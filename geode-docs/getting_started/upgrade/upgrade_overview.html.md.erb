@@ -23,11 +23,11 @@ follow these general steps:
 
 1. Back up your current system.
 1. Install the new version of the software.
-1. Stop your distributed system using the current software.
+1. Stop your cluster using the current software.
 1. Restart the system using the new software.
 
 In many cases, components running under the current version can be stopped selectively, then restarted under the new version
-so that the distributed system as a whole remains functional during the upgrade process; this is known as a "rolling upgrade."
+so that the cluster as a whole remains functional during the upgrade process; this is known as a "rolling upgrade."
 
 In other cases, the entire system must be stopped in order to accomplish the upgrade,
 which will require some downtime for your system.
@@ -45,7 +45,7 @@ you will need to accomplish the upgrade. Then select the appropriate upgrade pro
 
 -   **[Rolling Upgrade](upgrade_rolling.html)**
 
-    A rolling upgrade allows you to keep your existing distributed system running while you upgrade your members gradually.
+    A rolling upgrade allows you to keep your existing cluster running while you upgrade your members gradually.
 
 -   **[Offline Upgrade](upgrade_offline.html)**
 

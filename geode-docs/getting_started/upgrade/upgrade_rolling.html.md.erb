@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-A rolling upgrade eliminates system downtime by keeping your existing distributed system running while you upgrade one member at a time.
+A rolling upgrade eliminates system downtime by keeping your existing cluster running while you upgrade one member at a time.
 Each upgraded member can communicate with other members that are still running the earlier version of <%=vars.product_name%>, so servers can respond to
 client requests even as the upgrade is underway. Interdependent data members can be stopped and started without mutually blocking, a problem
 that can occur when multiple data members are stopped at the same time.
@@ -36,7 +36,7 @@ for more details on how different versions of <%=vars.product_name%> can interop
 
 **Components**
 
-Rolling upgrades apply to the peer members or cache servers within a distributed system.
+Rolling upgrades apply to the peer members, cache servers, and locators within a cluster.
 Under some circumstances, rolling upgrades can also be applied within individual sites of multi-site (WAN) deployments.
 
 **Redundancy**
@@ -66,7 +66,7 @@ The partitioned region attribute `startup-recovery-delay` is described in [Confi
 
 During a rolling upgrade, you can check the current <%=vars.product_name%> version of all members in the cluster by looking at the server or locator logs.
 
-  When an upgraded member reconnects to the distributed system, it logs all the members it can see as well as the <%=vars.product_name%> version of those members. For example, an upgraded locator will now detect <%=vars.product_name%> members running the older version of <%=vars.product_name%> (in this case, the version being upgraded, GEODE 1.2.0):
+  When an upgraded member reconnects to the cluster, it logs all the members it can see as well as the <%=vars.product_name%> version of those members. For example, an upgraded locator will now detect <%=vars.product_name%> members running the older version of <%=vars.product_name%> (in this case, the version being upgraded, GEODE 1.2.0):
 
 ``` pre
 [info 2013/06/03 10:03:29.206 PDT frodo <vm_1_thr_1_frodo> tid=0x1a]  DistributionManager frodo(locator1:21869:locator)<v16>:28242 started on frodo[15001]. There

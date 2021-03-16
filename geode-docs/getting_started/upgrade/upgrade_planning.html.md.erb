@@ -31,8 +31,9 @@ how to use the `gfsh backup disk-store` command to make a backup.
 ## <a id="guidelines-upgrading" class="no-quick-link"></a>Guidelines for Upgrading
 
 -   Schedule your upgrade during a period of low user activity for your system and network.
--   **Important:** After all locators have been upgraded, *do not start or restart any processes* that use the older version of the software. The older process will either not be allowed to join the distributed system or, if allowed to join, can potentially cause a deadlock.
--   Verify that all members that you wish to upgrade are members of the same distributed system cluster.
+-   Verify that the machines hosting the cluster members meet the [Host Machine Requirements](../system_requirements/host_machine.html) of the upgraded cluster.
+-   **Important:** After all locators have been upgraded, *do not start or restart any processes* that use the older version of the software. The older process will either not be allowed to join the cluster or, if allowed to join, can potentially cause a deadlock.
+-   Verify that all members that you wish to upgrade are members of the same cluster.
 A list of cluster members will be output with the `gfsh` command:
 
     ``` pre
@@ -78,14 +79,3 @@ Your choice of upgrade procedure depends, in part, on the versions of <%=vars.pr
 - **Version Compatibility Between Sites in Multi-Site (WAN) Deployments**
 
     In multi-site (WAN) deployments, sites should still be able to communicate with one another, even if they use different versions.
-
-## <a id="java-notes" class="no-quick-link"></a>Java Notes
-
-- To check your current Java version, type `java -version` at a command-line prompt.
-
-- <%=vars.product_name_long%> <%=vars.product_version%> requires Java SE 8, version 92 or a more recent version.
-
-- The <%=vars.product_name_long%> product download does not include Java.
-You must download and install a supported JRE or JDK on each system
-running Geode. To obtain best performance with commands such as `gfsh status` and `gfsh stop`,
-install a full JDK (not just a JRE).
