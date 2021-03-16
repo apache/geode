@@ -156,7 +156,6 @@ public class ClusterExecutor extends AbstractExecutor {
             + "cluster_current_epoch:6\r\n"
             + "cluster_my_epoch:2\r\n"
             + "cluster_stats_messages_sent:1483972\r\n"
-            + "cluster_stats_messages_received:1483968\r\n"
-    );
+            + "cluster_stats_messages_received:1483968\r\n");
   }
 }

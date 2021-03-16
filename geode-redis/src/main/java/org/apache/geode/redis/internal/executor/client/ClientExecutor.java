@@ -28,7 +28,7 @@ public class ClientExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(final Command command,
-                                      final ExecutionHandlerContext context) {
+      final ExecutionHandlerContext context) {
 
     logger.info("CLIENT: {}", command.toString());
 
