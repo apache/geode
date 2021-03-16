@@ -132,7 +132,7 @@ public class PartitionedIndex extends AbstractIndex {
         }
       }
       if (index == arbitraryBucketIndex) {
-        setArbitraryBucketIndex(retrieveArbitraryBucketIndex());
+        resetArbitraryBucketIndex(retrieveArbitraryBucketIndex());
       }
     }
   }
@@ -182,6 +182,10 @@ public class PartitionedIndex extends AbstractIndex {
     if (arbitraryBucketIndex == null) {
       arbitraryBucketIndex = index;
     }
+  }
+
+  private void resetArbitraryBucketIndex(Index index) {
+    arbitraryBucketIndex = index;
   }
 
   public Index retrieveArbitraryBucketIndex() {
