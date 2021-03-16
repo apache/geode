@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -41,53 +42,51 @@ final class PollingFileWatcher {
   private static final Logger logger = LogService.getLogger();
 
   private final Path path;
-  private final Runnable callback;
+  private final Runnable onUpdate;
+  private final Runnable onError;
   private final ScheduledExecutorService executor;
 
   private long lastModifiedTimeMillis;
 
-  PollingFileWatcher(Path path, Runnable callback) {
+  PollingFileWatcher(Path path, Runnable onUpdate, Runnable onError) {
     this.path = path;
-    this.callback = callback;
-    this.executor = LoggingExecutors.newSingleThreadScheduledExecutor(threadNameForPath(path));
-  }
+    this.onUpdate = onUpdate;
+    this.onError = onError;
 
-  void start() {
     try {
       lastModifiedTimeMillis = Files.getLastModifiedTime(path, NOFOLLOW_LINKS).toMillis();
     } catch (IOException e) {
-      logger.warn("Unable to start watching {}", path, e);
-      return;
+      throw new InternalGemFireException("Unable to start watching " + path, e);
     }
 
+    executor = LoggingExecutors.newSingleThreadScheduledExecutor(threadNameForPath(path));
     executor.scheduleAtFixedRate(this::poll, PERIOD_SECONDS, PERIOD_SECONDS, TimeUnit.SECONDS);
+
     logger.info("Started watching {}", path);
   }
 
   void stop() {
-    executor.shutdownNow();
+    executor.shutdown();
     logger.info("Stopped watching {}", path);
   }
 
   private void poll() {
-    long timeStampMillis;
     try {
-      timeStampMillis = Files.getLastModifiedTime(path, NOFOLLOW_LINKS).toMillis();
-    } catch (IOException e) {
-      logger.warn("File does not exist or unable to get last modified time: {}", path, e);
-      return;
-    }
-
-    if (timeStampMillis != lastModifiedTimeMillis) {
-      logger.debug("Detected update for {}", path);
-      lastModifiedTimeMillis = timeStampMillis;
-      callback.run();
-    } else {
-      logger.debug("No change detected for {}", path);
+      long timeStampMillis = Files.getLastModifiedTime(path, NOFOLLOW_LINKS).toMillis();
+      if (timeStampMillis != lastModifiedTimeMillis) {
+        logger.debug("Detected update for {}", path);
+        lastModifiedTimeMillis = timeStampMillis;
+        onUpdate.run();
+      } else {
+        logger.debug("No change detected for {}", path);
+      }
+    } catch (Exception e) {
+      logger.debug("Error watching {}", path, e);
+      onError.run();
     }
   }
 
   private static String threadNameForPath(Path path) {
-    return String.format("FileWatch-%s-", path.getName(path.getNameCount() - 1));
+    return String.format("file-watcher-%s-", path.getName(path.getNameCount() - 1));
   }
 }

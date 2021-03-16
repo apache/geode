@@ -16,15 +16,9 @@ package org.apache.geode.internal.net.filewatch;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.security.KeyStore;
 import java.time.Duration;
-
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,6 +29,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
+import org.apache.geode.internal.net.SSLConfig;
 
 public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
   private static final String dummyPassword = "geode";
@@ -43,15 +38,20 @@ public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private File trustStore;
+  private SSLConfig sslConfig;
   private FileWatchingX509ExtendedTrustManager target;
 
   @Before
-  public void createTrustStoreFile() throws Exception {
+  public void setUp() throws Exception {
     trustStore = temporaryFolder.newFile("truststore.jks");
+    sslConfig = new SSLConfig.Builder()
+        .setTruststore(trustStore.getAbsolutePath())
+        .setTruststorePassword(dummyPassword)
+        .build();
   }
 
   @After
-  public void stopWatchingTrustStore() {
+  public void stopWatching() {
     if (target != null) {
       target.stopWatching();
     }
@@ -61,7 +61,7 @@ public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
   public void initializesTrustManager() throws Exception {
     CertificateMaterial caCert = storeCa();
 
-    target = new FileWatchingX509ExtendedTrustManager(trustStore.toPath(), this::loadTrustManager);
+    target = FileWatchingX509ExtendedTrustManager.newFileWatchingTrustManager(sslConfig);
 
     assertThat(target.getAcceptedIssuers()).containsExactly(caCert.getCertificate());
   }
@@ -70,7 +70,7 @@ public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
   public void updatesTrustManager() throws Exception {
     storeCa();
 
-    target = new FileWatchingX509ExtendedTrustManager(trustStore.toPath(), this::loadTrustManager);
+    target = FileWatchingX509ExtendedTrustManager.newFileWatchingTrustManager(sslConfig);
 
     /*
      * Some file systems only have 1-second granularity for file timestamps. This sleep is needed
@@ -86,40 +86,11 @@ public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
         () -> assertThat(target.getAcceptedIssuers()).containsExactly(updated.getCertificate()));
   }
 
-  @Test
-  public void throwsIfX509ExtendedTrustManagerNotFound() {
-    TrustManager[] trustManagers = new TrustManager[] {new NotAnX509ExtendedTrustManager()};
-
-    Throwable thrown = catchThrowable(() -> new FileWatchingX509ExtendedTrustManager(
-        trustStore.toPath(), () -> trustManagers));
-
-    assertThat(thrown).isNotNull();
-  }
-
   private CertificateMaterial storeCa() throws Exception {
     CertificateMaterial cert = new CertificateBuilder().commonName("geode").generate();
     CertStores store = new CertStores("");
     store.trust("default", cert);
     store.createTrustStore(trustStore.getAbsolutePath(), dummyPassword);
     return cert;
-  }
-
-  private TrustManager[] loadTrustManager() {
-    try {
-      KeyStore store = KeyStore.getInstance("JKS");
-      try (FileInputStream stream = new FileInputStream(trustStore)) {
-        store.load(stream, dummyPassword.toCharArray());
-      }
-
-      TrustManagerFactory trustManagerFactory =
-          TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-      trustManagerFactory.init(store);
-      return trustManagerFactory.getTrustManagers();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static class NotAnX509ExtendedTrustManager implements TrustManager {
   }
 }

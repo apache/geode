@@ -14,14 +14,12 @@
  */
 package org.apache.geode.internal.net;
 
-import java.io.FileInputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.KeyStore;
+import static org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedKeyManager.newFileWatchingKeyManager;
+import static org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedTrustManager.newFileWatchingTrustManager;
+
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.util.Objects;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -33,8 +31,6 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedKeyManager;
-import org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedTrustManager;
 
 public class SSLUtil {
   /**
@@ -105,19 +101,26 @@ public class SSLUtil {
 
       KeyManager[] keyManagers = null;
       if (sslConfig.getKeystore() != null) {
-        Path path = Paths.get(sslConfig.getKeystore());
-        keyManagers = new KeyManager[] {
-            FileWatchingX509ExtendedKeyManager.forPath(path, () -> getKeyManagers(sslConfig))
-        };
+        keyManagers = new KeyManager[] {newFileWatchingKeyManager(sslConfig)};
       }
 
       TrustManager[] trustManagers = null;
-      if (sslConfig.getTruststore() != null) {
-        Path path = Paths.get(sslConfig.getTruststore());
-        trustManagers = new TrustManager[] {
-            FileWatchingX509ExtendedTrustManager.forPath(path,
-                () -> getTrustManagers(sslConfig, skipSslVerification))
-        };
+      if (skipSslVerification) {
+        trustManagers = new TrustManager[] {new X509TrustManager() {
+          @Override
+          public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return null;
+          }
+
+          @Override
+          public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+
+          @Override
+          public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+
+        }};
+      } else if (sslConfig.getTruststore() != null) {
+        trustManagers = new TrustManager[] {newFileWatchingTrustManager(sslConfig)};
       }
 
       ssl.init(keyManagers, trustManagers, new SecureRandom());
@@ -127,76 +130,12 @@ public class SSLUtil {
     }
   }
 
-  private static KeyManager[] getKeyManagers(SSLConfig sslConfig) throws Exception {
-    FileInputStream keyStoreStream = null;
-    KeyManagerFactory keyManagerFactory = null;
-
-    try {
-      if (StringUtils.isNotBlank(sslConfig.getKeystore())) {
-        String keyStoreType = Objects.toString(sslConfig.getKeystoreType(), "JKS");
-        KeyStore clientKeys = KeyStore.getInstance(keyStoreType);
-        keyStoreStream = new FileInputStream(sslConfig.getKeystore());
-        clientKeys.load(keyStoreStream, sslConfig.getKeystorePassword().toCharArray());
-
-        keyManagerFactory = getDefaultKeyManagerFactory();
-        keyManagerFactory.init(clientKeys, sslConfig.getKeystorePassword().toCharArray());
-      }
-    } finally {
-      if (keyStoreStream != null) {
-        keyStoreStream.close();
-      }
-    }
-
-    return keyManagerFactory != null ? keyManagerFactory.getKeyManagers() : null;
-  }
-
   static KeyManagerFactory getDefaultKeyManagerFactory() throws NoSuchAlgorithmException {
     return KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-  }
-
-  private static TrustManager[] getTrustManagers(SSLConfig sslConfig, boolean skipSslVerification)
-      throws Exception {
-    FileInputStream trustStoreStream = null;
-    TrustManagerFactory trustManagerFactory = null;
-
-    if (skipSslVerification) {
-      TrustManager[] trustAllCerts = new TrustManager[] {new X509TrustManager() {
-        @Override
-        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-          return null;
-        }
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] certs, String authType) {}
-
-      }};
-      return trustAllCerts;
-    }
-
-    try {
-      // load server public key
-      if (StringUtils.isNotBlank(sslConfig.getTruststore())) {
-        String trustStoreType = Objects.toString(sslConfig.getTruststoreType(), "JKS");
-        KeyStore serverPub = KeyStore.getInstance(trustStoreType);
-        trustStoreStream = new FileInputStream(sslConfig.getTruststore());
-        serverPub.load(trustStoreStream, sslConfig.getTruststorePassword().toCharArray());
-        trustManagerFactory = getDefaultTrustManagerFactory();
-        trustManagerFactory.init(serverPub);
-      }
-    } finally {
-      if (trustStoreStream != null) {
-        trustStoreStream.close();
-      }
-    }
-    return trustManagerFactory != null ? trustManagerFactory.getTrustManagers() : null;
   }
 
   static TrustManagerFactory getDefaultTrustManagerFactory()
       throws NoSuchAlgorithmException {
     return TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
   }
-
 }

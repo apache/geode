@@ -15,8 +15,11 @@
 package org.apache.geode.internal.net.filewatch;
 
 
+import java.io.FileInputStream;
 import java.net.Socket;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,12 +27,17 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509ExtendedTrustManager;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.internal.net.SSLConfig;
+import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -38,37 +46,46 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public final class FileWatchingX509ExtendedTrustManager extends X509ExtendedTrustManager {
 
   private static final Logger logger = LogService.getLogger();
+
+  /*
+   * This annotation is needed for the PMD checks to pass, but it probably should not be a
+   * cache-scoped field since there only needs to be one set of instances per JVM.
+   */
+  @MakeNotStatic
   private static final ConcurrentHashMap<Path, FileWatchingX509ExtendedTrustManager> instances =
       new ConcurrentHashMap<>();
 
   private final AtomicReference<X509ExtendedTrustManager> trustManager = new AtomicReference<>();
   private final Path trustStorePath;
-  private final ThrowingSupplier<TrustManager[]> trustManagerSupplier;
+  private final String trustStoreType;
+  private final String trustStorePassword;
   private final PollingFileWatcher fileWatcher;
 
-  @VisibleForTesting
-  FileWatchingX509ExtendedTrustManager(Path trustStorePath,
-      ThrowingSupplier<TrustManager[]> trustManagerSupplier) {
+  private FileWatchingX509ExtendedTrustManager(Path trustStorePath, String trustStoreType,
+      String trustStorePassword) {
     this.trustStorePath = trustStorePath;
-    this.trustManagerSupplier = trustManagerSupplier;
+    this.trustStoreType = trustStoreType;
+    this.trustStorePassword = trustStorePassword;
 
     loadTrustManager();
 
-    fileWatcher = new PollingFileWatcher(this.trustStorePath, this::loadTrustManager);
-    fileWatcher.start();
+    fileWatcher =
+        new PollingFileWatcher(this.trustStorePath, this::loadTrustManager, this::stopWatching);
   }
 
   /**
-   * Returns a {@link FileWatchingX509ExtendedTrustManager} for the given path. A new instance will
-   * be created only if one does not already exist for that path.
+   * Returns a {@link FileWatchingX509ExtendedKeyManager} for the given SSL config. A new instance
+   * will be created only if one does not already exist for the provided trust store path.
    *
-   * @param path The path to the trust store file
-   * @param supplier A supplier which returns an {@link X509ExtendedTrustManager}
+   * @param config The SSL config to use to load the trust manager
    */
-  public static FileWatchingX509ExtendedTrustManager forPath(Path path,
-      ThrowingSupplier<TrustManager[]> supplier) {
+  public static FileWatchingX509ExtendedTrustManager newFileWatchingTrustManager(SSLConfig config) {
+    Path path = Paths.get(config.getTruststore());
+    String type = config.getTruststoreType();
+    String password = config.getTruststorePassword();
+
     return instances.computeIfAbsent(path,
-        (Path p) -> new FileWatchingX509ExtendedTrustManager(p, supplier));
+        (Path p) -> new FileWatchingX509ExtendedTrustManager(path, type, password));
   }
 
   @Override
@@ -115,23 +132,60 @@ public final class FileWatchingX509ExtendedTrustManager extends X509ExtendedTrus
   @VisibleForTesting
   void stopWatching() {
     fileWatcher.stop();
+    instances.remove(trustStorePath, this);
   }
 
   private void loadTrustManager() {
     TrustManager[] trustManagers;
     try {
-      trustManagers = trustManagerSupplier.get();
+      KeyStore trustStore;
+      if (StringUtils.isEmpty(trustStoreType)) {
+        trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+      } else {
+        trustStore = KeyStore.getInstance(trustStoreType);
+      }
+
+      char[] password = null;
+      try (FileInputStream fis = new FileInputStream(trustStorePath.toString())) {
+        String passwordString = trustStorePassword;
+        if (passwordString != null) {
+          if (passwordString.trim().equals("")) {
+            if (!StringUtils.isEmpty(passwordString)) {
+              String toDecrypt = "encrypted(" + passwordString + ")";
+              passwordString = PasswordUtil.decrypt(toDecrypt);
+              password = passwordString.toCharArray();
+            }
+          } else {
+            password = passwordString.toCharArray();
+          }
+        }
+        trustStore.load(fis, password);
+      }
+
+      // default algorithm can be changed by setting property "ssl.TrustManagerFactory.algorithm" in
+      // security properties
+      TrustManagerFactory tmf =
+          TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+      tmf.init(trustStore);
+      trustManagers = tmf.getTrustManagers();
+
+      // follow the security tip in java doc
+      if (password != null) {
+        java.util.Arrays.fill(password, ' ');
+      }
     } catch (Exception e) {
       throw new InternalGemFireException("Unable to load TrustManager", e);
     }
 
     for (TrustManager tm : trustManagers) {
       if (tm instanceof X509ExtendedTrustManager) {
+
         if (trustManager.getAndSet((X509ExtendedTrustManager) tm) == null) {
           logger.info("Initialized TrustManager for {}", trustStorePath);
         } else {
           logger.info("Updated TrustManager for {}", trustStorePath);
         }
+
         return;
       }
     }

@@ -14,22 +14,31 @@
  */
 package org.apache.geode.internal.net.filewatch;
 
+import java.io.FileInputStream;
 import java.net.Socket;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.KeyStore;
 import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.X509ExtendedKeyManager;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.internal.net.SSLConfig;
+import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -38,37 +47,49 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public final class FileWatchingX509ExtendedKeyManager extends X509ExtendedKeyManager {
 
   private static final Logger logger = LogService.getLogger();
-  private static final ConcurrentHashMap<Path, FileWatchingX509ExtendedKeyManager> instances =
+
+  /*
+   * This annotation is needed for the PMD checks to pass, but it probably should not be a
+   * cache-scoped field since there only needs to be one set of instances per JVM.
+   */
+  @MakeNotStatic
+  private static final ConcurrentHashMap<PathAndAlias, FileWatchingX509ExtendedKeyManager> instances =
       new ConcurrentHashMap<>();
 
   private final AtomicReference<X509ExtendedKeyManager> keyManager = new AtomicReference<>();
   private final Path keyStorePath;
-  private final ThrowingSupplier<KeyManager[]> keyManagerSupplier;
+  private final String keyStoreType;
+  private final String keyStorePassword;
+  private final String keyStoreAlias;
   private final PollingFileWatcher fileWatcher;
 
-  @VisibleForTesting
-  FileWatchingX509ExtendedKeyManager(Path keystorePath,
-      ThrowingSupplier<KeyManager[]> keyManagerSupplier) {
-    this.keyStorePath = keystorePath;
-    this.keyManagerSupplier = keyManagerSupplier;
+  private FileWatchingX509ExtendedKeyManager(Path keyStorePath, String keyStoreType,
+      String keyStorePassword, String keyStoreAlias) {
+    this.keyStorePath = keyStorePath;
+    this.keyStoreType = keyStoreType;
+    this.keyStorePassword = keyStorePassword;
+    this.keyStoreAlias = keyStoreAlias;
 
     loadKeyManager();
 
-    fileWatcher = new PollingFileWatcher(this.keyStorePath, this::loadKeyManager);
-    fileWatcher.start();
+    fileWatcher =
+        new PollingFileWatcher(this.keyStorePath, this::loadKeyManager, this::stopWatching);
   }
 
   /**
-   * Returns a {@link FileWatchingX509ExtendedKeyManager} for the given path. A new instance will be
-   * created only if one does not already exist for that path.
+   * Returns a {@link FileWatchingX509ExtendedKeyManager} for the given SSL config. A new instance
+   * will be created only if one does not already exist for the provided key store path and alias.
    *
-   * @param path The path to the key store file
-   * @param supplier A supplier which returns an {@link X509ExtendedKeyManager}
+   * @param config The SSL config to use to load the key manager
    */
-  public static FileWatchingX509ExtendedKeyManager forPath(Path path,
-      ThrowingSupplier<KeyManager[]> supplier) {
-    return instances.computeIfAbsent(path,
-        (Path p) -> new FileWatchingX509ExtendedKeyManager(p, supplier));
+  public static FileWatchingX509ExtendedKeyManager newFileWatchingKeyManager(SSLConfig config) {
+    Path path = Paths.get(config.getKeystore());
+    String type = config.getKeystoreType();
+    String password = config.getKeystorePassword();
+    String alias = config.getAlias();
+
+    return instances.computeIfAbsent(new PathAndAlias(path, alias),
+        (PathAndAlias k) -> new FileWatchingX509ExtendedKeyManager(path, type, password, alias));
   }
 
   @Override
@@ -115,27 +136,102 @@ public final class FileWatchingX509ExtendedKeyManager extends X509ExtendedKeyMan
   @VisibleForTesting
   void stopWatching() {
     fileWatcher.stop();
+    instances.remove(new PathAndAlias(keyStorePath, keyStoreAlias), this);
   }
 
   private void loadKeyManager() {
     KeyManager[] keyManagers;
     try {
-      keyManagers = keyManagerSupplier.get();
+      KeyStore keyStore;
+      if (StringUtils.isEmpty(keyStoreType)) {
+        keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+      } else {
+        keyStore = KeyStore.getInstance(keyStoreType);
+      }
+
+      String keyStoreFilePath = keyStorePath.toString();
+      if (StringUtils.isEmpty(keyStoreFilePath)) {
+        keyStoreFilePath =
+            System.getProperty("user.home") + System.getProperty("file.separator") + ".keystore";
+      }
+
+      char[] password = null;
+      try (FileInputStream fileInputStream = new FileInputStream(keyStoreFilePath)) {
+        String passwordString = keyStorePassword;
+        if (passwordString != null) {
+          if (passwordString.trim().equals("")) {
+            String encryptedPass = System.getenv("javax.net.ssl.keyStorePassword");
+            if (!StringUtils.isEmpty(encryptedPass)) {
+              String toDecrypt = "encrypted(" + encryptedPass + ")";
+              passwordString = PasswordUtil.decrypt(toDecrypt);
+              password = passwordString.toCharArray();
+            }
+          } else {
+            password = passwordString.toCharArray();
+          }
+        }
+        keyStore.load(fileInputStream, password);
+      }
+
+      // default algorithm can be changed by setting property "ssl.KeyManagerFactory.algorithm" in
+      // security properties
+      KeyManagerFactory keyManagerFactory =
+          KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+      keyManagerFactory.init(keyStore, password);
+      keyManagers = keyManagerFactory.getKeyManagers();
+
+      // follow the security tip in java doc
+      if (password != null) {
+        java.util.Arrays.fill(password, ' ');
+      }
     } catch (Exception e) {
       throw new InternalGemFireException("Unable to load KeyManager", e);
     }
 
     for (KeyManager km : keyManagers) {
       if (km instanceof X509ExtendedKeyManager) {
-        if (keyManager.getAndSet((X509ExtendedKeyManager) km) == null) {
+
+        ExtendedAliasKeyManager extendedAliasKeyManager =
+            new ExtendedAliasKeyManager((X509ExtendedKeyManager) km, keyStoreAlias);
+
+        if (keyManager.getAndSet(extendedAliasKeyManager) == null) {
           logger.info("Initialized KeyManager for {}", keyStorePath);
         } else {
           logger.info("Updated KeyManager for {}", keyStorePath);
         }
+
         return;
       }
     }
 
     throw new IllegalStateException("No X509ExtendedKeyManager available");
+  }
+
+  private static class PathAndAlias {
+    private final Path keyStorePath;
+    private final String keyStoreAlias;
+
+    public PathAndAlias(Path keyStorePath, String keyStoreAlias) {
+      this.keyStorePath = keyStorePath;
+      this.keyStoreAlias = keyStoreAlias;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      PathAndAlias that = (PathAndAlias) o;
+      return Objects.equals(keyStorePath, that.keyStorePath) && Objects
+          .equals(keyStoreAlias, that.keyStoreAlias);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(keyStorePath, keyStoreAlias);
+    }
   }
 }
