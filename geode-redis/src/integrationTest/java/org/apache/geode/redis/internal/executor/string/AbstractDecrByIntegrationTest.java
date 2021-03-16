@@ -16,10 +16,12 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Random;
+import java.math.BigInteger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -33,13 +35,12 @@ import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 public abstract class AbstractDecrByIntegrationTest implements RedisPortSupplier {
 
   private Jedis jedis;
-  private Random rand;
+
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    rand = new Random();
     jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
@@ -50,48 +51,112 @@ public abstract class AbstractDecrByIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void decrBy_errors_givenWrongNumberOfArguments() {
+  public void shouldDecrementByGivenAmount_givenValidInputsAndKey() {
+    String key1 = "key1";
+    jedis.set(key1, "100");
+    jedis.decrBy(key1, 10);
+    String result = jedis.get(key1);
+    assertThat(Integer.parseInt(result)).isEqualTo(90);
+
+    jedis.set(key1, "100");
+    jedis.decrBy(key1, -10);
+    result = jedis.get(key1);
+    assertThat(Integer.parseInt(result)).isEqualTo(110);
+
+    String key2 = "key2";
+    jedis.set(key2, "-100");
+    jedis.decrBy(key2, 10);
+    result = jedis.get(key2);
+    assertThat(Integer.parseInt(result)).isEqualTo(-110);
+
+    jedis.set(key2, "-100");
+    jedis.decrBy(key2, -10);
+    result = jedis.get(key2);
+    assertThat(Integer.parseInt(result)).isEqualTo(-90);
+  }
+
+  @Test
+  public void should_returnNewValue_givenSuccessfulDecrby() {
+    jedis.set("key", "100");
+    Long decrByresult = jedis.decrBy("key", 50);
+
+    String getResult = jedis.get("key");
+
+    assertThat(decrByresult).isEqualTo(Long.valueOf(getResult)).isEqualTo(50l);
+  }
+
+
+  @Test
+  public void should_setKeyToZeroAndThenDecrement_givenKeyThatDoesNotExist() {
+
+    Long returnValue = jedis.decrBy("noneSuch", 10);
+    assertThat(returnValue).isEqualTo(-10);
+
+  }
+
+  @Test
+  public void shouldThrowError_givenWrongNumberOfArguments() {
     assertExactNumberOfArgs(jedis, Protocol.Command.DECRBY, 2);
   }
 
   @Test
-  public void testDecrBy() {
-    String key1 = randString();
-    String key2 = randString();
-    String key3 = randString();
-    int decr1 = rand.nextInt(100);
-    int decr2 = rand.nextInt(100);
-    Long decr3 = Long.MAX_VALUE / 2;
-    int num1 = 100;
-    int num2 = -100;
-    jedis.set(key1, "" + num1);
-    jedis.set(key2, "" + num2);
-    jedis.set(key3, "" + Long.MIN_VALUE);
+  public void shouldThrowArithmeticException_givenDecrbyMoreThanMaxLong() {
+    jedis.set("somekey", "1");
 
-    jedis.decrBy(key1, decr1);
-    jedis.decrBy(key2, decr2);
+    BigInteger maxLongValue = new BigInteger(String.valueOf(Long.MAX_VALUE));
+    BigInteger biggerThanMaxLongValue = maxLongValue.add(new BigInteger("1"));
 
-    assertThat(jedis.get(key1)).isEqualTo("" + (num1 - decr1 * 1));
-    assertThat(jedis.get(key2)).isEqualTo("" + (num2 - decr2 * 1));
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.DECRBY,
+            "somekey", String.valueOf(biggerThanMaxLongValue)))
+                .hasMessageContaining(ERROR_NOT_INTEGER);
 
-    Exception ex = null;
-    try {
-      jedis.decrBy(key3, decr3);
-    } catch (Exception e) {
-      ex = e;
-    }
-    assertThat(ex).isNotNull();
+    jedis.set("key", String.valueOf((Long.MIN_VALUE)));
   }
 
   @Test
-  public void decrbyMoreThanMaxLongThrowsArithmeticException() {
+  public void shouldReturnArithmeticError_givenDecrbyLessThanMinLong() {
+
     jedis.set("somekey", "1");
+
+    BigInteger minLongValue = new BigInteger(String.valueOf(Long.MIN_VALUE));
+    BigInteger smallerThanMinLongValue = minLongValue.subtract(new BigInteger("1"));
+
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.DECRBY, "somekey", "9223372036854775809"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+        () -> jedis.sendCommand(
+            Protocol.Command.DECRBY, "somekey",
+            smallerThanMinLongValue.toString()))
+                .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
-  private String randString() {
-    return Long.toHexString(Double.doubleToLongBits(Math.random()));
+  @Test
+  public void shouldReturnOverflowError_givenDecrbyThatWouldResultInValueLessThanMinLong() {
+
+    BigInteger minLongValue = new BigInteger(String.valueOf(Long.MIN_VALUE));
+    jedis.set("somekey", String.valueOf(minLongValue));
+
+    assertThatThrownBy(
+        () -> jedis.sendCommand(
+            Protocol.Command.DECRBY, "somekey",
+            "1"))
+                .hasMessageContaining(ERROR_OVERFLOW);
+  }
+
+
+  @Test
+  public void should_returnWrongTypeError_givenKeyContainsNonStringValue() {
+
+    jedis.hset("key", "1", "1");
+    assertThatThrownBy(
+        () -> jedis.decrBy("key", 1)).hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void should_returnNotAnIntegerError_givenKeyContainsNonNumericStringValue() {
+
+    jedis.set("key", "walrus");
+
+    assertThatThrownBy(
+        () -> jedis.decrBy("key", 1)).hasMessageContaining(ERROR_NOT_INTEGER);
   }
 }
