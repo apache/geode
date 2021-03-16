@@ -16,7 +16,7 @@ package org.apache.geode.redis.internal.executor.string;
 
 
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -25,7 +25,7 @@ public class IncrExecutor extends StringExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
-    ByteArrayWrapper key = command.getKey();
+    RedisKey key = command.getKey();
     RedisStringCommands stringCommands = getRedisStringCommands(context);
 
     long value = stringCommands.incr(key);
