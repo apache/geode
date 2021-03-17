@@ -30,6 +30,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -55,37 +57,44 @@ import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.security.query.TestCqListener;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.DUnitBlackboard;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.DistributedBlackboard;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 @Category(ClientSubscriptionTest.class)
 @RunWith(Parameterized.class)
 public class PartitionedRegionTxDUnitTest implements Serializable {
-  private static volatile DUnitBlackboard blackboard;
+
+  @Rule
+  public DistributedBlackboard blackboard = new DistributedBlackboard();
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
-  @Parameterized.Parameter
+  @Parameter
   public String conserveSockets;
 
-  @Parameterized.Parameters
+  @Parameters
   public static Collection<String> data() {
     return Arrays.asList("true", "false");
   }
 
   @After
   public void clearObserver() {
-    DistributionMessageObserver.setInstance(null);
+    for (VM vm : VM.toArray(VM.getAllVMs(), VM.getController())) {
+      vm.invoke(() -> {
+        DistributionMessageObserver.setInstance(null);
+      });
+    }
   }
 
   @Test
   public void verifyNoLockContentionBetweenCqRegistrationAndTxCommit() throws Exception {
-    getBlackboard().setMailbox("CqQueryResultCount", 0);
-    getBlackboard().setMailbox("CqEvents", 0);
+    blackboard.setMailbox("CqQueryResultCount", 0);
+    blackboard.setMailbox("CqEvents", 0);
 
     String REGION_NAME = "region";
     Properties properties = new Properties();
@@ -114,14 +123,14 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
           .create(REGION_NAME);
     });
 
-    AsyncInvocation serverAsync = server1.invokeAsync(() -> {
+    AsyncInvocation<Void> serverAsync = server1.invokeAsync(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
             DistributionMessage message) {
           if (message instanceof FilterProfile.OperationMessage) {
-            getBlackboard().signalGate("RegistrationReqReceived");
+            blackboard.signalGate("RegistrationReqReceived");
           }
         }
       });
@@ -134,8 +143,8 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
       ((TXState) txState).setDuringApplyChanges(() -> {
         try {
-          getBlackboard().signalGate("StartCQ");
-          getBlackboard().waitForGate("RegistrationReqReceived");
+          blackboard.signalGate("StartCQ");
+          blackboard.waitForGate("RegistrationReqReceived");
         } catch (TimeoutException | InterruptedException e) {
           // Do nothing
         }
@@ -155,16 +164,16 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
       cqaf.addCqListener(testListener);
       CqAttributes cqAttributes = cqaf.create();
 
-      getBlackboard().waitForGate("StartCQ");
+      blackboard.waitForGate("StartCQ");
       SelectResults cqResults = queryService
           .newCq("Select * from " + SEPARATOR + REGION_NAME, cqAttributes)
           .executeWithInitialResults();
-      getBlackboard().setMailbox("CqQueryResultCount", new Integer(cqResults.asList().size()));
+      blackboard.setMailbox("CqQueryResultCount", new Integer(cqResults.asList().size()));
     });
 
     GeodeAwaitility.await().untilAsserted(() -> {
-      Integer CqQueryResultCount = getBlackboard().getMailbox("CqQueryResultCount");
-      Integer CqEvents = getBlackboard().getMailbox("CqEvents");
+      Integer CqQueryResultCount = blackboard.getMailbox("CqQueryResultCount");
+      Integer CqEvents = blackboard.getMailbox("CqEvents");
       assertThat(CqQueryResultCount + CqEvents).isEqualTo(1);
     });
 
@@ -173,9 +182,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
   @Test
   public void verifyNoLockContentionBetweenInterestRegistrationAndTxCommit() throws Exception {
-    getBlackboard().setMailbox("CqQueryResultCount", 0);
-    getBlackboard().setMailbox("CqEvents", 0);
-
     String REGION_NAME = "region";
     Properties properties = new Properties();
     properties.put("conserve-sockets", conserveSockets);
@@ -210,7 +216,7 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
         public void beforeProcessMessage(ClusterDistributionManager dm,
             DistributionMessage message) {
           if (message instanceof FilterProfile.OperationMessage) {
-            getBlackboard().signalGate("RegistrationReqReceived");
+            blackboard.signalGate("RegistrationReqReceived");
           }
         }
       });
@@ -223,8 +229,8 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
       ((TXState) txState).setDuringApplyChanges(() -> {
         try {
-          getBlackboard().signalGate("StartReg");
-          getBlackboard().waitForGate("RegistrationReqReceived");
+          blackboard.signalGate("StartReg");
+          blackboard.waitForGate("RegistrationReqReceived");
         } catch (TimeoutException | InterruptedException e) {
           // Do nothing
         }
@@ -238,7 +244,7 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       Region region = clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
           .create(REGION_NAME);
-      getBlackboard().waitForGate("StartReg");
+      blackboard.waitForGate("StartReg");
       region.registerInterest("Key-5", InterestResultPolicy.KEYS_VALUES);
       region.registerInterest("Key-6", InterestResultPolicy.KEYS_VALUES);
 
@@ -257,7 +263,7 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
     @Override
     public void onEvent(CqEvent aCqEvent) {
       numEvents++;
-      getBlackboard().setMailbox("CqEvents", new Integer(numEvents));
+      blackboard.setMailbox("CqEvents", new Integer(numEvents));
     }
 
     @Override
@@ -268,10 +274,4 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
     }
   }
 
-  private static DUnitBlackboard getBlackboard() {
-    if (blackboard == null) {
-      blackboard = new DUnitBlackboard();
-    }
-    return blackboard;
-  }
 }
