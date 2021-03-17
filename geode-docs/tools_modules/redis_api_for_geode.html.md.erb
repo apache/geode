@@ -72,6 +72,7 @@ The Redis API for <%=vars.product_name%> currently supports the following comman
 -   **Keys**: DEL, EXISTS, EXPIRE, EXPIREAT, KEYS, PERSIST, PEXPIRE, PEXPIREAT, PTTL, RENAME, TTL,
   TYPE
 -   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE
+-   **Server**: INFO
 -   **Sets**: SADD, SMEMBERS, SREM
 -   **Strings**: APPEND, GET, SET
 
@@ -82,7 +83,7 @@ exactly as expected.
 -   **Connection**: ECHO, SELECT
 -   **Hashes**: HDEL, HEXISTS, HGET, HINCRBY, HINCRBYFLOAT, HKEYS, HSCAN
 -   **Keys**: SCAN, UNLINK
--   **Server**: DBSIZE, FLUSHALL (no async option), FLUSHDB (no async option), INFO, SHUTDOWN,
+-   **Server**: DBSIZE, FLUSHALL (no async option), FLUSHDB (no async option), SHUTDOWN,
   SLOWLOG, TIME
 -   **Sets**: SCARD, SDIFF, SDIFFSTORE, SINTER, SINTERSTORE, SISMEMBER, SMOVE, SPOP, SRANDMEMBER,
   SSCAN, SUNION, SUNIONSTORE
