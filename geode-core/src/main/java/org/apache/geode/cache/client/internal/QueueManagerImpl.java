@@ -42,6 +42,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.client.internal.RegisterInterestTracker.RegionInterestEntry;
 import org.apache.geode.cache.client.internal.ServerDenyList.DenyListListener;
@@ -451,7 +452,8 @@ public class QueueManagerImpl implements QueueManager {
       Connection connection = null;
       try {
         connection = factory.createClientToServerConnection(server, true);
-      } catch (GemFireSecurityException | GemFireConfigException e) {
+      } catch (GemFireSecurityException | GemFireConfigException
+          | ServerRefusedConnectionException e) {
         throw e;
       } catch (Exception e) {
         if (isDebugEnabled) {
