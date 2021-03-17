@@ -145,7 +145,7 @@ public class RedisHash extends AbstractRedisData {
    * to be thread safe with toData.
    */
   @Override
-  public void toData(DataOutput out, SerializationContext context) throws IOException {
+  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     DataSerializer.writeHashMap(hash, out);
   }
