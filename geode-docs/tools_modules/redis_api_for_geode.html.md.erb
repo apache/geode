@@ -68,13 +68,14 @@ If the server is functioning properly, you should see a response of `PONG`.
 The Redis API for <%=vars.product_name%> currently supports the following commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
 
 **Note**: These commands are supported for Redis 5.
+**Note**: SLOWLOG is implemented as a NoOp for compatibility with DataDog.
 
 -   **Connection**: AUTH, PING, QUIT
 -   **Hashes**: HDEL, HEXISTS, HGET, HGETALL, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HMSET, HSCAN, HSET, HSETNX, HSTRLEN, HVALS
 -   **Keys**: DEL, EXISTS, EXPIRE, EXPIREAT, KEYS, PERSIST, PEXPIRE, PEXPIREAT, PTTL, RENAME, TTL,
   TYPE
 -   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE
--   **Server**: INFO
+-   **Server**: SLOWLOG, INFO
 -   **Sets**: SADD, SMEMBERS, SREM
 -   **Strings**: APPEND, DECR, GET, GETRANGE, INCR, INCRBY, INCRBYFLOAT, MGET, SET, SETNX, STRLEN
 
@@ -84,8 +85,7 @@ exactly as expected.
 
 -   **Connection**: ECHO, SELECT
 -   **Keys**: SCAN, UNLINK
--   **Server**: DBSIZE, FLUSHALL (no async option), FLUSHDB (no async option), SHUTDOWN,
-  SLOWLOG, TIME
+-   **Server**: DBSIZE, FLUSHALL (no async option), FLUSHDB (no async option), SHUTDOWN, TIME
 -   **Sets**: SCARD, SDIFF, SDIFFSTORE, SINTER, SINTERSTORE, SISMEMBER, SMOVE, SPOP, SRANDMEMBER,
   SSCAN, SUNION, SUNIONSTORE
 -   **Strings**: BITCOUNT, BITOP, BITPOS, DECRBY, GETBIT, GETSET, MSET, MSETNX, PSETEX, SETBIT, SETEX, SETRANGE

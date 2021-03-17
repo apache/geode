@@ -189,6 +189,9 @@ public enum RedisCommandType {
   SMEMBERS(new SMembersExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   SREM(new SRemExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
 
+  /************* Server *****************/
+  SLOWLOG(new SlowlogExecutor(), SUPPORTED, new SlowlogParameterRequirements()),
+
   /********** Publish Subscribe **********/
   SUBSCRIBE(new SubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   PUBLISH(new PublishExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
@@ -270,7 +273,6 @@ public enum RedisCommandType {
   FLUSHALL(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   FLUSHDB(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
-  SLOWLOG(new SlowlogExecutor(), UNSUPPORTED, new SlowlogParameterRequirements()),
   TIME(new TimeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
 
   /////////// UNIMPLEMENTED /////////////////////
