@@ -47,7 +47,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.12.2")
     deps.put("springshell.version", "1.2.0.RELEASE")
-    deps.put("springframework.version", "5.3.3")
+    deps.put("springframework.version", "5.3.5")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
@@ -263,13 +263,10 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-core')
       entry('spring-expression')
       entry('spring-oxm')
+      entry('spring-test')
       entry('spring-tx')
       entry('spring-web')
       entry('spring-webmvc')
-    }
-
-    dependencySet(group: 'org.springframework', version: get('springframework.version')) {
-      entry('spring-test')
     }
 
     dependencySet(group: 'org.springframework.boot', version: '2.4.3') {
