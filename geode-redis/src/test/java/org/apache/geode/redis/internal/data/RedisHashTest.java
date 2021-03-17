@@ -20,7 +20,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +39,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -47,6 +50,9 @@ public class RedisHashTest {
     InternalDataSerializer
         .getDSFIDSerializer()
         .registerDSFID(DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER, ByteArrayWrapper.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_HASH_ID,
+        RedisHash.class);
   }
 
   @Test
@@ -58,6 +64,14 @@ public class RedisHashTest {
     ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
     RedisHash o2 = DataSerializer.readObject(in);
     assertThat(o2).isEqualTo(o1);
+  }
+
+  @Test
+  public void confirmToDataIsSynchronized() throws NoSuchMethodException {
+    assertThat(Modifier
+        .isSynchronized(RedisHash.class
+            .getMethod("toData", DataOutput.class, SerializationContext.class).getModifiers()))
+                .isTrue();
   }
 
   private RedisHash createRedisHash(String k1, String v1, String k2, String v2) {

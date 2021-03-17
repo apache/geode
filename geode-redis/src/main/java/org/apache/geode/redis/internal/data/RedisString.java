@@ -25,6 +25,9 @@ import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.delta.AppendDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
@@ -604,24 +607,28 @@ public class RedisString extends AbstractRedisData {
   /**
    * Since GII (getInitialImage) can come in and call toData while other threads
    * are modifying this object, the striped executor will not protect toData.
-   * So any methods that modify "value" need to be thread safe with toData.
-   * But currently all of them are because we never modify the existing byte
-   * array owned by "value" in place. Instead we create a new byte array
-   * and call setBytes. So toData will see either the old or new value but
-   * not a mix of both.
+   * So any methods that modify "value", "appendSequence" need to be thread safe with toData.
    */
+
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writePrimitiveInt(appendSequence, out);
     DataSerializer.writeByteArray(value.toBytes(), out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     appendSequence = DataSerializer.readPrimitiveInt(in);
     value = new ByteArrayWrapper(DataSerializer.readByteArray(in));
+
+  }
+
+  @Override
+  public int getDSFID() {
+    return REDIS_STRING_ID;
   }
 
   @Override
@@ -720,5 +727,10 @@ public class RedisString extends AbstractRedisData {
 
   protected void valueSetBytes(byte[] bytes) {
     value.setBytes(bytes);
+  }
+
+  @Override
+  public KnownVersion[] getSerializationVersions() {
+    return null;
   }
 }

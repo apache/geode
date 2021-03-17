@@ -20,7 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 
 import org.junit.BeforeClass;
@@ -32,6 +34,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class RedisStringTest {
 
@@ -40,6 +43,9 @@ public class RedisStringTest {
     InternalDataSerializer
         .getDSFIDSerializer()
         .registerDSFID(DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER, ByteArrayWrapper.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_STRING_ID,
+        RedisString.class);
   }
 
   @Test
@@ -105,7 +111,7 @@ public class RedisStringTest {
   }
 
   @Test
-  public void serializationIsStable() throws IOException, ClassNotFoundException {
+  public void confirmSerializationIsStable() throws IOException, ClassNotFoundException {
     RedisString o1 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1, 2, 3}));
     o1.setExpirationTimestampNoDelta(1000);
     HeapDataOutputStream outputStream = new HeapDataOutputStream(100);
@@ -113,6 +119,14 @@ public class RedisStringTest {
     ByteArrayDataInput dataInput = new ByteArrayDataInput(outputStream.toByteArray());
     RedisString o2 = DataSerializer.readObject(dataInput);
     assertThat(o2).isEqualTo(o1);
+  }
+
+  @Test
+  public void confirmToDataIsSynchronized() throws NoSuchMethodException {
+    assertThat(Modifier
+        .isSynchronized(RedisString.class
+            .getMethod("toData", DataOutput.class, SerializationContext.class).getModifiers()))
+                .isTrue();
   }
 
   @Test

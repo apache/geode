@@ -45,6 +45,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -141,8 +144,8 @@ public class RedisHash extends AbstractRedisData {
    * to be thread safe with toData.
    */
   @Override
-  public synchronized void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeHashMap(hash, out);
   }
 
@@ -160,8 +163,9 @@ public class RedisHash extends AbstractRedisData {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     hash = DataSerializer.readHashMap(in);
   }
 
@@ -498,5 +502,15 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public String toString() {
     return "RedisHash{" + super.toString() + ", " + "hash=" + hash + '}';
+  }
+
+  @Override
+  public int getDSFID() {
+    return REDIS_HASH_ID;
+  }
+
+  @Override
+  public KnownVersion[] getSerializationVersions() {
+    return null;
   }
 }

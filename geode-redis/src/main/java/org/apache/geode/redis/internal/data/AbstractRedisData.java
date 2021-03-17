@@ -27,6 +27,8 @@ import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.AppendDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
@@ -158,13 +160,14 @@ public abstract class AbstractRedisData implements RedisData {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeLong(expirationTimestamp, out);
+  public void toData(DataOutput out, SerializationContext context) throws IOException {
+    out.writeLong(expirationTimestamp);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    expirationTimestamp = (DataSerializer.readLong(in));
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    expirationTimestamp = in.readLong();
   }
 
   private void setDelta(DeltaInfo deltaInfo) {
