@@ -298,8 +298,6 @@ geode-assembly/**                                                 @rhoughton-piv
 #-----------------------------------------------------------------
 # Documentation
 #-----------------------------------------------------------------
-geode-book/**                                                     @karensmolermiller @davebarnes97
-geode-docs/**                                                     @karensmolermiller @davebarnes97
 BUILDING.md                                                       @rhoughton-pivot @upthewaterspout
 CODE_OF_CONDUCT.md                                                @upthewaterspout @pivotal-amurmann @nonbinaryprogrammer
 LICENSE                                                           @onichols-pivotal @dickcav @metatype

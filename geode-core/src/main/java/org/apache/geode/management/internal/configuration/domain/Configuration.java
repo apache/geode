@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.configuration.domain;
 
+import static java.util.Arrays.asList;
+import static org.apache.geode.internal.JarDeployer.getArtifactId;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -27,7 +29,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -135,28 +136,25 @@ public class Configuration implements DataSerializable {
   }
 
   public void putDeployment(Deployment deployment) {
-    String artifactId = deployment.getDeploymentName();
-    deployments.values()
-        .removeIf(d -> d.getDeploymentName().equals(artifactId));
-    deployments.put(deployment.getDeploymentName(), deployment);
+    String artifactId = getArtifactId(deployment.getFileName());
+    deployments.values().removeIf(d -> getArtifactId(d.getFileName()).equals(artifactId));
+    deployments.put(deployment.getId(), deployment);
   }
 
   public Collection<Deployment> getDeployments() {
     return deployments.values();
   }
 
-  public void removeDeployments(Collection<String> deploymentsToRemove) {
-    if (deploymentsToRemove == null) {
+  public void removeJarNames(String[] jarNames) {
+    if (jarNames == null) {
       deployments.clear();
     } else {
-      for (String deploymentName : deploymentsToRemove) {
-        deployments.remove(deploymentName);
-      }
+      asList(jarNames).forEach(deployments::remove);
     }
   }
 
   public Set<String> getJarNames() {
-    return deployments.values().stream().map(Deployment::getFileName).collect(Collectors.toSet());
+    return deployments.keySet();
   }
 
   @Override
@@ -187,7 +185,7 @@ public class Configuration implements DataSerializable {
       // we are reading pre 1.12 data. So add each jar name to deployments
       jarNames.stream()
           .map(x -> new Deployment(x, null, null))
-          .forEach(deployment -> deployments.put(deployment.getDeploymentName(), deployment));
+          .forEach(deployment -> deployments.put(deployment.getFileName(), deployment));
     } else {
       // version of the data we are reading (1.12 or later)
       final Version version = Versioning.getVersion(VersioningIO.readOrdinal(in));

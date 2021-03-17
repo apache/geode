@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.netty;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -39,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -81,7 +83,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final EventLoopGroup subscriberGroup;
   private BigInteger scanCursor;
   private BigInteger sscanCursor;
-  private BigInteger hscanCursor;
+  private int hscanCursor;
   private final AtomicBoolean channelInactive = new AtomicBoolean();
   private final int MAX_QUEUED_COMMANDS =
       Integer.getInteger("geode.redis.commandQueueSize", 1000);
@@ -123,7 +125,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.serverPort = serverPort;
     this.scanCursor = new BigInteger("0");
     this.sscanCursor = new BigInteger("0");
-    this.hscanCursor = new BigInteger("0");
+    this.hscanCursor = 0;
     redisStats.addClient();
 
     backgroundExecutor.submit(this::processCommandQueue);
@@ -232,6 +234,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       response = RedisResponse.error(cause.getMessage());
     } else if (cause instanceof RedisDataTypeMismatchException) {
       response = RedisResponse.wrongType(cause.getMessage());
+    } else if (cause instanceof LowMemoryException) {
+      response = RedisResponse.oom(RedisConstants.ERROR_OOM_COMMAND_NOT_ALLOWED);
     } else if (cause instanceof DecoderException
         && cause.getCause() instanceof RedisCommandParserException) {
       response = RedisResponse.error(RedisConstants.PARSING_EXCEPTION_MESSAGE);
@@ -403,6 +407,10 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return client;
   }
 
+  public UUID getClientUUID() {
+    return this.getClient().getId();
+  }
+
   public void shutdown() {
     shutdownInvoker.run();
   }
@@ -431,11 +439,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.sscanCursor = sscanCursor;
   }
 
-  public BigInteger getHscanCursor() {
-    return hscanCursor;
+  public int getHscanCursor() {
+    return this.hscanCursor;
   }
 
-  public void setHscanCursor(BigInteger hscanCursor) {
+  public void setHscanCursor(int hscanCursor) {
     this.hscanCursor = hscanCursor;
   }
 

@@ -151,6 +151,7 @@ public enum RedisCommandType {
 
   APPEND(new AppendExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   DECR(new DecrExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  DECRBY(new DecrByExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   GET(new GetExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   INCRBY(new IncrByExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   INCR(new IncrExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
@@ -177,6 +178,8 @@ public enum RedisCommandType {
   HSTRLEN(new HStrLenExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   HINCRBY(new HIncrByExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   HVALS(new HValsExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  HSCAN(new HScanExecutor(), SUPPORTED, new MinimumParameterRequirements(3),
+      new OddParameterRequirements(ERROR_SYNTAX)),
   HEXISTS(new HExistsExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   HKEYS(new HKeysExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
 
@@ -192,6 +195,9 @@ public enum RedisCommandType {
   PSUBSCRIBE(new PsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
   UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
+
+  /********** Server **********/
+  INFO(new InfoExecutor(), SUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
 
   /***************************************
    ********* Internal Commands ***********
@@ -226,7 +232,6 @@ public enum RedisCommandType {
   BITCOUNT(new BitCountExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   BITOP(new BitOpExecutor(), UNSUPPORTED, new MinimumParameterRequirements(4)),
   BITPOS(new BitPosExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
-  DECRBY(new DecrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   GETBIT(new GetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   GETSET(new GetSetExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   MSET(new MSetExecutor(), UNSUPPORTED,
@@ -237,13 +242,6 @@ public enum RedisCommandType {
   SETBIT(new SetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   SETEX(new SetEXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   SETRANGE(new SetRangeExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
-
-  /***************************************
-   **************** Hashes ***************
-   ***************************************/
-
-  HSCAN(new HScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3),
-      new OddParameterRequirements(ERROR_SYNTAX)),
 
   /***************************************
    **************** Sets *****************
@@ -271,7 +269,6 @@ public enum RedisCommandType {
   DBSIZE(new DBSizeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
   FLUSHALL(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   FLUSHDB(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
-  INFO(new InfoExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   SLOWLOG(new SlowlogExecutor(), UNSUPPORTED, new SlowlogParameterRequirements()),
   TIME(new TimeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),

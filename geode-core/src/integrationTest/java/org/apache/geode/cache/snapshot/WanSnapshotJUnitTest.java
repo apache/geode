@@ -46,13 +46,13 @@ public class WanSnapshotJUnitTest extends SnapshotTestCase {
     }
 
     File snapshot = new File(getSnapshotDirectory(), "wan.snapshot.gfd");
-    region.getSnapshotService().save(snapshot, SnapshotFormat.GEMFIRE);
+    region.getSnapshotService().save(snapshot, SnapshotFormat.GEODE);
     region.clear();
 
     await()
         .until(() -> wan.ticker.compareAndSet(count, 0));
 
-    region.getSnapshotService().load(snapshot, SnapshotFormat.GEMFIRE);
+    region.getSnapshotService().load(snapshot, SnapshotFormat.GEODE);
 
     // delay, just in case we get any events
     Thread.sleep(1000);

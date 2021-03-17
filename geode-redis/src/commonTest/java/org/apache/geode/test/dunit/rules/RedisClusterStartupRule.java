@@ -41,6 +41,13 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
         .withConnectionToLocator(locatorPort));
   }
 
+
+  public MemberVM startRedisVM(int index, String redisPort, int... locatorPort) {
+    return startServerVM(index, r -> withRedis(r, redisPort)
+        .withConnectionToLocator(locatorPort));
+  }
+
+
   public MemberVM startRedisVM(int index, Properties properties, int... locatorPort) {
     return startServerVM(index, x -> withRedis(x)
         .withProperties(properties)
@@ -59,8 +66,23 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
             "true");
   }
 
+  private ServerStarterRule withRedis(ServerStarterRule rule, String redisPort) {
+    return rule.withProperty(REDIS_BIND_ADDRESS, "localhost")
+        .withProperty(REDIS_PORT, redisPort)
+        .withProperty(REDIS_ENABLED, "true")
+        .withSystemProperty(GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM,
+            "true");
+  }
+
   public int getRedisPort(int vmNumber) {
     return getRedisPort(getMember(vmNumber));
+  }
+
+  public Long getDataStoreBytesInUseForDataRegion(MemberVM vm) {
+    return vm.invoke(() -> {
+      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
+      return service.getDataStoreBytesInUseForDataRegion();
+    });
   }
 
   public int getRedisPort(MemberVM vm) {

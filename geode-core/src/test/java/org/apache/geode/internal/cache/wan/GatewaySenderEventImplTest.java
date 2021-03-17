@@ -15,6 +15,8 @@
 package org.apache.geode.internal.cache.wan;
 
 import static org.apache.geode.internal.serialization.KnownVersion.GEODE_1_13_0;
+import static org.apache.geode.internal.serialization.KnownVersion.GEODE_1_14_0;
+import static org.apache.geode.internal.serialization.KnownVersion.GEODE_1_8_0;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
@@ -29,10 +31,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TransactionId;
@@ -41,6 +46,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderHelper;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -48,8 +54,10 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.test.fake.Fakes;
 
+@RunWith(JUnitParamsRunner.class)
 public class GatewaySenderEventImplTest {
 
   private GemFireCacheImpl cache;
@@ -89,7 +97,7 @@ public class GatewaySenderEventImplTest {
     gatewaySenderEvent.fromData(dataInput, deserializationContext);
     assertThat(gatewaySenderEvent.getTransactionId()).isNull();
 
-    when(dataInput.readShort()).thenReturn(KnownVersion.GEODE_1_14_0.ordinal());
+    when(dataInput.readShort()).thenReturn(GEODE_1_14_0.ordinal());
     when(objectDeserializer.readObject(dataInput)).thenReturn(eventID, new Object(),
         gatewaySenderEventCallbackArgument, transactionId);
     gatewaySenderEvent.fromData(dataInput, deserializationContext);
@@ -97,21 +105,29 @@ public class GatewaySenderEventImplTest {
   }
 
   @Test
-  public void testSerializingDataFromVersion_1_14_0_OrNewerToVersion_1_13_0() throws IOException {
+  @Parameters(method = "getVersionsAndExpectedInvocations")
+  public void testSerializingDataFromCurrentVersionToOldVersion(VersionAndExpectedInvocations vaei)
+      throws IOException {
     InternalDataSerializer internalDataSerializer = spy(InternalDataSerializer.class);
     GatewaySenderEventImpl gatewaySenderEvent = spy(GatewaySenderEventImpl.class);
     OutputStream outputStream = mock(OutputStream.class);
     VersionedDataOutputStream versionedDataOutputStream =
-        new VersionedDataOutputStream(outputStream, GEODE_1_13_0);
+        new VersionedDataOutputStream(outputStream, vaei.getVersion());
 
     internalDataSerializer.invokeToData(gatewaySenderEvent, versionedDataOutputStream);
     verify(gatewaySenderEvent, times(0)).toData(any(), any());
-    verify(gatewaySenderEvent, times(1)).toDataPre_GEODE_1_14_0_0(any(), any());
-    verify(gatewaySenderEvent, times(1)).toDataPre_GEODE_1_9_0_0(any(), any());
+    verify(gatewaySenderEvent, times(vaei.getPre115Invocations())).toDataPre_GEODE_1_15_0_0(any(),
+        any());
+    verify(gatewaySenderEvent, times(vaei.getPre114Invocations())).toDataPre_GEODE_1_14_0_0(any(),
+        any());
+    verify(gatewaySenderEvent, times(vaei.getPre19Invocations())).toDataPre_GEODE_1_9_0_0(any(),
+        any());
   }
 
   @Test
-  public void testDeserializingDataFromVersion_1_13_0_ToVersion_1_14_0_OrNewer()
+  @Parameters(method = "getVersionsAndExpectedInvocations")
+  public void testDeserializingDataFromOldVersionToCurrentVersion(
+      VersionAndExpectedInvocations vaei)
       throws IOException, ClassNotFoundException {
     InternalDataSerializer internalDataSerializer = spy(InternalDataSerializer.class);
     GatewaySenderEventImpl gatewaySenderEvent = spy(GatewaySenderEventImpl.class);
@@ -119,12 +135,24 @@ public class GatewaySenderEventImplTest {
     when(inputStream.read()).thenReturn(69); // NULL_STRING
     when(inputStream.read(isA(byte[].class), isA(int.class), isA(int.class))).thenReturn(1);
     VersionedDataInputStream versionedDataInputStream =
-        new VersionedDataInputStream(inputStream, GEODE_1_13_0);
+        new VersionedDataInputStream(inputStream, vaei.getVersion());
 
     internalDataSerializer.invokeFromData(gatewaySenderEvent, versionedDataInputStream);
     verify(gatewaySenderEvent, times(0)).fromData(any(), any());
-    verify(gatewaySenderEvent, times(1)).fromDataPre_GEODE_1_14_0_0(any(), any());
-    verify(gatewaySenderEvent, times(1)).fromDataPre_GEODE_1_9_0_0(any(), any());
+    verify(gatewaySenderEvent, times(vaei.getPre115Invocations())).fromDataPre_GEODE_1_15_0_0(any(),
+        any());
+    verify(gatewaySenderEvent, times(vaei.getPre114Invocations())).fromDataPre_GEODE_1_14_0_0(any(),
+        any());
+    verify(gatewaySenderEvent, times(vaei.getPre19Invocations())).fromDataPre_GEODE_1_9_0_0(any(),
+        any());
+  }
+
+  private VersionAndExpectedInvocations[] getVersionsAndExpectedInvocations() {
+    return new VersionAndExpectedInvocations[] {
+        new VersionAndExpectedInvocations(GEODE_1_8_0, 1, 0, 0),
+        new VersionAndExpectedInvocations(GEODE_1_13_0, 1, 1, 0),
+        new VersionAndExpectedInvocations(GEODE_1_14_0, 1, 1, 1)
+    };
   }
 
   @Test
@@ -185,4 +213,88 @@ public class GatewaySenderEventImplTest {
     assertThat(event).isNotEqualTo(eventDifferentRegion);
   }
 
+  @Test
+  public void testSerialization() throws Exception {
+    // Set up test
+    LocalRegion region = mock(LocalRegion.class);
+    when(region.getFullPath()).thenReturn(testName.getMethodName() + "_region");
+    when(region.getCache()).thenReturn(cache);
+    TXId txId = new TXId(cache.getMyId(), 0);
+    when(region.getTXId()).thenReturn(txId);
+
+    // Create GatewaySenderEventImpl
+    GatewaySenderEventImpl originalEvent =
+        ParallelGatewaySenderHelper.createGatewaySenderEvent(region, Operation.PUTALL_CREATE,
+            "key1", "value1", 1, 3, 3, 113);
+
+    // Serialize GatewaySenderEventImpl
+    byte[] eventBytes = BlobHelper.serializeToBlob(originalEvent);
+
+    // Deserialize GatewaySenderEventImpl
+    GatewaySenderEventImpl deserializedEvent =
+        (GatewaySenderEventImpl) BlobHelper.deserializeBlob(eventBytes);
+
+    // Verify fields are equal
+    assertThat(originalEvent.getEventId()).isEqualTo(deserializedEvent.getEventId());
+    assertThat(originalEvent.getAction()).isEqualTo(deserializedEvent.getAction());
+    assertThat(originalEvent.getOperation()).isEqualTo(deserializedEvent.getOperation());
+    assertThat(originalEvent.getRegionPath()).isEqualTo(deserializedEvent.getRegionPath());
+    assertThat(originalEvent.getKey()).isEqualTo(deserializedEvent.getKey());
+    assertThat(originalEvent.getDeserializedValue())
+        .isEqualTo(deserializedEvent.getDeserializedValue());
+    assertThat(originalEvent.getValueIsObject()).isEqualTo(deserializedEvent.getValueIsObject());
+    assertThat(originalEvent.getNumberOfParts()).isEqualTo(deserializedEvent.getNumberOfParts());
+    assertThat(originalEvent.getCallbackArgument())
+        .isEqualTo(deserializedEvent.getCallbackArgument());
+    assertThat(originalEvent.getPossibleDuplicate())
+        .isEqualTo(deserializedEvent.getPossibleDuplicate());
+    assertThat(originalEvent.getCreationTime()).isEqualTo(deserializedEvent.getCreationTime());
+    assertThat(originalEvent.getShadowKey()).isEqualTo(deserializedEvent.getShadowKey());
+    assertThat(originalEvent.getVersionTimeStamp())
+        .isEqualTo(deserializedEvent.getVersionTimeStamp());
+    assertThat(originalEvent.isAcked).isEqualTo(deserializedEvent.isAcked);
+    assertThat(originalEvent.isDispatched).isEqualTo(deserializedEvent.isDispatched);
+    assertThat(originalEvent.getBucketId()).isEqualTo(deserializedEvent.getBucketId());
+    assertThat(originalEvent.isConcurrencyConflict())
+        .isEqualTo(deserializedEvent.isConcurrencyConflict());
+    assertThat(originalEvent.getTransactionId())
+        .isEqualTo(deserializedEvent.getTransactionId());
+    assertThat(originalEvent.isLastEventInTransaction())
+        .isEqualTo(deserializedEvent.isLastEventInTransaction());
+  }
+
+  public static class VersionAndExpectedInvocations {
+
+    private final KnownVersion version;
+
+    private final int pre19Invocations;
+
+    private final int pre114Invocations;
+
+    private final int pre115Invocations;
+
+    public VersionAndExpectedInvocations(KnownVersion version, int pre19Invocations,
+        int pre114Invocations, int pre115Invocations) {
+      this.version = version;
+      this.pre19Invocations = pre19Invocations;
+      this.pre114Invocations = pre114Invocations;
+      this.pre115Invocations = pre115Invocations;
+    }
+
+    public KnownVersion getVersion() {
+      return this.version;
+    }
+
+    public int getPre19Invocations() {
+      return this.pre19Invocations;
+    }
+
+    public int getPre114Invocations() {
+      return this.pre114Invocations;
+    }
+
+    public int getPre115Invocations() {
+      return this.pre115Invocations;
+    }
+  }
 }

@@ -6,7 +6,7 @@ org/apache/geode/management/api/RealizationResult,false,memberName:java/lang/Str
 org/apache/geode/management/configuration/AbstractConfiguration,true,-6612840641128145954
 org/apache/geode/management/configuration/AutoSerializer,true,1,patterns:java/util/List,portable:java/lang/Boolean
 org/apache/geode/management/configuration/ClassName,true,1,className:java/lang/String,initProperties:java/util/Properties
-org/apache/geode/management/configuration/Deployment,true,6992732279452865384,deployedBy:java/lang/String,deployedTime:java/lang/String,deploymentName:java/lang/String,deploymentsToDependOn:java/util/List,jarFileName:java/lang/String
+org/apache/geode/management/configuration/Deployment,true,6992732279452865384,deployedBy:java/lang/String,deployedTime:java/lang/String,jarFileName:java/lang/String
 org/apache/geode/management/configuration/DiskDir,false,dirSize:java/lang/Integer,name:java/lang/String
 org/apache/geode/management/configuration/DiskStore,false,allowForceCompaction:java/lang/Boolean,autoCompact:java/lang/Boolean,compactionThreshold:java/lang/Integer,directories:java/util/List,diskUsageCriticalPercentage:java/lang/Float,diskUsageWarningPercentage:java/lang/Float,maxOplogSizeInBytes:java/lang/Long,name:java/lang/String,queueSize:java/lang/Integer,timeInterval:java/lang/Long,writeBufferSize:java/lang/Integer
 org/apache/geode/management/configuration/GatewayReceiver,false,endPort:java/lang/Integer,gatewayTransportFilters:java/util/List,manualStart:java/lang/Boolean,maximumTimeBetweenPings:java/lang/Integer,socketBufferSize:java/lang/Integer,startPort:java/lang/Integer

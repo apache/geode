@@ -40,6 +40,9 @@ public class RedisStringTest {
     InternalDataSerializer
         .getDSFIDSerializer()
         .registerDSFID(DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER, ByteArrayWrapper.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_STRING_ID,
+        RedisString.class);
   }
 
   @Test
@@ -105,7 +108,7 @@ public class RedisStringTest {
   }
 
   @Test
-  public void serializationIsStable() throws IOException, ClassNotFoundException {
+  public void confirmSerializationIsStable() throws IOException, ClassNotFoundException {
     RedisString o1 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1, 2, 3}));
     o1.setExpirationTimestampNoDelta(1000);
     HeapDataOutputStream outputStream = new HeapDataOutputStream(100);

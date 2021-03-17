@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
@@ -39,6 +40,7 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
 public class CommandFunction extends SingleResultRedisFunction {
 
   public static final String ID = "REDIS_COMMAND_FUNCTION";
+  private static final long serialVersionUID = -1302506316316454732L;
 
   private final transient RedisKeyCommandsFunctionExecutor keyCommands;
   private final transient RedisHashCommandsFunctionExecutor hashCommands;
@@ -257,11 +259,13 @@ public class CommandFunction extends SingleResultRedisFunction {
       case HSCAN: {
         Pattern pattern = (Pattern) args[1];
         int count = (int) args[2];
-        BigInteger cursor = (BigInteger) args[3];
-        return hashCommands.hscan(key, pattern, count, cursor);
+        int cursor = (int) args[3];
+        UUID clientID = (UUID) args[4];
+        return hashCommands.hscan(key, pattern, count, cursor, clientID);
       }
       case HINCRBY: {
         ByteArrayWrapper field = (ByteArrayWrapper) args[1];
+
         long increment = (long) args[2];
         return hashCommands.hincrby(key, field, increment);
       }

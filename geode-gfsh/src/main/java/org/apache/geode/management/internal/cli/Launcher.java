@@ -119,7 +119,7 @@ public class Launcher {
   public static void main(final String[] args) {
     // first check whether required dependencies exist in the classpath
     // should we start without tomcat/servlet jars?
-    String nonExistingDependency = CliUtils.cliDependenciesExist(true);
+    String nonExistingDependency = CliUtil.cliDependenciesExist(true);
     if (nonExistingDependency != null) {
       System.err.println("Required (" + nonExistingDependency
           + ") libraries not found in the classpath. gfsh can't start.");

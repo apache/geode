@@ -133,7 +133,7 @@ public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
     opt.setMapper(mapper);
 
     File f = new File(directory, "mysnap.gfd").getAbsoluteFile();
-    rss.save(f, SnapshotFormat.GEMFIRE, opt);
+    rss.save(f, SnapshotFormat.GEODE, opt);
 
     mapper.setShouldExplode(false);
     SerializableCallable check = new SerializableCallable() {
@@ -165,7 +165,7 @@ public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
       region.put(i, eeee);
     }
 
-    rss.load(directory, SnapshotFormat.GEMFIRE, opt);
+    rss.load(directory, SnapshotFormat.GEODE, opt);
     for (int i = 0; i < DATA_POINTS; i++) {
       assertTrue(Arrays.equals(ffff, (byte[]) region.get(i)));
     }
@@ -182,7 +182,7 @@ public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
     }
     int vmCount = Host.getHost(0).getVMCount();
     for (int i = 0; i <= vmCount; i++) {
-      rss.load(new File(directory, Integer.toString(i)), SnapshotFormat.GEMFIRE, opt);
+      rss.load(new File(directory, Integer.toString(i)), SnapshotFormat.GEODE, opt);
     }
     for (int i = 0; i < DATA_POINTS; i++) {
       assertTrue(Arrays.equals(ffff, (byte[]) region.get(i)));

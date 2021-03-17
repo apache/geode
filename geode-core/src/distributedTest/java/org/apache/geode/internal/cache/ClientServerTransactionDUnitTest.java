@@ -911,6 +911,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         TXStateProxy tx = mgr.pauseTransaction();
         assertNotNull(tx);
         mgr.unpauseTransaction(tx);
@@ -1934,7 +1935,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           pr.put(custId, cust);
           r.put(i, "value" + i);
         }
-        return mgr.getTransactionId();
+        return mgr.suspend();
       }
     });
 
@@ -1965,6 +1966,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txid);
         mgr.commit();
         return null;
       }
@@ -2030,7 +2032,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port3 = serverOnDatastore ? createRegionsAndStartServer(datastore, false)
         : createRegionOnServer(datastore, false, false);
 
-    /* final TXId txid = (TXId) */client.invoke(new SerializableCallable() {
+    final TXId txid = (TXId) client.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
@@ -2061,7 +2063,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           pr.put(custId, cust);
           r.put(i, "value" + i);
         }
-        return mgr.getTransactionId();
+        return mgr.suspend();
       }
     });
 
@@ -2079,7 +2081,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     client.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        /* TXManagerImpl mgr = */ getGemfireCache().getTxManager();
+        TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txid);
         Region<Integer, String> r = getGemfireCache().getRegion(D_REFERENCE);
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         for (int i = 5; i < 10; i++) {
@@ -2089,7 +2092,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           pr.put(custId, cust);
           r.put(i, "value" + i);
         }
-        return null;
+        return mgr.suspend();
       }
     });
 
@@ -2106,6 +2109,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txid);
         Region<Integer, String> r = getGemfireCache().getRegion(D_REFERENCE);
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         mgr.commit();
@@ -3037,7 +3041,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         cCache.getLogger().info("SWAP:beganTX");
         r1.put("key1", "value1");
         r2.put("key2", "value2");
-        return cCache.getCacheTransactionManager().getTransactionId();
+        return cCache.getCacheTransactionManager().suspend();
       }
     });
 
@@ -3082,6 +3086,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       @Override
       public Object call() throws Exception {
         getCache().getLogger().info("SWAP:commiting transaction");
+        getCache().getCacheTransactionManager().resume(txId);
         getCache().getCacheTransactionManager().commit();
         Region r1 = getCache().getRegion("r1");
         Region r2 = getCache().getRegion("r2");
@@ -3139,7 +3144,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       r1.put("key", "value");
       cCache.getCacheTransactionManager().begin();
       r1.destroy("key");
-      return cCache.getCacheTransactionManager().getTransactionId();
+      return cCache.getCacheTransactionManager().suspend();
     });
 
     datastore1.invoke("create backup server", () -> {
@@ -3181,7 +3186,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         }
       };
       r1.getAttributesMutator().addCacheListener(listener);
-
+      getCache().getCacheTransactionManager().resume(txId);
       getCache().getCacheTransactionManager().commit();
       assertFalse(r1.containsKey("key"));
       assertEquals(1, afterDestroyInvocations.intValue());
@@ -3730,13 +3735,15 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         Customer cust = new Customer("name" + 0, "address" + 0);
         pr.put(custId, cust);
         r.put(0, "value" + 0);
-        return mgr.getTransactionId();
+        return mgr.suspend();
       }
     });
 
     client.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
+        TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txid);
         EntryEventImpl event = null;
         Region<Integer, String> r = getGemfireCache().getRegion(D_REFERENCE);
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
@@ -3749,7 +3756,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         lr.validatedPut(event, System.currentTimeMillis());
         lr.validatedPut(event, System.currentTimeMillis());
         lr.validatedPut(event, System.currentTimeMillis());
-        return null;
+        return mgr.suspend();
       }
     });
 
@@ -3782,13 +3789,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       @Override
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
-        if (mgr.getTXState() == null) {
-          // oops - different RMI thread this time. Spit out a suspect string
-          // so that we can remove this log statement & know that the fix of
-          // setting the TXState works
-          getLogWriter().error("no tx state found for this thread");
-          mgr.setTXState(mgr.getHostedTXState(txid));
-        }
+        mgr.resume(txid);
         mgr.commit();
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         CacheListener<CustId, Customer>[] clarray = pr.getAttributes().getCacheListeners();

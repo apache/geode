@@ -243,13 +243,6 @@ public interface Membership<ID extends MemberIdentifier> {
    */
   Throwable getShutdownCause();
 
-  /**
-   * If this member is shunned, ensure that a warning is generated at least once.
-   *
-   * @param mbr the member that may be shunned
-   */
-  void warnShun(ID mbr);
-
   boolean addSurpriseMember(ID mbr);
 
   /**

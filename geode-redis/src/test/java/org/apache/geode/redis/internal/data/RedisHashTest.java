@@ -16,12 +16,16 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -34,6 +38,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class RedisHashTest {
 
@@ -42,6 +47,9 @@ public class RedisHashTest {
     InternalDataSerializer
         .getDSFIDSerializer()
         .registerDSFID(DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER, ByteArrayWrapper.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_HASH_ID,
+        RedisHash.class);
   }
 
   @Test
@@ -62,10 +70,6 @@ public class RedisHashTest {
     elements.add(createByteArrayWrapper(k2));
     elements.add(createByteArrayWrapper(v2));
     return new RedisHash(elements);
-  }
-
-  private ByteArrayWrapper createByteArrayWrapper(String str) {
-    return new ByteArrayWrapper(Coder.stringToBytes(str));
   }
 
   @Test
@@ -160,5 +164,110 @@ public class RedisHashTest {
     assertThat(o2).isNotEqualTo(o1);
     o2.fromDelta(in);
     assertThat(o2).isEqualTo(o1);
+  }
+
+  @Test
+  public void hscanSnaphots_shouldBeEmpty_givenHscanHasNotBeenCalled() {
+    RedisHash subject = createRedisHash(100);
+    assertThat(subject.getHscanSnapShots()).isEmpty();
+  }
+
+  @Test
+  public void hscanSnaphots_shouldContainSnapshot_givenHscanHasBeenCalled() {
+
+    final List<ByteArrayWrapper> FIELDS_AND_VALUES_FOR_HASH = createListOfDataElements(100);
+    RedisHash subject = new RedisHash(FIELDS_AND_VALUES_FOR_HASH);
+    UUID clientID = UUID.randomUUID();
+
+    subject.hscan(clientID, null, 10, 0);
+
+    ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hscanSnapShotMap = subject.getHscanSnapShots();
+
+    assertThat(hscanSnapShotMap.containsKey(clientID)).isTrue();
+
+    List<ByteArrayWrapper> keyList = hscanSnapShotMap.get(clientID);
+    assertThat(keyList).isNotEmpty();
+
+    FIELDS_AND_VALUES_FOR_HASH.forEach((entry) -> {
+      if (entry.toString().contains("field")) {
+        assertThat(keyList).contains(entry);
+      } else if (entry.toString().contains("value")) {
+        assertThat(keyList).doesNotContain(entry);
+      }
+    });
+
+  }
+
+  @Test
+  public void hscanSnaphots_shouldContainSnapshot_givenHscanHasBeenCalled_WithNonZeroCursor() {
+
+    final List<ByteArrayWrapper> FIELDS_AND_VALUES_FOR_HASH = createListOfDataElements(100);
+    RedisHash subject = new RedisHash(FIELDS_AND_VALUES_FOR_HASH);
+    UUID clientID = UUID.randomUUID();
+
+    subject.hscan(clientID, null, 10, 10);
+
+    ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hscanSnapShotMap = subject.getHscanSnapShots();
+
+    assertThat(hscanSnapShotMap.containsKey(clientID)).isTrue();
+
+    List<ByteArrayWrapper> keyList = hscanSnapShotMap.get(clientID);
+    assertThat(keyList).isNotEmpty();
+
+    FIELDS_AND_VALUES_FOR_HASH.forEach((entry) -> {
+      if (entry.toString().contains("field")) {
+        assertThat(keyList).contains(entry);
+      } else if (entry.toString().contains("value")) {
+        assertThat(keyList).doesNotContain(entry);
+      }
+    });
+  }
+
+  @Test
+  public void hscanSnaphots_shouldBeRemoved_givenCompleteIteration() {
+    RedisHash subject = createRedisHashWithExpiration(1, 100000);
+    UUID client_ID = UUID.randomUUID();
+
+    subject.hscan(client_ID, null, 10, 0);
+
+    ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hscanSnapShotMap = subject.getHscanSnapShots();
+    assertThat(hscanSnapShotMap).isEmpty();
+  }
+
+  @Test
+  public void hscanSnaphots_shouldExpireAfterExpiryPeriod() {
+    RedisHash subject = createRedisHashWithExpiration(1000, 1);
+    UUID client_ID = UUID.randomUUID();
+
+    subject.hscan(client_ID, null, 1, 0);
+
+    GeodeAwaitility.await().atMost(2, SECONDS).untilAsserted(() -> {
+      ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hscanSnapShotMap =
+          subject.getHscanSnapShots();
+      assertThat(hscanSnapShotMap).isEmpty();
+    });
+  }
+
+  private RedisHash createRedisHash(int NumberOfFields) {
+    ArrayList<ByteArrayWrapper> elements = createListOfDataElements(NumberOfFields);
+    return new RedisHash(elements);
+  }
+
+  private ArrayList<ByteArrayWrapper> createListOfDataElements(int NumberOfFields) {
+    ArrayList<ByteArrayWrapper> elements = new ArrayList<>();
+    for (int i = 0; i < NumberOfFields; i++) {
+      elements.add(createByteArrayWrapper("field_" + i));
+      elements.add(createByteArrayWrapper("value_" + i));
+    }
+    return elements;
+  }
+
+  private RedisHash createRedisHashWithExpiration(int NumberOfFields, int hcanSnapshotExpiry) {
+    ArrayList<ByteArrayWrapper> elements = createListOfDataElements(NumberOfFields);
+    return new RedisHash(elements, hcanSnapshotExpiry, hcanSnapshotExpiry);
+  }
+
+  private ByteArrayWrapper createByteArrayWrapper(String str) {
+    return new ByteArrayWrapper(Coder.stringToBytes(str));
   }
 }

@@ -67,6 +67,7 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.ClusterConfigurationLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
@@ -84,7 +85,6 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
-import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.security.AuthenticationRequiredException;
 
 public class InternalConfigurationPersistenceService implements ConfigurationPersistenceService {
@@ -268,48 +268,37 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    * Add jar information into the shared configuration and save the jars in the file system used
    * when deploying jars
    */
-  public void addJarsToThisLocator(String deploymentName, List<String> jarFullPaths,
-      String[] groups) throws IOException {
-    addJarsToThisLocator(deploymentName, getDeployedBy(), Instant.now().toString(), jarFullPaths,
-        groups);
+  public void addJarsToThisLocator(List<String> jarFullPaths, String[] groups) throws IOException {
+    addJarsToThisLocator(getDeployedBy(), Instant.now().toString(), jarFullPaths, groups);
   }
 
   @VisibleForTesting
-  void addJarsToThisLocator(String deployedBy, String deployedTime, List<String> jarFullPaths,
-      String[] groups) throws IOException {
-    addJarsToThisLocator(null, deployedBy, deployedTime, jarFullPaths, groups);
-  }
-
-  private void addJarsToThisLocator(String deploymentName, String deployedBy, String deployedTime,
+  void addJarsToThisLocator(String deployedBy, String deployedTime,
       List<String> jarFullPaths, String[] groups) throws IOException {
     lockSharedConfiguration();
     try {
-      addJarsToGroups(listOf(groups), deploymentName, jarFullPaths, deployedBy, deployedTime);
+      addJarsToGroups(listOf(groups), jarFullPaths, deployedBy, deployedTime);
     } finally {
       unlockSharedConfiguration();
     }
   }
 
-  private void addJarsToGroups(List<String> groups, String deploymentName,
-      List<String> jarFullPaths, String deployedBy,
+  private void addJarsToGroups(List<String> groups, List<String> jarFullPaths, String deployedBy,
       String deployedTime) throws IOException {
     for (String group : groups) {
       copyJarsToGroupDir(group, jarFullPaths);
-      addJarsToGroupConfig(group, deploymentName, jarFullPaths, deployedBy, deployedTime);
+      addJarsToGroupConfig(group, jarFullPaths, deployedBy, deployedTime);
     }
   }
 
-  private void addJarsToGroupConfig(String group, String deploymentName, List<String> jarFullPaths,
-      String deployedBy,
+  private void addJarsToGroupConfig(String group, List<String> jarFullPaths, String deployedBy,
       String deployedTime) throws IOException {
     Region<String, Configuration> configRegion = getConfigurationRegion();
     Configuration configuration = getConfigurationCopy(configRegion, group);
 
     jarFullPaths.stream()
         .map(toFileName())
-        .map(jarFileName -> deploymentName != null
-            ? new Deployment(deploymentName, jarFileName, deployedBy, deployedTime)
-            : new Deployment(jarFileName, deployedBy, deployedTime))
+        .map(jarFileName -> new Deployment(jarFileName, deployedBy, deployedTime))
         .forEach(configuration::putDeployment);
 
     String memberId = cache.getMyId().getId();
@@ -339,12 +328,12 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   }
 
   private static void removeOtherVersionsOf(Path groupDir, String jarFileName) {
-    String artifactId = JarFileUtils.getArtifactId(jarFileName);
+    String artifactId = JarDeployer.getArtifactId(jarFileName);
     for (File file : groupDir.toFile().listFiles()) {
       if (file.getName().equals(jarFileName)) {
         continue;
       }
-      if (JarFileUtils.getArtifactId(file.getName()).equals(artifactId)) {
+      if (JarDeployer.getArtifactId(file.getName()).equals(artifactId)) {
         FileUtils.deleteQuietly(file);
       }
     }
@@ -366,11 +355,11 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   /**
    * Removes the jar files from the shared configuration. used when un-deploy jars
    *
-   * @param deploymentsToRemove Names of the jar files.
+   * @param jarNames Names of the jar files.
    * @param groups Names of the groups which had the jar file deployed.
    * @return true on success.
    */
-  public boolean removeDeployments(Map<String, String> deploymentsToRemove, String[] groups) {
+  public boolean removeJars(String[] jarNames, String[] groups) {
     lockSharedConfiguration();
     boolean success = true;
     try {
@@ -384,28 +373,22 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           break;
         }
 
-        logger.debug("Configuration before removing deployment: " + configuration);
-        Configuration configurationCopy = new Configuration(configuration);
-
-        for (Entry<String, String> deploymentToRemove : deploymentsToRemove.entrySet()) {
-          File jar = getPathToJarOnThisLocator(group, deploymentToRemove.getValue()).toFile();
+        for (String jarRemoved : jarNames) {
+          File jar = getPathToJarOnThisLocator(group, jarRemoved).toFile();
           if (jar.exists()) {
             try {
               FileUtils.forceDelete(jar);
-              logger.debug("Successfully deleted: " + jar.getName());
-              configurationCopy
-                  .removeDeployments(Collections.singleton(deploymentToRemove.getKey()));
-              logger.debug("deploymentToRemove.getKey(): " + deploymentToRemove.getKey());
             } catch (IOException e) {
               logger.error(
                   "Exception occurred while attempting to delete a jar from the filesystem: {}",
-                  deploymentToRemove, e);
+                  jarRemoved, e);
             }
           }
         }
+
+        Configuration configurationCopy = new Configuration(configuration);
+        configurationCopy.removeJarNames(jarNames);
         configRegion.put(group, configurationCopy);
-        logger.debug("Configuration updated for group: " + group);
-        logger.debug("Configuration after removing deployment: " + configurationCopy);
       }
     } catch (Exception e) {
       logger.info("Exception occurred while deleting the jar files", e);

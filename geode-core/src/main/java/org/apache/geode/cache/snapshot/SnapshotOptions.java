@@ -37,8 +37,17 @@ public interface SnapshotOptions<K, V> extends Serializable {
    * @since GemFire 7.0
    */
   enum SnapshotFormat {
-    /** an optimized binary format specific to GemFire */
-    GEMFIRE
+    /**
+     * An optimized binary format specific to GemFire.
+     *
+     * @deprecated Use {@link #GEODE}
+     */
+    @Deprecated
+    GEMFIRE,
+    /**
+     * An optimized binary format specific to Geode.
+     */
+    GEODE
   }
 
   /**

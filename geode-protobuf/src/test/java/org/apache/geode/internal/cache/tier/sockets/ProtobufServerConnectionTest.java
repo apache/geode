@@ -38,11 +38,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -65,18 +68,24 @@ public class ProtobufServerConnectionTest {
     cachedRegionHelper = mock(CachedRegionHelper.class);
     clientHealthMonitor = mock(ClientHealthMonitor.class);
     socket = mock(Socket.class);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    ThreadsMonitoring threadsMonitoring = mock(ThreadsMonitoring.class);
 
     when(acceptor.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
     when(socket.getInetAddress()).thenReturn(mock(InetAddress.class));
     when(socket.getOutputStream()).thenReturn(new ByteArrayOutputStream());
     when(socket.getRemoteSocketAddress()).thenReturn(createUnresolved("localhost", 9071));
+    when(cachedRegionHelper.getCache()).thenReturn(cache);
+    when(cache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getDM()).thenReturn(distributionManager);
+    when(distributionManager.getThreadMonitoring()).thenReturn(threadsMonitoring);
   }
 
   @Test
   public void doOneMessageUnsetsProcessMessagesFlag() throws Exception {
     ClientProtocolProcessor clientProtocolProcessor = mock(ClientProtocolProcessor.class);
     doThrow(new IOException("throw me")).when(clientProtocolProcessor).processMessage(any(), any());
-    when(cachedRegionHelper.getCache()).thenReturn(cache);
     ServerConnection serverConnection = new ProtobufServerConnection(socket, cache,
         cachedRegionHelper, mock(CacheServerStats.class), 0, 1024, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,
@@ -133,7 +142,6 @@ public class ProtobufServerConnectionTest {
 
   @Test
   public void doOneMessageNotifiesClientHealthMonitorOfPing() throws IOException {
-    when(cachedRegionHelper.getCache()).thenReturn(cache);
     ServerConnection serverConnection = new ProtobufServerConnection(socket, cache,
         cachedRegionHelper, mock(CacheServerStats.class), 0, 1024, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,

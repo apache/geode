@@ -31,7 +31,7 @@ public class GetClusterConfigurationFunction implements InternalFunction {
   @Override
   public void execute(FunctionContext context) {
     Set<String> groups = (Set<String>) context.getArguments();
-    InternalLocator internalLocator = InternalLocator.getLocator();
+    InternalLocator internalLocator = getInternalLocator();
     logger.info("Received request for configuration: {}", groups);
 
     // Return exception to the caller so startup fails fast.
@@ -61,5 +61,9 @@ public class GetClusterConfigurationFunction implements InternalFunction {
       // to fail fast, or wait and retry later.
       context.getResultSender().lastResult(null);
     }
+  }
+
+  InternalLocator getInternalLocator() {
+    return InternalLocator.getLocator();
   }
 }

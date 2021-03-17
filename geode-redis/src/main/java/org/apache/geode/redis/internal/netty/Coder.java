@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -31,13 +30,6 @@ import org.apache.geode.redis.internal.data.ByteArrayWrapper;
  * This is a safe encoder and decoder for all redis matching needs
  */
 public class Coder {
-
-
-  /*
-   * Take no chances on char to byte conversions with default charsets on jvms, so we'll hard code
-   * the UTF-8 symbol values as bytes here
-   */
-
 
   /**
    * byte identifier of a bulk string
@@ -87,6 +79,10 @@ public class Coder {
 
   @MakeImmutable
   public static final byte[] err = stringToBytes("ERR ");
+
+  @MakeImmutable
+  public static final byte[] oom = stringToBytes("OOM ");
+
   @MakeImmutable
   public static final byte[] wrongType = stringToBytes("WRONGTYPE ");
 
@@ -112,94 +108,78 @@ public class Coder {
    */
   public static final String N_INF = "-inf";
 
-  public static ByteBuf getBulkStringResponse(ByteBufAllocator alloc, Object v)
+  public static ByteBuf getBulkStringResponse(ByteBuf buffer, Object v)
       throws CoderException {
-    ByteBuf response;
     byte[] toWrite;
 
     if (v == null) {
-      response = alloc.buffer();
-      response.writeBytes(bNIL);
+      buffer.writeBytes(bNIL);
     } else if (v instanceof byte[]) {
-      byte[] value = (byte[]) v;
-      response = alloc.buffer(value.length + 20);
-      toWrite = value;
-      writeStringResponse(response, toWrite);
+      toWrite = (byte[]) v;
+      writeStringResponse(buffer, toWrite);
     } else if (v instanceof ByteArrayWrapper) {
-      byte[] value = ((ByteArrayWrapper) v).toBytes();
-      response = alloc.buffer(value.length + 20);
-      toWrite = value;
-      writeStringResponse(response, toWrite);
+      toWrite = ((ByteArrayWrapper) v).toBytes();
+      writeStringResponse(buffer, toWrite);
     } else if (v instanceof Double) {
-      response = alloc.buffer();
-      toWrite = doubleToBytes(((Double) v).doubleValue());
-      writeStringResponse(response, toWrite);
+      toWrite = doubleToBytes((Double) v);
+      writeStringResponse(buffer, toWrite);
     } else if (v instanceof String) {
       String value = (String) v;
-      response = alloc.buffer(value.length() + 20);
       toWrite = stringToBytes(value);
-      writeStringResponse(response, toWrite);
+      writeStringResponse(buffer, toWrite);
     } else if (v instanceof Integer) {
-      response = alloc.buffer(15);
-      response.writeByte(INTEGER_ID);
-      response.writeBytes(intToBytes((Integer) v));
-      response.writeBytes(CRLFar);
+      buffer.writeByte(INTEGER_ID);
+      buffer.writeBytes(intToBytes((Integer) v));
+      buffer.writeBytes(CRLFar);
     } else if (v instanceof Long) {
-      response = alloc.buffer(15);
-      response.writeByte(INTEGER_ID);
-      response.writeBytes(intToBytes(((Long) v).intValue()));
-      response.writeBytes(CRLFar);
+      buffer.writeByte(INTEGER_ID);
+      buffer.writeBytes(intToBytes(((Long) v).intValue()));
+      buffer.writeBytes(CRLFar);
     } else {
       throw new CoderException();
     }
 
-    return response;
+    return buffer;
   }
 
-  private static void writeStringResponse(ByteBuf response, byte[] toWrite) {
-    response.writeByte(BULK_STRING_ID);
-    response.writeBytes(intToBytes(toWrite.length));
-    response.writeBytes(CRLFar);
-    response.writeBytes(toWrite);
-    response.writeBytes(CRLFar);
+  private static void writeStringResponse(ByteBuf buffer, byte[] toWrite) {
+    buffer.writeByte(BULK_STRING_ID);
+    buffer.writeBytes(intToBytes(toWrite.length));
+    buffer.writeBytes(CRLFar);
+    buffer.writeBytes(toWrite);
+    buffer.writeBytes(CRLFar);
   }
 
-  public static ByteBuf getFlattenedArrayResponse(ByteBufAllocator alloc,
-      Collection<Collection<?>> items)
+  public static ByteBuf getFlattenedArrayResponse(ByteBuf buffer, Collection<Collection<?>> items)
       throws CoderException {
-    ByteBuf response = alloc.buffer();
-
     for (Object next : items) {
-      writeCollectionOrString(alloc, response, next);
+      writeCollectionOrString(buffer, next);
     }
 
-    return response;
+    return buffer;
   }
 
-  public static ByteBuf getArrayResponse(ByteBufAllocator alloc, Collection<?> items)
+  public static ByteBuf getArrayResponse(ByteBuf buffer, Collection<?> items)
       throws CoderException {
-    ByteBuf response = alloc.buffer();
-    response.writeByte(ARRAY_ID);
-    response.writeBytes(intToBytes(items.size()));
-    response.writeBytes(CRLFar);
+    buffer.writeByte(ARRAY_ID);
+    buffer.writeBytes(intToBytes(items.size()));
+    buffer.writeBytes(CRLFar);
     for (Object next : items) {
-      writeCollectionOrString(alloc, response, next);
+      writeCollectionOrString(buffer, next);
     }
 
-    return response;
+    return buffer;
   }
 
-  private static void writeCollectionOrString(ByteBufAllocator alloc, ByteBuf response, Object next)
+  private static void writeCollectionOrString(ByteBuf buffer, Object next)
       throws CoderException {
     ByteBuf tmp = null;
     try {
       if (next instanceof Collection) {
         Collection<?> nextItems = (Collection<?>) next;
-        tmp = getArrayResponse(alloc, nextItems);
-        response.writeBytes(tmp);
+        getArrayResponse(buffer, nextItems);
       } else {
-        tmp = getBulkStringResponse(alloc, next);
-        response.writeBytes(tmp);
+        getBulkStringResponse(buffer, next);
       }
     } finally {
       if (tmp != null) {
@@ -208,120 +188,120 @@ public class Coder {
     }
   }
 
-  public static ByteBuf getScanResponse(ByteBufAllocator alloc, BigInteger cursor,
+  public static ByteBuf getScanResponse(ByteBuf buffer, BigInteger cursor,
       List<Object> scanResult) {
-    ByteBuf response = alloc.buffer();
-
-    response.writeByte(ARRAY_ID);
-    response.writeBytes(intToBytes(2));
-    response.writeBytes(CRLFar);
-    response.writeByte(BULK_STRING_ID);
+    buffer.writeByte(ARRAY_ID);
+    buffer.writeBytes(intToBytes(2));
+    buffer.writeBytes(CRLFar);
+    buffer.writeByte(BULK_STRING_ID);
     byte[] cursorBytes = stringToBytes(cursor.toString());
-    response.writeBytes(intToBytes(cursorBytes.length));
-    response.writeBytes(CRLFar);
-    response.writeBytes(cursorBytes);
-    response.writeBytes(CRLFar);
-    response.writeByte(ARRAY_ID);
-    response.writeBytes(intToBytes(scanResult.size()));
-    response.writeBytes(CRLFar);
+    buffer.writeBytes(intToBytes(cursorBytes.length));
+    buffer.writeBytes(CRLFar);
+    buffer.writeBytes(cursorBytes);
+    buffer.writeBytes(CRLFar);
+    buffer.writeByte(ARRAY_ID);
+    buffer.writeBytes(intToBytes(scanResult.size()));
+    buffer.writeBytes(CRLFar);
 
     for (Object nextObject : scanResult) {
       if (nextObject instanceof String) {
         String next = (String) nextObject;
-        response.writeByte(BULK_STRING_ID);
-        response.writeBytes(intToBytes(next.length()));
-        response.writeBytes(CRLFar);
-        response.writeBytes(stringToBytes(next));
-        response.writeBytes(CRLFar);
+        buffer.writeByte(BULK_STRING_ID);
+        buffer.writeBytes(intToBytes(next.length()));
+        buffer.writeBytes(CRLFar);
+        buffer.writeBytes(stringToBytes(next));
+        buffer.writeBytes(CRLFar);
       } else if (nextObject instanceof ByteArrayWrapper) {
         byte[] next = ((ByteArrayWrapper) nextObject).toBytes();
-        response.writeByte(BULK_STRING_ID);
-        response.writeBytes(intToBytes(next.length));
-        response.writeBytes(CRLFar);
-        response.writeBytes(next);
-        response.writeBytes(CRLFar);
+        buffer.writeByte(BULK_STRING_ID);
+        buffer.writeBytes(intToBytes(next.length));
+        buffer.writeBytes(CRLFar);
+        buffer.writeBytes(next);
+        buffer.writeBytes(CRLFar);
       }
     }
-    return response;
+    return buffer;
   }
 
-  public static ByteBuf getEmptyArrayResponse(ByteBufAllocator alloc) {
-    ByteBuf buf = alloc.buffer().writeBytes(bEMPTY_ARRAY);
-    return buf;
+  public static ByteBuf getEmptyArrayResponse(ByteBuf buffer) {
+    buffer.writeBytes(bEMPTY_ARRAY);
+    return buffer;
   }
 
-  public static ByteBuf getEmptyStringResponse(ByteBufAllocator alloc) {
-    ByteBuf buf = alloc.buffer().writeBytes(bEMPTY_STRING);
-    return buf;
+  public static ByteBuf getEmptyStringResponse(ByteBuf buffer) {
+    buffer.writeBytes(bEMPTY_STRING);
+    return buffer;
   }
 
-  public static ByteBuf getSimpleStringResponse(ByteBufAllocator alloc, String string) {
+  public static ByteBuf getSimpleStringResponse(ByteBuf buffer, String string) {
     byte[] simpAr = stringToBytes(string);
-    return getSimpleStringResponse(alloc, simpAr);
+    return getSimpleStringResponse(buffer, simpAr);
   }
 
-  public static ByteBuf getSimpleStringResponse(ByteBufAllocator alloc, byte[] byteArray) {
-    ByteBuf response = alloc.buffer(byteArray.length + 20);
-    response.writeByte(SIMPLE_STRING_ID);
-    response.writeBytes(byteArray);
-    response.writeBytes(CRLFar);
-    return response;
+  public static ByteBuf getSimpleStringResponse(ByteBuf buffer, byte[] byteArray) {
+    buffer.writeByte(SIMPLE_STRING_ID);
+    buffer.writeBytes(byteArray);
+    buffer.writeBytes(CRLFar);
+    return buffer;
   }
 
-  public static ByteBuf getErrorResponse(ByteBufAllocator alloc, String error) {
+  public static ByteBuf getErrorResponse(ByteBuf buffer, String error) {
     byte[] errorAr = stringToBytes(error);
-    ByteBuf response = alloc.buffer(errorAr.length + 25);
-    response.writeByte(ERROR_ID);
-    response.writeBytes(err);
-    response.writeBytes(errorAr);
-    response.writeBytes(CRLFar);
-    return response;
+    buffer.writeByte(ERROR_ID);
+    buffer.writeBytes(err);
+    buffer.writeBytes(errorAr);
+    buffer.writeBytes(CRLFar);
+    return buffer;
   }
 
-  public static ByteBuf getCustomErrorResponse(ByteBufAllocator alloc, String error) {
+  public static ByteBuf getOOMResponse(ByteBuf buffer, String error) {
     byte[] errorAr = stringToBytes(error);
-    ByteBuf response = alloc.buffer(errorAr.length + 25);
-    response.writeByte(ERROR_ID);
-    response.writeBytes(errorAr);
-    response.writeBytes(CRLFar);
-    return response;
+    buffer.writeByte(ERROR_ID);
+    buffer.writeBytes(oom);
+    buffer.writeBytes(errorAr);
+    buffer.writeBytes(CRLFar);
+    return buffer;
   }
 
-  public static ByteBuf getWrongTypeResponse(ByteBufAllocator alloc, String error) {
+  public static ByteBuf getCustomErrorResponse(ByteBuf buffer, String error) {
     byte[] errorAr = stringToBytes(error);
-    ByteBuf response = alloc.buffer(errorAr.length + 31);
-    response.writeByte(ERROR_ID);
-    response.writeBytes(wrongType);
-    response.writeBytes(errorAr);
-    response.writeBytes(CRLFar);
-    return response;
+    buffer.writeByte(ERROR_ID);
+    buffer.writeBytes(errorAr);
+    buffer.writeBytes(CRLFar);
+    return buffer;
   }
 
-  public static ByteBuf getIntegerResponse(ByteBufAllocator alloc, int integer) {
-    ByteBuf response = alloc.buffer(15);
-    response.writeByte(INTEGER_ID);
-    response.writeBytes(intToBytes(integer));
-    response.writeBytes(CRLFar);
-    return response;
+  public static ByteBuf getWrongTypeResponse(ByteBuf buffer, String error) {
+    byte[] errorAr = stringToBytes(error);
+    buffer.writeByte(ERROR_ID);
+    buffer.writeBytes(wrongType);
+    buffer.writeBytes(errorAr);
+    buffer.writeBytes(CRLFar);
+    return buffer;
   }
 
-  public static ByteBuf getIntegerResponse(ByteBufAllocator alloc, long l) {
-    ByteBuf response = alloc.buffer(25);
-    response.writeByte(INTEGER_ID);
-    response.writeBytes(longToBytes(l));
-    response.writeBytes(CRLFar);
-    return response;
+  public static ByteBuf getIntegerResponse(ByteBuf buffer, int integer) {
+    buffer.writeByte(INTEGER_ID);
+    buffer.writeBytes(intToBytes(integer));
+    buffer.writeBytes(CRLFar);
+    return buffer;
   }
 
-  public static ByteBuf getBigDecimalResponse(ByteBufAllocator alloc, BigDecimal b) {
-    ByteBuf response = alloc.buffer();
-    writeStringResponse(response, bigDecimalToBytes(b));
-    return response;
+  public static ByteBuf getIntegerResponse(ByteBuf buffer, long l) {
+    buffer.writeByte(INTEGER_ID);
+    buffer.writeBytes(longToBytes(l));
+    buffer.writeBytes(CRLFar);
+    return buffer;
   }
 
-  public static ByteBuf getNilResponse(ByteBufAllocator alloc) {
-    ByteBuf buf = alloc.buffer().writeBytes(bNIL);
-    return buf;
+  public static ByteBuf getBigDecimalResponse(ByteBuf buffer, BigDecimal b) {
+    writeStringResponse(buffer, bigDecimalToBytes(b));
+    return buffer;
+  }
+
+  public static ByteBuf getNilResponse(ByteBuf buffer) {
+    buffer.writeBytes(bNIL);
+    return buffer;
   }
 
 

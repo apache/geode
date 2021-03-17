@@ -62,11 +62,11 @@ public class SystemMemberBridgeServerJmxImpl extends SystemMemberBridgeServerImp
 
     GemFireVM vm = cache.getVM();
     this.mbeanName = new StringBuffer("GemFire.Cache:").append("name=")
-        .append(MBeanUtils.makeCompliantMBeanNameProperty(cache.getName())).append(",id=")
+        .append(MBeanUtil.makeCompliantMBeanNameProperty(cache.getName())).append(",id=")
         .append(this.getBridgeId()).append(",owner=")
-        .append(MBeanUtils.makeCompliantMBeanNameProperty(vm.getId().toString()))
+        .append(MBeanUtil.makeCompliantMBeanNameProperty(vm.getId().toString()))
         .append(",type=CacheServer").toString();
-    this.objectName = MBeanUtils.createMBean(this);
+    this.objectName = MBeanUtil.createMBean(this);
   }
 
   @Override

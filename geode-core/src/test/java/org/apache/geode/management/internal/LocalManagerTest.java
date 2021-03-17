@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
 
@@ -50,7 +50,6 @@ public class LocalManagerTest {
   private InternalRegionFactory regionFactory2;
   private StatisticsFactory statisticsFactory;
   private StatisticsClock statisticsClock;
-  private InternalCacheForClientAccess cacheForClientAccess;
 
   @Before
   public void setUp() throws Exception {
@@ -62,7 +61,7 @@ public class LocalManagerTest {
     regionFactory2 = mock(InternalRegionFactory.class);
     statisticsFactory = mock(StatisticsFactory.class);
     statisticsClock = mock(StatisticsClock.class);
-    cacheForClientAccess = mock(InternalCacheForClientAccess.class);
+    InternalCacheForClientAccess cacheForClientAccess = mock(InternalCacheForClientAccess.class);
     DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
     DistributionConfig config = mock(DistributionConfig.class);
 
@@ -83,7 +82,7 @@ public class LocalManagerTest {
   }
 
   @Test
-  public void startLocalManagementCreatesMonitoringRegion() throws Exception {
+  public void startLocalManagementCreatesMonitoringRegion() {
     InternalDistributedMember member = member(1, 20);
     when(system.getDistributedMember()).thenReturn(member);
     LocalManager localManager =
@@ -95,7 +94,7 @@ public class LocalManagerTest {
   }
 
   @Test
-  public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() throws Exception {
+  public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() {
     InternalDistributedMember member = member(2, 40);
     when(system.getDistributedMember()).thenReturn(member);
     LocalManager localManager =
@@ -110,7 +109,7 @@ public class LocalManagerTest {
   }
 
   @Test
-  public void addMemberArtifactsCreatesNotificationRegion() throws Exception {
+  public void addMemberArtifactsCreatesNotificationRegion() {
     InternalDistributedMember member = member(3, 60);
     when(system.getDistributedMember()).thenReturn(member);
     LocalManager localManager =
@@ -122,7 +121,7 @@ public class LocalManagerTest {
   }
 
   @Test
-  public void addMemberArtifactsCreatesNotificationRegionWithHasOwnStats() throws Exception {
+  public void addMemberArtifactsCreatesNotificationRegionWithHasOwnStats() {
     InternalDistributedMember member = member(4, 80);
     when(system.getDistributedMember()).thenReturn(member);
     LocalManager localManager =

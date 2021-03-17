@@ -14,41 +14,42 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PROXY;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.time.Duration;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.test.dunit.DUnitBlackboard;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedBlackboard;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class RegionConcurrentOperationDUnitTest implements Serializable {
 
-  private static DUnitBlackboard blackboard;
-
   Object key = "KEY";
   String value = "VALUE";
 
-  private static DUnitBlackboard getBlackboard() {
-    if (blackboard == null) {
-      blackboard = new DUnitBlackboard();
-    }
+  private DistributedBlackboard getBlackboard() {
     return blackboard;
   }
 
@@ -61,10 +62,8 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
-  @After
-  public void tearDown() {
-    blackboard.initBlackboard();
-  }
+  @Rule
+  public DistributedBlackboard blackboard = new DistributedBlackboard();
 
   @Test
   public void getOnProxyRegionFromMultipleThreadsReturnsDifferentObjects() throws Exception {
@@ -80,13 +79,13 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
           .setCacheLoader(new TestCacheLoader()).create(regionName);
     });
 
-    Future get1 = executorServiceRule.submit(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+    Future<Object> get1 = executorServiceRule.submit(() -> {
+      Region<Object, Object> region = cacheRule.getCache().getRegion(regionName);
       return region.get(key);
     });
 
-    Future get2 = executorServiceRule.submit(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+    Future<Object> get2 = executorServiceRule.submit(() -> {
+      Region<Object, Object> region = cacheRule.getCache().getRegion(regionName);
       getBlackboard().waitForGate("Loader", 60, TimeUnit.SECONDS);
       return region.get(key);
     });
@@ -113,13 +112,13 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
     });
     assertThat(cacheRule.getCache().getRegion(regionName).size()).isEqualTo(0);
 
-    Future get1 = executorServiceRule.submit(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+    Future<Object> get1 = executorServiceRule.submit(() -> {
+      Region<Object, Object> region = cacheRule.getCache().getRegion(regionName);
       return region.get(key);
     });
 
-    Future get2 = executorServiceRule.submit(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+    Future<Object> get2 = executorServiceRule.submit(() -> {
+      Region<Object, Object> region = cacheRule.getCache().getRegion(regionName);
       getBlackboard().waitForGate("Loader", 60, TimeUnit.SECONDS);
       return region.get(key);
     });
@@ -131,7 +130,50 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
     assertThat(cacheRule.getCache().getRegion(regionName).size()).isEqualTo(1);
   }
 
-  private class TestCacheLoader implements CacheLoader, Serializable {
+  @Test
+  public void getOnPartitionedRegionFromMultipleThreadsReturnsDifferentPdxInstances()
+      throws Exception {
+    String regionName = getClass().getSimpleName();
+    CacheFactory cacheFactory = new CacheFactory();
+    cacheFactory.setPdxReadSerialized(true);
+    cacheRule.createCache(cacheFactory);
+    InternalCache cache = cacheRule.getCache();
+    cache.setCopyOnRead(true);
+    Region<Object, Object> region = cache.createRegionFactory(PARTITION)
+        .create(regionName);
+
+    // Keep doing this concurrency test for 30 seconds.
+    long endTime = Duration.ofSeconds(30).toMillis() + System.currentTimeMillis();
+
+    while (System.currentTimeMillis() < endTime) {
+      Callable<Object> getValue = () -> {
+        while (true) {
+          Object value = region.get(key);
+          if (value != null) {
+            return value;
+          }
+        }
+      };
+
+      // In this test, two threads are doing gets. One thread puts the value
+      // We expect that the threads will *always* get different PdxInstance values
+      Future<Object> get1 = executorServiceRule.submit(getValue);
+      Future<Object> get2 = executorServiceRule.submit(getValue);
+      Future<Object> put = executorServiceRule.submit(() -> region.put(key, new TestValue()));
+
+      Object get1value = get1.get();
+      Object get2value = get2.get();
+      put.get();
+
+      // Assert the values returned are different objects.
+      // PdxInstances are not threadsafe and should not be shared between threads.
+      assertThat(get1value).isNotSameAs(get2value);
+      region.destroy(key);
+
+    }
+  }
+
+  private class TestCacheLoader implements CacheLoader<Object, Object>, Serializable {
 
     @Override
     public synchronized Object load(LoaderHelper helper) {
@@ -141,5 +183,23 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
 
     @Override
     public void close() {}
+  }
+
+  private static class TestValue implements PdxSerializable {
+    int field1 = 5;
+    String field2 = "field";
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeInt("field1", field1);
+      writer.writeString("field2", field2);
+
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      reader.readInt("field1");
+      reader.readString("field2");
+    }
   }
 }

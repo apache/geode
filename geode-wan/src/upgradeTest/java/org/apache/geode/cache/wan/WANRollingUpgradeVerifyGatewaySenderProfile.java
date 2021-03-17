@@ -31,7 +31,7 @@ import org.apache.geode.test.version.VersionManager;
 
 public class WANRollingUpgradeVerifyGatewaySenderProfile extends WANRollingUpgradeDUnitTest {
   @Test
-  // This test verifies that a GatewaySenderProfile serializes properly between versions.
+  // Thigit s test verifies that a GatewaySenderProfile serializes properly between versions.
   public void testVerifyGatewaySenderProfile() {
     final Host host = Host.getHost(0);
     VM oldLocator = host.getVM(oldVersion, 0);

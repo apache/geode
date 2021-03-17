@@ -57,9 +57,9 @@ public class ExportDataFunction extends CliFunction<String[]> {
       final File exportFile = new File(fileName);
       if (parallel) {
         SnapshotOptions<Object, Object> options = new SnapshotOptionsImpl<>().setParallelMode(true);
-        snapshotService.save(exportFile, SnapshotFormat.GEMFIRE, options);
+        snapshotService.save(exportFile, SnapshotFormat.GEODE, options);
       } else {
-        snapshotService.save(exportFile, SnapshotFormat.GEMFIRE);
+        snapshotService.save(exportFile, SnapshotFormat.GEODE);
       }
 
       String successMessage = CliStrings.format(CliStrings.EXPORT_DATA__SUCCESS__MESSAGE,

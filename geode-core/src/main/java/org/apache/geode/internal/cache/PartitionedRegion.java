@@ -8149,8 +8149,8 @@ public class PartitionedRegion extends LocalRegion
    * A test method to get the list of all the bucket ids for the partitioned region in the data
    * Store.
    */
-  public List getLocalBucketsListTestOnly() {
-    List localBucketList = null;
+  public List<Integer> getLocalBucketsListTestOnly() {
+    List<Integer> localBucketList = null;
     if (this.dataStore != null) {
       localBucketList = this.dataStore.getLocalBucketsListTestOnly();
     }
@@ -8161,8 +8161,8 @@ public class PartitionedRegion extends LocalRegion
    * A test method to get the list of all the primary bucket ids for the partitioned region in the
    * data Store.
    */
-  public List getLocalPrimaryBucketsListTestOnly() {
-    List localPrimaryList = null;
+  public List<Integer> getLocalPrimaryBucketsListTestOnly() {
+    List<Integer> localPrimaryList = null;
     if (this.dataStore != null) {
       localPrimaryList = this.dataStore.getLocalPrimaryBucketsListTestOnly();
     }

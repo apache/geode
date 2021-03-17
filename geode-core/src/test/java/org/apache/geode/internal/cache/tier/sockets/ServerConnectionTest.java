@@ -36,11 +36,14 @@ import org.junit.experimental.categories.Category;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -68,10 +71,20 @@ public class ServerConnectionTest {
 
     when(inetAddress.getHostAddress()).thenReturn("localhost");
     when(socket.getInetAddress()).thenReturn(inetAddress);
+    InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
+    CachedRegionHelper cachedRegionHelper = mock(CachedRegionHelper.class);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    ThreadsMonitoring threadsMonitoring = mock(ThreadsMonitoring.class);
+
+    when(cachedRegionHelper.getCache()).thenReturn(cache);
+    when(cache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getDM()).thenReturn(distributionManager);
+    when(distributionManager.getThreadMonitoring()).thenReturn(threadsMonitoring);
 
     serverConnection =
-        new ServerConnectionFactory().makeServerConnection(socket, mock(InternalCache.class),
-            mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, null,
+        new ServerConnectionFactory().makeServerConnection(socket, cache,
+            cachedRegionHelper, mock(CacheServerStats.class), 0, 0, null,
             CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor,
             mock(SecurityService.class));
 

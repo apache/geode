@@ -16,9 +16,9 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -46,8 +46,8 @@ public interface RedisHashCommands {
 
   Collection<ByteArrayWrapper> hkeys(ByteArrayWrapper key);
 
-  Pair<BigInteger, List<Object>> hscan(ByteArrayWrapper key, Pattern matchPattern, int count,
-      BigInteger cursor);
+  Pair<Integer, List<Object>> hscan(ByteArrayWrapper key, Pattern matchPattern, int count,
+      int cursor, UUID clientID);
 
   long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment);
 
