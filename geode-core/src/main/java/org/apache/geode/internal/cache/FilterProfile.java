@@ -1921,7 +1921,6 @@ public class FilterProfile implements DataSerializableFixedID {
         } else {
           cp.hasCacheServer = true;
           FilterProfile fp = cp.filterProfile;
-          fp.region = (LocalRegion) r;
           if (fp == null) { // PR accessors do not keep filter profiles around
             if (logger.isDebugEnabled()) {
               logger.debug("No filter profile to update: {}", this);
@@ -1930,6 +1929,7 @@ public class FilterProfile implements DataSerializableFixedID {
             if (logger.isDebugEnabled()) {
               logger.debug("Processing the filter profile request for : {}", this);
             }
+            fp.region = (LocalRegion) r;
             processRequest(fp);
           }
         }
