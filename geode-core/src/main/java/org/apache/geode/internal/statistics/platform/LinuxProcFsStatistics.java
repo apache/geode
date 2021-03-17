@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.statistics.LocalStatisticsImpl;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -140,12 +141,7 @@ public class LinuxProcFsStatistics {
       stats.setLong(LinuxProcessStats.imageSizeLONG, tokenizer.nextTokenAsLong() / OneMeg);
       stats.setLong(LinuxProcessStats.rssSizeLONG,
           (tokenizer.nextTokenAsLong() * pageSize) / OneMeg);
-    } catch (NoSuchElementException nsee) {
-      // It might just be a case of the process going away while we
-      // where trying to get its stats.
-      // So for now lets just ignore the failure and leave the stats
-      // as they are.
-    } catch (IOException ioe) {
+    } catch (NoSuchElementException | IOException ignore) {
       // It might just be a case of the process going away while we
       // where trying to get its stats.
       // So for now lets just ignore the failure and leave the stats
@@ -156,14 +152,20 @@ public class LinuxProcFsStatistics {
   }
 
   public static void refreshSystem(LocalStatisticsImpl stats) {
+    refreshSystem(stats, "/proc/stat", "/proc/net/netstat");
+  }
+
+  @VisibleForTesting
+  public static void refreshSystem(LocalStatisticsImpl stats, String statFilePath,
+      String netstatStatsFilePath) {
     if (cpuStatSingleton == null) {
       // stats have been closed or haven't been properly initialized
       return;
     }
     stats.setLong(LinuxSystemStats.processesLONG, getProcessCount());
     stats.setLong(LinuxSystemStats.cpusLONG, sys_cpus);
-    try (FileInputStream fileInputStream = new FileInputStream("/proc/stat");
-        InputStreamReader isr = new InputStreamReader(fileInputStream);
+    try (FileInputStream statFileInputStream = new FileInputStream(statFilePath);
+        InputStreamReader isr = new InputStreamReader(statFileInputStream);
         BufferedReader br = new BufferedReader(isr)) {
 
       String line;
@@ -213,7 +215,7 @@ public class LinuxProcFsStatistics {
     getMemInfo(stats);
     getDiskStats(stats);
     getNetStats(stats);
-    getNetStatStats(stats);
+    getNetStatStats(stats, netstatStatsFilePath);
     if (hasProcVmStat) {
       getVmStats(stats);
     }
@@ -280,7 +282,7 @@ public class LinuxProcFsStatistics {
         InputStreamReader isr = new InputStreamReader(fileInputStream);
         BufferedReader br = new BufferedReader(isr)) {
       // Assume all values read in are in kB, convert to MB
-      String line = null;
+      String line;
       while ((line = br.readLine()) != null) {
         try {
           if (line.startsWith("MemTotal: ")) {
@@ -332,10 +334,11 @@ public class LinuxProcFsStatistics {
     }
   }
 
-  private static void getNetStatStats(LocalStatisticsImpl stats) {
+  private static void getNetStatStats(LocalStatisticsImpl stats,
+      String netstatStatsFilePath) {
     SpaceTokenizer headerTokenizer = new SpaceTokenizer();
-    try (FileInputStream fileInputStream = new FileInputStream("/proc/net/netstat");
-        InputStreamReader isr = new InputStreamReader(fileInputStream);
+    try (FileInputStream netstatStatsFileInputStream = new FileInputStream(netstatStatsFilePath);
+        InputStreamReader isr = new InputStreamReader(netstatStatsFileInputStream);
         BufferedReader br = new BufferedReader(isr)) {
 
       String line = br.readLine(); // header;
@@ -417,7 +420,7 @@ public class LinuxProcFsStatistics {
       long other_recv_errs = 0, other_recv_drop = 0;
       long other_xmit_packets = 0, other_xmit_bytes = 0;
       long other_xmit_errs = 0, other_xmit_drop = 0, other_xmit_colls = 0;
-      String line = null;
+      String line;
       while ((line = br.readLine()) != null) {
         int index = line.indexOf(":");
         boolean isloopback = (line.contains("lo:"));
@@ -444,9 +447,7 @@ public class LinuxProcFsStatistics {
         other_recv_errs += recv_errs;
         other_recv_drop += recv_drop;
 
-        if (isloopback) {
-          /* loopback_xmit_packets = xmit_packets; */
-        } else {
+        if (!isloopback) {
           other_xmit_packets += xmit_packets;
           other_xmit_bytes += xmit_bytes;
         }
@@ -501,7 +502,7 @@ public class LinuxProcFsStatistics {
   private static void getDiskStats(LocalStatisticsImpl stats) {
     InputStreamReader isr = null;
     BufferedReader br = null;
-    String line = null;
+    String line;
     try {
       if (hasDiskStats) {
         // 2.6 kernel
@@ -530,10 +531,10 @@ public class LinuxProcFsStatistics {
           String tok = tokenizer.nextToken();
           if (tok.length() == 0 || Character.isWhitespace(tok.charAt(0))) {
             // skip over first token since it is whitespace
-            tok = tokenizer.nextToken();
+            tokenizer.nextToken();
           }
           // skip first token it is some number
-          tok = tokenizer.nextToken();
+          tokenizer.nextToken();
           // skip second token it is some number
           tok = tokenizer.nextToken();
           if (!hasDiskStats) {
@@ -611,11 +612,11 @@ public class LinuxProcFsStatistics {
   // pswpin 19422
   // pswpout 14495
   private static void getVmStats(LocalStatisticsImpl stats) {
-    assert hasProcVmStat != false : "getVmStats called when hasVmStat was false";
+    assert hasProcVmStat : "getVmStats called when hasVmStat was false";
     try (FileInputStream fileInputStream = new FileInputStream("/proc/vmstat");
         InputStreamReader isr = new InputStreamReader(fileInputStream);
         BufferedReader br = new BufferedReader(isr)) {
-      String line = null;
+      String line;
       while ((line = br.readLine()) != null) {
         if (line.startsWith(PGPGIN)) {
           stats.setLong(LinuxSystemStats.pagesPagedInLONG,
@@ -703,8 +704,8 @@ public class LinuxProcFsStatistics {
        * further, hence we now use List in place of long[]. We add up entries from all columns after
        * MAX_CPU_STATS into CPU.OTHER
        */
-      List<Long> newStats = new ArrayList<Long>(10);
-      List<Long> diffs = new ArrayList<Long>(10);
+      List<Long> newStats = new ArrayList<>(10);
+      List<Long> diffs = new ArrayList<>(10);
       long total_change = 0;
       int actualCpuStats = 0;
       long unaccountedCpuUtilization = 0;
@@ -849,7 +850,7 @@ public class LinuxProcFsStatistics {
       long l = 0L;
       try {
         l = Long.parseLong(number);
-      } catch (NumberFormatException nfe) {
+      } catch (NumberFormatException ignore) {
       }
       return l;
     }
@@ -858,7 +859,7 @@ public class LinuxProcFsStatistics {
       int i = 0;
       try {
         i = Integer.parseInt(number);
-      } catch (NumberFormatException nfe) {
+      } catch (NumberFormatException ignore) {
       }
       return i;
     }
@@ -867,7 +868,7 @@ public class LinuxProcFsStatistics {
       int i = 0;
       try {
         i = Integer.parseInt(nextToken());
-      } catch (NumberFormatException nfe) {
+      } catch (NumberFormatException ignore) {
       }
       return i;
     }
@@ -876,7 +877,7 @@ public class LinuxProcFsStatistics {
       long l = 0L;
       try {
         l = Long.parseLong(nextToken());
-      } catch (NumberFormatException nfe) {
+      } catch (NumberFormatException ignore) {
       }
       return l;
     }
@@ -885,7 +886,7 @@ public class LinuxProcFsStatistics {
       double d = 0;
       try {
         d = Double.parseDouble(nextToken());
-      } catch (NumberFormatException nfe) {
+      } catch (NumberFormatException ignore) {
       }
       return d;
     }
