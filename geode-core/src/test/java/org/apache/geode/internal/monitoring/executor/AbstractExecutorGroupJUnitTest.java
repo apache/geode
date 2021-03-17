@@ -78,11 +78,11 @@ public class AbstractExecutorGroupJUnitTest {
       public void run() {
         blockedThreadWaiting[0] = true;
         synchronized (syncObject) {
-          try {
-            syncObject.wait(timeoutInMilliseconds);
-          } catch (InterruptedException e) {
-            return;
-          }
+//          try {
+//            syncObject.wait(timeoutInMilliseconds);
+//          } catch (InterruptedException e) {
+//            return;
+//          }
         }
       }
     };
@@ -90,6 +90,7 @@ public class AbstractExecutorGroupJUnitTest {
     await().until(() -> blockingThreadWaiting[0]);
     blockedThread.start();
     await().until(() -> blockedThreadWaiting[0]);
+    Thread.sleep(500);
     try {
       AbstractExecutor executor = new AbstractExecutor("testGroup", blockedThread.getId()) {
         @Override
@@ -99,6 +100,7 @@ public class AbstractExecutorGroupJUnitTest {
       };
       await().untilAsserted(() -> {
         String threadReport = executor.createThreadReport(60000);
+        System.out.println("DEBUG: " + threadReport);
         Assertions.assertThat(threadReport).contains(AbstractExecutor.LOCK_OWNER_THREAD_STACK);
       });
     } finally {

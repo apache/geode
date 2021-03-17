@@ -15,10 +15,12 @@
 package org.apache.geode.internal.monitoring.executor;
 
 import java.lang.management.ManagementFactory;
+import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -101,12 +103,26 @@ public abstract class AbstractExecutor {
     return stringBuilder.toString();
   }
 
+  @Immutable
+  private static final String INDENT = "  ";
+  @Immutable
+  private static final String lineSeparator = System.lineSeparator();
+
   private void writeThreadStack(ThreadInfo thread, String header, StringBuilder strb) {
-    final String lineSeparator = System.lineSeparator();
     strb.append(header).append(lineSeparator);
+    MonitorInfo[] lockedMonitors = thread.getLockedMonitors();
     for (int i = 0; i < thread.getStackTrace().length; i++) {
       String row = thread.getStackTrace()[i].toString();
-      strb.append(row).append(lineSeparator);
+      strb.append(INDENT).append("at ").append(row).append(lineSeparator);
+      appendLockedMonitor(strb, i, lockedMonitors);
+    }
+  }
+
+  private void appendLockedMonitor(StringBuilder strb, int stackDepth, MonitorInfo[] lockedMonitors) {
+    for (MonitorInfo monitorInfo: lockedMonitors) {
+      if (stackDepth == monitorInfo.getLockedStackDepth()) {
+        strb.append(INDENT).append("  - locked " + monitorInfo).append(lineSeparator);
+      }
     }
   }
 
