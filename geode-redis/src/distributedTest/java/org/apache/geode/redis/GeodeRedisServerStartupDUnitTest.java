@@ -87,14 +87,14 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_PORT, "-1")
         .withProperty(REDIS_BIND_ADDRESS, "localhost")
         .withProperty(REDIS_ENABLED, "true"))).hasRootCauseMessage(
-            "Could not set \"redis-port\" to \"-1\" because its value can not be less than \"0\".");
+            "Could not set \"compatible-with-redis-port\" to \"-1\" because its value can not be less than \"0\".");
   }
 
   @Test
   public void startupFailsGivenPortAlreadyInUse() throws Exception {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
 
-    addIgnoredException("Could not start Redis Server");
+    addIgnoredException("Could not start server compatible with Redis");
     try (Socket interferingSocket = new Socket()) {
       interferingSocket.bind(new InetSocketAddress("localhost", port));
       assertThatThrownBy(() -> cluster.startServerVM(0, s -> s
@@ -109,13 +109,13 @@ public class GeodeRedisServerStartupDUnitTest {
   public void startupFailsGivenInvalidBindAddress() {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
 
-    addIgnoredException("Could not start Redis Server");
+    addIgnoredException("Could not start server compatible with Redis");
     assertThatThrownBy(() -> cluster.startServerVM(0, s -> s
         .withProperty(REDIS_PORT, "" + port)
         .withProperty(REDIS_BIND_ADDRESS, "1.1.1.1")
         .withProperty(REDIS_ENABLED, "true")))
             .hasStackTraceContaining(
-                "The redis-bind-address 1.1.1.1 is not a valid address for this machine");
+                "The compatible-with-redis-bind-address 1.1.1.1 is not a valid address for this machine");
   }
 
   @Test

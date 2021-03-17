@@ -101,7 +101,7 @@ public class NettyRedisServer {
 
     if (port < RANDOM_PORT_INDICATOR) {
       throw new IllegalArgumentException(
-          "Redis port cannot be less than " + RANDOM_PORT_INDICATOR);
+          "The compatible-with-redis-port cannot be less than " + RANDOM_PORT_INDICATOR);
     }
 
     selectorGroup = createEventLoopGroup("Selector", true, 1);
@@ -218,7 +218,7 @@ public class NettyRedisServer {
       channelFuture.syncUninterruptibly();
     } catch (Exception ex) {
       throw new ManagementException(
-          "Could not start Redis Server using bind address: " + bindAddress +
+          "Could not start server compatible with Redis using bind address: " + bindAddress +
               " and port: " + port + ". " +
               "Please make sure nothing else is running on this address/port combination.",
           ex);
@@ -258,7 +258,7 @@ public class NettyRedisServer {
         return InetAddress.getByName(requestedAddress);
       } catch (UnknownHostException e) {
         throw new ManagementException(
-            "Could not start Redis Server using bind address: '" + requestedAddress
+            "Could not start server compatible with Redis using bind address: '" + requestedAddress
                 + "'. Please make sure that this is a valid address for this host.",
             e);
       }

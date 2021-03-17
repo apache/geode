@@ -302,8 +302,9 @@ public class StartServerCommand extends OfflineGfshCommand {
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
 
-    // if redis-port, redis-bind-address, or redis-password are specified in the command line,
-    // REDIS_ENABLED should be set to true
+    // if compatible-with-redis-port, compatible-with-redis-bind-address, or
+    // compatible-with-redis-password are specified in the command line, REDIS_ENABLED should be set
+    // to true
     String stringRedisPort;
     stringRedisPort = redisPort == null ? "" : redisPort.toString();
 
