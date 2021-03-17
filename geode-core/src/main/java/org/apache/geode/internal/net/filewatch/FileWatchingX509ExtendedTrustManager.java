@@ -135,6 +135,11 @@ public final class FileWatchingX509ExtendedTrustManager extends X509ExtendedTrus
     instances.remove(trustStorePath, this);
   }
 
+  @VisibleForTesting
+  boolean isWatching() {
+    return instances.get(trustStorePath) == this;
+  }
+
   private void loadTrustManager() {
     TrustManager[] trustManagers;
     try {

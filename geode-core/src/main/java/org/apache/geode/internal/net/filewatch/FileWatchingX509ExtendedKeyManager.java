@@ -139,6 +139,11 @@ public final class FileWatchingX509ExtendedKeyManager extends X509ExtendedKeyMan
     instances.remove(new PathAndAlias(keyStorePath, keyStoreAlias), this);
   }
 
+  @VisibleForTesting
+  boolean isWatching() {
+    return instances.get(new PathAndAlias(keyStorePath, keyStoreAlias)) == this;
+  }
+
   private void loadKeyManager() {
     KeyManager[] keyManagers;
     try {
