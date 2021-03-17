@@ -186,26 +186,26 @@ start server \
 | RENAME             	| SCAN                                               	| CLIENT PAUSE                  	|
 | SADD               	| SCARD                                                 | CLIENT REPLY                  	|
 | SET               	| SDIFF                                              	| CLIENT SETNAME                	|
-| SMEMBERS              | SDIFFSTORE                                         	| CLIENT TRACKING               	|
-| SREM                  | SELECT                                             	| CLIENT UNBLOCK                	|
-| SUBSCRIBE             | SETBIT                                             	| CLUSTER ADDSLOTS              	|
-| TTL                   | SETEX                                              	| CLUSTER BUMPEPOCH             	|
-| TYPE                  | SETNX                                              	| CLUSTER COUNT-FAILURE-REPORTS 	|
-| UNSUBSCRIBE           | SETRANGE                                           	| CLUSTER COUNTKEYSINSLOT       	|
-|                    	| SHUTDOWN                                           	| CLUSTER DELSLOTS     	            |
+| SLOWLOG[2]            | SDIFFSTORE                                         	| CLIENT TRACKING               	|
+| SMEMBERS              | SELECT                                             	| CLIENT UNBLOCK                	|
+| SREM                  | SETBIT                                             	| CLUSTER ADDSLOTS              	|
+| SUBSCRIBE             | SETEX                                              	| CLUSTER BUMPEPOCH             	|
+| TTL                   | SETNX                                              	| CLUSTER COUNT-FAILURE-REPORTS 	|
+| TYPE                  | SETRANGE                                           	| CLUSTER COUNTKEYSINSLOT       	|
+| UNSUBSCRIBE          	| SHUTDOWN                                           	| CLUSTER DELSLOTS     	            |
 |                    	| SINTER                                             	| CLUSTER FAILOVER              	|
 |                    	| SINTERSTORE                                        	| CLUSTER FLUSHSLOTS                |
 |                    	| SISMEMBER                                          	| CLUSTER FORGET                    |
-|                    	| SLOWLOG                                            	| CLUSTER GETKEYSINSLOT             |
-|                    	| SMOVE                                              	| CLUSTER INFO                  	|
-|                    	| SPOP                                               	| CLUSTER KEYSLOT                   |
-|                    	| SRANDMEMBER                                        	| CLUSTER MEET                      |
-|                    	| SSCAN                                              	| CLUSTER MYID                   	|
-|                    	| STRLEN                                             	| CLUSTER NODES                 	|
-|                    	| SUNION                                             	| CLUSTER REPLICAS                  |
-|                    	| SUNIONSTORE                                        	| CLUSTER REPLICATE              	|
-|                    	| TIME                                               	| CLUSTER RESET                  	|
-|                    	| UNLINK [1]                                         	| CLUSTER SAVECONFIG                |
+|                    	| SMOVE                                                 | CLUSTER GETKEYSINSLOT             |
+|                    	| SPOP                                               	| CLUSTER INFO                  	|
+|                    	| SRANDMEMBER                                        	| CLUSTER KEYSLOT                   |
+|                    	| SSCAN                                              	| CLUSTER MEET                      |
+|                    	| STRLEN                                             	| CLUSTER MYID                   	|
+|                    	| SUNION                                             	| CLUSTER NODES                 	|
+|                    	| SUNIONSTORE                                        	| CLUSTER REPLICAS                  |
+|                    	| TIME                                               	| CLUSTER REPLICATE              	|
+|                    	| UNLINK [1]                                         	| CLUSTER RESET                  	|
+|                    	|                                         	            | CLUSTER SAVECONFIG                |
 |                    	|                                        	            | CLUSTER SET-CONFIG-EPOCH          |
 |                    	|                                       	            | CLUSTER SETSLOT                   |
 |                    	|                                      	                | CLUSTER SLAVES                    |
@@ -335,3 +335,4 @@ start server \
 **NOTES:**
 
 [1] - UNLINK is implemented as a synonym to DEL and does not unlink asynchronously.
+[2] - SLOWLOG is implemented as a NoOp.
