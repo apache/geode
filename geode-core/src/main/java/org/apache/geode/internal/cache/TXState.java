@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.ServiceConfigurationError;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.transaction.Status;
@@ -406,6 +407,11 @@ public class TXState implements TXStateInterface {
           .incTxConflictCheckTime(statisticsClock.getTime() - conflictStart);
     if (this.internalAfterReservation != null) {
       this.internalAfterReservation.run();
+    }
+    try {
+      TimeUnit.MILLISECONDS.sleep(150);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
     checkForConflicts();
   }
