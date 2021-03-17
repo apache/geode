@@ -47,7 +47,6 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 
 public class RedisSet extends AbstractRedisData {
 
-  public static final NullRedisSet NULL_REDIS_SET = new NullRedisSet();
   private HashSet<ByteArrayWrapper> members;
 
   @SuppressWarnings("unchecked")
