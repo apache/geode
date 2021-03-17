@@ -52,13 +52,12 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
       eventRegion = internalRegion.getPartitionedRegion();
     }
 
+    boolean isOriginRemote = txEntryState == null;
     @Retained
     EntryEventImpl retVal = EntryEventImpl.create(internalRegion, op, key, newValue,
-        aCallbackArgument, txEntryState == null, originator);
+        aCallbackArgument, isOriginRemote, originator);
     boolean returnedRetVal = false;
     try {
-
-
       if (bridgeContext != null) {
         retVal.setContext(bridgeContext);
       }
@@ -109,9 +108,9 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
         } else {
           retVal.setInvokePRCallbacks(false);
         }
-
         if (computeFilterInfo) {
           if (bucket.getBucketAdvisor().isPrimary()) {
+            // node with primary bucket is the tx host
             if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
               TxCallbackEventFactoryImpl.logger
                   .trace("createCBEvent computing routing for primary bucket");
@@ -127,13 +126,21 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
           }
         }
       } else if (computeFilterInfo) { // not a bucket
-        if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
-          TxCallbackEventFactoryImpl.logger.trace("createCBEvent computing routing for non-bucket");
+        if (!isOriginRemote) {
+          // compute now if it is a tx host.
+          if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
+            TxCallbackEventFactoryImpl.logger
+                .trace("createCBEvent computing routing for non-bucket");
+          }
+          FilterProfile fp = internalRegion.getFilterProfile();
+          if (fp != null) {
+            retVal.setLocalFilterInfo(fp.getLocalFilterRouting(retVal));
+          }
         }
-        FilterProfile fp = internalRegion.getFilterProfile();
-        if (fp != null) {
-          retVal.setLocalFilterInfo(fp.getLocalFilterRouting(retVal));
-        }
+        // For remote node (non host), do not computeFilterInfo when creating tx callbacks.
+        // Filter routing should be computed after entry commit is applied to cache for
+        // replicate regions, as concurrent register interest could occur.
+        // That computation occurs in notifyBridgeClient when no local routing is set.
       }
       retVal.setTransactionId(txId);
       returnedRetVal = true;
