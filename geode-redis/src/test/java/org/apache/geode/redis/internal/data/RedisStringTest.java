@@ -20,7 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 
 import org.junit.BeforeClass;
@@ -32,6 +34,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class RedisStringTest {
 
@@ -116,6 +119,14 @@ public class RedisStringTest {
     ByteArrayDataInput dataInput = new ByteArrayDataInput(outputStream.toByteArray());
     RedisString o2 = DataSerializer.readObject(dataInput);
     assertThat(o2).isEqualTo(o1);
+  }
+
+  @Test
+  public void confirmToDataIsSynchronized() throws NoSuchMethodException {
+    assertThat(Modifier
+        .isSynchronized(RedisString.class
+            .getMethod("toData", DataOutput.class, SerializationContext.class).getModifiers()))
+                .isTrue();
   }
 
   @Test

@@ -200,7 +200,7 @@ public class RedisSet extends AbstractRedisData {
    */
 
   @Override
-  public void toData(DataOutput out, SerializationContext context) throws IOException {
+  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     InternalDataSerializer.writeHashSet(members, out);
   }
