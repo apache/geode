@@ -93,6 +93,8 @@ public class TXState implements TXStateInterface {
   /** guards the completionStarted boolean and the closed boolean */
   protected final Object completionGuard = new Object();
 
+  private final List<InternalRegion> filterLockAcquiredRegions = new ArrayList<>();
+
   protected TXLockRequest locks = null;
   // Used for jta commit lifetime
   private long jtaLifeTime;
@@ -591,13 +593,14 @@ public class TXState implements TXStateInterface {
     for (InternalRegion region : getRegions()) {
       if (lockableRegionForFilterRegistration(region)) {
         region.getFilterProfile().lockFilterRegistrationDuringTx();
+        filterLockAcquiredRegions.add(region);
       }
     }
   }
 
   private void unlockFilterRegistrationOnTxRegions() {
-    for (InternalRegion region : getRegions()) {
-      if (lockableRegionForFilterRegistration(region)) {
+    for (InternalRegion region : filterLockAcquiredRegions) {
+      if (region != null) {
         region.getFilterProfile().unlockFilterRegistrationDuringTx();
       }
     }
