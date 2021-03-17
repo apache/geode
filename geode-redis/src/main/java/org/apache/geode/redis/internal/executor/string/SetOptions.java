@@ -70,7 +70,7 @@ public class SetOptions implements DataSerializableFixedID {
 
   @Override
   public void toData(DataOutput out, SerializationContext context) throws IOException {
-    DataSerializer.writeObject(exists, out);
+    DataSerializer.writeEnum(exists, out);
     out.writeLong(expirationMillis);
     out.writeBoolean(keepTTL);
   }
@@ -78,7 +78,7 @@ public class SetOptions implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    exists = DataSerializer.readObject(in);
+    exists = DataSerializer.readEnum(SetOptions.Exists.class, in);
     expirationMillis = in.readLong();
     keepTTL = in.readBoolean();
   }
