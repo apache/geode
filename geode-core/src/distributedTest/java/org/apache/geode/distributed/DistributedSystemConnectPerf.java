@@ -94,8 +94,6 @@ public class DistributedSystemConnectPerf {
       usage("Missing iterations");
     }
 
-    System.setProperty("DistributionManager.VERBOSE", "true");
-
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOG_LEVEL, "info");

@@ -207,13 +207,6 @@ public class CacheClientProxy implements ClientSession {
   protected final CacheClientNotifier _cacheClientNotifier;
 
   /**
-   * Defaults to true; meaning do some logging of dropped client notification messages. Set the
-   * system property to true to cause dropped messages to NOT be logged.
-   */
-  protected static final boolean LOG_DROPPED_MSGS =
-      !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disableNotificationWarnings");
-
-  /**
    * for testing purposes, delays the start of the dispatcher thread
    */
   @MutableForTesting
