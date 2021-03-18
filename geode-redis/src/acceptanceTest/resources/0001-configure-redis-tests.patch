@@ -674,38 +674,6 @@ index d2c679d32..f354f5953 100644
  
      test {HINCRBY against non existing database key} {
          r del htest
-@@ -356,19 +356,19 @@ start_server {tags {"hash"}} {
-              [roundFloat [r hincrbyfloat bighash tmp 2.5]]
-     } {102.5 102.5}
- 
--    test {HINCRBYFLOAT over 32bit value} {
--        r hset smallhash tmp 17179869184
--        r hset bighash tmp 17179869184
--        list [r hincrbyfloat smallhash tmp 1] \
--             [r hincrbyfloat bighash tmp 1]
--    } {17179869185 17179869185}
-+    #test {HINCRBYFLOAT over 32bit value} {
-+    #    r hset smallhash tmp 17179869184
-+    #    r hset bighash tmp 17179869184
-+    #    list [r hincrbyfloat smallhash tmp 1] \
-+    #         [r hincrbyfloat bighash tmp 1]
-+    #} {17179869185 17179869185}
- 
--    test {HINCRBYFLOAT over 32bit value with over 32bit increment} {
--        r hset smallhash tmp 17179869184
--        r hset bighash tmp 17179869184
--        list [r hincrbyfloat smallhash tmp 17179869184] \
--             [r hincrbyfloat bighash tmp 17179869184]
--    } {34359738368 34359738368}
-+    #test {HINCRBYFLOAT over 32bit value with over 32bit increment} {
-+    #    r hset smallhash tmp 17179869184
-+    #    r hset bighash tmp 17179869184
-+    #    list [r hincrbyfloat smallhash tmp 17179869184] \
-+    #         [r hincrbyfloat bighash tmp 17179869184]
-+    #} {34359738368 34359738368}
- 
-     test {HINCRBYFLOAT fails against hash value with spaces (left)} {
-         r hset smallhash str " 11"
 @@ -505,16 +505,16 @@ start_server {tags {"hash"}} {
          }
      }
