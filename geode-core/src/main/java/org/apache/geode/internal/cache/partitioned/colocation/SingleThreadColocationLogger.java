@@ -63,7 +63,7 @@ public class SingleThreadColocationLogger implements ColocationLogger {
     this(region, delayMillis, intervalMillis, LOGGER::warn,
         pr -> getAllColocationRegions(pr).keySet(),
         newSingleThreadExecutor(
-            runnable -> new LoggingThread("ColocationLogger for " + region.getName(), false,
+            runnable -> new LoggingThread("ColocationLogger for " + region.getName(), true,
                 runnable)));
   }
 
@@ -95,6 +95,7 @@ public class SingleThreadColocationLogger implements ColocationLogger {
   public void stop() {
     synchronized (lock) {
       missingChildren.clear();
+      executorService.shutdownNow();
       lock.notifyAll();
     }
   }
@@ -149,6 +150,11 @@ public class SingleThreadColocationLogger implements ColocationLogger {
   @VisibleForTesting
   List<String> getMissingChildren() {
     return new ArrayList<>(missingChildren);
+  }
+
+  @VisibleForTesting
+  ExecutorService getExecutorService() {
+    return executorService;
   }
 
   private Runnable checkForMissingColocatedRegionRunnable() {
