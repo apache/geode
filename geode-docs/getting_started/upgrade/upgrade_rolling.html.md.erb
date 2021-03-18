@@ -1,0 +1,218 @@
+---
+title:  Rolling Upgrade
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+A rolling upgrade eliminates system downtime by keeping your existing cluster running while you upgrade one member at a time.
+Each upgraded member can communicate with other members that are still running the earlier version of <%=vars.product_name%>, so servers can respond to
+client requests even as the upgrade is underway. Interdependent data members can be stopped and started without mutually blocking, a problem
+that can occur when multiple data members are stopped at the same time.
+
+## <a id="rolling-upgrade-limitations-requirements" class="no-quick-link"></a>Rolling Upgrade Limitations and Requirements
+
+**Versions**
+
+Rolling upgrade requires that the older and newer versions of <%=vars.product_name%> are mutually compatible, which usually means that they
+share the same major version number.
+
+See [Version Compatibilities](upgrade_planning.html#version_compatibilities)
+for more details on how different versions of <%=vars.product_name%> can interoperate.
+
+**Components**
+
+Rolling upgrades apply to the peer members, cache servers, and locators within a cluster.
+Under some circumstances, rolling upgrades can also be applied within individual sites of multi-site (WAN) deployments.
+
+**Redundancy**
+
+All partitioned regions in your system must have full redundancy.
+Check the redundancy state of all your regions *before* you begin the rolling upgrade and *before* stopping any members.
+See [Checking Redundancy in Partitioned Regions](../../developing/partitioned_regions/checking_region_redundancy.html) for details.
+
+If a rolling update is not possible for your system, follow the [Off-Line Upgrade](upgrade_offline.html) procedure.
+
+## <a id="rolling-upgrade-guidelines" class="no-quick-link"></a>Rolling Upgrade Guidelines
+
+**Do not create or destroy regions**
+
+When you perform a rolling upgrade, your online cluster will have a mix of members running different versions of <%=vars.product_name%>.
+During this time period, do not execute region operations such as region creation or region destruction.
+
+**Region rebalancing affects the restart process**
+
+If you have `startup-recovery-delay` disabled (set to -1) for your partitioned region, you will need to perform a rebalance on your
+region after you restart each member.
+If rebalance occurs automatically, as it will if `startup-recovery-delay` is enabled (set to a value other than -1), make sure that the rebalance completes before you stop the next server.
+If you have `startup-recovery-delay` enabled and set to a high number, you may need to wait extra time until the region has recovered redundancy, because rebalance must complete before new servers are restarted.
+The partitioned region attribute `startup-recovery-delay` is described in [Configure Member Join Redundancy Recovery for a Partitioned Region](../../developing/partitioned_regions/set_join_redundancy_recovery.html).
+
+**Checking component versions while upgrading**
+
+During a rolling upgrade, you can check the current <%=vars.product_name%> version of all members in the cluster by looking at the server or locator logs.
+
+  When an upgraded member reconnects to the cluster, it logs all the members it can see as well as the <%=vars.product_name%> version of those members. For example, an upgraded locator will now detect <%=vars.product_name%> members running the older version of <%=vars.product_name%> (in this case, the version being upgraded, GEODE 1.2.0):
+
+``` pre
+[info 2013/06/03 10:03:29.206 PDT frodo <vm_1_thr_1_frodo> tid=0x1a]  DistributionManager frodo(locator1:21869:locator)<v16>:28242 started on frodo[15001]. There
+    were 2 other DMs. others: [frodo(server2:21617)<v4>:14973( version:GEODE 1.2.0 ), frodo(server1:21069)<v1>:60929( version:Geode 1.2.0 )] (locator)
+```
+
+After some members have been upgraded, non-upgraded members will log the following message when they receive a new membership view:
+
+``` pre
+Membership: received new view [frodo(locator1:20786)<v0>:32240|4]
+      [frodo(locator1:20786)<v0>:32240/51878, frodo(server1:21069)<v1>:60929/46949,
+      frodo(server2:21617)<v4>( version:UNKNOWN[ordinal=23] ):14973/33919]
+```
+
+  Non-upgraded members identify members that have been upgraded to the next version with `version: UNKNOWN`.
+
+**Cluster configuration affects save and restore**
+
+The way in which your cluster configuration was created determines which commands you use to save
+    and restore that cluster configuration during the upgrade procedure.
+
+  - If your system was configured with `gfsh` commands, relying on the underlying **cluster configuration service**, the configuration can be saved in one central location, then applied to all newly-upgraded members. See [Exporting and Importing Cluster Configurations](../../configuring/cluster_config/export-import.html).
+  - If your system was configured with **XML properties** specified through the Java API or configuration files, you must save the configuration for each member before you bring it down, then re-import it for that member's upgraded counterpart. See [Deploying Configuration Files without the Cluster Configuration Service](../../configuring/running/deploying_config_files.html).
+
+## <a id="rolling-upgrade-procedure" class="no-quick-link"></a>Rolling Upgrade Procedure
+
+Begin by installing the new version of the software alongside the older version of the software on all hosts. You will need both versions of the software during the upgrade procedure.
+
+Upgrade locators first, then data members, then clients.
+
+### <a id="upgrade-locators" class="no-quick-link"></a>Upgrade Locators
+
+1.  On the machine hosting the first locator you wish to upgrade, open a terminal console.
+
+2.  Start a `gfsh` prompt, using the version from your current <%=vars.product_name%> installation, and connect to the currently running locator.
+    For example:
+
+    ``` pre
+    gfsh>connect --locator=locator_hostname_or_ip_address[port]
+    ```
+
+3.  Use `gfsh` commands to characterize your current installation so you can compare your post-upgrade system to the current one.
+For example, use the `list members` command to view locators and data members:
+
+    ```
+      Name   | Id
+    -------- | ------------------------------------------------
+    locator1 | 172.16.71.1(locator1:26510:locator)<ec><v0>:1024
+    locator2 | 172.16.71.1(locator2:26511:locator)<ec><v1>:1025
+    server1  | 172.16.71.1(server1:26514)<v2>:1026
+    server2  | 172.16.71.1(server2:26518)<v3>:1027
+    ```
+
+4.  Save your cluster configuration.
+  - If you are using the cluster configuration service, use the gfsh `export cluster-configuration` command. You only need to do this once, as the newly-upgraded locator will propagate the configuration to newly-upgraded members as they come online.
+  - For an XML configuration, save `cache.xml`, `gemfire.properties`, and any other relevant configuration files to a well-known location. You must repeat this step for each member you upgrade.
+
+5.  Stop the locator. For example:
+
+    ``` pre
+    gfsh>stop locator --name=locator1
+    Stopping Locator running in /Users/username/sandbox/locator on 172.16.71.1[10334] as locator...
+    Process ID: 96686
+    Log File: /Users/username/sandbox/locator/locator.log
+    ....
+    No longer connected to 172.16.71.1[1099].
+    ```
+6. Start `gfsh` from the new <%=vars.product_name%> installation.
+    Verify that you are running the newer version with
+
+    ``` pre
+    gfsh>version
+    ```
+
+7. Start a locator and import the saved configuration. If you are using the cluster configuration service, use the same name and directory as the older version you stopped, and the new locator will access the old locator's cluster configuration without having to import it in a separate step:
+
+    ```
+    gfsh>start locator --name=locator1 --enable-cluster-configuration=true --dir=/data/locator1
+    ```
+
+    Otherwise, use the gfsh `import cluster-configuration` command or explicitly import `.xml` and `.properties` files, as appropriate.
+
+8. The new locator should reconnect to the same members as the older locator. Use `list members` to verify:
+
+    ```
+    gfsh>list members
+      Name   | Id
+    -------- | ----------------------------------------------------
+    locator1 | 172.16.71.1(locator1:26752:locator)<ec><v17>:1024(version:UNKNOWN[ordinal=65])
+    locator2 | 172.16.71.1(locator2:26511:locator)<ec><v1>:1025
+    server1  | 172.16.71.1(server1:26514)<v2>:1026
+    server2  | 172.16.71.1(server2:26518)<v3>:1027
+    ```
+
+9. Upgrade the remaining locators by stopping and restarting them. When you have completed that step, the system gives a more coherent view of version numbers:
+
+    ```
+    gfsh>list members
+      Name   | Id
+    -------- | ----------------------------------------------------
+    locator1 | 172.16.71.1(locator1:26752:locator)<ec><v17>:1024
+    locator2 | 172.16.71.1(locator2:26808:locator)<ec><v30>:1025
+    server1  | 172.16.71.1(server1:26514)<v2>:1026(version:GEODE 1.2)
+    server2  | 172.16.71.1(server2:26518)<v3>:1027(version:GEODE 1.2)
+    ```
+
+    The server entries show that the servers are running an older version of <%=vars.product_name%>, in this case `(version:GEODE 1.2)`.
+
+### <a id="upgrade-servers" class="no-quick-link"></a>Upgrade Servers
+
+After you have upgraded all of the system's locators, upgrade the servers.
+
+1. Upgrade each server, one at a time, by stopping it and restarting it. Restart the server with the same command-line options with which it was originally started in the previous installation. For example:
+
+    ```
+    gfsh>stop server --name=server1
+    Stopping Cache Server running in /Users/share/server1 on 172.16.71.1[52139] as server1...
+
+    gfsh>start server --name=server1 --use-cluster-configuration=true --server-port=0 --dir=/data/server1
+    Starting a Geode Server in /Users/share/server1...
+    ```
+
+    Use the `list members` command to verify that the server is now running the new version of <%=vars.product_name%>:
+
+    ```
+    gfsh>list members
+      Name   | Id
+    -------- | ----------------------------------------------------
+    locator1 | 172.16.71.1(locator1:26752:locator)<ec><v17>:1024
+    locator2 | 172.16.71.1(locator2:26808:locator)<ec><v30>:1025
+    server1  | 172.16.71.1(server1:26835)<v32>:1026
+    server2  | 172.16.71.1(server2:26518)<v3>:1027(version:GEODE 1.2)
+    ```
+
+2. Restore data to the data member. If automatic rebalancing is enabled (partitioned region
+    attribute `startup-recovery-delay` is set to a value other than -1), data restoration will start
+    automatically. If automatic rebalancing is disabled (partitioned region attribute
+    `startup-recovery-delay=-1`), you must initiate data restoration by issuing the gfsh `rebalance`
+    command.
+
+    Wait until the newly-started server has been restored before upgrading the next server. You can repeat various gfsh
+    `show metrics` command with the `--member` option or the `--region` option to verify that the data member is hosting data and that
+    the amount of data it is hosting has stabilized.
+
+3. Shut down,restart, and rebalance servers until all data members are running the new version of <%=vars.product_name%>.
+
+### <a id="upgrade-clients" class="no-quick-link"></a>Upgrade Clients
+
+Upgrade <%=vars.product_name%> clients, following the guidelines described in [Upgrading Clients](upgrade_clients.html).

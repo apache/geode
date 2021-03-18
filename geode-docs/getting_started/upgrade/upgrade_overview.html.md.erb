@@ -1,0 +1,56 @@
+<% set_title("Upgrading", product_name_long) %>
+
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+To upgrade an existing installation to a new version of <%=vars.product_name_long%>,
+follow these general steps:
+
+1. Back up your current system.
+1. Install the new version of the software.
+1. Stop your cluster using the current software.
+1. Restart the system using the new software.
+
+In many cases, components running under the current version can be stopped selectively, then restarted under the new version
+so that the cluster as a whole remains functional during the upgrade process; this is known as a "rolling upgrade."
+
+In other cases, the entire system must be stopped in order to accomplish the upgrade,
+which will require some downtime for your system.
+
+See [Planning an Upgrade](upgrade_planning.html) to choose the upgrade scenario that best suits your implementation and to understand the resources
+you will need to accomplish the upgrade. Then select the appropriate upgrade procedure for more detailed instructions that fit your specific needs.
+
+## <a id="upgrade_details" class="no-quick-link"></a>Upgrade Details
+
+-   **[Planning an Upgrade](upgrade_planning.html)**
+
+    This section discusses the upgrade paths for various <%=vars.product_name_long%>
+    versions, and it lists information you need to know before you begin
+    the upgrade process.
+
+-   **[Rolling Upgrade](upgrade_rolling.html)**
+
+    A rolling upgrade allows you to keep your existing cluster running while you upgrade your members gradually.
+
+-   **[Offline Upgrade](upgrade_offline.html)**
+
+    An offline upgrade can handle the widest variety of software versions and cluster configurations, but requires shutting down the entire
+    system for at least a short time.
+
+-   **[Upgrading Clients](upgrade_clients.html)**
+
