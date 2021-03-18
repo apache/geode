@@ -81,8 +81,7 @@ public class RedisKey extends ByteArrayWrapper implements DataSerializableFixedI
   /**
    * Used by the {@link RedisPartitionResolver} to map slots to buckets
    */
-  @Override
-  public int hashCode() {
+  public int getCrc16() {
     return crc16;
   }
 }
