@@ -26,34 +26,34 @@ public class RedisKeyJUnitTest {
   @Test
   public void testRoutingId_withHashtags() {
     RedisKey key = new RedisKey("name{user1000}".getBytes());
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user1000"));
+    assertThat(key.hashCode()).isEqualTo(CRC16.calculate("user1000"));
 
     key = new RedisKey("{user1000".getBytes());
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("{user1000"));
+    assertThat(key.hashCode()).isEqualTo(CRC16.calculate("{user1000"));
 
     key = new RedisKey("}user1000{".getBytes());
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("}user1000{"));
+    assertThat(key.hashCode()).isEqualTo(CRC16.calculate("}user1000{"));
 
     key = new RedisKey("user{}1000".getBytes());
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user{}1000"));
+    assertThat(key.hashCode()).isEqualTo(CRC16.calculate("user{}1000"));
 
     key = new RedisKey("user}{1000".getBytes());
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user}{1000"));
+    assertThat(key.hashCode()).isEqualTo(CRC16.calculate("user}{1000"));
 
     key = new RedisKey("{user1000}}bar".getBytes());
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user1000"));
+    assertThat(key.hashCode()).isEqualTo(CRC16.calculate("user1000"));
 
     key = new RedisKey("foo{user1000}{bar}".getBytes());
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user1000"));
+    assertThat(key.hashCode()).isEqualTo(CRC16.calculate("user1000"));
 
     key = new RedisKey("foo{}{user1000}".getBytes());
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("foo{}{user1000}"));
+    assertThat(key.hashCode()).isEqualTo(CRC16.calculate("foo{}{user1000}"));
 
     key = new RedisKey("{}{user1000}".getBytes());
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("{}{user1000}"));
+    assertThat(key.hashCode()).isEqualTo(CRC16.calculate("{}{user1000}"));
 
     key = new RedisKey("foo{{user1000}}bar".getBytes());
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("{user1000"));
+    assertThat(key.hashCode()).isEqualTo(CRC16.calculate("{user1000"));
   }
 
 }

@@ -55,13 +55,6 @@ public class RedisKey extends ByteArrayWrapper implements DataSerializableFixedI
     crc16 = CRC16.calculate(value, startHashtag + 1, endHashtag);
   }
 
-  /**
-   * Used by the {@link RedisPartitionResolver} to map slots to buckets
-   */
-  public Integer getCrc16() {
-    return crc16;
-  }
-
   @Override
   public int getDSFID() {
     return DataSerializableFixedID.REDIS_KEY;
@@ -85,6 +78,9 @@ public class RedisKey extends ByteArrayWrapper implements DataSerializableFixedI
     return null;
   }
 
+  /**
+   * Used by the {@link RedisPartitionResolver} to map slots to buckets
+   */
   @Override
   public int hashCode() {
     return crc16;
