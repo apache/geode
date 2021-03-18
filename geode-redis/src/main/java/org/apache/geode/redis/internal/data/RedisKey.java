@@ -15,14 +15,10 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -32,7 +28,7 @@ import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
 
 public class RedisKey extends ByteArrayWrapper implements DataSerializableFixedID {
 
-  private Integer routingId;
+  private int crc16;
 
   public RedisKey() {}
 
@@ -56,33 +52,31 @@ public class RedisKey extends ByteArrayWrapper implements DataSerializableFixedI
       endHashtag = value.length;
     }
 
-    // & (REDIS_SLOTS - 1) is equivalent to % REDIS_SLOTS but supposedly faster
-    routingId = (CRC16.calculate(value, startHashtag + 1, endHashtag) & (REDIS_SLOTS - 1))
-        / REDIS_SLOTS_PER_BUCKET;
+    crc16 = CRC16.calculate(value, startHashtag + 1, endHashtag);
   }
 
   /**
    * Used by the {@link RedisPartitionResolver} to map slots to buckets
    */
-  public Object getRoutingId() {
-    return routingId;
+  public Integer getCrc16() {
+    return crc16;
   }
 
   @Override
   public int getDSFID() {
-    return DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER_KEY;
+    return DataSerializableFixedID.REDIS_KEY;
   }
 
   @Override
   public void toData(DataOutput out, SerializationContext context) throws IOException {
-    DataSerializer.writeInteger(routingId, out);
+    out.writeInt(crc16);
     super.toData(out, context);
   }
 
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    routingId = DataSerializer.readInteger(in);
+    crc16 = in.readInt();
     super.fromData(in, context);
   }
 
@@ -91,4 +85,8 @@ public class RedisKey extends ByteArrayWrapper implements DataSerializableFixedI
     return null;
   }
 
+  @Override
+  public int hashCode() {
+    return crc16;
+  }
 }

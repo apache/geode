@@ -56,7 +56,7 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
 
   private void registerDataSerializables() {
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER_KEY,
+        DataSerializableFixedID.REDIS_KEY,
         RedisKey.class);
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER,

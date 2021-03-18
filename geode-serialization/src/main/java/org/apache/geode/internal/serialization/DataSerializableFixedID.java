@@ -461,7 +461,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short UPDATE_ENTRY_VERSION_MESSAGE = 158;
   short PR_UPDATE_ENTRY_VERSION_MESSAGE = 159;
 
-  short REDIS_BYTE_ARRAY_WRAPPER_KEY = 160;
+  short REDIS_KEY = 160;
 
   // 161 through 164 unused
 
