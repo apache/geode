@@ -18,6 +18,7 @@ import static java.lang.System.lineSeparator;
 import static java.util.Collections.singleton;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -212,5 +213,19 @@ public class SingleThreadColocationLoggerTest {
 
     assertThat(colocationLogger.getMissingChildren())
         .isEmpty();
+  }
+
+  @Test
+  public void stopTerminatesExecutorService() {
+    SingleThreadColocationLogger colocationLogger =
+        new SingleThreadColocationLogger(region, 500, 1000, logger,
+            allColocationRegionsProvider, executorService);
+    colocationLogger.start();
+
+    colocationLogger.stop();
+
+    // Wait until the ExecutorService is terminated
+    await().untilAsserted(
+        () -> assertThat(colocationLogger.getExecutorService().isTerminated()).isTrue());
   }
 }
