@@ -522,14 +522,14 @@ public class TXState implements TXStateInterface {
           // Take filter registration lock
           lockFilterRegistrationOnTxRegions();
           try {
+            attachFilterProfileInformation(entries);
+
             // apply changes to the cache
             applyChanges(entries);
             // For internal testing
             if (this.internalAfterApplyChanges != null) {
               this.internalAfterApplyChanges.run();
             }
-
-            attachFilterProfileInformation(entries);
 
             // build and send the message
             msg = buildMessage();
