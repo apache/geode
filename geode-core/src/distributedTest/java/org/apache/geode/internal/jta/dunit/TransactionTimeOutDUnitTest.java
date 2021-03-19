@@ -45,7 +45,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.datasource.GemFireTransactionDataSource;
 import org.apache.geode.internal.jta.CacheUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
-import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.internal.process.utils.OSProcess;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;

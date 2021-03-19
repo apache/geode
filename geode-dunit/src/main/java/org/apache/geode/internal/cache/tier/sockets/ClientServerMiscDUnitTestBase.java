@@ -81,7 +81,7 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.internal.process.utils.OSProcess;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -1128,7 +1128,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
           .until(() -> ccn.getClientProxies().size() == 0);
     } catch (Exception ex) {
       System.out.println("The size of the client proxies != 0");
-      OSProcess.printStacks(0);
+      OSProcess.printStacks(0, logger);
       throw ex;
     }
   }

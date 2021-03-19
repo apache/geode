@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -34,7 +35,8 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.IncompatibleSystemException;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.wan.WANTestBase;
-import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.internal.process.utils.OSProcess;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -45,6 +47,7 @@ import org.apache.geode.test.junit.categories.WanTest;
 @Category({WanTest.class})
 public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 
+  private static final Logger logger = LogService.getLogger();
 
   public WanAutoDiscoveryDUnitTest() {
     super();
@@ -584,7 +587,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     // Fail if the active thread count after the test is greater than the active thread count before
     // the test
     if (Thread.activeCount() > activeThreadCountBefore) {
-      OSProcess.printStacks(0);
+      OSProcess.printStacks(0, logger);
       StringBuilder builder = new StringBuilder();
       builder.append("Expected ").append(activeThreadCountBefore).append(" threads but found ")
           .append(Thread.activeCount()).append(". Check log file for a thread dump.");

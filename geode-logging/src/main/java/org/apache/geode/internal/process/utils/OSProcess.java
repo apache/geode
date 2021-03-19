@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.logging.internal;
+package org.apache.geode.internal.process.utils;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,7 +36,6 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 import org.apache.geode.util.internal.TeePrintStream;
 
@@ -51,7 +50,6 @@ import org.apache.geode.util.internal.TeePrintStream;
 // DISABLE_REDIRECTION_CONFIGURATION_PROPERTY, ENABLE_OUTPUT_REDIRECTION, DISABLE_OUTPUT_REDIRECTION
 // and DISABLE_REDIRECTION_CONFIGURATION). GFSH should always use the new redirect-output flag.
 public class OSProcess {
-  private static final Logger logger = LogService.getLogger();
 
   /**
    * @deprecated use GFSH redirect-output flag instead.
@@ -386,8 +384,8 @@ public class OSProcess {
    * @param pid the id of the process that will print its stacks, or zero for the current process
    * @return true if the process was told; false if it does not exist or can not be told.
    */
-  public static boolean printStacks(int pid) {
-    return printStacks(pid, false);
+  public static boolean printStacks(int pid, Logger logger) {
+    return printStacks(pid, false, logger);
   }
 
   /**
@@ -397,7 +395,7 @@ public class OSProcess {
    * @param useNative if true we attempt to use native code, which goes to stdout
    * @return true if the process was told; false if it does not exist or can not be told.
    */
-  public static boolean printStacks(int pid, boolean useNative) {
+  public static boolean printStacks(int pid, boolean useNative, Logger logger) {
     if (!useNative) {
       if (pid > 0 && pid != myPid[0]) {
         return false;

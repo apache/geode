@@ -54,7 +54,6 @@ import org.apache.geode.test.junit.categories.PerformanceTest;
 @Category({PerformanceTest.class, OQLQueryTest.class})
 @Ignore("Performance tests should not be run as part of precheckin")
 public class BaseLineAndCompareQueryPerfJUnitTest {
-
   /** Creates a new instance of BaseLineAndCompareQueryPerfJUnitTest */
   public BaseLineAndCompareQueryPerfJUnitTest() {}// end of constructor1
 

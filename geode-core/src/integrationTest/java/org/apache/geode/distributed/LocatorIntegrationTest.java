@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.IntSupplier;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -56,8 +57,9 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.process.utils.OSProcess;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -67,6 +69,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class LocatorIntegrationTest {
+
+  private static final Logger logger = LogService.getLogger();
 
   private Locator locator;
   private File tmpFile;
@@ -201,7 +205,7 @@ public class LocatorIntegrationTest {
       }
     }
 
-    OSProcess.printStacks(0);
+    OSProcess.printStacks(0, logger);
 
     assertThat(threadCount)
         .as("Expected " + threadCount + " threads or fewer but found " + Thread.activeCount()

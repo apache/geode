@@ -19,7 +19,7 @@ import static org.junit.Assert.fail;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.internal.process.utils.OSProcess;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -58,7 +58,7 @@ public class ThreadUtils {
    * Dump all thread stacks
    */
   public static void dumpMyThreads() {
-    OSProcess.printStacks(0, false);
+    OSProcess.printStacks(0, false, logger);
   }
 
   /**
@@ -67,7 +67,7 @@ public class ThreadUtils {
    * @since GemFire 5.0
    */
   public static void dumpStack() {
-    OSProcess.printStacks(0, false);
+    OSProcess.printStacks(0, false, logger);
   }
 
   /**

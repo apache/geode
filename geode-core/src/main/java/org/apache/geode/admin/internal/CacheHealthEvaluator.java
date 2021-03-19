@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.CacheLifecycleListener;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.internal.process.utils.OSProcess;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**

@@ -79,11 +79,11 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.process.utils.OSProcess;
 import org.apache.geode.internal.sequencelog.MembershipLogger;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.tcp.ReenteredConnectException;
-import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.executors.LoggingUncaughtExceptionHandler;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -2751,7 +2751,7 @@ public class ClusterDistributionManager implements DistributionManager {
   public void printStacks(Collection<InternalDistributedMember> ids, boolean useNative) {
     Set<InternalDistributedMember> requiresMessage = new HashSet<>();
     if (ids.contains(localAddress)) {
-      OSProcess.printStacks(0, useNative);
+      OSProcess.printStacks(0, useNative, logger);
     }
     if (useNative) {
       requiresMessage.addAll(ids);
@@ -2761,7 +2761,7 @@ public class ClusterDistributionManager implements DistributionManager {
         if (mbr.getProcessId() > 0
             && mbr.getInetAddress().equals(localAddress.getInetAddress())) {
           if (!mbr.equals(localAddress)) {
-            if (!OSProcess.printStacks(mbr.getProcessId(), false)) {
+            if (!OSProcess.printStacks(mbr.getProcessId(), false, logger)) {
               requiresMessage.add(mbr);
             }
           }

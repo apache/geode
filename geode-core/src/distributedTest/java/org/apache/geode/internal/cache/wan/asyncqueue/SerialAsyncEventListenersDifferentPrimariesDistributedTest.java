@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,7 +51,8 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.internal.process.utils.OSProcess;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -62,6 +64,8 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @SuppressWarnings("serial")
 @RunWith(JUnitParamsRunner.class)
 public class SerialAsyncEventListenersDifferentPrimariesDistributedTest implements Serializable {
+
+  private static final Logger logger = LogService.getLogger();
 
   private MemberVM locator;
 
@@ -246,7 +250,7 @@ public class SerialAsyncEventListenersDifferentPrimariesDistributedTest implemen
   }
 
   private void dumpStacks() {
-    OSProcess.printStacks(0);
+    OSProcess.printStacks(0, logger);
   }
 
   public static class RegionOperationsFunction implements Function {

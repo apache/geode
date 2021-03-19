@@ -28,9 +28,9 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.process.utils.OSProcess;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -195,7 +195,7 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
             ReplyMessage.send(getSender(), processorId, new ReplyException(e), dm);
           }
         } else {
-          OSProcess.printStacks(0, this.useNative);
+          OSProcess.printStacks(0, this.useNative, logger);
         }
     }
   }

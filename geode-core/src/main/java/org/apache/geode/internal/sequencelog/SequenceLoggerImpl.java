@@ -21,8 +21,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.process.utils.OSProcess;
 import org.apache.geode.internal.sequencelog.io.OutputStreamAppender;
-import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class SequenceLoggerImpl implements SequenceLogger {
