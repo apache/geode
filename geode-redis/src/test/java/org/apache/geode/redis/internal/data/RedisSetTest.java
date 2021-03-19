@@ -104,7 +104,7 @@ public class RedisSetTest {
   @Test
   public void equals_returnsTrue_givenDifferentEmptySets() {
     RedisSet o1 = new RedisSet(Collections.emptyList());
-    RedisSet o2 = RedisSet.NULL_REDIS_SET;
+    RedisSet o2 = NullRedisDataStructures.NULL_REDIS_SET;
     assertThat(o1).isEqualTo(o2);
     assertThat(o2).isEqualTo(o1);
   }

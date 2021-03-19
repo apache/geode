@@ -16,12 +16,12 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_HASH;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_STRING;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_HASH;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
-import static org.apache.geode.redis.internal.data.RedisHash.NULL_REDIS_HASH;
-import static org.apache.geode.redis.internal.data.RedisSet.NULL_REDIS_SET;
-import static org.apache.geode.redis.internal.data.RedisString.NULL_REDIS_STRING;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.RedisConstants;
@@ -65,7 +65,7 @@ public class CommandHelper {
   }
 
   RedisData getRedisData(ByteArrayWrapper key) {
-    return getRedisData(key, RedisData.NULL_REDIS_DATA);
+    return getRedisData(key, NullRedisDataStructures.NULL_REDIS_DATA);
   }
 
   RedisData getRedisData(ByteArrayWrapper key, RedisData notFoundValue) {
