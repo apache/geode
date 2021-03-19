@@ -42,7 +42,7 @@ public class UnsupportedCommandsIntegrationTest
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule(false);
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {
@@ -55,26 +55,26 @@ public class UnsupportedCommandsIntegrationTest
   }
 
   @Test
-  public void shouldNotError_givenCallToUnsupportedCommandAndSystemPropertySet() {
+  public void shouldNotError_givenCallToUnsupportedCommand_whenEnableUnSupportedCommandsFlagSet() {
+    server.setEnableUnsupportedCommands(true);
+
     final String NEW_VALUE = "new value";
-
-    System.setProperty("enable-unsupported-commands", "true");
-
     jedis.set("key", "value");
+
     jedis.getSet("key", NEW_VALUE);
 
     String actual = jedis.get("key");
-
     assertThat(actual).isEqualTo(NEW_VALUE);
   }
 
   @Test
-  public void shouldReturnUnknownCommandMessage_givenCallToUnsupportedCommandAndSystemPropertyNotSet() {
+  public void shouldReturnUnknownCommandMessage_givenCallToUnsupportedCommand_whenEnableUnSupportedCommandsFlagNotSet() {
+    server.setEnableUnsupportedCommands(false);
+
     final String KEY = "key";
     final String NEW_VALUE = "changed value";
     final String EXPECTED_ERROR_MSG =
         String.format(ERROR_UNKNOWN_COMMAND, "GETSET", "`" + KEY + "`", NEW_VALUE);
-
     jedis.set(KEY, "value");
 
     assertThatThrownBy(
@@ -83,7 +83,9 @@ public class UnsupportedCommandsIntegrationTest
   }
 
   @Test
-  public void shouldReturnUnknownCommandMessage_givenCallToInternalCommandAndSystemPropertyNotSet() {
+  public void shouldReturnUnknownCommandMessage_givenCallToInternalCommand_whenEnableUnSupportedCommandsFlagNotSet() {
+    server.setEnableUnsupportedCommands(false);
+
     final String TEST_PARAMETER = "this is only a test";
     final String EXPECTED_ERROR_MSG =
         String.format(ERROR_UNKNOWN_COMMAND, InternalCommands.INTERNALPTTL,
@@ -95,13 +97,13 @@ public class UnsupportedCommandsIntegrationTest
   }
 
   @Test
-  public void shouldReturnUnknownCommandMessage_givenCallToInternalCommandAndSystemPropertySet() {
+  public void shouldReturnUnknownCommandMessage_givenCallToInternalCommand_whenEnableUnSupportedCommandsFlagSet() {
+    server.setEnableUnsupportedCommands(true);
+
     final String TEST_PARAMETER = " this is only a test";
     final String EXPECTED_ERROR_MSG =
         String.format(ERROR_UNKNOWN_COMMAND, InternalCommands.INTERNALTYPE,
             "`" + TEST_PARAMETER + "`");
-
-    System.setProperty("enable-unsupported-commands", "true");
 
     assertThatThrownBy(
         () -> jedis.sendCommand(InternalCommands.INTERNALTYPE, TEST_PARAMETER))
@@ -110,9 +112,8 @@ public class UnsupportedCommandsIntegrationTest
 
   @After
   public void tearDown() {
-    System.setProperty("enable-unsupported-commands", "true");
+    server.setEnableUnsupportedCommands(true);
     jedis.flushAll();
-    System.clearProperty("enable-unsupported-commands");
   }
 
   @AfterClass
