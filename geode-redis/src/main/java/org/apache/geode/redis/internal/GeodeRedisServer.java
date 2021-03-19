@@ -51,11 +51,9 @@ public class GeodeRedisServer {
    * The default Redis port as specified by their protocol, {@code DEFAULT_REDIS_SERVER_PORT}
    */
   public static final int DEFAULT_REDIS_SERVER_PORT = 6379;
-  public static final String ENABLE_UNSUPPORTED_COMMANDS_SYSTEM_PROPERTY =
-      "enable-unsupported-commands";
-
+  public static final String ENABLE_UNSUPPORTED_COMMANDS_PARAM = "enable-unsupported-commands";
+  private static boolean unsupportedCommandsEnabled;
   private static final Logger logger = LogService.getLogger();
-
   private final PassiveExpirationManager passiveExpirationManager;
   private final NettyRedisServer nettyRedisServer;
   private final RegionProvider regionProvider;
@@ -75,6 +73,7 @@ public class GeodeRedisServer {
    */
   public GeodeRedisServer(String bindAddress, int port, InternalCache cache) {
 
+    unsupportedCommandsEnabled = Boolean.getBoolean(ENABLE_UNSUPPORTED_COMMANDS_PARAM);
     pubSub = new PubSubImpl(new Subscriptions());
     redisStats = createStats(cache);
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
@@ -125,13 +124,12 @@ public class GeodeRedisServer {
   }
 
   @VisibleForTesting
-  public void setAllowUnsupportedCommandsSystemProperty(boolean allowUnsupportedCommands) {
-    System.setProperty(ENABLE_UNSUPPORTED_COMMANDS_SYSTEM_PROPERTY,
-        String.valueOf(allowUnsupportedCommands));
+  public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {
+    this.unsupportedCommandsEnabled = allowUnsupportedCommands;
   }
 
   public boolean allowUnsupportedCommands() {
-    return Boolean.valueOf(System.getProperty("enable-unsupported-commands", "false"));
+    return this.unsupportedCommandsEnabled;
   }
 
   public RegionProvider getRegionProvider() {
