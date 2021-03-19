@@ -54,7 +54,6 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHash extends AbstractRedisData {
-  public static final RedisHash NULL_REDIS_HASH = new NullRedisHash();
   private HashMap<ByteArrayWrapper, ByteArrayWrapper> hash;
   private ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hScanSnapShots;
   private ConcurrentHashMap<UUID, Long> hScanSnapShotCreationTimes;
