@@ -17,11 +17,23 @@ package org.apache.geode.redis.internal.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.redis.internal.executor.cluster.CRC16;
 
 public class RedisKeyJUnitTest {
+
+  @BeforeClass
+  public static void classSetup() {
+    InternalDataSerializer.getDSFIDSerializer()
+        .registerDSFID(DataSerializableFixedID.REDIS_KEY, RedisKey.class);
+  }
 
   @Test
   public void testRoutingId_withHashtags() {
@@ -54,6 +66,32 @@ public class RedisKeyJUnitTest {
 
     key = new RedisKey("foo{{user1000}}bar".getBytes());
     assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("{user1000"));
+  }
+
+  @Test
+  public void testSerialization_withPositiveSignedShortCRC16() throws Exception {
+    RedisKey keyOut = new RedisKey("012345".getBytes());
+    assertThat((short) keyOut.getCrc16()).isPositive();
+
+    HeapDataOutputStream out = new HeapDataOutputStream(100);
+    DataSerializer.writeObject(keyOut, out);
+    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
+
+    RedisKey keyIn = DataSerializer.readObject(in);
+    assertThat(keyIn).isEqualTo(keyOut);
+  }
+
+  @Test
+  public void testSerialization_withNegativeSignedShortCRC16() throws Exception {
+    RedisKey keyOut = new RedisKey("k2".getBytes());
+    assertThat((short) keyOut.getCrc16()).isNegative();
+
+    HeapDataOutputStream out = new HeapDataOutputStream(100);
+    DataSerializer.writeObject(keyOut, out);
+    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
+
+    RedisKey keyIn = DataSerializer.readObject(in);
+    assertThat(keyIn).isEqualTo(keyOut);
   }
 
 }

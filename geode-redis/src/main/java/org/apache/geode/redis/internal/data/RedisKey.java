@@ -62,14 +62,15 @@ public class RedisKey extends ByteArrayWrapper implements DataSerializableFixedI
 
   @Override
   public void toData(DataOutput out, SerializationContext context) throws IOException {
-    out.writeInt(crc16);
+    out.writeShort(crc16);
     super.toData(out, context);
   }
 
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    crc16 = in.readInt();
+    // Need to convert a signed short to unsigned
+    crc16 = in.readShort() & 0xffff;
     super.fromData(in, context);
   }
 
