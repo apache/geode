@@ -176,7 +176,7 @@ public class CommandManager {
   private void loadCommands() {
     Set<String> userCommandPackages = getUserCommandPackages();
     Set<String> packagesToScan = new HashSet<>(userCommandPackages);
-    packagesToScan.add("org.apache.geode.management.internal.cli.converters");
+    packagesToScan.add("org.apache.geode");
     packagesToScan.add("org.springframework.shell.converters");
     packagesToScan.add(GfshCommand.class.getPackage().getName());
     packagesToScan.add(VersionCommand.class.getPackage().getName());
@@ -195,7 +195,7 @@ public class CommandManager {
     // Converters
     try {
       foundClasses = scanner.scanPackagesForClassesImplementing(Converter.class,
-          "org.apache.geode.management.internal.cli.converters");
+          "org.apache.geode.*.converters.**");
       for (Class<?> klass : foundClasses) {
         try {
           Converter<?> object = (Converter<?>) klass.newInstance();

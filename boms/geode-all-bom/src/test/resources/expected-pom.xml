@@ -825,6 +825,12 @@
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+        <version>5.3.5</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
         <artifactId>spring-tx</artifactId>
         <version>5.3.5</version>
         <scope>compile</scope>
@@ -838,12 +844,6 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-webmvc</artifactId>
-        <version>5.3.5</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-test</artifactId>
         <version>5.3.5</version>
         <scope>compile</scope>
       </dependency>
