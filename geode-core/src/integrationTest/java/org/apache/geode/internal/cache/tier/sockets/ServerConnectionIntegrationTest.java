@@ -39,7 +39,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
@@ -98,7 +97,6 @@ public class ServerConnectionIntegrationTest {
     ClientHealthMonitor.createInstance(cache, 100, mock(CacheClientNotifierStats.class));
     ClientHealthMonitor clientHealthMonitor = ClientHealthMonitor.getInstance();
 
-    when(cache.getCacheTransactionManager()).thenReturn(mock(TXManagerImpl.class));
     when(acceptor.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
     when(acceptor.getConnectionListener()).thenReturn(mock(ConnectionListener.class));
 
@@ -157,7 +155,7 @@ public class ServerConnectionIntegrationTest {
         int socketBufferSize, String communicationModeStr, byte communicationMode,
         Acceptor acceptor, SecurityService securityService) {
       super(socket, internalCache, cachedRegionHelper, stats, hsTimeout, socketBufferSize,
-          communicationModeStr, communicationMode, acceptor, securityService);
+          communicationModeStr, communicationMode, acceptor, securityService, null);
 
       // Not clear where this is supposed to be set in the timeout path
       setClientDisconnectCleanly();

@@ -102,6 +102,7 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
@@ -203,10 +204,10 @@ public class CacheClientNotifier {
       }
     } catch (AuthenticationRequiredException ex) {
       handleAuthenticationException(clientProxyMembershipID, dataOutputStream, clientVersion, ex,
-          Handshake.REPLY_EXCEPTION_AUTHENTICATION_REQUIRED);
+          Handshake.REPLY_EXCEPTION_AUTHENTICATION_REQUIRED, clientRegistrationMetadata);
     } catch (AuthenticationFailedException ex) {
       handleAuthenticationException(clientProxyMembershipID, dataOutputStream, clientVersion, ex,
-          Handshake.REPLY_EXCEPTION_AUTHENTICATION_FAILED);
+          Handshake.REPLY_EXCEPTION_AUTHENTICATION_FAILED, clientRegistrationMetadata);
     } catch (CacheException e) {
       logger.warn(
           String.format("%s :registerClient: Exception encountered in registration %s", this, e),
@@ -217,7 +218,8 @@ public class CacheClientNotifier {
       logger.warn(String.format("An exception was thrown for client [%s].",
           clientProxyMembershipID != null ? clientProxyMembershipID : "unknown"), ex);
       socketMessageWriter.writeException(dataOutputStream,
-          CommunicationMode.UnsuccessfulServerToClient.getModeNumber(), ex, clientVersion);
+          CommunicationMode.UnsuccessfulServerToClient.getModeNumber(), ex, clientVersion,
+          clientRegistrationMetadata.getIOFilter(), clientRegistrationMetadata.getSocket());
     }
 
     statistics.endClientRegistration(startTime);
@@ -301,7 +303,8 @@ public class CacheClientNotifier {
         cacheClientProxy =
             cacheClientProxyFactory.create(this, socket, clientProxyMembershipID, isPrimary,
                 clientConflation, clientVersion, acceptorId, notifyBySubscription,
-                cache.getSecurityService(), subject, statisticsClock);
+                cache.getSecurityService(), subject, statisticsClock,
+                clientRegistrationMetadata.getIOFilter());
         successful = initializeProxy(cacheClientProxy);
       } else {
         cacheClientProxy.setSubject(subject);
@@ -377,7 +380,7 @@ public class CacheClientNotifier {
       cacheClientProxy =
           new CacheClientProxy(this, socket, clientProxyMembershipID, isPrimary, clientConflation,
               clientVersion, acceptorId, notifyBySubscription, cache.getSecurityService(), subject,
-              statisticsClock);
+              statisticsClock, clientRegistrationMetadata.getIOFilter());
       successful = initializeProxy(cacheClientProxy);
     }
 
@@ -399,9 +402,12 @@ public class CacheClientNotifier {
     try {
       DataOutputStream dos =
           new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+
+      NioFilter ioFilter = clientRegistrationMetadata.getIOFilter();
+
       // write the message type, message length and the error message (if any)
       socketMessageWriter.writeHandshakeMessage(dos, responseByte, unsuccessfulMsg, clientVersion,
-          endpointType, queueSize);
+          endpointType, queueSize, ioFilter, socket);
     } catch (IOException ioe) {// remove the added proxy if we get IOException.
       if (cacheClientProxy != null) {
         // do not check for queue, just close it
@@ -448,13 +454,15 @@ public class CacheClientNotifier {
 
   private void handleAuthenticationException(final ClientProxyMembershipID clientProxyMembershipID,
       final DataOutputStream dataOutputStream, final KnownVersion clientVersion,
-      final GemFireSecurityException ex, final byte replyExceptionAuthenticationFailed)
+      final GemFireSecurityException ex, final byte replyExceptionAuthenticationFailed,
+      ClientRegistrationMetadata clientRegistrationMetadata)
       throws IOException {
     securityLogWriter.warning(
         String.format("An exception was thrown for client [%s]. %s",
             clientProxyMembershipID, ex));
     socketMessageWriter.writeException(dataOutputStream, replyExceptionAuthenticationFailed, ex,
-        clientVersion);
+        clientVersion, clientRegistrationMetadata.getIOFilter(),
+        clientRegistrationMetadata.getSocket());
   }
 
   private boolean initializeProxy(CacheClientProxy l_proxy) throws CacheException {
@@ -780,7 +788,8 @@ public class CacheClientNotifier {
     if (getDenylistedClient().contains(clientProxyMembershipID)) {
       Exception deniedException = new Exception("This client is denylisted by server");
       socketMessageWriter.writeException(clientRegistrationMetadata.getDataOutputStream(),
-          Handshake.REPLY_INVALID, deniedException, clientRegistrationMetadata.getClientVersion());
+          Handshake.REPLY_INVALID, deniedException, clientRegistrationMetadata.getClientVersion(),
+          clientRegistrationMetadata.getIOFilter(), clientRegistrationMetadata.getSocket());
       return false;
     }
     return true;

@@ -15,6 +15,8 @@
 package org.apache.geode.internal.net;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
@@ -101,5 +103,17 @@ public interface NioFilter {
    * to call this method in a try-with-resources statement.
    */
   ByteBufferSharing getUnwrappedBuffer() throws IOException;
+
+  ByteBufferSharing getUnwrappedBuffer(ByteBuffer unwrappedBuffer) throws IOException;
+
+  InputStream getInputStream(Socket socket) throws IOException;
+
+  int getPacketBufferSize();
+
+  default void closeInputStream(InputStream stream) throws IOException {
+    // nothing by default
+  }
+
+  void initReadBuffer() throws IOException;
 
 }

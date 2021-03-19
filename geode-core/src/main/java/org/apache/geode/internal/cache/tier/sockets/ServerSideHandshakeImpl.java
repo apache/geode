@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.security.Principal;
 import java.util.Properties;
 
@@ -29,10 +30,12 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.ByteBufferOutputStream;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
+import org.apache.geode.internal.net.ByteBufferSharing;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
@@ -49,6 +52,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
   private final KnownVersion clientVersion;
 
   private final byte replyCode;
+  private ServerConnection connection;
 
   @Override
   protected byte getReplyCode() {
@@ -60,19 +64,26 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
    */
   public ServerSideHandshakeImpl(Socket sock, int timeout, DistributedSystem sys,
       KnownVersion clientVersion, CommunicationMode communicationMode,
-      SecurityService securityService)
+      SecurityService securityService, ServerConnection connection)
       throws IOException, AuthenticationRequiredException {
 
     this.clientVersion = clientVersion;
     system = sys;
     this.securityService = securityService;
     encryptor = new EncryptorImpl(sys.getSecurityLogWriter());
+    this.connection = connection;
 
     int soTimeout = -1;
+    InputStream inputStream = null;
+
     try {
       soTimeout = sock.getSoTimeout();
       sock.setSoTimeout(timeout);
-      InputStream inputStream = sock.getInputStream();
+      if (connection.getIOFilter() == null) {
+        inputStream = sock.getInputStream();
+      } else {
+        inputStream = connection.getIOFilter().getInputStream(sock);
+      }
       int valRead = inputStream.read();
       if (valRead == -1) {
         throw new EOFException(
@@ -108,6 +119,16 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
             "ClientProxyMembershipID class could not be found while deserializing the object");
       }
     } finally {
+      if (connection.getIOFilter() != null) {
+        try (
+            final ByteBufferSharing sharedBuffer = connection.getIOFilter().getUnwrappedBuffer()) {
+          ByteBuffer iobuff = sharedBuffer.getBuffer();
+          if (iobuff.capacity() > 0) {
+            connection.getIOFilter().doneReading(iobuff);
+          }
+        }
+        connection.getIOFilter().closeInputStream(inputStream);
+      }
       if (soTimeout != -1) {
         try {
           sock.setSoTimeout(soTimeout);
@@ -129,7 +150,18 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
   @Override
   public void handshakeWithClient(OutputStream out, InputStream in, byte endpointType,
       int queueSize, CommunicationMode communicationMode, Principal principal) throws IOException {
-    DataOutputStream dos = new DataOutputStream(out);
+
+    DataOutputStream dos;
+    ByteBufferOutputStream bbos = null;
+
+    if (connection.getIOFilter() != null) {
+      bbos = new ByteBufferOutputStream(
+          connection.getIOFilter().getPacketBufferSize());
+      dos = new DataOutputStream(bbos);
+    } else {
+      dos = new DataOutputStream(out);
+    }
+
     DataInputStream dis;
     if (clientVersion.isOlderThan(KnownVersion.CURRENT)) {
       dis = new VersionedDataInputStream(in, clientVersion);
@@ -190,6 +222,16 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     // Flush
     dos.flush();
+
+    if (bbos != null) {
+      bbos.flush();
+      ByteBuffer buffer = bbos.getContentBuffer();
+      try (final ByteBufferSharing outputSharing = connection.getIOFilter().wrap(buffer)) {
+        final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
+        connection.getSocket().getChannel().write(wrappedBuffer);
+      }
+      bbos.close();
+    }
   }
 
   @Override

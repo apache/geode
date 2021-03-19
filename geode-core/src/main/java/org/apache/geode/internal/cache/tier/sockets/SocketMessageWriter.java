@@ -17,6 +17,8 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,8 +28,11 @@ import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
+import org.apache.geode.internal.ByteBufferOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.internal.net.ByteBufferSharing;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -36,9 +41,17 @@ public class SocketMessageWriter {
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "serverToClientPingPeriod", 60000);
 
   public void writeHandshakeMessage(DataOutputStream dos, byte type, String p_msg,
-      @Nullable KnownVersion clientVersion, byte endpointType, int queueSize)
+      @Nullable KnownVersion clientVersion, byte endpointType, int queueSize,
+      NioFilter ioFilter,
+      Socket socket)
       throws IOException {
     String msg = p_msg;
+    ByteBufferOutputStream bbos = null;
+
+    if (ioFilter != null) {
+      bbos = new ByteBufferOutputStream(ioFilter.getPacketBufferSize());
+      dos = new DataOutputStream(bbos);
+    }
 
     // write the message type
     dos.writeByte(type);
@@ -87,6 +100,21 @@ public class SocketMessageWriter {
       }
     }
     dos.flush();
+
+    if (ioFilter != null) {
+      bbos.flush();
+      ByteBuffer buffer = bbos.getContentBuffer();
+
+      try (final ByteBufferSharing outputSharing = ioFilter.wrap(buffer)) {
+        final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
+        if (socket != null) {
+          while (wrappedBuffer.remaining() > 0) {
+            socket.getChannel().write(wrappedBuffer);
+          }
+        }
+      }
+      bbos.close();
+    }
   }
 
   /**
@@ -97,8 +125,9 @@ public class SocketMessageWriter {
    * @param ex the exception to be written; should not be null
    */
   public void writeException(DataOutputStream dos, byte type, Exception ex,
-      KnownVersion clientVersion)
+      KnownVersion clientVersion, NioFilter ioFilter, Socket socket)
       throws IOException {
-    writeHandshakeMessage(dos, type, ex.toString(), clientVersion, (byte) 0x00, 0);
+    writeHandshakeMessage(dos, type, ex.toString(), clientVersion, (byte) 0x00, 0, ioFilter,
+        socket);
   }
 }

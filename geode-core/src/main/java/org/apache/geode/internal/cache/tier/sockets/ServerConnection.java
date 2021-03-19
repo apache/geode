@@ -68,6 +68,8 @@ import org.apache.geode.internal.cache.tier.sockets.command.Default;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
+import org.apache.geode.internal.net.NioFilter;
+import org.apache.geode.internal.net.NioSslEngine;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
@@ -251,7 +253,6 @@ public class ServerConnection implements Runnable {
   private static final ConcurrentHashMap<ClientProxyMembershipID, ClientUserAuths> proxyIdVsClientUserAuths =
       new ConcurrentHashMap<>();
 
-
   private ClientUserAuths clientUserAuths;
 
   // this is constant(server and client) for first user request, after that it is random
@@ -272,6 +273,8 @@ public class ServerConnection implements Runnable {
   @MutableForTesting
   private static boolean TEST_VERSION_AFTER_HANDSHAKE_FLAG;
 
+  private final NioFilter ioFilter;
+
   /**
    * Creates a new {@code ServerConnection} that processes messages received from an edge
    * client over a given {@code Socket}.
@@ -280,7 +283,7 @@ public class ServerConnection implements Runnable {
       final CachedRegionHelper cachedRegionHelper, final CacheServerStats stats,
       final int hsTimeout, final int socketBufferSize, final String communicationModeStr,
       final byte communicationMode, final Acceptor acceptor,
-      final SecurityService securityService) {
+      final SecurityService securityService, final NioFilter ioFilter) {
     StringBuilder buffer = new StringBuilder(100);
     if (acceptor.isGatewayReceiver()) {
       buffer.append("GatewayReceiver connection from [");
@@ -303,6 +306,7 @@ public class ServerConnection implements Runnable {
     randomConnectionIdGen = new Random(hashCode());
 
     this.securityService = securityService;
+    this.ioFilter = ioFilter;
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
@@ -348,7 +352,7 @@ public class ServerConnection implements Runnable {
         ServerSideHandshake readHandshake;
         try {
           readHandshake = handshakeFactory.readHandshake(getSocket(), getHandShakeTimeout(),
-              getCommunicationMode(), getDistributedSystem(), getSecurityService());
+              getCommunicationMode(), getDistributedSystem(), getSecurityService(), this);
 
         } catch (SocketTimeoutException timeout) {
           logger.warn("{}: Handshake reply code timeout, not received with in {} ms",
@@ -668,7 +672,8 @@ public class ServerConnection implements Runnable {
 
   private void refuseHandshake(String message, byte exception) {
     try {
-      acceptor.refuseHandshake(theSocket.getOutputStream(), message, exception);
+      acceptor.refuseHandshake(theSocket.getOutputStream(), message, exception, ioFilter,
+          theSocket);
     } catch (IOException ignore) {
     } finally {
       stats.incFailedConnectionAttempts();
@@ -1307,7 +1312,11 @@ public class ServerConnection implements Runnable {
   }
 
   void registerWithSelector2(Selector s) throws ClosedChannelException {
-    getSelectableChannel().register(s, SelectionKey.OP_READ, this);
+    if ((getIOFilter() != null) && (getIOFilter() instanceof NioSslEngine)) {
+      getSelectableChannel().register(s, SelectionKey.OP_WRITE | SelectionKey.OP_READ, this);
+    } else {
+      getSelectableChannel().register(s, SelectionKey.OP_READ, this);
+    }
   }
 
   /**
@@ -1476,6 +1485,13 @@ public class ServerConnection implements Runnable {
       getAcceptor().decClientServerConnectionCount();
     }
 
+    if (getIOFilter() != null) {
+      try {
+        getIOFilter().close(theSocket.getChannel());
+      } catch (Exception ignored) {
+      }
+    }
+
     if (!theSocket.isClosed()) {
       // Here we direct closing of sockets to one of two executors. Use of an executor
       // keeps us from causing an explosion of new threads when a server is shut down.
@@ -1529,6 +1545,13 @@ public class ServerConnection implements Runnable {
     terminated = true;
     Socket s = theSocket;
     if (s != null) {
+      if (getIOFilter() != null) {
+        try {
+          getIOFilter().close(s.getChannel());
+        } catch (Exception e) {
+          // ignore
+        }
+      }
       try {
         s.close();
       } catch (IOException e) {
@@ -1858,6 +1881,10 @@ public class ServerConnection implements Runnable {
       setPrincipal((Principal) principal);
     }
     setUserAuthId(uniqueId);
+  }
+
+  public NioFilter getIOFilter() {
+    return this.ioFilter;
   }
 
   /**

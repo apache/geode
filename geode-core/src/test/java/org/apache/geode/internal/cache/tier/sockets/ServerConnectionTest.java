@@ -86,7 +86,7 @@ public class ServerConnectionTest {
         new ServerConnection(socket, cache,
             cachedRegionHelper, mock(CacheServerStats.class), 0, 0, null,
             CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor,
-            mock(SecurityService.class));
+            mock(SecurityService.class), null);
 
     serverConnection.setHandshake(handshake);
   }

@@ -28,6 +28,6 @@ public class SocketMessageWriterTest {
     final SocketMessageWriter writer = new SocketMessageWriter();
     // can't mock DataOutputStream
     final DataOutputStream outputStream = new DataOutputStream(new ByteArrayOutputStream());
-    writer.writeHandshakeMessage(outputStream, (byte) 1, "", null, (byte) 0, 0);
+    writer.writeHandshakeMessage(outputStream, (byte) 1, "", null, (byte) 0, 0, null, null);
   }
 }

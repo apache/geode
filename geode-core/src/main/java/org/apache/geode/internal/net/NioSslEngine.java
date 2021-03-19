@@ -24,6 +24,8 @@ import static org.apache.geode.internal.net.BufferPool.BufferType.TRACKED_SENDER
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
@@ -43,6 +45,7 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.net.BufferPool.BufferType;
 import org.apache.geode.internal.net.ByteBufferVendor.OpenAttemptTimedOut;
+import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
@@ -69,10 +72,14 @@ public class NioSslEngine implements NioFilter {
    */
   private final ByteBufferVendor inputBufferVendor;
 
+  private ByteBuffer handshakeBuffer;
+
+  private int packetBufferSize;
+
   NioSslEngine(SSLEngine engine, BufferPool bufferPool) {
     SSLSession session = engine.getSession();
     int appBufferSize = session.getApplicationBufferSize();
-    int packetBufferSize = engine.getSession().getPacketBufferSize();
+    packetBufferSize = engine.getSession().getPacketBufferSize();
     closed = false;
     this.engine = engine;
     this.bufferPool = bufferPool;
@@ -98,6 +105,7 @@ public class NioSslEngine implements NioFilter {
     }
 
     final ByteBuffer handshakeBuffer = peerNetData;
+
     handshakeBuffer.clear();
 
     ByteBuffer myAppData = ByteBuffer.wrap(new byte[0]);
@@ -365,6 +373,11 @@ public class NioSslEngine implements NioFilter {
   }
 
   @Override
+  public ByteBufferSharing getUnwrappedBuffer(ByteBuffer unwrappedBuffer) throws IOException {
+    return shareInputBuffer();
+  }
+
+  @Override
   public void doneReadingDirectAck(ByteBuffer unwrappedBuffer) {
     // nothing needs to be done - the next direct-ack message will be
     // read into the same buffer and compaction will be done during
@@ -430,4 +443,39 @@ public class NioSslEngine implements NioFilter {
   public ByteBufferVendor getInputBufferVendorForTestingOnly() throws IOException {
     return inputBufferVendor;
   }
+
+  public ByteBuffer getHandshakeBuffer() {
+    return handshakeBuffer;
+  }
+
+  @Override
+  public int getPacketBufferSize() {
+    return packetBufferSize;
+  }
+
+  @Override
+  public InputStream getInputStream(Socket socket) throws IOException {
+    InputStream is;
+    try (final ByteBufferSharing sharedBuffer = getUnwrappedBuffer()) {
+      ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
+      is = new ByteBufferInputStream(unwrapbuff);
+    }
+    return is;
+  }
+
+  @Override
+  public void closeInputStream(InputStream stream) throws IOException {
+    if (stream != null) {
+      stream.close();
+    }
+  }
+
+  @Override
+  public void initReadBuffer() throws IOException {
+    try (final ByteBufferSharing sharedBuffer = getUnwrappedBuffer()) {
+      ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
+      doneReading(unwrapbuff);
+    }
+  }
+
 }

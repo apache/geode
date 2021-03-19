@@ -77,6 +77,7 @@ import org.apache.geode.internal.cache.tier.sockets.command.Get70;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -294,6 +295,7 @@ public class CacheClientProxy implements ClientSession {
   private final StatisticsClock statisticsClock;
 
   private final MessageDispatcherFactory messageDispatcherFactory;
+  private final NioFilter ioFilter;
 
   /**
    * Constructor.
@@ -301,19 +303,20 @@ public class CacheClientProxy implements ClientSession {
    * @param ccn The <code>CacheClientNotifier</code> registering this proxy
    * @param socket The socket between the server and the client
    * @param proxyID representing the Connection Proxy of the clien
-   * @param isPrimary The boolean stating whether this prozxy is primary
+   * @param isPrimary The boolean stating whether this proxy is primary
    * @throws CacheException {
    */
   protected CacheClientProxy(CacheClientNotifier ccn, Socket socket,
       ClientProxyMembershipID proxyID, boolean isPrimary, byte clientConflation,
       KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
-      SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
+      SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
+      NioFilter ioFilter)
       throws CacheException {
     this(ccn.getCache(), ccn, socket, proxyID, isPrimary, clientConflation, clientVersion,
         acceptorId, notifyBySubscription, securityService, subject, statisticsClock,
         ccn.getCache().getInternalDistributedSystem().getStatisticsManager(),
         DEFAULT_CACHECLIENTPROXYSTATSFACTORY,
-        DEFAULT_MESSAGEDISPATCHERFACTORY);
+        DEFAULT_MESSAGEDISPATCHERFACTORY, ioFilter);
   }
 
   @VisibleForTesting
@@ -323,7 +326,7 @@ public class CacheClientProxy implements ClientSession {
       SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
       StatisticsFactory statisticsFactory,
       CacheClientProxyStatsFactory cacheClientProxyStatsFactory,
-      MessageDispatcherFactory messageDispatcherFactory)
+      MessageDispatcherFactory messageDispatcherFactory, NioFilter ioFilter)
       throws CacheException {
     initializeTransientFields(socket, proxyID, isPrimary, clientConflation, clientVersion);
     this._cacheClientNotifier = ccn;
@@ -337,6 +340,7 @@ public class CacheClientProxy implements ClientSession {
     this._statistics =
         cacheClientProxyStatsFactory.create(statisticsFactory, proxyID, _remoteHostAddress);
     this.subject = subject;
+    this.ioFilter = ioFilter;
 
     // Create the interest list
     this.cils[RegisterInterestTracker.interestListIndex] =
@@ -2043,5 +2047,9 @@ public class CacheClientProxy implements ClientSession {
   public interface MessageDispatcherFactory {
 
     MessageDispatcher create(CacheClientProxy proxy, String name, StatisticsClock statisticsClock);
+  }
+
+  public NioFilter getIOFilter() {
+    return ioFilter;
   }
 }

@@ -26,6 +26,8 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.net.ByteBufferSharing;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.offheap.AddressableMemoryManager;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.serialization.DSCODE;
@@ -448,7 +450,7 @@ public class Part {
    * buffer. This is only called for parts that will not fit into the commBuffer so they need to be
    * written directly to the socket. Precondition: buf contains nothing that needs to be sent
    */
-  public void writeTo(SocketChannel sc, ByteBuffer buf) throws IOException {
+  public void writeTo(SocketChannel sc, ByteBuffer buf, NioFilter ioFilter) throws IOException {
     if (getLength() > 0) {
       final int BUF_MAX = buf.capacity();
       if (this.part instanceof byte[]) {
@@ -465,9 +467,7 @@ public class Part {
           len -= bytesThisTime;
           off += bytesThisTime;
           buf.flip();
-          while (buf.remaining() > 0) {
-            sc.write(buf);
-          }
+          writeToSocket(sc, buf, ioFilter);
           buf.clear();
         }
       } else if (this.part instanceof StoredObject) {
@@ -476,9 +476,7 @@ public class Part {
         StoredObject c = (StoredObject) this.part;
         ByteBuffer bb = c.createDirectByteBuffer();
         if (bb != null) {
-          while (bb.remaining() > 0) {
-            sc.write(bb);
-          }
+          writeToSocket(sc, bb, ioFilter);
         } else {
           int len = c.getDataSize();
           long addr = c.getAddressForReadingData(0, len);
@@ -495,18 +493,32 @@ public class Part {
               bytesThisTime--;
             }
             buf.flip();
-            while (buf.remaining() > 0) {
-              sc.write(buf);
-            }
+            writeToSocket(sc, buf, ioFilter);
             buf.clear();
           }
         }
       } else {
         HeapDataOutputStream hdos = (HeapDataOutputStream) this.part;
         try {
-          hdos.sendTo(sc, buf);
+          hdos.sendTo(sc, buf, ioFilter);
         } finally {
           hdos.rewind();
+        }
+      }
+    }
+  }
+
+  private void writeToSocket(SocketChannel sc, ByteBuffer buf, NioFilter ioFilter)
+      throws IOException {
+    if (ioFilter == null) {
+      while (buf.remaining() > 0) {
+        sc.write(buf);
+      }
+    } else {
+      try (final ByteBufferSharing outputSharing = ioFilter.wrap(buf)) {
+        final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
+        while (wrappedBuffer.remaining() > 0) {
+          sc.write(wrappedBuffer);
         }
       }
     }

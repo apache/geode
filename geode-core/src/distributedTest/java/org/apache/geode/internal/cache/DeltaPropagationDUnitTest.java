@@ -95,6 +95,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxyFactory.InternalCacheClientProxyFactory;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.MessageDispatcher;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -1593,11 +1594,12 @@ public class DeltaPropagationDUnitTest implements Serializable {
     public CacheClientProxy create(CacheClientNotifier notifier, Socket socket,
         ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
         KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
-        SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
+        SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
+        NioFilter ioFilter)
         throws CacheException {
       return new CustomCacheClientProxy(notifier, socket, proxyId, isPrimary, clientConflation,
           clientVersion, acceptorId, notifyBySubscription, securityService, subject,
-          statisticsClock);
+          statisticsClock, ioFilter);
     }
   }
 
@@ -1606,13 +1608,14 @@ public class DeltaPropagationDUnitTest implements Serializable {
     private CustomCacheClientProxy(CacheClientNotifier notifier, Socket socket,
         ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
         KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
-        SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
+        SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
+        NioFilter ioFilter)
         throws CacheException {
       super(notifier.getCache(), notifier, socket, proxyId, isPrimary, clientConflation,
           clientVersion, acceptorId, notifyBySubscription, securityService, subject,
           statisticsClock,
           notifier.getCache().getInternalDistributedSystem().getStatisticsManager(),
-          DEFAULT_CACHECLIENTPROXYSTATSFACTORY, CustomMessageDispatcher::new);
+          DEFAULT_CACHECLIENTPROXYSTATSFACTORY, CustomMessageDispatcher::new, ioFilter);
     }
   }
 

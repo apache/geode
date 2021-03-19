@@ -438,11 +438,18 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     try {
       nioSslEngine.handshake(socketChannel, timeout, peerNetBuffer);
     } catch (SSLException e) {
+      nioSslEngine.close(socketChannel);
       if (!socketChannel.socket().isClosed()) {
         socketChannel.close();
       }
       logger.warn("SSL handshake exception", e);
       throw e;
+    } catch (InterruptedException e) {
+      nioSslEngine.close(socketChannel);
+      if (!socketChannel.socket().isClosed()) {
+        socketChannel.close();
+      }
+      throw new IOException("SSL handshake interrupted");
     } finally {
       if (blocking) {
         try {

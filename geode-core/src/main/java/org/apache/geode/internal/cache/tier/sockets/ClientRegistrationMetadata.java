@@ -18,6 +18,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
@@ -47,51 +49,67 @@ class ClientRegistrationMetadata {
   private KnownVersion clientVersion;
   private DataInputStream dataInputStream;
   private DataOutputStream dataOutputStream;
+  private final NioFilter ioFilter;
 
-  ClientRegistrationMetadata(final InternalCache cache, final Socket socket) {
+  ClientRegistrationMetadata(final InternalCache cache, final Socket socket,
+      final NioFilter ioFilter) {
     this.cache = cache;
     this.socket = socket;
     socketMessageWriter = new SocketMessageWriter();
+    this.ioFilter = ioFilter;
   }
 
   boolean initialize() throws IOException {
-    DataInputStream unversionedDataInputStream = new DataInputStream(socket.getInputStream());
-    DataOutputStream unversionedDataOutputStream = new DataOutputStream(socket.getOutputStream());
-
-    if (getAndValidateClientVersion(socket, unversionedDataInputStream,
-        unversionedDataOutputStream)) {
-      if (oldClientRequiresVersionedStreams(clientVersion)) {
-        dataInputStream =
-            new VersionedDataInputStream(unversionedDataInputStream, clientVersion);
-        dataOutputStream =
-            new VersionedDataOutputStream(unversionedDataOutputStream, clientVersion);
+    InputStream inputStream = null;
+    try {
+      if (ioFilter == null) {
+        inputStream = socket.getInputStream();
       } else {
-        dataInputStream = unversionedDataInputStream;
-        dataOutputStream = unversionedDataOutputStream;
+        inputStream = ioFilter.getInputStream(socket);
+      }
+      DataInputStream unversionedDataInputStream = new DataInputStream(inputStream);
+
+      DataOutputStream unversionedDataOutputStream = new DataOutputStream(socket.getOutputStream());
+
+      if (getAndValidateClientVersion(socket, unversionedDataInputStream,
+          unversionedDataOutputStream)) {
+        if (oldClientRequiresVersionedStreams(clientVersion)) {
+          dataInputStream =
+              new VersionedDataInputStream(unversionedDataInputStream, clientVersion);
+          dataOutputStream =
+              new VersionedDataOutputStream(unversionedDataOutputStream, clientVersion);
+        } else {
+          dataInputStream = unversionedDataInputStream;
+          dataOutputStream = unversionedDataOutputStream;
+        }
+
+        // Read and ignore the reply code. This is used on the client to server
+        // handshake.
+        dataInputStream.readByte(); // replyCode
+
+        // Read the ports and throw them away. We no longer need them
+        int numberOfPorts = dataInputStream.readInt();
+        for (int i = 0; i < numberOfPorts; i++) {
+          dataInputStream.readInt();
+        }
+
+        getAndValidateClientProxyMembershipID();
+
+        if (getAndValidateClientConflation()) {
+          clientCredentials =
+              Handshake.readCredentials(dataInputStream, dataOutputStream,
+                  cache.getDistributedSystem(), cache.getSecurityService());
+
+          return true;
+        }
       }
 
-      // Read and ignore the reply code. This is used on the client to server
-      // handshake.
-      dataInputStream.readByte(); // replyCode
-
-      // Read the ports and throw them away. We no longer need them
-      int numberOfPorts = dataInputStream.readInt();
-      for (int i = 0; i < numberOfPorts; i++) {
-        dataInputStream.readInt();
-      }
-
-      getAndValidateClientProxyMembershipID();
-
-      if (getAndValidateClientConflation()) {
-        clientCredentials =
-            Handshake.readCredentials(dataInputStream, dataOutputStream,
-                cache.getDistributedSystem(), cache.getSecurityService());
-
-        return true;
+      return false;
+    } finally {
+      if (ioFilter != null) {
+        ioFilter.closeInputStream(inputStream);
       }
     }
-
-    return false;
   }
 
   ClientProxyMembershipID getClientProxyMembershipID() {
@@ -153,7 +171,7 @@ class ClientRegistrationMetadata {
 
     socketMessageWriter.writeException(dataOutputStream,
         CommunicationMode.UnsuccessfulServerToClient.getModeNumber(),
-        unsupportedVersionException, null);
+        unsupportedVersionException, null, ioFilter, socket);
 
     return false;
   }
@@ -183,11 +201,20 @@ class ClientRegistrationMetadata {
         break;
       default:
         socketMessageWriter.writeException(dataOutputStream, Handshake.REPLY_INVALID,
-            new IllegalArgumentException("Invalid conflation byte"), clientVersion);
+            new IllegalArgumentException("Invalid conflation byte"), clientVersion, ioFilter,
+            socket);
 
         return false;
     }
 
     return true;
+  }
+
+  public NioFilter getIOFilter() {
+    return this.ioFilter;
+  }
+
+  public Socket getSocket() {
+    return socket;
   }
 }

@@ -17,6 +17,8 @@ package org.apache.geode.internal.net;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
@@ -33,6 +35,8 @@ public class NioPlainEngine implements NioFilter {
   // not really modifiable
   @MakeImmutable
   private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
+
+  private static final int SMALL_BUFFER_SIZE = 4096;
 
   private final BufferPool bufferPool;
 
@@ -132,8 +136,30 @@ public class NioPlainEngine implements NioFilter {
     return shareBuffer(EMPTY_BUFFER);
   }
 
+  @Override
+  public ByteBufferSharing getUnwrappedBuffer(ByteBuffer unwrappedBuffer) throws IOException {
+    return shareBuffer(unwrappedBuffer);
+  }
+
+
   private ByteBufferSharingNoOp shareBuffer(final ByteBuffer wrappedBuffer) {
     return new ByteBufferSharingNoOp(wrappedBuffer);
   }
+
+  @Override
+  public int getPacketBufferSize() {
+    return SMALL_BUFFER_SIZE;
+  }
+
+  @Override
+  public InputStream getInputStream(Socket socket) throws IOException {
+    return socket.getInputStream();
+  }
+
+  public void initReadBuffer() throws IOException {
+    lastReadPosition = 0;
+    lastProcessedPosition = 0;
+  }
+
 
 }

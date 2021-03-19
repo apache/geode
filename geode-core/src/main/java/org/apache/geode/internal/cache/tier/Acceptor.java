@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.Set;
 
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -25,6 +26,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.cache.tier.sockets.CommBufferPool;
 import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.SocketCloser;
 
 /**
@@ -100,6 +102,9 @@ public interface Acceptor extends CommBufferPool {
   ConnectionListener getConnectionListener();
 
   void refuseHandshake(OutputStream out, String message, byte exception) throws IOException;
+
+  void refuseHandshake(OutputStream out, String message, byte exception, NioFilter ioFilter,
+      Socket socket) throws IOException;
 
   void registerServerConnection(ServerConnection serverConnection);
 
