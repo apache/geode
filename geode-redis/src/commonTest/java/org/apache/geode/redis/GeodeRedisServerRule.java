@@ -33,7 +33,6 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
   private CacheFactory cacheFactory;
   private Boolean enableUnsupportedCommands = true;
 
-
   public GeodeRedisServerRule() {
     cacheFactory = new CacheFactory();
     cacheFactory.set(LOG_LEVEL, "warn");
@@ -41,19 +40,15 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
     cacheFactory.set(LOCATORS, "");
   }
 
-  public GeodeRedisServerRule(boolean enableUnsupportedCommands) {
-    cacheFactory = new CacheFactory();
-    cacheFactory.set(LOG_LEVEL, "warn");
-    cacheFactory.set(MCAST_PORT, "0");
-    cacheFactory.set(LOCATORS, "");
-    this.enableUnsupportedCommands = enableUnsupportedCommands;
+  public void setEnableUnsupportedCommands(boolean allow) {
+    this.server.setAllowUnsupportedCommands(allow);
   }
 
   @Override
   protected void before() {
     cache = cacheFactory.create();
     server = new GeodeRedisServer("localhost", 0, (InternalCache) cache);
-    server.setAllowUnsupportedCommandsSystemProperty(enableUnsupportedCommands);
+    server.setAllowUnsupportedCommands(enableUnsupportedCommands);
   }
 
   public GeodeRedisServerRule withProperty(String property, String value) {

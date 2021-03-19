@@ -128,6 +128,6 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
   }
 
   public void setEnableUnsupported(boolean unsupported) {
-    redisServer.setAllowUnsupportedCommandsSystemProperty(unsupported);
+    redisServer.setAllowUnsupportedCommands(unsupported);
   }
 }
