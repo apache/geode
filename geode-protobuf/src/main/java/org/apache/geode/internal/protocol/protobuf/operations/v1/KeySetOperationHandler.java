@@ -12,32 +12,36 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.operations;
+package org.apache.geode.internal.protocol.protobuf.operations.v1;
 
+import java.util.Set;
+
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.Result;
+import org.apache.geode.internal.protocol.protobuf.Success;
 import org.apache.geode.internal.protocol.protobuf.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.serialization.exception.EncodingException;
-import org.apache.geode.internal.protocol.protobuf.state.exception.ConnectionStateException;
+import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 
-/**
- * This interface is implemented by a object capable of handling request types 'Req' and returning a
- * response of type 'Resp'.
- *
- * The Serializer deserializes and serializes values in 'Req' and 'Resp'.
- *
- */
-public interface ProtobufOperationHandler<Req, Resp> {
-  /**
-   * Decode the message, deserialize contained values using the serialization service, do the work
-   * indicated on the provided cache, and return a response.
-   *
-   * @throws ConnectionStateException if the connection is in an invalid state for the operation in
-   *         question.
-   */
-  Result<Resp> process(ProtobufSerializationService serializationService, Req request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException,
-      ConnectionStateException, EncodingException, DecodingException;
+@Experimental
+public class KeySetOperationHandler
+    implements ProtobufOperationHandler<RegionAPI.KeySetRequest, RegionAPI.KeySetResponse> {
+
+  @Override
+  public Result<RegionAPI.KeySetResponse> process(ProtobufSerializationService serializationService,
+      RegionAPI.KeySetRequest request, MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, EncodingException, DecodingException {
+    String regionName = request.getRegionName();
+
+    Set<Object> keySet = messageExecutionContext.getSecureCache().keySet(regionName);
+
+    RegionAPI.KeySetResponse.Builder builder = RegionAPI.KeySetResponse.newBuilder();
+    keySet.stream().map(serializationService::encode).forEach(builder::addKeys);
+
+    return Success.of(builder.build());
+  }
 }

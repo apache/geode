@@ -18,10 +18,10 @@ import static org.mockito.Mockito.mock;
 
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.protocol.protobuf.LocatorMessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.ServerMessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
-import org.apache.geode.internal.protocol.protobuf.v1.LocatorMessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ServerMessageExecutionContext;
 import org.apache.geode.internal.security.SecurityService;
 
 public class TestExecutionContext {

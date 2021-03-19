@@ -12,32 +12,41 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.operations;
+package org.apache.geode.internal.protocol.protobuf.operations.v1;
+
 
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.Result;
+import org.apache.geode.internal.protocol.protobuf.Success;
 import org.apache.geode.internal.protocol.protobuf.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.state.exception.ConnectionStateException;
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 
-/**
- * This interface is implemented by a object capable of handling request types 'Req' and returning a
- * response of type 'Resp'.
- *
- * The Serializer deserializes and serializes values in 'Req' and 'Resp'.
- *
- */
-public interface ProtobufOperationHandler<Req, Resp> {
-  /**
-   * Decode the message, deserialize contained values using the serialization service, do the work
-   * indicated on the provided cache, and return a response.
-   *
-   * @throws ConnectionStateException if the connection is in an invalid state for the operation in
-   *         question.
-   */
-  Result<Resp> process(ProtobufSerializationService serializationService, Req request,
+public class PutIfAbsentRequestOperationHandler implements
+    ProtobufOperationHandler<RegionAPI.PutIfAbsentRequest, RegionAPI.PutIfAbsentResponse> {
+
+  @Override
+  public Result<RegionAPI.PutIfAbsentResponse> process(
+      ProtobufSerializationService serializationService, RegionAPI.PutIfAbsentRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException,
-      ConnectionStateException, EncodingException, DecodingException;
+      ConnectionStateException, EncodingException, DecodingException {
+
+    final String regionName = request.getRegionName();
+
+    final BasicTypes.Entry entry = request.getEntry();
+
+    Object decodedValue = serializationService.decode(entry.getValue());
+    Object decodedKey = serializationService.decode(entry.getKey());
+
+    final Object oldValue =
+        messageExecutionContext.getSecureCache().putIfAbsent(regionName, decodedKey, decodedValue);
+
+    return Success.of(RegionAPI.PutIfAbsentResponse.newBuilder()
+        .setOldValue(serializationService.encode(oldValue)).build());
+  }
 }

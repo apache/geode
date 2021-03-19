@@ -12,35 +12,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf;
+package org.apache.geode.internal.protocol.protobuf.operations.v1;
 
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import org.junit.Test;
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
-import org.apache.geode.internal.protocol.TestExecutionContext;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class ProtobufStreamProcessorTest {
-  @Test(expected = IOException.class)
-  public void receiveMessage() throws Exception {
-    InputStream inputStream = new ByteArrayInputStream(new byte[0]);
-    OutputStream outputStream = new ByteArrayOutputStream(2);
+public class OperationHandlerJUnitTest<Req, Res> {
+  protected InternalCache cacheStub;
+  protected ProtobufSerializationService serializationService;
+  protected ProtobufOperationHandler<Req, Res> operationHandler;
 
-    ProtobufStreamProcessor protobufStreamProcessor = new ProtobufStreamProcessor();
-    InternalCacheForClientAccess mockInternalCache = mock(InternalCacheForClientAccess.class);
-    when(mockInternalCache.getCacheForProcessingClientRequests()).thenReturn(mockInternalCache);
-    protobufStreamProcessor.receiveMessage(inputStream, outputStream,
-        TestExecutionContext.getNoAuthCacheExecutionContext(mockInternalCache));
+  // if we name this setUp, then our children override, which is all kinds of annoying.
+  @Before
+  public void setUpForChildJUnitTests() throws Exception {
+    cacheStub = mock(InternalCacheForClientAccess.class);
+    doReturn(cacheStub).when(cacheStub).getCacheForProcessingClientRequests();
+    serializationService = new ProtobufSerializationService();
   }
 }
