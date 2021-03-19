@@ -63,7 +63,7 @@ public class RedisKey extends ByteArrayWrapper
 
   @Override
   public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
+      throws IOException {
     routingId = DataSerializer.readInteger(in);
     super.fromData(in, context);
   }

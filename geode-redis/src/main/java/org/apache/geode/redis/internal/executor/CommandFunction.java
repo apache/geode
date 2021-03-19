@@ -40,6 +40,7 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
 public class CommandFunction extends SingleResultRedisFunction {
 
   public static final String ID = "REDIS_COMMAND_FUNCTION";
+  private static final long serialVersionUID = -1302506316316454732L;
 
   private final transient RedisKeyCommandsFunctionExecutor keyCommands;
   private final transient RedisHashCommandsFunctionExecutor hashCommands;
