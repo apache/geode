@@ -35,7 +35,6 @@ import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisString extends AbstractRedisData {
-  public static final NullRedisString NULL_REDIS_STRING = new NullRedisString();
 
   private int appendSequence;
 

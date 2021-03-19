@@ -15,7 +15,7 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.data.RedisString.NULL_REDIS_STRING;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_STRING;
 
 import java.math.BigDecimal;
 import java.util.List;

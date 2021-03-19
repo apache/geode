@@ -22,7 +22,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 public interface RedisData extends Delta, DataSerializableFixedID {
-  NullRedisData NULL_REDIS_DATA = new NullRedisData();
+
 
   /**
    * Returns true if this instance does not exist.

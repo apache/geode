@@ -112,7 +112,7 @@ public class RedisHashTest {
   @Test
   public void equals_returnsTrue_givenDifferentEmptyHashes() {
     RedisHash o1 = new RedisHash(Collections.emptyList());
-    RedisHash o2 = RedisHash.NULL_REDIS_HASH;
+    RedisHash o2 = NullRedisDataStructures.NULL_REDIS_HASH;
     assertThat(o1).isEqualTo(o2);
     assertThat(o2).isEqualTo(o1);
   }
