@@ -79,7 +79,6 @@ mx4j-tools
 netty-all
 nimbus-jose-jwt
 oauth2-oidc-sdk
-protobuf-java
 ra.jar
 rmiio
 shiro-cache

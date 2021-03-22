@@ -62,7 +62,7 @@ public class TcpServerJUnitTest {
     DSFIDSerializer serializer = new DSFIDSerializerFactory().create();
     server = new TcpServer(port, localhost, handler,
         "server thread",
-        (x, y, z) -> false, // protobuf hook - not needed here
+        (x, y, z) -> false,
         () -> 0, // stats time
         () -> LoggingExecutors.newCachedThreadPool("test thread", true),
         null,

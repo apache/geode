@@ -348,8 +348,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
   private final SecurityService securityService;
 
-  private final ServerConnectionFactory serverConnectionFactory;
-
   private final SocketCloser socketCloser = new SocketCloser();
 
   /**
@@ -379,14 +377,14 @@ public class AcceptorImpl implements Acceptor, Runnable {
       final InternalCache internalCache, final int maxConnections, final int maxThreads,
       final int maximumMessageCount, final int messageTimeToLive,
       final ConnectionListener connectionListener, final OverflowAttributes overflowAttributes,
-      final boolean tcpNoDelay, final ServerConnectionFactory serverConnectionFactory,
+      final boolean tcpNoDelay,
       final long timeLimitMillis, final SecurityService securityService,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) throws IOException {
     this(port, bindHostName, notifyBySubscription, socketBufferSize, maximumTimeBetweenPings,
         internalCache, maxConnections, maxThreads, maximumMessageCount, messageTimeToLive,
-        connectionListener, overflowAttributes, tcpNoDelay, serverConnectionFactory,
+        connectionListener, overflowAttributes, tcpNoDelay,
         timeLimitMillis, securityService, socketCreatorSupplier, cacheClientNotifierProvider,
         clientHealthMonitorProvider, false, Collections.emptyList(),
         StatisticsClockFactory.disabledClock());
@@ -406,7 +404,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
    * @param connectionListener listener to detect if connect or disconnect events
    * @param overflowAttributes overflow attributes of Cache Client Notifier
    * @param tcpNoDelay TCP delay for the outgoing sockets
-   * @param serverConnectionFactory server connection factory for the client
    * @param timeLimitMillis time limit to wait attemping to bind to a server socket
    * @param socketCreatorSupplier socket creator for the server connection
    * @param cacheClientNotifierProvider collection of cache client notifiers
@@ -430,7 +427,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
       final int maximumMessageCount, final int messageTimeToLive,
       final ConnectionListener connectionListener,
       final OverflowAttributes overflowAttributes,
-      final boolean tcpNoDelay, final ServerConnectionFactory serverConnectionFactory,
+      final boolean tcpNoDelay,
       final long timeLimitMillis, final SecurityService securityService,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
@@ -448,7 +445,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
     this.connectionListener =
         connectionListener == null ? new ConnectionListenerAdapter() : connectionListener;
     this.notifyBySubscription = notifyBySubscription;
-    this.serverConnectionFactory = serverConnectionFactory;
 
     {
       int tmp_maxConnections = maxConnections;
@@ -1303,7 +1299,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
         }
         loggedAcceptError = false;
 
-        handOffNewClientConnection(socket, serverConnectionFactory);
+        handOffNewClientConnection(socket);
       } catch (InterruptedIOException e) { // Solaris only
         closeSocket(socket);
         if (isRunning()) {
@@ -1338,14 +1334,13 @@ public class AcceptorImpl implements Acceptor, Runnable {
    * threads in this pool are busy then the hand off will block until a thread is available. This
    * blocking is good because it will throttle the rate at which we create new connections.
    */
-  private void handOffNewClientConnection(final Socket socket,
-      final ServerConnectionFactory serverConnectionFactory) {
+  private void handOffNewClientConnection(final Socket socket) {
     try {
       stats.incAcceptsInProgress();
       hsPool.execute(() -> {
         boolean finished = false;
         try {
-          handleNewClientConnection(socket, serverConnectionFactory);
+          handleNewClientConnection(socket);
           finished = true;
         } catch (RegionDestroyedException rde) {
           // aborted due to disconnect - bug 42273
@@ -1423,8 +1418,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
     return notifyBySubscription;
   }
 
-  private void handleNewClientConnection(final Socket socket,
-      final ServerConnectionFactory serverConnectionFactory) throws IOException {
+  private void handleNewClientConnection(final Socket socket) throws IOException {
     // Read the first byte. If this socket is being used for 'client to server'
     // communication, create a ServerConnection. If this socket is being used
     // for 'server to client' communication, send it to the CacheClientNotifier
@@ -1461,25 +1455,22 @@ public class AcceptorImpl implements Acceptor, Runnable {
             "Rejected connection from {} because current connection count of {} is greater than or equal to the configured max of {}",
             new Object[] {socket.getInetAddress(), curCnt,
                 maxConnections});
-        if (communicationMode.expectsConnectionRefusalMessage()) {
-          try {
-            refuseHandshake(socket.getOutputStream(),
-                String.format("exceeded max-connections %s",
-                    maxConnections),
-                REPLY_REFUSED);
-          } catch (Exception ex) {
-            logger.debug("rejection message failed", ex);
-          }
+        try {
+          refuseHandshake(socket.getOutputStream(),
+              String.format("exceeded max-connections %s",
+                  maxConnections),
+              REPLY_REFUSED);
+        } catch (Exception ex) {
+          logger.debug("rejection message failed", ex);
         }
         closeSocket(socket);
         return;
       }
     }
 
-    ServerConnection serverConn =
-        serverConnectionFactory.makeServerConnection(socket, cache, crHelper, stats,
-            handshakeTimeout, socketBufferSize, communicationMode.toString(),
-            communicationMode.getModeNumber(), this, securityService);
+    ServerConnection serverConn = new ServerConnection(socket, cache, crHelper, stats,
+        handshakeTimeout, socketBufferSize, communicationMode.toString(),
+        communicationMode.getModeNumber(), this, securityService);
 
     synchronized (allSCsLock) {
       allSCs.add(serverConn);

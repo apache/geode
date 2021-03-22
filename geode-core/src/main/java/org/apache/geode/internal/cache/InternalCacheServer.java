@@ -23,7 +23,6 @@ import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
 import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
-import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -39,8 +38,6 @@ public interface InternalCacheServer extends CacheServer {
   InternalCache getCache();
 
   ConnectionListener getConnectionListener();
-
-  ServerConnectionFactory getServerConnectionFactory();
 
   long getTimeLimitMillis();
 
