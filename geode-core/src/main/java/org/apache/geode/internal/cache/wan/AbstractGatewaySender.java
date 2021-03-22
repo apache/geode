@@ -690,14 +690,13 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   protected void preStop() {
-    if (!mustGroupTransactionEvents()) {
-      return;
-    }
     isStopping = true;
-    try {
-      Thread.sleep(TIME_TO_COMPLETE_TRANSACTIONS_BEFORE_STOP_MS);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
+    if (mustGroupTransactionEvents()) {
+      try {
+        Thread.sleep(TIME_TO_COMPLETE_TRANSACTIONS_BEFORE_STOP_MS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
     }
   }
 
