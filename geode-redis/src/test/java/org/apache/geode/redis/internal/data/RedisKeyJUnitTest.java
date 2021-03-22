@@ -66,6 +66,9 @@ public class RedisKeyJUnitTest {
 
     key = new RedisKey("foo{{user1000}}bar".getBytes());
     assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("{user1000"));
+
+    key = new RedisKey(new byte[]{});
+    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate(""));
   }
 
   @Test
