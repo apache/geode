@@ -123,7 +123,7 @@ sed -e "s/^version =.*/version = ${VERSION}${BUILDSUFFIX}/" -i.bak gradle.proper
 
 #  product_version: '1.13.2'
 sed -E \
-    -e "s#product_version: '[0-9.]+'#product_version: '${VERSION}'#" \
+    -e "s#product_version: '[0-9.]+'#product_version: '${VERSION%.0}'#" \
     -i.bak geode-book/config.yml
 
 #git clone -b branch --depth 1 https://github.com/apache/geode.git geode

@@ -187,11 +187,13 @@ sed -e "s#/. NOTE: when adding a new version#private static final short GEODE_${
 #  product_version: '1.13.2'
 #  product_version_nodot: '113'
 #  product_version_geode: '1.13'
+#  product_version_old_minor: '1.12'
 sed -E \
     -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_MM_NODOT}#" \
-    -e "s#product_version: '[0-9.]+'#product_version: '${NEWVERSION}'#" \
+    -e "s#product_version: '[0-9.]+'#product_version: '${NEWVERSION%.0}'#" \
     -e "s#version_nodot: '[0-9]+'#version_nodot: '${NEWVERSION_MM_NODOT}'#" \
     -e "s#product_version_geode: '[0-9.]+'#product_version_geode: '${NEWVERSION_MM}'#" \
+    -e "s#product_version_old_minor: '[0-9.]+'#product_version_old_minor: '${VERSION_MM}'#" \
     -i.bak geode-book/config.yml
 
 #rewrite '/', '/docs/guide/113/about_geode.html'
@@ -236,7 +238,7 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Removing duplicate scripts from support/${VERSION_MM}"
+echo "Removing CODEOWNERS and duplicate scripts from support/${VERSION_MM}"
 echo "============================================================"
 set -x
 cd ${GEODE}/dev-tools/release
@@ -246,7 +248,10 @@ cat << EOF > README.md
 See [Releasing Apache Geode](https://cwiki.apache.org/confluence/display/GEODE/Releasing+Apache+Geode)
 EOF
 git add README.md
-git commit -m "remove outdated copies of release scripts to ensure they are not run by accident"
+cd ${GEODE}
+[ ! -r CODEOWNERS ] || git rm CODEOWNERS
+[ ! -r CODEWATCHERS ] || git rm CODEWATCHERS
+git commit -m "remove outdated copies of release scripts to ensure they are not run by accident + remove CODEOWNERS to avoid confusion"
 git push -u origin
 set +x
 
