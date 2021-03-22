@@ -29,8 +29,8 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.key.AbstractScanExecutor;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -66,7 +66,7 @@ public class HScanExecutor extends AbstractScanExecutor {
       cursor = 0;
     }
 
-    ByteArrayWrapper key = command.getKey();
+    RedisKey key = command.getKey();
     if (!getDataRegion(context).containsKey(key)) {
       context.getRedisStats().incKeyspaceMisses();
       return RedisResponse.emptyScan();

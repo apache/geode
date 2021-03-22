@@ -31,6 +31,7 @@ import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.CommandHelper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisHashCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.data.RedisKeyCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisSetCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisStringCommandsFunctionExecutor;
@@ -47,7 +48,7 @@ public class CommandFunction extends SingleResultRedisFunction {
   private final transient RedisSetCommandsFunctionExecutor setCommands;
   private final transient RedisStringCommandsFunctionExecutor stringCommands;
 
-  public static void register(Region<ByteArrayWrapper, RedisData> dataRegion,
+  public static void register(Region<RedisKey, RedisData> dataRegion,
       StripedExecutor stripedExecutor,
       RedisStats redisStats) {
     FunctionService.registerFunction(new CommandFunction(dataRegion, stripedExecutor, redisStats));
@@ -66,7 +67,7 @@ public class CommandFunction extends SingleResultRedisFunction {
     return result;
   }
 
-  public CommandFunction(Region<ByteArrayWrapper, RedisData> dataRegion,
+  public CommandFunction(Region<RedisKey, RedisData> dataRegion,
       StripedExecutor stripedExecutor,
       RedisStats redisStats) {
     super(dataRegion);
@@ -84,7 +85,7 @@ public class CommandFunction extends SingleResultRedisFunction {
 
   @Override
   @SuppressWarnings("unchecked")
-  protected Object compute(ByteArrayWrapper key, Object[] args) {
+  protected Object compute(RedisKey key, Object[] args) {
     RedisCommandType command = (RedisCommandType) args[0];
     switch (command) {
       case DEL:
@@ -160,7 +161,7 @@ public class CommandFunction extends SingleResultRedisFunction {
       }
       case BITOP: {
         String operation = (String) args[1];
-        List<ByteArrayWrapper> sources = (List<ByteArrayWrapper>) args[2];
+        List<RedisKey> sources = (List<RedisKey>) args[2];
         return stringCommands.bitop(operation, key, sources);
       }
       case INCR:
@@ -212,15 +213,15 @@ public class CommandFunction extends SingleResultRedisFunction {
         return setCommands.sscan(key, matchPattern, count, cursor);
       }
       case SUNIONSTORE: {
-        ArrayList<ByteArrayWrapper> setKeys = (ArrayList<ByteArrayWrapper>) args[1];
+        ArrayList<RedisKey> setKeys = (ArrayList<RedisKey>) args[1];
         return setCommands.sunionstore(key, setKeys);
       }
       case SINTERSTORE: {
-        ArrayList<ByteArrayWrapper> setKeys = (ArrayList<ByteArrayWrapper>) args[1];
+        ArrayList<RedisKey> setKeys = (ArrayList<RedisKey>) args[1];
         return setCommands.sinterstore(key, setKeys);
       }
       case SDIFFSTORE: {
-        ArrayList<ByteArrayWrapper> setKeys = (ArrayList<ByteArrayWrapper>) args[1];
+        ArrayList<RedisKey> setKeys = (ArrayList<RedisKey>) args[1];
         return setCommands.sdiffstore(key, setKeys);
       }
       case HSET: {

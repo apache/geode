@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -40,7 +41,7 @@ public class KeysExecutor extends AbstractExecutor {
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     String glob = Coder.bytesToString(commandElems.get(1));
-    Set<ByteArrayWrapper> allKeys = getDataRegion(context).keySet();
+    Set<RedisKey> allKeys = getDataRegion(context).keySet();
     List<ByteArrayWrapper> matchingKeys = new ArrayList<>();
 
     Pattern pattern;

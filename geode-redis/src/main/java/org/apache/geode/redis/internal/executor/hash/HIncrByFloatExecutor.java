@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.string.IncrByFloatExecutor;
 import org.apache.geode.redis.internal.netty.Command;
@@ -63,7 +64,7 @@ public class HIncrByFloatExecutor extends HashExecutor {
       return validated.getRight();
     }
 
-    ByteArrayWrapper key = command.getKey();
+    RedisKey key = command.getKey();
     RedisHashCommands redisHashCommands = createRedisHashCommands(context);
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
