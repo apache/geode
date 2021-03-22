@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.data.RedisSet.NULL_REDIS_SET;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
