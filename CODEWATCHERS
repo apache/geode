@@ -32,3 +32,5 @@ CODEWATCHERS                                                      @onichols-pivo
 #-----------------------------------------------------------------
 geode-book/**                                                     @karensmolermiller @davebarnes97
 geode-docs/**                                                     @karensmolermiller @davebarnes97
+geode-book/config.yml                                             @onichols-pivotal
+geode-book/redirects.rb                                           @onichols-pivotal
