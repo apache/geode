@@ -30,6 +30,7 @@ import java.util.List;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
 
 /**
@@ -39,52 +40,52 @@ import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
 public class RedisKeyCommandsFunctionInvoker extends RedisCommandsFunctionInvoker
     implements RedisKeyCommands {
   public RedisKeyCommandsFunctionInvoker(
-      Region<ByteArrayWrapper, RedisData> region) {
+      Region<RedisKey, RedisData> region) {
     super(region);
   }
 
   @Override
-  public boolean del(ByteArrayWrapper key) {
+  public boolean del(RedisKey key) {
     return invokeCommandFunction(key, DEL);
   }
 
   @Override
-  public boolean exists(ByteArrayWrapper key) {
+  public boolean exists(RedisKey key) {
     return invokeCommandFunction(key, EXISTS);
   }
 
   @Override
-  public long pttl(ByteArrayWrapper key) {
+  public long pttl(RedisKey key) {
     return invokeCommandFunction(key, PTTL);
   }
 
   @Override
-  public long internalPttl(ByteArrayWrapper key) {
+  public long internalPttl(RedisKey key) {
     return invokeCommandFunction(key, INTERNALPTTL);
   }
 
   @Override
-  public int pexpireat(ByteArrayWrapper key, long timestamp) {
+  public int pexpireat(RedisKey key, long timestamp) {
     return invokeCommandFunction(key, PEXPIREAT, timestamp);
   }
 
   @Override
-  public int persist(ByteArrayWrapper key) {
+  public int persist(RedisKey key) {
     return invokeCommandFunction(key, PERSIST);
   }
 
   @Override
-  public String type(ByteArrayWrapper key) {
+  public String type(RedisKey key) {
     return invokeCommandFunction(key, TYPE);
   }
 
   @Override
-  public String internalType(ByteArrayWrapper key) {
+  public String internalType(RedisKey key) {
     return invokeCommandFunction(key, INTERNALTYPE);
   }
 
   @Override
-  public boolean rename(ByteArrayWrapper oldKey, ByteArrayWrapper newKey) {
+  public boolean rename(RedisKey oldKey, RedisKey newKey) {
     if (!region.containsKey(oldKey)) {
       return false;
     }

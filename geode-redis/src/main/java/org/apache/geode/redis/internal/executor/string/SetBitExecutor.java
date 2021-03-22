@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
@@ -36,7 +36,7 @@ public class SetBitExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisStringCommands stringCommands = getRedisStringCommands(context);
-    ByteArrayWrapper key = command.getKey();
+    RedisKey key = command.getKey();
 
     long offset;
     int value;

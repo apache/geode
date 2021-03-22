@@ -24,32 +24,33 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 
 public interface RedisHashCommands {
-  int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX);
+  int hset(RedisKey key, List<ByteArrayWrapper> fieldsToSet, boolean NX);
 
-  int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToRemove);
+  int hdel(RedisKey key, List<ByteArrayWrapper> fieldsToRemove);
 
-  Collection<ByteArrayWrapper> hgetall(ByteArrayWrapper key);
+  Collection<ByteArrayWrapper> hgetall(RedisKey key);
 
-  int hexists(ByteArrayWrapper key, ByteArrayWrapper field);
+  int hexists(RedisKey key, ByteArrayWrapper field);
 
-  ByteArrayWrapper hget(ByteArrayWrapper key, ByteArrayWrapper field);
+  ByteArrayWrapper hget(RedisKey key, ByteArrayWrapper field);
 
-  int hlen(ByteArrayWrapper key);
+  int hlen(RedisKey key);
 
-  int hstrlen(ByteArrayWrapper key, ByteArrayWrapper field);
+  int hstrlen(RedisKey key, ByteArrayWrapper field);
 
-  List<ByteArrayWrapper> hmget(ByteArrayWrapper key, List<ByteArrayWrapper> fields);
+  List<ByteArrayWrapper> hmget(RedisKey key, List<ByteArrayWrapper> fields);
 
-  Collection<ByteArrayWrapper> hvals(ByteArrayWrapper key);
+  Collection<ByteArrayWrapper> hvals(RedisKey key);
 
-  Collection<ByteArrayWrapper> hkeys(ByteArrayWrapper key);
+  Collection<ByteArrayWrapper> hkeys(RedisKey key);
 
-  Pair<Integer, List<Object>> hscan(ByteArrayWrapper key, Pattern matchPattern, int count,
+  Pair<Integer, List<Object>> hscan(RedisKey key, Pattern matchPattern, int count,
       int cursor, UUID clientID);
 
-  long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment);
+  long hincrby(RedisKey key, ByteArrayWrapper field, long increment);
 
-  BigDecimal hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field, BigDecimal increment);
+  BigDecimal hincrbyfloat(RedisKey key, ByteArrayWrapper field, BigDecimal increment);
 }

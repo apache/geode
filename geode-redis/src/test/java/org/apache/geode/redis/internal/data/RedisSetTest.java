@@ -112,7 +112,7 @@ public class RedisSetTest {
   @SuppressWarnings("unchecked")
   @Test
   public void sadd_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(Region.class);
     RedisSet o1 = createRedisSet(1, 2);
     ByteArrayWrapper member3 = new ByteArrayWrapper(new byte[] {3});
     ArrayList<ByteArrayWrapper> adds = new ArrayList<>();
@@ -132,7 +132,7 @@ public class RedisSetTest {
   @SuppressWarnings("unchecked")
   @Test
   public void srem_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(Region.class);
     RedisSet o1 = createRedisSet(1, 2);
     ByteArrayWrapper member1 = new ByteArrayWrapper(new byte[] {1});
     ArrayList<ByteArrayWrapper> removes = new ArrayList<>();
@@ -152,7 +152,7 @@ public class RedisSetTest {
   @SuppressWarnings("unchecked")
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(Region.class);
     RedisSet o1 = createRedisSet(1, 2);
     o1.setExpirationTimestamp(region, null, 999);
     assertThat(o1.hasDelta()).isTrue();

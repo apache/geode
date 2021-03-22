@@ -16,9 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -29,8 +26,6 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.redis.internal.executor.cluster.CRC16;
-import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
 import org.apache.geode.redis.internal.netty.Coder;
 
 /**
@@ -44,8 +39,6 @@ public class ByteArrayWrapper
    * The data portion of ValueWrapper
    */
   protected byte[] value;
-
-  private transient Object routingId;
 
   /**
    * Empty constructor for serialization
@@ -115,39 +108,6 @@ public class ByteArrayWrapper
   }
 
   /**
-   * Used by the {@link RedisPartitionResolver} to map slots to buckets. Supports using hashtags
-   * in the same way that redis does.
-   *
-   * @see <a href="https://redis.io/topics/cluster-spec">Redis Cluster Spec</a>
-   */
-  public synchronized Object getRoutingId() {
-    if (routingId == null && value != null) {
-      int startHashtag = Integer.MAX_VALUE;
-      int endHashtag = 0;
-
-      for (int i = 0; i < value.length; i++) {
-        if (value[i] == '{' && startHashtag == Integer.MAX_VALUE) {
-          startHashtag = i;
-        } else if (value[i] == '}') {
-          endHashtag = i;
-          break;
-        }
-      }
-
-      if (endHashtag - startHashtag <= 1) {
-        startHashtag = -1;
-        endHashtag = value.length;
-      }
-
-      // & (REDIS_SLOTS - 1) is equivalent to % REDIS_SLOTS but supposedly faster
-      routingId = (CRC16.calculate(value, startHashtag + 1, endHashtag) & (REDIS_SLOTS - 1))
-          / REDIS_SLOTS_PER_BUCKET;
-    }
-
-    return routingId;
-  }
-
-  /**
    * Private helper method to compare two byte arrays, A.compareTo(B). The comparison is basically
    * numerical, for each byte index, the byte representing the greater value will be the greater
    *
@@ -213,7 +173,7 @@ public class ByteArrayWrapper
 
   @Override
   public void fromData(DataInput in, DeserializationContext context)
-      throws IOException {
+      throws IOException, ClassNotFoundException {
     value = DataSerializer.readByteArray(in);
   }
 

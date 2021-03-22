@@ -41,6 +41,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -246,7 +247,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisPortSupplier
   private List<String> getKeysOnDifferentStripes() {
     String key1 = "keyz" + new Random().nextInt();
 
-    ByteArrayWrapper key1ByteArrayWrapper = new ByteArrayWrapper(key1.getBytes());
+    RedisKey key1ByteArrayWrapper = new RedisKey(key1.getBytes());
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     int iterator = 0;
     String key2;
@@ -262,7 +263,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisPortSupplier
   private Set<String> getKeysOnSameRandomStripe(int numKeysNeeded) {
     Random random = new Random();
     String key1 = "keyz" + random.nextInt();
-    ByteArrayWrapper key1ByteArrayWrapper = new ByteArrayWrapper(key1.getBytes());
+    RedisKey key1ByteArrayWrapper = new RedisKey(key1.getBytes());
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     Set<String> keys = new HashSet<>();
     keys.add(key1);
@@ -326,10 +327,10 @@ public abstract class AbstractRenameIntegrationTest implements RedisPortSupplier
     List<String> keys = new ArrayList<>();
 
     String key1;
-    ByteArrayWrapper key1ByteArrayWrapper;
+    RedisKey key1ByteArrayWrapper;
     do {
       key1 = "keyz" + new Random().nextInt();
-      key1ByteArrayWrapper = new ByteArrayWrapper(key1.getBytes());
+      key1ByteArrayWrapper = new RedisKey(key1.getBytes());
     } while (stripedExecutor.compareStripes(key1ByteArrayWrapper, toAvoid) == 0 && keys.add(key1));
 
     do {

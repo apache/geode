@@ -18,8 +18,8 @@ import java.util.Collection;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.GeodeRedisServer;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionInvoker;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -41,7 +41,7 @@ public abstract class AbstractExecutor implements Executor {
     return new RedisKeyCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
   }
 
-  protected Region<ByteArrayWrapper, RedisData> getDataRegion(ExecutionHandlerContext context) {
+  protected Region<RedisKey, RedisData> getDataRegion(ExecutionHandlerContext context) {
     return context.getRegionProvider().getDataRegion();
   }
 }
