@@ -67,7 +67,8 @@ import org.apache.geode.internal.size.Sizeable;
  *
  */
 public class GatewaySenderEventImpl
-    implements AsyncEvent, DataSerializableFixedID, Conflatable, Sizeable, Releasable {
+    implements InternalGatewayQueueEvent, AsyncEvent, DataSerializableFixedID, Conflatable,
+    Sizeable, Releasable {
   private static final long serialVersionUID = -5690172020872255422L;
   protected static final Object TOKEN_NULL = new Object();
 
@@ -1259,10 +1260,12 @@ public class GatewaySenderEventImpl
     return this.shadowKey;
   }
 
+  @Override
   public boolean isLastEventInTransaction() {
     return isLastEventInTransaction;
   }
 
+  @Override
   public TransactionId getTransactionId() {
     return transactionId;
   }

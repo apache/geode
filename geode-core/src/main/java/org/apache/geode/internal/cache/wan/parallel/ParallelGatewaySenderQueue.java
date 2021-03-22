@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan.parallel;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
 import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
+import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
 
 import java.util.ArrayList;
@@ -88,6 +89,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
@@ -701,44 +703,16 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     boolean isDREvent = isDREvent(sender.getCache(), value);
 
-    String regionPath = value.getRegionPath();
-    if (!isDREvent) {
-      Region region = sender.getCache().getRegion(regionPath, true);
-      regionPath = ColocationHelper.getLeaderRegion((PartitionedRegion) region).getFullPath();
-    }
-    if (isDebugEnabled) {
-      logger.debug("Put is for the region {}", regionPath);
-    }
-    if (!this.userRegionNameToShadowPRMap.containsKey(regionPath)) {
-      if (isDebugEnabled) {
-        logger.debug("The userRegionNameToshadowPRMap is {}", userRegionNameToShadowPRMap);
-      }
-      logger.warn(
-          "GatewaySender: Not queuing the event {}, as the region for which this event originated is not yet configured in the GatewaySender",
-          value);
-      // does not put into queue
+    String regionPath = getRegionPathForEventAndType(value, isDREvent);
+    if (regionPath == null) {
       return false;
     }
 
     PartitionedRegion prQ = this.userRegionNameToShadowPRMap.get(regionPath);
     int bucketId = value.getBucketId();
-    Object key = null;
-    if (!isDREvent) {
-      key = value.getShadowKey();
-
-      if ((Long) key == -1) {
-        // In case of parallel we don't expect
-        // the key to be not set. If it is the case then the event must be coming
-        // through listener, so return.
-        if (isDebugEnabled) {
-          logger.debug("ParallelGatewaySenderOrderedQueue not putting key {} : Value : {}", key,
-              value);
-        }
-        // does not put into queue
-        return false;
-      }
-    } else {
-      key = value.getEventId();
+    Object key = getKeyForEventAndType(value, isDREvent);
+    if (key == null) {
+      return false;
     }
 
     if (isDebugEnabled) {
@@ -868,6 +842,49 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
 
     return putDone;
+  }
+
+  private String getRegionPathForEventAndType(GatewaySenderEventImpl event, boolean isDREvent) {
+    boolean isDebugEnabled = logger.isDebugEnabled();
+    String regionPath = event.getRegionPath();
+    if (!isDREvent) {
+      PartitionedRegion region = (PartitionedRegion) sender.getCache().getRegion(regionPath, true);
+      regionPath = ColocationHelper.getLeaderRegion(region).getFullPath();
+    }
+    if (isDebugEnabled) {
+      logger.debug("Put is for region {}", regionPath);
+    }
+    if (!this.userRegionNameToShadowPRMap.containsKey(regionPath)) {
+      if (isDebugEnabled) {
+        logger.debug("The userRegionNameToShadowPRMap is {}", userRegionNameToShadowPRMap);
+      }
+      logger.warn(
+          "GatewaySender: Not queuing the event {}, as the region for which this event originated is not yet configured in the GatewaySender",
+          event);
+      return null;
+    }
+    return regionPath;
+  }
+
+  private Object getKeyForEventAndType(GatewaySenderEventImpl event, boolean isDREvent) {
+    Object key;
+    if (!isDREvent) {
+      key = event.getShadowKey();
+
+      if ((Long) key == -1) {
+        // In the case of parallel we expect the key to be set.
+        // If the key is not set, then the event must be coming
+        // through listener, so return.
+        if (logger.isDebugEnabled()) {
+          logger.debug("ParallelGatewaySenderOrderedQueue not putting key {} : Value : {}", key,
+              event);
+        }
+        return null;
+      }
+    } else {
+      key = event.getEventId();
+    }
+    return key;
   }
 
   public void notifyEventProcessorIfRequired() {
@@ -1369,36 +1386,40 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       return;
     }
 
-    boolean batchHasIncompleteTransactions = false;
-    for (Map.Entry<TransactionId, Integer> pendingTransaction : incompleteTransactionIdsInBatch
-        .entrySet()) {
-      TransactionId transactionId = pendingTransaction.getKey();
-      int bucketId = pendingTransaction.getValue();
-      boolean areAllEventsForTransactionInBatch = false;
-      int retries = 0;
-      while (!areAllEventsForTransactionInBatch
-          && retries++ < GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
+    int retries = 0;
+    while (true) {
+      for (Map.Entry<TransactionId, Integer> pendingTransaction : incompleteTransactionIdsInBatch
+          .entrySet()) {
+        TransactionId transactionId = pendingTransaction.getKey();
+        int bucketId = pendingTransaction.getValue();
         List<Object> events = peekEventsWithTransactionId(prQ, bucketId, transactionId);
         for (Object object : events) {
           GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
           batch.add(event);
           peekedEvents.add(event);
-          areAllEventsForTransactionInBatch = event.isLastEventInTransaction();
-
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "Peeking extra event: {}, bucketId: {}, isLastEventInTransaction: {}, batch size: {}",
                 event.getKey(), bucketId, event.isLastEventInTransaction(), batch.size());
           }
+          if (event.isLastEventInTransaction()) {
+            incompleteTransactionIdsInBatch.remove(transactionId);
+          }
         }
       }
-      if (!areAllEventsForTransactionInBatch) {
-        batchHasIncompleteTransactions = true;
-        logger.warn("Not able to retrieve all events for transaction {} after {} tries",
-            transactionId, retries);
+      if (incompleteTransactionIdsInBatch.size() == 0 ||
+          retries++ == GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
+        break;
+      }
+      try {
+        Thread.sleep(GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
       }
     }
-    if (batchHasIncompleteTransactions) {
+    if (incompleteTransactionIdsInBatch.size() > 0) {
+      logger.warn("Not able to retrieve all events for transactions: {} after {} retries of {}ms",
+          incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
     }
   }
@@ -1570,9 +1591,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
 
     try {
-      Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
+      Predicate<InternalGatewayQueueEvent> hasTransactionIdPredicate =
           getHasTransactionIdPredicate(transactionId);
-      Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
+      Predicate<InternalGatewayQueueEvent> isLastEventInTransactionPredicate =
           getIsLastEventInTransactionPredicate();
       objects =
           brq.getElementsMatching(hasTransactionIdPredicate, isLastEventInTransactionPredicate);
@@ -1586,12 +1607,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   @VisibleForTesting
-  public static Predicate<GatewaySenderEventImpl> getIsLastEventInTransactionPredicate() {
+  public static Predicate<InternalGatewayQueueEvent> getIsLastEventInTransactionPredicate() {
     return x -> x.isLastEventInTransaction();
   }
 
   @VisibleForTesting
-  public static Predicate<GatewaySenderEventImpl> getHasTransactionIdPredicate(
+  public static Predicate<InternalGatewayQueueEvent> getHasTransactionIdPredicate(
       TransactionId transactionId) {
     return x -> transactionId.equals(x.getTransactionId());
   }
@@ -1795,6 +1816,21 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     int queueStringStart = regionName.indexOf(QSTRING);
     // The queue id is everything after the leading / and before the QSTRING
     return regionName.substring(1, queueStringStart);
+  }
+
+  public boolean hasEventsMatching(GatewaySenderEventImpl event,
+      Predicate<InternalGatewayQueueEvent> condition) {
+    boolean isDREvent = isDREvent(sender.getCache(), event);
+
+    String regionPath = getRegionPathForEventAndType(event, isDREvent);
+    if (regionPath == null) {
+      return true;
+    }
+    PartitionedRegion prQ = this.userRegionNameToShadowPRMap.get(regionPath);
+    int bucketId = event.getBucketId();
+    BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
+
+    return brq.hasEventsMatching(condition);
   }
 
   // TODO:REF: Name for this class should be appropriate?
