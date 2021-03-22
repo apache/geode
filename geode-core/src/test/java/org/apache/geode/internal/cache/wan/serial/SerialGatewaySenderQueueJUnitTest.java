@@ -24,7 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,8 +137,8 @@ public class SerialGatewaySenderQueueJUnitTest {
         .doAnswer(invocation -> null)
         .when(queue).peekAhead();
 
-    doAnswer(invocation -> new SerialGatewaySenderQueue.EventsAndLastKey(
-        Arrays.asList(new Object[] {event4}), 2L))
+    doAnswer(invocation -> Collections
+        .singletonList(new SerialGatewaySenderQueue.KeyAndEventPair(1L, event4)))
             .when(queue).getElementsMatching(any(), any(), anyLong());
 
     List peeked = queue.peek(-1, 1);
@@ -181,8 +181,8 @@ public class SerialGatewaySenderQueueJUnitTest {
         .doAnswer(invocation -> null)
         .when(queue).peekAhead();
 
-    doAnswer(invocation -> new SerialGatewaySenderQueue.EventsAndLastKey(
-        Arrays.asList(new Object[] {event4}), 2L))
+    doAnswer(invocation -> Collections
+        .singletonList(new SerialGatewaySenderQueue.KeyAndEventPair(2L, event4)))
             .when(queue).getElementsMatching(any(), any(), anyLong());
 
     List peeked = queue.peek(-1, 1);
