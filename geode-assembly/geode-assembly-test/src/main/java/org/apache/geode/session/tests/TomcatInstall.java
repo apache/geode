@@ -42,8 +42,8 @@ public class TomcatInstall extends ContainerInstall {
   public enum TomcatVersion {
     TOMCAT6(6, "tomcat-6.0.37.zip"),
     TOMCAT7(7, "tomcat-7.0.108.zip"),
-    TOMCAT8(8, "tomcat-8.5.63.zip"),
-    TOMCAT9(9, "tomcat-9.0.43.zip");
+    TOMCAT8(8, "tomcat-8.5.64.zip"),
+    TOMCAT9(9, "tomcat-9.0.44.zip");
 
     private final int version;
 
