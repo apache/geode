@@ -55,16 +55,15 @@ public class RedisString extends AbstractRedisData {
     valueSet(value);
   }
 
-  public int append(ByteArrayWrapper appendValue,
-      Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key) {
+  public int append(ByteArrayWrapper appendValue, Region<RedisKey, RedisData> region,
+      RedisKey key) {
     valueAppend(appendValue.toBytes());
     appendSequence++;
     storeChanges(region, key, new AppendDeltaInfo(appendValue.toBytes(), appendSequence));
     return value.length();
   }
 
-  public long incr(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key)
+  public long incr(Region<RedisKey, RedisData> region, RedisKey key)
       throws NumberFormatException, ArithmeticException {
     long longValue = parseValueAsLong();
     if (longValue == Long.MAX_VALUE) {
@@ -77,8 +76,7 @@ public class RedisString extends AbstractRedisData {
     return longValue;
   }
 
-  public long incrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
-      long increment)
+  public long incrby(Region<RedisKey, RedisData> region, RedisKey key, long increment)
       throws NumberFormatException, ArithmeticException {
     long longValue = parseValueAsLong();
     if (longValue >= 0 && increment > (Long.MAX_VALUE - longValue)) {
@@ -91,7 +89,7 @@ public class RedisString extends AbstractRedisData {
     return longValue;
   }
 
-  public BigDecimal incrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public BigDecimal incrbyfloat(Region<RedisKey, RedisData> region, RedisKey key,
       BigDecimal increment)
       throws NumberFormatException, ArithmeticException {
     BigDecimal bigDecimalValue = parseValueAsBigDecimal();
@@ -103,8 +101,7 @@ public class RedisString extends AbstractRedisData {
     return bigDecimalValue;
   }
 
-  public long decrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
-      long decrement) {
+  public long decrby(Region<RedisKey, RedisData> region, RedisKey key, long decrement) {
     long longValue = parseValueAsLong();
     if (longValue <= 0 && -decrement < (Long.MIN_VALUE - longValue)) {
       throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
@@ -116,7 +113,7 @@ public class RedisString extends AbstractRedisData {
     return longValue;
   }
 
-  public long decr(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key)
+  public long decr(Region<RedisKey, RedisData> region, RedisKey key)
       throws NumberFormatException, ArithmeticException {
     long longValue = parseValueAsLong();
     if (longValue == Long.MIN_VALUE) {
@@ -170,7 +167,7 @@ public class RedisString extends AbstractRedisData {
     return new ByteArrayWrapper(returnRange);
   }
 
-  public int setrange(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key, int offset,
+  public int setrange(Region<RedisKey, RedisData> region, RedisKey key, int offset,
       byte[] valueToAdd) {
     if (valueToAdd.length == 0) {
       return value.length();
@@ -205,7 +202,7 @@ public class RedisString extends AbstractRedisData {
     }
   }
 
-  public int bitpos(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key, int bit,
+  public int bitpos(Region<RedisKey, RedisData> region, RedisKey key, int bit,
       int start, Integer end) {
     int length = value.length();
     if (length == 0) {
@@ -577,9 +574,8 @@ public class RedisString extends AbstractRedisData {
     return (value.toBytes()[byteIndex] & (0x80 >> offset)) >> (7 - offset);
   }
 
-  public int setbit(
-      Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key, int bitValue, int byteIndex, byte bitIndex) {
+  public int setbit(Region<RedisKey, RedisData> region, RedisKey key,
+      int bitValue, int byteIndex, byte bitIndex) {
     int returnBit;
     byte[] bytes = value.toBytes();
     if (byteIndex < bytes.length) {
@@ -655,7 +651,7 @@ public class RedisString extends AbstractRedisData {
     return RedisDataType.REDIS_STRING;
   }
 
-  public ByteArrayWrapper getset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public ByteArrayWrapper getset(Region<RedisKey, RedisData> region, RedisKey key,
       ByteArrayWrapper newValue) {
     // No need to copy "value" since we are locked and will be calling set which replaces
     // "value" with a new instance.

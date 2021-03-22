@@ -59,6 +59,11 @@ public class CRC16 {
     return crc;
   }
 
+  public static int calculate(String data) {
+    byte[] bytes = data.getBytes();
+    return calculate(bytes, 0, bytes.length);
+  }
+
   // Reverses the bits of a 16 bit integer.
   private static int reverseInt16(int i) {
     i = (i & 0x5555) << 1 | (i >>> 1) & 0x5555;
