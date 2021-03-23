@@ -244,7 +244,7 @@ dependencies {
   distributedTestImplementation(project(':geode-web-management'))
   distributedTestImplementation('com.arakelian:java-jq')
   distributedTestImplementation('javax.servlet:javax.servlet-api')
-
+  distributedTestImplementation(project(':geode-apis-compatible-with-redis'))
   distributedTestRuntimeOnly(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }

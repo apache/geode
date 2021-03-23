@@ -17,8 +17,10 @@ package org.apache.geode.redis.internal;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
@@ -57,6 +59,9 @@ public class RegionProvider {
     redisDataRegionFactory.setPartitionAttributes(attributesFactory.create());
 
     dataRegion = redisDataRegionFactory.create(REDIS_DATA_REGION);
+    cache.getInternalDistributedSystem()
+        .handleResourceEvent(ResourceEvent.REGION_CREATE, dataRegion);
+    ((PartitionedRegion) dataRegion).setRegionCreateNotified(true);
 
     InternalRegionFactory<String, Object> redisConfigRegionFactory =
         cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
