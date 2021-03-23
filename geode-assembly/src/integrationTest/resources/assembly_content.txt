@@ -921,10 +921,6 @@ javadoc/org/apache/geode/pdx/WritablePdxInstance.html
 javadoc/org/apache/geode/pdx/package-frame.html
 javadoc/org/apache/geode/pdx/package-summary.html
 javadoc/org/apache/geode/pdx/package-tree.html
-javadoc/org/apache/geode/protocol/serialization/ValueSerializer.html
-javadoc/org/apache/geode/protocol/serialization/package-frame.html
-javadoc/org/apache/geode/protocol/serialization/package-summary.html
-javadoc/org/apache/geode/protocol/serialization/package-tree.html
 javadoc/org/apache/geode/ra/GFConnection.html
 javadoc/org/apache/geode/ra/GFConnectionFactory.html
 javadoc/org/apache/geode/ra/package-frame.html
