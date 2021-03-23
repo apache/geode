@@ -29,8 +29,14 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class CreateDiskStoreFunction extends CliFunction {
-
   private static final long serialVersionUID = 1L;
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.CreateDiskStoreFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext context) {
@@ -44,10 +50,5 @@ public class CreateDiskStoreFunction extends CliFunction {
 
     return new CliFunctionResult(context.getMemberName(), Result.Status.OK,
         "Created disk store " + diskStoreName);
-  }
-
-  @Override
-  public String getId() {
-    return CreateDiskStoreFunction.class.getName();
   }
 }

@@ -39,7 +39,13 @@ public class ChangeLogLevelFunction implements InternalFunction<Object[]> {
   private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = 1L;
 
-  public static final String ID = ChangeLogLevelFunction.class.getName();
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ChangeLogLevelFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<Object[]> context) {
@@ -66,11 +72,6 @@ public class ChangeLogLevelFunction implements InternalFunction<Object[]> {
           "ChangeLogLevelFunction exception " + ex.getMessage());
       context.getResultSender().lastResult(result);
     }
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 
   @Override

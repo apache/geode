@@ -43,6 +43,14 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class GetMemberConfigInformationFunction extends CliFunction<Boolean> {
   private static final long serialVersionUID = 1L;
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.GetMemberConfigInformationFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
+
 
   @Override
   @SuppressWarnings("deprecation")

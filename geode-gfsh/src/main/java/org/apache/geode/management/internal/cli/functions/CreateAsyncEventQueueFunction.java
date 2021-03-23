@@ -51,8 +51,14 @@ import org.apache.geode.management.internal.functions.CliFunctionResult.StatusSt
  */
 public class CreateAsyncEventQueueFunction extends CliFunction<CacheConfig.AsyncEventQueue> {
   private static final Logger logger = LogService.getLogger();
-
   private static final long serialVersionUID = 1L;
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.CreateAsyncEventQueueFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext<CacheConfig.AsyncEventQueue> context) {
@@ -152,10 +158,5 @@ public class CreateAsyncEventQueueFunction extends CliFunction<CacheConfig.Async
     }
 
     return ClassPathLoader.getLatest().forName(className).newInstance();
-  }
-
-  @Override
-  public String getId() {
-    return CreateAsyncEventQueueFunction.class.getName();
   }
 }

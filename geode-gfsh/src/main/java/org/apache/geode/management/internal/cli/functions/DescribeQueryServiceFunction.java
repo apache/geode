@@ -33,6 +33,14 @@ public class DescribeQueryServiceFunction extends CliFunction {
   static final String QUERY_SERVICE_NOT_FOUND_MESSAGE =
       "QueryConfigurationService not found on member.";
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.DescribeQueryServiceFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
+
   @Override
   public CliFunctionResult executeFunction(FunctionContext context) {
     QueryConfigurationServiceImpl queryConfigurationService = getQueryConfigurationService();

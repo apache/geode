@@ -33,9 +33,15 @@ import org.apache.geode.management.internal.cli.util.BytesToString;
  *
  */
 public class GarbageCollectionFunction implements InternalFunction<Void> {
-  public static final String ID = GarbageCollectionFunction.class.getName();
-
   private static final long serialVersionUID = 1L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.GarbageCollectionFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<Void> context) {
@@ -65,11 +71,6 @@ public class GarbageCollectionFunction implements InternalFunction<Void> {
       context.getResultSender().lastResult(message);
     }
     context.getResultSender().lastResult(resultMap);
-  }
-
-  @Override
-  public String getId() {
-    return GarbageCollectionFunction.ID;
   }
 
   @Override

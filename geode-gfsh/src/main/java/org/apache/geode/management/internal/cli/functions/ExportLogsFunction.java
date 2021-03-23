@@ -59,6 +59,14 @@ public class ExportLogsFunction implements InternalFunction<ExportLogsFunction.A
   private static final long serialVersionUID = 1L;
   private static final int BUFFER_SIZE = 1024;
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ExportLogsFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
+
   @Override
   public void execute(final FunctionContext<Args> context) {
     try {

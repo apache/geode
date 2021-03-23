@@ -45,7 +45,6 @@ import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 /**
  * The ListDiskStoreFunctionJUnitTest test suite class tests the contract and functionality of the
  * ListDiskStoresFunction.
- * </p>
  *
  * @see org.apache.geode.internal.cache.DiskStoreImpl
  * @see org.apache.geode.management.internal.cli.domain.DiskStoreDetails

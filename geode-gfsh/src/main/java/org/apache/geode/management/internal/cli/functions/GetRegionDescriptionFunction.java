@@ -23,9 +23,15 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.cli.domain.RegionDescriptionPerMember;
 
 public class GetRegionDescriptionFunction implements InternalFunction<String> {
-
-
   private static final long serialVersionUID = 1L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.GetRegionDescriptionFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<String> context) {

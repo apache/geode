@@ -28,9 +28,16 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class GatewaySenderDestroyFunction
     implements InternalFunction<GatewaySenderDestroyFunctionArgs> {
   private static final long serialVersionUID = 1L;
-  private static final String ID = GatewaySenderDestroyFunction.class.getName();
   @Immutable
   public static final GatewaySenderDestroyFunction INSTANCE = new GatewaySenderDestroyFunction();
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.GatewaySenderDestroyFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   @SuppressWarnings("deprecation")
@@ -68,10 +75,4 @@ public class GatewaySenderDestroyFunction
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, e, ""));
     }
   }
-
-  @Override
-  public String getId() {
-    return ID;
-  }
-
 }

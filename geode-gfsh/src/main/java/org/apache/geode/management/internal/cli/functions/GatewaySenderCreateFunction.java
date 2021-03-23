@@ -40,11 +40,16 @@ public class GatewaySenderCreateFunction implements InternalFunction<GatewaySend
 
   private static final long serialVersionUID = 8746830191680509335L;
 
-  private static final String ID = GatewaySenderCreateFunction.class.getName();
-
   @Immutable
   public static final GatewaySenderCreateFunction INSTANCE = new GatewaySenderCreateFunction();
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.GatewaySenderCreateFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<GatewaySenderFunctionArgs> context) {
@@ -183,10 +188,4 @@ public class GatewaySenderCreateFunction implements InternalFunction<GatewaySend
     return gateway.create(gatewaySenderCreateArgs.getId(),
         gatewaySenderCreateArgs.getRemoteDistributedSystemId());
   }
-
-  @Override
-  public String getId() {
-    return ID;
-  }
-
 }

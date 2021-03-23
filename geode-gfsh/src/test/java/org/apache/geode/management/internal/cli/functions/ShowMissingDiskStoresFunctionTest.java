@@ -227,7 +227,7 @@ public class ShowMissingDiskStoresFunctionTest {
   public void getId_returnsFullyQualifiedClassName() {
     assertThat(showMissingDiskStoresFunction.getId())
         .as("function id")
-        .isEqualTo(ShowMissingDiskStoresFunction.class.getName());
+        .isEqualTo(ShowMissingDiskStoresFunction.ID);
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
