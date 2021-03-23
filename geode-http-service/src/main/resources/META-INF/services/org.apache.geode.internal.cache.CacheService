@@ -1,1 +1,1 @@
-org.apache.geode.internal.cache.InternalHttpService
+org.apache.geode.internal.cache.http.service.InternalHttpService

@@ -27,7 +27,7 @@ import java.util.Properties;
 
 import org.junit.rules.ExternalResource;
 
-import org.apache.geode.internal.cache.InternalHttpService;
+import org.apache.geode.internal.cache.http.service.InternalHttpService;
 import org.apache.geode.internal.net.SSLConfig;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.tests.Server;
