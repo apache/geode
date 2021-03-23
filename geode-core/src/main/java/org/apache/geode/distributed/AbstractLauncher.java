@@ -47,8 +47,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.unsafe.RegisterSignalHandlerSupport;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.membership.utils.AvailablePort;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.util.ArgumentRedactor;
@@ -133,7 +133,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @param port an integer indicating the network port to listen for client network requests.
    * @throws BindException if the network address and port are not available. Address defaults to
    *         localhost (or all network interfaces on the local system) if null.
-   * @see org.apache.geode.internal.AvailablePort
+   * @see AvailablePort
    */
   protected static void assertPortAvailable(final InetAddress bindAddress, final int port)
       throws BindException {

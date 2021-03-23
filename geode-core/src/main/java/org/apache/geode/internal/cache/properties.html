@@ -94,7 +94,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>org.apache.geode.internal.AvailablePort</code>.
+See <code>org.apache.geode.internal.membership.utils.AvailablePort</code>.
 <p>
 If true, an instance of <code>java.util.Random</code> is used instead of
 <code>java.security.SecureRandom</code> to randomly select a port.
@@ -1060,8 +1060,8 @@ TBA
 See <code>org.apache.geode.internal.cache.PRHAFailureAndRecoveryPRovider#BUCKET_RECOVERY_JITTER</code>.
 <p>
 <pre>
-   Maximum additional amount of time, in milliseconds, to skew bucket creation, 
-   to stagger recovery and creation in a starting system. 
+   Maximum additional amount of time, in milliseconds, to skew bucket creation,
+   to stagger recovery and creation in a starting system.
 </pre>
 <p>
 TBA
@@ -1077,8 +1077,8 @@ TBA
 See <code>org.apache.geode.internal.cache.BucketAdvisor#GET_PRIMARY_TIMEOUT</code>.
 <p>
 <pre>
-   Specifies the timeout to wait for a primary when calling {@link 
-   #getPrimary()} 
+   Specifies the timeout to wait for a primary when calling {@link
+   #getPrimary()}
 </pre>
 <p>
 Units are in milliseconds.
@@ -1188,7 +1188,7 @@ TBA
 See <code>org.apache.geode.internal.cache.CacheDistributionAdvisor#ROLLOVER_THRESHOLD</code>.
 <p>
 <pre>
-  Used to compare profile versioning numbers against 
+  Used to compare profile versioning numbers against
   {@link Integer#MAX_VALUE} and {@link Integer#MIN_VALUE} to determine
   if a rollover has occurred.
 </pre>
@@ -1382,7 +1382,7 @@ TBA
 See <code>org.apache.geode.distributed.internal.DistributionAdvisor#START_VERSION_NUMBER</code>.
 <p>
 <pre>
-   Specifies the starting version number for the {@link 
+   Specifies the starting version number for the {@link
    #profileVersionSequencer}.
 </pre>
 <p>
@@ -1964,7 +1964,7 @@ TBA
 <p>
 See <code>org.apache.geode.internal.cache.LocalRegion.#EXPIRATIONS_CAUSE_CONFLICTS</code>
 <p>
-Allow expirations to be done by multiple threads, avoiding the 
+Allow expirations to be done by multiple threads, avoiding the
 pendingExpires list (set in conjunction with gemfire.EXPIRY_THREADS)
 </dd>
 
@@ -2110,7 +2110,7 @@ instead of exiting the process.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-On OSes that support it bind to the mcast_addr to prevent traffic on 
+On OSes that support it bind to the mcast_addr to prevent traffic on
 different addresses, but on the same port.
 Setting to true can avoid cross address chatter.
 </dd>
@@ -2312,7 +2312,7 @@ See <code>org.apache.geode.internal.cache.Oplog#SYNC_WRITES</code>.
 <p>
 TBA
 </dd>
-	
+
 <!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.TcpServer.MAX_POOL_SIZE</strong></dt>
 <dd>
@@ -2440,7 +2440,7 @@ TBA
 See <code>org.apache.geode.admin.jmx.internal.AgentConfigImpl#retrievePropertyFile</code>.
 <p>
 <pre>
-   The <code>propertyFile</code> is the name of the property file that will 
+   The <code>propertyFile</code> is the name of the property file that will
    be loaded on startup of the Agent.
    <p>
    The file will be searched for, in order, in the following directories:
@@ -2451,10 +2451,10 @@ See <code>org.apache.geode.admin.jmx.internal.AgentConfigImpl#retrievePropertyFi
    </ol>
    Only the first file found will be used.
    <p>
-   The default value of propertyFile is <code>"agent.properties"</code>. However 
-   if the "gfAgentPropertyFile" system property is set then its value is the 
-   value of propertyFile. If this value is a relative file system path then 
-   the above search is done. If its an absolute file system path then that 
+   The default value of propertyFile is <code>"agent.properties"</code>. However
+   if the "gfAgentPropertyFile" system property is set then its value is the
+   value of propertyFile. If this value is a relative file system path then
+   the above search is done. If its an absolute file system path then that
    file must exist; no search for it is done.
 </pre>
 <p>
@@ -2857,7 +2857,7 @@ Units are are bytes.
 <p>
 See org.apache.geode.internal.tcp.TCPConduit#startAcceptor(int, int, InetAddress).
 <p>
-TBA 
+TBA
 </dd>
 
 
@@ -2870,7 +2870,7 @@ TBA
 <p>
 See org.apache.geode.cache.query.internal.index.IndexUtils#indexesEnabled.
 <p>
-TBA 
+TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -2884,7 +2884,7 @@ See org.apache.geode.internal.admin.remote.RemoteCall#getPopupTime.
 <p>
 Units are in seconds.
 <p>
-TBA 
+TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -2898,7 +2898,7 @@ See org.apache.geode.internal.admin.remote.AdminWaiters#getWaitTimeout.
 <p>
 Units are in seconds.
 <p>
-TBA 
+TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -2910,7 +2910,7 @@ TBA
 <p>
 Removed in Geode 1.0 with removal of deprecated Bridge classes.
 </p>
-TBA 
+TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -2924,7 +2924,7 @@ See org.apache.geode.internal.cache.tier.sockets.CacheClientProxy.MessageDispatc
 <p>
 Units are in milliseconds.
 <p>
-TBA 
+TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -2938,7 +2938,7 @@ See org.apache.geode.internal.SimpleStatSampler#archiveFileName.
 <p>
 This is a filename.
 <p>
-TBA 
+TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -2950,7 +2950,7 @@ TBA
 <p>
 See org.apache.geode.internal.LocalStatisticsFactory#statsDisabled.
 <p>
-TBA 
+TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -2962,7 +2962,7 @@ TBA
 <p>
 See org.apache.geode.internal.SimpleStatSampler#archiveDiskSpaceLimit.
 <p>
-TBA 
+TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -2976,7 +2976,7 @@ See org.apache.geode.internal.SimpleStatSampler#archiveFileSizeLimit.
 <p>
 Units are in megabytes
 <p>
-TBA 
+TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -2988,7 +2988,7 @@ TBA
 <p>
 See org.apache.geode.internal.LocalStatisticsFactory#logLevel.
 <p>
-TBA 
+TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -3000,7 +3000,7 @@ TBA
 <p>
 See org.apache.geode.internal.LocalStatisticsFactory#name.
 <p>
-TBA 
+TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -3014,7 +3014,7 @@ See org.apache.geode.internal.SimpleStatSampler#sampleRate.
 <p>
 Units are in milliseconds.
 <p>
-TBA 
+TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -3032,7 +3032,7 @@ See org.apache.geode.internal.gui.Service#Service().
       via a system property.  It is used only for testing.
 </pre>
 <p>
-TBA 
+TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -3044,7 +3044,7 @@ TBA
 <p>
 See org.apache.geode.distributed.internal.direct.DirectChannel#DirectChannel(MembershipManager, DistributedMembershipListener, DistributionConfig, LogWriter, Properties).
 <p>
-TBA 
+TBA
 </dd>
 
 </dl>
@@ -3125,8 +3125,8 @@ See <code>org.apache.commons.logging.impl.SimpleLog class init</code>.
 <p>
 See <code>org.apache.commons.logging.impl.SimpleLog class init</code>.
 <p>
-Include the short name ( last component ) of the logger in the log message. 
-Default to true - otherwise we'll be lost in a flood of messages without 
+Include the short name ( last component ) of the logger in the log message.
+Default to true - otherwise we'll be lost in a flood of messages without
 knowing who sends them.
 
 </dd>
