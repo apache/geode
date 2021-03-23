@@ -19,7 +19,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -42,11 +42,11 @@ public class BitOpExecutor extends StringExecutor {
       return RedisResponse.error(ERROR_SYNTAX);
     }
 
-    ByteArrayWrapper destKey = new ByteArrayWrapper(commandElems.get(2));
+    RedisKey destKey = new RedisKey(commandElems.get(2));
 
-    List<ByteArrayWrapper> values = new ArrayList<>();
+    List<RedisKey> values = new ArrayList<>();
     for (int i = 3; i < commandElems.size(); i++) {
-      ByteArrayWrapper key = new ByteArrayWrapper(commandElems.get(i));
+      RedisKey key = new RedisKey(commandElems.get(i));
       values.add(key);
     }
     if (operation.equals("NOT") && values.size() != 1) {

@@ -20,7 +20,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -35,7 +35,7 @@ public class ExpireExecutor extends AbstractExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
     int SECONDS_INDEX = 2;
 
-    ByteArrayWrapper key = command.getKey();
+    RedisKey key = command.getKey();
     byte[] delayByteArray = commandElems.get(SECONDS_INDEX);
     long delay;
     try {

@@ -34,66 +34,66 @@ public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunction
     super(helper);
   }
 
-  private RedisHash getRedisHash(ByteArrayWrapper key, boolean updateStats) {
+  private RedisHash getRedisHash(RedisKey key, boolean updateStats) {
     return helper.getRedisHash(key, updateStats);
   }
 
   @Override
-  public int hset(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
+  public int hset(RedisKey key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
     return stripedExecute(key,
         () -> getRedisHash(key, false)
             .hset(getRegion(), key, fieldsToSet, NX));
   }
 
   @Override
-  public int hdel(ByteArrayWrapper key, List<ByteArrayWrapper> fieldsToRemove) {
+  public int hdel(RedisKey key, List<ByteArrayWrapper> fieldsToRemove) {
     return stripedExecute(key,
         () -> getRedisHash(key, false)
             .hdel(getRegion(), key, fieldsToRemove));
   }
 
   @Override
-  public Collection<ByteArrayWrapper> hgetall(ByteArrayWrapper key) {
+  public Collection<ByteArrayWrapper> hgetall(RedisKey key) {
     return stripedExecute(key, () -> getRedisHash(key, true).hgetall());
   }
 
   @Override
-  public int hexists(ByteArrayWrapper key, ByteArrayWrapper field) {
+  public int hexists(RedisKey key, ByteArrayWrapper field) {
     return stripedExecute(key, () -> getRedisHash(key, true).hexists(field));
   }
 
   @Override
-  public ByteArrayWrapper hget(ByteArrayWrapper key, ByteArrayWrapper field) {
+  public ByteArrayWrapper hget(RedisKey key, ByteArrayWrapper field) {
     return stripedExecute(key, () -> getRedisHash(key, true).hget(field));
   }
 
   @Override
-  public int hlen(ByteArrayWrapper key) {
+  public int hlen(RedisKey key) {
     return stripedExecute(key, () -> getRedisHash(key, true).hlen());
   }
 
   @Override
-  public int hstrlen(ByteArrayWrapper key, ByteArrayWrapper field) {
+  public int hstrlen(RedisKey key, ByteArrayWrapper field) {
     return stripedExecute(key, () -> getRedisHash(key, true).hstrlen(field));
   }
 
   @Override
-  public List<ByteArrayWrapper> hmget(ByteArrayWrapper key, List<ByteArrayWrapper> fields) {
+  public List<ByteArrayWrapper> hmget(RedisKey key, List<ByteArrayWrapper> fields) {
     return stripedExecute(key, () -> getRedisHash(key, true).hmget(fields));
   }
 
   @Override
-  public Collection<ByteArrayWrapper> hvals(ByteArrayWrapper key) {
+  public Collection<ByteArrayWrapper> hvals(RedisKey key) {
     return stripedExecute(key, () -> getRedisHash(key, true).hvals());
   }
 
   @Override
-  public Collection<ByteArrayWrapper> hkeys(ByteArrayWrapper key) {
+  public Collection<ByteArrayWrapper> hkeys(RedisKey key) {
     return stripedExecute(key, () -> getRedisHash(key, true).hkeys());
   }
 
   @Override
-  public Pair<Integer, List<Object>> hscan(ByteArrayWrapper key, Pattern matchPattern,
+  public Pair<Integer, List<Object>> hscan(RedisKey key, Pattern matchPattern,
       int count, int cursor, UUID clientID) {
     return stripedExecute(key,
         () -> getRedisHash(key, true)
@@ -101,15 +101,14 @@ public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunction
   }
 
   @Override
-  public long hincrby(ByteArrayWrapper key, ByteArrayWrapper field, long increment) {
+  public long hincrby(RedisKey key, ByteArrayWrapper field, long increment) {
     return stripedExecute(key,
         () -> getRedisHash(key, false)
             .hincrby(getRegion(), key, field, increment));
   }
 
   @Override
-  public BigDecimal hincrbyfloat(ByteArrayWrapper key, ByteArrayWrapper field,
-      BigDecimal increment) {
+  public BigDecimal hincrbyfloat(RedisKey key, ByteArrayWrapper field, BigDecimal increment) {
     return stripedExecute(key,
         () -> getRedisHash(key, false)
             .hincrbyfloat(getRegion(), key, field, increment));

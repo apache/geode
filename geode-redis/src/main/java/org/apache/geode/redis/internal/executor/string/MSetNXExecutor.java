@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.netty.Command;
@@ -39,7 +40,7 @@ public class MSetNXExecutor extends StringExecutor {
     // TODO: make this atomic
     for (int i = 1; i < commandElems.size(); i += 2) {
       byte[] keyArray = commandElems.get(i);
-      ByteArrayWrapper key = new ByteArrayWrapper(keyArray);
+      RedisKey key = new RedisKey(keyArray);
       if (keyCommands.exists(key)) {
         return RedisResponse.integer(NOT_SET);
       }
@@ -48,7 +49,7 @@ public class MSetNXExecutor extends StringExecutor {
     // none exist so now set them all
     for (int i = 1; i < commandElems.size(); i += 2) {
       byte[] keyArray = commandElems.get(i);
-      ByteArrayWrapper key = new ByteArrayWrapper(keyArray);
+      RedisKey key = new RedisKey(keyArray);
       byte[] valueArray = commandElems.get(i + 1);
       ByteArrayWrapper value = new ByteArrayWrapper(valueArray);
       stringCommands.set(key, value, null);

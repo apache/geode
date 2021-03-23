@@ -30,7 +30,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
@@ -102,7 +102,7 @@ public class ScanExecutor extends AbstractScanExecutor {
     return RedisResponse.scan(scanResult.getLeft(), scanResult.getRight());
   }
 
-  private Pair<BigInteger, List<Object>> scan(Collection<ByteArrayWrapper> list,
+  private Pair<BigInteger, List<Object>> scan(Collection<RedisKey> list,
       Pattern matchPattern,
       int count, BigInteger cursor) {
     List<Object> returnList = new ArrayList<>();
@@ -110,7 +110,7 @@ public class ScanExecutor extends AbstractScanExecutor {
     BigInteger beforeCursor = new BigInteger("0");
     int numElements = 0;
     int i = -1;
-    for (ByteArrayWrapper key : list) {
+    for (RedisKey key : list) {
       i++;
       if (beforeCursor.compareTo(cursor) < 0) {
         beforeCursor = beforeCursor.add(new BigInteger("1"));

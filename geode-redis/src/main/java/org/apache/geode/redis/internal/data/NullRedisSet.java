@@ -41,8 +41,8 @@ class NullRedisSet extends RedisSet {
   }
 
   @Override
-  Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key, int popCount) {
+  Collection<ByteArrayWrapper> spop(Region<RedisKey, RedisData> region,
+      RedisKey key, int popCount) {
     return emptyList();
   }
 
@@ -62,15 +62,15 @@ class NullRedisSet extends RedisSet {
   }
 
   @Override
-  long sadd(ArrayList<ByteArrayWrapper> membersToAdd,
-      Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key) {
+  long sadd(ArrayList<ByteArrayWrapper> membersToAdd, Region<RedisKey, RedisData> region,
+      RedisKey key) {
     region.create(key, new RedisSet(membersToAdd));
     return membersToAdd.size();
   }
 
   @Override
-  long srem(ArrayList<ByteArrayWrapper> membersToRemove,
-      Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key) {
+  long srem(ArrayList<ByteArrayWrapper> membersToRemove, Region<RedisKey, RedisData> region,
+      RedisKey key) {
     return 0;
   }
 
@@ -85,23 +85,23 @@ class NullRedisSet extends RedisSet {
     UNION, INTERSECTION, DIFF
   }
 
-  public int sunionstore(CommandHelper helper, ByteArrayWrapper destination,
-      ArrayList<ByteArrayWrapper> setKeys) {
+  public int sunionstore(CommandHelper helper, RedisKey destination,
+      ArrayList<RedisKey> setKeys) {
     return doSetOp(SetOp.UNION, helper, destination, setKeys);
   }
 
-  public int sinterstore(CommandHelper helper, ByteArrayWrapper destination,
-      ArrayList<ByteArrayWrapper> setKeys) {
+  public int sinterstore(CommandHelper helper, RedisKey destination,
+      ArrayList<RedisKey> setKeys) {
     return doSetOp(SetOp.INTERSECTION, helper, destination, setKeys);
   }
 
-  public int sdiffstore(CommandHelper helper, ByteArrayWrapper destination,
-      ArrayList<ByteArrayWrapper> setKeys) {
+  public int sdiffstore(CommandHelper helper, RedisKey destination,
+      ArrayList<RedisKey> setKeys) {
     return doSetOp(SetOp.DIFF, helper, destination, setKeys);
   }
 
   private int doSetOp(SetOp setOp, CommandHelper helper,
-      ByteArrayWrapper destination, ArrayList<ByteArrayWrapper> setKeys) {
+      RedisKey destination, ArrayList<RedisKey> setKeys) {
     ArrayList<Set<ByteArrayWrapper>> nonDestinationSets =
         fetchSets(helper.getRegion(), setKeys, destination);
     return helper.getStripedExecutor()
@@ -110,7 +110,7 @@ class NullRedisSet extends RedisSet {
   }
 
   private int doSetOpWhileLocked(SetOp setOp, CommandHelper helper,
-      ByteArrayWrapper destination,
+      RedisKey destination,
       ArrayList<Set<ByteArrayWrapper>> nonDestinationSets) {
     Set<ByteArrayWrapper> result = computeSetOp(setOp, nonDestinationSets, helper, destination);
     if (result.isEmpty()) {
@@ -125,7 +125,7 @@ class NullRedisSet extends RedisSet {
   private Set<ByteArrayWrapper> computeSetOp(SetOp setOp,
       ArrayList<Set<ByteArrayWrapper>> nonDestinationSets,
       CommandHelper helper,
-      ByteArrayWrapper destination) {
+      RedisKey destination) {
     Set<ByteArrayWrapper> result = null;
     if (nonDestinationSets.isEmpty()) {
       return emptySet();
@@ -160,12 +160,12 @@ class NullRedisSet extends RedisSet {
    * This is all done outside the striped executor to prevent a deadlock.
    */
   private ArrayList<Set<ByteArrayWrapper>> fetchSets(
-      Region<ByteArrayWrapper, RedisData> region,
-      ArrayList<ByteArrayWrapper> setKeys,
-      ByteArrayWrapper destination) {
+      Region<RedisKey, RedisData> region,
+      ArrayList<RedisKey> setKeys,
+      RedisKey destination) {
     ArrayList<Set<ByteArrayWrapper>> result = new ArrayList<>(setKeys.size());
     RedisSetCommands redisSetCommands = new RedisSetCommandsFunctionInvoker(region);
-    for (ByteArrayWrapper key : setKeys) {
+    for (RedisKey key : setKeys) {
       if (key.equals(destination)) {
         result.add(null);
       } else {

@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisDataType;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -36,8 +37,8 @@ public class SMoveExecutor extends SetExecutor {
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    ByteArrayWrapper source = command.getKey();
-    ByteArrayWrapper destination = new ByteArrayWrapper(commandElems.get(2));
+    RedisKey source = command.getKey();
+    RedisKey destination = new RedisKey(commandElems.get(2));
     ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(3));
 
     String destinationType = getRedisKeyCommands(context).internalType(destination);

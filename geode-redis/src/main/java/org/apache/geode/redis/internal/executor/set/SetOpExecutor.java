@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -34,11 +35,11 @@ public abstract class SetOpExecutor extends SetExecutor {
       setsStartIndex++;
     }
 
-    List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
-    ArrayList<ByteArrayWrapper> setKeys =
+    List<RedisKey> commandElements = command.getProcessedCommandWrapperKeys();
+    ArrayList<RedisKey> setKeys =
         new ArrayList<>(commandElements.subList(setsStartIndex, commandElements.size()));
     if (isStorage()) {
-      ByteArrayWrapper destination = command.getKey();
+      RedisKey destination = command.getKey();
       RedisSetCommands redisSetCommands = createRedisSetCommands(context);
       int storeCount;
       switch (command.getCommandType()) {
@@ -62,12 +63,12 @@ public abstract class SetOpExecutor extends SetExecutor {
   }
 
   private RedisResponse doActualSetOperation(ExecutionHandlerContext context,
-      ArrayList<ByteArrayWrapper> setKeys) {
+      ArrayList<RedisKey> setKeys) {
     RedisSetCommands redisSetCommands = createRedisSetCommands(context);
-    ByteArrayWrapper firstSetKey = setKeys.remove(0);
+    RedisKey firstSetKey = setKeys.remove(0);
     Set<ByteArrayWrapper> resultSet = redisSetCommands.smembers(firstSetKey);
 
-    for (ByteArrayWrapper key : setKeys) {
+    for (RedisKey key : setKeys) {
       Set<ByteArrayWrapper> nextSet = redisSetCommands.smembers(key);
       if (doSetOp(resultSet, nextSet)) {
         break;
