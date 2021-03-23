@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute.metrics;
 
-import static org.apache.geode.internal.lang.JavaWorkarounds.computeIfAbsent;
+import static org.apache.geode.internal.lang.utils.JavaWorkarounds.computeIfAbsent;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
