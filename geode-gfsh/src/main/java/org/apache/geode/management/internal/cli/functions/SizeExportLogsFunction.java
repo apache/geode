@@ -34,6 +34,13 @@ public class SizeExportLogsFunction extends ExportLogsFunction
     implements InternalFunction<ExportLogsFunction.Args> {
   private static final Logger LOGGER = LogService.getLogger();
   private static final long serialVersionUID = 1L;
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(final FunctionContext<Args> context) {

@@ -55,16 +55,17 @@ import org.apache.geode.security.ResourcePermission;
 public class UserFunctionExecution implements InternalFunction<Object[]> {
   private static final long serialVersionUID = 1L;
   private static final Logger logger = LogService.getLogger();
-  public static final String ID = UserFunctionExecution.class.getName();
+  protected static final String ID =
+      "org.apache.geode.management.internal.cli.functions.UserFunctionExecution";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public boolean isHA() {
     return false;
-  }
-
-  @Override
-  public String getId() {
-    return UserFunctionExecution.ID;
   }
 
   @Override

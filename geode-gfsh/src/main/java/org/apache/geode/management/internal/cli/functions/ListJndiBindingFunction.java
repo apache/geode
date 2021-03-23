@@ -29,8 +29,15 @@ import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class ListJndiBindingFunction extends CliFunction<Void> {
-
   private static final long serialVersionUID = 5254506785395069200L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ListJndiBindingFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext<Void> context) {

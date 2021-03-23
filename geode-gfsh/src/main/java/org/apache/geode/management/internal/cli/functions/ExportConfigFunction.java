@@ -36,9 +36,15 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class ExportConfigFunction implements InternalFunction<Object> {
   private static final Logger logger = LogService.getLogger();
 
-  public static final String ID = ExportConfigFunction.class.getName();
-
   private static final long serialVersionUID = 1L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ExportConfigFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   @SuppressWarnings("deprecation")
@@ -113,11 +119,6 @@ public class ExportConfigFunction implements InternalFunction<Object> {
       CliFunctionResult result = new CliFunctionResult(memberId, th, null);
       context.getResultSender().lastResult(result);
     }
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 
   @Override

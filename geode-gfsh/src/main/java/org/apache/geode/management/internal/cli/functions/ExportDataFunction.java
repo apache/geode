@@ -37,6 +37,14 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 public class ExportDataFunction extends CliFunction<String[]> {
   private static final long serialVersionUID = 1L;
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ExportDataFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
+
   @Override
   public CliFunctionResult executeFunction(FunctionContext<String[]> context) throws Exception {
     final String[] args = context.getArguments();
@@ -73,10 +81,4 @@ public class ExportDataFunction extends CliFunction<String[]> {
 
     return result;
   }
-
-  @Override
-  public String getId() {
-    return ExportDataFunction.class.getName();
-  }
-
 }

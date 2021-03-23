@@ -33,10 +33,17 @@ import org.apache.geode.management.internal.functions.CliFunctionResult.StatusSt
 public class DestroyGatewayReceiverFunction extends CliFunction<Void> {
   private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = 1490927519860899562L;
-  private static final String ID = DestroyGatewayReceiverFunction.class.getName();
   @Immutable
   public static final DestroyGatewayReceiverFunction INSTANCE =
       new DestroyGatewayReceiverFunction();
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.DestroyGatewayReceiverFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext<Void> context) {
@@ -65,10 +72,4 @@ public class DestroyGatewayReceiverFunction extends CliFunction<Void> {
     return new CliFunctionResult(memberNameOrId, StatusState.IGNORABLE,
         "Gateway receiver not found.");
   }
-
-  @Override
-  public String getId() {
-    return ID;
-  }
-
 }

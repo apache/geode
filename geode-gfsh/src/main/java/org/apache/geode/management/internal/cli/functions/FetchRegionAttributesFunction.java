@@ -34,7 +34,13 @@ public class FetchRegionAttributesFunction extends CliFunction<String> {
 
   private static final long serialVersionUID = 4366812590788342070L;
 
-  private static final String ID = FetchRegionAttributesFunction.class.getName();
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.FetchRegionAttributesFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Immutable
   public static final FetchRegionAttributesFunction INSTANCE = new FetchRegionAttributesFunction();
@@ -56,10 +62,5 @@ public class FetchRegionAttributesFunction extends CliFunction<String> {
     }
     XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionPath.substring(1));
     return new CliFunctionResult(context.getMemberName(), xmlEntity.getXmlDefinition());
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 }

@@ -32,12 +32,13 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
 public class CreateDefinedIndexesFunction implements InternalFunction<Set<RegionConfig.Index>> {
-
   private static final long serialVersionUID = 6756381106602823693L;
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.CreateDefinedIndexesFunction";
 
   @Override
   public String getId() {
-    return CreateDefinedIndexesFunction.class.getName();
+    return ID;
   }
 
   @Override

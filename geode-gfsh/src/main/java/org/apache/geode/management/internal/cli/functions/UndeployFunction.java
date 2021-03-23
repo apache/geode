@@ -36,10 +36,14 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class UndeployFunction implements InternalFunction<Object[]> {
   private static final Logger logger = LogService.getLogger();
-
-  public static final String ID = UndeployFunction.class.getName();
-
   private static final long serialVersionUID = 1L;
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.UndeployFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<Object[]> context) {
@@ -93,11 +97,6 @@ public class UndeployFunction implements InternalFunction<Object[]> {
       context.getResultSender().lastResult(result);
     }
 
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 
   @Override

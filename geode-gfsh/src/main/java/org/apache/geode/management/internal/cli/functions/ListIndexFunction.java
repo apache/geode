@@ -39,10 +39,12 @@ import org.apache.geode.management.internal.cli.domain.IndexDetails;
  */
 @SuppressWarnings("unused")
 public class ListIndexFunction implements InternalFunction<Void> {
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ListIndexFunction";
 
   @Override
   public String getId() {
-    return ListIndexFunction.class.getName();
+    return ID;
   }
 
   @Override

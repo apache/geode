@@ -27,8 +27,15 @@ import org.apache.geode.management.internal.cli.domain.RegionInformation;
  * Function that retrieves regions hosted on every member
  */
 public class GetRegionsFunction implements InternalFunction<Void> {
-
   private static final long serialVersionUID = 1L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.GetRegionsFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<Void> functionContext) {

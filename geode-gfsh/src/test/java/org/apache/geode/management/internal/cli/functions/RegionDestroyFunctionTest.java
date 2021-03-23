@@ -73,7 +73,7 @@ public class RegionDestroyFunctionTest {
   @Test
   @SuppressWarnings("deprecation")
   public void regionAlreadyDestroyed() {
-    when(context.getFunctionId()).thenReturn(RegionDestroyFunction.class.getName());
+    when(context.getFunctionId()).thenReturn(RegionDestroyFunction.ID);
     when(filterCache.getRegion(any())).thenReturn(null);
     function.execute(context);
 
@@ -88,7 +88,7 @@ public class RegionDestroyFunctionTest {
   @Test
   @SuppressWarnings("deprecation")
   public void regionAlreadyDestroyed_throwException() {
-    when(context.getFunctionId()).thenReturn(RegionDestroyFunction.class.getName());
+    when(context.getFunctionId()).thenReturn(RegionDestroyFunction.ID);
     @SuppressWarnings("unchecked")
     Region<Object, Object> region = mock(Region.class);
     when(filterCache.getRegion(any())).thenReturn(region);
@@ -106,7 +106,7 @@ public class RegionDestroyFunctionTest {
   @Test
   @SuppressWarnings("deprecation")
   public void illegalStateExceptionWillNotThrowExceptionToCommand() {
-    when(context.getFunctionId()).thenReturn(RegionDestroyFunction.class.getName());
+    when(context.getFunctionId()).thenReturn(RegionDestroyFunction.ID);
     @SuppressWarnings("unchecked")
     Region<Object, Object> region = mock(Region.class);
     when(filterCache.getRegion(any())).thenReturn(region);

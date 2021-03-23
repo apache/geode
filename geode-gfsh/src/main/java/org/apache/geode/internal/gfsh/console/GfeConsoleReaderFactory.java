@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.gfsh.console;
 
 import java.io.Console;
 

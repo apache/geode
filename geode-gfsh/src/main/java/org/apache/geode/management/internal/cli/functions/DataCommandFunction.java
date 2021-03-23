@@ -72,9 +72,12 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
 
   private boolean optimizeForWrite = false;
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.DataCommandFunction";
+
   @Override
   public String getId() {
-    return DataCommandFunction.class.getName();
+    return ID;
   }
 
   @Override

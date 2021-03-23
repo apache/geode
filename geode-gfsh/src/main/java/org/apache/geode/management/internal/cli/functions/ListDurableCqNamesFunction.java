@@ -45,9 +45,12 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 public class ListDurableCqNamesFunction implements InternalFunction<String> {
   private static final long serialVersionUID = 1L;
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ListDurableCqNamesFunction";
+
   @Override
   public String getId() {
-    return ListDurableCqNamesFunction.class.getName();
+    return ID;
   }
 
   @Override

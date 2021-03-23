@@ -55,8 +55,8 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  * @see org.apache.geode.management.internal.cli.commands.DescribeDiskStoreCommand
  * @see org.apache.geode.management.internal.cli.commands.ListDiskStoresCommand
  * @see org.apache.geode.management.internal.cli.domain.DiskStoreDetails
- * @see org.apache.geode.management.internal.cli.functions.DescribeDiskStoreFunction
- * @see org.apache.geode.management.internal.cli.functions.ListDiskStoresFunction
+ * @see DescribeDiskStoreFunction
+ * @see ListDiskStoresFunction
  * @see org.junit.Test
  *
  * @since GemFire 7.0

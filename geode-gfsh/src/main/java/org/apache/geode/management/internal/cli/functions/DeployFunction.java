@@ -38,9 +38,15 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class DeployFunction implements InternalFunction<Object[]> {
   private static final Logger logger = LogService.getLogger();
 
-  public static final String ID = DeployFunction.class.getName();
-
   private static final long serialVersionUID = 1L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.DeployFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   @SuppressWarnings("deprecation")
@@ -107,11 +113,6 @@ public class DeployFunction implements InternalFunction<Object[]> {
     } finally {
       deleteStagingDir(stagingDir);
     }
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 
   @Override

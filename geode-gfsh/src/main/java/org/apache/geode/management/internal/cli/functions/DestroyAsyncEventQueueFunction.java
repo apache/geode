@@ -31,6 +31,14 @@ public class DestroyAsyncEventQueueFunction
 
   private static final long serialVersionUID = -7754359270344102817L;
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
+
   @Override
   public void execute(FunctionContext<DestroyAsyncEventQueueFunctionArgs> context) {
     DestroyAsyncEventQueueFunctionArgs aeqArgs =
@@ -73,10 +81,5 @@ public class DestroyAsyncEventQueueFunction
 
   XmlEntity getAEQXmlEntity(String key, String value) {
     return new XmlEntity(CacheXml.ASYNC_EVENT_QUEUE, key, value);
-  }
-
-  @Override
-  public String getId() {
-    return DestroyAsyncEventQueueFunction.class.getName();
   }
 }

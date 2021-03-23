@@ -55,10 +55,16 @@ public class NetstatFunction implements InternalFunction<NetstatFunction.Netstat
   @Immutable
   public static final NetstatFunction INSTANCE = new NetstatFunction();
 
-  private static final String ID = NetstatFunction.class.getName();
-
   private static final String NETSTAT_COMMAND = "netstat";
   private static final String LSOF_COMMAND = "lsof";
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.NetstatFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public boolean hasResult() {
@@ -228,11 +234,6 @@ public class NetstatFunction implements InternalFunction<NetstatFunction.Netstat
     }
 
     return netstatInfo.toString();
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 
   @Override

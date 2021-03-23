@@ -33,8 +33,15 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  *
  */
 public class ImportDataFunction implements InternalFunction<Object[]> {
-
   private static final long serialVersionUID = 1L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ImportDataFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<Object[]> context) {
@@ -77,10 +84,4 @@ public class ImportDataFunction implements InternalFunction<Object[]> {
 
     context.getResultSender().lastResult(result);
   }
-
-  @Override
-  public String getId() {
-    return ImportDataFunction.class.getName();
-  }
-
 }

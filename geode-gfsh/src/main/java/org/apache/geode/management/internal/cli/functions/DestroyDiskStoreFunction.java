@@ -32,6 +32,14 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class DestroyDiskStoreFunction implements InternalFunction<DestroyDiskStoreFunctionArgs> {
   private static final long serialVersionUID = 1L;
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.DestroyDiskStoreFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
+
   @Override
   @SuppressWarnings("deprecation")
   public void execute(FunctionContext<DestroyDiskStoreFunctionArgs> context) {
