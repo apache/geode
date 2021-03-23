@@ -125,6 +125,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.cache.wan.internal.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
