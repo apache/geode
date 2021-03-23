@@ -27,10 +27,6 @@ org/apache/geode/internal/cache/ServerBuilder$SocketCreatorType
 org/apache/geode/internal/cache/UserSpecifiedDiskStoreAttributes
 org/apache/geode/internal/cache/backup/BackupWriterFactory
 org/apache/geode/internal/cache/backup/BackupWriterFactory$1
-org/apache/geode/internal/cache/client/protocol/exception/ServiceLoadingFailureException
-org/apache/geode/internal/cache/client/protocol/exception/ServiceVersionNotFoundException
-org/apache/geode/internal/cache/client/protocol/exception/ServiceLoadingFailureException
-org/apache/geode/internal/cache/client/protocol/exception/ServiceVersionNotFoundException
 org/apache/geode/internal/cache/tier/CommunicationMode
 org/apache/geode/internal/cache/tier/InternalClientMembership$EventType
 org/apache/geode/internal/cache/tier/sockets/CacheClientNotifier$1
