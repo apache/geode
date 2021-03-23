@@ -42,10 +42,11 @@ public class ExtendedNumericComparator extends NumericComparator implements Comp
     if (obj1.getClass() != obj2.getClass() && (obj1 instanceof Number && obj2 instanceof Number)) {
       return super.compare(obj1, obj2);
     } else if (obj2 instanceof Undefined && !(obj1 instanceof Undefined)) {
-      // Everthing should be greater than Undefined
+      // Everything should be greater than Undefined
       return 1;
-    } else if (obj2 instanceof NullToken && !(obj1 instanceof NullToken)) {
-      // Everthing should be greater than Null
+    } else if (obj2 instanceof NullToken && !(obj1 instanceof Undefined)
+        && !(obj1 instanceof NullToken)) {
+      // Everything should be greater than Null except for Undefined
       return 1;
     }
 
