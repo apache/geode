@@ -22,7 +22,11 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -47,9 +51,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
+import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -245,6 +251,28 @@ public class QueueManagerJUnitTest {
     });
 
     assertPortEquals(2, manager.getAllConnections().getPrimary());
+  }
+
+  @Test
+  public void testThrowsServerRefusedConnectionException() {
+    String serverRefusedConnectionExceptionMessage =
+        "Peer or client version with ordinal x not supported. Highest known version is x.x.x.";
+    // Spy the factory so that the createClientToServerConnection method can be mocked
+    DummyFactory factorySpy = spy(factory);
+    manager = new QueueManagerImpl(pool, endpoints, source, factorySpy, 2, 20, logger,
+        ClientProxyMembershipID.getNewProxyMembership(ds));
+    // Cause a ServerRefusedConnectionException to be thrown from createClientToServerConnection
+    ServerRefusedConnectionException e =
+        new ServerRefusedConnectionException(mock(DistributedMember.class),
+            serverRefusedConnectionExceptionMessage);
+    ServerLocation sl = new ServerLocation("localhost", 1);
+    when(factorySpy.createClientToServerConnection(sl, true)).thenThrow(e);
+    // Add a server connection
+    factory.addConnection(0, 0, 1);
+    // Attempt to start the manager
+    assertThatThrownBy(() -> manager.start(background))
+        .isInstanceOf(ServerRefusedConnectionException.class)
+        .hasMessageContaining(serverRefusedConnectionExceptionMessage);
   }
 
   private static void assertPortEquals(int expected, Connection actual) {

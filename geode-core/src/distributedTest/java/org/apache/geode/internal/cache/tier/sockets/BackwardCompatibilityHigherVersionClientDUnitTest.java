@@ -18,6 +18,7 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -34,6 +35,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.ClientSideHandshakeImpl;
 import org.apache.geode.cache.client.internal.ConnectionFactoryImpl;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -156,13 +158,17 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
    */
   @Test
   public void testHigherVersionedClient() {
-    Integer port1 = ((Integer) server1
+    Integer port1 = (server1
         .invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.createServerCache()));
 
     client1.invoke(
         () -> BackwardCompatibilityHigherVersionClientDUnitTest.setHandshakeVersionForTesting());
-    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port1));
+
+    assertThatThrownBy(() -> client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port1)))
+            .getCause().isInstanceOf(ServerRefusedConnectionException.class)
+            .hasMessageContaining("refused connection: Peer or client version with ordinal");
+
     client1.invoke(
         () -> BackwardCompatibilityHigherVersionClientDUnitTest.verifyConnectionToServerFailed());
   }
