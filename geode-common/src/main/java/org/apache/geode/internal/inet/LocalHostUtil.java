@@ -243,7 +243,7 @@ public class LocalHostUtil {
   }
 
   public static boolean isWildcardAddress(String address) {
-    return (address != null && (address.equals("0.0.0.0") || address.equals("::")));
+    return ("0.0.0.0".equals(address) || "::".equals(address));
   }
 
   /**
