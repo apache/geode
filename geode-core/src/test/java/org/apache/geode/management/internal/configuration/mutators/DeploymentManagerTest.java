@@ -22,17 +22,32 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class DeploymentManagerTest {
+
+  private Function<String, Deployment> function;
+
+  public DeploymentManagerTest(Function<String, Deployment> function) {
+    this.function = function;
+  }
+
   @Test
   public void listWithNullJarNameReturnsAllDeployedJarsForGroup() {
 
@@ -50,8 +65,7 @@ public class DeploymentManagerTest {
 
     DeploymentManager manager = new DeploymentManager(persistenceService);
 
-    Deployment filter = new Deployment();
-    filter.setDeploymentName(null);
+    Deployment filter = function.apply(null);
 
     List<Deployment> result = manager.list(filter, "some-group");
 
@@ -79,8 +93,7 @@ public class DeploymentManagerTest {
 
     DeploymentManager manager = new DeploymentManager(persistenceService);
 
-    Deployment filter = new Deployment();
-    filter.setFileName(requestedJarFile);
+    Deployment filter = function.apply(requestedJarFile);
 
     List<Deployment> result = manager.list(filter, "some-group");
 
@@ -98,8 +111,7 @@ public class DeploymentManagerTest {
 
     DeploymentManager manager = new DeploymentManager(persistenceService);
 
-    Deployment filter = new Deployment();
-    filter.setDeploymentName("jarFileThatHasNotBeenDeployed.jar");
+    Deployment filter = function.apply("jarFileThatHasNotBeenDeployed.jar");
 
     List<Deployment> result = manager.list(filter, "some-group");
 
@@ -114,10 +126,23 @@ public class DeploymentManagerTest {
 
     DeploymentManager manager = new DeploymentManager(persistenceService);
 
-    Deployment filter = new Deployment();
+    Deployment filter = function.apply(null);
 
     List<Deployment> result = manager.list(filter, "some-group");
 
     assertThat(result).isEmpty();
+  }
+
+  @Parameters
+  public static List<Function<String, Deployment>> consumers() {
+    return Arrays.asList(name -> {
+      Deployment deployment = new Deployment();
+      deployment.setFileName(name);
+      return deployment;
+    }, name -> {
+      Deployment deployment = new Deployment();
+      deployment.setDeploymentName(name);
+      return deployment;
+    });
   }
 }

@@ -82,6 +82,22 @@ public class DeployJarAcceptanceTest {
   }
 
   @Test
+  public void testDeployExistingJar() throws IOException {
+    GfshScript.of(getLocatorGFSHConnectionString(),
+        "deploy --jar=" + jarFile.getCanonicalPath()).execute(gfshRule);
+
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed")
+        .execute(gfshRule).getOutputText()).contains(jarFile.getName()).contains("JAR Location");
+
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(),
+        "deploy --jar=" + jarFile.getCanonicalPath()).execute(gfshRule).getOutputText())
+            .contains("Already deployed");
+
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed")
+        .execute(gfshRule).getOutputText()).contains(jarFile.getName()).contains("JAR Location");
+  }
+
+  @Test
   public void testDeployJarWithDeploymentName() throws IOException {
     GfshScript.of(getLocatorGFSHConnectionString(),
         "deploy --name=myDeployment --jar=" + jarFile.getCanonicalPath()).execute(gfshRule);

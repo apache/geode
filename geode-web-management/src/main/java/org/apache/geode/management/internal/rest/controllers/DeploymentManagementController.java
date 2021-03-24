@@ -57,7 +57,7 @@ public class DeploymentManagementController extends AbstractManagementController
   @Autowired
   private Jackson2ObjectMapperFactoryBean objectMapper;
 
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @ApiOperation(value = "list deployed")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")

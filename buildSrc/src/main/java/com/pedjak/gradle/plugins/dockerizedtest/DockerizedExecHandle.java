@@ -326,8 +326,8 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
       }
       if (!stateIn(ExecHandleState.STARTED, ExecHandleState.DETACHED)) {
         throw new IllegalStateException(
-            format("Cannot abort process '%s' because it is not in started or detached state. It is currently in state: '%s'",state,
-                displayName));
+            format("Cannot abort process '%s' because it is not in started or detached state. It is currently in state: '%s'",
+                displayName,state));
       }
       execHandleRunner.abortProcess();
       waitForFinish();

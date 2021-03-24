@@ -83,7 +83,8 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
   }
 
   public void setDeploymentName(String deploymentName) {
-    this.deploymentName = deploymentName;
+    this.deploymentName =
+        deploymentName != null ? JarFileUtils.getArtifactId(deploymentName) : null;
   }
 
   public void setDeploymentsToDependOn(List<String> deploymentsToDependOn) {
