@@ -249,7 +249,7 @@ public class KnownVersion extends AbstractVersion {
   @Immutable
   public static final KnownVersion GEODE_1_14_0 =
       new KnownVersion("GEODE", "1.14.0", (byte) 1, (byte) 14, (byte) 0, (byte) 0,
-          GEODE_1_14_0_ORDINAL, true);
+          GEODE_1_14_0_ORDINAL);
 
   private static final short GEODE_1_15_0_ORDINAL = 150;
 
