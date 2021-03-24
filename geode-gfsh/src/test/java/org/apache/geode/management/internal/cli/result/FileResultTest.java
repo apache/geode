@@ -25,31 +25,30 @@ import org.junit.Test;
 import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
-
 public class FileResultTest {
 
   private ResultModel fileResult;
 
   @Before
-  public void before() {
+  public void setUp() {
     fileResult = new ResultModel();
   }
 
   @Test
-  public void getFormattedFileList() {
+  public void getFormattedFileListReturnsCommaDelimitedStringOfFiles() {
     fileResult.addFile(new File("file1.txt"), FileResultModel.FILE_TYPE_FILE);
     fileResult.addFile(new File("file2.txt"), FileResultModel.FILE_TYPE_FILE);
+
     assertThat(fileResult.getFormattedFileList()).isEqualTo("file1.txt, file2.txt");
   }
 
   @Test
-  public void getFiles() {
-    assertThat(fileResult.getFiles()).isEmpty();
-
+  public void getFileListReturnsListOfFilesInAnyOrder() {
     File file1 = new File("file1.txt");
     File file2 = new File("file2.txt");
     fileResult.addFile(file1, FileResultModel.FILE_TYPE_FILE);
     fileResult.addFile(file2, FileResultModel.FILE_TYPE_FILE);
+
     assertThat(fileResult.getFileList()).containsExactlyInAnyOrder(file1, file2);
   }
 }

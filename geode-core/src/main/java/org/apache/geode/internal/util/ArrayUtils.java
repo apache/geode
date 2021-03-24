@@ -386,4 +386,20 @@ public abstract class ArrayUtils {
     return new ArrayList<>(Arrays.asList(array));
   }
 
+  /**
+   * Assigns the specified typed reference to each element of the specified
+   * typed array.
+   *
+   * @param array the array to be filled
+   * @param value the value to be stored in all elements of the array
+   * @return the specified typed array filled with the specified typed reference
+   * @throws ArrayStoreException if the specified value is not of a runtime type that can be stored
+   *         in the specified array
+   */
+  public static <T> T[] fill(T[] array, T value) {
+    for (int i = 0, length = array.length; i < length; i++) {
+      array[i] = value;
+    }
+    return array;
+  }
 }
