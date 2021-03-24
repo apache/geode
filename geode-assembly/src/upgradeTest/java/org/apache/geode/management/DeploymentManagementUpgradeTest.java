@@ -34,7 +34,7 @@ import org.junit.runners.Parameterized;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;

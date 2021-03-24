@@ -33,6 +33,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 
 public class ClusterManagementServiceBuilderTest {
 

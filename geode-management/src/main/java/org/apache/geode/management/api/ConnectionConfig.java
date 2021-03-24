@@ -22,7 +22,7 @@ import javax.net.ssl.SSLContext;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 
 /**
  * Concrete implementation of {@link ConnectionConfig} which can be used where the various
