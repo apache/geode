@@ -59,7 +59,11 @@ public class JarDeployer implements Serializable {
   }
 
   public JarDeployer(final File deployDirectory) {
-    this.deployDirectory = deployDirectory;
+    if (deployDirectory == null) {
+      this.deployDirectory = new File(System.getProperty("user.dir"));
+    } else {
+      this.deployDirectory = deployDirectory;
+    }
   }
 
   /**

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.deployment.internal;
+package org.apache.geode.deployment.internal.legacy;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +33,10 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
+import org.apache.geode.deployment.internal.DeployedJar;
+import org.apache.geode.deployment.internal.JarDeployer;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.pdx.internal.TypeRegistry;
@@ -42,7 +45,7 @@ import org.apache.geode.services.result.impl.Failure;
 import org.apache.geode.services.result.impl.Success;
 
 /**
- * Implementation of {@link JarDeploymentService} that encpsulates the standard method of deploying
+ * Implementation of {@link JarDeploymentService} that encapsulates the standard method of deploying
  * jars by delegating to the {@link JarDeployer}.
  *
  * @since Geode 1.15
@@ -53,9 +56,8 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
   private static final Logger logger = LogService.getLogger();
 
   private final Map<String, Deployment> deployments = new ConcurrentHashMap<>();
-  private JarDeployer jarDeployer = new JarDeployer();
-
   private final FunctionToFileTracker functionToFileTracker = new FunctionToFileTracker();
+  private JarDeployer jarDeployer = new JarDeployer();
 
   @Override
   public synchronized ServiceResult<Deployment> deploy(Deployment deployment) {
@@ -75,8 +77,13 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
         deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
         logger.debug("Deployments List size after add: {}", deployments.size());
         logger.debug("Deployment copy to return: {}", deploymentCopy);
-        functionToFileTracker.registerFunctionsFromFile(deploymentCopy.getDeploymentName(),
-            deploymentCopy.getFile());
+        try {
+          functionToFileTracker.registerFunctionsFromFile(deploymentCopy.getDeploymentName(),
+              deploymentCopy.getFile());
+        } catch (ClassNotFoundException | IOException e) {
+          jarDeployer.undeploy(deployment.getDeploymentName());
+          return Failure.of(e);
+        }
         return Success.of(deploymentCopy);
       }
     } catch (IOException | ClassNotFoundException e) {
@@ -135,6 +142,7 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
             .filter(deployment -> deployment.getFileName().equals(fileName))
             .map(Deployment::getDeploymentName)
             .collect(Collectors.toList());
+    jarDeployer.deleteAllVersionsOfJar(fileName);
     logger.debug("Deployments found for file: {}",
         Arrays.toString(deploymentNamesFromFileName.toArray()));
     if (deploymentNamesFromFileName.size() > 1) {
@@ -192,7 +200,7 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
         functionToFileTracker.registerFunctionsFromFile(deployment.getDeploymentName(),
             deployment.getFile());
       }
-    } catch (ClassNotFoundException e) {
+    } catch (ClassNotFoundException | IOException e) {
       logger.error(e);
       throw new RuntimeException(e);
     } finally {
@@ -202,10 +210,13 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
 
   @Override
   public void close() {
+    String[] deploymentNames = deployments.keySet().toArray(new String[] {});
     logger
         .debug("Closing LegacyJarDeploymentService. The following Deployments will be removed: {}",
-            Arrays.toString(deployments.keySet().toArray()));
-    deployments.keySet().forEach(this::undeployByDeploymentName);
+            Arrays.toString(deploymentNames));
+    for (String deploymentName : deploymentNames) {
+      undeployByDeploymentName(deploymentName);
+    }
   }
 
   private Deployment createDeployment(DeployedJar deployedJar) {
