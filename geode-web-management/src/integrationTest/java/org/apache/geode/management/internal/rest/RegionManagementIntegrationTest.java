@@ -44,7 +44,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
 import org.apache.geode.management.configuration.Region;

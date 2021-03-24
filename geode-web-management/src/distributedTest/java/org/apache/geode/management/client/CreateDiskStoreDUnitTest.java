@@ -49,6 +49,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.DiskDir;
 import org.apache.geode.management.configuration.DiskStore;
 import org.apache.geode.management.configuration.Region;

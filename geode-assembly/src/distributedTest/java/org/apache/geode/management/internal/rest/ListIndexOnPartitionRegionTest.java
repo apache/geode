@@ -30,7 +30,7 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
 import org.apache.geode.management.configuration.Region;

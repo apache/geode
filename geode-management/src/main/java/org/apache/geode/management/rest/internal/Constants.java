@@ -12,11 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
 
-/**
- * lazy-initialization interface
- */
-public interface Dormant {
-  void wakeUp();
+package org.apache.geode.management.rest.internal;
+
+public interface Constants {
+  /**
+   * used by ClientCMS to request additional rest information to help with deserialization
+   */
+  String INCLUDE_CLASS_HEADER = "X-Include-Class";
 }

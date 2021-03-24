@@ -40,7 +40,7 @@ import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.operation.RestoreRedundancyRequest;
 import org.apache.geode.management.runtime.RegionRedundancyStatus;
 import org.apache.geode.management.runtime.RestoreRedundancyResults;

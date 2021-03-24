@@ -37,7 +37,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.DiskDir;
 import org.apache.geode.management.configuration.DiskStore;
 import org.apache.geode.management.configuration.Index;

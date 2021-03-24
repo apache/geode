@@ -46,7 +46,7 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.ConnectionConfig;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfo;
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
 import org.apache.geode.management.internal.functions.GetMemberInformationFunction;

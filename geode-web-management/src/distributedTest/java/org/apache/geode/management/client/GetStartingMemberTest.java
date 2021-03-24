@@ -39,6 +39,7 @@ import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;

@@ -40,7 +40,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.EntityGroupInfo;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;

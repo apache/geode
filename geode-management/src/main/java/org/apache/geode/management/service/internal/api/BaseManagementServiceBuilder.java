@@ -13,7 +13,7 @@
  * the License.
  *
  */
-package org.apache.geode.management.internal.api;
+package org.apache.geode.management.service.internal.api;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -22,7 +22,7 @@ import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ClusterManagementServiceTransport;
 import org.apache.geode.management.api.ConnectionConfig;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
-import org.apache.geode.management.internal.ClientClusterManagementService;
+import org.apache.geode.management.cluster.client.internal.ClientClusterManagementService;
 
 public abstract class BaseManagementServiceBuilder<T extends BaseManagementServiceBuilder<?>> {
 

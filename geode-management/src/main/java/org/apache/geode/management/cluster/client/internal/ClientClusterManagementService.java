@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal;
+package org.apache.geode.management.cluster.client.internal;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;

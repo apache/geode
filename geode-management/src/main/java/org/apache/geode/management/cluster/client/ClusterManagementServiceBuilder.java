@@ -14,13 +14,13 @@
  *
  */
 
-package org.apache.geode.management.client;
+package org.apache.geode.management.cluster.client;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.ClusterManagementServiceTransport;
 import org.apache.geode.management.api.ConnectionConfig;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
-import org.apache.geode.management.internal.api.BaseManagementServiceBuilder;
+import org.apache.geode.management.service.internal.api.BaseManagementServiceBuilder;
 
 /**
  * This builder facilitates creating a ClusterManagementService using either (or both) a {@link
