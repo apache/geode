@@ -142,6 +142,18 @@ public class QueryCommandDUnitTestBase {
   }
 
   @Test
+  public void testSimpleQueryWithEscapingCharacter() {
+    server1.invoke(() -> prepareDataForRegionWithSpecialCharacters(DATA_PAR_REGION_NAME_PATH));
+    String query = "query --query=\"select * from " + DATA_PAR_REGION_NAME_PATH
+        + " e where e LIKE 'value\\$'\"";
+    String query1 = "query --query=\"select * from " + DATA_PAR_REGION_NAME_PATH
+        + " e where e LIKE 'value\\%'\"";
+
+    gfsh.executeAndAssertThat(query).statusIsSuccess().containsOutput("value$");
+    gfsh.executeAndAssertThat(query1).statusIsSuccess().containsOutput("value%");
+  }
+
+  @Test
   public void testSimpleQueryOnLocator() {
     server1.invoke(() -> prepareDataForRegion(DATA_PAR_REGION_NAME_PATH));
 
@@ -198,6 +210,14 @@ public class QueryCommandDUnitTestBase {
     for (int j = 0; j < 10; j++) {
       dataRegion.put(new Integer(j), new Portfolio(j));
     }
+  }
+
+  private static void prepareDataForRegionWithSpecialCharacters(String regionPath) {
+    InternalCache cache = ClusterStartupRule.getCache();
+    Region<Integer, String> dataRegion = cache.getRegion(regionPath);
+
+    dataRegion.put(1, "value$");
+    dataRegion.put(2, "value%");
   }
 
   private static void prepareNotDeserializableDataForRegion(String regionPath) {
