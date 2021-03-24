@@ -355,7 +355,10 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         // for testing
         VersioningIO.writeOrdinal(hdos, overrideClientVersion, true);
       } else {
-        VersioningIO.writeOrdinal(hdos, currentClientVersion.ordinal(), true);
+        VersioningIO.writeOrdinal(hdos,
+            communicationMode.isWAN() ? KnownVersion.CURRENT_ORDINAL
+                : currentClientVersion.ordinal(),
+            true);
       }
 
       hdos.writeByte(replyCode);

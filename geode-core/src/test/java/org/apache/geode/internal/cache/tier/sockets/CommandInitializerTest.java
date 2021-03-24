@@ -89,11 +89,12 @@ public class CommandInitializerTest {
 
   @Test
   public void testCommandMapContainsAllVersions() {
-    for (KnownVersion version : KnownVersion.getAllVersions()) {
-      if (version.isNotOlderThan(KnownVersion.OLDEST)) {
+    for (KnownVersion productVersion : KnownVersion.getAllVersions()) {
+      KnownVersion protocolVersion = productVersion.getClientServerProtocolVersion();
+      if (protocolVersion.isNotOlderThan(KnownVersion.OLDEST)) {
         org.junit.Assert.assertNotNull(
-            "Please add a command set for " + version + " of Geode to CommandInitializer",
-            CommandInitializer.getDefaultInstance().get(version));
+            "Please add a command set for " + protocolVersion + " of Geode to CommandInitializer",
+            CommandInitializer.getDefaultInstance().get(protocolVersion));
       }
     }
   }
@@ -206,7 +207,8 @@ public class CommandInitializerTest {
   @Test
   public void commandMapUnmodifiable() {
     final CommandInitializer commandInitializer = new CommandInitializer();
-    final Map<Integer, Command> commands = commandInitializer.get(KnownVersion.CURRENT);
+    final Map<Integer, Command> commands =
+        commandInitializer.get(KnownVersion.CURRENT.getClientServerProtocolVersion());
     assertThatThrownBy(() -> commands.put(1, Put70.getCommand()))
         .isInstanceOf(UnsupportedOperationException.class);
   }
@@ -215,10 +217,11 @@ public class CommandInitializerTest {
   public void newlyRegisteredCommandsVisibleInCommandMap() {
     final Command command = mock(Command.class);
     Map<KnownVersion, Command> newCommandMap = new HashMap<>();
-    newCommandMap.put(KnownVersion.CURRENT, command);
+    newCommandMap.put(KnownVersion.CURRENT.getClientServerProtocolVersion(), command);
 
     final CommandInitializer commandInitializer = new CommandInitializer();
-    final Map<Integer, Command> commands = commandInitializer.get(KnownVersion.CURRENT);
+    final Map<Integer, Command> commands =
+        commandInitializer.get(KnownVersion.CURRENT.getClientServerProtocolVersion());
     assertThat(commands).doesNotContainKeys(-2);
     commandInitializer.register(-2, newCommandMap);
     assertThat(commands).containsEntry(-2, command);
