@@ -63,8 +63,8 @@ import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.offheap.OffHeapClearRequired;
 import org.apache.geode.internal.offheap.OffHeapHelper;
-import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -433,7 +433,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
               boolean tombstone = re.isTombstone();
               // note: it.remove() did not reliably remove the entry so we use remove(K,V) here
               if (getEntryMap().remove(re.getKey(), re)) {
-                if (OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap()) {
+                if (OffHeapClearRequired.doesClearNeedToCheckForOffHeap()) {
                   GatewaySenderEventImpl.release(re.getValue()); // OFFHEAP _getValue ok
                 }
                 // If this is an overflow only region, we need to free the entry on

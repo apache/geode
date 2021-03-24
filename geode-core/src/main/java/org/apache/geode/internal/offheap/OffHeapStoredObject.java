@@ -260,13 +260,6 @@ public class OffHeapStoredObject extends AbstractStoredObject
     return getDataSize(this.memoryAddress);
   }
 
-  protected static int getDataSize(long memoryAdress) {
-    int dataSizeDelta = AddressableMemoryManager.readInt(memoryAdress + REF_COUNT_OFFSET);
-    dataSizeDelta &= DATA_SIZE_DELTA_MASK;
-    dataSizeDelta >>= DATA_SIZE_SHIFT;
-    return getSize(memoryAdress) - dataSizeDelta;
-  }
-
   protected long getBaseDataAddress() {
     return this.memoryAddress + HEADER_SIZE;
   }
@@ -370,7 +363,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
 
   @Override
   public void release() {
-    release(this.memoryAddress);
+    ReferenceCounter.release(this.memoryAddress);
   }
 
   @Override
@@ -481,44 +474,12 @@ public class OffHeapStoredObject extends AbstractStoredObject
 
   @Override
   public boolean retain() {
-    return retain(this.memoryAddress);
+    return ReferenceCounter.retain(this.memoryAddress);
   }
 
   @Override
   public int getRefCount() {
-    return getRefCount(this.memoryAddress);
-  }
-
-  public static int getSize(long memAddr) {
-    MemoryAllocatorImpl.validateAddress(memAddr);
-    return AddressableMemoryManager.readInt(memAddr + CHUNK_SIZE_OFFSET);
-  }
-
-  public static void setSize(long memAddr, int size) {
-    MemoryAllocatorImpl.validateAddressAndSize(memAddr, size);
-    AddressableMemoryManager.writeInt(memAddr + CHUNK_SIZE_OFFSET, size);
-  }
-
-  public static long getNext(long memAddr) {
-    MemoryAllocatorImpl.validateAddress(memAddr);
-    return AddressableMemoryManager.readLong(memAddr + HEADER_SIZE);
-  }
-
-  public static void setNext(long memAddr, long next) {
-    MemoryAllocatorImpl.validateAddress(memAddr);
-    AddressableMemoryManager.writeLong(memAddr + HEADER_SIZE, next);
-  }
-
-  /**
-   * Fills the chunk with a repeated byte fill pattern.
-   *
-   * @param baseAddress the starting address for a {@link OffHeapStoredObject}.
-   */
-  public static void fill(long baseAddress) {
-    long startAddress = baseAddress + MIN_CHUNK_SIZE;
-    int size = getSize(baseAddress) - MIN_CHUNK_SIZE;
-
-    AddressableMemoryManager.fill(startAddress, size, FILL_BYTE);
+    return ReferenceCounter.getRefCount(this.memoryAddress);
   }
 
   /**
@@ -617,98 +578,6 @@ public class OffHeapStoredObject extends AbstractStoredObject
         rawBits, rawBits + 1));
   }
 
-  public static int getRefCount(long memAddr) {
-    return AddressableMemoryManager.readInt(memAddr + REF_COUNT_OFFSET) & REF_COUNT_MASK;
-  }
-
-  public static boolean retain(long memAddr) {
-    MemoryAllocatorImpl.validateAddress(memAddr);
-    int uc;
-    int rawBits;
-    int retryCount = 0;
-    do {
-      rawBits = AddressableMemoryManager.readIntVolatile(memAddr + REF_COUNT_OFFSET);
-      if ((rawBits & MAGIC_MASK) != MAGIC_NUMBER) {
-        // same as uc == 0
-        // TODO MAGIC_NUMBER rethink its use and interaction with compactor fragments
-        return false;
-      }
-      uc = rawBits & REF_COUNT_MASK;
-      if (uc == MAX_REF_COUNT) {
-        throw new IllegalStateException(
-            "Maximum use count exceeded. rawBits=" + Integer.toHexString(rawBits));
-      } else if (uc == 0) {
-        return false;
-      }
-      retryCount++;
-      if (retryCount > 1000) {
-        throw new IllegalStateException("tried to write " + (rawBits + 1) + " to @"
-            + Long.toHexString(memAddr) + " 1,000 times.");
-      }
-    } while (!AddressableMemoryManager.writeIntVolatile(memAddr + REF_COUNT_OFFSET, rawBits,
-        rawBits + 1));
-    // debugLog("use inced ref count " + (uc+1) + " @" + Long.toHexString(memAddr), true);
-    if (ReferenceCountHelper.trackReferenceCounts()) {
-      ReferenceCountHelper.refCountChanged(memAddr, false, uc + 1);
-    }
-
-    return true;
-  }
-
-  public static void release(final long memAddr) {
-    release(memAddr, null);
-  }
-
-  static void release(final long memAddr, FreeListManager freeListManager) {
-    MemoryAllocatorImpl.validateAddress(memAddr);
-    int newCount;
-    int rawBits;
-    boolean returnToAllocator;
-    do {
-      returnToAllocator = false;
-      rawBits = AddressableMemoryManager.readIntVolatile(memAddr + REF_COUNT_OFFSET);
-      if ((rawBits & MAGIC_MASK) != MAGIC_NUMBER) {
-        String msg = "It looks like off heap memory @" + Long.toHexString(memAddr)
-            + " was already freed. rawBits=" + Integer.toHexString(rawBits) + " history="
-            + ReferenceCountHelper.getFreeRefCountInfo(memAddr);
-        // debugLog(msg, true);
-        throw new IllegalStateException(msg);
-      }
-      int curCount = rawBits & REF_COUNT_MASK;
-      if ((curCount) == 0) {
-        // debugLog("too many frees @" + Long.toHexString(memAddr), true);
-        throw new IllegalStateException(
-            "Memory has already been freed." + " history=" + ReferenceCountHelper
-                .getFreeRefCountInfo(memAddr) /* + System.identityHashCode(this) */);
-      }
-      if (curCount == 1) {
-        newCount = 0; // clear the use count, bits, and the delta size since it will be freed.
-        returnToAllocator = true;
-      } else {
-        newCount = rawBits - 1;
-      }
-    } while (!AddressableMemoryManager.writeIntVolatile(memAddr + REF_COUNT_OFFSET, rawBits,
-        newCount));
-    // debugLog("free deced ref count " + (newCount&USE_COUNT_MASK) + " @" +
-    // Long.toHexString(memAddr), true);
-    if (returnToAllocator) {
-      if (ReferenceCountHelper.trackReferenceCounts()) {
-        if (ReferenceCountHelper.trackFreedReferenceCounts()) {
-          ReferenceCountHelper.refCountChanged(memAddr, true, newCount & REF_COUNT_MASK);
-        }
-        ReferenceCountHelper.freeRefCountInfo(memAddr);
-      }
-      if (freeListManager == null) {
-        freeListManager = MemoryAllocatorImpl.getAllocator().getFreeListManager();
-      }
-      freeListManager.free(memAddr);
-    } else {
-      if (ReferenceCountHelper.trackReferenceCounts()) {
-        ReferenceCountHelper.refCountChanged(memAddr, true, newCount & REF_COUNT_MASK);
-      }
-    }
-  }
-
   @Override
   public String toString() {
     return super.toString() + ":<dataSize=" + getDataSize() + " refCount=" + getRefCount()
@@ -762,5 +631,46 @@ public class OffHeapStoredObject extends AbstractStoredObject
   @Override
   public boolean hasRefCount() {
     return true;
+  }
+
+  // ---------------------------------- STATICS --------------------------------------
+
+  protected static int getDataSize(long memoryAdress) {
+    int dataSizeDelta = AddressableMemoryManager.readInt(memoryAdress + REF_COUNT_OFFSET);
+    dataSizeDelta &= DATA_SIZE_DELTA_MASK;
+    dataSizeDelta >>= DATA_SIZE_SHIFT;
+    return getSize(memoryAdress) - dataSizeDelta;
+  }
+
+  public static int getSize(long memAddr) {
+    MemoryAllocatorImpl.validateAddress(memAddr);
+    return AddressableMemoryManager.readInt(memAddr + CHUNK_SIZE_OFFSET);
+  }
+
+  public static void setSize(long memAddr, int size) {
+    MemoryAllocatorImpl.validateAddressAndSize(memAddr, size);
+    AddressableMemoryManager.writeInt(memAddr + CHUNK_SIZE_OFFSET, size);
+  }
+
+  public static long getNext(long memAddr) {
+    MemoryAllocatorImpl.validateAddress(memAddr);
+    return AddressableMemoryManager.readLong(memAddr + HEADER_SIZE);
+  }
+
+  public static void setNext(long memAddr, long next) {
+    MemoryAllocatorImpl.validateAddress(memAddr);
+    AddressableMemoryManager.writeLong(memAddr + HEADER_SIZE, next);
+  }
+
+  /**
+   * Fills the chunk with a repeated byte fill pattern.
+   *
+   * @param baseAddress the starting address for a {@link OffHeapStoredObject}.
+   */
+  public static void fill(long baseAddress) {
+    long startAddress = baseAddress + MIN_CHUNK_SIZE;
+    int size = getSize(baseAddress) - MIN_CHUNK_SIZE;
+
+    AddressableMemoryManager.fill(startAddress, size, FILL_BYTE);
   }
 }

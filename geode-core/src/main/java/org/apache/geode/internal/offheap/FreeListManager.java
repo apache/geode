@@ -75,7 +75,7 @@ public class FreeListManager {
         addr = f.getAddress() + f.getSize();
       } else {
         int curChunkSize = OffHeapStoredObject.getSize(addr);
-        int refCount = OffHeapStoredObject.getRefCount(addr);
+        int refCount = ReferenceCounter.getRefCount(addr);
         if (refCount > 0) {
           result.add(new OffHeapStoredObject(addr));
         }
