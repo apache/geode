@@ -32,9 +32,9 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.deployment.DeploymentServiceFactory;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -51,7 +51,7 @@ public class ClassPathLoaderDeployTest {
   @After
   public void resetClassPathLoader() {
     ClassPathLoader.setLatestToDefault();
-    JarDeploymentServiceFactory.shutdownJarDeploymentService();
+    DeploymentServiceFactory.shutdownJarDeploymentService();
   }
 
   @Test
@@ -133,7 +133,7 @@ public class ClassPathLoaderDeployTest {
     GemFireCache gemFireCache = server.getCache();
     DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
 
-    JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
+    DeploymentServiceFactory.getJarDeploymentServiceInstance()
         .deploy(createDeploymentFromJar(jarVersion1));
 
     assertThatClassCanBeLoaded("jddunit.function.MyFunction");
@@ -142,7 +142,7 @@ public class ClassPathLoaderDeployTest {
     List<String> result = (List<String>) execution.execute("MyFunction").getResult();
     assertThat(result.get(0)).isEqualTo("Version1");
 
-    JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
+    DeploymentServiceFactory.getJarDeploymentServiceInstance()
         .deploy(createDeploymentFromJar(jarVersion2));
     result = (List<String>) execution.execute("MyFunction").getResult();
     assertThat(result.get(0)).isEqualTo("Version2");

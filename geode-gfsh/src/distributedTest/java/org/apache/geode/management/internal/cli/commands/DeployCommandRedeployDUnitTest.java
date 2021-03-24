@@ -37,10 +37,10 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.internal.deployment.DeploymentServiceFactory;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -222,7 +222,7 @@ public class DeployCommandRedeployDUnitTest {
 
   private static void assertThatCanLoad(String jarName, String className)
       throws ClassNotFoundException {
-    assertThat(JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
+    assertThat(DeploymentServiceFactory.getJarDeploymentServiceInstance()
         .getDeployed(FilenameUtils.getBaseName(jarName)).isSuccessful()).isTrue();
     assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
   }

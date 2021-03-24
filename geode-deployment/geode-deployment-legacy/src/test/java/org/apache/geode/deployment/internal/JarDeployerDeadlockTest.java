@@ -37,6 +37,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.deployment.DeploymentServiceFactory;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.ClassBuilder;
 
@@ -52,19 +53,18 @@ public class JarDeployerDeadlockTest {
   @Before
   public void setup() throws Exception {
     File workingDir = temporaryFolder.newFolder();
-    // ClassPathLoader.setLatestToDefault(workingDir);
-    JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
+    DeploymentServiceFactory.getJarDeploymentServiceInstance()
         .reinitializeWithWorkingDirectory(workingDir);
     classBuilder = new ClassBuilder();
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     for (String functionName : FunctionService.getRegisteredFunctions().keySet()) {
       FunctionService.unregisterFunction(functionName);
     }
 
-    JarDeploymentServiceFactory.shutdownJarDeploymentService();
+    DeploymentServiceFactory.shutdownJarDeploymentService();
   }
 
   @Test
@@ -73,14 +73,14 @@ public class JarDeployerDeadlockTest {
     byte[] jarBytes = this.classBuilder.createJarFromName("JarClassLoaderJUnitA");
     File jarFile = temporaryFolder.newFile("JarClassLoaderJUnitA.jar");
     IOUtils.copy(new ByteArrayInputStream(jarBytes), new FileOutputStream(jarFile));
-    JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
+    DeploymentServiceFactory.getJarDeploymentServiceInstance()
         .deploy(createDeploymentFromJar(jarFile));
 
     jarBytes = this.classBuilder.createJarFromClassContent("com/jcljunit/JarClassLoaderJUnitB",
         "package com.jcljunit; public class JarClassLoaderJUnitB {}");
     File jarFile2 = temporaryFolder.newFile("JarClassLoaderJUnitB.jar");
     IOUtils.copy(new ByteArrayInputStream(jarBytes), new FileOutputStream(jarFile2));
-    JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
+    DeploymentServiceFactory.getJarDeploymentServiceInstance()
         .deploy(createDeploymentFromJar(jarFile2));
 
     String[] classNames = new String[] {"JarClassLoaderJUnitA", "com.jcljunit.JarClassLoaderJUnitB",

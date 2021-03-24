@@ -39,10 +39,10 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.deployment.DeploymentServiceFactory;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.utils.JarFileUtils;
@@ -189,7 +189,7 @@ public class ClusterConfig implements Serializable {
 
       for (String deploymentName : this.getDeploymentNames()) {
         ServiceResult<Deployment> serviceResult =
-            JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
+            DeploymentServiceFactory.getJarDeploymentServiceInstance()
                 .getDeployed(deploymentName);
         assertThat(serviceResult.isSuccessful()).isTrue();
         Deployment deployment = serviceResult.getMessage();
@@ -205,7 +205,7 @@ public class ClusterConfig implements Serializable {
         System.out.println("Verifying undeployed jar: " + jar);
 
         ServiceResult<Deployment> serviceResult =
-            JarDeploymentServiceFactory.getJarDeploymentServiceInstance().getDeployed(jar);
+            DeploymentServiceFactory.getJarDeploymentServiceInstance().getDeployed(jar);
         assertThat(serviceResult.isFailure()).isTrue();
       }
     });

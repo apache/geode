@@ -32,7 +32,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
+import org.apache.geode.internal.deployment.DeploymentServiceFactory;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.ClassBuilder;
 
@@ -57,7 +57,7 @@ public class FunctionToFileTrackerIntegrationTest {
     File functionJar = registerFunctionJar();
 
     Deployment deployment = createDeploymentFromJar(functionJar);
-    JarDeploymentServiceFactory.getJarDeploymentServiceInstance().deploy(deployment);
+    DeploymentServiceFactory.getJarDeploymentServiceInstance().deploy(deployment);
 
     Set<String> registeredFunctions = FunctionService.getRegisteredFunctions().keySet();
     assertThat(registeredFunctions.size()).isEqualTo(1);
@@ -79,7 +79,7 @@ public class FunctionToFileTrackerIntegrationTest {
         "jcljunit/parent/JarClassLoaderJUnitParent", stringBuffer.toString());
     writeJarBytesToFile(parentJarFile, jarBytes);
     Deployment parentDeployment = createDeploymentFromJar(parentJarFile);
-    JarDeploymentServiceFactory.getJarDeploymentServiceInstance().deploy(parentDeployment);
+    DeploymentServiceFactory.getJarDeploymentServiceInstance().deploy(parentDeployment);
 
     stringBuffer = new StringBuffer();
     stringBuffer.append("package jcljunit.uses;");
@@ -91,7 +91,7 @@ public class FunctionToFileTrackerIntegrationTest {
         stringBuffer.toString());
     writeJarBytesToFile(usesJarFile, jarBytes);
     Deployment userDeployment = createDeploymentFromJar(usesJarFile);
-    JarDeploymentServiceFactory.getJarDeploymentServiceInstance().deploy(userDeployment);
+    DeploymentServiceFactory.getJarDeploymentServiceInstance().deploy(userDeployment);
 
     stringBuffer = new StringBuffer();
     stringBuffer.append("package jcljunit.function;");
@@ -124,13 +124,13 @@ public class FunctionToFileTrackerIntegrationTest {
     File functionJar = registerFunctionJar();
 
     Deployment deployment = createDeploymentFromJar(functionJar);
-    JarDeploymentServiceFactory.getJarDeploymentServiceInstance().deploy(deployment);
+    DeploymentServiceFactory.getJarDeploymentServiceInstance().deploy(deployment);
 
     Set<String> registeredFunctions = FunctionService.getRegisteredFunctions().keySet();
     assertThat(registeredFunctions.size()).isEqualTo(1);
     assertThat(registeredFunctions).containsExactly("JarClassLoaderJUnitFunction");
 
-    JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
+    DeploymentServiceFactory.getJarDeploymentServiceInstance()
         .undeployByDeploymentName(deployment.getDeploymentName());
     registeredFunctions = FunctionService.getRegisteredFunctions().keySet();
     assertThat(registeredFunctions.size()).isEqualTo(0);

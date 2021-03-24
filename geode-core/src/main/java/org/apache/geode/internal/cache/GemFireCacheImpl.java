@@ -185,7 +185,6 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -243,6 +242,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlPropertyResolver;
 import org.apache.geode.internal.cache.xmlcache.PropertyResolver;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
+import org.apache.geode.internal.deployment.DeploymentServiceFactory;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
@@ -1493,7 +1493,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   void applyJarAndXmlFromClusterConfig() {
     if (configurationResponse == null) {
       // Deploy all the jars from the deploy working dir.
-      JarDeploymentServiceFactory.getJarDeploymentServiceInstance().loadJarsFromWorkingDirectory();
+      DeploymentServiceFactory.getJarDeploymentServiceInstance().loadJarsFromWorkingDirectory();
     }
     clusterConfigurationLoader.applyClusterXmlConfiguration(this, configurationResponse,
         system.getConfig().getGroups());
@@ -2163,7 +2163,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   boolean doClose(String reason, Throwable systemFailureCause, boolean keepAlive,
       boolean keepDS, boolean skipAwait) {
     securityService.close();
-    JarDeploymentServiceFactory.shutdownJarDeploymentService();
+    DeploymentServiceFactory.shutdownJarDeploymentService();
 
     if (waitIfClosing(skipAwait)) {
       return false;
