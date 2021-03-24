@@ -300,7 +300,7 @@ start locator --name=value [--bind-address=value] [--force(=value)]
 <td><span class="keyword parmname">\-\-bind-address</span></td>
 <td>The IP address on which the locator will be bound. The '*' character is accepted for wildcard addresses.
 <div class="note note">
-<b>Note:</b> In case the locator is bound to all local addresses, UDP membership-related traffic will be bound to the local host machine's address.
+<b>Note:</b> When the locator is bound to all local addresses, the default for UDP membership-related traffic is to bind to the local host machine's address.
 </div>
 </td>
 <td>bind to all addresses</td>
@@ -422,9 +422,7 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 <tr>
 <td><span class="keyword parmname">\-\-membership-bind-address</span></td>
 <td>Specifies the IP address to which the UDP membership-related traffic will be bound. If defined, it has precedence over the value of <code>bind-address</code>. Wildcard addresses are not accepted.
-<div class="note note">
-<b>Note:</b> By default, UDP membership-related traffic is bound to <code>bind-address</code> but there is one exception. In case the locator is bound to all local addresses, UDP membership-related traffic will be bound to the local host machine's address by default.
-</div></td>
+</td>
 <td>uses <code>bind-address</code></td>
 </tr>
 <tr>
@@ -540,7 +538,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <td><span class="keyword parmname">\-\-bind-address</span></td>
 <td>The IP address on which the server will be bound. The '*' character is accepted for wildcard addresses.
 <div class="note note">
-<b>Note:</b> In case the server is bound to all local addresses, UDP membership-related traffic will be bound to the local host machine's address.
+<b>Note:</b> When the server is bound to all local addresses, the default for UDP membership-related traffic is to bind to the local host machine's address.
 </div>
 </td>
 <td>binds to all local addresses</td>
@@ -623,9 +621,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <tr>
 <td><span class="keyword parmname">\-\-membership-bind-address</span></td>
 <td>Specifies the IP address to which the UDP membership-related traffic will be bound. If defined, it has precedence over the value of <code>bind-address</code>. Wildcard addresses are not accepted.
-<div class="note note">
-<b>Note:</b> By default, UDP membership-related traffic is bound to <code>bind-address</code> but there is one exception. In case the server is bound to all local addresses, UDP membership-related traffic will be bound to the local host machine's address by default.
-</div></td>
+</td>
 <td>uses <code>bind-address</code></td>
 </tr>
 <tr>
