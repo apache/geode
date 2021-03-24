@@ -98,9 +98,9 @@ org/apache/geode/management/internal/cli/functions/SizeExportLogsFunction,true,1
 org/apache/geode/management/internal/cli/functions/UndeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/UnregisterFunction,true,1
 org/apache/geode/management/internal/cli/functions/UserFunctionExecution,true,1
-org/apache/geode/management/internal/cli/result/CommandResultException,true,1,result:org/apache/geode/management/cli/Result
-org/apache/geode/management/internal/cli/result/TableBuilder$Align,false
-org/apache/geode/management/internal/cli/result/TableBuilder$TooManyColumnsException,false
+org/apache/geode/management/internal/cli/result/Align,false
+org/apache/geode/management/internal/cli/result/CommandResultException,true,1
+org/apache/geode/management/internal/cli/result/TooManyColumnsException,true,4703710831740034363
 org/apache/geode/management/internal/cli/shell/JMXConnectionException,true,3872374016604940917,exceptionType:int
 org/apache/geode/management/internal/cli/shell/JMXInvocationException,true,-4265451314790394366
 org/apache/geode/management/internal/cli/shell/jline/ANSIHandler$ANSIStyle,false
