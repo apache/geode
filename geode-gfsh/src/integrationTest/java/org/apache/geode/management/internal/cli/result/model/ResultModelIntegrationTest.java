@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.result.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,6 +94,7 @@ public class ResultModelIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void modelCommandResultShouldNotDealWithFiles() throws Exception {
     result.saveFileTo(temporaryFolder.newFolder("test"));
     Result commandResult = new CommandResult(result);
