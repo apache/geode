@@ -72,43 +72,12 @@ The <%=vars.product_name%> APIs compatible with Redis currently supports the fol
 
 -   **Connection**: AUTH, PING, QUIT
 -   **Hashes**: HDEL, HEXISTS, HGET, HGETALL, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HMSET, HSCAN, HSET, HSETNX, HSTRLEN, HVALS
--   **Keys**: DEL, EXISTS, EXPIRE, EXPIREAT, KEYS, PERSIST, PEXPIRE, PEXPIREAT, PTTL, RENAME, TTL,
-  TYPE
+-   **Keys**: DEL, EXISTS, EXPIRE, EXPIREAT, KEYS, PERSIST, PEXPIRE, PEXPIREAT, PTTL, RENAME, TTL,TYPE
 -   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE
 -   **Server**: SLOWLOG, INFO
 -   **Sets**: SADD, SMEMBERS, SREM
 -   **Strings**: APPEND, DECR, DECRBY, GET, GETRANGE, INCR, INCRBY, INCRBYFLOAT, MGET, SET, SETNX, STRLEN
 
-The following Redis commands are **unsupported** by <%=vars.produce_name%>'s APIs compatible with Redis. Unsupported
-commands are available to use, but have not been fully tested. There is no guarantee they will work
-exactly as expected.
-
--   **Connection**: ECHO, SELECT
--   **Keys**: SCAN, UNLINK
--   **Server**: DBSIZE, FLUSHALL (no async option), FLUSHDB (no async option), SHUTDOWN, TIME
--   **Sets**: SCARD, SDIFF, SDIFFSTORE, SINTER, SINTERSTORE, SISMEMBER, SMOVE, SPOP, SRANDMEMBER,
-  SSCAN, SUNION, SUNIONSTORE
--   **Strings**: BITCOUNT, BITOP, BITPOS, GETBIT, GETSET, MSET, MSETNX, PSETEX, SETBIT, SETEX, SETRANGE
-
-
-If you already have some Geode servers running that are compatible with Redis, you can execute the
-following command with gfsh to enable unsupported commands:
-
-```pre
-redis --enable-unsupported-commands
-```
-
-You can also enable unsupported commands when you start the Geode server by setting the Java property `enable-redis-unsupported-commands=true`:
-
-```pre
-start server \
-  --J=-Denable-redis-unsupported-commands=true \
-  --name=<serverName> \
-  --locators=<locatorPort> \
-  --compatible-with-redis-port=<compatibleWithRedisPort> \
-  --compatible-with-redis-bind-address=<compatibleWithRedisBindAddress> \
-  --compatible-with-redis-password=<compatibleWithRedisPassword>
-```
 
 Commands not listed above are **not implemented**.
 
