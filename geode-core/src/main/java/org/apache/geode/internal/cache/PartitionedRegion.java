@@ -4559,18 +4559,6 @@ public class PartitionedRegion extends LocalRegion
         }
       }
 
-      // Handle old nodes for Rolling Upgrade support
-      Set<Integer> failedSet = handleOldNodes(nodeToBuckets, values, servConn);
-      // Add failed buckets to nodeToBuckets map so that these will be tried on
-      // remote nodes.
-      if (!failedSet.isEmpty()) {
-        for (Integer bId : failedSet) {
-          failures.put(bId, bucketKeys.get(bId));
-        }
-        updateNodeToBucketMap(nodeToBuckets, failures);
-        failures.clear();
-      }
-
       fetchRemoteEntries(nodeToBuckets, failures, values, servConn);
       if (!failures.isEmpty()) {
         if (retryTime == null) {
@@ -4734,14 +4722,6 @@ public class PartitionedRegion extends LocalRegion
       // remote nodes.
       updateNodeToBucketMap(nodeToBuckets, failures);
       failures.clear();
-
-      // Handle old nodes for Rolling Upgrade support
-      Set<Integer> ret = handleOldNodes(nodeToBuckets, values, servConn);
-      if (!ret.isEmpty()) {
-        failures.addAll(ret);
-        updateNodeToBucketMap(nodeToBuckets, failures);
-        failures.clear();
-      }
 
       localBuckets = nodeToBuckets.remove(getMyId());
       if (localBuckets != null && !localBuckets.isEmpty()) {
