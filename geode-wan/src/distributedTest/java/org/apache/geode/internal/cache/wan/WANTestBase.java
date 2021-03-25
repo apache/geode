@@ -1320,6 +1320,23 @@ public class WANTestBase extends DistributedTestCase {
     assertEquals(creates, gatewayReceiverStats.getCreateRequest());
   }
 
+  public static List<Integer> getReceiverStats() {
+    Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
+    GatewayReceiver receiver = gatewayReceivers.iterator().next();
+    CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
+    assertTrue(stats instanceof GatewayReceiverStats);
+    GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
+    ArrayList<Integer> statsList = new ArrayList<>();
+    statsList.add(gatewayReceiverStats.getEventsReceived());
+    statsList.add(gatewayReceiverStats.getEventsRetried());
+    statsList.add(gatewayReceiverStats.getProcessBatchRequests());
+    statsList.add(gatewayReceiverStats.getDuplicateBatchesReceived());
+    statsList.add(gatewayReceiverStats.getOutoforderBatchesReceived());
+    statsList.add(gatewayReceiverStats.getEarlyAcks());
+    statsList.add(gatewayReceiverStats.getExceptionsOccurred());
+    return statsList;
+  }
+
   public static void checkMinimumGatewayReceiverStats(int processBatches, int eventsReceived) {
     Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
     GatewayReceiver receiver = gatewayReceivers.iterator().next();

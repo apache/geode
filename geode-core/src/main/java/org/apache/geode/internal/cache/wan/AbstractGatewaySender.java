@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
@@ -125,6 +126,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   protected boolean isParallel;
 
   protected boolean groupTransactionEvents;
+
+  protected volatile boolean isStopping = false;
 
   protected boolean isForInternalUse;
 
@@ -686,6 +689,21 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return enqueue;
   }
 
+  protected void preStop() {
+    isStopping = true;
+    if (mustGroupTransactionEvents()) {
+      try {
+        Thread.sleep(TIME_TO_COMPLETE_TRANSACTIONS_BEFORE_STOP_MS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }
+  }
+
+  protected void postStop() {
+    isStopping = false;
+  }
+
   protected void stopProcessing() {
     // Stop the dispatcher
     AbstractGatewaySenderEventProcessor ev = this.eventProcessor;
@@ -1041,14 +1059,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         clonedEvent.setCallbackArgument(geCallbackArg);
       }
 
-      // If this gateway is not running, return
       if (!isRunning()) {
-        if (this.isPrimary()) {
-          recordDroppedEvent(clonedEvent);
-        }
-        if (isDebugEnabled) {
-          logger.debug("Returning back without putting into the gateway sender queue:" + event);
-        }
+        recordDroppedEvent(clonedEvent);
         return;
       }
 
@@ -1075,12 +1087,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         // If this gateway is not running, return
         // The sender may have stopped, after we have checked the status in the beginning.
         if (!isRunning()) {
-          if (isDebugEnabled) {
-            logger.debug("Returning back without putting into the gateway sender queue:" + event);
-          }
-          if (this.isPrimary()) {
-            recordDroppedEvent(clonedEvent);
-          }
+          recordDroppedEvent(clonedEvent);
           return;
         }
 
@@ -1100,7 +1107,21 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           // Get substitution value to enqueue if necessary
           Object substituteValue = getSubstituteValue(clonedEvent, operation);
 
-          ev.enqueueEvent(operation, clonedEvent, substituteValue, isLastEventInTransaction);
+          Predicate<InternalGatewayQueueEvent> hasSameTransactionIdPredicate = null;
+          // In case the sender is about to be stopped, the event will only
+          // be queued if there is any event in the queue with the same
+          // transactionId as the one of this event
+          if (isStopping && mustGroupTransactionEvents()
+              && clonedEvent.getTransactionId() != null) {
+            hasSameTransactionIdPredicate =
+                x -> x != null && clonedEvent.getTransactionId() != null
+                    && clonedEvent.getTransactionId()
+                        .equals((x).getTransactionId());
+          }
+          if (!ev.enqueueEvent(operation, clonedEvent, substituteValue, isLastEventInTransaction,
+              hasSameTransactionIdPredicate)) {
+            recordDroppedEvent(event);
+          }
         } catch (CancelException e) {
           logger.debug("caught cancel exception", e);
           throw e;
@@ -1126,6 +1147,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   private void recordDroppedEvent(EntryEventImpl event) {
+    if (!this.isPrimary()) {
+      return;
+    }
     if (this.eventProcessor != null) {
       this.eventProcessor.registerEventDroppedInPrimaryQueue(event);
     } else {
@@ -1133,6 +1157,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       if (logger.isDebugEnabled()) {
         logger.debug("added to tmpDroppedEvents event: {}", event);
       }
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("Returning without putting into the gateway sender queue:" + event);
     }
   }
 
@@ -1530,7 +1557,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       try {
         logger.info("{}: Enqueueing synchronization event: {}",
             this, event);
-        this.eventProcessor.enqueueEvent(event);
+        this.eventProcessor.enqueueEvent(event, null);
         this.statistics.incSynchronizationEventsEnqueued();
       } catch (Throwable t) {
         logger.warn(String.format(

@@ -19,7 +19,9 @@ package org.apache.geode.redis.internal.data;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +35,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class RedisSetTest {
 
@@ -55,6 +58,14 @@ public class RedisSetTest {
     ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
     RedisSet o2 = DataSerializer.readObject(in);
     assertThat(o2).isEqualTo(o1);
+  }
+
+  @Test
+  public void confirmToDataIsSynchronized() throws NoSuchMethodException {
+    assertThat(Modifier
+        .isSynchronized(RedisSet.class
+            .getMethod("toData", DataOutput.class, SerializationContext.class).getModifiers()))
+                .isTrue();
   }
 
   private RedisSet createRedisSet(int m1, int m2) {
@@ -93,7 +104,7 @@ public class RedisSetTest {
   @Test
   public void equals_returnsTrue_givenDifferentEmptySets() {
     RedisSet o1 = new RedisSet(Collections.emptyList());
-    RedisSet o2 = RedisSet.NULL_REDIS_SET;
+    RedisSet o2 = NullRedisDataStructures.NULL_REDIS_SET;
     assertThat(o1).isEqualTo(o2);
     assertThat(o2).isEqualTo(o1);
   }
@@ -101,7 +112,7 @@ public class RedisSetTest {
   @SuppressWarnings("unchecked")
   @Test
   public void sadd_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(Region.class);
     RedisSet o1 = createRedisSet(1, 2);
     ByteArrayWrapper member3 = new ByteArrayWrapper(new byte[] {3});
     ArrayList<ByteArrayWrapper> adds = new ArrayList<>();
@@ -121,7 +132,7 @@ public class RedisSetTest {
   @SuppressWarnings("unchecked")
   @Test
   public void srem_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(Region.class);
     RedisSet o1 = createRedisSet(1, 2);
     ByteArrayWrapper member1 = new ByteArrayWrapper(new byte[] {1});
     ArrayList<ByteArrayWrapper> removes = new ArrayList<>();
@@ -141,7 +152,7 @@ public class RedisSetTest {
   @SuppressWarnings("unchecked")
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(Region.class);
     RedisSet o1 = createRedisSet(1, 2);
     o1.setExpirationTimestamp(region, null, 999);
     assertThat(o1.hasDelta()).isTrue();

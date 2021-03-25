@@ -81,6 +81,11 @@ public class SerialGatewaySenderImplTest {
   }
 
   private SerialGatewaySenderImpl createSerialGatewaySenderImplSpy() {
+    return createSerialGatewaySenderImplSpy(false);
+  }
+
+  private SerialGatewaySenderImpl createSerialGatewaySenderImplSpy(
+      boolean mustGroupTransactionEvents) {
     GatewaySenderAdvisor gatewaySenderAdvisor = mock(GatewaySenderAdvisor.class);
     when(gatewaySenderAdvisor.isPrimary()).thenReturn(true);
 
@@ -101,6 +106,10 @@ public class SerialGatewaySenderImplTest {
     doReturn(eventProcessor2).when(spySerialGatewaySender).createEventProcessor(true);
 
     doReturn(null).when(spySerialGatewaySender).getQueues();
+
+    if (mustGroupTransactionEvents) {
+      doReturn(true).when(spySerialGatewaySender).mustGroupTransactionEvents();
+    }
 
     return spySerialGatewaySender;
   }
@@ -132,4 +141,37 @@ public class SerialGatewaySenderImplTest {
     assertThat(serialGatewaySender.getEventProcessor()).isNull();
   }
 
+  @Test
+  public void whenStoppedTwiceCloseInTimeWithGroupTransactionEventsPreStopWaitsTwice() {
+    serialGatewaySender = createSerialGatewaySenderImplSpy(true);
+
+    long start = System.currentTimeMillis();
+
+    Thread t1 = new Thread(this::stopGatewaySenderAndCheckTime);
+    Thread t2 = new Thread(this::stopGatewaySenderAndCheckTime);
+    t1.start();
+    t2.start();
+    try {
+      t1.join();
+      t2.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    long finish = System.currentTimeMillis();
+    long timeElapsed = finish - start;
+
+    // Each call to preStop waits for 1 second but these waits execute in parallel
+    assertThat(timeElapsed).isGreaterThan(1000);
+
+    assertThat(serialGatewaySender.getEventProcessor()).isNull();
+  }
+
+  private void stopGatewaySenderAndCheckTime() {
+    long start = System.currentTimeMillis();
+    serialGatewaySender.stop();
+    long finish = System.currentTimeMillis();
+    long timeElapsed = finish - start;
+    assertThat(timeElapsed).isGreaterThan(1000);
+  }
 }

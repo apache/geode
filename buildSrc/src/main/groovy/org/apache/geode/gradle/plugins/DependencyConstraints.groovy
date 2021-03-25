@@ -35,19 +35,19 @@ class DependencyConstraints implements Plugin<Project> {
     // Some of these are referenced below as well
     deps.put("antlr.version", "2.7.7")
     deps.put("commons-io.version", "2.8.0")
-    deps.put("commons-lang3.version", "3.11")
+    deps.put("commons-lang3.version", "3.12.0")
     deps.put("commons-validator.version", "1.7")
     deps.put("fastutil.version", "8.5.2")
     deps.put("javax.transaction-api.version", "1.3")
     deps.put("jgroups.version", "3.6.14.Final")
-    deps.put("log4j.version", "2.14.0")
-    deps.put("micrometer.version", "1.6.4")
+    deps.put("log4j.version", "2.14.1")
+    deps.put("micrometer.version", "1.6.5")
     deps.put("shiro.version", "1.7.1")
     deps.put("slf4j-api.version", "1.7.30")
     deps.put("jboss-modules.version", "1.11.0.Final")
-    deps.put("jackson.version", "2.12.1")
+    deps.put("jackson.version", "2.12.2")
     deps.put("springshell.version", "1.2.0.RELEASE")
-    deps.put("springframework.version", "5.3.3")
+    deps.put("springframework.version", "5.3.5")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
@@ -56,12 +56,12 @@ class DependencyConstraints implements Plugin<Project> {
     // This would possibly be corrected if they were proper source sets.
     deps.put("tomcat6.version", "6.0.37")
     deps.put("tomcat7.version", "7.0.108")
-    deps.put("tomcat8.version", "8.5.63")
-    deps.put("tomcat9.version", "9.0.43")
+    deps.put("tomcat8.version", "8.5.64")
+    deps.put("tomcat9.version", "9.0.44")
 
     // The jetty version is also hard-coded in geode-assembly:test
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
-    deps.put("jetty.version", "9.4.37.v20210219")
+    deps.put("jetty.version", "9.4.38.v20210224")
 
     // These version numbers are consumed by protobuf configurations that are plugin-specific and not
     // part of the typical Gradle dependency configurations.
@@ -107,7 +107,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2')
         api(group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.2')
         api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.15.0')
-        api(group: 'com.zaxxer', name: 'HikariCP', version: '4.0.2')
+        api(group: 'com.zaxxer', name: 'HikariCP', version: '4.0.3')
         api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4')
         api(group: 'commons-codec', name: 'commons-codec', version: '1.15')
         api(group: 'commons-collections', name: 'commons-collections', version: '3.2.2')
@@ -139,8 +139,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'net.java.dev.jna', name: 'jna-platform', version: '5.7.0')
         api(group: 'net.openhft', name: 'compiler', version: '2.4.1')
         api(group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4')
-        api(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.31.0')
-        api(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.31.0')
+        api(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.32.0')
+        api(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.32.0')
         api(group: 'net.spy', name: 'spymemcached', version: '2.12.3')
         api(group: 'org.apache.bcel', name: 'bcel', version: '6.5.0')
         api(group: 'org.apache.commons', name: 'commons-lang3', version: get('commons-lang3.version'))
@@ -152,7 +152,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.assertj', name: 'assertj-core', version: '3.19.0')
         api(group: 'org.awaitility', name: 'awaitility', version: '4.0.3')
         api(group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.68')
-        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.9.1')
+        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.9.2')
         api(group: 'org.eclipse.jetty', name: 'jetty-server', version: get('jetty.version'))
         api(group: 'org.eclipse.jetty', name: 'jetty-webapp', version: get('jetty.version'))
         api(group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.2.1')
@@ -165,13 +165,13 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.postgresql', name: 'postgresql', version: '42.2.8')
         api(group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0')
         api(group: 'org.slf4j', name: 'slf4j-api', version: get('slf4j-api.version'))
-        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.2.4')
+        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.2.5')
         api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.2.RELEASE')
         api(group: 'org.springframework.shell', name: 'spring-shell', version: get('springshell.version'))
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.14.3')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
-        api(group: 'redis.clients', name: 'jedis', version: '3.5.1')
-        api(group: 'io.lettuce', name: 'lettuce-core', version: '6.0.2.RELEASE')
+        api(group: 'redis.clients', name: 'jedis', version: '3.5.2')
+        api(group: 'io.lettuce', name: 'lettuce-core', version: '6.0.3.RELEASE')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
       }
     }
@@ -263,13 +263,10 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-core')
       entry('spring-expression')
       entry('spring-oxm')
+      entry('spring-test')
       entry('spring-tx')
       entry('spring-web')
       entry('spring-webmvc')
-    }
-
-    dependencySet(group: 'org.springframework', version: get('springframework.version')) {
-      entry('spring-test')
     }
 
     dependencySet(group: 'org.springframework.boot', version: '2.4.3') {

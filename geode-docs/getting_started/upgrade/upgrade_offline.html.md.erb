@@ -1,0 +1,109 @@
+---
+title:  Offline Upgrade
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Use the offline upgrade procedure when you cannot, or choose not to, perform a rolling upgrade.
+For example, a rolling upgrade is not possible for a cluster that has partitioned regions without redundancy.
+(Without the redundancy, region entries would be lost when individual servers were taken out of the cluster during a rolling upgrade.)
+
+## <a id="offline-upgrade-guidelines" class="no-quick-link"></a>Offline Upgrade Guidelines
+
+**Versions**
+
+For best reliability and performance, all server components of a <%=vars.product_name%> system should run the same version of the software.
+See [Version Compatibilities](upgrade_planning.html#version_compatibilities) for more details on how different versions of <%=vars.product_name%> can interoperate.
+
+**Data member interdependencies**
+
+When you restart your upgraded servers, interdependent data members may hang on startup waiting for each other. In this case, start the servers in
+separate command shells so they can start simultaneously and communicate with one another to resolve dependencies.
+
+## <a id="offline-upgrade-procedure" class="no-quick-link"></a>Offline Upgrade Procedure
+
+1.  Stop any connected clients.
+
+1.  On a machine hosting a locator, open a terminal console.
+
+1.  Start a `gfsh` prompt, using the version from your current <%=vars.product_name%> installation, and connect to a currently running locator.
+    For example:
+
+    ``` pre
+    gfsh>connect --locator=locator_hostname_or_ip_address[port]
+    ```
+
+1.  Use `gfsh` commands to characterize your current installation so you can compare your post-upgrade system to the current one.
+For example, use the `list members` command to view locators and data members:
+
+    ```
+      Name   | Id
+    -------- | ------------------------------------------------
+    locator1 | 172.16.71.1(locator1:26510:locator)<ec><v0>:1024
+    locator2 | 172.16.71.1(locator2:26511:locator)<ec><v1>:1025
+    server1  | 172.16.71.1(server1:26514)<v2>:1026
+    server2  | 172.16.71.1(server2:26518)<v3>:1027
+    ```
+
+1.  Save your cluster configuration.
+  - If you are using the cluster configuration service, use the gfsh `export cluster-configuration` command. You only need to do this once, as the newly-upgraded locator will propagate the configuration to newly-upgraded members as they come online.
+  - For an XML configuration, save `cache.xml`, `gemfire.properties`, and any other relevant configuration files to a well-known location. You must repeat this step for each member you upgrade.
+
+1.  Shut down the entire cluster (by pressing Y at the prompt, this will lose no persisted data):
+
+    ``` pre
+    gfsh>shutdown --include-locators=true
+    As a lot of data in memory will be lost, including possibly events in queues, do you really want to shutdown the entire distributed system? (Y/n): y
+    Shutdown is triggered
+
+    gfsh>
+    No longer connected to 172.16.71.1[1099].
+    gfsh>quit
+    ```
+
+    Since <%=vars.product_name%> is a Java process, to check before continuing that all <%=vars.product_name%> members successfully stopped,
+it is useful to use the JDK-included `jps` command to check running java processes:
+
+    ``` pre
+    % jps
+    29664 Jps
+    ```
+
+1.  On each machine in the cluster, install the new version of the software (alongside the older version of the software).
+
+1.  Redeploy your environment's configuration files to the new version installation. If you are using the cluster configuration service, one copy of the exported `.zip` configuration file is sufficient, as the first upgraded locator will propagate it to the other members.
+For XML configurations, you should have a copy of the saved configuration files for each data member.
+
+1. On each machine in the cluster, install any updated server code. Point all client applications to the new installation of <%=vars.product_name%>.
+
+1. Run the new version of `gfsh`.
+
+1. Start a locator and import the saved configuration. If you are using the cluster configuration service, use the same name and directory as the older version you stopped, and the new locator will access the old locator's cluster configuration without having to import it in a separate step:
+
+    ```
+    gfsh>start locator --name=locator1 --enable-cluster-configuration=true --dir=/data/locator1
+    ```
+
+    Otherwise, use the gfsh `import cluster-configuration` command or explicitly import `.xml` and `.properties` files, as appropriate.
+
+1. Restart all system data members using the new version of gfsh. Use the same names, directories, and other properties that
+were used when starting the system under the previous version of the software. (Here is where a system startup script comes in
+handy as a reference.) Interdependent data members may hang on startup waiting for each other. In this case, start servers in
+separate shells so they can communicate with one another to resolve dependencies.
+
+1. Upgrade <%=vars.product_name%> clients, following the guidelines described in [Upgrading Clients](upgrade_clients.html).

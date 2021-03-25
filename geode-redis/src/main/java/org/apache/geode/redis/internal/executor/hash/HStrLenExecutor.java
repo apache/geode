@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.hash;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -26,7 +27,7 @@ public class HStrLenExecutor extends HashExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    ByteArrayWrapper key = command.getKey();
+    RedisKey key = command.getKey();
     List<byte[]> commandElems = command.getProcessedCommand();
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);

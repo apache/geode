@@ -18,43 +18,44 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 
 public interface RedisStringCommands {
-  long append(ByteArrayWrapper key, ByteArrayWrapper valueToAppend);
+  long append(RedisKey key, ByteArrayWrapper valueToAppend);
 
-  ByteArrayWrapper get(ByteArrayWrapper key);
+  ByteArrayWrapper get(RedisKey key);
 
-  boolean set(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options);
+  boolean set(RedisKey key, ByteArrayWrapper value, SetOptions options);
 
-  long incr(ByteArrayWrapper key);
+  long incr(RedisKey key);
 
-  long decr(ByteArrayWrapper key);
+  long decr(RedisKey key);
 
-  ByteArrayWrapper getset(ByteArrayWrapper key, ByteArrayWrapper value);
+  ByteArrayWrapper getset(RedisKey key, ByteArrayWrapper value);
 
-  long incrby(ByteArrayWrapper key, long increment);
+  long incrby(RedisKey key, long increment);
 
-  long decrby(ByteArrayWrapper key, long decrement);
+  long decrby(RedisKey key, long decrement);
 
-  ByteArrayWrapper getrange(ByteArrayWrapper key, long start, long end);
+  ByteArrayWrapper getrange(RedisKey key, long start, long end);
 
-  long bitcount(ByteArrayWrapper key, int start, int end);
+  long bitcount(RedisKey key, int start, int end);
 
-  long bitcount(ByteArrayWrapper key);
+  long bitcount(RedisKey key);
 
-  int strlen(ByteArrayWrapper key);
+  int strlen(RedisKey key);
 
-  int getbit(ByteArrayWrapper key, int offset);
+  int getbit(RedisKey key, int offset);
 
-  int setbit(ByteArrayWrapper key, long offset, int value);
+  int setbit(RedisKey key, long offset, int value);
 
-  BigDecimal incrbyfloat(ByteArrayWrapper key, BigDecimal increment);
+  BigDecimal incrbyfloat(RedisKey key, BigDecimal increment);
 
-  int bitop(String operation, ByteArrayWrapper destKey, List<ByteArrayWrapper> sources);
+  int bitop(String operation, RedisKey destKey, List<RedisKey> sources);
 
-  int bitpos(ByteArrayWrapper key, int bit, int start, Integer end);
+  int bitpos(RedisKey key, int bit, int start, Integer end);
 
-  int setrange(ByteArrayWrapper key, int offset, byte[] value);
+  int setrange(RedisKey key, int offset, byte[] value);
 
-  ByteArrayWrapper mget(ByteArrayWrapper key);
+  ByteArrayWrapper mget(RedisKey key);
 }

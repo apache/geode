@@ -22,7 +22,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 public interface RedisData extends Delta, DataSerializableFixedID {
-  NullRedisData NULL_REDIS_DATA = new NullRedisData();
+
 
   /**
    * Returns true if this instance does not exist.
@@ -37,28 +37,25 @@ public interface RedisData extends Delta, DataSerializableFixedID {
 
   RedisDataType getType();
 
-  void setExpirationTimestamp(Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key, long value);
+  void setExpirationTimestamp(Region<RedisKey, RedisData> region, RedisKey key, long value);
 
   long getExpirationTimestamp();
 
-  int persist(Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key);
+  int persist(Region<RedisKey, RedisData> region, RedisKey key);
 
   boolean hasExpired();
 
   boolean hasExpired(long now);
 
-  long pttl(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key);
+  long pttl(Region<RedisKey, RedisData> region, RedisKey key);
 
-  int pexpireat(CommandHelper helper, ByteArrayWrapper key, long timestamp);
+  int pexpireat(CommandHelper helper, RedisKey key, long timestamp);
 
-  void doExpiration(CommandHelper helper, ByteArrayWrapper key);
+  void doExpiration(CommandHelper helper, RedisKey key);
 
   String type();
 
-  boolean rename(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper oldKey,
-      ByteArrayWrapper newKey);
+  boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey);
 
   default boolean getForceRecalculateSize() {
     return true;

@@ -20,8 +20,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.management.ManagementException;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
 
 public class RegionProvider {
@@ -40,17 +40,17 @@ public class RegionProvider {
 
   public static final int REDIS_SLOTS_PER_BUCKET = REDIS_SLOTS / REDIS_REGION_BUCKETS;
 
-  private final Region<ByteArrayWrapper, RedisData> dataRegion;
+  private final Region<RedisKey, RedisData> dataRegion;
   private final Region<String, Object> configRegion;
 
   public RegionProvider(InternalCache cache) {
     validateBucketCount(REDIS_REGION_BUCKETS);
 
-    InternalRegionFactory<ByteArrayWrapper, RedisData> redisDataRegionFactory =
+    InternalRegionFactory<RedisKey, RedisData> redisDataRegionFactory =
         cache.createInternalRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
     redisDataRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
 
-    PartitionAttributesFactory<ByteArrayWrapper, RedisData> attributesFactory =
+    PartitionAttributesFactory<RedisKey, RedisData> attributesFactory =
         new PartitionAttributesFactory<>();
     attributesFactory.setPartitionResolver(new RedisPartitionResolver());
     attributesFactory.setTotalNumBuckets(REDIS_REGION_BUCKETS);
@@ -64,7 +64,7 @@ public class RegionProvider {
     configRegion = redisConfigRegionFactory.create(REDIS_CONFIG_REGION);
   }
 
-  public Region<ByteArrayWrapper, RedisData> getDataRegion() {
+  public Region<RedisKey, RedisData> getDataRegion() {
     return dataRegion;
   }
 

@@ -20,7 +20,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -31,9 +31,9 @@ public class RenameExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    List<ByteArrayWrapper> commandElems = command.getProcessedCommandWrappers();
-    ByteArrayWrapper key = command.getKey();
-    ByteArrayWrapper newKey = commandElems.get(2);
+    List<RedisKey> commandElems = command.getProcessedCommandWrapperKeys();
+    RedisKey key = command.getKey();
+    RedisKey newKey = commandElems.get(2);
     RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
 
     if (key.equals(newKey)) {
