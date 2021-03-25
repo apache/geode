@@ -140,7 +140,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LockServiceDestroyedException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
@@ -4590,33 +4589,6 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  /**
-   * @return set of bucket-ids that could not be read from.
-   */
-  private Set<Integer> handleOldNodes(HashMap nodeToBuckets, VersionedObjectList values,
-      ServerConnection servConn) throws IOException {
-    Set<Integer> failures = new HashSet<Integer>();
-    HashMap oldFellas = filterOldMembers(nodeToBuckets);
-    for (Iterator it = oldFellas.entrySet().iterator(); it.hasNext();) {
-      Map.Entry e = (Map.Entry) it.next();
-      InternalDistributedMember member = (InternalDistributedMember) e.getKey();
-      Object bucketInfo = e.getValue();
-
-      HashMap<Integer, HashSet> bucketKeys = null;
-      Set<Integer> buckets = null;
-
-      if (bucketInfo instanceof Set) {
-        buckets = (Set<Integer>) bucketInfo;
-      } else {
-        bucketKeys = (HashMap<Integer, HashSet>) bucketInfo;
-        buckets = bucketKeys.keySet();
-      }
-
-      fetchKeysAndValues(values, servConn, failures, member, bucketKeys, buckets);
-    }
-    return failures;
-  }
-
   void fetchKeysAndValues(VersionedObjectList values, ServerConnection servConn,
       Set<Integer> failures, InternalDistributedMember member,
       HashMap<Integer, HashSet> bucketKeys, Set<Integer> buckets)
@@ -4664,31 +4636,6 @@ public class PartitionedRegion extends LocalRegion
         values.clear();
       }
     }
-  }
-
-  /**
-   * @param nodeToBuckets A map with InternalDistributedSystem as key and either HashSet or
-   *        HashMap<Integer, HashSet> as value.
-   * @return Map of <old members, set/map of bucket ids they host>.
-   */
-  private HashMap filterOldMembers(HashMap nodeToBuckets) {
-    ClusterDistributionManager dm = (ClusterDistributionManager) getDistributionManager();
-    HashMap oldGuys = new HashMap();
-
-    Set<InternalDistributedMember> oldMembers =
-        new HashSet<InternalDistributedMember>(nodeToBuckets.keySet());
-    dm.removeMembersWithSameOrNewerVersion(oldMembers, KnownVersion.CURRENT);
-    Iterator<InternalDistributedMember> oldies = oldMembers.iterator();
-    while (oldies.hasNext()) {
-      InternalDistributedMember old = oldies.next();
-      if (nodeToBuckets.containsKey(old)) {
-        oldGuys.put(old, nodeToBuckets.remove(old));
-      } else {
-        oldies.remove();
-      }
-    }
-
-    return oldGuys;
   }
 
   /**
