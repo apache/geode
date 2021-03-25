@@ -42,7 +42,7 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
       ClientProxyMembershipID bridgeContext,
       TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
-    DistributedMember originator = null;
+    DistributedMember originator;
     // txId should not be null even on localOrigin
     Assert.assertTrue(txId != null);
     originator = txId.getMemberId();
@@ -52,10 +52,9 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
       eventRegion = internalRegion.getPartitionedRegion();
     }
 
-    boolean isOriginRemote = txEntryState == null;
     @Retained
     EntryEventImpl retVal = EntryEventImpl.create(internalRegion, op, key, newValue,
-        aCallbackArgument, isOriginRemote, originator);
+        aCallbackArgument, txEntryState == null, originator);
     boolean returnedRetVal = false;
     try {
       if (bridgeContext != null) {
@@ -74,9 +73,7 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
 
       FilterRoutingInfo.FilterInfo localRouting = null;
       boolean computeFilterInfo = false;
-      if (filterRoutingInfo == null) {
-        computeFilterInfo = true;
-      } else {
+      if (filterRoutingInfo != null) {
         localRouting = filterRoutingInfo.getLocalFilterInfo();
         if (localRouting != null) {
           // routing was computed in this VM but may need to perform local interest processing
@@ -90,8 +87,6 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
           if (!computeFilterInfo) {
             retVal.setLocalFilterInfo(localRouting);
           }
-        } else {
-          computeFilterInfo = true;
         }
       }
       if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
@@ -108,40 +103,13 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
         } else {
           retVal.setInvokePRCallbacks(false);
         }
-        if (computeFilterInfo) {
-          if (bucket.getBucketAdvisor().isPrimary()) {
-            // node with primary bucket is the tx host
-            if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
-              TxCallbackEventFactoryImpl.logger
-                  .trace("createCBEvent computing routing for primary bucket");
-            }
-            FilterProfile fp =
-                ((BucketRegion) internalRegion).getPartitionedRegion().getFilterProfile();
-            if (fp != null) {
-              FilterRoutingInfo fri = fp.getFilterRoutingInfoPart2(filterRoutingInfo, retVal);
-              if (fri != null) {
-                retVal.setLocalFilterInfo(fri.getLocalFilterInfo());
-              }
-            }
-          }
-        }
-      } else if (computeFilterInfo) { // not a bucket
-        if (!isOriginRemote) {
-          // compute now if it is a tx host.
-          if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
-            TxCallbackEventFactoryImpl.logger
-                .trace("createCBEvent computing routing for non-bucket");
-          }
-          FilterProfile fp = internalRegion.getFilterProfile();
-          if (fp != null) {
-            retVal.setLocalFilterInfo(fp.getLocalFilterRouting(retVal));
-          }
-        }
-        // For remote node (non host), do not computeFilterInfo when creating tx callbacks.
-        // Filter routing should be computed after entry commit is applied to cache for
-        // replicate regions, as concurrent register interest could occur.
-        // That computation occurs in notifyBridgeClient when no local routing is set.
       }
+      // No need to computeFilterInfo for primary bucket, as it is done
+      // during attach filter info after applying to cache.
+      // For secondary buckets, filter routing is calculated in the "remote" routing table.
+      // For replicate region, filter routing should be computed after entry commit
+      // is applied to cache, as concurrent register interest could occur.
+      // That computation occurs in notifyBridgeClient when no local routing is set.
       retVal.setTransactionId(txId);
       returnedRetVal = true;
       return retVal;

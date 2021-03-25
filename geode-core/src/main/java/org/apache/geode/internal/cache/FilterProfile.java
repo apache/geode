@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
@@ -93,9 +92,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 public class FilterProfile implements DataSerializableFixedID {
   private static final Logger logger = LogService.getLogger();
-
-  private ReentrantReadWriteLock filterRegistrationAndTxCommitLock =
-      new ReentrantReadWriteLock(true);
 
   /** enumeration of distributed profile operations */
   enum operationType {
@@ -271,49 +267,38 @@ public class FilterProfile implements DataSerializableFixedID {
 
     Long clientID = getClientIDForMaps(inputClientID);
     synchronized (this.interestListLock) {
-      // Profiles are managed at cache-advisor and region,
-      // Take tx lock on region profile.
-      if (region != null && region.getFilterProfile() != null) {
-        region.getFilterProfile().lockTxCommitDuringFilterRegistration();
-      }
-      try {
-        switch (typeOfInterest) {
-          case InterestType.KEY:
-            opType = operationType.REGISTER_KEY;
-            Map<Object, Set> koi =
-                updatesAsInvalidates ? getKeysOfInterestInv() : getKeysOfInterest();
-            registerKeyInMap(interest, keysRegistered, clientID, koi);
-            break;
-          case InterestType.REGULAR_EXPRESSION:
-            opType = operationType.REGISTER_PATTERN;
-            if (((String) interest).equals(".*")) {
-              Set akc = updatesAsInvalidates ? getAllKeyClientsInv() : getAllKeyClients();
-              if (akc.add(clientID)) {
-                keysRegistered.add(interest);
-              }
-            } else {
-              Map<Object, Map<Object, Pattern>> pats =
-                  updatesAsInvalidates ? getPatternsOfInterestInv() : getPatternsOfInterest();
-              registerPatternInMap(interest, keysRegistered, clientID, pats);
+      switch (typeOfInterest) {
+        case InterestType.KEY:
+          opType = operationType.REGISTER_KEY;
+          Map<Object, Set> koi =
+              updatesAsInvalidates ? getKeysOfInterestInv() : getKeysOfInterest();
+          registerKeyInMap(interest, keysRegistered, clientID, koi);
+          break;
+        case InterestType.REGULAR_EXPRESSION:
+          opType = operationType.REGISTER_PATTERN;
+          if (((String) interest).equals(".*")) {
+            Set akc = updatesAsInvalidates ? getAllKeyClientsInv() : getAllKeyClients();
+            if (akc.add(clientID)) {
+              keysRegistered.add(interest);
             }
-            break;
-          case InterestType.FILTER_CLASS: {
-            opType = operationType.REGISTER_FILTER;
-            Map<Object, Map> filts =
-                updatesAsInvalidates ? getFiltersOfInterestInv() : getFiltersOfInterest();
-            registerFilterClassInMap(interest, clientID, filts);
-            break;
+          } else {
+            Map<Object, Map<Object, Pattern>> pats =
+                updatesAsInvalidates ? getPatternsOfInterestInv() : getPatternsOfInterest();
+            registerPatternInMap(interest, keysRegistered, clientID, pats);
           }
-
-          default:
-            throw new InternalGemFireError(
-                "Unknown interest type");
-        } // switch
-      } finally {
-        if (region != null && region.getFilterProfile() != null) {
-          region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
+          break;
+        case InterestType.FILTER_CLASS: {
+          opType = operationType.REGISTER_FILTER;
+          Map<Object, Map> filts =
+              updatesAsInvalidates ? getFiltersOfInterestInv() : getFiltersOfInterest();
+          registerFilterClassInMap(interest, clientID, filts);
+          break;
         }
-      }
+
+        default:
+          throw new InternalGemFireError(
+              "Unknown interest type");
+      } // switch
       if (this.isLocalProfile && opType != null) {
         sendProfileOperation(clientID, opType, interest, updatesAsInvalidates);
       }
@@ -538,27 +523,17 @@ public class FilterProfile implements DataSerializableFixedID {
     Long clientID = getClientIDForMaps(inputClientID);
     Set keysRegistered = new HashSet(keys);
     synchronized (interestListLock) {
-      // Profiles are managed at cache-advisor and region,
-      // Take tx lock on region profile.
-      if (region != null && region.getFilterProfile() != null) {
-        region.getFilterProfile().lockTxCommitDuringFilterRegistration();
+      Map<Object, Set> koi = updatesAsInvalidates ? getKeysOfInterestInv() : getKeysOfInterest();
+      CopyOnWriteHashSet interestList = (CopyOnWriteHashSet) koi.get(clientID);
+      if (interestList == null) {
+        interestList = new CopyOnWriteHashSet();
+        koi.put(clientID, interestList);
+      } else {
+        // Get the list of keys that will be registered new, not already registered.
+        keysRegistered.removeAll(interestList.getSnapshot());
       }
-      try {
-        Map<Object, Set> koi = updatesAsInvalidates ? getKeysOfInterestInv() : getKeysOfInterest();
-        CopyOnWriteHashSet interestList = (CopyOnWriteHashSet) koi.get(clientID);
-        if (interestList == null) {
-          interestList = new CopyOnWriteHashSet();
-          koi.put(clientID, interestList);
-        } else {
-          // Get the list of keys that will be registered new, not already registered.
-          keysRegistered.removeAll(interestList.getSnapshot());
-        }
-        interestList.addAll(keys);
-      } finally {
-        if (region != null && region.getFilterProfile() != null) {
-          region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
-        }
-      }
+      interestList.addAll(keys);
+
       if (this.region != null && this.isLocalProfile) {
         sendProfileOperation(clientID, operationType.REGISTER_KEYS, keys, updatesAsInvalidates);
       }
@@ -825,19 +800,9 @@ public class FilterProfile implements DataSerializableFixedID {
     if (logger.isDebugEnabled()) {
       logger.debug("Adding CQ {} to this members FilterProfile.", cq.getServerCqName());
     }
-    try {
-      // Profiles are managed at cache-advisor and region,
-      // Take tx lock on region profile.
-      if (region != null && region.getFilterProfile() != null) {
-        region.getFilterProfile().lockTxCommitDuringFilterRegistration();
-      }
-      this.cqs.put(cq.getServerCqName(), cq);
-      this.incCqCount();
-    } finally {
-      if (region != null && region.getFilterProfile() != null) {
-        region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
-      }
-    }
+    this.cqs.put(cq.getServerCqName(), cq);
+    this.incCqCount();
+
     // cq.setFilterID(cqMap.getWireID(cq.getServerCqName()));
     this.sendCQProfileOperation(operationType.REGISTER_CQ, cq);
   }
@@ -860,18 +825,7 @@ public class FilterProfile implements DataSerializableFixedID {
   }
 
   void processRegisterCq(String serverCqName, ServerCQ ServerCQ, boolean addToCqMap) {
-    // Profiles are managed at cache-advisor and region,
-    // Take tx lock on region profile.
-    if (region != null && region.getFilterProfile() != null) {
-      region.getFilterProfile().lockTxCommitDuringFilterRegistration();
-    }
-    try {
-      processRegisterCq(serverCqName, ServerCQ, addToCqMap, GemFireCacheImpl.getInstance());
-    } finally {
-      if (region != null && region.getFilterProfile() != null) {
-        region.getFilterProfile().unlockTxCommitDuringFilterRegistration();
-      }
-    }
+    processRegisterCq(serverCqName, ServerCQ, addToCqMap, GemFireCacheImpl.getInstance());
   }
 
 
@@ -1131,12 +1085,11 @@ public class FilterProfile implements DataSerializableFixedID {
     FilterRoutingInfo frInfo = null;
     // bug #50809 - local routing for transactional ops must be done here
     // because the event isn't available later and we lose the old value for the entry
-    boolean processLocalProfile = false;
+    boolean processLocalProfile =
+        event.getOperation().isEntry() && ((EntryEvent) event).getTransactionId() != null;
 
     CqService cqService = getCqService(event.getRegion());
     if (cqService.isRunning()) {
-      processLocalProfile =
-          event.getOperation().isEntry() && ((EntryEvent) event).getTransactionId() != null;
       frInfo = new FilterRoutingInfo();
       fillInCQRoutingInfo(event, processLocalProfile, peerProfiles, frInfo);
     }
@@ -2324,21 +2277,5 @@ public class FilterProfile implements DataSerializableFixedID {
   public KnownVersion[] getSerializationVersions() {
     // TODO Auto-generated method stub
     return null;
-  }
-
-  public void lockTxCommitDuringFilterRegistration() {
-    filterRegistrationAndTxCommitLock.writeLock().lock();
-  }
-
-  public void unlockTxCommitDuringFilterRegistration() {
-    filterRegistrationAndTxCommitLock.writeLock().unlock();
-  }
-
-  public void lockFilterRegistrationDuringTx() {
-    filterRegistrationAndTxCommitLock.readLock().lock();
-  }
-
-  public void unlockFilterRegistrationDuringTx() {
-    filterRegistrationAndTxCommitLock.readLock().unlock();
   }
 }
