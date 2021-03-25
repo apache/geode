@@ -78,7 +78,8 @@ public class PassiveExpirationManager {
       }
     } catch (CacheClosedException ignore) {
     } catch (RuntimeException | Error ex) {
-      logger.warn("Passive Redis expiration failed. Will try again in 1 second.", ex);
+      logger.warn("Passive expiration failed. Will try again in 1 second.",
+          ex);
     } finally {
       redisStats.endPassiveExpirationCheck(start, expireCount);
     }

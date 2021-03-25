@@ -1,24 +1,24 @@
-# Redis API for Apache Geode
+# Apache Geode APIs Compatible with Redis
 
 [Introduction](#introduction)  
 [How To Try It](#how-to-try-it)  
 [Building Apache Geode](#building-apache-geode)  
 [Starting a Geode Server with Redis Enabled](#starting-a-server)  
-[Adding an Additional Geode Redis Server](#adding-a-server)  
+[Adding an Additional Geode Server Compatible with Redis](#adding-a-server)  
 [Shutting Down](#shutting-down)  
 [Redis Commands](#redis-commands)
 
 
 ## <a name="introduction"></a>Introduction
 
-The Redis API for Geode allows an application to send Redis commands to Geode. This will allow users to 
+The Geode APIs compatible with Redis allows an application to send Redis commands to Geode. This will allow users to 
 switch seamlessly from native Redis to Geode as a data store/caching solution. 
 
 The API allows Geode to listen for and interpret incoming Redis commands on a designated port.
 
 ## <a name="how-to-try-it"></a>How To Try It
 
-The Redis API for Geode is currently in early access. We’ll build the develop branch of Apache Geode
+The Geode APIs compatible with Redis is currently in early access. We’ll build the develop branch of Apache Geode
 and then connect the [Redis-CLI](https://redis.io/topics/quickstart) to that instance.
 
 **Note:** Currently Geode requires **Java 8 JDK** to build.
@@ -61,7 +61,7 @@ You should now see GFSH starting up with a version of 1.14.x.-build.x
 ![screenshot of GFSH running in the terminal](gfsh.png)
 
 ### <a name="starting-a-server"></a>Starting a Geode Server with Redis Enabled
-**Note**: if you wish to run the Geode Redis API on the default Redis port (6379), make sure to stop
+**Note**: if you wish to run the Geode APIs compatible with Redis on the default Redis port (6379), make sure to stop
 any applications running on that port before starting the Geode server, especially any native Redis
 servers.
 
@@ -78,12 +78,12 @@ connection, the locator directs the client to one of the least loaded servers.
 
     For example:
     ```commandline
-    gfsh> start server --name=redisServer1 --locators=localhost[10334] --server-port=0 --redis-port=6379
+    gfsh> start server --name=redisServer1 --locators=localhost[10334] --server-port=0 --compatible-with-redis-port=6379
     ```
     * --name: A name you create for your server.
     * --locators: This is the location of the locator you started in step 1. 
     * --server-port: The port that Geode clients connect to.
-    * --redis-port: The port that your Redis client will connect to.
+    * --compatible-with-redis-port: The port that your Redis client will connect to.
 
     Your Geode instance should now be up and running (1 locator and 1 server) and ready to accept Redis 
     commands.  
@@ -98,13 +98,13 @@ connection, the locator directs the client to one of the least loaded servers.
     If working correctly you should now be in the redis-cli and see `127.0.0.1:6379>`.  If you run the 
     `PING` command you should receive a response of `PONG`.
 
-### <a name="adding-a-server"></a>Optional - Adding an Additional Geode Redis Server
+### <a name="adding-a-server"></a>Optional - Adding an Additional Geode server compatible with Redis
 If you’re interested in testing Geode scalability, in GFSH run the start server command again BUT 
 make sure you change the `--name=` and `--redis-port=` parameters. 
 
 For example: 
    ```commandLine
-   $ start server --name=redisServer2 --locators=localhost[10334] --server-port=0 --redis-port=6380
+   $ start server --name=redisServer2 --locators=localhost[10334] --server-port=0 --compatible-with-redis-port=6380
    ```
 
 ### <a name="shutting-down"></a>Shutting Down 
@@ -128,7 +128,7 @@ not connected>
 ```
 ### <a name="redis-commands"></a>Redis Commands
 
-The Redis API for Geode currently implements a subset of the full Redis command set. Some commands
+The Geode APIs compatible with Redis currently implements a subset of the full Redis command set. Some commands
 are **unsupported** (see table below). Unsupported commands are available to use, but have not been
 fully tested. There is no guarantee they will work exactly as expected.
 
@@ -148,9 +148,9 @@ start server \
   --J=-Denable-redis-unsupported-commands=true \
   --name=<serverName> \
   --locators=<locatorPort> \
-  --redis-port=<redisPort> \
-  --redis-bind-address=<redisBindAddress> \
-  --redis-password=<redisPassword>
+  --compatible-with-redis-port=<redisPort> \
+  --compatible-with-redis-bind-address=<redisBindAddress> \
+  --compatible-with-redis-password=<redisPassword>
 ```
 
 #### <a name="redis-command-status"></a>Redis Command Status [Return to top](#introduction)
