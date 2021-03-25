@@ -24,7 +24,7 @@ import org.apache.geode.management.cli.Result;
 public class CommandResultException extends Exception {
   private static final long serialVersionUID = 1L;
 
-  private final transient Result result; // TODO:KIRK
+  private final transient Result result;
 
   public CommandResultException(final Result result) {
     this.result = result;

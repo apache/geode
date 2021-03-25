@@ -34,8 +34,8 @@ public class CommandResult implements Result {
 
   private final ResultModel result;
 
-  private List<String> commandOutput; // TODO:KIRK
-  private int commandOutputIndex; // TODO:KIRK
+  private List<String> commandOutput;
+  private int commandOutputIndex;
 
   public CommandResult(ResultModel result) {
     this.result = result;
