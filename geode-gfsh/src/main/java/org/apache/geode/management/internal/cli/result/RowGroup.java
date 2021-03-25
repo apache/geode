@@ -37,8 +37,8 @@ class RowGroup {
   private final List<Row> rows = new ArrayList<>();
   private final Screen screen;
 
-  private int[] colSizes; // TODO:KIRK
-  private String columnSeparator; // TODO:KIRK
+  private int[] colSizes;
+  private String columnSeparator;
 
   RowGroup(Table table, Screen screen) {
     this.table = table;

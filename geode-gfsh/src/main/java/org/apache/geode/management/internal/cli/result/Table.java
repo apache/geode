@@ -22,8 +22,8 @@ class Table {
   private final List<RowGroup> rowGroups = new ArrayList<>();
   private final Screen screen;
 
-  private String columnSeparator = "   "; // TODO:KIRK
-  private boolean isTabularResult; // TODO:KIRK
+  private String columnSeparator = "   ";
+  private boolean isTabularResult;
 
   Table(Screen screen) {
     this.screen = screen;

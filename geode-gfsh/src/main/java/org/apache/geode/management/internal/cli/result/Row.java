@@ -27,9 +27,9 @@ class Row {
   private final boolean isTableWideSeparator;
   private final Screen screen;
 
-  private String columnSeparator; // TODO:KIRK
+  private String columnSeparator;
 
-  private boolean isBlank; // TODO:KIRK
+  private boolean isBlank;
 
   Row(RowGroup rowGroup, Screen screen) {
     this(rowGroup, screen, null, false);
@@ -77,7 +77,7 @@ class Row {
     return columns.get(colNum).getLength();
   }
 
-  void setColumnSeparator(String columnSeparator) { // TODO:KIRK
+  void setColumnSeparator(String columnSeparator) {
     this.columnSeparator = columnSeparator;
   }
 
@@ -125,7 +125,7 @@ class Row {
     return isBlank;
   }
 
-  void setBlank(boolean blank) { // TODO:KIRK
+  void setBlank(boolean blank) {
     isBlank = blank;
   }
 

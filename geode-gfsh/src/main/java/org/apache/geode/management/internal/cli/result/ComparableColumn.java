@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.cli.result;
 
 import static java.lang.System.lineSeparator;
 
-class ComparableColumn implements Comparable<ComparableColumn> { // TODO:KIRK
+class ComparableColumn implements Comparable<ComparableColumn> {
 
   int length;
   int originalIndex;
