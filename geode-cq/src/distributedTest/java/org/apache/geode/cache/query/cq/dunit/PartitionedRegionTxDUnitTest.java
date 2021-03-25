@@ -81,9 +81,10 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       assert cache != null;
-      Region<Object, Object> region = cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
-          new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
-          .create(REGION_NAME);
+      Region<Object, Object> region =
+          cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
+              new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
+              .create(REGION_NAME);
 
       // Force primary bucket to get created.
       region.put("Key-1", "value-1");
@@ -162,9 +163,10 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       assert cache != null;
-      Region<Object, Object> region = cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
-          new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
-          .create(REGION_NAME);
+      Region<Object, Object> region =
+          cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
+              new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
+              .create(REGION_NAME);
 
       // Force primary bucket to get created.
       region.put("Key-1", "value-1");
@@ -189,7 +191,8 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
       cqaf.addCqListener(testListener);
       CqAttributes cqAttributes = cqaf.create();
 
-      queryService.newCq("Select * from " + SEPARATOR + REGION_NAME, cqAttributes).executeWithInitialResults();
+      queryService.newCq("Select * from " + SEPARATOR + REGION_NAME, cqAttributes)
+          .executeWithInitialResults();
     });
 
     client.invoke(() -> {
@@ -220,9 +223,10 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       assert cache != null;
-      Region<Object, Object> region = cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
-          new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
-          .create(REGION_NAME);
+      Region<Object, Object> region =
+          cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
+              new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
+              .create(REGION_NAME);
 
       // Force primary bucket to get created.
       region.put("Key-1", "value-1");
@@ -262,8 +266,9 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
     client.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       assert clientCache != null;
-      Region<Object, Object> region = clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-          .create(REGION_NAME);
+      Region<Object, Object> region =
+          clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+              .create(REGION_NAME);
       blackboard.waitForGate("StartReg");
       region.registerInterest("Key-5", InterestResultPolicy.KEYS_VALUES);
       region.registerInterest("Key-6", InterestResultPolicy.KEYS_VALUES);
