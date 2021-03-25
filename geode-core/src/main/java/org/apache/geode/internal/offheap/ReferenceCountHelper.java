@@ -91,7 +91,7 @@ public class ReferenceCountHelper {
   /**
    * Returns true if currently tracking reference counts.
    */
-  static boolean isRefCountTracking() {
+  public static boolean isRefCountTracking() {
     return delegate().isRefCountTracking();
   }
 
@@ -112,7 +112,7 @@ public class ReferenceCountHelper {
   /**
    * Used internally to report that a reference count has changed.
    */
-  static void refCountChanged(Long address, boolean decRefCount, int rc) {
+  public static void refCountChanged(Long address, boolean decRefCount, int rc) {
     delegate().refCountChanged(address, decRefCount, rc);
   }
 
@@ -120,21 +120,21 @@ public class ReferenceCountHelper {
    * Called internally when free operations are tracked to record that a free has happened of the
    * given address.
    */
-  static void freeRefCountInfo(Long address) {
+  public static void freeRefCountInfo(Long address) {
     delegate().freeRefCountInfo(address);
   }
 
   /**
    * Returns the thread local owner
    */
-  static Object getReferenceCountOwner() {
+  public static Object getReferenceCountOwner() {
     return delegate().getReferenceCountOwner();
   }
 
   /**
    * Returns the thread local count of the number of times ref count has been updated
    */
-  static AtomicInteger getReenterCount() {
+  public static AtomicInteger getReenterCount() {
     return delegate().getReenterCount();
   }
 
@@ -142,7 +142,7 @@ public class ReferenceCountHelper {
    * Returns a list of any free operation tracking information. This is used to describe who did the
    * previous free(s) when an extra one ends up being done and fails.
    */
-  static List<RefCountChangeInfo> getFreeRefCountInfo(long address) {
+  public static List<RefCountChangeInfo> getFreeRefCountInfo(long address) {
     return delegate().getFreeRefCountInfo(address);
   }
 
@@ -150,7 +150,7 @@ public class ReferenceCountHelper {
    * Returns a list of any reference count tracking information for the given Chunk address without
    * locking.
    */
-  static List<RefCountChangeInfo> peekRefCountInfo(long address) {
+  public static List<RefCountChangeInfo> peekRefCountInfo(long address) {
     return delegate().peekRefCountInfo(address);
   }
 }

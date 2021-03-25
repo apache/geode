@@ -162,7 +162,7 @@ class ReferenceCountHelperImpl {
   /**
    * Returns a list of any reference count tracking information for the given Chunk address.
    */
-  List<RefCountChangeInfo> getRefCountInfo(long address) {
+  List<RefCountChangeInfo> getRefCountInfo(Long address) {
     if (!trackReferenceCounts()) {
       return null;
     }

@@ -96,7 +96,7 @@ public class OffHeapRegionEntryHelper {
    * Returns the bytes encoded in the given address. Note that compressed addresses are not
    * supported by this method.
    *
-   * @throws UnsupportedOperationException if the address has compressed data
+   * @throws AssertionError if the address has compressed data
    */
   static byte[] decodeUncompressedAddressToBytes(long addr) {
     return delegate().decodeUncompressedAddressToBytes(addr);
