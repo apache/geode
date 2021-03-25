@@ -55,7 +55,7 @@ while getopts ":f:rgt:c:h:p:" opt; do
 done
 
 if [ -z ${SERVER_TYPE} ]; then
-  echo "Please specify native Redis (-r) or Geode Redis (-g)"
+  echo "Please specify native Redis (-r) or Geode APIs compatible with Redis (-g)"
   exit 1
 fi
 
@@ -101,11 +101,11 @@ if [ ${SERVER_TYPE} == "geode" ]; then
           --log-level=none
           --locators=localhost[10334]
           --server-port=0
-          --redis-port=6379
-          --redis-bind-address=127.0.0.1"
+          --compatible-with-redis-port=6379
+          --compatible-with-redis-bind-address=127.0.0.1"
 else
   if [ ${SERVER_NOT_FOUND} -eq 1 ]; then
-    echo "No Redis server detected on host '${REDIS_HOST}' at port '${REDIS_PORT}'"
+    echo "No server compatible with Redis detected on host '${REDIS_HOST}' at port '${REDIS_PORT}'"
     exit 1
   fi
 fi

@@ -487,28 +487,28 @@ off-heap-memory-size=120g</code></pre></td>
 <td><em>not set</em></td>
 </tr>
 <tr>
-<td>redis-bind-address</td>
-<td>Specifies the address on which the Redis API for <%=vars.product_name%> is listening. If set to the empty string or this property is not
+<td>compatible-with-redis-bind-address</td>
+<td>Specifies the address on which the <%=vars.product_name%> APIs compatible with Redis is listening. If set to the empty string or this property is not
 specified, the server listens on all local addresses.
 <td>S</td>
 <td><code>""</code></td>
 </tr>
 <tr>
-<td>redis-enabled</td>
-<td>When the default value of false, the Redis API for <%=vars.product_name%> is not available.  Set
-to true to enable the Redis API for <%=vars.product_name%>.</td>
+<td>compatible-with-redis-enabled</td>
+<td>When the default value of false, the <%=vars.product_name%> APIs compatible with Redis are not available.  Set
+to true to enable the <%=vars.product_name%> APIs compatible with Redis.</td>
 <td>S</td>
 <td>false</td>
 </tr>
 <tr>
-<td>redis-password</td>
+<td>compatible-with-redis-password</td>
 <td>Specifies the password that the server uses when a client attempts to authenticate.</td>
 <td>S</td>
 <td>no password set</td>
 </tr>
 <tr>
-<td>redis-port</td>
-<td>Specifies the port on which the server listens for Redis API for <%=vars.product_name%> connections. A value of 0 selects a random port.</td>
+<td>compatible-with-redis-port</td>
+<td>Specifies the port on which the server listens for <%=vars.product_name%> APIs compatible with Redis connections. A value of 0 selects a random port.</td>
 <td>S</td>
 <td>6379</td>
 </tr>
