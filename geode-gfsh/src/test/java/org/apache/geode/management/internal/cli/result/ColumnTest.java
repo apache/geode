@@ -28,7 +28,7 @@ public class ColumnTest {
 
     int result = column.getLength();
 
-    assertThat(result).isEqualTo(3);
+    assertThat(result).isEqualTo(value.length());
   }
 
   @Test

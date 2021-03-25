@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,7 +47,7 @@ public class ResultModelIntegrationTest {
   }
 
   @Test
-  public void emptyFileSizeDoesNothing() throws IOException {
+  public void emptyFileSizeDoesNothing() throws Exception {
     ResultModel emptyFileResult = new ResultModel();
     result.saveFileTo(temporaryFolder.newFolder());
 
@@ -62,7 +61,7 @@ public class ResultModelIntegrationTest {
   }
 
   @Test
-  public void notADirectory() throws IOException {
+  public void notADirectory() throws Exception {
     result.saveFileTo(temporaryFolder.newFile());
 
     assertThis(result)
@@ -72,7 +71,7 @@ public class ResultModelIntegrationTest {
   }
 
   @Test
-  public void dirNotExistBefore() throws IOException {
+  public void dirNotExistBefore() throws Exception {
     File dir = temporaryFolder.newFolder("test");
     Files.delete(dir.toPath());
 
@@ -96,8 +95,7 @@ public class ResultModelIntegrationTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation")
-  public void modelCommandResultShouldNotDealWithFiles() throws IOException {
+  public void modelCommandResultShouldNotDealWithFiles() throws Exception {
     result.saveFileTo(temporaryFolder.newFolder("test"));
     Result commandResult = new CommandResult(result);
 
@@ -112,7 +110,6 @@ public class ResultModelIntegrationTest {
     result.addFile(file, FileResultModel.FILE_TYPE_FILE);
     ObjectMapper mapper = GeodeJsonMapper.getMapper();
     String json = mapper.writeValueAsString(result);
-    System.out.println(json);
     ResultModel resultModel = mapper.readValue(json, ResultModel.class);
 
     File value = resultModel.getFileToDownload().toFile();
@@ -121,7 +118,7 @@ public class ResultModelIntegrationTest {
         .isEqualTo(file);
   }
 
-  public static ResultModelAssert assertThis(ResultModel model) {
+  private static ResultModelAssert assertThis(ResultModel model) {
     return new ResultModelAssert(model);
   }
 }

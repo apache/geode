@@ -312,15 +312,9 @@ public class TableBuilderTest {
 
   private List<String> validateTable(Table table, boolean shouldTrim) {
     String tableAsString = table.buildTable();
-    System.out.println(tableAsString);
-
     List<String> lines = asList(tableAsString.split(GfshParser.LINE_SEPARATOR));
 
-    int lineCount = 0;
     for (String line : lines) {
-      System.out.println("Line #" + lineCount++ + ": length = " + line.length() + ", isWider = "
-          + (line.length() > SCREEN_WIDTH));
-
       if (shouldTrim) {
         assertThat(line.length()).isLessThanOrEqualTo(SCREEN_WIDTH);
       } else {
