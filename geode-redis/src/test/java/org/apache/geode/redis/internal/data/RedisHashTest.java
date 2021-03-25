@@ -20,7 +20,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +39,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -50,6 +53,13 @@ public class RedisHashTest {
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DataSerializableFixedID.REDIS_HASH_ID,
         RedisHash.class);
+  }
+
+  @Test
+  public void confirmToDataIsSynchronized() throws NoSuchMethodException {
+    assertThat(Modifier.isSynchronized(RedisHash.class
+        .getMethod("toData", DataOutput.class, SerializationContext.class).getModifiers()))
+            .isTrue();
   }
 
   @Test
@@ -102,7 +112,7 @@ public class RedisHashTest {
   @Test
   public void equals_returnsTrue_givenDifferentEmptyHashes() {
     RedisHash o1 = new RedisHash(Collections.emptyList());
-    RedisHash o2 = RedisHash.NULL_REDIS_HASH;
+    RedisHash o2 = NullRedisDataStructures.NULL_REDIS_HASH;
     assertThat(o1).isEqualTo(o2);
     assertThat(o2).isEqualTo(o1);
   }
@@ -110,7 +120,7 @@ public class RedisHashTest {
   @SuppressWarnings("unchecked")
   @Test
   public void hset_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = Mockito.mock(Region.class);
+    Region<RedisKey, RedisData> region = Mockito.mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
     ByteArrayWrapper k3 = createByteArrayWrapper("k3");
     ByteArrayWrapper v3 = createByteArrayWrapper("v3");
@@ -132,7 +142,7 @@ public class RedisHashTest {
   @SuppressWarnings("unchecked")
   @Test
   public void hdel_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
     ByteArrayWrapper k1 = createByteArrayWrapper("k1");
     ArrayList<ByteArrayWrapper> removes = new ArrayList<>();
@@ -152,7 +162,7 @@ public class RedisHashTest {
   @SuppressWarnings("unchecked")
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
     o1.setExpirationTimestamp(region, null, 999);
     assertThat(o1.hasDelta()).isTrue();

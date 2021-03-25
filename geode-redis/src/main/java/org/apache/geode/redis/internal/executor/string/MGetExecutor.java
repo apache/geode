@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -33,7 +34,7 @@ public class MGetExecutor extends StringExecutor {
     Collection<ByteArrayWrapper> values = new ArrayList<>();
     for (int i = 1; i < commandElems.size(); i++) {
       byte[] keyArray = commandElems.get(i);
-      ByteArrayWrapper key = new ByteArrayWrapper(keyArray);
+      RedisKey key = new RedisKey(keyArray);
       values.add(stringCommands.mget(key));
     }
 

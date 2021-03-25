@@ -107,12 +107,13 @@ public class CertStores {
     keyStoreFile.deleteOnExit();
     createKeyStore(keyStoreFile.getPath(), keyStorePassword);
 
-    return propertiesWith(components, protocols, ciphers, trustStoreFile, keyStoreFile, requireAuth,
-        endPointIdentification);
+    return propertiesWith(components, protocols, ciphers, trustStoreFile, trustStorePassword,
+        keyStoreFile, keyStorePassword, requireAuth, endPointIdentification);
   }
 
-  private Properties propertiesWith(String components, String protocols, String ciphers,
-      File trustStoreFile, File keyStoreFile, boolean requireAuth, boolean endPointVerification) {
+  public static Properties propertiesWith(String components, String protocols, String ciphers,
+      File trustStoreFile, String trustStorePassword, File keyStoreFile, String keyStorePassword,
+      boolean requireAuth, boolean endPointVerification) {
 
     Properties sslConfigs = new Properties();
     sslConfigs.setProperty(SSL_ENABLED_COMPONENTS, components);

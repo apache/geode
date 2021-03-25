@@ -39,6 +39,7 @@ import java.util.List;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
 
 /**
@@ -49,102 +50,102 @@ import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
 public class RedisStringCommandsFunctionInvoker extends RedisCommandsFunctionInvoker
     implements RedisStringCommands {
 
-  public RedisStringCommandsFunctionInvoker(Region<ByteArrayWrapper, RedisData> region) {
+  public RedisStringCommandsFunctionInvoker(Region<RedisKey, RedisData> region) {
     super(region);
   }
 
   @Override
-  public long append(ByteArrayWrapper key, ByteArrayWrapper valueToAppend) {
+  public long append(RedisKey key, ByteArrayWrapper valueToAppend) {
     return invokeCommandFunction(key, APPEND, valueToAppend);
   }
 
   @Override
-  public ByteArrayWrapper get(ByteArrayWrapper key) {
+  public ByteArrayWrapper get(RedisKey key) {
     return invokeCommandFunction(key, GET);
   }
 
   @Override
-  public boolean set(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
+  public boolean set(RedisKey key, ByteArrayWrapper value, SetOptions options) {
     return invokeCommandFunction(key, SET, value, options);
   }
 
   @Override
-  public long incr(ByteArrayWrapper key) {
+  public long incr(RedisKey key) {
     return invokeCommandFunction(key, INCR);
   }
 
   @Override
-  public long decr(ByteArrayWrapper key) {
+  public long decr(RedisKey key) {
     return invokeCommandFunction(key, DECR);
   }
 
   @Override
-  public ByteArrayWrapper getset(ByteArrayWrapper key, ByteArrayWrapper value) {
+  public ByteArrayWrapper getset(RedisKey key, ByteArrayWrapper value) {
     return invokeCommandFunction(key, GETSET, value);
   }
 
   @Override
-  public long incrby(ByteArrayWrapper key, long increment) {
+  public long incrby(RedisKey key, long increment) {
     return invokeCommandFunction(key, INCRBY, increment);
   }
 
   @Override
-  public long decrby(ByteArrayWrapper key, long decrement) {
+  public long decrby(RedisKey key, long decrement) {
     return invokeCommandFunction(key, DECRBY, decrement);
   }
 
   @Override
-  public ByteArrayWrapper getrange(ByteArrayWrapper key, long start, long end) {
+  public ByteArrayWrapper getrange(RedisKey key, long start, long end) {
     return invokeCommandFunction(key, GETRANGE, start, end);
   }
 
   @Override
-  public long bitcount(ByteArrayWrapper key, int start, int end) {
+  public long bitcount(RedisKey key, int start, int end) {
     return invokeCommandFunction(key, BITCOUNT, start, end);
   }
 
   @Override
-  public long bitcount(ByteArrayWrapper key) {
+  public long bitcount(RedisKey key) {
     return invokeCommandFunction(key, BITCOUNT);
   }
 
   @Override
-  public int strlen(ByteArrayWrapper key) {
+  public int strlen(RedisKey key) {
     return invokeCommandFunction(key, STRLEN);
   }
 
   @Override
-  public int getbit(ByteArrayWrapper key, int offset) {
+  public int getbit(RedisKey key, int offset) {
     return invokeCommandFunction(key, GETBIT, offset);
   }
 
   @Override
-  public int setbit(ByteArrayWrapper key, long offset, int value) {
+  public int setbit(RedisKey key, long offset, int value) {
     return invokeCommandFunction(key, SETBIT, offset, value);
   }
 
   @Override
-  public BigDecimal incrbyfloat(ByteArrayWrapper key, BigDecimal increment) {
+  public BigDecimal incrbyfloat(RedisKey key, BigDecimal increment) {
     return invokeCommandFunction(key, INCRBYFLOAT, increment);
   }
 
   @Override
-  public int bitop(String operation, ByteArrayWrapper destKey, List<ByteArrayWrapper> sources) {
+  public int bitop(String operation, RedisKey destKey, List<RedisKey> sources) {
     return invokeCommandFunction(destKey, BITOP, operation, sources);
   }
 
   @Override
-  public int bitpos(ByteArrayWrapper key, int bit, int start, Integer end) {
+  public int bitpos(RedisKey key, int bit, int start, Integer end) {
     return invokeCommandFunction(key, BITPOS, bit, start, end);
   }
 
   @Override
-  public int setrange(ByteArrayWrapper key, int offset, byte[] value) {
+  public int setrange(RedisKey key, int offset, byte[] value) {
     return invokeCommandFunction(key, SETRANGE, offset, value);
   }
 
   @Override
-  public ByteArrayWrapper mget(ByteArrayWrapper key) {
+  public ByteArrayWrapper mget(RedisKey key) {
     return invokeCommandFunction(key, MGET);
   }
 }

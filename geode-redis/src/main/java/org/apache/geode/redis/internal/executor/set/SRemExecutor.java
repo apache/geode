@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -28,7 +29,7 @@ public class SRemExecutor extends SetExecutor {
       ExecutionHandlerContext context) {
     List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
 
-    ByteArrayWrapper key = command.getKey();
+    RedisKey key = command.getKey();
 
     RedisSetCommands redisSetCommands = createRedisSetCommands(context);
 

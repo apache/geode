@@ -16,12 +16,12 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_HASH;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_STRING;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_HASH;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
-import static org.apache.geode.redis.internal.data.RedisHash.NULL_REDIS_HASH;
-import static org.apache.geode.redis.internal.data.RedisSet.NULL_REDIS_SET;
-import static org.apache.geode.redis.internal.data.RedisString.NULL_REDIS_STRING;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.RedisConstants;
@@ -39,11 +39,11 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
  * to prevent garbage creation.
  */
 public class CommandHelper {
-  private final Region<ByteArrayWrapper, RedisData> region;
+  private final Region<RedisKey, RedisData> region;
   private final RedisStats redisStats;
   private final StripedExecutor stripedExecutor;
 
-  public Region<ByteArrayWrapper, RedisData> getRegion() {
+  public Region<RedisKey, RedisData> getRegion() {
     return region;
   }
 
@@ -56,7 +56,7 @@ public class CommandHelper {
   }
 
   public CommandHelper(
-      Region<ByteArrayWrapper, RedisData> region,
+      Region<RedisKey, RedisData> region,
       RedisStats redisStats,
       StripedExecutor stripedExecutor) {
     this.region = region;
@@ -64,11 +64,11 @@ public class CommandHelper {
     this.stripedExecutor = stripedExecutor;
   }
 
-  RedisData getRedisData(ByteArrayWrapper key) {
-    return getRedisData(key, RedisData.NULL_REDIS_DATA);
+  RedisData getRedisData(RedisKey key) {
+    return getRedisData(key, NullRedisDataStructures.NULL_REDIS_DATA);
   }
 
-  RedisData getRedisData(ByteArrayWrapper key, RedisData notFoundValue) {
+  RedisData getRedisData(RedisKey key, RedisData notFoundValue) {
     RedisData result = region.get(key);
     if (result != null) {
       if (result.hasExpired()) {
@@ -83,7 +83,7 @@ public class CommandHelper {
     }
   }
 
-  RedisSet getRedisSet(ByteArrayWrapper key, boolean updateStats) {
+  RedisSet getRedisSet(RedisKey key, boolean updateStats) {
     RedisData redisData = getRedisData(key, NULL_REDIS_SET);
     if (updateStats) {
       if (redisData == NULL_REDIS_SET) {
@@ -105,7 +105,7 @@ public class CommandHelper {
     return (RedisSet) redisData;
   }
 
-  RedisHash getRedisHash(ByteArrayWrapper key, boolean updateStats) {
+  RedisHash getRedisHash(RedisKey key, boolean updateStats) {
     RedisData redisData = getRedisData(key, NULL_REDIS_HASH);
     if (updateStats) {
       if (redisData == NULL_REDIS_HASH) {
@@ -140,7 +140,7 @@ public class CommandHelper {
     return (RedisString) redisData;
   }
 
-  RedisString getRedisString(ByteArrayWrapper key, boolean updateStats) {
+  RedisString getRedisString(RedisKey key, boolean updateStats) {
     RedisData redisData = getRedisData(key, NULL_REDIS_STRING);
     if (updateStats) {
       if (redisData == NULL_REDIS_STRING) {
@@ -153,7 +153,7 @@ public class CommandHelper {
     return checkStringType(redisData, false);
   }
 
-  RedisString getRedisStringIgnoringType(ByteArrayWrapper key, boolean updateStats) {
+  RedisString getRedisStringIgnoringType(RedisKey key, boolean updateStats) {
     RedisData redisData = getRedisData(key, NULL_REDIS_STRING);
     if (updateStats) {
       if (redisData == NULL_REDIS_STRING) {
@@ -166,7 +166,7 @@ public class CommandHelper {
     return checkStringType(redisData, true);
   }
 
-  RedisString setRedisString(ByteArrayWrapper key, ByteArrayWrapper value) {
+  RedisString setRedisString(RedisKey key, ByteArrayWrapper value) {
     RedisString result;
     RedisData redisData = getRedisData(key);
 

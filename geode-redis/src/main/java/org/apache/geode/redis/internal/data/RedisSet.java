@@ -47,7 +47,6 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 
 public class RedisSet extends AbstractRedisData {
 
-  public static final NullRedisSet NULL_REDIS_SET = new NullRedisSet();
   private HashSet<ByteArrayWrapper> members;
 
   @SuppressWarnings("unchecked")
@@ -100,8 +99,8 @@ public class RedisSet extends AbstractRedisData {
     return scanResult;
   }
 
-  Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key, int popCount) {
+  Collection<ByteArrayWrapper> spop(Region<RedisKey, RedisData> region,
+      RedisKey key, int popCount) {
     int originalSize = scard();
     if (originalSize == 0) {
       return emptyList();
@@ -197,7 +196,7 @@ public class RedisSet extends AbstractRedisData {
    */
 
   @Override
-  public void toData(DataOutput out, SerializationContext context) throws IOException {
+  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     InternalDataSerializer.writeHashSet(members, out);
   }
@@ -239,8 +238,8 @@ public class RedisSet extends AbstractRedisData {
    * @param key the name of the set to add to
    * @return the number of members actually added
    */
-  long sadd(ArrayList<ByteArrayWrapper> membersToAdd, Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key) {
+  long sadd(ArrayList<ByteArrayWrapper> membersToAdd, Region<RedisKey, RedisData> region,
+      RedisKey key) {
 
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
@@ -257,8 +256,8 @@ public class RedisSet extends AbstractRedisData {
    * @param key the name of the set to remove from
    * @return the number of members actually removed
    */
-  long srem(ArrayList<ByteArrayWrapper> membersToRemove, Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key) {
+  long srem(ArrayList<ByteArrayWrapper> membersToRemove, Region<RedisKey, RedisData> region,
+      RedisKey key) {
 
     membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
     int membersRemoved = membersToRemove.size();

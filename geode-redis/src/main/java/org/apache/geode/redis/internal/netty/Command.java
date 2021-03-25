@@ -23,6 +23,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 
 /**
@@ -103,6 +104,15 @@ public class Command {
   }
 
   /**
+   * Used to get the command element list when every argument is also a key
+   *
+   * @return List of command elements in form of {@link List}
+   */
+  public List<RedisKey> getProcessedCommandWrapperKeys() {
+    return this.commandElems.stream().map(RedisKey::new).collect(Collectors.toList());
+  }
+
+  /**
    * Getter method for the command type
    *
    * @return The command type
@@ -132,12 +142,12 @@ public class Command {
     }
   }
 
-  public ByteArrayWrapper getKey() {
+  public RedisKey getKey() {
     if (this.commandElems.size() > 1) {
       if (this.bytes == null) {
-        this.bytes = new ByteArrayWrapper(this.commandElems.get(1));
+        this.bytes = new RedisKey(this.commandElems.get(1));
       }
-      return this.bytes;
+      return (RedisKey) this.bytes;
     } else {
       return null;
     }

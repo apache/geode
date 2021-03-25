@@ -59,6 +59,14 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
   public ResultModel createGatewaySender(
 
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ID,
+          mandatory = true,
+          help = CliStrings.CREATE_GATEWAYSENDER__ID__HELP) String id,
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID,
+          mandatory = true,
+          help = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID__HELP) Integer remoteDistributedSystemId,
+
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
@@ -67,13 +75,6 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.CREATE_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ID,
-          mandatory = true,
-          help = CliStrings.CREATE_GATEWAYSENDER__ID__HELP) String id,
-
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID,
-          mandatory = true,
-          help = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID__HELP) Integer remoteDistributedSystemId,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
           specifiedDefaultValue = "true",

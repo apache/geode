@@ -67,7 +67,7 @@ public class NullRedisString extends RedisString {
   }
 
   @Override
-  public int bitpos(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key, int bit,
+  public int bitpos(Region<RedisKey, RedisData> region, RedisKey key, int bit,
       int start, Integer end) {
     if (bit == 0) {
       return 0;
@@ -77,9 +77,8 @@ public class NullRedisString extends RedisString {
   }
 
   @Override
-  public int setbit(
-      Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key, int bitValue, int byteIndex, byte bitIndex) {
+  public int setbit(Region<RedisKey, RedisData> region, RedisKey key,
+      int bitValue, int byteIndex, byte bitIndex) {
     RedisString newValue;
     if (bitValue == 1) {
       byte[] bytes = new byte[byteIndex + 1];
@@ -94,7 +93,7 @@ public class NullRedisString extends RedisString {
   }
 
   @Override
-  public long incr(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key)
+  public long incr(Region<RedisKey, RedisData> region, RedisKey key)
       throws NumberFormatException, ArithmeticException {
     byte[] newValue = {Coder.NUMBER_1_BYTE};
     region.put(key, new RedisString(new ByteArrayWrapper(newValue)));
@@ -102,7 +101,7 @@ public class NullRedisString extends RedisString {
   }
 
   @Override
-  public long incrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public long incrby(Region<RedisKey, RedisData> region, RedisKey key,
       long increment) throws NumberFormatException, ArithmeticException {
     byte[] newValue = Coder.longToBytes(increment);
     region.put(key, new RedisString(new ByteArrayWrapper(newValue)));
@@ -110,7 +109,7 @@ public class NullRedisString extends RedisString {
   }
 
   @Override
-  public BigDecimal incrbyfloat(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public BigDecimal incrbyfloat(Region<RedisKey, RedisData> region, RedisKey key,
       BigDecimal increment) throws NumberFormatException, ArithmeticException {
     byte[] newValue = Coder.bigDecimalToBytes(increment);
     region.put(key, new RedisString(new ByteArrayWrapper(newValue)));
@@ -118,37 +117,35 @@ public class NullRedisString extends RedisString {
   }
 
   @Override
-  public long decr(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key)
+  public long decr(Region<RedisKey, RedisData> region, RedisKey key)
       throws NumberFormatException, ArithmeticException {
     region.put(key, new RedisString(new ByteArrayWrapper(Coder.stringToBytes("-1"))));
     return -1;
   }
 
   @Override
-  public long decrby(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
-      long decrement) {
+  public long decrby(Region<RedisKey, RedisData> region, RedisKey key, long decrement) {
     byte[] newValue = Coder.longToBytes(-decrement);
     region.put(key, new RedisString(new ByteArrayWrapper(newValue)));
     return -decrement;
   }
 
   @Override
-  public int append(ByteArrayWrapper appendValue,
-      Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key) {
+  public int append(ByteArrayWrapper appendValue, Region<RedisKey, RedisData> region,
+      RedisKey key) {
     region.put(key, new RedisString(appendValue));
     return appendValue.length();
   }
 
   @Override
-  public ByteArrayWrapper getset(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  public ByteArrayWrapper getset(Region<RedisKey, RedisData> region, RedisKey key,
       ByteArrayWrapper value) {
     region.put(key, new RedisString(value));
     return null;
   }
 
   @Override
-  public int setrange(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key, int offset,
+  public int setrange(Region<RedisKey, RedisData> region, RedisKey key, int offset,
       byte[] valueToAdd) {
     byte[] newBytes = valueToAdd;
     if (valueToAdd.length != 0) {
@@ -165,8 +162,8 @@ public class NullRedisString extends RedisString {
    * SET is currently mostly implemented here. It does not have an implementation on
    * RedisString which is a bit odd.
    */
-  public boolean set(CommandHelper helper, ByteArrayWrapper key,
-      ByteArrayWrapper value, SetOptions options) {
+  public boolean set(CommandHelper helper, RedisKey key, ByteArrayWrapper value,
+      SetOptions options) {
     if (options != null) {
       if (options.isNX()) {
         return setnx(helper, key, value, options);
@@ -182,8 +179,8 @@ public class NullRedisString extends RedisString {
     return true;
   }
 
-  private boolean setnx(CommandHelper helper, ByteArrayWrapper key,
-      ByteArrayWrapper value, SetOptions options) {
+  private boolean setnx(CommandHelper helper, RedisKey key, ByteArrayWrapper value,
+      SetOptions options) {
     if (helper.getRedisData(key).exists()) {
       return false;
     }
@@ -198,15 +195,13 @@ public class NullRedisString extends RedisString {
    * RedisString which is a bit odd. This implementation only has a couple of places
    * that care if a RedisString for "key" exists.
    */
-  public int bitop(CommandHelper helper,
-      String operation,
-      ByteArrayWrapper key, List<ByteArrayWrapper> sources) {
+  public int bitop(CommandHelper helper, String operation, RedisKey key, List<RedisKey> sources) {
     List<ByteArrayWrapper> sourceValues = new ArrayList<>();
     int selfIndex = -1;
     // Read all the source values, except for self, before locking the stripe.
     RedisStringCommands commander =
         new RedisStringCommandsFunctionInvoker(helper.getRegion());
-    for (ByteArrayWrapper sourceKey : sources) {
+    for (RedisKey sourceKey : sources) {
       if (sourceKey.equals(key)) {
         // get self later after the stripe is locked
         selfIndex = sourceValues.size();
@@ -225,10 +220,7 @@ public class NullRedisString extends RedisString {
     AND, OR, XOR
   }
 
-  private int doBitOp(CommandHelper helper,
-      String operation,
-      ByteArrayWrapper key,
-      int selfIndex,
+  private int doBitOp(CommandHelper helper, String operation, RedisKey key, int selfIndex,
       List<ByteArrayWrapper> sourceValues) {
     if (selfIndex != -1) {
       RedisString redisString = helper.getRedisString(key, true);
