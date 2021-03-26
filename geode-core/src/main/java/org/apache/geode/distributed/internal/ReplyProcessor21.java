@@ -994,17 +994,39 @@ public class ReplyProcessor21 implements MembershipListener {
       for (int i = 0; i < cells; i++) {
         InternalDistributedMember e = this.members[i];
         if (e != null && e.equals(m)) {
-          this.members[i] = null;
           // we may be expecting more than one response from a member. so,
           // unless the member left, we only scrub the first occurrence of
           // the member id from the responder list
-          if (!departed) {
-            return true;
+          if (removed && !departed) {
+            return removed;
           }
+          this.members[i] = null;
           removed = true;
         }
       }
     } // synchronized
+    if (!removed)
+      return removed;
+
+    List<Connection> copySendCons = new ArrayList<>(sendCons);
+    if (copySendCons.size() > 0) {
+      for (Connection con : copySendCons) {
+        if (con.getRemoteAddress().equals(m)) {
+          con.removeProcessor(this);
+          sendCons.remove(con);
+        }
+      }
+    }
+
+    List<Connection> copyRecvCons = new ArrayList<>(receiveCons);
+    if (copyRecvCons.size() > 0) {
+      for (Connection con : copyRecvCons) {
+        if (con.getRemoteAddress().equals(m)) {
+          con.removeProcessor(this);
+          receiveCons.remove(con);
+        }
+      }
+    }
     return removed;
   }
 
@@ -1270,6 +1292,11 @@ public class ReplyProcessor21 implements MembershipListener {
     checkIfDone();
   }
 
+  public void cancel(InternalDistributedMember sender, String reason) {
+    logger.warn("Connection closed while waiting for reply message, reason: " + reason);
+    removeMember(sender, true);
+    checkIfDone();
+  }
 
   public void addReceiveConnection(Connection con) {
     receiveCons.add(con);

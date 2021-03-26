@@ -34,6 +34,7 @@ import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -364,6 +365,9 @@ public class Connection implements Runnable {
 
   private int sendBufferSize = -1;
   private int recvBufferSize = -1;
+
+  /** list of reply processors that are monitoring this connection */
+  private final List attachedProcessors = new ArrayList();
 
   @MakeNotStatic
   private static final ByteBuffer okHandshakeBuf;
@@ -1319,6 +1323,15 @@ public class Connection implements Runnable {
     if (onlyCleanup && !forceRemoval) {
       return;
     }
+
+    // Notify attached processors that connection is released
+    List<ReplyProcessor21> copyProcessors = new ArrayList<>(attachedProcessors);
+    if (!copyProcessors.isEmpty()) {
+      for (ReplyProcessor21 processor : copyProcessors) {
+        processor.cancel(getRemoteAddress(), reason);
+      }
+    }
+
     boolean removeEndpoint = p_removeEndpoint;
     if (!onlyCleanup) {
       synchronized (this) {
@@ -3369,6 +3382,19 @@ public class Connection implements Runnable {
    */
   long getMessagesSent() {
     return messagesSent;
+  }
+
+
+  public void addProcessor(ReplyProcessor21 processor) {
+    attachedProcessors.add(processor);
+  }
+
+  public void removeProcessor(ReplyProcessor21 processor) {
+    attachedProcessors.remove(processor);
+  }
+
+  public boolean preserveOrder() {
+    return preserveOrder;
   }
 
   private class BatchBufferFlusher extends Thread {
