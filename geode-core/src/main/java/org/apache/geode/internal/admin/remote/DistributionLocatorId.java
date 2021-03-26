@@ -20,6 +20,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,7 +34,9 @@ import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * Identifies the host, port, and bindAddress a distribution locator is listening on.
- *
+ * Also identifies member name of the distribution locator. This is used to improve
+ * locator discovery logic.
+ * If member name is set to null, then design base logic will be used.
  *
  */
 public class DistributionLocatorId implements java.io.Serializable {
@@ -49,11 +52,14 @@ public class DistributionLocatorId implements java.io.Serializable {
   private boolean serverLocator = true;
   private String hostnameForClients;
   private String hostname;
-  private final String membername;
-
+  // added due to improvement for cloud native environment
+  private String membername;
+  private long timestamp;
 
   /**
    * Constructs a DistributionLocatorId with the given host and port.
+   * This constructor is used for design base behavior.
+   *
    */
   public DistributionLocatorId(InetAddress host, int port, String bindAddress,
       SSLConfig sslConfig) {
@@ -61,20 +67,23 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.port = port;
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(sslConfig);
-    this.membername = null;
+    this.membername = DistributionConfig.DEFAULT_NAME;
+    this.timestamp = 0;
   }
 
-  /**
-   * Constructs a DistributionLocatorId with the given port. The host will be set to the local host.
-   */
   public DistributionLocatorId(int port, String bindAddress) {
     this(port, bindAddress, null);
   }
 
   public DistributionLocatorId(int port, String bindAddress, String hostnameForClients) {
-    this(port, bindAddress, hostnameForClients, null);
+    this(port, bindAddress, hostnameForClients, DistributionConfig.DEFAULT_NAME);
   }
 
+  /**
+   * Constructs a DistributionLocatorId with the given port and member name.
+   * The host will be set to the local host.
+   *
+   */
   public DistributionLocatorId(int port, String bindAddress, String hostnameForClients,
       String membername) {
     try {
@@ -87,7 +96,12 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(null);
     this.hostnameForClients = hostnameForClients;
-    this.membername = membername;
+    if (membername == null) {
+      this.membername = DistributionConfig.DEFAULT_NAME;
+    } else {
+      this.membername = membername;
+    }
+    this.timestamp = System.currentTimeMillis();
   }
 
   public DistributionLocatorId(InetAddress host, int port, String bindAddress, SSLConfig sslConfig,
@@ -97,8 +111,10 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(sslConfig);
     this.hostnameForClients = hostnameForClients;
-    this.membername = null;
+    this.membername = DistributionConfig.DEFAULT_NAME;
+    this.timestamp = 0;
   }
+
 
   /**
    * Constructs a DistributionLocatorId with a String of the form: hostname[port] or
@@ -114,11 +130,33 @@ public class DistributionLocatorId implements java.io.Serializable {
    * two.
    */
   public DistributionLocatorId(String marshalled) {
-    this(marshalled, null);
+    this(marshalled, DistributionConfig.DEFAULT_NAME);
   }
 
+  /**
+   * Constructs a DistributionLocatorId with a String of the form: hostname[port] or
+   * hostname:bindaddress[port] or hostname@bindaddress[port]
+   * and membername
+   * <p>
+   * The :bindaddress portion is optional. hostname[port] is the more common form.
+   * <p>
+   * Example: merry.gemstone.com[7056]<br>
+   * Example w/ bind address: merry.gemstone.com:81.240.0.1[7056], or
+   * merry.gemstone.com@fdf0:76cf:a0ed:9449::16[7056]
+   * <p>
+   * Use bindaddress[port] or hostname[port]. This object doesn't need to differentiate between the
+   * two.
+   * <p>
+   * Membername example: locator1 or locator-ny1.
+   * <p>
+   */
   public DistributionLocatorId(String marshalled, String membername) {
-    this.membername = membername;
+    if (membername == null) {
+      this.membername = DistributionConfig.DEFAULT_NAME;
+    } else {
+      this.membername = membername;
+    }
+    this.timestamp = System.currentTimeMillis();
 
     final int portStartIdx = marshalled.indexOf('[');
     final int portEndIdx = marshalled.indexOf(']');
@@ -275,7 +313,14 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
 
   public String getMemberName() {
+    if (this.membername == null) {
+      this.membername = DistributionConfig.DEFAULT_NAME;
+    }
     return this.membername;
+  }
+
+  public long getTimeStamp() {
+    return timestamp;
   }
 
   // private String hostNameToString() {
@@ -326,6 +371,7 @@ public class DistributionLocatorId implements java.io.Serializable {
    *
    * @param other the reference object with which to compare.
    * @return true if this object is the same as the obj argument; false otherwise.
+   *
    */
   @Override
   public boolean equals(Object other) {
@@ -337,16 +383,7 @@ public class DistributionLocatorId implements java.io.Serializable {
       return false;
     final DistributionLocatorId that = (DistributionLocatorId) other;
 
-    if (this.membername != null && that.membername != null) {
-      if (this.membername.equals(that.membername))
-        return true;
-
-      return false;
-    }
-
-    if (!StringUtils.equals(this.hostnameForClients, that.hostnameForClients))
-      return false;
-    if (this.host != that.host && !(this.host != null && this.host.equals(that.host)))
+    if (!Objects.equals(this.host, that.host))
       return false;
     if (this.port != that.port)
       return false;
@@ -356,7 +393,14 @@ public class DistributionLocatorId implements java.io.Serializable {
     return true;
   }
 
-  public boolean additionalCheckEqual(Object other) {
+  /**
+   *
+   * In case both objects have same member name, it will compare all other parameters
+   *
+   * @param other the reference object with which to compare.
+   * @return true if this object is the same as the obj argument; false otherwise.
+   */
+  public boolean detailCompare(Object other) {
     if (other == this)
       return true;
     if (other == null)
@@ -367,7 +411,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 
     if (!StringUtils.equals(this.hostnameForClients, that.hostnameForClients))
       return false;
-    if (this.host != that.host && !(this.host != null && this.host.equals(that.host)))
+    if (!Objects.equals(this.host, that.host))
       return false;
     if (this.port != that.port)
       return false;

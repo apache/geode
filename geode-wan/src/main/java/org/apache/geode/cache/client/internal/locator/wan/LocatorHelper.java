@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 
@@ -46,35 +47,66 @@ public class LocatorHelper {
     Set<DistributionLocatorId> existingValue =
         allLocatorsInfo.putIfAbsent(distributedSystemId, locatorsSet);
     if (existingValue != null) {
-      if (!existingValue.contains(locator)) {
-        existingValue.add(locator);
-        addServerLocator(distributedSystemId, locatorListener, locator);
-        locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
-      } else if (locator.getMemberName() != null) {
-        DistributionLocatorId tempLocator = null;
-        for (DistributionLocatorId locElement : existingValue) {
-          if (locator.equals(locElement) && locElement.getMemberName() != null) {
-            tempLocator = locElement;
-            break;
-          }
-        }
-        if (tempLocator != null) {
-          if (!locator.additionalCheckEqual(tempLocator)) {
-            existingValue.remove(tempLocator);
+      if (!locator.getMemberName().equals(DistributionConfig.DEFAULT_NAME)) {
+        DistributionLocatorId existingLocator =
+            getLocatorWithSameMemberName(existingValue, locator);
+
+        if (existingLocator != null) {
+          // if locator with same name exist, check did all parameters are same
+          if (!locator.detailCompare(existingLocator)) {
+            // some parameters had changed for existing locator
+            // replace it
+            if (existingLocator.getTimeStamp() > locator.getTimeStamp())
+              return false;
+
+            existingValue.remove(existingLocator);
             ConcurrentHashMap<Integer, Set<String>> allServerLocatorsInfo =
                 (ConcurrentHashMap<Integer, Set<String>>) locatorListener
                     .getAllServerLocatorsInfo();
             Set<String> alllocators = allServerLocatorsInfo.get(distributedSystemId);
-            alllocators.remove(tempLocator.toString());
+            alllocators.remove(existingLocator.toString());
+            existingValue.add(locator);
             addServerLocator(distributedSystemId, locatorListener, locator);
             locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
             return true;
           }
+          return false;
+        } else if (!existingValue.contains(locator)) {
+          existingValue.add(locator);
+          addServerLocator(distributedSystemId, locatorListener, locator);
+          locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
+          return true;
+
+        } else {
+          DistributionLocatorId oldLocator =
+              getLocatorFromCollection(existingValue, locator);
+
+          if (oldLocator == null)
+            return false;
+
+          if (oldLocator.getTimeStamp() > locator.getTimeStamp())
+            return false;
+
+          // for new member name, existing host[port] received
+          // replace it, to contain latest info
+          existingValue.remove(oldLocator);
+          // member name is not used in equals(), so this is the way to replace old locator
+          existingValue.add(locator);
+          locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
+          return true;
+
         }
-        return false;
+
+      } else if (!existingValue.contains(locator)) {
+        existingValue.add(locator);
+        addServerLocator(distributedSystemId, locatorListener, locator);
+        locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
+
       } else {
         return false;
+
       }
+
     } else {
       addServerLocator(distributedSystemId, locatorListener, locator);
       locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
@@ -122,15 +154,14 @@ public class LocatorHelper {
           if (!localLocators.equals(entry.getValue())) {
             entry.getValue().removeAll(localLocators);
             for (DistributionLocatorId locator : entry.getValue()) {
-              if (locator.getMemberName() == null && !localLocators.isEmpty()) {
-                boolean locatorExist = false;
-                for (DistributionLocatorId locId : localLocators) {
-                  if (locId.equals(locator)) {
-                    locatorExist = true;
-                    break;
-                  }
-                }
-                if (locatorExist)
+              if (!locator.getMemberName().equals(DistributionConfig.DEFAULT_NAME)
+                  && !localLocators.isEmpty()) {
+                DistributionLocatorId existingLocator =
+                    getLocatorWithSameMemberName(localLocators, locator);
+
+                // if locator received in response, is already stored in local collection,
+                // ignore this info
+                if (existingLocator != null)
                   continue;
               }
               localLocators.add(locator);
@@ -149,6 +180,34 @@ public class LocatorHelper {
       return true;
     }
     return false;
+  }
+
+  /**
+   * This method gets locator with specific member name from collection of locators
+   *
+   */
+  private static DistributionLocatorId getLocatorWithSameMemberName(
+      Set<DistributionLocatorId> locatorSet, DistributionLocatorId locator) {
+    for (DistributionLocatorId locElement : locatorSet) {
+      if (locator.getMemberName().equals(locElement.getMemberName())) {
+        return locElement;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * This method gets locator equal to specified from collection of locators
+   *
+   */
+  private static DistributionLocatorId getLocatorFromCollection(
+      Set<DistributionLocatorId> locatorSet, DistributionLocatorId locator) {
+    for (DistributionLocatorId locElement : locatorSet) {
+      if (locator.equals(locElement)) {
+        return locElement;
+      }
+    }
+    return null;
   }
 
 }
