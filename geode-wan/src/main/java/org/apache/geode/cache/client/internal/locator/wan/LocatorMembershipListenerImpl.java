@@ -148,11 +148,14 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
       final DistributionLocatorId sourceLocator) {
     // DistributionLocatorId for local locator.
     DistributionLocatorId localLocatorId;
+
+    String memberName = config.getName();
     String localLocator = config.getStartLocator();
     if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
-      localLocatorId = new DistributionLocatorId(port, config.getBindAddress());
+      localLocatorId =
+          new DistributionLocatorId(port, config.getBindAddress(), null, memberName);
     } else {
-      localLocatorId = new DistributionLocatorId(localLocator);
+      localLocatorId = new DistributionLocatorId(localLocator, memberName);
     }
 
     // Make a local copy of the current list of known locators.
