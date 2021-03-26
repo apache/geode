@@ -531,6 +531,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       // We defer setting the port until the handler is init'd - that way we'll have an actual port
       // in the case where we're starting with port = 0.
       locatorListener.setConfig(getConfig());
+      locatorListener.start();
     }
 
     locatorStats = new LocatorStats();
@@ -995,6 +996,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     if (locatorListener != null) {
       locatorListener.clearLocatorInfo();
+      locatorListener.stop();
     }
 
     isSharedConfigurationStarted = false;
