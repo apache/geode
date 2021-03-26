@@ -217,5 +217,4 @@ public class ResultsCollectionPdxDeserializerWrapper implements SelectResults {
   public void setElementType(ObjectType elementType) {
     results.setElementType(elementType);
   }
-
 }

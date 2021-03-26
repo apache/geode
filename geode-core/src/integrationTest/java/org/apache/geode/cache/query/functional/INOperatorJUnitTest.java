@@ -225,11 +225,11 @@ public class INOperatorJUnitTest {
 
     q = CacheUtils.getQueryService().newQuery(" UNDEFINED IN SET(UNDEFINED)");
     result = q.execute();
-    assertThat(result).isEqualTo(QueryService.UNDEFINED);
+    assertThat(result).isEqualTo(TRUE);
 
     q = CacheUtils.getQueryService().newQuery(" UNDEFINED IN SET(UNDEFINED,UNDEFINED)");
     result = q.execute();
-    assertThat(result).isEqualTo(QueryService.UNDEFINED);
+    assertThat(result).isEqualTo(TRUE);
   }
 
   @Test

@@ -15,9 +15,11 @@
 package org.apache.geode.cache.query.internal.index;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -40,6 +42,7 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
+import org.apache.geode.util.internal.UncheckedUtils;
 
 @Category({OQLIndexTest.class})
 public class MapRangeIndexMaintenanceJUnitTest {
@@ -339,6 +342,167 @@ public class MapRangeIndexMaintenanceJUnitTest {
         .newQuery("select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = null")
         .execute();
     assertEquals(1, result.size());
+  }
+
+  @Test
+  public void testQueriesForValueInMapFieldWithoutIndex() throws Exception {
+    region =
+        CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
+    qs = CacheUtils.getQueryService();
+    testQueriesForValueInMapField(region, qs);
+  }
+
+  @Test
+  public void testQueriesForValueInMapFieldWithMapIndexWithOneKey() throws Exception {
+    region =
+        CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
+    qs = CacheUtils.getQueryService();
+
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN']", SEPARATOR + "portfolio ");
+    assertThat(keyIndex1).isInstanceOf(CompactRangeIndex.class);
+    testQueriesForValueInMapField(region, qs);
+
+    long keys = ((CompactRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
+    long mapIndexKeys =
+        ((CompactRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
+    long values =
+        ((CompactRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
+    long uses =
+        ((CompactRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
+
+    assertThat(keys).isEqualTo(4);
+    assertThat(mapIndexKeys).isEqualTo(0);
+    assertThat(values).isEqualTo(7);
+    assertThat(uses).isEqualTo(4);
+  }
+
+  @Test
+  public void testQueriesForValueInMapFieldWithMapIndexWithSeveralKeys() throws Exception {
+    region =
+        CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
+    qs = CacheUtils.getQueryService();
+
+    keyIndex1 =
+        qs.createIndex(INDEX_NAME, "positions['SUN', 'ERICSSON']", SEPARATOR + "portfolio ");
+    assertThat(keyIndex1).isInstanceOf(CompactMapRangeIndex.class);
+    testQueriesForValueInMapField(region, qs);
+
+    long keys = ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
+    long mapIndexKeys =
+        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
+    long values =
+        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
+    long uses =
+        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
+
+    assertThat(keys).isEqualTo(3);
+    assertThat(mapIndexKeys).isEqualTo(1);
+    assertThat(values).isEqualTo(3);
+    assertThat(uses).isEqualTo(2);
+  }
+
+  @Test
+  public void testQueriesForValueInMapFieldWithMapIndexWithStar() throws Exception {
+    region =
+        CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
+    qs = CacheUtils.getQueryService();
+
+    keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio ");
+    assertThat(keyIndex1).isInstanceOf(CompactMapRangeIndex.class);
+    testQueriesForValueInMapField(region, qs);
+
+    long keys = ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
+    long mapIndexKeys =
+        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
+    long values =
+        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
+    long uses =
+        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
+    assertThat(keys).isEqualTo(5);
+    assertThat(mapIndexKeys).isEqualTo(4);
+    assertThat(values).isEqualTo(5);
+    assertThat(uses).isEqualTo(2);
+  }
+
+  public void testQueriesForValueInMapField(Region<Object, Object> region, QueryService qs)
+      throws Exception {
+    // Empty map
+    Portfolio p = new Portfolio(1, 1);
+    p.positions = new HashMap<>();
+    region.put(1, p);
+
+    // Map is null
+    Portfolio p2 = new Portfolio(2, 2);
+    p2.positions = null;
+    region.put(2, p2);
+
+    // Map with null value for "SUN" key
+    Portfolio p3 = new Portfolio(3, 3);
+    p3.positions = new HashMap<>();
+    p3.positions.put("IBM", "something");
+    p3.positions.put("SUN", null);
+    region.put(3, p3);
+
+    // Map with not null value for "SUN" key
+    Portfolio p4 = new Portfolio(4, 4);
+    p4.positions = new HashMap<>();
+    p4.positions.put("SUN", "nothing");
+    region.put(4, p4);
+
+    // Map with null key
+    Portfolio p5 = new Portfolio(5, 5);
+    p5.positions = new HashMap<>();
+    p5.positions.put("SUN", "more");
+    // The next one causes trouble with gfsh as json cannot show maps with null keys
+    p5.positions.put(null, "empty");
+    region.put(5, p5);
+
+    // One more with map without the "SUN" key
+    Portfolio p6 = new Portfolio(6, 6);
+    p6.positions = new HashMap<>();
+    p6.positions.put("ERIC", "hey");
+    region.put(6, p6);
+
+    // One more with null map
+    Portfolio p7 = new Portfolio(7, 7);
+    p7.positions = null;
+    region.put(7, p7);
+
+    String query;
+    query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = null";
+    SelectResults<Object> result = UncheckedUtils.uncheckedCast(qs
+        .newQuery(query)
+        .execute());
+    assertThat(result.size()).isEqualTo(1);
+    assertThat(result.contains(p3)).isTrue();
+
+    query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] != null";
+    result = UncheckedUtils.uncheckedCast(qs
+        .newQuery(query)
+        .execute());
+    assertThat(result.size()).isEqualTo(6);
+    assertThat(result.containsAll(Arrays.asList(p, p2, p4, p5, p6, p7))).isTrue();
+
+    query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 'nothing'";
+    result = UncheckedUtils.uncheckedCast(qs
+        .newQuery(query)
+        .execute());
+    assertThat(result.size()).isEqualTo(1);
+    assertThat(result.contains(p4)).isTrue();
+
+    query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] != 'nothing'";
+    result = UncheckedUtils.uncheckedCast(qs
+        .newQuery(query)
+        .execute());
+    assertThat(result.size()).isEqualTo(6);
+    assertThat(result.containsAll(Arrays.asList(p, p2, p3, p5, p6, p7))).isTrue();
+
+    query = "select * from " + SEPARATOR + "portfolio p";
+    result = UncheckedUtils.uncheckedCast(qs
+        .newQuery(query)
+        .execute());
+    assertThat(result.size()).isEqualTo(7);
+    assertThat(result.containsAll(Arrays.asList(p, p2, p3, p4, p5, p6, p7))).isTrue();
   }
 
   @Test

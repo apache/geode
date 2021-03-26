@@ -112,9 +112,9 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
       removeOldMappings(((Map) key).keySet(), entry);
     } else {
       for (Object mapKey : mapKeys) {
-        Object indexKey = ((Map) key).get(mapKey);
-        if (indexKey != null) {
+        if (((Map) key).containsKey(mapKey)) {
           // Do not convert to IndexManager.NULL. We are only interested in specific keys
+          Object indexKey = ((Map) key).get(mapKey);
           this.saveIndexAddition(mapKey, indexKey, value, entry);
         }
       }
