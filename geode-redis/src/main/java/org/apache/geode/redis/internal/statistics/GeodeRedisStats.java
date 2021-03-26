@@ -158,6 +158,11 @@ public class GeodeRedisStats {
       ArrayList<StatisticDescriptor> descriptorList) {
 
     for (RedisCommandType command : RedisCommandType.values()) {
+
+      if (command.isUnimplemented()) {
+        continue;
+      }
+
       String name = command.name().toLowerCase();
       String statName = name + "Time";
       String statDescription =
@@ -172,6 +177,11 @@ public class GeodeRedisStats {
   private static void fillListWithCompletedCommandDescriptors(StatisticsTypeFactory factory,
       ArrayList<StatisticDescriptor> descriptorList) {
     for (RedisCommandType command : RedisCommandType.values()) {
+
+      if (command.isUnimplemented()) {
+        continue;
+      }
+
       String name = command.name().toLowerCase();
       String statName = name + "Completed";
       String statDescription = "Total number of redis '" + name
@@ -184,6 +194,11 @@ public class GeodeRedisStats {
 
   private static void fillCompletedIdMap(StatisticsType type) {
     for (RedisCommandType command : RedisCommandType.values()) {
+
+      if (command.isUnimplemented()) {
+        continue;
+      }
+
       String name = command.name().toLowerCase();
       String statName = name + "Completed";
 
@@ -244,6 +259,11 @@ public class GeodeRedisStats {
 
   private static void fillTimeIdMap(StatisticsType type) {
     for (RedisCommandType command : RedisCommandType.values()) {
+
+      if (command.isUnimplemented()) {
+        continue;
+      }
+
       String name = command.name().toLowerCase();
       String statName = name + "Time";
       timeCommandStatIds.put(command, type.nameToId(statName));

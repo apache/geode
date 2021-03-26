@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal;
 public enum RedisCommandSupportLevel {
   SUPPORTED,
   UNSUPPORTED,
+  UNIMPLEMENTED,
   UNKNOWN,
   INTERNAL
 }

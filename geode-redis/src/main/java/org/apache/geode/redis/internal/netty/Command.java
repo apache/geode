@@ -77,6 +77,10 @@ public class Command {
     return commandType.isUnsupported();
   }
 
+  public boolean isUnimplemented() {
+    return commandType.isUnimplemented();
+  }
+
   public boolean isUnknown() {
     return commandType.isUnknown();
   }
