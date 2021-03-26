@@ -1381,6 +1381,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           if (!returnTombstones && value == Token.TOMBSTONE) {
             value = null;
           }
+          isMiss = value == null;
         } else {
           // local scope with no loader, still might need to update stats
           if (isCreate) {
