@@ -1077,7 +1077,7 @@ public class ConnectionTable {
       for (Object receiver : receivers) {
         Connection con = (Connection) receiver;
         if (endPoint.equals(con.getRemoteAddress()) && con.isSharedResource()
-            && !con.preserveOrder()) {
+            && !con.getPreserveOrder()) {
           return con;
         }
       }

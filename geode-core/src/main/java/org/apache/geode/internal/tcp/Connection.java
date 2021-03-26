@@ -1324,14 +1324,6 @@ public class Connection implements Runnable {
       return;
     }
 
-    // Notify attached processors that connection is released
-    List<ReplyProcessor21> copyProcessors = new ArrayList<>(attachedProcessors);
-    if (!copyProcessors.isEmpty()) {
-      for (ReplyProcessor21 processor : copyProcessors) {
-        processor.cancel(getRemoteAddress(), reason);
-      }
-    }
-
     boolean removeEndpoint = p_removeEndpoint;
     if (!onlyCleanup) {
       synchronized (this) {
@@ -1464,6 +1456,16 @@ public class Connection implements Runnable {
     if (ackTimeoutTask != null) {
       synchronized (ackTimeoutTask) {
         ackTimeoutTask.cancel();
+      }
+    }
+  }
+
+  // Notify attached processors that connection is released
+  private void notifyProcessors(String reason) {
+    List<ReplyProcessor21> copyProcessors = new ArrayList<>(attachedProcessors);
+    if (!copyProcessors.isEmpty()) {
+      for (ReplyProcessor21 processor : copyProcessors) {
+        processor.cancel(getRemoteAddress(), reason);
       }
     }
   }
@@ -1716,8 +1718,10 @@ public class Connection implements Runnable {
             }
           }
           readerShuttingDown = true;
+          String reason = String.format("IOException in channel read: %s", e);
+          notifyProcessors(reason);
           try {
-            requestClose(String.format("IOException in channel read: %s", e));
+            requestClose(reason);
           } catch (Exception ignored) {
           }
           return;
@@ -3384,17 +3388,16 @@ public class Connection implements Runnable {
     return messagesSent;
   }
 
-
   public void addProcessor(ReplyProcessor21 processor) {
-    attachedProcessors.add(processor);
+    synchronized (attachedProcessors) {
+      attachedProcessors.add(processor);
+    }
   }
 
   public void removeProcessor(ReplyProcessor21 processor) {
-    attachedProcessors.remove(processor);
-  }
-
-  public boolean preserveOrder() {
-    return preserveOrder;
+    synchronized (attachedProcessors) {
+      attachedProcessors.remove(processor);
+    }
   }
 
   private class BatchBufferFlusher extends Thread {

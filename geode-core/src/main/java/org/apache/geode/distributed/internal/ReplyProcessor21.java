@@ -1008,22 +1008,27 @@ public class ReplyProcessor21 implements MembershipListener {
     if (!removed)
       return removed;
 
-    List<Connection> copySendCons = new ArrayList<>(sendCons);
-    if (copySendCons.size() > 0) {
-      for (Connection con : copySendCons) {
-        if (con.getRemoteAddress().equals(m)) {
-          con.removeProcessor(this);
-          sendCons.remove(con);
+    Connection con;
+    synchronized (this.sendCons) {
+      if (!sendCons.isEmpty()) {
+        for (Iterator it = sendCons.iterator(); it.hasNext();) {
+          con = (Connection) it.next();
+          if (con.getRemoteAddress().equals(m)) {
+            con.removeProcessor(this);
+            it.remove();
+          }
         }
       }
     }
 
-    List<Connection> copyRecvCons = new ArrayList<>(receiveCons);
-    if (copyRecvCons.size() > 0) {
-      for (Connection con : copyRecvCons) {
-        if (con.getRemoteAddress().equals(m)) {
-          con.removeProcessor(this);
-          receiveCons.remove(con);
+    synchronized (this.receiveCons) {
+      if (!receiveCons.isEmpty()) {
+        for (Iterator it = receiveCons.iterator(); it.hasNext();) {
+          con = (Connection) it.next();
+          if (con.getRemoteAddress().equals(m)) {
+            con.removeProcessor(this);
+            it.remove();
+          }
         }
       }
     }
@@ -1299,19 +1304,15 @@ public class ReplyProcessor21 implements MembershipListener {
   }
 
   public void addReceiveConnection(Connection con) {
-    receiveCons.add(con);
-  }
-
-  public void removeReceiveConnection(Connection con) {
-    receiveCons.remove(con);
+    synchronized (receiveCons) {
+      receiveCons.add(con);
+    }
   }
 
   public void addSendConnection(Connection con) {
-    sendCons.add(con);
-  }
-
-  public void removeSendConnection(Connection con) {
-    sendCons.remove(con);
+    synchronized (sendCons) {
+      sendCons.add(con);
+    }
   }
 
 }
