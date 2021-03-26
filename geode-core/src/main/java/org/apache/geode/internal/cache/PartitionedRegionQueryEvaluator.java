@@ -866,11 +866,13 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     final int totalBucketsToQuery = bucketIdsToConsider.size();
     if (query != null && query.isCqQuery()) {
       // Execute the query on primary buckets only
-      Set<Integer> localPrimaryBucketIds = this.pr.getDataStore().getAllLocalPrimaryBucketIds();
-      if (!localPrimaryBucketIds.isEmpty()) {
-        for (Integer bid : bucketIdsToConsider) {
-          if (localPrimaryBucketIds.contains(bid)) {
-            bucketIds.add(Integer.valueOf(bid));
+      if (pr.getDataStore() != null) {
+        Set<Integer> localPrimaryBucketIds = pr.getDataStore().getAllLocalPrimaryBucketIds();
+        if (!localPrimaryBucketIds.isEmpty()) {
+          for (Integer bid : bucketIdsToConsider) {
+            if (localPrimaryBucketIds.contains(bid)) {
+              bucketIds.add(Integer.valueOf(bid));
+            }
           }
         }
       }
