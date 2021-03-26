@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -45,22 +46,33 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
  * sent back to the client. The default connection port is 6379 but that can be altered when run
  * through gfsh or started through the provided static main class.
  */
-public class GeodeRedisServer {
 
+public class GeodeRedisServer {
   /**
    * The default Redis port as specified by their protocol, {@code DEFAULT_REDIS_SERVER_PORT}
    */
   public static final int DEFAULT_REDIS_SERVER_PORT = 6379;
-  public static final String ENABLE_UNSUPPORTED_COMMANDS_PARAM = "enable-unsupported-commands";
-  private static boolean unsupportedCommandsEnabled;
+
+  public static final String ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM =
+      "enable-redis-unsupported-commands";
+
   private static final Logger logger = LogService.getLogger();
+
+
+  private final boolean ENABLE_REDIS_UNSUPPORTED_COMMANDS =
+      Boolean.getBoolean(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM);
+
   private final PassiveExpirationManager passiveExpirationManager;
+
   private final NettyRedisServer nettyRedisServer;
+
   private final RegionProvider regionProvider;
   private final PubSub pubSub;
   private final RedisStats redisStats;
   private final ExecutorService redisCommandExecutor;
+
   private boolean shutdown;
+
 
   /**
    * Constructor for {@code GeodeRedisServer} that will configure the server to bind to the given
@@ -72,8 +84,10 @@ public class GeodeRedisServer {
    *        argument is less than 0. If the port is 0 a random port is assigned.
    */
   public GeodeRedisServer(String bindAddress, int port, InternalCache cache) {
+    if (ENABLE_REDIS_UNSUPPORTED_COMMANDS) {
+      logUnsupportedCommandWarning();
+    }
 
-    unsupportedCommandsEnabled = Boolean.getBoolean(ENABLE_UNSUPPORTED_COMMANDS_PARAM);
     pubSub = new PubSubImpl(new Subscriptions());
     redisStats = createStats(cache);
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
@@ -82,13 +96,9 @@ public class GeodeRedisServer {
     CommandFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
     RenameFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
     RedisCommandFunction.register();
-
     passiveExpirationManager =
         new PassiveExpirationManager(regionProvider.getDataRegion(), redisStats);
-
-    redisCommandExecutor =
-        LoggingExecutors.newCachedThreadPool("GeodeRedisServer-Command-", true);
-
+    redisCommandExecutor = LoggingExecutors.newCachedThreadPool("GeodeRedisServer-Command-", true);
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
@@ -98,6 +108,15 @@ public class GeodeRedisServer {
   @VisibleForTesting
   public int getSubscriptionCount() {
     return ((PubSubImpl) pubSub).getSubscriptionCount();
+  }
+
+  public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {
+    Region<String, Object> configRegion = regionProvider.getConfigRegion();
+    configRegion.put(GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM,
+        allowUnsupportedCommands);
+    if (allowUnsupportedCommands) {
+      logUnsupportedCommandWarning();
+    }
   }
 
   private static RedisStats createStats(InternalCache cache) {
@@ -123,13 +142,16 @@ public class GeodeRedisServer {
     return dataStoreBytesInUse;
   }
 
-  @VisibleForTesting
-  public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {
-    this.unsupportedCommandsEnabled = allowUnsupportedCommands;
+  /**
+   * Precedence of the internal property overrides the global system property.
+   */
+  public boolean allowUnsupportedCommands() {
+    return (boolean) regionProvider.getConfigRegion()
+        .getOrDefault(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, ENABLE_REDIS_UNSUPPORTED_COMMANDS);
   }
 
-  public boolean allowUnsupportedCommands() {
-    return this.unsupportedCommandsEnabled;
+  private void logUnsupportedCommandWarning() {
+    logger.warn("Unsupported commands enabled. Unsupported commands have not been fully tested.");
   }
 
   public RegionProvider getRegionProvider() {
