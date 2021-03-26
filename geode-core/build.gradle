@@ -233,7 +233,7 @@ dependencies {
         exclude group: '*'
     }
 
-    runtimeOnly(project(':geode-deployment-legacy'))
+    runtimeOnly(project(':geode-deployment:geode-deployment-legacy'))
 
     //Commons lang is used in many different places in core
     implementation('org.apache.commons:commons-lang3')
