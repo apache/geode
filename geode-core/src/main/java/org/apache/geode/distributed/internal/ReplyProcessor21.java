@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +37,7 @@ import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationExcep
 import org.apache.geode.internal.serialization.DSFIDNotFoundException;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
+import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -155,6 +157,16 @@ public class ReplyProcessor21 implements MembershipListener {
    * is waiting on a suspect member, for instance.
    */
   private volatile boolean severeAlertTimerReset;
+
+  /**
+   * List of connections on which Request is sent towards destination
+   */
+  private final List<Connection> sendCons = new ArrayList();
+
+  /**
+   * List of connections on which we are expecting Reply message
+   */
+  private final List<Connection> receiveCons = new ArrayList();
 
   /**
    * whether this reply processor should shorten severe-alert processing due to another vm waiting
@@ -1257,4 +1269,22 @@ public class ReplyProcessor21 implements MembershipListener {
     removeMember(sender, false);
     checkIfDone();
   }
+
+
+  public void addReceiveConnection(Connection con) {
+    receiveCons.add(con);
+  }
+
+  public void removeReceiveConnection(Connection con) {
+    receiveCons.remove(con);
+  }
+
+  public void addSendConnection(Connection con) {
+    sendCons.add(con);
+  }
+
+  public void removeSendConnection(Connection con) {
+    sendCons.remove(con);
+  }
+
 }
