@@ -338,30 +338,34 @@ public abstract class AbstractMapIndex extends AbstractIndex {
 
   void addOrSaveMapping(Object key, Object value, RegionEntry entry, boolean isAdd)
       throws IMQException {
-    if (key == QueryService.UNDEFINED || !(key instanceof Map)) {
+    if (key == QueryService.UNDEFINED || (key != null && !(key instanceof Map))) {
       return;
     }
     if (this.isAllKeys) {
+      if (key == null) {
+        return;
+      }
       Iterator<Map.Entry<?, ?>> entries = ((Map) key).entrySet().iterator();
       while (entries.hasNext()) {
         Map.Entry<?, ?> mapEntry = entries.next();
         Object mapKey = mapEntry.getKey();
         Object indexKey = mapEntry.getValue();
         if (isAdd) {
-          doIndexAddition(mapKey, indexKey, value, entry);
+          this.doIndexAddition(mapKey, indexKey, value, entry);
         } else {
-          saveIndexAddition(mapKey, indexKey, value, entry);
+          this.saveIndexAddition(mapKey, indexKey, value, entry);
         }
       }
     } else {
       for (Object mapKey : mapKeys) {
-        if (((Map) key).containsKey(mapKey)) {
-          Object indexKey = ((Map) key).get(mapKey);
-          if (isAdd) {
-            doIndexAddition(mapKey, indexKey, value, entry);
-          } else {
-            saveIndexAddition(mapKey, indexKey, value, entry);
-          }
+        Object indexKey = QueryService.UNDEFINED;
+        if (key != null && ((Map) key).containsKey(mapKey)) {
+          indexKey = ((Map) key).get(mapKey);
+        }
+        if (isAdd) {
+          this.doIndexAddition(mapKey, indexKey, value, entry);
+        } else {
+          this.saveIndexAddition(mapKey, indexKey, value, entry);
         }
       }
     }
@@ -422,4 +426,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     return mapKeyToValueIndex.size() == 0 ? true : false;
   }
 
+  public boolean getIsAllKeys() {
+    return isAllKeys;
+  }
 }

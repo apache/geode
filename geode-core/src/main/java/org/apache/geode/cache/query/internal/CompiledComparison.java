@@ -658,6 +658,7 @@ public class CompiledComparison extends AbstractCompiledValue
       // Do not use indexes when map index and != condition
       if (indexData != null
           && (indexData.getIndex() instanceof AbstractMapIndex)
+          && ((AbstractMapIndex) indexData.getIndex()).getIsAllKeys()
           && this._operator == TOK_NE) {
         Index prIndex = ((AbstractIndex) indexData.getIndex()).getPRIndex();
         if (prIndex != null) {

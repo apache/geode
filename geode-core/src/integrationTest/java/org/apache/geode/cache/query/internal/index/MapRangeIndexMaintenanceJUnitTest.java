@@ -403,21 +403,20 @@ public class MapRangeIndexMaintenanceJUnitTest {
         ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
 
     // The number of keys must be equal to the number of different values the
-    // positions map takes for the 'SUN' key (null, "nothing", "more") plus
+    // positions map takes for the 'SUN' key (null, "nothing", "more") + 1 (when
+    // the key is not present: undefined) plus
     // the number of different values the positions map takes for the 'ERICSSON' key
-    // ("hey") for each entry in the region.
-    assertThat(keys).isEqualTo(4);
+    // ("hey") + 1 (when the key is not present: undefined) for each entry in the region.
+    assertThat(keys).isEqualTo(6);
     // The number of mapIndexKeys must be equal to the number of keys
     // in the index that appear in region entries:
     // 'SUN', 'ERICSSON'
     assertThat(mapIndexKeys).isEqualTo(2);
-    // The number of values must be equal to the number of values the
-    // positions map takes for each key indexed in the map
-    // for each entry in the region:
-    // null, "nothing", "more", "hey", "more"
-    assertThat(values).isEqualTo(5);
+    // The number of values must be equal to the number of entries
+    // times the number of indexed keys in the map
+    assertThat(values).isEqualTo(14);
     // The index must not be used in queries with "!="
-    assertThat(uses).isEqualTo(2);
+    assertThat(uses).isEqualTo(4);
   }
 
   @Test
@@ -516,13 +515,11 @@ public class MapRangeIndexMaintenanceJUnitTest {
     // in the index that appear in positions map of region entries:
     // 'SUN', 'ERICSSON'
     assertThat(mapIndexKeys).isEqualTo(2);
-    // The number of values must be equal to the number of values the
-    // positions map takes for each key indexed in the map
-    // for each entry in the region:
-    // null, "nothing", "more", "hey", "more"
-    assertThat(values).isEqualTo(5);
-    // The index must not be used in queries with "!="
-    assertThat(uses).isEqualTo(2);
+    // The number of values must be equal to the number of
+    // entries times the number of keys in the index
+    assertThat(values).isEqualTo(14);
+    // The index must be used for all queries
+    assertThat(uses).isEqualTo(4);
   }
 
   @Test

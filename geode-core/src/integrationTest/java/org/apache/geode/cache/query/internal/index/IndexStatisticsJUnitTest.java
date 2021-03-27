@@ -345,19 +345,18 @@ public class IndexStatisticsJUnitTest {
     IndexStatistics keyIndexStats = keyIndex3.getStatistics();
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(100, keyIndexStats.getNumberOfKeys());
-    assertEquals(100, keyIndexStats.getNumberOfKeys());
-    assertEquals(100, keyIndexStats.getNumberOfValues());
-    assertEquals(100, keyIndexStats.getNumUpdates());
+    assertEquals(102, keyIndexStats.getNumberOfKeys());
+    assertEquals(200, keyIndexStats.getNumberOfValues());
+    assertEquals(200, keyIndexStats.getNumUpdates());
 
     for (int i = 0; i < 100; i++) {
       region.put(Integer.toString(i), new Portfolio(i, i));
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(100, keyIndexStats.getNumberOfKeys());
-    assertEquals(100, keyIndexStats.getNumberOfValues());
-    assertEquals(200, keyIndexStats.getNumUpdates());
+    assertEquals(102, keyIndexStats.getNumberOfKeys());
+    assertEquals(200, keyIndexStats.getNumberOfValues());
+    assertEquals(400, keyIndexStats.getNumUpdates());
 
     String queryStr =
         "select * from " + SEPARATOR
@@ -370,32 +369,31 @@ public class IndexStatisticsJUnitTest {
 
     assertEquals(0, keyIndexStats.getReadLockCount());
 
-    // Index should not be used as the conditions on the indexed keys are "!="
-    assertEquals(0, keyIndexStats.getTotalUses());
+    assertEquals(100, keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
       region.invalidate(Integer.toString(i));
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(50, keyIndexStats.getNumberOfKeys());
-    assertEquals(50, keyIndexStats.getNumberOfValues());
-    assertEquals(250, keyIndexStats.getNumUpdates());
+    assertEquals(52, keyIndexStats.getNumberOfKeys());
+    assertEquals(100, keyIndexStats.getNumberOfValues());
+    assertEquals(500, keyIndexStats.getNumUpdates());
 
     for (int i = 0; i < 50; i++) {
       region.destroy(Integer.toString(i));
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(50, keyIndexStats.getNumberOfKeys());
-    assertEquals(50, keyIndexStats.getNumberOfValues());
-    assertEquals(250, keyIndexStats.getNumUpdates());
+    assertEquals(52, keyIndexStats.getNumberOfKeys());
+    assertEquals(100, keyIndexStats.getNumberOfValues());
+    assertEquals(500, keyIndexStats.getNumUpdates());
 
     for (int i = 50; i < 100; i++) {
       region.destroy(Integer.toString(i));
     }
 
-    assertEquals(300, keyIndexStats.getNumUpdates());
+    assertEquals(600, keyIndexStats.getNumUpdates());
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(0, keyIndexStats.getNumberOfKeys());
@@ -425,8 +423,8 @@ public class IndexStatisticsJUnitTest {
 
     assertEquals(2, mapIndexStats.getNumberOfMapIndexKeys());
     assertEquals(100, mapIndexStats.getNumberOfKeys());
-    assertEquals(100, mapIndexStats.getNumberOfValues());
-    assertEquals(100, mapIndexStats.getNumUpdates());
+    assertEquals(200, mapIndexStats.getNumberOfValues());
+    assertEquals(200, mapIndexStats.getNumUpdates());
 
 
     Position.cnt = 0;
@@ -436,8 +434,8 @@ public class IndexStatisticsJUnitTest {
 
     assertEquals(2, mapIndexStats.getNumberOfMapIndexKeys());
     assertEquals(100, mapIndexStats.getNumberOfKeys());
-    assertEquals(100, mapIndexStats.getNumberOfValues());
-    assertEquals(200, mapIndexStats.getNumUpdates());
+    assertEquals(200, mapIndexStats.getNumberOfValues());
+    assertEquals(400, mapIndexStats.getNumUpdates());
     String queryStr =
         "select * from " + SEPARATOR
             + "portfolio where positions['DELL'] != NULL OR positions['YHOO'] != NULL";
@@ -450,8 +448,7 @@ public class IndexStatisticsJUnitTest {
 
     assertEquals(0, mapIndexStats.getReadLockCount());
 
-    // Index should not be used as the conditions on the indexed keys are "!="
-    assertEquals(0, mapIndexStats.getTotalUses());
+    assertEquals(100, mapIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
       region.invalidate(Integer.toString(i));
@@ -459,8 +456,8 @@ public class IndexStatisticsJUnitTest {
 
     assertEquals(2, mapIndexStats.getNumberOfMapIndexKeys());
     assertEquals(50, mapIndexStats.getNumberOfKeys());
-    assertEquals(50, mapIndexStats.getNumberOfValues());
-    assertEquals(300, mapIndexStats.getNumUpdates());
+    assertEquals(100, mapIndexStats.getNumberOfValues());
+    assertEquals(600, mapIndexStats.getNumUpdates());
 
     for (int i = 0; i < 50; i++) {
       region.destroy(Integer.toString(i));
@@ -468,14 +465,14 @@ public class IndexStatisticsJUnitTest {
 
     assertEquals(2, mapIndexStats.getNumberOfMapIndexKeys());
     assertEquals(50, mapIndexStats.getNumberOfKeys());
-    assertEquals(50, mapIndexStats.getNumberOfValues());
-    assertEquals(300, mapIndexStats.getNumUpdates());
+    assertEquals(100, mapIndexStats.getNumberOfValues());
+    assertEquals(600, mapIndexStats.getNumUpdates());
 
     for (int i = 50; i < 100; i++) {
       region.destroy(Integer.toString(i));
     }
 
-    assertEquals(400, mapIndexStats.getNumUpdates());
+    assertEquals(800, mapIndexStats.getNumUpdates());
 
     assertEquals(2, mapIndexStats.getNumberOfMapIndexKeys());
     assertEquals(0, mapIndexStats.getNumberOfKeys());
@@ -669,8 +666,8 @@ public class IndexStatisticsJUnitTest {
     IndexStatistics mapIndexStats = keyIndex3.getStatistics();
 
     assertEquals(100, mapIndexStats.getNumberOfKeys());
-    assertEquals(100, mapIndexStats.getNumberOfValues());
-    assertEquals(100, mapIndexStats.getNumUpdates());
+    assertEquals(200, mapIndexStats.getNumberOfValues());
+    assertEquals(200, mapIndexStats.getNumUpdates());
 
 
     Position.cnt = 0;
@@ -679,8 +676,8 @@ public class IndexStatisticsJUnitTest {
     }
 
     assertEquals(100, mapIndexStats.getNumberOfKeys());
-    assertEquals(100, mapIndexStats.getNumberOfValues());
-    assertEquals(200, mapIndexStats.getNumUpdates());
+    assertEquals(200, mapIndexStats.getNumberOfValues());
+    assertEquals(400, mapIndexStats.getNumUpdates());
 
     String queryStr =
         "select * from " + SEPARATOR
@@ -691,16 +688,15 @@ public class IndexStatisticsJUnitTest {
       query.execute();
     }
 
-    // Index should not be used as the conditions on the indexed keys are "!="
-    assertEquals(0, mapIndexStats.getTotalUses());
+    assertEquals(100, mapIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
       region.invalidate(Integer.toString(i));
     }
 
     assertEquals(50, mapIndexStats.getNumberOfKeys());
-    assertEquals(50, mapIndexStats.getNumberOfValues());
-    assertEquals(300, mapIndexStats.getNumUpdates());
+    assertEquals(100, mapIndexStats.getNumberOfValues());
+    assertEquals(600, mapIndexStats.getNumUpdates());
 
 
     for (int i = 0; i < 50; i++) {
@@ -708,14 +704,14 @@ public class IndexStatisticsJUnitTest {
     }
 
     assertEquals(50, mapIndexStats.getNumberOfKeys());
-    assertEquals(50, mapIndexStats.getNumberOfValues());
-    assertEquals(300, mapIndexStats.getNumUpdates());
+    assertEquals(100, mapIndexStats.getNumberOfValues());
+    assertEquals(600, mapIndexStats.getNumUpdates());
 
     for (int i = 50; i < 100; i++) {
       region.destroy(Integer.toString(i));
     }
 
-    assertEquals(400, mapIndexStats.getNumUpdates());
+    assertEquals(800, mapIndexStats.getNumUpdates());
 
     assertEquals(0, mapIndexStats.getNumberOfKeys());
 
