@@ -108,6 +108,24 @@
     {
       "type": "powershell",
       "inline": [
+        "$ErrorActionPreference = \"Stop\"",
+        "Set-ExecutionPolicy Bypass -Scope Process -Force",
+        "(New-Object Net.WebClient).DownloadFile(\"https://repo.stackdriver.com/windows/StackdriverMonitoring-GCM-46.exe\", \"${env:UserProfile}\\StackdriverMonitoring-GCM-46.exe\")",
+        "Start-Process -FilePath \"${env:UserProfile}\\StackdriverMonitoring-GCM-46.exe\" -ArgumentList \"/S\"",
+        "while ($true) {",
+        "  try {",
+        "    Get-Service -Name StackdriverMonitoring",
+        "    break",
+        "  } catch {",
+        "    Write-Warning \"Wating on service StackdriverMonitoring\"",
+        "    Start-Sleep -s 10",
+        "  }",
+        "}"
+      ]
+    },
+    {
+      "type": "powershell",
+      "inline": [
 
         "write-output '>>>>>>>>>> Cloning geode repo <<<<<<<<<<'",
         "& 'c:\\Program Files\\Git\\bin\\git.exe' clone -b develop --depth 1 https://github.com/apache/geode.git geode",
