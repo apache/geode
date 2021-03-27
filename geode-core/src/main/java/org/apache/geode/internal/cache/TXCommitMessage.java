@@ -176,6 +176,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     this.dontProcess = false;
     this.farSiders = null;
     this.bridgeContext = txState.bridgeContext;
+    this.processorId = 0;
   }
 
   public TXCommitMessage() {
@@ -444,6 +445,11 @@ public class TXCommitMessage extends PooledDistributionMessage
   @Override
   public boolean containsRegionContentChange() {
     return true;
+  }
+
+  @Override
+  public int getProcessorId() {
+    return this.processorId;
   }
 
   /**
