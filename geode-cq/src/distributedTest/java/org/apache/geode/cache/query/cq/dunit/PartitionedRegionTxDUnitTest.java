@@ -80,7 +80,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      assert cache != null;
       Region<Object, Object> region =
           cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
               new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
@@ -93,7 +92,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     server2.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      assert cache != null;
       cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
           new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
           .create(REGION_NAME);
@@ -101,7 +99,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     AsyncInvocation<?> serverAsync = server1.invokeAsync(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      assert cache != null;
       TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
       txManager.begin();
 
@@ -123,7 +120,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     client.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
-      assert clientCache != null;
       clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(REGION_NAME);
 
       QueryService queryService = clientCache.getQueryService();
@@ -162,7 +158,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      assert cache != null;
       Region<Object, Object> region =
           cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
               new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
@@ -174,7 +169,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     server2.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      assert cache != null;
       cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
           new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
           .create(REGION_NAME);
@@ -182,7 +176,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     client.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
-      assert clientCache != null;
       clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(REGION_NAME);
 
       QueryService queryService = clientCache.getQueryService();
@@ -197,7 +190,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     client.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
-      assert clientCache != null;
       TXManagerImpl txManager = (TXManagerImpl) clientCache.getCacheTransactionManager();
       txManager.begin();
 
@@ -222,7 +214,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      assert cache != null;
       Region<Object, Object> region =
           cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
               new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
@@ -235,7 +226,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     server2.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      assert cache != null;
       cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
           new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
           .create(REGION_NAME);
@@ -243,7 +233,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     AsyncInvocation serverAsync = server1.invokeAsync(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      assert cache != null;
       TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
       txManager.begin();
 
@@ -265,7 +254,6 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
     client.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
-      assert clientCache != null;
       Region<Object, Object> region =
           clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
               .create(REGION_NAME);
