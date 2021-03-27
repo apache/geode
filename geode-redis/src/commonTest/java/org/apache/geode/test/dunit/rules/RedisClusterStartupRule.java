@@ -38,8 +38,7 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
 
   public MemberVM startRedisVM(int index, int... locatorPort) {
     return startServerVM(index, r -> withRedis(r)
-        .withConnectionToLocator(locatorPort)
-        .withSystemProperty("enable-unsupported-commands", "true"));
+        .withConnectionToLocator(locatorPort));
   }
 
 
@@ -63,7 +62,7 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
     return rule.withProperty(REDIS_BIND_ADDRESS, "localhost")
         .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM,
+        .withSystemProperty(GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM,
             "true");
   }
 
@@ -71,7 +70,7 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
     return rule.withProperty(REDIS_BIND_ADDRESS, "localhost")
         .withProperty(REDIS_PORT, redisPort)
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM,
+        .withSystemProperty(GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM,
             "true");
   }
 

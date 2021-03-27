@@ -31,11 +31,11 @@ git apply ${REDIS_PATCH}
 export JAVA_HOME=${JAVA_TEST_PATH}
 
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
-  --J=-Denable-unsupported-commands=true \
+  --J=-Denable-redis-unsupported-commands=true \
   --name=server1 \
-  --redis-port=6380 \
-  --redis-bind-address=127.0.0.1 \
-  --redis-password=foobar
+  --compatible-with-redis-port=6380 \
+  --compatible-with-redis-bind-address=127.0.0.1 \
+  --compatible-with-redis-password=foobar
 
 failCount=0
 
@@ -45,11 +45,11 @@ failCount=0
 
 
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
-  --J=-Denable-unsupported-commands=true \
+  --J=-Denable-redis-unsupported-commands=true \
   --name=server2 \
   --server-port=0 \
-  --redis-port=6379 \
-  --redis-bind-address=127.0.0.1
+  --compatible-with-redis-port=6379 \
+  --compatible-with-redis-bind-address=127.0.0.1
 
 ./runtest --host 127.0.0.1 --port 6379 --single unit/type/set --single unit/expire \
 --single unit/type/hash --single unit/type/string \

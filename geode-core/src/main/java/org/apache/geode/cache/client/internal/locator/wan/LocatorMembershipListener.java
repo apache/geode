@@ -50,4 +50,8 @@ public interface LocatorMembershipListener {
   ConcurrentMap<Integer, Set<String>> getAllServerLocatorsInfo();
 
   void clearLocatorInfo();
+
+  void start();
+
+  void stop();
 }

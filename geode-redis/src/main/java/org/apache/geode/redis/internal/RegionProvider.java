@@ -80,7 +80,7 @@ public class RegionProvider {
   protected static void validateBucketCount(int buckets) {
     if (buckets > REDIS_SLOTS) {
       throw new ManagementException(String.format(
-          "Could not start Redis Server - System property '%s' must be <= %d",
+          "Could not start server compatible with Redis - System property '%s' must be <= %d",
           REDIS_REGION_BUCKETS_PARAM, REDIS_SLOTS));
     }
   }

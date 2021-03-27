@@ -20,7 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
-import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM;
+import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -98,7 +98,7 @@ public class HashesAndCrashesDUnitTest {
         x -> x.withProperty(REDIS_PORT, redisPort1)
             .withProperty(REDIS_ENABLED, "true")
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
+            .withSystemProperty(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
 
     String redisPort2 = redisPorts[1] + "";
@@ -106,7 +106,7 @@ public class HashesAndCrashesDUnitTest {
         x -> x.withProperty(REDIS_PORT, redisPort2)
             .withProperty(REDIS_ENABLED, "true")
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
+            .withSystemProperty(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
 
     String redisPort3 = redisPorts[2] + "";
@@ -114,7 +114,7 @@ public class HashesAndCrashesDUnitTest {
         x -> x.withProperty(REDIS_PORT, redisPort3)
             .withProperty(REDIS_ENABLED, "true")
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
+            .withSystemProperty(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
 
     gfsh.connectAndVerify(locator);
@@ -158,7 +158,7 @@ public class HashesAndCrashesDUnitTest {
         x -> x.withProperty(REDIS_PORT, redisPort + "")
             .withProperty(REDIS_ENABLED, "true")
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
+            .withSystemProperty(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
   }
 

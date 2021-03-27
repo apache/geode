@@ -43,8 +43,8 @@ public class GeodeRedisServerStartUpAcceptanceTest {
         "start server",
         "--server-port", "0",
         "--name", "same-port-and-address-server",
-        "--redis-bind-address", "localhost",
-        "--redis-port", String.valueOf(port));
+        "--compatible-with-redis-bind-address", "localhost",
+        "--compatible-with-redis-port", String.valueOf(port));
     GfshExecution execution;
 
     try (Socket interferingSocket = new Socket()) {
@@ -66,7 +66,7 @@ public class GeodeRedisServerStartUpAcceptanceTest {
         "start server",
         "--server-port", "0",
         "--name", "same-port-all-addresses-server",
-        "--redis-port", String.valueOf(port));
+        "--compatible-with-redis-port", String.valueOf(port));
     GfshExecution execution;
 
     try (Socket interferingSocket = new Socket()) {
@@ -86,7 +86,7 @@ public class GeodeRedisServerStartUpAcceptanceTest {
         "start server",
         "--server-port", "0",
         "--name", "invalid-bind-server",
-        "--redis-bind-address", "1.1.1.1");
+        "--compatible-with-redis-bind-address", "1.1.1.1");
     GfshExecution execution;
 
     execution = GfshScript.of(startServerCommand)
@@ -94,6 +94,6 @@ public class GeodeRedisServerStartUpAcceptanceTest {
         .execute(gfshRule);
 
     assertThat(execution.getOutputText()).containsIgnoringCase(
-        "The redis-bind-address 1.1.1.1 is not a valid address for this machine");
+        "The compatible-with-redis-bind-address 1.1.1.1 is not a valid address for this machine");
   }
 }

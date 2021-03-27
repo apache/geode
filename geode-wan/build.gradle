@@ -29,6 +29,7 @@ dependencies {
   implementation(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
   implementation(project(':geode-core'))
+  implementation('org.apache.commons:commons-lang3')
 
   compileOnly('org.apache.logging.log4j:log4j-api:2.14.1')
   

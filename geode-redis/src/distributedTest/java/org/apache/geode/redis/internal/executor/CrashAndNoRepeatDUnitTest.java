@@ -21,7 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
-import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM;
+import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -90,7 +90,7 @@ public class CrashAndNoRepeatDUnitTest {
             .withProperty(REDIS_ENABLED, "true")
             .withProperty(LOG_LEVEL, log_level)
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
+            .withSystemProperty(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
     redisPorts[0] = getPort(server1);
 
@@ -99,7 +99,7 @@ public class CrashAndNoRepeatDUnitTest {
             .withProperty(REDIS_ENABLED, "true")
             .withProperty(LOG_LEVEL, log_level)
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
+            .withSystemProperty(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
     redisPorts[1] = getPort(server2);
 
@@ -108,7 +108,7 @@ public class CrashAndNoRepeatDUnitTest {
             .withProperty(REDIS_ENABLED, "true")
             .withProperty(LOG_LEVEL, log_level)
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
+            .withSystemProperty(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
     redisPorts[2] = getPort(server3);
 
@@ -132,7 +132,7 @@ public class CrashAndNoRepeatDUnitTest {
         x -> x.withProperty(REDIS_PORT, redisPort + "")
             .withProperty(REDIS_ENABLED, "true")
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
+            .withSystemProperty(ENABLE_REDIS_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
   }
 
