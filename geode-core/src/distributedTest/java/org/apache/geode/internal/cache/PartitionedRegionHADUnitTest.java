@@ -39,6 +39,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
@@ -252,7 +253,7 @@ public class PartitionedRegionHADUnitTest extends CacheTestCase {
     RegionAdvisor regionAdvisor = partitionedRegion.getRegionAdvisor();
 
     try {
-      for (int bucketId : regionAdvisor.getBucketSet()) {
+      for (BucketId bucketId : regionAdvisor.getBucketSet()) {
         Set<InternalDistributedMember> nodeList = regionAdvisor.getBucketOwners(bucketId);
         if (nodeList != null && nodeList.contains(partitionedRegion.getMyId())) {
           containsNode++;

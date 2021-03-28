@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.internal.cache.BucketServerLocation66;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
@@ -100,7 +101,7 @@ public class GetClientPRMetaDataOp {
             Object result = msg.getPart(i).getObject();
             List<BucketServerLocation66> locations = (List<BucketServerLocation66>) result;
             if (!locations.isEmpty()) {
-              int bucketId = locations.get(0).getBucketId();
+              BucketId bucketId = locations.get(0).getBucketId();
               if (isDebugEnabled) {
                 logger.debug(
                     "GetClientPRMetaDataOpImpl#processResponse: for bucketId : {} locations are {}",

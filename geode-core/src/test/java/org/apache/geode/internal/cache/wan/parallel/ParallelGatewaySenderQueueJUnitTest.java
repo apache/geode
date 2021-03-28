@@ -60,6 +60,7 @@ import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.TXId;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
@@ -141,7 +142,8 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(event.getRegionPath()).thenReturn(regionPath);
     when(event.makeHeapCopyIfOffHeap()).thenReturn(event);
     when(event.getRegion()).thenReturn(null);
-    when(event.getBucketId()).thenReturn(1);
+    final BucketId bucketId = BucketId.valueOf(1);
+    when(event.getBucketId()).thenReturn(bucketId);
     when(event.getShadowKey()).thenReturn(100L);
     when(sender.isPersistenceEnabled()).thenReturn(true);
     PartitionedRegionDataStore prds = mock(PartitionedRegionDataStore.class);
@@ -157,8 +159,8 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(brq.lockWhenRegionIsInitializing()).thenReturn(true);
     when(prQ.getDataStore()).thenReturn(prds);
     when(prQ.getCache()).thenReturn(cache);
-    when(prQ.getBucketName(1)).thenReturn("_B__PARALLEL_GATEWAY_SENDER_QUEUE_1");
-    when(prds.getLocalBucketById(1)).thenReturn(null);
+    when(prQ.getBucketName(bucketId)).thenReturn("_B__PARALLEL_GATEWAY_SENDER_QUEUE_1");
+    when(prds.getLocalBucketById(bucketId)).thenReturn(null);
     PartitionedRegion userPR = mock(PartitionedRegion.class);
     PartitionAttributes<?, ?> pa = mock(PartitionAttributes.class);
     when(userPR.getPartitionAttributes()).thenReturn(pa);
@@ -173,7 +175,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     RegionAdvisor ra = mock(RegionAdvisor.class);
     BucketAdvisor ba = mock(BucketAdvisor.class);
     when(userPR.getRegionAdvisor()).thenReturn(ra);
-    when(ra.getBucketAdvisor(1)).thenReturn(ba);
+    when(ra.getBucketAdvisor(bucketId)).thenReturn(ba);
     when(ba.isShadowBucketDestroyed("/__PR/_B__PARALLEL_GATEWAY_SENDER_QUEUE_1")).thenReturn(false);
 
     prepareBrq(brq, isTmpQueue);
@@ -726,13 +728,13 @@ public class ParallelGatewaySenderQueueJUnitTest {
     }
 
     @Override
-    protected int getRandomPrimaryBucket(PartitionedRegion pr) {
-      return 0;
+    protected BucketId getRandomPrimaryBucket(PartitionedRegion pr) {
+      return BucketId.valueOf(0);
     }
 
     @Override
     protected BucketRegionQueue getBucketRegionQueueByBucketId(PartitionedRegion prQ,
-        int bucketId) {
+        BucketId bucketId) {
       return mockedAbstractBucketRegionQueue;
     }
   }

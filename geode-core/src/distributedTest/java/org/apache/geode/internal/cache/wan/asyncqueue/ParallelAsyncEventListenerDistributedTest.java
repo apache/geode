@@ -88,6 +88,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceO
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
@@ -569,9 +570,9 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
     vm0.invoke(() -> doPuts(partitionedRegionName, 80));
 
-    Set<Integer> primaryBucketsInVM1 =
+    Set<BucketId> primaryBucketsInVM1 =
         vm0.invoke(() -> getAllLocalPrimaryBucketIds(partitionedRegionName));
-    Set<Integer> primaryBucketsInVM2 =
+    Set<BucketId> primaryBucketsInVM2 =
         vm1.invoke(() -> getAllLocalPrimaryBucketIds(partitionedRegionName));
 
     assertThat(primaryBucketsInVM1.size() + primaryBucketsInVM2.size()).isEqualTo(16);
@@ -614,7 +615,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
     vm0.invoke(() -> doPuts(partitionedRegionName, 80));
 
-    Set<Integer> primaryBucketsInVM1 =
+    Set<BucketId> primaryBucketsInVM1 =
         vm1.invoke(() -> getAllLocalPrimaryBucketIds(partitionedRegionName));
     assertThat(primaryBucketsInVM1).isNotEmpty();
 
@@ -634,11 +635,11 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
       createPartitionedRegionAndAwaitRecovery(partitionedRegionName, asyncEventQueueId, 1, 16);
     });
 
-    Set<Integer> primaryBucketsInVM0 =
+    Set<BucketId> primaryBucketsInVM0 =
         vm0.invoke(() -> getAllLocalPrimaryBucketIds(partitionedRegionName));
     assertThat(primaryBucketsInVM0).isNotEmpty();
 
-    Set<Integer> primaryBucketsInVM2 =
+    Set<BucketId> primaryBucketsInVM2 =
         vm2.invoke(() -> getAllLocalPrimaryBucketIds(partitionedRegionName));
     assertThat(primaryBucketsInVM2).isNotEmpty();
 
@@ -690,7 +691,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
     vm0.invoke(this::doRebalance);
 
-    Set<Integer> primaryBucketsInVM3 =
+    Set<BucketId> primaryBucketsInVM3 =
         vm2.invoke(() -> getAllLocalPrimaryBucketIds(partitionedRegionName));
 
     vm0.invoke(() -> getInternalGatewaySender().resume());
@@ -1117,7 +1118,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     assertThat(rebalanceResults).isNotNull();
   }
 
-  private Set<Integer> getAllLocalPrimaryBucketIds(String regionName) {
+  private Set<BucketId> getAllLocalPrimaryBucketIds(String regionName) {
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
     return region.getDataStore().getAllLocalPrimaryBucketIds();
   }
@@ -1190,13 +1191,13 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     assertThat(listener.getTotalPossibleDuplicateEvents()).isEqualTo(numEvents);
   }
 
-  private void validatePossibleDuplicateEvents(Set<Integer> bucketIds, int batchSize) {
+  private void validatePossibleDuplicateEvents(Set<BucketId> bucketIds, int batchSize) {
     assertThat(bucketIds.size()).isGreaterThan(1);
 
-    Map<Integer, List<GatewaySenderEventImpl>> bucketToEventsMap =
+    Map<BucketId, List<GatewaySenderEventImpl>> bucketToEventsMap =
         getGatewaySenderAsyncEventListener().getBucketToEventsMap();
 
-    for (int bucketId : bucketIds) {
+    for (BucketId bucketId : bucketIds) {
       List<GatewaySenderEventImpl> eventsForBucket = bucketToEventsMap.get(bucketId);
       assertThat(eventsForBucket).as("bucketToEventsMap: " + bucketToEventsMap).isNotNull()
           .hasSize(batchSize);
@@ -1353,9 +1354,9 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
   private static class GatewaySenderAsyncEventListener implements AsyncEventListener {
 
-    private final Map<Integer, List<GatewaySenderEventImpl>> bucketToEventsMap = new HashMap<>();
+    private final Map<BucketId, List<GatewaySenderEventImpl>> bucketToEventsMap = new HashMap<>();
 
-    Map<Integer, List<GatewaySenderEventImpl>> getBucketToEventsMap() {
+    Map<BucketId, List<GatewaySenderEventImpl>> getBucketToEventsMap() {
       assertThat(bucketToEventsMap).isNotNull();
       return bucketToEventsMap;
     }
@@ -1364,7 +1365,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     public synchronized boolean processEvents(List<AsyncEvent> events) {
       for (AsyncEvent event : events) {
         GatewaySenderEventImpl gatewayEvent = (GatewaySenderEventImpl) event;
-        int bucketId = gatewayEvent.getBucketId();
+        BucketId bucketId = gatewayEvent.getBucketId();
         List<GatewaySenderEventImpl> bucketEvents = bucketToEventsMap.get(bucketId);
         if (bucketEvents == null) {
           bucketEvents = new ArrayList<>();

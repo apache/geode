@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.PartitionedRegion.RecoveryLock;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.control.RebalanceResultsImpl;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.rebalance.ExplicitMoveDirector;
@@ -221,7 +222,7 @@ public final class PartitionRegionHelper {
       lock.lock();
       for (int i = 0; i < getNumberOfBuckets(pr); i++) {
         // This method will return quickly if the bucket already exists
-        pr.createBucket(i, 0, null);
+        pr.createBucket(BucketId.valueOf(i), 0, null);
       }
     } finally {
       if (lock != null) {
@@ -262,7 +263,8 @@ public final class PartitionRegionHelper {
    */
   public static <K, V> DistributedMember getPrimaryMemberForKey(final Region<K, V> r, final K key) {
     PartitionedRegion pr = isPartitionedCheck(r);
-    int bucketId = PartitionedRegionHelper.getHashKey(pr, null, key, null, null);
+    BucketId bucketId =
+        BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, key, null, null));
     return pr.getBucketPrimary(bucketId);
   }
 
@@ -319,7 +321,8 @@ public final class PartitionRegionHelper {
   private static <K, V> Set<? extends DistributedMember> getAllForKey(final Region<K, V> r,
       final K key) {
     PartitionedRegion pr = isPartitionedCheck(r);
-    int bucketId = PartitionedRegionHelper.getHashKey(pr, null, key, null, null);
+    BucketId bucketId =
+        BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, key, null, null));
     return pr.getRegionAdvisor().getBucketOwners(bucketId);
   }
 
@@ -380,7 +383,7 @@ public final class PartitionRegionHelper {
   public static <K, V> Region<K, V> getLocalData(final Region<K, V> r) {
     if (isPartitionedRegion(r)) {
       PartitionedRegion pr = (PartitionedRegion) r;
-      final Set<Integer> buckets;
+      final Set<BucketId> buckets;
       if (pr.getDataStore() != null) {
         buckets = pr.getDataStore().getAllLocalBucketIds();
       } else {
@@ -410,7 +413,7 @@ public final class PartitionRegionHelper {
   public static <K, V> Region<K, V> getLocalPrimaryData(final Region<K, V> r) {
     if (isPartitionedRegion(r)) {
       PartitionedRegion pr = (PartitionedRegion) r;
-      final Set<Integer> buckets;
+      final Set<BucketId> buckets;
       if (pr.getDataStore() != null) {
         buckets = pr.getDataStore().getAllLocalPrimaryBucketIds();
       } else {
@@ -460,7 +463,7 @@ public final class PartitionRegionHelper {
     if (pr.isFixedPartitionedRegion()) {
       throw new IllegalStateException("Cannot move data in a fixed partitioned region");
     }
-    int bucketId = pr.getKeyInfo(key).getBucketId();
+    BucketId bucketId = pr.getKeyInfo(key).getBucketId();
     ExplicitMoveDirector director = new ExplicitMoveDirector(key, bucketId, source, destination,
         region.getCache().getDistributedSystem());
     PartitionedRegionRebalanceOp rebalance =

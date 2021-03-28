@@ -54,7 +54,7 @@ public class BucketSizeMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   /** The list of buckets whose size is needed, if null, then all buckets */
-  private int bucketId;
+  private BucketId bucketId;
 
   /**
    * Empty constructor provided for {@link org.apache.geode.DataSerializer}
@@ -64,7 +64,7 @@ public class BucketSizeMessage extends PartitionMessage {
   }
 
   private BucketSizeMessage(InternalDistributedMember recipient, int regionId,
-      ReplyProcessor21 processor, int bucketId) {
+      ReplyProcessor21 processor, BucketId bucketId) {
     super(recipient, regionId, processor);
     this.bucketId = bucketId;
   }
@@ -84,7 +84,7 @@ public class BucketSizeMessage extends PartitionMessage {
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static BucketSizeResponse send(InternalDistributedMember recipient, PartitionedRegion r,
-      int bucketId) throws ForceReattemptException {
+      BucketId bucketId) throws ForceReattemptException {
     Assert.assertTrue(recipient != null, "BucketSizeMessage NULL reply message");
     BucketSizeResponse p = new BucketSizeResponse(r.getSystem(), Collections.singleton(recipient));
     BucketSizeMessage m = new BucketSizeMessage(recipient, r.getPRId(), p, bucketId);
@@ -132,14 +132,14 @@ public class BucketSizeMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId); // fix for bug 38228
+    out.writeInt(bucketId.intValue());
   }
 
   public static class BucketSizeReplyMessage extends HighPriorityDistributionMessage {

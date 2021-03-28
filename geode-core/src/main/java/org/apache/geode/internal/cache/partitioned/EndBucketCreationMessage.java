@@ -39,7 +39,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
  */
 public class EndBucketCreationMessage extends PartitionMessage {
 
-  private int bucketId;
+  private BucketId bucketId;
   private InternalDistributedMember newPrimary;
 
   /**
@@ -48,7 +48,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
   public EndBucketCreationMessage() {}
 
   private EndBucketCreationMessage(Collection<InternalDistributedMember> recipients, int regionId,
-      ReplyProcessor21 processor, int bucketId, InternalDistributedMember newPrimary) {
+      ReplyProcessor21 processor, BucketId bucketId, InternalDistributedMember newPrimary) {
     super(recipients, regionId, processor);
     this.bucketId = bucketId;
     this.newPrimary = newPrimary;
@@ -63,7 +63,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
    * @param bid the bucket to become primary for
    */
   public static void send(Collection<InternalDistributedMember> acceptedMembers,
-      InternalDistributedMember newPrimary, PartitionedRegion pr, int bid) {
+      InternalDistributedMember newPrimary, PartitionedRegion pr, BucketId bid) {
 
     Assert.assertTrue(newPrimary != null, "VolunteerPrimaryBucketMessage NULL recipient");
 
@@ -129,7 +129,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
     newPrimary = new InternalDistributedMember();
     InternalDataSerializer.invokeFromData(newPrimary, in);
   }
@@ -138,7 +138,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
     InternalDataSerializer.invokeToData(newPrimary, out);
   }
 }

@@ -52,6 +52,7 @@ import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -84,14 +85,13 @@ public class PRQueryProcessor {
   private PartitionedRegion partitionedRegion;
   private final DefaultQuery query;
   private final Object[] parameters;
-  private final List<Integer> buckets;
+  private final List<BucketId> buckets;
   private volatile ObjectType resultType = null;
 
   private boolean isIndexUsedForLocalQuery = false;
 
   public PRQueryProcessor(PartitionedRegionDataStore partitionedRegionDataStore, DefaultQuery query,
-      Object[] parameters,
-      List<Integer> buckets) {
+      Object[] parameters, List<BucketId> buckets) {
     Assert.assertTrue(!buckets.isEmpty(), "bucket list can not be empty. ");
     this.partitionedRegionDataStore = partitionedRegionDataStore;
     this.buckets = buckets;
@@ -103,8 +103,7 @@ public class PRQueryProcessor {
   }
 
   public PRQueryProcessor(PartitionedRegion partitionedRegion, DefaultQuery query,
-      Object[] parameters,
-      List<Integer> buckets) {
+      Object[] parameters, List<BucketId> buckets) {
     Assert.assertTrue(!buckets.isEmpty(), "bucket list can not be empty. ");
     this.partitionedRegion = partitionedRegion;
     this.buckets = buckets;
@@ -195,7 +194,8 @@ public class PRQueryProcessor {
     }
   }
 
-  private void executeSequentially(Collection<Collection<?>> resultCollector, List<Integer> buckets)
+  private void executeSequentially(Collection<Collection<?>> resultCollector,
+      List<BucketId> buckets)
       throws QueryException, ForceReattemptException {
     ExecutionContext context =
         new QueryExecutionContext(parameters, partitionedRegion.getCache(), query);
@@ -203,8 +203,8 @@ public class PRQueryProcessor {
     CompiledSelect cs = query.getSimpleSelect();
     int limit = query.getLimit(parameters);
     if (cs != null && cs.isOrderBy()) {
-      for (Integer bucketID : buckets) {
-        List<Integer> singleBucket = Collections.singletonList(bucketID);
+      for (BucketId bucketID : buckets) {
+        List<BucketId> singleBucket = Collections.singletonList(bucketID);
         context.setBucketList(singleBucket);
         executeQueryOnBuckets(resultCollector, context);
       }
@@ -273,7 +273,7 @@ public class PRQueryProcessor {
 
   private @NotNull List<QueryTask> buildCallableTaskList(Collection<Collection<?>> resultsColl) {
     List<QueryTask> callableTasks = new ArrayList<>();
-    for (Integer bId : buckets) {
+    for (BucketId bId : buckets) {
       callableTasks.add(new QueryTask(query, parameters, bId, resultsColl));
     }
     return callableTasks;
@@ -390,10 +390,10 @@ public class PRQueryProcessor {
   private class QueryTask implements Callable<QueryTask.BucketQueryResult> {
     private final DefaultQuery query;
     private final Object[] parameters;
-    private final Integer bucketId;
+    private final BucketId bucketId;
     private final Collection<Collection<?>> results;
 
-    public QueryTask(DefaultQuery query, Object[] parameters, Integer bucketId,
+    public QueryTask(DefaultQuery query, Object[] parameters, BucketId bucketId,
         final Collection<Collection<?>> results) {
       this.query = query;
       this.bucketId = bucketId;
@@ -405,7 +405,7 @@ public class PRQueryProcessor {
     public BucketQueryResult call() throws Exception {
       BucketQueryResult bukResult = new BucketQueryResult(bucketId);
       try {
-        List<Integer> bucketList = Collections.singletonList(bucketId);
+        List<BucketId> bucketList = Collections.singletonList(bucketId);
         ExecutionContext context =
             new QueryExecutionContext(parameters, partitionedRegion.getCache(), query);
         context.setBucketList(bucketList);
@@ -422,12 +422,12 @@ public class PRQueryProcessor {
      */
     private class BucketQueryResult {
 
-      private final int bucketId;
+      private final BucketId bucketId;
       private Exception exception = null;
       public boolean retry = false;
 
-      public BucketQueryResult(int bukId) {
-        bucketId = bukId;
+      public BucketQueryResult(BucketId bucketId) {
+        this.bucketId = bucketId;
       }
 
       public Exception getException() {
@@ -442,7 +442,7 @@ public class PRQueryProcessor {
         exception = e;
       }
 
-      public Integer getBucketId() {
+      public BucketId getBucketId() {
         return bucketId;
       }
 

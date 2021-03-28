@@ -94,7 +94,7 @@ public class FetchKeysMessageTest {
     when(txStateProxy.isRealDealLocal()).thenReturn(true);
     when(txStateProxy.isDistTx()).thenReturn(false);
 
-    FetchKeysMessage.send(recipient, region, 1, false);
+    FetchKeysMessage.send(recipient, region, BucketId.valueOf(1), false);
 
     InOrder inOrder = inOrder(txManager, distributionManager);
     inOrder.verify(txManager, times(1)).pauseTransaction();
@@ -113,7 +113,7 @@ public class FetchKeysMessageTest {
     TXId txID = new TXId(recipient, uniqueId);
     when(txStateProxy.getTxId()).thenReturn(txID);
 
-    FetchKeysMessage.send(recipient, region, 1, false);
+    FetchKeysMessage.send(recipient, region, BucketId.valueOf(1), false);
 
     verify(distributionManager, times(1)).putOutgoing(sentMessage.capture());
     assertThat(sentMessage.getValue().getTXUniqId()).isEqualTo(uniqueId);

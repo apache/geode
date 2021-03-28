@@ -41,6 +41,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
@@ -225,7 +226,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends CacheTestCase {
     int numberOfBuckets = partitionedRegion.getTotalNumberOfBuckets();
 
     for (int whichBucket = numberOfBuckets - 1; whichBucket >= 0; whichBucket--) {
-      Set bucketKeys = partitionedRegion.getBucketKeys(whichBucket);
+      Set bucketKeys = partitionedRegion.getBucketKeys(BucketId.valueOf(whichBucket));
       assertThat(bucketKeys).isEmpty();
     }
 
@@ -235,7 +236,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends CacheTestCase {
     partitionedRegion.put(new TestPRKey(0, 2), 1);
     partitionedRegion.put(new TestPRKey(0, 3), 2);
 
-    Set<TestPRKey> bucketKeys = partitionedRegion.getBucketKeys(0);
+    Set<TestPRKey> bucketKeys = partitionedRegion.getBucketKeys(BucketId.valueOf(0));
 
     assertThat(bucketKeys).hasSize(3);
     assertThat(bucketKeys.iterator().next().hashCode()).isEqualTo(0);
@@ -250,7 +251,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends CacheTestCase {
 
     // Assert that the proper number of keys are placed in each bucket
     for (int whichBucket = 1; whichBucket < numberOfBuckets; whichBucket++) {
-      bucketKeys = partitionedRegion.getBucketKeys(whichBucket);
+      bucketKeys = partitionedRegion.getBucketKeys(BucketId.valueOf(whichBucket));
       assertThat(bucketKeys).hasSize(1);
       TestPRKey key = bucketKeys.iterator().next();
       assertThat(key.hashCode()).isEqualTo(whichBucket);
@@ -258,7 +259,8 @@ public class PartitionedRegionTestUtilsDUnitTest extends CacheTestCase {
   }
 
   /**
-   * Test the test method {@link PartitionedRegion#getBucketOwnersForValidation(int)} Verify that
+   * Test the test method {@link PartitionedRegion#getBucketOwnersForValidation(BucketId)} Verify
+   * that
    * the information it discovers is the same as the local advisor.
    */
   @Test
@@ -322,11 +324,11 @@ public class PartitionedRegionTestUtilsDUnitTest extends CacheTestCase {
     for (String regionName : regions) {
       PartitionedRegion partitionedRegion = (PartitionedRegion) getCache().getRegion(regionName);
       try {
-        for (int bucketId : partitionedRegion.getRegionAdvisor().getBucketSet()) {
+        for (BucketId bucketId : partitionedRegion.getRegionAdvisor().getBucketSet()) {
           assertThat(partitionedRegion.getRegionAdvisor().getBucketOwners(bucketId))
               .hasSize(partitionedRegion.getRedundantCopies() + 1);
 
-          List primaries = partitionedRegion.getBucketOwnersForValidation(bucketId);
+          List<Object[]> primaries = partitionedRegion.getBucketOwnersForValidation(bucketId);
           assertThat(primaries).hasSize(partitionedRegion.getRedundantCopies() + 1);
 
           int primaryCount = 0;
@@ -356,8 +358,9 @@ public class PartitionedRegionTestUtilsDUnitTest extends CacheTestCase {
 
       for (int whichBucket = 0; whichBucket < partitionedRegion
           .getTotalNumberOfBuckets(); whichBucket++) {
-        assertThat(partitionedRegion.getRegionAdvisor().getBucketOwners(whichBucket)).isEmpty();
-        assertThat(partitionedRegion.getBucketOwnersForValidation(whichBucket)).isEmpty();
+        final BucketId bucketId = BucketId.valueOf(whichBucket);
+        assertThat(partitionedRegion.getRegionAdvisor().getBucketOwners(bucketId)).isEmpty();
+        assertThat(partitionedRegion.getBucketOwnersForValidation(bucketId)).isEmpty();
       }
     }
   }

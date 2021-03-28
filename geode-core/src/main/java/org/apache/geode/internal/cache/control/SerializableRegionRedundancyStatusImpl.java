@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -57,7 +58,7 @@ public class SerializableRegionRedundancyStatusImpl extends
     int numBuckets = region.getPartitionAttributes().getTotalNumBuckets();
     int minRedundancy = Integer.MAX_VALUE;
     for (int i = 0; i < numBuckets; i++) {
-      int bucketRedundancy = region.getRegionAdvisor().getBucketRedundancy(i);
+      int bucketRedundancy = region.getRegionAdvisor().getBucketRedundancy(BucketId.valueOf(i));
       // Only consider redundancy for buckets that exist. Buckets that have not been created yet
       // have a redundancy value of -1
       if (bucketRedundancy != -1 && bucketRedundancy < minRedundancy) {

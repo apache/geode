@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.partitioned;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.Serializable;
 
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -32,7 +33,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  *
  * @since GemFire 6.0
  */
-public class SizedBasedLoadProbe implements LoadProbe, DataSerializableFixedID {
+public class SizedBasedLoadProbe implements LoadProbe, DataSerializableFixedID, Serializable {
   private static final long serialVersionUID = 7040814060882774875L;
   public static final int MIN_BUCKET_SIZE =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MIN_BUCKET_SIZE", 1);
@@ -44,19 +45,18 @@ public class SizedBasedLoadProbe implements LoadProbe, DataSerializableFixedID {
     PRLoad prLoad = new PRLoad(configuredBucketCount, pr.getLocalMaxMemory());
 
     // key: bid, value: size
-    for (Integer bidInt : ds.getAllLocalBucketIds()) {
-      int bid = bidInt;
-      long bucketSize = ds.getBucketSize(bid);
+    for (BucketId bucketId : ds.getAllLocalBucketIds()) {
+      long bucketSize = ds.getBucketSize(bucketId);
       if (bucketSize < MIN_BUCKET_SIZE) {
         bucketSize = MIN_BUCKET_SIZE;
       }
 
-      BucketAdvisor bucketAdvisor = pr.getRegionAdvisor().getBucket(bid).getBucketAdvisor();
+      BucketAdvisor bucketAdvisor = pr.getRegionAdvisor().getBucket(bucketId).getBucketAdvisor();
       // Wait for a primary to exist for this bucket, because
       // it might be this member.
       bucketAdvisor.getPrimary();
-      boolean isPrimary = pr.getRegionAdvisor().getBucket(bid).getBucketAdvisor().isPrimary();
-      prLoad.addBucket(bid, bucketSize, isPrimary ? 1 : 0);
+      boolean isPrimary = pr.getRegionAdvisor().getBucket(bucketId).getBucketAdvisor().isPrimary();
+      prLoad.addBucket(bucketId, bucketSize, isPrimary ? 1 : 0);
     }
 
     return prLoad;

@@ -15,13 +15,14 @@
 package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.internal.cache.ColocationListener;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class LuceneFileRegionColocationListener implements ColocationListener {
   private final PartitionedRepositoryManager partitionedRepositoryManager;
-  private final Integer bucketID;
+  private final BucketId bucketID;
 
   public LuceneFileRegionColocationListener(
-      PartitionedRepositoryManager partitionedRepositoryManager, Integer bucketID) {
+      PartitionedRepositoryManager partitionedRepositoryManager, BucketId bucketID) {
     this.partitionedRepositoryManager = partitionedRepositoryManager;
     this.bucketID = bucketID;
   }

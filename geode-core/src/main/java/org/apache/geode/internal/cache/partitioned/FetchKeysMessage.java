@@ -59,7 +59,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class FetchKeysMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
-  private Integer bucketId;
+  private BucketId bucketId;
 
   /**
    * the interest policy to use in processing the keys
@@ -74,7 +74,7 @@ public class FetchKeysMessage extends PartitionMessage {
   private boolean allowTombstones;
 
   private FetchKeysMessage(InternalDistributedMember recipient, int regionId,
-      ReplyProcessor21 processor, Integer bucketId, final @NotNull InterestType interestType,
+      ReplyProcessor21 processor, BucketId bucketId, final @NotNull InterestType interestType,
       Object interestArg,
       boolean allowTombstones) {
     super(recipient, regionId, processor);
@@ -100,7 +100,7 @@ public class FetchKeysMessage extends PartitionMessage {
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static FetchKeysResponse send(InternalDistributedMember recipient, PartitionedRegion r,
-      Integer bucketId, boolean allowTombstones) throws ForceReattemptException {
+      BucketId bucketId, boolean allowTombstones) throws ForceReattemptException {
     Assert.assertTrue(recipient != null, "FetchKeysMessage NULL recipient");
     TXManagerImpl txManager = r.getCache().getTxManager();
     boolean resetTxState = isTransactionInternalSuspendNeeded(txManager);
@@ -142,7 +142,7 @@ public class FetchKeysMessage extends PartitionMessage {
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static FetchKeysResponse sendInterestQuery(InternalDistributedMember recipient,
-      PartitionedRegion r, Integer bucketId, final @NotNull InterestType interestType, Object arg,
+      PartitionedRegion r, BucketId bucketId, final @NotNull InterestType interestType, Object arg,
       boolean allowTombstones)
       throws ForceReattemptException {
     Assert.assertTrue(recipient != null, "FetchKeysMessage NULL recipient");
@@ -231,17 +231,17 @@ public class FetchKeysMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
-    interestType = InterestType.valueOf(in.readInt());
-    interestArg = DataSerializer.readObject(in);
-    allowTombstones = in.readBoolean();
+    this.bucketId = BucketId.valueOf(in.readInt());
+    this.interestType = InterestType.valueOf(in.readInt());
+    this.interestArg = DataSerializer.readObject(in);
+    this.allowTombstones = in.readBoolean();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
     out.writeInt(interestType.ordinal());
     DataSerializer.writeObject(interestArg, out);
     out.writeBoolean(allowTombstones);

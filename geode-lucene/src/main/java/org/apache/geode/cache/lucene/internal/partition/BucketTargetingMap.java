@@ -20,13 +20,14 @@ import java.util.Set;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class BucketTargetingMap<K, V> extends AbstractMap<K, V> {
 
   private final Region<K, V> region;
   public Object callbackArg;
 
-  public BucketTargetingMap(Region<K, V> region, int bucketId) {
+  public BucketTargetingMap(Region<K, V> region, BucketId bucketId) {
     this.region = region;
     callbackArg = bucketId;
   }

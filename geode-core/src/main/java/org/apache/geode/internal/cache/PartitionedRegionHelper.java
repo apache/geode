@@ -61,6 +61,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -532,18 +533,16 @@ public class PartitionedRegionHelper {
             ((FixedPartitionResolver<K, V>) resolver).getPartitionName(event,
                 partitionMap.keySet());
         if (partition == null) {
-          Object[] prms = new Object[] {pr.getName(), resolver};
           throw new IllegalStateException(
               format("For region %s, partition resolver %s returned partition name null",
-                  prms));
+                  pr.getName(), resolver));
         }
         Integer[] bucketArray = partitionMap.get(partition);
         if (bucketArray == null) {
-          Object[] prms = new Object[] {pr.getName(), partition};
           throw new PartitionNotAvailableException(
               format(
                   "For FixedPartitionedRegion %s, partition %s is not available on any datastore.",
-                  prms));
+                  pr.getName(), partition));
         }
         int numberOfBuckets = bucketArray[1];
         resolveKey = (numberOfBuckets == 1) ? partition : resolver.getRoutingObject(event);
@@ -553,11 +552,10 @@ public class PartitionedRegionHelper {
                 "For FixedPartitionedRegion %s, FixedPartitionResolver is not available (neither through the partition attribute partition-resolver nor key/callbackArg implementing FixedPartitionResolver)",
                 pr.getName()));
       } else {
-        Object[] prms = new Object[] {pr.getName(), resolver};
         throw new IllegalStateException(
             format(
                 "For FixedPartitionedRegion %s, Resolver defined %s is not an instance of FixedPartitionResolver",
-                prms));
+                pr.getName(), resolver));
       }
       return assignFixedBucketId(pr, partition, resolveKey);
     } else {
@@ -597,7 +595,6 @@ public class PartitionedRegionHelper {
       int hc = resolveKey.hashCode();
       int bucketId = Math.abs(hc % partitionNumBuckets);
       int partitionBucketID = bucketId + startingBucketID;
-      assert partitionBucketID != KeyInfo.UNKNOWN_BUCKET;
       return partitionBucketID;
     }
     List<FixedPartitionAttributesImpl> localFPAs = pr.getFixedPartitionAttributesImpl();
@@ -645,7 +642,6 @@ public class PartitionedRegionHelper {
     int hc = resolveKey.hashCode();
     int bucketId = Math.abs(hc % partitionNumBuckets);
     int partitionBucketID = bucketId + startingBucketID;
-    assert partitionBucketID != KeyInfo.UNKNOWN_BUCKET;
     return partitionBucketID;
   }
 
@@ -709,8 +705,8 @@ public class PartitionedRegionHelper {
 
     PartitionedRegion pr = (PartitionedRegion) region;
 
-    int bid = getBucketId(bucketName);
-    RegionAdvisor ra = (RegionAdvisor) pr.getDistributionAdvisor();
+    final BucketId bid = BucketId.valueOf(getBucketId(bucketName));
+    final RegionAdvisor ra = (RegionAdvisor) pr.getDistributionAdvisor();
     if (postInit) {
       return ra.getBucketPostInit(bid);
     } else if (!ra.areBucketsInitialized()) {
@@ -748,7 +744,7 @@ public class PartitionedRegionHelper {
     return null;
   }
 
-  public static String getBucketFullPath(String prFullPath, int bucketId) {
+  public static String getBucketFullPath(String prFullPath, BucketId bucketId) {
     return SEPARATOR + PR_ROOT_REGION_NAME + SEPARATOR + getBucketName(prFullPath, bucketId);
   }
 
@@ -767,7 +763,7 @@ public class PartitionedRegionHelper {
     return path;
   }
 
-  public static @NotNull String getBucketName(String prPath, int bucketId) {
+  public static @NotNull String getBucketName(String prPath, BucketId bucketId) {
     return PartitionedRegionHelper.BUCKET_REGION_PREFIX
         + PartitionedRegionHelper.escapePRPath(prPath) + PartitionedRegion.BUCKET_NAME_SEPARATOR
         + bucketId;
@@ -836,7 +832,7 @@ public class PartitionedRegionHelper {
   }
 
   public static FixedPartitionAttributesImpl getFixedPartitionAttributesForBucket(
-      PartitionedRegion pr, int bucketId) {
+      PartitionedRegion pr, BucketId bucketId) {
     List<FixedPartitionAttributesImpl> localFPAs = pr.getFixedPartitionAttributesImpl();
 
     if (localFPAs != null) {

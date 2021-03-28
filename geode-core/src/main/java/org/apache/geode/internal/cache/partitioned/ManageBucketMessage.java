@@ -57,7 +57,7 @@ public class ManageBucketMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   /** The key associated with the value that must be sent */
-  private int bucketId;
+  private BucketId bucketId;
 
   /** The value associated with the key that must be sent */
   private int bucketSize;
@@ -73,7 +73,7 @@ public class ManageBucketMessage extends PartitionMessage {
   public ManageBucketMessage() {}
 
   private ManageBucketMessage(InternalDistributedMember recipient, int regionId,
-      ReplyProcessor21 processor, int bucketId, int bucketSize, boolean forceCreation) {
+      ReplyProcessor21 processor, BucketId bucketId, int bucketSize, boolean forceCreation) {
     super(recipient, regionId, processor);
     this.bucketId = bucketId;
     this.bucketSize = bucketSize;
@@ -101,7 +101,7 @@ public class ManageBucketMessage extends PartitionMessage {
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static NodeResponse send(InternalDistributedMember recipient, PartitionedRegion r,
-      int bucketId, int bucketSize, boolean forceCreation) throws ForceReattemptException {
+      BucketId bucketId, int bucketSize, boolean forceCreation) throws ForceReattemptException {
     Assert.assertTrue(recipient != null, "ManageBucketMessage NULL recipient");
     NodeResponse p = new NodeResponse(r.getSystem(), recipient);
     ManageBucketMessage m =
@@ -178,7 +178,7 @@ public class ManageBucketMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
     bucketSize = in.readInt();
     forceCreation = in.readBoolean();
   }
@@ -187,7 +187,7 @@ public class ManageBucketMessage extends PartitionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
     out.writeInt(bucketSize);
     out.writeBoolean(forceCreation);
   }
@@ -374,7 +374,7 @@ public class ManageBucketMessage extends PartitionMessage {
      * Wait for the response to a {@link ManageBucketMessage} request.
      *
      * @return true if the node sent the request is managing the bucket
-     * @see org.apache.geode.internal.cache.PartitionedRegionDataStore#handleManageBucketRequest(int,
+     * @see org.apache.geode.internal.cache.PartitionedRegionDataStore#handleManageBucketRequest(BucketId,
      *      int, InternalDistributedMember, boolean)
      * @throws ForceReattemptException if the peer is no longer available
      */

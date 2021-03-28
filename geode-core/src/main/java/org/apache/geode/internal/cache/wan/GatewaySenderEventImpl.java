@@ -42,6 +42,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.WrappedCallbackArgument;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.offheap.OffHeapHelper;
@@ -172,7 +173,7 @@ public class GatewaySenderEventImpl
    * For ParallelGatewaySender we need bucketId of the PartitionRegion on which the update operation
    * was applied.
    */
-  protected int bucketId;
+  protected BucketId bucketId = BucketId.valueOf(0);
 
   protected Long shadowKey = -1L;
 
@@ -252,7 +253,7 @@ public class GatewaySenderEventImpl
 
   @Retained
   public GatewaySenderEventImpl(EnumListenerEvent operation, CacheEvent<?, ?> event,
-      Object substituteValue, boolean initialize, int bucketId,
+      Object substituteValue, boolean initialize, BucketId bucketId,
       final TransactionMetadataDisposition transactionMetadataDisposition) throws IOException {
     this(operation, event, substituteValue, initialize, transactionMetadataDisposition);
     this.bucketId = bucketId;
@@ -743,7 +744,7 @@ public class GatewaySenderEventImpl
     context.getSerializer().writeObject(callbackArgument, out);
     out.writeBoolean(possibleDuplicate);
     out.writeLong(creationTime);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
     out.writeLong(shadowKey);
     out.writeLong(getVersionTimeStamp());
   }
@@ -796,7 +797,7 @@ public class GatewaySenderEventImpl
     callbackArgument = context.getDeserializer().readObject(in);
     possibleDuplicate = in.readBoolean();
     creationTime = in.readLong();
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
     shadowKey = in.readLong();
     versionTimeStamp = in.readLong();
   }
@@ -1155,7 +1156,7 @@ public class GatewaySenderEventImpl
     // int _numberOfParts = 4 bytes
     // byte _valueIsObject = 1 byte
     // boolean _possibleDuplicate = 1 byte
-    // int bucketId = 4 bytes
+    // BucketId bucketId = 4 bytes
     // long shadowKey = 8 bytes
     // long creationTime = 8 bytes
     // boolean _hasTransaction = 1 byte
@@ -1213,7 +1214,7 @@ public class GatewaySenderEventImpl
         : CacheFactory.getAnyInstance().getRegion(regionPath);
   }
 
-  public int getBucketId() {
+  public BucketId getBucketId() {
     return bucketId;
   }
 
@@ -1267,7 +1268,7 @@ public class GatewaySenderEventImpl
     int hashCode = 17;
     hashCode = 37 * hashCode + ObjectUtils.hashCode(shadowKey);
     hashCode = 37 * hashCode + ObjectUtils.hashCode(id);
-    hashCode = 37 * hashCode + bucketId;
+    hashCode = 37 * hashCode + bucketId.intValue();
     hashCode = 37 * hashCode + action;
     hashCode = 37 * hashCode + ObjectUtils.hashCode(regionPath);
     hashCode = 37 * hashCode + ObjectUtils.hashCode(key);

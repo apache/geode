@@ -308,11 +308,11 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
      *        returned, false to return all members that this member is waiting for, including
      *        members which are running but not fully initialized.
      */
-    private Map<PersistentMemberID, Set<Integer>> getMembersToWaitFor(boolean offlineOnly) {
-      final Map<PersistentMemberID, Set<Integer>> waitingForMembers = new HashMap<>();
+    private Map<PersistentMemberID, Set<BucketId>> getMembersToWaitFor(boolean offlineOnly) {
+      final Map<PersistentMemberID, Set<BucketId>> waitingForMembers = new HashMap<>();
 
       for (ProxyBucketRegion proxyBucket : bucketRegions) {
-        Integer bucketId = proxyBucket.getBucketId();
+        BucketId bucketId = proxyBucket.getBucketId();
 
         // Get the set of missing members from the persistence advisor
         Set<PersistentMemberID> missingMembers;
@@ -349,8 +349,8 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
      * Logs a consolidated log entry for all ProxyBucketRegions waiting for persistent members.
      */
     private void logWaitingForMembers() {
-      Map<PersistentMemberID, Set<Integer>> offlineMembers = getMembersToWaitFor(true);
-      Map<PersistentMemberID, Set<Integer>> allMembersToWaitFor = getMembersToWaitFor(false);
+      Map<PersistentMemberID, Set<BucketId>> offlineMembers = getMembersToWaitFor(true);
+      Map<PersistentMemberID, Set<BucketId>> allMembersToWaitFor = getMembersToWaitFor(false);
 
       boolean thereAreBucketsToBeRecovered = (getLatchCount() > 0);
 
@@ -363,7 +363,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
         TransformUtils.transform(offlineMembers.entrySet(), membersToWaitForLogEntries,
             TransformUtils.persistentMemberEntryToLogEntryTransformer);
 
-        Set<Integer> missingBuckets = getAllWaitingBuckets(offlineMembers);
+        Set<BucketId> missingBuckets = getAllWaitingBuckets(offlineMembers);
 
         startupStatus.startup(
             String.format(
@@ -380,7 +380,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
       else if (thereAreBucketsToBeRecovered && !allMembersToWaitFor.isEmpty()) {
         Set<String> membersToWaitForLogEntries = new HashSet<>();
 
-        Set<Integer> missingBuckets = getAllWaitingBuckets(allMembersToWaitFor);
+        Set<BucketId> missingBuckets = getAllWaitingBuckets(allMembersToWaitFor);
         TransformUtils.transform(allMembersToWaitFor.entrySet(), membersToWaitForLogEntries,
             TransformUtils.persistentMemberEntryToLogEntryTransformer);
 
@@ -405,10 +405,10 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     /**
      * Get a consolidated set of all buckets that are waiting.
      */
-    private Set<Integer> getAllWaitingBuckets(
-        Map<PersistentMemberID, Set<Integer>> offlineMembers) {
-      Set<Integer> allWaitingBuckets = new TreeSet<>();
-      for (Set<Integer> missingPerMember : offlineMembers.values()) {
+    private Set<BucketId> getAllWaitingBuckets(
+        Map<PersistentMemberID, Set<BucketId>> offlineMembers) {
+      Set<BucketId> allWaitingBuckets = new TreeSet<>();
+      for (Set<BucketId> missingPerMember : offlineMembers.values()) {
         allWaitingBuckets.addAll(missingPerMember);
       }
       return allWaitingBuckets;

@@ -19,6 +19,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import org.apache.geode.internal.cache.partitioned.BucketId;
+
 
 public class PartitionedRegionHelperJUnitTest {
 
@@ -26,7 +28,8 @@ public class PartitionedRegionHelperJUnitTest {
   public void testEscapeUnescape() {
     {
       String bucketName =
-          PartitionedRegionHelper.getBucketName(SEPARATOR + "root" + SEPARATOR + "region", 5);
+          PartitionedRegionHelper.getBucketName(SEPARATOR + "root" + SEPARATOR + "region",
+              BucketId.valueOf(5));
       assertEquals("Name = " + bucketName, -1, bucketName.indexOf(SEPARATOR));
       assertEquals(SEPARATOR + "root" + SEPARATOR + "region",
           PartitionedRegionHelper.getPRPath(bucketName));
@@ -34,7 +37,8 @@ public class PartitionedRegionHelperJUnitTest {
 
     {
       String bucketName =
-          PartitionedRegionHelper.getBucketName(SEPARATOR + "root" + SEPARATOR + "region_one", 5);
+          PartitionedRegionHelper.getBucketName(SEPARATOR + "root" + SEPARATOR + "region_one",
+              BucketId.valueOf(5));
       assertEquals("Name = " + bucketName, -1, bucketName.indexOf(SEPARATOR));
       assertEquals(SEPARATOR + "root" + SEPARATOR + "region_one",
           PartitionedRegionHelper.getPRPath(bucketName));

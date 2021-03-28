@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator.Completion;
 
@@ -47,7 +48,7 @@ public class BucketOperatorImplTest {
   private Completion completion;
 
   private final Map<String, Long> colocatedRegionBytes = new HashMap<>();
-  private final int bucketId = 1;
+  private final BucketId bucketId = BucketId.valueOf(1);
   private InternalDistributedMember sourceMember, targetMember;
 
   @Before

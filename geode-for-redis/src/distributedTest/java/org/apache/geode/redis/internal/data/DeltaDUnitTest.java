@@ -37,6 +37,7 @@ import redis.clients.jedis.JedisCluster;
 import org.apache.geode.internal.cache.BucketDump;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.redis.internal.services.cluster.RedisMemberInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -167,7 +168,7 @@ public class DeltaDUnitTest {
       PartitionedRegion region =
           (PartitionedRegion) cache.getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
       for (int j = 0; j < region.getTotalNumberOfBuckets(); j++) {
-        List<BucketDump> buckets = region.getAllBucketEntries(j);
+        List<BucketDump> buckets = region.getAllBucketEntries(BucketId.valueOf(j));
         assertThat(buckets.size()).isEqualTo(2);
         Map<Object, Object> bucket1 = buckets.get(0).getValues();
         Map<Object, Object> bucket2 = buckets.get(1).getValues();

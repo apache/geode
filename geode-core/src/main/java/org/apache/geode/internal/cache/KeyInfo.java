@@ -17,16 +17,15 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 
 public class KeyInfo {
 
-  public static final int UNKNOWN_BUCKET = -1;
-
   private Object key;
   private Object callbackArg;
-  private int bucketId;
+  private BucketId bucketId;
 
   // The value field is added since a Partition resolver could also rely on the value
   // part to calculate the routing object
@@ -34,14 +33,14 @@ public class KeyInfo {
   private final Object value;
 
   public KeyInfo(Object key, Object value, Object callbackArg) {
-    this(key, value, callbackArg, UNKNOWN_BUCKET);
+    this(key, value, callbackArg, BucketId.UNKNOWN_BUCKET);
   }
 
-  public KeyInfo(Object key, Object callbackArg, int bucketId) {
+  public KeyInfo(Object key, Object callbackArg, BucketId bucketId) {
     this(key, null, callbackArg, bucketId);
   }
 
-  private KeyInfo(Object key, Object value, Object callbackArg, int bucketId) {
+  private KeyInfo(Object key, Object value, Object callbackArg, BucketId bucketId) {
     this.key = key;
     this.callbackArg = callbackArg;
     this.bucketId = bucketId;
@@ -68,7 +67,7 @@ public class KeyInfo {
     return value;
   }
 
-  public int getBucketId() {
+  public BucketId getBucketId() {
     return bucketId;
   }
 
@@ -76,7 +75,7 @@ public class KeyInfo {
     this.key = key;
   }
 
-  public void setBucketId(int bucketId) {
+  public void setBucketId(BucketId bucketId) {
     this.bucketId = bucketId;
   }
 

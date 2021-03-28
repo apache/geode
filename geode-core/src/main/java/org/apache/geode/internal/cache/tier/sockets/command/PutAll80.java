@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PutAllPartialResultException;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -220,7 +221,7 @@ public class PutAll80 extends BaseCommand {
           // For PRs, the thread id assigned as a fake thread id.
           if (region instanceof PartitionedRegion) {
             PartitionedRegion pr = (PartitionedRegion) region;
-            int bucketId = pr.getKeyInfo(key).getBucketId();
+            BucketId bucketId = pr.getKeyInfo(key).getBucketId();
             long entryThreadId =
                 ThreadIdentifier.createFakeThreadIDForBulkOp(bucketId, entryEventId.getThreadID());
             entryEventId = new EventID(entryEventId.getMembershipID(), entryThreadId,

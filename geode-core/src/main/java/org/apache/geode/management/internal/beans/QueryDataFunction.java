@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.json.QueryResultFormatter;
@@ -147,7 +148,7 @@ public class QueryDataFunction implements Function<Object[]>, InternalEntity {
 
             Set<BucketRegion> localPrimaryBucketRegions =
                 parRegion.getDataStore().getAllLocalPrimaryBucketRegions();
-            Set<Integer> localPrimaryBucketSet = new HashSet<>();
+            Set<BucketId> localPrimaryBucketSet = new HashSet<>();
             for (BucketRegion bRegion : localPrimaryBucketRegions) {
               localPrimaryBucketSet.add(bRegion.getId());
             }
@@ -242,8 +243,6 @@ public class QueryDataFunction implements Function<Object[]>, InternalEntity {
     return queryString;
   }
 
-
-
   /**
    * Function to gather data locally. This function is required to execute query with region context
    */
@@ -252,10 +251,10 @@ public class QueryDataFunction implements Function<Object[]>, InternalEntity {
     private static final long serialVersionUID = 1L;
 
     private final String id;
-
-    private boolean optimizeForWrite = false;
     private final boolean showMembers;
     private final String regionName;
+
+    private boolean optimizeForWrite = false;
 
     public LocalQueryFunction(final String id, final String regionName, final boolean showMembers) {
       this.id = id;

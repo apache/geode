@@ -92,6 +92,7 @@ import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.control.TestMemoryThresholdListener;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.LocalStatListener;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -722,7 +723,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             for (int i = 0; i < 20; i++) {
               Integer key = i;
               int hKey = getHashKey(pr, null, key, null, null);
-              Set<InternalDistributedMember> owners = pr.getRegionAdvisor().getBucketOwners(hKey);
+              Set<InternalDistributedMember> owners = pr.getRegionAdvisor().getBucketOwners(
+                  BucketId.valueOf(hKey));
               if (owners.contains(server1Id)) {
                 keyFoundOnSickMember = true;
                 try {
@@ -874,7 +876,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         for (int i = 0; i < 20; i++) {
           Integer key = i;
           int hKey = PartitionedRegionHelper.getHashKey(pr, key);
-          Set<InternalDistributedMember> owners = pr.getRegionAdvisor().getBucketOwners(hKey);
+          Set<InternalDistributedMember> owners =
+              pr.getRegionAdvisor().getBucketOwners(BucketId.valueOf(hKey));
           if (owners.contains(server1Id)) {
             pr.put(key, "txTest");
             return i;
@@ -898,7 +901,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         for (int i = lastKey; i < 20; i++) {
           Integer key = i;
           int hKey = PartitionedRegionHelper.getHashKey(pr, key);
-          Set<InternalDistributedMember> owners = pr.getRegionAdvisor().getBucketOwners(hKey);
+          Set<InternalDistributedMember> owners =
+              pr.getRegionAdvisor().getBucketOwners(BucketId.valueOf(hKey));
           if (owners.contains(server1Id)) {
             try {
               pr.put(key, "txTest");

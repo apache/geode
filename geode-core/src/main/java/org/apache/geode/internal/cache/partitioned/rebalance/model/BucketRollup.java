@@ -17,13 +17,15 @@ package org.apache.geode.internal.cache.partitioned.rebalance.model;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.geode.internal.cache.partitioned.BucketId;
+
 /**
  * Represents the sum of all of colocated buckets with a given bucket id.
  */
 public class BucketRollup extends Bucket {
   private final Map<String, Bucket> colocatedBuckets = new HashMap<>();
 
-  BucketRollup(int id) {
+  BucketRollup(BucketId id) {
     super(id);
   }
 

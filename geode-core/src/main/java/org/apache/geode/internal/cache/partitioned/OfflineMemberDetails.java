@@ -28,7 +28,7 @@ public interface OfflineMemberDetails extends DataSerializable {
   @Immutable
   OfflineMemberDetails EMPTY_DETAILS = new OfflineMemberDetails() {
     @Override
-    public Set<PersistentMemberID> getOfflineMembers(int bucketId) {
+    public Set<PersistentMemberID> getOfflineMembers(BucketId bucketId) {
       return Collections.emptySet();
     }
 
@@ -39,5 +39,5 @@ public interface OfflineMemberDetails extends DataSerializable {
     public void toData(DataOutput out) {}
   };
 
-  Set<PersistentMemberID> getOfflineMembers(int bucketId);
+  Set<PersistentMemberID> getOfflineMembers(BucketId bucketId);
 }

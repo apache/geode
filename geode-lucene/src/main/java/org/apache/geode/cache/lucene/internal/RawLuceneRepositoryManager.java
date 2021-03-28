@@ -21,6 +21,7 @@ import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class RawLuceneRepositoryManager extends PartitionedRepositoryManager {
   public static IndexRepositoryFactory indexRepositoryFactory = new RawIndexRepositoryFactory();
@@ -31,7 +32,7 @@ public class RawLuceneRepositoryManager extends PartitionedRepositoryManager {
   }
 
   @Override
-  protected IndexRepository getRepository(Integer bucketId) throws BucketNotFoundException {
+  protected IndexRepository getRepository(BucketId bucketId) throws BucketNotFoundException {
     IndexRepository repo = indexRepositories.get(bucketId);
     if (repo != null && !repo.isClosed()) {
       return repo;
@@ -42,7 +43,7 @@ public class RawLuceneRepositoryManager extends PartitionedRepositoryManager {
   }
 
   @Override
-  public IndexRepository computeRepository(Integer bucketId, LuceneSerializer<?> serializer,
+  public IndexRepository computeRepository(BucketId bucketId, LuceneSerializer<?> serializer,
       InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
       throws IOException {
     return indexRepositoryFactory.computeIndexRepository(bucketId, serializer, index, userRegion,

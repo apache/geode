@@ -54,6 +54,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class QueryUtils {
@@ -1546,7 +1547,7 @@ public class QueryUtils {
       pr1 = ((Bucket) index1.getRegion()).getPartitionedRegion();
     }
 
-    for (final Integer b : context.getBucketList()) {
+    for (final BucketId b : context.getBucketList()) {
       final IndexProtocol i0 =
           pr0 != null ? PartitionedIndex.getBucketIndex(pr0, index0.getName(), b)
               : indxInfo[0]._index;

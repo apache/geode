@@ -51,6 +51,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
@@ -60,7 +61,7 @@ import org.apache.geode.test.fake.Fakes;
 public class ParallelQueueRemovalMessageJUnitTest {
 
   private static final String GATEWAY_SENDER_ID = "ny";
-  private static final int BUCKET_ID = 85;
+  private static final BucketId BUCKET_ID = BucketId.valueOf(85);
   private static final long KEY = 198;
 
   private GemFireCacheImpl cache;
@@ -249,9 +250,9 @@ public class ParallelQueueRemovalMessageJUnitTest {
     message.process((ClusterDistributionManager) cache.getDistributionManager());
   }
 
-  private Map<String, Map<Integer, List<Object>>> createRegionToDispatchedKeysMap() {
-    Map<String, Map<Integer, List<Object>>> regionToDispatchedKeys = new HashMap<>();
-    Map<Integer, List<Object>> bucketIdToDispatchedKeys = new HashMap<>();
+  private Map<String, Map<BucketId, List<Object>>> createRegionToDispatchedKeysMap() {
+    Map<String, Map<BucketId, List<Object>>> regionToDispatchedKeys = new HashMap<>();
+    Map<BucketId, List<Object>> bucketIdToDispatchedKeys = new HashMap<>();
     List<Object> dispatchedKeys = new ArrayList<>();
     dispatchedKeys.add(KEY);
     bucketIdToDispatchedKeys.put(BUCKET_ID, dispatchedKeys);
@@ -263,7 +264,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
   private BlockingQueue<GatewaySenderEventImpl> createTempQueueAndAddEvent(
       ParallelGatewaySenderEventProcessor processor, GatewaySenderEventImpl event) {
     ParallelGatewaySenderQueue queue = (ParallelGatewaySenderQueue) processor.getQueue();
-    Map<Integer, BlockingQueue<GatewaySenderEventImpl>> tempQueueMap =
+    Map<BucketId, BlockingQueue<GatewaySenderEventImpl>> tempQueueMap =
         queue.getBucketToTempQueueMap();
     BlockingQueue<GatewaySenderEventImpl> tempQueue = new LinkedBlockingQueue<>();
     when(event.getShadowKey()).thenReturn(KEY);

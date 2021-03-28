@@ -54,7 +54,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   /** The bucketId needing primary */
-  private int bucketId;
+  private BucketId bucketId;
 
   /**
    * Send request for primary election
@@ -67,7 +67,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
    * @throws ForceReattemptException if the message was unable to be sent
    */
   public static PrimaryResponse send(Set<InternalDistributedMember> recipients, PartitionedRegion r,
-      int bucketId)
+      BucketId bucketId)
       throws ForceReattemptException {
     Assert.assertTrue(recipients != null, "PrimaryRequestMessage NULL recipient");
     PrimaryResponse p = new PrimaryResponse(r.getSystem(), recipients);
@@ -85,7 +85,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
   public PrimaryRequestMessage() {}
 
   private PrimaryRequestMessage(Set<InternalDistributedMember> recipients, int regionId,
-      ReplyProcessor21 processor, int bucketId) {
+      ReplyProcessor21 processor, BucketId bucketId) {
     super(recipients, regionId, processor);
     this.bucketId = bucketId;
   }
@@ -120,14 +120,14 @@ public class PrimaryRequestMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
   }
 
   @Override

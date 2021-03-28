@@ -34,5 +34,5 @@ public interface PREntriesIterator<T> extends Iterator<T> {
   /**
    * @return int bucket ID of the bucket in which the Local Entry resides.
    */
-  int getBucketId();
+  BucketId getBucketId();
 }

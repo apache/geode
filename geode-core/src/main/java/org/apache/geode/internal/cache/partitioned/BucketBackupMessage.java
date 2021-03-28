@@ -43,7 +43,7 @@ public class BucketBackupMessage extends PartitionMessage {
 
   private static final Logger logger = LogService.getLogger();
 
-  private int bucketId;
+  private BucketId bucketId;
 
   /**
    * Empty constructor provided for {@link org.apache.geode.DataSerializer}
@@ -53,7 +53,7 @@ public class BucketBackupMessage extends PartitionMessage {
   }
 
   private BucketBackupMessage(Set<InternalDistributedMember> recipients, int regionId,
-      int bucketId) {
+      BucketId bucketId) {
     super(recipients, regionId, null /* no processor */);
     this.bucketId = bucketId;
   }
@@ -65,7 +65,7 @@ public class BucketBackupMessage extends PartitionMessage {
    * @param r the PartitionedRegion that contains the bucket
    */
   public static void send(Set<InternalDistributedMember> recipients, PartitionedRegion r,
-      int bucketId) {
+      BucketId bucketId) {
     Assert.assertTrue(recipients != null, "BucketBackupMessage NULL sender list");
     BucketBackupMessage m = new BucketBackupMessage(recipients, r.getPRId(), bucketId);
     m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
@@ -121,14 +121,14 @@ public class BucketBackupMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
   }
 
 }

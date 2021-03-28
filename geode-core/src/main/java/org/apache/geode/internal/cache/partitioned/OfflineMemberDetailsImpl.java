@@ -41,8 +41,8 @@ public class OfflineMemberDetailsImpl
   }
 
   @Override
-  public Set<PersistentMemberID> getOfflineMembers(int bucketId) {
-    return offlineMembers[bucketId];
+  public Set<PersistentMemberID> getOfflineMembers(BucketId bucketId) {
+    return offlineMembers[bucketId.intValue()];
   }
 
   @Override

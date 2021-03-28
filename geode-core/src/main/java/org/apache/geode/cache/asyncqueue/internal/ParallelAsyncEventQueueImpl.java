@@ -30,6 +30,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderProfile;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
@@ -180,12 +181,12 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
 
   @Override
   public void setModifiedEventId(EntryEventImpl clonedEvent) {
-    final int bucketId;
+    final BucketId bucketId;
     if (clonedEvent.getRegion() instanceof DistributedRegion) {
-      bucketId = PartitionedRegionHelper.getHashKey(clonedEvent.getKey(),
-          getMaxParallelismForReplicatedRegion());
+      bucketId = BucketId.valueOf(PartitionedRegionHelper.getHashKey(clonedEvent.getKey(),
+          getMaxParallelismForReplicatedRegion()));
     } else {
-      bucketId = PartitionedRegionHelper.getHashKey(clonedEvent);
+      bucketId = BucketId.valueOf(PartitionedRegionHelper.getHashKey(clonedEvent));
     }
     EventID originalEventId = clonedEvent.getEventId();
     long originatingThreadId = ThreadIdentifier.getRealThreadID(originalEventId.getThreadID());

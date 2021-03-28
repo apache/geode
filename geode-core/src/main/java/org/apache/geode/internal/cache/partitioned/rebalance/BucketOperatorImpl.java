@@ -18,6 +18,7 @@ import java.util.Map;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 
 public class BucketOperatorImpl implements BucketOperator {
@@ -30,7 +31,7 @@ public class BucketOperatorImpl implements BucketOperator {
 
   @Override
   public boolean moveBucket(InternalDistributedMember source, InternalDistributedMember target,
-      int bucketId, Map<String, Long> colocatedRegionBytes) {
+      BucketId bucketId, Map<String, Long> colocatedRegionBytes) {
 
     InternalResourceManager.getResourceObserver().movingBucket(rebalanceOp.getLeaderRegion(),
         bucketId, source, target);
@@ -39,7 +40,7 @@ public class BucketOperatorImpl implements BucketOperator {
 
   @Override
   public boolean movePrimary(InternalDistributedMember source, InternalDistributedMember target,
-      int bucketId) {
+      BucketId bucketId) {
 
     InternalResourceManager.getResourceObserver().movingPrimary(rebalanceOp.getLeaderRegion(),
         bucketId, source, target);
@@ -47,7 +48,7 @@ public class BucketOperatorImpl implements BucketOperator {
   }
 
   @Override
-  public void createRedundantBucket(InternalDistributedMember targetMember, int bucketId,
+  public void createRedundantBucket(InternalDistributedMember targetMember, BucketId bucketId,
       Map<String, Long> colocatedRegionBytes, Completion completion) {
     boolean result = false;
     try {
@@ -67,7 +68,7 @@ public class BucketOperatorImpl implements BucketOperator {
   }
 
   @Override
-  public boolean removeBucket(InternalDistributedMember targetMember, int bucketId,
+  public boolean removeBucket(InternalDistributedMember targetMember, BucketId bucketId,
       Map<String, Long> colocatedRegionBytes) {
     return rebalanceOp.removeRedundantBucketForRegion(targetMember, bucketId);
   }

@@ -34,6 +34,7 @@ import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class PartitionedRepositoryManager implements RepositoryManager {
@@ -49,7 +50,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
    *
    * It is weak so that the old BucketRegion will be garbage collected.
    */
-  protected final ConcurrentHashMap<Integer, IndexRepository> indexRepositories =
+  protected final ConcurrentHashMap<BucketId, IndexRepository> indexRepositories =
       new ConcurrentHashMap<>();
 
   /** The user region for this index */
@@ -89,7 +90,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
     }
     ArrayList<IndexRepository> repos = new ArrayList<>(buckets[0]);
     for (int i = 1; i <= buckets[0]; i++) {
-      int bucketId = buckets[i];
+      BucketId bucketId = BucketId.valueOf(buckets[i]);
       BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(bucketId);
       if (userBucket == null) {
         throw new BucketNotFoundException(
@@ -130,7 +131,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   /**
    * Return the repository for a given user bucket
    */
-  protected IndexRepository getRepository(Integer bucketId) throws BucketNotFoundException {
+  protected IndexRepository getRepository(BucketId bucketId) throws BucketNotFoundException {
     IndexRepository repo = indexRepositories.get(bucketId);
     if (repo != null && !repo.isClosed()) {
       return repo;
@@ -145,7 +146,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
     return repo;
   }
 
-  protected IndexRepository computeRepository(Integer bucketId, LuceneSerializer<?> serializer,
+  protected IndexRepository computeRepository(BucketId bucketId, LuceneSerializer<?> serializer,
       InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
       throws IOException {
     return indexRepositoryFactory.computeIndexRepository(bucketId, serializer, index, userRegion,
@@ -153,7 +154,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   }
 
 
-  protected IndexRepository computeRepository(Integer bucketId) {
+  protected IndexRepository computeRepository(BucketId bucketId) {
     try {
       isDataRegionReady.await();
     } catch (InterruptedException e) {
@@ -182,7 +183,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   @Override
   public void close() {
     closed = true;
-    for (Integer bucketId : indexRepositories.keySet()) {
+    for (BucketId bucketId : indexRepositories.keySet()) {
       try {
         computeRepository(bucketId);
       } catch (LuceneIndexDestroyedException e) {

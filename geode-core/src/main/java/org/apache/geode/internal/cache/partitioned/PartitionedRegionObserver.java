@@ -30,10 +30,10 @@ public interface PartitionedRegionObserver {
    */
   void beforeCalculatingStartingBucketId();
 
-  void beforeBucketCreation(PartitionedRegion region, int bucketId);
+  void beforeBucketCreation(PartitionedRegion region, BucketId bucketId);
 
   /**
    * Called after a bucket region is created, but before it is added to the map of buckets.
    */
-  void beforeAssignBucket(PartitionedRegion partitionedRegion, int bucketId);
+  void beforeAssignBucket(PartitionedRegion partitionedRegion, BucketId bucketId);
 }

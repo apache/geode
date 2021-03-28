@@ -18,7 +18,6 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doThrow;
@@ -56,6 +55,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
@@ -273,7 +273,7 @@ public class PRHARedundancyProviderTest {
     when(partitionedRegion.getRegionAdvisor()).thenReturn(regionAdvisor);
     when(partitionedRegion.getCache()).thenReturn(internalCache);
     when(partitionedRegion.getCancelCriterion()).thenReturn(cancelCriterion);
-    when(regionAdvisor.getBucket(anyInt())).thenReturn(bucket);
+    when(regionAdvisor.getBucket(any())).thenReturn(bucket);
     when(bucket.getBucketAdvisor()).thenReturn(bucketAdvisor);
     when(internalCache.isCacheAtShutdownAll())
         .thenReturn(Boolean.FALSE)
@@ -284,8 +284,9 @@ public class PRHARedundancyProviderTest {
         .thenReturn(memberSet);
 
     assertThatThrownBy(
-        () -> prHaRedundancyProvider.createBucketAtomically(1, 5000, false, partitionName))
-            .isEqualTo(cacheClosedException);
+        () -> prHaRedundancyProvider.createBucketAtomically(BucketId.valueOf(1), 5000, false,
+            partitionName))
+                .isEqualTo(cacheClosedException);
   }
 
   @Test
@@ -305,7 +306,7 @@ public class PRHARedundancyProviderTest {
     when(partitionedRegion.getRegionAdvisor()).thenReturn(regionAdvisor);
     when(partitionedRegion.getCache()).thenReturn(internalCache);
     when(partitionedRegion.getCancelCriterion()).thenReturn(cancelCriterion);
-    when(regionAdvisor.getBucket(anyInt())).thenReturn(bucket);
+    when(regionAdvisor.getBucket(any())).thenReturn(bucket);
     when(bucket.getBucketAdvisor()).thenReturn(bucketAdvisor);
     when(internalCache.isCacheAtShutdownAll())
         .thenReturn(Boolean.FALSE)
@@ -315,8 +316,9 @@ public class PRHARedundancyProviderTest {
         .thenReturn(memberSet);
 
     assertThatThrownBy(
-        () -> prHaRedundancyProvider.createBucketAtomically(1, 5000, false, partitionName))
-            .isEqualTo(diskAccessException);
+        () -> prHaRedundancyProvider.createBucketAtomically(BucketId.valueOf(1), 5000, false,
+            partitionName))
+                .isEqualTo(diskAccessException);
   }
 
   @Test

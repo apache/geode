@@ -33,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 import org.apache.geode.internal.cache.BucketDump;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -137,7 +138,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
       PartitionedRegion region =
           (PartitionedRegion) cache.getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
       for (int j = 0; j < region.getTotalNumberOfBuckets(); j++) {
-        List<BucketDump> buckets = region.getAllBucketEntries(j);
+        List<BucketDump> buckets = region.getAllBucketEntries(BucketId.valueOf(j));
         if (buckets.isEmpty()) {
           continue;
         }

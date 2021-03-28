@@ -50,6 +50,7 @@ import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -173,7 +174,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
 
     // Choose server with bucket to be stopped
     MemberVM serverToStop = getServerToStop(allMembers);
-    int bucketId = serverToStop.invoke(this::getPrimaryBucketList).iterator().next();
+    BucketId bucketId = serverToStop.invoke(this::getPrimaryBucketList).iterator().next();
     serverToStop.stop(true);
 
     // remove from list the member that has been previously stopped
@@ -214,7 +215,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
    * primary bucket server, and then it will check if events are enqueued in temporary queue.
    * It is expected that events are enqueued in this case because bucket is not yet available.
    */
-  void configureHooksOnRunningMember(MemberVM server, int bucketId) {
+  void configureHooksOnRunningMember(MemberVM server, BucketId bucketId) {
     server.invoke(() -> InitialImageOperation.setGIITestHook(new InitialImageOperation.GIITestHook(
         InitialImageOperation.GIITestHookType.BeforeRequestRVV,
         "_B__" + REGION_NAME + "_" + bucketId) {
@@ -280,7 +281,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
     });
   }
 
-  private Set<Integer> getPrimaryBucketList() {
+  private Set<BucketId> getPrimaryBucketList() {
     PartitionedRegion region = (PartitionedRegion) Objects
         .requireNonNull(ClusterStartupRule.getCache()).getRegion(REGION_NAME);
     return new HashSet<>(region.getDataStore().getAllLocalPrimaryBucketIds());
@@ -316,7 +317,8 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
       int buckets = region.getTotalNumberOfBuckets();
       for (int bucket = 0; bucket < buckets; bucket++) {
         BlockingQueue<GatewaySenderEventImpl> newQueue =
-            ((ConcurrentParallelGatewaySenderQueue) queue).getBucketTmpQueue(bucket);
+            ((ConcurrentParallelGatewaySenderQueue) queue)
+                .getBucketTmpQueue(BucketId.valueOf(bucket));
         if (newQueue != null) {
           size += newQueue.size();
         }

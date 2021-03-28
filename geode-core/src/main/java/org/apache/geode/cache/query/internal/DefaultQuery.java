@@ -58,6 +58,7 @@ import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -706,7 +707,7 @@ public class DefaultQuery implements Query {
       if (qe != null) {
         LocalDataSet<?, ?> localDataSet =
             (LocalDataSet<?, ?>) PartitionRegionHelper.getLocalDataForContext(context);
-        Set<Integer> buckets = localDataSet.getBucketSet();
+        Set<BucketId> buckets = localDataSet.getBucketSet();
         final ExecutionContext executionContext = new ExecutionContext(null, cache);
         result = qe.executeQuery(this, executionContext, params, buckets);
         return result;

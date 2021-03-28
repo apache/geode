@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.partitioned;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -40,8 +39,7 @@ public class FetchEntriesMessageJUnitTest {
 
   private GemFireCacheImpl cache;
 
-  private VersionTag createVersionTag(boolean validVersionTag)
-      throws ClassNotFoundException, IOException {
+  private VersionTag createVersionTag(boolean validVersionTag) {
     VersionTag tag = VersionTag.create(cache.getMyId());
     if (validVersionTag) {
       tag.setRegionVersion(1);
@@ -50,7 +48,7 @@ public class FetchEntriesMessageJUnitTest {
     return tag;
   }
 
-  private HeapDataOutputStream createDummyChunk() throws IOException, ClassNotFoundException {
+  private HeapDataOutputStream createDummyChunk() throws IOException {
     HeapDataOutputStream mos =
         new HeapDataOutputStream(InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048,
             KnownVersion.CURRENT);
@@ -75,16 +73,17 @@ public class FetchEntriesMessageJUnitTest {
     PartitionedRegion pr = mock(PartitionedRegion.class);
     InternalDistributedSystem system = cache.getInternalDistributedSystem();
 
-    FetchEntriesResponse response = new FetchEntriesResponse(system, null, 0);
+    FetchEntriesResponse response = new FetchEntriesResponse(system, null, BucketId.valueOf(0));
     HeapDataOutputStream chunkStream = createDummyChunk();
     FetchEntriesReplyMessage reply =
-        new FetchEntriesReplyMessage(null, 0, 0, chunkStream, 0, 0, 0, false, false);
+        new FetchEntriesReplyMessage(null, 0, BucketId.valueOf(0), chunkStream, 0, 0, 0, false,
+            false);
     reply.chunk = chunkStream.toByteArray();
     response.processChunk(reply);
     assertNull(response.returnRVV);
     assertEquals(2, response.returnValue.size());
-    assertTrue(response.returnValue.get("keyWithOutVersionTag").equals("valueWithOutVersionTag"));
-    assertTrue(response.returnValue.get("keyWithVersionTag").equals("valueWithVersionTag"));
+    assertEquals("valueWithOutVersionTag", response.returnValue.get("keyWithOutVersionTag"));
+    assertEquals("valueWithVersionTag", response.returnValue.get("keyWithVersionTag"));
     assertNull(response.returnVersions.get("keyWithOutVersionTag"));
     assertNotNull(response.returnVersions.get("keyWithVersionTag"));
   }

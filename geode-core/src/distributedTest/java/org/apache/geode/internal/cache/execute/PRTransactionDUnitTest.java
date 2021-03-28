@@ -59,6 +59,7 @@ import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.Shipment;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperatorImpl;
@@ -462,14 +463,14 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
     CustId cust1 = new CustId(1);
     CustId cust2 = new CustId(2);
-    int bucketId1 = pr.getKeyInfo(cust1).getBucketId();
-    int bucketId2 = pr.getKeyInfo(cust2).getBucketId();
+    BucketId bucketId1 = pr.getKeyInfo(cust1).getBucketId();
+    BucketId bucketId2 = pr.getKeyInfo(cust2).getBucketId();
 
-    List<Integer> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
+    List<BucketId> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
     Set localBucket1Keys;
     Set localBucket2Keys;
     assertTrue(localPrimaryBucketList.size() == 1);
-    for (int bucketId : localPrimaryBucketList) {
+    for (BucketId bucketId : localPrimaryBucketList) {
       if (bucketId == bucketId1) {
         // primary bucket has cust1
         localBucket1Keys = pr.getDataStore().getKeysLocally(bucketId1, false);
@@ -506,9 +507,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
 
   private boolean isCust1Local(PartitionedRegion pr, CustId cust1) {
-    int bucketId1 = pr.getKeyInfo(cust1).getBucketId();
-    List<Integer> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
-    assertTrue(localPrimaryBucketList.size() == 1);
+    BucketId bucketId1 = pr.getKeyInfo(cust1).getBucketId();
+    List<BucketId> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
+    assertEquals(1, localPrimaryBucketList.size());
     return localPrimaryBucketList.get(0) == bucketId1;
   }
 
@@ -691,7 +692,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
 
   private boolean isCust1LocalSingleBucket(PartitionedRegion pr, CustId cust1) {
-    List<Integer> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
+    List<BucketId> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
     return localPrimaryBucketList.size() == 1;
   }
 
@@ -1174,7 +1175,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     PartitionedRegion pr = (PartitionedRegion) basicGetCache()
         .getRegion(SEPARATOR + CustomerPartitionedRegionName);
     CustId cust1 = new CustId(1);
-    int bucketId = pr.getKeyInfo(cust1).getBucketId();
+    BucketId bucketId = pr.getKeyInfo(cust1).getBucketId();
     boolean isCust1LocalPrimary = pr.getBucketRegion(cust1).getBucketAdvisor().isPrimary();
     InternalDistributedMember destination = isCust1LocalPrimary ? dm2 : dm1;
     InternalDistributedMember source = isCust1LocalPrimary ? dm1 : dm2;

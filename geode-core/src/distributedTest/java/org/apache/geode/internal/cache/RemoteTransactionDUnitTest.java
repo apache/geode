@@ -108,6 +108,7 @@ import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
@@ -2186,7 +2187,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             for (int i = 6;; i++) {
               custId = new CustId(i);
               customer = new Customer("customer" + i, "address" + i);
-              int bucketId = PartitionedRegionHelper.getHashKey(custRegion, custId);
+              BucketId bucketId =
+                  BucketId.valueOf(PartitionedRegionHelper.getHashKey(custRegion, custId));
               InternalDistributedMember primary = custRegion.getBucketPrimary(bucketId);
               if (primary.equals(getCache().getMyId())) {
                 custRegion.put(custId, customer);
@@ -2200,7 +2202,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             for (int i = 3;; i--) {
               custId = new CustId(i);
               customer = new Customer("customer" + i, "address" + i);
-              int bucketId = PartitionedRegionHelper.getHashKey(custRegion, custId);
+              BucketId bucketId =
+                  BucketId.valueOf(PartitionedRegionHelper.getHashKey(custRegion, custId));
               InternalDistributedMember primary = custRegion.getBucketPrimary(bucketId);
               if (primary.equals(getCache().getMyId())) {
                 custRegion.destroy(custId);

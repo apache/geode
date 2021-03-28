@@ -40,6 +40,7 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
@@ -139,11 +140,11 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   public void enqueueEvent(EnumListenerEvent operation, EntryEvent<?, ?> event,
       Object substituteValue,
       boolean isLastEventInTransaction) throws CacheException, IOException {
-    int bucketId = ((EntryEventImpl) event).getEventId().getBucketID();
-    if (bucketId < 0) {
+    BucketId bucketId = ((EntryEventImpl) event).getEventId().getBucketID();
+    if (null == bucketId) {
       return;
     }
-    int pId = bucketId % nDispatcher;
+    int pId = bucketId.intValue() % nDispatcher;
     processors[pId].enqueueEvent(operation, event, substituteValue, isLastEventInTransaction);
   }
 
@@ -161,7 +162,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
       }
       return;
     }
-    int bucketId = PartitionedRegionHelper.getHashKey(droppedEvent);
+    BucketId bucketId = BucketId.valueOf(PartitionedRegionHelper.getHashKey(droppedEvent));
     long shadowKey = droppedEvent.getTailKey();
 
     ParallelGatewaySenderQueue pgsq = (ParallelGatewaySenderQueue) cpgsq.getQueueByBucket(bucketId);
@@ -346,7 +347,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
 
   @Override
   protected void enqueueEvent(GatewayQueueEvent<?, ?> event) {
-    int pId = ((GatewaySenderEventImpl) event).getBucketId() % nDispatcher;
+    int pId = ((GatewaySenderEventImpl) event).getBucketId().intValue() % nDispatcher;
     processors[pId].enqueueEvent(event);
   }
 

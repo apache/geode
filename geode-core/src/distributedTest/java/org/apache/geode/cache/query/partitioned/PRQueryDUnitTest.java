@@ -47,6 +47,7 @@ import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.QueryExecutionContext;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -121,9 +122,9 @@ public class PRQueryDUnitTest extends CacheTestCase {
     SelectResults results =
         query.getSimpleSelect().getEmptyResultSet(EMPTY_PARAMETERS, getCache(), query);
 
-    Set<Integer> buckets = new HashSet<>();
+    Set<BucketId> buckets = new HashSet<>();
     for (int i = 0; i < 3; i++) {
-      buckets.add(i);
+      buckets.add(BucketId.valueOf(i));
     }
 
     PartitionedRegion partitionedRegion = (PartitionedRegion) region;
@@ -156,9 +157,9 @@ public class PRQueryDUnitTest extends CacheTestCase {
         region.put(i, new Portfolio(i));
       }
 
-      Set<Integer> bucketsToQuery = new HashSet<>();
+      Set<BucketId> bucketsToQuery = new HashSet<>();
       for (int i = 0; i < numberOfBuckets; i++) {
-        bucketsToQuery.add(i);
+        bucketsToQuery.add(BucketId.valueOf(i));
       }
 
       String[] queries =
@@ -207,9 +208,9 @@ public class PRQueryDUnitTest extends CacheTestCase {
       region.put(i, new Portfolio(i));
     }
 
-    Set<Integer> buckets = new HashSet<>();
+    Set<BucketId> buckets = new HashSet<>();
     for (int i = 0; i < numberOfBuckets; i++) {
-      buckets.add(i);
+      buckets.add(BucketId.valueOf(i));
     }
 
     String[] queries =
@@ -274,9 +275,9 @@ public class PRQueryDUnitTest extends CacheTestCase {
           query.getSimpleSelect().getEmptyResultSet(EMPTY_PARAMETERS, getCache(), query);
 
       // Fake data loss
-      Set<Integer> buckets = new HashSet<>();
+      Set<BucketId> buckets = new HashSet<>();
       for (int i = 0; i < 3; i++) {
-        buckets.add(i);
+        buckets.add(BucketId.valueOf(i));
       }
 
       PartitionedRegion partitionedRegion = (PartitionedRegion) region;

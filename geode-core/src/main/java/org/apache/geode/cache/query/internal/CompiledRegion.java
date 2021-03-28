@@ -23,6 +23,7 @@ import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 
 /**
@@ -66,7 +67,7 @@ public class CompiledRegion extends AbstractCompiledValue {
       // bucket region
       // to get ID and then retrieve this region's bucket region
       BucketRegion br = context.getBucketRegion();
-      int bucketID = br.getId();
+      BucketId bucketID = br.getId();
       // Is current region a partitioned region
       region = cache.getRegion(regionPath);
       if (region.getAttributes().getDataPolicy().withPartitioning()) {

@@ -51,6 +51,7 @@ import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.eviction.HeapLRUController;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
@@ -143,10 +144,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               assertTrue(pollWaitMillis < (SECONDS.toMillis(maximumWaitSeconds) * 4));
               final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
               assertNotNull(pr);
-              for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+              for (final Entry<BucketId, BucketRegion> entry : pr.getDataStore()
                   .getAllLocalBuckets()) {
-                final Entry entry = (Entry) integerBucketRegionEntry;
-                final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+                final BucketRegion bucketRegion = entry.getValue();
                 if (bucketRegion == null) {
                   continue;
                 }
@@ -277,11 +277,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               assertNotNull(pr);
 
               long entriesEvicted = 0;
-              for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+              for (final Entry<BucketId, BucketRegion> entry : pr.getDataStore()
                   .getAllLocalBuckets()) {
-                final Entry entry = (Entry) integerBucketRegionEntry;
-
-                final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+                final BucketRegion bucketRegion = entry.getValue();
                 if (bucketRegion == null) {
                   continue;
                 }
@@ -396,11 +394,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
             // entries
             // overflowed
             long entriesEvicted = 0;
-            for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+            for (final Entry<BucketId, BucketRegion> entry : pr.getDataStore()
                 .getAllLocalBuckets()) {
-              final Entry entry = (Entry) integerBucketRegionEntry;
-
-              final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+              final BucketRegion bucketRegion = entry.getValue();
               if (bucketRegion == null) {
                 continue;
               }
@@ -486,11 +482,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
               assertNotNull(pr);
               long entriesEvicted = 0;
-              for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+              for (final Entry<BucketId, BucketRegion> entry : pr.getDataStore()
                   .getAllLocalBuckets()) {
-                final Entry entry = (Entry) integerBucketRegionEntry;
-
-                final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+                final BucketRegion bucketRegion = entry.getValue();
                 if (bucketRegion == null) {
                   continue;
                 }
@@ -574,11 +568,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
             // entries
             // overflowed
             int entriesEvicted = 0;
-            for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+            for (final Entry<BucketId, BucketRegion> entry : pr.getDataStore()
                 .getAllLocalBuckets()) {
-              final Entry entry = (Entry) integerBucketRegionEntry;
-
-              final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+              final BucketRegion bucketRegion = entry.getValue();
               if (bucketRegion == null) {
                 continue;
               }
@@ -693,11 +685,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
             try {
               final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
               assertNotNull(pr);
-              for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+              for (final Entry<BucketId, BucketRegion> entry : pr.getDataStore()
                   .getAllLocalBuckets()) {
-                final Entry entry = (Entry) integerBucketRegionEntry;
-
-                final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+                final BucketRegion bucketRegion = entry.getValue();
                 if (bucketRegion == null) {
                   continue;
                 }
@@ -778,7 +768,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
           final BucketRegion b;
           try {
             b = pr.getDataStore().getInitializedBucketForId(key,
-                PartitionedRegionHelper.getHashKey(pr, null, key, null, null));
+                BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, key, null, null)));
           } catch (final ForceReattemptException e) {
             fail();
           }
@@ -1213,7 +1203,8 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               final BucketRegion b;
               try {
                 b = pr.getDataStore().getInitializedBucketForId(key,
-                    PartitionedRegionHelper.getHashKey(pr, null, key, null, null));
+                    BucketId
+                        .valueOf(PartitionedRegionHelper.getHashKey(pr, null, key, null, null)));
               } catch (final ForceReattemptException e) {
                 fail();
               }

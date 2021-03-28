@@ -51,7 +51,7 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
 
   private static final long serialVersionUID = 1L;
   private int partitionedRegionId;
-  private int bucketId;
+  private BucketId bucketId;
   private int processorId = 0;
   private BucketAdvisor.BucketProfile profile;
 
@@ -64,7 +64,7 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
 
   private BucketProfileUpdateMessage(Set<InternalDistributedMember> recipients,
       int partitionedRegionId, int processorId,
-      int bucketId, BucketProfile profile) {
+      BucketId bucketId, BucketProfile profile) {
     setRecipients(recipients);
     this.processorId = processorId;
     this.partitionedRegionId = partitionedRegionId;
@@ -134,7 +134,7 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
    */
   public static ReplyProcessor21 send(Set<InternalDistributedMember> recipients,
       DistributionManager dm, int prId,
-      int bucketId, BucketProfile bp, boolean requireAck) {
+      BucketId bucketId, BucketProfile bp, boolean requireAck) {
     if (recipients.isEmpty()) {
       return null;
     }
@@ -160,7 +160,7 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     partitionedRegionId = in.readInt();
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
     processorId = in.readInt();
     profile = DataSerializer.readObject(in);
   }
@@ -170,7 +170,7 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
       SerializationContext context) throws IOException {
     super.toData(out, context);
     out.writeInt(partitionedRegionId);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
     out.writeInt(processorId);
     DataSerializer.writeObject(profile, out);
   }

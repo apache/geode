@@ -56,6 +56,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.LuceneTest;
@@ -114,7 +115,7 @@ public class LuceneIndexForPartitionedRegionTest {
     when(cache.getRegion(fileRegionName)).thenReturn(region);
     LuceneIndexForPartitionedRegion spy = spy(index);
     when(spy.getFileAndChunkRegion()).thenReturn(mockFileRegion);
-    assertFalse(spy.isIndexAvailable(0));
+    assertFalse(spy.isIndexAvailable(BucketId.valueOf(0)));
   }
 
   @Test
@@ -132,7 +133,7 @@ public class LuceneIndexForPartitionedRegionTest {
     when(spy.getFileAndChunkRegion()).thenReturn(mockFileRegion);
     when(mockFileRegion.get(IndexRepositoryFactory.APACHE_GEODE_INDEX_COMPLETE, 1))
         .thenReturn("SOMETHING IS PRESENT");
-    assertTrue(spy.isIndexAvailable(1));
+    assertTrue(spy.isIndexAvailable(BucketId.valueOf(1)));
   }
 
   @Test

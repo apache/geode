@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.PartitionedRegion.BucketLock;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore.CreateBucketResult;
 import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMembershipView;
@@ -63,7 +64,7 @@ public class ProxyBucketRegion implements Bucket {
   private static final Logger logger = LogService.getLogger();
 
   private final int serialNumber;
-  private final int bid;
+  private final BucketId bid;
   private final PartitionedRegion partitionedRegion;
   private final BucketAdvisor advisor;
   private final BucketPersistenceAdvisor persistenceAdvisor;
@@ -88,7 +89,7 @@ public class ProxyBucketRegion implements Bucket {
    * @param partitionedRegion the PartitionedRegion that owns this bucket
    * @param internalRegionArgs the internal args which includes RegionAdvisor
    */
-  public ProxyBucketRegion(int bid, PartitionedRegion partitionedRegion,
+  public ProxyBucketRegion(BucketId bid, PartitionedRegion partitionedRegion,
       InternalRegionArguments internalRegionArgs) {
     serialNumber = DistributionAdvisor.createSerialNumber();
     this.bid = bid;
@@ -376,12 +377,12 @@ public class ProxyBucketRegion implements Bucket {
     return advisor.getBucketRedundancy() + 1;
   }
 
-  public int getBucketId() {
+  public BucketId getBucketId() {
     return bid;
   }
 
   @Override
-  public int getId() {
+  public BucketId getId() {
     return getBucketId();
   }
 
@@ -415,7 +416,7 @@ public class ProxyBucketRegion implements Bucket {
       if (childPR.getDataPolicy().withPersistence()) {
         ProxyBucketRegion[] childBucketArray = childPR.getRegionAdvisor().getProxyBucketArray();
         if (childBucketArray != null) {
-          ProxyBucketRegion childBucket = childBucketArray[getBucketId()];
+          ProxyBucketRegion childBucket = childBucketArray[getBucketId().intValue()];
           childBucket.recoverFromDisk();
         }
       }
@@ -560,7 +561,7 @@ public class ProxyBucketRegion implements Bucket {
     for (PartitionedRegion childPR : colocatedWithList) {
       ProxyBucketRegion[] childBucketArray = childPR.getRegionAdvisor().getProxyBucketArray();
       if (childBucketArray != null) {
-        ProxyBucketRegion childBucket = childBucketArray[getBucketId()];
+        ProxyBucketRegion childBucket = childBucketArray[getBucketId().intValue()];
         if (childBucket.persistenceAdvisor != null) {
           childBucket.persistenceAdvisor.initialize();
         }

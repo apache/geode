@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.partitioned.rebalance;
 import java.util.Map;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /**
  * A BucketOperator is used by the PartitionedRegionLoadModel to perform the actual operations such
@@ -39,13 +40,13 @@ public interface BucketOperator {
    * @param completion a callback which will receive a notification on the success or failure of the
    *        operation.
    */
-  void createRedundantBucket(InternalDistributedMember targetMember, int bucketId,
+  void createRedundantBucket(InternalDistributedMember targetMember, BucketId bucketId,
       Map<String, Long> colocatedRegionBytes, Completion completion);
 
   /**
    * Remove a bucket from the target member.
    */
-  boolean removeBucket(InternalDistributedMember memberId, int id,
+  boolean removeBucket(InternalDistributedMember memberId, BucketId id,
       Map<String, Long> colocatedRegionSizes);
 
   /**
@@ -57,7 +58,7 @@ public interface BucketOperator {
    * @return true if the bucket was moved successfully
    */
   boolean moveBucket(InternalDistributedMember sourceMember, InternalDistributedMember targetMember,
-      int bucketId, Map<String, Long> colocatedRegionBytes);
+      BucketId bucketId, Map<String, Long> colocatedRegionBytes);
 
   /**
    * Move a primary from one node to another. This method will not be called unless both nodes are
@@ -69,7 +70,7 @@ public interface BucketOperator {
    * @return true if the primary was successfully moved.
    */
   boolean movePrimary(InternalDistributedMember source, InternalDistributedMember target,
-      int bucketId);
+      BucketId bucketId);
 
   /**
    * Wait for any pending asynchronous operations that this thread submitted earlier to complete.

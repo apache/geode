@@ -87,6 +87,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -1550,25 +1551,26 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     PartitionedRegion shipments = (PartitionedRegion) getCache().getRegion(SHIPMENTS_REGION);
 
     for (int i = 0; i < requirePositive(count); i++) {
-      InternalDistributedMember idmForCustomer = customers.getBucketPrimary(i);
-      InternalDistributedMember idmForOrder = orders.getBucketPrimary(i);
-      InternalDistributedMember idmForShipment = shipments.getBucketPrimary(i);
+      final BucketId bucketId = BucketId.valueOf(i);
+      InternalDistributedMember idmForCustomer = customers.getBucketPrimary(bucketId);
+      InternalDistributedMember idmForOrder = orders.getBucketPrimary(bucketId);
+      InternalDistributedMember idmForShipment = shipments.getBucketPrimary(bucketId);
 
       // take all the keys from the shipment for each bucket
-      Set<CustomerId> customerKey = uncheckedCast(customers.getBucketKeys(i));
+      Set<CustomerId> customerKey = uncheckedCast(customers.getBucketKeys(bucketId));
       assertThat(customerKey).isNotNull();
 
       for (CustomerId customerId : customerKey) {
         assertThat(customers.get(customerId)).isNotNull();
 
-        Set<OrderId> orderKey = uncheckedCast(orders.getBucketKeys(i));
+        Set<OrderId> orderKey = uncheckedCast(orders.getBucketKeys(bucketId));
         for (OrderId orderId : orderKey) {
           assertThat(orders.get(orderId)).isNotNull();
           if (orderId.getCustomerId().equals(customerId)) {
             assertThat(idmForOrder).isEqualTo(idmForCustomer);
           }
 
-          Set<ShipmentId> shipmentKey = uncheckedCast(shipments.getBucketKeys(i));
+          Set<ShipmentId> shipmentKey = uncheckedCast(shipments.getBucketKeys(bucketId));
           for (ShipmentId shipmentId : shipmentKey) {
             assertThat(shipments.get(shipmentId)).isNotNull();
             if (shipmentId.getOrderId().equals(orderId)) {
@@ -1654,11 +1656,11 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     PartitionedRegion shipmentPartitionedRegion =
         (PartitionedRegion) getCache().getRegion(SHIPMENTS_REGION);
 
-    Map<Integer, Integer> localBucket2RegionMap_Customer =
+    Map<BucketId, Integer> localBucket2RegionMap_Customer =
         customerPartitionedRegion.getDataStore().getSizeLocally();
-    Map<Integer, Integer> localBucket2RegionMap_Order =
+    Map<BucketId, Integer> localBucket2RegionMap_Order =
         orderPartitionedRegion.getDataStore().getSizeLocally();
-    Map<Integer, Integer> localBucket2RegionMap_Shipment =
+    Map<BucketId, Integer> localBucket2RegionMap_Shipment =
         shipmentPartitionedRegion.getDataStore().getSizeLocally();
 
     assertThat(localBucket2RegionMap_Customer)
@@ -1675,11 +1677,11 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     assertThat(localBucket2RegionMap_Shipment.keySet())
         .isEqualTo(localBucket2RegionMap_Order.keySet());
 
-    List<Integer> primaryBuckets_Customer =
+    List<BucketId> primaryBuckets_Customer =
         customerPartitionedRegion.getDataStore().getLocalPrimaryBucketsListTestOnly();
-    List<Integer> primaryBuckets_Order =
+    List<BucketId> primaryBuckets_Order =
         orderPartitionedRegion.getDataStore().getLocalPrimaryBucketsListTestOnly();
-    List<Integer> primaryBuckets_Shipment =
+    List<BucketId> primaryBuckets_Shipment =
         shipmentPartitionedRegion.getDataStore().getLocalPrimaryBucketsListTestOnly();
 
     assertThat(primaryBuckets_Customer)
@@ -1706,11 +1708,11 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     PartitionedRegion shipmentPartitionedRegion =
         (PartitionedRegion) getCache().getRegion(SHIPMENTS_REGION);
 
-    Map<Integer, Integer> localBucket2RegionMap_Customer =
+    Map<BucketId, Integer> localBucket2RegionMap_Customer =
         customerPartitionedRegion.getDataStore().getSizeLocally();
-    Map<Integer, Integer> localBucket2RegionMap_Order =
+    Map<BucketId, Integer> localBucket2RegionMap_Order =
         orderPartitionedRegion.getDataStore().getSizeLocally();
-    Map<Integer, Integer> localBucket2RegionMap_Shipment =
+    Map<BucketId, Integer> localBucket2RegionMap_Shipment =
         shipmentPartitionedRegion.getDataStore().getSizeLocally();
 
     assertThat(localBucket2RegionMap_Customer)
@@ -1727,11 +1729,11 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     assertThat(localBucket2RegionMap_Shipment.keySet())
         .isEqualTo(localBucket2RegionMap_Order.keySet());
 
-    List<Integer> primaryBuckets_Customer =
+    List<BucketId> primaryBuckets_Customer =
         customerPartitionedRegion.getDataStore().getLocalPrimaryBucketsListTestOnly();
-    List<Integer> primaryBuckets_Order =
+    List<BucketId> primaryBuckets_Order =
         orderPartitionedRegion.getDataStore().getLocalPrimaryBucketsListTestOnly();
-    List<Integer> primaryBuckets_Shipment =
+    List<BucketId> primaryBuckets_Shipment =
         shipmentPartitionedRegion.getDataStore().getLocalPrimaryBucketsListTestOnly();
 
     assertThat(primaryBuckets_Customer.size() % primaryBucketCount)
@@ -1959,13 +1961,13 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     }
 
     @Override
-    public void movingBucket(Region region, int bucketId, DistributedMember source,
+    public void movingBucket(Region region, BucketId bucketId, DistributedMember source,
         DistributedMember target) {
       // nothing
     }
 
     @Override
-    public void movingPrimary(Region region, int bucketId, DistributedMember source,
+    public void movingPrimary(Region region, BucketId bucketId, DistributedMember source,
         DistributedMember target) {
       // nothing
     }

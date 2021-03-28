@@ -26,6 +26,7 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -132,7 +133,7 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
       public Object call() {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion("region1");
-        long size = region.getDataStore().getBucketSize(0);
+        long size = region.getDataStore().getBucketSize(BucketId.valueOf(0));
         TestDelta value = (TestDelta) region.get(0);
         value.checkFields(serializations, deserializations, deltas, clones);
         return size;

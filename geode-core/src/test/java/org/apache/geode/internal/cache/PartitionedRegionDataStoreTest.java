@@ -27,6 +27,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import org.apache.geode.internal.cache.partitioned.BucketId;
+
 
 public class PartitionedRegionDataStoreTest {
   @Mock
@@ -49,7 +51,7 @@ public class PartitionedRegionDataStoreTest {
   private PartitionedRegionDataStore colocatedRegionDateStore;
   @Mock
   private PartitionedRegionDataStore grandChildRegionDateStore2_3;
-  private final int bucketId = 29;
+  private final BucketId bucketId = BucketId.valueOf(29);
 
   @Before
   public void setup() {

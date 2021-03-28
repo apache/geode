@@ -35,6 +35,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
@@ -46,7 +47,7 @@ import org.apache.geode.test.fake.Fakes;
 public class BucketRegionQueueJUnitTest {
 
   private static final String GATEWAY_SENDER_ID = "ny";
-  private static final int BUCKET_ID = 85;
+  private static final BucketId BUCKET_ID = BucketId.valueOf(85);
   private static final long KEY = 198;
 
   private GemFireCacheImpl cache;

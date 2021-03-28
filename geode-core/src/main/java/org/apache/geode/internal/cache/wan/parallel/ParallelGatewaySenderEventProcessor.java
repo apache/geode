@@ -32,6 +32,7 @@ import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
@@ -155,17 +156,17 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
   }
 
   @Override
-  public void clear(PartitionedRegion pr, int bucketId) {
+  public void clear(PartitionedRegion pr, BucketId bucketId) {
     ((ParallelGatewaySenderQueue) queue).clear(pr, bucketId);
   }
 
   @Override
-  public void notifyEventProcessorIfRequired(int bucketId) {
+  public void notifyEventProcessorIfRequired(BucketId bucketId) {
     ((ParallelGatewaySenderQueue) queue).notifyEventProcessorIfRequired();
   }
 
   @Override
-  public BlockingQueue<GatewaySenderEventImpl> getBucketTmpQueue(int bucketId) {
+  public BlockingQueue<GatewaySenderEventImpl> getBucketTmpQueue(BucketId bucketId) {
     return ((ParallelGatewaySenderQueue) queue).getBucketToTempQueueMap().get(bucketId);
   }
 
@@ -180,7 +181,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
   }
 
   @Override
-  public void conflateEvent(Conflatable conflatableObject, int bucketId, Long tailKey) {
+  public void conflateEvent(Conflatable conflatableObject, BucketId bucketId, Long tailKey) {
     ((ParallelGatewaySenderQueue) queue).conflateEvent(conflatableObject, bucketId, tailKey);
   }
 

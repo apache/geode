@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
@@ -252,8 +253,10 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
     Map<EventID, AbstractGatewaySender.EventWrapper> unprocessedEvents =
         (Map<EventID, AbstractGatewaySender.EventWrapper>) field.get(processor);
 
-    long complexThreadId1 = ThreadIdentifier.createFakeThreadIDForParallelGSPrimaryBucket(0, 1, 1);
-    long complexThreadId3 = ThreadIdentifier.createFakeThreadIDForParallelGSPrimaryBucket(0, 3, 3);
+    long complexThreadId1 =
+        ThreadIdentifier.createFakeThreadIDForParallelGSPrimaryBucket(BucketId.valueOf(0), 1, 1);
+    long complexThreadId3 =
+        ThreadIdentifier.createFakeThreadIDForParallelGSPrimaryBucket(BucketId.valueOf(0), 3, 3);
     unprocessedEvents.put(new EventID("mem1".getBytes(), complexThreadId1, 1L), null);
     unprocessedEvents.put(new EventID("mem2".getBytes(), 2L, 2L), null);
 

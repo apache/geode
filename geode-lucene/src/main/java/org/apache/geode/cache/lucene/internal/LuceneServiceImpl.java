@@ -77,6 +77,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.extension.Extensible;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrant;
@@ -310,8 +311,8 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
       }
       PartitionedRepositoryManager repositoryManager =
           (PartitionedRepositoryManager) luceneIndex.getRepositoryManager();
-      Set<Integer> primaryBucketIds = userRegion.getDataStore().getAllLocalPrimaryBucketIds();
-      for (final int primaryBucketId : primaryBucketIds) {
+      Set<BucketId> primaryBucketIds = userRegion.getDataStore().getAllLocalPrimaryBucketIds();
+      for (final BucketId primaryBucketId : primaryBucketIds) {
         try {
           BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(primaryBucketId);
           if (userBucket == null) {

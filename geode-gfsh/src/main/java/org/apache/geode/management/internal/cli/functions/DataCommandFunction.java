@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -192,7 +194,6 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
     }
   }
 
-  @SuppressWarnings("rawtypes")
   private DataCommandResult select(InternalCache cache, Object principal, String queryString) {
 
     if (StringUtils.isEmpty(queryString)) {
@@ -221,7 +222,7 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
         queryObserver.reset2();
       }
       if (results instanceof SelectResults) {
-        select_SelectResults((SelectResults) results, principal, list, cache);
+        select_SelectResults(uncheckedCast(results), principal, list, cache);
       } else {
         select_NonSelectResults(results, list);
       }
@@ -247,7 +248,7 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
     list.add(createSelectResultRow(results));
   }
 
-  private void select_SelectResults(SelectResults selectResults, Object principal,
+  private void select_SelectResults(SelectResults<Object> selectResults, Object principal,
       List<SelectResultRow> list, InternalCache cache) {
     for (Object object : selectResults) {
       // Post processing
@@ -478,7 +479,7 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
         if (value != null) {
           DistributedMember primaryMember =
               PartitionRegionHelper.getPrimaryMemberForKey(region, keyObject);
-          int bucketId = pr.getKeyInfo(keyObject).getBucketId();
+          final BucketId bucketId = pr.getKeyInfo(keyObject).getBucketId();
           boolean isPrimary = member == primaryMember;
           keyInfo.addLocation(new Object[] {region.getFullPath(), true, getClassAndJson(value)[1],
               isPrimary, "" + bucketId});

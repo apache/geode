@@ -19,13 +19,16 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jetbrains.annotations.NotNull;
+
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 
 /**
  * Represents a single bucket.
  */
 public class Bucket implements Comparable<Bucket> {
-  private final int id;
+  private final BucketId id;
   private final Set<Member> membersHosting = new TreeSet<>();
   private final Set<PersistentMemberID> offlineMembers;
   private float load;
@@ -34,11 +37,11 @@ public class Bucket implements Comparable<Bucket> {
   private int redundancy = -1;
   private Member primary;
 
-  public Bucket(int id) {
+  public Bucket(BucketId id) {
     this(id, 0, 0, new HashSet<>());
   }
 
-  public Bucket(int id, float load, long bytes, Set<PersistentMemberID> offlineMembers) {
+  public Bucket(BucketId id, float load, long bytes, Set<PersistentMemberID> offlineMembers) {
     this.id = id;
     this.load = load;
     this.bytes = bytes;
@@ -110,7 +113,7 @@ public class Bucket implements Comparable<Bucket> {
     return load;
   }
 
-  public int getId() {
+  public BucketId getId() {
     return id;
   }
 
@@ -141,7 +144,7 @@ public class Bucket implements Comparable<Bucket> {
 
   @Override
   public int hashCode() {
-    return id;
+    return id.hashCode();
   }
 
   @Override
@@ -154,7 +157,7 @@ public class Bucket implements Comparable<Bucket> {
   }
 
   @Override
-  public int compareTo(Bucket other) {
-    return Integer.compare(id, other.id);
+  public int compareTo(@NotNull Bucket other) {
+    return id.compareTo(other.id);
   }
 }

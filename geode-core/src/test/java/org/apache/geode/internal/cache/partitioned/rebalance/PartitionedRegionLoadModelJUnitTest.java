@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -48,6 +49,7 @@ import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.OfflineMemberDetails;
 import org.apache.geode.internal.cache.partitioned.OfflineMemberDetailsImpl;
 import org.apache.geode.internal.cache.partitioned.PRLoad;
@@ -118,9 +120,9 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(memberInfo2[0].getPrimaryCount()).isEqualTo(3);
 
     List<Create> expectedCreates = new ArrayList<>();
-    expectedCreates.add(new Create(member2, 0));
-    expectedCreates.add(new Create(member2, 2));
-    expectedCreates.add(new Create(member1, 3));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(0)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(2)));
+    expectedCreates.add(new Create(member1, BucketId.valueOf(3)));
     assertThat(bucketOperator.creates).isEqualTo(expectedCreates);
   }
 
@@ -149,8 +151,8 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(doMoves(new CompositeDirector(true, true, false, false), model)).isEqualTo(2);
 
     List<Create> expectedCreates = new ArrayList<>();
-    expectedCreates.add(new Create(member1, 1));
-    expectedCreates.add(new Create(member1, 2));
+    expectedCreates.add(new Create(member1, BucketId.valueOf(1)));
+    expectedCreates.add(new Create(member1, BucketId.valueOf(2)));
     assertThat(bucketOperator.creates).isEqualTo(expectedCreates);
   }
 
@@ -174,7 +176,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(doMoves(new CompositeDirector(true, true, false, false), model)).isEqualTo(1);
 
     List<Create> expectedCreates = new ArrayList<>();
-    expectedCreates.add(new Create(member2, 0));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(0)));
     assertThat(bucketOperator.creates).isEqualTo(expectedCreates);
   }
 
@@ -202,9 +204,9 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(doMoves(new CompositeDirector(true, true, false, false), model)).isEqualTo(3);
 
     List<Create> expectedCreates = new ArrayList<>();
-    expectedCreates.add(new Create(member2, 0));
-    expectedCreates.add(new Create(member1, 1));
-    expectedCreates.add(new Create(member1, 2));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(0)));
+    expectedCreates.add(new Create(member1, BucketId.valueOf(1)));
+    expectedCreates.add(new Create(member1, BucketId.valueOf(2)));
     assertThat(bucketOperator.creates).isEqualTo(expectedCreates);
     Set<PartitionMemberInfo> afterDetails = model.getPartitionedMemberDetails("a");
     assertThat(afterDetails.size()).isEqualTo(2);
@@ -248,9 +250,9 @@ public class PartitionedRegionLoadModelJUnitTest {
     // The buckets should all be created on member 3 because
     // it has a different ip address
     List<Create> expectedCreates = new ArrayList<>();
-    expectedCreates.add(new Create(member3, 0));
-    expectedCreates.add(new Create(member3, 1));
-    expectedCreates.add(new Create(member3, 2));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(0)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(1)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(2)));
     assertThat(bucketOperator.creates).isEqualTo(expectedCreates);
   }
 
@@ -331,10 +333,10 @@ public class PartitionedRegionLoadModelJUnitTest {
     // The bucket creates should alternate between members
     // so that the load is balanced.
     List<Create> expectedCreates = new ArrayList<>();
-    expectedCreates.add(new Create(member2, 0));
-    expectedCreates.add(new Create(member3, 1));
-    expectedCreates.add(new Create(member2, 2));
-    expectedCreates.add(new Create(member3, 3));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(0)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(1)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(2)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(3)));
     assertThat(bucketOperator.creates).isEqualTo(expectedCreates);
   }
 
@@ -372,18 +374,18 @@ public class PartitionedRegionLoadModelJUnitTest {
     // The bucket creates should alternate between members
     // so that the load is balanced.
     Set<Create> expectedCreates = new HashSet<>();
-    expectedCreates.add(new Create(member2, 0));
-    expectedCreates.add(new Create(member3, 1));
-    expectedCreates.add(new Create(member2, 2));
-    expectedCreates.add(new Create(member3, 3));
-    expectedCreates.add(new Create(member2, 4));
-    expectedCreates.add(new Create(member3, 5));
-    expectedCreates.add(new Create(member2, 6));
-    expectedCreates.add(new Create(member3, 7));
-    expectedCreates.add(new Create(member2, 8));
-    expectedCreates.add(new Create(member3, 9));
-    expectedCreates.add(new Create(member2, 10));
-    expectedCreates.add(new Create(member3, 11));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(0)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(1)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(2)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(3)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(4)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(5)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(6)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(7)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(8)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(9)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(10)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(11)));
     assertThat(new HashSet<>(bucketOperator.creates)).isEqualTo(expectedCreates);
 
     Set<Move> expectedMoves = new HashSet<>();
@@ -426,10 +428,10 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     // Everything should be creatd on member2
     Set<Create> expectedCreates = new HashSet<>();
-    expectedCreates.add(new Create(member2, 0));
-    expectedCreates.add(new Create(member2, 1));
-    expectedCreates.add(new Create(member2, 2));
-    expectedCreates.add(new Create(member2, 3));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(0)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(1)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(2)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(3)));
     assertThat(new HashSet<>(bucketOperator.creates)).isEqualTo(expectedCreates);
 
     Set<Move> expectedMoves = new HashSet<>();
@@ -472,8 +474,8 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     // Everything should be create on member2
     Set<Create> expectedCreates = new HashSet<>();
-    expectedCreates.add(new Create(member2, 0));
-    expectedCreates.add(new Create(member2, 1));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(0)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(1)));
     assertThat(new HashSet<>(bucketOperator.creates)).isEqualTo(expectedCreates);
 
     Set<Move> expectedMoves = new HashSet<>();
@@ -514,10 +516,10 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     // Everything should be created on member2
     Set<Create> expectedCreates = new HashSet<>();
-    expectedCreates.add(new Create(member2, 0));
-    expectedCreates.add(new Create(member2, 1));
-    expectedCreates.add(new Create(member2, 2));
-    expectedCreates.add(new Create(member2, 3));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(0)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(1)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(2)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(3)));
     assertThat(new HashSet<>(bucketOperator.creates)).isEqualTo(expectedCreates);
 
     Set<Move> expectedMoves = new HashSet<>();
@@ -584,7 +586,7 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     MyBucketOperator op = new MyBucketOperator() {
       @Override
-      public void createRedundantBucket(InternalDistributedMember targetMember, int i,
+      public void createRedundantBucket(InternalDistributedMember targetMember, BucketId i,
           Map<String, Long> colocatedRegionBytes, Completion completion) {
         if (targetMember.equals(member2)) {
           completion.onFailure();
@@ -613,10 +615,10 @@ public class PartitionedRegionLoadModelJUnitTest {
     // The bucket creates should do all of the creates on member 3
     // because member2 failed.
     List<Create> expectedCreates = new ArrayList<>();
-    expectedCreates.add(new Create(member3, 0));
-    expectedCreates.add(new Create(member3, 1));
-    expectedCreates.add(new Create(member3, 2));
-    expectedCreates.add(new Create(member3, 3));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(0)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(1)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(2)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(3)));
     assertThat(op.creates).isEqualTo(expectedCreates);
   }
 
@@ -679,12 +681,12 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(doMoves(new CompositeDirector(true, true, false, false), model)).isEqualTo(3);
 
     List<Create> expectedCreates = new ArrayList<>();
-    expectedCreates.add(new Create(member3, 1));
-    expectedCreates.add(new Create(member3, 3));
-    expectedCreates.add(new Create(member3, 5));
-    expectedCreates.add(new Create(member3, 0));
-    expectedCreates.add(new Create(member3, 2));
-    expectedCreates.add(new Create(member3, 4));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(1)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(3)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(5)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(0)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(2)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(4)));
     assertThat(bucketOperator.creates).isEqualTo(expectedCreates);
   }
 
@@ -736,7 +738,7 @@ public class PartitionedRegionLoadModelJUnitTest {
 
       @Override
       public boolean movePrimary(InternalDistributedMember source, InternalDistributedMember target,
-          int bucketId) {
+          BucketId bucketId) {
         if (target.equals(member2)) {
           return false;
         }
@@ -972,10 +974,10 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     // We should see 4 buckets deleted.
     List<Remove> expectedRemoves = new ArrayList<>();
-    expectedRemoves.add(new Remove(member1, 0));
-    expectedRemoves.add(new Remove(member2, 1));
-    expectedRemoves.add(new Remove(member2, 2));
-    expectedRemoves.add(new Remove(member1, 3));
+    expectedRemoves.add(new Remove(member1, BucketId.valueOf(0)));
+    expectedRemoves.add(new Remove(member2, BucketId.valueOf(1)));
+    expectedRemoves.add(new Remove(member2, BucketId.valueOf(2)));
+    expectedRemoves.add(new Remove(member1, BucketId.valueOf(3)));
 
     assertThat(bucketOperator.removes).isEqualTo(expectedRemoves);
   }
@@ -1014,12 +1016,12 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(bucketOperator.bucketMoves).isEqualTo(Collections.emptyList());
 
     List<Remove> expectedRemoves = new ArrayList<>();
-    expectedRemoves.add(new Remove(member2, 0));
-    expectedRemoves.add(new Remove(member3, 0));
-    expectedRemoves.add(new Remove(member1, 1));
-    expectedRemoves.add(new Remove(member3, 1));
-    expectedRemoves.add(new Remove(member1, 2));
-    expectedRemoves.add(new Remove(member2, 2));
+    expectedRemoves.add(new Remove(member2, BucketId.valueOf(0)));
+    expectedRemoves.add(new Remove(member3, BucketId.valueOf(0)));
+    expectedRemoves.add(new Remove(member1, BucketId.valueOf(1)));
+    expectedRemoves.add(new Remove(member3, BucketId.valueOf(1)));
+    expectedRemoves.add(new Remove(member1, BucketId.valueOf(2)));
+    expectedRemoves.add(new Remove(member2, BucketId.valueOf(2)));
 
     assertThat(bucketOperator.removes).isEqualTo(expectedRemoves);
   }
@@ -1064,8 +1066,8 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(bucketOperator.primaryMoves).isEqualTo(primaryMoves);
 
     List<Remove> expectedRemoves = new ArrayList<>();
-    expectedRemoves.add(new Remove(member3, 2));
-    expectedRemoves.add(new Remove(member2, 0));
+    expectedRemoves.add(new Remove(member3, BucketId.valueOf(2)));
+    expectedRemoves.add(new Remove(member2, BucketId.valueOf(0)));
 
     assertThat(bucketOperator.removes).isEqualTo(expectedRemoves);
   }
@@ -1106,7 +1108,7 @@ public class PartitionedRegionLoadModelJUnitTest {
 
 
     List<Remove> expectedRemoves = new ArrayList<>();
-    expectedRemoves.add(new Remove(member2, 0));
+    expectedRemoves.add(new Remove(member2, BucketId.valueOf(0)));
     assertThat(bucketOperator.removes).isEqualTo(expectedRemoves);
 
     List<Move> expectedMoves = new ArrayList<>();
@@ -1177,7 +1179,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(bucketOperator.bucketMoves).isEqualTo(expectedMove);
 
     List<Remove> expectedRemoves = new ArrayList<>();
-    expectedRemoves.add(new Remove(member2, 0));
+    expectedRemoves.add(new Remove(member2, BucketId.valueOf(0)));
     assertThat(bucketOperator.removes).isEqualTo(expectedRemoves);
 
   }
@@ -1229,8 +1231,8 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(bucketOperator.primaryMoves).isEqualTo(primaryMoves);
 
     List<Create> expectedCreates = new ArrayList<>();
-    expectedCreates.add(new Create(member3, 1));
-    expectedCreates.add(new Create(member3, 2));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(1)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(2)));
 
     assertThat(bucketOperator.creates).isEqualTo(expectedCreates);
   }
@@ -1280,12 +1282,12 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(bucketOperator.bucketMoves).isEqualTo(Collections.emptyList());
 
     List<Remove> expectedRemoves = new ArrayList<>();
-    expectedRemoves.add(new Remove(member1, 0));
+    expectedRemoves.add(new Remove(member1, BucketId.valueOf(0)));
     assertThat(bucketOperator.removes).isEqualTo(expectedRemoves);
 
     List<Create> expectedCreates = new ArrayList<>();
-    expectedCreates.add(new Create(member1, 1));
-    expectedCreates.add(new Create(member3, 2));
+    expectedCreates.add(new Create(member1, BucketId.valueOf(1)));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(2)));
 
     assertThat(bucketOperator.creates).isEqualTo(expectedCreates);
   }
@@ -1341,12 +1343,12 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(bucketOperator.bucketMoves).isEqualTo(Collections.emptyList());
 
     List<Remove> expectedRemoves = new ArrayList<>();
-    expectedRemoves.add(new Remove(member2, 0));
+    expectedRemoves.add(new Remove(member2, BucketId.valueOf(0)));
 
     assertThat(bucketOperator.removes).isEqualTo(expectedRemoves);
 
     List<Create> expectedCreates = new ArrayList<>();
-    expectedCreates.add(new Create(member3, 0));
+    expectedCreates.add(new Create(member3, BucketId.valueOf(0)));
 
     assertThat(bucketOperator.creates).isEqualTo(expectedCreates);
   }
@@ -1404,8 +1406,8 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(bucketOperator.primaryMoves).isEqualTo(expectedPrimaryMoves);
 
     List<Remove> expectedRemoves = new ArrayList<>();
-    expectedRemoves.add(new Remove(member1, 0));
-    expectedRemoves.add(new Remove(member4, 0));
+    expectedRemoves.add(new Remove(member1, BucketId.valueOf(0)));
+    expectedRemoves.add(new Remove(member4, BucketId.valueOf(0)));
     assertThat(bucketOperator.removes).isEqualTo(expectedRemoves);
   }
 
@@ -1457,12 +1459,12 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(bucketOperator.creates).isEqualTo(Collections.emptyList());
 
     List<Remove> expectedRemoves = new ArrayList<>();
-    expectedRemoves.add(new Remove(member2, 0));
-    expectedRemoves.add(new Remove(member3, 0));
-    expectedRemoves.add(new Remove(member1, 1));
-    expectedRemoves.add(new Remove(member4, 1));
-    expectedRemoves.add(new Remove(member1, 2));
-    expectedRemoves.add(new Remove(member4, 2));
+    expectedRemoves.add(new Remove(member2, BucketId.valueOf(0)));
+    expectedRemoves.add(new Remove(member3, BucketId.valueOf(0)));
+    expectedRemoves.add(new Remove(member1, BucketId.valueOf(1)));
+    expectedRemoves.add(new Remove(member4, BucketId.valueOf(1)));
+    expectedRemoves.add(new Remove(member1, BucketId.valueOf(2)));
+    expectedRemoves.add(new Remove(member4, BucketId.valueOf(2)));
 
     assertThat(bucketOperator.removes).isEqualTo(expectedRemoves);
   }
@@ -1525,9 +1527,9 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(bucketOperator.bucketMoves).isEqualTo(expectedMoves);
 
     List<Remove> expectedRemoves = new ArrayList<>();
-    expectedRemoves.add(new Remove(member2, 0));
-    expectedRemoves.add(new Remove(member1, 1));
-    expectedRemoves.add(new Remove(member4, 2));
+    expectedRemoves.add(new Remove(member2, BucketId.valueOf(0)));
+    expectedRemoves.add(new Remove(member1, BucketId.valueOf(1)));
+    expectedRemoves.add(new Remove(member4, BucketId.valueOf(2)));
     assertThat(bucketOperator.removes).isEqualTo(expectedRemoves);
   }
 
@@ -1547,7 +1549,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     MyBucketOperator op = new MyBucketOperator() {
       @Override
       public boolean moveBucket(InternalDistributedMember source, InternalDistributedMember target,
-          int id, Map<String, Long> colocatedRegionBytes) {
+          BucketId id, Map<String, Long> colocatedRegionBytes) {
         if (target.equals(member2)) {
           return false;
         }
@@ -2084,9 +2086,9 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertThat(doMoves(new CompositeDirector(true, true, false, false), model)).isEqualTo(3);
 
     List<Create> expectedCreates = new ArrayList<>();
-    expectedCreates.add(new Create(member2, 0));
-    expectedCreates.add(new Create(member1, 1));
-    expectedCreates.add(new Create(member2, 4));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(0)));
+    expectedCreates.add(new Create(member1, BucketId.valueOf(1)));
+    expectedCreates.add(new Create(member2, BucketId.valueOf(4)));
     assertThat(bucketOperator.creates).isEqualTo(expectedCreates);
   }
 
@@ -2218,7 +2220,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     int bucketCount = 0;
 
     for (int i = 0; i < bucketLoad.length; i++) {
-      load1.addBucket(i, bucketLoad[i], primaryBucketLoad[i]);
+      load1.addBucket(BucketId.valueOf(i), bucketLoad[i], primaryBucketLoad[i]);
       size += bucketLoad[i];
       if (bucketLoad[i] != 0) {
         bucketCount++;
@@ -2250,9 +2252,9 @@ public class PartitionedRegionLoadModelJUnitTest {
   private static class Create {
 
     private final InternalDistributedMember targetMember;
-    private final int bucketId;
+    private final BucketId bucketId;
 
-    public Create(InternalDistributedMember targetMember, int bucketId) {
+    public Create(InternalDistributedMember targetMember, BucketId bucketId) {
       this.targetMember = targetMember;
       this.bucketId = bucketId;
     }
@@ -2261,7 +2263,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + bucketId;
+      result = prime * result + bucketId.intValue();
       result = prime * result + (targetMember == null ? 0 : targetMember.hashCode());
       return result;
     }
@@ -2296,9 +2298,9 @@ public class PartitionedRegionLoadModelJUnitTest {
   private static class Remove {
 
     private final InternalDistributedMember targetMember;
-    private final int bucketId;
+    private final BucketId bucketId;
 
-    public Remove(InternalDistributedMember targetMember, int bucketId) {
+    public Remove(InternalDistributedMember targetMember, BucketId bucketId) {
       this.targetMember = targetMember;
       this.bucketId = bucketId;
     }
@@ -2307,7 +2309,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + bucketId;
+      result = prime * result + bucketId.intValue();
       result = prime * result + (targetMember == null ? 0 : targetMember.hashCode());
       return result;
     }
@@ -2324,7 +2326,7 @@ public class PartitionedRegionLoadModelJUnitTest {
         return false;
       }
       Remove other = (Remove) obj;
-      if (bucketId != other.bucketId) {
+      if (!Objects.equals(this, other)) {
         return false;
       }
       if (targetMember == null) {
@@ -2398,7 +2400,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     private MoveType lastMove;
 
     @Override
-    public void createRedundantBucket(InternalDistributedMember targetMember, int i,
+    public void createRedundantBucket(InternalDistributedMember targetMember, BucketId i,
         Map<String, Long> colocatedRegionBytes, Completion completion) {
       creates.add(new Create(targetMember, i));
       if (DEBUG) {
@@ -2410,7 +2412,7 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     @Override
     public boolean movePrimary(InternalDistributedMember source, InternalDistributedMember target,
-        int bucketId) {
+        BucketId bucketId) {
       primaryMoves.add(new PartitionedRegionLoadModelJUnitTest.Move(source, target));
       if (DEBUG) {
         System.out.println("Moved primary " + bucketId + " from " + source + " to " + target);
@@ -2421,7 +2423,7 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     @Override
     public boolean moveBucket(InternalDistributedMember source, InternalDistributedMember target,
-        int id, Map<String, Long> colocatedRegionBytes) {
+        BucketId id, Map<String, Long> colocatedRegionBytes) {
       bucketMoves.add(new PartitionedRegionLoadModelJUnitTest.Move(source, target));
       if (DEBUG) {
         System.out.println("Moved bucket " + id + " from " + source + " to " + target);
@@ -2431,7 +2433,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     }
 
     @Override
-    public boolean removeBucket(InternalDistributedMember memberId, int id,
+    public boolean removeBucket(InternalDistributedMember memberId, BucketId id,
         Map<String, Long> colocatedRegionSizes) {
       removes.add(new Remove(memberId, id));
       if (DEBUG) {
@@ -2453,7 +2455,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     }
 
     @Override
-    public void createRedundantBucket(InternalDistributedMember targetMember, int i,
+    public void createRedundantBucket(InternalDistributedMember targetMember, BucketId i,
         Map<String, Long> colocatedRegionBytes, Completion completion) {
       if (badMembers.contains(targetMember)) {
         pendingFailures.add(completion);
@@ -2489,7 +2491,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     }
 
     @Override
-    public Set<PersistentMemberID> getOfflineMembers(int bucketId) {
+    public Set<PersistentMemberID> getOfflineMembers(BucketId bucketId) {
       return offlineMembers;
     }
 

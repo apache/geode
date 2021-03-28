@@ -37,6 +37,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -172,7 +173,7 @@ public class DeltaForceSizingFlagDUnitTest {
         PartitionedRegion pr = (PartitionedRegion) region;
         int totalNumBuckets = pr.getPartitionAttributes().getTotalNumBuckets();
         for (int i = 0; i < totalNumBuckets; i++) {
-          total += pr.getDataStore().getBucketSize(i);
+          total += pr.getDataStore().getBucketSize(BucketId.valueOf(i));
         }
         return total;
       } else {

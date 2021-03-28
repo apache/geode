@@ -45,6 +45,7 @@ import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -60,12 +61,12 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
 
   private static final Logger logger = LogService.getLogger();
 
-  private Map<String, ? extends Map<Integer, List<Object>>> regionToDispatchedKeysMap;
+  private Map<String, ? extends Map<BucketId, List<Object>>> regionToDispatchedKeysMap;
 
   public ParallelQueueRemovalMessage() {}
 
   public ParallelQueueRemovalMessage(
-      final Map<String, ? extends Map<Integer, List<Object>>> regionToDispatchedKeysMap) {
+      final Map<String, ? extends Map<BucketId, List<Object>>> regionToDispatchedKeysMap) {
     this.regionToDispatchedKeysMap = regionToDispatchedKeysMap;
   }
 
@@ -95,9 +96,9 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
             // Find the map: bucketId to dispatchedKeys
             // Find the bucket
             // Destroy the keys
-            final Map<Integer, List<Object>> bucketIdToDispatchedKeys =
+            final Map<BucketId, List<Object>> bucketIdToDispatchedKeys =
                 regionToDispatchedKeysMap.get(regionName);
-            for (final Integer bId : bucketIdToDispatchedKeys.keySet()) {
+            for (final BucketId bId : bucketIdToDispatchedKeys.keySet()) {
               final String bucketFullPath =
                   SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + SEPARATOR
                       + region.getBucketName(bId);
@@ -160,14 +161,13 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
               }
             }
           }
-        } // for loop regionToDispatchedKeysMap.keySet()
+        }
       } finally {
         LocalRegion.setThreadInitLevelRequirement(oldLevel);
       }
-    } // cache != null
+    }
   }
 
-  // fix for #48082
   private void afterAckForSecondary_EventInBucket(AbstractGatewaySender abstractSender,
       AbstractBucketRegionQueue brq, Object key) {
     for (GatewayEventFilter filter : abstractSender.getGatewayEventFilters()) {
@@ -225,7 +225,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
     }
   }
 
-  private void destroyFromTempQueue(PartitionedRegion qPR, int bId, Object key) {
+  private void destroyFromTempQueue(PartitionedRegion qPR, BucketId bId, Object key) {
     Set<RegionQueue> queues = qPR.getParallelGatewaySender().getQueues();
     if (queues != null) {
       ConcurrentParallelGatewaySenderQueue prq =

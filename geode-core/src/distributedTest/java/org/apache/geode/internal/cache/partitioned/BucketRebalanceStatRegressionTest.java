@@ -243,9 +243,9 @@ public class BucketRebalanceStatRegressionTest implements Serializable {
 
     int totalBucketEntriesInVM = 0;
     int totalBucketEntriesOnDisk = 0;
-    Set<Entry<Integer, BucketRegion>> buckets =
+    Set<Entry<BucketId, BucketRegion>> buckets =
         partitionedRegion.getDataStore().getAllLocalBuckets();
-    for (Map.Entry<Integer, BucketRegion> entry : buckets) {
+    for (Map.Entry<BucketId, BucketRegion> entry : buckets) {
       BucketRegion bucket = entry.getValue();
       if (bucket != null) {
         totalBucketEntriesInVM += bucket.testHookGetValuesInVM();

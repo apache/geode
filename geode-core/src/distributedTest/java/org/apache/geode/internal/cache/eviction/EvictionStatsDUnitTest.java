@@ -41,6 +41,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -205,11 +206,10 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
 
     assertEquals(sizeOfPRegion, 20);
     long bucketSize = 0;
-    for (final Map.Entry<Integer, BucketRegion> regionEntry : ((PartitionedRegion) region)
+    for (final Map.Entry<BucketId, BucketRegion> entry : ((PartitionedRegion) region)
         .getDataStore()
         .getAllLocalBuckets()) {
-      final Map.Entry entry = (Map.Entry) regionEntry;
-      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+      final BucketRegion bucketRegion = entry.getValue();
       if (bucketRegion == null) {
         continue;
       }
@@ -226,10 +226,9 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     }
     sizeOfPRegion = pr.getEvictionCounter();
     assertEquals(sizeOfPRegion, 20);
-    for (final Map.Entry<Integer, BucketRegion> bucketRegionEntry : pr.getDataStore()
+    for (final Map.Entry<BucketId, BucketRegion> entry : pr.getDataStore()
         .getAllLocalBuckets()) {
-      final Map.Entry entry = (Map.Entry) bucketRegionEntry;
-      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+      final BucketRegion bucketRegion = entry.getValue();
       if (bucketRegion == null) {
         continue;
       }
@@ -239,10 +238,9 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     assertEquals(sizeOfPRegion, bucketSize);
 
     // Clear one bucket
-    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+    for (final Map.Entry<BucketId, BucketRegion> entry : pr.getDataStore()
         .getAllLocalBuckets()) {
-      final Map.Entry entry = (Map.Entry) integerBucketRegionEntry;
-      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+      final BucketRegion bucketRegion = entry.getValue();
       if (bucketRegion == null) {
         continue;
       }
@@ -494,10 +492,9 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
   public static long getCounterForBuckets(String prRegionName) {
     long bucketSize = 0;
     final PartitionedRegion pr = (PartitionedRegion) cache.getRegion(prRegionName);
-    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+    for (final Map.Entry<BucketId, BucketRegion> entry : pr.getDataStore()
         .getAllLocalBuckets()) {
-      final Map.Entry entry = (Map.Entry) integerBucketRegionEntry;
-      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+      final BucketRegion bucketRegion = entry.getValue();
       if (bucketRegion == null) {
         continue;
       }

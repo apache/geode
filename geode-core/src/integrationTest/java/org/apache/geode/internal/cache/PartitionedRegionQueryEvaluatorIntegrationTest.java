@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,6 +36,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
 import org.apache.geode.internal.util.VersionedArrayList;
@@ -60,9 +62,9 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
     PartitionedRegion pr = (PartitionedRegion) PartitionedRegionTestHelper
         .createPartitionedRegion(prPrefix, localMaxMemory, redundancy);
 
-    HashSet<Integer> bucketsToQuery = new HashSet<>();
+    Set<BucketId> bucketsToQuery = new HashSet<>();
     for (int i = 0; i < totalNoOfBuckets; i++) {
-      bucketsToQuery.add(i);
+      bucketsToQuery.add(BucketId.valueOf(i));
     }
     final String expectedUnknownHostException = UnknownHostException.class.getName();
     pr.getCache().getLogger().info(
@@ -133,7 +135,8 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
         }
         bp.scope = Scope.DISTRIBUTED_ACK;
         boolean forceBadProfile = true;
-        assertTrue(ra.getBucket(i).getBucketAdvisor().putProfile(bp, forceBadProfile));
+        assertTrue(
+            ra.getBucket(BucketId.valueOf(i)).getBucketAdvisor().putProfile(bp, forceBadProfile));
       }
     }
   }

@@ -76,6 +76,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.BucketAdvisor;
@@ -83,6 +84,7 @@ import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.AllBucketProfilesUpdateMessage;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
@@ -777,11 +779,11 @@ public class AcceptorImpl implements Acceptor, Runnable {
     }
     Set<PartitionedRegion> prs = cache.getPartitionedRegions();
     for (PartitionedRegion pr : prs) {
-      Map<Integer, BucketAdvisor.BucketProfile> profiles =
+      Map<BucketId, BucketAdvisor.BucketProfile> profiles =
           new HashMap<>();
       // get all local real bucket advisors
-      Map<Integer, BucketAdvisor> advisors = pr.getRegionAdvisor().getAllBucketAdvisors();
-      for (Map.Entry<Integer, BucketAdvisor> entry : advisors.entrySet()) {
+      Map<BucketId, BucketAdvisor> advisors = pr.getRegionAdvisor().getAllBucketAdvisors();
+      for (Map.Entry<BucketId, BucketAdvisor> entry : advisors.entrySet()) {
         BucketAdvisor advisor = entry.getValue();
         // addLocally
         BucketProfile bp = (BucketProfile) advisor.createProfile();
@@ -789,7 +791,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
         // advisor.basicAddClientProfile(bp);
         profiles.put(entry.getKey(), bp);
       }
-      Set recipients = pr.getRegionAdvisor().adviseAllPRNodes();
+      Set<InternalDistributedMember> recipients = pr.getRegionAdvisor().adviseAllPRNodes();
       // send it to all in one message
       ReplyProcessor21 reply = AllBucketProfilesUpdateMessage.send(recipients,
           pr.getDistributionManager(), pr.getPRId(), profiles);
@@ -826,10 +828,10 @@ public class AcceptorImpl implements Acceptor, Runnable {
     // removed syncLock synchronization to fix bug 37104
     synchronized (allSCsLock) {
       allSCs.remove(serverConnection);
-      Iterator it = allSCs.iterator();
+      Iterator<ServerConnection> it = allSCs.iterator();
       ServerConnection[] again = new ServerConnection[allSCs.size()];
       for (int i = 0; i < again.length; i++) {
-        again[i] = (ServerConnection) it.next();
+        again[i] = it.next();
       }
       allSCList = again;
     }
@@ -907,9 +909,9 @@ public class AcceptorImpl implements Acceptor, Runnable {
     int result = count;
     CancelException cce = null;
     if (count > 0) {
-      Iterator it = selectorRegistrations.iterator();
+      Iterator<ServerConnection> it = selectorRegistrations.iterator();
       while (it.hasNext()) {
-        ServerConnection sc = (ServerConnection) it.next();
+        ServerConnection sc = it.next();
         if (isRegisteredObjectClosed(sc)) {
           result--;
           it.remove();
@@ -1095,18 +1097,17 @@ public class AcceptorImpl implements Acceptor, Runnable {
           checkForStuckKeys();
         }
         while (events > 0) {
-          Set sk = selector.selectedKeys();
+          Set<SelectionKey> sk = selector.selectedKeys();
           if (sk == null) {
             // something really bad has happened I'm not even sure this is possible
             // but lhughes so an NPE during close one time so perhaps it can happen
             // during selector close.
-            events = 0;
             break;
           }
-          Iterator keysIterator = sk.iterator();
+          Iterator<SelectionKey> keysIterator = sk.iterator();
           int cancelCount = 0;
           while (keysIterator.hasNext()) {
-            SelectionKey key = (SelectionKey) keysIterator.next();
+            SelectionKey key = keysIterator.next();
             // Remove the key from the selector's selectedKeys
             keysIterator.remove();
             final ServerConnection sc = (ServerConnection) key.attachment();
@@ -1304,7 +1305,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
         closeSocket(socket);
         if (isRunning()) {
           if (logger.isDebugEnabled()) {
-            logger.debug("Aborted due to interrupt: {}", e);
+            logger.debug("Aborted due to interrupt: {}", e.toString());
           }
         }
       } catch (IOException e) {
@@ -1638,17 +1639,17 @@ public class AcceptorImpl implements Acceptor, Runnable {
       logger.debug("sending messages to all peers for removing this server..");
     }
     for (PartitionedRegion pr : cache.getPartitionedRegions()) {
-      Map<Integer, BucketAdvisor.BucketProfile> profiles = new HashMap<>();
+      Map<BucketId, BucketAdvisor.BucketProfile> profiles = new HashMap<>();
       // get all local real bucket advisors
-      Map<Integer, BucketAdvisor> advisors = pr.getRegionAdvisor().getAllBucketAdvisors();
-      for (Map.Entry<Integer, BucketAdvisor> entry : advisors.entrySet()) {
+      Map<BucketId, BucketAdvisor> advisors = pr.getRegionAdvisor().getAllBucketAdvisors();
+      for (Map.Entry<BucketId, BucketAdvisor> entry : advisors.entrySet()) {
         BucketAdvisor advisor = entry.getValue();
         BucketProfile bp = (BucketProfile) advisor.createProfile();
         advisor.updateServerBucketProfile(bp);
         profiles.put(entry.getKey(), bp);
       }
 
-      Set recipients = pr.getRegionAdvisor().adviseAllPRNodes();
+      Set<InternalDistributedMember> recipients = pr.getRegionAdvisor().adviseAllPRNodes();
       // send it to all in one message
       ReplyProcessor21 reply = AllBucketProfilesUpdateMessage.send(recipients,
           pr.getDistributionManager(), pr.getPRId(), profiles);

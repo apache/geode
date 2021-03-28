@@ -53,6 +53,7 @@ import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.eviction.AbstractEvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
@@ -83,11 +84,12 @@ public class ParallelGatewaySenderHelper {
 
   public static GatewaySenderEventImpl createGatewaySenderEvent(LocalRegion lr, Operation operation,
       Object key, Object value, long sequenceId, long shadowKey) throws Exception {
-    return createGatewaySenderEvent(lr, operation, key, value, 1l, sequenceId, 0, shadowKey);
+    return createGatewaySenderEvent(lr, operation, key, value, 1l, sequenceId, BucketId.valueOf(0),
+        shadowKey);
   }
 
   public static GatewaySenderEventImpl createGatewaySenderEvent(LocalRegion lr, Operation operation,
-      Object key, Object value, long threadId, long sequenceId, int bucketId, long shadowKey)
+      Object key, Object value, long threadId, long sequenceId, BucketId bucketId, long shadowKey)
       throws Exception {
     when(lr.getKeyInfo(key, value, null)).thenReturn(new KeyInfo(key, null, null));
     EntryEventImpl eei = EntryEventImpl.create(lr, operation, key, value, null, false, null);
@@ -115,7 +117,7 @@ public class ParallelGatewaySenderHelper {
   }
 
   public static BucketRegionQueue createBucketRegionQueue(GemFireCacheImpl cache,
-      PartitionedRegion parentRegion, PartitionedRegion queueRegion, int bucketId) {
+      PartitionedRegion parentRegion, PartitionedRegion queueRegion, BucketId bucketId) {
     // Create InternalRegionArguments
     InternalRegionArguments ira = new InternalRegionArguments();
     ira.setPartitionedRegion(queueRegion);

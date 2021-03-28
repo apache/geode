@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tx;
 
 import org.apache.geode.internal.cache.KeyInfo;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /*
  * Created especially for Distributed Tx Purpose
@@ -22,7 +23,7 @@ import org.apache.geode.internal.cache.KeyInfo;
 public class DistTxKeyInfo extends KeyInfo {
   boolean checkPrimary = true;
 
-  public DistTxKeyInfo(Object key, Object value, Object callbackArg, Integer bucketId) {
+  public DistTxKeyInfo(Object key, Object value, Object callbackArg, BucketId bucketId) {
     super(key, value, callbackArg);
     setBucketId(bucketId);
   }

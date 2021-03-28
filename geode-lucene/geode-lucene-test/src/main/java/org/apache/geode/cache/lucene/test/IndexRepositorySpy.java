@@ -30,6 +30,7 @@ import org.apache.geode.cache.lucene.internal.InternalLuceneIndex;
 import org.apache.geode.cache.lucene.internal.PartitionedRepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class IndexRepositorySpy extends IndexRepositoryFactory {
 
@@ -49,7 +50,8 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
   private IndexRepositorySpy() {}
 
   @Override
-  public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
+  public IndexRepository computeIndexRepository(final BucketId bucketId,
+      LuceneSerializer<?> serializer,
       InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository,
       PartitionedRepositoryManager partitionedRepositoryManager) throws IOException {
     final IndexRepository indexRepo = super.computeIndexRepository(bucketId, serializer, index,
@@ -63,7 +65,7 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
 
     final IndexRepository spy = Mockito.spy(indexRepo);
 
-    Answer invokeBeforeWrite = invocation -> {
+    Answer<Object> invokeBeforeWrite = invocation -> {
       beforeWrite.accept(invocation.getArgument(0));
       return invocation.callRealMethod();
     };

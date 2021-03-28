@@ -43,10 +43,11 @@ import org.apache.geode.cache.query.internal.aggregate.SumDistinctPRQueryNode;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class CompiledAggregateFunctionTest {
   private InternalCache cache;
-  private List<Integer> bucketList;
+  private List<BucketId> bucketList;
 
   @Before
   public void setUp() throws Exception {
@@ -55,7 +56,7 @@ public class CompiledAggregateFunctionTest {
     when(mockService.getMethodAuthorizer()).thenReturn(mock(MethodInvocationAuthorizer.class));
     when(cache.getService(QueryConfigurationService.class)).thenReturn(mockService);
 
-    bucketList = Collections.singletonList(1);
+    bucketList = Collections.singletonList(BucketId.valueOf(1));
   }
 
   @Test

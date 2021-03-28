@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.fixed.QuarterPartitionResolver;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -499,8 +500,8 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(prName);
-        Integer bucketId =
-            PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null);
+        BucketId bucketId =
+            BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null));
         try {
           BucketRegion buk0 = pr.getDataStore().getInitializedBucketForId(buk0Key1, bucketId);
           assertNotNull(buk0);
@@ -516,8 +517,9 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
           @Override
           public void run2() throws CacheException {
             PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(prName);
-            Integer bucketId =
-                PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null);
+            BucketId bucketId =
+                BucketId
+                    .valueOf(PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null));
             try {
               BucketRegion buk0 = pr.getDataStore().getInitializedBucketForId(buk0Key1, bucketId);
               assertNotNull(buk0);
@@ -540,8 +542,8 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(prName);
-        Integer bucketId =
-            PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null);
+        BucketId bucketId =
+            BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null));
         try {
           BucketRegion buk0 = pr.getDataStore().getInitializedBucketForId(buk0Key1, bucketId);
           assertNotNull(buk0);

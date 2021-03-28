@@ -67,6 +67,7 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore.CreateBucketRe
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.BucketBackupMessage;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.CreateBucketMessage;
 import org.apache.geode.internal.cache.partitioned.CreateMissingBucketsTask;
 import org.apache.geode.internal.cache.partitioned.DataStoreBuckets;
@@ -349,7 +350,7 @@ public class PRHARedundancyProvider {
    * @return the new member, null if it fails.
    * @throws PartitionedRegionStorageException if there are not enough data stores
    */
-  private InternalDistributedMember createBucketInstance(int bucketId, int newBucketSize,
+  private InternalDistributedMember createBucketInstance(BucketId bucketId, int newBucketSize,
       Collection<InternalDistributedMember> excludedMembers,
       Collection<InternalDistributedMember> alreadyUsed,
       ArrayListWithClearState<InternalDistributedMember> failedMembers, long timeOut,
@@ -471,7 +472,7 @@ public class PRHARedundancyProvider {
     return null;
   }
 
-  InternalDistributedMember createBucketOnDataStore(int bucketId, int size,
+  InternalDistributedMember createBucketOnDataStore(BucketId bucketId, int size,
       RetryTimeKeeper retryTimeKeeper) {
     boolean isDebugEnabled = logger.isDebugEnabled();
 
@@ -549,7 +550,7 @@ public class PRHARedundancyProvider {
    * @throws PartitionOfflineException if persistent data recovery is not complete for a partitioned
    *         region referred to in the query.
    */
-  public InternalDistributedMember createBucketAtomically(int bucketId, int newBucketSize,
+  public InternalDistributedMember createBucketAtomically(BucketId bucketId, int newBucketSize,
       boolean finishIncompleteCreation, String partitionName)
       throws PartitionedRegionStorageException, PartitionedRegionException,
       PartitionOfflineException {
@@ -783,7 +784,7 @@ public class PRHARedundancyProvider {
    *
    * @param acceptedMembers The members that now host the bucket
    */
-  private void endBucketCreation(int bucketId,
+  private void endBucketCreation(BucketId bucketId,
       Collection<InternalDistributedMember> acceptedMembers,
       InternalDistributedMember targetPrimary, String partitionName) {
     if (acceptedMembers.isEmpty()) {
@@ -838,7 +839,7 @@ public class PRHARedundancyProvider {
     return false;
   }
 
-  public void endBucketCreationLocally(int bucketId, InternalDistributedMember newPrimary) {
+  public void endBucketCreationLocally(BucketId bucketId, InternalDistributedMember newPrimary) {
     // Don't elect ourselves as primary or tell others to persist our ID
     // if this member has been destroyed.
     if (partitionedRegion.getCancelCriterion().isCancelInProgress()
@@ -1006,13 +1007,13 @@ public class PRHARedundancyProvider {
    *
    * @param bucketId the bucket identifier
    */
-  private void cleanUpBucket(int bucketId) {
+  private void cleanUpBucket(BucketId bucketId) {
     Set<InternalDistributedMember> dataStores =
         partitionedRegion.getRegionAdvisor().adviseDataStore();
     BucketBackupMessage.send(dataStores, partitionedRegion, bucketId);
   }
 
-  public void finishIncompleteBucketCreation(int bucketId) {
+  public void finishIncompleteBucketCreation(BucketId bucketId) {
     String partitionName = null;
     if (partitionedRegion.isFixedPartitionedRegion()) {
       FixedPartitionAttributesImpl fpa =
@@ -1029,7 +1030,8 @@ public class PRHARedundancyProvider {
    * @param isRebalance true if bucket creation is directed by rebalancing
    * @return true if the bucket was sucessfully created
    */
-  public boolean createBackupBucketOnMember(int bucketId, InternalDistributedMember targetMember,
+  public boolean createBackupBucketOnMember(BucketId bucketId,
+      InternalDistributedMember targetMember,
       boolean isRebalance, boolean replaceOfflineData, InternalDistributedMember fromMember,
       boolean forceCreation) {
     if (logger.isDebugEnabled()) {
@@ -1121,7 +1123,8 @@ public class PRHARedundancyProvider {
    *        ignoring it's maximums
    * @return a response object
    */
-  private ManageBucketRsp createBucketOnMember(int bucketId, InternalDistributedMember targetMember,
+  private ManageBucketRsp createBucketOnMember(BucketId bucketId,
+      InternalDistributedMember targetMember,
       int newBucketSize, boolean forceCreation) {
     if (logger.isDebugEnabled()) {
       logger.debug("createBucketOnMember for bucketId={} member: {}{}",
@@ -1210,7 +1213,7 @@ public class PRHARedundancyProvider {
    */
   private InternalDistributedMember getColocatedDataStore(
       Collection<InternalDistributedMember> candidates,
-      Collection<InternalDistributedMember> alreadyUsed, int bucketId, String prName) {
+      Collection<InternalDistributedMember> alreadyUsed, BucketId bucketId, String prName) {
     Assert.assertTrue(prName != null);
     PartitionedRegion colocatedRegion = ColocationHelper.getColocatedRegion(partitionedRegion);
     Region<?, ?> prRoot = PartitionedRegionHelper.getPRRoot(partitionedRegion.getCache());
@@ -1552,7 +1555,8 @@ public class PRHARedundancyProvider {
     int targetRedundancy = partitionedRegion.getPartitionAttributes().getRedundantCopies();
 
     for (int i = 0; i < numBuckets; i++) {
-      int redundancy = partitionedRegion.getRegionAdvisor().getBucketRedundancy(i);
+      int redundancy =
+          partitionedRegion.getRegionAdvisor().getBucketRedundancy(BucketId.valueOf(i));
       if (redundancy < targetRedundancy && redundancy != -1 || redundancy > targetRedundancy) {
         return true;
       }
@@ -1840,12 +1844,12 @@ public class PRHARedundancyProvider {
     long[] bucketSizes = new long[configuredBucketCount];
 
     // key: bid, value: size
-    Map<Integer, Integer> bucketSizeMap = dataStore.getSizeLocally();
+    Map<BucketId, Integer> bucketSizeMap = dataStore.getSizeLocally();
 
-    for (Map.Entry<Integer, Integer> me : bucketSizeMap.entrySet()) {
-      int bid = me.getKey();
+    for (Map.Entry<BucketId, Integer> me : bucketSizeMap.entrySet()) {
+      BucketId bid = me.getKey();
       long bucketSize = dataStore.getBucketSize(bid);
-      bucketSizes[bid] = bucketSize;
+      bucketSizes[bid.intValue()] = bucketSize;
       size += bucketSize;
     }
 

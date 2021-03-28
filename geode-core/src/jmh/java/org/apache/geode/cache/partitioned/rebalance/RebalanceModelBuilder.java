@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.OfflineMemberDetails;
 import org.apache.geode.internal.cache.partitioned.PRLoad;
 import org.apache.geode.internal.cache.partitioned.PartitionMemberInfoImpl;
@@ -129,7 +130,8 @@ class RebalanceModelBuilder {
     int bucketCount = 0;
     long[] bucketSizes = new long[loads.length];
     for (int bucketId = 0; bucketId < loads.length; bucketId++) {
-      prLoad.addBucket(bucketId, loads[bucketId], primaryLoads[bucketId]);
+      BucketId b = BucketId.valueOf(bucketId);
+      prLoad.addBucket(b, loads[bucketId], primaryLoads[bucketId]);
       bucketSizes[bucketId] = loads[bucketId];
       size += bucketSizes[bucketId];
       if (loads[bucketId] != 0) {
@@ -169,7 +171,7 @@ class RebalanceModelBuilder {
     }
 
     @Override
-    public Set<PersistentMemberID> getOfflineMembers(int bucketId) {
+    public Set<PersistentMemberID> getOfflineMembers(BucketId bucketId) {
       return offlineMembers;
     }
 

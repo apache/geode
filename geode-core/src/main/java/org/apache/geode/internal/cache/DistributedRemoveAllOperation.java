@@ -43,6 +43,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -145,7 +146,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
    * @param ev event to be added
    * @param bucketId message is for this bucket
    */
-  public void addEntry(EntryEventImpl ev, Integer bucketId) {
+  public void addEntry(EntryEventImpl ev, BucketId bucketId) {
     removeAllData[removeAllDataSize] = new RemoveAllEntryData(ev);
     removeAllData[removeAllDataSize].setBucketId(bucketId);
     removeAllDataSize += 1;
@@ -271,7 +272,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
     transient EntryEventImpl event;
 
-    private Integer bucketId = -1;
+    private BucketId bucketId = BucketId.UNKNOWN_BUCKET;
 
     protected transient boolean callbacksInvoked = false;
 
@@ -347,7 +348,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     public String toString() {
       StringBuilder sb = new StringBuilder(50);
       sb.append("(").append(getKey()).append(",").append(getOldValue());
-      if (bucketId > 0) {
+      if (bucketId != BucketId.UNKNOWN_BUCKET) {
         sb.append(", b").append(bucketId);
       }
       if (versionTag != null) {
@@ -462,7 +463,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
      *
      * @param bucketId new bucket id
      */
-    public void setBucketId(Integer bucketId) {
+    public void setBucketId(BucketId bucketId) {
       this.bucketId = bucketId;
     }
 
@@ -471,7 +472,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
      *
      * @return bucket id
      */
-    public Integer getBucketId() {
+    public BucketId getBucketId() {
       return bucketId;
     }
 
@@ -482,15 +483,15 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
      *
      */
     public void setFakeEventID() {
-      if (bucketId < 0) {
+      if (bucketId == BucketId.UNKNOWN_BUCKET) {
         return;
       }
 
       if (!isUsedFakeEventId()) {
         // assign a fake big thread id. bucket id starts from 0. In order to distinguish
         // with other read thread, let bucket id starts from 1 in fake thread id
-        long threadId = ThreadIdentifier.createFakeThreadIDForBulkOp(bucketId,
-            eventID.getThreadID());
+        long threadId =
+            ThreadIdentifier.createFakeThreadIDForBulkOp(bucketId, eventID.getThreadID());
         eventID = new EventID(eventID.getMembershipID(), threadId, eventID.getSequenceID());
         setUsedFakeEventId(true);
       }
@@ -635,7 +636,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
    *
    * @param bucketId create message to send to this bucket
    */
-  public RemoveAllPRMessage createPRMessagesNotifyOnly(int bucketId) {
+  public RemoveAllPRMessage createPRMessagesNotifyOnly(BucketId bucketId) {
     final EntryEventImpl event = getBaseEvent();
     RemoveAllPRMessage prMsg = new RemoveAllPRMessage(bucketId, removeAllDataSize, true,
         event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument());
@@ -656,13 +657,12 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
    *
    * @return a HashMap contain RemoveAllPRMessages, key is bucket id
    */
-  public HashMap<Integer, RemoveAllPRMessage> createPRMessages() {
-    // getFilterRecipients(Collections.EMPTY_SET); // establish filter recipient routing information
-    HashMap<Integer, RemoveAllPRMessage> prMsgMap = new HashMap<>();
+  public HashMap<BucketId, RemoveAllPRMessage> createPRMessages() {
+    HashMap<BucketId, RemoveAllPRMessage> prMsgMap = new HashMap<>();
     final EntryEventImpl event = getBaseEvent();
 
     for (int i = 0; i < removeAllDataSize; i++) {
-      Integer bucketId = removeAllData[i].getBucketId();
+      BucketId bucketId = removeAllData[i].getBucketId();
       RemoveAllPRMessage prMsg = prMsgMap.get(bucketId);
       if (prMsg == null) {
         prMsg = new RemoveAllPRMessage(bucketId, removeAllDataSize, false,

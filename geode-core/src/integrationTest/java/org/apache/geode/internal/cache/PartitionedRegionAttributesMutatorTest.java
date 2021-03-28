@@ -52,6 +52,7 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverAdapter;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverHolder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -287,7 +288,7 @@ public class PartitionedRegionAttributesMutatorTest {
   private static void setRegionObserver(CountDownLatch bucketCreated, CountDownLatch mutationMade) {
     PartitionedRegionObserverHolder.setInstance(new PartitionedRegionObserverAdapter() {
       @Override
-      public void beforeAssignBucket(PartitionedRegion partitionedRegion, int bucketId) {
+      public void beforeAssignBucket(PartitionedRegion partitionedRegion, BucketId bucketId) {
         try {
           // Indicate that the bucket has been created
           bucketCreated.countDown();

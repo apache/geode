@@ -42,6 +42,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.PartitionRebalanceDetailsImpl;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator.Completion;
 
 public class BucketOperatorWrapperTest {
@@ -54,7 +55,7 @@ public class BucketOperatorWrapperTest {
   private BucketOperatorImpl delegate;
 
   private Map<String, Long> colocatedRegionBytes;
-  private final int bucketId = 1;
+  private final BucketId bucketId = BucketId.valueOf(1);
   private InternalDistributedMember sourceMember, targetMember;
 
   private static final String PR_LEADER_REGION_NAME = "leadregion1";

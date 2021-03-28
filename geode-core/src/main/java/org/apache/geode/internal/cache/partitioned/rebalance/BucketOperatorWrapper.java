@@ -23,6 +23,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.PartitionRebalanceDetailsImpl;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class BucketOperatorWrapper implements BucketOperator {
@@ -46,7 +47,7 @@ public class BucketOperatorWrapper implements BucketOperator {
 
   @Override
   public boolean moveBucket(InternalDistributedMember sourceMember,
-      InternalDistributedMember targetMember, int id, Map<String, Long> colocatedRegionBytes) {
+      InternalDistributedMember targetMember, BucketId id, Map<String, Long> colocatedRegionBytes) {
     long start = System.nanoTime();
     boolean result = false;
     long elapsed = 0;
@@ -89,7 +90,7 @@ public class BucketOperatorWrapper implements BucketOperator {
   }
 
   @Override
-  public void createRedundantBucket(final InternalDistributedMember targetMember, final int i,
+  public void createRedundantBucket(final InternalDistributedMember targetMember, final BucketId i,
       final Map<String, Long> colocatedRegionBytes, final Completion completion) {
 
     if (stats != null) {
@@ -146,7 +147,7 @@ public class BucketOperatorWrapper implements BucketOperator {
   }
 
   @Override
-  public boolean removeBucket(InternalDistributedMember targetMember, int i,
+  public boolean removeBucket(InternalDistributedMember targetMember, BucketId i,
       Map<String, Long> colocatedRegionBytes) {
     boolean result = false;
     long elapsed = 0;
@@ -191,7 +192,7 @@ public class BucketOperatorWrapper implements BucketOperator {
 
   @Override
   public boolean movePrimary(InternalDistributedMember source, InternalDistributedMember target,
-      int bucketId) {
+      BucketId bucketId) {
     boolean result = false;
     long elapsed = 0;
 

@@ -57,7 +57,7 @@ public interface Bucket extends CacheDistributionAdvisee, HasDiskRegion {
    *
    * @return the unique identity of the bucket
    */
-  int getId();
+  BucketId getId();
 
   /**
    * Report members that are currently hosting the bucket

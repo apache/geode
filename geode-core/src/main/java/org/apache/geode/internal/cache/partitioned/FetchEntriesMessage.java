@@ -74,12 +74,12 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class FetchEntriesMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
-  private int bucketId;
+  private BucketId bucketId;
 
   public FetchEntriesMessage() {}
 
   private FetchEntriesMessage(InternalDistributedMember recipient, int regionId,
-      ReplyProcessor21 processor, int bucketId) {
+      ReplyProcessor21 processor, BucketId bucketId) {
     super(recipient, regionId, processor);
     this.bucketId = bucketId;
   }
@@ -94,7 +94,7 @@ public class FetchEntriesMessage extends PartitionMessage {
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static FetchEntriesResponse send(InternalDistributedMember recipient, PartitionedRegion r,
-      int bucketId) throws ForceReattemptException {
+      BucketId bucketId) throws ForceReattemptException {
     Assert.assertTrue(recipient != null, "FetchEntriesMessage NULL reply message");
     FetchEntriesResponse p = new FetchEntriesResponse(r.getSystem(), recipient, bucketId);
     FetchEntriesMessage m = new FetchEntriesMessage(recipient, r.getPRId(), p, bucketId);
@@ -149,20 +149,20 @@ public class FetchEntriesMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
   }
 
   public static class FetchEntriesReplyMessage extends ReplyMessage {
 
     /** The bucket id */
-    int bucketId;
+    BucketId bucketId;
 
     /** The number of the series */
     int seriesNum;
@@ -193,7 +193,8 @@ public class FetchEntriesMessage extends PartitionMessage {
      */
     public FetchEntriesReplyMessage() {}
 
-    protected FetchEntriesReplyMessage(InternalDistributedMember dest, int processorId, int buckId,
+    protected FetchEntriesReplyMessage(InternalDistributedMember dest, int processorId,
+        BucketId buckId,
         HeapDataOutputStream chunk, int seriesNum, int msgNum, int numSeries, boolean lastInSeries,
         boolean hasRVV) {
       setRecipient(dest);
@@ -213,7 +214,7 @@ public class FetchEntriesMessage extends PartitionMessage {
      * @throws ForceReattemptException if the peer is no longer available
      */
     public static void send(final InternalDistributedMember recipient, final int processorId,
-        final DistributionManager dm, final int bucketId, BucketRegion keys)
+        final DistributionManager dm, final BucketId bucketId, BucketRegion keys)
         throws ForceReattemptException {
 
       Assert.assertTrue(recipient != null, "FetchEntriesReplyMessage NULL reply message");
@@ -267,7 +268,8 @@ public class FetchEntriesMessage extends PartitionMessage {
       }
     }
 
-    static boolean sendChunk(InternalDistributedMember recipient, int processorId, int bucketId,
+    static boolean sendChunk(InternalDistributedMember recipient, int processorId,
+        BucketId bucketId,
         DistributionManager dm, HeapDataOutputStream chunk, int seriesNum, int msgNum,
         int numSeries, boolean lastInSeries, boolean hasRVV) {
       FetchEntriesReplyMessage reply = new FetchEntriesReplyMessage(recipient, processorId,
@@ -387,7 +389,7 @@ public class FetchEntriesMessage extends PartitionMessage {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(bucketId);
+      out.writeInt(bucketId.intValue());
       out.writeInt(seriesNum);
       out.writeInt(msgNum);
       out.writeInt(numSeries);
@@ -405,7 +407,7 @@ public class FetchEntriesMessage extends PartitionMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      bucketId = in.readInt();
+      bucketId = BucketId.valueOf(in.readInt());
       seriesNum = in.readInt();
       msgNum = in.readInt();
       numSeries = in.readInt();
@@ -462,12 +464,12 @@ public class FetchEntriesMessage extends PartitionMessage {
     /** whether the last chunk has been processed */
     private volatile boolean lastChunkReceived;
 
-    private final int bucketId;
+    private final BucketId bucketId;
 
     private final InternalDistributedMember recipient;
 
     public FetchEntriesResponse(InternalDistributedSystem ds,
-        final InternalDistributedMember recipient, final int bucketId) {
+        final InternalDistributedMember recipient, final BucketId bucketId) {
       super(ds, Collections.singleton(recipient));
       this.bucketId = bucketId;
       this.recipient = recipient;

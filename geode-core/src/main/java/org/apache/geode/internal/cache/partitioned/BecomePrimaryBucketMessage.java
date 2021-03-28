@@ -56,7 +56,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
 
   private static final Logger logger = LogService.getLogger();
 
-  private int bucketId;
+  private BucketId bucketId;
   private boolean isRebalance;
 
   /**
@@ -65,7 +65,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
   public BecomePrimaryBucketMessage() {}
 
   private BecomePrimaryBucketMessage(InternalDistributedMember recipient, int regionId,
-      ReplyProcessor21 processor, int bucketId, boolean isRebalance) {
+      ReplyProcessor21 processor, BucketId bucketId, boolean isRebalance) {
     super(recipient, regionId, processor);
     this.bucketId = bucketId;
     this.isRebalance = isRebalance;
@@ -81,7 +81,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
    * @return the processor used to wait for the response
    */
   public static BecomePrimaryBucketResponse send(InternalDistributedMember recipient,
-      PartitionedRegion pr, int bid, boolean isRebalance) {
+      PartitionedRegion pr, BucketId bid, boolean isRebalance) {
 
     Assert.assertTrue(recipient != null, "BecomePrimaryBucketMessage NULL recipient");
 
@@ -153,7 +153,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
     isRebalance = in.readBoolean();
   }
 
@@ -161,7 +161,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
     out.writeBoolean(isRebalance);
   }
 

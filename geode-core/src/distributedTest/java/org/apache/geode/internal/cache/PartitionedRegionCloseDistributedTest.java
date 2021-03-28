@@ -32,6 +32,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
@@ -103,7 +104,7 @@ public class PartitionedRegionCloseDistributedTest implements Serializable {
 
       PartitionedRegion partitionedRegion = (PartitionedRegion) region;
       RegionAdvisor advisor = partitionedRegion.getRegionAdvisor();
-      for (int bucketId : advisor.getBucketSet()) {
+      for (BucketId bucketId : advisor.getBucketSet()) {
         assertThat(advisor.getBucketOwners(bucketId))
             .doesNotContain(datastoreToRemove.getMemberId());
       }

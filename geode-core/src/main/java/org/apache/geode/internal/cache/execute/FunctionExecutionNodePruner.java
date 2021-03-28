@@ -18,12 +18,14 @@ import static java.lang.String.format;
 import static org.apache.geode.internal.cache.PartitionedRegionHelper.getHashKey;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -32,13 +34,14 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketSetHelper;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class FunctionExecutionNodePruner {
   public static final Logger logger = LogService.getLogger();
 
   public static HashMap<InternalDistributedMember, int[]> pruneNodes(
-      PartitionedRegion pr, Set<Integer> buckets) {
+      PartitionedRegion pr, Set<BucketId> buckets) {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
@@ -49,7 +52,7 @@ public class FunctionExecutionNodePruner {
     HashMap<InternalDistributedMember, int[]> prunedNodeToBucketsMap = new HashMap<>();
 
     try {
-      for (Integer bucketId : buckets) {
+      for (BucketId bucketId : buckets) {
         Set<InternalDistributedMember> nodes = pr.getRegionAdvisor().getBucketOwners(bucketId);
         if (nodes.isEmpty()) {
           if (isDebugEnabled) {
@@ -68,12 +71,11 @@ public class FunctionExecutionNodePruner {
           if (nodeToBucketsMap.get(node) == null) {
             int[] bucketArray = new int[buckets.size() + 1];
             bucketArray[0] = 0;
-            BucketSetHelper.add(bucketArray, bucketId);
+            BucketSetHelper.add(bucketArray, bucketId.intValue());
             nodeToBucketsMap.put(node, bucketArray);
           } else {
             int[] bucketArray = nodeToBucketsMap.get(node);
-            BucketSetHelper.add(bucketArray, bucketId);
-            // nodeToBucketsMap.put(node, bucketSet);
+            BucketSetHelper.add(bucketArray, bucketId.intValue());
           }
         }
       }
@@ -176,20 +178,21 @@ public class FunctionExecutionNodePruner {
         ? nodesOfEqualSize.get(PartitionedRegion.RANDOM.nextInt(nodesOfEqualSize.size())) : null);
   }
 
-  public static <K> Map<Integer, Set<K>> groupByBucket(PartitionedRegion pr, Set<K> routingKeys,
+  public static <K> Map<BucketId, Set<K>> groupByBucket(PartitionedRegion pr, Set<K> routingKeys,
       final boolean primaryMembersNeeded, final boolean hasRoutingObjects,
       final boolean isBucketSetAsFilter) {
-    HashMap<Integer, Set<K>> bucketToKeysMap = new HashMap<>();
+    HashMap<BucketId, Set<K>> bucketToKeysMap = new HashMap<>();
 
     for (final K routingKey : routingKeys) {
-      final Integer bucketId;
+      final BucketId bucketId;
       if (isBucketSetAsFilter) {
-        bucketId = ((Integer) routingKey);
+        bucketId = BucketId.valueOf((Integer) routingKey);
       } else {
         if (hasRoutingObjects) {
-          bucketId = getHashKey(pr, routingKey);
+          bucketId = BucketId.valueOf(getHashKey(pr, routingKey));
         } else {
-          bucketId = getHashKey(pr, Operation.FUNCTION_EXECUTION, routingKey, null, null);
+          bucketId = BucketId
+              .valueOf(getHashKey(pr, Operation.FUNCTION_EXECUTION, routingKey, null, null));
         }
       }
       final InternalDistributedMember mem;
@@ -211,31 +214,32 @@ public class FunctionExecutionNodePruner {
       final boolean hasRoutingObjects, boolean isBucketSetAsFilter) {
     int[] bucketArray = null;
     for (K key : routingKeys) {
-      final Integer bucketId;
+      final BucketId bucketId;
       if (isBucketSetAsFilter) {
-        bucketId = (Integer) key;
+        bucketId = BucketId.valueOf((Integer) key);
       } else {
         if (hasRoutingObjects) {
-          bucketId = getHashKey(pr, key);
+          bucketId = BucketId.valueOf(getHashKey(pr, key));
         } else {
-          bucketId = getHashKey(pr, Operation.FUNCTION_EXECUTION, key, null, null);
+          bucketId =
+              BucketId.valueOf(getHashKey(pr, Operation.FUNCTION_EXECUTION, key, null, null));
         }
       }
       if (bucketArray == null) {
         bucketArray = new int[routingKeys.size() + 1];
         bucketArray[0] = 0;
       }
-      BucketSetHelper.add(bucketArray, bucketId);
+      BucketSetHelper.add(bucketArray, bucketId.intValue());
     }
     return bucketArray;
   }
 
   public static HashMap<InternalDistributedMember, int[]> groupByMemberToBuckets(
-      PartitionedRegion pr, Set<Integer> bucketSet, boolean primaryOnly) {
+      PartitionedRegion pr, Set<BucketId> bucketSet, boolean primaryOnly) {
     if (primaryOnly) {
       HashMap<InternalDistributedMember, int[]> memberToBucketsMap = new HashMap<>();
       try {
-        for (Integer bucketId : bucketSet) {
+        for (BucketId bucketId : bucketSet) {
           InternalDistributedMember mem = pr.getOrCreateNodeForBucketWrite(bucketId, null);
           int[] bucketArray = memberToBucketsMap.get(mem);
           if (bucketArray == null) {
@@ -243,7 +247,7 @@ public class FunctionExecutionNodePruner {
             memberToBucketsMap.put(mem, bucketArray);
             bucketArray[0] = 0;
           }
-          BucketSetHelper.add(bucketArray, bucketId);
+          BucketSetHelper.add(bucketArray, bucketId.intValue());
 
         }
       } catch (NoSuchElementException ignored) {
@@ -254,13 +258,18 @@ public class FunctionExecutionNodePruner {
     }
   }
 
-  private static boolean arrayAndSetAreEqual(Set<Integer> setA, int[] arrayB) {
-    Set<Integer> setB = BucketSetHelper.toSet(arrayB);
-
+  private static boolean arrayAndSetAreEqual(Set<BucketId> setA, int[] arrayB) {
+    final int len = BucketSetHelper.length(arrayB);
+    if (len == 0) {
+      return setA.isEmpty();
+    }
+    final Set<BucketId> setB =
+        Arrays.stream(arrayB, 1, len).mapToObj(BucketId::valueOf).collect(Collectors.toSet());
     return setA.equals(setB);
   }
 
   private static int[] removeAllElements(int[] arrayA, int[] arrayB) {
+
     if (BucketSetHelper.length(arrayA) == 0 || BucketSetHelper.length(arrayB) == 0) {
       return arrayA;
     }

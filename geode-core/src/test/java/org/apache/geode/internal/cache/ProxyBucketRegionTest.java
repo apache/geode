@@ -31,6 +31,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 
 public class ProxyBucketRegionTest {
@@ -87,7 +88,7 @@ public class ProxyBucketRegionTest {
     when(regionAdvisor.isInitialized()).thenReturn(true);
 
     ProxyBucketRegion proxyBucketRegion =
-        new ProxyBucketRegion(0, partitionedRegion, internalRegionArguments);
+        new ProxyBucketRegion(BucketId.valueOf(0), partitionedRegion, internalRegionArguments);
 
     proxyBucketRegion.recoverFromDisk();
     proxyBucketRegion.recoverFromDisk();

@@ -43,6 +43,7 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.PutAllPartialResultException;
 import org.apache.geode.internal.cache.PutAllPartialResultException.PutAllPartialResult;
 import org.apache.geode.internal.cache.TXStateStub;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.PutAllPRMessage;
 import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -56,7 +57,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
    * TransactionDataNotColocated and TransactionDataRebalanced exceptions. Map rather than set, as a
    * HashSet is backed by a HashMap. (avoids one "new" call).
    */
-  private final Map<Integer, Boolean> buckets = new HashMap<>();
+  private final Map<BucketId, Boolean> buckets = new HashMap<>();
 
   private final PartitionedRegion region;
 
@@ -65,7 +66,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     this.region = region;
   }
 
-  public Map<Integer, Boolean> getBuckets() {
+  public Map<BucketId, Boolean> getBuckets() {
     return buckets;
   }
 
@@ -185,12 +186,13 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
 
   void trackBucketForTx(KeyInfo keyInfo) {
-    if (region.getCache().getLogger().fineEnabled()) {
-      region.getCache().getLogger()
-          .fine("adding bucket:" + keyInfo.getBucketId() + " for tx:" + state.getTransactionId());
-    }
-    if (keyInfo.getBucketId() >= 0) {
-      buckets.put(keyInfo.getBucketId(), Boolean.TRUE);
+    final BucketId bucketId = keyInfo.getBucketId();
+    if (null != bucketId) {
+      if (region.getCache().getLogger().fineEnabled()) {
+        region.getCache().getLogger()
+            .fine("adding bucket:" + bucketId + " for tx:" + state.getTransactionId());
+      }
+      buckets.put(bucketId, Boolean.TRUE);
     }
   }
 
@@ -372,12 +374,12 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     PartitionedRegion pr = (PartitionedRegion) r;
     final long startTime = pr.prStats.getTime();
     // build all the msgs by bucketid
-    HashMap<Integer, PutAllPRMessage> prMsgMap = putallO.createPRMessages();
+    Map<BucketId, PutAllPRMessage> prMsgMap = putallO.createPRMessages();
     PutAllPartialResult partialKeys = new PutAllPartialResult(putallO.putAllDataSize);
 
     successfulPuts.clear(); // this is rebuilt by this method
-    for (final Map.Entry<Integer, PutAllPRMessage> mapEntry : prMsgMap.entrySet()) {
-      Integer bucketId = mapEntry.getKey();
+    for (final Map.Entry<BucketId, PutAllPRMessage> mapEntry : prMsgMap.entrySet()) {
+      BucketId bucketId = mapEntry.getKey();
       PutAllPRMessage prMsg = mapEntry.getValue();
       pr.checkReadiness();
       try {
@@ -430,12 +432,12 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     PartitionedRegion pr = (PartitionedRegion) r;
     final long startTime = pr.prStats.getTime();
     // build all the msgs by bucketid
-    HashMap<Integer, RemoveAllPRMessage> prMsgMap = op.createPRMessages();
+    HashMap<BucketId, RemoveAllPRMessage> prMsgMap = op.createPRMessages();
     PutAllPartialResult partialKeys = new PutAllPartialResult(op.removeAllDataSize);
 
     successfulOps.clear(); // this is rebuilt by this method
-    for (final Map.Entry<Integer, RemoveAllPRMessage> mapEntry : prMsgMap.entrySet()) {
-      Integer bucketId = mapEntry.getKey();
+    for (final Map.Entry<BucketId, RemoveAllPRMessage> mapEntry : prMsgMap.entrySet()) {
+      BucketId bucketId = mapEntry.getKey();
       RemoveAllPRMessage prMsg = mapEntry.getValue();
       pr.checkReadiness();
       try {
@@ -484,7 +486,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
    * If failed after retries, it will throw PartitionedRegionStorageException, no need for return
    * value
    */
-  private VersionedObjectList sendMsgByBucket(final Integer bucketId, PutAllPRMessage prMsg,
+  private VersionedObjectList sendMsgByBucket(final BucketId bucketId, PutAllPRMessage prMsg,
       PartitionedRegion pr) throws RuntimeException {
     // retry the put remotely until it finds the right node managing the bucket
     InternalDistributedMember currentTarget = pr.getOrCreateNodeForBucketWrite(bucketId, null);
@@ -516,7 +518,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
    * If failed after retries, it will throw PartitionedRegionStorageException, no need for return
    * value
    */
-  private VersionedObjectList sendMsgByBucket(final Integer bucketId, RemoveAllPRMessage prMsg,
+  private VersionedObjectList sendMsgByBucket(final BucketId bucketId, RemoveAllPRMessage prMsg,
       PartitionedRegion pr) {
     // retry the put remotely until it finds the right node managing the bucket
     InternalDistributedMember currentTarget =

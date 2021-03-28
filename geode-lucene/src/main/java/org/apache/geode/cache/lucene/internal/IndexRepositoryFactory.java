@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,6 +40,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionRegionConfig;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class IndexRepositoryFactory {
@@ -48,7 +51,7 @@ public class IndexRepositoryFactory {
 
   public IndexRepositoryFactory() {}
 
-  public IndexRepository computeIndexRepository(final Integer bucketId,
+  public IndexRepository computeIndexRepository(final BucketId bucketId,
       LuceneSerializer<?> serializer,
       InternalLuceneIndex index, PartitionedRegion userRegion, final IndexRepository oldRepository,
       PartitionedRepositoryManager partitionedRepositoryManager) throws IOException {
@@ -56,9 +59,9 @@ public class IndexRepositoryFactory {
     final PartitionedRegion fileRegion = indexForPR.getFileAndChunkRegion();
 
     // We need to ensure that all members have created the fileAndChunk region before continuing
-    Region<?, ?> prRoot = PartitionedRegionHelper.getPRRoot(fileRegion.getCache());
-    PartitionRegionConfig prConfig =
-        (PartitionRegionConfig) prRoot.get(fileRegion.getRegionIdentifier());
+    Region<String, PartitionRegionConfig> prRoot =
+        uncheckedCast(PartitionedRegionHelper.getPRRoot(fileRegion.getCache()));
+    PartitionRegionConfig prConfig = prRoot.get(fileRegion.getRegionIdentifier());
     LuceneFileRegionColocationListener luceneFileRegionColocationCompleteListener =
         new LuceneFileRegionColocationListener(partitionedRepositoryManager, bucketId);
     fileRegion.addColocationListener(luceneFileRegionColocationCompleteListener);
@@ -75,7 +78,7 @@ public class IndexRepositoryFactory {
    * conditions.
    * This is a util function just to not let computeIndexRepository be a huge chunk of code.
    */
-  protected IndexRepository finishComputingRepository(Integer bucketId,
+  protected IndexRepository finishComputingRepository(BucketId bucketId,
       LuceneSerializer<?> serializer,
       PartitionedRegion userRegion, IndexRepository oldRepository, InternalLuceneIndex index)
       throws IOException {
@@ -145,7 +148,7 @@ public class IndexRepositoryFactory {
     }
   }
 
-  protected IndexWriter buildIndexWriter(int bucketId, BucketRegion fileAndChunkBucket,
+  protected IndexWriter buildIndexWriter(BucketId bucketId, BucketRegion fileAndChunkBucket,
       LuceneIndexForPartitionedRegion indexForPR) throws IOException {
     int attempts = 0;
     // IOExceptions can occur if the fileAndChunk region is being modified while the IndexWriter is
@@ -178,7 +181,7 @@ public class IndexRepositoryFactory {
     return new IndexWriter(dir, config);
   }
 
-  private boolean reindexUserDataRegion(Integer bucketId, PartitionedRegion userRegion,
+  private boolean reindexUserDataRegion(BucketId bucketId, PartitionedRegion userRegion,
       PartitionedRegion fileRegion, BucketRegion dataBucket, IndexRepository repo)
       throws IOException {
     Set<IndexRepository> affectedRepos = new HashSet<>();
@@ -213,7 +216,7 @@ public class IndexRepositoryFactory {
   }
 
   @SuppressWarnings("unchecked")
-  protected Map<Object, Object> getBucketTargetingMap(BucketRegion region, int bucketId) {
+  protected Map<Object, Object> getBucketTargetingMap(BucketRegion region, BucketId bucketId) {
     return new BucketTargetingMap<Object, Object>(region, bucketId);
   }
 
@@ -229,7 +232,7 @@ public class IndexRepositoryFactory {
   /**
    * Find the bucket in region2 that matches the bucket id from region1.
    */
-  protected BucketRegion getMatchingBucket(PartitionedRegion region, Integer bucketId) {
+  protected BucketRegion getMatchingBucket(PartitionedRegion region, BucketId bucketId) {
     // Force the bucket to be created if it is not already
     region.getOrCreateNodeForBucketWrite(bucketId, null);
 

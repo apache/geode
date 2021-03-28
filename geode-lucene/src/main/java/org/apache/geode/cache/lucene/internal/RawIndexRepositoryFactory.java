@@ -28,12 +28,13 @@ import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class RawIndexRepositoryFactory extends IndexRepositoryFactory {
   public RawIndexRepositoryFactory() {}
 
   @Override
-  public IndexRepository computeIndexRepository(final Integer bucketId,
+  public IndexRepository computeIndexRepository(final BucketId bucketId,
       LuceneSerializer<?> serializer,
       InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository,
       PartitionedRepositoryManager partitionedRepositoryManager) throws IOException {

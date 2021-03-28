@@ -46,13 +46,14 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * Removes the hosted bucket from the recipient's PartitionedRegionDataStore.
  *
  * Usage: RemoveBucketResponse response = RemoveBucketMessage.send( InternalDistributedMember,
- * PartitionedRegion, int bucketId); if (response != null && response.waitForResponse()) { // bucket
+ * PartitionedRegion, BucketId bucketId); if (response != null && response.waitForResponse()) { //
+ * bucket
  * was removed }
  */
 public class RemoveBucketMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
-  private int bucketId;
+  private BucketId bucketId;
   private boolean forceRemovePrimary;
 
   /**
@@ -61,7 +62,7 @@ public class RemoveBucketMessage extends PartitionMessage {
   public RemoveBucketMessage() {}
 
   private RemoveBucketMessage(InternalDistributedMember recipient, int regionId,
-      ReplyProcessor21 processor, int bucketId, boolean forceRemovePrimary) {
+      ReplyProcessor21 processor, BucketId bucketId, boolean forceRemovePrimary) {
     super(recipient, regionId, processor);
     this.bucketId = bucketId;
     this.forceRemovePrimary = forceRemovePrimary;
@@ -76,7 +77,7 @@ public class RemoveBucketMessage extends PartitionMessage {
    * @return the processor used to wait for the response
    */
   public static RemoveBucketResponse send(InternalDistributedMember recipient,
-      PartitionedRegion region, int bucketId, boolean forceRemovePrimary) {
+      PartitionedRegion region, BucketId bucketId, boolean forceRemovePrimary) {
 
     Assert.assertTrue(recipient != null, "RemoveBucketMessage NULL recipient");
 
@@ -132,7 +133,7 @@ public class RemoveBucketMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
     forceRemovePrimary = in.readBoolean();
   }
 
@@ -140,7 +141,7 @@ public class RemoveBucketMessage extends PartitionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
     out.writeBoolean(forceRemovePrimary);
   }
 

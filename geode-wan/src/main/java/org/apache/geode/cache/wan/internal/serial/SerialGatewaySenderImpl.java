@@ -32,6 +32,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderProfile;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
@@ -120,11 +121,11 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
   protected AbstractGatewaySenderEventProcessor createEventProcessor(boolean cleanQueues) {
     AbstractGatewaySenderEventProcessor eventProcessor;
     if (getDispatcherThreads() > 1) {
-      eventProcessor = new RemoteConcurrentSerialGatewaySenderEventProcessor(
-          this, getThreadMonitorObj(), cleanQueues);
+      eventProcessor = new RemoteConcurrentSerialGatewaySenderEventProcessor(this,
+          getThreadMonitorObj(), cleanQueues);
     } else {
-      eventProcessor = new RemoteSerialGatewaySenderEventProcessor(this,
-          getId(), getThreadMonitorObj(), cleanQueues);
+      eventProcessor = new RemoteSerialGatewaySenderEventProcessor(this, getId(),
+          getThreadMonitorObj(), cleanQueues);
     }
     return eventProcessor;
   }
@@ -238,8 +239,9 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
     if (ThreadIdentifier.isWanTypeThreadID(newThreadId)) {
       // This thread id has already been converted. Do nothing.
     } else {
-      newThreadId = ThreadIdentifier.createFakeThreadIDForParallelGSPrimaryBucket(0,
-          originalThreadId, getEventIdIndex());
+      newThreadId =
+          ThreadIdentifier.createFakeThreadIDForParallelGSPrimaryBucket(BucketId.valueOf(0),
+              originalThreadId, getEventIdIndex());
     }
     EventID newEventId = new EventID(originalEventId.getMembershipID(), newThreadId,
         originalEventId.getSequenceID());

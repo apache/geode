@@ -16,20 +16,20 @@
 package org.apache.geode.cache.query.data;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class TestData {
   public static void populateRegion(Region region, int numValues) {
     IntStream.rangeClosed(1, numValues).forEach(i -> region.put(i, new MyValue(i)));
   }
 
-  public static Set<Integer> createAndPopulateSet(int nBuckets) {
-    return new HashSet<>(IntStream.range(0, nBuckets).boxed().collect(Collectors.toSet()));
+  public static Set<BucketId> createAndPopulateSet(int nBuckets) {
+    return IntStream.range(0, nBuckets).mapToObj(BucketId::valueOf).collect(Collectors.toSet());
   }
 
   public static class MyValue implements Serializable, Comparable<MyValue> {

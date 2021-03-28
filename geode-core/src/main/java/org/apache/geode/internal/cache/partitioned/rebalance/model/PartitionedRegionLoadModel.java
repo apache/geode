@@ -36,6 +36,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.InternalPartitionDetails;
 import org.apache.geode.internal.cache.partitioned.OfflineMemberDetails;
 import org.apache.geode.internal.cache.partitioned.PRLoad;
@@ -87,7 +88,7 @@ public class PartitionedRegionLoadModel {
     if (result == 0) {
       // finally, just use the id so the comparator doesn't swallow buckets
       // with the same load
-      result = o1.getId() - o2.getId();
+      result = o1.getId().compareTo(o2.getId());
     }
 
     return result;
@@ -197,18 +198,20 @@ public class PartitionedRegionLoadModel {
 
       PRLoad load = memberDetails.getPRLoad();
       for (int i = 0; i < regionBuckets.length; i++) {
-        if (load.getReadLoad(i) > 0) {
+        BucketId bucketId = BucketId.valueOf(i);
+        if (load.getReadLoad(bucketId) > 0) {
           Bucket bucket = regionBuckets[i];
           if (bucket == null) {
-            Set<PersistentMemberID> offlineMembers = offlineDetails.getOfflineMembers(i);
+            Set<PersistentMemberID> offlineMembers = offlineDetails.getOfflineMembers(bucketId);
             bucket =
-                new Bucket(i, load.getReadLoad(i), memberDetails.getBucketSize(i), offlineMembers);
+                new Bucket(bucketId, load.getReadLoad(bucketId),
+                    memberDetails.getBucketSize(bucketId), offlineMembers);
             regionBuckets[i] = bucket;
           }
           bucket.addMember(member);
-          if (load.getWriteLoad(i) > 0) {
+          if (load.getWriteLoad(bucketId) > 0) {
             if (bucket.getPrimary() == null) {
-              bucket.setPrimary(member, load.getWriteLoad(i));
+              bucket.setPrimary(member, load.getWriteLoad(bucketId));
             } else if (!bucket.getPrimary().equals(member)) {
               bucket.setPrimary(INVALID_MEMBER, 1);
             }
@@ -246,7 +249,7 @@ public class PartitionedRegionLoadModel {
       if (buckets[i] == null) {
         // If this is the first region we have seen that is hosting this bucket, create a bucket
         // rollup
-        buckets[i] = new BucketRollup(i);
+        buckets[i] = new BucketRollup(BucketId.valueOf(i));
       }
 
       // Add all the members hosting the bucket to the rollup
@@ -906,7 +909,7 @@ public class PartitionedRegionLoadModel {
   @Override
   public String toString() {
     StringBuilder result = new StringBuilder();
-    TreeSet<Bucket> allBucketIds = new TreeSet<>(Comparator.comparingInt(Bucket::getId));
+    TreeSet<Bucket> allBucketIds = new TreeSet<>(Comparator.comparing(Bucket::getId));
     if (members.isEmpty()) {
       return "";
     }

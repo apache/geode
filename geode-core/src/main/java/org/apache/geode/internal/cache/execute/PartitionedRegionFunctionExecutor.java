@@ -31,6 +31,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
     extends AbstractExecution<IN, OUT, AGG> {
@@ -247,7 +248,7 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
       throw new FunctionException("Bucket IDs list is empty");
     }
 
-    Set<Integer> actualBucketSet = pr.getRegionAdvisor().getBucketSet();
+    Set<BucketId> actualBucketSet = pr.getRegionAdvisor().getBucketSet();
 
     bucketIDs.retainAll(actualBucketSet);
 

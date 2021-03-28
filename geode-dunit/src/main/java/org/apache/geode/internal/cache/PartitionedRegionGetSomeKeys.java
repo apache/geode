@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.FetchKeysMessage;
 import org.apache.geode.internal.cache.partitioned.FetchKeysMessage.FetchKeysResponse;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
@@ -44,18 +45,18 @@ public class PartitionedRegionGetSomeKeys {
    */
   public static Set<?> getSomeKeys(PartitionedRegion partitionedRegion, Random random)
       throws IOException, ClassNotFoundException {
-    Set<Integer> bucketIdSet = partitionedRegion.getRegionAdvisor().getBucketSet();
+    Set<BucketId> bucketIdSet = partitionedRegion.getRegionAdvisor().getBucketSet();
 
     if (bucketIdSet != null && !bucketIdSet.isEmpty()) {
       Object[] bucketIds = bucketIdSet.toArray();
-      Integer bucketId = null;
+      BucketId bucketId = null;
       Set<?> someKeys;
 
       // Randomly pick a node to get some data from
       for (int i = 0; i < bucketIds.length; i++) {
         try {
           int whichBucket = random.nextInt(bucketIds.length);
-          bucketId = (Integer) bucketIds[whichBucket];
+          bucketId = (BucketId) bucketIds[whichBucket];
 
           InternalDistributedMember member = partitionedRegion.getNodeForBucketRead(bucketId);
           if (member != null) {

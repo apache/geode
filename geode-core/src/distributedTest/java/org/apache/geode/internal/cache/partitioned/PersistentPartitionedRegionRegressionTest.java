@@ -118,7 +118,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
 
     createData(0, 1, "a", partitionedRegionName);
 
-    Set<Integer> vm0Buckets = getBucketList(partitionedRegionName);
+    Set<BucketId> vm0Buckets = getBucketList(partitionedRegionName);
 
     getCache().close();
 
@@ -147,8 +147,8 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     vm2.invoke(() -> createPartitionedRegion(1, 0, 113, true));
     assertThat(vm2.invoke(() -> getBucketList(partitionedRegionName))).isEmpty();
 
-    Set<Integer> bucketsOnVM0 = vm0.invoke(() -> getBucketList(partitionedRegionName));
-    Set<Integer> bucketsLost = vm1.invoke(() -> getBucketList(partitionedRegionName));
+    Set<BucketId> bucketsOnVM0 = vm0.invoke(() -> getBucketList(partitionedRegionName));
+    Set<BucketId> bucketsLost = vm1.invoke(() -> getBucketList(partitionedRegionName));
 
     vm1.invoke(() -> getCache().close());
 
@@ -207,11 +207,11 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
 
     vm0.invoke(() -> createData(0, 1, "a", partitionedRegionName));
 
-    Set<Integer> bucketsOnVM0 = vm0.invoke(() -> getBucketList(partitionedRegionName));
-    Set<Integer> bucketsOnVM1 = vm1.invoke(() -> getBucketList(partitionedRegionName));
+    Set<BucketId> bucketsOnVM0 = vm0.invoke(() -> getBucketList(partitionedRegionName));
+    Set<BucketId> bucketsOnVM1 = vm1.invoke(() -> getBucketList(partitionedRegionName));
 
-    assertThat(bucketsOnVM0).containsOnly(0);
-    assertThat(bucketsOnVM1).containsOnly(0);
+    assertThat(bucketsOnVM0).containsOnly(BucketId.valueOf(0));
+    assertThat(bucketsOnVM1).containsOnly(BucketId.valueOf(0));
 
     vm1.invoke(() -> getCache().close());
 
@@ -222,7 +222,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     // Note, vm2 will consider vm1 as "online" because vm2 doesn't host the bucket
     assertThat(vm2.invoke(() -> getOnlineMembers(0))).hasSize(2);
 
-    Set<Integer> bucketsOnVM2 = vm2.invoke(() -> getBucketList(partitionedRegionName));
+    Set<BucketId> bucketsOnVM2 = vm2.invoke(() -> getBucketList(partitionedRegionName));
     assertThat(bucketsOnVM2).isEmpty();
 
     vm1.invoke(() -> createPartitionedRegion(1, -1, 113, true));
@@ -238,16 +238,18 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     InternalDistributedMember memberVM1 = vm1.invoke(this::getInternalDistributedMember);
     vm2.invoke(() -> {
       PartitionedRegion region = (PartitionedRegion) getCache().getRegion(partitionedRegionName);
-      assertThat(region.getDataStore().moveBucket(0, memberVM1, false)).isTrue();
+      assertThat(region.getDataStore().moveBucket(BucketId.valueOf(0), memberVM1, false)).isTrue();
     });
 
     assertThat(vm0.invoke(() -> getOfflineMembers(0))).isEmpty();
     assertThat(vm1.invoke(() -> getOfflineMembers(0))).isEmpty();
     assertThat(vm2.invoke(() -> getOfflineMembers(0))).isEmpty();
 
-    assertThat(vm0.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(0);
+    assertThat(vm0.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(
+        BucketId.valueOf(0));
     assertThat(vm1.invoke(() -> getBucketList(partitionedRegionName))).isEmpty();
-    assertThat(vm2.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(0);
+    assertThat(vm2.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(
+        BucketId.valueOf(0));
 
     // Destroy VM2
     vm2.invoke(() -> getCache().getRegion(partitionedRegionName).localDestroyRegion());
@@ -263,8 +265,10 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     // This should recover redundancy, because vm2 was destroyed
     vm1.invoke(() -> createPartitionedRegion(1, -1, 113, true));
 
-    assertThat(vm0.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(0);
-    assertThat(vm1.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(0);
+    assertThat(vm0.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(
+        BucketId.valueOf(0));
+    assertThat(vm1.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(
+        BucketId.valueOf(0));
 
     assertThat(vm0.invoke(() -> getOfflineMembers(0))).isEmpty();
     assertThat(vm1.invoke(() -> getOfflineMembers(0))).isEmpty();
@@ -297,7 +301,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
 
     vm1.invoke(() -> createData(0, 4, "a", partitionedRegionName));
 
-    Set<Integer> bucketsOnVM1 = vm1.invoke(() -> getBucketList(partitionedRegionName));
+    Set<BucketId> bucketsOnVM1 = vm1.invoke(() -> getBucketList(partitionedRegionName));
     assertThat(bucketsOnVM1).hasSize(4);
 
     vm1.invoke(() -> checkData(0, 4, "a", partitionedRegionName));
@@ -369,10 +373,12 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     vm0.invoke(() -> createPartitionedRegion(1, -1, 113, true));
 
     // Make sure vm0 recovers the bucket
-    assertThat(vm0.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(0);
+    assertThat(vm0.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(
+        BucketId.valueOf(0));
 
     // vm1 should satisfy redundancy for the bucket as well
-    assertThat(vm1.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(0);
+    assertThat(vm1.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(
+        BucketId.valueOf(0));
   }
 
   /**
@@ -430,11 +436,13 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     vm1.invoke(() -> createPartitionedRegion(1, -1, 113, true));
 
     // Make sure vm0 recovers the bucket
-    assertThat(vm0.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(0);
+    assertThat(vm0.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(
+        BucketId.valueOf(0));
 
     // vm1 should satisfy redundancy for the bucket as well
     await().untilAsserted(() -> {
-      assertThat(vm1.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(0);
+      assertThat(vm1.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(
+          BucketId.valueOf(0));
     });
   }
 
@@ -454,7 +462,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
         .getPersistedOnlineOrEqualMembers();
   }
 
-  private void awaitBucketRecovery(Set<Integer> bucketsLost) {
+  private void awaitBucketRecovery(Set<BucketId> bucketsLost) {
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(partitionedRegionName);
     PartitionedRegionDataStore dataStore = region.getDataStore();
 
@@ -501,7 +509,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     }
   }
 
-  private Set<Integer> getBucketList(final String regionName) {
+  private Set<BucketId> getBucketList(final String regionName) {
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
     return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
   }

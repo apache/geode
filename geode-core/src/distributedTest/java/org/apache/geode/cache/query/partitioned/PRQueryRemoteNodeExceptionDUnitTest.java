@@ -40,6 +40,7 @@ import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
@@ -364,8 +365,8 @@ public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
       if (queryCount.incrementAndGet() == queryCountToDestroy) {
         PartitionedRegion partitionedRegion =
             (PartitionedRegion) PRQueryDUnitHelper.getCache().getRegion(PARTITIONED_REGION_NAME);
-        List<Integer> localPrimaryBuckets = partitionedRegion.getLocalPrimaryBucketsListTestOnly();
-        int bucketId = localPrimaryBuckets.get(0);
+        List<BucketId> localPrimaryBuckets = partitionedRegion.getLocalPrimaryBucketsListTestOnly();
+        BucketId bucketId = localPrimaryBuckets.get(0);
         partitionedRegion.getDataStore().getLocalBucketById(bucketId).destroyRegion();
       }
     }

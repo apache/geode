@@ -60,6 +60,7 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -362,7 +363,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
     await().until(() -> {
       Entry<?, ?> entry = null;
       try {
-        entry = region.getDataStore().getEntryLocally(0, key, false, false);
+        entry = region.getDataStore().getEntryLocally(BucketId.valueOf(0), key, false, false);
       } catch (EntryNotFoundException | ForceReattemptException e) {
         // expected
       } catch (PRLocallyDestroyedException e) {

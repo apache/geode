@@ -51,6 +51,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.ManageBucketMessage;
 import org.apache.geode.internal.cache.partitioned.ManageBucketMessage.ManageBucketReplyMessage;
 import org.apache.geode.test.dunit.RMIException;
@@ -147,7 +148,7 @@ public class BucketCreationCrashRegressionTest implements Serializable {
         .isInstanceOf(RMIException.class)
         .hasCauseInstanceOf(DistributedSystemDisconnectedException.class);
 
-    assertThat(server2.invoke(this::getBucketList)).containsExactly(3);
+    assertThat(server2.invoke(this::getBucketList)).containsExactly(BucketId.valueOf(3));
 
     // This shouldn't hang, because the bucket creation should finish,.
     server2.invoke(() -> putData(3, 4, "a"));
@@ -175,7 +176,8 @@ public class BucketCreationCrashRegressionTest implements Serializable {
         .hasCauseInstanceOf(DistributedSystemDisconnectedException.class);
 
     await()
-        .untilAsserted(() -> assertThat(server2.invoke(this::getBucketList)).containsExactly(3));
+        .untilAsserted(() -> assertThat(server2.invoke(this::getBucketList))
+            .containsExactly(BucketId.valueOf(3)));
 
     // This shouldn't hang, because the bucket creation should finish.
     server2.invoke(() -> putData(3, 4, "a"));
@@ -226,7 +228,7 @@ public class BucketCreationCrashRegressionTest implements Serializable {
     }
   }
 
-  private Set<Integer> getBucketList() {
+  private Set<BucketId> getBucketList() {
     PartitionedRegion region = (PartitionedRegion) cacheRule.getCache().getRegion(uniqueName);
     return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
   }

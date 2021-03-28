@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -45,11 +46,11 @@ public class BucketDump {
    */
   private final Map<Object, VersionTag<?>> versions;
 
-  private final int bucketId;
+  private final BucketId bucketId;
 
   private final InternalDistributedMember member;
 
-  public BucketDump(int bucketId, InternalDistributedMember member,
+  public BucketDump(BucketId bucketId, InternalDistributedMember member,
       RegionVersionVector<VersionSource<?>> rvv,
       Map<Object, Object> values, Map<Object, VersionTag<?>> versions) {
     this.bucketId = bucketId;
@@ -87,7 +88,7 @@ public class BucketDump {
     return result;
   }
 
-  public int getBucketId() {
+  public BucketId getBucketId() {
     return bucketId;
   }
 

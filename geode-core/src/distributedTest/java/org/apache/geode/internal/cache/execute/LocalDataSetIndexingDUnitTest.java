@@ -52,6 +52,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -161,7 +162,7 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
                   GemFireCacheImpl.getInstance().getLogger()
                       .fine(" Num BUCKET SET: " + localCust.getBucketSet());
                   GemFireCacheImpl.getInstance().getLogger().fine("VALUES FROM PR1 bucket:");
-                  for (Integer bId : localCust.getBucketSet()) {
+                  for (BucketId bId : localCust.getBucketSet()) {
                     BucketRegion br =
                         ((PartitionedRegion) pr1).getDataStore().getLocalBucketById(bId);
                     String val = "";
@@ -172,7 +173,7 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
                   }
 
                   GemFireCacheImpl.getInstance().getLogger().fine("VALUES FROM PR2 bucket:");
-                  for (Integer bId : localCust.getBucketSet()) {
+                  for (BucketId bId : localCust.getBucketSet()) {
                     BucketRegion br =
                         ((PartitionedRegion) pr2).getDataStore().getLocalBucketById(bId);
                     String val = "";

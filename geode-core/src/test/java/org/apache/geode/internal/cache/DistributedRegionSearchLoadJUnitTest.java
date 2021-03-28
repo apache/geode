@@ -37,6 +37,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -74,7 +75,7 @@ public class DistributedRegionSearchLoadJUnitTest {
 
   private EventID createDummyEventID() {
     byte[] memId = {1, 2, 3};
-    return new EventID(memId, 11, 12, 13);
+    return new EventID(memId, 11, 12, BucketId.valueOf(13));
   }
 
   protected EntryEventImpl createDummyEvent(DistributedRegion region) {

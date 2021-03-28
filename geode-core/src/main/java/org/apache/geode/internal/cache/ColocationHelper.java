@@ -44,6 +44,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
@@ -342,7 +343,7 @@ public class ColocationHelper {
   }
 
   public static Map<String, LocalDataSet<?, ?>> getColocatedLocalDataSetsForBuckets(
-      PartitionedRegion region, Set<Integer> bucketSet) {
+      PartitionedRegion region, Set<BucketId> bucketSet) {
     if (region.getColocatedWith() == null && (!region.isColocatedBy())) {
       return Collections.emptyMap();
     }

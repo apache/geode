@@ -19,6 +19,7 @@ import java.util.Set;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 
 
@@ -112,7 +113,7 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
   }
 
   @Override
-  public Set<?> getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
+  public Set<?> getBucketKeys(LocalRegion localRegion, BucketId bucketId, boolean allowTombstones) {
     PartitionedRegion pr = (PartitionedRegion) localRegion;
     return pr.getBucketKeys(bucketId, allowTombstones);
   }

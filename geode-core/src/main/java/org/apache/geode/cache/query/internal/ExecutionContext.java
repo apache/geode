@@ -42,6 +42,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
@@ -627,7 +628,7 @@ public class ExecutionContext {
     return false;
   }
 
-  public List<Integer> getBucketList() {
+  public List<BucketId> getBucketList() {
     return null;
   }
 
@@ -647,7 +648,7 @@ public class ExecutionContext {
     throw new UnsupportedOperationException("Method should not have been called");
   }
 
-  public void setBucketList(List<Integer> list) {
+  public void setBucketList(List<BucketId> list) {
     throw new UnsupportedOperationException("Method should not have been called");
   }
 

@@ -98,6 +98,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
@@ -1317,7 +1318,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
       }
     }
 
-    final Map<Integer, List<GatewaySenderEventImpl>> bucketToEventsMap =
+    final Map<BucketId, List<GatewaySenderEventImpl>> bucketToEventsMap =
         ((MyAsyncEventListener2) theListener).getBucketToEventsMap();
     assertNotNull(bucketToEventsMap);
     assertTrue(bucketIds.size() > 1);
@@ -1411,7 +1412,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     return r.getFullPath();
   }
 
-  public static Set<Integer> getAllPrimaryBucketsOnTheNode(String regionName) {
+  public static Set<BucketId> getAllPrimaryBucketsOnTheNode(String regionName) {
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
     return region.getDataStore().getAllLocalPrimaryBucketIds();
   }

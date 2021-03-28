@@ -28,6 +28,7 @@ import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
@@ -327,7 +328,7 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
   public void checkSupportsRegionClear() throws UnsupportedOperationInTransactionException {}
 
   @Override
-  public Set<?> getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
+  public Set<?> getBucketKeys(LocalRegion localRegion, BucketId bucketId, boolean allowTombstones) {
     return null;
   }
 

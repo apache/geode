@@ -51,6 +51,7 @@ import org.apache.geode.cache.query.internal.QueryUtils;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
@@ -456,7 +457,7 @@ public class QueryServiceRegressionTest {
         (PartitionedRegion) CacheUtils.getCache().createRegion("pr2", factory.create());
 
     createAllNumPRAndEvenNumPR(pr1, pr2, 80);
-    Set<Integer> set = createAndPopulateSet(15);
+    Set<BucketId> set = createAndPopulateSet(15);
     LocalDataSet lds = new LocalDataSet(pr1, set);
 
     QueryObserverImpl observer = new QueryObserverImpl();
@@ -530,7 +531,7 @@ public class QueryServiceRegressionTest {
         (PartitionedRegion) CacheUtils.getCache().createRegion("pr2", factory.create());
 
     createAllNumPRAndEvenNumPR(pr1, pr2, 80);
-    Set<Integer> set = createAndPopulateSet(15);
+    Set<BucketId> set = createAndPopulateSet(15);
     LocalDataSet lds = new LocalDataSet(pr1, set);
 
     QueryObserverImpl observer = new QueryObserverImpl();

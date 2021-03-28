@@ -50,6 +50,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.functions.TestFunction;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
@@ -344,7 +345,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends CacheTestCase 
 
       // Assert there is data in each bucket
       for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
-        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+        assertThat(pr.getBucketKeys(BucketId.valueOf(bucketId)).size()).isGreaterThan(0);
       }
 
       Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION_NO_LASTRESULT);
@@ -401,7 +402,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends CacheTestCase 
 
       // Assert there is data in each bucket
       for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
-        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+        assertThat(pr.getBucketKeys(BucketId.valueOf(bucketId)).size()).isGreaterThan(0);
       }
 
       Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION9);

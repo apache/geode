@@ -21,6 +21,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -37,7 +38,9 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
@@ -137,25 +140,25 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
   }
 
   protected static boolean tryVerifyPrimaryColocation() {
-    HashMap customerPrimaryMap = new HashMap();
+    Map<BucketId, String> customerPrimaryMap = new HashMap<>();
     RegionAdvisor customeAdvisor = ((PartitionedRegion) customerPR).getRegionAdvisor();
-    for (final Integer bucketId : customeAdvisor.getBucketSet()) {
+    for (final BucketId bucketId : customeAdvisor.getBucketSet()) {
       if (customeAdvisor.isPrimaryForBucket(bucketId)) {
         customerPrimaryMap.put(bucketId,
             customeAdvisor.getPrimaryMemberForBucket(bucketId).getId());
       }
     }
-    HashMap orderPrimaryMap = new HashMap();
+    Map<BucketId, String> orderPrimaryMap = new HashMap<>();
     RegionAdvisor orderAdvisor = ((PartitionedRegion) orderPR).getRegionAdvisor();
-    for (final Integer bucketId : orderAdvisor.getBucketSet()) {
+    for (final BucketId bucketId : orderAdvisor.getBucketSet()) {
       if (orderAdvisor.isPrimaryForBucket(bucketId)) {
         orderPrimaryMap.put(bucketId,
             orderAdvisor.getPrimaryMemberForBucket(bucketId).getId());
       }
     }
-    HashMap shipmentPrimaryMap = new HashMap();
+    Map<BucketId, String> shipmentPrimaryMap = new HashMap<>();
     RegionAdvisor shipmentAdvisor = ((PartitionedRegion) shipmentPR).getRegionAdvisor();
-    for (final Integer bucketId : shipmentAdvisor.getBucketSet()) {
+    for (final BucketId bucketId : shipmentAdvisor.getBucketSet()) {
       if (shipmentAdvisor.isPrimaryForBucket(bucketId)) {
         shipmentPrimaryMap.put(bucketId,
             shipmentAdvisor.getPrimaryMemberForBucket(bucketId).getId());
@@ -210,13 +213,13 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
     ((PartitionedRegion) orderPR).dumpAllBuckets(false);
     ((PartitionedRegion) shipmentPR).dumpAllBuckets(false);
     for (int i = 0; i < 6; i++) {
-      ((PartitionedRegion) customerPR).dumpB2NForBucket(i);
+      ((PartitionedRegion) customerPR).dumpB2NForBucket(BucketId.valueOf(i));
     }
     for (int i = 0; i < 6; i++) {
-      ((PartitionedRegion) orderPR).dumpB2NForBucket(i);
+      ((PartitionedRegion) orderPR).dumpB2NForBucket(BucketId.valueOf(i));
     }
     for (int i = 0; i < 6; i++) {
-      ((PartitionedRegion) shipmentPR).dumpB2NForBucket(i);
+      ((PartitionedRegion) shipmentPR).dumpB2NForBucket(BucketId.valueOf(i));
     }
   }
 
@@ -226,33 +229,33 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
    * @return true if verified
    */
   protected static boolean tryVerifyColocation() {
-    HashMap customerMap = new HashMap();
-    HashMap customerPrimaryMap = new HashMap();
+    Map<BucketId, Set<InternalDistributedMember>> customerMap = new HashMap<>();
+    Map<BucketId, String> customerPrimaryMap = new HashMap<>();
     RegionAdvisor customeAdvisor = ((PartitionedRegion) customerPR).getRegionAdvisor();
-    for (final Integer bucketId : customeAdvisor.getBucketSet()) {
-      Set someOwners = customeAdvisor.getBucketOwners(bucketId);
+    for (final BucketId bucketId : customeAdvisor.getBucketSet()) {
+      Set<InternalDistributedMember> someOwners = customeAdvisor.getBucketOwners(bucketId);
       customerMap.put(bucketId, someOwners);
       if (customeAdvisor.isPrimaryForBucket(bucketId)) {
         customerPrimaryMap.put(bucketId,
             customeAdvisor.getPrimaryMemberForBucket(bucketId).getId());
       }
     }
-    HashMap orderMap = new HashMap();
-    HashMap orderPrimaryMap = new HashMap();
+    Map<BucketId, Set<InternalDistributedMember>> orderMap = new HashMap<>();
+    Map<BucketId, String> orderPrimaryMap = new HashMap<>();
     RegionAdvisor orderAdvisor = ((PartitionedRegion) orderPR).getRegionAdvisor();
-    for (final Integer bucketId : orderAdvisor.getBucketSet()) {
-      Set someOwners = orderAdvisor.getBucketOwners(bucketId);
+    for (final BucketId bucketId : orderAdvisor.getBucketSet()) {
+      Set<InternalDistributedMember> someOwners = orderAdvisor.getBucketOwners(bucketId);
       orderMap.put(bucketId, someOwners);
       if (orderAdvisor.isPrimaryForBucket(bucketId)) {
         orderPrimaryMap.put(bucketId,
             orderAdvisor.getPrimaryMemberForBucket(bucketId).getId());
       }
     }
-    HashMap shipmentMap = new HashMap();
-    HashMap shipmentPrimaryMap = new HashMap();
+    Map<BucketId, Set<InternalDistributedMember>> shipmentMap = new HashMap();
+    Map<BucketId, String> shipmentPrimaryMap = new HashMap();
     RegionAdvisor shipmentAdvisor = ((PartitionedRegion) shipmentPR).getRegionAdvisor();
-    for (final Integer bucketId : shipmentAdvisor.getBucketSet()) {
-      Set someOwners = shipmentAdvisor.getBucketOwners(bucketId);
+    for (final BucketId bucketId : shipmentAdvisor.getBucketSet()) {
+      Set<InternalDistributedMember> someOwners = shipmentAdvisor.getBucketOwners(bucketId);
       shipmentMap.put(bucketId, someOwners);
       if (!customerMap.get(bucketId).equals(someOwners)) {
         excuse = "customerMap at " + bucketId + " has wrong owners";

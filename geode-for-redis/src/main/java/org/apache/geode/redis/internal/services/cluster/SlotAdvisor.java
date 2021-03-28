@@ -31,6 +31,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
@@ -56,12 +57,13 @@ public class SlotAdvisor {
 
   public boolean isLocal(RedisKey key) {
     // This call returns early with the member if the bucket already exists
-    DistributedMember primaryMember = dataRegion.createBucket(key.getBucketId(), 1, null);
+    DistributedMember primaryMember =
+        dataRegion.createBucket(BucketId.valueOf(key.getBucketId()), 1, null);
     return thisMember.equals(primaryMember);
   }
 
   public RedisMemberInfo getMemberInfo(RedisKey key) throws InterruptedException {
-    return getMemberInfo(key.getBucketId());
+    return getMemberInfo(BucketId.valueOf(key.getBucketId()));
   }
 
   /**
@@ -71,7 +73,7 @@ public class SlotAdvisor {
   public synchronized List<MemberBucketSlot> getBucketSlots() throws InterruptedException {
     List<MemberBucketSlot> memberBucketSlots = new ArrayList<>(RegionProvider.REDIS_REGION_BUCKETS);
     for (int bucketId = 0; bucketId < REDIS_REGION_BUCKETS; bucketId++) {
-      RedisMemberInfo memberInfo = getMemberInfo(bucketId);
+      RedisMemberInfo memberInfo = getMemberInfo(BucketId.valueOf(bucketId));
       if (memberInfo != null) {
         memberBucketSlots.add(
             new MemberBucketSlot(bucketId, memberInfo.getMember(), memberInfo.getHostAddress(),
@@ -84,7 +86,7 @@ public class SlotAdvisor {
     return memberBucketSlots;
   }
 
-  private InternalDistributedMember getOrCreateMember(int bucketId) {
+  private InternalDistributedMember getOrCreateMember(BucketId bucketId) {
     return dataRegion.getOrCreateNodeForBucketWrite(bucketId, null);
   }
 
@@ -92,7 +94,7 @@ public class SlotAdvisor {
    * This method will retry for {@link #HOSTPORT_RETRIEVAL_ATTEMPTS} attempts and return null if
    * no information could be retrieved.
    */
-  private RedisMemberInfo getMemberInfo(int bucketId) throws InterruptedException {
+  private RedisMemberInfo getMemberInfo(BucketId bucketId) throws InterruptedException {
     RedisMemberInfo response;
 
     for (int i = 0; i < HOSTPORT_RETRIEVAL_ATTEMPTS; i++) {
@@ -110,7 +112,7 @@ public class SlotAdvisor {
   }
 
   @SuppressWarnings("unchecked")
-  private RedisMemberInfo getMemberInfo0(int bucketId) {
+  private RedisMemberInfo getMemberInfo0(BucketId bucketId) {
     InternalDistributedMember member = getOrCreateMember(bucketId);
 
     if (memberInfos.containsKey(member)) {

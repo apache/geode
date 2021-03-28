@@ -78,6 +78,7 @@ import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.functions.TestFunction;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
@@ -1458,7 +1459,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
 
       // Assert there is data each bucket
       for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
-        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+        assertThat(pr.getBucketKeys(BucketId.valueOf(bucketId)).size()).isGreaterThan(0);
       }
 
       Function function = new TestFunction(true, TEST_FUNCTION2);
@@ -1537,7 +1538,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
 
       // Assert there is data each bucket
       for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
-        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+        assertThat(pr.getBucketKeys(BucketId.valueOf(bucketId)).size()).isGreaterThan(0);
       }
 
       Function function = new TestFunction(true, TEST_FUNCTION2);
@@ -1615,7 +1616,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
 
       // Assert there is data in each bucket
       for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
-        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+        assertThat(pr.getBucketKeys(BucketId.valueOf(bucketId)).size()).isGreaterThan(0);
       }
 
       Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION2);
@@ -1675,7 +1676,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
 
       // Assert there is data in each bucket
       for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
-        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+        assertThat(pr.getBucketKeys(BucketId.valueOf(bucketId)).size()).isGreaterThan(0);
       }
 
       Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION2);
@@ -1732,7 +1733,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
 
       // Assert there is data in each bucket
       for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
-        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+        assertThat(pr.getBucketKeys(BucketId.valueOf(bucketId)).size()).isGreaterThan(0);
       }
 
       Execution<Boolean, Boolean, List<Boolean>> execution = FunctionService.onRegion(pr);

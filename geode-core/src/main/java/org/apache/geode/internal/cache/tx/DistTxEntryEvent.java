@@ -28,6 +28,7 @@ import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryDat
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation.RemoveAllEntryData;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -76,7 +77,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
     DataSerializer.writeObject(getRegion().getFullPath(), out);
     out.writeByte(op.ordinal);
     DataSerializer.writeObject(getKey(), out);
-    DataSerializer.writeInteger(keyInfo.getBucketId(), out);
+    DataSerializer.writeInteger(keyInfo.getBucketId().intValue(), out);
     DataSerializer.writeObject(basicGetNewValue(), out);
 
     byte flags = 0;
@@ -105,7 +106,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
     regionName = DataSerializer.readString(in);
     op = Operation.fromOrdinal(in.readByte());
     Object key = DataSerializer.readObject(in);
-    Integer bucketId = DataSerializer.readInteger(in);
+    BucketId bucketId = BucketId.valueOf(DataSerializer.readInteger(in));
     keyInfo = new DistTxKeyInfo(key, null/*
                                           * value [DISTTX} TODO see if required
                                           */, null/*

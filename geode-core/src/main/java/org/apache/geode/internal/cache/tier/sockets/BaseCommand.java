@@ -73,6 +73,7 @@ import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.VersionTagHolder;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.InterestType;
@@ -1168,9 +1169,10 @@ public abstract class BaseCommand implements Command {
         region.getConcurrencyChecksEnabled(), serializeValues);
 
     if (keyInfo instanceof List) {
-      HashMap<Integer, HashSet<Object>> bucketKeys = new HashMap<>();
+      Map<BucketId, Set<Object>> bucketKeys = new HashMap<>();
       for (Object key : (List<?>) keyInfo) {
-        int id = PartitionedRegionHelper.getHashKey(region, null, key, null, null);
+        BucketId id =
+            BucketId.valueOf(PartitionedRegionHelper.getHashKey(region, null, key, null, null));
         if (bucketKeys.containsKey(id)) {
           bucketKeys.get(id).add(key);
         } else {

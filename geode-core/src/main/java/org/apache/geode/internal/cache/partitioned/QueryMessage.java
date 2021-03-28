@@ -64,7 +64,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
   private volatile String queryString;
   private volatile boolean cqQuery;
   private volatile Object[] parameters;
-  private volatile List<Integer> buckets;
+  private volatile List<BucketId> buckets;
   private volatile boolean isPdxSerialized;
   private volatile boolean traceOn;
 
@@ -82,7 +82,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
   }
 
   public QueryMessage(InternalDistributedMember recipient, int regionId, ReplyProcessor21 processor,
-      DefaultQuery query, Object[] parameters, final List<Integer> buckets) {
+      DefaultQuery query, Object[] parameters, final List<BucketId> buckets) {
     super(recipient, regionId, processor);
     queryString = query.getQueryString();
     this.buckets = buckets;

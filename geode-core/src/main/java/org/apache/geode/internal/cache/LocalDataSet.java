@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -63,6 +65,7 @@ import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.LocalRegion.IteratorType;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -71,14 +74,14 @@ public class LocalDataSet<K, V> implements Region<K, V>, QueryExecutor {
   private static final Logger logger = LogService.getLogger();
 
   private final PartitionedRegion proxy;
-  private final Set<Integer> buckets;
+  private final Set<BucketId> buckets;
   private InternalRegionFunctionContext<?> rfContext;
 
   public LocalDataSet(PartitionedRegion proxy, int[] buckets) {
-    this(proxy, BucketSetHelper.toSet(buckets));
+    this(proxy, Arrays.stream(buckets).mapToObj(BucketId::valueOf).collect(Collectors.toSet()));
   }
 
-  public LocalDataSet(PartitionedRegion proxy, Set<Integer> buckets) {
+  public LocalDataSet(PartitionedRegion proxy, Set<BucketId> buckets) {
     this.proxy = proxy;
     this.buckets = buckets;
   }
@@ -183,7 +186,7 @@ public class LocalDataSet<K, V> implements Region<K, V>, QueryExecutor {
   @Override
   public Object executeQuery(DefaultQuery query,
       final ExecutionContext executionContext,
-      Object[] parameters, Set<Integer> buckets)
+      Object[] parameters, Set<BucketId> buckets)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     long startTime = 0L;
@@ -208,7 +211,7 @@ public class LocalDataSet<K, V> implements Region<K, V>, QueryExecutor {
     return proxy;
   }
 
-  public Set<Integer> getBucketSet() {
+  public Set<BucketId> getBucketSet() {
     return buckets;
   }
 
@@ -717,8 +720,8 @@ public class LocalDataSet<K, V> implements Region<K, V>, QueryExecutor {
 
     protected class LocalEntriesSetIterator implements Iterator<Object> {
       Iterator<Map.Entry<?, ?>> curBucketIter = null;
-      Integer curBucketId;
-      List<Integer> localBuckets = new ArrayList<>(buckets);
+      BucketId curBucketId;
+      List<BucketId> localBuckets = new ArrayList<>(buckets);
       int index = 0;
       int localBucketsSize = localBuckets.size();
       boolean hasNext = false;
@@ -809,7 +812,7 @@ public class LocalDataSet<K, V> implements Region<K, V>, QueryExecutor {
     @Override
     public int size() {
       int size = 0;
-      for (Integer bId : buckets) {
+      for (BucketId bId : buckets) {
         BucketRegion br = proxy.getDataStore().getLocalBucketById(bId);
         size += br.size();
       }

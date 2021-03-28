@@ -162,7 +162,7 @@ public class PercentageMoveDirector extends RebalanceDirectorAdapter {
     public int compare(Bucket o1, Bucket o2) {
       int result = Float.compare(o1.getLoad(), o2.getLoad());
       if (result == 0) {
-        result = o2.getId() - o1.getId();
+        result = o1.getId().compareTo(o2.getId());
       }
       return result;
     }

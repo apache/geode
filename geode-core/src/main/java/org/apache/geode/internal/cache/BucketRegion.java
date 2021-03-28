@@ -72,6 +72,7 @@ import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
 import org.apache.geode.internal.cache.partitioned.InvalidateMessage;
 import org.apache.geode.internal.cache.partitioned.LockObject;
@@ -287,11 +288,11 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       BucketRegion parentBucket = parentPR.getDataStore().getLocalBucketById(getId());
       // needs to be set only once.
       if (parentBucket.eventSeqNum == null) {
-        parentBucket.eventSeqNum = new AtomicLong5(getId());
+        parentBucket.eventSeqNum = new AtomicLong5(getId().intValue());
       }
     }
     if (partitionedRegion.getColocatedWith() == null) {
-      eventSeqNum = new AtomicLong5(getId());
+      eventSeqNum = new AtomicLong5(getId().intValue());
     } else {
       PartitionedRegion parentPR = ColocationHelper.getLeaderRegion(partitionedRegion);
       BucketRegion parentBucket = parentPR.getDataStore().getLocalBucketById(getId());
@@ -573,7 +574,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   long generateTailKey() {
     long key = eventSeqNum.addAndGet(partitionedRegion.getTotalNumberOfBuckets());
-    if (key < 0 || key % getPartitionedRegion().getTotalNumberOfBuckets() != getId()) {
+    if (key < 0 || key % getPartitionedRegion().getTotalNumberOfBuckets() != getId().intValue()) {
       logger.error("ERROR! The sequence number {} generated for the bucket {} is incorrect.",
           new Object[] {key, getId()});
     }
@@ -597,7 +598,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     if (!(this instanceof AbstractBucketRegionQueue)) {
       if (getBucketAdvisor().isPrimary()) {
         long key = eventSeqNum.addAndGet(partitionedRegion.getTotalNumberOfBuckets());
-        if (key < 0 || key % getPartitionedRegion().getTotalNumberOfBuckets() != getId()) {
+        if (key < 0
+            || key % getPartitionedRegion().getTotalNumberOfBuckets() != getId().intValue()) {
           logger.error("ERROR! The sequence number {} generated for the bucket {} is incorrect.",
               new Object[] {key, getId()});
         }
@@ -1974,7 +1976,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  public int getId() {
+  public BucketId getId() {
     return getBucketAdvisor().getProxyBucketRegion().getId();
   }
 
@@ -2215,7 +2217,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
 
-  void preDestroyBucket(int bucketId) {}
+  void preDestroyBucket(BucketId bucketId) {}
 
   @Override
   public void cleanupFailedInitialization() {
@@ -2230,7 +2232,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
     for (PartitionListener listener : partitionListeners) {
       if (listener != null) {
-        listener.afterBucketRemoved(getId(), keySet());
+        listener.afterBucketRemoved(getId().intValue(), keySet());
       }
     }
   }
@@ -2242,7 +2244,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
     for (PartitionListener listener : partitionListeners) {
       if (listener != null) {
-        listener.afterBucketCreated(getId(), keySet());
+        listener.afterBucketCreated(getId().intValue(), keySet());
       }
     }
   }

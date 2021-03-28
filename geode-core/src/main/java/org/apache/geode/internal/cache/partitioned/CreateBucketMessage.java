@@ -65,7 +65,7 @@ public class CreateBucketMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   /** The key associated with the value that must be sent */
-  private int bucketId;
+  private BucketId bucketId;
 
   /** The value associated with the key that must be sent */
   private int bucketSize;
@@ -76,7 +76,7 @@ public class CreateBucketMessage extends PartitionMessage {
   public CreateBucketMessage() {}
 
   private CreateBucketMessage(InternalDistributedMember recipient, int regionId,
-      ReplyProcessor21 processor, int bucketId, int bucketSize) {
+      ReplyProcessor21 processor, BucketId bucketId, int bucketSize) {
     super(recipient, regionId, processor);
     this.bucketId = bucketId;
     this.bucketSize = bucketSize;
@@ -102,7 +102,7 @@ public class CreateBucketMessage extends PartitionMessage {
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static NodeResponse send(InternalDistributedMember recipient, PartitionedRegion r,
-      int bucketId, int bucketSize) throws ForceReattemptException {
+      BucketId bucketId, int bucketSize) throws ForceReattemptException {
     Assert.assertTrue(recipient != null, "CreateBucketMessage NULL recipient");
     NodeResponse p = new NodeResponse(r.getSystem(), recipient);
     CreateBucketMessage m =
@@ -166,7 +166,7 @@ public class CreateBucketMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
     bucketSize = in.readInt();
   }
 
@@ -174,7 +174,7 @@ public class CreateBucketMessage extends PartitionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
     out.writeInt(bucketSize);
   }
 

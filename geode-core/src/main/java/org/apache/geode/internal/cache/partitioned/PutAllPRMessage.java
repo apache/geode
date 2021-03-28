@@ -86,7 +86,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
   private int putAllPRDataSize = 0;
 
-  private Integer bucketId;
+  private BucketId bucketId;
 
   /**
    * An additional object providing context for the operation, e.g., for BridgeServer notification
@@ -115,7 +115,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
    */
   public PutAllPRMessage() {}
 
-  public PutAllPRMessage(int bucketId, int size, boolean notificationOnly, boolean posDup,
+  public PutAllPRMessage(BucketId bucketId, int size, boolean notificationOnly, boolean posDup,
       boolean skipCallbacks, Object callbackArg) {
     this.bucketId = bucketId;
     putAllPRData = new PutAllEntryData[size];
@@ -216,7 +216,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = (int) InternalDataSerializer.readSignedVL(in);
+    bucketId = BucketId.valueOf((int) InternalDataSerializer.readSignedVL(in));
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
       bridgeContext = DataSerializer.readObject(in);
     }
@@ -247,7 +247,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     if (bucketId == null) {
       InternalDataSerializer.writeSignedVL(-1, out);
     } else {
-      InternalDataSerializer.writeSignedVL(bucketId, out);
+      InternalDataSerializer.writeSignedVL(bucketId.intValue(), out);
     }
     if (bridgeContext != null) {
       DataSerializer.writeObject(bridgeContext, out);

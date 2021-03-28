@@ -47,6 +47,7 @@ import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
@@ -122,7 +123,7 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
 
     createData(0, 1);
 
-    Set<Integer> vm0Buckets = getBucketList();
+    Set<BucketId> vm0Buckets = getBucketList();
 
     getCache().close();
 
@@ -149,10 +150,10 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
 
     vm0.invoke(() -> createData(0, numEntries));
 
-    Set<Integer> bucketsOnVM0 = vm0.invoke(this::getBucketList);
-    Set<Integer> bucketsOnVM1 = vm1.invoke(this::getBucketList);
-    Set<Integer> bucketsOnVM2 = vm2.invoke(this::getBucketList);
-    Set<Integer> bucketsOnVM3 = vm3.invoke(this::getBucketList);
+    Set<BucketId> bucketsOnVM0 = vm0.invoke(this::getBucketList);
+    Set<BucketId> bucketsOnVM1 = vm1.invoke(this::getBucketList);
+    Set<BucketId> bucketsOnVM2 = vm2.invoke(this::getBucketList);
+    Set<BucketId> bucketsOnVM3 = vm3.invoke(this::getBucketList);
 
     vm1.invoke(() -> getCache().close());
 
@@ -222,11 +223,11 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
     }
   }
 
-  private Set<Integer> getBucketList() {
+  private Set<BucketId> getBucketList() {
     return getBucketListFor(partitionedRegionName);
   }
 
-  private Set<Integer> getBucketListFor(final String regionName) {
+  private Set<BucketId> getBucketListFor(final String regionName) {
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
     return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
   }

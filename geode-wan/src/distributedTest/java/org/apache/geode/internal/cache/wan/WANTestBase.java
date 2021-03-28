@@ -155,6 +155,7 @@ import org.apache.geode.internal.cache.execute.data.Shipment;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
@@ -1170,8 +1171,8 @@ public class WANTestBase extends DistributedTestCase {
       PartitionedRegion prQ =
           parallelGatewaySenderQueue.getRegions().toArray(new PartitionedRegion[1])[0];
 
-      Set<Integer> primaryBucketIds = prQ.getDataStore().getAllLocalPrimaryBucketIds();
-      for (int bid : primaryBucketIds) {
+      Set<BucketId> primaryBucketIds = prQ.getDataStore().getAllLocalPrimaryBucketIds();
+      for (BucketId bid : primaryBucketIds) {
         movePrimary(destination, regionName, bid);
       }
 
@@ -1182,7 +1183,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void movePrimary(final DistributedMember destination, final String regionName,
-      final int bucketId) {
+      final BucketId bucketId) {
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
 
     BecomePrimaryBucketResponse response = BecomePrimaryBucketMessage
@@ -3530,7 +3531,8 @@ public class WANTestBase extends DistributedTestCase {
       int buckets = region.getTotalNumberOfBuckets();
       for (int bucket = 0; bucket < buckets; bucket++) {
         BlockingQueue<GatewaySenderEventImpl> newQueue =
-            ((ConcurrentParallelGatewaySenderQueue) queue).getBucketTmpQueue(bucket);
+            ((ConcurrentParallelGatewaySenderQueue) queue)
+                .getBucketTmpQueue(BucketId.valueOf(bucket));
         if (newQueue != null) {
           size += newQueue.size();
         }

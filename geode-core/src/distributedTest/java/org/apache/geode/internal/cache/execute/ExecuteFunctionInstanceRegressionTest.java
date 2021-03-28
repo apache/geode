@@ -33,6 +33,7 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
@@ -162,7 +163,7 @@ public class ExecuteFunctionInstanceRegressionTest extends CacheTestCase {
     }
 
     for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
-      assertThat(pr.getBucketKeys(bucketId)).hasSize(1);
+      assertThat(pr.getBucketKeys(BucketId.valueOf(bucketId))).hasSize(1);
     }
   }
 

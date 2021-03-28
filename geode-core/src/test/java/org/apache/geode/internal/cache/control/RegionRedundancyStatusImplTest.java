@@ -21,7 +21,7 @@ import static org.apache.geode.management.runtime.RegionRedundancyStatus.Redunda
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.management.runtime.RegionRedundancyStatus;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
@@ -58,7 +59,7 @@ public class RegionRedundancyStatusImplTest {
       + "; Actual redundancy:{0}; Expected status:{1})")
   public void constructorPopulatesValuesCorrectlyWhenAllBucketsExist(int actualRedundancy,
       RegionRedundancyStatus.RedundancyStatus expectedStatus) {
-    when(mockRegion.getRegionAdvisor().getBucketRedundancy(anyInt())).thenReturn(actualRedundancy);
+    when(mockRegion.getRegionAdvisor().getBucketRedundancy(any())).thenReturn(actualRedundancy);
 
     RegionRedundancyStatus result = new SerializableRegionRedundancyStatusImpl(mockRegion);
 
@@ -74,7 +75,7 @@ public class RegionRedundancyStatusImplTest {
       + "; Actual redundancy:{0}; Expected status:{1})")
   public void constructorPopulatesValuesCorrectlyWhenNotAllBucketsExist(int actualRedundancy,
       RegionRedundancyStatus.RedundancyStatus expectedStatus) {
-    when(mockRegion.getRegionAdvisor().getBucketRedundancy(anyInt())).thenReturn(-1)
+    when(mockRegion.getRegionAdvisor().getBucketRedundancy(any())).thenReturn(-1)
         .thenReturn(actualRedundancy);
 
     RegionRedundancyStatus result = new SerializableRegionRedundancyStatusImpl(mockRegion);
@@ -87,9 +88,10 @@ public class RegionRedundancyStatusImplTest {
 
   @Test
   public void constructorPopulatesValuesCorrectlyWhenNotAllBucketsReturnTheSameRedundancy() {
-    when(mockRegion.getRegionAdvisor().getBucketRedundancy(anyInt())).thenReturn(desiredRedundancy);
+    when(mockRegion.getRegionAdvisor().getBucketRedundancy(any())).thenReturn(desiredRedundancy);
     // Have only the bucket with ID = 1 report being under redundancy
-    when(mockRegion.getRegionAdvisor().getBucketRedundancy(1)).thenReturn(oneRedundantCopy);
+    when(mockRegion.getRegionAdvisor().getBucketRedundancy(BucketId.valueOf(1)))
+        .thenReturn(oneRedundantCopy);
 
     RegionRedundancyStatus result = new SerializableRegionRedundancyStatusImpl(mockRegion);
 

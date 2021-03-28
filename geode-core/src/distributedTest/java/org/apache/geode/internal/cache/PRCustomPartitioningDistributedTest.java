@@ -35,6 +35,7 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -177,7 +178,7 @@ public class PRCustomPartitioningDistributedTest implements Serializable {
   private boolean containsKeyInSomeBucket(PartitionedRegion partitionedRegion, Date key) {
     int numberOfBuckets = partitionedRegion.getTotalNumberOfBuckets();
     for (int bucketId = 0; bucketId < numberOfBuckets; bucketId++) {
-      if (partitionedRegion.getBucketKeys(bucketId).contains(key)) {
+      if (partitionedRegion.getBucketKeys(BucketId.valueOf(bucketId)).contains(key)) {
         return true;
       }
     }

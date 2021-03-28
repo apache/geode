@@ -220,6 +220,7 @@ import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.locks.TXLockService;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
 import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
@@ -1885,8 +1886,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
 
           // lock all the primary buckets
-          Set<Entry<Integer, BucketRegion>> bucketEntries = dataStore.getAllLocalBuckets();
-          for (Entry<Integer, BucketRegion> e : bucketEntries) {
+          Set<Entry<BucketId, BucketRegion>> bucketEntries = dataStore.getAllLocalBuckets();
+          for (Entry<BucketId, BucketRegion> e : bucketEntries) {
             BucketRegion bucket = e.getValue();
             if (bucket == null || bucket.isDestroyed) {
               // bucket region could be destroyed in race condition
@@ -1895,11 +1896,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             bucket.getBucketAdvisor().tryLockIfPrimary();
 
             // get map <InternalDistributedMember, persistentID> for this bucket's remote members
-            bucketMaps[bucket.getId()] =
+            bucketMaps[bucket.getId().intValue()] =
                 bucket.getBucketAdvisor().adviseInitializedPersistentMembers();
             if (logger.isDebugEnabled()) {
               logger.debug("shutDownAll: PR {}: initialized persistent members for {}:{}",
-                  partitionedRegion.getName(), bucket.getId(), bucketMaps[bucket.getId()]);
+                  partitionedRegion.getName(), bucket.getId(),
+                  bucketMaps[bucket.getId().intValue()]);
             }
           }
           if (logger.isDebugEnabled()) {
@@ -1935,14 +1937,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           // bucketMaps and exclude the items whose idm is no longer online
           Set<InternalDistributedMember> membersToPersistOfflineEqual =
               partitionedRegion.getRegionAdvisor().adviseDataStore();
-          for (Entry<Integer, BucketRegion> e : bucketEntries) {
+          for (Entry<BucketId, BucketRegion> e : bucketEntries) {
             BucketRegion bucket = e.getValue();
             if (bucket == null || bucket.isDestroyed) {
               // bucket region could be destroyed in race condition
               continue;
             }
             Map<InternalDistributedMember, PersistentMemberID> persistMap =
-                getSubMapForLiveMembers(membersToPersistOfflineEqual, bucketMaps[bucket.getId()]);
+                getSubMapForLiveMembers(membersToPersistOfflineEqual,
+                    bucketMaps[bucket.getId().intValue()]);
             if (persistMap != null) {
               bucket.getPersistenceAdvisor().persistMembersOfflineAndEqual(persistMap);
               if (logger.isDebugEnabled()) {
@@ -3203,9 +3206,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         PartitionedRegion partitionedRegion = (PartitionedRegion) region;
         PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
         if (dataStore != null) {
-          Set<Entry<Integer, BucketRegion>> bucketEntries =
+          Set<Entry<BucketId, BucketRegion>> bucketEntries =
               partitionedRegion.getDataStore().getAllLocalBuckets();
-          for (Entry<Integer, BucketRegion> entry : bucketEntries) {
+          for (Entry<BucketId, BucketRegion> entry : bucketEntries) {
             result.add(entry.getValue());
           }
         }

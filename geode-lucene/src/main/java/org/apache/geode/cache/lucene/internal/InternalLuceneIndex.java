@@ -18,6 +18,7 @@ package org.apache.geode.cache.lucene.internal;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public interface InternalLuceneIndex extends LuceneIndex {
 
@@ -39,5 +40,5 @@ public interface InternalLuceneIndex extends LuceneIndex {
 
   void initialize();
 
-  boolean isIndexAvailable(int id);
+  boolean isIndexAvailable(BucketId id);
 }

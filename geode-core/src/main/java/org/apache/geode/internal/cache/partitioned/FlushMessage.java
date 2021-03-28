@@ -78,7 +78,7 @@ public class FlushMessage extends SerialDistributionMessage implements MessageWi
       }
       try {
         final PartitionedRegion p = PartitionedRegion.getPRFromId(prId);
-        Assert.assertTrue(p.getRegionAdvisor().isPrimaryForBucket(bucketId));
+        Assert.assertTrue(p.getRegionAdvisor().isPrimaryForBucket(BucketId.valueOf(bucketId)));
       } catch (PRLocallyDestroyedException fre) {
         if (logger.isDebugEnabled()) {
           logger.debug("Sending reply despite Region getting locally destroyed prId={}", prId,

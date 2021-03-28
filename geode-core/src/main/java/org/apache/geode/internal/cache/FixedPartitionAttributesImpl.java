@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -49,7 +50,7 @@ public class FixedPartitionAttributesImpl extends FixedPartitionAttributes
    */
   private int numBuckets = 1;
 
-  private int startingBucketID = KeyInfo.UNKNOWN_BUCKET;
+  private int startingBucketID = -1;
 
   /**
    * Constructs an instance of <code>FixedPartitionAttributes</code> with default settings.
@@ -117,8 +118,8 @@ public class FixedPartitionAttributesImpl extends FixedPartitionAttributes
     return startingBucketID + numBuckets - 1;
   }
 
-  public boolean hasBucket(int bucketId) {
-    return getStartingBucketID() <= bucketId && bucketId <= getLastBucketID();
+  public boolean hasBucket(BucketId bucketId) {
+    return getStartingBucketID() <= bucketId.intValue() && bucketId.intValue() <= getLastBucketID();
   }
 
   public boolean equals(final Object obj) {

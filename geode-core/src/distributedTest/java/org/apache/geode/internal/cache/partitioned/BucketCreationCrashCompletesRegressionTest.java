@@ -58,7 +58,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * TRAC #39356: Missing PR buckets with HA
  */
 @Category(RegionsTest.class)
-@SuppressWarnings("serial")
 public class BucketCreationCrashCompletesRegressionTest implements Serializable {
 
   private String regionName;
@@ -131,7 +130,7 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
         PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionName);
         int totalNumBuckets = pr.getAttributes().getPartitionAttributes().getTotalNumBuckets();
         for (int i = 0; i < totalNumBuckets; i++) {
-          int bucketId = i;
+          BucketId bucketId = BucketId.valueOf(i);
 
           await().until(() -> {
             try {
@@ -191,17 +190,18 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
   private void verifyCannotMoveBucketToExistingHost(InternalDistributedMember member1) {
     PartitionedRegion partitionedRegion = (PartitionedRegion) getCache().getRegion(regionName);
     Set<InternalDistributedMember> bucketOwners =
-        partitionedRegion.getRegionAdvisor().getBucketOwners(0);
+        partitionedRegion.getRegionAdvisor().getBucketOwners(BucketId.valueOf(0));
 
     assertThat(bucketOwners).hasSize(2);
 
     PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
 
-    assertThat(dataStore.isManagingBucket(0)).isTrue();
+    assertThat(dataStore.isManagingBucket(BucketId.valueOf(0))).isTrue();
     // try to move the bucket from the other member to this one. This should
     // fail because we already have the bucket
-    assertThat(dataStore.moveBucket(0, member1, true)).isFalse();
-    assertThat(partitionedRegion.getRegionAdvisor().getBucketOwners(0)).isEqualTo(bucketOwners);
+    assertThat(dataStore.moveBucket(BucketId.valueOf(0), member1, true)).isFalse();
+    assertThat(partitionedRegion.getRegionAdvisor().getBucketOwners(BucketId.valueOf(0)))
+        .isEqualTo(bucketOwners);
   }
 
   private InternalCache getCache() {

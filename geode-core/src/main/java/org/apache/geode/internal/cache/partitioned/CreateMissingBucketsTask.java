@@ -51,10 +51,10 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
     createMissingBuckets(parentRegion);
 
     for (int i = 0; i < region.getTotalNumberOfBuckets(); i++) {
-
-      if (parentRegion.getRegionAdvisor().getBucketAdvisor(i).getBucketRedundancy() != region
-          .getRegionAdvisor().getBucketAdvisor(i).getBucketRedundancy()) {
-        region.getRedundancyProvider().createBucketAtomically(i, 0, true, null);
+      BucketId bucketId = BucketId.valueOf(i);
+      if (parentRegion.getRegionAdvisor().getBucketAdvisor(bucketId).getBucketRedundancy() != region
+          .getRegionAdvisor().getBucketAdvisor(bucketId).getBucketRedundancy()) {
+        region.getRedundancyProvider().createBucketAtomically(bucketId, 0, true, null);
       }
     }
   }

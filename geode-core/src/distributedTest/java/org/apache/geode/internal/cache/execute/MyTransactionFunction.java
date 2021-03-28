@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class MyTransactionFunction implements Function {
 
@@ -397,7 +398,8 @@ public class MyTransactionFunction implements Function {
     ArrayList args = (ArrayList) ctx.getArguments();
     CustId custId = (CustId) args.get(1);
     int bucketId = PartitionedRegionHelper.getHashKey(pr, null, custId, null, null);
-    DistributedMember primary = pr.getRegionAdvisor().getPrimaryMemberForBucket(bucketId);
+    DistributedMember primary = pr.getRegionAdvisor().getPrimaryMemberForBucket(
+        BucketId.valueOf(bucketId));
     DistributedMember me = pr.getCache().getDistributedSystem().getDistributedMember();
     Assert.assertTrue(me.equals(primary), "Function should have been executed on primary:" + primary
         + " but was executed on member:" + me);

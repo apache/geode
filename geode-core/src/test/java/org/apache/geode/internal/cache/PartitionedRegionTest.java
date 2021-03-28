@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -74,6 +73,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
@@ -219,7 +219,7 @@ public class PartitionedRegionTest {
     when(clientEvent.getOperation())
         .thenReturn(Operation.GET_FOR_REGISTER_INTEREST);
 
-    int bucketId = 0;
+    BucketId bucketId = BucketId.valueOf(0);
     doReturn(primaryMember)
         .when(spyPartitionedRegion).getNodeForBucketWrite(eq(bucketId), isNull());
 
@@ -230,8 +230,7 @@ public class PartitionedRegionTest {
     // ASSERT
     assertThat(memberForRegisterInterestRead)
         .isSameAs(primaryMember);
-    verify(spyPartitionedRegion)
-        .getNodeForBucketWrite(anyInt(), any());
+    verify(spyPartitionedRegion).getNodeForBucketWrite(any(), any());
   }
 
   @Test
@@ -245,7 +244,7 @@ public class PartitionedRegionTest {
     when(clientEvent.getOperation())
         .thenReturn(Operation.GET);
 
-    int bucketId = 0;
+    BucketId bucketId = BucketId.valueOf(0);
     doReturn(secondaryMember)
         .when(spyPartitionedRegion).getNodeForBucketRead(eq(bucketId));
 
@@ -257,7 +256,7 @@ public class PartitionedRegionTest {
     assertThat(memberForRegisterInterestRead)
         .isSameAs(secondaryMember);
     verify(spyPartitionedRegion)
-        .getNodeForBucketRead(anyInt());
+        .getNodeForBucketRead(any());
   }
 
   @Test
@@ -267,7 +266,7 @@ public class PartitionedRegionTest {
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
-    int bucketId = 0;
+    BucketId bucketId = BucketId.valueOf(0);
     doReturn(secondaryMember)
         .when(spyPartitionedRegion).getNodeForBucketRead(eq(bucketId));
 
@@ -279,7 +278,7 @@ public class PartitionedRegionTest {
     assertThat(memberForRegisterInterestRead)
         .isSameAs(secondaryMember);
     verify(spyPartitionedRegion)
-        .getNodeForBucketRead(anyInt());
+        .getNodeForBucketRead(any());
   }
 
   @Test
@@ -289,7 +288,7 @@ public class PartitionedRegionTest {
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
-    int bucketId = 0;
+    BucketId bucketId = BucketId.valueOf(0);
     doReturn(secondaryMember)
         .when(spyPartitionedRegion).getNodeForBucketRead(eq(bucketId));
 
@@ -301,7 +300,7 @@ public class PartitionedRegionTest {
     assertThat(memberForRegisterInterestRead)
         .isSameAs(secondaryMember);
     verify(spyPartitionedRegion)
-        .getNodeForBucketRead(anyInt());
+        .getNodeForBucketRead(any());
   }
 
   @Test
@@ -312,16 +311,17 @@ public class PartitionedRegionTest {
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
     doReturn(primaryMember)
-        .when(spyPartitionedRegion).getNodeForBucketWrite(anyInt(), isNull());
+        .when(spyPartitionedRegion).getNodeForBucketWrite(any(), isNull());
 
-    HashMap<InternalDistributedMember, HashSet<Integer>> nodeToBuckets = new HashMap<>();
+    HashMap<InternalDistributedMember, HashSet<BucketId>> nodeToBuckets = new HashMap<>();
 
     // ACT
-    spyPartitionedRegion.updateNodeToBucketMap(nodeToBuckets, asSet(0, 1));
+    spyPartitionedRegion.updateNodeToBucketMap(nodeToBuckets,
+        asSet(BucketId.valueOf(0), BucketId.valueOf(1)));
 
     // ASSERT
     verify(spyPartitionedRegion, times(2))
-        .getNodeForBucketWrite(anyInt(), isNull());
+        .getNodeForBucketWrite(any(), isNull());
   }
 
   @Test
@@ -332,18 +332,18 @@ public class PartitionedRegionTest {
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
     doReturn(primaryMember)
-        .when(spyPartitionedRegion).getNodeForBucketWrite(anyInt(), isNull());
+        .when(spyPartitionedRegion).getNodeForBucketWrite(any(), isNull());
 
-    Map<InternalDistributedMember, Map<Integer, Set<Object>>> nodeToBuckets =
-        new HashMap<>();
-    Map<Integer, Set<Object>> bucketKeys = asMapOfSet(0, 0, 1);
+    Map<InternalDistributedMember, Map<BucketId, Set<Object>>> nodeToBuckets = new HashMap<>();
+    Map<BucketId, Set<Object>> bucketKeys =
+        asMapOfSet(BucketId.valueOf(0), BucketId.valueOf(0), BucketId.valueOf(1));
 
     // ACT
     spyPartitionedRegion.updateNodeToBucketMap(nodeToBuckets, bucketKeys);
 
     // ASSERT
     verify(spyPartitionedRegion)
-        .getNodeForBucketWrite(anyInt(), isNull());
+        .getNodeForBucketWrite(any(), isNull());
   }
 
   @Test
@@ -489,7 +489,7 @@ public class PartitionedRegionTest {
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
     KeyInfo keyInfo = mock(KeyInfo.class);
-    when(keyInfo.getBucketId()).thenReturn(1);
+    when(keyInfo.getBucketId()).thenReturn(BucketId.valueOf(1));
     doReturn(null).when(spyPartitionedRegion).getDataStore();
 
     Throwable caughtException =
@@ -507,13 +507,14 @@ public class PartitionedRegionTest {
     KeyInfo keyInfo = mock(KeyInfo.class);
     Object key = new Object();
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
-    when(keyInfo.getBucketId()).thenReturn(1);
+    when(keyInfo.getBucketId()).thenReturn(BucketId.valueOf(1));
     when(keyInfo.getKey()).thenReturn(key);
     when(keyInfo.isCheckPrimary()).thenReturn(true);
     doReturn(dataStore).when(spyPartitionedRegion).getDataStore();
     doThrow(new ForceReattemptException("")).when(dataStore)
-        .getInitializedBucketWithKnownPrimaryForId(key, 1);
-    doReturn(mock(InternalDistributedMember.class)).when(spyPartitionedRegion).createBucket(1, 0,
+        .getInitializedBucketWithKnownPrimaryForId(key, BucketId.valueOf(1));
+    doReturn(mock(InternalDistributedMember.class)).when(spyPartitionedRegion).createBucket(
+        BucketId.valueOf(1), 0,
         null);
 
     Throwable caughtException =
@@ -531,11 +532,11 @@ public class PartitionedRegionTest {
     KeyInfo keyInfo = mock(KeyInfo.class);
     Object key = new Object();
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
-    when(keyInfo.getBucketId()).thenReturn(1);
+    when(keyInfo.getBucketId()).thenReturn(BucketId.valueOf(1));
     when(keyInfo.getKey()).thenReturn(key);
     doReturn(dataStore).when(spyPartitionedRegion).getDataStore();
     doThrow(new RegionDestroyedException("", "")).when(dataStore)
-        .getInitializedBucketWithKnownPrimaryForId(key, 1);
+        .getInitializedBucketWithKnownPrimaryForId(key, BucketId.valueOf(1));
 
     Throwable caughtException =
         catchThrowable(() -> spyPartitionedRegion.getDataRegionForWrite(keyInfo));

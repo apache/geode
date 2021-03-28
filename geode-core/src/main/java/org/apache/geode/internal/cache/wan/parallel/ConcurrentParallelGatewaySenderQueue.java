@@ -26,6 +26,7 @@ import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 
@@ -171,24 +172,24 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  private ParallelGatewaySenderEventProcessor getPGSProcessor(int bucketId) {
-    int index = bucketId % processors.length;
+  private ParallelGatewaySenderEventProcessor getPGSProcessor(BucketId bucketId) {
+    int index = bucketId.intValue() % processors.length;
     return processors[index];
   }
 
-  public RegionQueue getQueueByBucket(int bucketId) {
+  public RegionQueue getQueueByBucket(BucketId bucketId) {
     return getPGSProcessor(bucketId).getQueue();
   }
 
-  public BlockingQueue<GatewaySenderEventImpl> getBucketTmpQueue(int bucketId) {
+  public BlockingQueue<GatewaySenderEventImpl> getBucketTmpQueue(BucketId bucketId) {
     return getPGSProcessor(bucketId).getBucketTmpQueue(bucketId);
   }
 
-  public void notifyEventProcessorIfRequired(int bucketId) {
+  public void notifyEventProcessorIfRequired(BucketId bucketId) {
     getPGSProcessor(bucketId).notifyEventProcessorIfRequired(bucketId);
   }
 
-  public void clear(PartitionedRegion pr, int bucketId) {
+  public void clear(PartitionedRegion pr, BucketId bucketId) {
     getPGSProcessor(bucketId).clear(pr, bucketId);
   }
 
@@ -198,7 +199,7 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  public void conflateEvent(Conflatable conflatableObject, int bucketId, Long tailKey) {
+  public void conflateEvent(Conflatable conflatableObject, BucketId bucketId, Long tailKey) {
     getPGSProcessor(bucketId).conflateEvent(conflatableObject, bucketId, tailKey);
   }
 

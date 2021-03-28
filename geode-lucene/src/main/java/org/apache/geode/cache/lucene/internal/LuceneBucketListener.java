@@ -20,6 +20,7 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.geode.cache.partition.PartitionListenerAdapter;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.PrimaryBucketException;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class LuceneBucketListener extends PartitionListenerAdapter {
@@ -37,7 +38,7 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
   public void afterPrimary(int bucketId) {
     dm.getExecutors().getWaitingThreadPool().execute(() -> {
       try {
-        lucenePartitionRepositoryManager.computeRepository(bucketId);
+        lucenePartitionRepositoryManager.computeRepository(BucketId.valueOf(bucketId));
       } catch (PrimaryBucketException e) {
         logger.info("Index repository could not be created because we are no longer primary?", e);
       }
@@ -53,7 +54,7 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
   public void afterSecondary(int bucketId) {
     dm.getExecutors().getWaitingThreadPool().execute(() -> {
       try {
-        lucenePartitionRepositoryManager.computeRepository(bucketId);
+        lucenePartitionRepositoryManager.computeRepository(BucketId.valueOf(bucketId));
       } catch (PrimaryBucketException | AlreadyClosedException e) {
         logger.debug("Exception while cleaning up Lucene Index Repository", e);
       }

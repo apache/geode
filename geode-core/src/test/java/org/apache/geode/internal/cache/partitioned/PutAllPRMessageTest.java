@@ -49,7 +49,7 @@ public class PutAllPRMessageTest {
   private Object[] keys;
   private DistributedPutAllOperation.PutAllEntryData entryData;
 
-  private final int bucketId = 1;
+  private final BucketId bucketId = BucketId.valueOf(1);
 
   @Before
   public void setup() throws Exception {

@@ -31,6 +31,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderProfile;
@@ -249,8 +250,9 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     long originalThreadId = originalEventId.getThreadID();
     long newThreadId = originalThreadId;
     if (!ThreadIdentifier.isWanTypeThreadID(newThreadId)) {
-      newThreadId = ThreadIdentifier.createFakeThreadIDForParallelGSPrimaryBucket(0,
-          originalThreadId, getEventIdIndex());
+      newThreadId =
+          ThreadIdentifier.createFakeThreadIDForParallelGSPrimaryBucket(BucketId.valueOf(0),
+              originalThreadId, getEventIdIndex());
     }
     EventID newEventId = new EventID(originalEventId.getMembershipID(), newThreadId,
         originalEventId.getSequenceID());

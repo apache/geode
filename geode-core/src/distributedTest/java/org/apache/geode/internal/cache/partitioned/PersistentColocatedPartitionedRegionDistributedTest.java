@@ -199,10 +199,10 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       createData(childRegionName2, "c");
     });
 
-    Map<Integer, Set<Integer>> bucketIdsInVM = new HashMap<>();
+    Map<Integer, Set<BucketId>> bucketIdsInVM = new HashMap<>();
     for (VM vm : toArray(vm0, vm1, vm2)) {
       bucketIdsInVM.put(vm.getId(), vm.invoke(() -> {
-        Set<Integer> bucketIds = getBucketIds(regionName);
+        Set<BucketId> bucketIds = getBucketIds(regionName);
         assertThat(getBucketIds(childRegionName1)).isEqualTo(bucketIds);
         assertThat(getBucketIds(childRegionName2)).isEqualTo(bucketIds);
         return bucketIds;
@@ -229,7 +229,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     // The secondary buckets can be recovered asynchronously, so wait for them to come back.
     for (VM vm : toArray(vm0, vm1)) {
-      Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
+      Set<BucketId> bucketIds = bucketIdsInVM.get(vm.getId());
       vm.invoke(() -> {
         waitForBuckets(regionName, bucketIds);
         waitForBuckets(childRegionName1, bucketIds);
@@ -250,7 +250,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     // The region 3 buckets should be restored in the appropriate places.
     for (VM vm : toArray(vm0, vm1, vm2)) {
-      Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
+      Set<BucketId> bucketIds = bucketIdsInVM.get(vm.getId());
       assertThat(vm.invoke(() -> getBucketIds(childRegionName2))).isEqualTo(bucketIds);
     }
   }
@@ -278,7 +278,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     for (VM vm : toArray(vm0, vm1)) {
       vm.invoke(() -> {
-        Set<Integer> bucketIds = getBucketIds(regionName);
+        Set<BucketId> bucketIds = getBucketIds(regionName);
         assertThat(bucketIds).isNotEmpty();
         assertThat(getBucketIds(childRegionName1)).isEqualTo(bucketIds);
       });
@@ -328,7 +328,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     for (VM vm : toArray(vm0, vm1)) {
       vm.invoke(() -> {
-        Set<Integer> bucketIds = getBucketIds(regionName);
+        Set<BucketId> bucketIds = getBucketIds(regionName);
         assertThat(bucketIds).isNotEmpty();
         assertThat(getBucketIds(childRegionName1)).isEqualTo(bucketIds);
       });
@@ -405,7 +405,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     for (VM vm : toArray(vm0, vm1)) {
       vm.invoke(() -> {
-        Set<Integer> bucketIds = getBucketIds(regionName);
+        Set<BucketId> bucketIds = getBucketIds(regionName);
         assertThat(bucketIds).isNotEmpty();
         assertThat(getBucketIds(childRegionName1)).isEqualTo(bucketIds);
       });
@@ -443,7 +443,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     for (VM vm : toArray(vm0, vm1)) {
       vm.invoke(() -> {
-        Set<Integer> bucketIds = getBucketIds(regionName);
+        Set<BucketId> bucketIds = getBucketIds(regionName);
         assertThat(bucketIds).isNotEmpty();
         assertThat(getBucketIds(childRegionName1)).isEqualTo(bucketIds);
       });
@@ -487,10 +487,10 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       createData(childRegionName1, "c");
     });
 
-    Map<Integer, Set<Integer>> bucketIdsInVM = new HashMap<>();
+    Map<Integer, Set<BucketId>> bucketIdsInVM = new HashMap<>();
     for (VM vm : toArray(vm0, vm1)) {
       bucketIdsInVM.put(vm.getId(), vm.invoke(() -> {
-        Set<Integer> bucketIds = getBucketIds(regionName);
+        Set<BucketId> bucketIds = getBucketIds(regionName);
         assertThat(bucketIds).isNotEmpty();
         return bucketIds;
       }));
@@ -499,7 +499,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     for (int i = 2; i < childPRCount + 2; ++i) {
       String childRegionName = "region" + i;
       for (VM vm : toArray(vm0, vm1)) {
-        Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
+        Set<BucketId> bucketIds = bucketIdsInVM.get(vm.getId());
         assertThat(vm.invoke(() -> getBucketIds(childRegionName))).isEqualTo(bucketIds);
       }
     }
@@ -543,10 +543,10 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       createData(childRegionName1, "c");
     });
 
-    Map<Integer, Set<Integer>> bucketIdsInVM = new HashMap<>();
+    Map<Integer, Set<BucketId>> bucketIdsInVM = new HashMap<>();
     for (VM vm : toArray(vm0, vm1)) {
       bucketIdsInVM.put(vm.getId(), vm.invoke(() -> {
-        Set<Integer> bucketIds = getBucketIds(regionName);
+        Set<BucketId> bucketIds = getBucketIds(regionName);
         assertThat(bucketIds).isNotEmpty();
         return bucketIds;
       }));
@@ -555,7 +555,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     for (int i = 2; i < childPRCount + 2; ++i) {
       String childRegionName = "region" + i;
       for (VM vm : toArray(vm0, vm1)) {
-        Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
+        Set<BucketId> bucketIds = bucketIdsInVM.get(vm.getId());
         assertThat(vm.invoke(() -> getBucketIds(childRegionName))).isEqualTo(bucketIds);
       }
     }
@@ -604,10 +604,10 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       createData(childRegionName2, "c");
     });
 
-    Map<Integer, Set<Integer>> bucketIdsInVM = new HashMap<>();
+    Map<Integer, Set<BucketId>> bucketIdsInVM = new HashMap<>();
     for (VM vm : toArray(vm0, vm1)) {
       bucketIdsInVM.put(vm.getId(), vm.invoke(() -> {
-        Set<Integer> bucketIds = getBucketIds(regionName);
+        Set<BucketId> bucketIds = getBucketIds(regionName);
         assertThat(bucketIds).isNotEmpty();
         return bucketIds;
       }));
@@ -616,7 +616,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     for (int i = 2; i < childPRGenerations + 2; ++i) {
       String childRegionName = "region" + i;
       for (VM vm : toArray(vm0, vm1)) {
-        Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
+        Set<BucketId> bucketIds = bucketIdsInVM.get(vm.getId());
         assertThat(vm.invoke(() -> getBucketIds(childRegionName))).isEqualTo(bucketIds);
       }
     }
@@ -662,10 +662,10 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       createData(childRegionName2, "c");
     });
 
-    Map<Integer, Set<Integer>> bucketIdsInVM = new HashMap<>();
+    Map<Integer, Set<BucketId>> bucketIdsInVM = new HashMap<>();
     for (VM vm : toArray(vm0, vm1)) {
       bucketIdsInVM.put(vm.getId(), vm.invoke(() -> {
-        Set<Integer> bucketIds = getBucketIds(regionName);
+        Set<BucketId> bucketIds = getBucketIds(regionName);
         assertThat(bucketIds).isNotEmpty();
         return bucketIds;
       }));
@@ -674,7 +674,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     for (int i = 2; i < childPRGenerationsCount + 2; ++i) {
       String childRegionName = "region" + i;
       for (VM vm : toArray(vm0, vm1)) {
-        Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
+        Set<BucketId> bucketIds = bucketIdsInVM.get(vm.getId());
         assertThat(vm.invoke(() -> getBucketIds(childRegionName))).isEqualTo(bucketIds);
       }
     }
@@ -742,10 +742,10 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       createData("Gen2_C2_2", "c");
     });
 
-    Map<Integer, Set<Integer>> bucketIdsInVM = new HashMap<>();
+    Map<Integer, Set<BucketId>> bucketIdsInVM = new HashMap<>();
     for (VM vm : toArray(vm0, vm1)) {
       bucketIdsInVM.put(vm.getId(), vm.invoke(() -> {
-        Set<Integer> bucketIds = getBucketIds("Parent");
+        Set<BucketId> bucketIds = getBucketIds("Parent");
         assertThat(bucketIds).isNotEmpty();
         return bucketIds;
       }));
@@ -754,7 +754,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     for (String region : asList("Gen1_C1", "Gen1_C2", "Gen2_C1_1", "Gen2_C1_2", "Gen2_C2_1",
         "Gen2_C2_2")) {
       for (VM vm : toArray(vm0, vm1)) {
-        Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
+        Set<BucketId> bucketIds = bucketIdsInVM.get(vm.getId());
         assertThat(vm.invoke(() -> getBucketIds(region))).isEqualTo(bucketIds);
       }
     }
@@ -793,10 +793,10 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       createData(childRegionName1, "b");
     });
 
-    Map<Integer, Set<Integer>> bucketIdsInVM = new HashMap<>();
+    Map<Integer, Set<BucketId>> bucketIdsInVM = new HashMap<>();
     for (VM vm : toArray(vm0, vm1, vm2)) {
       bucketIdsInVM.put(vm.getId(), vm.invoke(() -> {
-        Set<Integer> bucketIds = getBucketIds(regionName);
+        Set<BucketId> bucketIds = getBucketIds(regionName);
         assertThat(bucketIds).isNotEmpty();
         return bucketIds;
       }));
@@ -804,7 +804,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
       vm.invoke(() -> {
-        Set<Integer> primaryBucketIds = getPrimaryBucketIds(regionName);
+        Set<BucketId> primaryBucketIds = getPrimaryBucketIds(regionName);
         assertThat(getPrimaryBucketIds(childRegionName1)).isEqualTo(primaryBucketIds);
       });
     }
@@ -830,7 +830,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
-      Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
+      Set<BucketId> bucketIds = bucketIdsInVM.get(vm.getId());
       vm.invoke(() -> {
         assertThat(getBucketIds(regionName)).isEqualTo(bucketIds);
         assertThat(getBucketIds(childRegionName1)).isEqualTo(bucketIds);
@@ -840,7 +840,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     // primary can differ
     for (VM vm : toArray(vm0, vm1, vm2)) {
       vm.invoke(() -> {
-        Set<Integer> primaryBucketIds = getPrimaryBucketIds(regionName);
+        Set<BucketId> primaryBucketIds = getPrimaryBucketIds(regionName);
         assertThat(getPrimaryBucketIds(childRegionName1)).isEqualTo(primaryBucketIds);
       });
     }
@@ -857,7 +857,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     // Now all the buckets should be restored in the appropriate places.
     for (VM vm : toArray(vm0, vm1, vm2)) {
-      Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
+      Set<BucketId> bucketIds = bucketIdsInVM.get(vm.getId());
       vm.invoke(() -> {
         assertThat(getBucketIds(childRegionName1)).isEqualTo(bucketIds);
       });
@@ -885,10 +885,10 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       createData(childRegionName1, "b");
     });
 
-    Map<Integer, Set<Integer>> bucketIdsInVM = new HashMap<>();
+    Map<Integer, Set<BucketId>> bucketIdsInVM = new HashMap<>();
     for (VM vm : toArray(vm0, vm1, vm2)) {
       bucketIdsInVM.put(vm.getId(), vm.invoke(() -> {
-        Set<Integer> bucketIds = getBucketIds(regionName);
+        Set<BucketId> bucketIds = getBucketIds(regionName);
         assertThat(getBucketIds(childRegionName1)).isEqualTo(bucketIds);
         return bucketIds;
       }));
@@ -896,7 +896,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
       vm.invoke(() -> {
-        Set<Integer> primaryBucketIds = getPrimaryBucketIds(regionName);
+        Set<BucketId> primaryBucketIds = getPrimaryBucketIds(regionName);
         assertThat(getPrimaryBucketIds(childRegionName1)).isEqualTo(primaryBucketIds);
       });
     }
@@ -937,7 +937,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     for (VM vm : toArray(vm0, vm1)) {
-      Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
+      Set<BucketId> bucketIds = bucketIdsInVM.get(vm.getId());
       vm.invoke(() -> waitForBucketRecovery(regionName, bucketIds));
     }
 
@@ -952,7 +952,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     });
 
     // Now we initialize vm2.
-    Set<Integer> bucketIds = bucketIdsInVM.get(vm2.getId());
+    Set<BucketId> bucketIds = bucketIdsInVM.get(vm2.getId());
     vm2.invoke(() -> {
       createCache();
       createDiskStore(diskStoreName1);
@@ -973,7 +973,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
       vm.invoke(() -> {
-        Set<Integer> buckets = getPrimaryBucketIds(regionName);
+        Set<BucketId> buckets = getPrimaryBucketIds(regionName);
         assertThat(getPrimaryBucketIds(childRegionName1)).isEqualTo(buckets);
       });
     }
@@ -1543,7 +1543,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
   /**
    * Test that a rebalance will regions are in the middle of recovery doesn't cause issues.
    *
-   * This is slightly different than {@link #testRebalanceWithOfflineChildRegion(boolean)} because
+   * This is slightly different than {@link #testRebalanceWithOfflineChildRegion(String)} because
    * in this case all of the regions have been created, but they are in the middle of actually
    * recovering buckets from disk.
    */
@@ -1604,8 +1604,8 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       });
 
       // Try to forcibly move some buckets to vm2 (this should not succeed).
-      moveBucket(0, vm1, vm2);
-      moveBucket(1, vm1, vm2);
+      moveBucket(BucketId.valueOf(0), vm1, vm2);
+      moveBucket(BucketId.valueOf(1), vm1, vm2);
 
     } finally {
       vm1.invoke(() -> {
@@ -2000,17 +2000,17 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
   }
 
-  private Set<Integer> getBucketIds(String regionName) {
+  private Set<BucketId> getBucketIds(String regionName) {
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
     return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
   }
 
-  private Set<Integer> getPrimaryBucketIds(String regionName) {
+  private Set<BucketId> getPrimaryBucketIds(String regionName) {
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
     return new TreeSet<>(region.getDataStore().getAllLocalPrimaryBucketIds());
   }
 
-  private void moveBucket(int bucketId, VM sourceVM, VM targetVM) {
+  private void moveBucket(BucketId bucketId, VM sourceVM, VM targetVM) {
     InternalDistributedMember sourceId =
         sourceVM.invoke(() -> getCache().getInternalDistributedSystem().getDistributedMember());
 
@@ -2029,21 +2029,21 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
   }
 
-  private void waitForBuckets(String regionName, Set<Integer> expectedBucketIds) {
+  private void waitForBuckets(String regionName, Set<BucketId> expectedBucketIds) {
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
 
     await().untilAsserted(() -> {
-      Set<Integer> allLocalBucketIds = new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
+      Set<BucketId> allLocalBucketIds = new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
       assertThat(allLocalBucketIds).isEqualTo(expectedBucketIds);
     });
   }
 
-  private void waitForBucketRecovery(String regionName, Set<Integer> lostBucketIds) {
+  private void waitForBucketRecovery(String regionName, Set<BucketId> lostBucketIds) {
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
     PartitionedRegionDataStore dataStore = region.getDataStore();
 
     await().untilAsserted(() -> {
-      Set<Integer> allLocalBucketIds = dataStore.getAllLocalBucketIds();
+      Set<BucketId> allLocalBucketIds = dataStore.getAllLocalBucketIds();
       assertThat(lostBucketIds).isEqualTo(allLocalBucketIds);
     });
   }
@@ -2134,7 +2134,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     @Override
-    public void beforeBucketCreation(PartitionedRegion region, int bucketId) {
+    public void beforeBucketCreation(PartitionedRegion region, BucketId bucketId) {
       if (region.getName().contains(childRegionName)) {
         bucketCreateStarted.countDown();
         waitForRebalance();

@@ -37,6 +37,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache30.CertifiableTestCacheListener;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 
@@ -183,7 +184,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCas
       }
 
       // Grab a bucket id
-      int bucketId = region.getRegionAdvisor().getBucketSet().iterator().next();
+      BucketId bucketId = region.getRegionAdvisor().getBucketSet().iterator().next();
       assertThat(bucketId).isNotNull();
 
       // Find a host for the bucket
@@ -246,7 +247,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCas
     if (stillHasDS.get(vm)) {
       vm.invoke(() -> {
         PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(uniqueName + "0");
-        for (int bucketId : pr.getRegionAdvisor().getBucketSet()) {
+        for (BucketId bucketId : pr.getRegionAdvisor().getBucketSet()) {
           assertThatBucketHasRedundantCopies(pr, bucketId);
         }
       });
@@ -254,7 +255,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCas
 
   }
 
-  private void assertThatBucketHasRedundantCopies(PartitionedRegion pr, int bucketId) {
+  private void assertThatBucketHasRedundantCopies(PartitionedRegion pr, BucketId bucketId) {
     boolean forceReattempt;
     do {
       forceReattempt = false;
@@ -308,7 +309,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCas
       }
       PartitionedRegion prRegion = (PartitionedRegion) prRegionObject;
 
-      for (int bucketId : prRegion.getRegionAdvisor().getBucketSet()) {
+      for (BucketId bucketId : prRegion.getRegionAdvisor().getBucketSet()) {
         Set<InternalDistributedMember> bucketOwners =
             prRegion.getRegionAdvisor().getBucketOwners(bucketId);
         assertThat(bucketOwners).doesNotContain(member);

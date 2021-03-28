@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.execute.MemberMappedArgument;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender65;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -75,12 +76,13 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
     MemberMappedArgument memberMappedArg = null;
     byte isExecuteOnAllBuckets = 0;
     Set<Object> filter = null;
-    Set<Integer> buckets = null;
+    Set<BucketId> buckets = null;
     byte hasResult = 0;
     byte functionState = 0;
     Set<String> removedNodesSet = null;
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     int functionTimeout = DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+
     try {
       byte[] bytes = clientMessage.getPart(0).getSerializedForm();
       functionState = bytes[0];
@@ -115,7 +117,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
           buckets = new HashSet<>();
           partNumber = 7;
           for (int i = 0; i < bucketIdsSize; i++) {
-            buckets.add(clientMessage.getPart(partNumber + i).getInt());
+            buckets.add(BucketId.valueOf(clientMessage.getPart(partNumber + i).getInt()));
           }
         }
         partNumber = 7 + bucketIdsSize;
@@ -230,7 +232,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
 
       if (isExecuteOnAllBuckets == 1) {
         PartitionedRegion pr = (PartitionedRegion) region;
-        Set<Integer> actualBucketSet = pr.getRegionAdvisor().getBucketSet();
+        Set<BucketId> actualBucketSet = pr.getRegionAdvisor().getBucketSet();
         try {
           buckets.retainAll(actualBucketSet);
         } catch (NoSuchElementException ignored) {

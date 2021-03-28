@@ -32,6 +32,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
@@ -208,21 +209,22 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
     // Create a batch of conflatable and non-conflatable events with one duplicate conflatable event
     // and one duplicate non-conflatable event (including the shadowKey)
     List<GatewaySenderEventImpl> originalEvents = new ArrayList<>();
+    final BucketId bucketId = BucketId.valueOf(89);
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.UPDATE,
-        "Object_6079", "Object_6079", 104, 2, 89, 16587));
+        "Object_6079", "Object_6079", 104, 2, bucketId, 16587));
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.DESTROY,
-        "Object_6079", null, 104, 3, 89, 16700));
+        "Object_6079", null, 104, 3, bucketId, 16700));
     originalEvents
         .add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.PUTALL_UPDATE,
-            "Object_7731", "Object_7731", 112, 9, 89, 16813));
+            "Object_7731", "Object_7731", 112, 9, bucketId, 16813));
     originalEvents
         .add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.PUTALL_UPDATE,
-            "Object_6591", "Object_6591", 112, 12, 89, 16926));
+            "Object_6591", "Object_6591", 112, 12, bucketId, 16926));
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.DESTROY,
-        "Object_6079", null, 104, 3, 89, 16700));
+        "Object_6079", null, 104, 3, bucketId, 16700));
     originalEvents
         .add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.PUTALL_UPDATE,
-            "Object_7731", "Object_7731", 112, 9, 89, 16813));
+            "Object_7731", "Object_7731", 112, 9, bucketId, 16813));
     logEvents("original", originalEvents);
 
     // Conflate the batch of events
@@ -262,20 +264,21 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
     // Create a batch of conflatable events with duplicate create and destroy events on the same key
     // from different threads
     List<GatewaySenderEventImpl> originalEvents = new ArrayList<>();
+    final BucketId bucketId = BucketId.valueOf(0);
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.CREATE,
-        "6079", "6079", 6, 6072, 0, 0));
+        "6079", "6079", 6, 6072, bucketId, 0));
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.UPDATE,
-        "6079", "6079", 6, 6073, 0, 0));
+        "6079", "6079", 6, 6073, bucketId, 0));
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.CREATE,
-        "1736", "1736", 5, 6009, 0, 0));
+        "1736", "1736", 5, 6009, bucketId, 0));
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.DESTROY,
-        "6079", "6079", 6, 6074, 0, 0));
+        "6079", "6079", 6, 6074, bucketId, 0));
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.DESTROY,
-        "1736", "1736", 5, 6011, 0, 0));
+        "1736", "1736", 5, 6011, bucketId, 0));
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.CREATE,
-        "1736", "1736", 6, 6087, 0, 0));
+        "1736", "1736", 6, 6087, bucketId, 0));
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.DESTROY,
-        "1736", "1736", 6, 6089, 0, 0));
+        "1736", "1736", 6, 6089, bucketId, 0));
     logEvents("original", originalEvents);
 
     // Conflate the batch of events

@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.fake.Fakes;
 
 public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryManagerJUnitTest {
@@ -84,20 +85,21 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
   }
 
   @Override
-  protected void checkRepository(IndexRepositoryImpl repo0, int... bucketId) {
+  protected void checkRepository(IndexRepositoryImpl repo0, BucketId... bucketId) {
     IndexWriter writer0 = repo0.getWriter();
     Directory dir0 = writer0.getDirectory();
     assertTrue(dir0 instanceof NIOFSDirectory);
   }
 
   @Override
-  protected BucketRegion setUpMockBucket(int id) throws BucketNotFoundException {
+  protected BucketRegion setUpMockBucket(BucketId id) throws BucketNotFoundException {
     BucketRegion mockBucket = Mockito.mock(BucketRegion.class);
     when(mockBucket.getId()).thenReturn(id);
     when(userRegion.getBucketRegion(eq(id), eq(null))).thenReturn(mockBucket);
     when(userDataStore.getLocalBucketById(eq(id))).thenReturn(mockBucket);
-    when(userRegion.getBucketRegion(eq(id + 113), eq(null))).thenReturn(mockBucket);
-    when(userDataStore.getLocalBucketById(eq(id + 113))).thenReturn(mockBucket);
+    when(userRegion.getBucketRegion(eq(id.intValue() + 113), eq(null))).thenReturn(mockBucket);
+    when(userDataStore.getLocalBucketById(eq(BucketId.valueOf(id.intValue() + 113))))
+        .thenReturn(mockBucket);
     dataBuckets.put(id, mockBucket);
 
     repoManager.computeRepository(mockBucket.getId());
@@ -107,7 +109,7 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
   @Override
   @Test
   public void createMissingBucket() throws BucketNotFoundException {
-    setUpMockBucket(0);
+    setUpMockBucket(BucketId.valueOf(0));
 
     assertNotNull(repoManager.getRepository(userRegion, 0, null));
   }

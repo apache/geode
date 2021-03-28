@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
  * {@link Integer} cache is -128 to +127. This class is optimized for positive bucket indexes only.
  */
 public final class BucketId implements Comparable<BucketId> {
-  static final int max = 123;
+  static final int max = 113;
   private static final BucketId[] values;
 
   static {
@@ -35,6 +35,8 @@ public final class BucketId implements Comparable<BucketId> {
       values[i] = new BucketId(i);
     }
   }
+
+  public static final BucketId UNKNOWN_BUCKET = new BucketId(-1);
 
   private final int bucketId;
 
@@ -45,6 +47,7 @@ public final class BucketId implements Comparable<BucketId> {
   /**
    * Returns the {@code int} value for this {@link BucketId}. Be careful not to use the value in
    * any methods that would result in autoboxing.
+   *
    * @return {@code int} value for this {@link BucketId}.
    */
   public int intValue() {
@@ -53,18 +56,22 @@ public final class BucketId implements Comparable<BucketId> {
 
   /**
    * Returns the {@link BucketId} for given {@code int} value.
+   *
    * @param bucketId {@code int} value to get {@link BucketId} for.
    * @return BucketId or throws {@link IndexOutOfBoundsException}.
    * @throws IndexOutOfBoundsException if bucketId is out of range.
    */
   public static BucketId valueOf(final int bucketId) {
+    if (-1 == bucketId) {
+      return UNKNOWN_BUCKET;
+    }
     return values[bucketId];
   }
 
   @Override
   public boolean equals(final Object object) {
     if (object instanceof BucketId) {
-      return bucketId == ((BucketId)object).bucketId;
+      return bucketId == ((BucketId) object).bucketId;
     }
     return false;
   }

@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.partitioned.rebalance;
 import java.util.Map;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /**
  * A BucketOperator which does nothing. Used for simulations.
@@ -25,25 +26,25 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 public class SimulatedBucketOperator implements BucketOperator {
 
   @Override
-  public void createRedundantBucket(InternalDistributedMember targetMember, int i,
+  public void createRedundantBucket(InternalDistributedMember targetMember, BucketId i,
       Map<String, Long> colocatedRegionBytes, BucketOperator.Completion completion) {
     completion.onSuccess();
   }
 
   @Override
   public boolean moveBucket(InternalDistributedMember source, InternalDistributedMember target,
-      int id, Map<String, Long> colocatedRegionBytes) {
+      BucketId id, Map<String, Long> colocatedRegionBytes) {
     return true;
   }
 
   @Override
   public boolean movePrimary(InternalDistributedMember source, InternalDistributedMember target,
-      int bucketId) {
+      BucketId bucketId) {
     return true;
   }
 
   @Override
-  public boolean removeBucket(InternalDistributedMember memberId, int id,
+  public boolean removeBucket(InternalDistributedMember memberId, BucketId id,
       Map<String, Long> colocatedRegionSizes) {
     return true;
   }

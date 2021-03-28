@@ -50,7 +50,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
 
   private static final Logger logger = LogService.getLogger();
 
-  private volatile int bucketId;
+  private volatile BucketId bucketId;
 
   /**
    * Empty constructor to satisfy {@link DataSerializer} requirements
@@ -58,7 +58,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
   public DeposePrimaryBucketMessage() {}
 
   private DeposePrimaryBucketMessage(InternalDistributedMember recipient, int regionId,
-      ReplyProcessor21 processor, int bucketId) {
+      ReplyProcessor21 processor, BucketId bucketId) {
     super(recipient, regionId, processor);
     this.bucketId = bucketId;
   }
@@ -72,7 +72,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
    * @return the processor used to wait for the response
    */
   public static DeposePrimaryBucketResponse send(InternalDistributedMember recipient,
-      PartitionedRegion region, int bucketId) {
+      PartitionedRegion region, BucketId bucketId) {
 
     Assert.assertTrue(recipient != null, "DeposePrimaryBucketMessage NULL recipient");
 
@@ -130,14 +130,14 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
   }
 
   public static class DeposePrimaryBucketReplyMessage extends ReplyMessage {

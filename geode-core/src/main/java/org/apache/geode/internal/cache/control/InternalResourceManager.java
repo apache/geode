@@ -50,6 +50,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.internal.cache.partitioned.SizedBasedLoadProbe;
 import org.apache.geode.internal.classloader.ClassPathLoader;
@@ -437,7 +438,7 @@ public class InternalResourceManager implements ResourceManager {
      * @param source the member the bucket is moving from
      * @param target the member the bucket is moving to
      */
-    void movingBucket(Region<?, ?> region, int bucketId, DistributedMember source,
+    void movingBucket(Region<?, ?> region, BucketId bucketId, DistributedMember source,
         DistributedMember target);
 
     /**
@@ -448,7 +449,7 @@ public class InternalResourceManager implements ResourceManager {
      * @param source the member the bucket primary is moving from
      * @param target the member the bucket primary is moving to
      */
-    void movingPrimary(Region<?, ?> region, int bucketId, DistributedMember source,
+    void movingPrimary(Region<?, ?> region, BucketId bucketId, DistributedMember source,
         DistributedMember target);
   }
 
@@ -494,13 +495,13 @@ public class InternalResourceManager implements ResourceManager {
     }
 
     @Override
-    public void movingBucket(Region<?, ?> region, int bucketId, DistributedMember source,
+    public void movingBucket(Region<?, ?> region, BucketId bucketId, DistributedMember source,
         DistributedMember target) {
       // do nothing
     }
 
     @Override
-    public void movingPrimary(Region<?, ?> region, int bucketId, DistributedMember source,
+    public void movingPrimary(Region<?, ?> region, BucketId bucketId, DistributedMember source,
         DistributedMember target) {
       // do nothing
     }

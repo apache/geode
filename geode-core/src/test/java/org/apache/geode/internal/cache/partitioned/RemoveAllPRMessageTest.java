@@ -49,7 +49,7 @@ public class RemoveAllPRMessageTest {
   private Object[] keys;
   private DistributedRemoveAllOperation.RemoveAllEntryData entryData;
 
-  private final int bucketId = 1;
+  private final BucketId bucketId = BucketId.valueOf(1);
 
   @Before
   public void setup() throws Exception {
@@ -76,7 +76,7 @@ public class RemoveAllPRMessageTest {
 
 
   @Test
-  public void doPostRemoveAllCallsCheckReadinessBeforeAndAfter() throws Exception {
+  public void doPostRemoveAllCallsCheckReadinessBeforeAndAfter() {
     DistributedRemoveAllOperation distributedRemoveAllOperation =
         mock(DistributedRemoveAllOperation.class);
     InternalDataView internalDataView = mock(InternalDataView.class);

@@ -56,6 +56,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
@@ -553,7 +554,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
                   qpr = ((ParallelGatewaySenderQueue) getQueue())
                       .getRegion(event.getRegionPath());
                 }
-                int bucketId = event.getBucketId();
+                BucketId bucketId = event.getBucketId();
                 // if the bucket from which the event has been picked is no longer
                 // primary, then set possibleDuplicate to true on the event
                 if (qpr != null) {
@@ -1240,15 +1241,15 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     numEventsDispatched += newEventsDispatched;
   }
 
-  public void clear(PartitionedRegion pr, int bucketId) {
+  public void clear(PartitionedRegion pr, BucketId bucketId) {
     ((ParallelGatewaySenderQueue) queue).clear(pr, bucketId);
   }
 
-  public void notifyEventProcessorIfRequired(int bucketId) {
+  public void notifyEventProcessorIfRequired(BucketId bucketId) {
     ((ParallelGatewaySenderQueue) queue).notifyEventProcessorIfRequired();
   }
 
-  public BlockingQueue<GatewaySenderEventImpl> getBucketTmpQueue(int bucketId) {
+  public BlockingQueue<GatewaySenderEventImpl> getBucketTmpQueue(BucketId bucketId) {
     return ((ParallelGatewaySenderQueue) queue).getBucketToTempQueueMap().get(bucketId);
   }
 
@@ -1260,7 +1261,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     ((ParallelGatewaySenderQueue) queue).removeShadowPR(prRegionName);
   }
 
-  public void conflateEvent(Conflatable conflatableObject, int bucketId, Long tailKey) {
+  public void conflateEvent(Conflatable conflatableObject, BucketId bucketId, Long tailKey) {
     ((ParallelGatewaySenderQueue) queue).conflateEvent(conflatableObject, bucketId, tailKey);
   }
 

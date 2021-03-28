@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,6 +34,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -44,7 +44,6 @@ import org.apache.geode.test.dunit.cache.CacheTestCase;
 /**
  * This class tests bucket Creation and distribution for the multiple Partition regions.
  */
-
 public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheTestCase {
 
   private String regionOne;
@@ -509,7 +508,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
    * refuse for different reasons, in this case VMs may refuse because they are above their maximum.
    */
   @Test
-  public void testCompleteBucketAllocation() throws Exception {
+  public void testCompleteBucketAllocation() {
     invokeInEveryVM(() -> {
       PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
       partitionAttributesFactory.setLocalMaxMemory(10);
@@ -560,12 +559,12 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     assertThat(regionAdvisor.getBucketSet().size()).isGreaterThan(0);
 
     PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
-    ConcurrentMap<Integer, BucketRegion> localBucket2RegionMap =
+    ConcurrentMap<BucketId, BucketRegion> localBucket2RegionMap =
         dataStore.getLocalBucket2RegionMap();
     assertThat(localBucket2RegionMap.size()).isGreaterThan(0);
 
     // taking the buckets which are local to the node and not all the available buckets.
-    for (Integer bucketId : localBucket2RegionMap.keySet()) {
+    for (BucketId bucketId : localBucket2RegionMap.keySet()) {
       BucketRegion bucketRegion = localBucket2RegionMap.get(bucketId);
       Region subregion = prRoot.getSubregion(partitionedRegion.getBucketName(bucketId));
       assertThat(bucketRegion.getFullPath()).isEqualTo(subregion.getFullPath());
@@ -591,7 +590,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
 
     // taking the buckets which are local to the node and not all the available buckets.
     PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
-    for (Integer bucketId : dataStore.getLocalBucket2RegionMap().keySet()) {
+    for (BucketId bucketId : dataStore.getLocalBucket2RegionMap().keySet()) {
       Region bucketRegion = prRoot.getSubregion(partitionedRegion.getBucketName(bucketId));
       assertThat(bucketRegion.getAttributes().getScope()).isEqualTo(Scope.DISTRIBUTED_ACK);
     }
@@ -649,7 +648,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     Region region = cache.getRegion(regionName);
     PartitionedRegion partitionedRegion = (PartitionedRegion) region;
 
-    Set<Integer> bucketSet = partitionedRegion.getRegionAdvisor().getBucketSet();
+    Set<BucketId> bucketSet = partitionedRegion.getRegionAdvisor().getBucketSet();
     assertThat(bucketSet).hasSize(expectedNumberOfBuckets);
   }
 
@@ -669,7 +668,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     asyncInvocations.add(vm.invokeAsync(runnable));
   }
 
-  private void awaitAllAsyncInvocations() throws ExecutionException, InterruptedException {
+  private void awaitAllAsyncInvocations() throws InterruptedException {
     for (AsyncInvocation async : asyncInvocations) {
       async.await();
     }

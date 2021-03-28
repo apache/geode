@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+
 import java.util.Collections;
 import java.util.Map;
 
@@ -81,8 +82,8 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   }
 
   protected boolean withPersistence() {
-    RegionAttributes<?, ?> ra = dataRegion.getAttributes();
-    DataPolicy dp = ra.getDataPolicy();
+    final RegionAttributes<?, ?> ra = dataRegion.getAttributes();
+    final DataPolicy dp = ra.getDataPolicy();
     return dp.withPersistence();
   }
 

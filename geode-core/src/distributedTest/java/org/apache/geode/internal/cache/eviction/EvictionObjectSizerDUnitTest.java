@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.RegionMap;
 import org.apache.geode.internal.cache.TestNonSizerObject;
 import org.apache.geode.internal.cache.TestObjectSizerImpl;
 import org.apache.geode.internal.cache.entries.AbstractLRURegionEntry;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -293,11 +294,10 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
 
   private static void verifySize(String regionName, int noOfElememts, int entrySize) {
     final Region pr = cache.getRegion(regionName);
-    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : ((PartitionedRegion) pr)
+    for (final Map.Entry<BucketId, BucketRegion> entry : ((PartitionedRegion) pr)
         .getDataStore()
         .getAllLocalBuckets()) {
-      final Map.Entry entry = (Map.Entry) integerBucketRegionEntry;
-      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+      final BucketRegion bucketRegion = entry.getValue();
       if (bucketRegion == null) {
         continue;
       } else {
@@ -328,11 +328,10 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
 
   private int getSizeOfCustomizedData(int counter) {
     final Region pr = cache.getRegion("PR1");
-    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : ((PartitionedRegion) pr)
+    for (final Map.Entry<BucketId, BucketRegion> entry : ((PartitionedRegion) pr)
         .getDataStore()
         .getAllLocalBuckets()) {
-      final Map.Entry entry = (Map.Entry) integerBucketRegionEntry;
-      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+      final BucketRegion bucketRegion = entry.getValue();
       if (bucketRegion == null) {
         continue;
       } else {
@@ -345,11 +344,10 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
 
   private int getSizeOfCustomizedObject(Object object) {
     final Region pr = cache.getRegion("PR1");
-    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : ((PartitionedRegion) pr)
+    for (final Map.Entry<BucketId, BucketRegion> entry : ((PartitionedRegion) pr)
         .getDataStore()
         .getAllLocalBuckets()) {
-      final Map.Entry entry = (Map.Entry) integerBucketRegionEntry;
-      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
+      final BucketRegion bucketRegion = entry.getValue();
       if (bucketRegion == null) {
         continue;
       } else {

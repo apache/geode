@@ -43,6 +43,7 @@ import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -106,7 +107,9 @@ public class IndexRepositoryFactoryDistributedTest implements Serializable {
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     PartitionedRegion fileRegion = indexForPR.getFileAndChunkRegion();
 
-    return PartitionedRepositoryManager.indexRepositoryFactory.getMatchingBucket(fileRegion, 0);
+    return PartitionedRepositoryManager.indexRepositoryFactory.getMatchingBucket(fileRegion,
+        BucketId
+            .valueOf(0));
   }
 
   @Test

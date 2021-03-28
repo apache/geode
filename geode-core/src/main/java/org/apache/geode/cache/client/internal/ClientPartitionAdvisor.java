@@ -32,6 +32,7 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -44,7 +45,7 @@ public class ClientPartitionAdvisor {
 
   private static final Logger logger = LogService.getLogger();
 
-  private final ConcurrentMap<Integer, List<BucketServerLocation66>> bucketServerLocationsMap =
+  private final ConcurrentMap<BucketId, List<BucketServerLocation66>> bucketServerLocationsMap =
       new ConcurrentHashMap<>();
 
   private final int totalNumBuckets;
@@ -114,7 +115,7 @@ public class ClientPartitionAdvisor {
   }
 
   public ServerLocation adviseRandomServerLocation() {
-    ArrayList<Integer> bucketList = new ArrayList<>(bucketServerLocationsMap.keySet());
+    ArrayList<BucketId> bucketList = new ArrayList<>(this.bucketServerLocationsMap.keySet());
     int size = bucketList.size();
     if (size > 0) {
       List<BucketServerLocation66> locations =
@@ -150,7 +151,7 @@ public class ClientPartitionAdvisor {
     return null;
   }
 
-  public void updateBucketServerLocations(int bucketId,
+  public void updateBucketServerLocations(BucketId bucketId,
       List<BucketServerLocation66> bucketServerLocations, ClientMetadataService cms) {
     List<BucketServerLocation66> locationCopy = new ArrayList<>();
     List<BucketServerLocation66> locations;
@@ -180,9 +181,9 @@ public class ClientPartitionAdvisor {
   }
 
   public void removeBucketServerLocation(ServerLocation serverLocation) {
-    for (final Map.Entry<Integer, List<BucketServerLocation66>> entry : bucketServerLocationsMap
+    for (final Map.Entry<BucketId, List<BucketServerLocation66>> entry : this.bucketServerLocationsMap
         .entrySet()) {
-      Integer key = entry.getKey();
+      BucketId key = entry.getKey();
       List<BucketServerLocation66> oldLocations = entry.getValue();
       List<BucketServerLocation66> newLocations =
           new ArrayList<>(oldLocations);
@@ -197,7 +198,7 @@ public class ClientPartitionAdvisor {
   }
 
   @VisibleForTesting
-  public Map<Integer, List<BucketServerLocation66>> getBucketServerLocationsMap_TEST_ONLY() {
+  public Map<BucketId, List<BucketServerLocation66>> getBucketServerLocationsMap_TEST_ONLY() {
     return bucketServerLocationsMap;
   }
 

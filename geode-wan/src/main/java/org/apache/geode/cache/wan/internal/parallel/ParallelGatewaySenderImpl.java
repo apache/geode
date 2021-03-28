@@ -31,6 +31,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderProfile;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
@@ -153,8 +154,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
   @Override
   public void fillInProfile(Profile profile) {
-    assert profile instanceof GatewaySenderProfile;
-    GatewaySenderProfile pf = (GatewaySenderProfile) profile;
+    final GatewaySenderProfile pf = (GatewaySenderProfile) profile;
     pf.Id = getId();
     pf.remoteDSId = getRemoteDSId();
     pf.isRunning = isRunning();
@@ -180,12 +180,12 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
   @Override
   public void setModifiedEventId(EntryEventImpl clonedEvent) {
-    final int bucketId;
+    final BucketId bucketId;
     if (clonedEvent.getRegion() instanceof DistributedRegion) {
-      bucketId = PartitionedRegionHelper.getHashKey(clonedEvent.getKey(),
-          getMaxParallelismForReplicatedRegion());
+      bucketId = BucketId.valueOf(PartitionedRegionHelper.getHashKey(clonedEvent.getKey(),
+          getMaxParallelismForReplicatedRegion()));
     } else {
-      bucketId = PartitionedRegionHelper.getHashKey(clonedEvent);
+      bucketId = BucketId.valueOf(PartitionedRegionHelper.getHashKey(clonedEvent));
     }
     EventID originalEventId = clonedEvent.getEventId();
     long originatingThreadId = ThreadIdentifier.getRealThreadID(originalEventId.getThreadID());

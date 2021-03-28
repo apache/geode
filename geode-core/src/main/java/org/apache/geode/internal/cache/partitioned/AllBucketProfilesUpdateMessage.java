@@ -52,7 +52,7 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
 
   private int partitionedRegionId;
   private int processorId = 0;
-  private Map<Integer, BucketAdvisor.BucketProfile> profiles;
+  private Map<BucketId, BucketAdvisor.BucketProfile> profiles;
 
   public AllBucketProfilesUpdateMessage() {}
 
@@ -63,7 +63,7 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
 
   private AllBucketProfilesUpdateMessage(Set<InternalDistributedMember> recipients,
       int partitionedRegionId, int processorId,
-      Map<Integer, BucketAdvisor.BucketProfile> profiles) {
+      Map<BucketId, BucketAdvisor.BucketProfile> profiles) {
     setRecipients(recipients);
     this.processorId = processorId;
     this.partitionedRegionId = partitionedRegionId;
@@ -79,7 +79,7 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
   protected void process(ClusterDistributionManager dm) {
     try {
       PartitionedRegion pr = PartitionedRegion.getPRFromId(partitionedRegionId);
-      for (Map.Entry<Integer, BucketAdvisor.BucketProfile> profile : profiles.entrySet()) {
+      for (Map.Entry<BucketId, BucketAdvisor.BucketProfile> profile : profiles.entrySet()) {
         pr.getRegionAdvisor().putBucketProfile(profile.getKey(), profile.getValue());
       }
     } catch (PRLocallyDestroyedException fre) {
@@ -125,7 +125,7 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
    */
   public static ReplyProcessor21 send(Set<InternalDistributedMember> recipients,
       DistributionManager dm, int prId,
-      Map<Integer, BucketAdvisor.BucketProfile> profiles) {
+      Map<BucketId, BucketAdvisor.BucketProfile> profiles) {
     if (recipients.isEmpty()) {
       return null;
     }

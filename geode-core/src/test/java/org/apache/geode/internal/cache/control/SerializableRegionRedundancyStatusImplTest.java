@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.control;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -40,14 +40,14 @@ public class SerializableRegionRedundancyStatusImplTest {
   public void calculateLowestRedundancyReturnsZeroWhenRegionIsEmpty() {
     redundancyStatus = new SerializableRegionRedundancyStatusImpl();
     when(prMock.getPartitionAttributes().getTotalNumBuckets()).thenReturn(113);
-    when(prMock.getRegionAdvisor().getBucketRedundancy(anyInt())).thenReturn(-1);
+    when(prMock.getRegionAdvisor().getBucketRedundancy(any())).thenReturn(-1);
     assertThat(redundancyStatus.calculateLowestRedundancy(prMock)).isEqualTo(0);
   }
 
   @Test
   public void redundancyStatusOfRegionWithNoBucketsCreatedIsEqualToNoRedundantCopies() {
     when(prMock.getPartitionAttributes().getTotalNumBuckets()).thenReturn(113);
-    when(prMock.getRegionAdvisor().getBucketRedundancy(anyInt())).thenReturn(-1);
+    when(prMock.getRegionAdvisor().getBucketRedundancy(any())).thenReturn(-1);
     when(prMock.getRedundantCopies()).thenReturn(1);
     redundancyStatus = new SerializableRegionRedundancyStatusImpl(prMock);
     assertThat(redundancyStatus.getStatus())

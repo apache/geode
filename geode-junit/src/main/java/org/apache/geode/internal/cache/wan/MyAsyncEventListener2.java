@@ -21,10 +21,11 @@ import java.util.Map;
 
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class MyAsyncEventListener2 implements AsyncEventListener {
 
-  private final Map<Integer, List<GatewaySenderEventImpl>> bucketToEventsMap;
+  private final Map<BucketId, List<GatewaySenderEventImpl>> bucketToEventsMap;
 
   public MyAsyncEventListener2() {
     bucketToEventsMap = new HashMap<>();
@@ -34,7 +35,7 @@ public class MyAsyncEventListener2 implements AsyncEventListener {
   public synchronized boolean processEvents(List<AsyncEvent> events) {
     for (AsyncEvent event : events) {
       GatewaySenderEventImpl gatewayEvent = (GatewaySenderEventImpl) event;
-      int bucketId = gatewayEvent.getBucketId();
+      BucketId bucketId = gatewayEvent.getBucketId();
       List<GatewaySenderEventImpl> bucketEvents = bucketToEventsMap.get(bucketId);
       if (bucketEvents == null) {
         bucketEvents = new ArrayList<>();
@@ -47,7 +48,7 @@ public class MyAsyncEventListener2 implements AsyncEventListener {
     return true;
   }
 
-  public Map<Integer, List<GatewaySenderEventImpl>> getBucketToEventsMap() {
+  public Map<BucketId, List<GatewaySenderEventImpl>> getBucketToEventsMap() {
     return bucketToEventsMap;
   }
 }

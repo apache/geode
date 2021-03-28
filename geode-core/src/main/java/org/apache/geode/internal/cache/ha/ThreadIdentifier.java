@@ -23,6 +23,7 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 
 /**
@@ -260,8 +261,8 @@ public class ThreadIdentifier implements DataSerializable {
    *
    * @return the fake id
    */
-  public static long createFakeThreadIDForBulkOp(int bucketNumber, long originatingThreadId) {
-    return (MAX_THREAD_PER_CLIENT * (bucketNumber + 1) + originatingThreadId);
+  public static long createFakeThreadIDForBulkOp(BucketId bucketNumber, long originatingThreadId) {
+    return (MAX_THREAD_PER_CLIENT * (bucketNumber.intValue() + 1) + originatingThreadId);
   }
 
   /**
@@ -269,9 +270,9 @@ public class ThreadIdentifier implements DataSerializable {
    *
    * @return the fake id
    */
-  public static long createFakeThreadIDForParallelGSPrimaryBucket(int bucketId,
+  public static long createFakeThreadIDForParallelGSPrimaryBucket(BucketId bucketId,
       long originatingThreadId, int gatewayIndex) {
-    return WanType.PRIMARY.generateWanId(originatingThreadId, bucketId, gatewayIndex);
+    return WanType.PRIMARY.generateWanId(originatingThreadId, bucketId.intValue(), gatewayIndex);
   }
 
   /**
@@ -279,9 +280,9 @@ public class ThreadIdentifier implements DataSerializable {
    *
    * @return the fake id
    */
-  public static long createFakeThreadIDForParallelGSSecondaryBucket(int bucketId,
+  public static long createFakeThreadIDForParallelGSSecondaryBucket(BucketId bucketId,
       long originatingThreadId, int gatewayIndex) {
-    return WanType.SECONDARY.generateWanId(originatingThreadId, bucketId, gatewayIndex);
+    return WanType.SECONDARY.generateWanId(originatingThreadId, bucketId.intValue(), gatewayIndex);
   }
 
   /**

@@ -195,7 +195,7 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest
     vm.invoke(checkData);
   }
 
-  void checkRecoveredFromDisk(VM vm, final int bucketId, final boolean recoveredLocally) {
+  void checkRecoveredFromDisk(VM vm, final BucketId bucketId, final boolean recoveredLocally) {
     vm.invoke(new SerializableRunnable("check recovered from disk") {
       @Override
       public void run() {

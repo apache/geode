@@ -37,6 +37,6 @@ public interface InternalPartitionDetails
    * @param bucketId the identity of the bucket from 0 to number of buckets -1
    * @return the size of the bucket in bytes
    */
-  long getBucketSize(int bucketId);
+  long getBucketSize(BucketId bucketId);
 
 }

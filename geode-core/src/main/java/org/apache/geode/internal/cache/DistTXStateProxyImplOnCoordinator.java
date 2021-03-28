@@ -32,6 +32,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistTXPrecommitMessage.DistTxPrecommitResponse;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistClientTXStateStub;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
@@ -757,17 +758,15 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
 
       // map of bucketId to putall op for this bucket
-      HashMap<Integer, DistributedPutAllOperation> bucketToPutallMap =
-          new HashMap<>();
+      HashMap<BucketId, DistributedPutAllOperation> bucketToPutallMap = new HashMap<>();
       // map of bucketId to TXStateStub for target that hosts this bucket
-      HashMap<Integer, DistTXCoordinatorInterface> bucketToTxStateStubMap =
-          new HashMap<>();
+      HashMap<BucketId, DistTXCoordinatorInterface> bucketToTxStateStubMap = new HashMap<>();
 
       // separate the putall op per bucket
       for (int i = 0; i < putallOp.putAllData.length; i++) {
         assert (putallOp.putAllData[i] != null);
         Object key = putallOp.putAllData[i].key;
-        int bucketId = putallOp.putAllData[i].getBucketId();
+        BucketId bucketId = putallOp.putAllData[i].getBucketId();
 
         DistributedPutAllOperation putAllForBucket = bucketToPutallMap.get(bucketId);
         if (putAllForBucket == null) {
@@ -794,8 +793,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       // This sends putAll in a loop to each target bucket (and waits for ack)
       // one after another.Could we send respective putAll messages to all
       // targets using same reply processor and wait on it?
-      for (Entry<Integer, DistTXCoordinatorInterface> e : bucketToTxStateStubMap.entrySet()) {
-        Integer bucketId = e.getKey();
+      for (Entry<BucketId, DistTXCoordinatorInterface> e : bucketToTxStateStubMap.entrySet()) {
+        BucketId bucketId = e.getKey();
         DistTXCoordinatorInterface dtsi = e.getValue();
         DistributedPutAllOperation putAllForBucket = bucketToPutallMap.get(bucketId);
 
@@ -834,17 +833,15 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       }
 
       // map of bucketId to removeAll op for this bucket
-      HashMap<Integer, DistributedRemoveAllOperation> bucketToRemoveAllMap =
-          new HashMap<>();
+      HashMap<BucketId, DistributedRemoveAllOperation> bucketToRemoveAllMap = new HashMap<>();
       // map of bucketId to TXStateStub for target that hosts this bucket
-      HashMap<Integer, DistTXCoordinatorInterface> bucketToTxStateStubMap =
-          new HashMap<>();
+      HashMap<BucketId, DistTXCoordinatorInterface> bucketToTxStateStubMap = new HashMap<>();
 
       // separate the removeAll op per bucket
       for (int i = 0; i < op.removeAllData.length; i++) {
         assert (op.removeAllData[i] != null);
         Object key = op.removeAllData[i].key;
-        int bucketId = op.removeAllData[i].getBucketId();
+        BucketId bucketId = op.removeAllData[i].getBucketId();
 
         DistributedRemoveAllOperation removeAllForBucket = bucketToRemoveAllMap.get(bucketId);
         if (removeAllForBucket == null) {
@@ -870,8 +867,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       // This sends putAll in a loop to each target bucket (and waits for ack)
       // one after another.Could we send respective putAll messages to all
       // targets using same reply processor and wait on it?
-      for (Entry<Integer, DistTXCoordinatorInterface> e : bucketToTxStateStubMap.entrySet()) {
-        Integer bucketId = e.getKey();
+      for (Entry<BucketId, DistTXCoordinatorInterface> e : bucketToTxStateStubMap.entrySet()) {
+        BucketId bucketId = e.getKey();
         DistTXCoordinatorInterface dtsi = e.getValue();
         DistributedRemoveAllOperation removeAllForBucket = bucketToRemoveAllMap.get(bucketId);
 

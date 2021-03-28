@@ -85,6 +85,7 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.BucketAdvisor.ServerBucketProfile;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.util.TypedFunctionService;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.membership.MembershipEvent;
 import org.apache.geode.management.membership.UniversalMembershipListenerAdapter;
@@ -724,14 +725,14 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
         .containsKey(partitionedRegion.getFullPath());
 
     ClientPartitionAdvisor prMetadata = clientPRMetadata.get(partitionedRegion.getFullPath());
-    Map<Integer, List<BucketServerLocation66>> clientBucketMap =
+    Map<BucketId, List<BucketServerLocation66>> clientBucketMap =
         prMetadata.getBucketServerLocationsMap_TEST_ONLY();
 
     await().alias("expected no metadata to be refreshed").untilAsserted(() -> {
       assertThat(clientBucketMap).hasSize(totalNumberOfBuckets);
     });
 
-    for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
+    for (Entry<BucketId, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
       assertThat(entry.getValue()).hasSize(4);
     }
 
@@ -761,12 +762,12 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
       ClientPartitionAdvisor prMetadata_await =
           clientPRMetadata_await.get(partitionedRegion.getFullPath());
-      Map<Integer, List<BucketServerLocation66>> clientBucketMap_await =
+      Map<BucketId, List<BucketServerLocation66>> clientBucketMap_await =
           prMetadata_await.getBucketServerLocationsMap_TEST_ONLY();
 
       assertThat(clientBucketMap_await).hasSize(totalNumberOfBuckets);
 
-      for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap_await.entrySet()) {
+      for (Entry<BucketId, List<BucketServerLocation66>> entry : clientBucketMap_await.entrySet()) {
         assertThat(entry.getValue()).hasSize(totalNumberOfBuckets);
       }
     });
@@ -781,14 +782,14 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
     prMetadata = clientPRMetadata.get(partitionedRegion.getFullPath());
 
-    Map<Integer, List<BucketServerLocation66>> clientBucketMap2 =
+    Map<BucketId, List<BucketServerLocation66>> clientBucketMap2 =
         prMetadata.getBucketServerLocationsMap_TEST_ONLY();
 
     await().untilAsserted(() -> {
       assertThat(clientBucketMap2).hasSize(totalNumberOfBuckets);
     });
 
-    for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
+    for (Entry<BucketId, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
       assertThat(entry.getValue()).hasSize(totalNumberOfBuckets);
     }
 
@@ -824,14 +825,14 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
         .containsKey(partitionedRegion.getFullPath());
 
     prMetadata = clientPRMetadata.get(partitionedRegion.getFullPath());
-    Map<Integer, List<BucketServerLocation66>> clientBucketMap3 =
+    Map<BucketId, List<BucketServerLocation66>> clientBucketMap3 =
         prMetadata.getBucketServerLocationsMap_TEST_ONLY();
 
     await().untilAsserted(() -> {
       assertThat(clientBucketMap3).hasSize(totalNumberOfBuckets);
     });
 
-    for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
+    for (Entry<BucketId, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
       assertThat(entry.getValue()).hasSize(2);
     }
 
@@ -874,14 +875,14 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     });
 
     ClientPartitionAdvisor prMetadata = clientPRMetadata.get(partitionedRegion.getFullPath());
-    Map<Integer, List<BucketServerLocation66>> clientBucketMap =
+    Map<BucketId, List<BucketServerLocation66>> clientBucketMap =
         prMetadata.getBucketServerLocationsMap_TEST_ONLY();
 
     await().untilAsserted(() -> {
       assertThat(clientBucketMap).hasSize(totalNumberOfBuckets);
     });
 
-    for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
+    for (Entry<BucketId, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
       assertThat(entry.getValue()).hasSize(2);
     }
 
@@ -896,7 +897,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
     assertThat(clientBucketMap).hasSize(totalNumberOfBuckets);
 
-    for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
+    for (Entry<BucketId, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
       assertThat(entry.getValue()).hasSize(1);
     }
 
@@ -907,7 +908,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
         .hasSize(totalNumberOfBuckets);
 
     await().untilAsserted(() -> {
-      for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
+      for (Entry<BucketId, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
         assertThat(entry.getValue()).hasSize(1);
       }
     });
@@ -1408,10 +1409,10 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
   private void verifyDeadServer(Map<String, ClientPartitionAdvisor> regionMetaData, Region region,
       int port0, int port1) {
     ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
-    Set<Entry<Integer, List<BucketServerLocation66>>> bucketLocationsMap =
+    Set<Entry<BucketId, List<BucketServerLocation66>>> bucketLocationsMap =
         prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet();
 
-    for (Entry<Integer, List<BucketServerLocation66>> entry : bucketLocationsMap) {
+    for (Entry<BucketId, List<BucketServerLocation66>> entry : bucketLocationsMap) {
       for (BucketServerLocation66 bucketLocation : entry.getValue()) {
         assertThat(bucketLocation.getPort())
             .isNotEqualTo(port0)
@@ -1420,9 +1421,9 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     }
   }
 
-  private void verifyMetadata(Map<Integer, List<BucketServerLocation66>> clientBucketMap) {
+  private void verifyMetadata(Map<BucketId, List<BucketServerLocation66>> clientBucketMap) {
     PartitionedRegion pr = (PartitionedRegion) getRegion(PARTITIONED_REGION_NAME);
-    Map<Integer, Set<ServerBucketProfile>> serverBucketMap =
+    Map<BucketId, Set<ServerBucketProfile>> serverBucketMap =
         pr.getRegionAdvisor().getAllClientBucketProfilesTest();
 
     assertThat(serverBucketMap)
@@ -1430,8 +1431,8 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     assertThat(serverBucketMap.keySet())
         .containsAll(clientBucketMap.keySet());
 
-    for (Entry<Integer, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
-      int bucketId = entry.getKey();
+    for (Entry<BucketId, List<BucketServerLocation66>> entry : clientBucketMap.entrySet()) {
+      BucketId bucketId = entry.getKey();
       List<BucketServerLocation66> bucketLocations = entry.getValue();
 
       BucketServerLocation66 primaryBucketLocation = null;

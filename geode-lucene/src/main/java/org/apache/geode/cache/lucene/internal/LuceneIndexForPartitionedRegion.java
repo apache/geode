@@ -47,6 +47,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 
 public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
@@ -78,9 +79,9 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   @Override
   public boolean isIndexingInProgress() {
     PartitionedRegion userRegion = (PartitionedRegion) cache.getRegion(getRegionPath());
-    Set<Integer> fileRegionPrimaryBucketIds =
+    Set<BucketId> fileRegionPrimaryBucketIds =
         getFileAndChunkRegion().getDataStore().getAllLocalPrimaryBucketIds();
-    for (Integer bucketId : fileRegionPrimaryBucketIds) {
+    for (BucketId bucketId : fileRegionPrimaryBucketIds) {
       BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(bucketId);
       if (!userBucket.isEmpty() && !isIndexAvailable(bucketId)) {
         return true;
@@ -237,7 +238,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   }
 
   @Override
-  public boolean isIndexAvailable(int id) {
+  public boolean isIndexAvailable(BucketId id) {
     PartitionedRegion fileAndChunkRegion = getFileAndChunkRegion();
     return (fileAndChunkRegion.get(IndexRepositoryFactory.APACHE_GEODE_INDEX_COMPLETE, id) != null
         || !LuceneServiceImpl.LUCENE_REINDEX);

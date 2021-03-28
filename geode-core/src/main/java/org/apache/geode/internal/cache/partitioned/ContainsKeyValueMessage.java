@@ -53,14 +53,14 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
 
   private Object key;
 
-  private Integer bucketId;
+  private BucketId bucketId;
 
   public ContainsKeyValueMessage() {
     super();
   }
 
   public ContainsKeyValueMessage(InternalDistributedMember recipient, int regionId,
-      DirectReplyProcessor processor, Object key, Integer bucketId, boolean valueCheck) {
+      DirectReplyProcessor processor, Object key, BucketId bucketId, boolean valueCheck) {
     super(recipient, regionId, processor);
     this.valueCheck = valueCheck;
     this.key = key;
@@ -83,7 +83,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static ContainsKeyValueResponse send(InternalDistributedMember recipient,
-      PartitionedRegion r, Object key, Integer bucketId, boolean valueCheck)
+      PartitionedRegion r, Object key, BucketId bucketId, boolean valueCheck)
       throws ForceReattemptException {
     Assert.assertTrue(recipient != null, "PRDistributedContainsKeyValueMessage NULL reply message");
 
@@ -157,7 +157,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
     super.fromData(in, context);
     key = DataSerializer.readObject(in);
     valueCheck = in.readBoolean();
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
   }
 
   @Override
@@ -166,7 +166,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
     super.toData(out, context);
     DataSerializer.writeObject(key, out);
     out.writeBoolean(valueCheck);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
   }
 
   public static class ContainsKeyValueReplyMessage extends ReplyMessage {

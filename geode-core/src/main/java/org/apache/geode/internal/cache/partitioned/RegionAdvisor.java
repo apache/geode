@@ -103,7 +103,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   protected Queue<QueuedBucketProfile> preInitQueue;
   private final Object preInitQueueMonitor = new Object();
 
-  private final ConcurrentHashMap<Integer, Set<ServerBucketProfile>> clientBucketProfilesMap;
+  private final ConcurrentHashMap<BucketId, Set<ServerBucketProfile>> clientBucketProfilesMap;
 
   @VisibleForTesting
   protected RegionAdvisor(PartitionedRegion region) {
@@ -135,7 +135,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     InternalRegionArguments args = new InternalRegionArguments();
     args.setPartitionedRegionAdvisor(this);
     for (int i = 0; i < buckets.length; i++) {
-      buckets[i] = new ProxyBucketRegion(i, p, args);
+      buckets[i] = new ProxyBucketRegion(BucketId.valueOf(i), p, args);
       buckets[i].initialize();
     }
     this.buckets = buckets;
@@ -230,9 +230,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   /**
    * Returns an unmodifiable map of bucket IDs to locations hosting the bucket.
    */
-  public Map<Integer, List<BucketServerLocation66>> getAllClientBucketProfiles() {
-    Map<Integer, List<BucketServerLocation66>> bucketToServerLocations = new HashMap<>();
-    for (Integer bucketId : clientBucketProfilesMap.keySet()) {
+  public Map<BucketId, List<BucketServerLocation66>> getAllClientBucketProfiles() {
+    Map<BucketId, List<BucketServerLocation66>> bucketToServerLocations = new HashMap<>();
+    for (BucketId bucketId : clientBucketProfilesMap.keySet()) {
       ArrayList<BucketServerLocation66> clientBucketProfiles = new ArrayList<>();
       for (ServerBucketProfile profile : clientBucketProfilesMap.get(bucketId)) {
         if (profile.isHosting) {
@@ -246,7 +246,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     }
 
     if (getPartitionedRegion().isDataStore()) {
-      for (Integer bucketId : getPartitionedRegion().getDataStore().getAllLocalBucketIds()) {
+      for (BucketId bucketId : getPartitionedRegion().getDataStore().getAllLocalBucketIds()) {
         BucketProfile profile = getBucketAdvisor(bucketId).getLocalProfile();
 
         if (logger.isDebugEnabled()) {
@@ -273,17 +273,17 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   }
 
   @VisibleForTesting
-  public ConcurrentHashMap<Integer, Set<ServerBucketProfile>> getAllClientBucketProfilesTest() {
-    ConcurrentHashMap<Integer, Set<ServerBucketProfile>> map = new ConcurrentHashMap<>();
-    Map<Integer, List<BucketServerLocation66>> testMap =
+  public ConcurrentHashMap<BucketId, Set<ServerBucketProfile>> getAllClientBucketProfilesTest() {
+    ConcurrentHashMap<BucketId, Set<ServerBucketProfile>> map = new ConcurrentHashMap<>();
+    Map<BucketId, List<BucketServerLocation66>> testMap =
         new HashMap<>(getAllClientBucketProfiles());
-    for (Integer bucketId : testMap.keySet()) {
+    for (BucketId bucketId : testMap.keySet()) {
       Set<ServerBucketProfile> parr = new HashSet<>(clientBucketProfilesMap.get(bucketId));
       map.put(bucketId, parr);
     }
 
     if (getPartitionedRegion().isDataStore()) {
-      for (Integer bucketId : getPartitionedRegion().getDataStore().getAllLocalBucketIds()) {
+      for (BucketId bucketId : getPartitionedRegion().getDataStore().getAllLocalBucketIds()) {
         BucketProfile profile = getBucketAdvisor(bucketId).getLocalProfile();
         if ((profile instanceof ServerBucketProfile) && profile.isHosting) {
           map.get(bucketId).add((ServerBucketProfile) profile);
@@ -297,11 +297,11 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   }
 
 
-  public Set<ServerBucketProfile> getClientBucketProfiles(Integer bucketId) {
+  public Set<ServerBucketProfile> getClientBucketProfiles(BucketId bucketId) {
     return clientBucketProfilesMap.get(bucketId);
   }
 
-  public void setClientBucketProfiles(Integer bucketId, Set<ServerBucketProfile> profiles) {
+  public void setClientBucketProfiles(BucketId bucketId, Set<ServerBucketProfile> profiles) {
     clientBucketProfilesMap.put(bucketId, Collections.unmodifiableSet(profiles));
   }
 
@@ -442,15 +442,17 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       }
       buckets[i].setBucketSick(member, sick);
       if (logger.isDebugEnabled()) {
-        logger.debug("Marked bucket ({}) {}", getPartitionedRegion().bucketStringForLogs(i),
+        logger.debug("Marked bucket ({}) {}",
+            getPartitionedRegion().bucketStringForLogs(BucketId.valueOf(i)),
             (buckets[i].isBucketSick() ? "sick" : "healthy"));
       }
     }
   }
 
-  public void updateBucketStatus(int bucketId, DistributedMember member, boolean profileRemoved) {
+  public void updateBucketStatus(BucketId bucketId, DistributedMember member,
+      boolean profileRemoved) {
     if (profileRemoved) {
-      buckets[bucketId].setBucketSick(member, false);
+      buckets[bucketId.intValue()].setBucketSick(member, false);
 
     } else {
       ResourceAdvisor advisor = getPartitionedRegion().getCache().getResourceAdvisor();
@@ -459,7 +461,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         logger.debug("updateBucketStatus:({}):member:{}:sick:{}",
             getPartitionedRegion().bucketStringForLogs(bucketId), member, sick);
       }
-      buckets[bucketId].setBucketSick(member, sick);
+      buckets[bucketId.intValue()].setBucketSick(member, sick);
     }
   }
 
@@ -469,12 +471,14 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    *
    * @param key for bucketId used in exception
    */
-  public void checkIfBucketSick(final int bucketId, final Object key) throws LowMemoryException {
+  public void checkIfBucketSick(final BucketId bucketId, final Object key)
+      throws LowMemoryException {
     if (MemoryThresholds.isLowMemoryExceptionDisabled()) {
       return;
     }
-    if (buckets[bucketId].isBucketSick()) {
-      Set<DistributedMember> sm = buckets[bucketId].getSickMembers();
+    final ProxyBucketRegion bucket = buckets[bucketId.intValue()];
+    if (bucket.isBucketSick()) {
+      Set<DistributedMember> sm = bucket.getSickMembers();
       if (sm.isEmpty()) {
         // check again as this list is obtained under synchronization
         // fixes bug 50845
@@ -732,7 +736,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * return a distributed members on which the primary partition for given bucket is defined
    *
    */
-  public InternalDistributedMember adviseFixedPrimaryPartitionDataStore(final int bucketId) {
+  public InternalDistributedMember adviseFixedPrimaryPartitionDataStore(final BucketId bucketId) {
     final List<InternalDistributedMember> fixedPartitionDataStore = new ArrayList<>(1);
     fetchProfiles(profile -> {
       if (profile instanceof PartitionProfile) {
@@ -904,11 +908,11 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     return (PartitionProfile) getProfile(id);
   }
 
-  public boolean isPrimaryForBucket(int bucketId) {
+  public boolean isPrimaryForBucket(BucketId bucketId) {
     if (buckets == null) {
       return false;
     }
-    return buckets[bucketId].isPrimary();
+    return buckets[bucketId.intValue()].isPrimary();
   }
 
   /**
@@ -918,11 +922,11 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @param bucketId the index of the bucket to check
    * @return true if the bucket is currently being hosted locally
    */
-  public boolean isBucketLocal(int bucketId) {
+  public boolean isBucketLocal(BucketId bucketId) {
     if (buckets == null) {
       return false;
     }
-    return buckets[bucketId].getHostedBucketRegion() != null;
+    return buckets[bucketId.intValue()].getHostedBucketRegion() != null;
   }
 
   public boolean areBucketsInitialized() {
@@ -937,8 +941,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @param bucketId the index of the bucket to retrieve
    * @return the bucket identified by bucketId
    */
-  public Bucket getBucket(int bucketId) {
-    ProxyBucketRegion pbr = buckets[bucketId];
+  public Bucket getBucket(BucketId bucketId) {
+    ProxyBucketRegion pbr = buckets[bucketId.intValue()];
     Bucket ret = pbr.getHostedBucketRegion();
     if (ret != null) {
       return ret;
@@ -953,8 +957,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @param bucketId the index of the bucket to retrieve the advisor for
    * @return the bucket advisor identified by bucketId
    */
-  public BucketAdvisor getBucketAdvisor(int bucketId) {
-    ProxyBucketRegion pbr = buckets[bucketId];
+  public BucketAdvisor getBucketAdvisor(BucketId bucketId) {
+    ProxyBucketRegion pbr = buckets[bucketId.intValue()];
     Bucket ret = pbr.getHostedBucketRegion();
     if (ret != null) {
       return ret.getBucketAdvisor();
@@ -963,8 +967,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     }
   }
 
-  public Map<Integer, BucketAdvisor> getAllBucketAdvisors() {
-    Map<Integer, BucketAdvisor> map = new HashMap<>();
+  public Map<BucketId, BucketAdvisor> getAllBucketAdvisors() {
+    Map<BucketId, BucketAdvisor> map = new HashMap<>();
     for (ProxyBucketRegion pbr : buckets) {
       Bucket ret = pbr.getHostedBucketRegion();
       if (ret != null) {
@@ -1010,7 +1014,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @throws org.apache.geode.distributed.DistributedSystemDisconnectedException if interrupted for
    *         shutdown cancellation
    */
-  public Bucket getBucketPostInit(int bucketId) {
+  public Bucket getBucketPostInit(BucketId bucketId) {
     synchronized (preInitQueueMonitor) {
       boolean interrupted = false;
       try {
@@ -1037,8 +1041,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    *
    * @return the Node managing the primary copy of the bucket
    */
-  public InternalDistributedMember getPrimaryMemberForBucket(int bucketId) {
-    Bucket b = buckets[bucketId];
+  public InternalDistributedMember getPrimaryMemberForBucket(BucketId bucketId) {
+    Bucket b = buckets[bucketId.intValue()];
     return b.getBucketAdvisor().getPrimary();
   }
 
@@ -1048,13 +1052,13 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @param bucketId the bucket we want to read
    * @return the member, possibly null if no member is available
    */
-  public InternalDistributedMember getPreferredNode(int bucketId) {
-    Bucket b = buckets[bucketId];
+  public InternalDistributedMember getPreferredNode(BucketId bucketId) {
+    Bucket b = buckets[bucketId.intValue()];
     return b.getBucketAdvisor().getPreferredNode();
   }
 
-  public boolean isStorageAssignedForBucket(int bucketId) {
-    return buckets[bucketId].getBucketRedundancy() >= 0;
+  public boolean isStorageAssignedForBucket(BucketId bucketId) {
+    return buckets[bucketId.intValue()].getBucketRedundancy() >= 0;
   }
 
   /**
@@ -1063,11 +1067,11 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @param wait true if caller wants us to wait for redundancy
    * @return true if redundancy on given bucket is detected
    */
-  public boolean isStorageAssignedForBucket(int bucketId, int minRedundancy, boolean wait) {
+  public boolean isStorageAssignedForBucket(BucketId bucketId, int minRedundancy, boolean wait) {
     if (!wait) {
       return isStorageAssignedForBucket(bucketId);
     } else {
-      return buckets[bucketId].getBucketAdvisor().waitForRedundancy(minRedundancy);
+      return buckets[bucketId.intValue()].getBucketAdvisor().waitForRedundancy(minRedundancy);
     }
   }
 
@@ -1077,8 +1081,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @return number of redundant copies for a given bucket, or -1 if there are no instances of the
    *         bucket.
    */
-  public int getBucketRedundancy(int bucketId) {
-    return buckets[bucketId].getBucketRedundancy();
+  public int getBucketRedundancy(BucketId bucketId) {
+    return buckets[bucketId.intValue()].getBucketRedundancy();
   }
 
   /**
@@ -1087,8 +1091,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    *
    * @return a set of {@link InternalDistributedMember}s that own the bucket
    */
-  public Set<InternalDistributedMember> getBucketOwners(int bucketId) {
-    return buckets[bucketId].getBucketOwners();
+  public Set<InternalDistributedMember> getBucketOwners(BucketId bucketId) {
+    return buckets[bucketId.intValue()].getBucketOwners();
   }
 
   /**
@@ -1096,7 +1100,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    *
    * @return set of Integer bucketIds
    */
-  public Set<Integer> getBucketSet() {
+  public Set<BucketId> getBucketSet() {
     return new BucketSet();
   }
 
@@ -1105,7 +1109,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     return buckets;
   }
 
-  private class BucketSet extends AbstractSet<Integer> {
+  private class BucketSet extends AbstractSet<BucketId> {
     final ProxyBucketRegion[] pbrs;
 
     BucketSet() {
@@ -1122,11 +1126,11 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     }
 
     @Override
-    public @NotNull Iterator<Integer> iterator() {
+    public @NotNull Iterator<BucketId> iterator() {
       return new BucketSetIterator();
     }
 
-    class BucketSetIterator implements Iterator<Integer> {
+    class BucketSetIterator implements Iterator<BucketId> {
       private int currentItem = -1;
 
 
@@ -1156,7 +1160,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
             }
             while (++possibleBucketId < pbrs.length && !bucketExists) {
               for (FixedPartitionAttributesImpl fpa : fpaList) {
-                if (fpa.hasBucket(possibleBucketId)) {
+                if (fpa.hasBucket(BucketId.valueOf(possibleBucketId))) {
                   bucketExists = true;
                   break;
                 }
@@ -1172,10 +1176,11 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       }
 
       @Override
-      public Integer next() {
+      public BucketId next() {
         if (++currentItem < pbrs.length) {
-          if (isStorageAssignedForBucket(currentItem)) {
-            return currentItem;
+          final BucketId bucketId = BucketId.valueOf(currentItem);
+          if (isStorageAssignedForBucket(bucketId)) {
+            return bucketId;
           } else {
             if (getPartitionedRegion().isFixedPartitionedRegion()) {
               boolean bucketExists = false;
@@ -1187,7 +1192,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
               }
               do {
                 for (FixedPartitionAttributesImpl fpa : fpaList) {
-                  if (fpa.hasBucket(currentItem)) {
+                  if (fpa.hasBucket(bucketId)) {
                     bucketExists = true;
                     break;
                   }
@@ -1198,12 +1203,12 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
               } while (currentItem < pbrs.length && !bucketExists);
 
               if (bucketExists) {
-                getPartitionedRegion().createBucket(currentItem, 0, null);
-                return currentItem;
+                getPartitionedRegion().createBucket(bucketId, 0, null);
+                return bucketId;
               }
             } else {
-              getPartitionedRegion().createBucket(currentItem, 0, null);
-              return currentItem;
+              getPartitionedRegion().createBucket(bucketId, 0, null);
+              return bucketId;
             }
           }
         }
@@ -1297,8 +1302,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     }
   }
 
-  public void notPrimary(int bucketId, InternalDistributedMember wasPrimary) {
-    ProxyBucketRegion b = buckets[bucketId];
+  public void notPrimary(BucketId bucketId, InternalDistributedMember wasPrimary) {
+    ProxyBucketRegion b = buckets[bucketId.intValue()];
     b.getBucketAdvisor().notPrimary(wasPrimary);
   }
 
@@ -1311,7 +1316,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     ProxyBucketRegion[] bucs = buckets;
     HashSet<InternalDistributedMember> hs = new HashSet<>();
     for (int i = 0; i < bucs.length; i++) {
-      if (isStorageAssignedForBucket(i)) {
+      if (isStorageAssignedForBucket(BucketId.valueOf(i))) {
         InternalDistributedMember mem = bucs[i].getBucketAdvisor().getPrimary();
         if (mem != null) {
           hs.add(mem);
@@ -1372,7 +1377,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @param bucketId the unique identifier of the bucket
    * @param profile the bucket meta-data from a particular member with the bucket
    */
-  void putBucketProfile(int bucketId, BucketProfile profile) {
+  void putBucketProfile(BucketId bucketId, BucketProfile profile) {
     synchronized (preInitQueueMonitor) {
       if (preInitQueue != null) {
         // Queue profile during pre-initialization
@@ -1387,7 +1392,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   }
 
   static class QueuedBucketProfile {
-    protected final int bucketId;
+    protected final BucketId bucketId;
     final BucketProfile bucketProfile;
 
     /** true means that this member has departed the view */
@@ -1415,7 +1420,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
      * @param bId the bucket being added
      * @param p the profile to add
      */
-    QueuedBucketProfile(int bId, BucketProfile p) {
+    QueuedBucketProfile(BucketId bId, BucketProfile p) {
       bucketId = bId;
       bucketProfile = p;
       isRemoval = false;
@@ -1434,7 +1439,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
      */
     QueuedBucketProfile(InternalDistributedMember mbr, boolean crashed, boolean destroyed,
         boolean fromMembershipListener) {
-      bucketId = 0;
+      bucketId = BucketId.valueOf(0);
       bucketProfile = null;
       isRemoval = true;
       this.crashed = crashed;
@@ -1452,7 +1457,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
      * @param serials the serials it had
      */
     QueuedBucketProfile(InternalDistributedMember mbr, int[] serials, boolean destroyed) {
-      bucketId = 0;
+      bucketId = BucketId.valueOf(0);
       bucketProfile = null;
       isRemoval = true;
       crashed = false;
@@ -1521,7 +1526,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       // profiles.
       BucketRegion br = bucs[i].getCreatedBucketRegion();
       if (br != null) {
-        result.add(new BucketProfileAndId(br.getProfile(), i));
+        result.add(new BucketProfileAndId(br.getProfile(), BucketId.valueOf(i)));
       }
     }
     if (result.size() == 0) {
@@ -1537,7 +1542,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    */
   public void putBucketRegionProfiles(List<BucketProfileAndId> l) {
     for (BucketProfileAndId bp : l) {
-      int id = bp.getId();
+      final BucketId id = bp.getId();
       getBucket(id).getBucketAdvisor().putProfile(bp.getBucketProfile());
     }
   }
@@ -1570,12 +1575,12 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
   public static class BucketProfileAndId implements DataSerializable {
     private static final long serialVersionUID = 332892607792421553L;
-    /* final */ private int id;
+    /* final */ private BucketId id;
     // bid = bucket id
     /* final */ private BucketProfile bp;
     private boolean isServerBucketProfile = false;
 
-    public BucketProfileAndId(Profile bp, int id) {
+    public BucketProfileAndId(Profile bp, BucketId id) {
       this.id = id;
       this.bp = (BucketProfile) bp;
       if (bp instanceof ServerBucketProfile) {
@@ -1585,7 +1590,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
     public BucketProfileAndId() {}
 
-    public int getId() {
+    public BucketId getId() {
       return id;
     }
 
@@ -1595,7 +1600,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      id = in.readInt();
+      id = BucketId.valueOf(in.readInt());
       isServerBucketProfile = in.readBoolean();
       if (isServerBucketProfile) {
         bp = new ServerBucketProfile();
@@ -1608,7 +1613,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
     @Override
     public void toData(DataOutput out) throws IOException {
-      out.writeInt(id);
+      out.writeInt(id.intValue());
       out.writeBoolean(isServerBucketProfile);
       InternalDataSerializer.invokeToData(bp, out);
     }

@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /**
  * A bucket operator that will perform operations on a bucket asynchronously.
@@ -78,7 +79,7 @@ public class ParallelBucketOperator implements BucketOperator {
    */
   @Override
   public void createRedundantBucket(final InternalDistributedMember targetMember,
-      final int bucketId, final Map<String, Long> colocatedRegionBytes,
+      final BucketId bucketId, final Map<String, Long> colocatedRegionBytes,
       final Completion completion) {
     drainCompletions();
     operationSemaphore.acquireUninterruptibly();
@@ -105,21 +106,21 @@ public class ParallelBucketOperator implements BucketOperator {
   }
 
   @Override
-  public boolean removeBucket(InternalDistributedMember memberId, int id,
+  public boolean removeBucket(InternalDistributedMember memberId, BucketId id,
       Map<String, Long> colocatedRegionSizes) {
     return delegate.removeBucket(memberId, id, colocatedRegionSizes);
   }
 
   @Override
   public boolean moveBucket(InternalDistributedMember sourceMember,
-      InternalDistributedMember targetMember, int bucketId,
+      InternalDistributedMember targetMember, BucketId bucketId,
       Map<String, Long> colocatedRegionBytes) {
     return delegate.moveBucket(sourceMember, targetMember, bucketId, colocatedRegionBytes);
   }
 
   @Override
   public boolean movePrimary(InternalDistributedMember source, InternalDistributedMember target,
-      int bucketId) {
+      BucketId bucketId) {
     return delegate.movePrimary(source, target, bucketId);
   }
 

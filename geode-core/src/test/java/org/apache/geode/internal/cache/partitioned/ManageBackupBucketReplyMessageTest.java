@@ -52,7 +52,7 @@ public class ManageBackupBucketReplyMessageTest {
   private ReplyProcessor21 processor;
   @Captor
   private ArgumentCaptor<ManageBackupBucketMessage.ManageBackupBucketReplyMessage> replyMessage;
-  private final int bucketId = 15;
+  private final BucketId bucketId = BucketId.valueOf(15);
   private final int regionId = 2;
   private final boolean isReblance = true;
   private final boolean replaceOfflineDate = false;

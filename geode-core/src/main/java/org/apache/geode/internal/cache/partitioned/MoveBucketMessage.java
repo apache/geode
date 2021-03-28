@@ -54,7 +54,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class MoveBucketMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
-  private volatile int bucketId;
+  private volatile BucketId bucketId;
   private volatile InternalDistributedMember source;
 
   /**
@@ -63,7 +63,7 @@ public class MoveBucketMessage extends PartitionMessage {
   public MoveBucketMessage() {}
 
   private MoveBucketMessage(InternalDistributedMember recipient, int regionId,
-      ReplyProcessor21 processor, int bucketId, InternalDistributedMember source) {
+      ReplyProcessor21 processor, BucketId bucketId, InternalDistributedMember source) {
     super(recipient, regionId, processor);
     this.bucketId = bucketId;
     this.source = source;
@@ -80,7 +80,7 @@ public class MoveBucketMessage extends PartitionMessage {
    * @return the processor used to wait for the response
    */
   public static MoveBucketResponse send(InternalDistributedMember recipient,
-      PartitionedRegion region, int bucketId, InternalDistributedMember source) {
+      PartitionedRegion region, BucketId bucketId, InternalDistributedMember source) {
 
     Assert.assertTrue(recipient != null, "MoveBucketMessage NULL recipient");
 
@@ -137,7 +137,7 @@ public class MoveBucketMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
     source = DataSerializer.readObject(in);
   }
 
@@ -145,7 +145,7 @@ public class MoveBucketMessage extends PartitionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
     DataSerializer.writeObject(source, out);
   }
 

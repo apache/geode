@@ -46,6 +46,7 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -654,7 +655,7 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
           long total = 0;
           PartitionedRegion pr = ((PartitionedRegion) region);
           for (int i = 0; i < pr.getPartitionAttributes().getTotalNumBuckets(); i++) {
-            total += pr.getDataStore().getBucketSize(i);
+            total += pr.getDataStore().getBucketSize(BucketId.valueOf(i));
           }
           return total;
         } else {

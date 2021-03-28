@@ -57,7 +57,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   /** The key associated with the value that must be sent */
-  private int bucketId;
+  private BucketId bucketId;
 
   /** true if the request is directed by a rebalance operation */
   private boolean isRebalance;
@@ -79,7 +79,8 @@ public class ManageBackupBucketMessage extends PartitionMessage {
   public ManageBackupBucketMessage() {}
 
   ManageBackupBucketMessage(InternalDistributedMember recipient, int regionId,
-      ReplyProcessor21 processor, int bucketId, boolean isRebalance, boolean replaceOfflineData,
+      ReplyProcessor21 processor, BucketId bucketId, boolean isRebalance,
+      boolean replaceOfflineData,
       InternalDistributedMember moveSource, boolean forceCreation) {
     super(recipient, regionId, processor);
     this.bucketId = bucketId;
@@ -111,7 +112,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static NodeResponse send(InternalDistributedMember recipient, PartitionedRegion r,
-      int bucketId, boolean isRebalance, boolean replaceOfflineData,
+      BucketId bucketId, boolean isRebalance, boolean replaceOfflineData,
       InternalDistributedMember moveSource, boolean forceCreation) throws ForceReattemptException {
 
     Assert.assertTrue(recipient != null, "ManageBucketMessage NULL recipient");
@@ -193,7 +194,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
     isRebalance = in.readBoolean();
     replaceOfflineData = in.readBoolean();
     boolean hasMoveSource = in.readBoolean();
@@ -208,7 +209,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
     out.writeBoolean(isRebalance);
     out.writeBoolean(replaceOfflineData);
     out.writeBoolean(moveSource != null);
@@ -426,7 +427,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
      * Wait for the response to a {@link ManageBackupBucketMessage} request.
      *
      * @return true if the node sent the request is managing the bucket
-     * @see org.apache.geode.internal.cache.PartitionedRegionDataStore#handleManageBucketRequest(int,
+     * @see org.apache.geode.internal.cache.PartitionedRegionDataStore#handleManageBucketRequest(BucketId,
      *      int, InternalDistributedMember, boolean)
      * @throws ForceReattemptException if the peer is no longer available
      */

@@ -39,6 +39,7 @@ import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.ClientTXStateStub;
@@ -69,7 +70,7 @@ public class TXStateProxyImpl implements TXStateProxy {
    * tracks bucketIds of transactional operations so as to distinguish between
    * TransactionDataNotColocated and TransactionDataRebalanced exceptions.
    */
-  private final Map<Integer, Boolean> buckets = new HashMap<>();
+  private final Map<BucketId, Boolean> buckets = new HashMap<>();
 
   private boolean firstOperationOnPartitionedRegion = false;
 
@@ -290,13 +291,12 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   void trackBucketForTx(KeyInfo keyInfo) {
-    if (keyInfo.getBucketId() >= 0) {
+    final BucketId bucketId = keyInfo.getBucketId();
+    if (null != bucketId) {
       if (logger.isDebugEnabled()) {
-        logger.debug("adding bucket:{} for tx:{}", keyInfo.getBucketId(), getTransactionId());
+        logger.debug("adding bucket:{} for tx:{}", bucketId, getTransactionId());
       }
-    }
-    if (keyInfo.getBucketId() >= 0) {
-      buckets.put(keyInfo.getBucketId(), Boolean.TRUE);
+      buckets.put(bucketId, Boolean.TRUE);
     }
   }
 
@@ -792,7 +792,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public Set<?> getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
+  public Set<?> getBucketKeys(LocalRegion localRegion, BucketId bucketId, boolean allowTombstones) {
     boolean resetTxState = isTransactionInternalSuspendNeeded(localRegion);
     TXStateProxy txp = null;
     if (resetTxState) {

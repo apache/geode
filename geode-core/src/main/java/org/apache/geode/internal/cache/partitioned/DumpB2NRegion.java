@@ -50,22 +50,23 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A message used for debugging purposes. For example if a test fails it can call
- * {@link org.apache.geode.internal.cache.PartitionedRegion#sendDumpB2NRegionForBucket(int)} which
+ * {@link org.apache.geode.internal.cache.PartitionedRegion#sendDumpB2NRegionForBucket(BucketId)}
+ * which
  * sends this message to all VMs that have that PartitionedRegion defined.
  *
- * @see org.apache.geode.internal.cache.PartitionedRegion#sendDumpB2NRegionForBucket(int)
+ * @see org.apache.geode.internal.cache.PartitionedRegion#sendDumpB2NRegionForBucket(BucketId)
  */
 public class DumpB2NRegion extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
-  private int bucketId;
+  private BucketId bucketId;
   private boolean onlyReturnPrimaryInfo;
 
 
   public DumpB2NRegion() {}
 
   private DumpB2NRegion(Set<InternalDistributedMember> recipients, int regionId,
-      ReplyProcessor21 processor, int bucketId,
+      ReplyProcessor21 processor, BucketId bucketId,
       boolean onlyReturnPrimaryInfo) {
     super(recipients, regionId, processor);
     this.bucketId = bucketId;
@@ -73,7 +74,7 @@ public class DumpB2NRegion extends PartitionMessage {
   }
 
   public static DumpB2NResponse send(Set<InternalDistributedMember> recipients, PartitionedRegion r,
-      int bId,
+      BucketId bId,
       boolean justPrimaryInfo) {
     DumpB2NResponse p = new DumpB2NResponse(r.getSystem(), recipients);
     DumpB2NRegion m = new DumpB2NRegion(recipients, r.getPRId(), p, bId, justPrimaryInfo);
@@ -153,7 +154,7 @@ public class DumpB2NRegion extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = in.readInt();
+    bucketId = BucketId.valueOf(in.readInt());
     onlyReturnPrimaryInfo = in.readBoolean();
   }
 
@@ -161,7 +162,7 @@ public class DumpB2NRegion extends PartitionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(bucketId);
+    out.writeInt(bucketId.intValue());
     out.writeBoolean(onlyReturnPrimaryInfo);
   }
 

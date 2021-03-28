@@ -65,6 +65,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.cache.partitioned.QueryMessage;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
@@ -113,7 +114,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_PR_QUERY_RETRIES", 10);
 
   private final PartitionedRegion pr;
-  private volatile Map<InternalDistributedMember, List<Integer>> node2bucketIds;
+  private volatile Map<InternalDistributedMember, List<BucketId>> node2bucketIds;
   private final DefaultQuery query;
   private final ExecutionContext executionContext;
   private final Object[] parameters;
@@ -125,7 +126,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    */
   private final ConcurrentMap<InternalDistributedMember, Collection<Collection>> resultsPerMember;
   private ConcurrentLinkedQueue<PRQueryTraceInfo> prQueryTraceInfoList = null;
-  private final Set<Integer> bucketsToQuery;
+  private final Set<BucketId> bucketsToQuery;
   // set of members failed to execute query
   private Set<InternalDistributedMember> failedMembers;
 
@@ -144,7 +145,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       final ExecutionContext executionContext,
       final Object[] parameters,
       final SelectResults cumulativeResults,
-      final Set<Integer> bucketsToQuery) {
+      final Set<BucketId> bucketsToQuery) {
     super(sys, pr.getPRId());
     this.pr = pr;
     this.query = query;
@@ -152,8 +153,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     this.parameters = parameters;
     this.cumulativeResults = cumulativeResults;
     this.bucketsToQuery = bucketsToQuery;
-    resultsPerMember =
-        new ConcurrentHashMap<>();
+    resultsPerMember = new ConcurrentHashMap<>();
     node2bucketIds = Collections.emptyMap();
     if (query != null && query.isTraced()) {
       prQueryTraceInfoList = new ConcurrentLinkedQueue();
@@ -304,8 +304,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       throw new InterruptedException();
     }
 
-    HashMap<InternalDistributedMember, List<Integer>> n2b =
-        new HashMap<>(node2bucketIds);
+    HashMap<InternalDistributedMember, List<BucketId>> n2b = new HashMap<>(node2bucketIds);
     n2b.remove(pr.getMyId());
     // IF query is originated from a Function and we found some buckets on
     // remote node we should throw exception mentioning data movement during function execution.
@@ -334,9 +333,9 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       // send separate message to each recipient since each one has a
       // different list of bucket ids
       processor = createStreamingQueryPartitionResponse(sys, n2b);
-      for (Map.Entry<InternalDistributedMember, List<Integer>> me : n2b.entrySet()) {
+      for (Map.Entry<InternalDistributedMember, List<BucketId>> me : n2b.entrySet()) {
         final InternalDistributedMember rcp = me.getKey();
-        final List<Integer> bucketIds = me.getValue();
+        final List<BucketId> bucketIds = me.getValue();
         PartitionMessage m = createRequestMessage(rcp, processor, bucketIds);
         m.setTransactionDistributed(sys.getCache().getTxManager().isDistributed());
         Set notReceivedMembers = sendMessage(m);
@@ -435,7 +434,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   }
 
   protected StreamingQueryPartitionResponse createStreamingQueryPartitionResponse(
-      InternalDistributedSystem system, HashMap<InternalDistributedMember, List<Integer>> n2b) {
+      InternalDistributedSystem system, HashMap<InternalDistributedMember, List<BucketId>> n2b) {
     return new StreamingQueryPartitionResponse(system, n2b.keySet());
   }
 
@@ -539,12 +538,12 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     }
   }
 
-  private Set<Integer> calculateRetryBuckets() {
-    Iterator<Map.Entry<InternalDistributedMember, List<Integer>>> memberToBucketList =
+  private Set<BucketId> calculateRetryBuckets() {
+    Iterator<Map.Entry<InternalDistributedMember, List<BucketId>>> memberToBucketList =
         node2bucketIds.entrySet().iterator();
-    final HashSet<Integer> retryBuckets = new HashSet<>();
+    final HashSet<BucketId> retryBuckets = new HashSet<>();
     while (memberToBucketList.hasNext()) {
-      Map.Entry<InternalDistributedMember, List<Integer>> e = memberToBucketList.next();
+      Map.Entry<InternalDistributedMember, List<BucketId>> e = memberToBucketList.next();
       InternalDistributedMember m = e.getKey();
       if (!resultsPerMember.containsKey(m)
           || (!((MemberResultsList) resultsPerMember.get(m)).isLastChunkReceived())) {
@@ -557,7 +556,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       StringBuilder logStr = new StringBuilder();
       logStr.append("Query ").append(query.getQueryString())
           .append(" needs to retry bucketsIds: [");
-      for (Integer i : retryBuckets) {
+      for (BucketId i : retryBuckets) {
         logStr.append(",").append(i);
       }
       logStr.append("]");
@@ -827,20 +826,20 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    */
 
   // (package access for unit test purposes)
-  Map<InternalDistributedMember, List<Integer>> buildNodeToBucketMap() throws QueryException {
+  Map<InternalDistributedMember, List<BucketId>> buildNodeToBucketMap() throws QueryException {
     return buildNodeToBucketMapForBuckets(bucketsToQuery);
   }
 
   /**
    * @return Map of {@link InternalDistributedMember} to {@link ArrayList} of Integers
    */
-  private Map<InternalDistributedMember, List<Integer>> buildNodeToBucketMapForBuckets(
-      final Set<Integer> bucketIdsToConsider) throws QueryException {
-    final HashMap<InternalDistributedMember, List<Integer>> ret = new HashMap<>();
+  private Map<InternalDistributedMember, List<BucketId>> buildNodeToBucketMapForBuckets(
+      final Set<BucketId> bucketIdsToConsider) throws QueryException {
+    final HashMap<InternalDistributedMember, List<BucketId>> ret = new HashMap<>();
     if (bucketIdsToConsider.isEmpty()) {
       return ret;
     }
-    List<Integer> bucketIds;
+    List<BucketId> bucketIds;
     if (query != null && query.isCqQuery()) {
       bucketIds = findPrimaryBucketOwners(bucketIdsToConsider, ret);
     } else {
@@ -857,21 +856,21 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     return ret;
   }
 
-  private List<Integer> findPrimaryBucketOwners(Set<Integer> bucketIdsToConsider,
-      HashMap<InternalDistributedMember, List<Integer>> nodeToBucketMap) {
-    final List<Integer> bucketIds = new ArrayList<>();
+  private List<BucketId> findPrimaryBucketOwners(Set<BucketId> bucketIdsToConsider,
+      HashMap<InternalDistributedMember, List<BucketId>> nodeToBucketMap) {
+    final List<BucketId> bucketIds = new ArrayList<>();
     int retry = 3;
     for (int i = 0; i < retry && (bucketIds.size() != bucketIdsToConsider.size()); i++) {
       bucketIds.clear();
       nodeToBucketMap.clear();
-      for (Integer bucketId : bucketIdsToConsider) {
+      for (BucketId bucketId : bucketIdsToConsider) {
         InternalDistributedMember primary = getPrimaryBucketOwner(bucketId);
         if (primary != null) {
           bucketIds.add(bucketId);
           if (nodeToBucketMap.get(primary) != null) {
             nodeToBucketMap.get(primary).add(bucketId);
           } else {
-            List<Integer> bids = new ArrayList<>();
+            List<BucketId> bids = new ArrayList<>();
             bids.add(bucketId);
             nodeToBucketMap.put(primary, bids);
           }
@@ -881,19 +880,19 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     return bucketIds;
   }
 
-  private List<Integer> findBucketOwners(final Set<Integer> bucketIdsToConsider,
-      HashMap<InternalDistributedMember, List<Integer>> nodeToBucketMap) {
-    final List<Integer> bucketIds = new ArrayList<>();
+  private List<BucketId> findBucketOwners(final Set<BucketId> bucketIdsToConsider,
+      HashMap<InternalDistributedMember, List<BucketId>> nodeToBucketMap) {
+    final List<BucketId> bucketIds = new ArrayList<>();
     // Get all local buckets
     PartitionedRegionDataStore dataStore = pr.getDataStore();
     if (dataStore != null) {
-      for (Integer bid : bucketIdsToConsider) {
+      for (BucketId bid : bucketIdsToConsider) {
         if (dataStore.isManagingBucket(bid)) {
           bucketIds.add(bid);
         }
       }
       if (bucketIds.size() > 0) {
-        List<Integer> localBucketIds = new ArrayList<>(bucketIds);
+        List<BucketId> localBucketIds = new ArrayList<>(bucketIds);
         nodeToBucketMap.put(pr.getMyId(), localBucketIds);
         // All the buckets are hosted locally.
         if (localBucketIds.size() == bucketIdsToConsider.size()) {
@@ -911,8 +910,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     for (Iterator<InternalDistributedMember> dsItr = allNodes.iterator(); dsItr.hasNext()
         && (bucketIds.size() < totalBucketsToQuery);) {
       InternalDistributedMember nd = dsItr.next();
-      final List<Integer> buckets = new ArrayList<>();
-      for (Integer bid : bucketIdsToConsider) {
+      final List<BucketId> buckets = new ArrayList<>();
+      for (BucketId bid : bucketIdsToConsider) {
         if (!bucketIds.contains(bid)) {
           final Set owners = getBucketOwners(bid);
           if (owners.contains(nd)) {
@@ -928,11 +927,11 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     return bucketIds;
   }
 
-  InternalDistributedMember getPrimaryBucketOwner(Integer bid) {
+  InternalDistributedMember getPrimaryBucketOwner(BucketId bid) {
     return pr.getBucketPrimary(bid);
   }
 
-  protected Set<InternalDistributedMember> getBucketOwners(Integer bid) {
+  protected Set<InternalDistributedMember> getBucketOwners(BucketId bid) {
     return pr.getRegionAdvisor().getBucketOwners(bid);
   }
 
@@ -961,7 +960,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       pr.getDataStore().invokeBucketReadHook();
       final InternalDistributedMember me = pr.getMyId();
 
-      List<Integer> bucketList = node2bucketIds.get(me);
+      List<BucketId> bucketList = node2bucketIds.get(me);
       try {
         PRQueryProcessor qp = createLocalPRQueryProcessor(bucketList);
         MemberResultsList resultCollector = new MemberResultsList();
@@ -1033,7 +1032,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     return false;
   }
 
-  protected PRQueryProcessor createLocalPRQueryProcessor(List<Integer> bucketList) {
+  protected PRQueryProcessor createLocalPRQueryProcessor(List<BucketId> bucketList) {
     return new PRQueryProcessor(pr, query, parameters, bucketList);
   }
 

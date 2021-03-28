@@ -87,9 +87,9 @@ public class PRLoad implements DataSerializable {
   /**
    * Add a bucket to the list of bucket loads
    */
-  public void addBucket(int bucketId, float readLoad, float writeLoad) {
-    bucketReadLoads[bucketId] = readLoad;
-    bucketWriteLoads[bucketId] = writeLoad;
+  public void addBucket(BucketId bucketId, float readLoad, float writeLoad) {
+    bucketReadLoads[bucketId.intValue()] = readLoad;
+    bucketWriteLoads[bucketId.intValue()] = writeLoad;
   }
 
   /**
@@ -97,8 +97,8 @@ public class PRLoad implements DataSerializable {
    *
    * @param bucketId the id of a bucket
    */
-  public float getReadLoad(int bucketId) {
-    return bucketReadLoads[bucketId];
+  public float getReadLoad(BucketId bucketId) {
+    return bucketReadLoads[bucketId.intValue()];
   }
 
   /**
@@ -106,8 +106,8 @@ public class PRLoad implements DataSerializable {
    *
    * @param bucketId the id of a bucket
    */
-  public float getWriteLoad(int bucketId) {
-    return bucketWriteLoads[bucketId];
+  public float getWriteLoad(BucketId bucketId) {
+    return bucketWriteLoads[bucketId.intValue()];
   }
 
   /**

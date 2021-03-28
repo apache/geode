@@ -32,6 +32,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -138,11 +139,12 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
 
     long bucketSizeWithOneEntry = vm0.invoke(() -> {
       Region<Integer, byte[]> region = getRegion(REGION_NAME);
+      final BucketId bucketId = BucketId.valueOf(0);
       region.put(0, new byte[100]);
 
       PartitionedRegion partitionedRegion = (PartitionedRegion) region;
       PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
-      long size = dataStore.getBucketSize(0);
+      long size = dataStore.getBucketSize(bucketId);
 
       for (int i = 1; i < 100; i++) {
         region.put(i * TOTAL_NUMBER_OF_BUCKETS, new byte[100]);
@@ -150,7 +152,7 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
       await().until(() -> dataStore.getBucketsManaged() == (short) 1);
 
       // make sure the size is proportional to the amount of data
-      await().until(() -> dataStore.getBucketSize(0) == 100 * size);
+      await().until(() -> dataStore.getBucketSize(bucketId) == 100 * size);
 
       // destroy and invalidate entries and make sure the size goes down
       for (int i = 0; i < 25; i++) {
@@ -161,7 +163,7 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
         region.invalidate(i * TOTAL_NUMBER_OF_BUCKETS);
       }
 
-      await().until(() -> dataStore.getBucketSize(0) == 50 * size);
+      await().until(() -> dataStore.getBucketSize(bucketId) == 50 * size);
 
       // put some larger values in and make sure the size goes up
       for (int i = 50; i < 75; i++) {
@@ -173,7 +175,7 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
         region.put(i * TOTAL_NUMBER_OF_BUCKETS, new byte[50]);
       }
 
-      await().until(() -> dataStore.getBucketSize(0) == 50 * size);
+      await().until(() -> dataStore.getBucketSize(bucketId) == 50 * size);
 
       return size;
     });
@@ -181,7 +183,8 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
     vm1.invoke(() -> {
       PartitionedRegion partitionedRegion = getPartitionedRegion(REGION_NAME);
       await().until(
-          () -> partitionedRegion.getDataStore().getBucketSize(0) == 50 * bucketSizeWithOneEntry);
+          () -> partitionedRegion.getDataStore().getBucketSize(BucketId.valueOf(0)) == 50
+              * bucketSizeWithOneEntry);
     });
 
     vm1.invoke(() -> {
@@ -201,7 +204,7 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
 
       PartitionedRegion partitionedRegion = (PartitionedRegion) region;
       PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
-      long size = dataStore.getBucketSize(0);
+      long size = dataStore.getBucketSize(BucketId.valueOf(0));
 
       for (int i = 1; i < 100; i++) {
         region.put(i * TOTAL_NUMBER_OF_BUCKETS, new byte[100]);

@@ -21,6 +21,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -185,7 +186,7 @@ public interface InternalDataView {
    * @param allowTombstones whether to include destroyed entries in the result
    * @return Set of keys in the given bucket
    */
-  Set<?> getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones);
+  Set<?> getBucketKeys(LocalRegion localRegion, BucketId bucketId, boolean allowTombstones);
 
   void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
       InternalRegion reg);

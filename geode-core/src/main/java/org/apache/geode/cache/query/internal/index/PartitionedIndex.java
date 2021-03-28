@@ -42,6 +42,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /**
  * This class implements a Partitioned index over a group of partitioned region buckets.
@@ -229,7 +230,7 @@ public class PartitionedIndex extends AbstractIndex {
   /**
    * Returns the index for the bucket.
    */
-  public static AbstractIndex getBucketIndex(PartitionedRegion pr, String indexName, Integer bId)
+  public static AbstractIndex getBucketIndex(PartitionedRegion pr, String indexName, BucketId bId)
       throws QueryInvocationTargetException {
     try {
       pr.checkReadiness();
@@ -258,14 +259,14 @@ public class PartitionedIndex extends AbstractIndex {
   /**
    * Verify if the index is available of the buckets. If not create index on the bucket.
    */
-  public void verifyAndCreateMissingIndex(List<Integer> buckets)
+  public void verifyAndCreateMissingIndex(List<BucketId> buckets)
       throws QueryInvocationTargetException {
     final PartitionedRegion region = (PartitionedRegion) getRegion();
     final PartitionedRegionDataStore dataStore = region.getDataStore();
 
     final boolean fineEnabled = region.getCache().getLogger().fineEnabled();
 
-    for (final Integer bucketId : buckets) {
+    for (final BucketId bucketId : buckets) {
       // create index
       BucketRegion bukRegion = dataStore.getLocalBucketById(bucketId);
       if (bukRegion == null) {

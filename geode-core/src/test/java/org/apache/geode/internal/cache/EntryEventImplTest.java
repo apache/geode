@@ -40,6 +40,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EntryEventImpl.NewValueImporter;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.StoredObject;
@@ -1238,7 +1239,7 @@ public class EntryEventImplTest {
 
   private static EventID createEventID() {
     byte[] memId = {1, 2, 3};
-    return new EventID(memId, 11, 12, 13);
+    return new EventID(memId, 11, 12, BucketId.valueOf(13));
   }
 
   private EntryEventImpl createEntryEvent(LocalRegion l, Object newValue) {

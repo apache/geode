@@ -41,9 +41,10 @@ import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class IndexRepositoryFactoryTest {
-  private Integer bucketId;
+  private BucketId bucketId;
   private LuceneSerializer<?> serializer;
   private PartitionedRegion userRegion;
   private PartitionedRegion fileRegion;
@@ -56,7 +57,7 @@ public class IndexRepositoryFactoryTest {
 
   @Before
   public void setUp() {
-    bucketId = 0;
+    bucketId = BucketId.valueOf(0);
     serializer = mock(LuceneSerializer.class);
     userRegion = mock(PartitionedRegion.class);
     fileRegion = mock(PartitionedRegion.class);
@@ -84,8 +85,9 @@ public class IndexRepositoryFactoryTest {
       throws IOException {
     doReturn(null).when(indexRepositoryFactory).getMatchingBucket(fileRegion, bucketId);
 
-    IndexRepository indexRepository = indexRepositoryFactory.finishComputingRepository(0,
-        serializer, userRegion, oldRepository, luceneIndex);
+    IndexRepository indexRepository =
+        indexRepositoryFactory.finishComputingRepository(BucketId.valueOf(0),
+            serializer, userRegion, oldRepository, luceneIndex);
     assertThat(indexRepository).isNull();
     verify(oldRepository).cleanup();
   }
@@ -95,8 +97,9 @@ public class IndexRepositoryFactoryTest {
       throws IOException {
     when(fileAndChunkBucketAdvisor.isPrimary()).thenReturn(false);
 
-    IndexRepository indexRepository = indexRepositoryFactory.finishComputingRepository(0,
-        serializer, userRegion, oldRepository, luceneIndex);
+    IndexRepository indexRepository =
+        indexRepositoryFactory.finishComputingRepository(BucketId.valueOf(0),
+            serializer, userRegion, oldRepository, luceneIndex);
     assertThat(indexRepository).isNull();
     verify(oldRepository).cleanup();
   }
@@ -107,8 +110,9 @@ public class IndexRepositoryFactoryTest {
     when(oldRepository.isClosed()).thenReturn(false);
     when(fileAndChunkBucketAdvisor.isPrimary()).thenReturn(true);
 
-    IndexRepository indexRepository = indexRepositoryFactory.finishComputingRepository(0,
-        serializer, userRegion, oldRepository, luceneIndex);
+    IndexRepository indexRepository =
+        indexRepositoryFactory.finishComputingRepository(BucketId.valueOf(0),
+            serializer, userRegion, oldRepository, luceneIndex);
     assertThat(indexRepository).isNotNull();
     assertThat(indexRepository).isSameAs(oldRepository);
   }
@@ -120,8 +124,9 @@ public class IndexRepositoryFactoryTest {
     when(fileAndChunkBucketAdvisor.isPrimary()).thenReturn(true).thenReturn(false);
     when(distributedLockService.lock(any(), anyLong(), anyLong())).thenReturn(false);
 
-    IndexRepository indexRepository = indexRepositoryFactory.finishComputingRepository(0,
-        serializer, userRegion, oldRepository, luceneIndex);
+    IndexRepository indexRepository =
+        indexRepositoryFactory.finishComputingRepository(BucketId.valueOf(0),
+            serializer, userRegion, oldRepository, luceneIndex);
     assertThat(indexRepository).isNull();
   }
 
@@ -134,7 +139,7 @@ public class IndexRepositoryFactoryTest {
     doThrow(new IOException("Test Exception")).when(indexRepositoryFactory)
         .buildIndexWriter(bucketId, fileAndChunkBucket, luceneIndex);
 
-    assertThatThrownBy(() -> indexRepositoryFactory.finishComputingRepository(0,
+    assertThatThrownBy(() -> indexRepositoryFactory.finishComputingRepository(BucketId.valueOf(0),
         serializer, userRegion, oldRepository, luceneIndex)).isInstanceOf(IOException.class);
     verify(distributedLockService).unlock(any());
   }
@@ -148,8 +153,9 @@ public class IndexRepositoryFactoryTest {
     doThrow(new CacheClosedException("Test Exception")).when(indexRepositoryFactory)
         .buildIndexWriter(bucketId, fileAndChunkBucket, luceneIndex);
 
-    assertThatThrownBy(() -> indexRepositoryFactory.finishComputingRepository(0, serializer,
-        userRegion, oldRepository, luceneIndex)).isInstanceOf(CacheClosedException.class);
+    assertThatThrownBy(
+        () -> indexRepositoryFactory.finishComputingRepository(BucketId.valueOf(0), serializer,
+            userRegion, oldRepository, luceneIndex)).isInstanceOf(CacheClosedException.class);
     verify(distributedLockService).unlock(any());
   }
 

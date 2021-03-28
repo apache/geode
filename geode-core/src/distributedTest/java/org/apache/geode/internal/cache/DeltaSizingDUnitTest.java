@@ -31,6 +31,7 @@ import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -248,7 +249,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
       public Object call() {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion("region1");
-        long size = region.getDataStore().getBucketSize(0);
+        long size = region.getDataStore().getBucketSize(BucketId.valueOf(0));
         TestDelta value = (TestDelta) region.get(0);
         value.checkFields(serializations, deserializations, deltas, clones);
         return size;

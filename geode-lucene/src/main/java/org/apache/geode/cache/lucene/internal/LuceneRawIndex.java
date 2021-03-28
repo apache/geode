@@ -19,6 +19,7 @@ import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class LuceneRawIndex extends LuceneIndexImpl {
 
@@ -49,7 +50,7 @@ public class LuceneRawIndex extends LuceneIndexImpl {
   public void destroy(boolean initiator) {}
 
   @Override
-  public boolean isIndexAvailable(int id) {
+  public boolean isIndexAvailable(BucketId id) {
     return true;
   }
 

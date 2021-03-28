@@ -45,6 +45,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.rest.internal.web.RestFunctionTemplate;
 import org.apache.geode.test.dunit.VM;
@@ -112,7 +113,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     }
     // Assert there is data in each bucket
     for (int bid = 0; bid < pr.getTotalNumberOfBuckets(); bid++) {
-      assertThat(pr.getBucketKeys(bid).size()).isGreaterThan(0);
+      assertThat(pr.getBucketKeys(BucketId.valueOf(bid)).size()).isGreaterThan(0);
     }
   }
 

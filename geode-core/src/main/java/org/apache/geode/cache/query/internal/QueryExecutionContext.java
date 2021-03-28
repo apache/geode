@@ -24,6 +24,7 @@ import java.util.Stack;
 
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
@@ -41,7 +42,7 @@ public class QueryExecutionContext extends ExecutionContext {
 
   private final boolean cqQueryContext;
 
-  private List<Integer> bucketList;
+  private List<BucketId> bucketList;
 
   private boolean indexUsed = false;
 
@@ -158,12 +159,12 @@ public class QueryExecutionContext extends ExecutionContext {
   }
 
   @Override
-  public void setBucketList(List<Integer> list) {
+  public void setBucketList(List<BucketId> list) {
     bucketList = list;
   }
 
   @Override
-  public List<Integer> getBucketList() {
+  public List<BucketId> getBucketList() {
     return bucketList;
   }
 

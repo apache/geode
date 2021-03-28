@@ -35,6 +35,7 @@ import redis.clients.jedis.JedisCluster;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.services.RegionProvider;
@@ -83,13 +84,13 @@ public class RedisPartitionResolverDUnitTest {
       jedis.set(key, "value-" + i);
     }
 
-    Map<String, Integer> keyToBucketMap1 = getKeyToBucketMap(server1);
-    Map<String, Integer> keyToBucketMap2 = getKeyToBucketMap(server2);
-    Map<String, Integer> keyToBucketMap3 = getKeyToBucketMap(server3);
+    Map<String, BucketId> keyToBucketMap1 = getKeyToBucketMap(server1);
+    Map<String, BucketId> keyToBucketMap2 = getKeyToBucketMap(server2);
+    Map<String, BucketId> keyToBucketMap3 = getKeyToBucketMap(server3);
 
-    Set<Integer> buckets1 = new HashSet<>(keyToBucketMap1.values());
-    Set<Integer> buckets2 = new HashSet<>(keyToBucketMap2.values());
-    Set<Integer> buckets3 = new HashSet<>(keyToBucketMap3.values());
+    Set<BucketId> buckets1 = new HashSet<>(keyToBucketMap1.values());
+    Set<BucketId> buckets2 = new HashSet<>(keyToBucketMap2.values());
+    Set<BucketId> buckets3 = new HashSet<>(keyToBucketMap3.values());
 
     assertThat(buckets1).doesNotContainAnyElementsOf(buckets2);
     assertThat(buckets1).doesNotContainAnyElementsOf(buckets3);
@@ -103,22 +104,23 @@ public class RedisPartitionResolverDUnitTest {
     validateBucketMapping(keyToBucketMap3);
   }
 
-  private void validateBucketMapping(Map<String, Integer> bucketMap) {
-    for (Map.Entry<String, Integer> e : bucketMap.entrySet()) {
-      assertThat(new RedisKey(e.getKey().getBytes()).getBucketId()).isEqualTo(e.getValue());
+  private void validateBucketMapping(Map<String, BucketId> bucketMap) {
+    for (Map.Entry<String, BucketId> e : bucketMap.entrySet()) {
+      assertThat(new RedisKey(e.getKey().getBytes()).getBucketId())
+          .isEqualTo(e.getValue().intValue());
     }
   }
 
-  private Map<String, Integer> getKeyToBucketMap(MemberVM vm) {
-    return vm.invoke((SerializableCallableIF<Map<String, Integer>>) () -> {
+  private Map<String, BucketId> getKeyToBucketMap(MemberVM vm) {
+    return vm.invoke((SerializableCallableIF<Map<String, BucketId>>) () -> {
       Region<RedisKey, RedisData> region =
           RedisClusterStartupRule.getCache().getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
 
       LocalDataSet local = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(region);
-      Map<String, Integer> keyMap = new HashMap<>();
+      Map<String, BucketId> keyMap = new HashMap<>();
 
       for (Object key : local.localKeys()) {
-        int id = local.getProxy().getKeyInfo(key).getBucketId();
+        BucketId id = local.getProxy().getKeyInfo(key).getBucketId();
         keyMap.put(key.toString(), id);
       }
 

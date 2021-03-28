@@ -105,6 +105,7 @@ import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tx.ClientTXStateStub;
 import org.apache.geode.internal.jta.SyncImpl;
 import org.apache.geode.internal.jta.TransactionImpl;
@@ -3539,7 +3540,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         List<CustId> keys = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
           cust = new CustId(i);
-          int bucketId = PartitionedRegionHelper.getHashKey(r, cust);
+          BucketId bucketId = BucketId.valueOf(PartitionedRegionHelper.getHashKey(r, cust));
           if (!myId.equals(r.getBucketPrimary(bucketId))) {
             keys.add(cust);
           }
@@ -4100,7 +4101,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       Region r = getCache().getRegion(regionName);
 
       await().untilAsserted(() -> {
-        List<Integer> ids = ((PartitionedRegion) r).getLocalBucketsListTestOnly();
+        List<BucketId> ids = ((PartitionedRegion) r).getLocalBucketsListTestOnly();
         assertFalse(ids.isEmpty());
       });
     });
@@ -4123,7 +4124,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       arm.setARMLockTestHook(new ARMLockTestHookAdapter() {
         @Override
         public void beforeLock(InternalRegion owner, CacheEvent event) {
-          List<Integer> ids =
+          List<BucketId> ids =
               ((PartitionedRegion) getCache().getRegion(regionName)).getLocalBucketsListTestOnly();
           assertFalse(ids.isEmpty());
           br.localDestroyRegion();

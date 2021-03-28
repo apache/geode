@@ -204,11 +204,11 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
     return vm.invokeAsync(getCreatePRRunnable(redundancy, -1));
   }
 
-  protected Set<Integer> getBucketList(final VM vm) {
+  protected Set<BucketId> getBucketList(final VM vm) {
     return getBucketList(vm, getPartitionedRegionName());
   }
 
-  protected Set<Integer> getBucketList(final VM vm, final String regionName) {
+  protected Set<BucketId> getBucketList(final VM vm, final String regionName) {
     return vm.invoke("getBucketList", () -> {
       PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
       return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
@@ -232,14 +232,14 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
               + expectedBuckets;
         }
 
-        Set<Integer> getActualBuckets() {
+        Set<BucketId> getActualBuckets() {
           return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
         }
       });
     });
   }
 
-  Set<Integer> getPrimaryBucketList(final VM vm, final String regionName) {
+  Set<BucketId> getPrimaryBucketList(final VM vm, final String regionName) {
     return vm.invoke("getPrimaryBucketList", () -> {
       Cache cache = getCache();
       PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
@@ -247,7 +247,7 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
     });
   }
 
-  protected boolean moveBucket(final int bucketId, final VM source, final VM target) {
+  protected boolean moveBucket(final BucketId bucketId, final VM source, final VM target) {
     InternalDistributedMember sourceId = getInternalDistributedMember(source);
 
     return target.invoke("moveBucket", () -> {
@@ -262,11 +262,11 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
         () -> getCache().getDistributedSystem().getDistributedMember());
   }
 
-  void waitForBucketRecovery(final VM vm, final Set<Integer> lostBuckets) {
+  void waitForBucketRecovery(final VM vm, final Set<BucketId> lostBuckets) {
     waitForBucketRecovery(vm, lostBuckets, getPartitionedRegionName());
   }
 
-  private void waitForBucketRecovery(final VM vm, final Set<Integer> lostBuckets,
+  private void waitForBucketRecovery(final VM vm, final Set<BucketId> lostBuckets,
       final String regionName) {
     vm.invoke("waitForBucketRecovery", () -> {
       PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
@@ -275,7 +275,7 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
       GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
         @Override
         public boolean done() {
-          Set<Integer> vm2Buckets = dataStore.getAllLocalBucketIds();
+          Set<BucketId> vm2Buckets = dataStore.getAllLocalBucketIds();
           return lostBuckets.equals(vm2Buckets);
         }
 

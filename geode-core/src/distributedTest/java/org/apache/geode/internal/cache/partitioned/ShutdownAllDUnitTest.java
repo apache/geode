@@ -105,8 +105,8 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
     createData(vm0, 0, numBuckets, "a", "region");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, "region");
-    Set<Integer> vm1Buckets = getBucketList(vm1, "region");
+    Set<BucketId> vm0Buckets = getBucketList(vm0, "region");
+    Set<BucketId> vm1Buckets = getBucketList(vm1, "region");
     assertEquals(vm0Buckets, vm1Buckets);
 
     shutDownAllMembers(vm2, 2);
@@ -176,8 +176,8 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
     createData(vm0, 0, numBuckets, "a", "region");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, "region");
-    Set<Integer> vm1Buckets = getBucketList(vm1, "region");
+    Set<BucketId> vm0Buckets = getBucketList(vm0, "region");
+    Set<BucketId> vm1Buckets = getBucketList(vm1, "region");
     assertEquals(vm0Buckets, vm1Buckets);
 
     vm0.invoke(addExceptionTag1(expectedExceptions));
@@ -270,7 +270,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     // restart vm0
     createRegion(vm0, "region", "disk", true, 0);
 
-    checkPRRecoveredFromDisk(vm0, "region", 0, true);
+    checkPRRecoveredFromDisk(vm0, "region", BucketId.valueOf(0), true);
 
     createData(vm0, 1, 10, "b", "region");
   }
@@ -295,7 +295,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     createRegion(vm0, "region_pr", "disk", true, 0);
     createRegion(vm0, "region_dr", "disk", false, 0);
 
-    checkPRRecoveredFromDisk(vm0, "region_pr", 0, true);
+    checkPRRecoveredFromDisk(vm0, "region_pr", BucketId.valueOf(0), true);
 
     checkData(vm0, 0, 1, "a", "region_pr");
     checkData(vm0, 0, 1, "c", "region_dr");
@@ -366,8 +366,8 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     checkData(vm0, 0, 1, "a", "region");
     checkData(vm1, 0, 1, "a", "region");
 
-    checkPRRecoveredFromDisk(vm0, "region", 0, true);
-    checkPRRecoveredFromDisk(vm1, "region", 0, true);
+    checkPRRecoveredFromDisk(vm0, "region", BucketId.valueOf(0), true);
+    checkPRRecoveredFromDisk(vm1, "region", BucketId.valueOf(0), true);
 
     closeRegion(vm0, "region");
     closeRegion(vm1, "region");
@@ -380,8 +380,8 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     checkData(vm0, 0, 1, "a", "region");
     checkData(vm1, 0, 1, "a", "region");
 
-    checkPRRecoveredFromDisk(vm0, "region", 0, false);
-    checkPRRecoveredFromDisk(vm1, "region", 0, true);
+    checkPRRecoveredFromDisk(vm0, "region", BucketId.valueOf(0), false);
+    checkPRRecoveredFromDisk(vm1, "region", BucketId.valueOf(0), true);
   }
 
   // shutdownAll, then restart to verify
@@ -419,8 +419,8 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     checkData(vm0, 0, 1, "a", "region");
     checkData(vm1, 0, 1, "a", "region");
 
-    checkPRRecoveredFromDisk(vm0, "region", 0, true);
-    checkPRRecoveredFromDisk(vm1, "region", 0, true);
+    checkPRRecoveredFromDisk(vm0, "region", BucketId.valueOf(0), true);
+    checkPRRecoveredFromDisk(vm1, "region", BucketId.valueOf(0), true);
   }
 
   @Test
@@ -478,8 +478,8 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
     createData(vm0, 0, numBuckets, "a", "region");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, "region");
-    Set<Integer> vm1Buckets = getBucketList(vm1, "region");
+    Set<BucketId> vm0Buckets = getBucketList(vm0, "region");
+    Set<BucketId> vm1Buckets = getBucketList(vm1, "region");
     assertEquals(vm0Buckets, vm1Buckets);
 
     // Add a cache listener that will cause the system to hang up.
@@ -563,8 +563,8 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
     createData(vm0, 0, numBuckets, "a", "region");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, "region");
-    Set<Integer> vm1Buckets = getBucketList(vm1, "region");
+    Set<BucketId> vm0Buckets = getBucketList(vm0, "region");
+    Set<BucketId> vm1Buckets = getBucketList(vm1, "region");
 
 
     // shutdown all the members
@@ -771,23 +771,24 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(createData);
   }
 
-  protected Set<Integer> getBucketList(VM vm, final String regionName) {
-    SerializableCallable getBuckets = new SerializableCallable("get buckets") {
+  protected Set<BucketId> getBucketList(VM vm, final String regionName) {
+    SerializableCallable<Set<BucketId>> getBuckets =
+        new SerializableCallable<Set<BucketId>>("get buckets") {
 
-      @Override
-      public Object call() throws Exception {
-        Cache cache = getCache();
-        Region region = cache.getRegion(regionName);
-        if (region instanceof PartitionedRegion) {
-          PartitionedRegion pr = (PartitionedRegion) region;
-          return new TreeSet<>(pr.getDataStore().getAllLocalBucketIds());
-        } else {
-          return null;
-        }
-      }
-    };
+          @Override
+          public Set<BucketId> call() {
+            Cache cache = getCache();
+            Region<?, ?> region = cache.getRegion(regionName);
+            if (region instanceof PartitionedRegion) {
+              PartitionedRegion pr = (PartitionedRegion) region;
+              return new TreeSet<>(pr.getDataStore().getAllLocalBucketIds());
+            } else {
+              return null;
+            }
+          }
+        };
 
-    return (Set<Integer>) vm.invoke(getBuckets);
+    return vm.invoke(getBuckets);
   }
 
   protected void checkData(VM vm, final int startKey, final int endKey, final String value,
@@ -808,7 +809,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(checkData);
   }
 
-  protected void checkPRRecoveredFromDisk(VM vm, final String regionName, final int bucketId,
+  protected void checkPRRecoveredFromDisk(VM vm, final String regionName, final BucketId bucketId,
       final boolean recoveredLocally) {
     vm.invoke(new SerializableRunnable("check PR recovered from disk") {
       @Override

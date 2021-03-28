@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /**
  * Represents the {@link ServerLocation} of a {@link BucketRegion}
@@ -30,7 +31,7 @@ public class BucketServerLocation66 extends ServerLocation {
 
   private byte version;
 
-  private int bucketId;
+  private BucketId bucketId;
 
   private boolean isPrimary;
 
@@ -40,7 +41,7 @@ public class BucketServerLocation66 extends ServerLocation {
 
   public BucketServerLocation66() {}
 
-  public BucketServerLocation66(int bucketId, int port, String host, boolean isPrimary,
+  public BucketServerLocation66(BucketId bucketId, int port, String host, boolean isPrimary,
       byte version, String[] groups) {
     super(host, port);
     this.bucketId = bucketId;
@@ -55,7 +56,7 @@ public class BucketServerLocation66 extends ServerLocation {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    bucketId = DataSerializer.readInteger(in);
+    bucketId = BucketId.valueOf(DataSerializer.readInteger(in));
     isPrimary = DataSerializer.readBoolean(in);
     version = DataSerializer.readByte(in);
     numServerGroups = in.readByte();
@@ -70,7 +71,7 @@ public class BucketServerLocation66 extends ServerLocation {
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    DataSerializer.writeInteger(bucketId, out);
+    DataSerializer.writeInteger(bucketId.intValue(), out);
     DataSerializer.writeBoolean(isPrimary, out);
     DataSerializer.writeByte(version, out);
     out.writeByte(numServerGroups);
@@ -95,7 +96,7 @@ public class BucketServerLocation66 extends ServerLocation {
         + getPort() + ",isPrimary=" + isPrimary + ",version=" + version + "}";
   }
 
-  public int getBucketId() {
+  public BucketId getBucketId() {
     return bucketId;
   }
 

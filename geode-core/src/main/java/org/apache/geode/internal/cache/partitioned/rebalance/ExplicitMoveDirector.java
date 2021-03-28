@@ -20,6 +20,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Bucket;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Member;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Move;
@@ -29,14 +30,14 @@ import org.apache.geode.internal.cache.partitioned.rebalance.model.RefusalReason
 public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
 
   private PartitionedRegionLoadModel model;
-  private final int bucketId;
+  private final BucketId bucketId;
   private final InternalDistributedMember source;
   private final InternalDistributedMember target;
   private final Object key;
   private final InternalDistributedSystem distributedSystem;
 
 
-  public ExplicitMoveDirector(Object key, int bucketId, DistributedMember source,
+  public ExplicitMoveDirector(Object key, BucketId bucketId, DistributedMember source,
       DistributedMember target, DistributedSystem distributedSystem) {
     this.key = key;
     this.bucketId = bucketId;
@@ -57,7 +58,7 @@ public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
 
   @Override
   public boolean nextStep() {
-    Bucket bucket = model.getBuckets()[bucketId];
+    Bucket bucket = model.getBuckets()[bucketId.intValue()];
     Member sourceMember = model.getMember(source);
     Member targetMember = model.getMember(target);
     if (sourceMember == null) {

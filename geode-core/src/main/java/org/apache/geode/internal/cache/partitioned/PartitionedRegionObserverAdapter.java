@@ -26,8 +26,8 @@ public class PartitionedRegionObserverAdapter implements PartitionedRegionObserv
   public void beforeCalculatingStartingBucketId() {}
 
   @Override
-  public void beforeBucketCreation(PartitionedRegion region, int bucketId) {}
+  public void beforeBucketCreation(PartitionedRegion region, BucketId bucketId) {}
 
   @Override
-  public void beforeAssignBucket(PartitionedRegion partitionedRegion, int bucketId) {}
+  public void beforeAssignBucket(PartitionedRegion partitionedRegion, BucketId bucketId) {}
 }

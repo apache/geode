@@ -37,6 +37,7 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.junit.categories.EvictionTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -48,7 +49,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 public class EvictionIntegrationTest {
 
   @Parameterized.Parameters(name = "offHeap={0}")
-  public static Collection booleans() {
+  public static Collection<Boolean> booleans() {
     return Arrays.asList(true, false);
   }
 
@@ -125,10 +126,9 @@ public class EvictionIntegrationTest {
 
     assertThat(pr1.getTotalEvictions()).isEqualTo(extraEntries);
 
-    for (Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : pr1.getDataStore()
+    for (Map.Entry<BucketId, BucketRegion> integerBucketRegionEntry : pr1.getDataStore()
         .getAllLocalBuckets()) {
-      final BucketRegion bucketRegion =
-          (BucketRegion) ((Map.Entry) integerBucketRegionEntry).getValue();
+      final BucketRegion bucketRegion = integerBucketRegionEntry.getValue();
       if (bucketRegion == null) {
         continue;
       }

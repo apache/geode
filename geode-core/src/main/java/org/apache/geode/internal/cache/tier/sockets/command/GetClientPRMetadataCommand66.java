@@ -24,6 +24,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -81,7 +82,7 @@ public class GetClientPRMetadataCommand66 extends BaseCommand {
           responseMsg.setMessageType(MessageType.RESPONSE_CLIENT_PR_METADATA);
 
           PartitionedRegion prRegion = (PartitionedRegion) region;
-          Map<Integer, List<BucketServerLocation66>> bucketToServerLocations =
+          Map<BucketId, List<BucketServerLocation66>> bucketToServerLocations =
               prRegion.getRegionAdvisor().getAllClientBucketProfiles();
           responseMsg.setNumberOfParts(bucketToServerLocations.size());
           for (List<BucketServerLocation66> serverLocations : bucketToServerLocations.values()) {

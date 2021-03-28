@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.partitioned.BucketId.UNKNOWN_BUCKET;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.Externalizable;
@@ -39,6 +41,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -77,7 +80,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    */
   private long sequenceID;
 
-  private int bucketID;
+  private BucketId bucketID = UNKNOWN_BUCKET;
 
   private byte breadcrumbCounter = 0x0;
 
@@ -140,7 +143,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     ThreadAndSequenceIDWrapper wrapper = threadIDLocal.get();
     threadID = wrapper.threadID;
     sequenceID = wrapper.getAndIncrementSequenceID();
-    bucketID = -1;
+    bucketID = UNKNOWN_BUCKET;
   }
 
   /**
@@ -222,7 +225,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     membershipID = eventId.getMembershipID();
     threadID = eventId.getThreadID();
     sequenceID = eventId.getSequenceID() + offset;
-    bucketID = -1;
+    bucketID = UNKNOWN_BUCKET;
   }
 
   /**
@@ -239,10 +242,10 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     membershipID = memId;
     threadID = threadId;
     sequenceID = seqId;
-    bucketID = -1;
+    bucketID = UNKNOWN_BUCKET;
   }
 
-  public EventID(byte[] memId, long threadId, long seqId, int bucketId) {
+  public EventID(byte[] memId, long threadId, long seqId, BucketId bucketId) {
     membershipID = memId;
     threadID = threadId;
     sequenceID = seqId;
@@ -285,7 +288,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     return membershipID;
   }
 
-  public int getBucketID() {
+  public BucketId getBucketID() {
     return bucketID;
   }
 
@@ -362,7 +365,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     }
     DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(threadID, sequenceID),
         dop);
-    dop.writeInt(bucketID);
+    dop.writeInt(bucketID.intValue());
     dop.writeByte(breadcrumbCounter);
   }
 
@@ -373,7 +376,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(di));
     threadID = readEventIdPartsFromOptimizedByteArray(eventIdParts);
     sequenceID = readEventIdPartsFromOptimizedByteArray(eventIdParts);
-    bucketID = di.readInt();
+    bucketID = BucketId.valueOf(di.readInt());
     breadcrumbCounter = di.readByte();
   }
 
@@ -382,7 +385,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     DataSerializer.writeByteArray(membershipID, out);
     DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(threadID, sequenceID),
         out);
-    out.writeInt(bucketID);
+    out.writeInt(bucketID.intValue());
   }
 
   @Override
@@ -391,7 +394,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(in));
     threadID = readEventIdPartsFromOptimizedByteArray(eventIdParts);
     sequenceID = readEventIdPartsFromOptimizedByteArray(eventIdParts);
-    bucketID = in.readInt();
+    bucketID = BucketId.valueOf(in.readInt());
   }
 
   @Override
@@ -500,7 +503,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     }
     return "EventID[" + mbr + ";threadID=" + ThreadIdentifier.toDisplayString(threadID)
         + ";sequenceID=" + sequenceID + (Breadcrumbs.ENABLED ? ";bcrumb=" + breadcrumbCounter : "")
-        + (bucketID >= 0 ? (";bucketID=" + bucketID) : "") + "]";
+        + (bucketID != UNKNOWN_BUCKET ? (";bucketID=" + bucketID) : "") + "]";
   }
 
   @Override
@@ -538,7 +541,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
       buf.append(";bcrumb=").append(breadcrumbCounter);
     }
 
-    if (bucketID >= 0) {
+    if (bucketID != UNKNOWN_BUCKET) {
       buf.append(";bucketId=");
       buf.append(bucketID);
     }

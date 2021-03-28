@@ -40,6 +40,7 @@ import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
@@ -71,7 +72,7 @@ public class QueryWithBucketParameterIntegrationTest {
     QueryService qs = pr1.getCache().getQueryService();
     String query = "select distinct e1.value from " + SEPARATOR + "pr1 e1";
     queryExecutor = (DefaultQuery) CacheUtils.getQueryService().newQuery(query);
-    Set<Integer> set = createAndPopulateSet(totalBuckets);
+    Set<BucketId> set = createAndPopulateSet(totalBuckets);
     lds = new LocalDataSet(pr1, set);
   }
 
@@ -126,7 +127,7 @@ public class QueryWithBucketParameterIntegrationTest {
   public void testQueryExecuteWithNonEmptyBucketListExpectNonEmptyResultSet() throws Exception {
     final ExecutionContext executionContext = new ExecutionContext(null, CacheUtils.getCache());
     int nTestBucketNumber = 15;
-    Set<Integer> nonEmptySet = createAndPopulateSet(nTestBucketNumber);
+    Set<BucketId> nonEmptySet = createAndPopulateSet(nTestBucketNumber);
     SelectResults r =
         (SelectResults) lds.executeQuery(queryExecutor, executionContext, null, nonEmptySet);
     assertFalse("Received: An empty result collection, expected : Non-empty result collection",
@@ -138,7 +139,7 @@ public class QueryWithBucketParameterIntegrationTest {
       throws Exception {
     final ExecutionContext executionContext = new ExecutionContext(null, CacheUtils.getCache());
     int nTestBucketNumber = 45;
-    Set<Integer> overflowSet = createAndPopulateSet(nTestBucketNumber);
+    Set<BucketId> overflowSet = createAndPopulateSet(nTestBucketNumber);
     SelectResults r =
         (SelectResults) lds.executeQuery(queryExecutor, executionContext, null, overflowSet);
   }

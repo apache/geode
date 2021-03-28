@@ -54,7 +54,7 @@ public class SizeMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   /** The list of buckets whose size is needed, if null, then all buckets */
-  private ArrayList<Integer> bucketIds;
+  private ArrayList<BucketId> bucketIds;
 
   /**
    * Empty constructor to satisfy {@link DataSerializer} requirements
@@ -78,7 +78,7 @@ public class SizeMessage extends PartitionMessage {
    */
   private SizeMessage(Set<InternalDistributedMember> recipients, int regionId,
       ReplyProcessor21 processor,
-      ArrayList<Integer> bucketIds, boolean estimate) {
+      ArrayList<BucketId> bucketIds, boolean estimate) {
     super(recipients, regionId, processor);
     if (bucketIds != null && bucketIds.isEmpty()) {
       this.bucketIds = null;
@@ -97,7 +97,7 @@ public class SizeMessage extends PartitionMessage {
    * @param bucketIds the buckets to look for, or null for all buckets
    */
   public static SizeResponse send(Set<InternalDistributedMember> recipients, PartitionedRegion r,
-      ArrayList<Integer> bucketIds,
+      ArrayList<BucketId> bucketIds,
       boolean estimate) {
     Assert.assertTrue(recipients != null, "SizeMessage NULL recipients set");
     SizeResponse p = new SizeResponse(r.getSystem(), recipients);
@@ -143,7 +143,7 @@ public class SizeMessage extends PartitionMessage {
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager distributionManager,
       PartitionedRegion region,
       long startTime) throws CacheException, ForceReattemptException {
-    Map<Integer, SizeEntry> sizes;
+    Map<BucketId, SizeEntry> sizes;
     if (region != null) {
       PartitionedRegionDataStore ds = region.getDataStore();
       if (ds != null) { // datastore exists
@@ -213,21 +213,21 @@ public class SizeMessage extends PartitionMessage {
 
   public static class SizeReplyMessage extends ReplyMessage {
     /** Propagated exception from remote node to operation initiator */
-    private Map<Integer, SizeEntry> bucketSizes;
+    private Map<BucketId, SizeEntry> bucketSizes;
 
     /**
      * Empty constructor to conform to DataSerializable interface
      */
     public SizeReplyMessage() {}
 
-    private SizeReplyMessage(int processorId, Map<Integer, SizeEntry> bucketSizes) {
+    private SizeReplyMessage(int processorId, Map<BucketId, SizeEntry> bucketSizes) {
       this.processorId = processorId;
       this.bucketSizes = bucketSizes;
     }
 
     /** Send an ack */
     public static void send(InternalDistributedMember recipient, int processorId,
-        DistributionManager dm, Map<Integer, SizeEntry> sizes) {
+        DistributionManager dm, Map<BucketId, SizeEntry> sizes) {
       Assert.assertTrue(recipient != null, "SizeReplyMessage NULL reply message");
       SizeReplyMessage m = new SizeReplyMessage(processorId, sizes);
       m.setRecipient(recipient);
@@ -288,7 +288,7 @@ public class SizeMessage extends PartitionMessage {
           + " returning bucketSizes.size=" + getBucketSizes().size();
     }
 
-    public Map<Integer, SizeEntry> getBucketSizes() {
+    public Map<BucketId, SizeEntry> getBucketSizes() {
       return bucketSizes;
     }
   }
@@ -300,7 +300,7 @@ public class SizeMessage extends PartitionMessage {
    * @since GemFire 5.0
    */
   public static class SizeResponse extends ReplyProcessor21 {
-    private final HashMap<Integer, SizeEntry> returnValue = new HashMap<>();
+    private final Map<BucketId, SizeEntry> returnValue = new HashMap<>();
 
     public SizeResponse(InternalDistributedSystem distributedSystem,
         Set<InternalDistributedMember> recipients) {
@@ -324,8 +324,8 @@ public class SizeMessage extends PartitionMessage {
         if (msg instanceof SizeReplyMessage) {
           SizeReplyMessage reply = (SizeReplyMessage) msg;
           synchronized (returnValue) {
-            for (Map.Entry<Integer, SizeEntry> me : reply.getBucketSizes().entrySet()) {
-              Integer k = me.getKey();
+            for (Map.Entry<BucketId, SizeEntry> me : reply.getBucketSizes().entrySet()) {
+              BucketId k = me.getKey();
               if (!returnValue.containsKey(k) || !returnValue.get(k).isPrimary()) {
                 returnValue.put(k, me.getValue());
               }
@@ -341,7 +341,7 @@ public class SizeMessage extends PartitionMessage {
      * @return Map buckets and their associated sizes, this should never throw due to the
      *         {@link #processException(ReplyException)}method above
      */
-    public Map<Integer, SizeEntry> waitBucketSizes() {
+    public Map<BucketId, SizeEntry> waitBucketSizes() {
       try {
         waitForRepliesUninterruptibly();
       } catch (ReplyException e) {

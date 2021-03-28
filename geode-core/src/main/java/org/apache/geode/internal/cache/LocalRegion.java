@@ -182,6 +182,7 @@ import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
 import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
@@ -1764,7 +1765,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     PartitionedRegion partitionedRegion = (PartitionedRegion) this;
     BucketRegion bucketRegion;
 
-    int bId = event.getKeyInfo().getBucketId();
+    final BucketId bId = event.getKeyInfo().getBucketId();
     try {
       bucketRegion = partitionedRegion.dataStore.getInitializedBucketForId(event.getKey(), bId);
     } catch (ForceReattemptException ignore) {
@@ -2091,11 +2092,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return getDataView().entryCount(this);
   }
 
-  int entryCount(Set<Integer> buckets) {
+  int entryCount(Set<BucketId> buckets) {
     return entryCount(buckets, false);
   }
 
-  int entryCount(Set<Integer> buckets, boolean estimate) {
+  int entryCount(Set<BucketId> buckets, boolean estimate) {
     assert buckets == null : "unexpected buckets " + buckets + " for region " + this;
 
     return getDataView().entryCount(this);

@@ -32,6 +32,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -52,7 +53,7 @@ public abstract class AbstractDistributedRegionJUnitTest {
 
   private EventID createDummyEventID() {
     byte[] memId = {1, 2, 3};
-    EventID eventId = new EventID(memId, 11, 12, 13);
+    EventID eventId = new EventID(memId, 11, 12, BucketId.valueOf(13));
     return eventId;
   }
 

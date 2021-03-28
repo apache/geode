@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
@@ -76,7 +77,7 @@ public class LuceneListIndexFunctionJUnitTest {
     when(userRegion.getDataStore()).thenReturn(userRegionDataStore);
 
     BucketRegion userBucket = mock(BucketRegion.class);
-    when(userRegionDataStore.getLocalBucketById(1)).thenReturn(userBucket);
+    when(userRegionDataStore.getLocalBucketById(BucketId.valueOf(1))).thenReturn(userBucket);
 
     when(userBucket.isEmpty()).thenReturn(false);
 
@@ -91,12 +92,12 @@ public class LuceneListIndexFunctionJUnitTest {
         mock(PartitionedRegionDataStore.class);
     when(mockFileRegion.getDataStore()).thenReturn(mockPartitionedRegionDataStore);
 
-    Set<Integer> bucketSet = new HashSet<>();
-    bucketSet.add(1);
+    Set<BucketId> bucketSet = new HashSet<>();
+    bucketSet.add(BucketId.valueOf(1));
 
     when(mockPartitionedRegionDataStore.getAllLocalPrimaryBucketIds()).thenReturn(bucketSet);
 
-    when(index1.isIndexAvailable(1)).thenReturn(false);
+    when(index1.isIndexAvailable(BucketId.valueOf(1))).thenReturn(false);
 
     LuceneListIndexFunction function = new LuceneListIndexFunction();
     function.execute(context);

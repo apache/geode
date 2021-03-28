@@ -33,6 +33,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 
 /**
@@ -258,9 +259,9 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
 
     final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
-    Map<Integer, List<BucketServerLocation66>> bucketLocations =
+    Map<BucketId, List<BucketServerLocation66>> bucketLocations =
         prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-    for (Map.Entry<Integer, List<BucketServerLocation66>> locationEntry : bucketLocations
+    for (Map.Entry<BucketId, List<BucketServerLocation66>> locationEntry : bucketLocations
         .entrySet()) {
       List<BucketServerLocation66> newList = new ArrayList<>(locationEntry.getValue());
       for (Iterator<BucketServerLocation66> bucketIterator = newList.iterator(); bucketIterator

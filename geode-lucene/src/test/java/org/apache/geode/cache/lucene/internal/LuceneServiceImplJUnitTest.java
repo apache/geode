@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -57,6 +58,7 @@ import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
@@ -82,7 +84,7 @@ public class LuceneServiceImplJUnitTest {
   public void shouldPassSerializer() {
     service = Mockito.spy(service);
     LuceneIndexFactory factory = service.createIndexFactory();
-    LuceneSerializer serializer = mock(LuceneSerializer.class);
+    LuceneSerializer<?> serializer = mock(LuceneSerializer.class);
     factory.setLuceneSerializer(serializer);
     factory.setFields("field1", "field2");
     factory.create("index", "region");
@@ -123,14 +125,14 @@ public class LuceneServiceImplJUnitTest {
     when(cache.getDistributedSystem()).thenReturn(ds);
     when(ds.createAtomicStatistics(any(), anyString()))
         .thenReturn(luceneIndexStats);
-    when(cache.getRegion(anyString())).thenReturn(region);
+    when(cache.getRegion(anyString())).thenReturn(uncheckedCast(region));
     DistributionManager manager = mock(DistributionManager.class);
     when(cache.getDistributionManager()).thenReturn(manager);
     OperationExecutors executors = mock(OperationExecutors.class);
     when(executors.getWaitingThreadPool()).thenReturn(Executors.newSingleThreadExecutor());
     when(manager.getExecutors()).thenReturn(executors);
 
-    RegionAttributes ratts = mock(RegionAttributes.class);
+    RegionAttributes<?, ?> ratts = mock(RegionAttributes.class);
     when(region.getAttributes()).thenReturn(ratts);
     when(ratts.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
     EvictionAttributes evictionAttrs = mock(EvictionAttributes.class);
@@ -148,15 +150,16 @@ public class LuceneServiceImplJUnitTest {
     LuceneIndexImpl index = mock(LuceneIndexImpl.class);
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
     when(region.getDataStore()).thenReturn(dataStore);
-    Integer[] bucketIds = {1, 2, 3, 4, 5};
-    Set<Integer> primaryBucketIds = new HashSet(Arrays.asList(bucketIds));
+    Set<BucketId> primaryBucketIds =
+        new HashSet<>(Arrays.asList(BucketId.valueOf(1), BucketId.valueOf(2),
+            BucketId.valueOf(3), BucketId.valueOf(4), BucketId.valueOf(5)));
     when(dataStore.getAllLocalPrimaryBucketIds()).thenReturn(primaryBucketIds);
-    when(dataStore.getLocalBucketById(3)).thenReturn(null);
+    when(dataStore.getLocalBucketById(BucketId.valueOf(3))).thenReturn(null);
     boolean result = service.createLuceneIndexOnDataRegion(region, index);
     assertTrue(result);
   }
 
-  private class TestLuceneServiceImpl extends LuceneServiceImpl {
+  private static class TestLuceneServiceImpl extends LuceneServiceImpl {
 
     @Override
     public void afterDataRegionCreated(InternalLuceneIndex index) {

@@ -66,6 +66,7 @@ import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.Shipment;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -1530,7 +1531,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         // there should be no buckets on this node, because we don't
         // have all of the colocated regions
         assertEquals(Collections.emptyList(), region1.getLocalBucketsListTestOnly());
-        assertEquals(0, region1.getRegionAdvisor().getBucketRedundancy(1));
+        assertEquals(0, region1.getRegionAdvisor().getBucketRedundancy(BucketId.valueOf(1)));
       }
     };
 
@@ -2273,18 +2274,21 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(customerPartitionedregion);
 
     for (int i = 1; i <= 10; i++) {
-      InternalDistributedMember idmForCustomer = customerPartitionedregion.getBucketPrimary(i);
-      InternalDistributedMember idmForOrder = orderPartitionedregion.getBucketPrimary(i);
+      final BucketId bucketId = BucketId.valueOf(i);
+      InternalDistributedMember idmForCustomer =
+          customerPartitionedregion.getBucketPrimary(bucketId);
+      InternalDistributedMember idmForOrder = orderPartitionedregion.getBucketPrimary(bucketId);
 
-      InternalDistributedMember idmForShipment = shipmentPartitionedregion.getBucketPrimary(i);
+      InternalDistributedMember idmForShipment =
+          shipmentPartitionedregion.getBucketPrimary(bucketId);
 
       // take all the keys from the shipmentfor each bucket
-      Set customerKey = customerPartitionedregion.getBucketKeys(i);
+      Set customerKey = customerPartitionedregion.getBucketKeys(bucketId);
       assertNotNull(customerKey);
       for (final Object item : customerKey) {
         CustId custId = (CustId) item;
         assertNotNull(customerPartitionedregion.get(custId));
-        Set orderKey = orderPartitionedregion.getBucketKeys(i);
+        Set orderKey = orderPartitionedregion.getBucketKeys(bucketId);
         assertNotNull(orderKey);
         for (final Object value : orderKey) {
           OrderId orderId = (OrderId) value;
@@ -2295,7 +2299,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
                 .info(orderId + "belongs to node " + idmForCustomer + " " + idmForOrder);
             assertEquals(idmForCustomer, idmForOrder);
           }
-          Set shipmentKey = shipmentPartitionedregion.getBucketKeys(i);
+          Set shipmentKey = shipmentPartitionedregion.getBucketKeys(bucketId);
           assertNotNull(shipmentKey);
           for (final Object o : shipmentKey) {
             ShipmentId shipmentId = (ShipmentId) o;

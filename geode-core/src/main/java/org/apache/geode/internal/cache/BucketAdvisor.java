@@ -64,6 +64,7 @@ import org.apache.geode.distributed.internal.locks.DistributedMemberLock;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.BucketProfileUpdateMessage;
 import org.apache.geode.internal.cache.partitioned.DeposePrimaryBucketMessage;
 import org.apache.geode.internal.cache.partitioned.DeposePrimaryBucketMessage.DeposePrimaryBucketResponse;
@@ -189,7 +190,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     return advisor;
   }
 
-  private void resetParentAdvisor(int bucketId) {
+  private void resetParentAdvisor(BucketId bucketId) {
     PartitionedRegion colocatedRegion = ColocationHelper.getColocatedRegion(pRegion);
     if (colocatedRegion != null) {
       if (colocatedRegion.isFixedPartitionedRegion()) {
@@ -198,7 +199,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           for (FixedPartitionAttributesImpl fpa : fpas) {
             if (fpa.hasBucket(bucketId)) {
               parentAdvisor =
-                  colocatedRegion.getRegionAdvisor().getBucketAdvisor(fpa.getStartingBucketID());
+                  colocatedRegion.getRegionAdvisor()
+                      .getBucketAdvisor(BucketId.valueOf(fpa.getStartingBucketID()));
               break;
             }
           }
@@ -219,10 +221,11 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     if (pRegion.isFixedPartitionedRegion()) {
       List<FixedPartitionAttributesImpl> fpas = pRegion.getFixedPartitionAttributesImpl();
       if (fpas != null) {
-        int bucketId = getBucket().getId();
+        BucketId bucketId = getBucket().getId();
         for (FixedPartitionAttributesImpl fpa : fpas) {
-          if (fpa.hasBucket(bucketId) && bucketId != fpa.getStartingBucketID()) {
-            startingBucketAdvisor = regionAdvisor.getBucketAdvisor(fpa.getStartingBucketID());
+          if (fpa.hasBucket(bucketId) && bucketId.intValue() != fpa.getStartingBucketID()) {
+            startingBucketAdvisor =
+                regionAdvisor.getBucketAdvisor(BucketId.valueOf(fpa.getStartingBucketID()));
             break;
           }
         }
@@ -328,13 +331,13 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   private void deposeOtherPrimaryBucketForFixedPartition() {
     boolean deposedOtherPrimaries = true;
-    int bucketId = getBucket().getId();
+    BucketId bucketId = getBucket().getId();
     List<FixedPartitionAttributesImpl> fpas = pRegion.getFixedPartitionAttributesImpl();
     if (fpas != null) {
       for (FixedPartitionAttributesImpl fpa : fpas) {
-        if (fpa.getStartingBucketID() == bucketId) {
-          for (int i = (bucketId + 1); i <= fpa.getLastBucketID(); i++) {
-            Bucket b = regionAdvisor.getBucket(i);
+        if (fpa.getStartingBucketID() == bucketId.intValue()) {
+          for (int i = (bucketId.intValue() + 1); i <= fpa.getLastBucketID(); i++) {
+            Bucket b = regionAdvisor.getBucket(BucketId.valueOf(i));
             if (b != null) {
               BucketAdvisor ba = b.getBucketAdvisor();
               deposedOtherPrimaries = ba.deposePrimary() && deposedOtherPrimaries;
@@ -687,7 +690,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * repopulates the RegionAdvisor's location information for this bucket
    */
   private void updateServerBucketProfile() {
-    int bucketId = getBucket().getId();
+    BucketId bucketId = getBucket().getId();
     Set<ServerBucketProfile> serverProfiles =
         newSetFromMap(new HashMap<>());
     for (Profile p : profiles) {
@@ -1215,7 +1218,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
     for (PartitionListener listener : listeners) {
       if (listener != null) {
-        listener.afterPrimary(getBucket().getId());
+        listener.afterPrimary(getBucket().getId().intValue());
       }
     }
   }
@@ -1227,7 +1230,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
     for (PartitionListener listener : listeners) {
       if (listener != null) {
-        listener.afterSecondary(getBucket().getId());
+        listener.afterSecondary(getBucket().getId().intValue());
       }
     }
   }
@@ -1320,11 +1323,11 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   private void acquirePrimaryForRestOfTheBucket() {
     List<FixedPartitionAttributesImpl> fpas = pRegion.getFixedPartitionAttributesImpl();
     if (fpas != null) {
-      int bucketId = getBucket().getId();
+      BucketId bucketId = getBucket().getId();
       for (FixedPartitionAttributesImpl fpa : fpas) {
-        if (fpa.getStartingBucketID() == bucketId) {
-          for (int i = bucketId + 1; i <= fpa.getLastBucketID();) {
-            Bucket b = regionAdvisor.getBucket(i++);
+        if (fpa.getStartingBucketID() == bucketId.intValue()) {
+          for (int i = bucketId.intValue() + 1; i <= fpa.getLastBucketID();) {
+            Bucket b = regionAdvisor.getBucket(BucketId.valueOf(i++));
             if (b != null) {
               BucketAdvisor ba = b.getBucketAdvisor();
               ba.primaryMoveWriteLock.lock();
@@ -1595,7 +1598,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     // NOTE: if this assert fails, you COULD use the WaitingThreadPool in DM
 
     final int partitionedRegionId = pRegion.getPRId();
-    final int bucketId = ((ProxyBucketRegion) getAdvisee()).getBucketId();
+    final BucketId bucketId = ((ProxyBucketRegion) getAdvisee()).getBucketId();
 
     BucketProfile bp = (BucketProfile) createProfile();
     updateServerBucketProfile(bp);
@@ -2225,7 +2228,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
     private Set<BucketServerLocation66> bucketServerLocations;
 
-    private int bucketId;
+    private BucketId bucketId;
 
     public ServerBucketProfile() {}
 
@@ -2255,7 +2258,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       bucketServerLocations = SerializationHelper.readBucketServerLocationSet(in);
-      bucketId = DataSerializer.readPrimitiveInt(in);
+      bucketId = BucketId.valueOf(DataSerializer.readPrimitiveInt(in));
     }
 
     @Override
@@ -2263,7 +2266,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         SerializationContext context) throws IOException {
       super.toData(out, context);
       SerializationHelper.writeBucketServerLocationSet(bucketServerLocations, out);
-      DataSerializer.writePrimitiveInt(bucketId, out);
+      DataSerializer.writePrimitiveInt(bucketId.intValue(), out);
     }
 
     public Set<BucketServerLocation66> getBucketServerLocations() {
@@ -2278,7 +2281,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     @Override
     public int hashCode() {
       BucketServerLocation66 sl = (BucketServerLocation66) bucketServerLocations.toArray()[0];
-      return 31 * bucketId + sl.getPort();
+      return 31 * bucketId.intValue() + sl.getPort();
     }
 
     @Override

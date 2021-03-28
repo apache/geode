@@ -20,6 +20,7 @@ import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /**
  * An interface allowing different Region implementations to support querying.
@@ -29,7 +30,7 @@ import org.apache.geode.cache.query.TypeMismatchException;
 public interface QueryExecutor {
   Object executeQuery(DefaultQuery query,
       ExecutionContext executionContext,
-      Object[] parameters, Set<Integer> buckets)
+      Object[] parameters, Set<BucketId> buckets)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException;
 

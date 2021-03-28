@@ -34,6 +34,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /**
  * This test checks functionality of the PartitionedRegionDatastore on a sinle node.
@@ -178,7 +179,8 @@ public class PartitionedRegionDataStoreJUnitTest {
         .create(regionName);
 
     boolean createdBucket =
-        regionAck.getDataStore().handleManageBucketRequest(1, Integer.MAX_VALUE, null, false);
+        regionAck.getDataStore().handleManageBucketRequest(BucketId.valueOf(1), Integer.MAX_VALUE,
+            null, false);
     assertFalse(createdBucket);
   }
 
@@ -191,7 +193,8 @@ public class PartitionedRegionDataStoreJUnitTest {
         .create(regionName);
 
     boolean createdBucket =
-        regionAck.getDataStore().handleManageBucketRequest(1, Integer.MAX_VALUE, null, true);
+        regionAck.getDataStore().handleManageBucketRequest(BucketId.valueOf(1), Integer.MAX_VALUE,
+            null, true);
     assertTrue(createdBucket);
   }
 }

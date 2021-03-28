@@ -34,6 +34,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.VMCachedDeserializable;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.versions.VMVersionTag;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -116,14 +117,16 @@ public class AsyncEventQueueEntrySynchronizationDUnitTest extends AsyncEventQueu
 
   private void createBucket(String regionName, Object key) throws Exception {
     PartitionedRegion pr = (PartitionedRegion) cache.getRegion(regionName);
-    int bucketId = PartitionedRegionHelper.getHashKey(pr, null, key, null, null);
+    BucketId bucketId =
+        BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, key, null, null));
     pr.getRedundancyProvider().createBackupBucketOnMember(bucketId, getMember(), false, false, null,
         true);
   }
 
   private void assertPrimaryBucket(String regionName, Object key) throws Exception {
     PartitionedRegion pr = (PartitionedRegion) cache.getRegion(regionName);
-    int bucketId = PartitionedRegionHelper.getHashKey(pr, null, key, null, null);
+    BucketId bucketId =
+        BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, key, null, null));
     assertThat(pr.getRegionAdvisor().isPrimaryForBucket(bucketId)).isTrue();
   }
 

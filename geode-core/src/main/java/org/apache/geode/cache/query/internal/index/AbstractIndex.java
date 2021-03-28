@@ -72,6 +72,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -261,9 +262,9 @@ public abstract class AbstractIndex implements IndexProtocol {
       PartitionedRegion pr = ((Bucket) region).getPartitionedRegion();
       long start = updateIndexUseStats();
       try {
-        for (Object bucketId : context.getBucketList()) {
+        for (BucketId bucketId : context.getBucketList()) {
           AbstractIndex bucketIndex =
-              PartitionedIndex.getBucketIndex(pr, indexName, (Integer) bucketId);
+              PartitionedIndex.getBucketIndex(pr, indexName, bucketId);
           if (bucketIndex == null) {
             continue;
           }
@@ -296,9 +297,9 @@ public abstract class AbstractIndex implements IndexProtocol {
       PartitionedRegion pr = ((Bucket) region).getPartitionedRegion();
       long start = updateIndexUseStats();
       try {
-        for (Object bucketId : context.getBucketList()) {
+        for (BucketId bucketId : context.getBucketList()) {
           AbstractIndex bucketIndex =
-              PartitionedIndex.getBucketIndex(pr, indexName, (Integer) bucketId);
+              PartitionedIndex.getBucketIndex(pr, indexName, bucketId);
           if (bucketIndex == null) {
             continue;
           }
@@ -329,9 +330,9 @@ public abstract class AbstractIndex implements IndexProtocol {
       PartitionedRegion pr = ((Bucket) region).getPartitionedRegion();
       long start = updateIndexUseStats();
       try {
-        for (Object bucketId : context.getBucketList()) {
+        for (BucketId bucketId : context.getBucketList()) {
           AbstractIndex bucketIndex =
-              PartitionedIndex.getBucketIndex(pr, indexName, (Integer) bucketId);
+              PartitionedIndex.getBucketIndex(pr, indexName, bucketId);
           if (bucketIndex == null) {
             continue;
           }
@@ -362,9 +363,9 @@ public abstract class AbstractIndex implements IndexProtocol {
       long start = updateIndexUseStats();
       try {
         PartitionedRegion partitionedRegion = ((Bucket) region).getPartitionedRegion();
-        for (Object bucketId : context.getBucketList()) {
+        for (BucketId bucketId : context.getBucketList()) {
           AbstractIndex bucketIndex = PartitionedIndex.getBucketIndex(partitionedRegion,
-              indexName, (Integer) bucketId);
+              indexName, bucketId);
           if (bucketIndex == null) {
             continue;
           }
@@ -397,9 +398,9 @@ public abstract class AbstractIndex implements IndexProtocol {
         PartitionedRegion partitionedRegion = ((Bucket) region).getPartitionedRegion();
         long start = updateIndexUseStats();
         try {
-          for (Object bucketId : context.getBucketList()) {
+          for (BucketId bucketId : context.getBucketList()) {
             AbstractIndex bucketIndex = PartitionedIndex.getBucketIndex(partitionedRegion,
-                indexName, (Integer) bucketId);
+                indexName, bucketId);
             if (bucketIndex == null) {
               continue;
             }

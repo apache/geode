@@ -32,6 +32,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.region.entry.RegionEntryFactoryBuilder;
 
 public class TXStateProxyImplTest {
@@ -167,9 +168,9 @@ public class TXStateProxyImplTest {
     TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false, disabledClock());
     tx.setLocalTXState(new TXState(tx, true, disabledClock()));
     KeyInfo keyInfo1 = mock(KeyInfo.class);
-    when(keyInfo1.getBucketId()).thenReturn(1);
+    when(keyInfo1.getBucketId()).thenReturn(BucketId.valueOf(1));
     KeyInfo keyInfo2 = mock(KeyInfo.class);
-    when(keyInfo2.getBucketId()).thenReturn(2);
+    when(keyInfo2.getBucketId()).thenReturn(BucketId.valueOf(2));
     tx.trackBucketForTx(keyInfo1);
 
     TransactionException transactionException =

@@ -69,6 +69,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableCallableIF;
@@ -321,7 +322,7 @@ public class FixedPartitioningWithTransactionDistributedTest implements
     PartitionedRegion partitionedRegion =
         (PartitionedRegion) cacheRule.getCache().getRegion(regionName);
     assertThat(partitionedRegion.get(1)).isEqualTo(1);
-    await().until(() -> partitionedRegion.getBucketPrimary(0)
+    await().until(() -> partitionedRegion.getBucketPrimary(BucketId.valueOf(0))
         .equals(cacheRule.getCache().getInternalDistributedSystem().getDistributedMember()));
   }
 

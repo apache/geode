@@ -87,15 +87,16 @@ public class PartitionMemberInfoImpl implements InternalPartitionDetails, Serial
   }
 
   @Override
-  public long getBucketSize(int bucketId) { // bytes
+  public long getBucketSize(BucketId bucketId) { // bytes
     if (bucketSizes == null) {
       throw new IllegalStateException(this + " has no bucketSizes");
     }
-    if (bucketId < 0 || bucketId >= bucketSizes.length) {
+    final int intValue = bucketId.intValue();
+    if (intValue < 0 || intValue >= bucketSizes.length) {
       throw new IllegalArgumentException(
           "bucketId must be between 0 and " + (bucketSizes.length - 1));
     }
-    return bucketSizes[bucketId];
+    return bucketSizes[intValue];
   }
 
   /**

@@ -49,6 +49,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.PutAllPRMessage;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -157,7 +158,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
    * @param ev event to be added
    * @param bucketId message is for this bucket
    */
-  public void addEntry(EntryEventImpl ev, Integer bucketId) {
+  public void addEntry(EntryEventImpl ev, BucketId bucketId) {
     putAllData[putAllDataSize] = new PutAllEntryData(ev);
     putAllData[putAllDataSize].setBucketId(bucketId);
     putAllDataSize += 1;
@@ -290,7 +291,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
 
     transient EntryEventImpl event;
 
-    private Integer bucketId = -1;
+    private BucketId bucketId = BucketId.UNKNOWN_BUCKET;
 
     protected transient boolean callbacksInvoked = false;
 
@@ -376,7 +377,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       StringBuilder sb = new StringBuilder(50);
       sb.append("(").append(getKey()).append(",").append(value).append(",")
           .append(getOldValue());
-      if (bucketId > 0) {
+      if (bucketId != BucketId.UNKNOWN_BUCKET) {
         sb.append(", b").append(bucketId);
       }
       if (versionTag != null) {
@@ -516,7 +517,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
      *
      * @param bucketId new bucket id
      */
-    public void setBucketId(Integer bucketId) {
+    public void setBucketId(BucketId bucketId) {
       this.bucketId = bucketId;
     }
 
@@ -525,7 +526,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
      *
      * @return bucket id
      */
-    public Integer getBucketId() {
+    public BucketId getBucketId() {
       return bucketId;
     }
 
@@ -535,15 +536,15 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
      * thread id.
      */
     public void setFakeEventID() {
-      if (bucketId < 0) {
+      if (bucketId == BucketId.UNKNOWN_BUCKET) {
         return;
       }
 
       if (!isUsedFakeEventId()) {
         // assign a fake big thread id. bucket id starts from 0. In order to distinguish
         // with other read thread, let bucket id starts from 1 in fake thread id
-        long threadId = ThreadIdentifier.createFakeThreadIDForBulkOp(bucketId,
-            eventID.getThreadID());
+        long threadId =
+            ThreadIdentifier.createFakeThreadIDForBulkOp(bucketId, eventID.getThreadID());
         eventID = new EventID(eventID.getMembershipID(), threadId, eventID.getSequenceID());
         setUsedFakeEventId(true);
       }
@@ -843,7 +844,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
    *
    * @param bucketId create message to send to this bucket
    */
-  public PutAllPRMessage createPRMessagesNotifyOnly(int bucketId) {
+  public PutAllPRMessage createPRMessagesNotifyOnly(BucketId bucketId) {
     final EntryEventImpl event = getBaseEvent();
     PutAllPRMessage prMsg = new PutAllPRMessage(bucketId, putAllDataSize, true,
         event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument());
@@ -864,12 +865,12 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
    *
    * @return a HashMap contain PutAllPRMessages, key is bucket id
    */
-  public HashMap<Integer, PutAllPRMessage> createPRMessages() {
-    HashMap<Integer, PutAllPRMessage> prMsgMap = new HashMap<>();
+  public Map<BucketId, PutAllPRMessage> createPRMessages() {
+    Map<BucketId, PutAllPRMessage> prMsgMap = new HashMap<>();
     final EntryEventImpl event = getBaseEvent();
 
     for (int i = 0; i < putAllDataSize; i++) {
-      Integer bucketId = putAllData[i].bucketId;
+      BucketId bucketId = putAllData[i].bucketId;
       PutAllPRMessage prMsg = prMsgMap.get(bucketId);
       if (prMsg == null) {
         prMsg = new PutAllPRMessage(bucketId, putAllDataSize, false,

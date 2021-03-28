@@ -74,6 +74,7 @@ import org.apache.geode.internal.cache.control.OffHeapMemoryMonitor.OffHeapMemor
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.control.TestMemoryThresholdListener;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -833,13 +834,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     setUsageAboveCriticalThreshold(servers[0], regionName);
 
     final Set<InternalDistributedMember> criticalMembers =
-        (Set) servers[0].invoke(new SerializableCallable() {
+        servers[0].invoke(new SerializableCallable<Set<InternalDistributedMember>>() {
           @Override
-          public Object call() throws Exception {
+          public Set<InternalDistributedMember> call() throws Exception {
             final PartitionedRegion pr =
                 (PartitionedRegion) getRootRegion().getSubregion(regionName);
             final int hashKey = PartitionedRegionHelper.getHashKey(pr, null, "oh5", null, null);
-            return pr.getRegionAdvisor().getBucketOwners(hashKey);
+            return pr.getRegionAdvisor().getBucketOwners(BucketId.valueOf(hashKey));
           }
         });
 
@@ -860,7 +861,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             for (int i = 0; i < 20; i++) {
               Integer key = i;
               int hKey = PartitionedRegionHelper.getHashKey(pr, null, key, null, null);
-              Set<InternalDistributedMember> owners = pr.getRegionAdvisor().getBucketOwners(hKey);
+              Set<InternalDistributedMember> owners = pr.getRegionAdvisor().getBucketOwners(
+                  BucketId.valueOf(hKey));
               final boolean hasCriticalOwners = owners.removeAll(criticalMembers);
               if (hasCriticalOwners) {
                 keyFoundOnSickMember = true;
@@ -1550,7 +1552,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         WaitCriterion wc;
         if (r instanceof PartitionedRegion) {
           final PartitionedRegion pr = (PartitionedRegion) r;
-          final int bucketId = PartitionedRegionHelper.getHashKey(pr, null, bigKey, null, null);
+          final BucketId bucketId =
+              BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, bigKey, null, null));
           wc = new WaitCriterion() {
             @Override
             public String description() {

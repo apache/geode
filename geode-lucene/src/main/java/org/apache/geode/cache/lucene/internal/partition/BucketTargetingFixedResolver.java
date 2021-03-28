@@ -20,6 +20,7 @@ import java.util.Set;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.FixedPartitionResolver;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /**
  * A partition resolver that expects the actual bucket id to be the callback argument of all
@@ -33,10 +34,9 @@ public class BucketTargetingFixedResolver<K, V> implements FixedPartitionResolve
 
   @Override
   public Object getRoutingObject(final EntryOperation<K, V> opDetails) {
-    int targetBucketId = (Integer) opDetails.getCallbackArgument();
+    BucketId targetBucketId = (BucketId) opDetails.getCallbackArgument();
     final Map.Entry<String, Integer[]> targetPartition = getFixedPartition(opDetails);
-
-    return targetBucketId - targetPartition.getValue()[0];
+    return BucketId.valueOf(targetBucketId.intValue() - targetPartition.getValue()[0]);
   }
 
   @Override
@@ -57,17 +57,18 @@ public class BucketTargetingFixedResolver<K, V> implements FixedPartitionResolve
   }
 
   protected Map.Entry<String, Integer[]> getFixedPartition(final EntryOperation<K, V> opDetails) {
-    PartitionedRegion region = (PartitionedRegion) opDetails.getRegion();
-    int targetBucketId = (Integer) opDetails.getCallbackArgument();
-    Map<String, Integer[]> partitions = region.getPartitionsMap();
+    final PartitionedRegion region = (PartitionedRegion) opDetails.getRegion();
+    final BucketId targetBucketId = (BucketId) opDetails.getCallbackArgument();
+    final Map<String, Integer[]> partitions = region.getPartitionsMap();
 
     return partitions.entrySet().stream().filter(entry -> withinPartition(entry, targetBucketId))
         .findFirst().get();
   }
 
-  private boolean withinPartition(Map.Entry<String, Integer[]> entry, int bucketId) {
+  private boolean withinPartition(final Map.Entry<String, Integer[]> entry,
+      final BucketId bucketId) {
     int startingBucket = entry.getValue()[0];
     int endingBucket = startingBucket + entry.getValue()[1];
-    return startingBucket <= bucketId && bucketId < endingBucket;
+    return startingBucket <= bucketId.intValue() && bucketId.intValue() < endingBucket;
   }
 }

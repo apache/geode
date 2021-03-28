@@ -43,6 +43,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -468,7 +469,7 @@ public class EventTrackerDUnitTest extends JUnit4CacheTestCase {
 
   private void verifyEventTrackerContent() {
     PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(getName());
-    BucketRegion br = pr.getDataStore().getLocalBucketById(0);
+    BucketRegion br = pr.getDataStore().getLocalBucketById(BucketId.valueOf(0));
     Map<?, ?> eventStates = br.getEventState();
     assertTrue(eventStates.size() == 4);
   }

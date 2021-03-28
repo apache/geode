@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 
 /**
@@ -32,12 +33,12 @@ public class TransformUtils {
    * Transforms PersistentMemberIDs to a user friendly log entry.
    */
   @Immutable
-  public static final Transformer<Map.Entry<PersistentMemberID, Set<Integer>>, String> persistentMemberEntryToLogEntryTransformer =
-      new Transformer<Map.Entry<PersistentMemberID, Set<Integer>>, String>() {
+  public static final Transformer<Map.Entry<PersistentMemberID, Set<BucketId>>, String> persistentMemberEntryToLogEntryTransformer =
+      new Transformer<Map.Entry<PersistentMemberID, Set<BucketId>>, String>() {
         @Override
-        public String transform(Map.Entry<PersistentMemberID, Set<Integer>> entry) {
+        public String transform(Map.Entry<PersistentMemberID, Set<BucketId>> entry) {
           PersistentMemberID memberId = entry.getKey();
-          Set<Integer> bucketIds = entry.getValue();
+          Set<BucketId> bucketIds = entry.getValue();
           StringBuilder builder = new StringBuilder();
           builder.append(persistentMemberIdToLogEntryTransformer.transform(memberId));
 

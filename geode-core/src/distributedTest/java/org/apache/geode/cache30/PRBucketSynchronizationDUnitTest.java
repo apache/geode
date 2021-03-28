@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.VMCachedDeserializable;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.versions.VMVersionTag;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -151,7 +152,8 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
   private boolean isPrimaryForBucket0(VM vm) {
     return vm.invoke("is primary?", () -> {
       PartitionedRegion pr = (PartitionedRegion) testRegion;
-      return pr.getDataStore().getLocalBucketById(0).getBucketAdvisor().isPrimary();
+      return pr.getDataStore().getLocalBucketById(BucketId.valueOf(0)).getBucketAdvisor()
+          .isPrimary();
     });
   }
 
@@ -172,7 +174,7 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
     vm.invoke("create entry2", () -> {
       // create a fake event that looks like it came from the primary and apply it to this cache
       PartitionedRegion pr = (PartitionedRegion) testRegion;
-      BucketRegion bucket = pr.getDataStore().getLocalBucketById(0);
+      BucketRegion bucket = pr.getDataStore().getLocalBucketById(BucketId.valueOf(0));
       VersionTag tag = new VMVersionTag();
       tag.setMemberID(primaryVersionID);
       tag.setRegionVersion(2);
@@ -208,7 +210,7 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
   private void verifySynchronized(VM vm, final InternalDistributedMember crashedMember) {
     vm.invoke("check that synchronization happened", () -> {
       PartitionedRegion pr = (PartitionedRegion) testRegion;
-      final BucketRegion bucket = pr.getDataStore().getLocalBucketById(0);
+      final BucketRegion bucket = pr.getDataStore().getLocalBucketById(BucketId.valueOf(0));
 
       await().until(() -> {
         if (testRegion.getCache().getDistributionManager().isCurrentMember(crashedMember)) {

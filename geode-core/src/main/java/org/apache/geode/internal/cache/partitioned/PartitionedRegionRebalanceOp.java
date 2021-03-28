@@ -509,7 +509,8 @@ public class PartitionedRegionRebalanceOp {
    * @param bucketId the identifier of the bucket
    * @return true if the redundant bucket was created
    */
-  public boolean createRedundantBucketForRegion(InternalDistributedMember target, int bucketId) {
+  public boolean createRedundantBucketForRegion(InternalDistributedMember target,
+      BucketId bucketId) {
     return getLeaderRegion().getRedundancyProvider().createBackupBucketOnMember(bucketId, target,
         isRebalance, replaceOfflineData, null, true);
   }
@@ -521,7 +522,8 @@ public class PartitionedRegionRebalanceOp {
    * @param bucketId the identifier of the bucket
    * @return true if the redundant bucket was removed
    */
-  public boolean removeRedundantBucketForRegion(InternalDistributedMember target, int bucketId) {
+  public boolean removeRedundantBucketForRegion(InternalDistributedMember target,
+      BucketId bucketId) {
     boolean removed = false;
     if (getLeaderRegion().getDistributionManager().getId().equals(target)) {
       // invoke directly on local member...
@@ -544,7 +546,7 @@ public class PartitionedRegionRebalanceOp {
    * @param bucketId the identifier of the bucket
    * @return true if the move was successful
    */
-  public boolean movePrimaryBucketForRegion(InternalDistributedMember target, int bucketId) {
+  public boolean movePrimaryBucketForRegion(InternalDistributedMember target, BucketId bucketId) {
     boolean movedPrimary = false;
     if (getLeaderRegion().getDistributionManager().getId().equals(target)) {
       // invoke directly on local member...
@@ -572,7 +574,7 @@ public class PartitionedRegionRebalanceOp {
    * @return true if the bucket was moved
    */
   public boolean moveBucketForRegion(InternalDistributedMember source,
-      InternalDistributedMember target, int bucketId) {
+      InternalDistributedMember target, BucketId bucketId) {
     boolean movedBucket = false;
     if (getLeaderRegion().getDistributionManager().getId().equals(target)) {
       // invoke directly on local member...

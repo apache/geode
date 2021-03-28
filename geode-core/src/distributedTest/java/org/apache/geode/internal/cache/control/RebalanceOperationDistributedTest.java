@@ -32,7 +32,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
-import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -99,6 +98,7 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.SignalBounceOnRequestImageMessageObserver;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.internal.cache.partitioned.BucketCountLoadProbe;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -583,7 +583,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       doReturn(redundancyProvider).when(spyRegion).getRedundancyProvider();
 
       // simulate create bucket fails on member2 and test if it creates on member3
-      doReturn(false).when(redundancyProvider).createBackupBucketOnMember(anyInt(),
+      doReturn(false).when(redundancyProvider).createBackupBucketOnMember(any(),
           eq((InternalDistributedMember) member2), anyBoolean(), anyBoolean(), any(),
           anyBoolean());
 
@@ -963,7 +963,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
         private volatile boolean firstBucket = true;
 
         @Override
-        public void movingBucket(Region region, int bucketId, DistributedMember source,
+        public void movingBucket(Region region, BucketId bucketId, DistributedMember source,
             DistributedMember target) {
           if (firstBucket) {
             firstBucket = false;
@@ -1811,7 +1811,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     });
 
     // Close the cache in vm1
-    Set<Integer> bucketsOnVM1 = vm1.invoke(() -> getBucketList("region1"));
+    Set<BucketId> bucketsOnVM1 = vm1.invoke(() -> getBucketList("region1"));
     vm1.invoke(() -> getCache().getRegion("region1").close());
 
     // make sure we can tell that the buckets have low redundancy
@@ -1859,8 +1859,8 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       }
     });
 
-    Set<Integer> bucketsOnVM0 = vm0.invoke(() -> getBucketList("region1"));
-    Set<Integer> bucketsOnVM2 = vm2.invoke(() -> getBucketList("region1"));
+    Set<BucketId> bucketsOnVM0 = vm0.invoke(() -> getBucketList("region1"));
+    Set<BucketId> bucketsOnVM2 = vm2.invoke(() -> getBucketList("region1"));
 
     if (simulate) {
       // Otherwise, we should still have broken redundancy at this point
@@ -1989,7 +1989,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       PartitionedRegionDataStore dataStore = region.getDataStore();
 
       for (int i = 1; i <= 6; i++) {
-        BucketRegion bucket = dataStore.getLocalBucketById(i);
+        BucketRegion bucket = dataStore.getLocalBucketById(BucketId.valueOf(i));
 
         assertThat(bucket.getNumOverflowBytesOnDisk()).isEqualTo(0);
         assertThat(bucket.getNumOverflowOnDisk()).isEqualTo(0);
@@ -2007,7 +2007,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       PartitionedRegionDataStore dataStore = region.getDataStore();
 
       for (int i = 1; i <= 6; i++) {
-        BucketRegion bucket = dataStore.getLocalBucketById(i);
+        BucketRegion bucket = dataStore.getLocalBucketById(BucketId.valueOf(i));
 
         assertThat(bucket.getNumOverflowOnDisk()).isEqualTo(1);
         assertThat(bucket.getNumEntriesInVM()).isEqualTo(0);
@@ -2585,12 +2585,12 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     return results;
   }
 
-  private Set<Integer> getBucketList(String regionName) {
+  private Set<BucketId> getBucketList(String regionName) {
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
     return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
   }
 
-  private void waitForBucketList(String regionName, Collection<Integer> expected) {
+  private void waitForBucketList(String regionName, Collection<BucketId> expected) {
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
 
     await().untilAsserted(new WaitCriterion() {
@@ -2600,7 +2600,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
         return getBuckets().equals(expected);
       }
 
-      private Set<Integer> getBuckets() {
+      private Set<BucketId> getBuckets() {
         return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
       }
 
