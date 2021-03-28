@@ -306,16 +306,20 @@ public class TXFarSideCMTracker {
 
   public TXCommitMessage waitForMessage(Object key, DistributionManager dm) {
     TXCommitMessage msg = null;
+    long timeout = System.currentTimeMillis() + 30000;
+
     synchronized (this.txInProgress) {
       msg = (TXCommitMessage) this.txInProgress.get(key);
       while (msg == null) {
         try {
           dm.getSystem().getCancelCriterion().checkCancelInProgress(null);
-          this.txInProgress.wait();
+          this.txInProgress.wait(10000);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }
         msg = (TXCommitMessage) this.txInProgress.get(key);
+        if (timeout <= System.currentTimeMillis())
+          return msg;
       }
     }
     return msg;

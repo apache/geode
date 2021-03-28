@@ -1768,6 +1768,10 @@ public class TXCommitMessage extends PooledDistributionMessage
     protected void process(ClusterDistributionManager dm) {
       final TXCommitMessage mess = waitForMessage(this.lockId, dm);
       Assert.assertTrue(mess != null, "Commit data for TXLockId: " + this.lockId + " not found");
+      if (mess == null) {
+        logger.fatal("Commit message not received");
+        return;
+      }
       basicProcess(mess, dm);
     }
 
@@ -1823,6 +1827,10 @@ public class TXCommitMessage extends PooledDistributionMessage
     protected void process(ClusterDistributionManager dm) {
       final TXCommitMessage mess = waitForMessage(this.txId, dm);
       Assert.assertTrue(mess != null, "Commit data for TXId: " + this.txId + " not found");
+      if (mess == null) {
+        logger.fatal("Commit message not received");
+        return;
+      }
       basicProcess(mess, dm);
     }
 

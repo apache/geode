@@ -1298,8 +1298,9 @@ public class ReplyProcessor21 implements MembershipListener {
   }
 
   public void cancel(InternalDistributedMember sender, String reason) {
-    logger.warn("Connection closed while waiting for reply message, reason: " + reason);
-    removeMember(sender, true);
+    processException(
+        new ReplyException("Connection closed while waiting for reply message, reason: " + reason));
+    removeMember(sender, false);
     checkIfDone();
   }
 
