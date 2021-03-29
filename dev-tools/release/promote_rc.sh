@@ -416,6 +416,7 @@ echo "Updating 'old' versions on support/$VERSION_MM"
 echo "============================================================"
 set -x
 cd ${GEODE}
+git checkout support/${VERSION_MM}
 git pull
 set +x
 #add at the end as this release will always be the latest on this branch
