@@ -33,6 +33,7 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
@@ -57,8 +58,7 @@ public class BucketTargetingFixedResolverTest {
     when(region.getPartitionsMap()).thenReturn(fakePartitions);
     when(region.isFixedPartitionedRegion()).thenReturn(true);
     when(region.getPartitionResolver()).thenReturn(resolver);
-    assertEquals(bucketId,
-        PartitionedRegionHelper.getHashKey(region, Operation.CREATE, "key", "value", bucketId));
+    assertEquals(bucketId, PartitionedRegionHelper.getHashKey(region, Operation.CREATE, "key", "value", BucketId.valueOf(bucketId)));
   }
 
 }
