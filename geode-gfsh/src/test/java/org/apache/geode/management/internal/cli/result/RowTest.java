@@ -14,23 +14,28 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
-import org.apache.geode.management.cli.Result;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
-/**
- * Exception wrapper around a command result.
- *
- * @since GemFire 7.0
- */
-public class CommandResultException extends Exception {
-  private static final long serialVersionUID = 1L;
+import org.junit.Test;
 
-  private final transient Result result;
+public class RowTest {
 
-  public CommandResultException(final Result result) {
-    this.result = result;
+  @Test
+  public void isEmptyIsTrueByDefault() {
+    Row row = new Row(mock(RowGroup.class), mock(Screen.class));
+
+    boolean value = row.isEmpty();
+
+    assertThat(value).isTrue();
   }
 
-  public Result getResult() {
-    return this.result;
+  @Test
+  public void getNumColsIsZeroByDefault() {
+    Row row = new Row(mock(RowGroup.class), mock(Screen.class));
+
+    int value = row.getNumCols();
+
+    assertThat(value).isZero();
   }
 }

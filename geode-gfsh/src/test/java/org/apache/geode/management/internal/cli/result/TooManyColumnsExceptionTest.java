@@ -14,23 +14,27 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
-import org.apache.geode.management.cli.Result;
+import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Exception wrapper around a command result.
- *
- * @since GemFire 7.0
- */
-public class CommandResultException extends Exception {
-  private static final long serialVersionUID = 1L;
+import java.io.Serializable;
 
-  private final transient Result result;
+import org.apache.commons.lang3.SerializationUtils;
+import org.junit.Test;
 
-  public CommandResultException(final Result result) {
-    this.result = result;
+public class TooManyColumnsExceptionTest {
+
+  @Test
+  public void isSerializable() {
+    assertThat(TooManyColumnsException.class).isInstanceOf(Serializable.class);
   }
 
-  public Result getResult() {
-    return this.result;
+  @Test
+  public void serializes() {
+    String message = "bad thing happened";
+    TooManyColumnsException instance = new TooManyColumnsException(message);
+
+    TooManyColumnsException cloned = SerializationUtils.clone(instance);
+
+    assertThat(cloned).hasMessage(message);
   }
 }

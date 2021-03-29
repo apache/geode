@@ -14,23 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
-import org.apache.geode.management.cli.Result;
+public class TooManyColumnsException extends RuntimeException {
+  private static final long serialVersionUID = 4703710831740034363L;
 
-/**
- * Exception wrapper around a command result.
- *
- * @since GemFire 7.0
- */
-public class CommandResultException extends Exception {
-  private static final long serialVersionUID = 1L;
-
-  private final transient Result result;
-
-  public CommandResultException(final Result result) {
-    this.result = result;
-  }
-
-  public Result getResult() {
-    return this.result;
+  public TooManyColumnsException(String message) {
+    super(message);
   }
 }
