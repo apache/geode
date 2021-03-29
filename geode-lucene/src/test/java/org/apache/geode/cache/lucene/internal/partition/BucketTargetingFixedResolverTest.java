@@ -58,7 +58,8 @@ public class BucketTargetingFixedResolverTest {
     when(region.getPartitionsMap()).thenReturn(fakePartitions);
     when(region.isFixedPartitionedRegion()).thenReturn(true);
     when(region.getPartitionResolver()).thenReturn(resolver);
-    assertEquals(bucketId, PartitionedRegionHelper.getHashKey(region, Operation.CREATE, "key", "value", BucketId.valueOf(bucketId)));
+    assertEquals(bucketId, PartitionedRegionHelper.getHashKey(region, Operation.CREATE, "key",
+        "value", BucketId.valueOf(bucketId)));
   }
 
 }

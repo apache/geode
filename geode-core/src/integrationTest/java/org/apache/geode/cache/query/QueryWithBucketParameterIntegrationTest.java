@@ -16,7 +16,7 @@
 package org.apache.geode.cache.query;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
-import static org.apache.geode.cache.query.data.TestData.createAndPopulateSet;
+import static org.apache.geode.cache.query.data.TestData.createAndPopulateBucketIdSet;
 import static org.apache.geode.cache.query.data.TestData.populateRegion;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -72,7 +72,7 @@ public class QueryWithBucketParameterIntegrationTest {
     QueryService qs = pr1.getCache().getQueryService();
     String query = "select distinct e1.value from " + SEPARATOR + "pr1 e1";
     queryExecutor = (DefaultQuery) CacheUtils.getQueryService().newQuery(query);
-    Set<BucketId> set = createAndPopulateSet(totalBuckets);
+    Set<BucketId> set = createAndPopulateBucketIdSet(totalBuckets);
     lds = new LocalDataSet(pr1, set);
   }
 
@@ -127,7 +127,7 @@ public class QueryWithBucketParameterIntegrationTest {
   public void testQueryExecuteWithNonEmptyBucketListExpectNonEmptyResultSet() throws Exception {
     final ExecutionContext executionContext = new ExecutionContext(null, CacheUtils.getCache());
     int nTestBucketNumber = 15;
-    Set<BucketId> nonEmptySet = createAndPopulateSet(nTestBucketNumber);
+    Set<BucketId> nonEmptySet = createAndPopulateBucketIdSet(nTestBucketNumber);
     SelectResults r =
         (SelectResults) lds.executeQuery(queryExecutor, executionContext, null, nonEmptySet);
     assertFalse("Received: An empty result collection, expected : Non-empty result collection",
@@ -139,7 +139,7 @@ public class QueryWithBucketParameterIntegrationTest {
       throws Exception {
     final ExecutionContext executionContext = new ExecutionContext(null, CacheUtils.getCache());
     int nTestBucketNumber = 45;
-    Set<BucketId> overflowSet = createAndPopulateSet(nTestBucketNumber);
+    Set<BucketId> overflowSet = createAndPopulateBucketIdSet(nTestBucketNumber);
     SelectResults r =
         (SelectResults) lds.executeQuery(queryExecutor, executionContext, null, overflowSet);
   }

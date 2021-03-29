@@ -134,7 +134,8 @@ public class PartitionedRepositoryManagerJUnitTest {
     CacheDistributionAdvisor cda = mock(CacheDistributionAdvisor.class);
     when(prRoot.getDistributionAdvisor()).thenReturn(cda);
     doNothing().when(cda).addMembershipListener(any());
-    InternalRegionFactory<Object, Object> regionFactory = uncheckedCast(mock(InternalRegionFactory.class));
+    InternalRegionFactory<Object, Object> regionFactory =
+        uncheckedCast(mock(InternalRegionFactory.class));
     when(regionFactory.create(eq(PR_ROOT_REGION_NAME))).thenReturn(uncheckedCast(prRoot));
     when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
 

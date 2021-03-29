@@ -28,8 +28,12 @@ public class TestData {
     IntStream.rangeClosed(1, numValues).forEach(i -> region.put(i, new MyValue(i)));
   }
 
-  public static Set<BucketId> createAndPopulateSet(int nBuckets) {
+  public static Set<BucketId> createAndPopulateBucketIdSet(int nBuckets) {
     return IntStream.range(0, nBuckets).mapToObj(BucketId::valueOf).collect(Collectors.toSet());
+  }
+
+  public static Set<Integer> createAndPopulateSet(int nBuckets) {
+    return IntStream.range(0, nBuckets).boxed().collect(Collectors.toSet());
   }
 
   public static class MyValue implements Serializable, Comparable<MyValue> {

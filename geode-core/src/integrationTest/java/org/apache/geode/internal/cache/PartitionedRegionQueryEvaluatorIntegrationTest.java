@@ -34,12 +34,12 @@ import org.junit.rules.TestName;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
 import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
-import org.apache.geode.internal.util.VersionedArrayList;
 
 /**
  * This class is an integration test for {@link PartitionedRegionQueryEvaluator} class.
@@ -53,7 +53,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
    * Test for the helper method getNodeToBucketMap.
    */
   @Test
-  public void testGetNodeToBucketMap() {
+  public void testGetNodeToBucketMap() throws QueryException {
     int totalNodes = 100;
     String prPrefix = name.getMethodName();
     String localMaxMemory = "0";
@@ -69,12 +69,12 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
     final String expectedUnknownHostException = UnknownHostException.class.getName();
     pr.getCache().getLogger().info(
         "<ExpectedException action=add>" + expectedUnknownHostException + "</ExpectedException>");
-    final ArrayList nodes = createNodeList(totalNodes);
+    final ArrayList<Node> nodes = createNodeList(totalNodes);
     pr.getCache().getLogger().info("<ExpectedException action=remove>"
         + expectedUnknownHostException + "</ExpectedException>");
     // populating bucket2Node of the partition region
     // ArrayList<InternalDistributedMember>
-    final ArrayList dses = createDataStoreList(totalNodes);
+    final ArrayList<InternalDistributedMember> dses = createDataStoreList(totalNodes);
     populateBucket2Node(pr, dses, totalNoOfBuckets);
 
     populateAllPartitionedRegion(pr, nodes);
@@ -83,24 +83,22 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
     PartitionedRegionQueryEvaluator evalr =
         new PartitionedRegionQueryEvaluator(pr.getSystem(), pr, null, null, null, null,
             bucketsToQuery);
-    Map n2bMap = null;
+    Map<InternalDistributedMember, List<BucketId>> n2bMap = null;
     try {
       n2bMap = evalr.buildNodeToBucketMap();
     } catch (Exception ignored) {
-
     }
-    ArrayList buckList = new ArrayList();
-    for (final Object o : n2bMap.entrySet()) {
-      Map.Entry entry = (Map.Entry) o;
+    ArrayList<BucketId> buckList = new ArrayList<>();
+    for (final Map.Entry<InternalDistributedMember, List<BucketId>> entry : n2bMap.entrySet()) {
       if (entry.getValue() != null) {
-        buckList.addAll((List) entry.getValue());
+        buckList.addAll(entry.getValue());
       }
     }
     // checking size of the two lists
     assertEquals("Unexpected number of buckets", totalNoOfBuckets, buckList.size());
     for (int i = 0; i < totalNoOfBuckets; i++) {
       assertTrue(" Bucket with Id = " + i + " not present in bucketList.",
-          buckList.contains(i));
+          buckList.contains(BucketId.valueOf(i)));
     }
 
     pr.destroyRegion();
@@ -109,19 +107,21 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
   /**
    * This function populates bucket2Node region of the partition region
    */
-  private void populateBucket2Node(PartitionedRegion pr, List nodes, int numOfBuckets) {
+  private void populateBucket2Node(PartitionedRegion pr, List<InternalDistributedMember> nodes,
+      int numOfBuckets) {
     assertEquals(0, pr.getRegionAdvisor().getCreatedBucketsCount());
     final RegionAdvisor ra = pr.getRegionAdvisor();
     int nodeListCnt = 0;
     Random ran = new Random();
-    HashMap verMap = new HashMap(); // Map tracking version for profile insertion purposes
+    // Map tracking version for profile insertion purposes
+    HashMap<InternalDistributedMember, Integer> verMap = new HashMap<>();
     for (int i = 0; i < numOfBuckets; i++) {
       nodeListCnt = setNodeListCnt(nodeListCnt);
       for (int j = 0; j < nodeListCnt; j++) {
         BucketProfile bp = new BucketProfile();
-        bp.peerMemberId = (InternalDistributedMember) nodes.get(ran.nextInt(nodes.size()));
+        bp.peerMemberId = nodes.get(ran.nextInt(nodes.size()));
         Integer v;
-        if ((v = (Integer) verMap.get(bp.getDistributedMember())) != null) {
+        if ((v = verMap.get(bp.getDistributedMember())) != null) {
           bp.version = v + 1;
           verMap.put(bp.getDistributedMember(), bp.version);
         } else {
@@ -184,27 +184,18 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
   /**
    * This functions number of new nodes specified by nCount.
    */
-  private ArrayList createNodeList(int nCount) {
-    ArrayList nodeList = new ArrayList(nCount);
+  private ArrayList<Node> createNodeList(int nCount) {
+    ArrayList<Node> nodeList = new ArrayList<>(nCount);
     for (int i = 0; i < nCount; i++) {
       nodeList.add(createNode(i));
     }
     return nodeList;
   }
 
-  private ArrayList createDataStoreList(int nCount) {
-    ArrayList nodeList = new ArrayList(nCount);
+  private ArrayList<InternalDistributedMember> createDataStoreList(int nCount) {
+    ArrayList<InternalDistributedMember> nodeList = new ArrayList<>(nCount);
     for (int i = 0; i < nCount; i++) {
       nodeList.add(createDataStoreMember(i));
-    }
-    return nodeList;
-  }
-
-  private VersionedArrayList getVersionedNodeList(int nCount, List<Node> nodes) {
-    VersionedArrayList nodeList = new VersionedArrayList(nCount);
-    Random ran = new Random();
-    for (int i = 0; i < nCount; i++) {
-      nodeList.add(nodes.get(ran.nextInt(nodes.size())));
     }
     return nodeList;
   }
@@ -222,15 +213,15 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
     return node;
   }
 
-  private void populateAllPartitionedRegion(PartitionedRegion pr, List nodes) {
-    Region rootReg = PartitionedRegionHelper.getPRRoot(pr.getCache());
+  private void populateAllPartitionedRegion(PartitionedRegion pr, List<Node> nodes) {
+    Region<String, PartitionRegionConfig> rootReg =
+        PartitionedRegionHelper.getPRRoot(pr.getCache());
     PartitionRegionConfig prConf = new PartitionRegionConfig(pr.getPRId(), pr.getFullPath(),
         pr.getPartitionAttributes(), pr.getScope(), new EvictionAttributesImpl(),
         new ExpirationAttributes(), new ExpirationAttributes(), new ExpirationAttributes(),
         new ExpirationAttributes(), Collections.emptySet());
     RegionAdvisor ra = pr.getRegionAdvisor();
-    for (final Object node : nodes) {
-      Node n = (Node) node;
+    for (Node n : nodes) {
       prConf.addNode(n);
       PartitionProfile pp = (PartitionProfile) ra.createProfile();
       pp.peerMemberId = n.getMemberId();

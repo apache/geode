@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.cache.query.data.TestData.createAndPopulateBucketIdSet;
 import static org.apache.geode.cache.query.data.TestData.createAndPopulateSet;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertEquals;
@@ -244,7 +245,7 @@ public class QueryServiceRegressionTest {
     queryStr = "Select distinct ID from " + SEPARATOR + "pos";
     q = qs.newQuery(queryStr);
     r = q.execute();
-    Set expectedSet = createAndPopulateSet(4);
+    Set<Integer> expectedSet = createAndPopulateSet(4);
     assertEquals(expectedSet, ((SelectResults) r).asSet());
 
     // the following queries still fail because there is more than one
@@ -457,7 +458,7 @@ public class QueryServiceRegressionTest {
         (PartitionedRegion) CacheUtils.getCache().createRegion("pr2", factory.create());
 
     createAllNumPRAndEvenNumPR(pr1, pr2, 80);
-    Set<BucketId> set = createAndPopulateSet(15);
+    Set<BucketId> set = createAndPopulateBucketIdSet(15);
     LocalDataSet lds = new LocalDataSet(pr1, set);
 
     QueryObserverImpl observer = new QueryObserverImpl();
@@ -531,7 +532,7 @@ public class QueryServiceRegressionTest {
         (PartitionedRegion) CacheUtils.getCache().createRegion("pr2", factory.create());
 
     createAllNumPRAndEvenNumPR(pr1, pr2, 80);
-    Set<BucketId> set = createAndPopulateSet(15);
+    Set<BucketId> set = createAndPopulateBucketIdSet(15);
     LocalDataSet lds = new LocalDataSet(pr1, set);
 
     QueryObserverImpl observer = new QueryObserverImpl();
