@@ -32,6 +32,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
@@ -44,7 +45,9 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     ReadWriteLock primaryMoveLock = new ReentrantReadWriteLock();
     Lock primaryMoveReadLock = primaryMoveLock.readLock();
     when(ba.getPrimaryMoveReadLock()).thenReturn(primaryMoveReadLock);
-    when(ba.getProxyBucketRegion()).thenReturn(mock(ProxyBucketRegion.class));
+    final ProxyBucketRegion proxyBucketRegion = mock(ProxyBucketRegion.class);
+    when(ba.getProxyBucketRegion()).thenReturn(proxyBucketRegion);
+    when(proxyBucketRegion.getId()).thenReturn(BucketId.valueOf(0));
     when(ba.isPrimary()).thenReturn(true);
 
     ira.setPartitionedRegion(pr).setPartitionedRegionBucketRedundancy(1).setBucketAdvisor(ba);

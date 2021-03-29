@@ -52,6 +52,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.LockObject;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
@@ -116,7 +117,9 @@ public class BucketRegionTest {
     when(membershipAttributes.getLossAction()).thenReturn(mock(LossAction.class));
     when(scope.isDistributedAck()).thenReturn(true);
     when(dataPolicy.withReplication()).thenReturn(true);
-    when(bucketAdvisor.getProxyBucketRegion()).thenReturn(mock(ProxyBucketRegion.class));
+    final ProxyBucketRegion proxyBucketRegion = mock(ProxyBucketRegion.class);
+    when(bucketAdvisor.getProxyBucketRegion()).thenReturn(proxyBucketRegion);
+    when(proxyBucketRegion.getId()).thenReturn(BucketId.valueOf(0));
     when(event.getOperation()).thenReturn(operation);
     when(operation.isDistributed()).thenReturn(true);
   }

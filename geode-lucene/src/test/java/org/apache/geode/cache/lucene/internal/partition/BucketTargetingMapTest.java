@@ -42,7 +42,7 @@ public class BucketTargetingMapTest {
   @Test
   public void getUsesCallbackArg() {
     final BucketTargetingMap map = new BucketTargetingMap(region, BucketId.valueOf(1));
-    when(region.get(eq("key"), eq(1))).thenReturn("value");
+    when(region.get(eq("key"), eq(BucketId.valueOf(1)))).thenReturn("value");
     assertEquals("value", map.get("key"));
   }
 
@@ -50,15 +50,15 @@ public class BucketTargetingMapTest {
   public void putIfAbsentUsesCallbackArg() {
     final BucketTargetingMap map = new BucketTargetingMap(region, BucketId.valueOf(1));
     map.putIfAbsent("key", "value");
-    verify(region).create(eq("key"), eq("value"), eq(1));
+    verify(region).create(eq("key"), eq("value"), eq(BucketId.valueOf(1)));
   }
 
   @Test
   public void containsKeyUsesCallbackArg() {
     final BucketTargetingMap map = new BucketTargetingMap(region, BucketId.valueOf(1));
-    when(region.get(eq("key"), eq(1))).thenReturn("value");
+    when(region.get(eq("key"), eq(BucketId.valueOf(1)))).thenReturn("value");
     assertEquals(true, map.containsKey("key"));
     assertEquals(false, map.containsKey("none"));
-    verify(region).get(eq("none"), eq(1));
+    verify(region).get(eq("none"), eq(BucketId.valueOf(1)));
   }
 }

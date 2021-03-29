@@ -139,7 +139,9 @@ public class ParallelGatewaySenderHelper {
 
     when(pa.getColocatedWith()).thenReturn(null);
 
-    when(ba.getProxyBucketRegion()).thenReturn(mock(ProxyBucketRegion.class));
+    final ProxyBucketRegion proxyBucketRegion = mock(ProxyBucketRegion.class);
+    when(ba.getProxyBucketRegion()).thenReturn(proxyBucketRegion);
+    when(proxyBucketRegion.getId()).thenReturn(BucketId.valueOf(0));
 
     // Create RegionAttributes
     AttributesFactory factory = new AttributesFactory();
