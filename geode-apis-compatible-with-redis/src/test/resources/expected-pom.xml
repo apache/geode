@@ -18,7 +18,7 @@
   -->
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.geode</groupId>
-  <artifactId>geode-redis</artifactId>
+  <artifactId>geode-apis-compatible-with-redis</artifactId>
   <version>${version}</version>
   <name>Apache Geode</name>
   <description>Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing</description>
