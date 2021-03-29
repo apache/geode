@@ -50,9 +50,8 @@ if [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]] || [[ ${GITHUB_USER
     usage
 fi
 
-SIGNING_KEY=$(gpg --fingerprint "${SIGNING_KEY}"  | tr -d ' ' | grep "${SIGNING_KEY}" | tail -1)
+SIGNING_KEY=$(gpg --fingerprint "${SIGNING_KEY}"  | tr -d ' ' | grep "${SIGNING_KEY}" | sed 's/Keyfingerprint=//' | tail -1)
 
-SIGNING_KEY=$(echo $SIGNING_KEY|sed 's/[^0-9A-Fa-f]//g')
 if [[ $SIGNING_KEY =~ ^[0-9A-Fa-f]{40}$ ]]; then
     true
 else
