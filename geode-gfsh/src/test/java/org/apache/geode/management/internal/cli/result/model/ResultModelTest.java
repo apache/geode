@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.result.model;
 
 import static org.apache.geode.management.internal.functions.CliFunctionResult.StatusState.ERROR;
@@ -20,28 +19,21 @@ import static org.apache.geode.management.internal.functions.CliFunctionResult.S
 import static org.apache.geode.management.internal.functions.CliFunctionResult.StatusState.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
-
 public class ResultModelTest {
 
   private ResultModel result;
   private TabularResultModel table;
-
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
   public void setUp() throws Exception {
@@ -169,17 +161,6 @@ public class ResultModelTest {
 
     List<String> sectionNames = result.getSectionNames();
     assertThat(sectionNames).containsExactly("Section1", "Section2", "Section3", "Section4");
-  }
-
-  @Test
-  public void serializeFileToDownload() throws Exception {
-    File file = temporaryFolder.newFile("test.log");
-    result.addFile(file, FileResultModel.FILE_TYPE_FILE);
-    ObjectMapper mapper = GeodeJsonMapper.getMapper();
-    String json = mapper.writeValueAsString(result);
-    System.out.println(json);
-    ResultModel resultModel = mapper.readValue(json, ResultModel.class);
-    assertThat(resultModel.getFileToDownload()).isEqualTo(file.toPath());
   }
 
   @Test

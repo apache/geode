@@ -452,6 +452,12 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
+        <groupId>org.jboss.modules</groupId>
+        <artifactId>jboss-modules</artifactId>
+        <version>1.11.0.Final</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
         <groupId>org.jgroups</groupId>
         <artifactId>jgroups</artifactId>
         <version>3.6.14.Final</version>
@@ -698,24 +704,6 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-mockito2</artifactId>
-        <version>2.0.9</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-core</artifactId>
-        <version>2.0.9</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-module-junit4</artifactId>
-        <version>2.0.9</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
         <groupId>org.seleniumhq.selenium</groupId>
         <artifactId>selenium-api</artifactId>
         <version>3.141.59</version>
@@ -825,6 +813,12 @@
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+        <version>5.3.5</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
         <artifactId>spring-tx</artifactId>
         <version>5.3.5</version>
         <scope>compile</scope>
@@ -838,12 +832,6 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-webmvc</artifactId>
-        <version>5.3.5</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-test</artifactId>
         <version>5.3.5</version>
         <scope>compile</scope>
       </dependency>
@@ -910,6 +898,12 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-cq</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-deployment-legacy</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>

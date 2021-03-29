@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
@@ -106,7 +107,8 @@ class BackupTask {
     try {
       Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
       temporaryFiles = TemporaryBackupFiles.create();
-      fileCopier = new BackupFileCopier(cache, temporaryFiles);
+      fileCopier = new BackupFileCopier(cache,
+          JarDeploymentServiceFactory.getJarDeploymentServiceInstance(), temporaryFiles);
 
       Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStores = startDiskStoreBackups(diskStores);
 

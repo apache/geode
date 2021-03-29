@@ -18,8 +18,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.junit.Test;
 
+import org.apache.geode.cache.wan.GatewaySender;
 
 public class AbstractRegionTest {
 
@@ -33,5 +37,40 @@ public class AbstractRegionTest {
 
     assertThat(mockAbstractRegion.isAllEvents()).isTrue();
     assertThat(mockAbstractRegion.cacheTimeMillis()).isEqualTo(millis);
+  }
+
+  @Test
+  public void hasRunningGatewaySender_returnsFalse_ifSendersIsEmpty() {
+    GatewaySender sender = mock(GatewaySender.class);
+
+    boolean value = AbstractRegion.hasRunningGatewaySender(Collections.emptySet(), sender);
+
+    assertThat(value).isFalse();
+  }
+
+  @Test
+  public void hasRunningGatewaySender_returnsFalse_ifSenderIsStopped() {
+    GatewaySender mockSender = mock(GatewaySender.class);
+    Set<GatewaySender> senders = (Set<GatewaySender>) mock(Set.class);
+
+    when(senders.contains(mockSender)).thenReturn(true);
+    when(mockSender.isRunning()).thenReturn(false);
+
+    boolean value = AbstractRegion.hasRunningGatewaySender(senders, mockSender);
+
+    assertThat(value).isFalse();
+  }
+
+  @Test
+  public void hasRunningGatewaySender_returnsTrue_ifSenderIsRunning() {
+    GatewaySender mockSender = mock(GatewaySender.class);
+    Set<GatewaySender> senders = (Set<GatewaySender>) mock(Set.class);
+
+    when(senders.contains(mockSender)).thenReturn(true);
+    when(mockSender.isRunning()).thenReturn(true);
+
+    boolean value = AbstractRegion.hasRunningGatewaySender(senders, mockSender);
+
+    assertThat(value).isTrue();
   }
 }

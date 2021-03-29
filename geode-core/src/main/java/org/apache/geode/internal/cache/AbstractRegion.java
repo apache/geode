@@ -741,8 +741,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
         // This is for all regions except pdx Region
         if (!isPdxTypesRegion) {
           // Make sure we are distributing to only those senders whose id
-          // is available on this region
-          if (allGatewaySenderIds.contains(sender.getId())) {
+          // is available on this region and whose state is running
+          if (hasRunningGatewaySender(allGatewaySenders, sender)) {
             allRemoteDSIds.add(sender.getRemoteDSId());
           }
         } else { // this else is for PDX region
@@ -1895,6 +1895,10 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   protected interface PoolFinder {
     PoolImpl find(String poolName);
+  }
+
+  static boolean hasRunningGatewaySender(Set<GatewaySender> senders, GatewaySender sender) {
+    return senders.contains(sender) && sender.isRunning();
   }
 
   @VisibleForTesting

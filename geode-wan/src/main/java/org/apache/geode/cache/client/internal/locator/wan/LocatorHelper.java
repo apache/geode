@@ -125,11 +125,11 @@ public class LocatorHelper {
         (ConcurrentHashMap<Integer, Set<String>>) locatorListener.getAllServerLocatorsInfo();
 
     Set<String> locatorsSet = new CopyOnWriteHashSet<String>();
-    locatorsSet.add(locator.toString());
+    locatorsSet.add(locator.marshal());
     Set<String> existingValue = allServerLocatorsInfo.putIfAbsent(distributedSystemId, locatorsSet);
     if (existingValue != null) {
-      if (!existingValue.contains(locator.toString())) {
-        existingValue.add(locator.toString());
+      if (!existingValue.contains(locator.marshal())) {
+        existingValue.add(locator.marshal());
       }
     }
   }

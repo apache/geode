@@ -17,7 +17,7 @@ org/apache/geode/distributed/internal/membership/gms/GMSMembership$BoundedLinked
 org/apache/geode/internal/AbstractConfig$SortedProperties
 org/apache/geode/internal/AvailablePort$Keeper
 org/apache/geode/internal/ExitCode
-org/apache/geode/internal/JarDeployer
+org/apache/geode/deployment/internal/JarDeployer
 org/apache/geode/internal/ObjIdConcurrentMap
 org/apache/geode/internal/ObjIdConcurrentMap$Segment
 org/apache/geode/internal/cache/DiskStoreMonitor$DiskState

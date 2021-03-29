@@ -20,8 +20,8 @@ import java.util.Collection;
 
 import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 
 public class MemcachedDistributedSystemService implements DistributedSystemService {
   @Override

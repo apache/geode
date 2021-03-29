@@ -75,7 +75,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
-import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.internal.offheap.OffHeapClearRequired;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementService;
@@ -1385,7 +1385,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     @Override
     public void closeEntries() {
-      OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+      OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
         @Override
         public void run() {
           SerialGatewaySenderQueueMetaRegion.super.closeEntries();
@@ -1396,7 +1396,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     @Override
     public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
       final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
-      OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+      OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
         @Override
         public void run() {
           result.set(SerialGatewaySenderQueueMetaRegion.super.clearEntries(rvv));

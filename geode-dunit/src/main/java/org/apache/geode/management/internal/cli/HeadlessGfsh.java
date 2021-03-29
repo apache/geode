@@ -35,6 +35,7 @@ import org.springframework.shell.core.ExitShellRequest;
 import org.springframework.shell.event.ShellStatus.Status;
 
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
@@ -131,9 +132,9 @@ public class HeadlessGfsh implements ResultHandler {
       }
 
       if (result == null) {
-        return CommandResult.createError(outputString);
+        return new CommandResult(ResultModel.createError(outputString));
       } else {
-        return CommandResult.createError(result.toString());
+        return new CommandResult(ResultModel.createError(result.toString()));
       }
 
     } catch (InterruptedException e) {

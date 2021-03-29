@@ -113,7 +113,7 @@ public class FreeListManagerTest {
     int tinySize = 10;
 
     OffHeapStoredObject c = this.freeListManager.allocate(tinySize);
-    OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c.getAddress(), this.freeListManager);
     c = this.freeListManager.allocate(tinySize);
 
     validateChunkSizes(c, tinySize);
@@ -125,7 +125,7 @@ public class FreeListManagerTest {
     int dataSize = 10;
 
     OffHeapStoredObject c = this.freeListManager.allocate(dataSize);
-    OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c.getAddress(), this.freeListManager);
     this.freeListManager.allocate(dataSize);
     // free list will now be empty
     c = this.freeListManager.allocate(dataSize);
@@ -149,7 +149,7 @@ public class FreeListManagerTest {
     int dataSize = FreeListManager.MAX_TINY + 1;
 
     OffHeapStoredObject c = this.freeListManager.allocate(dataSize);
-    OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c.getAddress(), this.freeListManager);
     this.freeListManager.allocate(dataSize);
     // free list will now be empty
     c = this.freeListManager.allocate(dataSize);
@@ -163,7 +163,7 @@ public class FreeListManagerTest {
     int dataSize = FreeListManager.MAX_TINY + 1 + 1024;
 
     OffHeapStoredObject c = this.freeListManager.allocate(dataSize);
-    OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c.getAddress(), this.freeListManager);
     dataSize = FreeListManager.MAX_TINY + 1;
     c = this.freeListManager.allocate(dataSize);
 
@@ -183,7 +183,7 @@ public class FreeListManagerTest {
     int dataSize = 10;
 
     OffHeapStoredObject c = this.freeListManager.allocate(dataSize);
-    OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c.getAddress(), this.freeListManager);
 
     assertThat(this.freeListManager.getFreeTinyMemory()).isEqualTo(computeExpectedSize(dataSize));
   }
@@ -194,12 +194,12 @@ public class FreeListManagerTest {
     int dataSize = 10;
 
     OffHeapStoredObject c = this.freeListManager.allocate(dataSize);
-    OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c.getAddress(), this.freeListManager);
 
     int dataSize2 = 100;
 
     OffHeapStoredObject c2 = this.freeListManager.allocate(dataSize2);
-    OffHeapStoredObject.release(c2.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c2.getAddress(), this.freeListManager);
 
     assertThat(this.freeListManager.getFreeTinyMemory())
         .isEqualTo(computeExpectedSize(dataSize) + computeExpectedSize(dataSize2));
@@ -218,7 +218,7 @@ public class FreeListManagerTest {
     int dataSize = FreeListManager.MAX_TINY + 1 + 1024;
 
     OffHeapStoredObject c = this.freeListManager.allocate(dataSize);
-    OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c.getAddress(), this.freeListManager);
 
     assertThat(this.freeListManager.getFreeHugeMemory()).isEqualTo(computeExpectedSize(dataSize));
   }
@@ -287,7 +287,7 @@ public class FreeListManagerTest {
     chunks.add(this.freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
     chunks.add(this.freeListManager.allocate(SMALL_SLAB - 8 + 1));
     for (OffHeapStoredObject c : chunks) {
-      OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+      ReferenceCounter.release(c.getAddress(), this.freeListManager);
     }
     this.freeListManager.firstDefragmentation = false;
     assertThat(this.freeListManager.defragment(DEFAULT_SLAB_SIZE + 1)).isFalse();
@@ -314,7 +314,7 @@ public class FreeListManagerTest {
     chunks.add(this.freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
     chunks.add(this.freeListManager.allocate(SMALL_SLAB - 8 + 1));
     for (OffHeapStoredObject c : chunks) {
-      OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+      ReferenceCounter.release(c.getAddress(), this.freeListManager);
     }
 
     this.freeListManager.firstDefragmentation = false;
@@ -335,7 +335,7 @@ public class FreeListManagerTest {
     chunks.add(this.freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
     this.freeListManager.allocate(SMALL_SLAB - 8 + 1);
     for (OffHeapStoredObject c : chunks) {
-      OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+      ReferenceCounter.release(c.getAddress(), this.freeListManager);
     }
 
     this.freeListManager.firstDefragmentation = false;
@@ -355,7 +355,7 @@ public class FreeListManagerTest {
     chunks.add(this.freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
     this.freeListManager.allocate(SMALL_SLAB - 8 + 1);
     for (OffHeapStoredObject c : chunks) {
-      OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+      ReferenceCounter.release(c.getAddress(), this.freeListManager);
     }
 
     this.freeListManager.firstDefragmentation = false;
@@ -398,26 +398,26 @@ public class FreeListManagerTest {
     OffHeapStoredObject mediumChunk1 = freeListManager.allocate(128 - 8);
     OffHeapStoredObject mediumChunk2 = freeListManager.allocate(128 - 8);
 
-    OffHeapStoredObject.release(bigChunk.getAddress(), freeListManager);
+    ReferenceCounter.release(bigChunk.getAddress(), freeListManager);
     int s = chunksToFree.size();
     for (int i = s / 2; i >= 0; i--) {
       OffHeapStoredObject c = chunksToFree.get(i);
-      OffHeapStoredObject.release(c.getAddress(), freeListManager);
+      ReferenceCounter.release(c.getAddress(), freeListManager);
     }
     for (int i = (s / 2) + 1; i < s; i++) {
       OffHeapStoredObject c = chunksToFree.get(i);
-      OffHeapStoredObject.release(c.getAddress(), freeListManager);
+      ReferenceCounter.release(c.getAddress(), freeListManager);
     }
-    OffHeapStoredObject.release(c3.getAddress(), freeListManager);
-    OffHeapStoredObject.release(c1.getAddress(), freeListManager);
-    OffHeapStoredObject.release(c2.getAddress(), freeListManager);
-    OffHeapStoredObject.release(c4.getAddress(), freeListManager);
-    OffHeapStoredObject.release(mediumChunk1.getAddress(), freeListManager);
-    OffHeapStoredObject.release(mediumChunk2.getAddress(), freeListManager);
+    ReferenceCounter.release(c3.getAddress(), freeListManager);
+    ReferenceCounter.release(c1.getAddress(), freeListManager);
+    ReferenceCounter.release(c2.getAddress(), freeListManager);
+    ReferenceCounter.release(c4.getAddress(), freeListManager);
+    ReferenceCounter.release(mediumChunk1.getAddress(), freeListManager);
+    ReferenceCounter.release(mediumChunk2.getAddress(), freeListManager);
     this.freeListManager.firstDefragmentation = false;
     assertThat(freeListManager.defragment(DEFAULT_SLAB_SIZE - (ALLOCATE_COUNT * 32))).isFalse();
     for (int i = 0; i < ((256 * 2) / 96); i++) {
-      OffHeapStoredObject.release(chunksToFreeLater.get(i).getAddress(), freeListManager);
+      ReferenceCounter.release(chunksToFreeLater.get(i).getAddress(), freeListManager);
     }
     assertThat(freeListManager.defragment(DEFAULT_SLAB_SIZE - (ALLOCATE_COUNT * 32))).isTrue();
   }
@@ -431,9 +431,9 @@ public class FreeListManagerTest {
     OffHeapStoredObject bigChunk3 = freeListManager.allocate(slabSize / 3 - 8);
     this.freeListManager.firstDefragmentation = false;
     assertThat(freeListManager.defragment(1)).isFalse();
-    OffHeapStoredObject.release(bigChunk3.getAddress(), freeListManager);
-    OffHeapStoredObject.release(bigChunk2.getAddress(), freeListManager);
-    OffHeapStoredObject.release(bigChunk1.getAddress(), freeListManager);
+    ReferenceCounter.release(bigChunk3.getAddress(), freeListManager);
+    ReferenceCounter.release(bigChunk2.getAddress(), freeListManager);
+    ReferenceCounter.release(bigChunk1.getAddress(), freeListManager);
     assertThat(freeListManager.defragment(slabSize)).isTrue();
   }
 
@@ -442,7 +442,7 @@ public class FreeListManagerTest {
     setUpSingleSlabManager();
     Fragment originalFragment = this.freeListManager.getFragmentList().get(0);
     OffHeapStoredObject c = freeListManager.allocate(16);
-    OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c.getAddress(), this.freeListManager);
     c = freeListManager.allocate(16);
     this.freeListManager.firstDefragmentation = false;
     assertThat(this.freeListManager.defragment(1)).isTrue();
@@ -714,7 +714,7 @@ public class FreeListManagerTest {
     this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
     OffHeapStoredObject c = this.freeListManager.allocate(24);
     OffHeapStoredObject c2 = this.freeListManager.allocate(24);
-    OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c.getAddress(), this.freeListManager);
 
     List<MemoryBlock> ob = this.freeListManager.getOrderedBlocks();
     assertThat(ob).hasSize(3);
@@ -733,7 +733,7 @@ public class FreeListManagerTest {
     Slab chunk = new SlabImpl(96);
     this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
     OffHeapStoredObject c = this.freeListManager.allocate(24);
-    OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c.getAddress(), this.freeListManager);
     List<MemoryBlock> ob = this.freeListManager.getAllocatedBlocks();
     assertThat(ob).hasSize(0);
   }
@@ -773,8 +773,8 @@ public class FreeListManagerTest {
     this.freeListManager = createFreeListManager(ma, new Slab[] {chunk, chunk2});
     OffHeapStoredObject c = this.freeListManager.allocate(24);
     OffHeapStoredObject c2 = this.freeListManager.allocate(1024 * 1024);
-    OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
-    OffHeapStoredObject.release(c2.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c2.getAddress(), this.freeListManager);
 
     Logger lw = mock(Logger.class);
     this.freeListManager.logOffHeapState(lw, 1024);

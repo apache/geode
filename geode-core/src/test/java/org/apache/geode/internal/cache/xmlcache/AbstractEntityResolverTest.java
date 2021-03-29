@@ -27,7 +27,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 
 /**
  * Unit test for {@link PivotalEntityResolver} and {@link DefaultEntityResolver2}.

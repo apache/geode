@@ -26,7 +26,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
+import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -135,7 +137,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     });
 
     // Undeploy of multiple jars by specifying group
-    gfshConnector.executeAndAssertThat("undeploy --group=" + GROUP1).statusIsSuccess();
+    gfshConnector.executeAndAssertThat("undeploy --group=" + GROUP1)
+        .statusIsSuccess();
     server1.invoke(() -> {
       assertThatCannotLoad(jarName3, class3);
       assertThatCannotLoad(jarName4, class4);
@@ -165,7 +168,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     });
 
     // Undeploy of multiple jars without specifying group
-    gfshConnector.executeAndAssertThat("undeploy --jars=" + jarName3 + "," + jarName4)
+    gfshConnector
+        .executeAndAssertThat("undeploy --jars=" + jarName3 + "," + jarName4)
         .statusIsSuccess()
         .hasTableSection("jars")
         .hasRowSize(4)
@@ -199,7 +203,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     server2.invoke(() -> assertThatCanLoad(jarName1, class1));
 
     // Undeploy of jar by specifying group
-    gfshConnector.executeAndAssertThat("undeploy --group=" + GROUP1).statusIsSuccess();
+    gfshConnector.executeAndAssertThat("undeploy --group=" + GROUP1)
+        .statusIsSuccess();
     server1.invoke(() -> assertThatCannotLoad(jarName1, class1));
     server2.invoke(() -> assertThatCanLoad(jarName1, class1));
   }
@@ -245,7 +250,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     server1.invoke(() -> assertThatCanLoad(jarName1, class1));
     server2.invoke(() -> assertThatCanLoad(jarName1, class1));
 
-    gfshConnector.executeAndAssertThat("undeploy --jar=" + jar1.getName()).statusIsSuccess();
+    gfshConnector.executeAndAssertThat("undeploy --jar=" + jar1.getName())
+        .statusIsSuccess();
     server1.invoke(() -> assertThatCannotLoad(jarName1, class1));
     server2.invoke(() -> assertThatCannotLoad(jarName1, class1));
 
@@ -304,7 +310,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
       assertThatCanLoad(jarName4, class4);
     });
 
-    gfshConnector.executeAndAssertThat("undeploy --jar=" + jar3.getName() + "," + jar4.getName())
+    gfshConnector.executeAndAssertThat(
+        "undeploy --jar=" + jar3.getName() + "," + jar4.getName())
         .statusIsSuccess();
     server1.invoke(() -> {
       assertThatCannotLoad(jarName3, class3);
@@ -317,12 +324,20 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   }
 
   private void assertThatCanLoad(String jarName, String className) throws ClassNotFoundException {
-    assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNotNull();
+    String deploymentName = JarFileUtils.getArtifactId(jarName);
+    assertThat(
+        JarDeploymentServiceFactory.getJarDeploymentServiceInstance().getDeployed(deploymentName)
+            .isSuccessful())
+                .isTrue();
     assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
   }
 
   private void assertThatCannotLoad(String jarName, String className) {
-    assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNull();
+    String deploymentName = JarFileUtils.getArtifactId(jarName);
+    assertThat(
+        JarDeploymentServiceFactory.getJarDeploymentServiceInstance().getDeployed(deploymentName)
+            .isSuccessful())
+                .isFalse();
     assertThatThrownBy(() -> ClassPathLoader.getLatest().forName(className))
         .isExactlyInstanceOf(ClassNotFoundException.class);
   }

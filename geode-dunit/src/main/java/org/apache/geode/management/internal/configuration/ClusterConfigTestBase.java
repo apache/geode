@@ -35,20 +35,21 @@ public abstract class ClusterConfigTestBase {
   public String clusterConfigZipPath;
 
   public static final ConfigGroup CLUSTER = new ConfigGroup("cluster").regions("regionForCluster")
-      .jars("cluster.jar").maxLogFileSize("5000").configFiles("cluster.properties", "cluster.xml");
+      .deployments("cluster").maxLogFileSize("5000")
+      .configFiles("cluster.properties", "cluster.xml");
   public static final ConfigGroup GROUP1 = new ConfigGroup("group1").regions("regionForGroup1")
-      .jars("group1.jar").maxLogFileSize("6000").configFiles("group1.properties", "group1.xml");
+      .deployments("group1").maxLogFileSize("6000").configFiles("group1.properties", "group1.xml");
   public static final ConfigGroup GROUP2 = new ConfigGroup("group2").regions("regionForGroup2")
-      .jars("group2.jar").maxLogFileSize("7000").configFiles("group2.properties", "group2.xml");
+      .deployments("group2").maxLogFileSize("7000").configFiles("group2.properties", "group2.xml");
 
   public static final ClusterConfig CONFIG_FROM_ZIP = new ClusterConfig(CLUSTER, GROUP1, GROUP2);
 
   public static final ClusterConfig REPLICATED_CONFIG_FROM_ZIP = new ClusterConfig(
-      new ConfigGroup("cluster").maxLogFileSize("5000").jars("cluster.jar")
+      new ConfigGroup("cluster").maxLogFileSize("5000").deployments("cluster")
           .regions("regionForCluster"),
-      new ConfigGroup("group1").maxLogFileSize("6000").jars("group1.jar")
+      new ConfigGroup("group1").maxLogFileSize("6000").deployments("group1")
           .regions("regionForGroup1"),
-      new ConfigGroup("group2").maxLogFileSize("7000").jars("group2.jar")
+      new ConfigGroup("group2").maxLogFileSize("7000").deployments("group2")
           .regions("regionForGroup2"));
 
   @Rule

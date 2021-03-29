@@ -155,7 +155,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
@@ -4165,7 +4165,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private void clearViaFilterClass(String key) {
     InterestFilter filter;
     try {
-      Class filterClass = ClassLoadUtil.classFromName(key);
+      Class filterClass = ClassLoadUtils.classFromName(key);
       filter = (InterestFilter) filterClass.newInstance();
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(
@@ -5813,7 +5813,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     FilterProfile filterProfile = getFilterProfile();
     FilterInfo routing = event.getLocalFilterInfo();
 
-    if (filterProfile != null && isGenerateLocalFilterRoutingNeeded(event)) {
+    if (filterProfile != null && routing == null) {
       boolean lockForCQ = false;
       Object regionEntryObject = null;
 
@@ -5849,17 +5849,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
       routing.clearCQRouting();
     }
-  }
-
-  boolean isGenerateLocalFilterRoutingNeeded(InternalCacheEvent event) {
-    FilterRoutingInfo.FilterInfo filterInfo = event.getLocalFilterInfo();
-    if (filterInfo == null) {
-      return true;
-    }
-    if (!event.isTransactional()) {
-      return false;
-    }
-    return filterInfo.isChangeAppliedToCache();
   }
 
   /**

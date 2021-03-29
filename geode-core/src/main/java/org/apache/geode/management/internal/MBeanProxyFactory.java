@@ -27,7 +27,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
 
@@ -68,7 +68,7 @@ public class MBeanProxyFactory {
       FederationComponent federation = (FederationComponent) newValue;
       String interfaceClassName = federation.getMBeanInterfaceClass();
 
-      Class interfaceClass = ClassLoadUtil.classFromName(interfaceClassName);
+      Class interfaceClass = ClassLoadUtils.classFromName(interfaceClassName);
 
       Object proxy = MBeanProxyInvocationHandler.newProxyInstance(member, monitoringRegion,
           objectName, federation, interfaceClass);

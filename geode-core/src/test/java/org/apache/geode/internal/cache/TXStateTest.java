@@ -32,9 +32,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.transaction.Status;
 
 import org.junit.Before;
@@ -392,26 +389,5 @@ public class TXStateTest {
 
     verify(txState, never()).getRecordedResultOrException(event);
     verify(txState).recordEventException(event, exception);
-  }
-
-  @Test
-  public void firePendingCallbacksSetsChangeAppliedToCacheInEventLocalFilterInfo() {
-    TXState txState = spy(new TXState(txStateProxy, true, disabledClock()));
-    FilterRoutingInfo.FilterInfo filterInfo1 = mock(FilterRoutingInfo.FilterInfo.class);
-    FilterRoutingInfo.FilterInfo filterInfo2 = mock(FilterRoutingInfo.FilterInfo.class);
-    EntryEventImpl event1 = mock(EntryEventImpl.class, RETURNS_DEEP_STUBS);
-    EntryEventImpl event2 = mock(EntryEventImpl.class, RETURNS_DEEP_STUBS);
-    List<EntryEventImpl> callbacks = new ArrayList<>();
-    callbacks.add(event1);
-    callbacks.add(event2);
-    doReturn(event2).when(txState).getLastTransactionEvent();
-    when(event1.getLocalFilterInfo()).thenReturn(filterInfo1);
-    when(event2.getLocalFilterInfo()).thenReturn(filterInfo2);
-    doReturn(callbacks).when(txState).getPendingCallbacks();
-
-    txState.firePendingCallbacks();
-
-    verify(filterInfo1).setChangeAppliedToCache(true);
-    verify(filterInfo2).setChangeAppliedToCache(true);
   }
 }

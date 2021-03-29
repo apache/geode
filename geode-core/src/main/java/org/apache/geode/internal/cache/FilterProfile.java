@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -61,7 +60,7 @@ import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
@@ -312,7 +311,7 @@ public class FilterProfile implements DataSerializableFixedID {
     Class filterClass;
     InterestFilter filter;
     try {
-      filterClass = ClassLoadUtil.classFromName((String) interest);
+      filterClass = ClassLoadUtils.classFromName((String) interest);
       filter = (InterestFilter) filterClass.newInstance();
     } catch (ClassNotFoundException cnfe) {
       throw new RuntimeException(String.format("Class %s not found in classpath.",
@@ -1046,7 +1045,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   private final CacheProfile localProfile = new CacheProfile(this);
 
-  final Profile[] localProfileArray = new Profile[] {localProfile};
+  private final Profile[] localProfileArray = new Profile[] {localProfile};
 
   /** compute local routing information */
   public FilterInfo getLocalFilterRouting(CacheEvent event) {
@@ -1131,11 +1130,6 @@ public class FilterProfile implements DataSerializableFixedID {
    */
   public FilterRoutingInfo getFilterRoutingInfoPart2(FilterRoutingInfo part1Info,
       CacheEvent event) {
-    return getFilterRoutingInfoPart2(part1Info, event, false);
-  }
-
-  public FilterRoutingInfo getFilterRoutingInfoPart2(FilterRoutingInfo part1Info,
-      CacheEvent event, boolean computeInterestRoutingInfo) {
     FilterRoutingInfo result = part1Info;
     if (localProfile.hasCacheServer) {
       // bug #45520 - CQ events arriving out of order causes result set
@@ -1143,60 +1137,20 @@ public class FilterProfile implements DataSerializableFixedID {
       boolean isInConflict =
           event.getOperation().isEntry() && ((EntryEventImpl) event).isConcurrencyConflict();
       CqService cqService = getCqService(event.getRegion());
-      if (!isInConflict && cqService.isRunning() && region != null) {
+      if (!isInConflict && cqService.isRunning()
+          && this.region != null /*
+                                  * && !( this.region.isUsedForPartitionedRegionBucket() || //
+                                  * partitioned region CQ this.region instanceof PartitionedRegion)
+                                  */) { // processing is done in part 1
         if (result == null) {
           result = new FilterRoutingInfo();
         }
         if (logger.isDebugEnabled()) {
           logger.debug("getting local cq matches for {}", event);
         }
-        setLocalCQRoutingInfo(event, result);
+        fillInCQRoutingInfo(event, true, NO_PROFILES, result);
       }
-      result = setLocalInterestRoutingInfo(event, result, computeInterestRoutingInfo);
-    }
-    return result;
-  }
-
-  void setLocalCQRoutingInfo(CacheEvent event, FilterRoutingInfo result) {
-    if (isCQRoutingNeeded(event)) {
-      fillInCQRoutingInfo(event, true, NO_PROFILES, result);
-    } else {
-      result.setLocalFilterInfo(getLocalFilterInfo(event));
-    }
-  }
-
-  boolean isCQRoutingNeeded(CacheEvent event) {
-    if (!isTransactionalEvent(event)) {
-      return true;
-    }
-    FilterInfo localFilterInfo = getLocalFilterInfo(event);
-    return localFilterInfo == null;
-  }
-
-  FilterInfo getLocalFilterInfo(CacheEvent event) {
-    EntryEventImpl entryEvent = uncheckedCast(event);
-    return entryEvent.getLocalFilterInfo();
-  }
-
-  boolean isTransactionalEvent(CacheEvent event) {
-    if (event.getOperation().isEntry()) {
-      EntryEventImpl entryEvent = uncheckedCast(event);
-      return entryEvent.isTransactional();
-    }
-    return false;
-  }
-
-  FilterRoutingInfo setLocalInterestRoutingInfo(CacheEvent event, FilterRoutingInfo result,
-      boolean computeInterestRoutingInfo) {
-    if (!isTransactionalEvent(event)) {
       result = fillInInterestRoutingInfo(event, localProfileArray, result, Collections.emptySet());
-    } else {
-      // For transaction, compute interested clients after transaction is applied to cache.
-      FilterInfo filterInfo = ((EntryEventImpl) event).getLocalFilterInfo();
-      if (filterInfo == null || filterInfo.isChangeAppliedToCache() || computeInterestRoutingInfo) {
-        result =
-            fillInInterestRoutingInfo(event, localProfileArray, result, Collections.emptySet());
-      }
     }
     return result;
   }
@@ -1208,7 +1162,7 @@ public class FilterProfile implements DataSerializableFixedID {
    * @param peerProfiles the profiles getting this event
    * @param frInfo the routing table to update
    */
-  void fillInCQRoutingInfo(CacheEvent event, boolean processLocalProfile,
+  private void fillInCQRoutingInfo(CacheEvent event, boolean processLocalProfile,
       Profile[] peerProfiles, FilterRoutingInfo frInfo) {
     CqService cqService = getCqService(event.getRegion());
     if (cqService != null) {
@@ -1227,7 +1181,7 @@ public class FilterProfile implements DataSerializableFixedID {
     }
   }
 
-  CqService getCqService(Region region) {
+  private CqService getCqService(Region region) {
     return ((InternalCache) region.getRegionService()).getCqService();
   }
 

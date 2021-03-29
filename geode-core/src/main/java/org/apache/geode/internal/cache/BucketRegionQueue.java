@@ -47,7 +47,7 @@ import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.cache.wan.parallel.BucketRegionQueueUnavailableException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.concurrent.Atomics;
-import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.internal.offheap.OffHeapClearRequired;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -209,7 +209,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public void closeEntries() {
-    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
       @Override
       public void run() {
         BucketRegionQueue.super.closeEntries();
@@ -222,7 +222,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   @Override
   public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
     final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
-    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
       @Override
       public void run() {
         result.set(BucketRegionQueue.super.clearEntries(rvv));
