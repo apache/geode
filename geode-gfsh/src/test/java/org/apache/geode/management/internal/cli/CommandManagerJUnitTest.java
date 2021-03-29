@@ -34,6 +34,7 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Disabled;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -228,7 +229,7 @@ public class CommandManagerJUnitTest {
   class AccessibleCommand implements CommandMarker {
     @CliCommand(value = "test-command")
     public Result ping() {
-      return CommandResult.createInfo("pong");
+      return new CommandResult(ResultModel.createInfo("pong"));
     }
 
     @CliAvailabilityIndicator("test-command")
