@@ -45,4 +45,9 @@ public class ClusterIntegrationTest {
     System.err.println(server.getPort());
     System.err.println(jedis.clusterSlots());
   }
+
+  @Test
+  public void testClusterNodes() {
+    System.err.println(jedis.clusterNodes());
+  }
 }

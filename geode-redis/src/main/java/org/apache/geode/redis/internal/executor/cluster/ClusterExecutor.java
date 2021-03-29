@@ -32,6 +32,7 @@ import java.util.TreeMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -51,6 +52,12 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ClusterExecutor extends AbstractExecutor {
 
   private static final Logger logger = LogService.getLogger();
+  private final String memberId;
+
+  public ClusterExecutor() {
+    memberId =
+        CacheFactory.getAnyInstance().getDistributedSystem().getDistributedMember().getUniqueId();
+  }
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
@@ -74,29 +81,15 @@ public class ClusterExecutor extends AbstractExecutor {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private RedisResponse getSlots(ExecutionHandlerContext ctx) {
-    Region<RedisKey, RedisData> dataRegion = ctx.getRegionProvider().getDataRegion();
-
-    // Really only need this in situations where the cluster is empty and no data has been
-    // added yet.
-    PartitionRegionHelper.assignBucketsToPartitions(dataRegion);
-
-    PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
-    Set<DistributedMember> membersWithDataRegion = new HashSet<>();
-    for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
-      membersWithDataRegion.add(memberInfo.getDistributedMember());
-    }
-
-    ResultCollector<MemberBuckets, List<MemberBuckets>> resultCollector =
-        FunctionService.onMembers(membersWithDataRegion).execute(BucketRetrievalFunction.ID);
+    List<BucketRetrievalFunction.MemberBuckets> memberBuckets = getMemberBuckets(ctx);
 
     Map<Integer, String> primaryBucketToMemberMap = new HashMap<>();
     Map<Integer, List<String>> secondaryBucketToMemberMap = new HashMap<>();
     Map<String, Pair<String, Integer>> memberToHostPortMap = new TreeMap<>();
     int retrievedBucketCount = 0;
 
-    for (MemberBuckets m : resultCollector.getResult()) {
+    for (MemberBuckets m : memberBuckets) {
       memberToHostPortMap.put(m.getMemberId(), Pair.of(m.getHostAddress(), m.getPort()));
       for (Integer id : m.getPrimaryBucketIds()) {
         primaryBucketToMemberMap.put(id, m.getMemberId());
@@ -140,8 +133,51 @@ public class ClusterExecutor extends AbstractExecutor {
     return RedisResponse.array(slots);
   }
 
+  @SuppressWarnings("unchecked")
+  private List<BucketRetrievalFunction.MemberBuckets> getMemberBuckets(
+      ExecutionHandlerContext ctx) {
+    Region<RedisKey, RedisData> dataRegion = ctx.getRegionProvider().getDataRegion();
+
+    // Really only need this in situations where the cluster is empty and no data has been
+    // added yet.
+    PartitionRegionHelper.assignBucketsToPartitions(dataRegion);
+
+    PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
+    Set<DistributedMember> membersWithDataRegion = new HashSet<>();
+    for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
+      membersWithDataRegion.add(memberInfo.getDistributedMember());
+    }
+
+    ResultCollector<MemberBuckets, List<MemberBuckets>> resultCollector =
+        FunctionService.onMembers(membersWithDataRegion).execute(BucketRetrievalFunction.ID);
+
+    return resultCollector.getResult();
+  }
+
   private RedisResponse getNodes(ExecutionHandlerContext ctx) {
-    return RedisResponse.error("not yet!");
+    List<BucketRetrievalFunction.MemberBuckets> memberBuckets = getMemberBuckets(ctx);
+
+    StringBuilder response = new StringBuilder();
+    for (MemberBuckets m : memberBuckets) {
+      response.append(String.format("%s %s:%d@%d master",
+          m.getMemberId(), m.getHostAddress(), m.getPort(), m.getPort()));
+
+      if (m.getMemberId().equals(memberId)) {
+        response.append(",myself");
+      }
+      response.append(" - 0 0 1 connected");
+
+      for (Integer index : m.getPrimaryBucketIds()) {
+        response.append(" ");
+        response.append(index * REDIS_SLOTS_PER_BUCKET);
+        response.append("-");
+        response.append(((index + 1) * REDIS_SLOTS_PER_BUCKET) - 1);
+      }
+
+      response.append("\n");
+    }
+
+    return RedisResponse.bulkString(response.toString());
   }
 
   private RedisResponse getInfo(ExecutionHandlerContext ctx) {
