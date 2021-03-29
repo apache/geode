@@ -18,7 +18,7 @@ package org.apache.geode.internal.offheap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -28,34 +28,38 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 public class ReferenceCountHelper {
 
-  public static final String TRACK_OFFHEAP_REFERENCES =
+  private static final String TRACK_OFFHEAP_REFERENCES =
       GeodeGlossary.GEMFIRE_PREFIX + "trackOffHeapRefCounts";
-  public static final String TRACK_OFFHEAP_FREES =
+  private static final String TRACK_OFFHEAP_FREES =
       GeodeGlossary.GEMFIRE_PREFIX + "trackOffHeapFreedRefCounts";
 
-  @MakeNotStatic
-  private static final ReferenceCountHelperImpl inst = new ReferenceCountHelperImpl(
-      Boolean.getBoolean(TRACK_OFFHEAP_REFERENCES), Boolean.getBoolean(TRACK_OFFHEAP_FREES));
+  @Immutable
+  private static final ReferenceCountHelper INSTANCE = new ReferenceCountHelper(
+      new ReferenceCountHelperImpl(Boolean.getBoolean(TRACK_OFFHEAP_REFERENCES),
+          Boolean.getBoolean(TRACK_OFFHEAP_FREES)));
 
-  /* Do not allow any instances */
-  private ReferenceCountHelper() {}
+  private final ReferenceCountHelperImpl delegate;
 
-  static ReferenceCountHelperImpl getInstance() {
-    return inst;
+  private ReferenceCountHelper(ReferenceCountHelperImpl delegate) {
+    this.delegate = delegate;
+  }
+
+  private static ReferenceCountHelperImpl delegate() {
+    return INSTANCE.delegate;
   }
 
   /**
    * Returns true if reference count tracking is enabled.
    */
   public static boolean trackReferenceCounts() {
-    return getInstance().trackReferenceCounts();
+    return delegate().trackReferenceCounts();
   }
 
   /**
    * Returns true if free operation tracking is enabled.
    */
-  public static boolean trackFreedReferenceCounts() {
-    return getInstance().trackFreedReferenceCounts();
+  static boolean trackFreedReferenceCounts() {
+    return delegate().trackFreedReferenceCounts();
   }
 
   /**
@@ -64,7 +68,7 @@ public class ReferenceCountHelper {
    * responsible for decrementing it. Calling this method is a noop if !trackReferenceCounts.
    */
   public static void setReferenceCountOwner(Object owner) {
-    getInstance().setReferenceCountOwner(owner);
+    delegate().setReferenceCountOwner(owner);
   }
 
   /**
@@ -72,7 +76,7 @@ public class ReferenceCountHelper {
    * and returns null if !trackReferenceCounts.
    */
   public static Object createReferenceCountOwner() {
-    return getInstance().createReferenceCountOwner();
+    return delegate().createReferenceCountOwner();
   }
 
   /**
@@ -81,57 +85,57 @@ public class ReferenceCountHelper {
    * of this method must also call unskipRefCountTracking after the allocation or free is done.
    */
   public static void skipRefCountTracking() {
-    getInstance().skipRefCountTracking();
+    delegate().skipRefCountTracking();
   }
 
   /**
    * Returns true if currently tracking reference counts.
    */
   public static boolean isRefCountTracking() {
-    return getInstance().isRefCountTracking();
+    return delegate().isRefCountTracking();
   }
 
   /**
    * Call this method to undo a call to skipRefCountTracking.
    */
   public static void unskipRefCountTracking() {
-    getInstance().unskipRefCountTracking();
+    delegate().unskipRefCountTracking();
   }
 
   /**
    * Returns a list of any reference count tracking information for the given Chunk address.
    */
   public static List<RefCountChangeInfo> getRefCountInfo(long address) {
-    return getInstance().getRefCountInfo(address);
+    return delegate().getRefCountInfo(address);
   }
 
   /**
    * Used internally to report that a reference count has changed.
    */
-  static void refCountChanged(Long address, boolean decRefCount, int rc) {
-    getInstance().refCountChanged(address, decRefCount, rc);
+  public static void refCountChanged(Long address, boolean decRefCount, int rc) {
+    delegate().refCountChanged(address, decRefCount, rc);
   }
 
   /**
    * Called internally when free operations are tracked to record that a free has happened of the
    * given address.
    */
-  static void freeRefCountInfo(Long address) {
-    getInstance().freeRefCountInfo(address);
+  public static void freeRefCountInfo(Long address) {
+    delegate().freeRefCountInfo(address);
   }
 
   /**
    * Returns the thread local owner
    */
-  static Object getReferenceCountOwner() {
-    return getInstance().getReferenceCountOwner();
+  public static Object getReferenceCountOwner() {
+    return delegate().getReferenceCountOwner();
   }
 
   /**
    * Returns the thread local count of the number of times ref count has been updated
    */
-  static AtomicInteger getReenterCount() {
-    return getInstance().getReenterCount();
+  public static AtomicInteger getReenterCount() {
+    return delegate().getReenterCount();
   }
 
   /**
@@ -139,14 +143,14 @@ public class ReferenceCountHelper {
    * previous free(s) when an extra one ends up being done and fails.
    */
   public static List<RefCountChangeInfo> getFreeRefCountInfo(long address) {
-    return getInstance().getFreeRefCountInfo(address);
+    return delegate().getFreeRefCountInfo(address);
   }
 
   /**
    * Returns a list of any reference count tracking information for the given Chunk address without
    * locking.
    */
-  static List<RefCountChangeInfo> peekRefCountInfo(long address) {
-    return getInstance().peekRefCountInfo(address);
+  public static List<RefCountChangeInfo> peekRefCountInfo(long address) {
+    return delegate().peekRefCountInfo(address);
   }
 }

@@ -232,12 +232,6 @@ class DependencyConstraints implements Plugin<Project> {
       entry('hamcrest')
     }
 
-    dependencySet(group: 'org.powermock', version: '2.0.9') {
-      entry('powermock-api-mockito2')
-      entry('powermock-core')
-      entry('powermock-module-junit4')
-    }
-
     dependencySet(group: 'org.seleniumhq.selenium', version: '3.141.59') {
       entry('selenium-api')
       entry('selenium-chrome-driver')
