@@ -370,9 +370,16 @@ public class MapRangeIndexMaintenanceJUnitTest {
     long uses =
         ((CompactRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
 
+    // The number of keys must be equal to the number of different values the
+    // positions map takes in region entries for the 'SUN' key:
+    // ("nothing", "more", null) + 1 for any entry that does not have
+    // a value for the "SUN" key (UNDEFINED)
     assertThat(keys).isEqualTo(4);
+    // mapIndexKeys must be zero because the index used is a range index and not a map index
     assertThat(mapIndexKeys).isEqualTo(0);
+    // The number of values must be equal to the number of region entries
     assertThat(values).isEqualTo(7);
+    // The index must be used in every query
     assertThat(uses).isEqualTo(4);
   }
 
@@ -395,9 +402,21 @@ public class MapRangeIndexMaintenanceJUnitTest {
     long uses =
         ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
 
-    assertThat(keys).isEqualTo(3);
-    assertThat(mapIndexKeys).isEqualTo(1);
-    assertThat(values).isEqualTo(3);
+    // The number of keys must be equal to the number of different values the
+    // positions map takes for the 'SUN' key (null, "nothing", "more") plus
+    // the number of different values the positions map takes for the 'ERICSSON' key
+    // ("hey") for each entry in the region.
+    assertThat(keys).isEqualTo(4);
+    // The number of mapIndexKeys must be equal to the number of keys
+    // in the index that appear in region entries:
+    // 'SUN', 'ERICSSON'
+    assertThat(mapIndexKeys).isEqualTo(2);
+    // The number of values must be equal to the number of values the
+    // positions map takes for each key indexed in the map
+    // for each entry in the region:
+    // null, "nothing", "more", "hey", "more"
+    assertThat(values).isEqualTo(5);
+    // The index must not be used in queries with "!="
     assertThat(uses).isEqualTo(2);
   }
 
@@ -418,14 +437,28 @@ public class MapRangeIndexMaintenanceJUnitTest {
         ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
     long uses =
         ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
-    assertThat(keys).isEqualTo(5);
-    assertThat(mapIndexKeys).isEqualTo(4);
-    assertThat(values).isEqualTo(5);
+
+    // The number of keys must be equal to the number of different values the
+    // positions map takes for each key (null not included)
+    // for each entry in the region:
+    // "something", null, "nothing", "more", "hey", "tip"
+    assertThat(keys).isEqualTo(6);
+    // The number of mapIndexKeys must be equal to the number of different keys
+    // that appear in entries of the region:
+    // "IBM", "ERICSSON", "HP", "SUN", null
+    assertThat(mapIndexKeys).isEqualTo(5);
+    // The number of values must be equal to the number of values the
+    // positions map takes for each key (null not included)
+    // for each entry in the region:
+    // "something", null, "nothing", "more", "hey", "more", "tip"
+    assertThat(values).isEqualTo(7);
+    // The index must not be used in queries with "!="
     assertThat(uses).isEqualTo(2);
   }
 
   public void testQueriesForValueInMapField(Region<Object, Object> region, QueryService qs)
       throws Exception {
+
     // Empty map
     Portfolio p = new Portfolio(1, 1);
     p.positions = new HashMap<>();
@@ -460,12 +493,14 @@ public class MapRangeIndexMaintenanceJUnitTest {
     // One more with map without the "SUN" key
     Portfolio p6 = new Portfolio(6, 6);
     p6.positions = new HashMap<>();
-    p6.positions.put("ERIC", "hey");
+    p6.positions.put("ERICSSON", "hey");
     region.put(6, p6);
 
-    // One more with null map
+    // Map with a repeated value for the "SUN" key
     Portfolio p7 = new Portfolio(7, 7);
-    p7.positions = null;
+    p7.positions = new HashMap<>();
+    p7.positions.put("SUN", "more");
+    p7.positions.put("HP", "tip");
     region.put(7, p7);
 
     String query;
