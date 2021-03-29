@@ -1973,6 +1973,11 @@ public class TXEntryState implements Releasable {
     }
 
     @Override
+    public boolean isTransactional() {
+      return true;
+    }
+
+    @Override
     public int compareTo(Object o) {
       TxEntryEventImpl other = (TxEntryEventImpl) o;
       return getSortValue() - other.getSortValue();

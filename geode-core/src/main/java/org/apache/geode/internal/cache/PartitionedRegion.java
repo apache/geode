@@ -7810,7 +7810,7 @@ public class PartitionedRegion extends LocalRegion
 
   @Override
   void generateLocalFilterRouting(InternalCacheEvent event) {
-    if (event.getLocalFilterInfo() == null) {
+    if (isGenerateLocalFilterRoutingNeeded(event)) {
       super.generateLocalFilterRouting(event);
     }
   }

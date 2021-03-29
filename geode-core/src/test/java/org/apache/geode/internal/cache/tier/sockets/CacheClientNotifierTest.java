@@ -343,7 +343,7 @@ public class CacheClientNotifierTest {
         .thenReturn(serverCQ);
     when(filterProfile.getRealCqID(CQ_ID))
         .thenReturn(CQ_NAME);
-    when(filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent))
+    when(filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent, true))
         .thenReturn(filterRoutingInfo);
     when(filterRoutingInfo.getLocalFilterInfo())
         .thenReturn(filterInfo);
