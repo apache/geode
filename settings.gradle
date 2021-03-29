@@ -91,7 +91,8 @@ include 'geode-deployment:geode-deployment-legacy'
  '1.12.0',
  '1.12.1',
  '1.13.0',
- '1.13.1'].each {
+ '1.13.1',
+ '1.13.2'].each {
   include 'geode-old-versions:'.concat(it)
 }
 
