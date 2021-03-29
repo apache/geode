@@ -219,19 +219,24 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Updating Native Dockerfile"
+echo "Updating Native Dockerfile and other variables"
 echo "============================================================"
 set -x
-cd ${GEODE_NATIVE}/docker
+cd ${GEODE_NATIVE}
 git pull -r
 set +x
-sed -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
-    -i.bak Dockerfile
-rm Dockerfile.bak
+if [ -r .travis.yml ] ; then
+  sed -e "s/geode-native-build:[latest0-9.]*/geode-native-build:${VERSION}/" \
+      -i.bak .travis.yml
+fi
+sed -e "s/GEODE_VERSION=.*/GEODE_VERSION=${VERSION}/" \
+       "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
+    -i.bak $(git grep -l GEODE_VERSION= ; git grep -l 'ENV GEODE_VERSION')
+rm $(find . -name '*.bak')
 set -x
-git add Dockerfile
+git add .
 git diff --staged --color | cat
-git commit -m "update Dockerfile to apache-geode ${VERSION}"
+git commit -m "update Dockerfile and other variables to apache-geode ${VERSION}"
 git push
 set +x
 
@@ -283,35 +288,6 @@ docker push apachegeode/geode-native-build:${VERSION}
 set +x
 
 
-echo ""
-echo "============================================================"
-echo "Setting Geode version for geode-native"
-echo "============================================================"
-set -x
-cd ${GEODE_NATIVE}
-git pull
-set +x
-
-#.travis.yml
-# DOCKER_IMAGE="apachegeode/geode-native-build:latest"
-#.lgtm.yml
-# GEODE_VERSION=1.12.0
-
-sed -e "s/geode-native-build:[latest0-9.]*/geode-native-build:${VERSION}/" \
-    -e "s/GEODE_VERSION=[0-9.]*/GEODE_VERSION=${VERSION}/" \
-    -i.bak .travis.yml .lgtm.yml
-
-rm .travis.yml.bak .lgtm.yml.bak
-set -x
-git add .
-if [ $(git diff --staged | wc -l) -gt 0 ] ; then
-  git diff --staged --color | cat
-  git commit -m "Bumping Geode version to ${VERSION} for CI"
-  git push -u origin
-fi
-set +x
-
-
 if [ -z "$LATER" ] ; then
   echo ""
   echo "============================================================"
@@ -322,12 +298,16 @@ if [ -z "$LATER" ] ; then
   git pull
   set +x
 
-  sed -e "s/geode-native-build:[latest0-9.]*/geode-native-build:latest/" \
-      -e "s/GEODE_VERSION=[0-9.]*/GEODE_VERSION=${VERSION}/" \
-      -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
-      -i.bak .travis.yml .lgtm.yml docker/Dockerfile
+  if [ -r .travis.yml ] ; then
+    sed -e "s/geode-native-build:[latest0-9.]*/geode-native-build:latest/" \
+        -i.bak .travis.yml
+  fi
 
-  rm .travis.yml.bak .lgtm.yml.bak docker/Dockerfile.bak
+  sed -e "s/GEODE_VERSION=[0-9.]*/GEODE_VERSION=${VERSION}/" \
+      -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
+      -i.bak $(git grep -l GEODE_VERSION= ; git grep -l 'ENV GEODE_VERSION')
+
+  rm $(find . -name '*.bak')
   set -x
   git add .
   if [ $(git diff --staged | wc -l) -gt 0 ] ; then
