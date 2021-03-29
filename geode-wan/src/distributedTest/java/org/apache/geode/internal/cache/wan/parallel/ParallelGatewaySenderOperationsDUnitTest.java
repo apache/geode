@@ -63,7 +63,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
-import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.internal.offheap.OffHeapClearRequired;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -929,7 +929,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       // above.
       callables.add(Executors.callable(() -> {
         try {
-          OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+          OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
             @Override
             public void run() {
               // Wait for the cache writer to be invoked to release this countdown latch.
