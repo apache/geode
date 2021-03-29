@@ -296,12 +296,9 @@ if [ -z "$LATER" ] ; then
   set -x
   cd ${GEODE_NATIVE_DEVELOP}
   git pull
+  git remote add myfork git@github.com:${GITHUB_USER}/geode-native.git || true
+  git checkout -b update-to-geode-${VERSION}
   set +x
-
-  if [ -r .travis.yml ] ; then
-    sed -e "s/geode-native-build:[latest0-9.]*/geode-native-build:latest/" \
-        -i.bak .travis.yml
-  fi
 
   sed -e "s/GEODE_VERSION=[0-9.]*/GEODE_VERSION=${VERSION}/" \
       -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
@@ -313,7 +310,7 @@ if [ -z "$LATER" ] ; then
   if [ $(git diff --staged | wc -l) -gt 0 ] ; then
     git diff --staged --color | cat
     git commit -m "Bumping Geode version to ${VERSION} for CI"
-    git push -u origin
+    git push -u myfork
   fi
   set +x
 fi
@@ -469,6 +466,7 @@ echo "Next steps:"
 echo "1. Click 'Release' in http://repository.apache.org/ (if you haven't already)"
 [ -n "$LATER" ] || echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-geode-${VERSION} and submit the pull request"
 echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
+[ -n "$LATER" ] || echo "3b.Go to https://github.com/${GITHUB_USER}/geode-native/pull/new/update-to-geode-${VERSION} and create the pull request"
 [ -n "$LATER" ] && tag=":${VERSION}" || tag=""
 echo "4. Validate docker image: docker run -it apachegeode/geode${tag}"
 echo "5. Bulk-transition JIRA issues fixed in this release to Closed"
