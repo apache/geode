@@ -121,7 +121,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
       throws BucketNotFoundException {
     BucketRegion userBucket = userRegion.getBucketRegion(key, callbackArg);
     if (userBucket == null) {
-      throw new BucketNotFoundException("User bucket was not found for region " + region + "key "
+      throw new BucketNotFoundException("User bucket was not found for region " + region + " key "
           + key + " callbackArg " + callbackArg);
     }
 
