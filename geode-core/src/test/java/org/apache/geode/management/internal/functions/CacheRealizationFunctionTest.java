@@ -114,7 +114,8 @@ public class CacheRealizationFunctionTest {
     arguments.add(inputStream);
     when(context.getCache()).thenReturn(cache);
 
-    doThrow(RuntimeException.class).when(function).executeUpdate(context, cache, config, operation,
+    doThrow(RuntimeException.class).when(function).executeUpdate("testName", cache, config,
+        operation,
         inputStream);
 
     function.execute(context);

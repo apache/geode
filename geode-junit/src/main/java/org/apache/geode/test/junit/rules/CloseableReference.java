@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  *   server.set(new ServerLauncher.Builder()
  *       .setMemberName("server1")
  *       .setDisableDefaultServer(true)
- *       .setWorkingDirectory(temporaryFolder.newFolder("server1").getAbsolutePath())
+ *       .reinitializeWithWorkingDirectory(temporaryFolder.newFolder("server1").getAbsolutePath())
  *       .build());
  *
  *   server.get().start();

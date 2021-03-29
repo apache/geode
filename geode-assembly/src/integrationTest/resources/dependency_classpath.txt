@@ -19,6 +19,7 @@ geode-management-0.0.0.jar
 jackson-databind-2.12.2.jar
 jackson-annotations-2.12.2.jar
 jackson-core-2.12.2.jar
+geode-deployment-legacy-0.0.0.jar
 geode-membership-0.0.0.jar
 geode-http-service-0.0.0.jar
 geode-unsafe-0.0.0.jar

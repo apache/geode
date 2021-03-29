@@ -41,7 +41,7 @@ import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.AsyncEventQueueMXBean;
 import org.apache.geode.management.CacheServerMXBean;
@@ -129,7 +129,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
       }
       ObjectInstance instance = mbeanServer.getObjectInstance(objectName);
       String className = instance.getClassName();
-      Class cls = ClassLoadUtil.classFromName(className);
+      Class cls = ClassLoadUtils.classFromName(className);
       Type[] intfTyps = cls.getGenericInterfaces();
       for (Type intfTyp1 : intfTyps) {
         Class intfTyp = (Class) intfTyp1;

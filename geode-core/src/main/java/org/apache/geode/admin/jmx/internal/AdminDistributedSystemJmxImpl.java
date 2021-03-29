@@ -142,8 +142,8 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       throws org.apache.geode.admin.AdminException {
     super(config);
     this.mbeanName = "GemFire:type=AdminDistributedSystem,id="
-        + MBeanUtil.makeCompliantMBeanNameProperty(getId());
-    this.objectName = MBeanUtil.createMBean(this);
+        + MBeanUtils.makeCompliantMBeanNameProperty(getId());
+    this.objectName = MBeanUtils.createMBean(this);
     isEmailNotificationEnabled = config.isEmailNotificationEnabled();
     if (isEmailNotificationEnabled) {
       initMailProps(config);
@@ -453,7 +453,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       SystemMemberType memberType = member.getType();
       if (/* member != null && */ memberType.isApplication() || memberType.isCacheVm()) {
         // automatically unregister the MBean...
-        MBeanUtil.unregisterMBean((ManagedResource) member);
+        MBeanUtils.unregisterMBean((ManagedResource) member);
       }
     } catch (RuntimeException e) {
       logger.warn(e.getMessage(), e);
@@ -515,7 +515,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       SystemMemberType memberType = member.getType();
       if (/* member != null && */ memberType.isApplication() || memberType.isCacheVm()) {
         // automatically unregister the MBean...
-        MBeanUtil.unregisterMBean((ManagedResource) member);
+        MBeanUtils.unregisterMBean((ManagedResource) member);
       }
     } catch (RuntimeException e) {
       logger.warn(e.getMessage(), e);
@@ -2140,7 +2140,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
   @Override
   public String getId() {
     String myId = super.getId();
-    return MBeanUtil.makeCompliantMBeanNameProperty(myId);
+    return MBeanUtils.makeCompliantMBeanNameProperty(myId);
   }
 
   /**

@@ -99,10 +99,11 @@ public class DeploymentManagementDUnitTest {
     ClusterManagementListResult<Deployment, DeploymentInfo> list = client.list(new Deployment());
     ClusterManagementListResultAssert<Deployment, DeploymentInfo> resultAssert =
         assertManagementListResult(list).isSuccessful();
-    resultAssert.hasConfigurations().extracting(Deployment::getFileName)
+    resultAssert.hasConfigurations().extracting(deployment -> deployment.getFileName())
         .containsExactlyInAnyOrder("group1.jar", "group2.jar", "cluster.jar");
-    resultAssert.hasRuntimeInfos().extracting(DeploymentInfo::getJarLocation).extracting(
-        FilenameUtils::getName)
+    resultAssert.hasRuntimeInfos()
+        .extracting(DeploymentInfo::getJarLocation).extracting(
+            FilenameUtils::getName)
         .containsExactlyInAnyOrder("group1.v1.jar", "group2.v1.jar", "cluster.v1.jar",
             "cluster.v1.jar");
   }
@@ -116,8 +117,10 @@ public class DeploymentManagementDUnitTest {
         assertManagementListResult(list).isSuccessful();
     resultAssert.hasConfigurations().extracting(Deployment::getFileName)
         .containsExactlyInAnyOrder("group1.jar");
-    resultAssert.hasRuntimeInfos().extracting(DeploymentInfo::getJarLocation).extracting(
-        FilenameUtils::getName).containsExactlyInAnyOrder("group1.v1.jar");
+    resultAssert.hasRuntimeInfos()
+        .extracting(DeploymentInfo::getJarLocation).extracting(
+            FilenameUtils::getName)
+        .containsExactlyInAnyOrder("group1.v1.jar");
   }
 
   @Test
@@ -151,8 +154,11 @@ public class DeploymentManagementDUnitTest {
     ClusterManagementGetResult<Deployment, DeploymentInfo> result = client.get(filter);
     ClusterManagementGetResultAssert<Deployment, DeploymentInfo> resultAssert =
         assertManagementGetResult(result).isSuccessful();
-    resultAssert.hasConfiguration().extracting(Deployment::getFileName).isEqualTo("cluster.jar");
-    resultAssert.hasRuntimeInfos().extracting(DeploymentInfo::getJarLocation).extracting(
-        FilenameUtils::getName).containsExactlyInAnyOrder("cluster.v1.jar", "cluster.v1.jar");
+    resultAssert.hasConfiguration().extracting(Deployment::getFileName)
+        .isEqualTo("cluster.jar");
+    resultAssert.hasRuntimeInfos()
+        .extracting(DeploymentInfo::getJarLocation).extracting(
+            FilenameUtils::getName)
+        .containsExactlyInAnyOrder("cluster.v1.jar", "cluster.v1.jar");
   }
 }
