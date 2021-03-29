@@ -245,8 +245,7 @@ public class TXState implements TXStateInterface {
     boolean isConfigError = false;
     EntryEventImpl lastTransactionEvent = null;
     try {
-      lastTransactionEvent =
-          TXLastEventInTransactionUtils.getLastTransactionEvent(getPendingCallbacks(), getCache());
+      lastTransactionEvent = getLastTransactionEvent();
     } catch (ServiceConfigurationError ex) {
       logger.error(ex.getMessage());
       isConfigError = true;
@@ -254,6 +253,11 @@ public class TXState implements TXStateInterface {
 
     for (EntryEventImpl ee : getPendingCallbacks()) {
       boolean isLastTransactionEvent = isConfigError || ee.equals(lastTransactionEvent);
+      // Change has been applied to cache.
+      FilterRoutingInfo.FilterInfo filterInfo = ee.getLocalFilterInfo();
+      if (filterInfo != null) {
+        filterInfo.setChangeAppliedToCache(true);
+      }
       if (ee.getOperation().isDestroy()) {
         ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true,
             isLastTransactionEvent);
@@ -268,6 +272,10 @@ public class TXState implements TXStateInterface {
             isLastTransactionEvent);
       }
     }
+  }
+
+  EntryEventImpl getLastTransactionEvent() {
+    return TXLastEventInTransactionUtils.getLastTransactionEvent(getPendingCallbacks(), getCache());
   }
 
   public void freePendingCallbacks() {

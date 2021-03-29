@@ -55,6 +55,8 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
     @Retained
     EntryEventImpl retVal = EntryEventImpl.create(internalRegion, op, key, newValue,
         aCallbackArgument, txEntryState == null, originator);
+    // Need to make it a Transactional event so that routing info can be computed correctly.
+    retVal.setTransactionId(txId);
     boolean returnedRetVal = false;
     try {
       if (bridgeContext != null) {

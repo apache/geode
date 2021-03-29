@@ -72,6 +72,11 @@ public class DistTxEntryEvent extends EntryEventImpl {
   }
 
   @Override
+  public boolean isTransactional() {
+    return true;
+  }
+
+  @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     DataSerializer.writeObject(this.eventID, out);

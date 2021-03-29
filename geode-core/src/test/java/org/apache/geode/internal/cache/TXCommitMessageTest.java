@@ -62,6 +62,26 @@ public class TXCommitMessageTest {
   }
 
   @Test
+  public void firePendingCallbacksSetsChangeAppliedToCacheInEventLocalFilterInfo() {
+    TXCommitMessage message = spy(new TXCommitMessage());
+    FilterRoutingInfo.FilterInfo filterInfo1 = mock(FilterRoutingInfo.FilterInfo.class);
+    FilterRoutingInfo.FilterInfo filterInfo2 = mock(FilterRoutingInfo.FilterInfo.class);
+    EntryEventImpl event1 = mock(EntryEventImpl.class, RETURNS_DEEP_STUBS);
+    EntryEventImpl event2 = mock(EntryEventImpl.class, RETURNS_DEEP_STUBS);
+    List<EntryEventImpl> callbacks = new ArrayList<>();
+    callbacks.add(event1);
+    callbacks.add(event2);
+    doReturn(event2).when(message).getLastTransactionEvent(callbacks);
+    when(event1.getLocalFilterInfo()).thenReturn(filterInfo1);
+    when(event2.getLocalFilterInfo()).thenReturn(filterInfo2);
+
+    message.firePendingCallbacks(callbacks);
+
+    verify(filterInfo1).setChangeAppliedToCache(true);
+    verify(filterInfo2).setChangeAppliedToCache(true);
+  }
+
+  @Test
   public void firePendingCallbacksSendsAFTER_CREATECallbackIfUpdateEntryEventHasNullNewValue() {
     TXCommitMessage message = spy(new TXCommitMessage());
     LocalRegion region = mock(LocalRegion.class, RETURNS_DEEP_STUBS);

@@ -228,6 +228,61 @@ public class LocalRegionTest {
   }
 
   @Test
+  public void generateLocalFilterRoutingIsNeededIfFilterInfoNotSetInEvent() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+    InternalCacheEvent event = mock(InternalCacheEvent.class);
+    when(event.getLocalFilterInfo()).thenReturn(null);
+
+    assertThat(region.isGenerateLocalFilterRoutingNeeded(event)).isTrue();
+  }
+
+  @Test
+  public void generateLocalFilterRoutingNotNeededIfNonTransactionalEventHasFilterInfo() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+    InternalCacheEvent event = mock(InternalCacheEvent.class);
+    when(event.getLocalFilterInfo()).thenReturn(mock(FilterRoutingInfo.FilterInfo.class));
+    when(event.isTransactional()).thenReturn(false);
+
+    assertThat(region.isGenerateLocalFilterRoutingNeeded(event)).isFalse();
+  }
+
+  @Test
+  public void generateLocalFilterRoutingIsNeededIfChangeAppliedToCacheForTransactionalEvent() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+    InternalCacheEvent event = mock(InternalCacheEvent.class);
+    FilterRoutingInfo.FilterInfo filterInfo = mock(FilterRoutingInfo.FilterInfo.class);
+    when(event.getLocalFilterInfo()).thenReturn(filterInfo);
+    when(event.isTransactional()).thenReturn(true);
+    when(filterInfo.isChangeAppliedToCache()).thenReturn(true);
+
+    assertThat(region.isGenerateLocalFilterRoutingNeeded(event)).isTrue();
+  }
+
+  @Test
+  public void generateLocalFilterRoutingIsNotNeededIfChangeNotAppliedToCacheYet() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+    InternalCacheEvent event = mock(InternalCacheEvent.class);
+    FilterRoutingInfo.FilterInfo filterInfo = mock(FilterRoutingInfo.FilterInfo.class);
+    when(event.getLocalFilterInfo()).thenReturn(filterInfo);
+    when(event.isTransactional()).thenReturn(true);
+    when(filterInfo.isChangeAppliedToCache()).thenReturn(false);
+
+    assertThat(region.isGenerateLocalFilterRoutingNeeded(event)).isFalse();
+  }
+
+  @Test
   public void initializeStatsInvokesDiskRegionStatsMethods() {
     LocalRegion region =
         spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
