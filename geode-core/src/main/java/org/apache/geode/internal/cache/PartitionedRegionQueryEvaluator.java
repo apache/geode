@@ -903,20 +903,19 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     final List<Integer> bucketIds = new ArrayList();
     // Get all local buckets
     PartitionedRegionDataStore dataStore = this.pr.getDataStore();
-    if (dataStore == null) {
-      return bucketIds;
-    }
-    for (Integer bid : bucketIdsToConsider) {
-      if (dataStore.isManagingBucket(bid)) {
-        bucketIds.add(Integer.valueOf(bid));
+    if (dataStore != null) {
+      for (Integer bid : bucketIdsToConsider) {
+        if (dataStore.isManagingBucket(bid)) {
+          bucketIds.add(Integer.valueOf(bid));
+        }
       }
-    }
-    if (bucketIds.size() > 0) {
-      List<Integer> localBucketIds = new ArrayList(bucketIds);
-      nodeToBucketMap.put(pr.getMyId(), localBucketIds);
-      // All the buckets are hosted locally.
-      if (localBucketIds.size() == bucketIdsToConsider.size()) {
-        return bucketIds;
+      if (bucketIds.size() > 0) {
+        List<Integer> localBucketIds = new ArrayList(bucketIds);
+        nodeToBucketMap.put(pr.getMyId(), localBucketIds);
+        // All the buckets are hosted locally.
+        if (localBucketIds.size() == bucketIdsToConsider.size()) {
+          return bucketIds;
+        }
       }
     }
     final List<InternalDistributedMember> allNodes = getAllNodes(this.pr.getRegionAdvisor());
