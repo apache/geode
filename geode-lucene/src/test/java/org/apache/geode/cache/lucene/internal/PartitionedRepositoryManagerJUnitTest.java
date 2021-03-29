@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene.internal;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.PartitionedRegionHelper.PR_ROOT_REGION_NAME;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -29,7 +30,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,10 +74,9 @@ public class PartitionedRepositoryManagerJUnitTest {
 
   protected PartitionedRegion userRegion;
   protected PartitionedRegion fileAndChunkRegion;
-  protected LuceneSerializer serializer;
+  protected LuceneSerializer<?> serializer;
   protected PartitionedRegionDataStore userDataStore;
   protected PartitionedRegionDataStore fileDataStore;
-  protected PartitionedRegionHelper prHelper;
   protected PartitionRegionConfig prConfig;
   protected DistributedRegion prRoot;
 
@@ -88,15 +87,14 @@ public class PartitionedRepositoryManagerJUnitTest {
   protected LuceneIndexImpl indexForPR;
   protected PartitionedRepositoryManager repoManager;
   protected GemFireCacheImpl cache;
-  private final Map<Integer, Boolean> isIndexAvailableMap = new HashMap<>();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     cache = Fakes.cache();
     userRegion = Mockito.mock(PartitionedRegion.class);
     userDataStore = Mockito.mock(PartitionedRegionDataStore.class);
     when(userRegion.getDataStore()).thenReturn(userDataStore);
-    when(cache.getRegion(SEPARATOR + "testRegion")).thenReturn(userRegion);
+    when(cache.getRegion(SEPARATOR + "testRegion")).thenReturn(uncheckedCast(userRegion));
     serializer = new HeterogeneousLuceneSerializer();
     DLockService lockService = mock(DLockService.class);
     when(lockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
@@ -112,7 +110,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     DLockService.removeLockServiceForTests(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME);
   }
 
-  protected void createIndexAndRepoManager() throws Exception {
+  protected void createIndexAndRepoManager() {
     fileAndChunkRegion = Mockito.mock(PartitionedRegion.class);
     fileDataStore = Mockito.mock(PartitionedRegionDataStore.class);
     when(fileAndChunkRegion.getDataStore()).thenReturn(fileDataStore);
@@ -136,8 +134,8 @@ public class PartitionedRepositoryManagerJUnitTest {
     CacheDistributionAdvisor cda = mock(CacheDistributionAdvisor.class);
     when(prRoot.getDistributionAdvisor()).thenReturn(cda);
     doNothing().when(cda).addMembershipListener(any());
-    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
-    when(regionFactory.create(eq(PR_ROOT_REGION_NAME))).thenReturn(prRoot);
+    InternalRegionFactory<Object, Object> regionFactory = uncheckedCast(mock(InternalRegionFactory.class));
+    when(regionFactory.create(eq(PR_ROOT_REGION_NAME))).thenReturn(uncheckedCast(prRoot));
     when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
 
     prConfig = Mockito.mock(PartitionRegionConfig.class);
@@ -151,11 +149,9 @@ public class PartitionedRepositoryManagerJUnitTest {
 
   @Test
   public void getByKey() throws BucketNotFoundException {
-    final BucketId bucket0 = BucketId.valueOf(0);
-    final BucketId bucket1 = BucketId.valueOf(1);
 
-    setUpMockBucket(bucket0);
-    setUpMockBucket(bucket1);
+    setUpMockBucket(0);
+    setUpMockBucket(1);
 
     IndexRepositoryImpl repo0 =
         (IndexRepositoryImpl) repoManager.getRepository(userRegion, 0, null);
@@ -170,8 +166,8 @@ public class PartitionedRepositoryManagerJUnitTest {
     assertEquals(repo0, repo113);
     assertNotEquals(repo0, repo1);
 
-    checkRepository(repo0, bucket0);
-    checkRepository(repo1, bucket1);
+    checkRepository(repo0, BucketId.valueOf(0));
+    checkRepository(repo1, BucketId.valueOf(1));
   }
 
   /**
@@ -179,9 +175,9 @@ public class PartitionedRepositoryManagerJUnitTest {
    */
   @Test
   public void destroyBucketShouldCreateNewIndexRepository()
-      throws BucketNotFoundException, IOException {
+      throws BucketNotFoundException {
     final BucketId bucketId = BucketId.valueOf(0);
-    setUpMockBucket(bucketId);
+    setUpMockBucket(0);
 
     IndexRepositoryImpl repo0 =
         (IndexRepositoryImpl) repoManager.getRepository(userRegion, 0, null);
@@ -189,13 +185,12 @@ public class PartitionedRepositoryManagerJUnitTest {
     assertNotNull(repo0);
     checkRepository(repo0, bucketId);
 
-    BucketRegion fileBucket0 = fileAndChunkBuckets.get(bucketId);
     BucketRegion dataBucket0 = dataBuckets.get(bucketId);
 
     // Simulate rebalancing of a bucket by marking the old bucket is destroyed
     // and creating a new bucket
     when(dataBucket0.isDestroyed()).thenReturn(true);
-    setUpMockBucket(bucketId);
+    setUpMockBucket(0);
 
     IndexRepositoryImpl newRepo0 =
         (IndexRepositoryImpl) repoManager.getRepository(userRegion, 0, null);
@@ -216,7 +211,7 @@ public class PartitionedRepositoryManagerJUnitTest {
   @Test
   public void createMissingBucket() throws BucketNotFoundException {
     final BucketId bucketId = BucketId.valueOf(0);
-    setUpMockBucket(bucketId);
+    setUpMockBucket(0);
 
     when(fileDataStore.getLocalBucketById(eq(bucketId))).thenReturn(null);
 
@@ -227,7 +222,7 @@ public class PartitionedRepositoryManagerJUnitTest {
           return null;
         });
 
-    assertNotNull(repoManager.getRepository(userRegion, bucketId, null));
+    assertNotNull(repoManager.getRepository(userRegion, 0, null));
   }
 
   @Test
@@ -235,8 +230,8 @@ public class PartitionedRepositoryManagerJUnitTest {
     final BucketId bucket0 = BucketId.valueOf(0);
     final BucketId bucket1 = BucketId.valueOf(1);
 
-    setUpMockBucket(bucket0);
-    setUpMockBucket(bucket1);
+    setUpMockBucket(0);
+    setUpMockBucket(1);
 
     when(indexForPR.isIndexAvailable(bucket0)).thenReturn(true);
     when(indexForPR.isIndexAvailable(bucket1)).thenReturn(true);
@@ -264,9 +259,8 @@ public class PartitionedRepositoryManagerJUnitTest {
    */
   @Test(expected = BucketNotFoundException.class)
   public void getMissingBucketByRegion() throws BucketNotFoundException {
-    final BucketId bucketId = BucketId.valueOf(0);
-    setUpMockBucket(bucketId);
-    when(indexForPR.isIndexAvailable(bucketId)).thenReturn(true);
+    setUpMockBucket(0);
+    when(indexForPR.isIndexAvailable(BucketId.valueOf(0))).thenReturn(true);
 
     int[] buckets = new int[] {2, 0, 1};
 
@@ -281,8 +275,7 @@ public class PartitionedRepositoryManagerJUnitTest {
   @Test(expected = LuceneIndexCreationInProgressException.class)
   public void luceneIndexCreationInProgressExceptionExpectedIfIndexIsNotYetIndexed()
       throws BucketNotFoundException {
-    final BucketId bucketId = BucketId.valueOf(0);
-    setUpMockBucket(bucketId);
+    setUpMockBucket(0);
 
     int[] buckets = new int[] {2, 0, 1};
 
@@ -296,8 +289,8 @@ public class PartitionedRepositoryManagerJUnitTest {
     final BucketId bucket0 = BucketId.valueOf(0);
     final BucketId bucket1 = BucketId.valueOf(1);
 
-    setUpMockBucket(bucket0);
-    setUpMockBucket(bucket1);
+    setUpMockBucket(0);
+    setUpMockBucket(1);
 
     when(indexForPR.isIndexAvailable(bucket0)).thenReturn(true);
     when(indexForPR.isIndexAvailable(bucket1)).thenReturn(true);
@@ -341,23 +334,22 @@ public class PartitionedRepositoryManagerJUnitTest {
     assertEquals(serializer, repo0.getSerializer());
   }
 
-  protected BucketRegion setUpMockBucket(BucketId id) throws BucketNotFoundException {
-    BucketRegion mockBucket = Mockito.mock(BucketRegion.class);
-    BucketRegion fileAndChunkBucket = Mockito.mock(BucketRegion.class);
+  protected BucketRegion setUpMockBucket(final int key) {
+    final BucketId bucketId = BucketId.valueOf(key);
+    final BucketRegion mockBucket = Mockito.mock(BucketRegion.class);
+    final BucketRegion fileAndChunkBucket = Mockito.mock(BucketRegion.class);
     // Allowing the fileAndChunkBucket to behave like a map so that the IndexWriter operations don't
     // fail
     Fakes.addMapBehavior(fileAndChunkBucket);
-    when(fileAndChunkBucket.getFullPath()).thenReturn("File" + id);
-    when(mockBucket.getId()).thenReturn(id);
-    when(userRegion.getBucketRegion(eq(id), eq(null))).thenReturn(mockBucket);
-    when(userDataStore.getLocalBucketById(eq(id))).thenReturn(mockBucket);
-    when(userRegion.getBucketRegion(eq(id.intValue() + 113), eq(null))).thenReturn(mockBucket);
-    when(userDataStore.getLocalBucketById(eq(BucketId.valueOf(id.intValue() + 113))))
-        .thenReturn(mockBucket);
-    when(fileDataStore.getLocalBucketById(eq(id))).thenReturn(fileAndChunkBucket);
+    when(fileAndChunkBucket.getFullPath()).thenReturn("File" + bucketId);
+    when(mockBucket.getId()).thenReturn(bucketId);
+    when(userRegion.getBucketRegion(eq(key), eq(null))).thenReturn(mockBucket);
+    when(userDataStore.getLocalBucketById(eq(bucketId))).thenReturn(mockBucket);
+    when(userRegion.getBucketRegion(eq(key + 113), eq(null))).thenReturn(mockBucket);
+    when(fileDataStore.getLocalBucketById(eq(bucketId))).thenReturn(fileAndChunkBucket);
 
-    fileAndChunkBuckets.put(id, fileAndChunkBucket);
-    dataBuckets.put(id, mockBucket);
+    fileAndChunkBuckets.put(bucketId, fileAndChunkBucket);
+    dataBuckets.put(bucketId, mockBucket);
 
     BucketAdvisor mockBucketAdvisor = Mockito.mock(BucketAdvisor.class);
     when(fileAndChunkBucket.getBucketAdvisor()).thenReturn(mockBucketAdvisor);
