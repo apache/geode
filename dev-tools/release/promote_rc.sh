@@ -484,7 +484,7 @@ PATCH="${VERSION##*.}"
 M=$(date --date '+18 months' '+%a, %B %d %Y' 2>/dev/null || date -v +9m "+%a, %B %d %Y" 2>/dev/null || echo "18 months from now")
 [ "${PATCH}" -ne 0 ] || echo "11. Mark your calendar for $M (assuming we release Geode ${MAJOR}.$((MINOR + 3)) on that day) to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
 [ "${PATCH}" -ne 0 ] || [ -n "$LATER" ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
-echo "If there are any support branches between ${VERSION_MM} and develop, manually cherry-pick '${VERSION}' bumps to those branches of geode, geode-native, and geode-examples."
+echo "If there are any support branches between ${VERSION_MM} and develop, manually cherry-pick '${VERSION}' bumps to those branches of geode and geode-native."
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
 echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 )) -s"
 echo 'Finally, send announce email!'
