@@ -1093,7 +1093,7 @@ public class FilterProfile implements DataSerializableFixedID {
     }
     boolean processLocalProfile =
         event.getOperation().isEntry() && ((EntryEvent) event).getTransactionId() != null;
-    
+
     CqService cqService = getCqService(event.getRegion());
     if (cqService.isRunning()) {
       frInfo = new FilterRoutingInfo();
