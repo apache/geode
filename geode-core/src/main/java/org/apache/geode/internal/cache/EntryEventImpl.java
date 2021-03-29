@@ -2231,9 +2231,6 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (this.tailKey != -1) {
       buf.append(";tailKey=").append(tailKey);
     }
-    if (this.isTransactional()) {
-      buf.append(";transactionId=").append(getTransactionId());
-    }
     buf.append("]");
     return buf.toString();
   }
@@ -3006,10 +3003,5 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (getRegion().isUsedForPartitionedRegionBucket()) {
       setRegion(getRegion().getPartitionedRegion());
     }
-  }
-
-  @Override
-  public boolean isTransactional() {
-    return getTransactionId() != null;
   }
 }
