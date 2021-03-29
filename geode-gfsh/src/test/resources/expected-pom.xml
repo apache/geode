@@ -132,6 +132,11 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
       <groupId>net.sf.jopt-simple</groupId>
       <artifactId>jopt-simple</artifactId>
       <scope>runtime</scope>

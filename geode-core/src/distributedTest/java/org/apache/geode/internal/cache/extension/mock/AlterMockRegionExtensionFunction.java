@@ -30,7 +30,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -82,7 +82,7 @@ public class AlterMockRegionExtensionFunction implements Function, DataSerializa
 
     final ResultSender<Object> resultSender = context.getResultSender();
     final String memberNameOrId =
-        CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
+        CliUtils.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
     resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
         CliStrings.format("Mock region extension \"{0}\" altered on \"{1}\"",

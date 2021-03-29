@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -64,7 +64,7 @@ public class MonitoringRegionCacheListener extends CacheListenerAdapter<String, 
       if (classRef.get(className) != null) {
         interfaceClass = classRef.get(className);
       } else {
-        interfaceClass = ClassLoadUtil.classFromName(className);
+        interfaceClass = ClassLoadUtils.classFromName(className);
         classRef.put(className, interfaceClass);
       }
 
@@ -95,7 +95,7 @@ public class MonitoringRegionCacheListener extends CacheListenerAdapter<String, 
       if (classRef.get(className) != null) {
         interfaceClass = classRef.get(className);
       } else {
-        interfaceClass = ClassLoadUtil.classFromName(className);
+        interfaceClass = ClassLoadUtils.classFromName(className);
         classRef.put(className, interfaceClass);
       }
 

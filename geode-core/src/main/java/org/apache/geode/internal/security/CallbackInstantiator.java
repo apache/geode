@@ -16,8 +16,8 @@ package org.apache.geode.internal.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
-import static org.apache.geode.internal.ClassLoadUtil.classFromName;
-import static org.apache.geode.internal.ClassLoadUtil.methodFromName;
+import static org.apache.geode.internal.ClassLoadUtils.classFromName;
+import static org.apache.geode.internal.ClassLoadUtils.methodFromName;
 
 import java.lang.reflect.Method;
 import java.util.Properties;

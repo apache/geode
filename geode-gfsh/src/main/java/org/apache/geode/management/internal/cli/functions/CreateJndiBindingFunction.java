@@ -26,7 +26,7 @@ import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.jndi.JNDIInvoker;
-import org.apache.geode.internal.util.DriverJarUtil;
+import org.apache.geode.internal.util.DriverJarUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -84,8 +84,8 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
     return params;
   }
 
-  DriverJarUtil getDriverJarUtil() {
-    return new DriverJarUtil();
+  DriverJarUtils getDriverJarUtil() {
+    return new DriverJarUtils();
   }
 
   static List<ConfigProperty> convert(
