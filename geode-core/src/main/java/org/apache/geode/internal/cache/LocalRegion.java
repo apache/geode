@@ -5813,7 +5813,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     FilterProfile filterProfile = getFilterProfile();
     FilterInfo routing = event.getLocalFilterInfo();
 
-    if (filterProfile != null && isGenerateLocalFilterRoutingNeeded(event)) {
+    if (filterProfile != null && routing == null) {
       boolean lockForCQ = false;
       Object regionEntryObject = null;
 
@@ -5849,17 +5849,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
       routing.clearCQRouting();
     }
-  }
-
-  boolean isGenerateLocalFilterRoutingNeeded(InternalCacheEvent event) {
-    FilterRoutingInfo.FilterInfo filterInfo = event.getLocalFilterInfo();
-    if (filterInfo == null) {
-      return true;
-    }
-    if (!event.isTransactional()) {
-      return false;
-    }
-    return filterInfo.isChangeAppliedToCache();
   }
 
   /**
