@@ -449,7 +449,7 @@ public class IndexStatisticsJUnitTest {
 
     assertEquals(0, mapIndexStats.getReadLockCount());
 
-    assertEquals(100, mapIndexStats.getTotalUses());
+    assertEquals(0, mapIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
       region.invalidate(Integer.toString(i));
@@ -689,7 +689,7 @@ public class IndexStatisticsJUnitTest {
       query.execute();
     }
 
-    assertEquals(100, mapIndexStats.getTotalUses());
+    assertEquals(0, mapIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
       region.invalidate(Integer.toString(i));

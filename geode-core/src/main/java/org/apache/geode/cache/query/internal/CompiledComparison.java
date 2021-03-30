@@ -31,7 +31,7 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.index.AbstractIndex;
-import org.apache.geode.cache.query.internal.index.CompactMapRangeIndex;
+import org.apache.geode.cache.query.internal.index.AbstractMapIndex;
 import org.apache.geode.cache.query.internal.index.IndexData;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.query.internal.index.IndexUtils;
@@ -656,7 +656,8 @@ public class CompiledComparison extends AbstractCompiledValue
       }
 
       // Do not use indexes when map index and != condition
-      if (indexData != null && indexData.getIndex() instanceof CompactMapRangeIndex
+      if (indexData != null
+          && (indexData.getIndex() instanceof AbstractMapIndex)
           && this._operator == TOK_NE) {
         Index prIndex = ((AbstractIndex) indexData.getIndex()).getPRIndex();
         if (prIndex != null) {

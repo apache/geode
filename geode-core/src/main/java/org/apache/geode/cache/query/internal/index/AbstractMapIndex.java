@@ -328,29 +328,16 @@ public abstract class AbstractMapIndex extends AbstractIndex {
 
   @Override
   void addMapping(Object key, Object value, RegionEntry entry) throws IMQException {
-    if (key == QueryService.UNDEFINED || !(key instanceof Map)) {
-      return;
-    }
-    if (this.isAllKeys) {
-      Iterator<Map.Entry<?, ?>> entries = ((Map) key).entrySet().iterator();
-      while (entries.hasNext()) {
-        Map.Entry<?, ?> mapEntry = entries.next();
-        Object mapKey = mapEntry.getKey();
-        Object indexKey = mapEntry.getValue();
-        this.doIndexAddition(mapKey, indexKey, value, entry);
-      }
-    } else {
-      for (Object mapKey : mapKeys) {
-        Object indexKey = ((Map) key).get(mapKey);
-        if (indexKey != null) {
-          this.doIndexAddition(mapKey, indexKey, value, entry);
-        }
-      }
-    }
+    addOrSaveMapping(key, value, entry, true);
   }
 
   @Override
   void saveMapping(Object key, Object value, RegionEntry entry) throws IMQException {
+    addOrSaveMapping(key, value, entry, false);
+  }
+
+  void addOrSaveMapping(Object key, Object value, RegionEntry entry, boolean isAdd)
+      throws IMQException {
     if (key == QueryService.UNDEFINED || !(key instanceof Map)) {
       return;
     }
@@ -360,13 +347,21 @@ public abstract class AbstractMapIndex extends AbstractIndex {
         Map.Entry<?, ?> mapEntry = entries.next();
         Object mapKey = mapEntry.getKey();
         Object indexKey = mapEntry.getValue();
-        this.saveIndexAddition(mapKey, indexKey, value, entry);
+        if (isAdd) {
+          doIndexAddition(mapKey, indexKey, value, entry);
+        } else {
+          saveIndexAddition(mapKey, indexKey, value, entry);
+        }
       }
     } else {
       for (Object mapKey : mapKeys) {
-        Object indexKey = ((Map) key).get(mapKey);
-        if (indexKey != null) {
-          this.saveIndexAddition(mapKey, indexKey, value, entry);
+        if (((Map) key).containsKey(mapKey)) {
+          Object indexKey = ((Map) key).get(mapKey);
+          if (isAdd) {
+            doIndexAddition(mapKey, indexKey, value, entry);
+          } else {
+            saveIndexAddition(mapKey, indexKey, value, entry);
+          }
         }
       }
     }
