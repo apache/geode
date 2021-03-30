@@ -50,9 +50,8 @@ if [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]] || [[ ${GITHUB_USER
     usage
 fi
 
-SIGNING_KEY=$(gpg --fingerprint "${SIGNING_KEY}"  | tr -d ' ' | grep "${SIGNING_KEY}" | tail -1)
+SIGNING_KEY=$(gpg --fingerprint "${SIGNING_KEY}"  | tr -d ' ' | grep "${SIGNING_KEY}" | sed 's/Keyfingerprint=//' | tail -1)
 
-SIGNING_KEY=$(echo $SIGNING_KEY|sed 's/[^0-9A-Fa-f]//g')
 if [[ $SIGNING_KEY =~ ^[0-9A-Fa-f]{40}$ ]]; then
     true
 else
@@ -220,19 +219,24 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Updating Native Dockerfile"
+echo "Updating Native Dockerfile and other variables"
 echo "============================================================"
 set -x
-cd ${GEODE_NATIVE}/docker
+cd ${GEODE_NATIVE}
 git pull -r
 set +x
-sed -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
-    -i.bak Dockerfile
-rm Dockerfile.bak
+if [ -r .travis.yml ] ; then
+  sed -e "s/geode-native-build:[latest0-9.]*/geode-native-build:${VERSION}/" \
+      -i.bak .travis.yml
+fi
+sed -e "s/GEODE_VERSION=.*/GEODE_VERSION=${VERSION}/" \
+       "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
+    -i.bak $(git grep -l GEODE_VERSION= ; git grep -l 'ENV GEODE_VERSION')
+rm $(find . -name '*.bak')
 set -x
-git add Dockerfile
+git add .
 git diff --staged --color | cat
-git commit -m "update Dockerfile to apache-geode ${VERSION}"
+git commit -m "update Dockerfile and other variables to apache-geode ${VERSION}"
 git push
 set +x
 
@@ -284,35 +288,6 @@ docker push apachegeode/geode-native-build:${VERSION}
 set +x
 
 
-echo ""
-echo "============================================================"
-echo "Setting Geode version for geode-native"
-echo "============================================================"
-set -x
-cd ${GEODE_NATIVE}
-git pull
-set +x
-
-#.travis.yml
-# DOCKER_IMAGE="apachegeode/geode-native-build:latest"
-#.lgtm.yml
-# GEODE_VERSION=1.12.0
-
-sed -e "s/geode-native-build:[latest0-9.]*/geode-native-build:${VERSION}/" \
-    -e "s/GEODE_VERSION=[0-9.]*/GEODE_VERSION=${VERSION}/" \
-    -i.bak .travis.yml .lgtm.yml
-
-rm .travis.yml.bak .lgtm.yml.bak
-set -x
-git add .
-if [ $(git diff --staged | wc -l) -gt 0 ] ; then
-  git diff --staged --color | cat
-  git commit -m "Bumping Geode version to ${VERSION} for CI"
-  git push -u origin
-fi
-set +x
-
-
 if [ -z "$LATER" ] ; then
   echo ""
   echo "============================================================"
@@ -321,20 +296,21 @@ if [ -z "$LATER" ] ; then
   set -x
   cd ${GEODE_NATIVE_DEVELOP}
   git pull
+  git remote add myfork git@github.com:${GITHUB_USER}/geode-native.git || true
+  git checkout -b update-to-geode-${VERSION}
   set +x
 
-  sed -e "s/geode-native-build:[latest0-9.]*/geode-native-build:latest/" \
-      -e "s/GEODE_VERSION=[0-9.]*/GEODE_VERSION=${VERSION}/" \
+  sed -e "s/GEODE_VERSION=[0-9.]*/GEODE_VERSION=${VERSION}/" \
       -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
-      -i.bak .travis.yml .lgtm.yml docker/Dockerfile
+      -i.bak $(git grep -l GEODE_VERSION= ; git grep -l 'ENV GEODE_VERSION')
 
-  rm .travis.yml.bak .lgtm.yml.bak docker/Dockerfile.bak
+  rm $(find . -name '*.bak')
   set -x
   git add .
   if [ $(git diff --staged | wc -l) -gt 0 ] ; then
     git diff --staged --color | cat
     git commit -m "Bumping Geode version to ${VERSION} for CI"
-    git push -u origin
+    git push -u myfork
   fi
   set +x
 fi
@@ -440,6 +416,7 @@ echo "Updating 'old' versions on support/$VERSION_MM"
 echo "============================================================"
 set -x
 cd ${GEODE}
+git checkout support/${VERSION_MM}
 git pull
 set +x
 #add at the end as this release will always be the latest on this branch
@@ -490,6 +467,7 @@ echo "Next steps:"
 echo "1. Click 'Release' in http://repository.apache.org/ (if you haven't already)"
 [ -n "$LATER" ] || echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-geode-${VERSION} and submit the pull request"
 echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
+[ -n "$LATER" ] || echo "3b.Go to https://github.com/${GITHUB_USER}/geode-native/pull/new/update-to-geode-${VERSION} and create the pull request"
 [ -n "$LATER" ] && tag=":${VERSION}" || tag=""
 echo "4. Validate docker image: docker run -it apachegeode/geode${tag}"
 echo "5. Bulk-transition JIRA issues fixed in this release to Closed"
@@ -506,7 +484,7 @@ PATCH="${VERSION##*.}"
 M=$(date --date '+18 months' '+%a, %B %d %Y' 2>/dev/null || date -v +9m "+%a, %B %d %Y" 2>/dev/null || echo "18 months from now")
 [ "${PATCH}" -ne 0 ] || echo "11. Mark your calendar for $M (assuming we release Geode ${MAJOR}.$((MINOR + 3)) on that day) to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
 [ "${PATCH}" -ne 0 ] || [ -n "$LATER" ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
-[ -z "$LATER" ] || echo "Manually add '${VERSION}' to settings.gradle in all later support branches"
+echo "If there are any support branches between ${VERSION_MM} and develop, manually cherry-pick '${VERSION}' bumps to those branches of geode and geode-native."
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
 echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 )) -s"
 echo 'Finally, send announce email!'
