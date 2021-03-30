@@ -317,9 +317,6 @@ public class Connection implements Runnable {
   /** the buffer used for message receipt */
   private ByteBuffer inputBuffer;
 
-  /** Lock used to protect the input buffer */
-  public final Object inputBufferLock = new Object();
-
   /** the length of the next message to be dispatched */
   private int messageLength;
 
@@ -866,11 +863,18 @@ public class Connection implements Runnable {
   }
 
   private void prepareForAsyncClose() {
+    if (hasBlockedReaderThread()) {
+      readerThread.interrupt();
+    }
+  }
+
+  /**
+   * Check to see if the readerThread, if it exists, is blocked reading from the socket
+   */
+  private boolean hasBlockedReaderThread() {
     synchronized (stateLock) {
-      if (readerThread != null && isRunning && !readerShuttingDown
-          && (connectionState == STATE_READING || connectionState == STATE_READING_ACK)) {
-        readerThread.interrupt();
-      }
+      return readerThread != null && isRunning && !readerShuttingDown
+          && (connectionState == STATE_READING || connectionState == STATE_READING_ACK);
     }
   }
 
@@ -1358,10 +1362,13 @@ public class Connection implements Runnable {
         }
         // make sure our socket is closed
         asyncClose(false);
-        if (!isReceiver && !hasResidualReaderThread()) {
-          // receivers release the input buffer when exiting run(). Senders use the
-          // inputBuffer for reading direct-reply responses
-          releaseInputBuffer();
+        // if there isn't another thread that will release the input buffer we need to do it here
+        synchronized (stateLock) {
+          if (!isReceiver && !hasResidualReaderThread() && !hasBlockedReaderThread()) {
+            // receivers and handshake readers release the input buffer when exiting run(). Senders
+            // use the inputBuffer for reading direct-reply responses.
+            releaseInputBuffer();
+          }
         }
         lengthSet = false;
       }
@@ -1504,7 +1511,6 @@ public class Connection implements Runnable {
         }
       }
 
-      releaseInputBuffer();
 
       // make sure that if the reader thread exits we notify a thread waiting for the handshake.
       logger.info("BRUCE: in connection.run, notifying handshake waiter of failure");
@@ -1512,13 +1518,14 @@ public class Connection implements Runnable {
       readerThread.setName("unused p2p reader");
       synchronized (stateLock) {
         isRunning = false;
+        releaseInputBuffer();
         readerThread = null;
       }
     }
   }
 
   private void releaseInputBuffer() {
-    synchronized (inputBufferLock) {
+    synchronized (stateLock) {
       ByteBuffer tmp = inputBuffer;
       if (tmp != null) {
         inputBuffer = null;
