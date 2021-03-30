@@ -76,7 +76,7 @@ The <%=vars.product_name%> APIs compatible with Redis currently supports the fol
 -   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE
 -   **Server**: SLOWLOG, INFO
 -   **Sets**: SADD, SMEMBERS, SREM
--   **Strings**: APPEND, DECR, GET, GETRANGE, INCR, INCRBY, INCRBYFLOAT, MGET, SET, SETNX, STRLEN
+-   **Strings**: APPEND, DECR, DECRBY, GET, GETRANGE, INCR, INCRBY, INCRBYFLOAT, MGET, SET, SETNX, STRLEN
 
 The following Redis commands are **unsupported** by <%=vars.produce_name%>'s APIs compatible with Redis. Unsupported
 commands are available to use, but have not been fully tested. There is no guarantee they will work
@@ -87,7 +87,7 @@ exactly as expected.
 -   **Server**: DBSIZE, FLUSHALL (no async option), FLUSHDB (no async option), SHUTDOWN, TIME
 -   **Sets**: SCARD, SDIFF, SDIFFSTORE, SINTER, SINTERSTORE, SISMEMBER, SMOVE, SPOP, SRANDMEMBER,
   SSCAN, SUNION, SUNIONSTORE
--   **Strings**: BITCOUNT, BITOP, BITPOS, DECRBY, GETBIT, GETSET, MSET, MSETNX, PSETEX, SETBIT, SETEX, SETRANGE
+-   **Strings**: BITCOUNT, BITOP, BITPOS, GETBIT, GETSET, MSET, MSETNX, PSETEX, SETBIT, SETEX, SETRANGE
 
 
 If you already have some Geode servers running that are compatible with Redis, you can execute the
