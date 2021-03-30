@@ -99,7 +99,7 @@ public class ParallelGatewaySenderImplTest {
 
   @Test
   public void whenStoppedTwiceCloseInTimeWithGroupTransactionEventsPreStopWaitsTwice() {
-    attrs.groupTransactionEvents = true;
+    attrs.setGroupTransactionEvents(true);
     gatewaysender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
     gatewaysender.start();
 
