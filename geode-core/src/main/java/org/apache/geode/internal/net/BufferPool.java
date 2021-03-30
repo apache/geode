@@ -22,7 +22,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -102,19 +101,20 @@ public class BufferPool {
     ByteBuffer result;
 
     if (useDirectBuffers) {
-      if (size <= MEDIUM_BUFFER_SIZE) {
-        result = acquirePredefinedFixedBuffer(send, size);
-      } else {
-        result = acquireLargeBuffer(send, size);
-      }
-      if (result.capacity() > size) {
-        result.position(0).limit(size);
-        result = result.slice();
-      }
-      return result;
+      result = ByteBuffer.allocateDirect(size);
+      // if (size <= MEDIUM_BUFFER_SIZE) {
+      // result = acquirePredefinedFixedBuffer(send, size);
+      // } else {
+      // result = acquireLargeBuffer(send, size);
+      // }
+      // if (result.capacity() > size) {
+      // result.position(0).limit(size);
+      // result = result.slice();
+      // }
+      // return result;
+    } else {
+      result = ByteBuffer.allocate(size);
     }
-    // if we are using heap buffers then don't bother with keeping them around
-    result = ByteBuffer.allocate(size);
     updateBufferStats(size, send, false);
     return result;
   }
@@ -306,19 +306,19 @@ public class BufferPool {
    * Releases a previously acquired buffer.
    */
   private void releaseBuffer(ByteBuffer buffer, boolean send) {
-    if (buffer.isDirect()) {
-      buffer = getPoolableBuffer(buffer);
-      BBSoftReference bbRef = new BBSoftReference(buffer, send);
-      if (buffer.capacity() <= SMALL_BUFFER_SIZE) {
-        bufferSmallQueue.offer(bbRef);
-      } else if (buffer.capacity() <= MEDIUM_BUFFER_SIZE) {
-        bufferMiddleQueue.offer(bbRef);
-      } else {
-        bufferLargeQueue.offer(bbRef);
-      }
-    } else {
-      updateBufferStats(-buffer.capacity(), send, false);
-    }
+    // if (buffer.isDirect()) {
+    // buffer = getPoolableBuffer(buffer);
+    // BBSoftReference bbRef = new BBSoftReference(buffer, send);
+    // if (buffer.capacity() <= SMALL_BUFFER_SIZE) {
+    // bufferSmallQueue.offer(bbRef);
+    // } else if (buffer.capacity() <= MEDIUM_BUFFER_SIZE) {
+    // bufferMiddleQueue.offer(bbRef);
+    // } else {
+    // bufferLargeQueue.offer(bbRef);
+    // }
+    // } else {
+    updateBufferStats(-buffer.capacity(), send, false);
+    // }
   }
 
   /**
@@ -332,33 +332,33 @@ public class BufferPool {
    */
   @VisibleForTesting
   public ByteBuffer getPoolableBuffer(ByteBuffer buffer) {
-    if (!buffer.isDirect()) {
-      return buffer;
-    }
-    ByteBuffer result = buffer;
-    if (parentOfSliceMethod == null) {
-      Class clazz = buffer.getClass();
-      try {
-        Method method = clazz.getMethod("attachment");
-        method.setAccessible(true);
-        parentOfSliceMethod = method;
-      } catch (Exception e) {
-        throw new InternalGemFireException("unable to retrieve underlying byte buffer", e);
-      }
-    }
-    try {
-      Object attachment = parentOfSliceMethod.invoke(buffer);
-      if (attachment instanceof ByteBuffer) {
-        result = (ByteBuffer) attachment;
-      } else if (attachment != null) {
-        throw new InternalGemFireException(
-            "direct byte buffer attachment was not a byte buffer but a " +
-                attachment.getClass().getName());
-      }
-    } catch (Exception e) {
-      throw new InternalGemFireException("unable to retrieve underlying byte buffer", e);
-    }
-    return result;
+    // if (!buffer.isDirect()) {
+    return buffer;
+    // }
+    // ByteBuffer result = buffer;
+    // if (parentOfSliceMethod == null) {
+    // Class clazz = buffer.getClass();
+    // try {
+    // Method method = clazz.getMethod("attachment");
+    // method.setAccessible(true);
+    // parentOfSliceMethod = method;
+    // } catch (Exception e) {
+    // throw new InternalGemFireException("unable to retrieve underlying byte buffer", e);
+    // }
+    // }
+    // try {
+    // Object attachment = parentOfSliceMethod.invoke(buffer);
+    // if (attachment instanceof ByteBuffer) {
+    // result = (ByteBuffer) attachment;
+    // } else if (attachment != null) {
+    // throw new InternalGemFireException(
+    // "direct byte buffer attachment was not a byte buffer but a " +
+    // attachment.getClass().getName());
+    // }
+    // } catch (Exception e) {
+    // throw new InternalGemFireException("unable to retrieve underlying byte buffer", e);
+    // }
+    // return result;
   }
 
   /**
