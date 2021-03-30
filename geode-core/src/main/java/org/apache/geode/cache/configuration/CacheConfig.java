@@ -2690,9 +2690,7 @@ public class CacheConfig {
     }
 
     public boolean areGatewayEventFiltersUpdated() {
-      if (gatewayEventFilters == null)
-        return false;
-      return true;
+      return gatewayEventFilters != null;
     }
 
     /**

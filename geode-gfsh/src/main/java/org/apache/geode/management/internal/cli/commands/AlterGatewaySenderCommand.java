@@ -222,7 +222,6 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
     }
 
     Set<String> groups = ccService.getGroups();
-    gwsender = null;
 
     for (String group : groups) {
       List<CacheConfig.GatewaySender> gwSendersList =

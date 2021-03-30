@@ -88,20 +88,6 @@ public class GatewaySenderAttributes {
   private boolean enforceThreadsConnectSameReceiver =
       GatewaySender.DEFAULT_ENFORCE_THREADS_CONNECT_SAME_RECEIVER;
 
-  // Added due to "alter gateway-sender" command
-
-  private boolean modifyAlertThreshold = false;
-
-  private boolean modifyBatchSize = false;
-
-  private boolean modifyBatchTimeInterval = false;
-
-  private boolean modifyGroupTransactionEvents = false;
-
-  private boolean modifyGatewayEventFilter = false;
-
-  private boolean modifyGatewayTransportFilter = false;
-
   public void setSocketBufferSize(int bufferSize) {
     socketBufferSize = bufferSize;
   }
@@ -200,30 +186,6 @@ public class GatewaySenderAttributes {
 
   public void setEnforceThreadsConnectSameReceiver(boolean enforcethreadsconnectsamereceiver) {
     enforceThreadsConnectSameReceiver = enforcethreadsconnectsamereceiver;
-  }
-
-  public void setModifyAlertThreshold(boolean modify) {
-    modifyAlertThreshold = modify;
-  }
-
-  public void setModifyBatchSize(boolean modify) {
-    modifyBatchSize = modify;
-  }
-
-  public void setModifyBatchTimeInterval(boolean modify) {
-    modifyBatchTimeInterval = modify;
-  }
-
-  public void setModifyGroupTransactionEvents(boolean modify) {
-    modifyGroupTransactionEvents = modify;
-  }
-
-  public void setModifyGatewayEventFilter(boolean modify) {
-    modifyGatewayEventFilter = modify;
-  }
-
-  public void setModifyGatewayTransportFilter(boolean modify) {
-    modifyGatewayTransportFilter = modify;
   }
 
   public int getSocketBufferSize() {
@@ -348,32 +310,6 @@ public class GatewaySenderAttributes {
 
   public boolean getEnforceThreadsConnectSameReceiver() {
     return this.enforceThreadsConnectSameReceiver;
-  }
-
-  // Added due to "alter gateway-sender" command
-
-  public boolean modifyAlertThreshold() {
-    return this.modifyAlertThreshold;
-  }
-
-  public boolean modifyBatchSize() {
-    return this.modifyBatchSize;
-  }
-
-  public boolean modifyBatchTimeInterval() {
-    return this.modifyBatchTimeInterval;
-  }
-
-  public boolean modifyGroupTransactionEvents() {
-    return this.modifyGroupTransactionEvents;
-  }
-
-  public boolean modifyGatewayEventFilter() {
-    return this.modifyGatewayEventFilter;
-  }
-
-  public boolean modifyGatewayTransportFilter() {
-    return this.modifyGatewayTransportFilter;
   }
 
 }
