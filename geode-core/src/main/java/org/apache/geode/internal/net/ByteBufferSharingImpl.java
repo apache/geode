@@ -31,7 +31,7 @@ import org.apache.geode.internal.net.BufferPool.BufferType;
  * {@link ByteBuffer}) is available (for reading and modification) in the scope of the
  * try-with-resources.
  */
-class ByteBufferSharingImpl implements ByteBufferSharing {
+public class ByteBufferSharingImpl implements ByteBufferSharing {
 
   static class OpenAttemptTimedOut extends Exception {
   }
@@ -53,7 +53,7 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
    * This constructor acquires no lock. The reference count will be 1 after this constructor
    * completes.
    */
-  ByteBufferSharingImpl(final ByteBuffer buffer, final BufferType bufferType,
+  public ByteBufferSharingImpl(final ByteBuffer buffer, final BufferType bufferType,
       final BufferPool bufferPool) {
     this.buffer = buffer;
     this.bufferType = bufferType;
@@ -66,7 +66,7 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
   /**
    * The destructor. Called by the resource owner to undo the work of the constructor.
    */
-  void destruct() {
+  public void destruct() {
     if (isDestructed.compareAndSet(false, true)) {
       dropReference();
     }
@@ -80,7 +80,7 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
    * That caller binds that reference to a variable in a try-with-resources statement and relies on
    * the AutoCloseable protocol to invoke {@link #close()} on the object at the end of the block.
    */
-  ByteBufferSharing open() throws IOException {
+  public ByteBufferSharing open() throws IOException {
     lock.lock();
     addReferenceAfterLock();
     return this;
@@ -89,7 +89,7 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
   /**
    * This variant throws {@link OpenAttemptTimedOut} if it can't acquire the lock in time.
    */
-  ByteBufferSharing open(final long time, final TimeUnit unit)
+  public ByteBufferSharing open(final long time, final TimeUnit unit)
       throws OpenAttemptTimedOut, IOException {
     try {
       if (!lock.tryLock(time, unit)) {
@@ -114,6 +114,11 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
   @Override
   public ByteBuffer expandWriteBufferIfNeeded(final int newCapacity) throws IOException {
     return buffer = bufferPool.expandWriteBufferIfNeeded(bufferType, getBuffer(), newCapacity);
+  }
+
+  @Override
+  public ByteBuffer expandReadBufferIfNeeded(final int newCapacity) throws IOException {
+    return buffer = bufferPool.expandReadBufferIfNeeded(bufferType, getBuffer(), newCapacity);
   }
 
   @Override

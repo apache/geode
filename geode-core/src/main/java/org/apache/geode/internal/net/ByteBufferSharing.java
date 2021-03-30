@@ -47,6 +47,8 @@ public interface ByteBufferSharing extends AutoCloseable {
    */
   ByteBuffer expandWriteBufferIfNeeded(final int newCapacity) throws IOException;
 
+  ByteBuffer expandReadBufferIfNeeded(final int newCapacity) throws IOException;
+
   /**
    * Override {@link AutoCloseable#close()} without throws clause since we don't need one.
    */

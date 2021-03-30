@@ -82,6 +82,7 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.ByteBufferSharing;
+import org.apache.geode.internal.net.ByteBufferSharingImpl;
 import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.NioPlainEngine;
 import org.apache.geode.internal.net.SocketCreator;
@@ -315,10 +316,7 @@ public class Connection implements Runnable {
   private String ackThreadName;
 
   /** the buffer used for message receipt */
-  private ByteBuffer inputBuffer;
-
-  /** Lock used to protect the input buffer */
-  public final Object inputBufferLock = new Object();
+  private ByteBufferSharingImpl inputSharing;
 
   /** the length of the next message to be dispatched */
   private int messageLength;
@@ -506,6 +504,7 @@ public class Connection implements Runnable {
       socket.setKeepAlive(true);
       setSendBufferSize(socket, SMALL_BUFFER_SIZE);
       setReceiveBufferSize(socket);
+      initializeInputSharing();
     } catch (SocketException e) {
       // unable to get the settings we want. Don't log an error because it will likely happen a lot
     }
@@ -1190,6 +1189,8 @@ public class Connection implements Runnable {
 
         channel.socket().connect(addr, connectTime);
 
+        initializeInputSharing();
+
         createIoFilter(channel, true);
 
       } catch (NullPointerException e) {
@@ -1361,7 +1362,7 @@ public class Connection implements Runnable {
         if (!isReceiver && !hasResidualReaderThread()) {
           // receivers release the input buffer when exiting run(). Senders use the
           // inputBuffer for reading direct-reply responses
-          releaseInputBuffer();
+          inputSharing.close();
         }
         lengthSet = false;
       }
@@ -1502,8 +1503,6 @@ public class Connection implements Runnable {
         }
       }
 
-      releaseInputBuffer();
-
       // make sure that if the reader thread exits we notify a thread waiting for the handshake.
       notifyHandshakeWaiter(false);
       readerThread.setName("unused p2p reader");
@@ -1511,16 +1510,8 @@ public class Connection implements Runnable {
         isRunning = false;
         readerThread = null;
       }
-    }
-  }
 
-  private void releaseInputBuffer() {
-    synchronized (inputBufferLock) {
-      ByteBuffer tmp = inputBuffer;
-      if (tmp != null) {
-        inputBuffer = null;
-        getBufferPool().releaseReceiveBuffer(tmp);
-      }
+      inputSharing.close();
     }
   }
 
@@ -1591,8 +1582,6 @@ public class Connection implements Runnable {
     // we should not change the state of the connection if we are a handshake reader thread
     // as there is a race between this thread and the application thread doing direct ack
     boolean handshakeHasBeenRead = false;
-    // if we're using SSL/TLS the input buffer may already have data to process
-    boolean skipInitialRead = getInputBuffer().position() > 0;
     final ThreadsMonitoring threadMonitoring = getThreadMonitoring();
     final AbstractExecutor threadMonitorExecutor =
         threadMonitoring.createAbstractExecutor(P2PReaderExecutor);
@@ -1618,35 +1607,39 @@ public class Connection implements Runnable {
         }
 
         try {
-          ByteBuffer buff = getInputBuffer();
-          synchronized (stateLock) {
-            connectionState = STATE_READING;
-          }
-          int amountRead;
-          if (!isInitialRead) {
-            amountRead = channel.read(buff);
-          } else {
-            isInitialRead = false;
-            if (!skipInitialRead) {
+          try (final ByteBufferSharing inputSharing = shareInputBuffer()) {
+            final ByteBuffer buff = inputSharing.getBuffer();
+            synchronized (stateLock) {
+              connectionState = STATE_READING;
+            }
+            final int amountRead;
+            if (!isInitialRead) {
               amountRead = channel.read(buff);
             } else {
-              amountRead = buff.position();
+              isInitialRead = false;
+              // if we're using SSL/TLS the input buffer may already have data to process
+              final boolean skipInitialRead = buff.position() > 0;
+              if (!skipInitialRead) {
+                amountRead = channel.read(buff);
+              } else {
+                amountRead = buff.position();
+              }
             }
-          }
-          synchronized (stateLock) {
-            connectionState = STATE_IDLE;
-          }
-          if (amountRead == 0) {
-            continue;
-          }
-          if (amountRead < 0) {
-            readerShuttingDown = true;
-            try {
-              requestClose("SocketChannel.read returned EOF");
-            } catch (Exception e) {
-              // ignore - shutting down
+            synchronized (stateLock) {
+              connectionState = STATE_IDLE;
             }
-            return;
+            if (amountRead == 0) {
+              continue;
+            }
+            if (amountRead < 0) {
+              readerShuttingDown = true;
+              try {
+                requestClose("SocketChannel.read returned EOF");
+              } catch (Exception e) {
+                // ignore - shutting down
+              }
+              return;
+            }
           }
           processInputBuffer(threadMonitorExecutor);
 
@@ -1744,23 +1737,20 @@ public class Connection implements Runnable {
           getConduit().getSocketCreator().createSSLEngine(address.getHostString(),
               address.getPort(), clientSocket);
 
-      int packetBufferSize = engine.getSession().getPacketBufferSize();
-      if (inputBuffer == null || inputBuffer.capacity() < packetBufferSize) {
-        // TLS has a minimum input buffer size constraint
-        if (inputBuffer != null) {
-          getBufferPool().releaseReceiveBuffer(inputBuffer);
-        }
-        inputBuffer = getBufferPool().acquireDirectReceiveBuffer(packetBufferSize);
-      }
+      final int packetBufferSize = engine.getSession().getPacketBufferSize();
+      inputSharing.expandReadBufferIfNeeded(packetBufferSize);
       if (channel.socket().getReceiveBufferSize() < packetBufferSize) {
         channel.socket().setReceiveBufferSize(packetBufferSize);
       }
       if (channel.socket().getSendBufferSize() < packetBufferSize) {
         channel.socket().setSendBufferSize(packetBufferSize);
       }
-      ioFilter = getConduit().getSocketCreator().handshakeSSLSocketChannel(channel, engine,
-          getConduit().idleConnectionTimeout, clientSocket, inputBuffer,
-          getBufferPool());
+      try (final ByteBufferSharing inputSharing = shareInputBuffer()) {
+        final ByteBuffer inputBuffer = inputSharing.getBuffer();
+        ioFilter = getConduit().getSocketCreator().handshakeSSLSocketChannel(channel, engine,
+            getConduit().idleConnectionTimeout, clientSocket, inputBuffer,
+            getBufferPool());
+      }
     } else {
       ioFilter = new NioPlainEngine(getBufferPool());
     }
@@ -2643,17 +2633,21 @@ public class Connection implements Runnable {
   }
 
   /**
-   * gets the buffer for receiving message length bytes
+   * Called from constructors to initialize inputSharing
    */
-  private ByteBuffer getInputBuffer() {
-    if (inputBuffer == null) {
-      int allocSize = recvBufferSize;
-      if (allocSize == -1) {
-        allocSize = owner.getConduit().tcpBufferSize;
-      }
-      inputBuffer = getBufferPool().acquireDirectReceiveBuffer(allocSize);
+  private void initializeInputSharing() {
+    int allocSize = recvBufferSize;
+    if (allocSize == -1) {
+      allocSize = owner.getConduit().tcpBufferSize;
     }
-    return inputBuffer;
+    inputSharing = new ByteBufferSharingImpl(
+        getBufferPool().acquireDirectReceiveBuffer(allocSize),
+        BufferPool.BufferType.TRACKED_RECEIVER,
+        getBufferPool());
+  }
+
+  private ByteBufferSharing shareInputBuffer() throws IOException {
+    return inputSharing.open();
   }
 
   /**
@@ -2764,73 +2758,78 @@ public class Connection implements Runnable {
    */
   private void processInputBuffer(AbstractExecutor threadMonitorExecutor)
       throws ConnectionException, IOException {
-    inputBuffer.flip();
 
-    try (final ByteBufferSharing sharedBuffer = ioFilter.unwrap(inputBuffer)) {
-      final ByteBuffer peerDataBuffer = sharedBuffer.getBuffer();
+    try (final ByteBufferSharing inputSharing = shareInputBuffer()) {
+      final ByteBuffer inputBuffer = inputSharing.getBuffer();
 
-      peerDataBuffer.flip();
+      inputBuffer.flip();
 
-      boolean done = false;
+      try (final ByteBufferSharing sharedBuffer = ioFilter.unwrap(inputBuffer)) {
+        final ByteBuffer peerDataBuffer = sharedBuffer.getBuffer();
 
-      while (!done && connected) {
-        owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
-        int remaining = peerDataBuffer.remaining();
-        if (lengthSet || remaining >= MSG_HEADER_BYTES) {
-          if (!lengthSet) {
-            if (readMessageHeader(peerDataBuffer)) {
-              break;
-            }
-          }
-          if (remaining >= messageLength + MSG_HEADER_BYTES) {
-            lengthSet = false;
-            peerDataBuffer.position(peerDataBuffer.position() + MSG_HEADER_BYTES);
-            // don't trust the message deserialization to leave the position in
-            // the correct spot. Some of the serialization uses buffered
-            // streams that can leave the position at the wrong spot
-            int startPos = peerDataBuffer.position();
-            int oldLimit = peerDataBuffer.limit();
-            peerDataBuffer.limit(startPos + messageLength);
+        peerDataBuffer.flip();
 
-            if (handshakeRead) {
-              try {
-                readMessage(peerDataBuffer, threadMonitorExecutor);
-              } catch (SerializationException e) {
-                logger.info("input buffer startPos {} oldLimit {}", startPos, oldLimit);
-                throw e;
+        boolean done = false;
+
+        while (!done && connected) {
+          owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
+          int remaining = peerDataBuffer.remaining();
+          if (lengthSet || remaining >= MSG_HEADER_BYTES) {
+            if (!lengthSet) {
+              if (readMessageHeader(peerDataBuffer)) {
+                break;
               }
+            }
+            if (remaining >= messageLength + MSG_HEADER_BYTES) {
+              lengthSet = false;
+              peerDataBuffer.position(peerDataBuffer.position() + MSG_HEADER_BYTES);
+              // don't trust the message deserialization to leave the position in
+              // the correct spot. Some of the serialization uses buffered
+              // streams that can leave the position at the wrong spot
+              int startPos = peerDataBuffer.position();
+              int oldLimit = peerDataBuffer.limit();
+              peerDataBuffer.limit(startPos + messageLength);
+
+              if (handshakeRead) {
+                try {
+                  readMessage(peerDataBuffer, threadMonitorExecutor);
+                } catch (SerializationException e) {
+                  logger.info("input buffer startPos {} oldLimit {}", startPos, oldLimit);
+                  throw e;
+                }
+              } else {
+                try (ByteBufferInputStream bbis = new ByteBufferInputStream(peerDataBuffer);
+                    DataInputStream dis = new DataInputStream(bbis)) {
+                  if (!isReceiver) {
+                    // we read the handshake and then stop processing since we don't want
+                    // to process the input buffer anymore in a handshake thread
+                    readHandshakeForSender(dis, peerDataBuffer);
+                    return;
+                  }
+                  if (readHandshakeForReceiver(dis)) {
+                    ioFilter.doneReading(peerDataBuffer);
+                    return;
+                  }
+                }
+              }
+              if (!connected) {
+                continue;
+              }
+              accessed();
+              peerDataBuffer.limit(oldLimit);
+              peerDataBuffer.position(startPos + messageLength);
             } else {
-              try (ByteBufferInputStream bbis = new ByteBufferInputStream(peerDataBuffer);
-                  DataInputStream dis = new DataInputStream(bbis)) {
-                if (!isReceiver) {
-                  // we read the handshake and then stop processing since we don't want
-                  // to process the input buffer anymore in a handshake thread
-                  readHandshakeForSender(dis, peerDataBuffer);
-                  return;
-                }
-                if (readHandshakeForReceiver(dis)) {
-                  ioFilter.doneReading(peerDataBuffer);
-                  return;
-                }
+              done = true;
+              if (getConduit().useSSL()) {
+                ioFilter.doneReading(peerDataBuffer);
+              } else {
+                compactOrResizeBuffer(messageLength);
               }
             }
-            if (!connected) {
-              continue;
-            }
-            accessed();
-            peerDataBuffer.limit(oldLimit);
-            peerDataBuffer.position(startPos + messageLength);
           } else {
+            ioFilter.doneReading(peerDataBuffer);
             done = true;
-            if (getConduit().useSSL()) {
-              ioFilter.doneReading(peerDataBuffer);
-            } else {
-              compactOrResizeBuffer(messageLength);
-            }
           }
-        } else {
-          ioFilter.doneReading(peerDataBuffer);
-          done = true;
         }
       }
     }
@@ -3228,28 +3227,23 @@ public class Connection implements Runnable {
         + " local port=" + socket.getLocalPort() + " remote port=" + socket.getPort());
   }
 
-  private void compactOrResizeBuffer(int messageLength) {
-    final int oldBufferSize = inputBuffer.capacity();
-    int allocSize = messageLength + MSG_HEADER_BYTES;
-    if (oldBufferSize < allocSize) {
-      // need a bigger buffer
-      logger.info("Allocating larger network read buffer, new size is {} old size was {}.",
-          allocSize, oldBufferSize);
-      ByteBuffer oldBuffer = inputBuffer;
-      inputBuffer = getBufferPool().acquireDirectReceiveBuffer(allocSize);
-
-      if (oldBuffer != null) {
-        int oldByteCount = oldBuffer.remaining();
-        inputBuffer.put(oldBuffer);
-        inputBuffer.position(oldByteCount);
-        getBufferPool().releaseReceiveBuffer(oldBuffer);
-      }
-    } else {
-      if (inputBuffer.position() != 0) {
-        inputBuffer.compact();
+  private void compactOrResizeBuffer(int messageLength) throws IOException {
+    try (final ByteBufferSharing inputSharing = shareInputBuffer()) {
+      final ByteBuffer inputBuffer = inputSharing.getBuffer();
+      final int oldBufferSize = inputBuffer.capacity();
+      int allocSize = messageLength + MSG_HEADER_BYTES;
+      if (oldBufferSize < allocSize) {
+        // need a bigger buffer
+        logger.info("Allocating larger network read buffer, new size is {} old size was {}.",
+            allocSize, oldBufferSize);
+        inputSharing.expandReadBufferIfNeeded(allocSize);
       } else {
-        inputBuffer.position(inputBuffer.limit());
-        inputBuffer.limit(inputBuffer.capacity());
+        if (inputBuffer.position() != 0) {
+          inputBuffer.compact();
+        } else {
+          inputBuffer.position(inputBuffer.limit());
+          inputBuffer.limit(inputBuffer.capacity());
+        }
       }
     }
   }

@@ -48,5 +48,10 @@ class ByteBufferSharingNoOp implements ByteBufferSharing {
   }
 
   @Override
+  public ByteBuffer expandReadBufferIfNeeded(final int newCapacity) throws IOException {
+    throw new UnsupportedOperationException("Can't expand buffer when using NioPlainEngine");
+  }
+
+  @Override
   public void close() {}
 }
