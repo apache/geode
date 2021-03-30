@@ -302,6 +302,18 @@ public class CacheManagementDUnitTest implements Serializable {
     });
   }
 
+  @Test
+  public void testVisibleNodes() throws Exception {
+    this.managementTestRule.createMember(this.memberVMs[0]);
+    this.managementTestRule.createMember(this.memberVMs[1]);
+
+    this.memberVMs[1].invoke("visibleNodes", () -> {
+      ManagementService service = this.managementTestRule.getExistingManagementService();
+      MemberMXBean memberMXBean = service.getMemberMXBean();
+      assertThat(memberMXBean.getVisibleNodes()).isEqualTo(2);
+    });
+  }
+
   private void verifyQueryMBeans(final VM managerVM) {
     managerVM.invoke("validateQueryMBeans", () -> {
       SystemManagementService service = this.managementTestRule.getSystemManagementService();
