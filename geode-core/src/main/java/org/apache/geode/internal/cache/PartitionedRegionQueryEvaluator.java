@@ -881,6 +881,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     int retry = 3;
     for (int i = 0; i < retry && (bucketIds.size() != bucketIdsToConsider.size()); i++) {
       bucketIds.clear();
+      nodeToBucketMap.clear();
       for (Integer bucketId : bucketIdsToConsider) {
         InternalDistributedMember primary = getPrimaryBucketOwner(bucketId);
         if (primary != null) {
@@ -945,7 +946,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     return bucketIds;
   }
 
-  private InternalDistributedMember getPrimaryBucketOwner(Integer bid) {
+  InternalDistributedMember getPrimaryBucketOwner(Integer bid) {
     return pr.getBucketPrimary(bid.intValue());
   }
 
