@@ -755,16 +755,16 @@ fromData,37
 toData,37
 
 org/apache/geode/internal/cache/BucketAdvisor$ServerBucketProfile,2
-fromData,23
-toData,23
+fromData,26
+toData,26
 
 org/apache/geode/internal/cache/BucketServerLocation,2
 fromData,39
 toData,39
 
 org/apache/geode/internal/cache/BucketServerLocation66,2
-fromData,93
-toData,91
+fromData,96
+toData,94
 
 org/apache/geode/internal/cache/CacheDistributionAdvisor$CacheProfile,2
 fromData,114
@@ -1339,28 +1339,28 @@ fromData,38
 toData,35
 
 org/apache/geode/internal/cache/partitioned/BecomePrimaryBucketMessage,2
-fromData,27
-toData,27
+fromData,30
+toData,30
 
 org/apache/geode/internal/cache/partitioned/BecomePrimaryBucketMessage$BecomePrimaryBucketReplyMessage,2
 fromData,17
 toData,17
 
 org/apache/geode/internal/cache/partitioned/BucketBackupMessage,2
-fromData,17
-toData,17
+fromData,20
+toData,20
 
 org/apache/geode/internal/cache/partitioned/BucketCountLoadProbe,2
 fromData,1
 toData,1
 
 org/apache/geode/internal/cache/partitioned/BucketProfileUpdateMessage,2
-fromData,48
-toData,45
+fromData,51
+toData,48
 
 org/apache/geode/internal/cache/partitioned/BucketSizeMessage,2
-fromData,17
-toData,17
+fromData,20
+toData,20
 
 org/apache/geode/internal/cache/partitioned/BucketSizeMessage$BucketSizeReplyMessage,2
 fromData,27
@@ -1379,16 +1379,16 @@ fromData,17
 toData,17
 
 org/apache/geode/internal/cache/partitioned/CreateBucketMessage,2
-fromData,27
-toData,27
+fromData,30
+toData,30
 
 org/apache/geode/internal/cache/partitioned/CreateBucketMessage$CreateBucketReplyMessage,2
 fromData,37
 toData,40
 
 org/apache/geode/internal/cache/partitioned/DeposePrimaryBucketMessage,2
-fromData,17
-toData,17
+fromData,20
+toData,20
 
 org/apache/geode/internal/cache/partitioned/DeposePrimaryBucketMessage$DeposePrimaryBucketReplyMessage,2
 fromData,7
@@ -1407,8 +1407,8 @@ fromData,15
 toData,15
 
 org/apache/geode/internal/cache/partitioned/DumpB2NRegion,2
-fromData,27
-toData,27
+fromData,30
+toData,30
 
 org/apache/geode/internal/cache/partitioned/DumpB2NRegion$DumpB2NReplyMessage,2
 fromData,18
@@ -1419,8 +1419,8 @@ fromData,27
 toData,27
 
 org/apache/geode/internal/cache/partitioned/EndBucketCreationMessage,2
-fromData,36
-toData,25
+fromData,39
+toData,28
 
 org/apache/geode/internal/cache/partitioned/FetchBulkEntriesMessage,2
 fromData,68
@@ -1431,12 +1431,12 @@ fromData,41
 toData,41
 
 org/apache/geode/internal/cache/partitioned/FetchEntriesMessage,2
-fromData,17
-toData,17
+fromData,20
+toData,20
 
 org/apache/geode/internal/cache/partitioned/FetchEntriesMessage$FetchEntriesReplyMessage,2
-fromData,75
-toData,75
+fromData,78
+toData,78
 
 org/apache/geode/internal/cache/partitioned/FetchEntryMessage,2
 fromData,15
@@ -1507,24 +1507,24 @@ fromData,18
 toData,15
 
 org/apache/geode/internal/cache/partitioned/ManageBackupBucketMessage,2
-fromData,77
-toData,80
+fromData,80
+toData,83
 
 org/apache/geode/internal/cache/partitioned/ManageBackupBucketMessage$ManageBackupBucketReplyMessage,2
 fromData,27
 toData,27
 
 org/apache/geode/internal/cache/partitioned/ManageBucketMessage,2
-fromData,37
-toData,37
+fromData,40
+toData,40
 
 org/apache/geode/internal/cache/partitioned/ManageBucketMessage$ManageBucketReplyMessage,2
 fromData,27
 toData,27
 
 org/apache/geode/internal/cache/partitioned/MoveBucketMessage,2
-fromData,28
-toData,25
+fromData,31
+toData,28
 
 org/apache/geode/internal/cache/partitioned/MoveBucketMessage$MoveBucketReplyMessage,2
 fromData,17
@@ -1563,8 +1563,8 @@ fromData,18
 toData,15
 
 org/apache/geode/internal/cache/partitioned/PrimaryRequestMessage,2
-fromData,17
-toData,17
+fromData,20
+toData,20
 
 org/apache/geode/internal/cache/partitioned/PrimaryRequestMessage$PrimaryRequestReplyMessage,2
 fromData,17
@@ -1591,8 +1591,8 @@ fromData,64
 toData,61
 
 org/apache/geode/internal/cache/partitioned/RegionAdvisor$BucketProfileAndId,2
-fromData,61
-toData,29
+fromData,64
+toData,32
 
 org/apache/geode/internal/cache/partitioned/RegionAdvisor$PartitionProfile,2
 fromData,54
@@ -1607,8 +1607,8 @@ fromData,28
 toData,25
 
 org/apache/geode/internal/cache/partitioned/RemoveBucketMessage,2
-fromData,27
-toData,27
+fromData,30
+toData,30
 
 org/apache/geode/internal/cache/partitioned/RemoveBucketMessage$RemoveBucketReplyMessage,2
 fromData,17
@@ -1770,8 +1770,8 @@ fromData,10
 toData,41
 
 org/apache/geode/internal/cache/tx/DistTxEntryEvent,2
-fromData,104
-toData,125
+fromData,110
+toData,128
 
 org/apache/geode/internal/cache/tx/RemoteClearMessage,2
 fromData,14
@@ -1907,11 +1907,11 @@ org/apache/geode/internal/cache/wan/GatewaySenderEventImpl,8
 fromData,30
 fromDataPre_GEODE_1_14_0_0,31
 fromDataPre_GEODE_1_15_0_0,62
-fromDataPre_GEODE_1_9_0_0,159
+fromDataPre_GEODE_1_9_0_0,162
 toData,17
 toDataPre_GEODE_1_14_0_0,18
 toDataPre_GEODE_1_15_0_0,59
-toDataPre_GEODE_1_9_0_0,151
+toDataPre_GEODE_1_9_0_0,154
 
 org/apache/geode/internal/cache/wan/GatewaySenderQueueEntrySynchronizationOperation$GatewaySenderQueueEntrySynchronizationEntry,2
 fromData,36

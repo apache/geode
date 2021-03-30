@@ -582,20 +582,15 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * @return - the number of byte taken by this value
    */
   public static int getByteSizeForValue(long id) {
-    final int length;
-
-    // compare threadId to find its range
     if (id <= Byte.MAX_VALUE) {
-      length = 1;
+      return 1;
     } else if (id <= Short.MAX_VALUE) {
-      length = 2;
+      return 2;
     } else if (id <= Integer.MAX_VALUE) {
-      length = 4;
+      return 4;
     } else {
-      length = 8;
+      return 8;
     }
-
-    return length;
   }
 
   /**

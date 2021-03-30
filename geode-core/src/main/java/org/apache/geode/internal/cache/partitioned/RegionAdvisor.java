@@ -1519,7 +1519,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     if (bucs == null) {
       return null;
     }
-    ArrayList<BucketProfileAndId> result = new ArrayList<>(bucs.length);
+    final List<BucketProfileAndId> result = new ArrayList<>(bucs.length);
     for (int i = 0; i < bucs.length; i++) {
       // Fix for 41436 - we need to include buckets that are still initializing here
       // we must start including buckets in this list *before* those buckets exchange
@@ -1529,8 +1529,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         result.add(new BucketProfileAndId(br.getProfile(), BucketId.valueOf(i)));
       }
     }
-    if (result.size() == 0) {
-      result = null;
+    if (result.isEmpty()) {
+      return null;
     }
     return result;
   }
