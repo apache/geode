@@ -105,6 +105,12 @@ public class RestAccessControllerTest {
   private static final String ORDER_CAS_OLD_JSON = "order-cas-old.json";
   private static final String ORDER_CAS_NEW_JSON = "order-cas-new.json";
   private static final String ORDER_CAS_WRONG_OLD_JSON = "order-cas-wrong-old.json";
+  private static final String CUSTOMER_CONTAINING_CHINESE_JSON =
+      "customer-containing-chinese.json";
+  private static final String CUSTOMER_CONTAINING_CHINESE_QUERY_FULL_RESULT_JSON =
+      "customer-containing-chinese-query-full-result.json";
+  private static final String CUSTOMER_CONTAINING_CHINESE_QUERY_STRUCT_RESULT_JSON =
+      "customer-containing-chinese-query-struct-result.json";
 
   private static final String SLASH = "/";
   private static final String KEY_PREFIX = "/?+ @&./";
@@ -167,6 +173,9 @@ public class RestAccessControllerTest {
     loadResource(ORDER_CAS_OLD_JSON);
     loadResource(ORDER_CAS_NEW_JSON);
     loadResource(ORDER_CAS_WRONG_OLD_JSON);
+    loadResource(CUSTOMER_CONTAINING_CHINESE_JSON);
+    loadResource(CUSTOMER_CONTAINING_CHINESE_QUERY_FULL_RESULT_JSON);
+    loadResource(CUSTOMER_CONTAINING_CHINESE_QUERY_STRUCT_RESULT_JSON);
 
     RestAgent.createParameterizedQueryRegion();
 
@@ -1356,6 +1365,39 @@ public class RestAccessControllerTest {
         .andExpect(header().string("Resource-Count", "60"));
   }
 
+
+  @Test
+  @WithMockUser
+  public void putGetQueryCustomerContainingMandarin() throws Exception {
+    // Put customer containing mandarin
+    mockMvc.perform(put("/v1/customers/1")
+        .content(jsonResources.get(CUSTOMER_CONTAINING_CHINESE_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Location", BASE_URL + "/customers/1"));
+
+    // Get customer containing mandarin
+    mockMvc.perform(get("/v1/customers/1")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(content().json(jsonResources.get(CUSTOMER_CONTAINING_CHINESE_JSON)));
+
+    // Query full customer containing mandarin
+    mockMvc.perform(
+        get("/v1/queries/adhoc?q=SELECT * FROM " + SEPARATOR + "customers WHERE customerId = 1")
+            .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(
+            content().json(jsonResources.get(CUSTOMER_CONTAINING_CHINESE_QUERY_FULL_RESULT_JSON)));
+
+    // Query struct customer containing mandarin
+    mockMvc.perform(get("/v1/queries/adhoc?q=SELECT firstName, lastName FROM " + SEPARATOR
+        + "customers WHERE customerId = 1")
+            .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(content()
+            .json(jsonResources.get(CUSTOMER_CONTAINING_CHINESE_QUERY_STRUCT_RESULT_JSON)));
+  }
 
   private void deleteAllQueries() throws Exception {
     MvcResult result = mockMvc.perform(get("/v1/queries")
