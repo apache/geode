@@ -16,10 +16,8 @@ package org.apache.geode.internal.cache.control;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryNotificationInfo;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
-import java.lang.management.MemoryUsage;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +30,6 @@ import javax.management.ListenerNotFoundException;
 import javax.management.Notification;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationListener;
-import javax.management.openmbean.CompositeData;
 
 import org.apache.logging.log4j.Logger;
 
@@ -145,6 +142,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   private final ResourceAdvisor resourceAdvisor;
   private final InternalCache cache;
   private final ResourceManagerStats stats;
+  private final TenuredHeapConsumptionMonitor tenuredHeapConsumptionMonitor;
 
   @MutableForTesting
   private static boolean testDisableMemoryUpdates = false;
@@ -156,6 +154,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
    * names.
    *
    * Package private for testing.
+   * checkTenuredHeapConsumption
    *
    * @param memoryPoolMXBean The memory pool MXBean to check.
    * @return True if the pool name matches a known tenured pool name, false otherwise.
@@ -180,11 +179,13 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   }
 
   HeapMemoryMonitor(final InternalResourceManager resourceManager, final InternalCache cache,
-      final ResourceManagerStats stats) {
+      final ResourceManagerStats stats,
+      TenuredHeapConsumptionMonitor tenuredHeapConsumptionMonitor) {
     this.resourceManager = resourceManager;
     this.resourceAdvisor = (ResourceAdvisor) cache.getDistributionAdvisor();
     this.cache = cache;
     this.stats = stats;
+    this.tenuredHeapConsumptionMonitor = tenuredHeapConsumptionMonitor;
   }
 
   /**
@@ -673,30 +674,12 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
         // Not using the information given by the notification in favor
         // of constructing fresh information ourselves.
         if (!testDisableMemoryUpdates) {
-          try {
-            String notifType = notification.getType();
-            if (notifType.equals(MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED) ||
-                notifType.equals(MemoryNotificationInfo.MEMORY_COLLECTION_THRESHOLD_EXCEEDED)) {
-              // retrieve the memory notification information
-              CompositeData cd = (CompositeData) notification.getUserData();
-              MemoryNotificationInfo info = MemoryNotificationInfo.from(cd);
-              MemoryUsage usage = info.getUsage();
-              long usedBytes = usage.getUsed();
-              logger.info(
-                  "A tenured heap garbage collection has occurred.  New tenured heap consumption: "
-                      +
-                      usedBytes);
-            }
-          } catch (Exception e) {
-            logger.info(
-                "An Exception occureed while attempting to print out tenured heap consumption", e);
-          }
+          tenuredHeapConsumptionMonitor.checkTenuredHeapConsumption(notification);
           updateStateAndSendEvent();
         }
       }
     });
   }
-
 
   protected Set<DistributedMember> getHeapCriticalMembersFrom(
       Set<? extends DistributedMember> members) {
