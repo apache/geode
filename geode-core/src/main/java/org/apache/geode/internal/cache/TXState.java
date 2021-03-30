@@ -101,7 +101,7 @@ public class TXState implements TXStateInterface {
    * this transaction.
    */
   private int modSerialNum;
-  private final List<EntryEventImpl> pendingCallbacks = new ArrayList<EntryEventImpl>();
+  private final List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
   // Access this variable should be in synchronized block.
   private boolean beforeCompletionCalled;
 
@@ -506,7 +506,6 @@ public class TXState implements TXStateInterface {
       List/* <TXEntryStateWithRegionAndKey> */ entries = generateEventOffsets();
       TXCommitMessage msg = null;
       try {
-
         /*
          * In order to preserve data consistency, we need to: 1. Modify the cache first
          * (applyChanges) 2. Ask for advice on who to send to (buildMessage) 3. Send out to other
@@ -514,8 +513,6 @@ public class TXState implements TXStateInterface {
          *
          * If this is done out of order, we will have problems with GII, split brain, and HA.
          */
-
-        attachFilterProfileInformation(entries);
 
         lockTXRegions(regions);
 
@@ -526,6 +523,8 @@ public class TXState implements TXStateInterface {
           if (this.internalAfterApplyChanges != null) {
             this.internalAfterApplyChanges.run();
           }
+
+          attachFilterProfileInformation(entries);
 
           // build and send the message
           msg = buildMessage();
@@ -605,6 +604,18 @@ public class TXState implements TXStateInterface {
               o.es.setFilterRoutingInfo(fri);
               Set set = bucket.getAdjunctReceivers(ev, Collections.EMPTY_SET, new HashSet(), fri);
               o.es.setAdjunctRecipients(set);
+
+              if (o.es.getPendingCallback() != null) {
+                if (fri != null) {
+                  // For tx host, local filter info was also calculated.
+                  // Set this local filter info in corresponding pending callback so that
+                  // notifyBridgeClient has correct routing info.
+                  FilterRoutingInfo.FilterInfo localRouting = fri.getLocalFilterInfo();
+                  o.es.getPendingCallback().setLocalFilterInfo(localRouting);
+                }
+                // do not hold pending callback reference after setting local routing.
+                o.es.setPendingCallback(null);
+              }
             } finally {
               ev.release();
             }
@@ -860,7 +871,11 @@ public class TXState implements TXStateInterface {
         this.internalDuringApplyChanges.run();
       }
       try {
+        int size = pendingCallbacks.size();
         o.es.applyChanges(o.r, o.key, this);
+        if (pendingCallbacks.size() - size == 1) {
+          o.es.setPendingCallback(pendingCallbacks.get(size));
+        }
       } catch (RegionDestroyedException ex) {
         // region was destroyed out from under us; after conflict checking
         // passed. So act as if the region destroy happened right after the
