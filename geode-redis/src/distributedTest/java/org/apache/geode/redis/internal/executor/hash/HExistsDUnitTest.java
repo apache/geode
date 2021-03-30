@@ -116,7 +116,7 @@ public class HExistsDUnitTest {
           jedis1.hset(key, "field-" + i, "value-" + i);
           expectedValues.put("field-" + i, "value-" + i);
         },
-        (i) -> GeodeAwaitility.await().atMost(Duration.ofSeconds(1))
+        (i) -> GeodeAwaitility.await().atMost(Duration.ofSeconds(60))
             .untilAsserted(() -> assertThat(jedis2.hexists(key, "field-" + i)).isTrue()))
                 .runInLockstep();
 
@@ -133,7 +133,7 @@ public class HExistsDUnitTest {
 
     new ConcurrentLoopingThreads(HASH_SIZE,
         (i) -> jedis1.hdel(key, "field-" + i),
-        (i) -> GeodeAwaitility.await().atMost(Duration.ofSeconds(1))
+        (i) -> GeodeAwaitility.await().atMost(Duration.ofSeconds(60))
             .untilAsserted(() -> assertThat(jedis2.hexists(key, "field-" + i)).isFalse()))
                 .runInLockstep();
 
