@@ -27,7 +27,7 @@ sections:
 template_variables:
   product_name_long: Apache Geode
   product_name: Geode
-  product_version: '1.13.2'
+  product_version: '1.13.3'
   product_version_nodot: '113'
   product_version_geode: '1.13'
   min_java_version: '8'
