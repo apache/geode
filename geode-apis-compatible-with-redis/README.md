@@ -174,7 +174,7 @@ start server \
 | HLEN               	| HINCRBY                                            	| BITFIELD                      	|
 | HVALS               	| HINCRBYFLOAT                                       	| BLPOP                         	|
 | INFO               	| HKEYS                                              	| BRPOP                         	|
-| KEYS               	| HSCAN                                              	| BRPOPLPUSH                    	|
+| KEYS               	| HSCAN[3]                                             	| BRPOPLPUSH                    	|
 | PERSIST            	| INCR                                                  | BZPOPMAX                      	|
 | PEXPIRE            	| INCRBY                                                | BZPOPMIN                      	|
 | PEXPIREAT          	| INCRBYFLOAT                                           | CLIENT CACHING                	|
@@ -182,7 +182,7 @@ start server \
 | PSUBSCRIBE         	| MSET                                                 	| CLIENT ID                     	|
 | PTTL               	| MSETNX                                             	| CLIENT KILL                   	|
 | PUNSUBSCRIBE       	| PSETEX                                             	| CLIENT LIST                   	|
-| QUIT               	| SCAN                                               	| CLIENT PAUSE                  	|
+| QUIT               	| SCAN                                              	| CLIENT PAUSE                  	|
 | RENAME             	| SCARD                                                 | CLIENT REPLY                  	|
 | SADD              	| SDIFF                                              	| CLIENT SETNAME                	|
 | SET                   | SDIFFSTORE                                         	| CLIENT TRACKING               	|
@@ -329,9 +329,10 @@ start server \
 |                    	|                                                    	| ZREVRANK                      	|
 |                    	|                                                    	| ZSCAN                         	|
 |                    	|                                                    	| ZSCORE                        	|
-|                    	|                                                    	| ZUNIONSTORE                   	|                   	|
+|                    	|                                                    	| ZUNIONSTORE                   	|
 
 **NOTES:**
 
 [1] - UNLINK is implemented as a synonym to DEL and does not unlink asynchronously.
 [2] - SLOWLOG is implemented as a NoOp.
+[3] - Redis accepts Longs as the cursor index for the HSCAN command. The Geode APIs compatible with Redis only accept Integer values. Values out of the range of the 32-bit integer type will throw a NumberFormatException with a message containing "invalid cursor".
