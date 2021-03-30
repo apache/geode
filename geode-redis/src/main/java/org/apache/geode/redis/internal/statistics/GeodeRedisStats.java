@@ -71,8 +71,8 @@ public class GeodeRedisStats {
         descriptorList.toArray(new StatisticDescriptor[descriptorList.size()]);
 
     type = statisticsTypeFactory
-        .createType("RedisStats",
-            "Statistics for a GemFire Redis Server",
+        .createType("statsForServerCompatibleWithRedis",
+            "Statistics for a Geode server compatible with Redis",
             descriptorArray);
 
     fillCompletedIdMap(type);

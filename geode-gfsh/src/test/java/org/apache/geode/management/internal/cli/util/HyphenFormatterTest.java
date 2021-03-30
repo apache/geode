@@ -227,10 +227,11 @@ public class HyphenFormatterTest {
 
   @Test
   public void optionWithOneHyphenAfterOneJOption() {
-    String cmd = "start server --name=me3 --J=-Dgemfire.jmx-manager=true --redis-port=8080";
+    String cmd =
+        "start server --name=me3 --J=-Dgemfire.jmx-manager=true --compatible-with-redis-port=8080";
     String formattedCmd = this.formatter.formatCommand(cmd);
     String expected =
-        "start server --name=me3 --J=\"-Dgemfire.jmx-manager=true\" --redis-port=8080";
+        "start server --name=me3 --J=\"-Dgemfire.jmx-manager=true\" --compatible-with-redis-port=8080";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
   }
 
@@ -246,10 +247,10 @@ public class HyphenFormatterTest {
   @Test
   public void optionWithOneHyphenAfterTwoJOptions() {
     String cmd =
-        "start server --name=me3 --J=-Dgemfire.jmx-manager=true --J=-Dgemfire.jmx-manager-start=true --redis-port=8080";
+        "start server --name=me3 --J=-Dgemfire.jmx-manager=true --J=-Dgemfire.jmx-manager-start=true --compatible-with-redis-port=8080";
     String formattedCmd = this.formatter.formatCommand(cmd);
     String expected =
-        "start server --name=me3 --J=\"-Dgemfire.jmx-manager=true\" --J=\"-Dgemfire.jmx-manager-start=true\" --redis-port=8080";
+        "start server --name=me3 --J=\"-Dgemfire.jmx-manager=true\" --J=\"-Dgemfire.jmx-manager-start=true\" --compatible-with-redis-port=8080";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
   }
 

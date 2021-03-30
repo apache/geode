@@ -1,4 +1,4 @@
-<% set_title("Redis API for", product_name) %>
+<% set_title(product_name, "APIs Compatible with Redis") %>
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -17,18 +17,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-The Redis API for <%=vars.product_name%> allows <%=vars.product_name%> to function as a drop-in replacement for a
+The <%=vars.product_name%> APIs compatible with Redis allows <%=vars.product_name%> to function as a drop-in replacement for a
 highly-available Redis data store, letting Redis applications take advantage of
 <%=vars.product_name%>’s scaling capabilities without changing their client code. Redis clients connect to a <%=vars.product_name%>
 server in the same way they connect to a Redis server, using a hostname and a port number, with
 optional password authentication.
 
-<img src="../images/redis_api_for_geode.png" class="image" />
+<img src="../images/geode_apis_compatible_with_redis.png" class="image" />
 
-## <a id="using-the-api" class="no-quick-link"></a>Using the Redis API for <%=vars.product_name%>
+## <a id="using-the-api" class="no-quick-link"></a>Using the <%=vars.product_name%> API compatible with Redis
 
-The <%=vars.product_name%> cluster must have at least one server that is set up to handle the incoming Redis
-commands.
+The <%=vars.product_name%> cluster must have at least one server that is set up to handle the incoming Redis commands.
 
 Use gfsh to start at least one server with a command of the form:
 
@@ -36,39 +35,39 @@ Use gfsh to start at least one server with a command of the form:
 start server \
   --name=<serverName> \
   --locators=<locatorPort> \
-  --redis-port=<redisPort> \
-  --redis-bind-address=<redisBindAddress> \
-  --redis-password=<redisPassword>
+  --compatible-with-redis-port=<compatibleWithRedisPort> \
+  --compatible-with-redis-bind-address=<compatibleWithRedisBindAddress> \
+  --compatible-with-redis-password=<compatibleWithRedisPassword>
 ```
 
-If any of the options `redis-bind-address`, `redis-password`, or `redis-port` are included, a compatible-with-Redis Geode server will be started.
+If any of the options `compatible-with-redis-bind-address`, `compatible-with-redis-password`, or `compatible-with-redis-port` are included, a <%=vars.product_name%> server compatible with Redis will be started.
 
 Replace `<serverName>` with the name of your server.
 
 Replace `<locatorPort>` with your locator port.
 
-Replace `<redisPort>` with the port that the <%=vars.product_name%> server listens on for Redis commands. The typical port used with a Redis cluster is 6379.
+Replace `<compatibleWithRedisPort>` with the port that the <%=vars.product_name%> server listens on for Redis commands. The typical port used with a cluster compatible with Redis is 6379.
 
-Replace `<redisBindAddress>` with the address of the server host.
+Replace `<compatibleWithRedisBindAddress>` with the address of the server host.
 
-Replace `<redisPassword>` with the password clients use to authenticate.
+Replace `<compatibleWithWithRedisPassword>` with the password clients use to authenticate.
 
 To confirm the server is listening, run:
 
 ``` pre
-redis-cli -h <redisBindAddress> -p <redisPort> -a <redisPassword> ping
+redis-cli -h <compatibleWithRedisBindAddress> -p <compatibleWithRedisPort> -a <compatibleWithRedisPassword> ping
 ```
 
-Replace `<redisBindAddress>`,`<redisPort>`, and `<redisPassword>` with the same values as the server.
+Replace `<compatibleWithRedisBindAddress>`,`<compatibleWithRedisPort>`, and `<compatibleWithRedisPassword>` with the same values as the server.
 
 If the server is functioning properly, you should see a response of `PONG`.
 
-## <a id="included-commands" class="no-quick-link"></a>Included Redis Commands
+## <a id="supported-commands" class="no-quick-link"></a>Supported Redis Commands
 
-The Redis API for <%=vars.product_name%> currently supports the following commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
+The <%=vars.product_name%> APIs compatible with Redis currently supports the following Redis commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
 
 **Note**: These commands are supported for Redis 5.
-**Note**: SLOWLOG is implemented as a NoOp for compatibility with DataDog.
+**Note**: SLOWLOG is implemented as a NoOp for compatibility with some monitoring tools.
 
 -   **Connection**: AUTH, PING, QUIT
 -   **Hashes**: HDEL, HEXISTS, HGET, HGETALL, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HMSET, HSCAN, HSET, HSETNX, HSTRLEN, HVALS
@@ -79,7 +78,7 @@ The Redis API for <%=vars.product_name%> currently supports the following comman
 -   **Sets**: SADD, SMEMBERS, SREM
 -   **Strings**: APPEND, DECR, GET, GETRANGE, INCR, INCRBY, INCRBYFLOAT, MGET, SET, SETNX, STRLEN
 
-The following Redis API for <%=vars.product_name%> commands are **unsupported**. Unsupported
+The following Redis commands are **unsupported** by <%=vars.produce_name%>'s APIs compatible with Redis. Unsupported
 commands are available to use, but have not been fully tested. There is no guarantee they will work
 exactly as expected.
 
@@ -91,8 +90,8 @@ exactly as expected.
 -   **Strings**: BITCOUNT, BITOP, BITPOS, DECRBY, GETBIT, GETSET, MSET, MSETNX, PSETEX, SETBIT, SETEX, SETRANGE
 
 
-If you already have some Geode servers running with Redis enabled, you can execute the following
-command with gfsh to enable unsupported commands:
+If you already have some Geode servers running that are compatible with Redis, you can execute the
+following command with gfsh to enable unsupported commands:
 
 ```pre
 redis --enable-unsupported-commands
@@ -105,9 +104,9 @@ start server \
   --J=-Denable-redis-unsupported-commands=true \
   --name=<serverName> \
   --locators=<locatorPort> \
-  --redis-port=<redisPort> \
-  --redis-bind-address=<redisBindAddress> \
-  --redis-password=<redisPassword>
+  --compatible-with-redis-port=<compatibleWithRedisPort> \
+  --compatible-with-redis-bind-address=<compatibleWithRedisBindAddress> \
+  --compatible-with-redis-password=<compatibleWithRedisPassword>
 ```
 
 Commands not listed above are **not implemented**.
