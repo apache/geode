@@ -192,12 +192,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   public static int MAXIMUM_SHUTDOWN_WAIT_TIME =
       Integer.getInteger("GatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME", 0).intValue();
 
-  /**
-   * The number of times to peek on shutdown before giving up and shutting down.
-   */
-  protected static final int MAXIMUM_SHUTDOWN_PEEKS =
-      Integer.getInteger("GatewaySender.MAXIMUM_SHUTDOWN_PEEKS", 20).intValue();
-
   public static final int QUEUE_SIZE_THRESHOLD =
       Integer.getInteger("GatewaySender.QUEUE_SIZE_THRESHOLD", 5000).intValue();
 
