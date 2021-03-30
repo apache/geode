@@ -133,7 +133,7 @@ public abstract class ServerConnection implements Runnable {
    * will automatically register with the thread monitor the thread that is processing
    * the request. So no need to create a threadMonitorExecutor.
    */
-  protected AbstractExecutor threadMonitorExecutor;
+  private AbstractExecutor threadMonitorExecutor;
 
   public static ByteBuffer allocateCommBuffer(int size, Socket sock) {
     // I expect that size will almost always be the same value
