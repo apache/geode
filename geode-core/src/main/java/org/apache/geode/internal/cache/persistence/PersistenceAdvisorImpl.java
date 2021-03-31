@@ -514,14 +514,14 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     persistenceAdvisorObserver.observe(regionPath);
 
     boolean equal = false;
-    PersistentMemberID myId = getPersistentID();
     for (Map.Entry<InternalDistributedMember, PersistentMemberState> entry : remoteStates
         .getStateOnPeers().entrySet()) {
       InternalDistributedMember member = entry.getKey();
       PersistentMemberID remoteId = remoteStates.getPersistentIds().get(member);
 
-
+      PersistentMemberID myId = getPersistentID();
       PersistentMemberState stateOnPeer = entry.getValue();
+
       if (PersistentMemberState.REVOKED.equals(stateOnPeer)) {
         throw new RevokedPersistentDataException(
             String.format(
@@ -533,12 +533,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         String message = String.format(
             "Region %s remote member %s with persistent data %s was not part of the same distributed system as the local data from %s",
             regionPath, member, remoteId, myId);
-        replicates.remove(member);
-        if (replicates.isEmpty()) {
-          throw new ConflictingPersistentDataException(message);
-        } else {
-          logger.info(message);
-        }
+        throw new ConflictingPersistentDataException(message);
       }
 
       if (myId != null && stateOnPeer == PersistentMemberState.EQUAL) {
