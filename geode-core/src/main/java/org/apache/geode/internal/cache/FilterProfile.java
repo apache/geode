@@ -1086,10 +1086,6 @@ public class FilterProfile implements DataSerializableFixedID {
     // bug #50809 - local routing for transactional ops must be done here
     // because the event isn't available later and we lose the old value for the entry
 
-    if (event.getOperation() == null) {
-      // A read op with detect read conflicts does not need filter routing.
-      return null;
-    }
     boolean processLocalProfile =
         event.getOperation().isEntry() && ((EntryEvent) event).getTransactionId() != null;
 

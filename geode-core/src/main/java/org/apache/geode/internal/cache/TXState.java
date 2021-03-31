@@ -595,6 +595,10 @@ public class TXState implements TXStateInterface {
             @Released
             EntryEventImpl ev =
                 (EntryEventImpl) o.es.getEvent(o.r, o.key, o.es.getTXRegionState().getTXState());
+            if (ev.getOperation() == null) {
+              // A read op with detect read conflicts does not need filter routing.
+              continue;
+            }
             try {
               /*
                * The routing information is derived from the PR advisor, not the bucket advisor.
@@ -865,16 +869,17 @@ public class TXState implements TXStateInterface {
     }
 
     // applyChanges for each entry
+    int size = pendingCallbacks.size();
     for (Object entry : entries) {
       TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) entry;
       if (this.internalDuringApplyChanges != null) {
         this.internalDuringApplyChanges.run();
       }
       try {
-        int size = pendingCallbacks.size();
         o.es.applyChanges(o.r, o.key, this);
-        if (pendingCallbacks.size() - size == 1) {
+        if (pendingCallbacks.size() > size) {
           o.es.setPendingCallback(pendingCallbacks.get(size));
+          size = pendingCallbacks.size();
         }
       } catch (RegionDestroyedException ex) {
         // region was destroyed out from under us; after conflict checking

@@ -289,9 +289,9 @@ public class PartitionedRegionQueryEvaluatorTest {
 
     Map<InternalDistributedMember, List<Integer>> bnMap = prqe.buildNodeToBucketMap();
 
-    assertThat(bnMap.size()).isEqualTo(bucket1);
+    assertThat(bnMap.size()).isEqualTo(1);
     assertThat(bnMap.get(remoteNodeA).size()).isEqualTo(10);
-    verify(prqe, times(2)).getPrimaryBucketOwner(1);
+    verify(prqe, times(2)).getPrimaryBucketOwner(bucket1);
   }
 
   @Test
@@ -388,7 +388,9 @@ public class PartitionedRegionQueryEvaluatorTest {
 
     assertThat(bnMap.size()).isEqualTo(2);
     bnMap.keySet().forEach(x -> {
-      assertThat(x.equals(remoteNodeA) || x.equals(remoteNodeB)).isTrue();
+      assertThat(x).satisfiesAnyOf(
+          member -> assertThat(member).isEqualTo(remoteNodeA),
+          member -> assertThat(member).isEqualTo(remoteNodeB));
       assertThat(bnMap.get(x).size()).isEqualTo(5);
     });
   }

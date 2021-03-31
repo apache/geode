@@ -99,7 +99,7 @@ public class TXStateTest {
   }
 
   @Test
-  public void attacheFilterProfileAfterApplyingChanges() {
+  public void attachFilterProfileAfterApplyingChanges() {
     TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
     doReturn(new ArrayList()).when(txState).generateEventOffsets();
     doNothing().when(txState).attachFilterProfileInformation(any());
