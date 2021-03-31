@@ -200,7 +200,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     return this.isStopped;
   }
 
-  protected void setIsStopped(boolean isStopped) {
+  public void setIsStopped(boolean isStopped) {
     this.isStopped = isStopped;
     if (isStopped) {
       this.failureLogInterval.clear();
@@ -232,7 +232,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   /**
    * Reset the batch id. This method is not synchronized because this dispatcher is the caller
    */
-  protected void resetBatchId() {
+  public void resetBatchId() {
     this.batchId = 0;
     // dont reset first time when first batch is put for dispatch
     // if (this.batchIdToEventsMap.size() == 1) {
@@ -244,11 +244,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     this.resetLastPeekedEvents = true;
   }
 
-  protected int getBatchSize() {
+  public int getBatchSize() {
     return this.batchSize;
   }
 
-  protected void setBatchSize(int batchSize) {
+  public void setBatchSize(int batchSize) {
     int currentBatchSize = this.batchSize;
     if (batchSize <= 0) {
       this.batchSize = 1;
@@ -267,11 +267,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
    *
    * @return the current batch id to be used to identify the next batch
    */
-  protected int getBatchId() {
+  public int getBatchId() {
     return this.batchId;
   }
 
-  protected boolean isConnectionReset() {
+  public boolean isConnectionReset() {
     return this.resetLastPeekedEvents;
   }
 

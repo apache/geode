@@ -1388,4 +1388,8 @@ public class GatewaySenderEventImpl
       this.value = getSerializedValue();
     }
   }
+
+  public void setAcked(boolean acked) {
+    this.isAcked = isAcked;
+  }
 }
