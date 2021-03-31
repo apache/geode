@@ -335,4 +335,4 @@ start server \
 
 [1] - UNLINK is implemented as a synonym to DEL and does not unlink asynchronously.
 [2] - SLOWLOG is implemented as a NoOp.
-[3] - Redis accepts Longs as the cursor index for the HSCAN command. The Geode APIs compatible with Redis only accept Integer values. Values out of the range of the 32-bit integer type will throw a NumberFormatException with a message containing "invalid cursor".
+[3] - Redis accepts Longs as the parameters for the HSCAN command. The Geode APIs compatible with Redis only accept Integer values. Values out of the range of the 32-bit integer type will throw an exception.
