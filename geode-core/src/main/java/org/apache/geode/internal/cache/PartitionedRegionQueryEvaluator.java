@@ -854,7 +854,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    */
   private Map<InternalDistributedMember, List<Integer>> buildNodeToBucketMapForBuckets(
       final Set<Integer> bucketIdsToConsider) throws QueryException {
-    final HashMap<InternalDistributedMember, List<Integer>> ret = new HashMap();
+    final HashMap<InternalDistributedMember, List<Integer>> ret = new HashMap<>();
     if (bucketIdsToConsider.isEmpty()) {
       return ret;
     }
@@ -877,7 +877,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   private List<Integer> findPrimaryBucketOwners(Set<Integer> bucketIdsToConsider,
       HashMap<InternalDistributedMember, List<Integer>> nodeToBucketMap) {
-    final List<Integer> bucketIds = new ArrayList();
+    final List<Integer> bucketIds = new ArrayList<>();
     int retry = 3;
     for (int i = 0; i < retry && (bucketIds.size() != bucketIdsToConsider.size()); i++) {
       bucketIds.clear();
@@ -901,17 +901,17 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   private List<Integer> findBucketOwners(final Set<Integer> bucketIdsToConsider,
       HashMap<InternalDistributedMember, List<Integer>> nodeToBucketMap) {
-    final List<Integer> bucketIds = new ArrayList();
+    final List<Integer> bucketIds = new ArrayList<>();
     // Get all local buckets
     PartitionedRegionDataStore dataStore = this.pr.getDataStore();
     if (dataStore != null) {
       for (Integer bid : bucketIdsToConsider) {
         if (dataStore.isManagingBucket(bid)) {
-          bucketIds.add(Integer.valueOf(bid));
+          bucketIds.add(bid);
         }
       }
       if (bucketIds.size() > 0) {
-        List<Integer> localBucketIds = new ArrayList(bucketIds);
+        List<Integer> localBucketIds = new ArrayList<>(bucketIds);
         nodeToBucketMap.put(pr.getMyId(), localBucketIds);
         // All the buckets are hosted locally.
         if (localBucketIds.size() == bucketIdsToConsider.size()) {
@@ -926,10 +926,10 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       allNodes.addAll(failedMembers);
     }
     int totalBucketsToQuery = bucketIdsToConsider.size();
-    for (Iterator dsItr = allNodes.iterator(); dsItr.hasNext()
+    for (Iterator<InternalDistributedMember> dsItr = allNodes.iterator(); dsItr.hasNext()
         && (bucketIds.size() < totalBucketsToQuery);) {
-      InternalDistributedMember nd = (InternalDistributedMember) dsItr.next();
-      final List<Integer> buckets = new ArrayList<Integer>();
+      InternalDistributedMember nd = dsItr.next();
+      final List<Integer> buckets = new ArrayList<>();
       for (Integer bid : bucketIdsToConsider) {
         if (!bucketIds.contains(bid)) {
           final Set owners = getBucketOwners(bid);
@@ -947,15 +947,15 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   }
 
   InternalDistributedMember getPrimaryBucketOwner(Integer bid) {
-    return pr.getBucketPrimary(bid.intValue());
+    return pr.getBucketPrimary(bid);
   }
 
   protected Set<InternalDistributedMember> getBucketOwners(Integer bid) {
-    return pr.getRegionAdvisor().getBucketOwners(bid.intValue());
+    return pr.getRegionAdvisor().getBucketOwners(bid);
   }
 
   protected ArrayList<InternalDistributedMember> getAllNodes(RegionAdvisor regionAdvisor) {
-    ArrayList<InternalDistributedMember> nodes = new ArrayList(regionAdvisor.adviseDataStore());
+    ArrayList<InternalDistributedMember> nodes = new ArrayList<>(regionAdvisor.adviseDataStore());
     Collections.shuffle(nodes);
     return nodes;
   }

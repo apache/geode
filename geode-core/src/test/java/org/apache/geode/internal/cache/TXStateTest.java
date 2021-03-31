@@ -99,12 +99,11 @@ public class TXStateTest {
   }
 
   @Test
-  public void attacheFilterProfileAfterApplyingChagnes() {
+  public void attacheFilterProfileAfterApplyingChanges() {
     TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
-    ArrayList entries = mock(ArrayList.class);
-    doReturn(entries).when(txState).generateEventOffsets();
-    doNothing().when(txState).attachFilterProfileInformation(entries);
-    doNothing().when(txState).applyChanges(entries);
+    doReturn(new ArrayList()).when(txState).generateEventOffsets();
+    doNothing().when(txState).attachFilterProfileInformation(any());
+    doNothing().when(txState).applyChanges(any());
     TXCommitMessage txCommitMessage = mock(TXCommitMessage.class);
     doReturn(txCommitMessage).when(txState).buildMessage();
 

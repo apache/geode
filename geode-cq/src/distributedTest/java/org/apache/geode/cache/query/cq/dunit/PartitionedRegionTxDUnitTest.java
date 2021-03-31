@@ -19,10 +19,9 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -33,6 +32,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.CqEvent;
@@ -55,7 +55,6 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @Category(ClientSubscriptionTest.class)
 public class PartitionedRegionTxDUnitTest implements Serializable {
   private final String REGION_NAME = "region";
-  private MemberVM locator;
   private MemberVM server1;
   private MemberVM server2;
   private ClientVM client;
@@ -66,36 +65,38 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
-  @Test
-  public void verifyCqRegistrationWorksDuringTxCommit() throws Exception {
-    blackboard.setMailbox("CqQueryResultCount", 0);
-    blackboard.setMailbox("CqEvents", 0);
-
-    Properties properties = new Properties();
-    locator = clusterStartupRule.startLocatorVM(0, new Properties());
-    server1 = clusterStartupRule.startServerVM(1, properties, locator.getPort());
-    server2 = clusterStartupRule.startServerVM(2, properties, locator.getPort());
-    client = clusterStartupRule.startClientVM(3,
-        cacheRule -> cacheRule.withServerConnection(server2.getPort()).withPoolSubscription(true));
+  @Before
+  public void setUp() {
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    server2 = clusterStartupRule.startServerVM(2, locator.getPort());
 
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       Region<Object, Object> region =
           cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
-              new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
+              new PartitionAttributesFactory<>().setRedundantCopies(1).setTotalNumBuckets(1)
+                  .create())
               .create(REGION_NAME);
 
-      // Force primary bucket to get created.
-      region.put("Key-1", "value-1");
-      region.destroy("Key-1");
+      PartitionRegionHelper.assignBucketsToPartitions(region);
     });
 
     server2.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
-          new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
+          new PartitionAttributesFactory<>().setRedundantCopies(1).setTotalNumBuckets(1).create())
           .create(REGION_NAME);
     });
+  }
+
+  @Test
+  public void verifyCqRegistrationWorksDuringTxCommit() throws Exception {
+    blackboard.setMailbox("CqQueryResultCount", 0);
+    blackboard.setMailbox("CqEvents", 0);
+
+    client = clusterStartupRule.startClientVM(3,
+        cacheRule -> cacheRule.withServerConnection(server2.getPort()).withPoolSubscription(true));
 
     AsyncInvocation<?> serverAsync = server1.invokeAsync(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
@@ -129,7 +130,7 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
       CqAttributes cqAttributes = cqaf.create();
 
       blackboard.waitForGate("StartCQ");
-      SelectResults cqResults = queryService
+      SelectResults<Object> cqResults = queryService
           .newCq("Select * from " + SEPARATOR + REGION_NAME, cqAttributes)
           .executeWithInitialResults();
       blackboard.signalGate("RegistrationFinished");
@@ -146,32 +147,15 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
   }
 
   @Test
-  public void verifyCqEventInvocationIfTxCommitFromClient() throws Exception {
+  public void verifyCqEventInvocationForDestroyOpIfTxCommitFromClient() throws Exception {
     blackboard.setMailbox("CqEvents", 0);
 
-    Properties properties = new Properties();
-    locator = clusterStartupRule.startLocatorVM(0, new Properties());
-    server1 = clusterStartupRule.startServerVM(1, properties, locator.getPort());
-    server2 = clusterStartupRule.startServerVM(2, properties, locator.getPort());
     client = clusterStartupRule.startClientVM(3,
         cacheRule -> cacheRule.withServerConnection(server1.getPort()).withPoolSubscription(true));
 
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      Region<Object, Object> region =
-          cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
-              new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
-              .create(REGION_NAME);
-
-      // Force primary bucket to get created.
-      region.put("Key-1", "value-1");
-    });
-
-    server2.invoke(() -> {
-      InternalCache cache = ClusterStartupRule.getCache();
-      cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
-          new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
-          .create(REGION_NAME);
+      cache.getRegion(REGION_NAME).put("Key-1", "value-1");
     });
 
     client.invoke(() -> {
@@ -197,7 +181,7 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
       txManager.commit();
     });
 
-    GeodeAwaitility.await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+    GeodeAwaitility.await().untilAsserted(() -> {
       Integer CqEvents = blackboard.getMailbox("CqEvents");
       assertThat(CqEvents).isEqualTo(1);
     });
@@ -205,31 +189,8 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
 
   @Test
   public void verifyInterestRegistrationWorksDuringTxCommit() throws Exception {
-    Properties properties = new Properties();
-    locator = clusterStartupRule.startLocatorVM(0, new Properties());
-    server1 = clusterStartupRule.startServerVM(1, properties, locator.getPort());
-    server2 = clusterStartupRule.startServerVM(2, properties, locator.getPort());
     client = clusterStartupRule.startClientVM(3,
         cacheRule -> cacheRule.withServerConnection(server2.getPort()).withPoolSubscription(true));
-
-    server1.invoke(() -> {
-      InternalCache cache = ClusterStartupRule.getCache();
-      Region<Object, Object> region =
-          cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
-              new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
-              .create(REGION_NAME);
-
-      // Force primary bucket to get created.
-      region.put("Key-1", "value-1");
-      region.destroy("Key-1");
-    });
-
-    server2.invoke(() -> {
-      InternalCache cache = ClusterStartupRule.getCache();
-      cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(
-          new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create())
-          .create(REGION_NAME);
-    });
 
     AsyncInvocation serverAsync = server1.invokeAsync(() -> {
       InternalCache cache = ClusterStartupRule.getCache();

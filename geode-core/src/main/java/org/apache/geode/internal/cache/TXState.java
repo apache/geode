@@ -613,7 +613,7 @@ public class TXState implements TXStateInterface {
                   FilterRoutingInfo.FilterInfo localRouting = fri.getLocalFilterInfo();
                   o.es.getPendingCallback().setLocalFilterInfo(localRouting);
                 }
-                // do not hold pending callback reference after setting local routing.
+                // Do not hold pending callback reference in TXEntryState as it is no longer used.
                 o.es.setPendingCallback(null);
               }
             } finally {
