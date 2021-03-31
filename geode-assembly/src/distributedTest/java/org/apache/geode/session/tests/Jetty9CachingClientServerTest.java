@@ -16,7 +16,8 @@ package org.apache.geode.session.tests;
 
 import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER;
 import static org.apache.geode.session.tests.GenericAppServerInstall.GenericAppServerVersion.JETTY9;
-import static org.junit.Assert.assertEquals;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.function.IntSupplier;
@@ -46,13 +47,17 @@ public class Jetty9CachingClientServerTest extends GenericAppServerClientServerT
   public void shouldCacheSessionOnClient()
       throws Exception {
     manager.startAllInactiveContainers();
-
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
     String key = "value_testSessionExpiration";
     String value = "Foo";
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
-    String cookie = resp.getSessionCookie();
+    assertThat(resp.getResponse()).isEqualTo("");
+    assertThat(resp.getSessionCookie()).isNotEqualTo("");
 
     serverVM.invoke("set bogus session key", () -> {
       final InternalCache cache = ClusterStartupRule.memberStarter.getCache();
@@ -62,6 +67,6 @@ public class Jetty9CachingClientServerTest extends GenericAppServerClientServerT
 
     // Make sure the client still sees its original cached value
     resp = client.get(key);
-    assertEquals(value, resp.getResponse());
+    assertThat(resp.getResponse()).isEqualTo(value);
   }
 }

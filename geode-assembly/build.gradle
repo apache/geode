@@ -251,7 +251,8 @@ dependencies {
   distributedTestRuntimeOnly(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }
-  distributedTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')
+  distributedTestImplementation('org.codehaus.cargo:cargo-core-uberjar')
+
   distributedTestRuntimeOnly('io.swagger:swagger-annotations')
   distributedTestRuntimeOnly(project(':geode-wan'))
 
