@@ -83,7 +83,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
   }
 
   @Test
-  public void addServerToExistingClusterCreatesSessionRegion() {
+  public void addServerToExistingClusterCreatesSessionRegion() throws InterruptedException {
     final VM server0 = VM.getVM(0);
     final VM server1 = VM.getVM(1);
     final VM client = VM.getVM(2);
@@ -91,6 +91,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     server0.invoke(this::startCacheServer);
 
     client.invoke(this::startClientSessionCache);
+    Thread.sleep(1000);
 
     server0.invoke(this::validateServer);
 
@@ -127,16 +128,15 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
   }
 
   @Test
-  public void preCreatedRegionIsNotCopiedToNewlyStartedServers() {
+  public void preCreatedRegionIsNotCopiedToNewlyStartedServers() throws InterruptedException {
     final VM server0 = VM.getVM(0);
     final VM server1 = VM.getVM(1);
     final VM client = VM.getVM(2);
 
     server0.invoke(this::startCacheServer);
-
+    Thread.sleep(1000);
 
     server0.invoke(this::createSessionRegion);
-
 
     client.invoke(this::startClientSessionCache);
     server1.invoke(this::startCacheServer);
@@ -307,5 +307,6 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     final CacheServer cacheServer = cache.addCacheServer();
     cacheServer.setPort(0);
     cacheServer.start();
+    await().until(cacheServer::isRunning);
   }
 }

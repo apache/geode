@@ -48,7 +48,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   private static final ReentrantLock registerFunctionLock = new ReentrantLock();
 
   private static final int TIME_TO_WAIT_FOR_CACHE =
-      Integer.getInteger("gemfiremodules.timeToWaitForCache", 30000);
+      Integer.getInteger("gemfiremodules.timeToWaitForCache", 300000);
 
   public BootstrappingFunction() {}
 
@@ -190,11 +190,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     if (this == obj) {
       return true;
     }
-
-    if (!(obj instanceof BootstrappingFunction)) {
-      return false;
-    }
-    return true;
+    return obj instanceof BootstrappingFunction;
   }
 
   @Override
