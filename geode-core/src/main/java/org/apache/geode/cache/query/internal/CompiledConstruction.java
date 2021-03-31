@@ -23,7 +23,6 @@ import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
-import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.internal.Assert;
 
@@ -64,9 +63,6 @@ public class CompiledConstruction extends AbstractCompiledValue {
     for (Iterator itr = this.args.iterator(); itr.hasNext();) {
       CompiledValue cv = (CompiledValue) itr.next();
       Object eval = cv.evaluate(context);
-      if (eval == QueryService.UNDEFINED) {
-        return QueryService.UNDEFINED;
-      }
       newSet.add(eval);
     }
     return newSet;

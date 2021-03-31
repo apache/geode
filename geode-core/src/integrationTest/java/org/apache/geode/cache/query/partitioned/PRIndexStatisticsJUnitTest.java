@@ -251,18 +251,18 @@ public class PRIndexStatisticsJUnitTest {
     assertEquals(89, keyIndexStats.getNumberOfBucketIndexes());
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(100, keyIndexStats.getNumberOfKeys());
-    assertEquals(100, keyIndexStats.getNumberOfValues());
-    assertEquals(100, keyIndexStats.getNumUpdates());
+    assertEquals(200, keyIndexStats.getNumberOfKeys());
+    assertEquals(200, keyIndexStats.getNumberOfValues());
+    assertEquals(200, keyIndexStats.getNumUpdates());
 
     for (int i = 0; i < 100; i++) {
       region.put(Integer.toString(i), new Portfolio(i, i));
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(100, keyIndexStats.getNumberOfKeys());
-    assertEquals(100, keyIndexStats.getNumberOfValues());
-    assertEquals(200, keyIndexStats.getNumUpdates());
+    assertEquals(200, keyIndexStats.getNumberOfKeys());
+    assertEquals(200, keyIndexStats.getNumberOfValues());
+    assertEquals(400, keyIndexStats.getNumUpdates());
 
     String queryStr =
         "select * from " + SEPARATOR
@@ -273,32 +273,32 @@ public class PRIndexStatisticsJUnitTest {
       query.execute();
     }
 
-    // Both RangeIndex should be used
-    assertEquals(100 /* Execution time */, keyIndexStats.getTotalUses());
+    // Index should be used
+    assertEquals(100, keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
       region.invalidate(Integer.toString(i));
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(50, keyIndexStats.getNumberOfKeys());
-    assertEquals(50, keyIndexStats.getNumberOfValues());
-    assertEquals(250, keyIndexStats.getNumUpdates());
+    assertEquals(100, keyIndexStats.getNumberOfKeys());
+    assertEquals(100, keyIndexStats.getNumberOfValues());
+    assertEquals(500, keyIndexStats.getNumUpdates());
 
     for (int i = 0; i < 50; i++) {
       region.destroy(Integer.toString(i));
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(50, keyIndexStats.getNumberOfKeys());
-    assertEquals(50, keyIndexStats.getNumberOfValues());
-    assertEquals(250, keyIndexStats.getNumUpdates());
+    assertEquals(100, keyIndexStats.getNumberOfKeys());
+    assertEquals(100, keyIndexStats.getNumberOfValues());
+    assertEquals(500, keyIndexStats.getNumUpdates());
 
     for (int i = 50; i < 100; i++) {
       region.destroy(Integer.toString(i));
     }
 
-    assertEquals(300, keyIndexStats.getNumUpdates());
+    assertEquals(600, keyIndexStats.getNumUpdates());
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(0, keyIndexStats.getNumberOfKeys());
 
@@ -326,8 +326,8 @@ public class PRIndexStatisticsJUnitTest {
     assertEquals(89, keyIndexStats.getNumberOfBucketIndexes());
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(100, keyIndexStats.getNumberOfKeys());
-    assertEquals(100, keyIndexStats.getNumberOfValues());
-    assertEquals(100, keyIndexStats.getNumUpdates());
+    assertEquals(200, keyIndexStats.getNumberOfValues());
+    assertEquals(200, keyIndexStats.getNumUpdates());
 
     Position.cnt = 0;
     for (int i = 0; i < 100; i++) {
@@ -336,8 +336,8 @@ public class PRIndexStatisticsJUnitTest {
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(100, keyIndexStats.getNumberOfKeys());
-    assertEquals(100, keyIndexStats.getNumberOfValues());
-    assertEquals(200, keyIndexStats.getNumUpdates());
+    assertEquals(200, keyIndexStats.getNumberOfValues());
+    assertEquals(400, keyIndexStats.getNumUpdates());
 
     String queryStr =
         "select * from " + SEPARATOR
@@ -348,7 +348,6 @@ public class PRIndexStatisticsJUnitTest {
       query.execute();
     }
 
-    // Both RangeIndex should be used
     assertEquals(100 /* Execution time */, keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
@@ -357,8 +356,8 @@ public class PRIndexStatisticsJUnitTest {
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(50, keyIndexStats.getNumberOfKeys());
-    assertEquals(50, keyIndexStats.getNumberOfValues());
-    assertEquals(300, keyIndexStats.getNumUpdates());
+    assertEquals(100, keyIndexStats.getNumberOfValues());
+    assertEquals(600, keyIndexStats.getNumUpdates());
 
     for (int i = 0; i < 50; i++) {
       region.destroy(Integer.toString(i));
@@ -366,15 +365,15 @@ public class PRIndexStatisticsJUnitTest {
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(50, keyIndexStats.getNumberOfKeys());
-    assertEquals(50, keyIndexStats.getNumberOfValues());
-    assertEquals(300, keyIndexStats.getNumUpdates());
+    assertEquals(100, keyIndexStats.getNumberOfValues());
+    assertEquals(600, keyIndexStats.getNumUpdates());
 
 
     for (int i = 50; i < 100; i++) {
       region.destroy(Integer.toString(i));
     }
 
-    assertEquals(400, keyIndexStats.getNumUpdates());
+    assertEquals(800, keyIndexStats.getNumUpdates());
     assertEquals(0, keyIndexStats.getNumberOfKeys());
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
 
@@ -562,9 +561,9 @@ public class PRIndexStatisticsJUnitTest {
     assertEquals(89, keyIndexStats.getNumberOfBucketIndexes());
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(100, keyIndexStats.getNumberOfKeys());
-    assertEquals(100, keyIndexStats.getNumberOfValues());
-    assertEquals(100, keyIndexStats.getNumUpdates());
+    assertEquals(200, keyIndexStats.getNumberOfKeys());
+    assertEquals(200, keyIndexStats.getNumberOfValues());
+    assertEquals(200, keyIndexStats.getNumUpdates());
 
     Position.cnt = 0;
     for (int i = 0; i < 100; i++) {
@@ -572,9 +571,9 @@ public class PRIndexStatisticsJUnitTest {
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(100, keyIndexStats.getNumberOfKeys());
-    assertEquals(100, keyIndexStats.getNumberOfValues());
-    assertEquals(200, keyIndexStats.getNumUpdates());
+    assertEquals(200, keyIndexStats.getNumberOfKeys());
+    assertEquals(200, keyIndexStats.getNumberOfValues());
+    assertEquals(400, keyIndexStats.getNumUpdates());
 
     String queryStr =
         "select * from " + SEPARATOR
@@ -585,7 +584,6 @@ public class PRIndexStatisticsJUnitTest {
       query.execute();
     }
 
-    // Both RangeIndex should be used
     assertEquals((100 /* Execution time */), keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
@@ -593,24 +591,24 @@ public class PRIndexStatisticsJUnitTest {
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(50, keyIndexStats.getNumberOfKeys());
-    assertEquals(50, keyIndexStats.getNumberOfValues());
-    assertEquals(250, keyIndexStats.getNumUpdates());
+    assertEquals(100, keyIndexStats.getNumberOfKeys());
+    assertEquals(100, keyIndexStats.getNumberOfValues());
+    assertEquals(500, keyIndexStats.getNumUpdates());
 
     for (int i = 0; i < 50; i++) {
       region.destroy(Integer.toString(i));
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(50, keyIndexStats.getNumberOfKeys());
-    assertEquals(50, keyIndexStats.getNumberOfValues());
-    assertEquals(250, keyIndexStats.getNumUpdates());
+    assertEquals(100, keyIndexStats.getNumberOfKeys());
+    assertEquals(100, keyIndexStats.getNumberOfValues());
+    assertEquals(500, keyIndexStats.getNumUpdates());
 
     for (int i = 50; i < 100; i++) {
       region.destroy(Integer.toString(i));
     }
 
-    assertEquals(300, keyIndexStats.getNumUpdates());
+    assertEquals(600, keyIndexStats.getNumUpdates());
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(0, keyIndexStats.getNumberOfKeys());
 
@@ -645,8 +643,8 @@ public class PRIndexStatisticsJUnitTest {
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(100, keyIndexStats.getNumberOfKeys());
-    assertEquals(100, keyIndexStats.getNumberOfValues());
-    assertEquals(100, keyIndexStats.getNumUpdates());
+    assertEquals(200, keyIndexStats.getNumberOfValues());
+    assertEquals(200, keyIndexStats.getNumUpdates());
 
     Position.cnt = 0;
     for (int i = 0; i < 100; i++) {
@@ -655,8 +653,8 @@ public class PRIndexStatisticsJUnitTest {
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(100, keyIndexStats.getNumberOfKeys());
-    assertEquals(100, keyIndexStats.getNumberOfValues());
-    assertEquals(200, keyIndexStats.getNumUpdates());
+    assertEquals(200, keyIndexStats.getNumberOfValues());
+    assertEquals(400, keyIndexStats.getNumUpdates());
 
     String queryStr =
         "select * from " + SEPARATOR
@@ -667,7 +665,6 @@ public class PRIndexStatisticsJUnitTest {
       query.execute();
     }
 
-    // Both RangeIndex should be used
     assertEquals(100 /* Execution time */, keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
@@ -676,8 +673,8 @@ public class PRIndexStatisticsJUnitTest {
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(50, keyIndexStats.getNumberOfKeys());
-    assertEquals(50, keyIndexStats.getNumberOfValues());
-    assertEquals(300, keyIndexStats.getNumUpdates());
+    assertEquals(100, keyIndexStats.getNumberOfValues());
+    assertEquals(600, keyIndexStats.getNumUpdates());
 
     for (int i = 0; i < 50; i++) {
       region.destroy(Integer.toString(i));
@@ -685,8 +682,8 @@ public class PRIndexStatisticsJUnitTest {
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(50, keyIndexStats.getNumberOfKeys());
-    assertEquals(50, keyIndexStats.getNumberOfValues());
-    assertEquals(300, keyIndexStats.getNumUpdates());
+    assertEquals(100, keyIndexStats.getNumberOfValues());
+    assertEquals(600, keyIndexStats.getNumUpdates());
 
 
     for (int i = 50; i < 100; i++) {
@@ -694,7 +691,7 @@ public class PRIndexStatisticsJUnitTest {
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(400, keyIndexStats.getNumUpdates());
+    assertEquals(800, keyIndexStats.getNumUpdates());
     assertEquals(0, keyIndexStats.getNumberOfKeys());
 
     qs.removeIndex(keyIndex3);

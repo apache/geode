@@ -477,15 +477,43 @@ public class CompactRangeIndexJUnitTest {
     p4.positions.put("SUN", null);
     region.put("KEY-" + 4, p4);
 
-    // execute query and check result size
+    // execute query for null value and check result size
     QueryService qs = utils.getCache().getQueryService();
     SelectResults<Object> results = UncheckedUtils.uncheckedCast(qs
         .newQuery(
             "Select * from " + SEPARATOR + "exampleRegion r where r.positions['SUN'] = null")
         .execute());
+    assertThat(results.size()).isEqualTo(1);
+    assertThat(results.contains(p4)).isTrue();
+
+    // execute query for not null value and check result size
+    results = UncheckedUtils.uncheckedCast(qs
+        .newQuery(
+            "Select * from " + SEPARATOR + "exampleRegion r where r.positions['SUN'] != null")
+        .execute());
+    assertThat(results.size()).isEqualTo(3);
+    assertThat(results.contains(p1)).isTrue();
+    assertThat(results.contains(p2)).isTrue();
+    assertThat(results.contains(p3)).isTrue();
+
+    // execute query for defined values and check result size
+    results = UncheckedUtils.uncheckedCast(qs
+        .newQuery(
+            "Select * from " + SEPARATOR + "exampleRegion r where is_defined(r.positions['SUN'])")
+        .execute());
+    assertThat(results.size()).isEqualTo(2);
+    assertThat(results.contains(p1)).isTrue();
+    assertThat(results.contains(p4)).isTrue();
+
+    // execute query for undefined values and check result size
+    results = UncheckedUtils.uncheckedCast(qs
+        .newQuery(
+            "Select * from " + SEPARATOR + "exampleRegion r where is_undefined(r.positions['SUN'])")
+        .execute());
     assertThat(results.size()).isEqualTo(2);
     assertThat(results.contains(p2)).isTrue();
-    assertThat(results.contains(p4)).isTrue();
+    assertThat(results.contains(p3)).isTrue();
+
   }
 
   private void putValues(int num) {

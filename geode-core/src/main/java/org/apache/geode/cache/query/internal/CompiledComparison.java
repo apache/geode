@@ -22,6 +22,7 @@ import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -29,9 +30,12 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.index.AbstractIndex;
+import org.apache.geode.cache.query.internal.index.AbstractMapIndex;
 import org.apache.geode.cache.query.internal.index.IndexData;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.query.internal.index.IndexUtils;
+import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
@@ -642,13 +646,27 @@ public class CompiledComparison extends AbstractCompiledValue
     } else {
       CompiledValue path = pAndK._path;
       CompiledValue indexKey = pAndK._key;
-      IndexData indexData = null;
+      IndexData indexData;
       // CompiledLike should not use HashIndex and PrimarKey Index.
       if (this instanceof CompiledLike) {
         indexData =
             QueryUtils.getAvailableIndexIfAny(path, context, OQLLexerTokenTypes.LITERAL_like);
       } else {
         indexData = QueryUtils.getAvailableIndexIfAny(path, context, this._operator);
+      }
+
+      // Do not use indexes when map index and != condition
+      if (indexData != null
+          && (indexData.getIndex() instanceof AbstractMapIndex)
+          && ((AbstractMapIndex) indexData.getIndex()).getIsAllKeys()
+          && this._operator == TOK_NE) {
+        Index prIndex = ((AbstractIndex) indexData.getIndex()).getPRIndex();
+        if (prIndex != null) {
+          ((PartitionedIndex) prIndex).releaseIndexReadLockForRemove();
+        } else {
+          ((AbstractIndex) indexData.getIndex()).releaseIndexReadLockForRemove();
+        }
+        return null;
       }
 
       IndexProtocol index = null;
