@@ -17,9 +17,11 @@ package org.apache.geode.internal.cache.control;
 import static java.lang.management.MemoryNotificationInfo.MEMORY_COLLECTION_THRESHOLD_EXCEEDED;
 import static java.lang.management.MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,60 +36,64 @@ import javax.management.openmbean.CompositeData;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.Pool;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-
 public class TenuredHeapConsumptionMonitorTest {
 
   private BiConsumer<String, Throwable> infoLogger;
   private Function<CompositeData, MemoryNotificationInfo> memoryNotificationInfoFactory;
   private Notification notification;
-
+  private final long used = 50;
+  private TenuredHeapConsumptionMonitor monitor;
 
   @Before
   public void setUp() {
-    infoLogger = mock(BiConsumer.class);
+    notification = mock(Notification.class);
+    MemoryUsage usage = mock(MemoryUsage.class);
+    MemoryNotificationInfo memoryNotificationInfo = mock(MemoryNotificationInfo.class);
+    when(memoryNotificationInfo.getUsage()).thenReturn(usage);
+    when(usage.getUsed()).thenReturn(used);
     memoryNotificationInfoFactory = mock(Function.class);
-
-
-  }
-
-  private void notificationType(String type) {
-    notification = new Notification(type, this, 1);
-    ClientCache clientCache;
-    clientCache = new ClientCacheFactory().create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) clientCache;
-    Pool defPool = gfc.getDefaultPool();
-    MemoryUsage usage = new MemoryUsage(50, 50, 50, 100);
-    MemoryNotificationInfo memoryNotificationInfo =
-        new MemoryNotificationInfo(defPool.getName(), usage, 1);
     when(memoryNotificationInfoFactory.apply(any())).thenReturn(memoryNotificationInfo);
-    TenuredHeapConsumptionMonitor monitor =
-        new TenuredHeapConsumptionMonitor(infoLogger, memoryNotificationInfoFactory);
-
-    monitor.checkTenuredHeapConsumption(notification);
+    infoLogger = mock(BiConsumer.class);
+    monitor = new TenuredHeapConsumptionMonitor(infoLogger, memoryNotificationInfoFactory);
 
   }
 
   @Test
   public void assertIfTenuredGCLogMessageIsPrintedAfterGCAndWhenMemoryThresholdExceeds() {
-    notificationType(MEMORY_THRESHOLD_EXCEEDED);
+    when(notification.getType()).thenReturn(MEMORY_THRESHOLD_EXCEEDED);
+    monitor.checkTenuredHeapConsumption(notification);
     verify(infoLogger).accept(
-        eq("A tenured heap garbage collection has occurred.  New tenured heap consumption: 50"),
+        eq("A tenured heap garbage collection has occurred.  New tenured heap consumption: "
+            + used),
+        isNull());
+  }
+
+  @Test
+  public void assertIfTenuredGCLogMessageIsPrintedAfterGCAndWhenMemoryCollectionThresholdExceeds() {
+    when(notification.getType()).thenReturn(MEMORY_COLLECTION_THRESHOLD_EXCEEDED);
+    monitor.checkTenuredHeapConsumption(notification);
+    verify(infoLogger).accept(
+        eq("A tenured heap garbage collection has occurred.  New tenured heap consumption: "
+            + used),
         isNull());
 
 
   }
 
   @Test
-  public void assertIfTenuredGCLogMessageIsPrintedAfterGCAndWhenMemoryCollectionThresholdExceeds() {
-    notificationType(MEMORY_COLLECTION_THRESHOLD_EXCEEDED);
-    verify(infoLogger).accept(
-        eq("A tenured heap garbage collection has occurred.  New tenured heap consumption: 50"),
-        isNull());
+  public void assertThatNothingIsLoggedWhenNotificationTypeIsNotMemoryThresholdExceededOrMemoryCollectionThresholdExceeded() {
+    when(notification.getType()).thenReturn("FAKE_TYPE");
+    monitor.checkTenuredHeapConsumption(notification);
+    verify(infoLogger, never()).accept(anyString(), any());
+  }
 
-
+  @Test
+  public void exceptionMessageIsLoggedWhenExceptionIsThrownInCheckTenuredHeapConsumption() {
+    IllegalArgumentException ex = new IllegalArgumentException("test message");
+    when(memoryNotificationInfoFactory.apply(any())).thenThrow(ex);
+    when(notification.getType()).thenReturn(MEMORY_COLLECTION_THRESHOLD_EXCEEDED);
+    monitor.checkTenuredHeapConsumption(notification);
+    verify(infoLogger)
+        .accept("An Exception occurred while attempting to log tenured heap consumption", ex);
   }
 }
