@@ -42,9 +42,16 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.security.AuthenticationRequiredException;
 
 public class DeployFunction implements InternalFunction<Object[]> {
-  public static final String ID = DeployFunction.class.getName();
   private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = 1L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.DeployFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   @SuppressWarnings("deprecation")
@@ -118,11 +125,6 @@ public class DeployFunction implements InternalFunction<Object[]> {
       CliFunctionResult result = new CliFunctionResult(memberIdentifier, throwable, null);
       context.getResultSender().lastResult(result);
     }
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 
   @Override

@@ -33,8 +33,14 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.functions.CliFunctionResult.StatusState;
 
 public class CreateJndiBindingFunction extends CliFunction<Object[]> {
-
   private static final Logger logger = LogService.getLogger();
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {

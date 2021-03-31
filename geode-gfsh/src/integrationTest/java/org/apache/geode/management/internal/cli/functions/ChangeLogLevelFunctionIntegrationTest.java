@@ -46,7 +46,8 @@ import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
- * Integration tests for {@link ChangeLogLevelFunction}.
+ * Integration tests for {@link
+ * org.apache.geode.management.internal.cli.functions.ChangeLogLevelFunction}.
  */
 @Category(LoggingTest.class)
 public class ChangeLogLevelFunctionIntegrationTest {

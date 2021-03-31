@@ -38,7 +38,13 @@ public class RegionDestroyFunction implements InternalFunction<String> {
   @Immutable
   public static final RegionDestroyFunction INSTANCE = new RegionDestroyFunction();
 
-  private static final String ID = RegionDestroyFunction.class.getName();
+  protected static final String ID =
+      "org.apache.geode.management.internal.cli.functions.RegionDestroyFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public boolean hasResult() {
@@ -88,11 +94,6 @@ public class RegionDestroyFunction implements InternalFunction<String> {
       LogService.getLogger().error(ex.getMessage(), ex);
       context.getResultSender().lastResult(new CliFunctionResult(memberName, ex, ex.getMessage()));
     }
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 
   @Override

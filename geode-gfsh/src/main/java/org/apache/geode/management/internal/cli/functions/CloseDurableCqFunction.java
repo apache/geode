@@ -28,8 +28,14 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  *
  */
 public class CloseDurableCqFunction implements InternalFunction<String[]> {
-
   private static final long serialVersionUID = 1L;
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.CloseDurableCqFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<String[]> context) {

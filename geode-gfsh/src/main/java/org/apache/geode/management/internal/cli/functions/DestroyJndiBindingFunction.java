@@ -24,6 +24,14 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 
 public class DestroyJndiBindingFunction extends CliFunction<Object[]> {
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.DestroyJndiBindingFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
+
   @Override
   public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
     String jndiName = (String) context.getArguments()[0];

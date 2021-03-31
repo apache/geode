@@ -33,9 +33,15 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class ListDeployedFunction implements InternalFunction<Void> {
   private static final Logger logger = LogService.getLogger();
 
-  public static final String ID = ListDeployedFunction.class.getName();
-
   private static final long serialVersionUID = 1L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ListDeployedFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<Void> context) {
@@ -69,11 +75,6 @@ public class ListDeployedFunction implements InternalFunction<Void> {
       CliFunctionResult result = new CliFunctionResult(memberId, false, cce.getMessage());
       context.getResultSender().lastResult(result);
     }
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 
   @Override

@@ -41,10 +41,16 @@ public class GatewayReceiverCreateFunction implements InternalFunction<Object[]>
 
   private static final long serialVersionUID = 8746830191680509335L;
 
-  private static final String ID = GatewayReceiverCreateFunction.class.getName();
-
   @Immutable
   public static final GatewayReceiverCreateFunction INSTANCE = new GatewayReceiverCreateFunction();
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.GatewayReceiverCreateFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<Object[]> context) {
@@ -105,10 +111,4 @@ public class GatewayReceiverCreateFunction implements InternalFunction<Object[]>
   boolean gatewayReceiverExists(Cache cache) {
     return cache.getGatewayReceivers() != null && !cache.getGatewayReceivers().isEmpty();
   }
-
-  @Override
-  public String getId() {
-    return ID;
-  }
-
 }

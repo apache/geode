@@ -30,6 +30,13 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 
 public class ShowMissingDiskStoresFunction implements InternalFunction<Void> {
+  protected static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<Void> context) {
@@ -81,10 +88,5 @@ public class ShowMissingDiskStoresFunction implements InternalFunction<Void> {
         context.getResultSender().lastResult(missingColocatedRegions);
       }
     }
-  }
-
-  @Override
-  public String getId() {
-    return getClass().getName();
   }
 }

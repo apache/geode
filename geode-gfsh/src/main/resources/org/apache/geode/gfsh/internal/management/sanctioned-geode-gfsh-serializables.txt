@@ -111,3 +111,4 @@ org/apache/geode/management/internal/cli/util/FixedPartitionAttributesInfo,false
 org/apache/geode/management/internal/cli/util/JConsoleNotFoundException,true,-1485615321440327206
 org/apache/geode/management/internal/cli/util/LogFilter$LineFilterResult,false
 org/apache/geode/management/internal/cli/util/VisualVmNotFoundException,true,-8491645604829510102
+org/apache/geode/management/internal/web/shell/MBeanAccessException,true,813768898269516238

@@ -23,6 +23,14 @@ import org.apache.geode.management.internal.cli.commands.IndexDefinition;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class ManageIndexDefinitionFunction extends CliFunction<RegionConfig.Index> {
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ManageIndexDefinitionFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
+
   @Override
   public CliFunctionResult executeFunction(FunctionContext<RegionConfig.Index> context)
       throws Exception {

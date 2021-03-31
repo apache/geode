@@ -39,12 +39,14 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
  * @since GemFire 8.0
  */
 public class ListAsyncEventQueuesFunction extends CliFunction {
-
   private static final long serialVersionUID = 1L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ListAsyncEventQueuesFunction";
 
   @Override
   public String getId() {
-    return getClass().getName();
+    return ID;
   }
 
   @Override

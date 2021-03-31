@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.cli.util;
 
-import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
+import org.apache.geode.internal.gfsh.console.GfeConsoleReaderFactory.GfeConsoleReader;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
