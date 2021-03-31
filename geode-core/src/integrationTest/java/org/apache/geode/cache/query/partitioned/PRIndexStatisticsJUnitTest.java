@@ -273,7 +273,7 @@ public class PRIndexStatisticsJUnitTest {
       query.execute();
     }
 
-    // Index should not be used
+    // Index should not be used as the conditions on the indexed keys are "!="
     assertEquals(0, keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
@@ -348,7 +348,7 @@ public class PRIndexStatisticsJUnitTest {
       query.execute();
     }
 
-    // Indexes should not be used
+    // Index should not be used as the conditions on the indexed keys are "!="
     assertEquals(0 /* Execution time */, keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
@@ -585,6 +585,7 @@ public class PRIndexStatisticsJUnitTest {
       query.execute();
     }
 
+    // Index should not be used as the conditions on the indexed keys are "!="
     assertEquals((0 /* Execution time */), keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
@@ -666,7 +667,7 @@ public class PRIndexStatisticsJUnitTest {
       query.execute();
     }
 
-    // Indexes should not be used
+    // Index should not be used as the conditions on the indexed keys are "!="
     assertEquals(0 /* Execution time */, keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {

@@ -439,16 +439,16 @@ public class MapRangeIndexMaintenanceJUnitTest {
         ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
 
     // The number of keys must be equal to the number of different values the
-    // positions map takes for each key (null not included)
+    // positions map takes for each key
     // for each entry in the region:
-    // "something", null, "nothing", "more", "hey", "tip"
+    // "something", null, "nothing", "more", "empty", "hey", "tip"
     assertThat(keys).isEqualTo(7);
     // The number of mapIndexKeys must be equal to the number of different keys
     // that appear in entries of the region:
     // "IBM", "ERICSSON", "HP", "SUN", null
     assertThat(mapIndexKeys).isEqualTo(5);
     // The number of values must be equal to the number of values the
-    // positions map takes for each key (null not included)
+    // positions map takes for each key
     // for each entry in the region:
     // "something", null, "nothing", "more", "empty", "hey", "more", "tip"
     assertThat(values).isEqualTo(8);

@@ -370,6 +370,7 @@ public class IndexStatisticsJUnitTest {
 
     assertEquals(0, keyIndexStats.getReadLockCount());
 
+    // Index should not be used as the conditions on the indexed keys are "!="
     assertEquals(0, keyIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
@@ -449,6 +450,7 @@ public class IndexStatisticsJUnitTest {
 
     assertEquals(0, mapIndexStats.getReadLockCount());
 
+    // Index should not be used as the conditions on the indexed keys are "!="
     assertEquals(0, mapIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
@@ -689,6 +691,7 @@ public class IndexStatisticsJUnitTest {
       query.execute();
     }
 
+    // Index should not be used as the conditions on the indexed keys are "!="
     assertEquals(0, mapIndexStats.getTotalUses());
 
     for (int i = 0; i < 50; i++) {
