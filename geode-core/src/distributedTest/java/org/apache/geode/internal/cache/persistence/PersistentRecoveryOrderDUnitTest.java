@@ -876,9 +876,9 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
         Throwable thrown = catchThrowable(() -> {
           createReplicateRegion(regionName, getDiskDirs(getVMId()));
         });
-        assertThat(thrown).isInstanceOf(ConflictingPersistentDataException.class);
-        assertThat(thrown.getMessage())
-            .contains("was not part of the same distributed system as the local data");
+        assertThat(thrown)
+            .isInstanceOf(ConflictingPersistentDataException.class)
+            .hasMessageContaining("was not part of the same distributed system as the local data");
       }
     });
   }

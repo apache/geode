@@ -510,8 +510,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
   public boolean checkMyStateOnMembers(Set<InternalDistributedMember> replicates)
       throws ReplyException {
     PersistentStateQueryResults remoteStates = getMyStateOnMembers(replicates);
-    Set<InternalDistributedMember> copyOfReplicates = new HashSet<>();
-    copyOfReplicates.addAll(replicates);
+    Set<InternalDistributedMember> copyOfReplicates = new HashSet<>(replicates);
 
     persistenceAdvisorObserver.observe(regionPath);
 
