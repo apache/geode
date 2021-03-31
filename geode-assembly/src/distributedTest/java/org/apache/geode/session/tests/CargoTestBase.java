@@ -368,6 +368,10 @@ public abstract class CargoTestBase {
   @Test
   public void newContainersShouldShareDataAccess() throws Exception {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     String key = "value_testSessionAdd";
     String value = "Foo";
