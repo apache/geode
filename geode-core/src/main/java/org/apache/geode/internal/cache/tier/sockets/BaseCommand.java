@@ -1086,7 +1086,12 @@ public abstract class BaseCommand implements Command {
    */
   private static void handleSingleton(LocalRegion region, Object entryKey,
       InterestResultPolicy policy, ServerConnection servConn) throws IOException {
-    List keyList = new ArrayList(1);
+    List<Object> keyList = new ArrayList<>(1);
+    if (region instanceof PartitionedRegion) {
+      keyList.add(entryKey);
+      handleListPR((PartitionedRegion) region, keyList, policy, servConn);
+      return;
+    }
     if (region != null) {
       if (region.containsKey(entryKey)
           || sendTombstonesInRIResults(servConn, policy) && region.containsTombstone(entryKey)) {
@@ -1365,7 +1370,8 @@ public abstract class BaseCommand implements Command {
    */
   private static void handleListPR(final PartitionedRegion region, final List keyList,
       final InterestResultPolicy policy, final ServerConnection servConn) throws IOException {
-    final List newKeyList = new ArrayList(MAXIMUM_CHUNK_SIZE);
+    int chunkSize = keyList.size() < MAXIMUM_CHUNK_SIZE ? keyList.size() : MAXIMUM_CHUNK_SIZE;
+    final List<Object> newKeyList = new ArrayList<>(chunkSize);
     region.getKeysWithList(keyList, sendTombstonesInRIResults(servConn, policy),
         new PartitionedRegion.SetCollector() {
           @Override

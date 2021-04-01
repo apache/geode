@@ -95,6 +95,8 @@ public class TXEntryState implements Releasable {
 
   private byte[] serializedPendingValue;
 
+  private EntryEventImpl pendingCallback;
+
   /**
    * Remember the callback argument for listener invocation
    */
@@ -1937,6 +1939,14 @@ public class TXEntryState implements Releasable {
    */
   int getSortValue() {
     return this.modSerialNum;
+  }
+
+  public EntryEventImpl getPendingCallback() {
+    return pendingCallback;
+  }
+
+  public void setPendingCallback(EntryEventImpl pendingCallback) {
+    this.pendingCallback = pendingCallback;
   }
 
   /**
