@@ -510,7 +510,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
   public boolean checkMyStateOnMembers(Set<InternalDistributedMember> replicates)
       throws ReplyException {
     PersistentStateQueryResults remoteStates = getMyStateOnMembers(replicates);
-    Set<InternalDistributedMember> copyOfReplicates = new HashSet<>(replicates);
+    Set<InternalDistributedMember> copyOfReplicates = null;
 
     persistenceAdvisorObserver.observe(regionPath);
 
@@ -537,6 +537,9 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         // existing replicates.
         // It can still be used as GII provider candidate. Use a copyOfReplicates to avoid modifying
         // the replicates.
+        if (copyOfReplicates == null) {
+          copyOfReplicates = new HashSet<>(replicates);
+        }
         copyOfReplicates.remove(member);
         if (copyOfReplicates.isEmpty()) {
           throw new ConflictingPersistentDataException(message);
