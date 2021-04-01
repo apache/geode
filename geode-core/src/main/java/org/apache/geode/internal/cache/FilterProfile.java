@@ -1085,12 +1085,12 @@ public class FilterProfile implements DataSerializableFixedID {
     FilterRoutingInfo frInfo = null;
     // bug #50809 - local routing for transactional ops must be done here
     // because the event isn't available later and we lose the old value for the entry
-    boolean processLocalProfile = false;
+
+    boolean processLocalProfile =
+        event.getOperation().isEntry() && ((EntryEvent) event).getTransactionId() != null;
 
     CqService cqService = getCqService(event.getRegion());
     if (cqService.isRunning()) {
-      processLocalProfile =
-          event.getOperation().isEntry() && ((EntryEvent) event).getTransactionId() != null;
       frInfo = new FilterRoutingInfo();
       fillInCQRoutingInfo(event, processLocalProfile, peerProfiles, frInfo);
     }
@@ -1297,7 +1297,6 @@ public class FilterProfile implements DataSerializableFixedID {
    */
   public FilterRoutingInfo fillInInterestRoutingInfo(CacheEvent event, Profile[] profiles,
       FilterRoutingInfo filterRoutingInfo, Set cacheOpRecipients) {
-
     Set clientsInv = Collections.emptySet();
     Set clients = Collections.emptySet();
 
@@ -1884,6 +1883,7 @@ public class FilterProfile implements DataSerializableFixedID {
             if (logger.isDebugEnabled()) {
               logger.debug("Processing the filter profile request for : {}", this);
             }
+            fp.region = (LocalRegion) r;
             processRequest(fp);
           }
         }

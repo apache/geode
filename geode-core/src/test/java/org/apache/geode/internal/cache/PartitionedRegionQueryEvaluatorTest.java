@@ -16,8 +16,13 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -35,6 +40,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.CompiledSelect;
 import org.apache.geode.cache.query.internal.CompiledValue;
@@ -237,6 +243,179 @@ public class PartitionedRegionQueryEvaluatorTest {
     when(regionAdvisor.adviseDataStore()).thenReturn(bucketSet);
     await()
         .until(() -> !(bucketList.equals(prqe.getAllNodes(regionAdvisor))));
+  }
+
+  @Test
+  public void verifyPrimaryBucketNodesAreRetrievedForCqQuery() throws Exception {
+    List<Integer> bucketList = createBucketList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    Set<Integer> bucketSet = new HashSet<>(bucketList);
+    when(query.isCqQuery()).thenReturn(true);
+    PartitionedRegionQueryEvaluator prqe =
+        new PartitionedRegionQueryEvaluator(system, pr, query, mock(ExecutionContext.class),
+            null, new LinkedResultSet(), bucketSet);
+
+    for (Integer bid : bucketList) {
+      if (bid % 2 == 0) {
+        when(prqe.getPrimaryBucketOwner(bid)).thenReturn(remoteNodeA);
+      } else {
+        when(prqe.getPrimaryBucketOwner(bid)).thenReturn(remoteNodeB);
+      }
+    }
+
+    Map<InternalDistributedMember, List<Integer>> bnMap = prqe.buildNodeToBucketMap();
+
+    assertThat(bnMap.size()).isEqualTo(2);
+    assertThat(bnMap.get(remoteNodeA).size()).isEqualTo(5);
+    assertThat(bnMap.get(remoteNodeB).size()).isEqualTo(5);
+  }
+
+  @Test
+  public void verifyPrimaryBucketNodesAreRetrievedForCqQueryWithRetry() throws Exception {
+    List<Integer> bucketList = createBucketList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    int bucket1 = 1;
+    Set<Integer> bucketSet = new HashSet<>(bucketList);
+    when(query.isCqQuery()).thenReturn(true);
+    PartitionedRegionQueryEvaluator prqe =
+        spy(new PartitionedRegionQueryEvaluator(system, pr, query, mock(ExecutionContext.class),
+            null, new LinkedResultSet(), bucketSet));
+
+    for (Integer bid : bucketList) {
+      if (bid == bucket1) {
+        doReturn(null).doReturn(remoteNodeA).when(prqe).getPrimaryBucketOwner(bid);
+      } else {
+        doReturn(remoteNodeA).when(prqe).getPrimaryBucketOwner(bid);
+      }
+    }
+
+    Map<InternalDistributedMember, List<Integer>> bnMap = prqe.buildNodeToBucketMap();
+
+    assertThat(bnMap.size()).isEqualTo(1);
+    assertThat(bnMap.get(remoteNodeA).size()).isEqualTo(10);
+    verify(prqe, times(2)).getPrimaryBucketOwner(bucket1);
+  }
+
+  @Test
+  public void exceptionIsThrownWhenPrimaryBucketNodeIsNotFoundForCqQuery() {
+    List<Integer> bucketList = createBucketList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    int bucket1 = 1;
+    Set<Integer> bucketSet = new HashSet<>(bucketList);
+    when(query.isCqQuery()).thenReturn(true);
+    PartitionedRegionQueryEvaluator prqe =
+        spy(new PartitionedRegionQueryEvaluator(system, pr, query, mock(ExecutionContext.class),
+            null, new LinkedResultSet(), bucketSet));
+
+    for (Integer bid : bucketList) {
+      if (bid == bucket1) {
+        doReturn(null).when(prqe).getPrimaryBucketOwner(bid);
+      } else {
+        doReturn(remoteNodeA).when(prqe).getPrimaryBucketOwner(bid);
+      }
+    }
+
+    assertThatThrownBy(prqe::buildNodeToBucketMap).isInstanceOf(QueryException.class)
+        .hasMessageContaining(
+            "Data loss detected, unable to find the hosting  node for some of the dataset.");
+
+    verify(prqe, times(3)).getPrimaryBucketOwner(bucket1);
+  }
+
+  @Test
+  public void verifyLocalBucketNodesAreRetrievedForQuery() throws Exception {
+    List<Integer> bucketList = createBucketList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    Set<Integer> bucketSet = new HashSet<>(bucketList);
+    for (Integer bid : bucketList) {
+      when(dataStore.isManagingBucket(bid)).thenReturn(true);
+    }
+    when(pr.getDataStore()).thenReturn(dataStore);
+    PartitionedRegionQueryEvaluator prqe =
+        new PartitionedRegionQueryEvaluator(system, pr, query, mock(ExecutionContext.class),
+            null, new LinkedResultSet(), bucketSet);
+
+    Map<InternalDistributedMember, List<Integer>> bnMap = prqe.buildNodeToBucketMap();
+
+    assertThat(bnMap.size()).isEqualTo(1);
+    assertThat(bnMap.get(localNode).size()).isEqualTo(10);
+  }
+
+  @Test
+  public void verifyAllBucketsAreRetrievedFromSingleRemoteNode() throws Exception {
+    List<Integer> bucketList = createBucketList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    Set<Integer> bucketSet = new HashSet<>(bucketList);
+    when(pr.getDataStore()).thenReturn(null);
+    RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
+    Set<InternalDistributedMember> nodes = new HashSet<>(allNodes);
+    when(regionAdvisor.adviseDataStore()).thenReturn(nodes);
+    for (Integer bid : bucketList) {
+      when(regionAdvisor.getBucketOwners(bid)).thenReturn(nodes);
+    }
+    when(pr.getRegionAdvisor()).thenReturn(regionAdvisor);
+    PartitionedRegionQueryEvaluator prqe =
+        new PartitionedRegionQueryEvaluator(system, pr, query, mock(ExecutionContext.class),
+            null, new LinkedResultSet(), bucketSet);
+
+    Map<InternalDistributedMember, List<Integer>> bnMap = prqe.buildNodeToBucketMap();
+
+    assertThat(bnMap.size()).isEqualTo(1);
+    bnMap.keySet().forEach(x -> assertThat(bnMap.get(x).size()).isEqualTo(10));
+  }
+
+  @Test
+  public void verifyAllBucketsAreRetrievedFromMultipleRemoteNodes() throws Exception {
+    List<Integer> bucketList = createBucketList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    Set<Integer> bucketSet = new HashSet<>(bucketList);
+    when(pr.getDataStore()).thenReturn(null);
+    RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
+    Set<InternalDistributedMember> nodes = new HashSet<>(allNodes);
+    when(regionAdvisor.adviseDataStore()).thenReturn(nodes);
+    Set<InternalDistributedMember> nodesA = new HashSet<>();
+    nodesA.add(remoteNodeA);
+    Set<InternalDistributedMember> nodesB = new HashSet<>();
+    nodesB.add(remoteNodeB);
+    for (Integer bid : bucketList) {
+      if (bid % 2 == 0) {
+        when(regionAdvisor.getBucketOwners(bid)).thenReturn(nodesA);
+      } else {
+        when(regionAdvisor.getBucketOwners(bid)).thenReturn(nodesB);
+      }
+    }
+    when(pr.getRegionAdvisor()).thenReturn(regionAdvisor);
+    PartitionedRegionQueryEvaluator prqe =
+        new PartitionedRegionQueryEvaluator(system, pr, query, mock(ExecutionContext.class),
+            null, new LinkedResultSet(), bucketSet);
+
+    Map<InternalDistributedMember, List<Integer>> bnMap = prqe.buildNodeToBucketMap();
+
+    assertThat(bnMap.size()).isEqualTo(2);
+    bnMap.keySet().forEach(x -> {
+      assertThat(x).satisfiesAnyOf(
+          member -> assertThat(member).isEqualTo(remoteNodeA),
+          member -> assertThat(member).isEqualTo(remoteNodeB));
+      assertThat(bnMap.get(x).size()).isEqualTo(5);
+    });
+  }
+
+  @Test
+  public void exceptionIsThrownWhenNodesAreNotFoundForQueryBuckets() {
+    List<Integer> bucketList = createBucketList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    Set<Integer> bucketSet = new HashSet<>(bucketList);
+    when(pr.getDataStore()).thenReturn(null);
+    RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
+    Set<InternalDistributedMember> nodes = new HashSet<>(allNodes);
+    when(regionAdvisor.adviseDataStore()).thenReturn(nodes);
+    for (Integer bid : bucketList) {
+      if (bid != 1) {
+        when(regionAdvisor.getBucketOwners(bid)).thenReturn(nodes);
+      }
+    }
+    when(pr.getRegionAdvisor()).thenReturn(regionAdvisor);
+    PartitionedRegionQueryEvaluator prqe =
+        new PartitionedRegionQueryEvaluator(system, pr, query, mock(ExecutionContext.class),
+            null, new LinkedResultSet(), bucketSet);
+
+    assertThatThrownBy(prqe::buildNodeToBucketMap).isInstanceOf(QueryException.class)
+        .hasMessageContaining(
+            "Data loss detected, unable to find the hosting  node for some of the dataset.");
   }
 
   private Map<InternalDistributedMember, List<Integer>> createFakeBucketMap() {
