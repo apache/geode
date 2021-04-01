@@ -23,7 +23,7 @@ cd ..
 # Redis commands.  Once all commands needed to run relevant test files are implemented, we hope to
 # use Redis's repo without a patch.
 git clone --config transfer.fsckObjects=false https://github.com/redis/redis.git
-REDIS_PATCH=${PWD}/geode-redis/src/acceptanceTest/resources/0001-configure-redis-tests.patch
+REDIS_PATCH=${PWD}/geode-apis-compatible-with-redis/src/acceptanceTest/resources/0001-configure-redis-tests.patch
 cd redis
 git checkout origin/5.0
 git apply ${REDIS_PATCH}
