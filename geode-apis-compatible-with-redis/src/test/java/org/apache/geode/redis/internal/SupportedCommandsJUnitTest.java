@@ -48,8 +48,8 @@ public class SupportedCommandsJUnitTest {
       "HINCRBYFLOAT",
       "HLEN",
       "HMGET",
-      "HSCAN",
       "HMSET",
+      "HSCAN",
       "HSET",
       "HSETNX",
       "HSTRLEN",
@@ -81,7 +81,7 @@ public class SupportedCommandsJUnitTest {
       "SUBSCRIBE",
       "TTL",
       "TYPE",
-      "UNSUBSCRIBE",
+      "UNSUBSCRIBE"
   };
 
   private final String[] unSupportedCommands = new String[] {

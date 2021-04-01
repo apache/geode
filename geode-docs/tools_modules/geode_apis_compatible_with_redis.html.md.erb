@@ -17,13 +17,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-The <%=vars.product_name%> APIs compatible with Redis allows <%=vars.product_name%> to function as a drop-in replacement for a
+The <%=vars.product_name%> APIs compatible with Redis allow <%=vars.product_name%> to function as a drop-in replacement for a
 highly-available Redis data store, letting Redis applications take advantage of
 <%=vars.product_name%>’s scaling capabilities without changing their client code. Redis clients connect to a <%=vars.product_name%>
 server in the same way they connect to a Redis server, using a hostname and a port number, with
 optional password authentication.
 
-<img src="../images/geode_apis_compatible_with_redis.png" class="image" />
+<img src="../images_svg/geode_apis_compatible_with_redis.svg" class="image" />
 
 ## <a id="using-the-api" class="no-quick-link"></a>Using the <%=vars.product_name%> API compatible with Redis
 
@@ -40,13 +40,15 @@ start server \
   --compatible-with-redis-password=<compatibleWithRedisPassword>
 ```
 
-If any of the options `compatible-with-redis-bind-address`, `compatible-with-redis-password`, or `compatible-with-redis-port` are included, a <%=vars.product_name%> server compatible with Redis will be started.
+If any of the options `compatible-with-redis-bind-address`, `compatible-with-redis-password`, or `compatible-with-redis-port`
+are included, a <%=vars.product_name%> server with APIs compatible with Redis will be started.
 
 Replace `<serverName>` with the name of your server.
 
 Replace `<locatorPort>` with your locator port.
 
-Replace `<compatibleWithRedisPort>` with the port that the <%=vars.product_name%> server listens on for Redis commands. The typical port used with a cluster compatible with Redis is 6379.
+Replace `<compatibleWithRedisPort>` with the port that the <%=vars.product_name%> server
+ listens on for Redis commands. The typical port used with a cluster compatible with Redis is 6379.
 
 Replace `<compatibleWithRedisBindAddress>` with the address of the server host.
 
@@ -64,22 +66,151 @@ If the server is functioning properly, you should see a response of `PONG`.
 
 ## <a id="supported-commands" class="no-quick-link"></a>Supported Redis Commands
 
-The <%=vars.product_name%> APIs compatible with Redis currently supports the following Redis commands.  See [Redis commands](https://redis.io/commands/) for a complete list of and more information on Redis commands.
+The <%=vars.product_name%> APIs compatible with Redis currently support the following Redis commands.
+<br/>
 
-**Note**: These commands are supported for Redis 5.
-**Note**: SLOWLOG is implemented as a NoOp for compatibility with some monitoring tools.
-**Note**: Redis accepts 64-bit signed integers for the HSCAN cursor and COUNT parameters. The Geode APIs compatible with Redis are limited to 32-bit integer values for these parameters.
+ - APPEND <br/>
+ - AUTH <br/>
+ - DECR <br/>
+ - DECRBY <br/>
+ - DEL <br/>
+ - EXISTS <br/>
+ - EXPIRE <br/>
+ - EXPIREAT <br/>
+ - GET <br/>
+ - GETRANGE <br/>
+ - HDEL <br/>
+ - HEXISTS <br/>
+ - HGET <br/>
+ - HGETALL <br/>
+ - HINCRBY <br/>
+ - HINCRBYFLOAT <br/>
+ - HLEN <br/>
+ - HMGET <br/>
+ - HMSET <br/>
+ - HSCAN <sup>1</sup>  <br/>
+ - HSET <br/>
+ - HSETNX <br/>
+ - HSTRLEN <br/>
+ - HVALS <br/>
+ - HKEYS <br/>
+ - INCR <br/>
+ - INCRBY <br/>
+ - INCRBYFLOAT <br/>
+ - INFO <sup>2</sup>  <br/>
+ - KEYS <br/>
+ - MGET <br/>
+ - PERSIST <br/>
+ - PEXPIRE <br/>
+ - PEXPIREAT <br/>
+ - PING <br/>
+ - PSUBSCRIBE <br/>
+ - PTTL <br/>
+ - PUBLISH <br/>
+ - PUNSUBSCRIBE <br/>
+ - QUIT <br/>
+ - RENAME <br/>
+ - SADD <br/>
+ - SET <br/>
+ - SETNX <br/>
+ - SLOWLOG <sup>3</sup>  <br/>
+ - SMEMBERS <br/>
+ - SREM <br/>
+ - STRLEN <br/>
+ - SUBSCRIBE <br/>
+ - TTL <br/>
+ - TYPE <br/>
+ - UNSUBSCRIBE <br/>
 
--   **Connection**: AUTH, PING, QUIT
--   **Hashes**: HDEL, HEXISTS, HGET, HGETALL, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HMSET, HSCAN, HSET, HSETNX, HSTRLEN, HVALS
--   **Keys**: DEL, EXISTS, EXPIRE, EXPIREAT, KEYS, PERSIST, PEXPIRE, PEXPIREAT, PTTL, RENAME, TTL,TYPE
--   **Publish/Subscribe**: PUBLISH, PSUBSCRIBE, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE
--   **Server**: SLOWLOG, INFO
--   **Sets**: SADD, SMEMBERS, SREM
--   **Strings**: APPEND, DECR, DECRBY, GET, GETRANGE, INCR, INCRBY, INCRBYFLOAT, MGET, SET, SETNX, STRLEN
-
-
+<br/>
 Commands not listed above are **not implemented**.
+
+<br/>
+**NOTES:**
+
+<br/>
+<br/>
+These commands are supported for Redis 5.
+
+<br/>
+<br/>
+<sup>1</sup>Redis accepts 64-bit signed integers for the HSCAN cursor and COUNT parameters.
+ The Geode APIs compatible with Redis are limited to 32-bit integer values for these parameters.
+
+<br/>
+<br/>
+<sup>2</sup> INFO is implemented for the sections and fields listed below:
+
+ - clients
+
+    - connected_clients
+
+    - blocked_clients (always returns 0)
+
+ - cluster
+
+    - cluster_enables (always returns 0)
+
+ - keyspace
+
+    - returns stats for db: 0
+
+ - memory
+
+    - maxmemory
+
+    - used_memory
+
+    - mem_fragmentation_ratio (always reports 1.00)
+
+ - persistence
+
+    - loading (always returns 0)
+
+    - rdb_changes_since_last_save (always returns 0)
+
+    - rdb_last_save_time (always returns 0)
+
+ - replication
+
+    - role
+
+    - connected_slaves (always returns 0)
+
+ - server
+
+   - redis_version
+
+   - redis_mode
+
+   - tcp_port
+
+   - uptime_in_seconds
+
+   - uptime_in_days
+
+ - stats
+
+    - total_commands_processed
+
+    - instantaneous_ops_per_sec
+
+    - total_net_input_bytes
+
+    - instantaneous_input_kbps
+
+    - total_connections_received
+
+    - keyspace_hits
+
+    - keyspace_misses
+
+    - evicted_keys (always returns 0)
+
+    - rejected_connections (always returns 0)
+
+<br/>
+<sup>3</sup>  SLOWLOG is implemented as a NoOp.
 
 ## <a id="advantages-over-redis" class="no-quick-link"></a>Advantages of <%=vars.product_name%> over Redis
 
