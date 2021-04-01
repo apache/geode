@@ -877,8 +877,40 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
         Throwable thrown = catchThrowable(() -> {
           createReplicateRegion(regionName, getDiskDirs(getVMId()));
         });
-        assertThat(thrown).isInstanceOf(ConflictingPersistentDataException.class);
+        assertThat(thrown)
+            .isInstanceOf(ConflictingPersistentDataException.class)
+            .hasMessageContaining("was not part of the same distributed system as the local data");
       }
+    });
+  }
+
+  @Test
+  public void testRecoverableSplitBrain() {
+    vm2.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
+    vm0.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      putEntry("A", "B");
+      getCache().getRegion(regionName).close();
+    });
+
+    vm1.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      validateEntry("A", "B");
+      updateEntry("A", "C");
+      getCache().getRegion(regionName).close();
+    });
+
+    // VM0 doesn't know that VM1 ever existed so it will start up.
+    vm0.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      validateEntry("A", "C");
+    });
+
+    vm1.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      validateEntry("A", "C");
     });
   }
 
