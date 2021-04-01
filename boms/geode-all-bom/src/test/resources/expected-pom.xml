@@ -873,6 +873,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-apis-compatible-with-redis</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-common</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
@@ -1006,12 +1012,6 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-rebalancer</artifactId>
-        <version>${version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
-        <artifactId>geode-redis</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>

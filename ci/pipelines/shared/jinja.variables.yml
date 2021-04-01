@@ -148,7 +148,7 @@ tests:
   CPUS: '4'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 30m
-  GRADLE_TASK: ':geode-redis:redisAPITest'
+  GRADLE_TASK: ':geode-apis-compatible-with-redis:redisAPITest'
   MAX_IN_FLIGHT: 1
   ONLY_JDK: 11
   PARALLEL_DUNIT: 'false'

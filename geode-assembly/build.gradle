@@ -42,7 +42,7 @@ def dependentProjectNames = [
   ':geode-protobuf',
   ':geode-protobuf-messages',
   ':geode-rebalancer',
-  ':geode-redis',
+  ':geode-apis-compatible-with-redis',
   ':geode-serialization',
   ':geode-tcp-server',
   ':geode-wan'

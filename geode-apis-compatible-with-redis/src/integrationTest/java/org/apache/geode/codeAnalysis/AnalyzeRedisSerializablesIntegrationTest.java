@@ -21,7 +21,7 @@ public class AnalyzeRedisSerializablesIntegrationTest extends AnalyzeSerializabl
 
   @Override
   protected String getModuleName() {
-    return "geode-redis";
+    return "geode-apis-compatible-with-redis";
   }
 
   @Override

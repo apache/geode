@@ -1020,7 +1020,7 @@ lib/geode-old-client-support-0.0.0.jar
 lib/geode-protobuf-0.0.0.jar
 lib/geode-protobuf-messages-0.0.0.jar
 lib/geode-rebalancer-0.0.0.jar
-lib/geode-redis-0.0.0.jar
+lib/geode-apis-compatible-with-redis-0.0.0.jar
 lib/geode-serialization-0.0.0.jar
 lib/geode-tcp-server-0.0.0.jar
 lib/geode-unsafe-0.0.0.jar
