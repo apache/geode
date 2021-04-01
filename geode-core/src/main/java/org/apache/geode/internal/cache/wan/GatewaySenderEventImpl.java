@@ -1390,6 +1390,6 @@ public class GatewaySenderEventImpl
   }
 
   public void setAcked(boolean acked) {
-    this.isAcked = isAcked;
+    this.isAcked = acked;
   }
 }
