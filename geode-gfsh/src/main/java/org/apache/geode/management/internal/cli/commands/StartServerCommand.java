@@ -39,7 +39,7 @@ import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -230,7 +230,7 @@ public class StartServerCommand extends OfflineGfshCommand {
       String httpServicePort, String httpServiceBindAddress, String userName, String passwordToUse,
       Boolean redirectOutput)
       throws MalformedObjectNameException, IOException, InterruptedException {
-    cacheXmlPathname = CliUtil.resolvePathname(cacheXmlPathname);
+    cacheXmlPathname = CliUtils.resolvePathname(cacheXmlPathname);
 
     if (StringUtils.isNotBlank(cacheXmlPathname)) {
       if (!IOUtils.isExistingPathname(cacheXmlPathname)) {
@@ -302,8 +302,9 @@ public class StartServerCommand extends OfflineGfshCommand {
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
 
-    // if redis-port, redis-bind-address, or redis-password are specified in the command line,
-    // REDIS_ENABLED should be set to true
+    // if compatible-with-redis-port, compatible-with-redis-bind-address, or
+    // compatible-with-redis-password are specified in the command line, REDIS_ENABLED should be set
+    // to true
     String stringRedisPort;
     stringRedisPort = redisPort == null ? "" : redisPort.toString();
 

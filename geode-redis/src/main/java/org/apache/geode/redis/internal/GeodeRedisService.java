@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
@@ -28,6 +29,12 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.NullRedisData;
+import org.apache.geode.redis.internal.data.RedisHash;
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.data.RedisSet;
+import org.apache.geode.redis.internal.data.RedisString;
+import org.apache.geode.redis.internal.executor.string.SetOptions;
 
 public class GeodeRedisService implements CacheService, ResourceEventsListener {
   private static final Logger logger = LogService.getLogger();
@@ -49,9 +56,26 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
 
   private void registerDataSerializables() {
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_KEY,
+        RedisKey.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER,
         ByteArrayWrapper.class);
-
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_SET_ID,
+        RedisSet.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_STRING_ID,
+        RedisString.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_HASH_ID,
+        RedisHash.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_NULL_DATA_ID,
+        NullRedisData.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_SET_OPTIONS_ID,
+        SetOptions.class);
   }
 
   @Override
@@ -100,6 +124,11 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
 
   public int getPort() {
     return redisServer.getPort();
+  }
+
+  @VisibleForTesting
+  public Long getDataStoreBytesInUseForDataRegion() {
+    return redisServer.getDataStoreBytesInUseForDataRegion();
   }
 
   public void setEnableUnsupported(boolean unsupported) {

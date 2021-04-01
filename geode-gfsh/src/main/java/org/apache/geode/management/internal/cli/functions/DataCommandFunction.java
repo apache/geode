@@ -46,11 +46,11 @@ import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
@@ -72,9 +72,12 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
 
   private boolean optimizeForWrite = false;
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.DataCommandFunction";
+
   @Override
   public String getId() {
-    return DataCommandFunction.class.getName();
+    return ID;
   }
 
   @Override

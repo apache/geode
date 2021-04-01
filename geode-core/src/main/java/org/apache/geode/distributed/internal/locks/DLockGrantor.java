@@ -579,7 +579,7 @@ public class DLockGrantor {
   }
 
   @VisibleForTesting
-  Map getMembersDepartedTimeRecords() {
+  Map<InternalDistributedMember, Long> getMembersDepartedTimeRecords() {
     return membersDepartedTime;
   }
 

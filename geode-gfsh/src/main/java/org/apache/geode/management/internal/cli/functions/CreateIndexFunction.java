@@ -31,9 +31,14 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  *
  */
 public class CreateIndexFunction implements InternalFunction<RegionConfig.Index> {
-
-
   private static final long serialVersionUID = 1L;
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.CreateIndexFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   @SuppressWarnings("deprecation")
@@ -77,10 +82,5 @@ public class CreateIndexFunction implements InternalFunction<RegionConfig.Index>
           e.getClass().getName(), e.getMessage());
       context.getResultSender().lastResult(new CliFunctionResult(memberId, e, exceptionMessage));
     }
-  }
-
-  @Override
-  public String getId() {
-    return CreateIndexFunction.class.getName();
   }
 }

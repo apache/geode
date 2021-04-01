@@ -154,7 +154,7 @@
       <dependency>
         <groupId>com.zaxxer</groupId>
         <artifactId>HikariCP</artifactId>
-        <version>4.0.2</version>
+        <version>4.0.3</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -226,7 +226,7 @@
       <dependency>
         <groupId>io.micrometer</groupId>
         <artifactId>micrometer-core</artifactId>
-        <version>1.6.4</version>
+        <version>1.6.5</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -340,13 +340,13 @@
       <dependency>
         <groupId>net.sourceforge.pmd</groupId>
         <artifactId>pmd-java</artifactId>
-        <version>6.31.0</version>
+        <version>6.32.0</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>net.sourceforge.pmd</groupId>
         <artifactId>pmd-test</artifactId>
-        <version>6.31.0</version>
+        <version>6.32.0</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -364,7 +364,7 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
-        <version>3.11</version>
+        <version>3.12.0</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -418,19 +418,19 @@
       <dependency>
         <groupId>org.codehaus.cargo</groupId>
         <artifactId>cargo-core-uberjar</artifactId>
-        <version>1.9.1</version>
+        <version>1.9.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
-        <version>9.4.37.v20210219</version>
+        <version>9.4.38.v20210224</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-webapp</artifactId>
-        <version>9.4.37.v20210219</version>
+        <version>9.4.38.v20210224</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -449,6 +449,12 @@
         <groupId>org.iq80.snappy</groupId>
         <artifactId>snappy</artifactId>
         <version>0.4</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.modules</groupId>
+        <artifactId>jboss-modules</artifactId>
+        <version>1.11.0.Final</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -496,7 +502,7 @@
       <dependency>
         <groupId>org.springframework.hateoas</groupId>
         <artifactId>spring-hateoas</artifactId>
-        <version>1.2.4</version>
+        <version>1.2.5</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -526,13 +532,13 @@
       <dependency>
         <groupId>redis.clients</groupId>
         <artifactId>jedis</artifactId>
-        <version>3.5.1</version>
+        <version>3.5.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>io.lettuce</groupId>
         <artifactId>lettuce-core</artifactId>
-        <version>6.0.2.RELEASE</version>
+        <version>6.0.3.RELEASE</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -544,31 +550,31 @@
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
-        <version>2.12.1</version>
+        <version>2.12.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
-        <version>2.12.1</version>
+        <version>2.12.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>2.12.1</version>
+        <version>2.12.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.datatype</groupId>
         <artifactId>jackson-datatype-joda</artifactId>
-        <version>2.12.1</version>
+        <version>2.12.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.datatype</groupId>
         <artifactId>jackson-datatype-jsr310</artifactId>
-        <version>2.12.1</version>
+        <version>2.12.2</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -634,31 +640,31 @@
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-api</artifactId>
-        <version>2.14.0</version>
+        <version>2.14.1</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-core</artifactId>
-        <version>2.14.0</version>
+        <version>2.14.1</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-jcl</artifactId>
-        <version>2.14.0</version>
+        <version>2.14.1</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-jul</artifactId>
-        <version>2.14.0</version>
+        <version>2.14.1</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-slf4j-impl</artifactId>
-        <version>2.14.0</version>
+        <version>2.14.1</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -701,24 +707,6 @@
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest</artifactId>
         <version>2.2</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-mockito2</artifactId>
-        <version>2.0.9</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-core</artifactId>
-        <version>2.0.9</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-module-junit4</artifactId>
-        <version>2.0.9</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -796,61 +784,61 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-aspects</artifactId>
-        <version>5.3.3</version>
+        <version>5.3.5</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-beans</artifactId>
-        <version>5.3.3</version>
+        <version>5.3.5</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-context</artifactId>
-        <version>5.3.3</version>
+        <version>5.3.5</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-core</artifactId>
-        <version>5.3.3</version>
+        <version>5.3.5</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-expression</artifactId>
-        <version>5.3.3</version>
+        <version>5.3.5</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-oxm</artifactId>
-        <version>5.3.3</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-tx</artifactId>
-        <version>5.3.3</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-web</artifactId>
-        <version>5.3.3</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-webmvc</artifactId>
-        <version>5.3.3</version>
+        <version>5.3.5</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-test</artifactId>
-        <version>5.3.3</version>
+        <version>5.3.5</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-tx</artifactId>
+        <version>5.3.5</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>5.3.5</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-webmvc</artifactId>
+        <version>5.3.5</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -916,6 +904,12 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-cq</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-deployment-legacy</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>

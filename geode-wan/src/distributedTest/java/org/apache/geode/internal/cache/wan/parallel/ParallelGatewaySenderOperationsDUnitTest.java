@@ -63,7 +63,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
-import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.internal.offheap.OffHeapClearRequired;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -800,6 +800,79 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   }
 
   @Test
+  public void testMultiSiteReplication() {
+    String site1to2SenderId = "site1to2-sender";
+    String site1to3SenderId = "site1to3-sender";
+    String site2to3SenderId = "site2to3-sender";
+    String regionName = testName.getMethodName();
+    int[] ports = getRandomAvailableTCPPorts(3);
+    int site1Port = ports[0];
+    int site2Port = ports[1];
+    int site3Port = ports[2];
+    Set<String> site1RemoteLocators =
+        Stream.of("localhost[" + site2Port + "]", "localhost[" + site3Port + "]")
+            .collect(Collectors.toSet());
+    Set<String> site2RemoteLocators =
+        Stream.of("localhost[" + site1Port + "]", "localhost[" + site3Port + "]")
+            .collect(Collectors.toSet());
+    Set<String> site3RemoteLocators =
+        Stream.of("localhost[" + site1Port + "]", "localhost[" + site2Port + "]")
+            .collect(Collectors.toSet());
+
+    // Start 3 sites.
+    vm0.invoke(() -> createLocator(1, site1Port,
+        Collections.singleton("localhost[" + site1Port + "]"), site1RemoteLocators));
+    vm1.invoke(() -> createLocator(2, site2Port,
+        Collections.singleton("localhost[" + site2Port + "]"), site2RemoteLocators));
+    vm2.invoke(() -> createLocator(3, site3Port,
+        Collections.singleton("localhost[" + site3Port + "]"), site3RemoteLocators));
+
+    // Create the cache on the 3 sites.
+    createCacheInVMs(site1Port, vm3);
+    createCacheInVMs(site2Port, vm4);
+    createCacheInVMs(site3Port, vm5);
+
+    // Create senders and partitioned region on site 1.
+    vm3.invoke(() -> {
+      createSender(site1to2SenderId, 2, true, 100, 20, false, false, null, false);
+      createSender(site1to3SenderId, 3, true, 100, 20, false, false, null, false);
+      waitForSenderRunningState(site1to2SenderId);
+      waitForSenderRunningState(site1to3SenderId);
+
+      createPartitionedRegion(regionName, String.join(",", site1to2SenderId, site1to3SenderId), 1,
+          113,
+          isOffHeap());
+    });
+
+    // Create receiver, sender and partitioned region on site 2.
+    vm4.invoke(() -> {
+      createReceiver();
+      createSender(site2to3SenderId, 3, true, 100, 20, false, false, null, false);
+      waitForSenderRunningState(site2to3SenderId);
+
+      createPartitionedRegion(regionName, String.join(",", site2to3SenderId), 1, 113,
+          isOffHeap());
+    });
+
+    // Create receiver and partitioned region on site 3.
+    vm5.invoke(() -> {
+      createReceiver();
+      createPartitionedRegion(regionName, null, 1, 113, isOffHeap());
+    });
+
+    // Do puts
+    vm3.invoke(() -> doPuts(regionName, 200));
+    validateRegionSizes(regionName, 200, vm3, vm4, vm5);
+
+    // Stop sender from site 1 to site 3.
+    vm3.invoke(() -> stopSender(site1to3SenderId));
+
+    // Do puts again
+    vm3.invoke(() -> doPuts(regionName, 1000));
+    validateRegionSizes(regionName, 1000, vm3, vm4, vm5);
+  }
+
+  @Test
   public void testParallelGatewaySenderConcurrentPutClearNoOffheapOrphans()
       throws Exception {
     MemberVM locator = clusterStartupRule.startLocatorVM(1, new Properties());
@@ -856,7 +929,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       // above.
       callables.add(Executors.callable(() -> {
         try {
-          OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+          OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
             @Override
             public void run() {
               // Wait for the cache writer to be invoked to release this countdown latch.

@@ -90,7 +90,6 @@ public class StatSamplerIntegrationTest {
     File folder = temporaryFolder.newFolder();
     String archiveFileName = folder.getAbsolutePath() + File.separator + getName() + ".gfs";
 
-    System.setProperty("stats.log-level", "config");
     System.setProperty("stats.disable", "false");
     System.setProperty("stats.name", getName());
     System.setProperty("stats.archive-file", archiveFileName);

@@ -98,7 +98,7 @@ public class StringsDUnitTest {
   }
 
   @Test
-  public void set_shoulddistributeDataAmongMultipleServers_givenMultipleClients() {
+  public void set_shouldDistributeDataAmongMultipleServers_givenMultipleClients() {
     List<String> keys = makeStringList(LIST_SIZE, "key1-");
     List<String> values = makeStringList(LIST_SIZE, "values1-");
 
@@ -220,7 +220,7 @@ public class StringsDUnitTest {
   }
 
   @Test
-  public void decr_shouldDecrementWhileDoingConcurrentDecrs() {
+  public void decr_shouldDecrementWhileDoingConcurrentDecr() {
     String key = "key";
     int initialValue = NUM_ITERATIONS * 2;
     jedis1.set(key, String.valueOf(initialValue));
@@ -229,6 +229,19 @@ public class StringsDUnitTest {
         (i) -> jedis1.decr(key),
         (i) -> jedis2.decr(key))
             .run();
+
+    assertThat(jedis1.get(key)).isEqualTo("0");
+  }
+
+  @Test
+  public void decrby_shouldDecrementReliably_givenConcurrentThreadsPerformingDecrby() {
+    String key = "key";
+    int initialValue = NUM_ITERATIONS * 6;
+    jedis1.set(key, String.valueOf(initialValue));
+
+    new ConcurrentLoopingThreads(NUM_ITERATIONS,
+        (i) -> jedis1.decrBy(key, 4),
+        (i) -> jedis2.decrBy(key, 2)).run();
 
     assertThat(jedis1.get(key)).isEqualTo("0");
   }
@@ -256,6 +269,7 @@ public class StringsDUnitTest {
       assertThat(value).isEqualTo(expectedValue);
     }
   }
+
 
   private List<String> makeStringList(int setSize, String baseString) {
     List<String> strings = new ArrayList<>();

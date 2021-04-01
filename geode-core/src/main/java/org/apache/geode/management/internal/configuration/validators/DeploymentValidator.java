@@ -16,10 +16,12 @@
 package org.apache.geode.management.internal.configuration.validators;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.CacheElementOperation;
+import org.apache.geode.management.internal.utils.JarFileUtils;
 
 public class DeploymentValidator implements ConfigurationValidator<Deployment> {
   @Override
@@ -37,10 +39,16 @@ public class DeploymentValidator implements ConfigurationValidator<Deployment> {
 
   private void validateCreate(Deployment config) {
     // verify jar content
+    List<String> invalidFileNames = new ArrayList<>();
     File file = config.getFile();
-    if (!DeployedJar.hasValidJarContent(file)) {
+    if (!JarFileUtils.hasValidJarContent(file)) {
+      invalidFileNames.add(file.getName());
+    }
+
+    if (!invalidFileNames.isEmpty()) {
       throw new IllegalArgumentException(
-          "File does not contain valid JAR content: " + config.getFileName());
+          "Some files in deployment: " + config.getDeploymentName()
+              + " do not contain valid JAR contents: " + invalidFileNames);
     }
   }
 }

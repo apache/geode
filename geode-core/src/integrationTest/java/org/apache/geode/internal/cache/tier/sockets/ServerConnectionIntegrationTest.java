@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.quality.Strictness.STRICT_STUBS;
+import static org.mockito.quality.Strictness.LENIENT;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -35,6 +35,8 @@ import org.junit.experimental.categories.Category;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXManagerImpl;
@@ -43,6 +45,7 @@ import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -51,11 +54,12 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 public class ServerConnectionIntegrationTest {
 
   @Rule
-  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(LENIENT);
 
   private AcceptorImpl acceptor;
   private Socket socket;
   private InternalCache cache;
+  private CachedRegionHelper cachedRegionHelper;
   private SecurityService securityService;
   private CacheServerStats stats;
 
@@ -66,11 +70,21 @@ public class ServerConnectionIntegrationTest {
     acceptor = mock(AcceptorImpl.class);
     socket = mock(Socket.class);
     cache = mock(InternalCache.class);
+    cachedRegionHelper = mock(CachedRegionHelper.class);
     securityService = mock(SecurityService.class);
     stats = mock(CacheServerStats.class);
 
     when(inetAddress.getHostAddress()).thenReturn("localhost");
     when(socket.getInetAddress()).thenReturn(inetAddress);
+
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    ThreadsMonitoring threadsMonitoring = mock(ThreadsMonitoring.class);
+
+    when(cachedRegionHelper.getCache()).thenReturn(cache);
+    when(cache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getDM()).thenReturn(distributionManager);
+    when(distributionManager.getThreadMonitoring()).thenReturn(threadsMonitoring);
   }
 
   /**
@@ -89,7 +103,7 @@ public class ServerConnectionIntegrationTest {
     when(acceptor.getConnectionListener()).thenReturn(mock(ConnectionListener.class));
 
     TestServerConnection testServerConnection =
-        new TestServerConnection(socket, cache, mock(CachedRegionHelper.class), stats, 0, 0, null,
+        new TestServerConnection(socket, cache, cachedRegionHelper, stats, 0, 0, null,
             CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor, securityService);
 
     assertThatCode(() -> testServerConnection.run()).doesNotThrowAnyException();

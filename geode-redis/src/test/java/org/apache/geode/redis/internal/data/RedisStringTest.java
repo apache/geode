@@ -20,7 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 
 import org.junit.BeforeClass;
@@ -32,6 +34,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class RedisStringTest {
 
@@ -40,6 +43,9 @@ public class RedisStringTest {
     InternalDataSerializer
         .getDSFIDSerializer()
         .registerDSFID(DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER, ByteArrayWrapper.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_STRING_ID,
+        RedisString.class);
   }
 
   @Test
@@ -72,9 +78,9 @@ public class RedisStringTest {
 
   @Test
   public void appendResizesByteArray() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(Region.class);
     RedisString redisString = new RedisString(new ByteArrayWrapper(new byte[] {0, 1}));
     ByteArrayWrapper part2 = new ByteArrayWrapper(new byte[] {2, 3, 4, 5});
     int redisStringSize = redisString.strlen();
@@ -85,9 +91,9 @@ public class RedisStringTest {
 
   @Test
   public void appendStoresStableDelta() throws IOException {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(Region.class);
     RedisString o1 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1}));
     ByteArrayWrapper part2 = new ByteArrayWrapper(new byte[] {2, 3});
     o1.append(part2, region, null);
@@ -105,7 +111,7 @@ public class RedisStringTest {
   }
 
   @Test
-  public void serializationIsStable() throws IOException, ClassNotFoundException {
+  public void confirmSerializationIsStable() throws IOException, ClassNotFoundException {
     RedisString o1 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1, 2, 3}));
     o1.setExpirationTimestampNoDelta(1000);
     HeapDataOutputStream outputStream = new HeapDataOutputStream(100);
@@ -116,11 +122,19 @@ public class RedisStringTest {
   }
 
   @Test
+  public void confirmToDataIsSynchronized() throws NoSuchMethodException {
+    assertThat(Modifier
+        .isSynchronized(RedisString.class
+            .getMethod("toData", DataOutput.class, SerializationContext.class).getModifiers()))
+                .isTrue();
+  }
+
+  @Test
   public void incrThrowsArithmeticErrorWhenNotALong() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0', ' ', '1'});
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0', ' ', '1'});
     RedisString string = new RedisString(byteArrayWrapper);
     assertThatThrownBy(() -> string.incr(region, byteArrayWrapper))
         .isInstanceOf(NumberFormatException.class);
@@ -128,10 +142,10 @@ public class RedisStringTest {
 
   @Test
   public void incrErrorsWhenValueOverflows() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(
         // max value for signed long
         new byte[] {'9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5', '4', '7', '7', '5',
             '8', '0', '7'});
@@ -142,10 +156,10 @@ public class RedisStringTest {
 
   @Test
   public void incrIncrementsValueAtGivenKey() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0'});
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0'});
     RedisString string = new RedisString(byteArrayWrapper);
     string.incr(region, byteArrayWrapper);
     assertThat(string.get().toString()).isEqualTo("11");
@@ -153,10 +167,10 @@ public class RedisStringTest {
 
   @Test
   public void incrbyThrowsNumberFormatExceptionWhenNotALong() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0', ' ', '1'});
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0', ' ', '1'});
     RedisString string = new RedisString(byteArrayWrapper);
     assertThatThrownBy(() -> string.incrby(region, byteArrayWrapper, 2L))
         .isInstanceOf(NumberFormatException.class);
@@ -164,10 +178,10 @@ public class RedisStringTest {
 
   @Test
   public void incrbyErrorsWhenValueOverflows() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(
         // max value for signed long
         new byte[] {'9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5', '4', '7', '7', '5',
             '8', '0', '7'});
@@ -178,10 +192,10 @@ public class RedisStringTest {
 
   @Test
   public void incrbyIncrementsValueByGivenLong() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0'});
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0'});
     RedisString string = new RedisString(byteArrayWrapper);
     string.incrby(region, byteArrayWrapper, 2L);
     assertThat(string.get().toString()).isEqualTo("12");
@@ -189,10 +203,10 @@ public class RedisStringTest {
 
   @Test
   public void incrbyfloatThrowsArithmeticErrorWhenNotADouble() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0', ' ', '1'});
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0', ' ', '1'});
     RedisString string = new RedisString(byteArrayWrapper);
     assertThatThrownBy(() -> string.incrbyfloat(region, byteArrayWrapper, new BigDecimal("1.1")))
         .isInstanceOf(NumberFormatException.class);
@@ -200,10 +214,10 @@ public class RedisStringTest {
 
   @Test
   public void incrbyfloatIncrementsValueByGivenFloat() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0'});
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0'});
     RedisString string = new RedisString(byteArrayWrapper);
     string.incrbyfloat(region, byteArrayWrapper, new BigDecimal("2.20"));
     assertThat(string.get().toString()).isEqualTo("12.20");
@@ -211,10 +225,10 @@ public class RedisStringTest {
 
   @Test
   public void decrThrowsNumberFormatExceptionWhenNotALong() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {0});
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(new byte[] {0});
     RedisString string = new RedisString(byteArrayWrapper);
     assertThatThrownBy(() -> string.decr(region, byteArrayWrapper))
         .isInstanceOf(NumberFormatException.class);
@@ -222,10 +236,10 @@ public class RedisStringTest {
 
   @Test
   public void decrThrowsArithmeticExceptionWhenDecrementingMin() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(
         new byte[] {'-', '9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5', '4', '7', '7',
             '5',
             '8', '0', '8'});
@@ -236,10 +250,10 @@ public class RedisStringTest {
 
   @Test
   public void decrDecrementsValue() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0'});
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0'});
     RedisString string = new RedisString(byteArrayWrapper);
     string.decr(region, byteArrayWrapper);
     assertThat(string.get().toString()).isEqualTo("9");
@@ -247,10 +261,10 @@ public class RedisStringTest {
 
   @Test
   public void decrbyThrowsNumberFormatExceptionWhenNotALong() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {1});
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(new byte[] {1});
     RedisString string = new RedisString(byteArrayWrapper);
     assertThatThrownBy(() -> string.decrby(region, byteArrayWrapper, 2))
         .isInstanceOf(NumberFormatException.class);
@@ -258,10 +272,10 @@ public class RedisStringTest {
 
   @Test
   public void decrbyThrowsArithmeticExceptionWhenDecrementingMin() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(
         new byte[] {'-', '9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5', '4', '7', '7',
             '5',
             '8', '0', '7'});
@@ -272,10 +286,10 @@ public class RedisStringTest {
 
   @Test
   public void decrbyDecrementsValue() {
-    // allows unchecked cast of mock to Region<ByteArrayWrapper, RedisData>
+    // allows unchecked cast of mock to Region<RedisKey, RedisData>
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {'1', '0'});
+    Region<RedisKey, RedisData> region = mock(Region.class);
+    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0'});
     RedisString string = new RedisString(byteArrayWrapper);
     string.decrby(region, byteArrayWrapper, 2);
     assertThat(string.get().toString()).isEqualTo("8");
@@ -324,7 +338,7 @@ public class RedisStringTest {
   @SuppressWarnings("unchecked")
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
-    Region<ByteArrayWrapper, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(Region.class);
     RedisString o1 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1}));
     o1.setExpirationTimestamp(region, null, 999);
     assertThat(o1.hasDelta()).isTrue();

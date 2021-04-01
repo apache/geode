@@ -19,7 +19,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
@@ -28,15 +28,21 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  *
  */
 public class CloseDurableCqFunction implements InternalFunction<String[]> {
-
   private static final long serialVersionUID = 1L;
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.CloseDurableCqFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<String[]> context) {
 
     final Cache cache = context.getCache();
     final String memberNameOrId =
-        CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
+        CliUtils.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
     String[] args = context.getArguments();
     String durableClientId = args[0];
     String cqName = args[1];

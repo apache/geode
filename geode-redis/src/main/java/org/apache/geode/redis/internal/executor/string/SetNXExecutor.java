@@ -19,6 +19,7 @@ import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -30,7 +31,7 @@ public class SetNXExecutor extends StringExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    ByteArrayWrapper key = command.getKey();
+    RedisKey key = command.getKey();
     ByteArrayWrapper value = new ByteArrayWrapper(commandElems.get(VALUE_INDEX));
 
     RedisStringCommands stringCommands = getRedisStringCommands(context);

@@ -15,7 +15,7 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.data.RedisString.NULL_REDIS_STRING;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_STRING;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -32,119 +32,119 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
     super(helper);
   }
 
-  private RedisString getRedisString(ByteArrayWrapper key, boolean updateStats) {
+  private RedisString getRedisString(RedisKey key, boolean updateStats) {
     return helper.getRedisString(key, updateStats);
   }
 
-  private RedisString getRedisStringIgnoringType(ByteArrayWrapper key, boolean updateStats) {
+  private RedisString getRedisStringIgnoringType(RedisKey key, boolean updateStats) {
     return helper.getRedisStringIgnoringType(key, updateStats);
   }
 
   @Override
-  public long append(ByteArrayWrapper key, ByteArrayWrapper valueToAppend) {
+  public long append(RedisKey key, ByteArrayWrapper valueToAppend) {
     return stripedExecute(key,
         () -> getRedisString(key, false)
             .append(valueToAppend, getRegion(), key));
   }
 
   @Override
-  public ByteArrayWrapper get(ByteArrayWrapper key) {
+  public ByteArrayWrapper get(RedisKey key) {
     return stripedExecute(key, () -> getRedisString(key, true).get());
   }
 
   @Override
-  public ByteArrayWrapper mget(ByteArrayWrapper key) {
+  public ByteArrayWrapper mget(RedisKey key) {
     return stripedExecute(key, () -> getRedisStringIgnoringType(key, true).get());
   }
 
   @Override
-  public boolean set(ByteArrayWrapper key, ByteArrayWrapper value, SetOptions options) {
+  public boolean set(RedisKey key, ByteArrayWrapper value, SetOptions options) {
     return stripedExecute(key, () -> NULL_REDIS_STRING
         .set(helper, key, value, options));
   }
 
   @Override
-  public long incr(ByteArrayWrapper key) {
+  public long incr(RedisKey key) {
     return stripedExecute(key, () -> getRedisString(key, false).incr(getRegion(), key));
   }
 
   @Override
-  public long decr(ByteArrayWrapper key) {
+  public long decr(RedisKey key) {
     return stripedExecute(key, () -> getRedisString(key, false).decr(getRegion(), key));
   }
 
   @Override
-  public ByteArrayWrapper getset(ByteArrayWrapper key, ByteArrayWrapper value) {
+  public ByteArrayWrapper getset(RedisKey key, ByteArrayWrapper value) {
     return stripedExecute(key,
         () -> getRedisString(key, true).getset(getRegion(), key, value));
   }
 
   @Override
-  public long incrby(ByteArrayWrapper key, long increment) {
+  public long incrby(RedisKey key, long increment) {
     return stripedExecute(key,
         () -> getRedisString(key, false).incrby(getRegion(), key, increment));
   }
 
   @Override
-  public BigDecimal incrbyfloat(ByteArrayWrapper key, BigDecimal increment) {
+  public BigDecimal incrbyfloat(RedisKey key, BigDecimal increment) {
     return stripedExecute(key,
         () -> getRedisString(key, false)
             .incrbyfloat(getRegion(), key, increment));
   }
 
   @Override
-  public int bitop(String operation, ByteArrayWrapper key,
-      List<ByteArrayWrapper> sources) {
+  public int bitop(String operation, RedisKey key,
+      List<RedisKey> sources) {
     return NULL_REDIS_STRING.bitop(helper, operation, key, sources);
   }
 
   @Override
-  public long decrby(ByteArrayWrapper key, long decrement) {
+  public long decrby(RedisKey key, long decrement) {
     return stripedExecute(key,
         () -> getRedisString(key, false).decrby(getRegion(), key, decrement));
   }
 
   @Override
-  public ByteArrayWrapper getrange(ByteArrayWrapper key, long start, long end) {
+  public ByteArrayWrapper getrange(RedisKey key, long start, long end) {
     return stripedExecute(key, () -> getRedisString(key, true).getrange(start, end));
   }
 
   @Override
-  public int setrange(ByteArrayWrapper key, int offset, byte[] value) {
+  public int setrange(RedisKey key, int offset, byte[] value) {
     return stripedExecute(key,
         () -> getRedisString(key, false)
             .setrange(getRegion(), key, offset, value));
   }
 
   @Override
-  public int bitpos(ByteArrayWrapper key, int bit, int start, Integer end) {
+  public int bitpos(RedisKey key, int bit, int start, Integer end) {
     return stripedExecute(key,
         () -> getRedisString(key, true)
             .bitpos(getRegion(), key, bit, start, end));
   }
 
   @Override
-  public long bitcount(ByteArrayWrapper key, int start, int end) {
+  public long bitcount(RedisKey key, int start, int end) {
     return stripedExecute(key, () -> getRedisString(key, true).bitcount(start, end));
   }
 
   @Override
-  public long bitcount(ByteArrayWrapper key) {
+  public long bitcount(RedisKey key) {
     return stripedExecute(key, () -> getRedisString(key, true).bitcount());
   }
 
   @Override
-  public int strlen(ByteArrayWrapper key) {
+  public int strlen(RedisKey key) {
     return stripedExecute(key, () -> getRedisString(key, true).strlen());
   }
 
   @Override
-  public int getbit(ByteArrayWrapper key, int offset) {
+  public int getbit(RedisKey key, int offset) {
     return stripedExecute(key, () -> getRedisString(key, true).getbit(offset));
   }
 
   @Override
-  public int setbit(ByteArrayWrapper key, long offset, int value) {
+  public int setbit(RedisKey key, long offset, int value) {
     int byteIndex = (int) (offset / 8);
     byte bitIndex = (byte) (offset % 8);
     return stripedExecute(key,

@@ -16,24 +16,24 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 
 public interface RedisKeyCommands {
-  boolean del(ByteArrayWrapper key);
+  boolean del(RedisKey key);
 
-  boolean exists(ByteArrayWrapper key);
+  boolean exists(RedisKey key);
 
-  boolean rename(ByteArrayWrapper oldKey, ByteArrayWrapper newKey);
+  boolean rename(RedisKey oldKey, RedisKey newKey);
 
-  long pttl(ByteArrayWrapper key);
+  long pttl(RedisKey key);
 
-  long internalPttl(ByteArrayWrapper key);
+  long internalPttl(RedisKey key);
 
-  int pexpireat(ByteArrayWrapper key, long timestamp);
+  int pexpireat(RedisKey key, long timestamp);
 
-  int persist(ByteArrayWrapper key);
+  int persist(RedisKey key);
 
-  String type(ByteArrayWrapper key);
+  String type(RedisKey key);
 
-  String internalType(ByteArrayWrapper key);
+  String internalType(RedisKey key);
 }

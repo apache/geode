@@ -61,7 +61,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.internal.offheap.OffHeapClearRequired;
 import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.logging.internal.executors.LoggingThread;
@@ -1020,7 +1020,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
           // Geode changes BEGIN
           if (clearedEntries == null) {
             final boolean checkForGatewaySenderEvent =
-                OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap();
+                OffHeapClearRequired.doesClearNeedToCheckForOffHeap();
             if (checkForGatewaySenderEvent) {
               clearedEntries = new ArrayList<HashEntry<?, ?>>();
             } else {
@@ -1805,7 +1805,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       if (entries != null) {
         final ArrayList<HashEntry<?, ?>> clearedEntries = entries;
         Runnable runnable;
-        if (OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap()) {
+        if (OffHeapClearRequired.doesClearNeedToCheckForOffHeap()) {
           runnable = new Runnable() {
             @Override
             public void run() {

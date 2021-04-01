@@ -27,6 +27,8 @@ import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.AppendDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
@@ -54,8 +56,7 @@ public abstract class AbstractRedisData implements RedisData {
   private transient DeltaInfo deltaInfo;
 
   @Override
-  public void setExpirationTimestamp(Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key, long value) {
+  public void setExpirationTimestamp(Region<RedisKey, RedisData> region, RedisKey key, long value) {
     expirationTimestamp = value;
     storeChanges(region, key, new TimestampDeltaInfo(value));
   }
@@ -65,7 +66,7 @@ public abstract class AbstractRedisData implements RedisData {
   }
 
   @Override
-  public int pexpireat(CommandHelper helper, ByteArrayWrapper key, long timestamp) {
+  public int pexpireat(CommandHelper helper, RedisKey key, long timestamp) {
     long now = System.currentTimeMillis();
     if (now >= timestamp) {
       // already expired
@@ -77,15 +78,14 @@ public abstract class AbstractRedisData implements RedisData {
   }
 
   @Override
-  public void doExpiration(CommandHelper helper, ByteArrayWrapper key) {
+  public void doExpiration(CommandHelper helper, RedisKey key) {
     long start = helper.getRedisStats().startExpiration();
     helper.getRegion().remove(key);
     helper.getRedisStats().endExpiration(start);
   }
 
   @Override
-  public boolean rename(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper oldKey,
-      ByteArrayWrapper newKey) {
+  public boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey) {
     region.put(newKey, this, primaryMoveReadLockAcquired);
     try {
       region.destroy(oldKey, primaryMoveReadLockAcquired);
@@ -100,7 +100,7 @@ public abstract class AbstractRedisData implements RedisData {
   }
 
   @Override
-  public long pttl(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key) {
+  public long pttl(Region<RedisKey, RedisData> region, RedisKey key) {
     long expireTimestamp = getExpirationTimestamp();
     if (expireTimestamp == NO_EXPIRATION) {
       return -1;
@@ -114,8 +114,7 @@ public abstract class AbstractRedisData implements RedisData {
   }
 
   @Override
-  public int persist(Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key) {
+  public int persist(Region<RedisKey, RedisData> region, RedisKey key) {
     if (getExpirationTimestamp() == NO_EXPIRATION) {
       return 0;
     }
@@ -158,13 +157,14 @@ public abstract class AbstractRedisData implements RedisData {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeLong(expirationTimestamp, out);
+  public void toData(DataOutput out, SerializationContext context) throws IOException {
+    out.writeLong(expirationTimestamp);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    expirationTimestamp = (DataSerializer.readLong(in));
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    expirationTimestamp = in.readLong();
   }
 
   private void setDelta(DeltaInfo deltaInfo) {
@@ -214,7 +214,7 @@ public abstract class AbstractRedisData implements RedisData {
     }
   }
 
-  protected void storeChanges(Region<ByteArrayWrapper, RedisData> region, ByteArrayWrapper key,
+  protected void storeChanges(Region<RedisKey, RedisData> region, RedisKey key,
       DeltaInfo deltaInfo) {
     if (deltaInfo != null) {
       if (removeFromRegion()) {

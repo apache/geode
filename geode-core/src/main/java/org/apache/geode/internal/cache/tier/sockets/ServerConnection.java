@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode.ServerConnectionExecutor;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -65,6 +66,8 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.command.Default;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
@@ -121,6 +124,16 @@ public abstract class ServerConnection implements Runnable {
   private ServerConnectionCollection serverConnectionCollection;
 
   private final ProcessingMessageTimer processingMessageTimer = new ProcessingMessageTimer();
+
+  private final ThreadsMonitoring threadMonitoring;
+  /**
+   * The threadMonitorExecutor for this server connection.
+   * This will be null if acceptor is a selector.
+   * When a selector is used, the thread pool that is used to process client requests
+   * will automatically register with the thread monitor the thread that is processing
+   * the request. So no need to create a threadMonitorExecutor.
+   */
+  private AbstractExecutor threadMonitorExecutor;
 
   public static ByteBuffer allocateCommBuffer(int size, Socket sock) {
     // I expect that size will almost always be the same value
@@ -304,6 +317,7 @@ public abstract class ServerConnection implements Runnable {
         logger.debug("While creating server connection", e);
       }
     }
+    threadMonitoring = getCache().getInternalDistributedSystem().getDM().getThreadMonitoring();
   }
 
   public Acceptor getAcceptor() {
@@ -778,6 +792,7 @@ public abstract class ServerConnection implements Runnable {
     }
 
     ThreadState threadState = null;
+    resumeThreadMonitoring();
     try {
       if (message != null) {
         // Since this thread is not interrupted when the cache server is shutdown, test again after
@@ -847,6 +862,7 @@ public abstract class ServerConnection implements Runnable {
         command.execute(message, this, securityService);
       }
     } finally {
+      suspendThreadMonitoring();
       // Keep track of the fact that a message is no longer being
       // processed.
       serverConnectionCollection.connectionsProcessing.decrementAndGet();
@@ -855,6 +871,18 @@ public abstract class ServerConnection implements Runnable {
       if (threadState != null) {
         threadState.clear();
       }
+    }
+  }
+
+  private void suspendThreadMonitoring() {
+    if (threadMonitorExecutor != null) {
+      threadMonitorExecutor.suspendMonitoring();
+    }
+  }
+
+  private void resumeThreadMonitoring() {
+    if (threadMonitorExecutor != null) {
+      threadMonitorExecutor.resumeMonitoring();
     }
   }
 
@@ -1212,6 +1240,9 @@ public abstract class ServerConnection implements Runnable {
         }
       }
     } else {
+      threadMonitorExecutor = threadMonitoring.createAbstractExecutor(ServerConnectionExecutor);
+      suspendThreadMonitoring();
+      threadMonitoring.register(threadMonitorExecutor);
       try {
         while (processMessages && !crHelper.isShutdown()) {
           try {
@@ -1224,6 +1255,7 @@ public abstract class ServerConnection implements Runnable {
           }
         }
       } finally {
+        threadMonitoring.unregister(threadMonitorExecutor);
         try {
           unsetRequestSpecificTimeout();
           handleTermination();

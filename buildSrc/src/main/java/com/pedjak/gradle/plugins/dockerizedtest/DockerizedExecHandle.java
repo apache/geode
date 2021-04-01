@@ -297,7 +297,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
       while (stateIn(ExecHandleState.STARTING)) {
         LOGGER.debug("Waiting until process started: {}.", displayName);
         try {
-          if (!stateChanged.await(30, TimeUnit.SECONDS)) {
+          if (!stateChanged.await(10, TimeUnit.MINUTES)) {
             execHandleRunner.abortProcess();
             throw new RuntimeException("Giving up on " + execHandleRunner);
           }
@@ -326,8 +326,8 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
       }
       if (!stateIn(ExecHandleState.STARTED, ExecHandleState.DETACHED)) {
         throw new IllegalStateException(
-            format("Cannot abort process '%s' because it is not in started or detached state",
-                displayName));
+            format("Cannot abort process '%s' because it is not in started or detached state. It is currently in state: '%s'",
+                displayName,state));
       }
       execHandleRunner.abortProcess();
       waitForFinish();
@@ -520,10 +520,6 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
 
     @Override
     public ExecResult assertNormalExitValue() throws ExecException {
-      // all exit values are ok
-//            if (exitValue != 0) {
-//                throw new ExecException(format("Process '%s' finished with non-zero exit value %d", displayName, exitValue));
-//            }
       return this;
     }
 
@@ -644,7 +640,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
           .withStdErr(true)
           .withStdIn(stdInReadStream)
           .exec(attachContainerResultCallback);
-      if (!attachContainerResultCallback.awaitStarted(10, TimeUnit.SECONDS)) {
+      if (!attachContainerResultCallback.awaitStarted(2, TimeUnit.MINUTES)) {
         LOGGER.warn("Not attached to container " + containerId + " within 10secs");
         throw new RuntimeException("Not attached to container " + containerId + " within 10secs");
       }

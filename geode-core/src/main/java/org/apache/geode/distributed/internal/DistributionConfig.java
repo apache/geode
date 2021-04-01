@@ -1411,9 +1411,6 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   int MAX_SOCKET_BUFFER_SIZE = Connection.MAX_MSG_SIZE;
 
   boolean VALIDATE = Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "validateMessageSize");
-  int VALIDATE_CEILING = Integer
-      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "validateMessageSizeCeiling", 8 * 1024 * 1024)
-      .intValue();
 
   /**
    * The name of the {@link ConfigurationProperties#SOCKET_BUFFER_SIZE} property

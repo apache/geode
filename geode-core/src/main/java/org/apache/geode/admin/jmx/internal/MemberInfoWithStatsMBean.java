@@ -1123,7 +1123,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
     Map<String, ObjectName> pathsToObjName = new HashMap<String, ObjectName>();
 
     if (memberId != null && memberId.trim().length() != 0) {
-      Object[] params = new Object[] {MBeanUtil.makeCompliantMBeanNameProperty(memberId)};
+      Object[] params = new Object[] {MBeanUtils.makeCompliantMBeanNameProperty(memberId)};
       Set<ObjectName> queryNames = queryObjectNames(REGION_QUERY_EXPRESSION, params);
       for (ObjectName objectName : queryNames) {
         pathsToObjName.put(objectName.getKeyProperty("path"), objectName);
@@ -1146,7 +1146,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
     ObjectName[] statObjectNames = new ObjectName[0];
 
     if (memberId != null && memberId.trim().length() != 0) {
-      Object[] params = new Object[] {MBeanUtil.makeCompliantMBeanNameProperty(memberId), name};
+      Object[] params = new Object[] {MBeanUtils.makeCompliantMBeanNameProperty(memberId), name};
       Set<ObjectName> queryNames = queryObjectNames(STATS_QUERY_EXPRESSION, params);
       statObjectNames = new ObjectName[queryNames.size()];
       statObjectNames = queryNames.toArray(statObjectNames);

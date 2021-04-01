@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal;
 
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.INTERNAL;
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.SUPPORTED;
-import static org.apache.geode.redis.internal.RedisCommandSupportLevel.UNIMPLEMENTED;
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.UNSUPPORTED;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
@@ -151,6 +150,7 @@ public enum RedisCommandType {
 
   APPEND(new AppendExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   DECR(new DecrExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  DECRBY(new DecrByExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   GET(new GetExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   INCRBY(new IncrByExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   INCR(new IncrExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
@@ -188,12 +188,18 @@ public enum RedisCommandType {
   SMEMBERS(new SMembersExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   SREM(new SRemExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
 
+  /************* Server *****************/
+  SLOWLOG(new SlowlogExecutor(), SUPPORTED, new SlowlogParameterRequirements()),
+
   /********** Publish Subscribe **********/
   SUBSCRIBE(new SubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   PUBLISH(new PublishExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   PSUBSCRIBE(new PsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
   UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
+
+  /********** Server **********/
+  INFO(new InfoExecutor(), SUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
 
   /***************************************
    ********* Internal Commands ***********
@@ -204,31 +210,25 @@ public enum RedisCommandType {
   INTERNALSMEMBERS(new UnknownExecutor(), INTERNAL, new ExactParameterRequirements(3)),
 
   /***************************************
-   *** Unsupported Commands ***
+   ******** Unsupported Commands *********
    ***************************************/
 
-  /***************************************
-   *************** Connection *************
-   ***************************************/
+  /*************** Connection *************/
 
   ECHO(new EchoExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
   SELECT(new SelectExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
 
-  /***************************************
-   *************** Keys ******************
-   ***************************************/
+  /*************** Keys ******************/
 
-  SCAN(new ScanExecutor(), UNSUPPORTED, new EvenParameterRequirements(ERROR_SYNTAX).and(new MinimumParameterRequirements(2))),
+  SCAN(new ScanExecutor(), UNSUPPORTED,
+      new EvenParameterRequirements(ERROR_SYNTAX).and(new MinimumParameterRequirements(2))),
   UNLINK(new DelExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
 
-  /***************************************
-   ************** Strings ****************
-   ***************************************/
+  /************** Strings ****************/
 
   BITCOUNT(new BitCountExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   BITOP(new BitOpExecutor(), UNSUPPORTED, new MinimumParameterRequirements(4)),
   BITPOS(new BitPosExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
-  DECRBY(new DecrByExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   GETBIT(new GetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   GETSET(new GetSetExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   MSET(new MSetExecutor(), UNSUPPORTED,
@@ -240,9 +240,7 @@ public enum RedisCommandType {
   SETEX(new SetEXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   SETRANGE(new SetRangeExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
 
-  /***************************************
-   **************** Sets *****************
-   ***************************************/
+  /**************** Sets *****************/
 
   SCARD(new SCardExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
   SDIFF(new SDiffExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
@@ -259,131 +257,16 @@ public enum RedisCommandType {
   SUNION(new SUnionExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
   SUNIONSTORE(new SUnionStoreExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
 
-  /***************************************
-   *************** Server ****************
-   ***************************************/
+  /*************** Server ****************/
 
   DBSIZE(new DBSizeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
   FLUSHALL(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   FLUSHDB(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
-  INFO(new InfoExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
   SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
-  SLOWLOG(new SlowlogExecutor(), UNSUPPORTED, new SlowlogParameterRequirements()),
   TIME(new TimeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
 
-  /////////// UNIMPLEMENTED /////////////////////
-
-  ACL(null, UNIMPLEMENTED),
-  BGREWRITEAOF(null, UNIMPLEMENTED),
-  BGSAVE(null, UNIMPLEMENTED),
-  BITFIELD(null, UNIMPLEMENTED),
-  BLPOP(null, UNIMPLEMENTED),
-  BRPOP(null, UNIMPLEMENTED),
-  BRPOPLPUSH(null, UNIMPLEMENTED),
-  BZPOPMIN(null, UNIMPLEMENTED),
-  BZPOPMAX(null, UNIMPLEMENTED),
-  CLIENT(null, UNIMPLEMENTED),
-  CLUSTER(null, UNIMPLEMENTED),
-  COMMAND(null, UNIMPLEMENTED),
-  CONFIG(null, UNIMPLEMENTED),
-  DEBUG(null, UNIMPLEMENTED),
-  DISCARD(null, UNIMPLEMENTED),
-  DUMP(null, UNIMPLEMENTED),
-  EVAL(null, UNIMPLEMENTED),
-  EVALSHA(null, UNIMPLEMENTED),
-  EXEC(null, UNIMPLEMENTED),
-  GEOADD(null, UNIMPLEMENTED),
-  GEOHASH(null, UNIMPLEMENTED),
-  GEOPOS(null, UNIMPLEMENTED),
-  GEODIST(null, UNIMPLEMENTED),
-  GEORADIUS(null, UNIMPLEMENTED),
-  GEORADIUSBYMEMBER(null, UNIMPLEMENTED),
-  LATENCY(null, UNIMPLEMENTED),
-  LASTSAVE(null, UNIMPLEMENTED),
-  LINDEX(null, UNIMPLEMENTED),
-  LINSERT(null, UNIMPLEMENTED),
-  LLEN(null, UNIMPLEMENTED),
-  LOLWUT(null, UNIMPLEMENTED),
-  LPOP(null, UNIMPLEMENTED),
-  LPUSH(null, UNIMPLEMENTED),
-  LPUSHX(null, UNIMPLEMENTED),
-  LRANGE(null, UNIMPLEMENTED),
-  LREM(null, UNIMPLEMENTED),
-  LSET(null, UNIMPLEMENTED),
-  LTRIM(null, UNIMPLEMENTED),
-  MEMORY(null, UNIMPLEMENTED),
-  MIGRATE(null, UNIMPLEMENTED),
-  MODULE(null, UNIMPLEMENTED),
-  MONITOR(null, UNIMPLEMENTED),
-  MOVE(null, UNIMPLEMENTED),
-  MULTI(null, UNIMPLEMENTED),
-  OBJECT(null, UNIMPLEMENTED),
-  PFADD(null, UNIMPLEMENTED),
-  PFCOUNT(null, UNIMPLEMENTED),
-  PFMERGE(null, UNIMPLEMENTED),
-  PSYNC(null, UNIMPLEMENTED),
-  PUBSUB(null, UNIMPLEMENTED),
-  RANDOMKEY(null, UNIMPLEMENTED),
-  READONLY(null, UNIMPLEMENTED),
-  READWRITE(null, UNIMPLEMENTED),
-  RENAMENX(null, UNIMPLEMENTED),
-  RESTORE(null, UNIMPLEMENTED),
-  ROLE(null, UNIMPLEMENTED),
-  RPOP(null, UNIMPLEMENTED),
-  RPOPLPUSH(null, UNIMPLEMENTED),
-  RPUSH(null, UNIMPLEMENTED),
-  RPUSHX(null, UNIMPLEMENTED),
-  SAVE(null, UNIMPLEMENTED),
-  SCRIPT(null, UNIMPLEMENTED),
-  SLAVEOF(null, UNIMPLEMENTED),
-  REPLICAOF(null, UNIMPLEMENTED),
-  SORT(null, UNIMPLEMENTED),
-  STRALGO(null, UNIMPLEMENTED),
-  SWAPDB(null, UNIMPLEMENTED),
-  SYNC(null, UNIMPLEMENTED),
-  TOUCH(null, UNIMPLEMENTED),
-  UNWATCH(null, UNIMPLEMENTED),
-  WAIT(null, UNIMPLEMENTED),
-  WATCH(null, UNIMPLEMENTED),
-  XINFO(null, UNIMPLEMENTED),
-  XADD(null, UNIMPLEMENTED),
-  XTRIM(null, UNIMPLEMENTED),
-  XDEL(null, UNIMPLEMENTED),
-  XRANGE(null, UNIMPLEMENTED),
-  XREVRANGE(null, UNIMPLEMENTED),
-  XLEN(null, UNIMPLEMENTED),
-  XREAD(null, UNIMPLEMENTED),
-  XGROUP(null, UNIMPLEMENTED),
-  XREADGROUP(null, UNIMPLEMENTED),
-  XACK(null, UNIMPLEMENTED),
-  XCLAIM(null, UNIMPLEMENTED),
-  XPENDING(null, UNIMPLEMENTED),
-  ZADD(null, UNIMPLEMENTED),
-  ZCARD(null, UNIMPLEMENTED),
-  ZCOUNT(null, UNIMPLEMENTED),
-  ZINCRBY(null, UNIMPLEMENTED),
-  ZINTERSTORE(null, UNIMPLEMENTED),
-  ZLEXCOUNT(null, UNIMPLEMENTED),
-  ZPOPMAX(null, UNIMPLEMENTED),
-  ZPOPMIN(null, UNIMPLEMENTED),
-  ZRANGE(null, UNIMPLEMENTED),
-  ZRANGEBYLEX(null, UNIMPLEMENTED),
-  ZREVRANGEBYLEX(null, UNIMPLEMENTED),
-  ZRANGEBYSCORE(null, UNIMPLEMENTED),
-  ZRANK(null, UNIMPLEMENTED),
-  ZREM(null, UNIMPLEMENTED),
-  ZREMRANGEBYLEX(null, UNIMPLEMENTED),
-  ZREMRANGEBYRANK(null, UNIMPLEMENTED),
-  ZREMRANGEBYSCORE(null, UNIMPLEMENTED),
-  ZREVRANGE(null, UNIMPLEMENTED),
-  ZREVRANGEBYSCORE(null, UNIMPLEMENTED),
-  ZREVRANK(null, UNIMPLEMENTED),
-  ZSCORE(null, UNIMPLEMENTED),
-  ZUNIONSCORE(null, UNIMPLEMENTED),
-  ZSCAN(null, UNIMPLEMENTED),
-
   /***************************************
-   *** Unknown Commands ***
+   *********** Unknown Commands **********
    ***************************************/
   UNKNOWN(new UnknownExecutor(), RedisCommandSupportLevel.UNKNOWN);
 
@@ -418,9 +301,6 @@ public enum RedisCommandType {
     return supportLevel == UNSUPPORTED;
   }
 
-  public boolean isUnimplemented() {
-    return supportLevel == UNIMPLEMENTED;
-  }
 
   public boolean isInternal() {
     return supportLevel == INTERNAL;

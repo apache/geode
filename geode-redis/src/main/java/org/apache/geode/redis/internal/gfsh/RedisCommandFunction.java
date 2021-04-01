@@ -23,6 +23,8 @@ import org.apache.geode.redis.internal.GeodeRedisService;
 
 public class RedisCommandFunction extends CliFunction<Boolean> {
 
+  private static final long serialVersionUID = -6607122865046807926L;
+
   public static void register() {
     FunctionService.registerFunction(new RedisCommandFunction());
   }
@@ -34,7 +36,8 @@ public class RedisCommandFunction extends CliFunction<Boolean> {
     InternalCache cache = (InternalCache) context.getCache();
 
     if (!cache.getInternalDistributedSystem().getConfig().getRedisEnabled()) {
-      return new CliFunctionResult(context.getMemberName(), false, "Error: Redis is not enabled");
+      return new CliFunctionResult(context.getMemberName(), false,
+          "Error: Geode APIs compatible with Redis are not enabled");
     }
 
     GeodeRedisService geodeRedisService = cache.getService(GeodeRedisService.class);

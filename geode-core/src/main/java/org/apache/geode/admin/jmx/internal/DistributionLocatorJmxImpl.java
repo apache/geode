@@ -48,8 +48,8 @@ public class DistributionLocatorJmxImpl
   /** Create and register the MBean to manage this resource */
   private void initializeMBean() {
     this.mbeanName =
-        "GemFire:type=DistributionLocator,id=" + MBeanUtil.makeCompliantMBeanNameProperty(getId());
-    this.objectName = MBeanUtil.createMBean(this, MBeanUtil.lookupManagedBean(this));
+        "GemFire:type=DistributionLocator,id=" + MBeanUtils.makeCompliantMBeanNameProperty(getId());
+    this.objectName = MBeanUtils.createMBean(this, MBeanUtils.lookupManagedBean(this));
   }
 
   //////////////////////// Configuration ////////////////////////

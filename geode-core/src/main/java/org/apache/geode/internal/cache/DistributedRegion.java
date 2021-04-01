@@ -2466,7 +2466,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     boolean getForRegisterInterest = clientEvent != null && clientEvent.getOperation() != null
         && clientEvent.getOperation().isGetForRegisterInterest();
     if (!getForRegisterInterest) {
-      SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+      SearchLoadAndWriteProcessor processor = getSearchLoadAndWriteProcessor();
       try {
         processor.initialize(this, keyInfo.getKey(), keyInfo.getCallbackArg());
         // processor fills in event
@@ -2504,7 +2504,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         final long start = getCachePerfStats().startCacheWriterCall();
         try {
           event.setOldValueFromRegion();
-          SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+          SearchLoadAndWriteProcessor processor = getSearchLoadAndWriteProcessor();
           try {
             processor.initialize(this, event.getKey(), null);
             processor.doNetWrite(event, netWriteRecipients, localWriter,
@@ -2533,7 +2533,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       if (localWriter != null || netWriteRecipients != null && !netWriteRecipients.isEmpty()) {
         final long start = getCachePerfStats().startCacheWriterCall();
         try {
-          SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+          SearchLoadAndWriteProcessor processor = getSearchLoadAndWriteProcessor();
           try {
             processor.initialize(this, "preDestroyRegion", null);
             processor.doNetWrite(event, netWriteRecipients, localWriter,
@@ -2708,7 +2708,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       final boolean isNewKey = event.getOperation().isCreate();
       final long start = getCachePerfStats().startCacheWriterCall();
       try {
-        SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+        SearchLoadAndWriteProcessor processor = getSearchLoadAndWriteProcessor();
         processor.initialize(this, "preUpdate", null);
         try {
           if (!isNewKey) {
@@ -3973,5 +3973,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   @VisibleForTesting
   public SenderIdMonitor getSenderIdMonitor() {
     return senderIdMonitor;
+  }
+
+  SearchLoadAndWriteProcessor getSearchLoadAndWriteProcessor() {
+    return SearchLoadAndWriteProcessor.getProcessor();
   }
 }

@@ -34,12 +34,11 @@ dependencies {
     implementation('org.apache.commons:commons-lang3')
     implementation('com.healthmarketscience.rmiio:rmiio')
     implementation('com.fasterxml.jackson.core:jackson-databind')
+    implementation('io.swagger:swagger-annotations')
 
 //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
     testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
     testImplementation('org.springframework:spring-test')
-    integrationTestImplementation('org.powermock:powermock-module-junit4')
-    integrationTestImplementation('org.powermock:powermock-api-mockito2')
     testImplementation(project(':geode-junit'))
 
     integrationTestImplementation(project(':geode-dunit'))

@@ -34,8 +34,8 @@ import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -63,9 +63,7 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public long publish(
-      Region<ByteArrayWrapper, RedisData> dataRegion,
-      byte[] channel, byte[] message) {
+  public long publish(Region<RedisKey, RedisData> dataRegion, byte[] channel, byte[] message) {
     PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
     Set<DistributedMember> membersWithDataRegion = new HashSet<>();
     for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {

@@ -53,7 +53,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   public void testCompletionDeploy() {
     String buffer = "deploy";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(5);
+    assertThat(candidate.getCandidates()).hasSize(6);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " --dir");
   }
 
@@ -61,7 +61,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   public void testCompletionDeployWithSpace() {
     String buffer = "deploy ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(5);
+    assertThat(candidate.getCandidates()).hasSize(6);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--dir");
   }
 
@@ -428,5 +428,23 @@ public class GfshParserAutoCompletionIntegrationTest {
     assertThat(candidate.getCandidates())
         .hasSize(org.apache.geode.cache.query.IndexType.values().length);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "hash");
+  }
+
+  @Test
+  public void testCompletionCreateGatewaySenderWithSpace() {
+    String buffer = "create gateway-sender ";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(2);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--id");
+    assertThat(candidate.getCandidates().get(1).getValue())
+        .isEqualTo(buffer + "--remote-distributed-system-id");
+  }
+
+  @Test
+  public void testCompletionCreateGatewaySenderWithDash() {
+    String buffer = "create gateway-sender --";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "id");
   }
 }

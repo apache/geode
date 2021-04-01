@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.util.DriverJarUtil;
+import org.apache.geode.internal.util.DriverJarUtils;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
@@ -47,8 +47,8 @@ public class ListDriversFunction extends CliFunction<Object[]> {
     }
   }
 
-  DriverJarUtil getDriverJarUtil() {
-    return new DriverJarUtil();
+  DriverJarUtils getDriverJarUtil() {
+    return new DriverJarUtils();
   }
 
   String createMessageFromDriversList(List<String> driverNames) {

@@ -35,16 +35,18 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 
 public class RedisSet extends AbstractRedisData {
 
-  public static final NullRedisSet NULL_REDIS_SET = new NullRedisSet();
   private HashSet<ByteArrayWrapper> members;
 
   @SuppressWarnings("unchecked")
@@ -97,8 +99,8 @@ public class RedisSet extends AbstractRedisData {
     return scanResult;
   }
 
-  Collection<ByteArrayWrapper> spop(Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key, int popCount) {
+  Collection<ByteArrayWrapper> spop(Region<RedisKey, RedisData> region,
+      RedisKey key, int popCount) {
     int originalSize = scard();
     if (originalSize == 0) {
       return emptyList();
@@ -192,10 +194,23 @@ public class RedisSet extends AbstractRedisData {
    * are modifying this object, the striped executor will not protect toData.
    * So any methods that modify "members" needs to be thread safe with toData.
    */
+
   @Override
-  public synchronized void toData(DataOutput out) throws IOException {
-    super.toData(out);
-    DataSerializer.writeHashSet(members, out);
+  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
+    super.toData(out, context);
+    InternalDataSerializer.writeHashSet(members, out);
+  }
+
+  @Override
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
+    members = InternalDataSerializer.readHashSet(in);
+  }
+
+  @Override
+  public int getDSFID() {
+    return REDIS_SET_ID;
   }
 
   private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
@@ -214,11 +229,7 @@ public class RedisSet extends AbstractRedisData {
     return members.removeAll(remsDeltaInfo.getRemoves());
   }
 
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
-    members = DataSerializer.readHashSet(in);
-  }
+
 
   /**
    * @param membersToAdd members to add to this set; NOTE this list may by
@@ -227,8 +238,8 @@ public class RedisSet extends AbstractRedisData {
    * @param key the name of the set to add to
    * @return the number of members actually added
    */
-  long sadd(ArrayList<ByteArrayWrapper> membersToAdd, Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key) {
+  long sadd(ArrayList<ByteArrayWrapper> membersToAdd, Region<RedisKey, RedisData> region,
+      RedisKey key) {
 
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
@@ -245,8 +256,8 @@ public class RedisSet extends AbstractRedisData {
    * @param key the name of the set to remove from
    * @return the number of members actually removed
    */
-  long srem(ArrayList<ByteArrayWrapper> membersToRemove, Region<ByteArrayWrapper, RedisData> region,
-      ByteArrayWrapper key) {
+  long srem(ArrayList<ByteArrayWrapper> membersToRemove, Region<RedisKey, RedisData> region,
+      RedisKey key) {
 
     membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
     int membersRemoved = membersToRemove.size();
@@ -300,5 +311,10 @@ public class RedisSet extends AbstractRedisData {
   @Override
   public String toString() {
     return "RedisSet{" + super.toString() + ", " + "members=" + members + '}';
+  }
+
+  @Override
+  public KnownVersion[] getSerializationVersions() {
+    return null;
   }
 }

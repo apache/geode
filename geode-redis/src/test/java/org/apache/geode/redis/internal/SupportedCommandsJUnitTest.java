@@ -33,6 +33,7 @@ public class SupportedCommandsJUnitTest {
       "APPEND",
       "AUTH",
       "DECR",
+      "DECRBY",
       "DEL",
       "EXISTS",
       "EXPIRE",
@@ -57,6 +58,7 @@ public class SupportedCommandsJUnitTest {
       "INCRBY",
       "INCR",
       "INCRBYFLOAT",
+      "INFO",
       "KEYS",
       "MGET",
       "PERSIST",
@@ -72,6 +74,7 @@ public class SupportedCommandsJUnitTest {
       "SADD",
       "SET",
       "SETNX",
+      "SLOWLOG",
       "SMEMBERS",
       "SREM",
       "STRLEN",
@@ -86,13 +89,11 @@ public class SupportedCommandsJUnitTest {
       "BITOP",
       "BITPOS",
       "DBSIZE",
-      "DECRBY",
       "ECHO",
       "FLUSHALL",
       "FLUSHDB",
       "GETBIT",
       "GETSET",
-      "INFO",
       "MSET",
       "MSETNX",
       "PSETEX",
@@ -108,7 +109,6 @@ public class SupportedCommandsJUnitTest {
       "SINTER",
       "SINTERSTORE",
       "SISMEMBER",
-      "SLOWLOG",
       "SMOVE",
       "SPOP",
       "SRANDMEMBER",
@@ -117,117 +117,6 @@ public class SupportedCommandsJUnitTest {
       "SUNIONSTORE",
       "TIME",
       "UNLINK",
-  };
-
-  private final String[] unImplementedCommands = new String[] {
-      "ACL",
-      "BGREWRITEAOF",
-      "BGSAVE",
-      "BITFIELD",
-      "BLPOP",
-      "BRPOP",
-      "BRPOPLPUSH",
-      "BZPOPMIN",
-      "BZPOPMAX",
-      "CLIENT",
-      "CLUSTER",
-      "COMMAND",
-      "CONFIG",
-      "DEBUG",
-      "DISCARD",
-      "DUMP",
-      "EVAL",
-      "EVALSHA",
-      "EXEC",
-      "GEOADD",
-      "GEOHASH",
-      "GEOPOS",
-      "GEODIST",
-      "GEORADIUS",
-      "GEORADIUSBYMEMBER",
-      "LATENCY",
-      "LASTSAVE",
-      "LINDEX",
-      "LINSERT",
-      "LLEN",
-      "LOLWUT",
-      "LPOP",
-      "LPUSH",
-      "LPUSHX",
-      "LRANGE",
-      "LREM",
-      "LSET",
-      "LTRIM",
-      "MEMORY",
-      "MIGRATE",
-      "MODULE",
-      "MONITOR",
-      "MOVE",
-      "MULTI",
-      "OBJECT",
-      "PFADD",
-      "PFCOUNT",
-      "PFMERGE",
-      "PSYNC",
-      "PUBSUB",
-      "RANDOMKEY",
-      "READONLY",
-      "READWRITE",
-      "RENAMENX",
-      "RESTORE",
-      "ROLE",
-      "RPOP",
-      "RPOPLPUSH",
-      "RPUSH",
-      "RPUSHX",
-      "SAVE",
-      "SCRIPT",
-      "SLAVEOF",
-      "REPLICAOF",
-      "SORT",
-      "STRALGO",
-      "SWAPDB",
-      "SYNC",
-      "TOUCH",
-      "UNWATCH",
-      "WAIT",
-      "WATCH",
-      "XINFO",
-      "XADD",
-      "XTRIM",
-      "XDEL",
-      "XRANGE",
-      "XREVRANGE",
-      "XLEN",
-      "XREAD",
-      "XGROUP",
-      "XREADGROUP",
-      "XACK",
-      "XCLAIM",
-      "XPENDING",
-      "ZADD",
-      "ZCARD",
-      "ZCOUNT",
-      "ZINCRBY",
-      "ZINTERSTORE",
-      "ZLEXCOUNT",
-      "ZPOPMAX",
-      "ZPOPMIN",
-      "ZRANGE",
-      "ZRANGEBYLEX",
-      "ZREVRANGEBYLEX",
-      "ZRANGEBYSCORE",
-      "ZRANK",
-      "ZREM",
-      "ZREMRANGEBYLEX",
-      "ZREMRANGEBYRANK",
-      "ZREMRANGEBYSCORE",
-      "ZREVRANGE",
-      "ZREVRANGEBYSCORE",
-      "ZREVRANK",
-      "ZSCORE",
-      "ZUNIONSCORE",
-      "ZSCAN"
   };
 
   private final String[] unknownCommands = new String[] {
@@ -269,20 +158,6 @@ public class SupportedCommandsJUnitTest {
   }
 
   @Test
-  public void crossCheckAllUnimplementedCommands_areMarkedUnimplemented() {
-    for (String commandName : unImplementedCommands) {
-      List<byte[]> args = new ArrayList<>();
-      args.add(commandName.getBytes());
-
-      Command command = new Command(args);
-
-      assertThat(command.isUnimplemented())
-          .as("Command " + commandName + " should be unimplemented")
-          .isTrue();
-    }
-  }
-
-  @Test
   public void checkAllImplementedCommands_areIncludedInBothSupportedAndUnsupportedLists() {
     List<String> allCommands = new ArrayList<>(asList(supportedCommands));
     allCommands.addAll(asList(unSupportedCommands));
@@ -298,7 +173,6 @@ public class SupportedCommandsJUnitTest {
   public void checkAllDefinedCommands_areIncludedInAllLists() {
     List<String> allCommands = new ArrayList<>(asList(supportedCommands));
     allCommands.addAll(asList(unSupportedCommands));
-    allCommands.addAll(asList(unImplementedCommands));
     allCommands.addAll(asList(unknownCommands));
     allCommands.addAll(asList(internalCommands));
 
@@ -321,14 +195,12 @@ public class SupportedCommandsJUnitTest {
 
   private List<RedisCommandType> getAllImplementedCommands() {
     List<RedisCommandType> implementedCommands = new ArrayList<>(asList(RedisCommandType.values()));
-    implementedCommands.removeIf(RedisCommandType::isUnimplemented);
     implementedCommands.removeIf(RedisCommandType::isInternal);
     return implementedCommands;
   }
 
   private List<RedisCommandType> getAllInternalCommands() {
     List<RedisCommandType> internalCommands = new ArrayList<>(asList(RedisCommandType.values()));
-    internalCommands.removeIf(RedisCommandType::isUnimplemented);
     internalCommands.removeIf(RedisCommandType::isSupported);
     internalCommands.removeIf(RedisCommandType::isUnsupported);
 

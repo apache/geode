@@ -67,7 +67,8 @@ import org.apache.geode.internal.size.Sizeable;
  *
  */
 public class GatewaySenderEventImpl
-    implements AsyncEvent, DataSerializableFixedID, Conflatable, Sizeable, Releasable {
+    implements InternalGatewayQueueEvent, AsyncEvent, DataSerializableFixedID, Conflatable,
+    Sizeable, Releasable {
   private static final long serialVersionUID = -5690172020872255422L;
   protected static final Object TOKEN_NULL = new Object();
 
@@ -710,6 +711,12 @@ public class GatewaySenderEventImpl
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
+    toDataPre_GEODE_1_15_0_0(out, context);
+    out.writeInt(this.operationDetail);
+  }
+
+  public void toDataPre_GEODE_1_15_0_0(DataOutput out,
+      SerializationContext context) throws IOException {
     toDataPre_GEODE_1_14_0_0(out, context);
     boolean hasTransaction = this.transactionId != null;
     DataSerializer.writeBoolean(hasTransaction, out);
@@ -754,6 +761,14 @@ public class GatewaySenderEventImpl
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
+    fromDataPre_GEODE_1_15_0_0(in, context);
+    if (version >= KnownVersion.GEODE_1_15_0.ordinal()) {
+      this.operationDetail = in.readInt();
+    }
+  }
+
+  public void fromDataPre_GEODE_1_15_0_0(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_14_0_0(in, context);
     if (version >= KnownVersion.GEODE_1_14_0.ordinal()) {
       boolean hasTransaction = DataSerializer.readBoolean(in);
@@ -1245,10 +1260,12 @@ public class GatewaySenderEventImpl
     return this.shadowKey;
   }
 
+  @Override
   public boolean isLastEventInTransaction() {
     return isLastEventInTransaction;
   }
 
+  @Override
   public TransactionId getTransactionId() {
     return transactionId;
   }
@@ -1287,7 +1304,8 @@ public class GatewaySenderEventImpl
 
   @Override
   public KnownVersion[] getSerializationVersions() {
-    return new KnownVersion[] {KnownVersion.GEODE_1_9_0, KnownVersion.GEODE_1_14_0};
+    return new KnownVersion[] {KnownVersion.GEODE_1_9_0, KnownVersion.GEODE_1_14_0,
+        KnownVersion.GEODE_1_15_0};
   }
 
   public int getSerializedValueSize() {
@@ -1369,5 +1387,9 @@ public class GatewaySenderEventImpl
     if (this.value == null) {
       this.value = getSerializedValue();
     }
+  }
+
+  public void setAcked(boolean acked) {
+    this.isAcked = acked;
   }
 }

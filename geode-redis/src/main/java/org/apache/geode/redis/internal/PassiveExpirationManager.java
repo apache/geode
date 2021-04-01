@@ -29,8 +29,8 @@ import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionInvoker;
 import org.apache.geode.redis.internal.statistics.RedisStats;
@@ -38,13 +38,12 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
 public class PassiveExpirationManager {
   private static final Logger logger = LogService.getLogger();
 
-  private final Region<ByteArrayWrapper, RedisData> dataRegion;
+  private final Region<RedisKey, RedisData> dataRegion;
   private final ScheduledExecutorService expirationExecutor;
   private final RedisStats redisStats;
 
 
-  public PassiveExpirationManager(Region<ByteArrayWrapper, RedisData> dataRegion,
-      RedisStats redisStats) {
+  public PassiveExpirationManager(Region<RedisKey, RedisData> dataRegion, RedisStats redisStats) {
     this.dataRegion = dataRegion;
     this.redisStats = redisStats;
     expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
@@ -58,16 +57,15 @@ public class PassiveExpirationManager {
     expirationExecutor.shutdownNow();
   }
 
-  private void doDataExpiration(
-      Region<ByteArrayWrapper, RedisData> redisData) {
+  private void doDataExpiration(Region<RedisKey, RedisData> redisData) {
     final long start = redisStats.startPassiveExpirationCheck();
     long expireCount = 0;
     try {
       final long now = System.currentTimeMillis();
-      Region<ByteArrayWrapper, RedisData> localPrimaryData =
+      Region<RedisKey, RedisData> localPrimaryData =
           PartitionRegionHelper.getLocalPrimaryData(redisData);
       RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionInvoker(redisData);
-      for (Map.Entry<ByteArrayWrapper, RedisData> entry : localPrimaryData.entrySet()) {
+      for (Map.Entry<RedisKey, RedisData> entry : localPrimaryData.entrySet()) {
         try {
           if (entry.getValue().hasExpired(now)) {
             // pttl will do its own check using active expiration and expire the key if needed
@@ -80,7 +78,8 @@ public class PassiveExpirationManager {
       }
     } catch (CacheClosedException ignore) {
     } catch (RuntimeException | Error ex) {
-      logger.warn("Passive Redis expiration failed. Will try again in 1 second.", ex);
+      logger.warn("Passive expiration failed. Will try again in 1 second.",
+          ex);
     } finally {
       redisStats.endPassiveExpirationCheck(start, expireCount);
     }

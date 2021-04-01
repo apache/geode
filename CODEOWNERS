@@ -56,8 +56,8 @@ geode-core/**/org/apache/geode/internal/cache/tier/**             @bschuchardt @
 #-----------------------------------------------------------------
 # Client Queues
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/cache/ha/**               @agingade @boglesby
-geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*   @agingade @boglesby
+geode-core/**/org/apache/geode/internal/cache/ha/**               @agingade @boglesby @nabarunnag
+geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*   @agingade @boglesby @nabarunnag
 
 #-----------------------------------------------------------------
 # Experimental Protobuf based Client/Server
@@ -69,9 +69,9 @@ geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*   @agingade @bog
 #-----------------------------------------------------------------
 # Core Public API packages - Cache, Region, etc.
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/*                                  @dschneider-pivotal @boglesby @kirklund
-geode-core/**/org/apache/geode/cache/*                            @dschneider-pivotal @boglesby @kirklund
-geode-core/**/org/apache/geode/cache/util/**                      @dschneider-pivotal @boglesby
+geode-core/**/org/apache/geode/*                                  @dschneider-pivotal @boglesby @kirklund @nabarunnag
+geode-core/**/org/apache/geode/cache/*                            @dschneider-pivotal @boglesby @kirklund @nabarunnag
+geode-core/**/org/apache/geode/cache/util/**                      @dschneider-pivotal @boglesby @nabarunnag
 
 #-----------------------------------------------------------------
 # Distributed Locks
@@ -95,9 +95,9 @@ geode-core/**/org/apache/geode/internal/cache/compression/**      @dschneider-pi
 #-----------------------------------------------------------------
 # Partitioned Regions
 #-----------------------------------------------------------------
-geode-rebalancer/**                                               @boglesby @BenjaminPerryRoss
-geode-core/**/org/apache/geode/internal/cache/partitioned/**      @boglesby @BenjaminPerryRoss @mhansonp @kirklund
-geode-core/**/org/apache/geode/cache/partition/**                 @boglesby @BenjaminPerryRoss @mhansonp @kirklund
+geode-rebalancer/**                                               @boglesby @BenjaminPerryRoss @nabarunnag
+geode-core/**/org/apache/geode/internal/cache/partitioned/**      @boglesby @BenjaminPerryRoss @mhansonp @kirklund @nabarunnag
+geode-core/**/org/apache/geode/cache/partition/**                 @boglesby @BenjaminPerryRoss @mhansonp @kirklund @nabarunnag
 
 #-----------------------------------------------------------------
 # Event tracking
@@ -125,8 +125,8 @@ geode-core/**/org/apache/geode/internal/cache/locks/**            @pivotal-eshu 
 #-----------------------------------------------------------------
 # Function Execution
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/cache/execute/**          @boglesby @sabbey37 @kirklund
-geode-core/**/org/apache/geode/cache/execute/**                   @boglesby @sabbey37 @kirklund
+geode-core/**/org/apache/geode/internal/cache/execute/**          @boglesby @sabbey37 @kirklund @nabarunnag
+geode-core/**/org/apache/geode/cache/execute/**                   @boglesby @sabbey37 @kirklund @nabarunnag
 
 #-----------------------------------------------------------------
 # Querying
@@ -190,10 +190,10 @@ geode-core/**/org/apache/geode/internal/cache/versions/**         @dschneider-pi
 #-----------------------------------------------------------------
 # WAN messaging and queues
 #-----------------------------------------------------------------
-geode-wan/**                                                      @gesterzhou @boglesby
-geode-core/**/org/apache/geode/cache/asyncqueue/**                @gesterzhou @boglesby
-geode-core/**/org/apache/geode/cache/wan/**                       @gesterzhou @boglesby
-geode-core/**/org/apache/geode/internal/cache/wan/**              @gesterzhou @boglesby
+geode-wan/**                                                      @gesterzhou @boglesby @nabarunnag
+geode-core/**/org/apache/geode/cache/asyncqueue/**                @gesterzhou @boglesby @nabarunnag
+geode-core/**/org/apache/geode/cache/wan/**                       @gesterzhou @boglesby @nabarunnag
+geode-core/**/org/apache/geode/internal/cache/wan/**              @gesterzhou @boglesby @nabarunnag
 
 #-----------------------------------------------------------------
 # Management
@@ -298,8 +298,6 @@ geode-assembly/**                                                 @rhoughton-piv
 #-----------------------------------------------------------------
 # Documentation
 #-----------------------------------------------------------------
-geode-book/**                                                     @karensmolermiller @davebarnes97
-geode-docs/**                                                     @karensmolermiller @davebarnes97
 BUILDING.md                                                       @rhoughton-pivot @upthewaterspout
 CODE_OF_CONDUCT.md                                                @upthewaterspout @pivotal-amurmann @nonbinaryprogrammer
 LICENSE                                                           @onichols-pivotal @dickcav @metatype

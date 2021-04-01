@@ -42,8 +42,8 @@ public class TomcatInstall extends ContainerInstall {
   public enum TomcatVersion {
     TOMCAT6(6, "tomcat-6.0.37.zip"),
     TOMCAT7(7, "tomcat-7.0.108.zip"),
-    TOMCAT8(8, "tomcat-8.5.63.zip"),
-    TOMCAT9(9, "tomcat-9.0.43.zip");
+    TOMCAT8(8, "tomcat-8.5.64.zip"),
+    TOMCAT9(9, "tomcat-9.0.44.zip");
 
     private final int version;
 
@@ -115,12 +115,10 @@ public class TomcatInstall extends ContainerInstall {
    */
   private static final String[] tomcatRequiredJars =
       {"antlr", "commons-io", "commons-lang", "commons-validator", "fastutil", "geode-common",
-          "geode-core", "geode-log4j", "geode-logging", "geode-membership", "geode-management",
-          "geode-serialization",
-          "geode-tcp-server", "javax.transaction-api", "jgroups", "log4j-api", "log4j-core",
-          "log4j-jul", "micrometer", "shiro-core", "jetty-server", "jetty-util", "jetty-http",
-          "jetty-io"};
-
+          "geode-core", "geode-unsafe", "geode-deployment-legacy", "geode-log4j", "geode-logging",
+          "geode-membership", "geode-management", "geode-serialization", "geode-tcp-server",
+          "javax.transaction-api", "jgroups", "log4j-api", "log4j-core", "log4j-jul", "micrometer",
+          "shiro-core", "jetty-server", "jetty-util", "jetty-http", "jetty-io"};
   private final TomcatVersion version;
 
   private final CommitValve commitValve;

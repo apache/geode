@@ -16,6 +16,7 @@ package org.apache.geode.codeAnalysis;
 
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.wan.internal.WANDistributedSystemService;
 import org.apache.geode.test.junit.categories.WanTest;
 
 
@@ -25,5 +26,10 @@ public class AnalyzeWANSerializablesJUnitTest extends AnalyzeSerializablesJUnitT
   @Override
   protected String getModuleName() {
     return "geode-wan";
+  }
+
+  @Override
+  protected Class getModuleClass() {
+    return WANDistributedSystemService.class;
   }
 }

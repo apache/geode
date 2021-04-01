@@ -28,9 +28,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.CommandHelper;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.data.RedisKeyCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.SingleResultCollector;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
@@ -40,19 +40,19 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
 public class RenameFunction implements InternalFunction {
 
   public static final String ID = "REDIS_RENAME_FUNCTION";
+  private static final long serialVersionUID = 7047473969356686453L;
 
   private final transient PartitionedRegion partitionedRegion;
   private final transient CommandHelper commandHelper;
   private final transient RedisKeyCommandsFunctionExecutor keyCommands;
 
-  public static void register(Region<ByteArrayWrapper, RedisData> dataRegion,
+  public static void register(Region<RedisKey, RedisData> dataRegion,
       StripedExecutor stripedExecutor,
       RedisStats redisStats) {
     FunctionService.registerFunction(new RenameFunction(dataRegion, stripedExecutor, redisStats));
   }
 
-  public RenameFunction(
-      Region<ByteArrayWrapper, RedisData> dataRegion,
+  public RenameFunction(Region<RedisKey, RedisData> dataRegion,
       StripedExecutor stripedExecutor,
       RedisStats redisStats) {
     partitionedRegion = (PartitionedRegion) dataRegion;
@@ -86,7 +86,7 @@ public class RenameFunction implements InternalFunction {
       return getLockForNextKey(context);
     }
 
-    List<ByteArrayWrapper> keysToOperateOn = new ArrayList<>(context.getKeysFixedOnPrimary());
+    List<RedisKey> keysToOperateOn = new ArrayList<>(context.getKeysFixedOnPrimary());
     context.getKeysToOperateOn().addAll(keysToOperateOn);
 
     context.getKeysToOperateOn().sort(((o1, o2) -> compare(o1, o2, context)));
@@ -149,14 +149,14 @@ public class RenameFunction implements InternalFunction {
   }
 
   private void markCurrentKeyAsLocked(RenameContext context) {
-    ByteArrayWrapper keyToMarkAsLocked = context.getKeyToLock();
+    RedisKey keyToMarkAsLocked = context.getKeyToLock();
 
     context.getLockedKeys().add(keyToMarkAsLocked);
     context.getKeysToOperateOn().remove(keyToMarkAsLocked);
   }
 
   private boolean alreadyHaveLockForCurrentKey(
-      ByteArrayWrapper lockedKey, RenameContext context) {
+      RedisKey lockedKey, RenameContext context) {
 
     boolean stripesAreTheSame =
         getStripedExecutor().compareStripes(lockedKey, context.getKeyToLock()) == 0;
@@ -174,10 +174,7 @@ public class RenameFunction implements InternalFunction {
     DistributedMember primaryMemberForLockedKey = PartitionRegionHelper
         .getPrimaryMemberForKey(region, lockedKey);
 
-    boolean primaryMembersAreTheSame =
-        primaryMemberForCurrentKey.equals(primaryMemberForLockedKey);
-
-    return primaryMembersAreTheSame;
+    return primaryMemberForCurrentKey.equals(primaryMemberForLockedKey);
   }
 
   private boolean getLockForNextKey(RenameContext context) {
@@ -224,29 +221,29 @@ public class RenameFunction implements InternalFunction {
       this.context = (RegionFunctionContextImpl) context;
     }
 
-    private ByteArrayWrapper getOldKey() {
-      return (ByteArrayWrapper) ((Object[]) context.getArguments())[0];
+    private RedisKey getOldKey() {
+      return (RedisKey) ((Object[]) context.getArguments())[0];
     }
 
-    private ByteArrayWrapper getNewKey() {
-      return (ByteArrayWrapper) ((Object[]) context.getArguments())[1];
+    private RedisKey getNewKey() {
+      return (RedisKey) ((Object[]) context.getArguments())[1];
     }
 
-    private List<ByteArrayWrapper> getKeysToOperateOn() {
-      return (List<ByteArrayWrapper>) ((Object[]) context.getArguments())[2];
+    private List<RedisKey> getKeysToOperateOn() {
+      return (List<RedisKey>) ((Object[]) context.getArguments())[2];
     }
 
-    private List<ByteArrayWrapper> getKeysFixedOnPrimary() {
-      return (List<ByteArrayWrapper>) ((Object[]) context.getArguments())[3];
+    private List<RedisKey> getKeysFixedOnPrimary() {
+      return (List<RedisKey>) ((Object[]) context.getArguments())[3];
     }
 
-    private List<ByteArrayWrapper> getLockedKeys() {
-      return (List<ByteArrayWrapper>) ((Object[]) context.getArguments())[4];
+    private List<RedisKey> getLockedKeys() {
+      return (List<RedisKey>) ((Object[]) context.getArguments())[4];
     }
 
 
-    private ByteArrayWrapper getKeyToLock() {
-      return (ByteArrayWrapper) context.getFilter().iterator().next();
+    private RedisKey getKeyToLock() {
+      return (RedisKey) context.getFilter().iterator().next();
     }
 
     private Region getDataRegion() {

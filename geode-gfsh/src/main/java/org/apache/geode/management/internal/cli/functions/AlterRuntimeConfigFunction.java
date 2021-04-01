@@ -32,10 +32,15 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
 public class AlterRuntimeConfigFunction implements InternalFunction<Map<String, String>> {
-
   private static final long serialVersionUID = 1L;
-
   private static final Logger logger = LogService.getLogger();
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.AlterRuntimeConfigFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<Map<String, String>> context) {
@@ -89,10 +94,5 @@ public class AlterRuntimeConfigFunction implements InternalFunction<Map<String, 
           new CliFunctionResult(memberId, e, ExceptionUtils.getStackTrace(e));
       context.getResultSender().lastResult(cliFuncResult);
     }
-  }
-
-  @Override
-  public String getId() {
-    return AlterRuntimeConfigFunction.class.getName();
   }
 }

@@ -31,7 +31,7 @@ import org.apache.geode.security.ResourcePermission;
 public class RedisCommand extends GfshCommand {
   public static final String REDIS = "redis";
   public static final String REDIS__HELP =
-      "Commands related to the Redis API for Geode.";
+      "Commands related to the Geode APIs compatible with Redis.";
   public static final String REDIS__ENABLE_UNSUPPORTED_COMMANDS = "enable-unsupported-commands";
   public static final String REDIS__ENABLE_UNSUPPORTED_COMMANDS__HELP =
       "Boolean value to determine "

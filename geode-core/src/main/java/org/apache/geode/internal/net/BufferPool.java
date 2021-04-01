@@ -12,15 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.net;
 
 import java.lang.ref.SoftReference;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -28,14 +26,11 @@ import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.tcp.Connection;
-import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.unsafe.internal.sun.nio.ch.DirectBuffer;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class BufferPool {
   private final DMStats stats;
-  private static final Logger logger = LogService.getLogger();
-
-  private Method parentOfSliceMethod;
 
   /**
    * Buffers may be acquired from the Buffers pool
@@ -325,40 +320,25 @@ public class BufferPool {
    * If we hand out a buffer that is larger than the requested size we create a
    * "slice" of the buffer having the requested capacity and hand that out instead.
    * When we put the buffer back in the pool we need to find the original, non-sliced,
-   * buffer. This is held in DirectBuffer in its "attachment" field, which is a public
-   * method, though DirectBuffer is package-private. This method is visible for use
-   * in debugging and testing. For debugging, invoke this method if you need to see
-   * the non-sliced buffer for some reason, such as logging its hashcode.
+   * buffer. This is held in DirectBuffer in its "attachment" field.
+   *
+   * This method is visible for use in debugging and testing. For debugging, invoke this method if
+   * you need to see the non-sliced buffer for some reason, such as logging its hashcode.
    */
   @VisibleForTesting
-  public ByteBuffer getPoolableBuffer(ByteBuffer buffer) {
-    if (!buffer.isDirect()) {
+  ByteBuffer getPoolableBuffer(final ByteBuffer buffer) {
+    final Object attachment = DirectBuffer.attachment(buffer);
+
+    if (null == attachment) {
       return buffer;
     }
-    ByteBuffer result = buffer;
-    if (parentOfSliceMethod == null) {
-      Class clazz = buffer.getClass();
-      try {
-        Method method = clazz.getMethod("attachment");
-        method.setAccessible(true);
-        parentOfSliceMethod = method;
-      } catch (Exception e) {
-        throw new InternalGemFireException("unable to retrieve underlying byte buffer", e);
-      }
+
+    if (attachment instanceof ByteBuffer) {
+      return (ByteBuffer) attachment;
     }
-    try {
-      Object attachment = parentOfSliceMethod.invoke(buffer);
-      if (attachment instanceof ByteBuffer) {
-        result = (ByteBuffer) attachment;
-      } else if (attachment != null) {
-        throw new InternalGemFireException(
-            "direct byte buffer attachment was not a byte buffer but a " +
-                attachment.getClass().getName());
-      }
-    } catch (Exception e) {
-      throw new InternalGemFireException("unable to retrieve underlying byte buffer", e);
-    }
-    return result;
+
+    throw new InternalGemFireException("direct byte buffer attachment was not a byte buffer but a "
+        + attachment.getClass().getName());
   }
 
   /**
@@ -383,22 +363,22 @@ public class BufferPool {
 
     BBSoftReference(ByteBuffer bb, boolean send) {
       super(bb);
-      this.size = bb.capacity();
+      size = bb.capacity();
       this.send = send;
     }
 
     public int getSize() {
-      return this.size;
+      return size;
     }
 
     synchronized int consumeSize() {
-      int result = this.size;
-      this.size = 0;
+      int result = size;
+      size = 0;
       return result;
     }
 
     public boolean getSend() {
-      return this.send;
+      return send;
     }
 
     public ByteBuffer getBB() {

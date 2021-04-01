@@ -33,11 +33,11 @@ import org.apache.geode.redis.internal.netty.CoderException;
 
 public class RedisResponse {
 
-  private final Function<ByteBufAllocator, ByteBuf> coderCallback;
+  private final Function<ByteBuf, ByteBuf> coderCallback;
 
   private Runnable afterWriteCallback;
 
-  private RedisResponse(Function<ByteBufAllocator, ByteBuf> coderCallback) {
+  private RedisResponse(Function<ByteBuf, ByteBuf> coderCallback) {
     this.coderCallback = coderCallback;
   }
 
@@ -52,37 +52,37 @@ public class RedisResponse {
   }
 
   public ByteBuf encode(ByteBufAllocator allocator) {
-    return coderCallback.apply(allocator);
+    return coderCallback.apply(allocator.buffer());
   }
 
   public static RedisResponse integer(long numericValue) {
-    return new RedisResponse((bba) -> Coder.getIntegerResponse(bba, numericValue));
+    return new RedisResponse((buffer) -> Coder.getIntegerResponse(buffer, numericValue));
   }
 
   public static RedisResponse integer(boolean exists) {
-    return new RedisResponse((bba) -> Coder.getIntegerResponse(bba, exists ? 1 : 0));
+    return new RedisResponse((buffer) -> Coder.getIntegerResponse(buffer, exists ? 1 : 0));
   }
 
   public static RedisResponse string(String stringValue) {
-    return new RedisResponse((bba) -> Coder.getSimpleStringResponse(bba, stringValue));
+    return new RedisResponse((buffer) -> Coder.getSimpleStringResponse(buffer, stringValue));
   }
 
   public static RedisResponse string(byte[] byteArray) {
-    return new RedisResponse((bba) -> Coder.getSimpleStringResponse(bba, byteArray));
+    return new RedisResponse((buffer) -> Coder.getSimpleStringResponse(buffer, byteArray));
   }
 
   public static RedisResponse bulkString(Object value) {
-    return new RedisResponse((bba) -> {
+    return new RedisResponse((buffer) -> {
       try {
-        return Coder.getBulkStringResponse(bba, value);
+        return Coder.getBulkStringResponse(buffer, value);
       } catch (CoderException e) {
-        return Coder.getErrorResponse(bba, "Internal server error: " + e.getMessage());
+        return Coder.getErrorResponse(buffer, "Internal server error: " + e.getMessage());
       }
     });
   }
 
   public static RedisResponse ok() {
-    return new RedisResponse((bba) -> Coder.getSimpleStringResponse(bba, "OK"));
+    return new RedisResponse((buffer) -> Coder.getSimpleStringResponse(buffer, "OK"));
   }
 
   public static RedisResponse nil() {
@@ -90,21 +90,21 @@ public class RedisResponse {
   }
 
   public static RedisResponse flattenedArray(Collection<Collection<?>> nestedCollection) {
-    return new RedisResponse((bba) -> {
+    return new RedisResponse((buffer) -> {
       try {
-        return Coder.getFlattenedArrayResponse(bba, nestedCollection);
+        return Coder.getFlattenedArrayResponse(buffer, nestedCollection);
       } catch (CoderException e) {
-        return Coder.getErrorResponse(bba, "Internal server error: " + e.getMessage());
+        return Coder.getErrorResponse(buffer, "Internal server error: " + e.getMessage());
       }
     });
   }
 
   public static RedisResponse array(Collection<?> collection) {
-    return new RedisResponse((bba) -> {
+    return new RedisResponse((buffer) -> {
       try {
-        return Coder.getArrayResponse(bba, collection);
+        return Coder.getArrayResponse(buffer, collection);
       } catch (CoderException e) {
-        return Coder.getErrorResponse(bba, "Internal server error: " + e.getMessage());
+        return Coder.getErrorResponse(buffer, "Internal server error: " + e.getMessage());
       }
     });
   }
@@ -118,21 +118,23 @@ public class RedisResponse {
   }
 
   public static RedisResponse error(String error) {
-    return new RedisResponse((bba) -> Coder.getErrorResponse(bba, error));
+    return new RedisResponse((buffer) -> Coder.getErrorResponse(buffer, error));
+  }
+
+  public static RedisResponse oom(String error) {
+    return new RedisResponse((bba) -> Coder.getOOMResponse(bba, error));
   }
 
   public static RedisResponse customError(String error) {
-    return new RedisResponse((bba) -> Coder.getCustomErrorResponse(bba, error));
+    return new RedisResponse((buffer) -> Coder.getCustomErrorResponse(buffer, error));
   }
 
   public static RedisResponse wrongType(String error) {
-    return new RedisResponse((bba) -> Coder.getWrongTypeResponse(bba, error));
+    return new RedisResponse((buffer) -> Coder.getWrongTypeResponse(buffer, error));
   }
 
   public static RedisResponse scan(BigInteger cursor, List<Object> scanResult) {
-
-    return new RedisResponse(
-        (bba) -> Coder.getScanResponse(bba, cursor, scanResult));
+    return new RedisResponse((buffer) -> Coder.getScanResponse(buffer, cursor, scanResult));
   }
 
   public static RedisResponse emptyScan() {
@@ -147,7 +149,7 @@ public class RedisResponse {
   }
 
   public static RedisResponse bigDecimal(BigDecimal numericValue) {
-    return new RedisResponse((bba) -> Coder.getBigDecimalResponse(bba, numericValue));
+    return new RedisResponse((buffer) -> Coder.getBigDecimalResponse(buffer, numericValue));
   }
 
 }

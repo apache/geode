@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -46,6 +47,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
+import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -109,19 +111,22 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
   // based on the fix for old wan Bug#46992 .revision is 39437
   @Override
-  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue)
+  public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue)
       throws IOException, CacheException {
-    enqueueEvent(operation, event, substituteValue, false);
+    enqueueEvent(operation, event, substituteValue, false, null);
+    return true;
 
   }
 
   @Override
-  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      boolean isLastEventInTransaction) throws IOException, CacheException {
+  public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
+      boolean isLastEventInTransaction, Predicate<InternalGatewayQueueEvent> condition)
+      throws IOException, CacheException {
     // Get the appropriate index into the gateways
     int index = Math.abs(getHashCode(((EntryEventImpl) event)) % this.processors.size());
     // Distribute the event to the gateway
-    enqueueEvent(operation, event, substituteValue, index, isLastEventInTransaction);
+    return enqueueEvent(operation, event, substituteValue, index, isLastEventInTransaction,
+        condition);
   }
 
   public void setModifiedEventId(EntryEventImpl clonedEvent, int index) {
@@ -153,8 +158,9 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     clonedEvent.setEventId(newEventId);
   }
 
-  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      int index, boolean isLastEventInTransaction) throws CacheException, IOException {
+  public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
+      int index, boolean isLastEventInTransaction, Predicate<InternalGatewayQueueEvent> condition)
+      throws CacheException, IOException {
     // Get the appropriate gateway
     SerialGatewaySenderEventProcessor serialProcessor = this.processors.get(index);
 
@@ -166,15 +172,15 @@ public class ConcurrentSerialGatewaySenderEventProcessor
       EntryEventImpl clonedEvent = new EntryEventImpl((EntryEventImpl) event);
       try {
         setModifiedEventId(clonedEvent, index);
-        serialProcessor.enqueueEvent(operation, clonedEvent, substituteValue,
-            isLastEventInTransaction);
+        return serialProcessor.enqueueEvent(operation, clonedEvent, substituteValue,
+            isLastEventInTransaction, condition);
       } finally {
         clonedEvent.release();
       }
     } else {
-      serialProcessor.enqueueEvent(operation, event, substituteValue);
+      return serialProcessor.enqueueEvent(operation, event, substituteValue,
+          isLastEventInTransaction, condition);
     }
-
   }
 
   @Override
@@ -418,10 +424,12 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   }
 
   @Override
-  protected void enqueueEvent(GatewayQueueEvent event) {
+  protected boolean enqueueEvent(GatewayQueueEvent event,
+      Predicate<InternalGatewayQueueEvent> condition) {
     for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
-      serialProcessor.enqueueEvent(event);
+      serialProcessor.enqueueEvent(event, condition);
     }
+    return true;
   }
 
   protected ThreadsMonitoring getThreadMonitorObj() {

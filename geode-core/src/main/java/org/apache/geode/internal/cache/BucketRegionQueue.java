@@ -43,10 +43,11 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.cache.wan.parallel.BucketRegionQueueUnavailableException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.concurrent.Atomics;
-import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.internal.offheap.OffHeapClearRequired;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -208,7 +209,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public void closeEntries() {
-    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
       @Override
       public void run() {
         BucketRegionQueue.super.closeEntries();
@@ -221,7 +222,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   @Override
   public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
     final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
-    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
       @Override
       public void run() {
         result.set(BucketRegionQueue.super.clearEntries(rvv));
@@ -453,26 +454,51 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * If a matching object also fulfills the endPredicate then the method
    * stops looking for more matching objects.
    */
-  public List<Object> getElementsMatching(Predicate matchingPredicate, Predicate endPredicate) {
+  public List<Object> getElementsMatching(Predicate<InternalGatewayQueueEvent> matchingPredicate,
+      Predicate<InternalGatewayQueueEvent> endPredicate) {
     getInitializationLock().readLock().lock();
     try {
       if (this.getPartitionedRegion().isDestroyed()) {
         throw new BucketRegionQueueUnavailableException();
       }
-      List<Object> elementsMatching = new ArrayList<Object>();
+      List<Object> elementsMatching = new ArrayList<>();
       Iterator<Object> it = this.eventSeqNumDeque.iterator();
       while (it.hasNext()) {
         Object key = it.next();
-        Object object = optimalGet(key);
-        if (matchingPredicate.test(object)) {
-          elementsMatching.add(object);
+        Object event = optimalGet(key);
+        if (!(event instanceof InternalGatewayQueueEvent)) {
+          continue;
+        }
+        if (matchingPredicate.test((InternalGatewayQueueEvent) event)) {
+          elementsMatching.add(event);
           this.eventSeqNumDeque.remove(key);
-          if (endPredicate.test(object)) {
+          if (endPredicate.test((InternalGatewayQueueEvent) event)) {
             break;
           }
         }
       }
       return elementsMatching;
+    } finally {
+      getInitializationLock().readLock().unlock();
+    }
+  }
+
+  public boolean hasEventsMatching(Predicate<InternalGatewayQueueEvent> matchingPredicate) {
+    getInitializationLock().readLock().lock();
+    try {
+      if (this.getPartitionedRegion().isDestroyed()) {
+        throw new BucketRegionQueueUnavailableException();
+      }
+      for (Object o : eventSeqNumDeque) {
+        Object event = optimalGet(o);
+        if (!(event instanceof InternalGatewayQueueEvent)) {
+          continue;
+        }
+        if (matchingPredicate.test((InternalGatewayQueueEvent) event)) {
+          return true;
+        }
+      }
+      return false;
     } finally {
       getInitializationLock().readLock().unlock();
     }

@@ -461,7 +461,9 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short UPDATE_ENTRY_VERSION_MESSAGE = 158;
   short PR_UPDATE_ENTRY_VERSION_MESSAGE = 159;
 
-  // 160 through 164 unused
+  short REDIS_KEY = 160;
+
+  // 161 through 164 unused
 
   short PR_FETCH_BULK_ENTRIES_MESSAGE = 165;
   short PR_FETCH_BULK_ENTRIES_REPLY_MESSAGE = 166;
@@ -680,7 +682,11 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short ABORT_BACKUP_REQUEST = 2183;
   short MEMBER_IDENTIFIER = 2184;
   short HOST_AND_PORT = 2185;
-
+  short REDIS_SET_ID = 2186;
+  short REDIS_STRING_ID = 2187;
+  short REDIS_HASH_ID = 2188;
+  short REDIS_NULL_DATA_ID = 2189;
+  short REDIS_SET_OPTIONS_ID = 2190;
   // NOTE, codes > 65535 will take 4 bytes to serialize
 
   /**

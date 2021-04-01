@@ -14,40 +14,50 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
-import org.apache.commons.io.FileUtils;
+import joptsimple.internal.Strings;
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
 
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.configuration.Deployment;
+import org.apache.geode.management.internal.CacheElementOperation;
+import org.apache.geode.management.internal.cli.domain.DeploymentInfo;
 import org.apache.geode.management.internal.functions.CacheRealizationFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.security.AuthenticationRequiredException;
 
 public class DeployFunction implements InternalFunction<Object[]> {
   private static final Logger logger = LogService.getLogger();
-
-  public static final String ID = DeployFunction.class.getName();
-
   private static final long serialVersionUID = 1L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.DeployFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   @SuppressWarnings("deprecation")
   public void execute(FunctionContext<Object[]> context) {
-    // Declared here so that it's available when returning a Throwable
-    String memberId = "";
-    File stagingDir = null;
+
+    String memberIdentifier = "";
 
     try {
       final Object[] args = context.getArguments();
@@ -59,59 +69,62 @@ public class DeployFunction implements InternalFunction<Object[]> {
       InternalCache cache = (InternalCache) context.getCache();
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
-      memberId = member.getId();
-      // If they set a name use it instead
-      if (!member.getName().equals("")) {
-        memberId = member.getName();
+      String memberId = !member.getName().equals("") ? member.getName() : member.getId();
+      memberIdentifier = memberId;
+
+      List<DeploymentInfo> results = new LinkedList<>();
+
+      List<Deployment> deployments;
+      String deploymentName = (String) args[2];
+      if (Strings.isNullOrEmpty(deploymentName)) {
+        deployments = jarFilenames.stream().map(jarFileName -> new Deployment(jarFileName,
+            getDeployedBy(cache), Instant.now().toString())).collect(Collectors.toList());
+      } else {
+        deployments =
+            jarFilenames.stream().map(jarFileName -> new Deployment(deploymentName, jarFileName,
+                getDeployedBy(cache), Instant.now().toString())).collect(Collectors.toList());
       }
 
-      Set<File> stagedFiles = CacheRealizationFunction.stageFileContent(jarFilenames, jarStreams);
-      stagingDir = stagedFiles.stream().findFirst().get().getParentFile();
+      for (int i = 0; i < deployments.size(); i++) {
+        Deployment deployment = deployments.get(i);
+        @SuppressWarnings("unchecked")
+        Execution execution = FunctionService.onMember(member)
+            .setArguments(
+                Arrays.asList(deployment, CacheElementOperation.CREATE, jarStreams.get(i)));
+        List<?> functionResult = (List<?>) execution
+            .execute(new CacheRealizationFunction())
+            .getResult();
 
-      List<String> deployedList = new ArrayList<>();
-      List<DeployedJar> jarClassLoaders =
-          ClassPathLoader.getLatest().getJarDeployer().deploy(stagedFiles);
-      for (int i = 0; i < jarFilenames.size(); i++) {
-        deployedList.add(jarFilenames.get(i));
-        // if deploy(jar) returns null, i.e. the staged file bytes matched the latest
-        // deployed version
-        if (jarClassLoaders.get(i) != null) {
-          deployedList.add(jarClassLoaders.get(i).getFileCanonicalPath());
-        } else {
-          deployedList.add("Already deployed");
-        }
+        functionResult.forEach(entry -> {
+          if (entry != null) {
+            if (entry instanceof Throwable) {
+              logger.warn("Error executing CacheRealizationFunction.", entry);
+            } else if (entry instanceof RealizationResult) {
+              RealizationResult realizationResult = (RealizationResult) entry;
+              results.add(new DeploymentInfo(memberId, deployment.getDeploymentName(),
+                  deployment.getFileName(), realizationResult.getMessage()));
+            }
+          }
+        });
       }
 
-      CliFunctionResult result =
-          new CliFunctionResult(memberId, deployedList.toArray(new String[0]));
-      context.getResultSender().lastResult(result);
-
-    } catch (IOException ex) {
-      CliFunctionResult result =
-          new CliFunctionResult(memberId, ex, "error staging jars for deployment");
+      CliFunctionResult result = new CliFunctionResult(memberIdentifier, results);
       context.getResultSender().lastResult(result);
     } catch (CacheClosedException cce) {
-      CliFunctionResult result = new CliFunctionResult(memberId, false, null);
+      CliFunctionResult result = new CliFunctionResult(memberIdentifier, false, null);
       context.getResultSender().lastResult(result);
 
     } catch (VirtualMachineError e) {
       org.apache.geode.SystemFailure.initiateFailure(e);
       throw e;
 
-    } catch (Throwable th) {
+    } catch (Throwable throwable) {
       org.apache.geode.SystemFailure.checkFailure();
-      logger.error("Could not deploy JAR file {}", th.getMessage(), th);
+      logger.error("Could not deploy JAR file {}", throwable.getMessage(), throwable);
 
-      CliFunctionResult result = new CliFunctionResult(memberId, th, null);
+      CliFunctionResult result = new CliFunctionResult(memberIdentifier, throwable, null);
       context.getResultSender().lastResult(result);
-    } finally {
-      deleteStagingDir(stagingDir);
     }
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 
   @Override
@@ -129,15 +142,16 @@ public class DeployFunction implements InternalFunction<Object[]> {
     return false;
   }
 
-  private void deleteStagingDir(File stagingDir) {
-    if (stagingDir == null) {
-      return;
-    }
-
+  private String getDeployedBy(InternalCache cache) {
+    Subject subject = null;
     try {
-      FileUtils.deleteDirectory(stagingDir);
-    } catch (IOException iox) {
-      logger.error("Unable to delete staging directory: {}", iox.getMessage());
+      subject = cache.getSecurityService().getSubject();
+    } catch (AuthenticationRequiredException e) {
+      // ignored. No user logged in for the deployment
+      // this would happen for offline commands like "start locator" and loading the cluster config
+      // from a directory
+      logger.debug("getDeployedBy: no user information is found.", e);
     }
+    return subject == null ? null : subject.getPrincipal().toString();
   }
 }

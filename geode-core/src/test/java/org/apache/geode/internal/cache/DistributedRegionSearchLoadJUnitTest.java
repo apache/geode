@@ -15,10 +15,10 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -29,13 +29,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -48,13 +42,10 @@ import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.fake.Fakes;
 
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore("*.UnitTest")
-@PrepareForTest({SearchLoadAndWriteProcessor.class})
 public class DistributedRegionSearchLoadJUnitTest {
 
   protected DistributedRegion createAndDefineRegion(boolean isConcurrencyChecksEnabled,
-      RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache) {
+      RegionAttributes<Object, Object> ra, InternalRegionArguments ira, GemFireCacheImpl cache) {
     DistributedRegion region =
         new DistributedRegion("testRegion", ra, null, cache, ira, disabledClock());
     if (isConcurrencyChecksEnabled) {
@@ -69,23 +60,21 @@ public class DistributedRegionSearchLoadJUnitTest {
     doNothing().when(region).distributeDestroy(any(), any());
     doNothing().when(region).distributeInvalidate(any());
     doNothing().when(region).distributeUpdateEntryVersion(any());
-
     return region;
   }
 
-  private RegionAttributes createRegionAttributes(boolean isConcurrencyChecksEnabled) {
-    AttributesFactory factory = new AttributesFactory();
+  private RegionAttributes<Object, Object> createRegionAttributes(
+      boolean isConcurrencyChecksEnabled) {
+    AttributesFactory<Object, Object> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    factory.setConcurrencyChecksEnabled(isConcurrencyChecksEnabled); //
-    RegionAttributes ra = factory.create();
-    return ra;
+    factory.setConcurrencyChecksEnabled(isConcurrencyChecksEnabled);
+    return factory.create();
   }
 
   private EventID createDummyEventID() {
     byte[] memId = {1, 2, 3};
-    EventID eventId = new EventID(memId, 11, 12, 13);
-    return eventId;
+    return new EventID(memId, 11, 12, 13);
   }
 
   protected EntryEventImpl createDummyEvent(DistributedRegion region) {
@@ -103,9 +92,9 @@ public class DistributedRegionSearchLoadJUnitTest {
     return event;
   }
 
-  protected VersionTag createVersionTag(boolean validVersionTag) {
-    InternalDistributedMember remotemember = mock(InternalDistributedMember.class);
-    VersionTag tag = VersionTag.create(remotemember);
+  protected VersionTag<InternalDistributedMember> createVersionTag(boolean validVersionTag) {
+    InternalDistributedMember remoteMember = mock(InternalDistributedMember.class);
+    VersionTag<InternalDistributedMember> tag = uncheckedCast(VersionTag.create(remoteMember));
     if (validVersionTag) {
       tag.setRegionVersion(1);
       tag.setEntryVersion(1);
@@ -117,7 +106,7 @@ public class DistributedRegionSearchLoadJUnitTest {
     GemFireCacheImpl cache = Fakes.cache();
 
     // create region attributes and internal region arguments
-    RegionAttributes ra = createRegionAttributes(isConcurrencyChecksEnabled);
+    RegionAttributes<Object, Object> ra = createRegionAttributes(isConcurrencyChecksEnabled);
     InternalRegionArguments ira = new InternalRegionArguments();
 
     // create a region object
@@ -131,26 +120,21 @@ public class DistributedRegionSearchLoadJUnitTest {
     return region;
   }
 
-  private void createSearchLoad() {
+  private void createSearchLoad(DistributedRegion region) {
     SearchLoadAndWriteProcessor proc = mock(SearchLoadAndWriteProcessor.class);
-    PowerMockito.mockStatic(SearchLoadAndWriteProcessor.class);
-    PowerMockito.when(SearchLoadAndWriteProcessor.getProcessor()).thenReturn(proc);
 
-    VersionTag tag = createVersionTag(true);
-
-    doAnswer(new Answer<EntryEventImpl>() {
-      @Override
-      public EntryEventImpl answer(InvocationOnMock invocation) throws Throwable {
-        Object[] args = invocation.getArguments();
-        if (args[0] instanceof EntryEventImpl) {
-          EntryEventImpl event = (EntryEventImpl) args[0];
-          event.setNewValue("NewLoadedValue");
-          event.setOperation(Operation.LOCAL_LOAD_CREATE);
-        }
-        return null;
+    doAnswer((Answer<EntryEventImpl>) invocation -> {
+      Object[] args = invocation.getArguments();
+      if (args[0] instanceof EntryEventImpl) {
+        EntryEventImpl event = (EntryEventImpl) args[0];
+        event.setNewValue("NewLoadedValue");
+        event.setOperation(Operation.LOCAL_LOAD_CREATE);
       }
-    }).when(proc).doSearchAndLoad(any(EntryEventImpl.class), anyObject(), anyObject(),
+      return null;
+    }).when(proc).doSearchAndLoad(any(EntryEventImpl.class), any(), any(),
         anyBoolean());
+
+    doReturn(proc).when(region).getSearchLoadAndWriteProcessor();
   }
 
   @Test
@@ -159,7 +143,7 @@ public class DistributedRegionSearchLoadJUnitTest {
     EntryEventImpl event = createDummyEvent(region);
     region.basicInvalidate(event);
 
-    createSearchLoad();
+    createSearchLoad(region);
 
     KeyInfo ki = new KeyInfo(event.getKey(), null, null);
     region.findObjectInSystem(ki, false, null, false, null, false, false, null, event, false);
@@ -174,7 +158,7 @@ public class DistributedRegionSearchLoadJUnitTest {
     EntryEventImpl event = createDummyEvent(region);
     region.basicInvalidate(event);
 
-    VersionTag tag = createVersionTag(true);
+    VersionTag<InternalDistributedMember> tag = createVersionTag(true);
     RegionEntry re = mock(RegionEntry.class);
     VersionStamp stamp = mock(VersionStamp.class);
 
@@ -182,7 +166,7 @@ public class DistributedRegionSearchLoadJUnitTest {
     when(re.getVersionStamp()).thenReturn(stamp);
     when(stamp.asVersionTag()).thenReturn(tag);
 
-    createSearchLoad();
+    createSearchLoad(region);
     doThrow(new ConcurrentCacheModificationException()).when(region)
         .basicPutEntry(any(EntryEventImpl.class), anyLong());
 

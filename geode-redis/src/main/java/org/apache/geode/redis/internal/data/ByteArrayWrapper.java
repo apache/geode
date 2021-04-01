@@ -13,12 +13,12 @@
  * the License.
  *
  */
+
 package org.apache.geode.redis.internal.data;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Arrays;
 
 import org.apache.geode.DataSerializer;
@@ -34,7 +34,7 @@ import org.apache.geode.redis.internal.netty.Coder;
  * able to be used in querying. Class is also marked as Serializable for test support.
  */
 public class ByteArrayWrapper
-    implements DataSerializableFixedID, Serializable, Comparable<ByteArrayWrapper> {
+    implements DataSerializableFixedID, Comparable<ByteArrayWrapper> {
   /**
    * The data portion of ValueWrapper
    */

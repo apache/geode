@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -37,7 +38,7 @@ public class SPopExecutor extends SetExecutor {
       popCount = Integer.parseInt(new String(commandElems.get(2)));
     }
 
-    ByteArrayWrapper key = command.getKey();
+    RedisKey key = command.getKey();
     RedisSetCommands redisSetCommands = createRedisSetCommands(context);
     Collection<ByteArrayWrapper> popped = redisSetCommands.spop(key, popCount);
 

@@ -47,9 +47,17 @@ public class AlterQueryServiceFunction extends CliFunction<Object[]> {
       + ALLOW_UNTRUSTED_METHOD_INVOCATION_SYSTEM_PROPERTY
       + "\" is set to TRUE. In order to use a MethodInvocationAuthorizer, this property must be FALSE or undefined.";
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.AlterQueryServiceFunction";
+
   boolean isSecurityEnabled() {
     return ((InternalCache) CacheFactory.getAnyInstance()).getSecurityService()
         .isIntegratedSecurity();
+  }
+
+  @Override
+  public String getId() {
+    return ID;
   }
 
   @Override

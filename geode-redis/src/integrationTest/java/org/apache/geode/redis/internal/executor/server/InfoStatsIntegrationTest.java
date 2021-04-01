@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.server;
 
 import org.junit.ClassRule;
+import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
@@ -26,5 +27,15 @@ public class InfoStatsIntegrationTest extends AbstractRedisInfoStatsIntegrationT
   @Override
   public int getPort() {
     return server.getPort();
+  }
+
+  @Override
+  public int getExposedPort() {
+    return server.getPort();
+  }
+
+  @Override
+  public void configureMaxMemory(Jedis jedis) {
+    return;
   }
 }

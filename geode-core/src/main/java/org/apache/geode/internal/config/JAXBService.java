@@ -41,7 +41,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import org.apache.geode.cache.configuration.XSDRootElement;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
 

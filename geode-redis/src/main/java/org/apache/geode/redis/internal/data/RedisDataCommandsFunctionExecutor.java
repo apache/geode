@@ -34,7 +34,7 @@ public abstract class RedisDataCommandsFunctionExecutor {
     this.helper = helper;
   }
 
-  protected Region<ByteArrayWrapper, RedisData> getRegion() {
+  protected Region<RedisKey, RedisData> getRegion() {
     return helper.getRegion();
   }
 
@@ -43,7 +43,7 @@ public abstract class RedisDataCommandsFunctionExecutor {
     return helper.getStripedExecutor().execute(key, callable);
   }
 
-  protected RedisData getRedisData(ByteArrayWrapper key) {
+  protected RedisData getRedisData(RedisKey key) {
     return helper.getRedisData(key);
   }
 }

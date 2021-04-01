@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
@@ -173,14 +174,25 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
   protected abstract void initializeMessageQueue(String id, boolean cleanQueues);
 
-  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event,
+  public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event,
       Object substituteValue) throws IOException, CacheException {
-    enqueueEvent(operation, event, substituteValue, false);
+    return enqueueEvent(operation, event, substituteValue, false, null);
   }
 
-  public abstract void enqueueEvent(EnumListenerEvent operation, EntryEvent event,
-      Object substituteValue, boolean isLastEventInTransaction) throws IOException, CacheException;
-
+  /**
+   *
+   * @param operation The operation
+   * @param event The event to be put in the queue
+   * @param substituteValue The substitute value
+   * @param isLastEventInTransaction True if this event is the last one in the
+   *        transaction it belongs to
+   * @param condition If not null, the event will be enqueued only if at least
+   *        one element in the queue matches the predicate
+   * @return False only if the condition is not null and no element in the queue matches it
+   */
+  public abstract boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event,
+      Object substituteValue, boolean isLastEventInTransaction,
+      Predicate<InternalGatewayQueueEvent> condition) throws IOException, CacheException;
 
   protected abstract void rebalance();
 
@@ -188,12 +200,10 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     return this.isStopped;
   }
 
-  protected void setIsStopped(boolean isStopped) {
+  public void setIsStopped(boolean isStopped) {
+    this.isStopped = isStopped;
     if (isStopped) {
-      this.isStopped = true;
       this.failureLogInterval.clear();
-    } else {
-      this.isStopped = isStopped;
     }
   }
 
@@ -222,7 +232,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   /**
    * Reset the batch id. This method is not synchronized because this dispatcher is the caller
    */
-  protected void resetBatchId() {
+  public void resetBatchId() {
     this.batchId = 0;
     // dont reset first time when first batch is put for dispatch
     // if (this.batchIdToEventsMap.size() == 1) {
@@ -234,11 +244,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     this.resetLastPeekedEvents = true;
   }
 
-  protected int getBatchSize() {
+  public int getBatchSize() {
     return this.batchSize;
   }
 
-  protected void setBatchSize(int batchSize) {
+  public void setBatchSize(int batchSize) {
     int currentBatchSize = this.batchSize;
     if (batchSize <= 0) {
       this.batchSize = 1;
@@ -257,11 +267,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
    *
    * @return the current batch id to be used to identify the next batch
    */
-  protected int getBatchId() {
+  public int getBatchId() {
     return this.batchId;
   }
 
-  protected boolean isConnectionReset() {
+  public boolean isConnectionReset() {
     return this.resetLastPeekedEvents;
   }
 
@@ -1386,7 +1396,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     }
   }
 
-  protected abstract void enqueueEvent(GatewayQueueEvent event);
+  protected abstract boolean enqueueEvent(GatewayQueueEvent event,
+      Predicate<InternalGatewayQueueEvent> condition);
 
   protected class SenderStopperCallable implements Callable<Boolean> {
     private final AbstractGatewaySenderEventProcessor p;

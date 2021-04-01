@@ -44,13 +44,19 @@ public class RegionCreateFunction implements InternalFunction {
 
   private static final long serialVersionUID = 8746830191680509335L;
 
-  private static final String ID = RegionCreateFunction.class.getName();
-
   @Immutable
   public static final RegionCreateFunction INSTANCE = new RegionCreateFunction();
 
   @Immutable
   private static final RegionConfigRealizer realizer = new RegionConfigRealizer();
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.RegionCreateFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public boolean isHA() {
@@ -121,11 +127,6 @@ public class RegionCreateFunction implements InternalFunction {
     }
 
     return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR);
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 
   @VisibleForTesting

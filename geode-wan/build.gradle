@@ -22,6 +22,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
+  compileOnly(platform(project(':boms:geode-all-bom')))
 
 
   implementation(project(':geode-logging'))
@@ -29,9 +30,10 @@ dependencies {
   implementation(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
   implementation(project(':geode-core'))
+  implementation('org.apache.commons:commons-lang3')
 
-  compileOnly('org.apache.logging.log4j:log4j-api:2.14.0')
-  
+  compileOnly('org.apache.logging.log4j:log4j-api')
+
   testImplementation(project(':geode-junit'))
   testImplementation('org.assertj:assertj-core')
   testImplementation('junit:junit')

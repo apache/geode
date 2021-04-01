@@ -140,7 +140,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LockServiceDestroyedException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
@@ -233,7 +232,6 @@ import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-import org.apache.geode.internal.cache.tier.sockets.command.Get70;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -4559,18 +4557,6 @@ public class PartitionedRegion extends LocalRegion
         }
       }
 
-      // Handle old nodes for Rolling Upgrade support
-      Set<Integer> failedSet = handleOldNodes(nodeToBuckets, values, servConn);
-      // Add failed buckets to nodeToBuckets map so that these will be tried on
-      // remote nodes.
-      if (!failedSet.isEmpty()) {
-        for (Integer bId : failedSet) {
-          failures.put(bId, bucketKeys.get(bId));
-        }
-        updateNodeToBucketMap(nodeToBuckets, failures);
-        failures.clear();
-      }
-
       fetchRemoteEntries(nodeToBuckets, failures, values, servConn);
       if (!failures.isEmpty()) {
         if (retryTime == null) {
@@ -4602,106 +4588,6 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  /**
-   * @return set of bucket-ids that could not be read from.
-   */
-  private Set<Integer> handleOldNodes(HashMap nodeToBuckets, VersionedObjectList values,
-      ServerConnection servConn) throws IOException {
-    Set<Integer> failures = new HashSet<Integer>();
-    HashMap oldFellas = filterOldMembers(nodeToBuckets);
-    for (Iterator it = oldFellas.entrySet().iterator(); it.hasNext();) {
-      Map.Entry e = (Map.Entry) it.next();
-      InternalDistributedMember member = (InternalDistributedMember) e.getKey();
-      Object bucketInfo = e.getValue();
-
-      HashMap<Integer, HashSet> bucketKeys = null;
-      Set<Integer> buckets = null;
-
-      if (bucketInfo instanceof Set) {
-        buckets = (Set<Integer>) bucketInfo;
-      } else {
-        bucketKeys = (HashMap<Integer, HashSet>) bucketInfo;
-        buckets = bucketKeys.keySet();
-      }
-
-      fetchKeysAndValues(values, servConn, failures, member, bucketKeys, buckets);
-    }
-    return failures;
-  }
-
-  void fetchKeysAndValues(VersionedObjectList values, ServerConnection servConn,
-      Set<Integer> failures, InternalDistributedMember member,
-      HashMap<Integer, HashSet> bucketKeys, Set<Integer> buckets)
-      throws IOException {
-    for (Integer bucket : buckets) {
-      Set keys = null;
-      if (bucketKeys == null) {
-        try {
-          FetchKeysResponse fetchKeysResponse = getFetchKeysResponse(member, bucket);
-          keys = fetchKeysResponse.waitForKeys();
-        } catch (ForceReattemptException ignore) {
-          failures.add(bucket);
-        }
-      } else {
-        keys = bucketKeys.get(bucket);
-      }
-      if (keys != null) {
-        getValuesForKeys(values, servConn, keys);
-      }
-    }
-  }
-
-  FetchKeysResponse getFetchKeysResponse(InternalDistributedMember member,
-      Integer bucket)
-      throws ForceReattemptException {
-    return FetchKeysMessage.send(member, this, bucket, true);
-  }
-
-  void getValuesForKeys(VersionedObjectList values, ServerConnection servConn, Set keys)
-      throws IOException {
-    // TODO (ashetkar) Use single Get70 instance for all?
-    for (Object key : keys) {
-      Get70 command = (Get70) Get70.getCommand();
-      Get70.Entry ge = command.getValueAndIsObject(this, key, null, servConn);
-
-      if (ge.keyNotPresent) {
-        values.addObjectPartForAbsentKey(key, ge.value, ge.versionTag);
-      } else {
-        values.addObjectPart(key, ge.value, ge.isObject, ge.versionTag);
-      }
-
-      if (values.size() == BaseCommand.MAXIMUM_CHUNK_SIZE) {
-        BaseCommand.sendNewRegisterInterestResponseChunk(this, "keyList", values, false,
-            servConn);
-        values.clear();
-      }
-    }
-  }
-
-  /**
-   * @param nodeToBuckets A map with InternalDistributedSystem as key and either HashSet or
-   *        HashMap<Integer, HashSet> as value.
-   * @return Map of <old members, set/map of bucket ids they host>.
-   */
-  private HashMap filterOldMembers(HashMap nodeToBuckets) {
-    ClusterDistributionManager dm = (ClusterDistributionManager) getDistributionManager();
-    HashMap oldGuys = new HashMap();
-
-    Set<InternalDistributedMember> oldMembers =
-        new HashSet<InternalDistributedMember>(nodeToBuckets.keySet());
-    dm.removeMembersWithSameOrNewerVersion(oldMembers, KnownVersion.CURRENT);
-    Iterator<InternalDistributedMember> oldies = oldMembers.iterator();
-    while (oldies.hasNext()) {
-      InternalDistributedMember old = oldies.next();
-      if (nodeToBuckets.containsKey(old)) {
-        oldGuys.put(old, nodeToBuckets.remove(old));
-      } else {
-        oldies.remove();
-      }
-    }
-
-    return oldGuys;
-  }
 
   /**
    * Fetches entries from local and remote nodes and appends these to register-interest response.
@@ -4734,14 +4620,6 @@ public class PartitionedRegion extends LocalRegion
       // remote nodes.
       updateNodeToBucketMap(nodeToBuckets, failures);
       failures.clear();
-
-      // Handle old nodes for Rolling Upgrade support
-      Set<Integer> ret = handleOldNodes(nodeToBuckets, values, servConn);
-      if (!ret.isEmpty()) {
-        failures.addAll(ret);
-        updateNodeToBucketMap(nodeToBuckets, failures);
-        failures.clear();
-      }
 
       localBuckets = nodeToBuckets.remove(getMyId());
       if (localBuckets != null && !localBuckets.isEmpty()) {
@@ -7932,7 +7810,7 @@ public class PartitionedRegion extends LocalRegion
 
   @Override
   void generateLocalFilterRouting(InternalCacheEvent event) {
-    if (isGenerateLocalFilterRoutingNeeded(event)) {
+    if (event.getLocalFilterInfo() == null) {
       super.generateLocalFilterRouting(event);
     }
   }
@@ -8149,8 +8027,8 @@ public class PartitionedRegion extends LocalRegion
    * A test method to get the list of all the bucket ids for the partitioned region in the data
    * Store.
    */
-  public List getLocalBucketsListTestOnly() {
-    List localBucketList = null;
+  public List<Integer> getLocalBucketsListTestOnly() {
+    List<Integer> localBucketList = null;
     if (this.dataStore != null) {
       localBucketList = this.dataStore.getLocalBucketsListTestOnly();
     }
@@ -8161,8 +8039,8 @@ public class PartitionedRegion extends LocalRegion
    * A test method to get the list of all the primary bucket ids for the partitioned region in the
    * data Store.
    */
-  public List getLocalPrimaryBucketsListTestOnly() {
-    List localPrimaryList = null;
+  public List<Integer> getLocalPrimaryBucketsListTestOnly() {
+    List<Integer> localPrimaryList = null;
     if (this.dataStore != null) {
       localPrimaryList = this.dataStore.getLocalPrimaryBucketsListTestOnly();
     }

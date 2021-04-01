@@ -39,9 +39,9 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -55,16 +55,17 @@ import org.apache.geode.security.ResourcePermission;
 public class UserFunctionExecution implements InternalFunction<Object[]> {
   private static final long serialVersionUID = 1L;
   private static final Logger logger = LogService.getLogger();
-  public static final String ID = UserFunctionExecution.class.getName();
+  protected static final String ID =
+      "org.apache.geode.management.internal.cli.functions.UserFunctionExecution";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public boolean isHA() {
     return false;
-  }
-
-  @Override
-  public String getId() {
-    return UserFunctionExecution.ID;
   }
 
   @Override

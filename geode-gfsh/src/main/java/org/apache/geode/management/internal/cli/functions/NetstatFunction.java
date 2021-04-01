@@ -37,8 +37,8 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.CliUtil.DeflaterInflaterData;
+import org.apache.geode.management.internal.cli.CliUtils;
+import org.apache.geode.management.internal.cli.CliUtils.DeflaterInflaterData;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
@@ -55,10 +55,16 @@ public class NetstatFunction implements InternalFunction<NetstatFunction.Netstat
   @Immutable
   public static final NetstatFunction INSTANCE = new NetstatFunction();
 
-  private static final String ID = NetstatFunction.class.getName();
-
   private static final String NETSTAT_COMMAND = "netstat";
   private static final String LSOF_COMMAND = "lsof";
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.NetstatFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public boolean hasResult() {
@@ -85,7 +91,7 @@ public class NetstatFunction implements InternalFunction<NetstatFunction.Netstat
     addMemberHostHeader(netstatInfo, "{0}", host, lineSeparator);
 
     NetstatFunctionResult result = new NetstatFunctionResult(host, netstatInfo.toString(),
-        CliUtil.compressBytes(netstatOutput.getBytes()));
+        CliUtils.compressBytes(netstatOutput.getBytes()));
 
     context.getResultSender().lastResult(result);
   }
@@ -228,11 +234,6 @@ public class NetstatFunction implements InternalFunction<NetstatFunction.Netstat
     }
 
     return netstatInfo.toString();
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 
   @Override
