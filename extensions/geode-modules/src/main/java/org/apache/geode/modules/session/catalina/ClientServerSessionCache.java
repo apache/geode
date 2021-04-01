@@ -163,7 +163,6 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     } catch (Exception e) {
       // If an exception occurs in the function, log it.
       getSessionManager().getLogger().warn("Caught unexpected exception:", e);
-      throw e;
     }
   }
 
