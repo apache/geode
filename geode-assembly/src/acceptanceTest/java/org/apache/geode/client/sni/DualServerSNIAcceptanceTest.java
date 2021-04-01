@@ -74,8 +74,17 @@ public class DualServerSNIAcceptanceTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    docker.get().exec(options("-T"), "geode",
-        arguments("gfsh", "run", "--file=/geode/scripts/geode-starter-2.gfsh"));
+    docker.get().exec(options("-T"), "locator-maeve",
+        arguments("gfsh", "run", "--file=/geode/scripts/locator-maeve.gfsh"));
+
+    docker.get().exec(options("-T"), "server-dolores",
+        arguments("gfsh", "run", "--file=/geode/scripts/server-dolores.gfsh"));
+
+    docker.get().exec(options("-T"), "server-clementine",
+        arguments("gfsh", "run", "--file=/geode/scripts/server-clementine.gfsh"));
+
+    docker.get().exec(options("-T"), "locator-maeve",
+        arguments("gfsh", "run", "--file=/geode/scripts/create-regions.gfsh"));
 
     final String trustStorePath =
         createTempFileFromResource(SingleServerSNIAcceptanceTest.class,

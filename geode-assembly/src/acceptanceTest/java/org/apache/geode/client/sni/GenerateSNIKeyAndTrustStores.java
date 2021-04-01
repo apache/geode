@@ -51,10 +51,7 @@ public class GenerateSNIKeyAndTrustStores {
       CertificateMaterial certificate = new CertificateBuilder(365 * 100, "SHA256withRSA")
           .commonName(certName)
           .issuedBy(ca)
-          .sanDnsName("geode") // for inside the docker container
-          .sanDnsName("localhost") // for inside the docker container
-          .sanIpAddress(InetAddress.getByName("0.0.0.0")) // for inside the docker container
-          .sanDnsName(certName) // for client endpoint validation
+          .sanDnsName(certName)
           .generate();
 
       CertStores store = new CertStores(certName);

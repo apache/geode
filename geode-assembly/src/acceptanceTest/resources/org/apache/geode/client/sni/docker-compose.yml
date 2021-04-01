@@ -16,13 +16,37 @@
 #
 version: '3'
 services:
-  geode:
-    container_name: 'geode'
+  locator-maeve:
+    container_name: 'locator-maeve'
     image: 'geode:develop'
-    hostname: geode
+    hostname: locator-maeve
     expose:
       - '10334'
+    entrypoint: 'sh'
+    command: '-c /geode/scripts/forever'
+    networks:
+      geode-sni-test:
+    volumes:
+      - ./geode-config:/geode/config:ro
+      - ./scripts:/geode/scripts
+  server-clementine:
+    container_name: 'server-clementine'
+    image: 'geode:develop'
+    hostname: server-clementine
+    expose:
       - '8501'
+    entrypoint: 'sh'
+    command: '-c /geode/scripts/forever'
+    networks:
+      geode-sni-test:
+    volumes:
+      - ./geode-config:/geode/config:ro
+      - ./scripts:/geode/scripts
+  server-dolores:
+    container_name: 'server-dolores'
+    image: 'geode:develop'
+    hostname: server-dolores
+    expose:
       - '8502'
     entrypoint: 'sh'
     command: '-c /geode/scripts/forever'
@@ -42,4 +66,5 @@ services:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
 networks:
   geode-sni-test:
+    name: geode-sni-test
 

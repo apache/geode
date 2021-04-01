@@ -15,30 +15,4 @@
 # limitations under the License.
 #
 
-defaults
-  timeout client 1000
-  timeout connect 1000
-  timeout server 1000
-
-frontend sniproxy
-  bind *:15443
-  mode tcp
-  tcp-request inspect-delay 5s
-  tcp-request content accept if { req_ssl_hello_type 1 }
-  use_backend locators-maeve if { req.ssl_sni -i locator-maeve }
-  use_backend servers-dolores if { req.ssl_sni -i server-dolores }
-  use_backend servers-clementine if { req.ssl_sni -i server-clementine }
-  default_backend locators-maeve
-  log stdout format raw  local0  debug
-
-backend locators-maeve
-  mode tcp
-  server locator1 locator-maeve:10334
-
-backend servers-dolores
-  mode tcp
-  server server1 server-dolores:8501
-
-backend servers-clementine
-  mode tcp
-  server server1 server-clementine:8502
+start server --name=server-dolores --group=group-dolores --bind-address=server-dolores --http-service-bind-address=server-dolores --hostname-for-clients=server-dolores --server-port=8501 --locators=locator-maeve[10334] --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/server-dolores-keystore.jks --J=-Dgemfire.forceDnsUse=true --J=-Djdk.tls.trustNameService=true
