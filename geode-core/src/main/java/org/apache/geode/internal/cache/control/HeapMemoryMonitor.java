@@ -47,6 +47,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
+import org.apache.geode.internal.cache.execute.AllowExecutionInLowMemory;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.LocalStatListener;
 import org.apache.geode.internal.statistics.StatisticsManager;
@@ -710,7 +711,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
 
   public LowMemoryException createLowMemoryIfNeeded(Function function,
       Set<? extends DistributedMember> memberSet) {
-    if (function.optimizeForWrite()
+    if (function.optimizeForWrite() && !(function instanceof AllowExecutionInLowMemory)
         && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
       Set<DistributedMember> criticalMembersFrom = getHeapCriticalMembersFrom(memberSet);
       if (!criticalMembersFrom.isEmpty()) {

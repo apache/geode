@@ -49,6 +49,8 @@ public class RedisConstants {
   public static final String ERROR_SYNTAX = "syntax error";
   public static final String ERROR_INVALID_EXPIRE_TIME = "invalid expire time in set";
   public static final String ERROR_NOT_A_VALID_FLOAT = "value is not a valid float";
+  public static final String ERROR_OOM_COMMAND_NOT_ALLOWED =
+      "command not allowed when used memory > 'maxmemory'";
 
   public static final String ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND =
       "Unknown subcommand or wrong number of arguments for '%s'. Try SLOWLOG HELP.";
