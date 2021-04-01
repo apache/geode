@@ -37,7 +37,7 @@ public class RedisDistributedSystemService implements DistributedSystemService {
   @Override
   public Collection<String> getSerializationAcceptlist() throws IOException {
     URL sanctionedSerializables = ClassPathLoader.getLatest().getResource(getClass(),
-        "sanctioned-geode-redis-serializables.txt");
+        "sanctioned-geode-apis-compatible-with-redis-serializables.txt");
     return InternalDataSerializer.loadClassNames(sanctionedSerializables);
   }
 }

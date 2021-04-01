@@ -12,7 +12,7 @@ geode-old-client-support-0.0.0.jar
 geode-protobuf-0.0.0.jar
 geode-protobuf-messages-0.0.0.jar
 geode-rebalancer-0.0.0.jar
-geode-redis-0.0.0.jar
+geode-apis-compatible-with-redis-0.0.0.jar
 geode-serialization-0.0.0.jar
 geode-tcp-server-0.0.0.jar
 geode-wan-0.0.0.jar

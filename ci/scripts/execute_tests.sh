@@ -37,7 +37,7 @@ fi
 . ${SCRIPTDIR}/shared_utilities.sh
 is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" || exit 0
 
-if [ "${GRADLE_TASK}" = ":geode-redis:redisAPITest" ] && ! grep -q redisAPITest geode/geode-redis/build.gradle ; then
+if [ "${GRADLE_TASK}" = ":geode-apis-compatible-with-redis:redisAPITest" ] && ! grep -q redisAPITest geode/geode-apis-compatible-with-redis/build.gradle ; then
   echo "redisAPITest is not applicable for 1.13 and earlier"
   exit 0
 fi
