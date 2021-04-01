@@ -14,15 +14,18 @@
  */
 package org.apache.geode.internal.monitoring.executor;
 
+import static java.lang.Integer.min;
+
+import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import org.apache.geode.annotations.Immutable;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public abstract class AbstractExecutor {
@@ -51,12 +54,21 @@ public abstract class AbstractExecutor {
     logger.warn(createThreadReport(stuckTime));
   }
 
+  private static ThreadInfo getThreadInfo(long threadId) {
+    ThreadInfo[] threadInfos =
+        ManagementFactory.getThreadMXBean().getThreadInfo(new long[] {threadId}, true, true);
+    if (threadInfos != null) {
+      return threadInfos[0];
+    } else {
+      return null;
+    }
+  }
+
   String createThreadReport(long stuckTime) {
 
     DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss zzz");
 
-    ThreadInfo thread =
-        ManagementFactory.getThreadMXBean().getThreadInfo(this.threadID, THREAD_DUMP_DEPTH);
+    ThreadInfo thread = getThreadInfo(threadID);
     boolean logThreadDetails = (thread != null);
 
     StringBuilder stringBuilder = new StringBuilder();
@@ -89,12 +101,11 @@ public abstract class AbstractExecutor {
         .append(lineSeparator);
 
     if (logThreadDetails) {
-      writeThreadStack(thread, "Thread stack:", stringBuilder);
+      writeThreadStack(thread, "Thread stack", stringBuilder);
     }
 
     if (logThreadDetails && thread.getLockOwnerName() != null) {
-      ThreadInfo lockOwnerThread = ManagementFactory.getThreadMXBean()
-          .getThreadInfo(thread.getLockOwnerId(), THREAD_DUMP_DEPTH);
+      ThreadInfo lockOwnerThread = getThreadInfo(thread.getLockOwnerId());
       if (lockOwnerThread != null) {
         writeThreadStack(lockOwnerThread, LOCK_OWNER_THREAD_STACK, stringBuilder);
       }
@@ -109,17 +120,38 @@ public abstract class AbstractExecutor {
   private static final String lineSeparator = System.lineSeparator();
 
   private void writeThreadStack(ThreadInfo thread, String header, StringBuilder strb) {
-    strb.append(header).append(lineSeparator);
+    strb.append(header).append(" for \"")
+        .append(thread.getThreadName())
+        .append("\" (0x").append(Long.toHexString(thread.getThreadId()))
+        .append("):").append(lineSeparator);
+    strb.append("java.lang.ThreadState: ").append(thread.getThreadState());
+    if (thread.isSuspended()) {
+      strb.append(" (suspended)");
+    }
+    if (thread.isInNative()) {
+      strb.append(" (in native)");
+    }
+    strb.append(lineSeparator);
     MonitorInfo[] lockedMonitors = thread.getLockedMonitors();
-    for (int i = 0; i < thread.getStackTrace().length; i++) {
+    for (int i = 0; i < min(thread.getStackTrace().length, THREAD_DUMP_DEPTH); i++) {
       String row = thread.getStackTrace()[i].toString();
       strb.append(INDENT).append("at ").append(row).append(lineSeparator);
       appendLockedMonitor(strb, i, lockedMonitors);
     }
+    strb.append("Locked ownable synchronizers:").append(lineSeparator);
+    LockInfo[] lockedSynchronizers = thread.getLockedSynchronizers();
+    if (lockedSynchronizers.length == 0) {
+      strb.append(INDENT).append("- None").append(lineSeparator);
+    } else {
+      for (LockInfo lockInfo : lockedSynchronizers) {
+        strb.append(INDENT).append("- ").append(lockInfo).append(lineSeparator);
+      }
+    }
   }
 
-  private void appendLockedMonitor(StringBuilder strb, int stackDepth, MonitorInfo[] lockedMonitors) {
-    for (MonitorInfo monitorInfo: lockedMonitors) {
+  private void appendLockedMonitor(StringBuilder strb, int stackDepth,
+      MonitorInfo[] lockedMonitors) {
+    for (MonitorInfo monitorInfo : lockedMonitors) {
       if (stackDepth == monitorInfo.getLockedStackDepth()) {
         strb.append(INDENT).append("  - locked " + monitorInfo).append(lineSeparator);
       }
