@@ -29,10 +29,13 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.internal.cli.functions.AlterGatewaySenderFunction;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderFunctionArgs;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -69,8 +72,10 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL,
           help = CliStrings.ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL__HELP) Integer batchTimeInterval,
       @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER,
-          specifiedDefaultValue = CliStrings.NULL,
-          help = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP) String[] gatewayEventFilters,
+          specifiedDefaultValue = "",
+          // split the input only with comma outside of json string
+          optionContext = "splittingRegex=,(?![^{]*\\})",
+          help = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP) ClassName[] gatewayEventFilters,
       @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
           specifiedDefaultValue = "true",
           help = CliStrings.ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS__HELP) Boolean groupTransactionEvents)
@@ -86,11 +91,26 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
 
     final String id = senderId.trim();
 
-    CacheConfig.GatewaySender oldConfiguration = findGW(id);
+    CacheConfig.GatewaySender oldConfiguration = findGatewaySenderConfiguration(id);
 
     if (oldConfiguration == null) {
       String message = String.format("Cannot find a gateway sender with id '%s'.", id);
       throw new EntityNotFoundException(message);
+    }
+
+    if (alertThreshold != null && alertThreshold < 0) {
+      return ResultModel.createError(
+          "alter-gateway-sender cannot be performed for --alert-threshold values smaller then 0.");
+    }
+
+    if (batchSize != null && batchSize < 1) {
+      return ResultModel.createError(
+          "alter-gateway-sender cannot be performed for --batch-size values smaller then 1.");
+    }
+
+    if (batchTimeInterval != null && batchTimeInterval < -1) {
+      return ResultModel.createError(
+          "alter-gateway-sender cannot be performed for --batch-time-interval values smaller then -1.");
     }
 
     if (groupTransactionEvents != null && groupTransactionEvents
@@ -111,6 +131,13 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
 
     if (dsMembers.isEmpty()) {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+    }
+
+    // Don't allow alter gateway sender command to be performed if all members are not the current
+    // version.
+    if (!verifyAllCurrentVersion(dsMembers)) {
+      return ResultModel.createError(
+          CliStrings.ALTER_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS);
     }
 
     CacheConfig.GatewaySender gwConfiguration = new CacheConfig.GatewaySender();
@@ -138,14 +165,17 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
       gwConfiguration.setGroupTransactionEvents(groupTransactionEvents);
     }
 
+
     if (gatewayEventFilters != null) {
       modify = true;
       if (gatewayEventFilters.length == 1
-          && gatewayEventFilters[0].equalsIgnoreCase(CliStrings.NULL)) {
+          && gatewayEventFilters[0].getClassName().isEmpty()) {
         gwConfiguration.getGatewayEventFilters();
       } else {
         gwConfiguration.getGatewayEventFilters()
-            .addAll((stringsToDeclarableTypes(gatewayEventFilters)));
+            .addAll(Arrays.stream(gatewayEventFilters)
+                .map(l -> new DeclarableType(l.getClassName()))
+                .collect(Collectors.toList()));
       }
     }
 
@@ -213,10 +243,9 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
 
   }
 
-  private CacheConfig.GatewaySender findGW(String gwId) {
+  private CacheConfig.GatewaySender findGatewaySenderConfiguration(String gwId) {
     CacheConfig.GatewaySender gwsender = null;
-    InternalConfigurationPersistenceService ccService =
-        (InternalConfigurationPersistenceService) this.getConfigurationPersistenceService();
+    InternalConfigurationPersistenceService ccService = this.getConfigurationPersistenceService();
     if (ccService == null) {
       return null;
     }
@@ -238,11 +267,10 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
     return gwsender;
   }
 
-  private List<DeclarableType> stringsToDeclarableTypes(String[] objects) {
-    return Arrays.stream(objects).map(fullyQualifiedClassName -> {
-      DeclarableType thisFilter = new DeclarableType();
-      thisFilter.setClassName(fullyQualifiedClassName);
-      return thisFilter;
-    }).collect(Collectors.toList());
+  boolean verifyAllCurrentVersion(Set<DistributedMember> members) {
+    return members.stream().allMatch(
+        member -> ((InternalDistributedMember) member).getVersion()
+            .equals(KnownVersion.CURRENT));
   }
+
 }

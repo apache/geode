@@ -93,6 +93,8 @@ public class AlterGatewaySenderCommandTest {
         Stream.of(mock(DistributedMember.class)).collect(Collectors.toSet());
     doReturn(members).when(command).findMembers(any(), any());
 
+    doReturn(true).when(command).verifyAllCurrentVersion(members);
+
   }
 
   @Test

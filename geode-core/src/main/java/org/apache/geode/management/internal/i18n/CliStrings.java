@@ -366,6 +366,9 @@ public class CliStrings {
 
   public static final String ALTER_GATEWAYSENDER__RELEVANT__OPTION__MESSAGE =
       "Please provide a relevant parameter(s)";
+  public static final String ALTER_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS =
+      "Alter Gateway Sender cannot be performed until all members are the current version";
+
 
   /* 'alter region' command */
   public static final String ALTER_REGION = "alter region";

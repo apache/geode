@@ -158,6 +158,33 @@ public class AlterGatewaySenderCommandDUnitTest {
   }
 
   @Test
+  public void testCreateSerialGatewaySenderAndInvalidAlterBatchSize() throws Exception {
+    gfsh.executeAndAssertThat(CREATE).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection()
+        .hasColumn("Message")
+        .containsExactly("GatewaySender \"sender1\" created on \"happyserver1\"",
+            "GatewaySender \"sender1\" created on \"happyserver2\"");
+
+    gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
+        .containsOutput("sender1");
+
+    gfsh.executeAndAssertThat(
+        "alter gateway-sender --id=sender1 --batch-size=-10 --alert-threshold=100")
+        .statusIsError();
+
+    // verify that server1's event queue has the default value
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender = cache.getGatewaySender("sender1");
+      assertThat(sender.getBatchSize()).isEqualTo(GatewaySender.DEFAULT_BATCH_SIZE);
+      assertThat(sender.getBatchTimeInterval())
+          .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(sender.getAlertThreshold()).isEqualTo(GatewaySender.DEFAULT_ALERT_THRESHOLD);
+    });
+  }
+
+  @Test
   public void testCreateSerialGatewaySenderAndAlterBatchSizeCheckConfig() throws Exception {
     gfsh.executeAndAssertThat(CREATE).statusIsSuccess()
         .doesNotContainOutput("Did not complete waiting")
@@ -296,6 +323,34 @@ public class AlterGatewaySenderCommandDUnitTest {
       assertThat(sender.getGatewayEventFilters().get(0).beforeEnqueue(null)).isTrue();
       assertThat(sender.getGatewayEventFilters().size()).isEqualTo(1);
     });
+
+    gfsh.executeAndAssertThat(
+        "alter gateway-sender --id=sender1 --batch-size=2000 --alert-threshold=1000")
+        .statusIsSuccess();
+
+    // verify that server1's event queue has the default value
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender = cache.getGatewaySender("sender1");
+      assertThat(sender.getBatchSize()).isEqualTo(2000);
+      assertThat(sender.getBatchTimeInterval())
+          .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(sender.getAlertThreshold()).isEqualTo(1000);
+      assertThat(sender.getGatewayEventFilters().get(0).beforeEnqueue(null)).isTrue();
+      assertThat(sender.getGatewayEventFilters().size()).isEqualTo(1);
+
+    });
+    server2.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      GatewaySender sender = cache.getGatewaySender("sender1");
+      assertThat(sender.getBatchSize()).isEqualTo(2000);
+      assertThat(sender.getBatchTimeInterval())
+          .isEqualTo(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(sender.getAlertThreshold()).isEqualTo(1000);
+      assertThat(sender.getGatewayEventFilters().get(0).beforeEnqueue(null)).isTrue();
+      assertThat(sender.getGatewayEventFilters().size()).isEqualTo(1);
+    });
+
   }
 
   @Test
