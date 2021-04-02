@@ -128,6 +128,9 @@ public class GeodeRedisServer {
     this.unsupportedCommandsEnabled = allowUnsupportedCommands;
   }
 
+  /**
+   * Precedence of the internal property overrides the global system property.
+   */
   public boolean allowUnsupportedCommands() {
     return this.unsupportedCommandsEnabled;
   }
