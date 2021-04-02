@@ -21,8 +21,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.management.internal.OpenJmxTypesSerialFilter.PROPERTY_NAME;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.apache.geode.management.internal.JmxRmiOpenTypesSerialFilter.PROPERTY_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
@@ -35,30 +35,27 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class LocatorManagerSerialFilterIntegrationTest {
+public class ServerManagerConfiguresJmxSerialFilterIntegrationTest {
 
-  private static final String NAME = "locator";
+  private static final String NAME = "server";
 
   private File workingDirectory;
-  private int locatorPort;
   private int jmxPort;
   private String expectedSerialFilter;
 
   @Rule
-  public CloseableReference<LocatorLauncher> locator = new CloseableReference<>();
+  public CloseableReference<ServerLauncher> server = new CloseableReference<>();
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
   public void setUp() throws Exception {
     workingDirectory = temporaryFolder.newFolder(NAME);
-    int[] ports = getRandomAvailableTCPPorts(2);
-    locatorPort = ports[0];
-    jmxPort = ports[1];
-    expectedSerialFilter = new OpenJmxTypesSerialFilter().createSerialFilterPattern();
+    jmxPort = getRandomAvailableTCPPort();
+    expectedSerialFilter = new JmxRmiOpenTypesSerialFilter().createSerialFilterPattern();
   }
 
   @After
@@ -67,12 +64,12 @@ public class LocatorManagerSerialFilterIntegrationTest {
   }
 
   @Test
-  public void startingLocatorWithJmxManager_configuresSerialFilter_atLeastJava9() {
+  public void startingServerWithJmxManager_configuresSerialFilter_atLeastJava9() {
     assumeThat(isJavaVersionAtLeast(JavaVersion.JAVA_9)).isTrue();
 
-    locator.set(new LocatorLauncher.Builder()
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
+        .setDisableDefaultServer(true)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -88,14 +85,14 @@ public class LocatorManagerSerialFilterIntegrationTest {
   }
 
   @Test
-  public void startingLocatorWithJmxManager_changesEmptySerialFilter_atLeastJava9() {
+  public void startingServerWithJmxManager_changesEmptySerialFilter_atLeastJava9() {
     assumeThat(isJavaVersionAtLeast(JavaVersion.JAVA_9)).isTrue();
 
     System.setProperty(PROPERTY_NAME, "");
 
-    locator.set(new LocatorLauncher.Builder()
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
+        .setDisableDefaultServer(true)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -111,15 +108,15 @@ public class LocatorManagerSerialFilterIntegrationTest {
   }
 
   @Test
-  public void startingLocatorWithJmxManager_skipsNonEmptySerialFilter_atLeastJava9() {
+  public void startingServerWithJmxManager_skipsNonEmptySerialFilter_atLeastJava9() {
     assumeThat(isJavaVersionAtLeast(JavaVersion.JAVA_9)).isTrue();
 
     String existingSerialFilter = "!*";
     System.setProperty(PROPERTY_NAME, existingSerialFilter);
 
-    locator.set(new LocatorLauncher.Builder()
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
+        .setDisableDefaultServer(true)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -135,12 +132,12 @@ public class LocatorManagerSerialFilterIntegrationTest {
   }
 
   @Test
-  public void startingLocatorWithJmxManager_skipsSerialFilter_atMostJava8() {
+  public void startingServerWithJmxManager_skipsSerialFilter_atMostJava8() {
     assumeThat(isJavaVersionAtMost(JavaVersion.JAVA_1_8)).isTrue();
 
-    locator.set(new LocatorLauncher.Builder()
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
+        .setDisableDefaultServer(true)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -156,14 +153,14 @@ public class LocatorManagerSerialFilterIntegrationTest {
   }
 
   @Test
-  public void startingLocatorWithJmxManager_skipsEmptySerialFilter_atMostJava8() {
+  public void startingServerWithJmxManager_skipsEmptySerialFilter_atMostJava8() {
     assumeThat(isJavaVersionAtMost(JavaVersion.JAVA_1_8)).isTrue();
 
     System.setProperty(PROPERTY_NAME, "");
 
-    locator.set(new LocatorLauncher.Builder()
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
+        .setDisableDefaultServer(true)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -179,15 +176,15 @@ public class LocatorManagerSerialFilterIntegrationTest {
   }
 
   @Test
-  public void startingLocatorWithJmxManager_skipsNonEmptySerialFilter_atMostJava8() {
+  public void startingServerWithJmxManager_skipsNonEmptySerialFilter_atMostJava8() {
     assumeThat(isJavaVersionAtMost(JavaVersion.JAVA_1_8)).isTrue();
 
     String existingSerialFilter = "!*";
     System.setProperty(PROPERTY_NAME, existingSerialFilter);
 
-    locator.set(new LocatorLauncher.Builder()
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
+        .setDisableDefaultServer(true)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")

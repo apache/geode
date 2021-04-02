@@ -134,7 +134,7 @@ public class ManagementAgent {
 
 
   public synchronized void startAgent() {
-    serialFilter.configureSerialFilterIfEmpty();
+    serialFilter.configureSerialFilter();
     loadWebApplications();
 
     if (!this.running && this.config.getJmxManagerPort() != 0) {

@@ -17,10 +17,5 @@ package org.apache.geode.management.internal;
 @FunctionalInterface
 public interface JmxRmiSerialFilter {
 
-  /**
-   * Configure the “jmx.remote.rmi.server.serial.filter.pattern” system property if Java version is
-   * greater than Java 8. If the system property already has a non-null value with a length greater
-   * than zero, then leave it as is.
-   */
-  void configureSerialFilterIfEmpty();
+  void configureSerialFilter();
 }

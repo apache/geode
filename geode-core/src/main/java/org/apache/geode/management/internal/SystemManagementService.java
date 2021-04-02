@@ -180,7 +180,7 @@ public class SystemManagementService extends BaseManagementService {
 
     if (system.getConfig().getJmxManager()) {
       agent = managementAgentFactory.create(system.getConfig(), cache,
-          new OpenJmxTypesSerialFilter());
+          new JmxRmiOpenTypesSerialFilter());
     } else {
       agent = null;
     }

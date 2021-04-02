@@ -43,7 +43,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * greater than Java 8. The serial pattern will be configured to accept only standard JMX
  * open-types. If the system property already has a non-null value, then leave it as is.
  */
-public class OpenJmxTypesSerialFilter implements JmxRmiSerialFilter {
+public class JmxRmiOpenTypesSerialFilter implements JmxRmiSerialFilter {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -53,23 +53,24 @@ public class OpenJmxTypesSerialFilter implements JmxRmiSerialFilter {
   private final Consumer<String> infoLogger;
   private final Supplier<Boolean> supportsSerialFilter;
 
-  OpenJmxTypesSerialFilter() {
+  JmxRmiOpenTypesSerialFilter() {
     this(logger::info, () -> isJavaVersionAtLeast(JavaVersion.JAVA_9));
   }
 
   @VisibleForTesting
-  OpenJmxTypesSerialFilter(Consumer<String> infoLogger, Supplier<Boolean> supportsSerialFilter) {
+  JmxRmiOpenTypesSerialFilter(Consumer<String> infoLogger, Supplier<Boolean> supportsSerialFilter) {
     this.infoLogger = infoLogger;
     this.supportsSerialFilter = supportsSerialFilter;
   }
 
   @Override
-  public void configureSerialFilterIfEmpty() {
+  public void configureSerialFilter() {
     if (supportsDedicatedSerialFilter()) {
       setPropertyValueUnlessExists(createSerialFilterPattern());
     }
   }
 
+  @VisibleForTesting
   boolean supportsDedicatedSerialFilter() {
     return supportsSerialFilter.get();
   }
@@ -78,6 +79,7 @@ public class OpenJmxTypesSerialFilter implements JmxRmiSerialFilter {
    * Sets the value of the system property {@code jmx.remote.rmi.server.serial.filter.pattern}
    * unless it exists with a value that is not null or empty ("").
    */
+  @VisibleForTesting
   void setPropertyValueUnlessExists(String value) {
     String existingValue = System.getProperty(PROPERTY_NAME);
     if (StringUtils.isNotEmpty(existingValue)) {
@@ -94,6 +96,7 @@ public class OpenJmxTypesSerialFilter implements JmxRmiSerialFilter {
    * Returns a serial filter pattern that accepts all open MBean data types and rejects everything
    * not included in the pattern.
    */
+  @VisibleForTesting
   String createSerialFilterPattern() {
     // note: java.util.* may also be needed
     return new StringBuilder()
