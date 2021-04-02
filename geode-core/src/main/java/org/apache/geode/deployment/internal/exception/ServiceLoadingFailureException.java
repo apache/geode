@@ -12,46 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.statistics;
+package org.apache.geode.deployment.internal.exception;
 
-public class NoOpStatistics implements ClientStatistics {
-  @Override
-  public void clientConnected() {
 
-  }
+import org.apache.geode.GemFireException;
 
-  @Override
-  public void clientDisconnected() {
-
-  }
-
-  @Override
-  public void messageReceived(int bytes) {
-
-  }
-
-  @Override
-  public void messageSent(int bytes) {
-
-  }
-
-  @Override
-  public void incAuthorizationViolations() {
-
-  }
-
-  @Override
-  public void incAuthenticationFailures() {
-
-  }
-
-  @Override
-  public long startOperation() {
-    return 0;
-  }
-
-  @Override
-  public void endOperation(long startOperationTime) {
-
+/**
+ * Indicates that an error has happened loading a necessary service.
+ */
+public class ServiceLoadingFailureException extends GemFireException {
+  public ServiceLoadingFailureException(String message) {
+    super(message);
   }
 }

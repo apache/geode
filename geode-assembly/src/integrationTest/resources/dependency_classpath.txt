@@ -8,8 +8,6 @@ geode-logging-0.0.0.jar
 geode-lucene-0.0.0.jar
 geode-memcached-0.0.0.jar
 geode-old-client-support-0.0.0.jar
-geode-protobuf-0.0.0.jar
-geode-protobuf-messages-0.0.0.jar
 geode-rebalancer-0.0.0.jar
 geode-apis-compatible-with-redis-0.0.0.jar
 geode-serialization-0.0.0.jar
@@ -86,6 +84,5 @@ lucene-analyzers-common-6.6.6.jar
 lucene-queryparser-6.6.6.jar
 lucene-core-6.6.6.jar
 lucene-queries-6.6.6.jar
-protobuf-java-3.11.4.jar
 geo-0.7.7.jar
 netty-all-4.1.59.Final.jar

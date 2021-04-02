@@ -83,7 +83,7 @@ public class ServerConnectionTest {
     when(distributionManager.getThreadMonitoring()).thenReturn(threadsMonitoring);
 
     serverConnection =
-        new ServerConnectionFactory().makeServerConnection(socket, cache,
+        new ServerConnection(socket, cache,
             cachedRegionHelper, mock(CacheServerStats.class), 0, 0, null,
             CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor,
             mock(SecurityService.class));

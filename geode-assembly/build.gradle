@@ -39,8 +39,6 @@ def dependentProjectNames = [
   ':geode-lucene',
   ':geode-memcached',
   ':geode-old-client-support',
-  ':geode-protobuf',
-  ':geode-protobuf-messages',
   ':geode-rebalancer',
   ':geode-apis-compatible-with-redis',
   ':geode-serialization',
@@ -57,7 +55,6 @@ def otherDependentProjectNames = [
   ':extensions:geode-modules-tomcat7',
   ':extensions:geode-modules-tomcat8',
   ':extensions:geode-modules-tomcat9',
-  ':geode-experimental-driver',
   ':geode-management',
   ':geode-pulse',
   ':geode-web',
@@ -181,7 +178,6 @@ dependencies {
   javadocOnly project(':extensions:geode-modules-tomcat7')
   javadocOnly project(':extensions:geode-modules-tomcat9')
   javadocOnly project(':extensions:geode-modules-tomcat8')
-  javadocOnly project(':geode-experimental-driver')
 
   testImplementation(project(':geode-core'))
   testImplementation(project(':geode-gfsh'))
@@ -590,11 +586,6 @@ distributions {
         from {project(':geode-web-management').configurations.archives.allArtifacts.files}
 
         exclude '*.jar'
-      }
-
-      with copySpec {
-        into('tools/ClientProtocol')
-        from {project(':geode-protobuf-messages').zip.outputs.files}
       }
 
       with copySpec {
