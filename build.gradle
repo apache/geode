@@ -128,7 +128,7 @@ tasks.register('devBuild') {
 tasks.register('generate') {
   group = 'Build'
   description = "Top-level target for all source generation. Helps IDE integration"
-  // This task is a no-op, with other tasks (such as geode-protobuf-messages:generateProto)
+  // This task is a no-op, with other tasks
   // injecting themselves as a task dependency into this task.  E.g., via
   // `afterEvaluate.rootProject.generate.dependsOn(generateProto)`
 }

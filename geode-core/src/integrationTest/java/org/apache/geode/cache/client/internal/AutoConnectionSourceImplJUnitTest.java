@@ -77,7 +77,6 @@ import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.PoolStats;
-import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -299,7 +298,7 @@ public class AutoConnectionSourceImplJUnitTest {
 
     TcpServer server2 =
         new TcpServer(secondPort, InetAddress.getLocalHost(), handler,
-            "tcp server", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
+            "tcp server", new ProtocolCheckerImpl(),
             DistributionStats::getStatTime,
             Executors::newCachedThreadPool,
             SocketCreatorFactory
@@ -386,7 +385,7 @@ public class AutoConnectionSourceImplJUnitTest {
   private void startFakeLocator() throws IOException, InterruptedException {
 
     server = new TcpServer(port, InetAddress.getLocalHost(), handler,
-        "Tcp Server", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
+        "Tcp Server", new ProtocolCheckerImpl(),
         DistributionStats::getStatTime,
         Executors::newCachedThreadPool,
         SocketCreatorFactory

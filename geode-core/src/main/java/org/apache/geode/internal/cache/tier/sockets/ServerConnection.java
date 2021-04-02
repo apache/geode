@@ -87,7 +87,7 @@ import org.apache.geode.security.NotAuthorizedException;
  *
  * @since GemFire 2.0.2
  */
-public abstract class ServerConnection implements Runnable {
+public class ServerConnection implements Runnable {
 
   protected static final Logger logger = LogService.getLogger();
 
@@ -124,6 +124,11 @@ public abstract class ServerConnection implements Runnable {
   private ServerConnectionCollection serverConnectionCollection;
 
   private final ProcessingMessageTimer processingMessageTimer = new ProcessingMessageTimer();
+
+  /**
+   * Set to false once handshake has been done
+   */
+  private boolean doHandshake = true;
 
   private final ThreadsMonitoring threadMonitoring;
   /**
@@ -318,6 +323,7 @@ public abstract class ServerConnection implements Runnable {
       }
     }
     threadMonitoring = getCache().getInternalDistributedSystem().getDM().getThreadMonitoring();
+    initStreams(socket, socketBufferSize, stats);
   }
 
   public Acceptor getAcceptor() {
@@ -674,7 +680,19 @@ public abstract class ServerConnection implements Runnable {
     return doHandShake(endpointType, queueSize) && handshakeAccepted();
   }
 
-  protected abstract boolean doHandShake(byte epType, int qSize);
+  protected boolean doHandShake(byte endpointType, int queueSize) {
+    try {
+      handshake.handshakeWithClient(theSocket.getOutputStream(), theSocket.getInputStream(),
+          endpointType, queueSize, communicationMode, principal);
+    } catch (IOException ioe) {
+      if (!crHelper.isShutdown() && !isTerminated()) {
+        logger.warn("{}: Handshake accept failed on socket {}: {}", name, theSocket, ioe);
+      }
+      cleanup();
+      return false;
+    }
+    return true;
+  }
 
   private boolean handshakeAccepted() {
     if (logger.isDebugEnabled()) {
@@ -995,7 +1013,15 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
-  protected abstract void doOneMessage();
+  protected void doOneMessage() {
+    if (doHandshake) {
+      doHandshake();
+      doHandshake = false;
+    } else {
+      resetTransientData();
+      doNormalMessage();
+    }
+  }
 
   private void initializeClientUserAuths() {
     clientUserAuths = getClientUserAuths(proxyId);

@@ -144,7 +144,7 @@ public class ServerConnectionIntegrationTest {
     }
   }
 
-  private static class TestServerConnection extends OriginalServerConnection {
+  private static class TestServerConnection extends ServerConnection {
 
     private volatile TestMessage testMessage;
 
