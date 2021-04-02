@@ -34,7 +34,9 @@ import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
@@ -110,7 +112,7 @@ public class RebalanceOperationPerformer {
             CliStrings.REBALANCE__MSG__NO_ASSOCIATED_DISTRIBUTED_MEMBER, regionName));
       }
 
-      Function rebalanceFunction = new RebalanceFunction();
+      Function rebalanceFunction = getRebalanceFunction((InternalDistributedMember) member);
       Object[] functionArgs = new Object[3];
       functionArgs[0] = simulate ? "true" : "false";
       Set<String> setRegionName = new HashSet<>();
@@ -354,7 +356,7 @@ public class RebalanceOperationPerformer {
         if (memberPR.dsMemberList.size() > 1) {
           for (int i = 0; i < memberPR.dsMemberList.size(); i++) {
             DistributedMember dsMember = memberPR.dsMemberList.get(i);
-            Function rebalanceFunction = new RebalanceFunction();
+            Function rebalanceFunction = getRebalanceFunction((InternalDistributedMember) dsMember);
             Object[] functionArgs = new Object[3];
             functionArgs[0] = simulate;
             Set<String> regionSet = new HashSet<>();
@@ -425,6 +427,17 @@ public class RebalanceOperationPerformer {
       rebalanceResult.setSuccess(false);
     }
     return rebalanceResult;
+  }
+
+  private static Function getRebalanceFunction(InternalDistributedMember dsMember) {
+    Function rebalanceFunction;
+    if (dsMember.getVersionOrdinal() < Version.GEODE_1_12_0.ordinal()) {
+      rebalanceFunction =
+          new org.apache.geode.management.internal.cli.functions.RebalanceFunction();
+    } else {
+      rebalanceFunction = new RebalanceFunction();
+    }
+    return rebalanceFunction;
   }
 
   private static RebalanceRegionResult toRebalanceRegionResut(List<String> rstList) {

@@ -50,7 +50,7 @@ public class CacheRealizationFunction implements InternalFunction<List> {
   private static final Logger logger = LogService.getLogger();
   @Immutable
   private static final Map<Class, ConfigurationRealizer> realizers = new HashMap<>();
-
+  private static final long serialVersionUID = -2695517414081975343L;
   static {
     realizers.put(Region.class, new RegionConfigRealizer());
     realizers.put(GatewayReceiver.class, new GatewayReceiverRealizer());

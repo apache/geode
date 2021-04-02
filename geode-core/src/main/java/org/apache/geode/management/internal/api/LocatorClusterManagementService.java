@@ -40,11 +40,12 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementGetResult;
@@ -190,7 +191,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     // execute function on all targeted members
     List<RealizationResult> functionResults = executeAndGetFunctionResult(
-        new CacheRealizationFunction(),
         Arrays.asList(config, CacheElementOperation.CREATE),
         targetedMembers);
 
@@ -251,7 +251,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
     ClusterManagementRealizationResult result = new ClusterManagementRealizationResult();
 
     List<RealizationResult> functionResults = executeAndGetFunctionResult(
-        new CacheRealizationFunction(),
         Arrays.asList(config, CacheElementOperation.DELETE),
         memberValidator.findServers(groupsWithThisElement));
     functionResults.forEach(result::addMemberStatus);
@@ -361,7 +360,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
         members = Collections.singleton(members.iterator().next());
       }
 
-      List<R> runtimeInfos = executeAndGetFunctionResult(new CacheRealizationFunction(),
+      List<R> runtimeInfos = executeAndGetFunctionResult(
           Arrays.asList(element, CacheElementOperation.GET),
           members);
       response.setRuntimeInfo(runtimeInfos);
@@ -535,19 +534,56 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @VisibleForTesting
-  <R> List<R> executeAndGetFunctionResult(Function function, Object args,
+  <R> List<R> executeAndGetFunctionResult(Object args,
       Set<DistributedMember> targetMembers) {
+    Set<DistributedMember> targetMemberPRE1_12_0 = new HashSet<>();
+    Set<DistributedMember> targetMemberPOST1_12_0 = new HashSet<>();
     if (targetMembers.size() == 0) {
       return Collections.emptyList();
     }
 
-    Execution execution = FunctionService.onMembers(targetMembers).setArguments(args);
-    ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
-    ResultCollector rc = execution.execute(function);
+    targetMembers.stream().forEach(member -> {
+      if (((InternalDistributedMember) member).getVersionOrdinal() < Version.GEODE_1_12_0
+          .ordinal()) {
+        targetMemberPRE1_12_0.add(member);
+      } else {
+        targetMemberPOST1_12_0.add(member);
+      }
+    });
 
-    return (List<R>) rc.getResult();
+    List<R> functionResults = new ArrayList<>();
+    if (targetMemberPRE1_12_0.size() > 0) {
+      Function<?> function =
+          new org.apache.geode.management.internal.cli.functions.CacheRealizationFunction();
+      Execution execution = FunctionService.onMembers(targetMemberPRE1_12_0).setArguments(args);
+      ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
+      functionResults.addAll(cleanResults((List<?>) execution.execute(function).getResult()));
+    }
+    if (targetMemberPOST1_12_0.size() > 0) {
+      Function<?> function = new CacheRealizationFunction();
+      Execution execution = FunctionService.onMembers(targetMemberPOST1_12_0).setArguments(args);
+      ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
+      functionResults.addAll(cleanResults((List<?>) execution.execute(function).getResult()));
+    }
+
+    return functionResults;
   }
 
+  <R> List<R> cleanResults(List<?> functionResults) {
+    List<R> results = new ArrayList<>();
+    for (Object functionResult : functionResults) {
+      if (functionResult == null) {
+        continue;
+      }
+      if (functionResult instanceof Throwable) {
+        // log the exception and continue
+        logger.warn("Error executing CacheRealizationFunction.", (Throwable) functionResult);
+        continue;
+      }
+      results.add((R) functionResult);
+    }
+    return results;
+  }
 
   /**
    * for internal use only
