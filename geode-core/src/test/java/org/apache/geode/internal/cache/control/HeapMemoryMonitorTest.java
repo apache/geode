@@ -68,7 +68,7 @@ public class HeapMemoryMonitorTest {
     when(internalCache.getMyId()).thenReturn(myself);
 
     heapMonitor = new HeapMemoryMonitor(mock(InternalResourceManager.class), internalCache,
-        mock(ResourceManagerStats.class));
+        mock(ResourceManagerStats.class), mock(TenuredHeapConsumptionMonitor.class));
     previousMemoryStateChangeTolerance = heapMonitor.getMemoryStateChangeTolerance();
     heapMonitor.setMemoryStateChangeTolerance(memoryStateChangeTolerance);
     memberSet = new HashSet<>();
