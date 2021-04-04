@@ -30,7 +30,6 @@ import redis.clients.jedis.util.SafeEncoder;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 public class UnsupportedCommandsIntegrationTest {
 
