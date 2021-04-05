@@ -53,6 +53,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
+// DHE: comment added to trigger stress new test
 @Category({SerializationTest.class})
 public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
 
