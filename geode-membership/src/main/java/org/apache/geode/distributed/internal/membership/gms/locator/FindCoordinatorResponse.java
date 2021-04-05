@@ -30,6 +30,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
@@ -183,8 +184,8 @@ public class FindCoordinatorResponse<ID extends MemberIdentifier> extends Abstra
       DeserializationContext context) throws IOException, ClassNotFoundException {
     coordinator = context.getDeserializer().readObject(in);
     senderId = context.getDeserializer().readObject(in);
-    coordinatorPublicKey = StaticSerialization.readByteArray(in);
-    rejectionMessage = StaticSerialization.readString(in);
+    coordinatorPublicKey = StaticDeserialization.readByteArray(in);
+    rejectionMessage = StaticDeserialization.readString(in);
     isShortForm = in.readBoolean();
     if (!isShortForm) {
       fromView = in.readBoolean();

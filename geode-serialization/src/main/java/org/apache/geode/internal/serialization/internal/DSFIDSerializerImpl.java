@@ -40,6 +40,7 @@ import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 
 public class DSFIDSerializerImpl implements DSFIDSerializer {
@@ -385,7 +386,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
 
   private Object readDataSerializable(final DataInput in)
       throws IOException, ClassNotFoundException {
-    Class<?> c = StaticSerialization.readClass(in);
+    Class<?> c = StaticDeserialization.readClass(in);
     try {
       Constructor<?> init = c.getConstructor();
       init.setAccessible(true);

@@ -63,6 +63,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
@@ -263,7 +264,7 @@ public abstract class DataSerializer {
       String className = readString(in);
       return InternalDataSerializer.getCachedClass(className);
     } else {
-      return StaticSerialization.decodePrimitiveClass(typeCode);
+      return StaticDeserialization.decodePrimitiveClass(typeCode);
     }
   }
 
@@ -460,7 +461,7 @@ public abstract class DataSerializer {
   public static InetAddress readInetAddress(DataInput in) throws IOException {
 
     InternalDataSerializer.checkIn(in);
-    InetAddress address = StaticSerialization.readInetAddress(in);
+    InetAddress address = StaticDeserialization.readInetAddress(in);
 
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read InetAddress {}", address);
@@ -500,7 +501,7 @@ public abstract class DataSerializer {
    * @see #writeString
    */
   public static String readString(DataInput in) throws IOException {
-    return StaticSerialization.readString(in);
+    return StaticDeserialization.readString(in);
   }
 
   /**
@@ -1262,7 +1263,7 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkIn(in);
 
-    byte[] result = StaticSerialization.readByteArray(in);
+    byte[] result = StaticDeserialization.readByteArray(in);
 
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read byte array of length {}",
@@ -1311,7 +1312,7 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkIn(in);
 
-    String array[] = StaticSerialization.readStringArray(in);
+    String array[] = StaticDeserialization.readStringArray(in);
 
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read String array of length {}",
@@ -1508,7 +1509,7 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkIn(in);
 
-    int[] result = StaticSerialization.readIntArray(in);
+    int[] result = StaticDeserialization.readIntArray(in);
 
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read int array of length {}",
@@ -1741,7 +1742,7 @@ public abstract class DataSerializer {
         if (typeCode == DSCODE.CLASS.toByte()) {
           c = InternalDataSerializer.getCachedClass(typeString);
         } else {
-          c = StaticSerialization.decodePrimitiveClass(typeCode);
+          c = StaticDeserialization.decodePrimitiveClass(typeCode);
         }
       }
       Object o = null;

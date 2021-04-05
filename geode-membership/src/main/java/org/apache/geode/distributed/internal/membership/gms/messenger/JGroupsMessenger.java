@@ -92,6 +92,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.JoinRespons
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.Versioning;
@@ -1113,12 +1114,12 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       byte[] pk = null;
 
       if (readPK) {
-        pk = StaticSerialization.readByteArray(dis);
-        data = StaticSerialization.readByteArray(dis);
+        pk = StaticDeserialization.readByteArray(dis);
+        data = StaticDeserialization.readByteArray(dis);
         // using prefixed pk from sender
         data = encryptLocal.decryptData(data, pk);
       } else {
-        data = StaticSerialization.readByteArray(dis);
+        data = StaticDeserialization.readByteArray(dis);
         // from cluster key
         if (pkMbr != null) {
           // using member public key

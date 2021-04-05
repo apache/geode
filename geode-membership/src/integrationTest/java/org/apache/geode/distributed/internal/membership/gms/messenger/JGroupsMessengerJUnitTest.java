@@ -96,6 +96,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -1188,7 +1189,7 @@ public class JGroupsMessengerJUnitTest {
     @Override
     public void fromData(DataInput in, DeserializationContext context)
         throws IOException {
-      payload = StaticSerialization.readByteArray(in);
+      payload = StaticDeserialization.readByteArray(in);
     }
 
     @Override

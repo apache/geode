@@ -27,6 +27,7 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
@@ -584,7 +585,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
     this.networkPartitionDetectionEnabled = (flags & NPD_ENABLED_BIT) != 0;
     this.preferredForCoordinator = (flags & COORD_ENABLED_BIT) != 0;
 
-    this.inetAddr = StaticSerialization.readInetAddress(in);
+    this.inetAddr = StaticDeserialization.readInetAddress(in);
     if (this.inetAddr != null) {
       // use address as hostname at this level. getHostName() will do a reverse-dns lookup,
       // which is very expensive

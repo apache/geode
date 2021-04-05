@@ -27,6 +27,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
@@ -136,7 +137,7 @@ public class HostAndPort implements DataSerializableFixedID {
     InetAddress address = null;
     byte flags = in.readByte();
     if ((flags & 1) == 0) {
-      String hostName = StaticSerialization.readString(in);
+      String hostName = StaticDeserialization.readString(in);
       int port = in.readInt();
       if (hostName == null || hostName.isEmpty()) {
         socketInetAddress = new InetSocketAddress(port);
@@ -144,7 +145,7 @@ public class HostAndPort implements DataSerializableFixedID {
         socketInetAddress = InetSocketAddress.createUnresolved(hostName, port);
       }
     } else {
-      address = StaticSerialization.readInetAddress(in);
+      address = StaticDeserialization.readInetAddress(in);
       int port = in.readInt();
       socketInetAddress = new InetSocketAddress(address, port);
     }

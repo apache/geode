@@ -119,6 +119,7 @@ import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
@@ -320,7 +321,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * @return the name of the class in this implementation
    */
   public static String processIncomingClassName(String nameArg) {
-    final String name = StaticSerialization.processIncomingClassName(nameArg);
+    final String name = StaticDeserialization.processIncomingClassName(nameArg);
     // using identity comparison on purpose because we are on the hot path
     if (name != nameArg) {
       return name;
@@ -2459,13 +2460,13 @@ public abstract class InternalDataSerializer extends DataSerializer {
     if (len == 0) {
       return "";
     }
-    byte[] buf = StaticSerialization.getThreadLocalByteArray(len);
+    byte[] buf = StaticDeserialization.getThreadLocalByteArray(len);
     dataInput.readFully(buf, 0, len);
     return new String(buf, 0, 0, len); // intentionally using deprecated constructor
   }
 
   public static String readString(DataInput in, byte header) throws IOException {
-    return StaticSerialization.readString(in, header);
+    return StaticDeserialization.readString(in, header);
   }
 
   /**

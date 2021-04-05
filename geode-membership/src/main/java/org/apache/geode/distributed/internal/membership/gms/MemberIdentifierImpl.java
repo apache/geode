@@ -45,6 +45,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
@@ -583,7 +584,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     InetAddress inetAddr = InetAddress.getByAddress(addr);
     int port = in.readInt();
 
-    String hostName = StaticSerialization.readString(in);
+    String hostName = StaticDeserialization.readString(in);
 
     int flags = in.readUnsignedByte();
     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
@@ -594,11 +595,11 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     int vmPid = in.readInt();
     int vmKind = in.readInt();
     int vmViewId = in.readInt();
-    String[] groups = StaticSerialization.readStringArray(in);
+    String[] groups = StaticDeserialization.readStringArray(in);
 
-    String name = StaticSerialization.readString(in);
-    String uniqueTag = StaticSerialization.readString(in);
-    String durableId = StaticSerialization.readString(in);
+    String name = StaticDeserialization.readString(in);
+    String uniqueTag = StaticDeserialization.readString(in);
+    String durableId = StaticDeserialization.readString(in);
     int durableTimeout = in.readInt();
 
     short version = readVersion(flags, in);
@@ -752,10 +753,10 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
   public void fromDataPre_GFE_9_0_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    InetAddress inetAddr = StaticSerialization.readInetAddress(in);
+    InetAddress inetAddr = StaticDeserialization.readInetAddress(in);
     int port = in.readInt();
 
-    String hostName = StaticSerialization.readString(in);
+    String hostName = StaticDeserialization.readString(in);
 
     int flags = in.readUnsignedByte();
     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
@@ -765,21 +766,21 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     int dcPort = in.readInt();
     int vmPid = in.readInt();
     int vmKind = in.readUnsignedByte();
-    String[] groups = StaticSerialization.readStringArray(in);
+    String[] groups = StaticDeserialization.readStringArray(in);
     int vmViewId = -1;
 
-    String name = StaticSerialization.readString(in);
+    String name = StaticDeserialization.readString(in);
     String uniqueTag = null;
     if (vmKind == MemberIdentifier.LONER_DM_TYPE) {
-      uniqueTag = StaticSerialization.readString(in);
+      uniqueTag = StaticDeserialization.readString(in);
     } else {
-      String str = StaticSerialization.readString(in);
+      String str = StaticDeserialization.readString(in);
       if (str != null) { // backward compatibility from earlier than 6.5
         vmViewId = Integer.parseInt(str);
       }
     }
 
-    String durableId = StaticSerialization.readString(in);
+    String durableId = StaticDeserialization.readString(in);
     int durableTimeout = in.readInt();
 
     short version = readVersion(flags, in);
@@ -807,10 +808,10 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
   public void fromDataPre_GFE_7_1_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    InetAddress inetAddr = StaticSerialization.readInetAddress(in);
+    InetAddress inetAddr = StaticDeserialization.readInetAddress(in);
     int port = in.readInt();
 
-    String hostName = StaticSerialization.readString(in);
+    String hostName = StaticDeserialization.readString(in);
 
     int flags = in.readUnsignedByte();
     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
@@ -820,21 +821,21 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     int dcPort = in.readInt();
     int vmPid = in.readInt();
     int vmKind = in.readUnsignedByte();
-    String[] groups = StaticSerialization.readStringArray(in);
+    String[] groups = StaticDeserialization.readStringArray(in);
     int vmViewId = -1;
 
-    String name = StaticSerialization.readString(in);
+    String name = StaticDeserialization.readString(in);
     String uniqueTag = null;
     if (vmKind == MemberIdentifier.LONER_DM_TYPE) {
-      uniqueTag = StaticSerialization.readString(in);
+      uniqueTag = StaticDeserialization.readString(in);
     } else {
-      String str = StaticSerialization.readString(in);
+      String str = StaticDeserialization.readString(in);
       if (str != null) { // backward compatibility from earlier than 6.5
         vmViewId = Integer.parseInt(str);
       }
     }
 
-    String durableId = StaticSerialization.readString(in);
+    String durableId = StaticDeserialization.readString(in);
     int durableTimeout = in.readInt();
 
     short version = readVersion(flags, in);
@@ -862,7 +863,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
   public void _readEssentialData(DataInput in, Function<InetAddress, String> hostnameResolver)
       throws IOException, ClassNotFoundException {
-    InetAddress inetAddr = StaticSerialization.readInetAddress(in);
+    InetAddress inetAddr = StaticDeserialization.readInetAddress(in);
     int port = in.readInt();
 
     String hostName = hostnameResolver.apply(inetAddr);
@@ -876,15 +877,15 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
     String uniqueTag = null;
     if (vmKind == MemberIdentifier.LONER_DM_TYPE) {
-      uniqueTag = StaticSerialization.readString(in);
+      uniqueTag = StaticDeserialization.readString(in);
     } else {
-      String str = StaticSerialization.readString(in);
+      String str = StaticDeserialization.readString(in);
       if (str != null) { // backward compatibility from earlier than 6.5
         vmViewId = Integer.parseInt(str);
       }
     }
 
-    String name = StaticSerialization.readString(in);
+    String name = StaticDeserialization.readString(in);
 
     memberData = MemberDataBuilder.newBuilder(inetAddr, hostName)
         .setMembershipPort(port)

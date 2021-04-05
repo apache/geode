@@ -25,6 +25,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMS
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
@@ -136,8 +137,8 @@ public class FindCoordinatorRequest<ID extends MemberIdentifier> extends Abstrac
     }
     this.lastViewId = in.readInt();
     this.requestId = in.readInt();
-    this.dhalgo = StaticSerialization.readString(in);
-    this.myPublicKey = StaticSerialization.readByteArray(in);
+    this.dhalgo = StaticDeserialization.readString(in);
+    this.myPublicKey = StaticDeserialization.readByteArray(in);
   }
 
   @Override

@@ -25,6 +25,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 
 // TODO this class has been made unintelligible with different combinations of response values.
@@ -126,9 +127,9 @@ public class JoinResponseMessage<ID extends MemberIdentifier> extends AbstractGM
       DeserializationContext context) throws IOException, ClassNotFoundException {
     currentView = context.getDeserializer().readObject(in);
     memberID = context.getDeserializer().readObject(in);
-    rejectionMessage = StaticSerialization.readString(in);
-    messengerData = StaticSerialization.readByteArray(in);
-    secretPk = StaticSerialization.readByteArray(in);
+    rejectionMessage = StaticDeserialization.readString(in);
+    messengerData = StaticDeserialization.readByteArray(in);
+    secretPk = StaticDeserialization.readByteArray(in);
   }
 
   @Override

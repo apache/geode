@@ -32,6 +32,7 @@ import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
@@ -65,7 +66,7 @@ public class GMSUtil {
   public static <ID extends MemberIdentifier> Set<ID> readHashSetOfMemberIDs(DataInput in,
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    int size = StaticSerialization.readArrayLength(in);
+    int size = StaticDeserialization.readArrayLength(in);
     if (size == -1) {
       return null;
     }
@@ -205,7 +206,7 @@ public class GMSUtil {
   public static <ID extends MemberIdentifier> List<ID> readArrayOfIDs(DataInput in,
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    int size = StaticSerialization.readArrayLength(in);
+    int size = StaticDeserialization.readArrayLength(in);
     if (size == -1) {
       return null;
     }

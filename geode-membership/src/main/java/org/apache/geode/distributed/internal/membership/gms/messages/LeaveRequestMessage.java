@@ -23,6 +23,7 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
@@ -85,7 +86,7 @@ public class LeaveRequestMessage<ID extends MemberIdentifier> extends AbstractGM
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     memberID = context.getDeserializer().readObject(in);
-    reason = StaticSerialization.readString(in);
+    reason = StaticDeserialization.readString(in);
   }
 
   @Override

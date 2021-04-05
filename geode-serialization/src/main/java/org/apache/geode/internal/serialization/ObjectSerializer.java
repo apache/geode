@@ -33,7 +33,7 @@ public interface ObjectSerializer {
   void writeObject(Object obj, DataOutput output) throws IOException;
 
   /**
-   * When deserializing you may want to invoke a toData method on an object.
+   * When serializing you may want to invoke a toData method on an object.
    * Use this method to ensure that the proper toData method is invoked for
    * backward-compatibility.
    */

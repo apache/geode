@@ -24,6 +24,7 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
@@ -83,7 +84,7 @@ public class SuspectMembersMessage<ID extends MemberIdentifier> extends Abstract
     int size = in.readInt();
     for (int i = 0; i < size; i++) {
       SuspectRequest<ID> sr = new SuspectRequest<>(
-          context.getDeserializer().readObject(in), StaticSerialization.readString(in));
+          context.getDeserializer().readObject(in), StaticDeserialization.readString(in));
       suspectRequests.add(sr);
     }
   }
