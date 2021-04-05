@@ -290,7 +290,7 @@ dependencies {
     exclude module: 'geode-core'
   }
   upgradeTestCompile(project(':geode-assembly:geode-assembly-test'))
-
+  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
   upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
   upgradeTestRuntime(project(':extensions:session-testing-war'))
   upgradeTestRuntime('org.codehaus.cargo:cargo-core-uberjar')

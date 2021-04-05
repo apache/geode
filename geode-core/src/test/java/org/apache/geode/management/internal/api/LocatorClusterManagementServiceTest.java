@@ -171,7 +171,7 @@ public class LocatorClusterManagementServiceTest {
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(
         new RealizationResult().setMemberName("member2").setSuccess(false).setMessage("failed"));
-    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
+    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any());
 
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
         .findServers();
@@ -187,7 +187,7 @@ public class LocatorClusterManagementServiceTest {
     List<RealizationResult> functionResults = new ArrayList<>();
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(new RealizationResult().setMemberName("member2"));
-    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
+    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any());
 
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
         .findServers();
@@ -289,7 +289,7 @@ public class LocatorClusterManagementServiceTest {
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(
         new RealizationResult().setMemberName("member2").setSuccess(false).setMessage("failed"));
-    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
+    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any());
 
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
         any());
@@ -317,7 +317,7 @@ public class LocatorClusterManagementServiceTest {
     List<RealizationResult> functionResults = new ArrayList<>();
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(new RealizationResult().setMemberName("member2"));
-    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
+    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any());
 
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
         any());
