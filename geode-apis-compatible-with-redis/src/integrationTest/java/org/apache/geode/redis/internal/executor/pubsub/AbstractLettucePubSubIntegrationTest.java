@@ -26,6 +26,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.pubsub.RedisPubSubAdapter;
@@ -52,6 +53,7 @@ public abstract class AbstractLettucePubSubIntegrationTest implements RedisPortS
   @Before
   public void before() {
     client = RedisClient.create("redis://localhost:" + getPort());
+    client.setOptions(ClientOptions.builder().autoReconnect(false).build());
   }
 
   @After
