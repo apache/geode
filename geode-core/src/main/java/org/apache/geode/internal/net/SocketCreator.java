@@ -365,7 +365,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   void configureSSLEngine(SSLEngine engine, String hostName, int port, boolean clientSocket) {
     SSLParameters parameters = engine.getSSLParameters();
     boolean updateEngineWithParameters = false;
-    if (sslConfig.doEndpointIdentification()) {
+    if (sslConfig.doEndpointIdentification() && clientSocket) {
       // set server-names so that endpoint identification algorithms can find what's expected
       if (setServerNames(parameters, new HostAndPort(hostName, port))) {
         updateEngineWithParameters = true;
