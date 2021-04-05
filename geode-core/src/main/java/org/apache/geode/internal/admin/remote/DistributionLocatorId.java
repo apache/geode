@@ -230,13 +230,6 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
 
   public DistributionLocatorId(InetAddress address, Locator locator) {
-    // InternalLocator internalLocator = (InternalLocator)locator;
-    // String hostname = internalLocator.getBindAddressString();
-    // if (hostname == null) {
-    // if (internalLocator.getBindAddress() != null) {
-    // hostname = internalLocator.getBindAddress().getHostAddress();
-    // }
-    // }
     this(address, locator.getPort(),
         (((InternalLocator) locator).getBindAddressString() != null
             ? ((InternalLocator) locator).getBindAddressString()
