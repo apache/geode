@@ -30,13 +30,10 @@ import redis.clients.jedis.util.SafeEncoder;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
+public class UnsupportedCommandsIntegrationTest {
 
-public class UnsupportedCommandsIntegrationTest
-    implements RedisPortSupplier {
-
-  protected static Jedis jedis;
+  private static Jedis jedis;
 
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -44,14 +41,9 @@ public class UnsupportedCommandsIntegrationTest
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  @Override
-  public int getPort() {
-    return server.getPort();
-  }
-
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @Test
