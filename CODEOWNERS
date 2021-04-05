@@ -267,7 +267,7 @@ geode-junit/**/org/apache/geode/test/util                         @jdeppe-pivota
 #-----------------------------------------------------------------
 # Redis API
 #-----------------------------------------------------------------
-geode-apis-compatible-with-redis/**                                                    @sabbey37 @jdeppe-pivotal @nonbinaryprogrammer
+geode-apis-compatible-with-redis/**                               @sabbey37 @jdeppe-pivotal @nonbinaryprogrammer @ringles
 
 #-----------------------------------------------------------------
 # Build and tooling
