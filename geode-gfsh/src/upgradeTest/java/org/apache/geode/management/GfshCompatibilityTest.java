@@ -43,7 +43,6 @@ public class GfshCompatibilityTest {
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(s -> TestVersion.compare(s, "1.11.0") < 0);
     return result;
   }
 
