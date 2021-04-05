@@ -130,8 +130,10 @@ public class JmxOperationInvoker implements OperationInvoker {
       env.put("com.sun.jndi.rmi.factory.socket", new ContextAwareSSLRMIClientSocketFactory());
     }
 
+    final String hostName = checkAndConvertToCompatibleIPv6Syntax(host);
+    // System.out.println("BRUCE: JmxOperationInvoker creating URL with hostName="+hostName);
     this.url = new JMXServiceURL(MessageFormat.format(JMX_URL_FORMAT,
-        checkAndConvertToCompatibleIPv6Syntax(host), String.valueOf(port)));
+        hostName, String.valueOf(port)));
     this.connector = JMXConnectorFactory.connect(url, env);
     this.mbsc = connector.getMBeanServerConnection();
     this.connector.addConnectionNotificationListener(new JMXConnectionListener(this), null, null);

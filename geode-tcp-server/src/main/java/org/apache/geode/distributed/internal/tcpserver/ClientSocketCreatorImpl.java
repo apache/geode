@@ -44,6 +44,10 @@ public class ClientSocketCreatorImpl implements ClientSocketCreator {
    * Return a client socket. This method is used by client/server clients.
    */
   public Socket connect(HostAndPort addr, int timeout) throws IOException {
+    // if (InetAddressValidator.getInstance().isValid(addr.getHostName())) {
+    // System.out.println("BRUCE: ClientSocketCreatorImpl connecting to " + addr);
+    // Thread.dumpStack();
+    // }
     return socketCreator.connect(addr, timeout, null, true, -1);
   }
 

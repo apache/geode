@@ -188,6 +188,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   private final boolean workingDirectorySpecified;
 
   private final InetAddress bindAddress;
+  private final String bindAddressString;
 
   private final Integer pid;
   private final Integer port;
@@ -260,6 +261,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     this.help = Boolean.TRUE.equals(builder.getHelp());
     this.bindAddressSpecified = builder.isBindAddressSpecified();
     this.bindAddress = builder.getBindAddress();
+    this.bindAddressString = builder.getBindAddressString();
     setDebug(Boolean.TRUE.equals(builder.getDebug()));
     this.deletePidFileOnStop = Boolean.TRUE.equals(builder.getDeletePidFileOnStop());
     this.distributedSystemProperties = builder.getDistributedSystemProperties();
@@ -714,7 +716,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
         try {
           this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
-              getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients(),
+              getBindAddress(), bindAddressString, true, getDistributedSystemProperties(),
+              getHostnameForClients(),
               Paths.get(workingDirectory));
         } finally {
           ProcessLauncherContext.remove();
@@ -1270,6 +1273,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     private String hostnameForClients;
     private String memberName;
     private String workingDirectory;
+    private String bindAddressString;
 
     /**
      * Default constructor used to create an instance of the Builder class for programmatical
@@ -1589,6 +1593,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     public Builder setBindAddress(final String bindAddress) {
       if (isBlank(bindAddress)) {
         this.bindAddress = null;
+        bindAddressString = bindAddress;
         return this;
       } else {
         try {
@@ -1918,6 +1923,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       validate();
       return new LocatorLauncher(this);
     }
+
+    public String getBindAddressString() {
+      return bindAddressString;
+    }
   }
 
   /**
@@ -2130,11 +2139,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     private static String getBindAddressAsString(LocatorLauncher launcher) {
       if (InternalLocator.hasLocator()) {
         final InternalLocator locator = InternalLocator.getLocator();
-        final InetAddress bindAddress = locator.getBindAddress();
-        if (bindAddress != null) {
-          if (isNotBlank(bindAddress.getHostAddress())) {
-            return bindAddress.getHostAddress();
-          }
+        String bindAddress = locator.getBindAddressString();
+        if (bindAddress != null && !bindAddress.isEmpty()) {
+          return bindAddress;
         }
       }
       return launcher.getBindAddressAsString();

@@ -15,7 +15,6 @@
 package org.apache.geode.client.sni;
 
 import java.io.File;
-import java.net.InetAddress;
 import java.net.URL;
 
 import org.apache.geode.cache.ssl.CertStores;

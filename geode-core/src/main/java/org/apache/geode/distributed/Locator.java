@@ -63,6 +63,9 @@ public abstract class Locator {
   /** The file to which this locator logs */
   protected File logFile;
 
+  /** the bind address hostname for this locator */
+  protected String bindAddressString;
+
   /** The bind address for this locator */
   protected InetAddress bindAddress;
 
@@ -382,8 +385,8 @@ public abstract class Locator {
    * Get the string representation of this <code>Locator</code> in host[port] format.
    */
   public String asString() {
-    Object ba = this.bindAddress;
-    if (ba == null) {
+    String ba = this.bindAddressString;
+    if (ba == null || ba.isEmpty()) {
       try {
         ba = LocalHostUtil.getLocalHostName();
       } catch (java.net.UnknownHostException uh) {

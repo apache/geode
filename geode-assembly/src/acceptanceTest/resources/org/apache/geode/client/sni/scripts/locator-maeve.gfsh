@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 
-start locator --name=locator-maeve --connect=false --redirect-output --bind-address=locator-maeve --http-service-bind-address=locator-maeve --hostname-for-clients=locator-maeve --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/locator-maeve-keystore.jks --J=-Dgemfire.forceDnsUse=true --J=-Djdk.tls.trustNameService=true
+start locator --name=locator-maeve --connect=false --redirect-output --bind-address=locator-maeve --http-service-bind-address=locator-maeve --hostname-for-clients=locator-maeve --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/locator-maeve-keystore.jks --J=-Dgemfire.forceDnsUse=true --J=-Dgemfire.jmx-manager-hostname-for-clients=locator-maeve --J=-Djdk.tls.trustNameService=true

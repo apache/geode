@@ -97,7 +97,7 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
           dsProperties = null;
           Properties props = getDistributedSystemProperties();
           locator = InternalLocator.startLocator(locatorPorts[locatorNumber], new File(""),
-              null, null, LocalHostUtil.getLocalHost(), true,
+              null, null, LocalHostUtil.getLocalHost(), "", true,
               props, null, Paths.get(workingDir));
           system = locator.getDistributedSystem();
           cache = ((InternalLocator) locator).getCache();
