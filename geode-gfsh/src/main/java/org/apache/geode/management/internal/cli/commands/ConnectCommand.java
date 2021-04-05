@@ -160,8 +160,6 @@ public class ConnectCommand extends OfflineGfshCommand {
     if (StringUtils.isNotEmpty(url)) {
       result = httpConnect(gfProperties, url, skipSslValidation);
     } else {
-      // System.out.println("BRUCE: connecting to jmx: " + jmxManagerEndPoint
-      // + "; locator:" + locatorEndPoint + " with properties: " + gfProperties);
       result = jmxConnect(gfProperties, useSsl, jmxManagerEndPoint, locatorEndPoint, false);
     }
 
@@ -384,8 +382,6 @@ public class ConnectCommand extends OfflineGfshCommand {
             connectToLocator(locatorTcpHostPort.getHost(), locatorTcpHostPort.getPort(),
                 CONNECT_LOCATOR_TIMEOUT_MS, gfProperties);
         jmxHostPortToConnect = connectToLocatorResult.getMemberEndpoint();
-        // System.out.println("BRUCE: connectToLocatorResult returned endpoint " +
-        // jmxHostPortToConnect);
 
         // when locator is configured to use SSL (ssl-enabled=true) but manager is not
         // (jmx-manager-ssl=false)
@@ -399,7 +395,6 @@ public class ConnectCommand extends OfflineGfshCommand {
       }
 
       if (useSsl) {
-        // System.out.println("BRUCE: connecting to manager via SSL");
         gfsh.logToFile("Connecting to manager via SSL.", null);
       }
 

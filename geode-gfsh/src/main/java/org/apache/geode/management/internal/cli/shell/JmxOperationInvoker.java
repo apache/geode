@@ -131,7 +131,6 @@ public class JmxOperationInvoker implements OperationInvoker {
     }
 
     final String hostName = checkAndConvertToCompatibleIPv6Syntax(host);
-    // System.out.println("BRUCE: JmxOperationInvoker creating URL with hostName="+hostName);
     this.url = new JMXServiceURL(MessageFormat.format(JMX_URL_FORMAT,
         hostName, String.valueOf(port)));
     this.connector = JMXConnectorFactory.connect(url, env);
