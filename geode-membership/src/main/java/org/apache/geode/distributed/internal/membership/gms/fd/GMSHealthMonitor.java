@@ -954,6 +954,12 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   @Override
   public void started() throws MemberStartupException {
     setLocalAddress(services.getMessenger().getMemberID());
+    createServerSocket();
+    startTcpServer(serverSocket);
+    startHeartbeatThread();
+  }
+
+  private void createServerSocket() throws MemberStartupException {
     try {
       InetAddress address = localAddress.getInetAddress();
       String bindAddrStr = services.getConfig().getBindAddress();
@@ -974,8 +980,6 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     } catch (IOException e) {
       throw new MemberStartupException("Problem creating HealthMonitor socket", e);
     }
-    startTcpServer(serverSocket);
-    startHeartbeatThread();
   }
 
   @Override

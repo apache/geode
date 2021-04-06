@@ -39,4 +39,9 @@ public class LocalHostUtilTest {
   public void isWildCardAddressReturnsFalseIfAddressIsEmpty() {
     assertThat(LocalHostUtil.isWildcardAddress("")).isFalse();
   }
+
+  @Test
+  public void isWildCardAddressReturnsFalseIfAddressIsNotWildcard() {
+    assertThat(LocalHostUtil.isWildcardAddress("1.2.3.4")).isFalse();
+  }
 }
