@@ -39,7 +39,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-
 public class NetstatDUnitTest {
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -157,7 +156,7 @@ public class NetstatDUnitTest {
     assertThat(lines.get(4).trim().split("[,\\s]+")).containsExactly("server-1");
   }
 
-  // This test runs OK on JDK11 but takes a very long time on JDK8
+  @Ignore("GEODE-6228")
   @Test
   public void testOutputWithLsofToFile() throws Exception {
     // Skipping test on JDK8. Running lsof command takes an excessive amount of time on Java 8
