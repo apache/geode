@@ -106,15 +106,14 @@ public abstract class CargoTestBase {
   public void stop() throws IOException {
     try {
       manager.stopAllActiveContainers();
+    } catch (Exception exception) {
+      manager.dumpLogs();
+      throw exception;
     } finally {
       try {
-//        manager.dumpLogs();
+        manager.cleanUp();
       } finally {
-        try {
-          manager.cleanUp();
-        } finally {
-          announceTest("END");
-        }
+        announceTest("END");
       }
     }
   }
