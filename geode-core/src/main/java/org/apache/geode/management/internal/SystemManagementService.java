@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -41,7 +40,6 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -115,7 +113,7 @@ public class SystemManagementService extends BaseManagementService {
   private final StatisticsFactory statisticsFactory;
   private final StatisticsClock statisticsClock;
   private final FederatingManagerFactory federatingManagerFactory;
-
+  private final Function<SystemManagementService, LocalManager> localManagerFactory;
 
   /**
    * whether the service is closed or not if cache is closed automatically this service will be
@@ -137,30 +135,34 @@ public class SystemManagementService extends BaseManagementService {
    * Managing node.
    */
   private ManagementMembershipListener listener;
-  private final Function<SystemManagementService, LocalManager> localManagerFactory;
 
   static BaseManagementService newSystemManagementService(
       InternalCacheForClientAccess cache) {
-    return newSystemManagementService(cache, NotificationHub::new,
+    return newSystemManagementService(
+        cache,
+        NotificationHub::new,
         SystemManagementService::createLocalManager,
-        createFederatingManagerFactory(), ManagementAgent::new);
+        createFederatingManagerFactory(),
+        ManagementAgent::new);
   }
 
   @VisibleForTesting
-  static BaseManagementService newSystemManagementService(InternalCacheForClientAccess cache,
+  static BaseManagementService newSystemManagementService(
+      InternalCacheForClientAccess cache,
       Function<ManagementResourceRepo, NotificationHub> notificationHubFactory,
       Function<SystemManagementService, LocalManager> localManagerFactory,
       FederatingManagerFactory federatingManagerFactory,
-      BiFunction<DistributionConfig, InternalCacheForClientAccess, ManagementAgent> managementAgentFactory) {
+      ManagementAgentFactory managementAgentFactory) {
     return new SystemManagementService(cache, notificationHubFactory, localManagerFactory,
         federatingManagerFactory, managementAgentFactory).init();
   }
 
-  private SystemManagementService(InternalCacheForClientAccess cache,
+  private SystemManagementService(
+      InternalCacheForClientAccess cache,
       Function<ManagementResourceRepo, NotificationHub> notificationHubFactory,
       Function<SystemManagementService, LocalManager> localManagerFactory,
       FederatingManagerFactory federatingManagerFactory,
-      BiFunction<DistributionConfig, InternalCacheForClientAccess, ManagementAgent> managementAgentFactory) {
+      ManagementAgentFactory managementAgentFactory) {
     this.cache = cache;
     system = cache.getInternalDistributedSystem();
     this.localManagerFactory = localManagerFactory;
@@ -177,7 +179,8 @@ public class SystemManagementService extends BaseManagementService {
     notificationHub = notificationHubFactory.apply(repo);
 
     if (system.getConfig().getJmxManager()) {
-      agent = managementAgentFactory.apply(system.getConfig(), cache);
+      agent = managementAgentFactory.create(system.getConfig(), cache,
+          new JmxRmiOpenTypesSerialFilter());
     } else {
       agent = null;
     }
