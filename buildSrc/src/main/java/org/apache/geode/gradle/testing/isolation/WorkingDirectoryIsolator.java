@@ -13,7 +13,6 @@
  * the License.
  *
  */
-
 package org.apache.geode.gradle.testing.isolation;
 
 import java.io.IOException;

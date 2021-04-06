@@ -32,10 +32,12 @@ class Executers {
      */
     static TestExecuter<JvmTestExecutionSpec> withAdjustment(testTask, adjustment) {
         def gradleWorkerProcessFactory = testTask.createTestExecuter().workerFactory
+        def messagingServer = gradleWorkerProcessFactory.server
+        def launcher = new AdjustableProcessLauncher(adjustment)
         def isolatingWorkerProcessFactory = Workers.createWorkerProcessFactory(
-                gradleWorkerProcessFactory,
-                new AdjustableProcessLauncher(adjustment),
-                gradleWorkerProcessFactory.server)
+            gradleWorkerProcessFactory,
+            launcher,
+            messagingServer)
         return withFactory(testTask, isolatingWorkerProcessFactory)
     }
 
@@ -45,15 +47,14 @@ class Executers {
     static TestExecuter<JvmTestExecutionSpec> withFactory(testTask, workerProcessFactory) {
         def services = testTask.services
         return new DefaultTestExecuter(
-                workerProcessFactory,
-                testTask.actorFactory,
-                testTask.moduleRegistry,
-                services.get(WorkerLeaseRegistry),
-                services.get(StartParameter).getMaxWorkerCount(),
-                services.get(Clock),
-                services.get(DocumentationRegistry),
-                testTask.filter
+            workerProcessFactory,
+            testTask.actorFactory,
+            testTask.moduleRegistry,
+            services.get(WorkerLeaseRegistry),
+            services.get(StartParameter).getMaxWorkerCount(),
+            services.get(Clock),
+            services.get(DocumentationRegistry),
+            testTask.filter
         )
     }
-
 }

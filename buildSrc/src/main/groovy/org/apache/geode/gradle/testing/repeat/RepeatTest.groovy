@@ -46,8 +46,10 @@ class RepeatTest extends Test {
      */
     @Override
     protected TestExecuter<JvmTestExecutionSpec> createTestExecuter() {
+        def inheritedExecuter = super.createTestExecuter()
+        def inheritedFactory = inheritedExecuter.workerFactory
         return new RepeatableTestExecuter(
-                super.createTestExecuter().workerFactory,
+                inheritedFactory,
                 getActorFactory(),
                 getModuleRegistry(),
                 getServices().get(WorkerLeaseRegistry.class),
