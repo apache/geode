@@ -108,7 +108,7 @@ public abstract class CargoTestBase {
       manager.stopAllActiveContainers();
     } finally {
       try {
-        manager.dumpLogs();
+//        manager.dumpLogs();
       } finally {
         try {
           manager.cleanUp();
