@@ -17,11 +17,18 @@ package org.apache.geode.management.internal.cli;
 import static java.lang.System.lineSeparator;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.core.Completion;
+import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.management.internal.cli.commands.StartServerCommand;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -30,11 +37,28 @@ import org.apache.geode.test.junit.rules.GfshParserRule.CommandCandidate;
 @Category(GfshTest.class)
 public class GfshParserAutoCompletionIntegrationTest {
 
-  /**
-   * Number of @CliOption parameters of StartServerCommand.startServer()
-   * method +1 due to "--group" & "--groups" are defined in the same @CliOption
-   */
-  final int startServerCommandCliOptions = 55;
+  private static int startServerCommandCliOptions = 0;
+
+  @BeforeClass
+  public static void calculateStartServerCommandParameters() {
+    Object o = new StartServerCommand();
+    for (Method method : o.getClass().getDeclaredMethods()) {
+      if (method.getName().equals("startServer")) {
+        for (Parameter param : method.getParameters()) {
+          CliOption annotation = param.getAnnotation(CliOption.class);
+          startServerCommandCliOptions += annotation.key().length;
+        }
+        break;
+      }
+    }
+    assertThat(startServerCommandCliOptions).isNotZero();
+  }
+
+  @AfterClass
+  public static void cleanup() {
+    startServerCommandCliOptions = 0;
+  }
+
 
   @Rule
   public GfshParserRule gfshParserRule = new GfshParserRule();
