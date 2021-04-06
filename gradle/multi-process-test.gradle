@@ -16,33 +16,12 @@
  */
 
 /*
- * Configuration for running multi-process tests in parallel. See the 'multiProcessTestTasks'
+ * Configuration for running multi-process tests in isolation. See the 'multiProcessTestTasks'
  * variable for the list of multi-process test tasks.
  *
- * To run multi-process tests in Docker, set the Gradle property 'parallelDunit'.
- * The container used must have JAVA_HOME set in its environment and must
- * have 'java' defined on the path. For example, the relevant Dockerfile
- * content could be:
- *
- *   ENV JAVA_HOME=/opt/jdk1.8.0_u101
- *   ENV PATH=$PATH:$JAVA_HOME/bin
- *
- * In addition, the container must have docker installed.
+ * To run multi-process tests in isolation, set the Gradle property 'parallelDunit'.
  *
  * Additional configuration properties for running multi-process tests in Docker are:
- *
- *  dunitDockerImage   - The docker image used for running parallel dunits. The default image is
- *                       'bellsoft/liberica-openjdk-debian:8'. The image is required to have
- *                       'JAVA_HOME' set as an environment variable.
- *  dunitDockerUser    - The user used within the docker container to run tests.
- *                       The default is 'root'.
- *  dunitDockerVolumes - Docker volumes to mount in the docker container in addition to the ones
- *                       mounted by the plugin. The plugin always mounts the directory of the
- *                       top-level Geode project and the current user's Gradle home directory.
- *  dunitDockerJVM     - The JVM to use to launch test worker processes inside Docker. The default
- *                       is the value of the testJVM property if that property is set.
- *
- * The following properties apply to multi-process tests, whether running in Docker or not:
  *
  *  --max-workers        The maximum number of workers processes for Gradle to run in parallel.
  *                       (Note that Gradle applies this value to all tasks, not just test tasks.)
@@ -63,21 +42,30 @@ def multiProcessTestTasks = [acceptanceTest, repeatAcceptanceTest,
                              upgradeTest, repeatUpgradeTest,
                              uiTest, repeatUnitTest]
 
+if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
+  for (task in multiProcessTestTasks) {
+    task.environment "JAVA_HOME", "${project.testJVM}"
+  }
+}
+
 if (project.hasProperty('parallelDunit')) {
-    def parallelForks = project.hasProperty('testMaxParallelForks')
-            ? Integer.parseUnsignedInt(project.testMaxParallelForks)
-            : Runtime.runtime.availableProcessors().intdiv(4) ?: 1
-    for (task in multiProcessTestTasks) {
-        task.maxParallelForks = parallelForks
+  def parallelForks = project.hasProperty('testMaxParallelForks')
+    ? Integer.parseUnsignedInt(project.testMaxParallelForks)
+    : Runtime.runtime.availableProcessors().intdiv(4) ?: 1
+  for (task in multiProcessTestTasks) {
+    task.maxParallelForks = parallelForks
+    task.ext {
+      isolatedTest = true
     }
-    apply plugin: 'geode-dockerized-test'
+  }
+  apply plugin: 'geode-isolated-test'
 } else {
-    for (task in multiProcessTestTasks) {
-        if (project.hasProperty('testMaxParallelForks')) {
-            task.maxParallelForks = Integer.parseUnsignedInt(project.testMaxParallelForks)
-        }
-        task.doFirst {
-            testExecuter = Executers.withAdjustment(it, new WorkingDirectoryIsolator())
-        }
+  for (task in multiProcessTestTasks) {
+    if (project.hasProperty('testMaxParallelForks')) {
+      task.maxParallelForks = Integer.parseUnsignedInt(project.testMaxParallelForks)
     }
+    task.doFirst {
+      testExecuter = Executers.withAdjustment(it, new WorkingDirectoryIsolator())
+    }
+  }
 }
