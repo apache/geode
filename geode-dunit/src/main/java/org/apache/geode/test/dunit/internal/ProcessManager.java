@@ -15,6 +15,7 @@
 package org.apache.geode.test.dunit.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.distributed.internal.DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.BufferedReader;
@@ -40,6 +41,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.membership.utils.AvailablePort;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.version.VersionManager;
 
@@ -265,6 +267,11 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
     cmds.add("-D" + DUnitLauncher.VM_VERSION_PARAM + "=" + version);
     cmds.add("-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + new File(".").getAbsolutePath());
+    cmds.add("-DAvailablePort.lowerBound=" + AvailablePort.AVAILABLE_PORTS_LOWER_BOUND);
+    cmds.add("-DAvailablePort.upperBound=" + AvailablePort.AVAILABLE_PORTS_UPPER_BOUND);
+    cmds.add(String.format("-D%s=%d-%d", GEMFIRE_PREFIX + MEMBERSHIP_PORT_RANGE_NAME,
+        AvailablePort.MEMBERSHIP_PORTS_LOWER_BOUND,
+        AvailablePort.MEMBERSHIP_PORTS_UPPER_BOUND));
     if (vmNum >= 0) { // let the locator print a banner
       if (version.equals(VersionManager.CURRENT_VERSION)) { // enable the banner for older versions
         cmds.add("-D" + InternalLocator.INHIBIT_DM_BANNER + "=true");
