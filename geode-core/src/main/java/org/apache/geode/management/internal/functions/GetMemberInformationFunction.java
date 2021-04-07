@@ -35,6 +35,8 @@ import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.cache.CacheClientStatus;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
@@ -130,8 +132,19 @@ public class GetMemberInformationFunction implements InternalFunction {
 
     List<CacheServer> csList = cache.getCacheServers();
 
-    // A member is a server only if it has a cacheserver
-    if (csList != null && !csList.isEmpty()) {
+    InternalDistributedMember internalMember = (InternalDistributedMember) member;
+    if (internalMember.getVmKind() == MemberIdentifier.LOCATOR_DM_TYPE) {
+      memberInfo.setServer(false);
+      InternalLocator locator = InternalLocator.getLocator();
+      if (locator != null) {
+        memberInfo.setLocatorPort(locator.getPort());
+      }
+
+      LocatorLauncher.LocatorState state = LocatorLauncher.getLocatorState();
+      if (state != null) {
+        memberInfo.setStatus(state.getStatus().getDescription());
+      }
+    } else {
       memberInfo.setServer(true);
       Iterator<CacheServer> iters = csList.iterator();
       while (iters.hasNext()) {
@@ -156,17 +169,6 @@ public class GetMemberInformationFunction implements InternalFunction {
       memberInfo.setClientCount(numConnections);
 
       ServerLauncher.ServerState state = ServerLauncher.getServerState();
-      if (state != null) {
-        memberInfo.setStatus(state.getStatus().getDescription());
-      }
-    } else {
-      memberInfo.setServer(false);
-      InternalLocator locator = InternalLocator.getLocator();
-      if (locator != null) {
-        memberInfo.setLocatorPort(locator.getPort());
-      }
-
-      LocatorLauncher.LocatorState state = LocatorLauncher.getLocatorState();
       if (state != null) {
         memberInfo.setStatus(state.getStatus().getDescription());
       }
