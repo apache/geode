@@ -68,6 +68,7 @@ The <%=vars.product_name%> APIs compatible with Redis currently supports the fol
 
 **Note**: These commands are supported for Redis 5.
 **Note**: SLOWLOG is implemented as a NoOp for compatibility with some monitoring tools.
+**Note**: Redis accepts 64-bit signed integers for the HSCAN cursor and COUNT parameters. The Geode APIs compatible with Redis are limited to 32-bit integer values for these parameters.
 
 -   **Connection**: AUTH, PING, QUIT
 -   **Hashes**: HDEL, HEXISTS, HGET, HGETALL, HINCRBY, HINCRBYFLOAT, HKEYS, HLEN, HMGET, HMSET, HSCAN, HSET, HSETNX, HSTRLEN, HVALS
