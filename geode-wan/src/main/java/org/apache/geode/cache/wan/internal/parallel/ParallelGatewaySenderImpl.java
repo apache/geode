@@ -56,6 +56,34 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
   }
 
   @Override
+  public void recoverInStoppedState() {
+    this.getLifeCycleLock().writeLock().lock();
+
+    try {
+      if (this.remoteDSId != DEFAULT_DISTRIBUTED_SYSTEM_ID) {
+        String locators = this.cache.getInternalDistributedSystem().getConfig().getLocators();
+        if (locators.length() == 0) {
+          throw new IllegalStateException(
+              "Locators must be configured before recovering gateway-sender in stopped state.");
+        }
+      }
+
+      eventProcessor =
+          new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj(),
+              false, true);
+
+      logger.info("Stopped  {}", this);
+
+      InternalDistributedSystem system =
+          (InternalDistributedSystem) this.cache.getDistributedSystem();
+      system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
+
+    } finally {
+      this.getLifeCycleLock().writeLock().unlock();
+    }
+  }
+
+  @Override
   public void startWithCleanQueue() {
     start(true);
   }
@@ -83,7 +111,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
        */
       eventProcessor =
           new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj(),
-              cleanQueues);
+              cleanQueues, false);
       if (isStartEventProcessorInPausedState()) {
         pauseEvenIfProcessorStopped();
       }

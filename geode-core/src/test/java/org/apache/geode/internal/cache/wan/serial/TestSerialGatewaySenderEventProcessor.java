@@ -25,7 +25,7 @@ public class TestSerialGatewaySenderEventProcessor extends SerialGatewaySenderEv
   }
 
   @Override
-  protected void initializeMessageQueue(String id, boolean cleanQueues) {
+  protected void initializeMessageQueue(String id, boolean cleanQueues, boolean isStopped) {
     // Overridden to not create the RegionQueue in the constructor.
   }
 
