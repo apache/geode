@@ -143,7 +143,7 @@ public class LauncherProxyWorkerProcessBuilder implements WorkerProcessBuilder {
 
   /**
    * Because the exec handle created by Gradle uses a classloader different from ours, we can't
-   * simply construct a Gradle {@code ProcessLauncher) to assign. Instead we create proxy, using the
+   * simply construct a Gradle {@code ProcessLauncher} to assign. Instead we create proxy, using the
    * exec handle's classloader.
    */
   private synchronized Object assignableProcessLauncher(Class<?> requiredType) {
