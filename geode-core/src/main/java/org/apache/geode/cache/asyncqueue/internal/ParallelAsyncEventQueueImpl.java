@@ -58,6 +58,9 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
   }
 
   @Override
+  public void recoverInStoppedState() {}
+
+  @Override
   public void start() {
     this.start(false);
   }

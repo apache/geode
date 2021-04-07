@@ -582,6 +582,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   public abstract void start();
 
   @Override
+  public abstract void recoverInStoppedState();
+
+  @Override
   public abstract void startWithCleanQueue();
 
   @Override
@@ -1017,7 +1020,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       }
 
       // this filter is defined by Asif which exist in old wan too. new wan has
-      // other GatewaEventFilter. Do we need to get rid of this filter. Cheetah is
+      // other GatewayEventFilter. Do we need to get rid of this filter. Cheetah is
       // not considering this filter
       if (!this.filter.enqueueEvent(event)) {
         stats.incEventsFiltered();

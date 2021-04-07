@@ -51,7 +51,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     super("Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
     index = 0;
     nDispatcher = 1;
-    initializeMessageQueue(sender.getId(), cleanQueues);
+    initializeMessageQueue(sender.getId(), cleanQueues, false);
   }
 
   /**
@@ -62,11 +62,21 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     super("Event Processor for GatewaySender_" + sender.getId() + "_" + index, sender, tMonitoring);
     this.index = index;
     this.nDispatcher = nDispatcher;
-    initializeMessageQueue(sender.getId(), cleanQueues);
+    initializeMessageQueue(sender.getId(), cleanQueues, false);
+  }
+
+  protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      int id, int nDispatcher, ThreadsMonitoring tMonitoring,
+      boolean cleanQueues, boolean shouldOnlyRecoverQueues) {
+    super("Event Processor for GatewaySender_" + sender.getId() + "_" + id, sender, tMonitoring);
+    this.index = id;
+    this.nDispatcher = nDispatcher;
+    initializeMessageQueue(sender.getId(), cleanQueues, shouldOnlyRecoverQueues);
   }
 
   @Override
-  protected void initializeMessageQueue(String id, boolean cleanQueues) {
+  protected void initializeMessageQueue(String id, boolean cleanQueues,
+      boolean shouldOnlyRecoverQueues) {
     Set<Region<?, ?>> targetRs = new HashSet<>();
     for (InternalRegion region : sender.getCache().getApplicationRegions()) {
       if (region.getAllGatewaySenderIds().contains(id)) {
@@ -78,13 +88,18 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     }
 
     ParallelGatewaySenderQueue queue =
-        new ParallelGatewaySenderQueue(sender, targetRs, index, nDispatcher, cleanQueues);
+        new ParallelGatewaySenderQueue(sender, targetRs, index, nDispatcher, cleanQueues,
+            shouldOnlyRecoverQueues);
 
-    queue.start();
+    if (!shouldOnlyRecoverQueues) {
+      queue.start();
+    }
     this.queue = queue;
 
-    if (queue.localSize() > 0) {
-      queue.notifyEventProcessorIfRequired();
+    if (!shouldOnlyRecoverQueues) {
+      if (((ParallelGatewaySenderQueue) queue).localSize() > 0) {
+        ((ParallelGatewaySenderQueue) queue).notifyEventProcessorIfRequired();
+      }
     }
   }
 

@@ -25,14 +25,14 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -70,18 +70,365 @@ public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Seria
   private ClientVM clientSite1;
   private ClientVM clientSite2;
 
-  // Initialize put operations
-  private static final Map<String, String> putData;
-  static {
-    putData = new HashMap<>();
-    putData.put("1", "data1");
-    putData.put("2", "data2");
-    putData.put("3", "data3");
-    putData.put("4", "data3");
+  /**
+   * Verify that serial gateway-sender state is persisted after pause and resume gateway-sender
+   * commands are executed, and that gateway-sender works as expected after member restart:
+   *
+   * 1. Pause gateway-sender
+   * 2. Restart servers that host gateway-sender
+   * 3. Run some traffic and verify that data is enqueued in serial gateway-sender queues
+   * 4. Resume gateway-sender
+   * 5. Verify that traffic is sent over the gateway-sender to remote site
+   * 6. Restart servers that host gateway-sender
+   * 7. Run some traffic and verify that traffic is sent over the gateway-sender to remote site
+   */
+  @Test
+  public void testThatPauseResumeStateRemainAfterTheRestartOfMembers() throws Exception {
+    configureSites(false, "PARTITION", "0");
+
+    executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
+    verifyGatewaySenderState(true, true);
+
+    // stop servers on site #2
+    server1Site2.stop(true);
+    server2Site2.stop(true);
+
+    // start again servers in Site #2
+    server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort());
+    server2Site2 = clusterStartupRule.startServerVM(6, locatorSite2.getPort());
+
+    verifyGatewaySenderState(true, true);
+
+    // Do some puts
+    Set<String> keys = clientSite2.invoke(() -> doPutsInRange(0, 15));
+    // Check that data has been enqueued
+    server1Site2.invoke(() -> checkQueueSize("ln", keys.size()));
+
+    executeGfshCommand(CliStrings.RESUME_GATEWAYSENDER);
+    verifyGatewaySenderState(true, false);
+
+    // Check that data is sent over the gateway-sender
+    clientSite1.invoke(() -> checkDataAvailable(keys));
+
+    // stop servers on site #2
+    server1Site2.stop(true);
+    server2Site2.stop(true);
+
+    // start again servers in Site #2
+    server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort());
+    server2Site2 = clusterStartupRule.startServerVM(6, locatorSite2.getPort());
+    verifyGatewaySenderState(true, false);
+
+    // Do some puts
+    Set<String> key1 = clientSite2.invoke(() -> doPutsInRange(20, 35));
+    // Check that data is sent over the gateway-sender
+    clientSite1.invoke(() -> checkDataAvailable(key1));
   }
 
-  @Before
-  public void before() throws Exception {
+  /**
+   * Verify that gateway-sender queue is persisted while in paused state and it is recovered after
+   * the restart of members.
+   *
+   * - Region type: PARTITION_PERSISTENT and non-redundant
+   * - Gateway sender configured with queue persistence
+   *
+   * 1. Pause gateway-sender
+   * 2. Run some traffic and verify that data is enqueued in serial gateway-sender queues
+   * 3. Restart servers that host gateway-sender
+   * 4. Check that queues are recovered from persistent storage, and that gateway-sender
+   * remained in paused state
+   * 5. Run some traffic and verify that new data is enqueued in serial gateway-sender queues
+   * 6. Resume gateway-sender
+   * 7. Verify that complete traffic is sent over the gateway-sender to remote site
+   */
+  @Test
+  public void testThatPauseStateAndQueuesRemainAfterRestart() throws Exception {
+    configureSites(true, "PARTITION_PERSISTENT", "0");
+
+    executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
+    verifyGatewaySenderState(true, true);
+
+    Set<String> keysQueued = clientSite2.invoke(() -> doPutsInRange(70, 85));
+    clientSite2.invoke(() -> checkDataAvailable(keysQueued));
+    server1Site2.invoke(() -> checkQueueSize("ln", keysQueued.size()));
+
+    // stop servers on site #2
+    server1Site2.stop(false);
+    server2Site2.stop(false);
+
+    // start again servers in Site #2
+    Thread thread = new Thread(
+        () -> server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort()));
+    Thread thread1 = new Thread(
+        () -> server2Site2 = clusterStartupRule.startServerVM(6, locatorSite2.getPort()));
+    // start threads
+    thread.start();
+    thread1.start();
+    thread.join();
+    thread1.join();
+
+    verifyGatewaySenderState(true, true);
+
+    // queue recovered from persistent storage
+    server1Site2.invoke(() -> checkQueueSize("ln", keysQueued.size()));
+
+    // Do some puts
+    Set<String> keysQueued1 = clientSite2.invoke(() -> doPutsInRange(0, 15));
+    // Check that data has been enqueued
+    server1Site2.invoke(() -> checkQueueSize("ln", keysQueued1.size() + keysQueued.size()));
+
+    executeGfshCommand(CliStrings.RESUME_GATEWAYSENDER);
+    verifyGatewaySenderState(true, false);
+
+    // Check that data is sent over the gateway-sender
+    server1Site2.invoke(() -> checkQueueSize("ln", 0));
+    clientSite1.invoke(() -> checkDataAvailable(keysQueued1));
+    clientSite1.invoke(() -> checkDataAvailable(keysQueued));
+  }
+
+  /**
+   * Verify that gateway-sender is recovered from redundant server after the
+   * restart of member.
+   *
+   * - Region type: PARTITION_PERSISTENT and redundant
+   * - Gateway sender configured with queue persistence
+   *
+   * 1. Pause gateway-sender
+   * 2. Run some traffic and verify that data is enqueued in serial gateway-sender queues
+   * 3. Stop one server that host gateway-sender
+   * 4. Resume gateway-sender on running server, and check that data is replicated
+   * 5. Pause gateway-sender again
+   * 5. Run some traffic and verify that new data is enqueued in serial gateway-sender queues
+   * 6. Start server that has been previously stopped, and check that already replicated data is not
+   * inserted into queue
+   * 7. Resume gateway-sender
+   * 8. Verify that complete traffic is sent over the gateway-sender to remote site
+   */
+  @Test
+  public void testThatPauseStateRemainAfterTheRestartOfMembersRedundantPersistent()
+      throws Exception {
+    configureSites(true, "PARTITION_PERSISTENT", "1");
+
+    executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
+    verifyGatewaySenderState(true, true);
+
+    Set<String> keysQueued = clientSite2.invoke(() -> doPutsInRange(70, 85));
+    server1Site2.invoke(() -> checkQueueSize("ln", keysQueued.size()));
+
+    // stop servers on site #2
+    server1Site2.stop(false);
+
+    executeGfshCommand(CliStrings.RESUME_GATEWAYSENDER);
+    verifyGatewaySenderStateOnMember(server2Site2, true, false);
+    server2Site2.invoke(() -> checkQueueSize("ln", 0));
+    clientSite1.invoke(() -> checkDataAvailable(keysQueued));
+
+    executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
+    verifyGatewaySenderStateOnMember(server2Site2, true, true);
+
+    Set<String> keysQueued1 = clientSite2.invoke(() -> doPutsInRange(100, 110));
+    server2Site2.invoke(() -> checkQueueSize("ln", keysQueued1.size()));
+
+    // start again servers in Site #2
+    Thread thread = new Thread(
+        () -> server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort()));
+    // start threads
+    thread.start();
+    thread.join();
+
+    verifyGatewaySenderStateOnMember(server1Site2, true, true);
+    // queue recovered from persistent storage
+    server1Site2.invoke(() -> checkQueueSize("ln", keysQueued1.size()));
+
+    executeGfshCommand(CliStrings.RESUME_GATEWAYSENDER);
+    verifyGatewaySenderStateOnMember(server2Site2, true, false);
+    server2Site2.invoke(() -> checkQueueSize("ln", 0));
+    clientSite1.invoke(() -> checkDataAvailable(keysQueued1));
+    clientSite1.invoke(() -> checkDataAvailable(keysQueued));
+  }
+
+  /**
+   * Verify that serial gateway-sender state is persisted after stop and start gateway-sender
+   * commands are executed, and that gateway-sender works as expected after member restart:
+   *
+   * 1. Stop gateway-sender
+   * 2. Restart servers that host gateway-sender
+   * 3. Run some traffic and verify that data is just stored in regions, but not enqueued and sent
+   * to the remote site
+   * 4. Start gateway-sender
+   * 5. Verify that new traffic is sent over the gateway-sender to remote site
+   * 6. Restart servers that host gateway-sender
+   * 7. Run some traffic and verify that traffic is sent over the gateway-sender to remote site
+   */
+  @Test
+  public void testThatStopStateRemainAfterTheRestartOfMembers() throws Exception {
+    configureSites(false, "PARTITION", "0");
+
+    executeGfshCommand(CliStrings.STOP_GATEWAYSENDER);
+    verifyGatewaySenderState(false, false);
+
+    // stop servers on site #2
+    server1Site2.stop(true);
+    server2Site2.stop(true);
+
+    // start again servers in Site #2
+    server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort());
+    server2Site2 = clusterStartupRule.startServerVM(6, locatorSite2.getPort());
+
+    verifyGatewaySenderState(false, false);
+
+    // Do some puts
+    Set<String> keys = clientSite2.invoke(() -> doPutsInRange(0, 15));
+    clientSite2.invoke(() -> checkDataAvailable(keys));
+
+    // Check that data is not enqueued
+    server1Site2.invoke(() -> checkQueueSize("ln", 0));
+
+    executeGfshCommand(CliStrings.START_GATEWAYSENDER);
+    verifyGatewaySenderState(true, false);
+
+    // Do some puts
+    Set<String> keys1 = clientSite2.invoke(() -> doPutsInRange(20, 35));
+    clientSite2.invoke(() -> checkDataAvailable(keys1));
+    clientSite1.invoke(() -> checkDataAvailable(keys1));
+
+    // stop servers on site #2
+    server1Site2.stop(true);
+    server2Site2.stop(true);
+
+    // start again servers in Site #2
+    server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort());
+    server2Site2 = clusterStartupRule.startServerVM(6, locatorSite2.getPort());
+    verifyGatewaySenderState(true, false);
+
+    // Do some puts
+    Set<String> key1 = clientSite2.invoke(() -> doPutsInRange(40, 55));
+    // Check that data is sent over the gateway-sender
+    clientSite1.invoke(() -> checkDataAvailable(key1));
+    clientSite1.invoke(() -> checkDataNotAvailable(keys));
+  }
+
+  /**
+   * Verify that gateway-sender queue is not filled in stopped state and it is not recovered
+   * after the restart of member.
+   *
+   * - Region type: PARTITION_PERSISTENT and non-redundant
+   * - Gateway sender configured with queue persistence
+   *
+   * 1. Stop gateway-sender
+   * 2. Run some traffic and verify that data is not enqueued in serial gateway-sender queues
+   * 3. Restart servers that host gateway-sender
+   * 4. Check that queues are recovered empty, and that gateway-sender
+   * remained in stopped state
+   * 5. Run some traffic and verify that data is not enqueued in serial gateway-sender queues
+   * 6. Start gateway-sender
+   * 7. Verify that no traffic is sent over the gateway-sender to remote site
+   */
+  @Test
+  public void testThatStopStateRemainAfterTheRestartOfMembersPersistent() throws Exception {
+    configureSites(true, "PARTITION_PERSISTENT", "0");
+
+    executeGfshCommand(CliStrings.STOP_GATEWAYSENDER);
+    verifyGatewaySenderState(false, false);
+
+    Set<String> keysNotQueued = clientSite2.invoke(() -> doPutsInRange(70, 85));
+    clientSite2.invoke(() -> checkDataAvailable(keysNotQueued));
+    server1Site2.invoke(() -> checkQueueSize("ln", 0));
+
+    // stop servers on site #2
+    server1Site2.stop(false);
+    server2Site2.stop(false);
+
+    // start again servers in Site #2
+    Thread thread = new Thread(
+        () -> server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort()));
+    Thread thread1 = new Thread(
+        () -> server2Site2 = clusterStartupRule.startServerVM(6, locatorSite2.getPort()));
+    // start threads
+    thread.start();
+    thread1.start();
+    thread.join();
+    thread1.join();
+
+    verifyGatewaySenderState(false, false);
+    // Do some puts
+    Set<String> keysNotQueued1 = clientSite2.invoke(() -> doPutsInRange(0, 15));
+    // Check that data has been enqueued
+    clientSite2.invoke(() -> checkDataAvailable(keysNotQueued1));
+    server1Site2.invoke(() -> checkQueueSize("ln", 0));
+
+    executeGfshCommand(CliStrings.START_GATEWAYSENDER);
+    verifyGatewaySenderState(true, false);
+
+    server1Site2.invoke(() -> checkQueueSize("ln", 0));
+    clientSite1.invoke(() -> checkDataNotAvailable(keysNotQueued));
+    clientSite1.invoke(() -> checkDataNotAvailable(keysNotQueued1));
+  }
+
+  /**
+   * Verify that parallel gateway-sender queue recovers only data enqueued prior to stop command.
+   *
+   * - Region type: PARTITION_PERSISTENT and non-redundant
+   * - Gateway sender configured with queue persistence
+   *
+   * 1. Pause gateway-sender
+   * 2. Run some traffic and verify that data is enqueued in serial gateway-sender queues
+   * 3. Stop gateway-sender
+   * 4. Restart all servers
+   * 5. Check that queues are not recovered from persistent storage, and that gateway-sender
+   * remained in stopped state
+   * 6. Start gateway-senders
+   */
+  @Test
+  public void testThatStopStateRemainAfterTheRestartOfMembersNotRecover() throws Exception {
+    configureSites(true, "PARTITION_PERSISTENT", "0");
+
+    executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
+    verifyGatewaySenderState(true, true);
+
+    Set<String> keysQueued = clientSite2.invoke(() -> doPutsInRange(70, 85));
+    clientSite2.invoke(() -> checkDataAvailable(keysQueued));
+    server1Site2.invoke(() -> checkQueueSize("ln", keysQueued.size()));
+
+    executeGfshCommand(CliStrings.STOP_GATEWAYSENDER);
+    verifyGatewaySenderState(false, false);
+
+    Set<String> keysNotQueued = clientSite2.invoke(() -> doPutsInRange(100, 105));
+    clientSite2.invoke(() -> checkDataAvailable(keysNotQueued));
+    server1Site2.invoke(() -> checkQueueSize("ln", 0));
+
+    // stop servers on site #2
+    server1Site2.stop(false);
+    server2Site2.stop(false);
+
+    // start again servers in Site #2
+    Thread thread = new Thread(
+        () -> server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort()));
+    Thread thread1 = new Thread(
+        () -> server2Site2 = clusterStartupRule.startServerVM(6, locatorSite2.getPort()));
+    // start threads
+    thread.start();
+    thread1.start();
+    thread.join();
+    thread1.join();
+
+    verifyGatewaySenderState(false, false);
+
+    executeGfshCommand(CliStrings.START_GATEWAYSENDER);
+    verifyGatewaySenderState(true, false);
+    // Check that data is sent over the gateway-sender
+    server1Site2.invoke(() -> checkQueueSize("ln", 0));
+    clientSite1.invoke(() -> checkDataAvailable(keysQueued));
+    clientSite1.invoke(() -> checkDataNotAvailable(keysNotQueued));
+  }
+
+  void configureSites(boolean enableGWSPersistence, String regionShortcut, String redundancy)
+      throws Exception {
+    String enablePersistenceParameter = "false";
+    if (enableGWSPersistence) {
+      enablePersistenceParameter = "true";
+    }
+
     // Start locators for site #1
     Properties props = new Properties();
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
@@ -114,11 +461,20 @@ public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Seria
     locatorSite1
         .invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server2Site1.getVM()), true));
 
-    // create partition region on site #2
+    // create partition region on site #1
     csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
     csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
-    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, regionShortcut);
+    csb.addOption(CliStrings.CREATE_REGION__REDUNDANTCOPIES, redundancy);
+
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    // Start client for site #1
+    clientSite1 =
+        clusterStartupRule.startClientVM(8, c -> c.withLocatorConnection(locatorSite1.getPort()));
+    clientSite1.invoke(() -> {
+      ClusterStartupRule.clientCacheRule.createProxyRegion("test1");
+    });
 
     // start servers for site #2
     server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort());
@@ -130,6 +486,7 @@ public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Seria
         .addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln")
         .addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "1")
         .addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "false")
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__ENABLEPERSISTENCE, enablePersistenceParameter)
         .getCommandString();
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
@@ -144,130 +501,17 @@ public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Seria
     // create partition region on site #2
     csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
     csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
-    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_REDUNDANT");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, regionShortcut);
     csb.addOption(CliStrings.CREATE_REGION__GATEWAYSENDERID, "ln");
+    csb.addOption(CliStrings.CREATE_REGION__REDUNDANTCOPIES, redundancy);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
-    // Start clients
+    // Start client
     clientSite2 =
         clusterStartupRule.startClientVM(7, c -> c.withLocatorConnection(locatorSite2.getPort()));
     clientSite2.invoke(() -> {
       ClusterStartupRule.clientCacheRule.createProxyRegion("test1");
     });
-    clientSite1 =
-        clusterStartupRule.startClientVM(8, c -> c.withLocatorConnection(locatorSite1.getPort()));
-    clientSite1.invoke(() -> {
-      ClusterStartupRule.clientCacheRule.createProxyRegion("test1");
-    });
-  }
-
-  /**
-   * Verify that serial gateway-sender state is persisted after pause and resume gateway-sender
-   * commands are executed, and that gateway-sender works as expected after member restart:
-   *
-   * 1. Pause gateway-sender
-   * 2. Restart servers that host gateway-sender
-   * 3. Run some traffic and verify that data is enqueued in serial gateway-sender queues
-   * 4. Resume gateway-sender
-   * 5. Verify that traffic is sent over the gateway-sender to remote site
-   * 6. Restart servers that host gateway-sender
-   * 7. Run some traffic and verify that traffic is sent over the gateway-sender to remote site
-   */
-  @Test
-  public void testThatPauseStateRemainAfterTheRestartOfMember() {
-
-    executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
-    verifyGatewaySenderState(true, true);
-
-    // stop servers on site #2
-    server1Site2.stop(true);
-    server2Site2.stop(true);
-
-    // start again servers in Site #2
-    server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort());
-    server2Site2 = clusterStartupRule.startServerVM(6, locatorSite2.getPort());
-
-    verifyGatewaySenderState(true, true);
-
-    // Do some puts
-    clientSite2.invoke(() -> doPuts(putData));
-    // Check that data has been enqueued
-    server1Site2.invoke(() -> checkQueueSize("ln", putData.size()));
-
-    executeGfshCommand(CliStrings.RESUME_GATEWAYSENDER);
-    verifyGatewaySenderState(true, false);
-
-    // Check that data is sent over the gateway-sender
-    clientSite1.invoke(() -> checkPuts(putData.size()));
-
-    // stop servers on site #2
-    server1Site2.stop(true);
-    server2Site2.stop(true);
-
-    // start again servers in Site #2
-    server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort());
-    server2Site2 = clusterStartupRule.startServerVM(6, locatorSite2.getPort());
-    verifyGatewaySenderState(true, false);
-
-    // Do some puts
-    clientSite2.invoke(() -> doPuts(putData));
-    // Check that data is sent over the gateway-sender
-    clientSite1.invoke(() -> checkPuts(putData.size()));
-  }
-
-  /**
-   * Verify that serial gateway-sender state is persisted after start and stop gateway-sender
-   * commands are executed, and that gateway-sender works as expected after member restart:
-   *
-   * 1. Stop gateway-sender
-   * 2. Restart servers that host gateway-sender
-   * 3. Run some traffic and check that data is not enqueued in serial gateway-sender queues
-   * 4. Start gateway-sender
-   * 5. Restart servers that host gateway-sender
-   * 3. Run some traffic and verify that traffic is sent over the gateway-sender to remote site
-   */
-  @Test
-  public void testStopAndStartCommands() {
-
-    executeGfshCommand(CliStrings.STOP_GATEWAYSENDER);
-    verifyGatewaySenderState(false, false);
-
-    // stop servers on site #2
-    server1Site2.stop(true);
-    server2Site2.stop(true);
-
-    // start again servers in Site #2
-    server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort());
-    server2Site2 = clusterStartupRule.startServerVM(6, locatorSite2.getPort());
-
-    verifyGatewaySenderState(false, false);
-
-    // Do some puts
-    clientSite2.invoke(() -> doPuts(putData));
-    clientSite2.invoke(() -> checkPuts(putData.size()));
-
-    // Check that data has not been enqueued
-    server1Site2.invoke(() -> checkQueueSize("ln", 0));
-
-    executeGfshCommand(CliStrings.START_GATEWAYSENDER);
-    verifyGatewaySenderState(true, false);
-
-    // Check that data is not sent over the gateway-sender
-    clientSite1.invoke(() -> checkPuts(0));
-
-    // stop servers on site #2
-    server1Site2.stop(true);
-    server2Site2.stop(true);
-
-    // start again servers in Site #2
-    server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort());
-    server2Site2 = clusterStartupRule.startServerVM(6, locatorSite2.getPort());
-    verifyGatewaySenderState(true, false);
-
-    // Do some puts
-    clientSite2.invoke(() -> doPuts(putData));
-    // Check that data is sent over the gateway-sender
-    clientSite1.invoke(() -> checkPuts(putData.size()));
   }
 
   void connectGfshToSite(MemberVM locator) throws Exception {
@@ -278,14 +522,21 @@ public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Seria
   }
 
   void verifyGatewaySenderState(boolean isRunning, boolean isPaused) {
-    server1Site2.invoke(() -> verifySenderState("ln", isRunning, isPaused));
-    server2Site2.invoke(() -> verifySenderState("ln", isRunning, isPaused));
     locatorSite2.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1Site2.getVM()), "ln", isRunning,
             isPaused));
     locatorSite2.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server2Site2.getVM()), "ln", isRunning,
             isPaused));
+    server1Site2.invoke(() -> verifySenderState("ln", isRunning, isPaused));
+    server2Site2.invoke(() -> verifySenderState("ln", isRunning, isPaused));
+  }
+
+  void verifyGatewaySenderStateOnMember(MemberVM member, boolean isRunning, boolean isPaused) {
+    locatorSite2.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(member.getVM()), "ln", isRunning,
+            isPaused));
+    member.invoke(() -> verifySenderState("ln", isRunning, isPaused));
   }
 
   private void executeGfshCommand(String cliCommand) {
@@ -295,21 +546,30 @@ public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Seria
     gfsh.executeAndAssertThat(command).statusIsSuccess();
   }
 
-  private static void doPuts(Map<String, String> puts) {
+  Set<String> doPutsInRange(int start, int stop) {
     Region<String, String> region =
         ClusterStartupRule.clientCacheRule.getCache().getRegion("test1");
-    region.putAll(puts);
+    Set<String> keys = new HashSet<>();
+    for (int i = start; i < stop; i++) {
+      region.put(i + "key", i + "value");
+      keys.add(i + "key");
+    }
+    return keys;
   }
 
-  private void checkPuts(int expectedSize) {
+  private void checkDataAvailable(Set<String> keys) {
     await()
-        .untilAsserted(() -> assertEquals(expectedSize, getDataSize()));
+        .untilAsserted(() -> assertEquals(keys.size(), isPutAvail(keys)));
   }
 
-  private int getDataSize() {
+  private void checkDataNotAvailable(Set<String> keys) {
+    assertNotEquals(keys.size(), isPutAvail(keys));
+  }
+
+  private int isPutAvail(Set<String> keys) {
     Region<String, String> region =
         ClusterStartupRule.clientCacheRule.getCache().getRegion("test1");
-    Map<String, String> data = region.getAll(putData.keySet());
+    Map<String, String> data = region.getAll(keys);
     int size = 0;
     for (String dat : data.values()) {
       if (dat != null) {
