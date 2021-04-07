@@ -448,13 +448,13 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
-        <version>9.4.38.v20210224</version>
+        <version>9.4.39.v20210325</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-webapp</artifactId>
-        <version>9.4.38.v20210224</version>
+        <version>9.4.39.v20210325</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
