@@ -215,6 +215,14 @@ public interface GatewaySender {
   void start();
 
   /**
+   * Recovers partition region used by parallel gateway-sender queue. Parallel gateway sender
+   * queue region is collocated with partition region on which is collecting events. It is necessary
+   * to recover collocated gateway sender queue region, so it doesn't block the collocated data
+   * region to reach the online status.
+   */
+  void recoverInStoppedState();
+
+  /**
    * Starts this GatewaySender and discards previous queue content. Once the GatewaySender is
    * running, its configuration cannot be changed.
    */
@@ -267,6 +275,8 @@ public interface GatewaySender {
    * Returns whether or not this GatewaySender is running.
    */
   boolean isRunning();
+
+
 
   /**
    * Returns whether or not this GatewaySender is paused.

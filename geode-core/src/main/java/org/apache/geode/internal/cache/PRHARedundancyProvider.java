@@ -1559,7 +1559,6 @@ public class PRHARedundancyProvider {
      */
     PartitionedRegion leaderRegion = ColocationHelper.getLeaderRegion(partitionedRegion);
 
-
     // Check if the leader region or some child shadow PR region is persistent
     // and return the first persistent region found
     PartitionedRegion persistentLeader = getPersistentLeader();

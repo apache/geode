@@ -1189,11 +1189,11 @@ public class PartitionedRegion extends LocalRegion
       for (GatewaySender sender : cache.getAllGatewaySenders()) {
         if (sender.isParallel() && allGatewaySenderIds.contains(sender.getId())) {
           /*
-           * get the ParallelGatewaySender to create the colocated partitioned region for this
+           * get the ParallelGatewaySender to create the collocated partitioned region for this
            * region.
            */
-          if (sender.isRunning()) {
-            AbstractGatewaySender senderImpl = (AbstractGatewaySender) sender;
+          AbstractGatewaySender senderImpl = (AbstractGatewaySender) sender;
+          if (senderImpl.getQueues() != null) {
             ((ConcurrentParallelGatewaySenderQueue) senderImpl.getQueues()
                 .toArray(new RegionQueue[1])[0]).addShadowPartitionedRegionForUserPR(this);
           }

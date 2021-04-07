@@ -87,7 +87,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(sender.getId()).thenReturn("");
     metaRegionFactory = mock(MetaRegionFactory.class);
     queue = new ParallelGatewaySenderQueue(sender, Collections.emptySet(), 0, 1, metaRegionFactory,
-        false);
+        false, false);
   }
 
   @Test
@@ -698,7 +698,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     public TestableParallelGatewaySenderQueue(final AbstractGatewaySender sender,
         final Set<Region<?, ?>> userRegions, final int idx, final int nDispatcher,
         final MetaRegionFactory metaRegionFactory) {
-      super(sender, userRegions, idx, nDispatcher, metaRegionFactory, false);
+      super(sender, userRegions, idx, nDispatcher, metaRegionFactory, false, false);
     }
 
 

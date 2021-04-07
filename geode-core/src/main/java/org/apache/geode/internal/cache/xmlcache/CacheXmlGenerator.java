@@ -413,7 +413,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   @Override
   public void parse(InputSource input) throws SAXException {
     Assert.assertTrue(handler != null);
-
     boolean isClientCache = creation instanceof ClientCacheCreation;
 
     handler.startDocument();
