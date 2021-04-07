@@ -87,6 +87,10 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     }
   }
 
+  public boolean getIsAllKeys() {
+    return isAllKeys;
+  }
+
   class MapIndexStatistics extends InternalIndexStatistics {
     private IndexStats vsdStats;
 
@@ -328,44 +332,49 @@ public abstract class AbstractMapIndex extends AbstractIndex {
 
   @Override
   void addMapping(Object key, Object value, RegionEntry entry) throws IMQException {
-    if (key == QueryService.UNDEFINED || !(key instanceof Map)) {
-      return;
-    }
-    if (this.isAllKeys) {
-      Iterator<Map.Entry<?, ?>> entries = ((Map) key).entrySet().iterator();
-      while (entries.hasNext()) {
-        Map.Entry<?, ?> mapEntry = entries.next();
-        Object mapKey = mapEntry.getKey();
-        Object indexKey = mapEntry.getValue();
-        this.doIndexAddition(mapKey, indexKey, value, entry);
-      }
-    } else {
-      for (Object mapKey : mapKeys) {
-        Object indexKey = ((Map) key).get(mapKey);
-        if (indexKey != null) {
-          this.doIndexAddition(mapKey, indexKey, value, entry);
-        }
-      }
-    }
+    addOrSaveMapping(key, value, entry, true);
   }
 
   @Override
   void saveMapping(Object key, Object value, RegionEntry entry) throws IMQException {
-    if (key == QueryService.UNDEFINED || !(key instanceof Map)) {
+    addOrSaveMapping(key, value, entry, false);
+  }
+
+  void addOrSaveMapping(Object key, Object value, RegionEntry entry, boolean isAdd)
+      throws IMQException {
+    if (key == QueryService.UNDEFINED || (key != null && !(key instanceof Map))) {
       return;
     }
     if (this.isAllKeys) {
+      // If the key is null or it has no elements then we cannot associate it
+      // to any index key (it would apply to all). That is why
+      // this type of index does not support !=
+      // queries or queries comparing with null.
+      if (key == null) {
+        return;
+      }
       Iterator<Map.Entry<?, ?>> entries = ((Map) key).entrySet().iterator();
       while (entries.hasNext()) {
         Map.Entry<?, ?> mapEntry = entries.next();
         Object mapKey = mapEntry.getKey();
         Object indexKey = mapEntry.getValue();
-        this.saveIndexAddition(mapKey, indexKey, value, entry);
+        if (isAdd) {
+          this.doIndexAddition(mapKey, indexKey, value, entry);
+        } else {
+          this.saveIndexAddition(mapKey, indexKey, value, entry);
+        }
       }
     } else {
       for (Object mapKey : mapKeys) {
-        Object indexKey = ((Map) key).get(mapKey);
-        if (indexKey != null) {
+        Object indexKey;
+        if (key == null) {
+          indexKey = QueryService.UNDEFINED;
+        } else {
+          indexKey = ((Map) key).get(mapKey);
+        }
+        if (isAdd) {
+          this.doIndexAddition(mapKey, indexKey, value, entry);
+        } else {
           this.saveIndexAddition(mapKey, indexKey, value, entry);
         }
       }
