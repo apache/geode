@@ -129,8 +129,11 @@ public abstract class ServerConnection implements Runnable {
   /**
    * The threadMonitorExecutor for this server connection.
    * This will be null if acceptor is a selector.
+   * When a selector is used, the thread pool that is used to process client requests
+   * will automatically register with the thread monitor the thread that is processing
+   * the request. So no need to create a threadMonitorExecutor.
    */
-  protected final AbstractExecutor threadMonitorExecutor;
+  private AbstractExecutor threadMonitorExecutor;
 
   public static ByteBuffer allocateCommBuffer(int size, Socket sock) {
     // I expect that size will almost always be the same value
@@ -315,15 +318,6 @@ public abstract class ServerConnection implements Runnable {
       }
     }
     threadMonitoring = getCache().getInternalDistributedSystem().getDM().getThreadMonitoring();
-    if (getAcceptor().isSelector()) {
-      // When a selector is used, the thread pool that is used to process client requests
-      // will automatically register with the thread monitor the thread that is processing
-      // the request. So no need to create a threadMonitorExecutor.
-      threadMonitorExecutor = null;
-    } else {
-      threadMonitorExecutor = threadMonitoring.createAbstractExecutor(ServerConnectionExecutor);
-      suspendThreadMonitoring();
-    }
   }
 
   public Acceptor getAcceptor() {
@@ -1246,6 +1240,8 @@ public abstract class ServerConnection implements Runnable {
         }
       }
     } else {
+      threadMonitorExecutor = threadMonitoring.createAbstractExecutor(ServerConnectionExecutor);
+      suspendThreadMonitoring();
       threadMonitoring.register(threadMonitorExecutor);
       try {
         while (processMessages && !crHelper.isShutdown()) {

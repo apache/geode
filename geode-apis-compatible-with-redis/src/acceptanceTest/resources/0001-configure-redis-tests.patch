@@ -1,0 +1,808 @@
+From 15b752b4d129d4f303d033f0e6e63871355388cc Mon Sep 17 00:00:00 2001
+From: Hale Bales <hbales@vmware.com>
+Date: Wed, 22 Jul 2020 16:55:20 -0400
+Subject: [PATCH] configure redis tests
+
+change redis tests for compatibility with geode redis
+---
+ tests/support/server.tcl   |   7 +-
+ tests/support/test.tcl     |   4 +-
+ tests/test_helper.tcl      |  11 +-
+ tests/unit/auth.tcl        |  13 +-
+ tests/unit/expire.tcl      | 104 +++++++-------
+ tests/unit/pubsub.tcl      | 336 +++++++++++++++++++++++----------------------
+ tests/unit/quit.tcl        |   5 +-
+ tests/unit/type/hash.tcl   |  52 +++----
+ tests/unit/type/set.tcl    |   8 +-
+ tests/unit/type/string.tcl |  42 +++---
+ 10 files changed, 294 insertions(+), 288 deletions(-)
+
+diff --git a/tests/support/server.tcl b/tests/support/server.tcl
+index 5578f1fd6..55c0a5253 100644
+--- a/tests/support/server.tcl
++++ b/tests/support/server.tcl
+@@ -143,11 +143,12 @@ proc start_server {options {code undefined}} {
+     if {$::external} {
+         if {[llength $::servers] == 0} {
+             set srv {}
++            set baseport [expr {$::port-100}]
+             dict set srv "host" $::host
+-            dict set srv "port" $::port
+-            set client [redis $::host $::port]
++            dict set srv "port" $baseport
++            set client [redis $::host $baseport]
+             dict set srv "client" $client
+-            $client select 9
++           # $client select 9
+ 
+             # append the server to the stack
+             lappend ::servers $srv
+diff --git a/tests/support/test.tcl b/tests/support/test.tcl
+index 6f02f2f12..5a31cb4ca 100644
+--- a/tests/support/test.tcl
++++ b/tests/support/test.tcl
+@@ -39,8 +39,8 @@ proc assert_error {pattern code} {
+ }
+ 
+ proc assert_encoding {enc key} {
+-    set dbg [r debug object $key]
+-    assert_match "* encoding:$enc *" $dbg
++#    set dbg [r debug object $key]
++#    assert_match "* encoding:$enc *" $dbg
+ }
+ 
+ proc assert_type {type key} {
+diff --git a/tests/test_helper.tcl b/tests/test_helper.tcl
+index 8978631e0..33c10eb15 100644
+--- a/tests/test_helper.tcl
++++ b/tests/test_helper.tcl
+@@ -144,14 +144,14 @@ proc reconnect {args} {
+     set srv [lindex $::servers end+$level]
+     set host [dict get $srv "host"]
+     set port [dict get $srv "port"]
+-    set config [dict get $srv "config"]
++# set config [dict get $srv "config"]
+     set client [redis $host $port]
+     dict set srv "client" $client
+ 
+     # select the right db when we don't have to authenticate
+-    if {![dict exists $config "requirepass"]} {
+-        $client select 9
+-    }
++#    if {![dict exists $config "requirepass"]} {
++#        $client select 9
++#    }
+ 
+     # re-set $srv in the servers list
+     lset ::servers end+$level $srv
+@@ -168,7 +168,7 @@ proc redis_deferring_client {args} {
+     set client [redis [srv $level "host"] [srv $level "port"] 1]
+ 
+     # select the right db and read the response (OK)
+-    $client select 9
++    $client select 0
+     $client read
+     return $client
+ }
+@@ -488,6 +488,7 @@ for {set j 0} {$j < [llength $argv]} {incr j} {
+     } elseif {$opt eq {--host}} {
+         set ::external 1
+         set ::host $arg
++        set ::numclients 1
+         incr j
+     } elseif {$opt eq {--port}} {
+         set ::port $arg
+diff --git a/tests/unit/auth.tcl b/tests/unit/auth.tcl
+index 633cda95c..03857205d 100644
+--- a/tests/unit/auth.tcl
++++ b/tests/unit/auth.tcl
+@@ -1,9 +1,10 @@
+-start_server {tags {"auth"}} {
+-    test {AUTH fails if there is no password configured server side} {
+-        catch {r auth foo} err
+-        set _ $err
+-    } {ERR*no password*}
+-}
++#we don't currently integrate with Redis's tag system to remove our server's password
++#start_server {tags {"auth"}} {
++#    test {AUTH fails if there is no password configured server side} {
++#        catch {r auth foo} err
++#        set _ $err
++#    } {ERR*no password*}
++#}
+ 
+ start_server {tags {"auth"} overrides {requirepass foobar}} {
+     test {AUTH fails when a wrong password is given} {
+diff --git a/tests/unit/expire.tcl b/tests/unit/expire.tcl
+index de24eabed..aeeb1da7f 100644
+--- a/tests/unit/expire.tcl
++++ b/tests/unit/expire.tcl
+@@ -7,7 +7,7 @@ start_server {tags {"expire"}} {
+         set v4 [r ttl x]
+         r expire x 2
+         list $v1 $v2 $v3 $v4
+-    } {1 [45] 1 10}
++    } {1 [45] 1 [19-]0}
+ 
+     test {EXPIRE - It should be still possible to read 'x'} {
+         r get x
+@@ -22,10 +22,10 @@ start_server {tags {"expire"}} {
+ 
+     test {EXPIRE - write on expire should work} {
+         r del x
+-        r lpush x foo
++        r sadd x foo
+         r expire x 1000
+-        r lpush x bar
+-        r lrange x 0 -1
++        r sadd x bar
++        r smembers x
+     } {bar foo}
+ 
+     test {EXPIREAT - Check for EXPIRE alike behavior} {
+@@ -56,16 +56,16 @@ start_server {tags {"expire"}} {
+         } {}
+     }
+ 
+-    test {SETEX - Wrong time parameter} {
+-        catch {r setex z -10 foo} e
+-        set _ $e
+-    } {*invalid expire*}
++    #test {SETEX - Wrong time parameter} {
++    #    catch {r setex z -10 foo} e
++    #    set _ $e
++    #} {*invalid expire*}
+ 
+     test {PERSIST can undo an EXPIRE} {
+         r set x foo
+         r expire x 50
+         list [r ttl x] [r persist x] [r ttl x] [r get x]
+-    } {50 1 -1 foo}
++    } {[45][90] 1 -1 foo}
+ 
+     test {PERSIST returns 0 against non existing or non volatile keys} {
+         r set x foo
+@@ -154,39 +154,39 @@ start_server {tags {"expire"}} {
+         set size1 [r dbsize]
+         # Redis expires random keys ten times every second so we are
+         # fairly sure that all the three keys should be evicted after
+-        # one second.
+-        after 1000
++        # two seconds.
++        after 2000
+         set size2 [r dbsize]
+         list $size1 $size2
+     } {3 0}
+ 
+-    test {Redis should lazy expire keys} {
+-        r flushdb
+-        r debug set-active-expire 0
+-        r psetex key1 500 a
+-        r psetex key2 500 a
+-        r psetex key3 500 a
+-        set size1 [r dbsize]
+-        # Redis expires random keys ten times every second so we are
+-        # fairly sure that all the three keys should be evicted after
+-        # one second.
+-        after 1000
+-        set size2 [r dbsize]
+-        r mget key1 key2 key3
+-        set size3 [r dbsize]
+-        r debug set-active-expire 1
+-        list $size1 $size2 $size3
+-    } {3 3 0}
+-
+-    test {EXPIRE should not resurrect keys (issue #1026)} {
+-        r debug set-active-expire 0
+-        r set foo bar
+-        r pexpire foo 500
+-        after 1000
+-        r expire foo 10
+-        r debug set-active-expire 1
+-        r exists foo
+-    } {0}
++ #   test {Redis should lazy expire keys} {
++ #       r flushdb
++ #       r debug set-active-expire 0
++ #       r psetex key1 500 a
++ #       r psetex key2 500 a
++ #       r psetex key3 500 a
++ #       set size1 [r dbsize]
++ #       # Redis expires random keys ten times every second so we are
++ #       # fairly sure that all the three keys should be evicted after
++ #       # one second.
++ #       after 1000
++ #       set size2 [r dbsize]
++ #       r mget key1 key2 key3
++ #       set size3 [r dbsize]
++ #       r debug set-active-expire 1
++ #       list $size1 $size2 $size3
++ #   } {3 3 0}
++
++#    test {EXPIRE should not resurrect keys (issue #1026)} {
++#        r debug set-active-expire 0
++#        r set foo bar
++#        r pexpire foo 500
++#        after 1000
++#        r expire foo 10
++#        r debug set-active-expire 1
++#        r exists foo
++#    } {0}
+ 
+     test {5 keys in, 5 keys out} {
+         r flushdb
+@@ -205,18 +205,18 @@ start_server {tags {"expire"}} {
+         set e
+     } {*not an integer*}
+ 
+-    test {SET - use EX/PX option, TTL should not be reseted after loadaof} {
+-        r config set appendonly yes
+-        r set foo bar EX 100
+-        after 2000
+-        r debug loadaof
+-        set ttl [r ttl foo]
+-        assert {$ttl <= 98 && $ttl > 90}
+-
+-        r set foo bar PX 100000
+-        after 2000
+-        r debug loadaof
+-        set ttl [r ttl foo]
+-        assert {$ttl <= 98 && $ttl > 90}
+-    }
++#    test {SET - use EX/PX option, TTL should not be reseted after loadaof} {
++#        r config set appendonly yes
++#        r set foo bar EX 100
++#        after 2000
++#        r debug loadaof
++#        set ttl [r ttl foo]
++#        assert {$ttl <= 98 && $ttl > 90}
++#
++#        r set foo bar PX 100000
++#        after 2000
++#        r debug loadaof
++#        set ttl [r ttl foo]
++#        assert {$ttl <= 98 && $ttl > 90}
++#    }
+ }
+diff --git a/tests/unit/pubsub.tcl b/tests/unit/pubsub.tcl
+index 9c7a43bf0..b81618fe3 100644
+--- a/tests/unit/pubsub.tcl
++++ b/tests/unit/pubsub.tcl
+@@ -107,6 +107,7 @@ start_server {tags {"pubsub"}} {
+         set rd1 [redis_deferring_client]
+         assert_equal {1 2 3} [subscribe $rd1 {chan1 chan2 chan3}]
+         unsubscribe $rd1
++        after 500
+         assert_equal 0 [r publish chan1 hello]
+         assert_equal 0 [r publish chan2 hello]
+         assert_equal 0 [r publish chan3 hello]
+@@ -180,6 +181,7 @@ start_server {tags {"pubsub"}} {
+         set rd1 [redis_deferring_client]
+         assert_equal {1 2 3} [psubscribe $rd1 {chan1.* chan2.* chan3.*}]
+         punsubscribe $rd1
++        after 500
+         assert_equal 0 [r publish chan1.hi hello]
+         assert_equal 0 [r publish chan2.hi hello]
+         assert_equal 0 [r publish chan3.hi hello]
+@@ -196,9 +198,9 @@ start_server {tags {"pubsub"}} {
+         $rd1 close
+     }
+ 
+-    test "NUMSUB returns numbers, not strings (#1561)" {
+-        r pubsub numsub abc def
+-    } {abc 0 def 0}
++#    test "NUMSUB returns numbers, not strings (#1561)" {
++#        r pubsub numsub abc def
++#    } {abc 0 def 0}
+ 
+     test "Mix SUBSCRIBE and PSUBSCRIBE" {
+         set rd1 [redis_deferring_client]
+@@ -223,168 +225,168 @@ start_server {tags {"pubsub"}} {
+         concat $reply1 $reply2
+     } {punsubscribe {} 0 unsubscribe {} 0}
+ 
+-    ### Keyspace events notification tests
+-
+-    test "Keyspace notifications: we receive keyspace notifications" {
+-        r config set notify-keyspace-events KA
+-        set rd1 [redis_deferring_client]
+-        assert_equal {1} [psubscribe $rd1 *]
+-        r set foo bar
+-        assert_equal {pmessage * __keyspace@9__:foo set} [$rd1 read]
+-        $rd1 close
+-    }
+-
+-    test "Keyspace notifications: we receive keyevent notifications" {
+-        r config set notify-keyspace-events EA
+-        set rd1 [redis_deferring_client]
+-        assert_equal {1} [psubscribe $rd1 *]
+-        r set foo bar
+-        assert_equal {pmessage * __keyevent@9__:set foo} [$rd1 read]
+-        $rd1 close
+-    }
+-
+-    test "Keyspace notifications: we can receive both kind of events" {
+-        r config set notify-keyspace-events KEA
+-        set rd1 [redis_deferring_client]
+-        assert_equal {1} [psubscribe $rd1 *]
+-        r set foo bar
+-        assert_equal {pmessage * __keyspace@9__:foo set} [$rd1 read]
+-        assert_equal {pmessage * __keyevent@9__:set foo} [$rd1 read]
+-        $rd1 close
+-    }
+-
+-    test "Keyspace notifications: we are able to mask events" {
+-        r config set notify-keyspace-events KEl
+-        r del mylist
+-        set rd1 [redis_deferring_client]
+-        assert_equal {1} [psubscribe $rd1 *]
+-        r set foo bar
+-        r lpush mylist a
+-        # No notification for set, because only list commands are enabled.
+-        assert_equal {pmessage * __keyspace@9__:mylist lpush} [$rd1 read]
+-        assert_equal {pmessage * __keyevent@9__:lpush mylist} [$rd1 read]
+-        $rd1 close
+-    }
+-
+-    test "Keyspace notifications: general events test" {
+-        r config set notify-keyspace-events KEg
+-        set rd1 [redis_deferring_client]
+-        assert_equal {1} [psubscribe $rd1 *]
+-        r set foo bar
+-        r expire foo 1
+-        r del foo
+-        assert_equal {pmessage * __keyspace@9__:foo expire} [$rd1 read]
+-        assert_equal {pmessage * __keyevent@9__:expire foo} [$rd1 read]
+-        assert_equal {pmessage * __keyspace@9__:foo del} [$rd1 read]
+-        assert_equal {pmessage * __keyevent@9__:del foo} [$rd1 read]
+-        $rd1 close
+-    }
+-
+-    test "Keyspace notifications: list events test" {
+-        r config set notify-keyspace-events KEl
+-        r del mylist
+-        set rd1 [redis_deferring_client]
+-        assert_equal {1} [psubscribe $rd1 *]
+-        r lpush mylist a
+-        r rpush mylist a
+-        r rpop mylist
+-        assert_equal {pmessage * __keyspace@9__:mylist lpush} [$rd1 read]
+-        assert_equal {pmessage * __keyevent@9__:lpush mylist} [$rd1 read]
+-        assert_equal {pmessage * __keyspace@9__:mylist rpush} [$rd1 read]
+-        assert_equal {pmessage * __keyevent@9__:rpush mylist} [$rd1 read]
+-        assert_equal {pmessage * __keyspace@9__:mylist rpop} [$rd1 read]
+-        assert_equal {pmessage * __keyevent@9__:rpop mylist} [$rd1 read]
+-        $rd1 close
+-    }
+-
+-    test "Keyspace notifications: set events test" {
+-        r config set notify-keyspace-events Ks
+-        r del myset
+-        set rd1 [redis_deferring_client]
+-        assert_equal {1} [psubscribe $rd1 *]
+-        r sadd myset a b c d
+-        r srem myset x
+-        r sadd myset x y z
+-        r srem myset x
+-        assert_equal {pmessage * __keyspace@9__:myset sadd} [$rd1 read]
+-        assert_equal {pmessage * __keyspace@9__:myset sadd} [$rd1 read]
+-        assert_equal {pmessage * __keyspace@9__:myset srem} [$rd1 read]
+-        $rd1 close
+-    }
+-
+-    test "Keyspace notifications: zset events test" {
+-        r config set notify-keyspace-events Kz
+-        r del myzset
+-        set rd1 [redis_deferring_client]
+-        assert_equal {1} [psubscribe $rd1 *]
+-        r zadd myzset 1 a 2 b
+-        r zrem myzset x
+-        r zadd myzset 3 x 4 y 5 z
+-        r zrem myzset x
+-        assert_equal {pmessage * __keyspace@9__:myzset zadd} [$rd1 read]
+-        assert_equal {pmessage * __keyspace@9__:myzset zadd} [$rd1 read]
+-        assert_equal {pmessage * __keyspace@9__:myzset zrem} [$rd1 read]
+-        $rd1 close
+-    }
+-
+-    test "Keyspace notifications: hash events test" {
+-        r config set notify-keyspace-events Kh
+-        r del myhash
+-        set rd1 [redis_deferring_client]
+-        assert_equal {1} [psubscribe $rd1 *]
+-        r hmset myhash yes 1 no 0
+-        r hincrby myhash yes 10
+-        assert_equal {pmessage * __keyspace@9__:myhash hset} [$rd1 read]
+-        assert_equal {pmessage * __keyspace@9__:myhash hincrby} [$rd1 read]
+-        $rd1 close
+-    }
+-
+-    test "Keyspace notifications: expired events (triggered expire)" {
+-        r config set notify-keyspace-events Ex
+-        r del foo
+-        set rd1 [redis_deferring_client]
+-        assert_equal {1} [psubscribe $rd1 *]
+-        r psetex foo 100 1
+-        wait_for_condition 50 100 {
+-            [r exists foo] == 0
+-        } else {
+-            fail "Key does not expire?!"
+-        }
+-        assert_equal {pmessage * __keyevent@9__:expired foo} [$rd1 read]
+-        $rd1 close
+-    }
+-
+-    test "Keyspace notifications: expired events (background expire)" {
+-        r config set notify-keyspace-events Ex
+-        r del foo
+-        set rd1 [redis_deferring_client]
+-        assert_equal {1} [psubscribe $rd1 *]
+-        r psetex foo 100 1
+-        assert_equal {pmessage * __keyevent@9__:expired foo} [$rd1 read]
+-        $rd1 close
+-    }
+-
+-    test "Keyspace notifications: evicted events" {
+-        r config set notify-keyspace-events Ee
+-        r config set maxmemory-policy allkeys-lru
+-        r flushdb
+-        set rd1 [redis_deferring_client]
+-        assert_equal {1} [psubscribe $rd1 *]
+-        r set foo bar
+-        r config set maxmemory 1
+-        assert_equal {pmessage * __keyevent@9__:evicted foo} [$rd1 read]
+-        r config set maxmemory 0
+-        $rd1 close
+-    }
+-
+-    test "Keyspace notifications: test CONFIG GET/SET of event flags" {
+-        r config set notify-keyspace-events gKE
+-        assert_equal {gKE} [lindex [r config get notify-keyspace-events] 1]
+-        r config set notify-keyspace-events {$lshzxeKE}
+-        assert_equal {$lshzxeKE} [lindex [r config get notify-keyspace-events] 1]
+-        r config set notify-keyspace-events KA
+-        assert_equal {AK} [lindex [r config get notify-keyspace-events] 1]
+-        r config set notify-keyspace-events EA
+-        assert_equal {AE} [lindex [r config get notify-keyspace-events] 1]
+-    }
++#    ### Keyspace events notification tests
++#
++#    test "Keyspace notifications: we receive keyspace notifications" {
++#        r config set notify-keyspace-events KA
++#        set rd1 [redis_deferring_client]
++#        assert_equal {1} [psubscribe $rd1 *]
++#        r set foo bar
++#        assert_equal {pmessage * __keyspace@9__:foo set} [$rd1 read]
++#        $rd1 close
++#    }
++#
++#    test "Keyspace notifications: we receive keyevent notifications" {
++#        r config set notify-keyspace-events EA
++#        set rd1 [redis_deferring_client]
++#        assert_equal {1} [psubscribe $rd1 *]
++#        r set foo bar
++#        assert_equal {pmessage * __keyevent@9__:set foo} [$rd1 read]
++#        $rd1 close
++#    }
++#
++#    test "Keyspace notifications: we can receive both kind of events" {
++#        r config set notify-keyspace-events KEA
++#        set rd1 [redis_deferring_client]
++#        assert_equal {1} [psubscribe $rd1 *]
++#        r set foo bar
++#        assert_equal {pmessage * __keyspace@9__:foo set} [$rd1 read]
++#        assert_equal {pmessage * __keyevent@9__:set foo} [$rd1 read]
++#        $rd1 close
++#    }
++#
++#    test "Keyspace notifications: we are able to mask events" {
++#        r config set notify-keyspace-events KEl
++#        r del mylist
++#        set rd1 [redis_deferring_client]
++#        assert_equal {1} [psubscribe $rd1 *]
++#        r set foo bar
++#        r lpush mylist a
++#        # No notification for set, because only list commands are enabled.
++#        assert_equal {pmessage * __keyspace@9__:mylist lpush} [$rd1 read]
++#        assert_equal {pmessage * __keyevent@9__:lpush mylist} [$rd1 read]
++#        $rd1 close
++#    }
++#
++#    test "Keyspace notifications: general events test" {
++#        r config set notify-keyspace-events KEg
++#        set rd1 [redis_deferring_client]
++#        assert_equal {1} [psubscribe $rd1 *]
++#        r set foo bar
++#        r expire foo 1
++#        r del foo
++#        assert_equal {pmessage * __keyspace@9__:foo expire} [$rd1 read]
++#        assert_equal {pmessage * __keyevent@9__:expire foo} [$rd1 read]
++#        assert_equal {pmessage * __keyspace@9__:foo del} [$rd1 read]
++#        assert_equal {pmessage * __keyevent@9__:del foo} [$rd1 read]
++#        $rd1 close
++#    }
++#
++#    test "Keyspace notifications: list events test" {
++#        r config set notify-keyspace-events KEl
++#        r del mylist
++#        set rd1 [redis_deferring_client]
++#        assert_equal {1} [psubscribe $rd1 *]
++#        r lpush mylist a
++#        r rpush mylist a
++#        r rpop mylist
++#        assert_equal {pmessage * __keyspace@9__:mylist lpush} [$rd1 read]
++#        assert_equal {pmessage * __keyevent@9__:lpush mylist} [$rd1 read]
++#        assert_equal {pmessage * __keyspace@9__:mylist rpush} [$rd1 read]
++#        assert_equal {pmessage * __keyevent@9__:rpush mylist} [$rd1 read]
++#        assert_equal {pmessage * __keyspace@9__:mylist rpop} [$rd1 read]
++#        assert_equal {pmessage * __keyevent@9__:rpop mylist} [$rd1 read]
++#        $rd1 close
++#    }
++#
++#    test "Keyspace notifications: set events test" {
++#        r config set notify-keyspace-events Ks
++#        r del myset
++#        set rd1 [redis_deferring_client]
++#        assert_equal {1} [psubscribe $rd1 *]
++#        r sadd myset a b c d
++#        r srem myset x
++#        r sadd myset x y z
++#        r srem myset x
++#        assert_equal {pmessage * __keyspace@9__:myset sadd} [$rd1 read]
++#        assert_equal {pmessage * __keyspace@9__:myset sadd} [$rd1 read]
++#        assert_equal {pmessage * __keyspace@9__:myset srem} [$rd1 read]
++#        $rd1 close
++#    }
++#
++#    test "Keyspace notifications: zset events test" {
++#        r config set notify-keyspace-events Kz
++#        r del myzset
++#        set rd1 [redis_deferring_client]
++#        assert_equal {1} [psubscribe $rd1 *]
++#        r zadd myzset 1 a 2 b
++#        r zrem myzset x
++#        r zadd myzset 3 x 4 y 5 z
++#        r zrem myzset x
++#        assert_equal {pmessage * __keyspace@9__:myzset zadd} [$rd1 read]
++#        assert_equal {pmessage * __keyspace@9__:myzset zadd} [$rd1 read]
++#        assert_equal {pmessage * __keyspace@9__:myzset zrem} [$rd1 read]
++#        $rd1 close
++#    }
++#
++#    test "Keyspace notifications: hash events test" {
++#        r config set notify-keyspace-events Kh
++#        r del myhash
++#        set rd1 [redis_deferring_client]
++#        assert_equal {1} [psubscribe $rd1 *]
++#        r hmset myhash yes 1 no 0
++#        r hincrby myhash yes 10
++#        assert_equal {pmessage * __keyspace@9__:myhash hset} [$rd1 read]
++#        assert_equal {pmessage * __keyspace@9__:myhash hincrby} [$rd1 read]
++#        $rd1 close
++#    }
++#
++#    test "Keyspace notifications: expired events (triggered expire)" {
++#        r config set notify-keyspace-events Ex
++#        r del foo
++#        set rd1 [redis_deferring_client]
++#        assert_equal {1} [psubscribe $rd1 *]
++#        r psetex foo 100 1
++#        wait_for_condition 50 100 {
++#            [r exists foo] == 0
++#        } else {
++#            fail "Key does not expire?!"
++#        }
++#        assert_equal {pmessage * __keyevent@9__:expired foo} [$rd1 read]
++#        $rd1 close
++#    }
++#
++#    test "Keyspace notifications: expired events (background expire)" {
++#        r config set notify-keyspace-events Ex
++#        r del foo
++#        set rd1 [redis_deferring_client]
++#        assert_equal {1} [psubscribe $rd1 *]
++#        r psetex foo 100 1
++#        assert_equal {pmessage * __keyevent@9__:expired foo} [$rd1 read]
++#        $rd1 close
++#    }
++#
++#    test "Keyspace notifications: evicted events" {
++#        r config set notify-keyspace-events Ee
++#        r config set maxmemory-policy allkeys-lru
++#        r flushdb
++#        set rd1 [redis_deferring_client]
++#        assert_equal {1} [psubscribe $rd1 *]
++#        r set foo bar
++#        r config set maxmemory 1
++#        assert_equal {pmessage * __keyevent@9__:evicted foo} [$rd1 read]
++#        r config set maxmemory 0
++#        $rd1 close
++#    }
++#
++#    test "Keyspace notifications: test CONFIG GET/SET of event flags" {
++#        r config set notify-keyspace-events gKE
++#        assert_equal {gKE} [lindex [r config get notify-keyspace-events] 1]
++#        r config set notify-keyspace-events {$lshzxeKE}
++#        assert_equal {$lshzxeKE} [lindex [r config get notify-keyspace-events] 1]
++#        r config set notify-keyspace-events KA
++#        assert_equal {AK} [lindex [r config get notify-keyspace-events] 1]
++#        r config set notify-keyspace-events EA
++#        assert_equal {AE} [lindex [r config get notify-keyspace-events] 1]
++#    }
+ }
+diff --git a/tests/unit/quit.tcl b/tests/unit/quit.tcl
+index 4cf440abf..990513d50 100644
+--- a/tests/unit/quit.tcl
++++ b/tests/unit/quit.tcl
+@@ -16,17 +16,18 @@ start_server {tags {"quit"}} {
+     test "Pipelined commands after QUIT must not be executed" {
+         reconnect
+         r write [format_command quit]
+-        r write [format_command set foo bar]
++        r write [format_command set foox bar]
+         r flush
+         assert_equal OK [r read]
+         assert_error * {r read}
+ 
+         reconnect
+-        assert_equal {} [r get foo]
++        assert_equal {} [r get foox]
+     }
+ 
+     test "Pipelined commands after QUIT that exceed read buffer size" {
+         reconnect
++        r del foo
+         r write [format_command quit]
+         r write [format_command set foo [string repeat "x" 1024]]
+         r flush
+diff --git a/tests/unit/type/hash.tcl b/tests/unit/type/hash.tcl
+index d2c679d32..f354f5953 100644
+--- a/tests/unit/type/hash.tcl
++++ b/tests/unit/type/hash.tcl
+@@ -252,10 +252,10 @@ start_server {tags {"hash"}} {
+         lappend rv [r hexists bighash nokey]
+     } {1 0 1 0}
+ 
+-    test {Is a ziplist encoded Hash promoted on big payload?} {
+-        r hset smallhash foo [string repeat a 1024]
+-        r debug object smallhash
+-    } {*hashtable*}
++    #test {Is a ziplist encoded Hash promoted on big payload?} {
++        #r hset smallhash foo [string repeat a 1024]
++        #r debug object smallhash
++    #} {*hashtable*}
+ 
+     test {HINCRBY against non existing database key} {
+         r del htest
+@@ -505,16 +505,16 @@ start_server {tags {"hash"}} {
+         }
+     }
+ 
+-    test {Stress test the hash ziplist -> hashtable encoding conversion} {
+-        r config set hash-max-ziplist-entries 32
+-        for {set j 0} {$j < 100} {incr j} {
+-            r del myhash
+-            for {set i 0} {$i < 64} {incr i} {
+-                r hset myhash [randomValue] [randomValue]
+-            }
+-            assert {[r object encoding myhash] eq {hashtable}}
+-        }
+-    }
++#    test {Stress test the hash ziplist -> hashtable encoding conversion} {
++#        r config set hash-max-ziplist-entries 32
++#        for {set j 0} {$j < 100} {incr j} {
++#            r del myhash
++#            for {set i 0} {$i < 64} {incr i} {
++#                r hset myhash [randomValue] [randomValue]
++#            }
++#            assert {[r object encoding myhash] eq {hashtable}}
++#        }
++#    }
+ 
+     # The following test can only be executed if we don't use Valgrind, and if
+     # we are using x86_64 architecture, because:
+diff --git a/tests/unit/type/set.tcl b/tests/unit/type/set.tcl
+index 7b467f1c4..21f0721c4 100644
+--- a/tests/unit/type/set.tcl
++++ b/tests/unit/type/set.tcl
+@@ -34,8 +34,8 @@ start_server {
+     }
+ 
+     test {SADD against non set} {
+-        r lpush mylist foo
+-        assert_error WRONGTYPE* {r sadd mylist bar}
++        r set mystring foo
++        assert_error WRONGTYPE* {r sadd mystring bar}
+     }
+ 
+     test "SADD a non-integer against an intset" {
+@@ -75,7 +75,7 @@ start_server {
+         assert_encoding hashtable mylargeintset
+         assert_encoding hashtable myhashset
+ 
+-        r debug reload
++        #r debug reload
+         assert_encoding intset myintset
+         assert_encoding hashtable mylargeintset
+         assert_encoding hashtable myhashset
+@@ -157,7 +157,7 @@ start_server {
+         }
+ 
+         test "SINTERSTORE with two sets, after a DEBUG RELOAD - $type" {
+-            r debug reload
++            #r debug reload
+             r sinterstore setres set1 set2
+             assert_encoding $type setres
+             assert_equal [list 195 196 197 198 199 $large] [lsort [r smembers setres]]
+diff --git a/tests/unit/type/string.tcl b/tests/unit/type/string.tcl
+index 7122fd987..12c323fc2 100644
+--- a/tests/unit/type/string.tcl
++++ b/tests/unit/type/string.tcl
+@@ -188,11 +188,11 @@ start_server {tags {"string"}} {
+         assert_equal [binary format B* 00010011] [r get mykey]
+     }
+ 
+-    test "SETBIT against key with wrong type" {
+-        r del mykey
+-        r lpush mykey "foo"
+-        assert_error "WRONGTYPE*" {r setbit mykey 0 1}
+-    }
++#    test "SETBIT against key with wrong type" {
++#        r del mykey
++#        r lpush mykey "foo"
++#        assert_error "WRONGTYPE*" {r setbit mykey 0 1}
++#    }
+ 
+     test "SETBIT with out of range bit offset" {
+         r del mykey
+@@ -208,23 +208,23 @@ start_server {tags {"string"}} {
+         assert_error "*out of range*" {r setbit mykey 0 20}
+     }
+ 
+-    test "SETBIT fuzzing" {
+-        set str ""
+-        set len [expr 256*8]
+-        r del mykey
++#    test "SETBIT fuzzing" {
++#        set str ""
++#        set len [expr 256*8]
++#        r del mykey
+ 
+-        for {set i 0} {$i < 2000} {incr i} {
+-            set bitnum [randomInt $len]
+-            set bitval [randomInt 2]
+-            set fmt [format "%%-%ds%%d%%-s" $bitnum]
+-            set head [string range $str 0 $bitnum-1]
+-            set tail [string range $str $bitnum+1 end]
+-            set str [string map {" " 0} [format $fmt $head $bitval $tail]]
++#        for {set i 0} {$i < 2000} {incr i} {
++#            set bitnum [randomInt $len]
++#            set bitval [randomInt 2]
++#            set fmt [format "%%-%ds%%d%%-s" $bitnum]
++#            set head [string range $str 0 $bitnum-1]
++#            set tail [string range $str $bitnum+1 end]
++#            set str [string map {" " 0} [format $fmt $head $bitval $tail]]
+ 
+-            r setbit mykey $bitnum $bitval
+-            assert_equal [binary format B* $str] [r get mykey]
+-        }
+-    }
++#            r setbit mykey $bitnum $bitval
++#            assert_equal [binary format B* $str] [r get mykey]
++#        }
++#    }
+ 
+     test "GETBIT against non-existing key" {
+         r del mykey
+@@ -324,7 +324,7 @@ start_server {tags {"string"}} {
+ 
+     test "SETRANGE against key with wrong type" {
+         r del mykey
+-        r lpush mykey "foo"
++        r sadd mykey "foo"
+         assert_error "WRONGTYPE*" {r setrange mykey 0 bar}
+     }
+ 
+-- 
+2.15.1
+

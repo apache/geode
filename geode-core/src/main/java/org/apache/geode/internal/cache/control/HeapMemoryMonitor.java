@@ -47,6 +47,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
+import org.apache.geode.internal.cache.execute.AllowExecutionInLowMemory;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.LocalStatListener;
 import org.apache.geode.internal.statistics.StatisticsManager;
@@ -142,6 +143,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   private final ResourceAdvisor resourceAdvisor;
   private final InternalCache cache;
   private final ResourceManagerStats stats;
+  private final TenuredHeapConsumptionMonitor tenuredHeapConsumptionMonitor;
 
   @MutableForTesting
   private static boolean testDisableMemoryUpdates = false;
@@ -153,6 +155,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
    * names.
    *
    * Package private for testing.
+   * checkTenuredHeapConsumption
    *
    * @param memoryPoolMXBean The memory pool MXBean to check.
    * @return True if the pool name matches a known tenured pool name, false otherwise.
@@ -177,11 +180,13 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   }
 
   HeapMemoryMonitor(final InternalResourceManager resourceManager, final InternalCache cache,
-      final ResourceManagerStats stats) {
+      final ResourceManagerStats stats,
+      TenuredHeapConsumptionMonitor tenuredHeapConsumptionMonitor) {
     this.resourceManager = resourceManager;
     this.resourceAdvisor = (ResourceAdvisor) cache.getDistributionAdvisor();
     this.cache = cache;
     this.stats = stats;
+    this.tenuredHeapConsumptionMonitor = tenuredHeapConsumptionMonitor;
   }
 
   /**
@@ -669,6 +674,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
         // Not using the information given by the notification in favor
         // of constructing fresh information ourselves.
         if (!testDisableMemoryUpdates) {
+          tenuredHeapConsumptionMonitor.checkTenuredHeapConsumption(notification);
           updateStateAndSendEvent();
         }
       }
@@ -710,7 +716,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
 
   public LowMemoryException createLowMemoryIfNeeded(Function function,
       Set<? extends DistributedMember> memberSet) {
-    if (function.optimizeForWrite()
+    if (function.optimizeForWrite() && !(function instanceof AllowExecutionInLowMemory)
         && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
       Set<DistributedMember> criticalMembersFrom = getHeapCriticalMembersFrom(memberSet);
       if (!criticalMembersFrom.isEmpty()) {
