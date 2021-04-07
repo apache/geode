@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal;
 
 import static org.apache.geode.distributed.internal.ResourceEvent.MANAGER_START;
@@ -28,6 +29,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.quality.Strictness.LENIENT;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.junit.Before;
@@ -64,7 +66,7 @@ public class SystemManagementServiceTest {
   @Mock
   private ManagementAgent managementAgent;
   @Mock
-  private ManagementAgentFactory managementAgentFactory;
+  private BiFunction<DistributionConfig, InternalCacheForClientAccess, ManagementAgent> managementAgentFactory;
   @Mock
   private Function<ManagementResourceRepo, NotificationHub> notificationHubFactory;
   @Mock
@@ -85,7 +87,7 @@ public class SystemManagementServiceTest {
         .create(any(), any(), any(), any(), any(), any(), any(), any(), any()))
             .thenReturn(federatingManager);
 
-    when(managementAgentFactory.create(any(), any(), any())).thenReturn(managementAgent);
+    when(managementAgentFactory.apply(any(), any())).thenReturn(managementAgent);
     when(notificationHubFactory.apply(any())).thenReturn(mock(NotificationHub.class));
     when(localManagerFactory.apply(any())).thenReturn(mock(LocalManager.class));
   }
