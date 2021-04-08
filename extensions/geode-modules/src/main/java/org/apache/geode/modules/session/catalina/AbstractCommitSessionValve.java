@@ -14,8 +14,6 @@
  */
 package org.apache.geode.modules.session.catalina;
 
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
-
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -62,7 +60,8 @@ public abstract class AbstractCommitSessionValve<SelfT extends AbstractCommitSes
     if (manager instanceof DeltaSessionManager) {
       final DeltaSessionFacade session = (DeltaSessionFacade) request.getSession(false);
       if (session != null) {
-        final DeltaSessionManager<SelfT> deltaSessionManager = uncheckedCast(manager);
+        @SuppressWarnings("unchecked")
+        final DeltaSessionManager<SelfT> deltaSessionManager = (DeltaSessionManager<SelfT>) manager;
         if (session.isValid()) {
           deltaSessionManager.removeTouchedSession(session.getId());
           session.commit();
