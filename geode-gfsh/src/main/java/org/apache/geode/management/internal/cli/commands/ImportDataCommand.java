@@ -41,15 +41,15 @@ public class ImportDataCommand extends GfshCommand {
   @CliCommand(value = CliStrings.IMPORT_DATA, help = CliStrings.IMPORT_DATA__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   public ResultModel importData(
+      @CliOption(key = CliStrings.MEMBER, mandatory = true,
+          optionContext = ConverterHint.MEMBERIDNAME,
+          help = CliStrings.IMPORT_DATA__MEMBER__HELP) String memberNameOrId,
       @CliOption(key = CliStrings.IMPORT_DATA__REGION, optionContext = ConverterHint.REGION_PATH,
           mandatory = true, help = CliStrings.IMPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.IMPORT_DATA__FILE,
           help = CliStrings.IMPORT_DATA__FILE__HELP) String filePath,
       @CliOption(key = CliStrings.IMPORT_DATA__DIR,
           help = CliStrings.IMPORT_DATA__DIR__HELP) String dirPath,
-      @CliOption(key = CliStrings.MEMBER, mandatory = true,
-          optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.IMPORT_DATA__MEMBER__HELP) String memberNameOrId,
       @CliOption(key = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, unspecifiedDefaultValue = "false",
           help = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS__HELP) boolean invokeCallbacks,
       @CliOption(key = CliStrings.IMPORT_DATA__PARALLEL, unspecifiedDefaultValue = "false",
