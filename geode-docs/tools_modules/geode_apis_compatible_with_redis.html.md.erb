@@ -88,7 +88,7 @@ The <%=vars.product_name%> APIs compatible with Redis currently support the foll
  - HLEN <br/>
  - HMGET <br/>
  - HMSET <br/>
- - HSCAN <sup>1</sup>  <br/>
+ - HSCAN **[1]**  <br/>
  - HSET <br/>
  - HSETNX <br/>
  - HSTRLEN <br/>
@@ -97,7 +97,7 @@ The <%=vars.product_name%> APIs compatible with Redis currently support the foll
  - INCR <br/>
  - INCRBY <br/>
  - INCRBYFLOAT <br/>
- - INFO <sup>2</sup>  <br/>
+ - INFO **[2]**  <br/>
  - KEYS <br/>
  - MGET <br/>
  - PERSIST <br/>
@@ -113,7 +113,7 @@ The <%=vars.product_name%> APIs compatible with Redis currently support the foll
  - SADD <br/>
  - SET <br/>
  - SETNX <br/>
- - SLOWLOG <sup>3</sup>  <br/>
+ - SLOWLOG **[3]**  <br/>
  - SMEMBERS <br/>
  - SREM <br/>
  - STRLEN <br/>
@@ -128,18 +128,12 @@ Commands not listed above are **not implemented**.
 <br/>
 **NOTES:**
 
-<br/>
-<br/>
 These commands are supported for Redis 5.
 
-<br/>
-<br/>
-<sup>1</sup>Redis accepts 64-bit signed integers for the HSCAN cursor and COUNT parameters.
+**[1]** Redis accepts 64-bit signed integers for the HSCAN cursor and COUNT parameters.
  The Geode APIs compatible with Redis are limited to 32-bit integer values for these parameters.
 
-<br/>
-<br/>
-<sup>2</sup> INFO is implemented for the sections and fields listed below:
+**[2]** INFO is implemented for the sections and fields listed below:
 
  - clients
 
@@ -209,8 +203,7 @@ These commands are supported for Redis 5.
 
     - rejected_connections (always returns 0)
 
-<br/>
-<sup>3</sup>  SLOWLOG is implemented as a NoOp.
+**[3]**  SLOWLOG is implemented as a NoOp.
 
 ## <a id="advantages-over-redis" class="no-quick-link"></a>Advantages of <%=vars.product_name%> over Redis
 
