@@ -51,6 +51,7 @@ public class GenerateSNIKeyAndTrustStores {
           .commonName(certName)
           .issuedBy(ca)
           .sanDnsName(certName)
+          .sanDnsName("geode")
           .generate();
 
       CertStores store = new CertStores(certName);

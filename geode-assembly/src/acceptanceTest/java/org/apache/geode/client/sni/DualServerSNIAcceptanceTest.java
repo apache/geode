@@ -31,6 +31,7 @@ import java.util.Properties;
 
 import com.palantir.docker.compose.DockerComposeRule;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -60,7 +61,7 @@ import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 public class DualServerSNIAcceptanceTest {
 
   private static final URL DOCKER_COMPOSE_PATH =
-      SingleServerSNIAcceptanceTest.class.getResource("docker-compose.yml");
+      DualServerSNIAcceptanceTest.class.getResource("dual-server-docker-compose.yml");
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
@@ -104,6 +105,17 @@ public class DualServerSNIAcceptanceTest {
   @After
   public void after() {
     ensureCacheClosed();
+  }
+
+  @AfterClass
+  public static void afterClass() throws Exception {
+    // try {
+    // String output =
+    // docker.get().exec(options("-T"), "locator-maeve",
+    // arguments("cat", "locator-maeve/locator-maeve.log"));
+    // System.out.println("Locator log file--------------------------------\n" + output);
+    // } catch (Throwable ignore) {
+    // }
   }
 
   @Test
