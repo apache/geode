@@ -30,14 +30,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -46,8 +47,12 @@ import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 
 public class RedisSet extends AbstractRedisData {
-
   private HashSet<ByteArrayWrapper> members;
+
+  private static final int PER_MEMBER_OVERHEAD = PER_OBJECT_OVERHEAD + 70;
+  private static final int PER_SET_OVERHEAD = PER_OBJECT_OVERHEAD + 240;
+
+  private AtomicInteger setSize = new AtomicInteger(PER_SET_OVERHEAD);
 
   @SuppressWarnings("unchecked")
   RedisSet(Collection<ByteArrayWrapper> members) {
@@ -198,14 +203,16 @@ public class RedisSet extends AbstractRedisData {
   @Override
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
-    InternalDataSerializer.writeHashSet(members, out);
+    DataSerializer.writeHashSet(members, out);
+    DataSerializer.writeInteger(setSize.get(), out);
   }
 
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    members = InternalDataSerializer.readHashSet(in);
+    members = DataSerializer.readHashSet(in);
+    setSize.set(DataSerializer.readInteger(in));
   }
 
   @Override
@@ -214,19 +221,26 @@ public class RedisSet extends AbstractRedisData {
   }
 
   private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
-    return members.add(memberToAdd);
+    boolean retval = members.add(memberToAdd);
+    setSize.addAndGet(PER_MEMBER_OVERHEAD + memberToAdd.length());
+    return retval;
   }
 
   private boolean membersRemove(ByteArrayWrapper memberToRemove) {
+    setSize.addAndGet(-(PER_MEMBER_OVERHEAD + memberToRemove.length()));
     return members.remove(memberToRemove);
   }
 
   private synchronized boolean membersAddAll(AddsDeltaInfo addsDeltaInfo) {
-    return members.addAll(addsDeltaInfo.getAdds());
+    ArrayList<ByteArrayWrapper> adds = addsDeltaInfo.getAdds();
+    setSize.addAndGet(adds.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum());
+    return members.addAll(adds);
   }
 
   private synchronized boolean membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
-    return members.removeAll(remsDeltaInfo.getRemoves());
+    ArrayList<ByteArrayWrapper> removes = remsDeltaInfo.getRemoves();
+    setSize.addAndGet(-removes.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum());
+    return members.removeAll(removes);
   }
 
 
@@ -316,5 +330,10 @@ public class RedisSet extends AbstractRedisData {
   @Override
   public KnownVersion[] getSerializationVersions() {
     return null;
+  }
+
+  @Override
+  public int getSizeInBytes() {
+    return setSize.get();
   }
 }

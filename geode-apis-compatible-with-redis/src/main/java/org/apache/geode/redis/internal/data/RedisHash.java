@@ -36,6 +36,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -57,6 +58,9 @@ public class RedisHash extends AbstractRedisData {
   private ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hScanSnapShots;
   private ConcurrentHashMap<UUID, Long> hScanSnapShotCreationTimes;
   private ScheduledExecutorService HSCANSnapshotExpirationExecutor = null;
+  private static final int PER_STRING_OVERHEAD = PER_OBJECT_OVERHEAD + 46;
+  private static final int PER_HASH_OVERHEAD = PER_OBJECT_OVERHEAD + 116;
+  private AtomicInteger hashSize = new AtomicInteger(PER_HASH_OVERHEAD);
 
   private static int defaultHscanSnapshotsExpireCheckFrequency =
       Integer.getInteger("redis.hscan-snapshot-cleanup-interval", 30000);
@@ -103,7 +107,6 @@ public class RedisHash extends AbstractRedisData {
 
 
   private void expireHScanSnapshots() {
-
     this.hScanSnapShotCreationTimes.entrySet().forEach(entry -> {
       Long creationTime = entry.getValue();
       long millisecondsSinceCreation = currentTimeMillis() - creationTime;
@@ -144,6 +147,7 @@ public class RedisHash extends AbstractRedisData {
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     DataSerializer.writeHashMap(hash, out);
+    DataSerializer.writeInteger(hashSize.get(), out);
   }
 
   @Override
@@ -151,6 +155,7 @@ public class RedisHash extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     hash = DataSerializer.readHashMap(in);
+    hashSize.set(DataSerializer.readInteger(in));
   }
 
   @Override
@@ -160,15 +165,26 @@ public class RedisHash extends AbstractRedisData {
 
 
   private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
-    return hash.put(field, value);
+    ByteArrayWrapper oldvalue = hash.put(field, value);
+    if (oldvalue == null) {
+      hashSize.addAndGet(2 * PER_STRING_OVERHEAD + field.length() + value.length());
+    } else {
+      hashSize.addAndGet(value.length() - oldvalue.length());
+    }
+    return oldvalue;
   }
 
   private synchronized ByteArrayWrapper hashPutIfAbsent(ByteArrayWrapper field,
       ByteArrayWrapper value) {
-    return hash.putIfAbsent(field, value);
+    ByteArrayWrapper oldvalue = hash.putIfAbsent(field, value);
+    if (oldvalue == null) {
+      hashSize.addAndGet(2 * PER_STRING_OVERHEAD + field.length() + value.length());
+    }
+    return oldvalue;
   }
 
   private synchronized ByteArrayWrapper hashRemove(ByteArrayWrapper field) {
+    hashSize.addAndGet(-(2 * PER_STRING_OVERHEAD + field.length() + hash.get(field).length()));
     return hash.remove(field);
   }
 
@@ -287,8 +303,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public ImmutablePair<Integer, List<Object>> hscan(UUID clientID, Pattern matchPattern,
-      int count,
-      int startCursor) {
+      int count, int startCursor) {
 
     List<ByteArrayWrapper> keysToScan = getSnapShotOfKeySet(clientID);
 
@@ -329,14 +344,12 @@ public class RedisHash extends AbstractRedisData {
     List<ByteArrayWrapper> resultList = new ArrayList<>();
 
     for (int index = startCursor; index < keysSnapShot.size(); index++) {
-
       if ((index - startCursor) == count) {
         break;
       }
 
       ByteArrayWrapper key = keysSnapShot.get(index);
       indexOfKeys++;
-
       ByteArrayWrapper value = hash.get(key);
       if (value == null) {
         continue;
@@ -504,5 +517,10 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public KnownVersion[] getSerializationVersions() {
     return null;
+  }
+
+  @Override
+  public int getSizeInBytes() {
+    return hashSize.get();
   }
 }
