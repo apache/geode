@@ -27,29 +27,45 @@ ext.projectsToExclude = ["geode-pulse", "extensions", "geode-assembly", "geode-a
                          "geode-modules-session-internal", "geode-modules-tomcat7",
                          "geode-modules-tomcat8", "geode-modules-tomcat9", "session-testing-war",
                          "geode-client-bom", "geode-web", "geode-web-management", "geode-web-api",
-                         "geode-all-bom", "geode-jboss-extensions"]
-//                         ,"geode-dunit", "geode-junit"]
+                         "geode-all-bom", "geode-jboss-extensions","geode-dunit", "geode-junit"]
 
-def thirdPartyDepsNotToGenerate = {
+ext.testProjectsToInclude = ['geode-dunit', 'geode-junit']
+
+def thirdPartyDepsNotToGenerate = { String targetConfigurationPrefix ->
   def depsNotToGenerate = []
+  def configurations = getTargetConfigurations(['api', 'implementation',
+          'runtimeOnly', 'jbossModular'], targetConfigurationPrefix)
   rootProject.subprojects.each { project ->
-    depsNotToGenerate.addAll(getDependentProjectsForConfiguration(project, ['api', 'implementation', 'distributedTestImplementation', 'runtimeOnly', 'jbossModular']).stream().filter { it.ext.has('should-not-generate') }.map { it.name }.collect())
+    depsNotToGenerate.addAll(getDependentProjectsForConfiguration(project, configurations)
+            .stream()
+            .filter { it.ext.has('should-not-generate') }.map { it.name }.collect())
   }
   depsNotToGenerate
 }
 
-ext.generateModuleXmlForProject = { File jar, Project projectToUse ->
-  def apiProjectDeps = getDependentProjectsForConfiguration(projectToUse, ['api'])
-  def allProjectDeps = getDependentProjectsForConfiguration(projectToUse, ['implementation', 'runtimeOnly', 'distributedTestImplementation'])
+private static getTargetConfigurations(configurations, String targetConfigurationPrefix) {
+  def processedConfigurations = []
+  processedConfigurations.addAll(configurations)
+  if(targetConfigurationPrefix.size() > 0)
+  configurations.each {
+    processedConfigurations.add((targetConfigurationPrefix + it))
+  }
+
+  return processedConfigurations
+}
+
+ext.generateModuleXmlForProject = { File jar, Project projectToUse, String targetConfigurationPrefix ->
+  def apiProjectDeps = getDependentProjectsForConfiguration(projectToUse, getTargetConfigurations(['api'], targetConfigurationPrefix))
+  def allProjectDeps = getDependentProjectsForConfiguration(projectToUse, getTargetConfigurations(['implementation', 'runtimeOnly'], targetConfigurationPrefix))
   def jbossDeps = getDependentProjectsForConfiguration(projectToUse, ['jbossModular'])
 
   allProjectDeps.addAll(apiProjectDeps)
   allProjectDeps.addAll(jbossDeps)
   // Iterate over runtime classpath dependencies and separate project dependencies from library
   // dependencies.
-  def runtimeList = generateDependentProjects(allProjectDeps)
+  def runtimeList = generateDependentProjects(allProjectDeps, targetConfigurationPrefix)
 
-  def depsToNotGenerate = thirdPartyDepsNotToGenerate()
+  def depsToNotGenerate = thirdPartyDepsNotToGenerate(targetConfigurationPrefix)
 
   def sourceJarPath = null
   if (jar != null && jar.name.endsWith(".jar")) {
@@ -57,8 +73,9 @@ ext.generateModuleXmlForProject = { File jar, Project projectToUse ->
   }
 
   def geodeAssemblyProj = project(":geode-assembly")
-  def moduleDescriptorsRoot = "${geodeAssemblyProj.buildDir}/moduleDescriptors"
-  def namesAndVersion = generateModuleNamesAndVersionsMap(runtimeList, depsToNotGenerate, moduleDescriptorsRoot)
+  def configurationTargetPath = targetConfigurationPrefix.size() == 0? '/' : "/$targetConfigurationPrefix/"
+  def moduleDescriptorsRoot = "${geodeAssemblyProj.buildDir}${configurationTargetPath}moduleDescriptors"
+  def namesAndVersion = generateModuleNamesAndVersionsMap(runtimeList, depsToNotGenerate, moduleDescriptorsRoot, targetConfigurationPrefix)
 
   def moduleName = projectToUse.name
   def moduleVersion = version
@@ -71,10 +88,16 @@ ext.generateModuleXmlForProject = { File jar, Project projectToUse ->
       return 0
     }
   })
-  writeModuleXml(moduleName, moduleVersion, moduleDescriptorsRoot, "main", sourceJarPath, allProjectDeps, apiProjectDeps, namesAndVersion)
+  if (shouldGenerateModuleXML(moduleName, targetConfigurationPrefix)) {
+    writeModuleXml(moduleName, moduleVersion, moduleDescriptorsRoot, "main", sourceJarPath, allProjectDeps, apiProjectDeps, namesAndVersion, targetConfigurationPrefix)
+  }
 }
 
-private Map<String, String[]> generateModuleNamesAndVersionsMap(runtimeList, depsToNotGenerate, moduleDescriptorsRoot) {
+private shouldGenerateModuleXML(moduleName, targetConfigurationPrefix) {
+  return !projectsToExclude.contains(moduleName) || (targetConfigurationPrefix.size() > 0 && testProjectsToInclude.contains(moduleName))
+}
+
+private Map<String, String[]> generateModuleNamesAndVersionsMap(runtimeList, depsToNotGenerate, moduleDescriptorsRoot, targetConfigurationPrefix) {
   Map<String, String[]> namesAndVersion = new HashMap<>()
   runtimeList.each { ResolvedArtifact dependency ->
     def moduleVersionIdentifier = dependency.getModuleVersion().id
@@ -83,18 +106,18 @@ private Map<String, String[]> generateModuleNamesAndVersionsMap(runtimeList, dep
     def resource = dependency.file.name
     namesAndVersion.put(artifactName, [artifactVersion, resource])
     if (!depsToNotGenerate.contains(artifactName)) {
-      writeModuleXml(artifactName, artifactVersion, moduleDescriptorsRoot, "thirdParty", "lib/$resource", [], [], null)
+      writeModuleXml(artifactName, artifactVersion, moduleDescriptorsRoot, "thirdParty", "lib/$resource", [], [], null, targetConfigurationPrefix)
     }
   }
   namesAndVersion
 }
 
-def generateDependentProjects(List<String> allProjectDeps) {
+def generateDependentProjects(List<String> allProjectDeps, String targetConfigurationPrefix) {
   def runtimeList = []
   allProjectDeps.each { dependency ->
     if (dependency instanceof ExternalModuleDependency) {
       project.configurations.each {
-        if (it.name == 'runtimeClasspath' || it.name == 'jbossModular') {
+        if (it.name.toLowerCase() == "${targetConfigurationPrefix}runtimeClasspath".toLowerCase() || it.name == 'jbossModular') {
           it.resolvedConfiguration.resolvedArtifacts.each { dep ->
             def moduleVersionIdentifier = dep.getModuleVersion().id
             if (!moduleVersionIdentifier.name.contains('geode-')) {
@@ -112,7 +135,7 @@ def static getDependentProjectsForConfiguration(Project projectToUse, List<Strin
   def allProjectDeps = []
   configuration.each { configName ->
     projectToUse.configurations.each {
-      if (it.name == configName) {
+      if (it.name.toLowerCase() == configName.toLowerCase()) {
         allProjectDeps.addAll(it.getDependencies())
       }
     }
@@ -122,38 +145,36 @@ def static getDependentProjectsForConfiguration(Project projectToUse, List<Strin
 
 def writeModuleXml(moduleName, moduleVersion, moduleXMLRootPath,
                    moduleClassification, sourceJarPath, projectDependencies,
-                   apiProjectDeps, namesAndVersions) {
-  if (!projectsToExclude.contains(moduleName)) {
-    def moduleNamePath = moduleName.replace('.', File.separator)
-    if (moduleClassification == "main") {
-      generateAliasModuleXML(moduleXMLRootPath, moduleClassification, moduleNamePath)
-    }
-    def modulePath = "$moduleXMLRootPath/$moduleClassification/$moduleNamePath/$moduleVersion"
-    mkdir(modulePath)
+                   apiProjectDeps, namesAndVersions, targetConfigurationPrefix) {
+  def moduleNamePath = moduleName.replace('.', File.separator)
+  if (moduleClassification == "main") {
+    generateAliasModuleXML(moduleXMLRootPath, moduleClassification, moduleNamePath)
+  }
+  def modulePath = "$moduleXMLRootPath/$moduleClassification/$moduleNamePath/$moduleVersion"
+  mkdir(modulePath)
 
-    file("$modulePath/module.xml").withWriter { writer ->
-      // Create MarkupBuilder with 4 space indent
-      def xml = new MarkupBuilder(new IndentPrinter(writer, "    ", true))
+  file("$modulePath/module.xml").withWriter { writer ->
+    // Create MarkupBuilder with 4 space indent
+    def xml = new MarkupBuilder(new IndentPrinter(writer, "    ", true))
 
-      xml.doubleQuotes = true
-      xml.mkp.xmlDeclaration(version: '1.0', encoding: 'utf-8')
-      xml.'module'('xmlns': 'urn:jboss:module:1.9', 'name': "$moduleName:$moduleVersion") {
-        xml.'resources' {
-          addResourceRoots(sourceJarPath, moduleNamePath, xml, projectDependencies, namesAndVersions)
+    xml.doubleQuotes = true
+    xml.mkp.xmlDeclaration(version: '1.0', encoding: 'utf-8')
+    xml.'module'('xmlns': 'urn:jboss:module:1.9', 'name': "$moduleName:$moduleVersion") {
+      xml.'resources' {
+        addResourceRoots(sourceJarPath, moduleNamePath, xml, projectDependencies, namesAndVersions, targetConfigurationPrefix)
+      }
+      if (moduleName == 'geode-core') {
+        xml.'main-class'(['name': 'org.apache.geode.distributed.ServerLauncher'])
+      } else if(moduleName == 'geode-dunit') {
+        xml.'main-class'(['name': 'org.apache.geode.test.dunit.internal.ChildVM'])
+      }
+      xml.'dependencies' {
+        xml.'module'(['name': "java.se"])
+        if (moduleClassification == "thirdParty") {
+          xml.'module'(['name': "thirdParty", 'services': 'export', 'export': 'true'])
         }
-        if (moduleName == 'geode-core') {
-          xml.'main-class'(['name': 'org.apache.geode.distributed.ServerLauncher'])
-        } else if(moduleName == 'geode-dunit') {
-          xml.'main-class'(['name': 'org.apache.geode.test.dunit.internal.ChildVM'])
-        }
-        xml.'dependencies' {
-          xml.'module'(['name': "java.se"])
-          if (moduleClassification == "thirdParty") {
-            xml.'module'(['name': "thirdParty", 'services': 'export', 'export': 'true'])
-          }
-          projectDependencies.each { project ->
-            addModuleDependency(project, namesAndVersions, apiProjectDeps, xml)
-          }
+        projectDependencies.each { project ->
+          addModuleDependency(project, namesAndVersions, apiProjectDeps, xml)
         }
       }
     }
@@ -184,26 +205,30 @@ private def addModuleDependency(project, namesAndVersions, apiProjectDeps, xmlBu
   }
 }
 
-private def addResourceRoots(sourceJarPath, moduleNamePath, xmlBuilder, projectDependencies, namesAndVersions) {
+private def addResourceRoots(sourceJarPath, moduleNamePath, xmlBuilder, projectDependencies, namesAndVersions, targetConfigurationPrefix) {
   if (sourceJarPath != null) {
     def absolutePathPrefix = "../../../"
     for (int i = 0; i < moduleNamePath.split(File.separator).length; i++) {
       absolutePathPrefix = absolutePathPrefix.concat("../")
     }
     xmlBuilder.'resource-root'(['path': absolutePathPrefix + sourceJarPath])
-    if (moduleNamePath.contains(project.name) && moduleNamePath.contains('geode-')) {
-      def distributedTestJavaDirectory = project.projectDir.canonicalFile.toPath().resolve('src').resolve('distributedTest').resolve('java').toFile()
-      def distributedTestResourcesDirectory = project.projectDir.canonicalFile.toPath().resolve('src').resolve('distributedTest').resolve('resources').toFile()
-      if (distributedTestJavaDirectory.exists() && distributedTestJavaDirectory.list().length > 0) {
-        xmlBuilder.'resource-root'(['path': project.buildDir.toPath().resolve('classes').resolve('java').resolve('distributedTest').toString()])
-      }
-      if ( distributedTestResourcesDirectory.exists() && distributedTestResourcesDirectory.list().length > 0) {
-        xmlBuilder.'resource-root'(['path': project.buildDir.toPath().resolve('resources').resolve('distributedTest').toString()])
-      }
+    if (moduleNamePath.contains(project.name) && moduleNamePath.contains('geode-') && targetConfigurationPrefix.size() > 0) {
+      addResourceRootsForConfiguration(targetConfigurationPrefix, xmlBuilder)
     }
     projectDependencies.stream().filter { it.ext.has('should-not-generate') }.each { resource ->
       xmlBuilder.'resource-root'(['path': absolutePathPrefix + 'lib/' + namesAndVersions[resource.name][1]])
     }
+  }
+}
+
+private void addResourceRootsForConfiguration(String targetConfigurationPrefix, xmlBuilder) {
+  def distributedTestJavaDirectory = project.projectDir.canonicalFile.toPath().resolve('src').resolve(targetConfigurationPrefix).resolve('java').toFile()
+  def distributedTestResourcesDirectory = project.projectDir.canonicalFile.toPath().resolve('src').resolve(targetConfigurationPrefix).resolve('resources').toFile()
+  if (distributedTestJavaDirectory.exists() && distributedTestJavaDirectory.list().length > 0) {
+    xmlBuilder.'resource-root'(['path': project.buildDir.toPath().resolve('classes').resolve('java').resolve(targetConfigurationPrefix).toString()])
+  }
+  if (distributedTestResourcesDirectory.exists() && distributedTestResourcesDirectory.list().length > 0) {
+    xmlBuilder.'resource-root'(['path': project.buildDir.toPath().resolve('resources').resolve(targetConfigurationPrefix).toString()])
   }
 }
 

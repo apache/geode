@@ -152,6 +152,14 @@ configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repe
   }
 }
 
+//distributedTest.dependsOn(tasks.getByName('generateDistributedTestThirdPartyModuleXML'))
+
+//configure(distributedTest) {
+//  doLast {
+//    distributedTest.dependsOn()
+//  }
+//}
+
 // apply common test configuration
 gradle.taskGraph.whenReady({ graph ->
   tasks.withType(Test).each { test ->

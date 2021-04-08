@@ -23,10 +23,30 @@ task generateModuleXml(dependsOn: jar) {
     }
 
     outputs.file {
-      project(':geode-assembly').buildDir.toPath().resolve("moduleDescriptors").resolve("main").resolve(project.name).resolve(project.version.toString()).resolve("module.xml")
+        project(':geode-assembly').buildDir.toPath().resolve("moduleDescriptors").resolve("main")
+                .resolve(project.name).resolve(project.version.toString()).resolve("module.xml")
     }
     doLast {
-      generateModuleXmlForProject(jarFile, project)
+      generateModuleXmlForProject(jarFile, project, '')
+    }
+  }
+}
+
+task generateDistributedTestModuleXml(dependsOn: [jar, compileDistributedTestJava]) {
+  if (!projectsToExclude.contains(project.name) || testProjectsToInclude.contains(project.name)) {
+    def jarFile = jar.outputs.files.first()
+    inputs.file {
+      jarFile
+    }
+
+    outputs.file {
+      project(':geode-assembly').buildDir.toPath().resolve('distributedTest')
+              .resolve("moduleDescriptors").resolve("main").resolve(project.name)
+              .resolve(project.version.toString()).resolve("module.xml")
+    }
+    doLast {
+
+      generateModuleXmlForProject(jarFile, project, 'distributedTest')
     }
   }
 }

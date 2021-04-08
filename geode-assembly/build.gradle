@@ -636,6 +636,11 @@ distributions {
         into('moduleDescriptors')
         from { tasks.named("generateThirdPartyModuleXML") }
       }
+
+      with copySpec {
+        into('testModuleDescriptors')
+        from { tasks.named("generateDistributedTestThirdPartyModuleXML") }
+      }
     }
   }
 

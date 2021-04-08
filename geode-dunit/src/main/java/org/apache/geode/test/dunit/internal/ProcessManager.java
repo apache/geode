@@ -374,7 +374,7 @@ class ProcessManager implements ChildVMLauncher {
     String libPath = GEODE_HOME + File.separator + "lib";
     File jbossJar = findJarByArtifactIdAtPath("jboss-modules", libPath).orElseThrow(
         () -> new GemFireConfigException(
-            "jboss-modules jar not fund in " + GEODE_HOME + File.separator + "lib"));
+            "jboss-modules jar not found in " + libPath));
     File jbossExtensionsJar = findJarByArtifactIdAtPath("geode-jboss-extensions",
         libPath).orElseThrow(
             () -> new GemFireConfigException(

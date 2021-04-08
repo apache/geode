@@ -74,6 +74,62 @@ tasks.register('generateThirdPartyModuleXML') {
   }
 }
 
+tasks.register('generateDistributedTestThirdPartyModuleXML') {
+  inputs.files {
+    rootProject.getTasksByName('generateDistributedTestModuleXml', true).each { it.outputs.files.files }.flatten()
+  }
+
+  outputs.dir {
+    project(':geode-assembly').buildDir.toPath().resolve('distributedTest').resolve("moduleDescriptors")
+  }
+
+  doLast {
+    def geodeAssemblyProj = project(":geode-assembly")
+    def moduleDescriptorsRoot = "${geodeAssemblyProj.buildDir}/distributedTest/moduleDescriptors"
+
+    def thirdPartyRoot = file(moduleDescriptorsRoot + "/thirdParty")
+    Map<String, String> namesAndVersions = new TreeMap<>(new Comparator<String>() {
+      @Override
+      int compare(String o1, String o2) {
+        if (o1 != null && o2 != null) {
+          return o1.toLowerCase() <=> o2.toLowerCase()
+        }
+        return 0
+      }
+    })
+    listFilesRecursively(thirdPartyRoot, thirdPartyRoot, namesAndVersions)
+
+    mkdir("$moduleDescriptorsRoot/main/thirdParty/main")
+    file("$moduleDescriptorsRoot/main/thirdParty/main/module.xml").withWriter { writer ->
+      // Create MarkupBuilder with 4 space indent
+      def xml = new MarkupBuilder(new IndentPrinter(writer, "    ", true))
+
+      xml.doubleQuotes = true
+      xml.mkp.xmlDeclaration(version: '1.0', encoding: 'utf-8')
+
+      xml.'module-alias'('xmlns': 'urn:jboss:module:1.9', 'name': "thirdParty", 'target-name': "thirdParty:$version")
+    }
+
+    def modulePath = "$moduleDescriptorsRoot/main/thirdParty/$version"
+    mkdir(modulePath)
+    file("$modulePath/module.xml").withWriter { writer ->
+      // Create MarkupBuilder with 4 space indent
+      def xml = new MarkupBuilder(new IndentPrinter(writer, "    ", true))
+
+      xml.doubleQuotes = true
+      xml.mkp.xmlDeclaration(version: '1.0', encoding: 'utf-8')
+
+      xml.'module'('xmlns': 'urn:jboss:module:1.9', 'name': "thirdParty:$version") {
+        xml.'dependencies' {
+          namesAndVersions.each {
+            xml.'module'(['name': "${it.key}:${it.value}", 'services': 'export', 'export': 'true'])
+          }
+        }
+      }
+    }
+  }
+}
+
 private List listFilesRecursively(File rootDirectory, File currentDirectory, namesAndVersions) {
   currentDirectory.listFiles().each {
     if (it.isDirectory()) {
