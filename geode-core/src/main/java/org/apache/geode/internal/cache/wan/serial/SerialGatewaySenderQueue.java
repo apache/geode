@@ -505,7 +505,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
     if (incompleteTransactionIdsInBatch.size() > 0) {
       logger.warn("Not able to retrieve all events for transactions: {} after {} retries of {}ms",
-          incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
+          incompleteTransactionIdsInBatch, GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES,
+          GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
     }
   }

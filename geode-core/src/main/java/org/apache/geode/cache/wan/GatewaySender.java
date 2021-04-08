@@ -174,7 +174,7 @@ public interface GatewaySender {
    */
   int GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-retries",
-          2);
+          5);
   /**
    * Milliseconds to wait before retrying to get events for a transaction from the
    * gateway sender queue when group-transaction-events is true.
