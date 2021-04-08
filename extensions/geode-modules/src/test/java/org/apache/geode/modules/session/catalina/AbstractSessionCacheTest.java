@@ -55,8 +55,8 @@ public abstract class AbstractSessionCacheTest {
   protected Region<String, HttpSession> sessionRegion = mock(Region.class, RETURNS_DEEP_STUBS);
   protected DistributedSystem distributedSystem = mock(DistributedSystem.class);
   protected Log logger = mock(Log.class);
-  protected Execution<Object, Object, List<Object>> emptyExecution =
-      uncheckedCast(mock(Execution.class));
+  @SuppressWarnings("unchecked")
+  protected Execution<Object, Object, List<Object>> emptyExecution = mock(Execution.class);
 
   protected AbstractSessionCache sessionCache;
 

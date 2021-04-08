@@ -15,7 +15,6 @@
 
 package org.apache.geode.modules.session.catalina;
 
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;
@@ -39,14 +38,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
@@ -68,17 +65,16 @@ import org.apache.geode.modules.util.SessionCustomExpiry;
 import org.apache.geode.modules.util.TouchPartitionedRegionEntriesFunction;
 import org.apache.geode.modules.util.TouchReplicatedRegionEntriesFunction;
 
+@SuppressWarnings("unchecked")
 public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
 
   private final List<Object> regionStatusResultList = new ArrayList<>();
   private final ClientCache cache = mock(GemFireCacheImpl.class);
-  private final ResultCollector<Object, List<Object>> collector =
-      uncheckedCast(mock(ResultCollector.class));
+  private final ResultCollector<Object, List<Object>> collector = mock(ResultCollector.class);
   private final Statistics stats = mock(Statistics.class);
   private final ClientRegionFactory<String, HttpSession> regionFactory =
-      uncheckedCast(mock(ClientRegionFactory.class));
-  private final RegionAttributes<String, HttpSession> attributes =
-      uncheckedCast(mock(RegionAttributes.class));
+      mock(ClientRegionFactory.class);
+  private final RegionAttributes<String, HttpSession> attributes = mock(RegionAttributes.class);
 
   @Before
   public void setUp() {
@@ -132,8 +128,7 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
   public void bootstrappingFunctionThrowsException() {
     final FunctionException exception = new FunctionException();
 
-    final ResultCollector<Object, List<Object>> exceptionCollector =
-        uncheckedCast(mock(ResultCollector.class));
+    final ResultCollector<Object, List<Object>> exceptionCollector = mock(ResultCollector.class);
 
     when(emptyExecution.execute(new BootstrappingFunction())).thenReturn(exceptionCollector);
     when(exceptionCollector.getResult()).thenThrow(exception);
@@ -202,7 +197,7 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
   @Test
   public void createOrRetrieveRegionWithNonNullSessionRegionDoesNotCreateRegion() {
     final CacheListener<String, HttpSession>[] cacheListeners =
-        uncheckedCast(new CacheListener[] {new SessionExpirationCacheListener()});
+        new CacheListener[] {new SessionExpirationCacheListener()};
     doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
     doReturn(attributes).when(sessionRegion).getAttributes();
     doReturn(cacheListeners).when(attributes).getCacheListeners();
@@ -216,9 +211,8 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
   @Test
   public void createOrRetrieveRegionWithNonNullSessionRegionAndNoSessionExpirationCacheListenerCreatesListener() {
     final CacheListener<String, HttpSession>[] cacheListeners =
-        uncheckedCast(new CacheListener[] {new DebugCacheListener()});
-    final AttributesMutator<String, HttpSession> attributesMutator =
-        uncheckedCast(mock(AttributesMutator.class));
+        new CacheListener[] {new DebugCacheListener()};
+    final AttributesMutator<String, HttpSession> attributesMutator = mock(AttributesMutator.class);
     doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
     doReturn(attributes).when(sessionRegion).getAttributes();
     doReturn(cacheListeners).when(attributes).getCacheListeners();
@@ -232,7 +226,7 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
   @Test
   public void createOrRetrieveRegionWithNonNullSessionProxyRegionRegistersInterestForAllKeys() {
     final CacheListener<String, HttpSession>[] cacheListeners =
-        uncheckedCast(new CacheListener[] {new SessionExpirationCacheListener()});
+        new CacheListener[] {new SessionExpirationCacheListener()};
     doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
     doReturn(attributes).when(sessionRegion).getAttributes();
     doReturn(cacheListeners).when(attributes).getCacheListeners();
@@ -258,8 +252,7 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
   public void touchSessionsInvokesPRFunctionForPRAndThrowsExceptionWhenFunctionThrowsException() {
     final Set<String> sessionIds = new HashSet<>();
     final FunctionException exception = new FunctionException();
-    final ResultCollector<Object, List<Object>> exceptionCollector =
-        uncheckedCast(mock(ResultCollector.class));
+    final ResultCollector<Object, List<Object>> exceptionCollector = mock(ResultCollector.class);
 
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.PARTITION.toString());
     when(emptyExecution.execute(TouchPartitionedRegionEntriesFunction.ID))
@@ -278,7 +271,7 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
 
     final Set<String> sessionIds = new HashSet<>();
 
-    when(sessionRegion.getFullPath()).thenReturn(SEPARATOR + sessionRegionName);
+    when(sessionRegion.getFullPath()).thenReturn("/" + sessionRegionName);
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.REPLICATE.toString());
 
     sessionCache.touchSessions(sessionIds);
@@ -293,10 +286,9 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
 
     final Set<String> sessionIds = new HashSet<>();
     final FunctionException exception = new FunctionException();
-    final ResultCollector<Object, List<Object>> exceptionCollector =
-        uncheckedCast(mock(ResultCollector.class));
+    final ResultCollector<Object, List<Object>> exceptionCollector = mock(ResultCollector.class);
 
-    when(sessionRegion.getFullPath()).thenReturn(SEPARATOR + sessionRegionName);
+    when(sessionRegion.getFullPath()).thenReturn("/" + sessionRegionName);
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.REPLICATE.toString());
     when(emptyExecution.execute(TouchReplicatedRegionEntriesFunction.ID))
         .thenReturn(exceptionCollector);
