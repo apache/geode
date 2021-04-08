@@ -252,12 +252,10 @@ public abstract class CargoTestBase {
     client.setMaxInactive(1);
     Thread.sleep(5000);
 
-    await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+    GeodeAwaitility.await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
       verifySessionIsRemoved(key);
       Thread.sleep(1000);
     });
-
-    checkLogs();
   }
 
   /**
@@ -287,7 +285,7 @@ public abstract class CargoTestBase {
     for (int i = 0; i < manager.numContainers(); i++) {
       client.setPort(Integer.parseInt(manager.getContainerPort(i)));
       if (install.getConnectionType() == ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER) {
-        await().atMost(30, TimeUnit.SECONDS).until(() -> Integer.toString(expected)
+        GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> Integer.toString(expected)
             .equals(client.executionFunction(GetMaxInactiveInterval.class).getResponse()));
       } else {
         assertEquals(Integer.toString(expected),
