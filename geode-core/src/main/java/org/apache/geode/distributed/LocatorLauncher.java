@@ -297,17 +297,29 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    *             This static method does not use the properties set via the Builder.
    */
   @Deprecated
-  public static LocatorStatusResponse statusLocator(int port, String bindAddress)
+  public static LocatorStatusResponse statusLocator(int port, InetAddress bindAddress)
       throws IOException {
-    return statusLocator(port, bindAddress, new Properties());
+    return statusLocator(port, bindAddress == null ? null : bindAddress.getCanonicalHostName(),
+        new Properties());
+  }
+
+  /**
+   * Returns the status of the locator on the given host & port. If you have endpoint
+   * identification enabled the preferred method is statusForLocator(int, String), which
+   * lets you specify the locator's name that the locator has stored in its TLS certificate
+   */
+  public LocatorStatusResponse statusForLocator(int port, InetAddress bindAddress)
+      throws IOException {
+    return statusLocator(port, bindAddress == null ? null : bindAddress.getCanonicalHostName(),
+        getProperties());
   }
 
   /**
    * Returns the status of the locator on the given host & port
    */
-  public LocatorStatusResponse statusForLocator(int port, String bindAddress)
+  public LocatorStatusResponse statusForLocator(int port, String hostname)
       throws IOException {
-    return statusLocator(port, bindAddress, getProperties());
+    return statusLocator(port, hostname, getProperties());
   }
 
   private static LocatorStatusResponse statusLocator(
