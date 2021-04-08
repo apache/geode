@@ -24,8 +24,6 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticDeserialization;
-import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * The HealthMonitor will send SuspectMembersMessages to inform other members of the cluster
@@ -71,7 +69,7 @@ public class SuspectMembersMessage<ID extends MemberIdentifier> extends Abstract
       out.writeInt(suspectRequests.size());
       for (SuspectRequest<ID> sr : suspectRequests) {
         context.getSerializer().writeObject(sr.getSuspectMember(), out);
-        StaticSerialization.writeString(sr.getReason(), out);
+        context.getSerializer().writeString(sr.getReason(), out);
       }
     } else {
       out.writeInt(0);
@@ -84,7 +82,7 @@ public class SuspectMembersMessage<ID extends MemberIdentifier> extends Abstract
     int size = in.readInt();
     for (int i = 0; i < size; i++) {
       SuspectRequest<ID> sr = new SuspectRequest<>(
-          context.getDeserializer().readObject(in), StaticDeserialization.readString(in));
+          context.getDeserializer().readObject(in), context.getDeserializer().readString(in));
       suspectRequests.add(sr);
     }
   }

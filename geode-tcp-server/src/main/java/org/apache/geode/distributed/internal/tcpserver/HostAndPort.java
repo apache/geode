@@ -27,8 +27,6 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticDeserialization;
-import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * HostAndPort is a holder of a host name/address and a port. It is the primary
@@ -122,11 +120,11 @@ public class HostAndPort implements DataSerializableFixedID {
   public void toData(DataOutput out, SerializationContext context) throws IOException {
     if (socketInetAddress.isUnresolved()) {
       out.writeByte(0);
-      StaticSerialization.writeString(getHostName(), out);
+      context.getSerializer().writeString(getHostName(), out);
       out.writeInt(getPort());
     } else {
       out.writeByte(1);
-      StaticSerialization.writeInetAddress(socketInetAddress.getAddress(), out);
+      context.getSerializer().writeInetAddress(socketInetAddress.getAddress(), out);
       out.writeInt(getPort());
     }
   }
@@ -134,10 +132,10 @@ public class HostAndPort implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    InetAddress address = null;
+    InetAddress address;
     byte flags = in.readByte();
     if ((flags & 1) == 0) {
-      String hostName = StaticDeserialization.readString(in);
+      String hostName = context.getDeserializer().readString(in);
       int port = in.readInt();
       if (hostName == null || hostName.isEmpty()) {
         socketInetAddress = new InetSocketAddress(port);
@@ -145,7 +143,7 @@ public class HostAndPort implements DataSerializableFixedID {
         socketInetAddress = InetSocketAddress.createUnresolved(hostName, port);
       }
     } else {
-      address = StaticDeserialization.readInetAddress(in);
+      address = context.getDeserializer().readInetAddress(in);
       int port = in.readInt();
       socketInetAddress = new InetSocketAddress(address, port);
     }

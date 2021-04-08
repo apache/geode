@@ -518,7 +518,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
       return version;
     } else {
       // prior to 7.1 member IDs did not serialize their version information
-      KnownVersion v = StaticSerialization.getVersionForDataStreamOrNull(in);
+      KnownVersion v = StaticDeserialization.getVersionForDataStreamOrNull(in);
       if (v != null) {
         return v.ordinal();
       }
@@ -650,10 +650,10 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     // NOTE: If you change the serialized format of this class
     // then bump Connection.HANDSHAKE_VERSION since an
     // instance of this class is sent during Connection handshake.
-    StaticSerialization.writeInetAddress(getInetAddress(), out);
+    context.getSerializer().writeInetAddress(getInetAddress(), out);
     out.writeInt(getMembershipPort());
 
-    StaticSerialization.writeString(memberData.getHostName(), out);
+    context.getSerializer().writeString(memberData.getHostName(), out);
 
     int flags = 0;
     if (memberData.isNetworkPartitionDetectionEnabled())
@@ -672,17 +672,17 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     out.writeInt(memberData.getProcessId());
     int vmKind = memberData.getVmKind();
     out.writeByte(vmKind);
-    StaticSerialization.writeStringArray(memberData.getGroups(), out);
+    context.getSerializer().writeStringArray(memberData.getGroups(), out);
 
-    StaticSerialization.writeString(memberData.getName(), out);
+    context.getSerializer().writeString(memberData.getName(), out);
     if (vmKind == MemberIdentifier.LONER_DM_TYPE) {
-      StaticSerialization.writeString(memberData.getUniqueTag(), out);
+      context.getSerializer().writeString(memberData.getUniqueTag(), out);
     } else { // added in 6.5 for unique identifiers in P2P
-      StaticSerialization.writeString(String.valueOf(memberData.getVmViewId()), out);
+      context.getSerializer().writeString(String.valueOf(memberData.getVmViewId()), out);
     }
     String durableId = memberData.getDurableId();
-    StaticSerialization.writeString(durableId == null ? "" : durableId, out);
-    StaticSerialization.writeInteger(
+    context.getSerializer().writeString(durableId == null ? "" : durableId, out);
+    context.getSerializer().writeInteger(
         Integer.valueOf(durableId == null ? 300 : memberData.getDurableTimeout()),
         out);
 
@@ -703,10 +703,10 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     // NOTE: If you change the serialized format of this class
     // then bump Connection.HANDSHAKE_VERSION since an
     // instance of this class is sent during Connection handshake.
-    StaticSerialization.writeInetAddress(getInetAddress(), out);
+    context.getSerializer().writeInetAddress(getInetAddress(), out);
     out.writeInt(getMembershipPort());
 
-    StaticSerialization.writeString(memberData.getHostName(), out);
+    context.getSerializer().writeString(memberData.getHostName(), out);
 
     int flags = 0;
     if (memberData.isNetworkPartitionDetectionEnabled())
@@ -720,18 +720,18 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     out.writeInt(memberData.getDirectChannelPort());
     out.writeInt(memberData.getProcessId());
     out.writeByte(memberData.getVmKind());
-    StaticSerialization.writeStringArray(memberData.getGroups(), out);
+    context.getSerializer().writeStringArray(memberData.getGroups(), out);
 
-    StaticSerialization.writeString(memberData.getName(), out);
+    context.getSerializer().writeString(memberData.getName(), out);
     int vmKind = memberData.getVmKind();
     if (vmKind == MemberIdentifier.LONER_DM_TYPE) {
-      StaticSerialization.writeString(memberData.getUniqueTag(), out);
+      context.getSerializer().writeString(memberData.getUniqueTag(), out);
     } else { // added in 6.5 for unique identifiers in P2P
-      StaticSerialization.writeString(String.valueOf(memberData.getVmViewId()), out);
+      context.getSerializer().writeString(String.valueOf(memberData.getVmViewId()), out);
     }
     String durableId = memberData.getDurableId();
-    StaticSerialization.writeString(durableId == null ? "" : durableId, out);
-    StaticSerialization.writeInteger(
+    context.getSerializer().writeString(durableId == null ? "" : durableId, out);
+    context.getSerializer().writeInteger(
         Integer.valueOf(durableId == null ? 300 : memberData.getDurableTimeout()),
         out);
   }
@@ -752,8 +752,8 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
   }
 
   public void fromDataPre_GFE_9_0_0_0(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    InetAddress inetAddr = StaticDeserialization.readInetAddress(in);
+      throws IOException {
+    InetAddress inetAddr = context.getDeserializer().readInetAddress(in);
     int port = in.readInt();
 
     String hostName = StaticDeserialization.readString(in);
@@ -766,21 +766,21 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     int dcPort = in.readInt();
     int vmPid = in.readInt();
     int vmKind = in.readUnsignedByte();
-    String[] groups = StaticDeserialization.readStringArray(in);
+    String[] groups = context.getDeserializer().readStringArray(in);
     int vmViewId = -1;
 
-    String name = StaticDeserialization.readString(in);
+    String name = context.getDeserializer().readString(in);
     String uniqueTag = null;
     if (vmKind == MemberIdentifier.LONER_DM_TYPE) {
-      uniqueTag = StaticDeserialization.readString(in);
+      uniqueTag = context.getDeserializer().readString(in);
     } else {
-      String str = StaticDeserialization.readString(in);
+      String str = context.getDeserializer().readString(in);
       if (str != null) { // backward compatibility from earlier than 6.5
         vmViewId = Integer.parseInt(str);
       }
     }
 
-    String durableId = StaticDeserialization.readString(in);
+    String durableId = context.getDeserializer().readString(in);
     int durableTimeout = in.readInt();
 
     short version = readVersion(flags, in);
@@ -808,10 +808,10 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
   public void fromDataPre_GFE_7_1_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    InetAddress inetAddr = StaticDeserialization.readInetAddress(in);
+    InetAddress inetAddr = context.getDeserializer().readInetAddress(in);
     int port = in.readInt();
 
-    String hostName = StaticDeserialization.readString(in);
+    String hostName = context.getDeserializer().readString(in);
 
     int flags = in.readUnsignedByte();
     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
@@ -821,21 +821,21 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     int dcPort = in.readInt();
     int vmPid = in.readInt();
     int vmKind = in.readUnsignedByte();
-    String[] groups = StaticDeserialization.readStringArray(in);
+    String[] groups = context.getDeserializer().readStringArray(in);
     int vmViewId = -1;
 
-    String name = StaticDeserialization.readString(in);
+    String name = context.getDeserializer().readString(in);
     String uniqueTag = null;
     if (vmKind == MemberIdentifier.LONER_DM_TYPE) {
-      uniqueTag = StaticDeserialization.readString(in);
+      uniqueTag = context.getDeserializer().readString(in);
     } else {
-      String str = StaticDeserialization.readString(in);
+      String str = context.getDeserializer().readString(in);
       if (str != null) { // backward compatibility from earlier than 6.5
         vmViewId = Integer.parseInt(str);
       }
     }
 
-    String durableId = StaticDeserialization.readString(in);
+    String durableId = context.getDeserializer().readString(in);
     int durableTimeout = in.readInt();
 
     short version = readVersion(flags, in);
@@ -892,14 +892,14 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
         .setName(name)
         .setNetworkPartitionDetectionEnabled(sbEnabled)
         .setPreferredForCoordinator(elCoord)
-        .setVersionOrdinal(StaticSerialization.getVersionForDataStream(in).ordinal())
+        .setVersionOrdinal(StaticDeserialization.getVersionForDataStream(in).ordinal())
         .setVmKind(vmKind)
         .setVmViewId(vmViewId)
         .setIsPartial(true)
         .setUniqueTag(uniqueTag)
         .build();
 
-    if (StaticSerialization.getVersionForDataStream(in) == KnownVersion.GFE_90) {
+    if (StaticDeserialization.getVersionForDataStream(in) == KnownVersion.GFE_90) {
       memberData.readAdditionalData(in);
     }
   }

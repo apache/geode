@@ -31,11 +31,9 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Retained;
-import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticSerialization;
 
 public class DistTxEntryEvent extends EntryEventImpl {
 
@@ -153,8 +151,6 @@ public class DistTxEntryEvent extends EntryEventImpl {
     int putAllSize = DataSerializer.readInteger(in);
     PutAllEntryData[] putAllEntries = new PutAllEntryData[putAllSize];
     if (putAllSize > 0) {
-      final KnownVersion version = StaticSerialization.getVersionForDataStreamOrNull(in);
-      final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < putAllSize; i++) {
         putAllEntries[i] = new PutAllEntryData(in, context, this.eventID, i);
       }
@@ -203,8 +199,6 @@ public class DistTxEntryEvent extends EntryEventImpl {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     int removeAllSize = DataSerializer.readInteger(in);
     final RemoveAllEntryData[] removeAllData = new RemoveAllEntryData[removeAllSize];
-    final KnownVersion version = StaticSerialization.getVersionForDataStreamOrNull(in);
-    final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
     for (int i = 0; i < removeAllSize; i++) {
       removeAllData[i] = new RemoveAllEntryData(in, this.eventID, i, context);
     }

@@ -25,8 +25,6 @@ import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMS
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticDeserialization;
-import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * FindCoordinatorRequest is a message intended to be sent via a TcpClient to a Locator.
@@ -122,8 +120,8 @@ public class FindCoordinatorRequest<ID extends MemberIdentifier> extends Abstrac
     }
     out.writeInt(lastViewId);
     out.writeInt(requestId);
-    StaticSerialization.writeString(dhalgo, out);
-    StaticSerialization.writeByteArray(this.myPublicKey, out);
+    context.getSerializer().writeString(dhalgo, out);
+    context.getSerializer().writeByteArray(this.myPublicKey, out);
   }
 
   @Override
@@ -137,8 +135,8 @@ public class FindCoordinatorRequest<ID extends MemberIdentifier> extends Abstrac
     }
     this.lastViewId = in.readInt();
     this.requestId = in.readInt();
-    this.dhalgo = StaticDeserialization.readString(in);
-    this.myPublicKey = StaticDeserialization.readByteArray(in);
+    this.dhalgo = context.getDeserializer().readString(in);
+    this.myPublicKey = context.getDeserializer().readByteArray(in);
   }
 
   @Override

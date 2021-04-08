@@ -58,39 +58,8 @@ public class StaticDeserialization {
     }
   }
 
-  private static int ubyteToInt(byte ub) {
-    return ub & 0xFF;
-  }
-
   public static String readString(DataInput in, byte header) throws IOException {
     return readString(in, DscodeHelper.toDSCODE(header));
-  }
-
-  private static String readString(DataInput in, DSCODE dscode) throws IOException {
-    switch (dscode) {
-      case STRING_BYTES:
-        return readStringBytesFromDataInput(in, in.readUnsignedShort());
-      case STRING:
-        return readStringUTFFromDataInput(in);
-      case NULL_STRING: {
-        return null;
-      }
-      case HUGE_STRING_BYTES:
-        return readStringBytesFromDataInput(in, in.readInt());
-      case HUGE_STRING:
-        return readHugeStringFromDataInput(in);
-      default:
-        throw new IOException("Unknown String header " + dscode);
-    }
-  }
-
-  private static String readHugeStringFromDataInput(DataInput in) throws IOException {
-    int len = in.readInt();
-    char[] buf = new char[len];
-    for (int i = 0; i < len; i++) {
-      buf[i] = in.readChar();
-    }
-    return new String(buf);
   }
 
   public static String[] readStringArray(DataInput in) throws IOException {
@@ -105,22 +74,6 @@ public class StaticDeserialization {
       }
       return array;
     }
-  }
-
-  private static String readStringUTFFromDataInput(DataInput in) throws IOException {
-    return in.readUTF();
-  }
-
-  private static String readStringBytesFromDataInput(DataInput dataInput, int len)
-      throws IOException {
-    if (len == 0) {
-      return "";
-    }
-    byte[] buf = getThreadLocalByteArray(len);
-    dataInput.readFully(buf, 0, len);
-    @SuppressWarnings("deprecation") // intentionally using deprecated constructor
-    final String string = new String(buf, 0, 0, len);
-    return string;
   }
 
   /**
@@ -258,5 +211,82 @@ public class StaticDeserialization {
         throw new IllegalArgumentException(
             String.format("unexpected typeCode: %s", typeCode));
     }
+  }
+
+  /**
+   * Get the {@link KnownVersion} of the peer or disk store that created this
+   * {@link DataInput}. Returns
+   * null if the version is same as this member's.
+   */
+  public static KnownVersion getVersionForDataStreamOrNull(DataInput in) {
+    // check if this is a versioned data input
+    if (in instanceof VersionedDataStream) {
+      return ((VersionedDataStream) in).getVersion();
+    } else {
+      // assume latest version
+      return null;
+    }
+  }
+
+  /**
+   * Get the {@link KnownVersion} of the peer or disk store that created this
+   * {@link DataInput}.
+   */
+  public static KnownVersion getVersionForDataStream(DataInput in) {
+    // check if this is a versioned data input
+    if (in instanceof VersionedDataStream) {
+      final KnownVersion v = ((VersionedDataStream) in).getVersion();
+      return v != null ? v : KnownVersion.CURRENT;
+    } else {
+      // assume latest version
+      return KnownVersion.CURRENT;
+    }
+  }
+
+  private static int ubyteToInt(byte ub) {
+    return ub & 0xFF;
+  }
+
+  private static String readString(DataInput in, DSCODE dscode) throws IOException {
+    switch (dscode) {
+      case STRING_BYTES:
+        return readStringBytesFromDataInput(in, in.readUnsignedShort());
+      case STRING:
+        return readStringUTFFromDataInput(in);
+      case NULL_STRING: {
+        return null;
+      }
+      case HUGE_STRING_BYTES:
+        return readStringBytesFromDataInput(in, in.readInt());
+      case HUGE_STRING:
+        return readHugeStringFromDataInput(in);
+      default:
+        throw new IOException("Unknown String header " + dscode);
+    }
+  }
+
+  private static String readHugeStringFromDataInput(DataInput in) throws IOException {
+    int len = in.readInt();
+    char[] buf = new char[len];
+    for (int i = 0; i < len; i++) {
+      buf[i] = in.readChar();
+    }
+    return new String(buf);
+  }
+
+  private static String readStringUTFFromDataInput(DataInput in) throws IOException {
+    return in.readUTF();
+  }
+
+  private static String readStringBytesFromDataInput(DataInput dataInput, int len)
+      throws IOException {
+    if (len == 0) {
+      return "";
+    }
+    byte[] buf = getThreadLocalByteArray(len);
+    dataInput.readFully(buf, 0, len);
+    @SuppressWarnings("deprecation") // intentionally using deprecated constructor
+    final String string = new String(buf, 0, 0, len);
+    return string;
   }
 }

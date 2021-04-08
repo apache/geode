@@ -65,6 +65,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -541,7 +542,7 @@ public abstract class PartitionMessage extends DistributionMessage
     setBooleans(this.flags, in, context);
     this.regionId = in.readInt();
     // extra field post 9.0
-    if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(KnownVersion.GFE_90)) {
+    if (StaticDeserialization.getVersionForDataStream(in).isNotOlderThan(KnownVersion.GFE_90)) {
       this.isTransactionDistributed = in.readBoolean();
     }
   }

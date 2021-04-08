@@ -23,8 +23,6 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticDeserialization;
-import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * A LeaveRequestMessage is sent by a member of the cluster when it intends to shut down.
@@ -79,14 +77,14 @@ public class LeaveRequestMessage<ID extends MemberIdentifier> extends AbstractGM
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     context.getSerializer().writeObject(memberID, out);
-    StaticSerialization.writeString(reason, out);
+    context.getSerializer().writeString(reason, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     memberID = context.getDeserializer().readObject(in);
-    reason = StaticDeserialization.readString(in);
+    reason = context.getDeserializer().readString(in);
   }
 
   @Override

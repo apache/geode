@@ -14,13 +14,11 @@
  */
 package org.apache.geode.internal.serialization;
 
-import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Map;
 
-import org.apache.geode.annotations.internal.MakeNotStatic;
 
 /**
  * StaticSerialization provides a collection of serialization methods that
@@ -57,10 +55,6 @@ public class StaticSerialization {
       "com.gemstone.org.jgroups.stack.tcpserver";
   public static final String POST_GEODE_100_TCPSERVER_PACKAGE =
       "org.apache.geode.distributed.internal.tcpserver";
-
-  @MakeNotStatic("not tied to the cache lifecycle")
-  private static final ThreadLocalByteArrayCache threadLocalByteArrayCache =
-      new ThreadLocalByteArrayCache(65535);
 
   public static void writeInetAddress(InetAddress address, DataOutput out) throws IOException {
     writeByteArray((address != null) ? address.getAddress() : null, out);
@@ -275,36 +269,6 @@ public class StaticSerialization {
       throw new IllegalArgumentException(
           String.format("unknown primitive type: %s",
               c.getName()));
-    }
-  }
-
-  /**
-   * Get the {@link KnownVersion} of the peer or disk store that created this
-   * {@link DataInput}. Returns
-   * null if the version is same as this member's.
-   */
-  public static KnownVersion getVersionForDataStreamOrNull(DataInput in) {
-    // check if this is a versioned data input
-    if (in instanceof VersionedDataStream) {
-      return ((VersionedDataStream) in).getVersion();
-    } else {
-      // assume latest version
-      return null;
-    }
-  }
-
-  /**
-   * Get the {@link KnownVersion} of the peer or disk store that created this
-   * {@link DataInput}.
-   */
-  public static KnownVersion getVersionForDataStream(DataInput in) {
-    // check if this is a versioned data input
-    if (in instanceof VersionedDataStream) {
-      final KnownVersion v = ((VersionedDataStream) in).getVersion();
-      return v != null ? v : KnownVersion.CURRENT;
-    } else {
-      // assume latest version
-      return KnownVersion.CURRENT;
     }
   }
 

@@ -23,7 +23,10 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Map;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
@@ -80,6 +83,47 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
       }
 
       @Override
+      public void writeInetAddress(InetAddress address, DataOutput out) throws IOException {
+        StaticSerialization.writeInetAddress(address, out);
+      }
+
+      @Override
+      public void writeByteArray(byte[] array, DataOutput out) throws IOException {
+        StaticSerialization.writeByteArray(array, out);
+      }
+
+      @Override
+      public void writeArrayLength(int len, DataOutput out) throws IOException {
+        StaticSerialization.writeArrayLength(len, out);
+      }
+
+      @Override
+      public void writeString(String value, DataOutput out) throws IOException {
+        StaticSerialization.writeString(value, out);
+      }
+
+      @Override
+      public void writeStringArray(String[] array, DataOutput out) throws IOException {
+        StaticSerialization.writeStringArray(array, out);
+      }
+
+      @Override
+      public void writeInteger(Integer value, DataOutput out) throws IOException {
+        StaticSerialization.writeInteger(value, out);
+      }
+
+      @Override
+      public void writeIntArray(int[] array, DataOutput out) throws IOException {
+        StaticSerialization.writeIntArray(array, out);
+      }
+
+      @Override
+      public void writeHashMap(Map<?, ?> map, DataOutput out, SerializationContext context)
+          throws IOException {
+        StaticSerialization.writeHashMap(map, out, context);
+      }
+
+      @Override
       public void invokeToData(Object ds, DataOutput out) throws IOException {
         DSFIDSerializerImpl.this.invokeToData(ds, out);
       }
@@ -92,6 +136,42 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
       @Override
       public <T> T readObject(DataInput input) throws IOException, ClassNotFoundException {
         return (T) readDSFID(input);
+      }
+
+      @Override
+      public String readString(DataInput in) throws IOException {
+        return StaticDeserialization.readString(in);
+      }
+
+      @Override
+      public InetAddress readInetAddress(DataInput in) throws IOException {
+        return StaticDeserialization.readInetAddress(in);
+      }
+
+      @Override
+      public <K, V> HashMap<K, V> readHashMap(DataInput in, DeserializationContext context)
+          throws IOException, ClassNotFoundException {
+        return StaticDeserialization.readHashMap(in, context);
+      }
+
+      @Override
+      public int readArrayLength(DataInput in) throws IOException {
+        return StaticDeserialization.readArrayLength(in);
+      }
+
+      @Override
+      public String[] readStringArray(DataInput in) throws IOException {
+        return StaticDeserialization.readStringArray(in);
+      }
+
+      @Override
+      public int[] readIntArray(DataInput in) throws IOException {
+        return StaticDeserialization.readIntArray(in);
+      }
+
+      @Override
+      public byte[] readByteArray(DataInput in) throws IOException {
+        return StaticDeserialization.readByteArray(in);
       }
 
       @Override

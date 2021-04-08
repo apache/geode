@@ -22,8 +22,6 @@ import java.io.IOException;
 import org.apache.geode.internal.serialization.BasicSerializable;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticDeserialization;
-import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * A response to an InfoRequest message
@@ -47,12 +45,12 @@ public class InfoResponse implements BasicSerializable {
 
   @Override
   public void toData(final DataOutput out, final SerializationContext context) throws IOException {
-    StaticSerialization.writeStringArray(info, out);
+    context.getSerializer().writeStringArray(info, out);
   }
 
   @Override
   public void fromData(final DataInput in, final DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    info = StaticDeserialization.readStringArray(in);
+    info = context.getDeserializer().readStringArray(in);
   }
 }

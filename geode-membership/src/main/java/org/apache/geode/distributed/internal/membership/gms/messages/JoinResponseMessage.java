@@ -25,8 +25,6 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticDeserialization;
-import org.apache.geode.internal.serialization.StaticSerialization;
 
 // TODO this class has been made unintelligible with different combinations of response values.
 // It needs to have an enum that indicates what type of response is in the message or it
@@ -117,9 +115,9 @@ public class JoinResponseMessage<ID extends MemberIdentifier> extends AbstractGM
       SerializationContext context) throws IOException {
     context.getSerializer().writeObject(currentView, out);
     context.getSerializer().writeObject(memberID, out);
-    StaticSerialization.writeString(rejectionMessage, out);
-    StaticSerialization.writeByteArray(messengerData, out);
-    StaticSerialization.writeByteArray(secretPk, out);
+    context.getSerializer().writeString(rejectionMessage, out);
+    context.getSerializer().writeByteArray(messengerData, out);
+    context.getSerializer().writeByteArray(secretPk, out);
   }
 
   @Override
@@ -127,9 +125,9 @@ public class JoinResponseMessage<ID extends MemberIdentifier> extends AbstractGM
       DeserializationContext context) throws IOException, ClassNotFoundException {
     currentView = context.getDeserializer().readObject(in);
     memberID = context.getDeserializer().readObject(in);
-    rejectionMessage = StaticDeserialization.readString(in);
-    messengerData = StaticDeserialization.readByteArray(in);
-    secretPk = StaticDeserialization.readByteArray(in);
+    rejectionMessage = context.getDeserializer().readString(in);
+    messengerData = context.getDeserializer().readByteArray(in);
+    secretPk = context.getDeserializer().readByteArray(in);
   }
 
   @Override

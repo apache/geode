@@ -30,6 +30,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -119,7 +120,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
       if (cache != null && size > 0) {
         this.r = (LocalRegion) cache.getRegion(this.regionPath);
       }
-      if (StaticSerialization.getVersionForDataStream(in)
+      if (StaticDeserialization.getVersionForDataStream(in)
           .isNotOlderThan(KnownVersion.GEODE_1_10_0)) {
         this.entryKeys = readEntryKeyMap(size, in);
       } else {

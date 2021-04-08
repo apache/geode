@@ -408,7 +408,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
     public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
       if (OLD_MEMBERS_OPTIMIZED) {
-        this.myDataVersion = StaticSerialization.getVersionForDataStreamOrNull(in);
+        this.myDataVersion = StaticDeserialization.getVersionForDataStreamOrNull(in);
         this.myData = DataSerializer.readByteArray(in);
       } else {
         this.cqs = DataSerializer.readHashMap(in);

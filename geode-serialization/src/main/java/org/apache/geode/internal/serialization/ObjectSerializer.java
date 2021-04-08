@@ -16,6 +16,8 @@ package org.apache.geode.internal.serialization;
 
 import java.io.DataOutput;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Map;
 
 /**
  * An ObjectSerializer is held by a DSFIDSerializer serialization service. It
@@ -31,6 +33,23 @@ public interface ObjectSerializer {
    * serialize an object to the given data-output
    */
   void writeObject(Object obj, DataOutput output) throws IOException;
+
+  void writeInetAddress(InetAddress address, DataOutput out) throws IOException;
+
+  void writeByteArray(byte[] array, DataOutput out) throws IOException;
+
+  void writeArrayLength(int len, DataOutput out) throws IOException;
+
+  void writeString(String value, DataOutput out) throws IOException;
+
+  void writeStringArray(String[] array, DataOutput out) throws IOException;
+
+  void writeInteger(Integer value, DataOutput out) throws IOException;
+
+  void writeIntArray(int[] array, DataOutput out) throws IOException;
+
+  void writeHashMap(Map<?, ?> map, DataOutput out, SerializationContext context)
+      throws IOException;
 
   /**
    * When serializing you may want to invoke a toData method on an object.

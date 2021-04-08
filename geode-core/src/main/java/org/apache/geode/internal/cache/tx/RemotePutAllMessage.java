@@ -60,11 +60,8 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
-import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -227,7 +224,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.eventId = (EventID) DataSerializer.readObject(in);
+    this.eventId = DataSerializer.readObject(in);
     this.callbackArg = DataSerializer.readObject(in);
     this.posDup = (flags & POS_DUP) != 0;
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
@@ -237,8 +234,6 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
     this.putAllDataCount = (int) InternalDataSerializer.readUnsignedVL(in);
     this.putAllData = new PutAllEntryData[putAllDataCount];
     if (this.putAllDataCount > 0) {
-      final KnownVersion version = StaticSerialization.getVersionForDataStreamOrNull(in);
-      final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < this.putAllDataCount; i++) {
         this.putAllData[i] = new PutAllEntryData(in, context, this.eventId, i);
       }

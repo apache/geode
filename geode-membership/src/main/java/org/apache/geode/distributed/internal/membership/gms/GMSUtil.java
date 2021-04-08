@@ -33,7 +33,6 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticDeserialization;
-import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * GMSUtil contains a few static utility methods that should probably reside in other classes
@@ -66,7 +65,7 @@ public class GMSUtil {
   public static <ID extends MemberIdentifier> Set<ID> readHashSetOfMemberIDs(DataInput in,
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    int size = StaticDeserialization.readArrayLength(in);
+    int size = context.getDeserializer().readArrayLength(in);
     if (size == -1) {
       return null;
     }
@@ -225,7 +224,7 @@ public class GMSUtil {
     } else {
       size = set.size();
     }
-    StaticSerialization.writeArrayLength(size, out);
+    context.getSerializer().writeArrayLength(size, out);
     if (size > 0) {
       for (ID member : set) {
         context.getSerializer().writeObject(member, out);

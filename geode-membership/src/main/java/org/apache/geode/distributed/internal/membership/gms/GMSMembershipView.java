@@ -38,8 +38,6 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticDeserialization;
-import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * The GMSMembershipView class represents a membership view For Geode this is translated
@@ -606,9 +604,9 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
     writeAsArrayList(members, out, context);
     GMSUtil.writeSetOfMemberIDs(shutdownMembers, out, context);
     GMSUtil.writeSetOfMemberIDs(crashedMembers, out, context);
-    StaticSerialization.writeIntArray(failureDetectionPorts, out);
+    context.getSerializer().writeIntArray(failureDetectionPorts, out);
     // TODO expensive serialization
-    StaticSerialization.writeHashMap(publicKeys, out, context);
+    context.getSerializer().writeHashMap(publicKeys, out, context);
   }
 
 
@@ -621,8 +619,8 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
     this.hashedMembers = new HashSet<>(members);
     shutdownMembers = GMSUtil.readHashSetOfMemberIDs(in, context);
     crashedMembers = GMSUtil.readHashSetOfMemberIDs(in, context);
-    failureDetectionPorts = StaticDeserialization.readIntArray(in);
-    Map<ID, Object> pubkeys = StaticDeserialization.readHashMap(in, context);
+    failureDetectionPorts = context.getDeserializer().readIntArray(in);
+    Map<ID, Object> pubkeys = context.getDeserializer().readHashMap(in, context);
     if (pubkeys != null) {
       publicKeys.putAll(pubkeys);
     }
@@ -637,7 +635,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
     } else {
       size = list.size();
     }
-    StaticSerialization.writeArrayLength(size, out);
+    context.getSerializer().writeArrayLength(size, out);
     if (size > 0) {
       for (int i = 0; i < size; i++) {
         context.getSerializer().writeObject(list.get(i), out);

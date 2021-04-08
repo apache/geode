@@ -61,11 +61,8 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
-import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -223,7 +220,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.eventId = (EventID) DataSerializer.readObject(in);
+    this.eventId = DataSerializer.readObject(in);
     this.callbackArg = DataSerializer.readObject(in);
     this.posDup = (flags & POS_DUP) != 0;
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
@@ -232,8 +229,6 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
     this.removeAllDataCount = (int) InternalDataSerializer.readUnsignedVL(in);
     this.removeAllData = new RemoveAllEntryData[removeAllDataCount];
     if (this.removeAllDataCount > 0) {
-      final KnownVersion version = StaticSerialization.getVersionForDataStreamOrNull(in);
-      final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < this.removeAllDataCount; i++) {
         this.removeAllData[i] = new RemoveAllEntryData(in, this.eventId, i,
             context);

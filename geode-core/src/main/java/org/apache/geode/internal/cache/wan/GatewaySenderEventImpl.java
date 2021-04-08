@@ -54,7 +54,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.StaticDeserialization;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.size.Sizeable;
 
@@ -795,10 +795,10 @@ public class GatewaySenderEventImpl
     this.numberOfParts = in.readInt();
     // this._id = in.readUTF();
     if (version < 0x11 && (in instanceof InputStream)
-        && StaticSerialization.getVersionForDataStream(in) == KnownVersion.CURRENT) {
+        && StaticDeserialization.getVersionForDataStream(in) == KnownVersion.CURRENT) {
       in = new VersionedDataInputStream((InputStream) in, KnownVersion.GFE_701);
     }
-    this.id = (EventID) context.getDeserializer().readObject(in);
+    this.id = context.getDeserializer().readObject(in);
     // TODO:Asif ; Check if this violates Barry's logic of not assiging VM
     // specific Token.FROM_GATEWAY
     // and retain the serialized Token.FROM_GATEWAY
@@ -808,7 +808,7 @@ public class GatewaySenderEventImpl
     deserializeKey(in, context);
     this.value = DataSerializer.readByteArray(in);
     this.callbackArgument =
-        (GatewaySenderEventCallbackArgument) context.getDeserializer().readObject(in);
+        context.getDeserializer().readObject(in);
     this.possibleDuplicate = in.readBoolean();
     this.creationTime = in.readLong();
     this.bucketId = in.readInt();
