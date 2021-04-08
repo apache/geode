@@ -122,4 +122,9 @@ public class NullRedisData implements RedisData {
   public void fromDelta(DataInput in) throws InvalidDeltaException {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public int getSizeInBytes() {
+    return 0;
+  }
 }

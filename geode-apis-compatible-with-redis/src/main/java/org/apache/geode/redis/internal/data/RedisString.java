@@ -35,10 +35,11 @@ import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisString extends AbstractRedisData {
-
   private int appendSequence;
 
   private ByteArrayWrapper value;
+
+  public static final int PER_STRING_OVERHEAD = 34;
 
   public RedisString(ByteArrayWrapper value) {
     this.value = value;
@@ -728,5 +729,10 @@ public class RedisString extends AbstractRedisData {
   @Override
   public KnownVersion[] getSerializationVersions() {
     return null;
+  }
+
+  @Override
+  public int getSizeInBytes() {
+    return PER_STRING_OVERHEAD + value.length();
   }
 }
