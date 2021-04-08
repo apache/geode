@@ -85,6 +85,8 @@ public class CliStrings {
   public static final String JAR = "jar";
   public static final String JARS = "jars";
 
+  public static final String NULL = "null";
+
   public static final String IFEXISTS_HELP =
       "If true, the command will be a no-op if the entity does not exist.";
   public static final String IFNOTEXISTS_HELP =
@@ -323,6 +325,50 @@ public class CliStrings {
   public static final String ALTER_DISK_STORE__REMOVE = "remove";
   public static final String ALTER_DISK_STORE__REMOVE__HELP =
       "Whether to remove the region from the disk store.";
+
+  /* alter gateway-sender */
+  public static final String ALTER_GATEWAYSENDER = "alter gateway-sender";
+  public static final String ALTER_GATEWAYSENDER__HELP =
+      "Alter some options for the Gateway Sender on a member or members.";
+  public static final String ALTER_GATEWAYSENDER__ID = "id";
+  public static final String ALTER_GATEWAYSENDER__ID__HELP = "ID of the gateway sender.";
+
+  public static final String ALTER_GATEWAYSENDER__GROUP__HELP =
+      "Group(s) of members on which to alter the gateway sender option.";
+  public static final String ALTER_GATEWAYSENDER__MEMBER__HELP =
+      "Name/Id of the member on which to alter the gateway sender option.";
+
+  public static final String ALTER_GATEWAYSENDER__ALERTTHRESHOLD = "alert-threshold";
+  public static final String ALTER_GATEWAYSENDER__ALERTTHRESHOLD__HELP =
+      "The alert threshold for entries in a gateway sender's queue.";
+
+  public static final String ALTER_GATEWAYSENDER__BATCHSIZE = "batch-size";
+  public static final String ALTER_GATEWAYSENDER__BATCHSIZE__HELP =
+      "The batch size for the gateway sender.";
+
+  public static final String ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL = "batch-time-interval";
+  public static final String ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL__HELP =
+      "The batch time interval for the gateway sender.";
+
+  public static final String ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER = "gateway-event-filter";
+  public static final String ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP =
+      "The list of fully qualified class names of GatewayEventFilters (separated by commas) to be associated with the GatewaySender.\n"
+          + "This serves as a callback for users to filter out events before dispatching to the remote distributed system.\n"
+          + "E.g gateway-event-filter=com.user.filters.MyFilter1,com.user.filters.MyFilters2";
+
+  public static final String ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS =
+      "group-transaction-events";
+  public static final String ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS__HELP =
+      "Ensure that all the events of a transaction are sent in the same batch, i.e., they are never spread across different batches.\n"
+          + "Only allowed on serial gateway senders with 1 dispatcher thread or on parallel ones.\n"
+          + "Note that in order to work for a transaction, the regions to which the transaction \n"
+          + "events belong must be replicated by the same set of senders with this flag enabled.";
+
+  public static final String ALTER_GATEWAYSENDER__RELEVANT__OPTION__MESSAGE =
+      "Please provide a relevant parameter(s)";
+  public static final String ALTER_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS =
+      "Alter Gateway Sender cannot be performed until all members are the current version";
+
 
   /* 'alter region' command */
   public static final String ALTER_REGION = "alter region";
@@ -2979,6 +3025,8 @@ public class CliStrings {
       "Could not invoke start gateway sender {0} operation on members due to {1}";
   public static final String GATEWAY_SENDER_0_COULD_NOT_BE_STARTED_ON_MEMBER_DUE_TO_1 =
       "Could not start gateway sender {0} on member due to {1}";
+  public static final String GATEWAY_SENDER_0_IS_UPDATED_ON_MEMBER_1 =
+      "GatewaySender {0} is updated on member {1}";
   /* end gateway command messages */
 
   /***

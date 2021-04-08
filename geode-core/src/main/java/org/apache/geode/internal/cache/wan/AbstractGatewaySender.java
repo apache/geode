@@ -18,6 +18,7 @@ import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabl
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -119,7 +120,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected boolean isPersistence;
 
-  protected int alertThreshold;
+  protected volatile int alertThreshold;
 
   protected boolean manualStart;
 
@@ -135,9 +136,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected String diskStoreName;
 
-  protected List<GatewayEventFilter> eventFilters;
+  protected volatile List<GatewayEventFilter> eventFilters;
 
-  protected List<GatewayTransportFilter> transFilters;
+  protected volatile List<GatewayTransportFilter> transFilters;
 
   protected List<AsyncEventListener> listeners;
 
@@ -261,8 +262,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     this.isForInternalUse = attrs.isForInternalUse();
     this.diskStoreName = attrs.getDiskStoreName();
     this.remoteDSId = attrs.getRemoteDSId();
-    this.eventFilters = attrs.getGatewayEventFilters();
-    this.transFilters = attrs.getGatewayTransportFilters();
+    this.eventFilters = Collections.unmodifiableList(attrs.getGatewayEventFilters());
+    this.transFilters = Collections.unmodifiableList(attrs.getGatewayTransportFilters());
     this.listeners = attrs.getAsyncEventListeners();
     this.substitutionFilter = attrs.getGatewayEventSubstitutionFilter();
     this.locatorDiscoveryCallback = attrs.getGatewayLocatoDiscoveryCallback();
@@ -535,19 +536,26 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   @Override
   public void removeGatewayEventFilter(GatewayEventFilter filter) {
-    this.eventFilters.remove(filter);
+    if (filter == null) {
+      return;
+    }
+    if (this.eventFilters.isEmpty()) {
+      return;
+    }
+    List<GatewayEventFilter> templist = new ArrayList<>(this.eventFilters);
+    templist.remove(filter);
+    this.eventFilters = Collections.unmodifiableList(templist);
   }
 
   @Override
   public void addGatewayEventFilter(GatewayEventFilter filter) {
-    if (this.eventFilters.isEmpty()) {
-      this.eventFilters = new ArrayList<GatewayEventFilter>();
-    }
     if (filter == null) {
       throw new IllegalStateException(
           "null value can not be added to gateway-event-filters list");
     }
-    this.eventFilters.add(filter);
+    List<GatewayEventFilter> templist = new ArrayList<>(this.eventFilters);
+    templist.add(filter);
+    this.eventFilters = Collections.unmodifiableList(templist);
   }
 
   @Override
@@ -671,6 +679,41 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     logger.info(
         "GatewaySender {} has been rebalanced", this);
   }
+
+  @Override
+  public void setAlertThreshold(int alertThreshold) {
+    this.alertThreshold = alertThreshold;
+  };
+
+  @Override
+  public void setBatchSize(int batchSize) {
+    this.batchSize = batchSize;
+    if (this.eventProcessor != null) {
+      this.eventProcessor.setBatchSize(this.batchSize);
+    }
+  };
+
+  @Override
+  public void setBatchTimeInterval(int batchTimeInterval) {
+    this.batchTimeInterval = batchTimeInterval;
+    if (this.eventProcessor != null) {
+      this.eventProcessor.setBatchTimeInterval(this.batchTimeInterval);
+    }
+  };
+
+  @Override
+  public void setGroupTransactionEvents(boolean groupTransactionEvents) {
+    this.groupTransactionEvents = groupTransactionEvents;
+  };
+
+  @Override
+  public void setGatewayEventFilters(List<GatewayEventFilter> filters) {
+    if (filters.isEmpty()) {
+      this.eventFilters = Collections.emptyList();
+    } else {
+      this.eventFilters = Collections.unmodifiableList(filters);
+    }
+  };
 
   public boolean beforeEnqueue(GatewayQueueEvent gatewayEvent) {
     boolean enqueue = true;

@@ -49,21 +49,21 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
   public AsyncEventQueueCreation(String id, GatewaySenderAttributes senderAttrs,
       AsyncEventListener eventListener) {
     this.id = id;
-    this.batchSize = senderAttrs.batchSize;
-    this.batchTimeInterval = senderAttrs.batchTimeInterval;
-    this.isBatchConflationEnabled = senderAttrs.isBatchConflationEnabled;
-    this.isPersistent = senderAttrs.isPersistenceEnabled;
-    this.diskStoreName = senderAttrs.diskStoreName;
-    this.isDiskSynchronous = senderAttrs.isDiskSynchronous;
-    this.maxQueueMemory = senderAttrs.maximumQueueMemory;
-    this.isParallel = senderAttrs.isParallel;
-    this.dispatcherThreads = senderAttrs.dispatcherThreads;
-    this.orderPolicy = senderAttrs.policy;
+    this.batchSize = senderAttrs.getBatchSize();
+    this.batchTimeInterval = senderAttrs.getBatchTimeInterval();
+    this.isBatchConflationEnabled = senderAttrs.isBatchConflationEnabled();
+    this.isPersistent = senderAttrs.isPersistenceEnabled();
+    this.diskStoreName = senderAttrs.getDiskStoreName();
+    this.isDiskSynchronous = senderAttrs.isDiskSynchronous();
+    this.maxQueueMemory = senderAttrs.getMaximumQueueMemory();
+    this.isParallel = senderAttrs.isParallel();
+    this.dispatcherThreads = senderAttrs.getDispatcherThreads();
+    this.orderPolicy = senderAttrs.getOrderPolicy();
     this.asyncEventListener = eventListener;
-    this.isBucketSorted = senderAttrs.isBucketSorted;
-    this.gatewayEventFilters = senderAttrs.eventFilters;
-    this.gatewayEventSubstitutionFilter = senderAttrs.eventSubstitutionFilter;
-    this.forwardExpirationDestroy = senderAttrs.forwardExpirationDestroy;
+    this.isBucketSorted = senderAttrs.isBucketSorted();
+    this.gatewayEventFilters = senderAttrs.getGatewayEventFilters();
+    this.gatewayEventSubstitutionFilter = senderAttrs.getGatewayEventSubstitutionFilter();
+    this.forwardExpirationDestroy = senderAttrs.isForwardExpirationDestroy();
   }
 
   @Override

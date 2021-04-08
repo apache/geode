@@ -2689,6 +2689,10 @@ public class CacheConfig {
       return this.gatewayEventFilters;
     }
 
+    public boolean areGatewayEventFiltersUpdated() {
+      return gatewayEventFilters != null;
+    }
+
     /**
      * Gets the value of the gatewayEventSubstitutionFilter property.
      *
