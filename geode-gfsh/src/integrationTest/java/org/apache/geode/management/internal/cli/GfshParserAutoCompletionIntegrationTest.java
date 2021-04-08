@@ -431,7 +431,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void testCompletionCreateGatewaySenderWithSpace() {
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForCreateGatewaySenderWithSpace() {
     String buffer = "create gateway-sender ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(2);
@@ -441,7 +441,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void testCompletionCreateGatewaySenderWithDash() {
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForCreateGatewaySenderWithDash() {
     String buffer = "create gateway-sender --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(1);
@@ -449,7 +449,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forChangeLogLevelWithSpaceCompletionOffersMandatoryOptionsInAlphabeticalOrder() {
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForChangeLogLevelWithSpace() {
     String buffer = "change loglevel ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(1);
@@ -457,7 +457,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forChangeLogLevelWithDashCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrder() {
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForChangeLogLevelWithDash() {
     String buffer = "change loglevel --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(1);
@@ -465,7 +465,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forCreateDiskStoreWithSpaceCompletionOffersMandatoryOptionsInAlphabeticalOrder() {
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForCreateDiskStoreWithSpace() {
     String buffer = "create disk-store ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(2);
@@ -474,7 +474,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forCreateDiskStoreWithDashCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrder() {
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForCreateDiskStoreWithDash() {
     String buffer = "create disk-store --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(1);
@@ -482,7 +482,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forCreateJndiBindingWithSpaceCompletionOffersMandatoryOptionsInAlphabeticalOrder() {
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForCreateJndiBindingWithSpace() {
     String buffer = "create jndi-binding ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(3);
@@ -492,7 +492,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forCreateJndiBindingWithDashCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrder() {
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForCreateJndiBindingWithDash() {
     String buffer = "create jndi-binding --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(2);
@@ -501,7 +501,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forDestroyGwSenderWithSpaceCompletionOffersMandatoryOptionsInAlphabeticalOrder() {
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForDestroyGwSenderWithSpace() {
     String buffer = "destroy gateway-sender ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(1);
@@ -509,7 +509,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forDestroyGwSenderWithDashCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrder() {
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForDestroyGwSenderWithDash() {
     String buffer = "destroy gateway-sender --";
 
     CommandCandidate candidate = gfshParserRule.complete(buffer);
@@ -518,7 +518,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forExportDataWithSpaceCompletionOffersMandatoryOptionsInAlphabeticalOrder() {
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForExportDataWithSpace() {
     String buffer = "export data ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(2);
@@ -527,7 +527,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forExportDataWithDashCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrder() {
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForExportDataWithDash() {
     String buffer = "export data --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(1);
@@ -535,7 +535,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forImportDataWithSpaceCompletionOffersMandatoryOptionsInAlphabeticalOrder() {
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForImportDataWithSpace() {
     String buffer = "import data ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(2);
@@ -544,7 +544,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forImportDataWithDashCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrder() {
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForImportDataWithDash() {
     String buffer = "import data --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(1);
@@ -552,7 +552,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forRemoveWithSpaceCompletionOffersMandatoryOptionsInAlphabeticalOrder() {
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForRemoveWithSpace() {
     String buffer = "remove ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(1);
@@ -560,7 +560,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void forRemoveWithDashCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrder() {
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForRemoveWithDash() {
     String buffer = "remove --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(1);
