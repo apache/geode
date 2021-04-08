@@ -348,4 +348,9 @@ public class IndexElemArray implements Iterable, Collection {
   public Object[] getElementData() {
     return elementData;
   }
+
+  public String toString() {
+    return "(size: " + size + ", data: " + Arrays.toString(elementData) + ")";
+  }
+
 }

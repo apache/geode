@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
@@ -42,6 +44,7 @@ import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
 
@@ -610,6 +613,8 @@ public class CompiledComparison extends AbstractCompiledValue
     return cls.getName().substring(cls.getPackage().getName().length() + 1);
   }
 
+  private static final Logger logger = LogService.getLogger();
+
   // Asif: If the size of aray is two this implies that it is
   // a relation ship index & so the key field will be null in both the indexes
   // as key is not a meaningful entity. The 0th element will refer to LHS
@@ -656,26 +661,34 @@ public class CompiledComparison extends AbstractCompiledValue
       }
 
       // Do not use indexes when map index with allkeys and != condition or when comparing with null
-      try {
-        if (indexData != null
-            && indexData.getIndex() instanceof AbstractMapIndex
-            && ((AbstractMapIndex) indexData.getIndex()).getIsAllKeys()
-            && (this._operator == TOK_NE ||
-                (this._right != null && (this._right instanceof CompiledLiteral)
-                    && this._right.evaluate(context) == null)
-                ||
-                (this._left != null && (this._left instanceof CompiledLiteral)
-                    && this._left.evaluate(context) == null))) {
-          Index prIndex = ((AbstractIndex) indexData.getIndex()).getPRIndex();
-          if (prIndex != null) {
-            ((PartitionedIndex) prIndex).releaseIndexReadLockForRemove();
-          } else {
-            ((AbstractIndex) indexData.getIndex()).releaseIndexReadLockForRemove();
+      if (indexData != null) {
+        if (indexData.getIndex() instanceof AbstractMapIndex) {
+          if (((AbstractMapIndex) indexData.getIndex()).getIsAllKeys()) {
+            logger.info("toberal checking if we should use indexes as getIsAllkeys is true");
+            try {
+              logger.info("toberal checking if we should use indexes");
+              if ((this._operator == TOK_NE)
+                  ||
+                  (this._right != null && (this._right instanceof CompiledLiteral)
+                      && this._right.evaluate(context) == null)
+                  ||
+                  (this._left != null && (this._left instanceof CompiledLiteral)
+                      && this._left.evaluate(context) == null)) {
+                logger.info("toberal we should not use indexes");
+                Index prIndex = ((AbstractIndex) indexData.getIndex()).getPRIndex();
+                if (prIndex != null) {
+                  ((PartitionedIndex) prIndex).releaseIndexReadLockForRemove();
+                } else {
+                  ((AbstractIndex) indexData.getIndex()).releaseIndexReadLockForRemove();
+                }
+                return null;
+              }
+            } catch (Exception e) {
+              logger.info("toberal throwing exception {}", e);
+              // Ignore. Should not throw with a CompiledLiteral.evaluate.
+            }
           }
-          return null;
         }
-      } catch (Exception e) {
-        // Ignore. Should not throw with a CompiledLiteral.evaluate.
       }
 
       IndexProtocol index = null;

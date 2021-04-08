@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.IndexStatistics;
@@ -29,6 +31,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class CompactMapRangeIndex extends AbstractMapIndex {
   private final Map<Object, Map> entryToMapKeyIndexKeyMap;
@@ -96,6 +99,8 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
     }
   }
 
+  private static final Logger logger = LogService.getLogger();
+
   @Override
   void saveMapping(Object key, Object value, RegionEntry entry) throws IMQException {
     if (key == QueryService.UNDEFINED || (key != null && !(key instanceof Map))) {
@@ -118,6 +123,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
       }
       removeOldMappings(((Map) key).keySet(), entry);
     } else {
+      logger.info("toberal saveMaping. mapKeys: {}", mapKeys);
       for (Object mapKey : mapKeys) {
         Object indexKey;
         if (key == null) {

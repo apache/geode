@@ -271,7 +271,8 @@ public class CompactRangeIndexJUnitTest {
           .newQuery("Select * from " + SEPARATOR + "exampleRegion r where r.status='active'")
           .execute();
       // the remove should have happened
-      assertEquals(3, results.size());
+      assertEquals("Results size should have been 3. Instead, we got: " + results, 3,
+          results.size());
 
       results = (SelectResults) qs
           .newQuery("Select * from " + SEPARATOR + "exampleRegion r where r.status!='inactive'")
@@ -418,17 +419,22 @@ public class CompactRangeIndexJUnitTest {
       try {
         switch (spot) {
           case ATTEMPT_REMOVE:
+            System.out.println("toberal in doTestHook ATTEMPT_REMOVE");
             if (!readyToStartRemoveLatch.await(21, TimeUnit.SECONDS)) {
               throw new AssertionError("Time ran out waiting for other thread to initiate put");
             }
             break;
           case BEGIN_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET:
+            System.out.println(
+                "toberal in doTestHook BEGIN_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET");
             readyToStartRemoveLatch.countDown();
             if (!waitForRemoveLatch.await(21, TimeUnit.SECONDS)) {
               throw new AssertionError("Time ran out waiting for other thread to initiate remove");
             }
             break;
           case BEGIN_REMOVE_FROM_ELEM_ARRAY:
+            System.out.println(
+                "toberal in doTestHook BEGIN_TRANSITION_FROM_BEGIN_REMOVE_FROM_ELEM_ARRAY");
             waitForRemoveLatch.countDown();
             if (!waitForTransitioned.await(21, TimeUnit.SECONDS)) {
               throw new AssertionError(
@@ -436,6 +442,7 @@ public class CompactRangeIndexJUnitTest {
             }
             break;
           case TRANSITIONED_FROM_ELEMARRAY_TO_TOKEN:
+            System.out.println("toberal in doTestHook TRANSITIONED_FROM_ELEMARRAY_TO_TOKEN");
             waitForTransitioned.countDown();
             break;
         }
@@ -538,8 +545,9 @@ public class CompactRangeIndexJUnitTest {
   private void isUsingConcurrentHashSet(String key) {
     if (index instanceof CompactRangeIndex) {
       assertEquals(
-          "Expected concurrent hash set but instanceForKey is "
-              + getValuesFromMap(key).getClass().getName(),
+          "Expected concurrent hash set but instanceForKey for key " + key + " is "
+              + getValuesFromMap(key).getClass().getName() + ", valueToEntriesMap: "
+              + getValueToEntriesMap(),
           getValuesFromMap(key) instanceof IndexConcurrentHashSet, true);
     } else {
       fail("Should have used CompactRangeIndex");
@@ -551,6 +559,12 @@ public class CompactRangeIndexJUnitTest {
     Map map = ind.valueToEntriesMap;
     Object entryValue = map.get(key);
     return entryValue;
+  }
+
+  private Object getValueToEntriesMap() {
+    MemoryIndexStore ind = (MemoryIndexStore) ((CompactRangeIndex) index).getIndexStorage();
+    Map map = ind.valueToEntriesMap;
+    return map;
   }
 
   public void executeQueryWithAndWithoutIndex(int expectedResults) {

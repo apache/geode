@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.AmbiguousNameException;
@@ -43,6 +45,7 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public abstract class AbstractMapIndex extends AbstractIndex {
   final boolean isAllKeys;
@@ -340,6 +343,8 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     addOrSaveMapping(key, value, entry, false);
   }
 
+  private static final Logger logger = LogService.getLogger();
+
   void addOrSaveMapping(Object key, Object value, RegionEntry entry, boolean isAdd)
       throws IMQException {
     if (key == QueryService.UNDEFINED || (key != null && !(key instanceof Map))) {
@@ -365,6 +370,8 @@ public abstract class AbstractMapIndex extends AbstractIndex {
         }
       }
     } else {
+      logger.info("toberal addOrSaveMapping key: {}, value: {}, entry: {}, isAdd: {}", key, value,
+          entry, isAdd);
       for (Object mapKey : mapKeys) {
         Object indexKey;
         if (key == null) {

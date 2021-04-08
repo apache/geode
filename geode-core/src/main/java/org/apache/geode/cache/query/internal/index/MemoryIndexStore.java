@@ -26,6 +26,8 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -44,6 +46,7 @@ import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * The in-memory index storage
@@ -96,6 +99,8 @@ public class MemoryIndexStore implements IndexStore {
     this.cache = cache;
   }
 
+  private static final Logger logger = LogService.getLogger();
+
   @Override
   public void updateMapping(Object indexKey, Object oldKey, RegionEntry re, Object oldValue)
       throws IMQException {
@@ -144,12 +149,16 @@ public class MemoryIndexStore implements IndexStore {
         retry = false;
         Object regionEntries = this.valueToEntriesMap.putIfAbsent(indexKey, re);
         if (regionEntries == TRANSITIONING_TOKEN) {
+          logger.info("toberal TRANSITIONING_TOKEN. indexKey: {}", indexKey);
           retry = true;
           continue;
         } else if (regionEntries == null) {
+          logger.info("toberal regionEntryies == null. indexKey: {}, re: {}", indexKey, re);
           internalIndexStats.incNumKeys(1);
           numIndexKeys.incrementAndGet();
         } else if (regionEntries instanceof RegionEntry) {
+          logger.info("toberal regionEntryies instanceof RegionEntry. indexKey: {}, re: {}",
+              indexKey, re);
           IndexElemArray elemArray = new IndexElemArray();
           if (DefaultQuery.testHook != null) {
             DefaultQuery.testHook.doTestHook(
@@ -172,6 +181,9 @@ public class MemoryIndexStore implements IndexStore {
                 null, null);
           }
         } else if (regionEntries instanceof IndexConcurrentHashSet) {
+          logger.info(
+              "toberal regionEntries instanceof IndexConcurrentHashSet. indexKey: {}, re: {}",
+              indexKey, re);
           // This synchronized is for avoiding conflcts with remove of
           // ConcurrentHashSet when set size becomes zero during
           // basicRemoveMapping();
@@ -185,6 +197,9 @@ public class MemoryIndexStore implements IndexStore {
           IndexElemArray elemArray = (IndexElemArray) regionEntries;
           synchronized (elemArray) {
             if (elemArray.size() >= IndexManager.INDEX_ELEMARRAY_THRESHOLD) {
+              logger.info(
+                  "toberal regionEntries else and elemArray.size() >= IndexManager.INDEX_ELEMARRAY_THRESHOLD. indexKey: {}, re: {}",
+                  indexKey, re);
               IndexConcurrentHashSet set =
                   new IndexConcurrentHashSet(IndexManager.INDEX_ELEMARRAY_THRESHOLD + 20, 0.75f, 1);
               // Replace first so that we are sure that the set is placed in
@@ -227,6 +242,9 @@ public class MemoryIndexStore implements IndexStore {
                 }
               }
             } else {
+              logger.info(
+                  "toberal regionEntryies else and elemArray.size() < IndexManager.INDEX_ELEMARRAY_THRESHOLD. indexKey: {}, re: {}",
+                  indexKey, re);
               elemArray.add(re);
               if (regionEntries != this.valueToEntriesMap.get(indexKey)) {
                 retry = true;
@@ -304,10 +322,14 @@ public class MemoryIndexStore implements IndexStore {
     boolean found = false;
     boolean possiblyAlreadyRemoved = false;
     try {
+      logger.info("toberal basicRemoveMapping for key: {}", key);
       Object newKey = convertToIndexKey(key, entry);
+      logger.info("toberal basicRemoveMapping for key {} before testHook: {}", key,
+          DefaultQuery.testHook);
       if (DefaultQuery.testHook != null) {
         DefaultQuery.testHook.doTestHook(DefaultQuery.TestHook.SPOTS.ATTEMPT_REMOVE, null, null);
       }
+      logger.info("toberal basicRemoveMapping for key {} after testHook", key);
       boolean retry = false;
       do {
         retry = false;

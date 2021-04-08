@@ -218,4 +218,8 @@ public class ResultsCollectionPdxDeserializerWrapper implements SelectResults {
     results.setElementType(elementType);
   }
 
+  @Override
+  public String toString() {
+    return results.toString();
+  }
 }

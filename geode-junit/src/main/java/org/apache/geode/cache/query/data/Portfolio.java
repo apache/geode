@@ -191,8 +191,8 @@ public class Portfolio implements Serializable, DataSerializable {
         Map.Entry entry = (Map.Entry) iter.next();
         out += entry.getKey() + ":" + entry.getValue() + ", ";
       }
-      out += System.lineSeparator() + " P1:" + position1 + ", P2:" + position2;
     }
+    out += System.lineSeparator() + " P1:" + position1 + ", P2:" + position2;
     return out + System.lineSeparator() + "]";
   }
 
