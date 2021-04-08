@@ -32,7 +32,7 @@ task generateModuleXml(dependsOn: jar) {
   }
 }
 
-task generateDistributedTestModuleXml(dependsOn: [jar, compileDistributedTestJava]) {
+task generateDistributedTestModuleXml(dependsOn: jar) {
   if (!projectsToExclude.contains(project.name) || testProjectsToInclude.contains(project.name)) {
     def jarFile = jar.outputs.files.first()
     inputs.file {
@@ -45,7 +45,6 @@ task generateDistributedTestModuleXml(dependsOn: [jar, compileDistributedTestJav
               .resolve(project.version.toString()).resolve("module.xml")
     }
     doLast {
-
       generateModuleXmlForProject(jarFile, project, 'distributedTest')
     }
   }

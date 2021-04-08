@@ -17,7 +17,7 @@
 
 apply from: "${rootDir}/gradle/publish-common.gradle"
 apply from: "${rootDir}/gradle/publish-artifacts.gradle"
-apply from: "${rootDir}/${scriptDir}/module-descriptors.gradle"
+
 
 publishing {
   publications {

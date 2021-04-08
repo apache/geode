@@ -154,6 +154,10 @@ configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repe
 
 //distributedTest.dependsOn(tasks.getByName('generateDistributedTestThirdPartyModuleXML'))
 
+  tasks.named("distributedTest").configure {
+    dependsOn tasks.named("generateDistributedTestModuleXml")
+  }
+
 //configure(distributedTest) {
 //  doLast {
 //    distributedTest.dependsOn()

@@ -15,4 +15,4 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+//apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
