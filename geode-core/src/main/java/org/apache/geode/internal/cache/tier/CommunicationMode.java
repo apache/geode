@@ -17,9 +17,6 @@ package org.apache.geode.internal.cache.tier;
 /**
  * The following are communications "mode" bytes sent as the first byte of a client/server
  * handshake. They must not be larger than 1 byte.
- * <p>
- * NOTE: new protobuf modes should be added as new values in this enumeration and the appropriate
- * query methods must be updated.
  */
 public enum CommunicationMode {
   /**
@@ -27,14 +24,6 @@ public enum CommunicationMode {
    * which will always be 0. Communication modes should not collide with this value.
    */
   ReservedForGossip((byte) 0, "Locator gossip version"),
-  /**
-   * For the new client-server protocol.
-   *
-   * Protobuf handshake messages are specially constructed so that this value will match the first
-   * byte sent, allowing clients to start protobuf connections with a handshake instead of
-   * communication mode bytes.
-   */
-  ProtobufClientServerProtocol((byte) 10, "Protobuf client"),
   /**
    * Byte meaning that the Socket is being used for 'client to server' communication.
    */
@@ -75,7 +64,7 @@ public enum CommunicationMode {
    * is this a client-initiated operations connection?
    */
   public boolean isClientOperations() {
-    return this == ClientToServer || this == ProtobufClientServerProtocol;
+    return this == ClientToServer;
   }
 
   /**
@@ -83,8 +72,7 @@ public enum CommunicationMode {
    */
   public boolean isClientToServerOrSubscriptionFeed() {
     return this == ClientToServer || this == PrimaryServerToClient
-        || this == SecondaryServerToClient || this == ClientToServerForQueue
-        || this == ProtobufClientServerProtocol;
+        || this == SecondaryServerToClient || this == ClientToServerForQueue;
   }
 
   /**
@@ -98,8 +86,7 @@ public enum CommunicationMode {
    * is this connection counted in the ClientServerCnxCount statistic?
    */
   public boolean isCountedAsClientServerConnection() {
-    return this == ClientToServer || this == MonitorToServer
-        || this == ProtobufClientServerProtocol;
+    return this == ClientToServer || this == MonitorToServer;
   }
 
   /**
@@ -107,14 +94,6 @@ public enum CommunicationMode {
    */
   public boolean isWAN() {
     return this == GatewayToGateway;
-  }
-
-  /**
-   * non-protobuf (legacy) protocols expect a refusal message before a connection is closed. This is
-   * unintelligible to protobuf protocol clients.
-   */
-  public boolean expectsConnectionRefusalMessage() {
-    return this != ProtobufClientServerProtocol;
   }
 
   /**
@@ -142,8 +121,6 @@ public enum CommunicationMode {
 
   public static CommunicationMode fromModeNumber(byte modeNumber) {
     switch (modeNumber) {
-      case 10:
-        return ProtobufClientServerProtocol;
       case 100:
         return ClientToServer;
       case 101:

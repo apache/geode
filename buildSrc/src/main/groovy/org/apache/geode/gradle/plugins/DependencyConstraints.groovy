@@ -61,13 +61,7 @@ class DependencyConstraints implements Plugin<Project> {
 
     // The jetty version is also hard-coded in geode-assembly:test
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
-    deps.put("jetty.version", "9.4.38.v20210224")
-
-    // These version numbers are consumed by protobuf configurations that are plugin-specific and not
-    // part of the typical Gradle dependency configurations.
-    deps.put("protoc.version", "3.11.4")
-    deps.put("protobuf-gradle-plugin.version", "0.8.10")
-    deps.put("protobuf-java.version", "3.11.4")
+    deps.put("jetty.version", "9.4.39.v20210325")
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
     deps.put("junit.version", "4.13.2")
@@ -96,8 +90,6 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.github.stephenc.findbugs', name: 'findbugs-annotations', version: '1.3.9-1')
         api(group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2')
         api(group: 'com.google.guava', name: 'guava', version: '30.1-jre')
-        api(group: 'com.google.protobuf', name: 'protobuf-gradle-plugin', version: get('protobuf-gradle-plugin.version'))
-        api(group: 'com.google.protobuf', name: 'protobuf-java', version: get('protobuf-java.version'))
         api(group: 'com.healthmarketscience.rmiio', name: 'rmiio', version: '2.1.2')
         api(group: 'com.mockrunner', name: 'mockrunner-servlet', version: '2.0.6')
         api(group: 'com.nimbusds', name:'nimbus-jose-jwt', version:'8.11')

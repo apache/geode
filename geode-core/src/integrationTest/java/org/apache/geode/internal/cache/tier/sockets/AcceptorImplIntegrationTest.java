@@ -48,12 +48,10 @@ public class AcceptorImplIntegrationTest {
   private InternalCache cache;
   private Acceptor acceptor1;
   private Acceptor acceptor2;
-  private ServerConnectionFactory serverConnectionFactory;
 
   @Before
   public void setUp() throws Exception {
     cache = (InternalCache) new CacheFactory().create();
-    serverConnectionFactory = new ServerConnectionFactory();
   }
 
   @After
@@ -124,7 +122,6 @@ public class AcceptorImplIntegrationTest {
         .setMessageTimeToLive(DEFAULT_MESSAGE_TIME_TO_LIVE)
         .setConnectionListener(null)
         .setTcpNoDelay(DEFAULT_TCP_NO_DELAY)
-        .setServerConnectionFactory(serverConnectionFactory)
         .setTimeLimitMillis(1000)
         .setSecurityService(cache.getSecurityService())
         .setSocketCreatorSupplier(() -> getSocketCreatorForComponent(SERVER))

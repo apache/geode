@@ -82,7 +82,6 @@ import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheBuilder;
-import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -556,7 +555,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
               .setConfig(config)
               .setPort(port)
               .setBindAddress(bindAddress)
-              .setProtocolChecker(new ProtocolCheckerImpl(this, new ClientProtocolServiceLoader()))
+              .setProtocolChecker(new ProtocolCheckerImpl())
               .setFallbackHandler(handler)
               .setLocatorsAreCoordinators(shouldLocatorsBeCoordinators())
               .setLocatorStats(locatorStats)

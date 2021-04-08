@@ -149,7 +149,8 @@ public class InternalResourceManager implements ResourceManager {
 
     // Create the monitors
     Map<ResourceType, ResourceMonitor> tempMonitors = new HashMap<>();
-    tempMonitors.put(ResourceType.HEAP_MEMORY, new HeapMemoryMonitor(this, cache, stats));
+    tempMonitors.put(ResourceType.HEAP_MEMORY,
+        new HeapMemoryMonitor(this, cache, stats, new TenuredHeapConsumptionMonitor()));
     tempMonitors.put(ResourceType.OFFHEAP_MEMORY,
         new OffHeapMemoryMonitor(this, cache, cache.getOffHeapStore(), stats));
     resourceMonitors = Collections.unmodifiableMap(tempMonitors);

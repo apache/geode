@@ -60,13 +60,6 @@ geode-core/**/org/apache/geode/internal/cache/ha/**               @agingade @bog
 geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*   @agingade @boglesby @nabarunnag
 
 #-----------------------------------------------------------------
-# Experimental Protobuf based Client/Server
-#-----------------------------------------------------------------
-#geode-experimental-driver/**
-#geode-protobuf/**
-#geode-protobuf-messages/**
-
-#-----------------------------------------------------------------
 # Core Public API packages - Cache, Region, etc.
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/*                                  @dschneider-pivotal @boglesby @kirklund @nabarunnag
@@ -274,7 +267,7 @@ geode-junit/**/org/apache/geode/test/util                         @jdeppe-pivota
 #-----------------------------------------------------------------
 # Redis API
 #-----------------------------------------------------------------
-geode-redis/**                                                    @sabbey37 @jdeppe-pivotal @nonbinaryprogrammer
+geode-apis-compatible-with-redis/**                               @sabbey37 @jdeppe-pivotal @nonbinaryprogrammer @ringles
 
 #-----------------------------------------------------------------
 # Build and tooling

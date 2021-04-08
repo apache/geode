@@ -37,7 +37,7 @@ fi
 . ${SCRIPTDIR}/shared_utilities.sh
 is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" || exit 0
 
-if [ "${GRADLE_TASK}" = ":geode-redis:redisAPITest" ] && ! grep -q redisAPITest geode/geode-redis/build.gradle ; then
+if [ "${GRADLE_TASK}" = ":geode-apis-compatible-with-redis:redisAPITest" ] && ! grep -q redisAPITest geode/geode-apis-compatible-with-redis/build.gradle ; then
   echo "redisAPITest is not applicable for 1.13 and earlier"
   exit 0
 fi
@@ -64,7 +64,7 @@ scp ${SSH_OPTIONS} ${SCRIPTDIR}/capture-call-stacks.sh geode@${INSTANCE_IP_ADDRE
 if [[ -n "${PARALLEL_DUNIT}" && "${PARALLEL_DUNIT}" == "true" ]]; then
   PARALLEL_DUNIT="-PparallelDunit -PdunitDockerUser=geode -PdunitDockerImage=\$(docker images --format '{{.Repository}}:{{.Tag}}')"
   if [ -n "${DUNIT_PARALLEL_FORKS}" ]; then
-    DUNIT_PARALLEL_FORKS="-PdunitParallelForks=${DUNIT_PARALLEL_FORKS}"
+    DUNIT_PARALLEL_FORKS="-PdunitParallelForks=${DUNIT_PARALLEL_FORKS} --max-workers=${DUNIT_PARALLEL_FORKS} -PtestMaxParallelForks=${DUNIT_PARALLEL_FORKS}"
   fi
 else
   PARALLEL_DUNIT=""

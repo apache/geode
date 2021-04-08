@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
+import org.apache.geode.deployment.internal.exception.ServiceLoadingFailureException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**

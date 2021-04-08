@@ -92,18 +92,6 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
-        <groupId>com.google.protobuf</groupId>
-        <artifactId>protobuf-gradle-plugin</artifactId>
-        <version>0.8.10</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.google.protobuf</groupId>
-        <artifactId>protobuf-java</artifactId>
-        <version>3.11.4</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
         <groupId>com.healthmarketscience.rmiio</groupId>
         <artifactId>rmiio</artifactId>
         <version>2.1.2</version>
@@ -424,13 +412,13 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
-        <version>9.4.38.v20210224</version>
+        <version>9.4.39.v20210325</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-webapp</artifactId>
-        <version>9.4.38.v20210224</version>
+        <version>9.4.39.v20210325</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -879,6 +867,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-apis-compatible-with-redis</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-common</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
@@ -916,12 +910,6 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-dunit</artifactId>
-        <version>${version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
-        <artifactId>geode-experimental-driver</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>
@@ -993,18 +981,6 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
-        <artifactId>geode-protobuf</artifactId>
-        <version>${version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
-        <artifactId>geode-protobuf-messages</artifactId>
-        <version>${version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
         <artifactId>geode-pulse</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
@@ -1012,12 +988,6 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-rebalancer</artifactId>
-        <version>${version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
-        <artifactId>geode-redis</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>
@@ -1084,12 +1054,6 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-lucene-test</artifactId>
-        <version>${version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
-        <artifactId>geode-protobuf-test</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>

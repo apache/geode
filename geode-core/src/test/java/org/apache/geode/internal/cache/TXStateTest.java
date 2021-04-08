@@ -19,9 +19,12 @@ import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabl
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -29,12 +32,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+
 import javax.transaction.Status;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.InOrder;
 
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -90,6 +96,25 @@ public class TXStateTest {
 
     assertThatThrownBy(() -> txState.doAfterCompletionCommit())
         .isSameAs(transactionDataNodeHasDepartedException);
+  }
+
+  @Test
+  public void attachFilterProfileAfterApplyingChanges() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    doReturn(new ArrayList()).when(txState).generateEventOffsets();
+    doNothing().when(txState).attachFilterProfileInformation(any());
+    doNothing().when(txState).applyChanges(any());
+    TXCommitMessage txCommitMessage = mock(TXCommitMessage.class);
+    doReturn(txCommitMessage).when(txState).buildMessage();
+
+    txState.commit();
+
+    InOrder inOrder = inOrder(txState, txCommitMessage);
+    inOrder.verify(txState).applyChanges(any());
+    inOrder.verify(txState).attachFilterProfileInformation(any());
+    inOrder.verify(txState).buildMessage();
+    inOrder.verify(txCommitMessage).send(any());
+    inOrder.verify(txState).firePendingCallbacks();
   }
 
   @Test
