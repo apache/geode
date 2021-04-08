@@ -32,7 +32,6 @@ import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticDeserialization;
 
 /**
  * GMSUtil contains a few static utility methods that should probably reside in other classes
@@ -205,7 +204,7 @@ public class GMSUtil {
   public static <ID extends MemberIdentifier> List<ID> readArrayOfIDs(DataInput in,
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    int size = StaticDeserialization.readArrayLength(in);
+    int size = context.getDeserializer().readArrayLength(in);
     if (size == -1) {
       return null;
     }

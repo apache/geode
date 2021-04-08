@@ -83,49 +83,49 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
       }
 
       @Override
-      public void writeInetAddress(InetAddress address, DataOutput out) throws IOException {
-        StaticSerialization.writeInetAddress(address, out);
+      public void writeInetAddress(InetAddress address, DataOutput output) throws IOException {
+        StaticSerialization.writeInetAddress(address, output);
       }
 
       @Override
-      public void writeByteArray(byte[] array, DataOutput out) throws IOException {
-        StaticSerialization.writeByteArray(array, out);
+      public void writeByteArray(byte[] array, DataOutput output) throws IOException {
+        StaticSerialization.writeByteArray(array, output);
       }
 
       @Override
-      public void writeArrayLength(int len, DataOutput out) throws IOException {
-        StaticSerialization.writeArrayLength(len, out);
+      public void writeArrayLength(int len, DataOutput output) throws IOException {
+        StaticSerialization.writeArrayLength(len, output);
       }
 
       @Override
-      public void writeString(String value, DataOutput out) throws IOException {
-        StaticSerialization.writeString(value, out);
+      public void writeString(String value, DataOutput output) throws IOException {
+        StaticSerialization.writeString(value, output);
       }
 
       @Override
-      public void writeStringArray(String[] array, DataOutput out) throws IOException {
-        StaticSerialization.writeStringArray(array, out);
+      public void writeStringArray(String[] array, DataOutput output) throws IOException {
+        StaticSerialization.writeStringArray(array, output);
       }
 
       @Override
-      public void writeInteger(Integer value, DataOutput out) throws IOException {
-        StaticSerialization.writeInteger(value, out);
+      public void writeInteger(Integer value, DataOutput output) throws IOException {
+        StaticSerialization.writeInteger(value, output);
       }
 
       @Override
-      public void writeIntArray(int[] array, DataOutput out) throws IOException {
-        StaticSerialization.writeIntArray(array, out);
+      public void writeIntArray(int[] array, DataOutput output) throws IOException {
+        StaticSerialization.writeIntArray(array, output);
       }
 
       @Override
-      public void writeHashMap(Map<?, ?> map, DataOutput out, SerializationContext context)
+      public void writeHashMap(Map<?, ?> map, DataOutput output, SerializationContext context)
           throws IOException {
-        StaticSerialization.writeHashMap(map, out, context);
+        StaticSerialization.writeHashMap(map, output, context);
       }
 
       @Override
-      public void invokeToData(Object ds, DataOutput out) throws IOException {
-        DSFIDSerializerImpl.this.invokeToData(ds, out);
+      public void invokeToData(Object ds, DataOutput output) throws IOException {
+        DSFIDSerializerImpl.this.invokeToData(ds, output);
       }
     };
   }
@@ -139,45 +139,45 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
       }
 
       @Override
-      public String readString(DataInput in) throws IOException {
-        return StaticDeserialization.readString(in);
+      public String readString(DataInput input) throws IOException {
+        return StaticDeserialization.readString(input);
       }
 
       @Override
-      public InetAddress readInetAddress(DataInput in) throws IOException {
-        return StaticDeserialization.readInetAddress(in);
+      public InetAddress readInetAddress(DataInput input) throws IOException {
+        return StaticDeserialization.readInetAddress(input);
       }
 
       @Override
-      public <K, V> HashMap<K, V> readHashMap(DataInput in, DeserializationContext context)
+      public <K, V> HashMap<K, V> readHashMap(DataInput input, DeserializationContext context)
           throws IOException, ClassNotFoundException {
-        return StaticDeserialization.readHashMap(in, context);
+        return StaticDeserialization.readHashMap(input, context);
       }
 
       @Override
-      public int readArrayLength(DataInput in) throws IOException {
-        return StaticDeserialization.readArrayLength(in);
+      public int readArrayLength(DataInput input) throws IOException {
+        return StaticDeserialization.readArrayLength(input);
       }
 
       @Override
-      public String[] readStringArray(DataInput in) throws IOException {
-        return StaticDeserialization.readStringArray(in);
+      public String[] readStringArray(DataInput input) throws IOException {
+        return StaticDeserialization.readStringArray(input);
       }
 
       @Override
-      public int[] readIntArray(DataInput in) throws IOException {
-        return StaticDeserialization.readIntArray(in);
+      public int[] readIntArray(DataInput input) throws IOException {
+        return StaticDeserialization.readIntArray(input);
       }
 
       @Override
-      public byte[] readByteArray(DataInput in) throws IOException {
-        return StaticDeserialization.readByteArray(in);
+      public byte[] readByteArray(DataInput input) throws IOException {
+        return StaticDeserialization.readByteArray(input);
       }
 
       @Override
-      public void invokeFromData(Object ds, DataInput in)
+      public void invokeFromData(Object ds, DataInput input)
           throws IOException, ClassNotFoundException {
-        DSFIDSerializerImpl.this.invokeFromData(ds, in);
+        DSFIDSerializerImpl.this.invokeFromData(ds, input);
       }
     };
   }
