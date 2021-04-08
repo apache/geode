@@ -432,11 +432,6 @@ public class DistributionLocatorId implements java.io.Serializable {
     int result = 17;
     final int mult = 37;
 
-    if (this.membername != null) {
-      result = mult * result + this.membername.hashCode();
-      return result;
-    }
-
     result = mult * result + (this.host == null ? 0 : this.host.hashCode());
     result = mult * result + this.port;
     result = mult * result + (this.bindAddress == null ? 0 : this.bindAddress.hashCode());
