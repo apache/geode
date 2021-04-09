@@ -268,7 +268,7 @@ public class PartitionedRegionStatsUpdateTest {
   @Test
   public void should_showNoIncreaseInDatastoreBytesInUse_givenHSetDoesNotIncreaseHashSize() {
     jedis2.hset(HASH_KEY, FIELD, "initialvalue"); // two hsets are required to force
-    jedis2.hset(HASH_KEY, FIELD, "value");        // deserialization on both servers
+    jedis2.hset(HASH_KEY, FIELD, "value"); // deserialization on both servers
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -321,7 +321,7 @@ public class PartitionedRegionStatsUpdateTest {
   @Test
   public void should_showMembersAgreeUponUsedHashMemory_afterDeltaPropagation() {
     jedis1.hset(HASH_KEY, FIELD, "initialvalue"); // two hsets are required to force
-    jedis1.hset(HASH_KEY, FIELD, "finalvalue");   // deserialization on both servers
+    jedis1.hset(HASH_KEY, FIELD, "finalvalue"); // deserialization on both servers
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -339,8 +339,8 @@ public class PartitionedRegionStatsUpdateTest {
 
   @Test
   public void should_showMembersAgreeUponUsedSetMemory_afterDeltaPropagation() {
-    jedis1.sadd(SET_KEY, "value");  // two sadds are required to force
-    jedis1.sadd(SET_KEY, "value");  // deserialization on both servers
+    jedis1.sadd(SET_KEY, "value"); // two sadds are required to force
+    jedis1.sadd(SET_KEY, "value"); // deserialization on both servers
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -358,8 +358,8 @@ public class PartitionedRegionStatsUpdateTest {
 
   @Test
   public void should_showMembersAgreeUponUsedStringMemory_afterDeltaPropagation() {
-    jedis1.set(STRING_KEY, "value");  // two sets are required to force
-    jedis1.set(STRING_KEY, "value");  // deserialization on both servers
+    jedis1.set(STRING_KEY, "value"); // two sets are required to force
+    jedis1.set(STRING_KEY, "value"); // deserialization on both servers
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
