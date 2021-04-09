@@ -67,7 +67,7 @@ rm -rf /etc/alternatives
 mv /etc/keep-alternatives /etc/alternatives
 
 pip3 install --update pip
-pip3 install docker-compose
+pip3 install setuptools docker-compose
 
 pushd /tmp
   curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz
