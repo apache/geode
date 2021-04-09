@@ -39,7 +39,6 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     aptitude \
     ca-certificates \
     cgroupfs-mount \
-    docker-compose \
     containerd.io \
     docker-ce="5:19.03.14~3-0~ubuntu-bionic" \
     docker-ce-cli="5:19.03.14~3-0~ubuntu-bionic" \
@@ -66,6 +65,9 @@ apt-get install -y --no-install-recommends \
     bellsoft-java8
 rm -rf /etc/alternatives
 mv /etc/keep-alternatives /etc/alternatives
+
+pip3 install --update pip
+pip3 install docker-compose
 
 pushd /tmp
   curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz
