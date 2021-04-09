@@ -27,7 +27,7 @@ ext.projectsToExclude = ["geode-pulse", "extensions", "geode-assembly", "geode-a
                          "geode-modules-session-internal", "geode-modules-tomcat7",
                          "geode-modules-tomcat8", "geode-modules-tomcat9", "session-testing-war",
                          "geode-client-bom", "geode-web", "geode-web-management", "geode-web-api",
-                         "geode-all-bom", "geode-jboss-extensions","geode-dunit", "geode-junit"]
+                         "geode-all-bom", "geode-jboss-extensions","geode-dunit", "geode-junit", 'geode-deployment-test']
 
 ext.testProjectsToInclude = ['geode-dunit', 'geode-junit']
 
@@ -54,16 +54,25 @@ private static getTargetConfigurations(configurations, String targetConfiguratio
   return processedConfigurations
 }
 
-ext.generateModuleXmlForProject = { File jar, Project projectToUse, String targetConfigurationPrefix ->
+ext.generateModuleXmlForProject = { File jar, Project projectToUse, String targetConfigurationPrefix , projectsSeen ->
   def apiProjectDeps = getDependentProjectsForConfiguration(projectToUse, getTargetConfigurations(['api'], targetConfigurationPrefix))
   def allProjectDeps = getDependentProjectsForConfiguration(projectToUse, getTargetConfigurations(['implementation', 'runtimeOnly'], targetConfigurationPrefix))
   def jbossDeps = getDependentProjectsForConfiguration(projectToUse, ['jbossModular'])
 
   allProjectDeps.addAll(apiProjectDeps)
   allProjectDeps.addAll(jbossDeps)
+
+  def geodeProjects = allProjectDeps.stream().filter{Dependency it -> it.name.startsWith('geode-') && !projectsToExclude.contains(it.name)}.collect()
+  geodeProjects.each { Dependency it ->
+    if(!projectsSeen.contains(it.name)) {
+      projectsSeen.add(it.name)
+      generateModuleXmlForProject(rootProject.project(it.name).tasks.getByName('jar').outputs.files.singleFile, rootProject.project(it.name), 'distributedTest',projectsSeen)
+    }
+  }
+
   // Iterate over runtime classpath dependencies and separate project dependencies from library
   // dependencies.
-  def runtimeList = generateDependentProjects(allProjectDeps, targetConfigurationPrefix)
+  def runtimeList = generateDependentProjects(projectToUse, targetConfigurationPrefix)
 
   def depsToNotGenerate = thirdPartyDepsNotToGenerate(targetConfigurationPrefix)
 
@@ -73,7 +82,7 @@ ext.generateModuleXmlForProject = { File jar, Project projectToUse, String targe
   }
 
   def geodeAssemblyProj = project(":geode-assembly")
-  def configurationTargetPath = targetConfigurationPrefix.size() == 0? '/' : "/$targetConfigurationPrefix/"
+  def configurationTargetPath = targetConfigurationPrefix.size() == 0? '/' : "/${targetConfigurationPrefix}ing/"
   def moduleDescriptorsRoot = "${geodeAssemblyProj.buildDir}${configurationTargetPath}moduleDescriptors"
   def namesAndVersion = generateModuleNamesAndVersionsMap(runtimeList, depsToNotGenerate, moduleDescriptorsRoot, targetConfigurationPrefix)
 
@@ -112,18 +121,14 @@ private Map<String, String[]> generateModuleNamesAndVersionsMap(runtimeList, dep
   namesAndVersion
 }
 
-def generateDependentProjects(List<String> allProjectDeps, String targetConfigurationPrefix) {
+def generateDependentProjects(Project projectToUse, String targetConfigurationPrefix) {
   def runtimeList = []
-  allProjectDeps.each { dependency ->
-    if (dependency instanceof ExternalModuleDependency) {
-      project.configurations.each {
-        if (it.name.toLowerCase() == "${targetConfigurationPrefix}runtimeClasspath".toLowerCase() || it.name == 'jbossModular') {
-          it.resolvedConfiguration.resolvedArtifacts.each { dep ->
-            def moduleVersionIdentifier = dep.getModuleVersion().id
-            if (!moduleVersionIdentifier.name.contains('geode-')) {
-              runtimeList.add(dep)
-            }
-          }
+  projectToUse.configurations.each {
+    if (it.name.toLowerCase() == "${targetConfigurationPrefix}runtimeClasspath".toLowerCase() || it.name == 'jbossModular') {
+      it.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+        def moduleVersionIdentifier = artifact.getModuleVersion().id
+        if (!moduleVersionIdentifier.name.contains('geode-')) {
+          runtimeList.add(artifact)
         }
       }
     }

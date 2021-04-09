@@ -152,17 +152,10 @@ configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repe
   }
 }
 
-//distributedTest.dependsOn(tasks.getByName('generateDistributedTestThirdPartyModuleXML'))
-
-  tasks.named("distributedTest").configure {
-    dependsOn tasks.named("generateDistributedTestModuleXml")
-  }
-
-//configure(distributedTest) {
-//  doLast {
-//    distributedTest.dependsOn()
-//  }
-//}
+tasks.named("distributedTest").configure {
+  dependsOn(':geode-assembly:installDist')
+//  dependsOn tasks.named("generateDistributedTestModuleXml")
+}
 
 // apply common test configuration
 gradle.taskGraph.whenReady({ graph ->

@@ -579,7 +579,6 @@ distributions {
           dependentProjectNames.collect {
             [
                     project(':'.concat(it)).configurations.runtimeClasspath,
-                    project(':'.concat(it)).configurations.acceptanceTestRuntimeClasspath,
                     project(':'.concat(it)).configurations.archives.allArtifacts.files
             ]
           }.flatten()
@@ -636,14 +635,8 @@ distributions {
         into('moduleDescriptors')
         from { tasks.named("generateThirdPartyModuleXML") }
       }
-
-//      with copySpec {
-//        into('testModuleDescriptors')
-//        from { tasks.named("generateDistributedTestThirdPartyModuleXML") }
-//      }
     }
   }
-
 }
 // Distribution plugin does not allow configuring of the task, only the contents. So we set
 // compression and classifier here
