@@ -16,20 +16,10 @@ package org.apache.geode.modules.session.catalina;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -40,23 +30,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Lifecycle;
-import org.apache.catalina.Loader;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.Session;
 import org.apache.catalina.Valve;
 import org.apache.catalina.session.ManagerBase;
 import org.apache.catalina.session.StandardSession;
-import org.apache.catalina.util.CustomObjectInputStream;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.EntryNotFoundException;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.Query;
-import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
 import org.apache.geode.modules.util.ContextMapper;
@@ -570,13 +553,12 @@ public abstract class DeltaSessionManager extends ManagerBase
 
   @Override
   public void load() throws ClassNotFoundException, IOException {
-    doLoad();
     ContextMapper.addContext(getContextName(), this);
   }
 
   @Override
   public void unload() throws IOException {
-    doUnload();
+    clearLocalCache();
     ContextMapper.removeContext(getContextName());
   }
 
@@ -672,340 +654,22 @@ public abstract class DeltaSessionManager extends ManagerBase
   }
 
   /**
-   * Save any currently active sessions in the appropriate persistence mechanism, if any. If
-   * persistence is not supported, this method returns without doing anything.
-   *
-   * @throws IOException if an input/output error occurs
+   * Clear the local cache to avoid ClassCastException if container is being reloaded.
    */
-  private void doUnload() throws IOException {
-    QueryService querySvc = getSessionCache().getCache().getQueryService();
-    Context context = getTheContext();
+  private void clearLocalCache() {
+    final Log logger = getLogger();
+    final boolean debugEnabled = logger.isDebugEnabled();
 
-    if (context == null) {
-      return;
-    }
-
-    String regionName;
-    if (getRegionName().startsWith("/")) {
-      regionName = getRegionName();
-    } else {
-      regionName = "/" + getRegionName();
-    }
-
-    Query query = querySvc.newQuery("select s.id from " + regionName
-        + " as s where s.contextName = '" + context.getPath() + "'");
-
-    if (getLogger().isDebugEnabled()) {
-      getLogger().debug("Query: " + query.getQueryString());
-    }
-
-    SelectResults results;
-    try {
-      results = (SelectResults) query.execute();
-    } catch (Exception ex) {
-      getLogger().error("Unable to perform query during doUnload", ex);
-      return;
-    }
-
-    if (results.isEmpty()) {
-      getLogger().debug("No sessions to unload for context " + context.getPath());
-      return; // nothing to do
-    }
-
-    // Open an output stream to the specified pathname, if any
-    File store = sessionStore(context.getPath());
-    if (store == null) {
-      return;
-    }
-    if (getLogger().isDebugEnabled()) {
-      getLogger().debug("Unloading sessions to " + store.getAbsolutePath());
-    }
-    FileOutputStream fos = null;
-    BufferedOutputStream bos = null;
-    ObjectOutputStream oos = null;
-    boolean error = false;
-    try {
-      fos = getFileOutputStream(store);
-      bos = getBufferedOutputStream(fos);
-      oos = getObjectOutputStream(bos);
-    } catch (IOException e) {
-      error = true;
-      getLogger().error("Exception unloading sessions", e);
-      throw e;
-    } finally {
-      if (error) {
-        if (oos != null) {
-          try {
-            oos.close();
-          } catch (IOException ioe) {
-            // Ignore
-          }
-        }
-        if (bos != null) {
-          try {
-            bos.close();
-          } catch (IOException ioe) {
-            // Ignore
-          }
-        }
-        if (fos != null) {
-          try {
-            fos.close();
-          } catch (IOException ioe) {
-            // Ignore
-          }
-        }
-      }
-    }
-
-    ArrayList<DeltaSessionInterface> list = new ArrayList<>();
-    @SuppressWarnings("unchecked")
-    Iterator<String> elements = (Iterator<String>) results.iterator();
-    while (elements.hasNext()) {
-      String id = elements.next();
-      DeltaSessionInterface session = (DeltaSessionInterface) findSession(id);
-      if (session != null) {
-        list.add(session);
-      }
-    }
-
-    // Write the number of active sessions, followed by the details
-    if (getLogger().isDebugEnabled())
-      getLogger().debug("Unloading " + list.size() + " sessions");
-    try {
-      writeToObjectOutputStream(oos, list);
-      for (DeltaSessionInterface session : list) {
-        if (session instanceof StandardSession) {
-          StandardSession standardSession = (StandardSession) session;
-          standardSession.passivate();
-          standardSession.writeObjectData(oos);
-        } else {
-          // All DeltaSessionInterfaces as of Geode 1.0 should be based on StandardSession
-          throw new IOException("Session should be of type StandardSession");
-        }
-      }
-    } catch (IOException e) {
-      getLogger().error("Exception unloading sessions", e);
-      try {
-        oos.close();
-      } catch (IOException f) {
-        // Ignore
-      }
-      throw e;
-    }
-
-    // Flush and close the output stream
-    try {
-      oos.flush();
-    } finally {
-      try {
-        oos.close();
-      } catch (IOException f) {
-        // Ignore
-      }
-    }
-
-    // Locally destroy the sessions we just wrote
     if (getSessionCache().isClientServer()) {
-      for (DeltaSessionInterface session : list) {
-        if (getLogger().isDebugEnabled()) {
-          getLogger().debug("Locally destroying session " + session.getId());
-        }
-        try {
-          getSessionCache().getOperatingRegion().localDestroy(session.getId());
-        } catch (EntryNotFoundException ex) {
-          // This can be thrown if an entry is evicted during or immediately after a session is
-          // written
-          // to disk. This isn't a problem, but the resulting exception messages can be confusing in
-          // testing
-        }
+      if (debugEnabled) {
+        logger.debug("Locally clearing sessions.");
       }
+      getSessionCache().getOperatingRegion().localClear();
     }
 
-    if (getLogger().isDebugEnabled()) {
-      getLogger().debug("Unloading complete");
+    if (debugEnabled) {
+      logger.debug("Unloading complete");
     }
-  }
-
-  /**
-   * Load any currently active sessions that were previously unloaded to the appropriate persistence
-   * mechanism, if any. If persistence is not supported, this method returns without doing anything.
-   *
-   * @throws ClassNotFoundException if a serialized class cannot be found during the reload
-   * @throws IOException if an input/output error occurs
-   */
-  private void doLoad() throws ClassNotFoundException, IOException {
-    Context context = getTheContext();
-    if (context == null) {
-      return;
-    }
-
-    // Open an input stream to the specified pathname, if any
-    File store = sessionStore(context.getPath());
-    if (store == null) {
-      getLogger().debug("No session store file found");
-      return;
-    }
-    if (getLogger().isDebugEnabled()) {
-      getLogger().debug("Loading sessions from " + store.getAbsolutePath());
-    }
-    FileInputStream fis = null;
-    BufferedInputStream bis = null;
-    ObjectInputStream ois;
-    Loader loader = null;
-    ClassLoader classLoader = null;
-    try {
-      fis = getFileInputStream(store);
-      bis = getBufferedInputStream(fis);
-      if (getTheContext() != null) {
-        loader = getTheContext().getLoader();
-      }
-      if (loader != null) {
-        classLoader = loader.getClassLoader();
-      }
-      if (classLoader != null) {
-        if (getLogger().isDebugEnabled()) {
-          getLogger().debug("Creating custom object input stream for class loader");
-        }
-        ois = new CustomObjectInputStream(bis, classLoader);
-      } else {
-        if (getLogger().isDebugEnabled()) {
-          getLogger().debug("Creating standard object input stream");
-        }
-        ois = getObjectInputStream(bis);
-      }
-    } catch (FileNotFoundException e) {
-      if (getLogger().isDebugEnabled()) {
-        getLogger().debug("No persisted data file found");
-      }
-      return;
-    } catch (IOException e) {
-      getLogger().error("Exception loading sessions", e);
-      try {
-        fis.close();
-      } catch (IOException f) {
-        // Ignore
-      }
-      try {
-        bis.close();
-      } catch (IOException f) {
-        // Ignore
-      }
-      throw e;
-    }
-
-    // Load the previously unloaded active sessions
-    try {
-      int n = getSessionCountFromObjectInputStream(ois);
-      if (getLogger().isDebugEnabled()) {
-        getLogger().debug("Loading " + n + " persisted sessions");
-      }
-      for (int i = 0; i < n; i++) {
-        StandardSession session = getNewSession();
-        session.readObjectData(ois);
-        session.setManager(this);
-
-        Region region = getSessionCache().getOperatingRegion();
-        DeltaSessionInterface existingSession = (DeltaSessionInterface) region.get(session.getId());
-        // Check whether the existing session is newer
-        if (existingSession != null
-            && existingSession.getLastAccessedTime() > session.getLastAccessedTime()) {
-          if (getLogger().isDebugEnabled()) {
-            getLogger().debug("Loaded session " + session.getId() + " is older than cached copy");
-          }
-          continue;
-        }
-
-        // Check whether the new session has already expired
-        if (!session.isValid()) {
-          if (getLogger().isDebugEnabled()) {
-            getLogger().debug("Loaded session " + session.getId() + " is invalid");
-          }
-          continue;
-        }
-
-        getLogger().debug("Loading session " + session.getId());
-        session.activate();
-        add(session);
-      }
-    } catch (ClassNotFoundException | IOException e) {
-      getLogger().error(e);
-      try {
-        ois.close();
-      } catch (IOException f) {
-        // Ignore
-      }
-      throw e;
-    } finally {
-      // Close the input stream
-      try {
-        ois.close();
-      } catch (IOException f) {
-        // ignored
-      }
-
-      // Delete the persistent storage file
-      if (store.exists()) {
-        if (!store.delete()) {
-          getLogger().warn("Couldn't delete persistent storage file " + store.getAbsolutePath());
-        }
-      }
-    }
-  }
-
-  /**
-   * Return a File object representing the pathname to our persistence file, if any.
-   */
-  private File sessionStore(String ctxPath) {
-    String storeDir = getSystemPropertyValue(catalinaBaseSystemProperty);
-    if (storeDir == null || storeDir.isEmpty()) {
-      storeDir = getSystemPropertyValue(javaTempDirSystemProperty);
-    } else {
-      storeDir += getSystemPropertyValue(fileSeparatorSystemProperty) + "temp";
-    }
-
-    return getFileAtPath(storeDir, ctxPath);
-  }
-
-  String getSystemPropertyValue(String propertyKey) {
-    return System.getProperty(propertyKey);
-  }
-
-  File getFileAtPath(String storeDir, String ctxPath) {
-    return (new File(storeDir, ctxPath.replaceAll("/", "_") + ".sessions.ser"));
-  }
-
-  FileInputStream getFileInputStream(File file) throws FileNotFoundException {
-    return new FileInputStream(file.getAbsolutePath());
-  }
-
-  BufferedInputStream getBufferedInputStream(FileInputStream fis) {
-    return new BufferedInputStream(fis);
-  }
-
-  ObjectInputStream getObjectInputStream(BufferedInputStream bis) throws IOException {
-    return new ObjectInputStream(bis);
-  }
-
-  FileOutputStream getFileOutputStream(File file) throws FileNotFoundException {
-    return new FileOutputStream(file.getAbsolutePath());
-  }
-
-  BufferedOutputStream getBufferedOutputStream(FileOutputStream fos) {
-    return new BufferedOutputStream(fos);
-  }
-
-  ObjectOutputStream getObjectOutputStream(BufferedOutputStream bos) throws IOException {
-    return new ObjectOutputStream(bos);
-  }
-
-  void writeToObjectOutputStream(ObjectOutputStream oos, List listToWrite) throws IOException {
-    oos.writeObject(listToWrite.size());
-  }
-
-  int getSessionCountFromObjectInputStream(ObjectInputStream ois)
-      throws IOException, ClassNotFoundException {
-    return (Integer) ois.readObject();
   }
 
   @Override
