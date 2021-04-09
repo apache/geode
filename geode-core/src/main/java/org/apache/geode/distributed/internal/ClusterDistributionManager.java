@@ -350,13 +350,13 @@ public class ClusterDistributionManager implements DistributionManager {
               }
             }
           }
+        } else {
+          distributionManager.addNewMember(id); // add ourselves
         }
-        distributionManager.addNewMember(id); // add ourselves
       }
 
       // Send out a StartupMessage to the other members.
       StartupOperation op = new StartupOperation(distributionManager, transport);
-
       try {
         if (!distributionManager.sendStartupMessage(op)) {
           // Well we didn't hear back from anyone else. We assume that
@@ -1793,9 +1793,7 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private void handleManagerStartup(InternalDistributedMember theId) {
     // Note test is under membersLock
-    if (!this.getId().getName().equals(theId.getName())) {
-      stats.incNodes(1);
-    }
+    stats.incNodes(1);
     addMemberEvent(new MemberJoinedEvent(theId));
   }
 

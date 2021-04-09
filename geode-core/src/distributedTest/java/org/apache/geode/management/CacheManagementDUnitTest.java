@@ -98,7 +98,7 @@ public class CacheManagementDUnitTest implements Serializable {
   }
 
   @Test
-  public void testGemFireConfigData() throws Exception {
+  public void testGemFireConfigData() {
     this.managementTestRule.createMembers();
     this.managementTestRule.createManagers();
 
@@ -152,7 +152,7 @@ public class CacheManagementDUnitTest implements Serializable {
    * Invoke remote operations on MemberMBean
    */
   @Test
-  public void testMemberMBeanOpsRemote() throws Exception {
+  public void testMemberMBeanOpsRemote() {
     this.managementTestRule.createMembers();
     this.managementTestRule.createManagers();
     this.managerVM.invoke(() -> invokeRemoteMemberMXBeanOps());
@@ -162,7 +162,7 @@ public class CacheManagementDUnitTest implements Serializable {
    * Creates and starts a managerVM. Multiple Managers
    */
   @Test
-  public void testManager() throws Exception {
+  public void testManager() {
     this.managementTestRule.createMember(this.memberVMs[0]);
     this.managementTestRule.createMember(this.memberVMs[1]);
 
@@ -185,7 +185,7 @@ public class CacheManagementDUnitTest implements Serializable {
    * Creates and starts a managerVM. Multiple Managers
    */
   @Test
-  public void testManagerShutdown() throws Exception {
+  public void testManagerShutdown() {
     this.managementTestRule.createMember(this.memberVMs[0]);
     this.managementTestRule.createMember(this.memberVMs[1]);
     this.managementTestRule.createMember(this.memberVMs[2]);
@@ -201,7 +201,7 @@ public class CacheManagementDUnitTest implements Serializable {
   }
 
   @Test
-  public void closeCacheShouldStopLocalManager() throws Exception {
+  public void closeCacheShouldStopLocalManager() {
     this.managementTestRule.createMember(this.memberVMs[0]);
     this.managementTestRule.createMember(this.memberVMs[1]);
 
@@ -224,7 +224,7 @@ public class CacheManagementDUnitTest implements Serializable {
   }
 
   @Test
-  public void testGetMBean() throws Exception {
+  public void testGetMBean() {
     this.managementTestRule.createMember(this.memberVMs[0]);
     this.managementTestRule.createMember(this.memberVMs[1]);
     this.managementTestRule.createMember(this.memberVMs[2]);
@@ -237,7 +237,7 @@ public class CacheManagementDUnitTest implements Serializable {
   }
 
   @Test
-  public void testQueryMBeans() throws Exception {
+  public void testQueryMBeans() {
     this.managementTestRule.createMember(this.memberVMs[0]);
     this.managementTestRule.createMember(this.memberVMs[1]);
     this.managementTestRule.createMember(this.memberVMs[2]);
@@ -250,7 +250,7 @@ public class CacheManagementDUnitTest implements Serializable {
   }
 
   @Test
-  public void testNotification() throws Exception {
+  public void testNotification() {
     // Step : 1 : Create Managed Node Caches
     this.managementTestRule.createMember(this.memberVMs[0]);
     this.managementTestRule.createMember(this.memberVMs[1]);
@@ -268,7 +268,7 @@ public class CacheManagementDUnitTest implements Serializable {
   }
 
   @Test
-  public void testNotificationManagingNodeFirst() throws Exception {
+  public void testNotificationManagingNodeFirst() {
     // Step : 1 : Create Managing Node Cache, start managerVM, add a notification
     // handler to DistributedSystemMXBean
     this.managementTestRule.createManager(this.managerVM, false);
@@ -287,7 +287,7 @@ public class CacheManagementDUnitTest implements Serializable {
   }
 
   @Test
-  public void testRedundancyZone() throws Exception {
+  public void testRedundancyZone() {
     String redundancyZone = "ARMY_ZONE";
 
     Properties props = new Properties();
@@ -303,14 +303,14 @@ public class CacheManagementDUnitTest implements Serializable {
   }
 
   @Test
-  public void testVisibleNodes() throws Exception {
+  public void testVisibleNodes() {
     this.managementTestRule.createMember(this.memberVMs[0]);
     this.managementTestRule.createMember(this.memberVMs[1]);
 
     this.memberVMs[1].invoke("visibleNodes", () -> {
       ManagementService service = this.managementTestRule.getExistingManagementService();
       MemberMXBean memberMXBean = service.getMemberMXBean();
-      assertThat(memberMXBean.getVisibleNodes()).isEqualTo(2);
+      assertThat(memberMXBean.getVisibleNodes()).isEqualTo(3);
     });
   }
 
