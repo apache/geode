@@ -40,7 +40,6 @@ import static org.mockito.quality.Strictness.STRICT_STUBS;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,7 +72,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
-import org.apache.geode.internal.cache.partitioned.ClearPRMessage;
 import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 
 @RunWith(JUnitParamsRunner.class)
@@ -215,19 +213,6 @@ public class PartitionedRegionTest {
     doNothing().when(spyPartitionedRegion).basicClear(any(), anyBoolean());
     spyPartitionedRegion.clear();
   }
-
-  @Test
-  public void createClearPRMessagesShouldCreateMessagePerBucket() {
-    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
-    RegionEventImpl regionEvent =
-        new RegionEventImpl(spyPartitionedRegion, Operation.REGION_CLEAR, null, false,
-            spyPartitionedRegion.getMyId(), true);
-    when(spyPartitionedRegion.getTotalNumberOfBuckets()).thenReturn(3);
-    EventID eventID = new EventID(spyPartitionedRegion.getCache().getDistributedSystem());
-    List<ClearPRMessage> msgs = spyPartitionedRegion.createClearPRMessages(eventID);
-    assertThat(msgs.size()).isEqualTo(3);
-  }
-
 
   @Test
   public void getBucketNodeForReadOrWriteReturnsPrimaryNodeForRegisterInterest() {
