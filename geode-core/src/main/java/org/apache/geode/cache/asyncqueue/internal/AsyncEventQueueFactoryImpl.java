@@ -281,6 +281,12 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
     return this;
   }
 
+  // keep this method internal
+  public AsyncEventQueueFactory setPartitionedRegionClearSupported(boolean supported) {
+    gatewaySenderAttributes.partitionedRegionClearSupported = supported;
+    return this;
+  }
+
   @Override
   public AsyncEventQueueFactory pauseEventDispatching() {
     pauseEventsDispatching = true;

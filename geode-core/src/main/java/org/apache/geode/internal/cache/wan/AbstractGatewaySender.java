@@ -143,6 +143,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected boolean forwardExpirationDestroy;
 
+  protected boolean partitionedRegionClearSupported;
+
   protected GatewayEventSubstitutionFilter substitutionFilter;
 
   protected LocatorDiscoveryCallback locatorDiscoveryCallback;
@@ -290,6 +292,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     }
     this.isBucketSorted = attrs.isBucketSorted();
     this.forwardExpirationDestroy = attrs.isForwardExpirationDestroy();
+    this.partitionedRegionClearSupported = attrs.isPartitionedRegionClearSupported();
   }
 
   public GatewaySenderAdvisor getSenderAdvisor() {
@@ -384,6 +387,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   @Override
   public boolean isForwardExpirationDestroy() {
     return this.forwardExpirationDestroy;
+  }
+
+  @Override
+  public boolean isPartitionedRegionClearSupported() {
+    return this.partitionedRegionClearSupported;
   }
 
   @Override

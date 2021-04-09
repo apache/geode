@@ -40,6 +40,8 @@ public interface InternalGatewaySender extends GatewaySender {
 
   boolean isForwardExpirationDestroy();
 
+  boolean isPartitionedRegionClearSupported();
+
   boolean getIsMetaQueue();
 
   InternalCache getCache();
