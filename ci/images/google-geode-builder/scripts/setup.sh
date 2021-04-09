@@ -66,7 +66,7 @@ apt-get install -y --no-install-recommends \
 rm -rf /etc/alternatives
 mv /etc/keep-alternatives /etc/alternatives
 
-pip3 install --update pip
+pip3 install --upgrade pip
 pip3 install setuptools docker-compose
 
 pushd /tmp
