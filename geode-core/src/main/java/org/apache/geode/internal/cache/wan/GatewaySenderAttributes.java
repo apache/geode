@@ -85,6 +85,9 @@ public class GatewaySenderAttributes {
 
   public boolean forwardExpirationDestroy = GatewaySender.DEFAULT_FORWARD_EXPIRATION_DESTROY;
 
+  public boolean partitionedRegionClearUnsupported =
+      GatewaySender.DEFAULT_PARTITIONED_REGION_CLEAR_UNSUPPORTED;
+
   public boolean enforceThreadsConnectSameReceiver =
       GatewaySender.DEFAULT_ENFORCE_THREADS_CONNECT_SAME_RECEIVER;
 
@@ -206,6 +209,10 @@ public class GatewaySenderAttributes {
 
   public boolean isForwardExpirationDestroy() {
     return this.forwardExpirationDestroy;
+  }
+
+  public boolean isPartitionedRegionClearUnsupported() {
+    return this.partitionedRegionClearUnsupported;
   }
 
   public boolean getEnforceThreadsConnectSameReceiver() {

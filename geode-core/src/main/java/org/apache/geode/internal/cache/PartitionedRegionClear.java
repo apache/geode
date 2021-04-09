@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +28,8 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.OperationAbortedException;
 import org.apache.geode.cache.PartitionedRegionPartialClearException;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -395,6 +398,24 @@ public class PartitionedRegionClear {
 
       // Force all primary buckets to be created before clear.
       assignAllPrimaryBuckets();
+
+      for (AsyncEventQueue asyncEventQueue : partitionedRegion.getCache()
+          .getAsyncEventQueues(false)) {
+        if (((AsyncEventQueueImpl) asyncEventQueue).isPartitionedRegionClearUnsupported()) {
+          throw new UnsupportedOperationException(
+              "PartitionedRegion clear is not supported on region with lucene index");
+        }
+      }
+      Iterator<AsyncEventQueue> allAEQsIterator =
+          partitionedRegion.getCache().getAsyncEventQueues(false).iterator();
+      while (allAEQsIterator.hasNext()) {
+        AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) allAEQsIterator.next();
+        if (aeq.isPartitionedRegionClearUnsupported()) {
+          throw new UnsupportedOperationException(
+              "PartitionedRegion clear is not supported on region "
+                  + partitionedRegion.getFullPath() + " because it has a lucene index");
+        }
+      }
 
       // do cacheWrite
       if (cacheWrite) {

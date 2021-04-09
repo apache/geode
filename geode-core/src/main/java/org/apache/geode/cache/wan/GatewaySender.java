@@ -101,6 +101,8 @@ public interface GatewaySender {
 
   boolean DEFAULT_FORWARD_EXPIRATION_DESTROY = false;
 
+  boolean DEFAULT_PARTITIONED_REGION_CLEAR_UNSUPPORTED = false;
+
   @Immutable
   OrderPolicy DEFAULT_ORDER_POLICY = OrderPolicy.KEY;
   /**

@@ -42,6 +42,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.PartitionedRegionPartialClearException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -56,15 +57,19 @@ import org.apache.geode.internal.serialization.KnownVersion;
 
 public class PartitionedRegionClearTest {
 
+  private GemFireCacheImpl cache;
+  private HashSet<AsyncEventQueue> allAEQs = new HashSet<>();
+  private PartitionedRegionClear partitionedRegionClear;
   private DistributionManager distributionManager;
   private PartitionedRegion partitionedRegion;
   private RegionAdvisor regionAdvisor;
   private InternalDistributedMember internalDistributedMember;
 
-  private PartitionedRegionClear partitionedRegionClear;
-
   @Before
   public void setUp() {
+
+    cache = mock(GemFireCacheImpl.class);
+    partitionedRegion = mock(PartitionedRegion.class);
     distributionManager = mock(DistributionManager.class);
     internalDistributedMember = mock(InternalDistributedMember.class);
     partitionedRegion = mock(PartitionedRegion.class);
@@ -73,6 +78,8 @@ public class PartitionedRegionClearTest {
     when(distributionManager.getDistributionManagerId()).thenReturn(internalDistributedMember);
     when(distributionManager.getId()).thenReturn(internalDistributedMember);
     when(internalDistributedMember.getVersion()).thenReturn(KnownVersion.CURRENT);
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(cache.getAsyncEventQueues(false)).thenReturn(allAEQs);
     when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
     when(partitionedRegion.getName()).thenReturn("prRegion");
     when(partitionedRegion.getRegionAdvisor()).thenReturn(regionAdvisor);
