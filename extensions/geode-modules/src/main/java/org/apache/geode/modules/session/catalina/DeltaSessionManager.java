@@ -533,7 +533,11 @@ public abstract class DeltaSessionManager extends ManagerBase
     TimerTask task = new TimerTask() {
       @Override
       public void run() {
-        int currentActiveSessions = getSessionCache().size();
+        int currentActiveSessions = 0;
+        try {
+          currentActiveSessions = getSessionCache().size();
+        } catch (Exception ignore) {
+        }
         if (currentActiveSessions > getMaxActive()) {
           setMaxActive(currentActiveSessions);
           if (getLogger().isDebugEnabled()) {
