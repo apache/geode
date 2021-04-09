@@ -171,7 +171,8 @@ public abstract class CargoTestBase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.get(null);
-    GeodeAwaitility.await().untilAsserted(() -> getKeyValueDataOnAllClients(null, "", resp.getSessionCookie()));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> getKeyValueDataOnAllClients(null, "", resp.getSessionCookie()));
   }
 
   /**
@@ -187,7 +188,8 @@ public abstract class CargoTestBase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
-    GeodeAwaitility.await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
   }
 
   /**
@@ -208,7 +210,8 @@ public abstract class CargoTestBase {
     manager.stopContainer(0);
     manager.removeContainer(0);
 
-    GeodeAwaitility.await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
 
     checkLogs();
   }
@@ -251,7 +254,8 @@ public abstract class CargoTestBase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
-    GeodeAwaitility.await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
     client.setMaxInactive(1); // max inactive time is 1 second. Lets wait a second.
     Thread.sleep(2000);
 
@@ -353,7 +357,8 @@ public abstract class CargoTestBase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
-    GeodeAwaitility.await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     client.remove(key);
 
@@ -376,7 +381,8 @@ public abstract class CargoTestBase {
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
 
-    GeodeAwaitility.await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
     int numContainers = manager.numContainers();
     // Add and start new container
     manager.addContainer(install);
@@ -385,7 +391,8 @@ public abstract class CargoTestBase {
     manager.startAllInactiveContainers();
     // Check that a container was added
     assertEquals(numContainers + 1, manager.numContainers());
-    GeodeAwaitility.await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
   }
 
   @Test
