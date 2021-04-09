@@ -28,28 +28,9 @@ task generateModuleXml(dependsOn: jar) {
     }
     doLast {
       generateModuleXmlForProject(jarFile, project, '', [])
-      generateModuleXmlForProject(jarFile, project, 'distributedTest', [])
     }
   }
 }
-
-//task generateDistributedTestModuleXml(dependsOn: jar) {
-//  if (!projectsToExclude.contains(project.name) || testProjectsToInclude.contains(project.name)) {
-//    def jarFile = jar.outputs.files.first()
-//    inputs.file {
-//      jarFile
-//    }
-//
-//    outputs.file {
-//      project(':geode-assembly').buildDir.toPath().resolve('distributedTest')
-//              .resolve("moduleDescriptors").resolve("main").resolve(project.name)
-//              .resolve(project.version.toString()).resolve("module.xml")
-//    }
-//    doLast {
-//      generateModuleXmlForProject(jarFile, project, 'distributedTest', [])
-//    }
-//  }
-//}
 
 task generateRuntimeClasspathFile() {
   doLast {
@@ -60,7 +41,6 @@ task generateRuntimeClasspathFile() {
         it.configurations.each {
           if (it.name == 'runtimeClasspath' || it.name == 'jbossModular') {
             it.resolvedConfiguration.resolvedArtifacts.each { dep ->
-              def moduleVersionIdentifier = dep.getModuleVersion().id
               runtimeList.add(dep)
             }
           }
@@ -72,7 +52,6 @@ task generateRuntimeClasspathFile() {
         it.configurations.each {
           if (it.name == 'distributedTestRuntimeClasspath') {
             it.resolvedConfiguration.resolvedArtifacts.each { dep ->
-              def moduleVersionIdentifier = dep.getModuleVersion().id
               dunitRuntimeList.add(dep)
             }
           }
