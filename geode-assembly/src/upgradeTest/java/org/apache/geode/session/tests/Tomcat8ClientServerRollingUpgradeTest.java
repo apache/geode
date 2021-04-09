@@ -136,12 +136,12 @@ public class Tomcat8ClientServerRollingUpgradeTest {
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             oldModules.getAbsolutePath(),
             oldBuild.getAbsolutePath() + "/lib",
-            portSupplier::getAvailablePort);
+            portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
     tomcat8AndCurrentModules =
         new TomcatInstall("Tomcat8AndCurrentModules", TomcatInstall.TomcatVersion.TOMCAT8,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
-            portSupplier::getAvailablePort);
+            portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
     classPathTomcat8AndOldModules = getClassPathTomcat8AndOldModules();
 
