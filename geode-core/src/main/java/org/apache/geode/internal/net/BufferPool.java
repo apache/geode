@@ -21,6 +21,8 @@ import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DMStats;
@@ -28,10 +30,13 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.shared.StringPrintWriter;
 import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.unsafe.internal.sun.nio.ch.DirectBuffer;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class BufferPool {
+  private static final Logger logger = LogService.getLogger();
+
   private final DMStats stats;
 
   /**
@@ -359,7 +364,7 @@ public class BufferPool {
    * you need to see the non-sliced buffer for some reason, such as logging its hashcode.
    */
   @VisibleForTesting
-  ByteBuffer getPoolableBuffer(final ByteBuffer buffer) {
+  public ByteBuffer getPoolableBuffer(final ByteBuffer buffer) {
     final Object attachment = DirectBuffer.attachment(buffer);
 
     if (null == attachment) {
