@@ -17,6 +17,9 @@
 import groovy.xml.MarkupBuilder
 import org.gradle.util.CollectionUtils
 
+import java.nio.file.Files
+import java.nio.file.Paths
+
 // Projects that do not need module.xml files generated for them. Mostly testing code, projects that
 // do not generate jars, and geode-deployment-legacy.
 ext.projectsToExclude = ["geode-pulse", "extensions", "geode-assembly", "geode-assembly-test", "geode-concurrency-test",
@@ -29,7 +32,7 @@ ext.projectsToExclude = ["geode-pulse", "extensions", "geode-assembly", "geode-a
                          "geode-client-bom", "geode-web", "geode-web-management", "geode-web-api",
                          "geode-all-bom", "geode-jboss-extensions","geode-dunit", "geode-junit", 'geode-deployment-test']
 
-ext.testProjectsToInclude = ['geode-dunit', 'geode-junit']
+ext.testProjectsToInclude = ['geode-dunit', 'geode-junit', 'geode-old-versions']
 
 def thirdPartyDepsNotToGenerate = { String targetConfigurationPrefix ->
   def depsNotToGenerate = []
@@ -80,10 +83,10 @@ ext.generateModuleXmlForProject = { File jar, Project projectToUse, String targe
 
   def depsToNotGenerate = thirdPartyDepsNotToGenerate(targetConfigurationPrefix)
 
-  def sourceJarPath = null
-  if (jar != null && jar.name.endsWith(".jar")) {
-    sourceJarPath = "lib/${jar.name}"
-  }
+//  def sourceJarPath = null
+//  if (jar != null && jar.name.endsWith(".jar")) {
+//    sourceJarPath = "lib/${jar.name}"
+//  }
 
   def geodeAssemblyProj = project(":geode-assembly")
   def configurationTargetPath = targetConfigurationPrefix.size() == 0? '/' : "/${targetConfigurationPrefix}ing/"
@@ -102,7 +105,7 @@ ext.generateModuleXmlForProject = { File jar, Project projectToUse, String targe
     }
   })
   if (shouldGenerateModuleXML(moduleName, targetConfigurationPrefix)) {
-    writeModuleXml(moduleName, moduleVersion, moduleDescriptorsRoot, "main", sourceJarPath, allProjectDeps, apiProjectDeps, namesAndVersion, targetConfigurationPrefix)
+    writeModuleXml(moduleName, moduleVersion, moduleDescriptorsRoot, "main", allProjectDeps, apiProjectDeps, namesAndVersion, targetConfigurationPrefix)
   }
 }
 
@@ -118,8 +121,8 @@ private Map<String, String[]> generateModuleNamesAndVersionsMap(runtimeList, dep
     def artifactVersion = moduleVersionIdentifier.version
     def resource = dependency.file.name
     namesAndVersion.put(artifactName, [artifactVersion, resource])
-    if (!depsToNotGenerate.contains(artifactName)) {
-      writeModuleXml(artifactName, artifactVersion, moduleDescriptorsRoot, "thirdParty", "lib/$resource", [], [], null, targetConfigurationPrefix)
+    if (!depsToNotGenerate.contains(artifactName) && !artifactName.contains('geode-')) {
+      writeModuleXml(artifactName, artifactVersion, moduleDescriptorsRoot, "thirdParty", [], [], namesAndVersion, targetConfigurationPrefix)
     }
   }
   namesAndVersion
@@ -131,9 +134,7 @@ def generateDependentProjects(Project projectToUse, String targetConfigurationPr
     if (it.name.toLowerCase() == "${targetConfigurationPrefix}runtimeClasspath".toLowerCase() || it.name == 'jbossModular') {
       it.resolvedConfiguration.resolvedArtifacts.each { artifact ->
         def moduleVersionIdentifier = artifact.getModuleVersion().id
-        if (!moduleVersionIdentifier.name.contains('geode-')) {
-          runtimeList.add(artifact)
-        }
+        runtimeList.add(artifact)
       }
     }
   }
@@ -153,7 +154,7 @@ def static getDependentProjectsForConfiguration(Project projectToUse, List<Strin
 }
 
 def writeModuleXml(moduleName, moduleVersion, moduleXMLRootPath,
-                   moduleClassification, sourceJarPath, projectDependencies,
+                   moduleClassification, projectDependencies,
                    apiProjectDeps, namesAndVersions, targetConfigurationPrefix) {
   def moduleNamePath = moduleName.replace('.', File.separator)
   if (moduleClassification == "main") {
@@ -170,7 +171,7 @@ def writeModuleXml(moduleName, moduleVersion, moduleXMLRootPath,
     xml.mkp.xmlDeclaration(version: '1.0', encoding: 'utf-8')
     xml.'module'('xmlns': 'urn:jboss:module:1.9', 'name': "$moduleName:$moduleVersion") {
       xml.'resources' {
-        addResourceRoots(sourceJarPath, moduleNamePath, xml, projectDependencies, namesAndVersions, targetConfigurationPrefix)
+        addResourceRoots(moduleName, moduleNamePath, xml, projectDependencies, namesAndVersions, targetConfigurationPrefix)
       }
       if (moduleName == 'geode-core') {
         xml.'main-class'(['name': 'org.apache.geode.distributed.ServerLauncher'])
@@ -191,7 +192,8 @@ def writeModuleXml(moduleName, moduleVersion, moduleXMLRootPath,
 }
 
 private def addModuleDependency(project, namesAndVersions, apiProjectDeps, xmlBuilder) {
-  if (!projectsToExclude.contains(project.name) && !project.ext.has('should-not-generate')) {
+//  if (!projectsToExclude.contains(project.name) && !project.ext.has('should-not-generate')) {
+  if (!project.ext.has('should-not-generate')) {
     String projectVersion = project.version
     if (projectVersion == null) {
       if(namesAndVersions[project.name] == null) {
@@ -214,13 +216,16 @@ private def addModuleDependency(project, namesAndVersions, apiProjectDeps, xmlBu
   }
 }
 
-private def addResourceRoots(sourceJarPath, moduleNamePath, xmlBuilder, projectDependencies, namesAndVersions, targetConfigurationPrefix) {
-  if (sourceJarPath != null) {
+private def addResourceRoots(moduleName, moduleNamePath, xmlBuilder, projectDependencies, namesAndVersions, targetConfigurationPrefix) {
+  if (moduleName != null) {
     def absolutePathPrefix = "../../../"
     for (int i = 0; i < moduleNamePath.split(File.separator).length; i++) {
       absolutePathPrefix = absolutePathPrefix.concat("../")
     }
-    xmlBuilder.'resource-root'(['path': absolutePathPrefix + sourceJarPath])
+    if(namesAndVersions[moduleName] == null) {
+      println("$moduleName has no version-------------------")
+    }
+    xmlBuilder.'resource-root'(['path': absolutePathPrefix + 'lib/'+ namesAndVersions[moduleName][1]])
     if (moduleNamePath.contains(project.name) && moduleNamePath.contains('geode-') && targetConfigurationPrefix.size() > 0) {
       addResourceRootsForConfiguration(targetConfigurationPrefix, xmlBuilder)
     }

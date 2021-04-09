@@ -285,10 +285,6 @@ dependencies {
     //JOptSimple is used by gfsh. A couple of usages have leaked into DiskStore
     implementation('net.sf.jopt-simple:jopt-simple')
 
-    //Log4j is used everywhere
-    implementation('org.apache.logging.log4j:log4j-api')
-
-
     implementation('io.swagger:swagger-annotations') {
         ext.optional = true
     }
@@ -328,6 +324,8 @@ dependencies {
     //geode-management currently has pieces of the public API
     //copied into it, so it is an API dependency
     api(project(':geode-management'))
+
+    jbossModular(project(':geode-deployment:geode-deployment-jboss-modules'))
 
     jcaCompile(sourceSets.main.output)
 

@@ -37,7 +37,6 @@ dependencies {
   implementation(project(':geode-common'))
   implementation('com.github.davidmoten:geo')
   implementation('io.netty:netty-all')
-  implementation('org.apache.logging.log4j:log4j-api')
   implementation('commons-codec:commons-codec')
   implementation('org.apache.commons:commons-lang3')
 

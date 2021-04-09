@@ -63,9 +63,6 @@ dependencies {
 
     implementation('net.sf.jopt-simple:jopt-simple')
 
-    //Log4j is used everywhere
-    implementation('org.apache.logging.log4j:log4j-api')
-
     //Spring core is used by the the gfsh cli
     implementation('org.springframework:spring-core') {
         ext.optional = true

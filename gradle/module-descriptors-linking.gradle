@@ -16,6 +16,9 @@
  */
 import groovy.xml.MarkupBuilder
 
+import java.nio.file.Files
+import java.nio.file.Paths
+
 apply from: "${rootDir}/${scriptDir}/module-descriptors-functions.gradle"
 
 tasks.register('generateThirdPartyModuleXML') {
@@ -38,7 +41,38 @@ tasks.register('generateThirdPartyModuleXML') {
     def geodeAssemblyProj = project(":geode-assembly")
     generateThirdPartyModuleXML("${geodeAssemblyProj.buildDir}/moduleDescriptors")
     generateThirdPartyModuleXML("${geodeAssemblyProj.buildDir}/distributedTesting/moduleDescriptors")
+    copyDistributedTestLibs()
   }
+}
+
+def copyDistributedTestLibs() {
+  Set<File> jarFilesToCopy = new HashSet<>()
+
+  mkdir("${project(':geode-assembly').buildDir}/distributedTesting/lib")
+  rootProject.subprojects.each {proj ->
+    proj.configurations.each { conf ->
+      if(conf.name == 'jbossModular' || conf.name == 'distributedTestRuntimeClasspath') {
+        jarFilesToCopy.addAll(conf.resolvedConfiguration.resolvedArtifacts
+                .stream()
+                .map{it.file}
+                .filter{it -> it.name.endsWith('.jar') && it.exists()}
+                .collect())
+      }
+    }
+  }
+
+  jarFilesToCopy.each {jarFile ->
+    def newLibPath = Paths.get("${project(':geode-assembly').buildDir}/distributedTesting/lib/${jarFile.name}")
+    Files.copy(jarFile.toPath(), newLibPath)
+  }
+
+//  runtimeList.each { ResolvedArtifact resolvedArtifact ->
+//    def artifactFile = resolvedArtifact.file
+//    def newLibPath = Paths.get("${project(':geode-assembly').buildDir}/distributedTesting/lib/${artifactFile.name}")
+//    try {
+//      Files.copy(artifactFile.toPath(), newLibPath)
+//    } catch(Throwable t) {}
+//  }
 }
 
 def generateThirdPartyModuleXML(String moduleDescriptorsRoot){

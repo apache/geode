@@ -353,11 +353,12 @@ class ProcessManager implements ChildVMLauncher {
           "-Dboot.module.loader=org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader");
       // classPath = removeModulesFromPath(classPath, "geode-dunit", "");
       // classPath = removeStuffFromClasspath(classPath);
-      addJBossClassPath(GEODE_HOME, cmds);
+      final String GEODE_DISTRIBUTED_TEST_HOME = System.getenv("GEODE_DISTRIBUTED_TEST_HOME");
+      addJBossClassPath(GEODE_DISTRIBUTED_TEST_HOME, cmds);
       cmds.add("org.jboss.modules.Main");
       cmds.add("-mp");
-      cmds.add(GEODE_HOME + File.separator + "moduleDescriptors" + File.separator + "main"
-          + File.pathSeparator + GEODE_HOME
+      cmds.add(GEODE_DISTRIBUTED_TEST_HOME + File.separator + "moduleDescriptors" + File.separator + "main"
+          + File.pathSeparator + GEODE_DISTRIBUTED_TEST_HOME
           + File.separator + "moduleDescriptors" + File.separator + "thirdParty");
       cmds.add("geode-dunit:" + GemFireVersion.getGemFireVersion());
     } else {
@@ -369,9 +370,9 @@ class ProcessManager implements ChildVMLauncher {
     return rst;
   }
 
-  private void addJBossClassPath(String GEODE_HOME, List<String> commandLine) {
+  private void addJBossClassPath(String rootPath, List<String> commandLine) {
     commandLine.add("-classpath");
-    String libPath = GEODE_HOME + File.separator + "lib";
+    String libPath = rootPath + File.separator + "lib";
     File jbossJar = findJarByArtifactIdAtPath("jboss-modules", libPath).orElseThrow(
         () -> new GemFireConfigException(
             "jboss-modules jar not found in " + libPath));
