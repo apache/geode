@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static java.util.Collections.singleton;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -22,6 +24,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
@@ -754,24 +757,31 @@ public abstract class PartitionMessage extends DistributionMessage
      */
     boolean responseRequired;
 
-    public PartitionResponse(InternalDistributedSystem dm, Set initMembers) {
-      this(dm, initMembers, true);
+    protected PartitionResponse(InternalDistributedSystem dm,
+        Set<InternalDistributedMember> recipients) {
+      this(dm, recipients, true);
     }
 
-    public PartitionResponse(InternalDistributedSystem dm, Set initMembers, boolean register) {
-      super(dm, initMembers);
-      if (register) {
-        register();
-      }
+    protected PartitionResponse(InternalDistributedSystem system,
+        Set<InternalDistributedMember> recipients, boolean register) {
+      this(system.getDistributionManager(), system, recipients, system.getCancelCriterion(),
+          register);
     }
 
-    public PartitionResponse(InternalDistributedSystem dm, InternalDistributedMember member) {
-      this(dm, member, true);
+    protected PartitionResponse(InternalDistributedSystem system,
+        InternalDistributedMember member) {
+      this(system.getDistributionManager(), system, singleton(member), system.getCancelCriterion());
     }
 
-    public PartitionResponse(InternalDistributedSystem dm, InternalDistributedMember member,
+    protected PartitionResponse(DistributionManager dm, InternalDistributedSystem system,
+        Set<InternalDistributedMember> recipients, CancelCriterion cancelCriterion) {
+      this(dm, system, recipients, cancelCriterion, true);
+    }
+
+    private PartitionResponse(DistributionManager dm, InternalDistributedSystem system,
+        Set<InternalDistributedMember> recipients, CancelCriterion cancelCriterion,
         boolean register) {
-      super(dm, member);
+      super(dm, system, recipients, cancelCriterion);
       if (register) {
         register();
       }
