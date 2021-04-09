@@ -20,10 +20,13 @@ package org.apache.geode.redis.internal.data;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.assertj.core.data.Offset;
 import org.junit.Before;
@@ -55,6 +58,7 @@ public class PartitionedRegionStatsUpdateTest {
   public static final String HASH_KEY = "hash key";
   public static final String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
   public static final String FIELD = "field";
+  private static final int SET_SIZE = 1000;
 
   private ReflectionObjectSizer ros = ReflectionObjectSizer.getInstance();
 
@@ -442,5 +446,67 @@ public class PartitionedRegionStatsUpdateTest {
     Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
 
     assertThat(actual).isCloseTo(expected, offset);
+  }
+
+  @Test
+  public void should_getAccurateSize_whenUsingRedisSetConstructor() {
+    final String KEY = "key1";
+    List<String> members1 = makeMemberList(SET_SIZE, "member1-");
+
+    HashSet<ByteArrayWrapper> localHashSetCopy = new HashSet<>(
+        members1.stream().map(a -> new ByteArrayWrapper(a.getBytes()))
+            .collect(Collectors.toSet()));
+
+    jedis1.sadd(KEY, members1.toArray(new String[] {}));
+    jedis1.sadd(KEY, "forceDelta");
+
+    Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    int expected = ros.sizeof(localHashSetCopy);
+    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
+
+    assertThat(actual).isCloseTo(expected, offset);
+  }
+
+  @Test
+  public void should_notCountDuplicates_whenUsingRedisSetConstructor() {
+    final String KEY = "key1";
+    final String MEMBER_BASE_STRING = "member1-";
+
+    List<String> distinctMembers = makeMemberList(SET_SIZE, MEMBER_BASE_STRING);
+    HashSet<ByteArrayWrapper> localHashSetCopy = new HashSet<>(
+        distinctMembers.stream().distinct().map(a -> new ByteArrayWrapper(a.getBytes()))
+            .collect(Collectors.toSet()));
+
+    jedis1.sadd(KEY, distinctMembers.toArray(new String[] {}));
+    assertThat(jedis1.scard(KEY)).isEqualTo(SET_SIZE);
+
+    localHashSetCopy.add(new ByteArrayWrapper(MEMBER_BASE_STRING.getBytes()));
+    assertThat(localHashSetCopy.size()).isEqualTo(SET_SIZE + 1);
+
+    List<String> duplicateMembers = makeListOfDuplicates(SET_SIZE, MEMBER_BASE_STRING);
+    jedis1.sadd(KEY, duplicateMembers.toArray(new String[] {}));
+    assertThat(jedis1.scard(KEY)).isEqualTo(SET_SIZE + 1);
+
+    Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    int expected = ros.sizeof(localHashSetCopy);
+    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
+
+    assertThat(actual).isCloseTo(expected, offset);
+  }
+
+  private List<String> makeMemberList(int setSize, String baseString) {
+    List<String> members = new ArrayList<>();
+    for (int i = 0; i < setSize; i++) {
+      members.add(baseString + i);
+    }
+    return members;
+  }
+
+  private List<String> makeListOfDuplicates(int setSize, String baseString) {
+    List<String> members = new ArrayList<>();
+    for (int i = 0; i < setSize; i++) {
+      members.add(baseString);
+    }
+    return members;
   }
 }
