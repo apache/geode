@@ -184,8 +184,11 @@ public class RedisHash extends AbstractRedisData {
   }
 
   private synchronized ByteArrayWrapper hashRemove(ByteArrayWrapper field) {
-    hashSize.addAndGet(-(2 * PER_STRING_OVERHEAD + field.length() + hash.get(field).length()));
-    return hash.remove(field);
+    ByteArrayWrapper oldValue = hash.remove(field);
+    if (oldValue != null) {
+      hashSize.addAndGet(-(2 * PER_STRING_OVERHEAD + field.length() + oldValue.length()));
+    }
+    return oldValue;
   }
 
   @Override
