@@ -61,6 +61,9 @@ public class RedisSet extends AbstractRedisData {
     } else {
       this.members = new HashSet<>(members);
     }
+    for (ByteArrayWrapper value : this.members) {
+      setSize.addAndGet(PER_MEMBER_OVERHEAD + value.length());
+    }
   }
 
   // for serialization
@@ -221,14 +224,19 @@ public class RedisSet extends AbstractRedisData {
   }
 
   private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
-    boolean retval = members.add(memberToAdd);
-    setSize.addAndGet(PER_MEMBER_OVERHEAD + memberToAdd.length());
-    return retval;
+    boolean actuallyAdded = members.add(memberToAdd);
+    if (actuallyAdded) {
+      setSize.addAndGet(PER_MEMBER_OVERHEAD + memberToAdd.length());
+    }
+    return actuallyAdded;
   }
 
   private boolean membersRemove(ByteArrayWrapper memberToRemove) {
-    setSize.addAndGet(-(PER_MEMBER_OVERHEAD + memberToRemove.length()));
-    return members.remove(memberToRemove);
+    boolean actuallyRemoved = members.remove(memberToRemove);
+    if (actuallyRemoved) {
+      setSize.addAndGet(-(PER_MEMBER_OVERHEAD + memberToRemove.length()));
+    }
+    return actuallyRemoved;
   }
 
   private synchronized boolean membersAddAll(AddsDeltaInfo addsDeltaInfo) {
@@ -254,7 +262,6 @@ public class RedisSet extends AbstractRedisData {
    */
   long sadd(ArrayList<ByteArrayWrapper> membersToAdd, Region<RedisKey, RedisData> region,
       RedisKey key) {
-
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
