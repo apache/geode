@@ -17,7 +17,6 @@ package org.apache.geode.internal;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -74,12 +73,6 @@ public class RetryTest {
             .isInstanceOf(TimeoutException.class);
     verify(timer, times(3)).nanoTime();
     verify(timer, times(1)).sleep(1L);
-  }
-
-  @Test
-  public void timerSleepCanTakeNegativeArgument() throws Exception {
-    Retry.SteadyTimer steadyTimer = new Retry.SteadyTimer();
-    assertThatNoException().isThrownBy(() -> steadyTimer.sleep(-2));
   }
 
   @Test
