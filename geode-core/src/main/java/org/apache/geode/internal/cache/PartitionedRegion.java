@@ -180,7 +180,6 @@ import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultWa
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.internal.cache.partitioned.ClearPRMessage;
 import org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage;
 import org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage.ContainsKeyValueResponse;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
@@ -2180,15 +2179,6 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public void writeToDisk() {
     throw new UnsupportedOperationException();
-  }
-
-  List<ClearPRMessage> createClearPRMessages(EventID eventID) {
-    ArrayList<ClearPRMessage> clearMsgList = new ArrayList<>();
-    for (int bucketId = 0; bucketId < getTotalNumberOfBuckets(); bucketId++) {
-      ClearPRMessage clearPRMessage = new ClearPRMessage(bucketId, eventID);
-      clearMsgList.add(clearPRMessage);
-    }
-    return clearMsgList;
   }
 
   @Override
