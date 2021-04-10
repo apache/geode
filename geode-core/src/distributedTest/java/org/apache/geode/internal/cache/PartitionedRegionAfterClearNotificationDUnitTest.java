@@ -326,7 +326,7 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
       public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
         if (message instanceof PartitionedRegionClearMessage) {
           if (((PartitionedRegionClearMessage) message)
-              .getOp() == PartitionedRegionClearMessage.OperationType.OP_LOCK_FOR_PR_CLEAR) {
+              .getOperationType() == PartitionedRegionClearMessage.OperationType.OP_LOCK_FOR_PR_CLEAR) {
             DistributionMessageObserver.setInstance(null);
             getBlackboard().signalGate("CLOSE_CACHE");
             try {
@@ -348,7 +348,7 @@ public class PartitionedRegionAfterClearNotificationDUnitTest implements Seriali
       public void afterProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
         if (message instanceof PartitionedRegionClearMessage) {
           if (((PartitionedRegionClearMessage) message)
-              .getOp() == PartitionedRegionClearMessage.OperationType.OP_LOCK_FOR_PR_CLEAR) {
+              .getOperationType() == PartitionedRegionClearMessage.OperationType.OP_LOCK_FOR_PR_CLEAR) {
             DistributionMessageObserver.setInstance(null);
             getBlackboard().signalGate("CLOSE_CACHE");
             try {
