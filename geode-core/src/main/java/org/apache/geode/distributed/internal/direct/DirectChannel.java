@@ -393,13 +393,8 @@ public class DirectChannel {
           Connection con = (Connection) it.next();
           processor.addSendConnection(con);
           con.addProcessor(processor);
-          Connection recvCon = getReceiverFor(con.getRemoteAddress());
-          if (recvCon != null) {
-            processor.addReceiveConnection(recvCon);
-            recvCon.addProcessor(processor);
-          }
           if (logger.isDebugEnabled()) {
-            logger.debug("add connections {} and {}, to processor {}", con, recvCon, processor);
+            logger.debug("add connections, to processor {}", con, processor);
           }
         }
       }
@@ -765,32 +760,6 @@ public class DirectChannel {
    */
   public boolean hasReceiversFor(DistributedMember mbr) {
     return this.conduit.hasReceiversFor(mbr);
-  }
-
-  /**
-   * get first receive shared unordered connection for given endpoint
-   */
-  private Connection getReceiverFor(DistributedMember mbr) {
-    TCPConduit tc = this.conduit;
-    Connection con = null;
-    if (tc != null) {
-      con = tc.getReceiversFor(mbr);
-      if (con == null) {
-        // if connection is not created, wait for 10ms
-        boolean interrupted = Thread.interrupted();
-        try {
-          Thread.sleep(10);
-        } catch (InterruptedException ignore) {
-          interrupted = true;
-        } finally {
-          if (interrupted) {
-            return null;
-          }
-        }
-        con = tc.getReceiversFor(mbr);
-      }
-    }
-    return con;
   }
 
 }

@@ -164,11 +164,6 @@ public class ReplyProcessor21 implements MembershipListener {
   private final List<Connection> sendCons = new ArrayList();
 
   /**
-   * List of connections on which we are expecting Reply message
-   */
-  private final List<Connection> receiveCons = new ArrayList();
-
-  /**
    * whether this reply processor should shorten severe-alert processing due to another vm waiting
    * on this one. This is a thread-local so that lower level comm layers can tell that the interval
    * should be shortened
@@ -1021,17 +1016,6 @@ public class ReplyProcessor21 implements MembershipListener {
       }
     }
 
-    synchronized (this.receiveCons) {
-      if (!receiveCons.isEmpty()) {
-        for (Iterator it = receiveCons.iterator(); it.hasNext();) {
-          con = (Connection) it.next();
-          if (con.getRemoteAddress().equals(m)) {
-            con.removeProcessor(this);
-            it.remove();
-          }
-        }
-      }
-    }
     return removed;
   }
 
@@ -1304,21 +1288,9 @@ public class ReplyProcessor21 implements MembershipListener {
     checkIfDone();
   }
 
-  public void addReceiveConnection(Connection con) {
-    synchronized (receiveCons) {
-      receiveCons.add(con);
-    }
-  }
-
   public void addSendConnection(Connection con) {
     synchronized (sendCons) {
       sendCons.add(con);
-    }
-  }
-
-  public void removeReceiveConnection(Connection con) {
-    synchronized (receiveCons) {
-      receiveCons.remove(con);
     }
   }
 

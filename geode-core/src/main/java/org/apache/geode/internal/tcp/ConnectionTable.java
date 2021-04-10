@@ -1071,20 +1071,6 @@ public class ConnectionTable {
     return receivers.size();
   }
 
-  /** get first receive shared unordered connection for given endpoint */
-  Connection getReceiverFor(DistributedMember endPoint) {
-    synchronized (receivers) {
-      for (Object receiver : receivers) {
-        Connection con = (Connection) receiver;
-        if (endPoint.equals(con.getRemoteAddress()) && con.isSharedResource()
-            && !con.getPreserveOrder()) {
-          return con;
-        }
-      }
-    }
-    return null;
-  }
-
   private class PendingConnection {
 
     /**

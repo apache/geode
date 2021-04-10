@@ -980,15 +980,6 @@ public class TCPConduit implements Runnable {
     return membership.waitForNewMember(remoteId);
   }
 
-  /** get first receive shared unordered connection for given endpoint */
-  public Connection getReceiversFor(DistributedMember endPoint) {
-    ConnectionTable ct = conTable;
-    if (ct == null)
-      return null;
-    return ct.getReceiverFor(endPoint);
-  }
-
-
   private class Stopper extends CancelCriterion {
 
     @Override

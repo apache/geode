@@ -1466,11 +1466,7 @@ public class Connection implements Runnable {
     List<ReplyProcessor21> copyProcessors = new ArrayList<>(attachedProcessors);
     if (!copyProcessors.isEmpty()) {
       for (ReplyProcessor21 processor : copyProcessors) {
-        if (isReceiver) {
-          processor.removeReceiveConnection(this);
-        } else {
-          processor.removeSendConnection(this);
-        }
+        processor.removeSendConnection(this);
         removeProcessor(processor);
         processor.cancel(getRemoteAddress(), reason);
       }
@@ -1482,11 +1478,7 @@ public class Connection implements Runnable {
     synchronized (attachedProcessors) {
       if (!attachedProcessors.isEmpty()) {
         for (ReplyProcessor21 processor : attachedProcessors) {
-          if (isReceiver) {
-            processor.removeReceiveConnection(this);
-          } else {
-            processor.removeSendConnection(this);
-          }
+          processor.removeSendConnection(this);
         }
         attachedProcessors.clear();
       }
