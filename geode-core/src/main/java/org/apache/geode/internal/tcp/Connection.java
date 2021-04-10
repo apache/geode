@@ -1294,7 +1294,7 @@ public class Connection implements Runnable {
     close(reason, true, false, false, false);
   }
 
-  boolean isClosing() {
+  public boolean isClosing() {
     return closing.get();
   }
 
@@ -1324,7 +1324,7 @@ public class Connection implements Runnable {
       return;
     }
 
-    removeConsInProcessors();
+    // removeConsInProcessors();
     boolean removeEndpoint = p_removeEndpoint;
     if (!onlyCleanup) {
       synchronized (this) {
@@ -1461,29 +1461,31 @@ public class Connection implements Runnable {
     }
   }
 
-  // Notify attached processors that connection is released
-  private void notifyProcessors(String reason) {
-    List<ReplyProcessor21> copyProcessors = new ArrayList<>(attachedProcessors);
-    if (!copyProcessors.isEmpty()) {
-      for (ReplyProcessor21 processor : copyProcessors) {
-        processor.removeSendConnection(this);
-        removeProcessor(processor);
-        processor.cancel(getRemoteAddress(), reason);
-      }
-    }
-  }
-
-  // Remove connection from attached processors
-  private void removeConsInProcessors() {
-    synchronized (attachedProcessors) {
-      if (!attachedProcessors.isEmpty()) {
-        for (ReplyProcessor21 processor : attachedProcessors) {
-          processor.removeSendConnection(this);
-        }
-        attachedProcessors.clear();
-      }
-    }
-  }
+  /*
+   * // Notify attached processors that connection is released
+   * private void notifyProcessors(String reason) {
+   * List<ReplyProcessor21> copyProcessors = new ArrayList<>(attachedProcessors);
+   * if (!copyProcessors.isEmpty()) {
+   * for (ReplyProcessor21 processor : copyProcessors) {
+   * processor.removeSendConnection(this);
+   * removeProcessor(processor);
+   * processor.cancel(getRemoteAddress(), reason);
+   * }
+   * }
+   * }
+   *
+   * // Remove connection from attached processors
+   * private void removeConsInProcessors() {
+   * synchronized (attachedProcessors) {
+   * if (!attachedProcessors.isEmpty()) {
+   * for (ReplyProcessor21 processor : attachedProcessors) {
+   * processor.removeSendConnection(this);
+   * }
+   * attachedProcessors.clear();
+   * }
+   * }
+   * }
+   */
 
   /**
    * starts a reader thread
@@ -1734,7 +1736,7 @@ public class Connection implements Runnable {
           }
           readerShuttingDown = true;
           String reason = String.format("IOException in channel read: %s", e);
-          notifyProcessors(reason);
+          // notifyProcessors(reason);
           try {
             requestClose(reason);
           } catch (Exception ignored) {
@@ -3403,17 +3405,19 @@ public class Connection implements Runnable {
     return messagesSent;
   }
 
-  public void addProcessor(ReplyProcessor21 processor) {
-    synchronized (attachedProcessors) {
-      attachedProcessors.add(processor);
-    }
-  }
-
-  public void removeProcessor(ReplyProcessor21 processor) {
-    synchronized (attachedProcessors) {
-      attachedProcessors.remove(processor);
-    }
-  }
+  /*
+   * public void addProcessor(ReplyProcessor21 processor) {
+   * synchronized (attachedProcessors) {
+   * attachedProcessors.add(processor);
+   * }
+   * }
+   *
+   * public void removeProcessor(ReplyProcessor21 processor) {
+   * synchronized (attachedProcessors) {
+   * attachedProcessors.remove(processor);
+   * }
+   * }
+   */
 
   private class BatchBufferFlusher extends Thread {
 

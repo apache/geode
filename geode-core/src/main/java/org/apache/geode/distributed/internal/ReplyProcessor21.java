@@ -778,6 +778,11 @@ public class ReplyProcessor21 implements MembershipListener {
     return waitForRepliesUninterruptibly(p_msecs, getLatch(), true);
   }
 
+  public boolean waitForRepliesUninterruptibly(long p_msecs, boolean doCleanUp)
+      throws ReplyException {
+    return waitForRepliesUninterruptibly(p_msecs, getLatch(), doCleanUp);
+  }
+
   public boolean waitForRepliesUninterruptibly(long p_msecs, StoppableCountDownLatch latch,
       boolean doCleanUp) throws ReplyException {
     if (this.keeperCleanedUp) {
@@ -1003,18 +1008,20 @@ public class ReplyProcessor21 implements MembershipListener {
     if (!removed)
       return removed;
 
-    Connection con;
-    synchronized (this.sendCons) {
-      if (!sendCons.isEmpty()) {
-        for (Iterator it = sendCons.iterator(); it.hasNext();) {
-          con = (Connection) it.next();
-          if (con.getRemoteAddress().equals(m)) {
-            con.removeProcessor(this);
-            it.remove();
-          }
-        }
-      }
-    }
+    /*
+     * Connection con;
+     * synchronized (this.sendCons) {
+     * if (!sendCons.isEmpty()) {
+     * for (Iterator it = sendCons.iterator(); it.hasNext();) {
+     * con = (Connection) it.next();
+     * if (con.getRemoteAddress().equals(m)) {
+     * con.removeProcessor(this);
+     * it.remove();
+     * }
+     * }
+     * }
+     * }
+     */
 
     return removed;
   }
@@ -1032,7 +1039,7 @@ public class ReplyProcessor21 implements MembershipListener {
     return sz;
   }
 
-  protected boolean waitingOnMember(InternalDistributedMember id) {
+  public boolean waitingOnMember(InternalDistributedMember id) {
     synchronized (this.members) {
       int cells = this.members.length;
       for (int i = 0; i < cells; i++) {
@@ -1281,23 +1288,18 @@ public class ReplyProcessor21 implements MembershipListener {
     checkIfDone();
   }
 
-  public void cancel(InternalDistributedMember sender, String reason) {
-    processException(
-        new ReplyException("Connection closed while waiting for reply message, reason: " + reason));
-    removeMember(sender, false);
-    checkIfDone();
-  }
-
-  public void addSendConnection(Connection con) {
-    synchronized (sendCons) {
-      sendCons.add(con);
-    }
-  }
-
-  public void removeSendConnection(Connection con) {
-    synchronized (sendCons) {
-      sendCons.remove(con);
-    }
-  }
+  /*
+   * public void addSendConnection(Connection con) {
+   * synchronized (sendCons) {
+   * sendCons.add(con);
+   * }
+   * }
+   *
+   * public void removeSendConnection(Connection con) {
+   * synchronized (sendCons) {
+   * sendCons.remove(con);
+   * }
+   * }
+   */
 
 }
