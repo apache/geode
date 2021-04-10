@@ -236,10 +236,11 @@ public class PRClearCreateIndexDUnitTest implements Serializable {
       if (message instanceof PartitionedRegionClearMessage) {
         PartitionedRegionClearMessage clearMessage = (PartitionedRegionClearMessage) message;
         if (clearMessage
-            .getOp() == PartitionedRegionClearMessage.OperationType.OP_LOCK_FOR_PR_CLEAR) {
+            .getOperationType() == PartitionedRegionClearMessage.OperationType.OP_LOCK_FOR_PR_CLEAR) {
           lock_others = true;
         }
-        if (clearMessage.getOp() == PartitionedRegionClearMessage.OperationType.OP_PR_CLEAR) {
+        if (clearMessage
+            .getOperationType() == PartitionedRegionClearMessage.OperationType.OP_PR_CLEAR) {
           clear_others = true;
         }
       }
