@@ -220,7 +220,7 @@ public class PartitionRegionClearHATest implements Serializable {
       if (message instanceof PartitionedRegionClearMessage) {
         PartitionedRegionClearMessage clearMessage = (PartitionedRegionClearMessage) message;
         if (clearMessage
-            .getOp() == PartitionedRegionClearMessage.OperationType.OP_UNLOCK_FOR_PR_CLEAR) {
+            .getOperationType() == PartitionedRegionClearMessage.OperationType.OP_UNLOCK_FOR_PR_CLEAR) {
           try {
             // count down to 1 so that we can go ahead and restart the server
             latch.countDown();

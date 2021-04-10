@@ -759,7 +759,7 @@ public class PartitionedRegionClearWithAlterRegionDUnitTest implements Serializa
     private void shutdownMember(DistributionMessage message) {
       if (message instanceof PartitionedRegionClearMessage) {
         if (((PartitionedRegionClearMessage) message)
-            .getOp() == PartitionedRegionClearMessage.OperationType.OP_PR_CLEAR) {
+            .getOperationType() == PartitionedRegionClearMessage.OperationType.OP_PR_CLEAR) {
           DistributionMessageObserver.setInstance(null);
           InternalDistributedSystem.getConnectedInstance().stopReconnectingNoDisconnect();
           MembershipManagerHelper
