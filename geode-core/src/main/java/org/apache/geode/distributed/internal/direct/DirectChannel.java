@@ -390,15 +390,20 @@ public class DirectChannel {
       ReplyProcessor21 processor = ReplyProcessor21.getProcessor(msg.getProcessorId());
       if (processor != null) {
         List retrydestinations = new ArrayList();
+        try {
 
-        if (!processor.waitForRepliesUninterruptibly(20, false)) {
-          for (Iterator it = totalSentCons.iterator(); it.hasNext();) {
-            Connection con = (Connection) it.next();
-            if (processor.waitingOnMember(con.getRemoteAddress()) && con.isClosing()) {
-              retrydestinations.add(con.getRemoteAddress());
+          if (!processor.waitForRepliesUninterruptibly(20, false)) {
+            for (Iterator it = totalSentCons.iterator(); it.hasNext();) {
+              Connection con = (Connection) it.next();
+              if (processor.waitingOnMember(con.getRemoteAddress()) && con.isClosing()) {
+                retrydestinations.add(con.getRemoteAddress());
+              }
             }
           }
+        } catch (Exception e) {
+          // ignore
         }
+
         if (!retrydestinations.isEmpty()) {
           resendMessage(mgr, retrydestinations, msg, ackWaitThreshold, ackSAThreshold);
         }
