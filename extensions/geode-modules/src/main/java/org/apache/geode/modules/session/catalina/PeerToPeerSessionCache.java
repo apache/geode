@@ -27,8 +27,6 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.modules.session.catalina.callback.LocalSessionCacheLoader;
 import org.apache.geode.modules.session.catalina.callback.LocalSessionCacheWriter;
 import org.apache.geode.modules.session.catalina.callback.SessionExpirationCacheListener;
@@ -49,7 +47,6 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
   public PeerToPeerSessionCache(SessionManager sessionManager, Cache cache) {
     super(sessionManager);
     this.cache = cache;
-    addReconnectListener();
   }
 
   @Override
@@ -244,21 +241,5 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
 
   Execution getExecutionForFunctionOnMembersWithArguments(Object[] arguments) {
     return FunctionService.onMembers().setArguments(arguments);
-  }
-
-  private void addReconnectListener() {
-    InternalDistributedSystem.addReconnectListener(
-        new InternalDistributedSystem.ReconnectListener() {
-          @Override
-          public void onReconnect(InternalDistributedSystem oldSystem,
-              InternalDistributedSystem newSystem) {
-            reinitialize(newSystem.getCache());
-          }
-        });
-  }
-
-  private void reinitialize(InternalCache reconnectedCache) {
-    this.cache = reconnectedCache;
-    initialize();
   }
 }
