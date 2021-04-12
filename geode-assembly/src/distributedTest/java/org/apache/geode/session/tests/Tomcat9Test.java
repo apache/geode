@@ -22,7 +22,6 @@ import java.util.function.IntSupplier;
 public class Tomcat9Test extends CargoTestBase {
   @Override
   public ContainerInstall getInstall(IntSupplier portSupplier) throws Exception {
-    return new TomcatInstall(getClass().getSimpleName(), TOMCAT9, PEER_TO_PEER, portSupplier,
-        TomcatInstall.CommitValve.DEFAULT);
+    return new TomcatInstall(getClass().getSimpleName(), TOMCAT9, PEER_TO_PEER, portSupplier);
   }
 }
