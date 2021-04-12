@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -87,6 +88,7 @@ public class CompactRangeIndexJUnitTest {
    * Tests adding entries to compact range index where the key is null fixes bug 47151 where null
    * keyed entries would be removed after being added
    */
+  @Ignore
   @Test
   public void testNullKeyCompactRangeIndex() throws Exception {
     index = utils.createIndex("indexName", "status", SEPARATOR + "exampleRegion");
@@ -109,6 +111,7 @@ public class CompactRangeIndexJUnitTest {
   /**
    * Tests adding entries to compact range index where the the key of an indexed map field is null.
    */
+  @Ignore
   @Test
   public void testNullMapKeyCompactRangeIndex() throws Exception {
     index = utils.createIndex("indexName", "positions[*]", SEPARATOR + "exampleRegion");
@@ -134,6 +137,7 @@ public class CompactRangeIndexJUnitTest {
   /**
    * Tests adding entries to compact range index where the the key of an indexed map field is null.
    */
+  @Ignore
   @Test
   public void testNullMapKeyCompactRangeIndexCreateIndexLater() throws Exception {
     Region region = utils.getCache().getRegion("exampleRegion");
@@ -161,6 +165,7 @@ public class CompactRangeIndexJUnitTest {
    * empty index elem before adding the entries the fix is to add the entries to the elem and then
    * transition to that elem
    */
+  @Ignore
   @Test
   public void testCompactRangeIndexMemoryIndexStoreMaintenance() throws Exception {
     try {
@@ -225,6 +230,7 @@ public class CompactRangeIndexJUnitTest {
    * hash set The other thread could remove from the empty concurrent hash set. Instead we now set a
    * token, do all the puts into a collection and then unsets the token to the new collection
    */
+  @Ignore
   @Test
   public void testMemoryIndexStoreMaintenanceTransitionFromElemArrayToTokenToConcurrentHashSet()
       throws Exception {
@@ -294,6 +300,7 @@ public class CompactRangeIndexJUnitTest {
     }
   }
 
+  @Ignore
   @Test
   public void testInvalidTokens() throws Exception {
     final Region r = utils.getCache().getRegion(SEPARATOR + "exampleRegion");
@@ -323,6 +330,7 @@ public class CompactRangeIndexJUnitTest {
     assertEquals("incorrect number of entries in collection", 0, count);
   }
 
+  @Ignore
   @Test
   public void testUpdateInProgressWithMethodInvocationInIndexClauseShouldNotThrowException()
       throws Exception {
@@ -456,6 +464,7 @@ public class CompactRangeIndexJUnitTest {
    * Tests adding entries to compact range index where there are undefined and null values
    * for the key
    */
+  @Ignore
   @Test
   public void testNullAndUndefinedValuesForMapKeyInCompactRangeIndex() throws Exception {
     index = utils.createIndex("indexName", "positions['SUN']", SEPARATOR + "exampleRegion");
