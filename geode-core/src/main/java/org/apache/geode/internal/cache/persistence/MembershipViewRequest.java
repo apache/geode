@@ -40,7 +40,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
@@ -237,7 +236,7 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
       boolean hasView = in.readBoolean();
       if (hasView) {
         view = new PersistentMembershipView();
-        InternalDataSerializer.invokeFromData(view, in);
+        context.getDeserializer().invokeFromData(view, in);
       }
     }
 
@@ -249,7 +248,7 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
         out.writeBoolean(false);
       } else {
         out.writeBoolean(true);
-        InternalDataSerializer.invokeToData(view, out);
+        context.getSerializer().invokeToData(view, out);
       }
     }
   }

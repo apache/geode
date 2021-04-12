@@ -153,7 +153,7 @@ public class Node extends ExternalizableDSFID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    InternalDataSerializer.invokeToData(this.memberId, out);
+    context.getSerializer().invokeToData(this.memberId, out);
     out.writeInt(this.prType);
     out.writeBoolean(this.isPersistent);
     out.writeByte(this.cacheLoaderWriterByte);
@@ -164,7 +164,7 @@ public class Node extends ExternalizableDSFID {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     this.memberId = new InternalDistributedMember();
-    InternalDataSerializer.invokeFromData(this.memberId, in);
+    context.getDeserializer().invokeFromData(this.memberId, in);
     this.prType = in.readInt();
     this.isPersistent = in.readBoolean();
     this.cacheLoaderWriterByte = in.readByte();

@@ -1205,14 +1205,14 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     out.writeInt(this.memberToVersion.size());
     for (Map.Entry<T, RegionVersionHolder<T>> entry : this.memberToVersion.entrySet()) {
       writeMember(entry.getKey(), out);
-      InternalDataSerializer.invokeToData(entry.getValue(), out);
+      context.getSerializer().invokeToData(entry.getValue(), out);
     }
     out.writeInt(this.memberToGCVersion.size());
     for (Map.Entry<T, Long> entry : this.memberToGCVersion.entrySet()) {
       writeMember(entry.getKey(), out);
       out.writeLong(entry.getValue());
     }
-    InternalDataSerializer.invokeToData(this.localExceptions, out);
+    context.getSerializer().invokeToData(this.localExceptions, out);
   }
 
   /*

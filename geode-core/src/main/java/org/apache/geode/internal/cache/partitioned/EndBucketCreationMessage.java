@@ -132,7 +132,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
     super.fromData(in, context);
     this.bucketId = in.readInt();
     newPrimary = new InternalDistributedMember();
-    InternalDataSerializer.invokeFromData(newPrimary, in);
+    context.getDeserializer().invokeFromData(newPrimary, in);
   }
 
   @Override
@@ -140,6 +140,6 @@ public class EndBucketCreationMessage extends PartitionMessage {
       SerializationContext context) throws IOException {
     super.toData(out, context);
     out.writeInt(this.bucketId);
-    InternalDataSerializer.invokeToData(newPrimary, out);
+    context.getSerializer().invokeToData(newPrimary, out);
   }
 }

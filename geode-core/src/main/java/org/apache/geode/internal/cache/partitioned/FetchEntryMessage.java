@@ -283,7 +283,7 @@ public class FetchEntryMessage extends PartitionMessage {
         out.writeBoolean(true); // null entry
       } else {
         out.writeBoolean(false); // null entry
-        InternalDataSerializer.invokeToData(this.value, out);
+        context.getSerializer().invokeToData(this.value, out);
       }
     }
 

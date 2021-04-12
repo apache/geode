@@ -33,7 +33,6 @@ import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
@@ -144,7 +143,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
         this.profiles = new ResourceManagerProfile[l];
         for (int i = 0; i < this.profiles.length; i++) {
           final ResourceManagerProfile r = new ResourceManagerProfile();
-          InternalDataSerializer.invokeFromData(r, in);
+          context.getDeserializer().invokeFromData(r, in);
           this.profiles[i] = r;
         }
       } else {
@@ -160,7 +159,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
       if (this.profiles != null) {
         out.writeInt(this.profiles.length);
         for (int i = 0; i < this.profiles.length; i++) {
-          InternalDataSerializer.invokeToData(this.profiles[i], out);
+          context.getSerializer().invokeToData(this.profiles[i], out);
         }
       } else {
         out.writeInt(-1);

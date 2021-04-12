@@ -32,7 +32,6 @@ import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -145,7 +144,7 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
       DeserializationContext context) throws IOException, ClassNotFoundException {
     int size = in.readInt();
     ObjectTypeImpl clt = new ObjectTypeImpl();
-    InternalDataSerializer.invokeFromData(clt, in);
+    context.getDeserializer().invokeFromData(clt, in);
     setElementType(clt);
     for (int k = size; k > 0; k--) {
       this.add(context.getDeserializer().readObject(in));
@@ -158,7 +157,7 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
     out.writeInt(size());
     ObjectTypeImpl ctImpl = (ObjectTypeImpl) this.getCollectionType().getElementType();
     Assert.assertTrue(ctImpl != null, "ctImpl can not be null");
-    InternalDataSerializer.invokeToData(ctImpl, out);
+    context.getSerializer().invokeToData(ctImpl, out);
     for (Iterator itr = this.iterator(); itr.hasNext();) {
       context.getSerializer().writeObject(itr.next(), out);
     }

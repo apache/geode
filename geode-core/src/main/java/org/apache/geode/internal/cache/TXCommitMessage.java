@@ -62,7 +62,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.locks.TXLockId;
 import org.apache.geode.internal.cache.locks.TXLockIdImpl;
@@ -896,12 +895,12 @@ public class TXCommitMessage extends PooledDistributionMessage
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     out.writeInt(this.processorId);
-    InternalDataSerializer.invokeToData(this.txIdent, out);
+    context.getSerializer().invokeToData(this.txIdent, out);
     {
       boolean hasLockId = this.lockId != null;
       out.writeBoolean(hasLockId);
       if (hasLockId) {
-        InternalDataSerializer.invokeToData(this.lockId, out);
+        context.getSerializer().invokeToData(this.lockId, out);
       }
     }
     int regionsSize = 0;
@@ -1769,7 +1768,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
-      InternalDataSerializer.invokeToData(this.lockId, out);
+      context.getSerializer().invokeToData(this.lockId, out);
     }
 
     @Override
@@ -1824,7 +1823,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
-      InternalDataSerializer.invokeToData(this.txId, out);
+      context.getSerializer().invokeToData(this.txId, out);
     }
 
     @Override

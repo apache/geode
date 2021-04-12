@@ -2094,7 +2094,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         booleans |= PERSISTENT;
       out.writeByte(booleans);
       if (this.versionTag != null) {
-        InternalDataSerializer.invokeToData(this.versionTag, out);
+        context.getSerializer().invokeToData(this.versionTag, out);
       }
     }
 

@@ -135,7 +135,7 @@ public class TXLockBatch implements DLockBatch, DataSerializableFixedID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    InternalDataSerializer.invokeToData(this.txLockId, out);
+    context.getSerializer().invokeToData(this.txLockId, out);
     InternalDataSerializer.writeSet(this.participants, out);
     if (this.reqs == null) {
       out.writeInt(-1);
@@ -143,7 +143,7 @@ public class TXLockBatch implements DLockBatch, DataSerializableFixedID {
       out.writeInt(this.reqs.size());
       for (Iterator iter = this.reqs.iterator(); iter.hasNext();) {
         TXRegionLockRequestImpl elem = (TXRegionLockRequestImpl) iter.next();
-        InternalDataSerializer.invokeToData(elem, out);
+        context.getSerializer().invokeToData(elem, out);
       }
     }
   }

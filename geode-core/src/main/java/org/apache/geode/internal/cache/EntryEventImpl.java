@@ -49,11 +49,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
@@ -2294,7 +2292,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
         context.getSerializer().writeObject(ov, out);
       }
     }
-    InternalDataSerializer.invokeToData((InternalDistributedMember) this.distributedMember, out);
+    context.getSerializer().invokeToData(this.distributedMember, out);
     context.getSerializer().writeObject(getContext(), out);
     DataSerializer.writeLong(tailKey, out);
   }

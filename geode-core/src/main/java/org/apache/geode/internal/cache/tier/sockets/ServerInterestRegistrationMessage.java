@@ -26,7 +26,6 @@ import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
@@ -108,8 +107,8 @@ public class ServerInterestRegistrationMessage extends HighPriorityDistributionM
       SerializationContext context) throws IOException {
     super.toData(out, context);
     out.writeInt(this.processorId);
-    InternalDataSerializer.invokeToData(this.clientId, out);
-    InternalDataSerializer.invokeToData(this.clientMessage, out);
+    context.getSerializer().invokeToData(this.clientId, out);
+    context.getSerializer().invokeToData(this.clientMessage, out);
   }
 
   @Override
@@ -118,8 +117,8 @@ public class ServerInterestRegistrationMessage extends HighPriorityDistributionM
     super.fromData(in, context);
     this.processorId = in.readInt();
     this.clientId = new ClientProxyMembershipID();
-    InternalDataSerializer.invokeFromData(this.clientId, in);
+    context.getDeserializer().invokeFromData(this.clientId, in);
     this.clientMessage = new ClientInterestMessageImpl();
-    InternalDataSerializer.invokeFromData(this.clientMessage, in);
+    context.getDeserializer().invokeFromData(this.clientMessage, in);
   }
 }

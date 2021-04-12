@@ -43,7 +43,6 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -1493,7 +1492,7 @@ public class DistributionAdvisor {
 
     @Override
     public void toData(DataOutput out, SerializationContext context) throws IOException {
-      InternalDataSerializer.invokeToData(peerMemberId, out);
+      context.getSerializer().invokeToData(peerMemberId, out);
       out.writeInt(version);
       out.writeInt(serialNumber);
     }
@@ -1502,7 +1501,7 @@ public class DistributionAdvisor {
     public void fromData(DataInput in, DeserializationContext context)
         throws IOException, ClassNotFoundException {
       peerMemberId = new InternalDistributedMember();
-      InternalDataSerializer.invokeFromData(peerMemberId, in);
+      context.getDeserializer().invokeFromData(peerMemberId, in);
       version = in.readInt();
       serialNumber = in.readInt();
     }

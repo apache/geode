@@ -28,7 +28,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
@@ -82,9 +81,9 @@ public class CacheServerLoadMessage extends SerialDistributionMessage {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     load = new ServerLoad();
-    InternalDataSerializer.invokeFromData(load, in);
+    context.getDeserializer().invokeFromData(load, in);
     location = new ServerLocation();
-    InternalDataSerializer.invokeFromData(location, in);
+    context.getDeserializer().invokeFromData(location, in);
     this.clientIds = DataSerializer.readArrayList(in);
   }
 
@@ -92,8 +91,8 @@ public class CacheServerLoadMessage extends SerialDistributionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    InternalDataSerializer.invokeToData(load, out);
-    InternalDataSerializer.invokeToData(location, out);
+    context.getSerializer().invokeToData(load, out);
+    context.getSerializer().invokeToData(location, out);
     DataSerializer.writeArrayList(this.clientIds, out);
   }
 

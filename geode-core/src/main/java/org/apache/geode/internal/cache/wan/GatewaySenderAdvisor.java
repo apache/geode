@@ -42,7 +42,6 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -594,7 +593,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       boolean serverLocationFound = DataSerializer.readPrimitiveBoolean(in);
       if (serverLocationFound) {
         this.serverLocation = new ServerLocation();
-        InternalDataSerializer.invokeFromData(this.serverLocation, in);
+        context.getDeserializer().invokeFromData(this.serverLocation, in);
       }
     }
 
@@ -639,7 +638,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       boolean serverLocationFound = (this.serverLocation != null);
       DataSerializer.writePrimitiveBoolean(serverLocationFound, out);
       if (serverLocationFound) {
-        InternalDataSerializer.invokeToData(serverLocation, out);
+        context.getSerializer().invokeToData(serverLocation, out);
       }
     }
 
@@ -665,7 +664,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       boolean serverLocationFound = DataSerializer.readPrimitiveBoolean(in);
       if (serverLocationFound) {
         this.serverLocation = new ServerLocation();
-        InternalDataSerializer.invokeFromData(this.serverLocation, in);
+        context.getDeserializer().invokeFromData(this.serverLocation, in);
       }
     }
 
@@ -702,7 +701,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       boolean serverLocationFound = (this.serverLocation != null);
       DataSerializer.writePrimitiveBoolean(serverLocationFound, out);
       if (serverLocationFound) {
-        InternalDataSerializer.invokeToData(serverLocation, out);
+        context.getSerializer().invokeToData(serverLocation, out);
       }
     }
 

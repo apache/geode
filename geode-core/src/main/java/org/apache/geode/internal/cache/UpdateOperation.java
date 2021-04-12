@@ -34,7 +34,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EntryEventImpl.NewValueImporter;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -354,7 +353,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
       final boolean hasEventId = (extraFlags & HAS_EVENTID) != 0;
       if (hasEventId) {
         this.eventId = new EventID();
-        InternalDataSerializer.invokeFromData(this.eventId, in);
+        context.getDeserializer().invokeFromData(this.eventId, in);
 
         boolean hasTailKey = in.readBoolean();
         if (hasTailKey) {
@@ -393,7 +392,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
       out.writeByte(extraFlags);
 
       if (this.eventId != null) {
-        InternalDataSerializer.invokeToData(this.eventId, out);
+        context.getSerializer().invokeToData(this.eventId, out);
         if (region instanceof BucketRegion) {
           PartitionedRegion pr = region.getPartitionedRegion();
           // TODO Kishor: Since here we are talking about tail key

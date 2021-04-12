@@ -121,7 +121,7 @@ public class TXLockUpdateParticipantsMessage extends PooledDistributionMessage
       SerializationContext context) throws IOException {
     super.toData(out, context);
     out.writeInt(this.processorId);
-    InternalDataSerializer.invokeToData(this.txLockId, out);
+    context.getSerializer().invokeToData(this.txLockId, out);
     DataSerializer.writeString(this.serviceName, out);
     InternalDataSerializer.writeSet(this.updatedParticipants, out);
   }

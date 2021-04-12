@@ -100,7 +100,7 @@ public class TXId extends ExternalizableDSFID implements TransactionId {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     out.writeInt(this.uniqId);
-    InternalDataSerializer.invokeToData(this.memberId, out);
+    context.getSerializer().invokeToData(this.memberId, out);
   }
 
   @Override

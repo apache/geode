@@ -412,7 +412,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
         numToWrite = Math.max(0, this.versionTags.size() - startIndex);
       }
       InternalDataSerializer.writeUnsignedVL(numToWrite, out);
-      Map<VersionSource, Integer> ids = new HashMap<VersionSource, Integer>(numToWrite);
+      Map<VersionSource, Integer> ids = new HashMap<>(numToWrite);
       int idCount = 0;
       int index = startIndex;
       for (int i = 0; i < numToWrite; i++, index++) {
@@ -423,14 +423,14 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
           VersionSource id = tag.getMemberID();
           if (id == null) {
             out.writeByte(FLAG_FULL_TAG);
-            InternalDataSerializer.invokeToData(tag, out);
+            context.getSerializer().invokeToData(tag, out);
           } else {
             Integer idNumber = ids.get(id);
             if (idNumber == null) {
               out.writeByte(FLAG_TAG_WITH_NEW_ID);
               idNumber = Integer.valueOf(idCount++);
               ids.put(id, idNumber);
-              InternalDataSerializer.invokeToData(tag, out);
+              context.getSerializer().invokeToData(tag, out);
             } else {
               out.writeByte(FLAG_TAG_WITH_NUMBER_ID);
               tag.toData(out, false);

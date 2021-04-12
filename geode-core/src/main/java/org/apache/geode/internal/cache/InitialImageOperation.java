@@ -2931,7 +2931,7 @@ public class InitialImageOperation {
       out.writeBoolean(this.isDeltaGII);
       out.writeBoolean(this.hasHolderToSend);
       if (this.hasHolderToSend) {
-        InternalDataSerializer.invokeToData(this.holderToSend, out);
+        context.getSerializer().invokeToData(this.holderToSend, out);
       }
       out.writeShort(gcVersions == null ? -1 : gcVersions.size());
       if (gcVersions != null) {
@@ -3092,7 +3092,7 @@ public class InitialImageOperation {
       }
       out.writeLong(this.lastModified);
       if (this.versionTag != null) {
-        InternalDataSerializer.invokeToData(this.versionTag, out);
+        context.getSerializer().invokeToData(this.versionTag, out);
       }
     }
 
@@ -3339,14 +3339,14 @@ public class InitialImageOperation {
             VersionSource id = tag.getMemberID();
             if (id == null) {
               out.writeByte(FLAG_FULL_TAG);
-              InternalDataSerializer.invokeToData(tag, out);
+              context.getSerializer().invokeToData(tag, out);
             } else {
               Integer idNumber = ids.get(id);
               if (idNumber == null) {
                 out.writeByte(FLAG_TAG_WITH_NEW_ID);
                 idNumber = Integer.valueOf(idCount++);
                 ids.put(id, idNumber);
-                InternalDataSerializer.invokeToData(tag, out);
+                context.getSerializer().invokeToData(tag, out);
               } else {
                 out.writeByte(FLAG_TAG_WITH_NUMBER_ID);
                 tag.toData(out, false);
@@ -3501,7 +3501,7 @@ public class InitialImageOperation {
       if (versionVector != null) {
         dop.writeBoolean(true);
         dop.writeBoolean(versionVector instanceof DiskRegionVersionVector);
-        InternalDataSerializer.invokeToData(versionVector, dop);
+        context.getSerializer().invokeToData(versionVector, dop);
       } else {
         dop.writeBoolean(false);
       }

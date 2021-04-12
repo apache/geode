@@ -38,7 +38,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.DataLocationException;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -337,14 +336,14 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     this.op = Operation.fromOrdinal(in.readByte());
     this.notificationOnly = in.readBoolean();
     this.bridgeContext = ClientProxyMembershipID.readCanonicalized(in);
-    this.originalSender = (InternalDistributedMember) DataSerializer.readObject(in);
-    this.eventId = (EventID) DataSerializer.readObject(in);
+    this.originalSender = DataSerializer.readObject(in);
+    this.eventId = DataSerializer.readObject(in);
     this.expectedOldValue = DataSerializer.readObject(in);
 
     final boolean hasFilterInfo = ((flags & HAS_FILTER_INFO) != 0);
     if (hasFilterInfo) {
       this.filterInfo = new FilterRoutingInfo();
-      InternalDataSerializer.invokeFromData(this.filterInfo, in);
+      context.getDeserializer().invokeFromData(this.filterInfo, in);
     }
 
     this.versionTag = DataSerializer.readObject(in);
@@ -364,7 +363,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     DataSerializer.writeObject(this.expectedOldValue, out);
 
     if (this.filterInfo != null) {
-      InternalDataSerializer.invokeToData(this.filterInfo, out);
+      context.getSerializer().invokeToData(this.filterInfo, out);
     }
     DataSerializer.writeObject(this.versionTag, out);
   }
@@ -532,7 +531,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
       b |= this.versionTag instanceof DiskVersionTag ? PERSISTENT_TAG : 0;
       out.writeByte(b);
       if (this.versionTag != null) {
-        InternalDataSerializer.invokeToData(this.versionTag, out);
+        context.getSerializer().invokeToData(this.versionTag, out);
       }
     }
 

@@ -30,7 +30,6 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -190,20 +189,20 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
       this.op = TOperation.values()[in.readByte()];
       // this.regionVersion = in.readLong();
       int count = in.readInt();
-      this.regionGCVersions = new HashMap<VersionSource, Long>(count);
+      this.regionGCVersions = new HashMap<>(count);
       boolean persistent = in.readBoolean();
       for (int i = 0; i < count; i++) {
         VersionSource mbr;
         if (persistent) {
           DiskStoreID id = new DiskStoreID();
-          InternalDataSerializer.invokeFromData(id, in);
+          context.getDeserializer().invokeFromData(id, in);
           mbr = id;
         } else {
           mbr = InternalDistributedMember.readEssentialData(in);
         }
         this.regionGCVersions.put(mbr, Long.valueOf(in.readLong()));
       }
-      this.eventID = (EventID) DataSerializer.readObject(in);
+      this.eventID = DataSerializer.readObject(in);
     }
 
     @Override
@@ -228,12 +227,12 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
           if (!persistent) {
             throw new InternalGemFireException(msg);
           }
-          InternalDataSerializer.invokeToData((DiskStoreID) member, out);
+          context.getSerializer().invokeToData(member, out);
         } else {
           if (persistent) {
             throw new InternalGemFireException(msg);
           }
-          ((InternalDistributedMember) member).writeEssentialData(out);
+          member.writeEssentialData(out);
         }
         out.writeLong(entry.getValue());
       }

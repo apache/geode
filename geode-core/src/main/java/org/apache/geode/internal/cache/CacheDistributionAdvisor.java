@@ -840,7 +840,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       super.toData(out, context);
       out.writeInt(getIntInfo());
       if (persistentID != null) {
-        InternalDataSerializer.invokeToData(persistentID, out);
+        context.getSerializer().invokeToData(persistentID, out);
       }
       if (!gatewaySenderIds.isEmpty()) {
         writeSet(gatewaySenderIds, out);
@@ -868,7 +868,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       setIntInfo(bits);
       if (hasPersistentID(bits)) {
         persistentID = new PersistentMemberID();
-        InternalDataSerializer.invokeFromData(persistentID, in);
+        context.getDeserializer().invokeFromData(persistentID, in);
       }
       if (hasGatewaySenderIds(bits)) {
         gatewaySenderIds = DataSerializer.readObject(in);

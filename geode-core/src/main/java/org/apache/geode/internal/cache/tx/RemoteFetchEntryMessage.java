@@ -21,7 +21,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -36,7 +35,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.KeyInfo;
@@ -223,7 +221,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
         out.writeBoolean(true); // null entry
       } else {
         out.writeBoolean(false); // null entry
-        InternalDataSerializer.invokeToData((DataSerializable) this.value, out);
+        context.getSerializer().invokeToData(this.value, out);
       }
     }
 

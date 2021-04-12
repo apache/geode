@@ -61,7 +61,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.api.CacheOperationMessageMarker;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.CopyOnWriteHashSet;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
@@ -1402,7 +1401,7 @@ public abstract class DistributedCacheOperation {
       this.needsRouting = (bits & NEEDS_ROUTING_MASK) != 0;
       if (hasFilterInfo) {
         this.filterRouting = new FilterRoutingInfo();
-        InternalDataSerializer.invokeFromData(this.filterRouting, in);
+        context.getDeserializer().invokeFromData(this.filterRouting, in);
       }
       if ((bits & VERSION_TAG_MASK) != 0) {
         boolean persistentTag = (bits & PERSISTENT_TAG_MASK) != 0;
@@ -1448,10 +1447,10 @@ public abstract class DistributedCacheOperation {
         writeValue(policy, vObj, vBytes, out);
       }
       if (this.filterRouting != null) {
-        InternalDataSerializer.invokeToData(this.filterRouting, out);
+        context.getSerializer().invokeToData(this.filterRouting, out);
       }
       if (this.versionTag != null) {
-        InternalDataSerializer.invokeToData(this.versionTag, out);
+        context.getSerializer().invokeToData(this.versionTag, out);
       }
     }
 

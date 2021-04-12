@@ -21,7 +21,6 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryData;
@@ -142,7 +141,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
     }
     out.writeBoolean(hasTags);
     if (hasTags) {
-      InternalDataSerializer.invokeToData(versionTags, out);
+      context.getSerializer().invokeToData(versionTags, out);
     }
   }
 
@@ -191,7 +190,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
     }
     out.writeBoolean(hasTags);
     if (hasTags) {
-      InternalDataSerializer.invokeToData(versionTags, out);
+      context.getSerializer().invokeToData(versionTags, out);
     }
   }
 

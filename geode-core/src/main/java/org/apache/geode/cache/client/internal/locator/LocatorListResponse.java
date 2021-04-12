@@ -44,7 +44,7 @@ public class LocatorListResponse extends ServerLocationResponse {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.controllers = SerializationHelper.readServerLocationList(in);
+    this.controllers = SerializationHelper.readServerLocationList(in, context);
     this.isBalanced = in.readBoolean();
     if (this.controllers != null && !this.controllers.isEmpty()) {
       this.locatorsFound = true;
@@ -54,7 +54,7 @@ public class LocatorListResponse extends ServerLocationResponse {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    SerializationHelper.writeServerLocationList(this.controllers, out);
+    SerializationHelper.writeServerLocationList(this.controllers, out, context);
     out.writeBoolean(isBalanced);
   }
 

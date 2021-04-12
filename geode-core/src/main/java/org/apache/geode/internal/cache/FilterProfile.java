@@ -1481,7 +1481,7 @@ public class FilterProfile implements DataSerializableFixedID {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     InternalDistributedMember id = new InternalDistributedMember();
-    InternalDataSerializer.invokeFromData(id, in);
+    context.getDeserializer().invokeFromData(id, in);
     this.memberID = id;
 
     this.allKeyClients.addAll(InternalDataSerializer.readSetOfLongs(in));
@@ -1520,7 +1520,7 @@ public class FilterProfile implements DataSerializableFixedID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    InternalDataSerializer.invokeToData(memberID, out);
+    context.getSerializer().invokeToData(memberID, out);
     InternalDataSerializer.writeSetOfLongs(this.allKeyClients.getSnapshot(),
         this.clientMap.hasLongID, out);
     DataSerializer.writeHashMap(this.keysOfInterest.getSnapshot(), out);
@@ -1542,7 +1542,7 @@ public class FilterProfile implements DataSerializableFixedID {
       String name = entry.getKey();
       ServerCQ cq = entry.getValue();
       DataSerializer.writeString(name, out);
-      InternalDataSerializer.invokeToData(cq, out);
+      context.getSerializer().invokeToData(cq, out);
     }
   }
 
@@ -1994,9 +1994,9 @@ public class FilterProfile implements DataSerializableFixedID {
       if (isCqOp(this.opType)) {
         // For CQ info.
         // Write Server CQ Name.
-        out.writeUTF(((ServerCQ) this.cq).getServerCqName());
+        out.writeUTF(this.cq.getServerCqName());
         if (this.opType == operationType.REGISTER_CQ || this.opType == operationType.SET_CQ_STATE) {
-          InternalDataSerializer.invokeToData((ServerCQ) this.cq, out);
+          context.getSerializer().invokeToData(this.cq, out);
         }
       } else {
         // For interest list.

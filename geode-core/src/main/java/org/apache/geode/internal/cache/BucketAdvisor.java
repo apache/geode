@@ -2336,7 +2336,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      bucketServerLocations = SerializationHelper.readBucketServerLocationSet(in);
+      bucketServerLocations = SerializationHelper.readBucketServerLocationSet(in, context);
       bucketId = DataSerializer.readPrimitiveInt(in);
     }
 
@@ -2344,7 +2344,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      SerializationHelper.writeBucketServerLocationSet(bucketServerLocations, out);
+      SerializationHelper.writeBucketServerLocationSet(bucketServerLocations, out, context);
       DataSerializer.writePrimitiveInt(bucketId, out);
     }
 

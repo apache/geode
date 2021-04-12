@@ -272,7 +272,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
 
       out.writeBoolean(hasTags);
       if (hasTags) {
-        InternalDataSerializer.invokeToData(versionTags, out);
+        context.getSerializer().invokeToData(versionTags, out);
       }
     }
   }

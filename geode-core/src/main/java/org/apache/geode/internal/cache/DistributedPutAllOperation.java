@@ -353,7 +353,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       this.op = Operation.fromOrdinal(in.readByte());
       this.flags = in.readByte();
       if ((this.flags & FILTER_ROUTING) != 0) {
-        this.filterRouting = (FilterRoutingInfo) context.getDeserializer().readObject(in);
+        this.filterRouting = context.getDeserializer().readObject(in);
       }
       if ((this.flags & VERSION_TAG) != 0) {
         boolean persistentTag = (this.flags & PERSISTENT_TAG) != 0;
@@ -361,7 +361,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       }
       if (isUsedFakeEventId()) {
         this.eventID = new EventID();
-        InternalDataSerializer.invokeFromData(this.eventID, in);
+        context.getDeserializer().invokeFromData(this.eventID, in);
       } else {
         this.eventID = new EventID(baseEventID, idx);
       }
@@ -442,11 +442,11 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
         context.getSerializer().writeObject(this.filterRouting, out);
       }
       if (this.versionTag != null) {
-        InternalDataSerializer.invokeToData(this.versionTag, out);
+        context.getSerializer().invokeToData(this.versionTag, out);
       }
       if (isUsedFakeEventId()) {
         // fake event id should be serialized
-        InternalDataSerializer.invokeToData(this.eventID, out);
+        context.getSerializer().invokeToData(this.eventID, out);
       }
       // TODO: Yogesh, this should be conditional,
       // make sure that we sent it on wire only
@@ -705,14 +705,14 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
             VersionSource id = tag.getMemberID();
             if (id == null) {
               out.writeByte(FLAG_FULL_TAG);
-              InternalDataSerializer.invokeToData(tag, out);
+              context.getSerializer().invokeToData(tag, out);
             } else {
               int idNumber = ids.getInt(id);
               if (idNumber == 0) {
                 out.writeByte(FLAG_TAG_WITH_NEW_ID);
                 idNumber = ++idCount;
                 ids.put(id, idNumber);
-                InternalDataSerializer.invokeToData(tag, out);
+                context.getSerializer().invokeToData(tag, out);
               } else {
                 out.writeByte(FLAG_TAG_WITH_NUMBER_ID);
                 tag.toData(out, false);
@@ -1270,7 +1270,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
 
         out.writeBoolean(hasTags);
         if (hasTags) {
-          InternalDataSerializer.invokeToData(versionTags, out);
+          context.getSerializer().invokeToData(versionTags, out);
         }
       }
       if (this.context != null) {

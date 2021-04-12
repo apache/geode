@@ -50,7 +50,7 @@ public class QueueConnectionResponse extends ServerLocationResponse {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     durableQueueFound = DataSerializer.readPrimitiveBoolean(in);
-    servers = SerializationHelper.readServerLocationList(in);
+    servers = SerializationHelper.readServerLocationList(in, context);
     if (this.servers != null && !this.servers.isEmpty()) {
       this.serversFound = true;
     }
@@ -60,7 +60,7 @@ public class QueueConnectionResponse extends ServerLocationResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     DataSerializer.writePrimitiveBoolean(durableQueueFound, out);
-    SerializationHelper.writeServerLocationList(servers, out);
+    SerializationHelper.writeServerLocationList(servers, out, context);
   }
 
   public boolean isDurableQueueFound() {

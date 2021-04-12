@@ -46,7 +46,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
@@ -469,7 +468,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       this.originalSender = DataSerializer.readObject(in);
     }
     this.eventId = new EventID();
-    InternalDataSerializer.invokeFromData(this.eventId, in);
+    context.getDeserializer().invokeFromData(this.eventId, in);
 
     if ((flags & HAS_EXPECTED_OLD_VAL) != 0) {
       this.expectedOldValue = DataSerializer.readObject(in);
@@ -530,7 +529,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     if (this.originalSender != null) {
       DataSerializer.writeObject(this.originalSender, out);
     }
-    InternalDataSerializer.invokeToData(this.eventId, out);
+    context.getSerializer().invokeToData(this.eventId, out);
 
     if (this.expectedOldValue != null) {
       DataSerializer.writeObject(this.expectedOldValue, out);
@@ -892,7 +891,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       out.writeByte(this.op.ordinal);
       oldValueToData(out, getOldValue(), this.oldValueIsSerialized);
       if (this.versionTag != null) {
-        InternalDataSerializer.invokeToData(this.versionTag, out);
+        context.getSerializer().invokeToData(this.versionTag, out);
       }
     }
 

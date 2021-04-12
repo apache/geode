@@ -259,9 +259,9 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
         out.writeInt(this.bucketCount);
         out.writeInt(this.primaryCount);
         if (this.prLoad != null) {
-          InternalDataSerializer.invokeToData(this.prLoad, out);
+          context.getSerializer().invokeToData(this.prLoad, out);
           DataSerializer.writeLongArray(this.bucketSizes, out);
-          InternalDataSerializer.invokeToData(offlineDetails, out);
+          context.getSerializer().invokeToData(offlineDetails, out);
         }
       }
     }
@@ -285,7 +285,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
           this.prLoad = PRLoad.createFromDataInput(in);
           this.bucketSizes = DataSerializer.readLongArray(in);
           this.offlineDetails = new OfflineMemberDetailsImpl();
-          InternalDataSerializer.invokeFromData(this.offlineDetails, in);
+          context.getDeserializer().invokeFromData(this.offlineDetails, in);
         }
       }
     }

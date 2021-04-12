@@ -26,7 +26,6 @@ import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
@@ -139,7 +138,7 @@ public class CacheServerAdvisor extends GridAdvisor {
       super.toData(out, context);
       DataSerializer.writeStringArray(this.groups, out);
       out.writeInt(maxConnections);
-      InternalDataSerializer.invokeToData(initialLoad, out);
+      context.getSerializer().invokeToData(initialLoad, out);
       out.writeLong(getLoadPollInterval());
     }
 
@@ -150,7 +149,7 @@ public class CacheServerAdvisor extends GridAdvisor {
       this.groups = DataSerializer.readStringArray(in);
       this.maxConnections = in.readInt();
       this.initialLoad = new ServerLoad();
-      InternalDataSerializer.invokeFromData(initialLoad, in);
+      context.getDeserializer().invokeFromData(initialLoad, in);
       setLoadPollInterval(in.readLong());
     }
 

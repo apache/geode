@@ -23,7 +23,6 @@ import java.util.Set;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -62,17 +61,17 @@ public class MissingPersistentIDsResponse extends AdminResponse {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     int size = in.readInt();
-    missingIds = new HashSet<PersistentID>(size);
+    missingIds = new HashSet<>(size);
     for (int i = 0; i < size; i++) {
       PersistentMemberPattern pattern = new PersistentMemberPattern();
-      InternalDataSerializer.invokeFromData(pattern, in);
+      context.getDeserializer().invokeFromData(pattern, in);
       missingIds.add(pattern);
     }
     size = in.readInt();
-    localIds = new HashSet<PersistentID>(size);
+    localIds = new HashSet<>(size);
     for (int i = 0; i < size; i++) {
       PersistentMemberPattern pattern = new PersistentMemberPattern();
-      InternalDataSerializer.invokeFromData(pattern, in);
+      context.getDeserializer().invokeFromData(pattern, in);
       localIds.add(pattern);
     }
   }
@@ -83,11 +82,11 @@ public class MissingPersistentIDsResponse extends AdminResponse {
     super.toData(out, context);
     out.writeInt(missingIds.size());
     for (PersistentID pattern : missingIds) {
-      InternalDataSerializer.invokeToData(pattern, out);
+      context.getSerializer().invokeToData(pattern, out);
     }
     out.writeInt(localIds.size());
     for (PersistentID pattern : localIds) {
-      InternalDataSerializer.invokeToData(pattern, out);
+      context.getSerializer().invokeToData(pattern, out);
     }
   }
 

@@ -25,7 +25,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
@@ -95,13 +94,13 @@ public class RevokePersistentIDRequest extends CliLegacyMessage {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.pattern = new PersistentMemberPattern();
-    InternalDataSerializer.invokeFromData(this.pattern, in);
+    context.getDeserializer().invokeFromData(this.pattern, in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    InternalDataSerializer.invokeToData(this.pattern, out);
+    context.getSerializer().invokeToData(this.pattern, out);
   }
 }

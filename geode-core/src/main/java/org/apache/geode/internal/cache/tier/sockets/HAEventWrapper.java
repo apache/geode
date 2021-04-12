@@ -289,7 +289,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
       cum = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_CREATE,
           new ClientProxyMembershipID(), null);
     }
-    InternalDataSerializer.invokeToData(cum, out);
+    context.getSerializer().invokeToData(cum, out);
     if (cum.hasCqs()) {
       DataSerializer.writeConcurrentHashMap(cum.getClientCqs(), out);
     }
@@ -306,9 +306,9 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
       DeserializationContext context) throws IOException, ClassNotFoundException {
     if (DataSerializer.readPrimitiveBoolean(in)) {
       // Indicates that we have a ClientUpdateMessage along with the HAEW instance in inputstream.
-      this.eventIdentifier = (EventID) context.getDeserializer().readObject(in);
+      this.eventIdentifier = context.getDeserializer().readObject(in);
       this.clientUpdateMessage = new ClientUpdateMessageImpl();
-      InternalDataSerializer.invokeFromData(this.clientUpdateMessage, in);
+      context.getDeserializer().invokeFromData(this.clientUpdateMessage, in);
       ((ClientUpdateMessageImpl) this.clientUpdateMessage).setEventIdentifier(this.eventIdentifier);
       if (this.clientUpdateMessage.hasCqs()) {
         {
@@ -319,7 +319,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
           } else {
             cqMap = new ClientCqConcurrentMap(size, 1.0f, 1);
             for (int i = 0; i < size; i++) {
-              ClientProxyMembershipID key = DataSerializer.<ClientProxyMembershipID>readObject(in);
+              ClientProxyMembershipID key = DataSerializer.readObject(in);
               CqNameToOp value;
               {
                 byte typeByte = in.readByte();
@@ -329,7 +329,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
                     throw new IllegalStateException(
                         "The value of a ConcurrentHashMap is not allowed to be null.");
                   } else if (cqNamesSize == 1) {
-                    String cqNamesKey = DataSerializer.<String>readObject(in);
+                    String cqNamesKey = DataSerializer.readObject(in);
                     Integer cqNamesValue = DataSerializer.<Integer>readObject(in);
                     value = new CqNameToOpSingleEntry(cqNamesKey, cqNamesValue);
                   } else if (cqNamesSize == 0) {
@@ -337,7 +337,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
                   } else {
                     value = new CqNameToOpHashMap(cqNamesSize);
                     for (int j = 0; j < cqNamesSize; j++) {
-                      String cqNamesKey = DataSerializer.<String>readObject(in);
+                      String cqNamesKey = DataSerializer.readObject(in);
                       Integer cqNamesValue = DataSerializer.<Integer>readObject(in);
                       value.add(cqNamesKey, cqNamesValue);
                     }
@@ -365,7 +365,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
       // Read and ignore dummy eventIdentifier instance.
       context.getDeserializer().readObject(in);
       // Read and ignore dummy ClientUpdateMessageImpl instance.
-      InternalDataSerializer.invokeFromData(new ClientUpdateMessageImpl(), in);
+      context.getDeserializer().invokeFromData(new ClientUpdateMessageImpl(), in);
       // hasCq will be false here, so client CQs are not read from this input
       // stream.
       if (logger.isDebugEnabled()) {

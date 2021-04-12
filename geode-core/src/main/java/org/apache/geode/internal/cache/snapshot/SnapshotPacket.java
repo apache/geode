@@ -257,7 +257,7 @@ public class SnapshotPacket implements DataSerializableFixedID {
 
     InternalDataSerializer.writeArrayLength(records.length, out);
     for (SnapshotRecord rec : records) {
-      InternalDataSerializer.invokeToData(rec, out);
+      context.getSerializer().invokeToData(rec, out);
     }
   }
 
@@ -273,7 +273,7 @@ public class SnapshotPacket implements DataSerializableFixedID {
 
     for (int i = 0; i < count; i++) {
       SnapshotRecord rec = new SnapshotRecord();
-      InternalDataSerializer.invokeFromData(rec, in);
+      context.getDeserializer().invokeFromData(rec, in);
       records[i] = rec;
     }
   }

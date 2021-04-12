@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -48,14 +47,14 @@ public class ClientReplacementRequest extends ClientConnectionRequest {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.currentServer = new ServerLocation();
-    InternalDataSerializer.invokeFromData(this.currentServer, in);
+    context.getDeserializer().invokeFromData(this.currentServer, in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    InternalDataSerializer.invokeToData(this.currentServer, out);
+    context.getSerializer().invokeToData(this.currentServer, out);
   }
 
   public ServerLocation getCurrentServer() {

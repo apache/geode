@@ -31,9 +31,9 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ExternalizableDSFID;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.Versionable;
 import org.apache.geode.internal.util.VersionedArrayList;
@@ -249,20 +249,21 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
+    final ObjectSerializer serializer = context.getSerializer();
     out.writeInt(this.prId);
     out.writeByte(this.scope.ordinal);
-    InternalDataSerializer.invokeToData(this.pAttrs, out);
+    serializer.invokeToData(this.pAttrs, out);
     out.writeBoolean(this.isDestroying);
     out.writeBoolean(this.isColocationComplete);
-    InternalDataSerializer.invokeToData(this.nodes, out);
+    serializer.invokeToData(this.nodes, out);
     DataSerializer.writeString(this.partitionResolver, out);
     DataSerializer.writeString(this.colocatedWith, out);
     DataSerializer.writeString(this.fullPath, out);
-    InternalDataSerializer.invokeToData(this.ea, out);
-    InternalDataSerializer.invokeToData(this.regionIdleTimeout, out);
-    InternalDataSerializer.invokeToData(this.regionTimeToLive, out);
-    InternalDataSerializer.invokeToData(this.entryIdleTimeout, out);
-    InternalDataSerializer.invokeToData(this.entryTimeToLive, out);
+    serializer.invokeToData(this.ea, out);
+    serializer.invokeToData(this.regionIdleTimeout, out);
+    serializer.invokeToData(this.regionTimeToLive, out);
+    serializer.invokeToData(this.entryIdleTimeout, out);
+    serializer.invokeToData(this.entryTimeToLive, out);
     out.writeBoolean(this.firstDataStoreCreated);
     DataSerializer.writeObject(elderFPAs, out);
     DataSerializer.writeArrayList(this.partitionListenerClassNames, out);
@@ -282,7 +283,7 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
     this.isDestroying = in.readBoolean();
     this.isColocationComplete = in.readBoolean();
     this.nodes = new VersionedArrayList();
-    InternalDataSerializer.invokeFromData(this.nodes, in);
+    context.getDeserializer().invokeFromData(this.nodes, in);
     this.partitionResolver = DataSerializer.readString(in);
     this.colocatedWith = DataSerializer.readString(in);
     this.fullPath = DataSerializer.readString(in);

@@ -197,7 +197,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
     boolean hasMoveSource = in.readBoolean();
     if (hasMoveSource) {
       this.moveSource = new InternalDistributedMember();
-      InternalDataSerializer.invokeFromData(this.moveSource, in);
+      context.getDeserializer().invokeFromData(this.moveSource, in);
     }
     this.forceCreation = in.readBoolean();
   }
@@ -211,7 +211,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
     out.writeBoolean(this.replaceOfflineData);
     out.writeBoolean(this.moveSource != null);
     if (this.moveSource != null) {
-      InternalDataSerializer.invokeToData(this.moveSource, out);
+      context.getSerializer().invokeToData(this.moveSource, out);
     }
     out.writeBoolean(this.forceCreation);
   }

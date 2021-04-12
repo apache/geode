@@ -274,7 +274,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
 
       out.writeBoolean(hasTags);
       if (hasTags) {
-        InternalDataSerializer.invokeToData(versionTags, out);
+        context.getSerializer().invokeToData(versionTags, out);
       }
     }
   }

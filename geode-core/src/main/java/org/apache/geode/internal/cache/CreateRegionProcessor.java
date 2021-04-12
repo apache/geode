@@ -47,7 +47,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
@@ -814,7 +813,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       if (in.readBoolean()) {
-        this.profile = (CacheProfile) DataSerializer.readObject(in);
+        this.profile = DataSerializer.readObject(in);
       }
       int size = in.readInt();
       if (size == 0) {
@@ -823,7 +822,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         this.bucketProfiles = new ArrayList(size);
         for (int i = 0; i < size; i++) {
           RegionAdvisor.BucketProfileAndId bp = new RegionAdvisor.BucketProfileAndId();
-          InternalDataSerializer.invokeFromData(bp, in);
+          context.getDeserializer().invokeFromData(bp, in);
           this.bucketProfiles.add(bp);
         }
       }
@@ -832,7 +831,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       }
       if (in.readBoolean()) {
         this.destroyedId = new PersistentMemberID();
-        InternalDataSerializer.invokeFromData(this.destroyedId, in);
+        context.getDeserializer().invokeFromData(this.destroyedId, in);
       }
       this.skippedCompatibilityChecks = in.readBoolean();
       this.seqKeyForWan = in.readLong();
@@ -854,7 +853,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         for (int i = 0; i < size; i++) {
           RegionAdvisor.BucketProfileAndId bp =
               (RegionAdvisor.BucketProfileAndId) this.bucketProfiles.get(i);
-          InternalDataSerializer.invokeToData(bp, out);
+          context.getSerializer().invokeToData(bp, out);
         }
       }
       if (this.eventState != null) {
@@ -868,7 +867,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       }
       if (this.destroyedId != null) {
         out.writeBoolean(true);
-        InternalDataSerializer.invokeToData(destroyedId, out);
+        context.getSerializer().invokeToData(destroyedId, out);
       } else {
         out.writeBoolean(false);
       }

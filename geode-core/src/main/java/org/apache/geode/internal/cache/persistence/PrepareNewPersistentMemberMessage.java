@@ -37,7 +37,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -161,10 +160,10 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
     boolean hasOldId = in.readBoolean();
     if (hasOldId) {
       oldId = new PersistentMemberID();
-      InternalDataSerializer.invokeFromData(oldId, in);
+      context.getDeserializer().invokeFromData(oldId, in);
     }
     newId = new PersistentMemberID();
-    InternalDataSerializer.invokeFromData(newId, in);
+    context.getDeserializer().invokeFromData(newId, in);
   }
 
   @Override
@@ -175,8 +174,8 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
     out.writeInt(processorId);
     out.writeBoolean(oldId != null);
     if (oldId != null) {
-      InternalDataSerializer.invokeToData(oldId, out);
+      context.getSerializer().invokeToData(oldId, out);
     }
-    InternalDataSerializer.invokeToData(newId, out);
+    context.getSerializer().invokeToData(newId, out);
   }
 }

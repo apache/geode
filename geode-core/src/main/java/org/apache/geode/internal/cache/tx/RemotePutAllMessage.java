@@ -278,7 +278,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
 
       out.writeBoolean(hasTags);
       if (hasTags) {
-        InternalDataSerializer.invokeToData(versionTags, out);
+        context.getSerializer().invokeToData(versionTags, out);
       }
     }
   }

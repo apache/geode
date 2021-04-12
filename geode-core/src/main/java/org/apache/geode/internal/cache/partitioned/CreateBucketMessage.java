@@ -267,7 +267,7 @@ public class CreateBucketMessage extends PartitionMessage {
       super.toData(out, context);
       out.writeBoolean(primary != null);
       if (primary != null) {
-        InternalDataSerializer.invokeToData(primary, out);
+        context.getSerializer().invokeToData(primary, out);
       }
     }
 
@@ -283,7 +283,7 @@ public class CreateBucketMessage extends PartitionMessage {
       boolean hasPrimary = in.readBoolean();
       if (hasPrimary) {
         primary = new InternalDistributedMember();
-        InternalDataSerializer.invokeFromData(primary, in);
+        context.getDeserializer().invokeFromData(primary, in);
       }
     }
 

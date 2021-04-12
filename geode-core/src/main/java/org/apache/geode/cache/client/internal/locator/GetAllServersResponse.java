@@ -45,7 +45,7 @@ public class GetAllServersResponse extends ServerLocationResponse {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.servers = SerializationHelper.readServerLocationList(in);
+    this.servers = SerializationHelper.readServerLocationList(in, context);
     if (this.servers != null && !this.servers.isEmpty()) {
       this.serversFound = true;
     }
@@ -54,7 +54,7 @@ public class GetAllServersResponse extends ServerLocationResponse {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    SerializationHelper.writeServerLocationList(servers, out);
+    SerializationHelper.writeServerLocationList(servers, out, context);
   }
 
   public ArrayList<ServerLocation> getServers() {
