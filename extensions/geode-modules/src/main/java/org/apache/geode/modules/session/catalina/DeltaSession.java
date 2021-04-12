@@ -362,10 +362,6 @@ public class DeltaSession extends StandardSession
   @Override
   public void setMaxInactiveInterval(int interval) {
     super.setMaxInactiveInterval(interval);
-
-    if (!isCommitEnabled() && id != null) {
-      putInRegion(getOperatingRegion(), true, null);
-    }
   }
 
   @Override

@@ -22,7 +22,6 @@ import java.util.function.IntSupplier;
 public class Tomcat8ClientServerTest extends TomcatClientServerTest {
   @Override
   public ContainerInstall getInstall(IntSupplier portSupplier) throws Exception {
-    return new TomcatInstall(getClass().getSimpleName(), TOMCAT8, CLIENT_SERVER, portSupplier,
-        TomcatInstall.CommitValve.DEFAULT);
+    return new TomcatInstall(getClass().getSimpleName(), TOMCAT8, CLIENT_SERVER, portSupplier);
   }
 }
