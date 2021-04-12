@@ -31,11 +31,12 @@ tasks.register('generateThirdPartyModuleXML') {
   }
 
   doLast {
-    rootProject.subprojects.each {
-      if (!projectsToExclude.contains(it.name) || testProjectsToInclude.contains(it.name)) {
+    rootProject.subprojects.each { projectToUse ->
+      if (!projectsToExclude.contains(projectToUse.name) || testProjectsToInclude.contains(projectToUse.name)) {
         try {
-          generateModuleXmlForProject(it.tasks.getByName('jar').outputs.files.singleFile, it, 'distributedTest', [])
-        } catch(Throwable t) {}
+          generateModuleXmlForProject(projectToUse.tasks.getByName('jar').outputs.files.singleFile, projectToUse, 'distributedTest', [])
+        } catch (Throwable t) {
+        }
       }
     }
     def geodeAssemblyProj = project(":geode-assembly")
@@ -49,33 +50,27 @@ def copyDistributedTestLibs() {
   Set<File> jarFilesToCopy = new HashSet<>()
 
   mkdir("${project(':geode-assembly').buildDir}/distributedTesting/lib")
-  rootProject.subprojects.each {proj ->
+  rootProject.subprojects.each { proj ->
     proj.configurations.each { conf ->
-      if(conf.name == 'jbossModular' || conf.name == 'distributedTestRuntimeClasspath') {
+      if (conf.name == 'jbossModular' || conf.name == 'distributedTestRuntimeClasspath') {
         jarFilesToCopy.addAll(conf.resolvedConfiguration.resolvedArtifacts
                 .stream()
-                .map{it.file}
-                .filter{it -> it.name.endsWith('.jar') && it.exists()}
+                .map { it.file }
+                .filter { it -> it.name.endsWith('.jar') && it.exists() }
                 .collect())
       }
     }
   }
 
-  jarFilesToCopy.each {jarFile ->
+  jarFilesToCopy.each { jarFile ->
     def newLibPath = Paths.get("${project(':geode-assembly').buildDir}/distributedTesting/lib/${jarFile.name}")
-    Files.copy(jarFile.toPath(), newLibPath)
+    if (!file(newLibPath).exists()) {
+      Files.copy(jarFile.toPath(), newLibPath)
+    }
   }
-
-//  runtimeList.each { ResolvedArtifact resolvedArtifact ->
-//    def artifactFile = resolvedArtifact.file
-//    def newLibPath = Paths.get("${project(':geode-assembly').buildDir}/distributedTesting/lib/${artifactFile.name}")
-//    try {
-//      Files.copy(artifactFile.toPath(), newLibPath)
-//    } catch(Throwable t) {}
-//  }
 }
 
-def generateThirdPartyModuleXML(String moduleDescriptorsRoot){
+def generateThirdPartyModuleXML(String moduleDescriptorsRoot) {
   def thirdPartyRoot = file(moduleDescriptorsRoot + "/thirdParty")
   Map<String, String> namesAndVersions = new TreeMap<>(new Comparator<String>() {
     @Override

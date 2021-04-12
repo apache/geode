@@ -29,6 +29,7 @@ dependencies {
 
   jbossModular(project(':geode-deployment:geode-deployment-jboss-modules'))
   jbossModular('org.jboss.modules:jboss-modules')
+  runtimeOnly(project(':geode-deployment:geode-deployment-jboss-modules'))
 
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
@@ -75,7 +76,7 @@ dependencies {
     exclude module: 'hamcrest'
   }
 
-  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+//  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
 distributedTest {

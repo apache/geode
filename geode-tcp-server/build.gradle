@@ -40,5 +40,5 @@ dependencies {
     distributedTestImplementation(project(':geode-gfsh'))
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation(project(':geode-membership'))
-    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+//    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }

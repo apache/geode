@@ -38,6 +38,7 @@ dependencies {
 
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation(project(':geode-deployment:geode-jboss-extensions'))
+    distributedTestImplementation('org.jboss.modules:jboss-modules')
 }
 
 distributedTest {

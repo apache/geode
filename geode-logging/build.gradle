@@ -63,7 +63,7 @@ dependencies {
     exclude module: 'geode-logging'
   }
   distributedTestImplementation('pl.pragmatists:JUnitParams')
-  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+//  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
   testImplementation('com.tngtech.archunit:archunit-junit4')

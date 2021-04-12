@@ -15,7 +15,6 @@
 package org.apache.geode.test.dunit.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
-import static org.apache.geode.management.internal.cli.commands.StartMemberUtils.GEODE_HOME;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.BufferedReader;
@@ -357,7 +356,8 @@ class ProcessManager implements ChildVMLauncher {
       addJBossClassPath(GEODE_DISTRIBUTED_TEST_HOME, cmds);
       cmds.add("org.jboss.modules.Main");
       cmds.add("-mp");
-      cmds.add(GEODE_DISTRIBUTED_TEST_HOME + File.separator + "moduleDescriptors" + File.separator + "main"
+      cmds.add(GEODE_DISTRIBUTED_TEST_HOME + File.separator + "moduleDescriptors" + File.separator
+          + "main"
           + File.pathSeparator + GEODE_DISTRIBUTED_TEST_HOME
           + File.separator + "moduleDescriptors" + File.separator + "thirdParty");
       cmds.add("geode-dunit:" + GemFireVersion.getGemFireVersion());

@@ -381,7 +381,7 @@ dependencies {
     distributedTestImplementation('com.jayway.jsonpath:json-path-assert')
     distributedTestImplementation('net.openhft:compiler')
 
-    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+//    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
     distributedTestRuntimeOnly('org.apache.derby:derby')
 
 
