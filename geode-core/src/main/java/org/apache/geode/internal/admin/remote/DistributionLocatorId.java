@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfig;
@@ -230,7 +231,11 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   public DistributionLocatorId(InetAddress address, Locator locator) {
     this(address, locator.getPort(),
-        locator.getBindAddress() == null ? null : locator.getBindAddress().getHostAddress(), null,
+        (((InternalLocator) locator).getBindAddressString() != null
+            ? ((InternalLocator) locator).getBindAddressString()
+            : (locator.getBindAddress() != null ? locator.getBindAddress().getHostAddress()
+                : null)),
+        null,
         locator.getHostnameForClients());
   }
 

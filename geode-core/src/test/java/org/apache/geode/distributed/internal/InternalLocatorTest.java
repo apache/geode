@@ -75,7 +75,7 @@ public class InternalLocatorTest {
     BaseManagementService.setManagementService(cache, managementService);
 
     internalLocator = new InternalLocator(0, loggingSession, null, null, null, null,
-        null, null, distributionConfig, null);
+        null, null, null, distributionConfig, null);
   }
 
   @After

@@ -915,7 +915,8 @@ public class InternalDistributedSystem extends DistributedSystem
       startedLocator =
           InternalLocator.createLocator(locId.getPort(), NullLoggingSession.create(), null,
               logWriter, securityLogWriter, locId.getHost().getAddress(),
-              locId.getHostnameForClients(), originalConfig.toProperties(), false);
+              config.getBindAddress(), locId.getHostnameForClients(), originalConfig.toProperties(),
+              false);
 
       // if locator is started this way, cluster config is not enabled, set the flag correctly
       startedLocator.getConfig().setEnableClusterConfiguration(false);

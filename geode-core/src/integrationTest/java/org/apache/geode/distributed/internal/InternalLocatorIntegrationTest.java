@@ -96,7 +96,7 @@ public class InternalLocatorIntegrationTest {
     // start a locator that's not part of a cluster
     final boolean joinCluster = false;
     internalLocator = InternalLocator.startLocator(port, logFile, null,
-        null, bindAddress, joinCluster,
+        null, bindAddress, "", joinCluster,
         distributedSystemProperties, hostnameForClients, workingDirectory);
     port = internalLocator.getPort();
     // the locator shouldn't attempt a reconnect because it's not part of a cluster
@@ -119,7 +119,9 @@ public class InternalLocatorIntegrationTest {
     assertThatCode(() -> {
       internalLocator =
           new InternalLocator(port, loggingSession, logFile, null, null,
-              bindAddress, hostnameForClients, distributedSystemProperties, distributionConfig,
+              bindAddress, (bindAddress != null ? bindAddress.getHostName() : null),
+              hostnameForClients,
+              distributedSystemProperties, distributionConfig,
               workingDirectory);
     }).doesNotThrowAnyException();
   }
@@ -127,7 +129,7 @@ public class InternalLocatorIntegrationTest {
   @Test
   public void restartingClusterConfigurationDoesNotThrowException() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, null,
-        null, bindAddress, true,
+        null, bindAddress, "", true,
         distributedSystemProperties, hostnameForClients, workingDirectory);
     port = internalLocator.getPort();
     internalLocator.stop(true, true, false);
@@ -141,7 +143,7 @@ public class InternalLocatorIntegrationTest {
   @Test
   public void startedLocatorIsRunning() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, null,
-        null, bindAddress, true,
+        null, bindAddress, "", true,
         distributedSystemProperties, hostnameForClients, workingDirectory);
     port = internalLocator.getPort();
 
@@ -151,7 +153,7 @@ public class InternalLocatorIntegrationTest {
   @Test
   public void startedLocatorHasLocator() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, null,
-        null, bindAddress, true,
+        null, bindAddress, "", true,
         distributedSystemProperties, hostnameForClients, workingDirectory);
     port = internalLocator.getPort();
 
@@ -161,7 +163,7 @@ public class InternalLocatorIntegrationTest {
   @Test
   public void stoppedLocatorIsStopped() throws IOException {
     internalLocator = InternalLocator.startLocator(port, null, null,
-        null, bindAddress, true,
+        null, bindAddress, "", true,
         distributedSystemProperties, hostnameForClients, workingDirectory);
     port = internalLocator.getPort();
 
@@ -173,7 +175,7 @@ public class InternalLocatorIntegrationTest {
   @Test
   public void stoppedLocatorDoesNotHaveLocator() throws IOException {
     internalLocator = InternalLocator.startLocator(port, null, null,
-        null, bindAddress, true,
+        null, bindAddress, "", true,
         distributedSystemProperties, hostnameForClients, workingDirectory);
     port = internalLocator.getPort();
 
@@ -192,7 +194,7 @@ public class InternalLocatorIntegrationTest {
     // calling InternalLocator.startConfigurationPersistenceService
     properties.put("load-cluster-configuration-from-dir", "true");
     assertThatThrownBy(() -> InternalLocator.startLocator(port, null, null,
-        null, bindAddress, true,
+        null, bindAddress, "", true,
         properties, hostnameForClients, workingDirectory)).isInstanceOf(RuntimeException.class);
 
     assertThat(InternalLocator.hasLocator()).isFalse();

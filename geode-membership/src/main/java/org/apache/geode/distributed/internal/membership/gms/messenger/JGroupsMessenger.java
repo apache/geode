@@ -549,9 +549,10 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         || !config.getStartLocator().isEmpty();
 
     // establish the DistributedSystem's address
-    String hostname =
-        !config.isNetworkPartitionDetectionEnabled() ? jgAddress.getInetAddress().getHostName()
-            : jgAddress.getInetAddress().getHostAddress();
+    String hostname = config.getBindAddress();
+    if (hostname == null || hostname.isEmpty()) {
+      hostname = jgAddress.getInetAddress().getHostName();
+    }
     GMSMemberData gmsMember = new GMSMemberData(jgAddress.getInetAddress(),
         hostname, jgAddress.getPort(),
         OSProcess.getId(), (byte) services.getConfig().getVmKind(),

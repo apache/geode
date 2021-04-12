@@ -52,7 +52,6 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.StandardConstants;
 import javax.net.ssl.TrustManager;
 
-import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
@@ -640,17 +639,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
 
     String hostName = addr.getHostName();
-    if (this.sslConfig.doEndpointIdentification()
-        && InetAddressValidator.getInstance().isValid(hostName)) {
-      // endpoint validation typically uses a hostname in the sniServer parameter that the handshake
-      // will compare against the subject alternative addresses in the server's certificate. Here
-      // we attempt to get a hostname instead of the proffered numeric address
-      try {
-        hostName = InetAddress.getByName(hostName).getCanonicalHostName();
-      } catch (UnknownHostException e) {
-        // ignore - we'll see what happens with endpoint validation using a numeric address...
-      }
-    }
     serverNames.add(new SNIHostName(hostName));
     modifiedParams.setServerNames(serverNames);
     return true;
