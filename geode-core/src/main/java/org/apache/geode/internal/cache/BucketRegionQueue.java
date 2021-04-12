@@ -291,40 +291,56 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   private void conflateOldEntry(Conflatable object, Long tailKey) {
     PartitionedRegion region = this.getPartitionedRegion();
     Conflatable conflatableObject = object;
-    if (region.isConflationEnabled() && conflatableObject.shouldBeConflated()) {
-      Object keyToConflate = conflatableObject.getKeyToConflate();
-      String rName = object.getRegionToConflate();
-      if (logger.isDebugEnabled()) {
-        logger.debug(" The region name is : {}", rName);
-      }
-      Map latestIndexesForRegion = (Map) this.indexes.get(rName);
-      if (latestIndexesForRegion == null) {
-        latestIndexesForRegion = new ConcurrentHashMap();
-        this.indexes.put(rName, latestIndexesForRegion);
-      }
-      Long previousTailKey = (Long) latestIndexesForRegion.put(keyToConflate, tailKey);
-      if (previousTailKey != null) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("{}: Conflating {} at queue index={} and previousTailKey={} ", this, object,
-              tailKey, previousTailKey);
-        }
-        AbstractGatewaySenderEventProcessor ep =
-            region.getParallelGatewaySender().getEventProcessor();
-        if (ep == null)
-          return;
-        ConcurrentParallelGatewaySenderQueue queue =
-            (ConcurrentParallelGatewaySenderQueue) ep.getQueue();
-        // Give the actual conflation work to another thread.
-        // ParallelGatewaySenderQueue takes care of maintaining a thread pool.
-        queue.conflateEvent(conflatableObject, getId(), previousTailKey);
-      } else {
-        region.getParallelGatewaySender().getStatistics().incConflationIndexesMapSize();
-      }
-    } else {
+
+    if (!region.isConflationEnabled() || !conflatableObject.shouldBeConflated()) {
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Not conflating {}", this, object);
       }
+      return;
     }
+
+    Object keyToConflate = conflatableObject.getKeyToConflate();
+    String rName = object.getRegionToConflate();
+    if (logger.isDebugEnabled()) {
+      logger.debug(" The region name is : {}", rName);
+    }
+    Map latestIndexesForRegion = (Map) this.indexes.get(rName);
+    if (latestIndexesForRegion == null) {
+      latestIndexesForRegion = new ConcurrentHashMap();
+      this.indexes.put(rName, latestIndexesForRegion);
+    }
+
+    Long previousTailKey = (Long) latestIndexesForRegion.get(keyToConflate);
+    if (previousTailKey == null) {
+      latestIndexesForRegion.put(keyToConflate, tailKey);
+      region.getParallelGatewaySender().getStatistics().incConflationIndexesMapSize();
+      return;
+    }
+
+    GatewaySenderEventImpl previousEvent =
+        (GatewaySenderEventImpl) this.getRegion().get(previousTailKey);
+    if (previousEvent.getCreationTime() > ((GatewaySenderEventImpl) object).getCreationTime()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("{}: Not conflating {} due to {} has more recent timestamp", this, object,
+            previousEvent);
+      }
+      return;
+    }
+
+    latestIndexesForRegion.put(keyToConflate, tailKey);
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("{}: Conflating {} at queue index={} and previousTailKey={} ", this, object,
+          tailKey, previousTailKey);
+    }
+    AbstractGatewaySenderEventProcessor ep = region.getParallelGatewaySender().getEventProcessor();
+    if (ep == null)
+      return;
+    ConcurrentParallelGatewaySenderQueue queue =
+        (ConcurrentParallelGatewaySenderQueue) ep.getQueue();
+    // Give the actual conflation work to another thread.
+    // ParallelGatewaySenderQueue takes care of maintaining a thread pool.
+    queue.conflateEvent(conflatableObject, getId(), previousTailKey);
   }
 
   // No need to synchronize because it is called from a synchronized method

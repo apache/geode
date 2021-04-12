@@ -567,85 +567,91 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     boolean keepOldEntry = true;
 
-    // Determine whether conflation is enabled for this queue and object
-    // Conflation is enabled iff:
-    // - this queue has conflation enabled
-    // - the object can be conflated
-    if (this.enableConflation && object.shouldBeConflated()) {
-      if (isDebugEnabled) {
-        logger.debug("{}: Conflating {} at queue index={} queue size={} head={} tail={}", this,
-            object, tailKey, size(), this.headKey, tailKey);
-      }
-
-      // Determine whether this region / key combination is already indexed.
-      // If so, it is already in the queue. Update the value in the queue and
-      // set the shouldAddToQueue flag accordingly.
-      String rName = object.getRegionToConflate();
-      Object key = object.getKeyToConflate();
-      Long previousIndex;
-
-      synchronized (this) {
-        Map<Object, Long> latestIndexesForRegion = this.indexes.get(rName);
-        if (latestIndexesForRegion == null) {
-          latestIndexesForRegion = new HashMap<>();
-          this.indexes.put(rName, latestIndexesForRegion);
-        }
-
-        previousIndex = latestIndexesForRegion.put(key, tailKey);
-      }
-
-      if (isDebugEnabled) {
-        logger.debug("{}: Adding index key={}->index={} for {} head={} tail={}", this, key, tailKey,
-            object, this.headKey, tailKey);
-      }
-      // Test if the key is contained in the latest indexes map. If the key is
-      // not contained in the latest indexes map, then it should be added to
-      // the queue.
-      //
-      // It no longer matters if we remove an entry that is going out in the
-      // current
-      // batch, because we already put the latest value on the tail of the
-      // queue, and
-      // peekedIds list prevents us from removing an entry that was not peeked.
-      if (previousIndex != null) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "{}: Indexes contains index={} for key={} head={} tail={} and it can be used.", this,
-              previousIndex, key, this.headKey, tailKey);
-        }
-        keepOldEntry = false;
-      } else {
-        if (isDebugEnabled) {
-          logger.debug("{}: No old entry for key={} head={} tail={} not removing old entry.", this,
-              key, this.headKey, tailKey);
-        }
-        this.stats.incConflationIndexesMapSize();
-        keepOldEntry = true;
-      }
-
-      // Replace the object's value into the queue if necessary
-      if (!keepOldEntry) {
-        Conflatable previous = (Conflatable) this.region.remove(previousIndex);
-        this.stats.decQueueSize(1);
-        if (isDebugEnabled) {
-          logger.debug("{}: Previous conflatable at key={} head={} tail={}: {}", this,
-              previousIndex, this.headKey, tailKey, previous);
-          logger.debug("{}: Current conflatable at key={} head={} tail={}: {}", this, tailKey,
-              this.headKey, tailKey, object);
-          if (previous != null) {
-            logger.debug(
-                "{}: Removed {} and added {} for key={} head={} tail={} in queue for region={} old event={}",
-                this, previous.getValueToConflate(), object.getValueToConflate(), key, this.headKey,
-                tailKey, rName, previous);
-          }
-        }
-      }
-    } else {
+    if (!this.enableConflation || !object.shouldBeConflated()) {
       if (isDebugEnabled) {
         logger.debug("{}: Not conflating {} queue size: {} head={} tail={}", this, object, size(),
             this.headKey, tailKey);
       }
+      return true;
     }
+
+    if (isDebugEnabled) {
+      logger.debug("{}: Conflating {} at queue index={} queue size={} head={} tail={}", this,
+          object, tailKey, size(), this.headKey, tailKey);
+    }
+
+    // Determine whether this region / key combination is already indexed.
+    // If so, it is already in the queue. Update the value in the queue and
+    // set the shouldAddToQueue flag accordingly.
+    String rName = object.getRegionToConflate();
+    Object key = object.getKeyToConflate();
+    Long previousIndex;
+
+    synchronized (this) {
+      Map<Object, Long> latestIndexesForRegion = this.indexes.get(rName);
+      if (latestIndexesForRegion == null) {
+        latestIndexesForRegion = new HashMap<>();
+        this.indexes.put(rName, latestIndexesForRegion);
+      }
+
+      previousIndex = latestIndexesForRegion.get(key);
+      if (previousIndex != null) {
+        GatewaySenderEventImpl oldEvent = (GatewaySenderEventImpl) this.region.get(previousIndex);
+        GatewaySenderEventImpl newEvent = (GatewaySenderEventImpl) object;
+        if (oldEvent.getCreationTime() > newEvent.getCreationTime()) {
+          return true;
+        }
+      }
+      latestIndexesForRegion.put(key, tailKey);
+    }
+
+    if (isDebugEnabled) {
+      logger.debug("{}: Adding index key={}->index={} for {} head={} tail={}", this, key, tailKey,
+          object, this.headKey, tailKey);
+    }
+    // Test if the key is contained in the latest indexes map. If the key is
+    // not contained in the latest indexes map, then it should be added to
+    // the queue.
+    //
+    // It no longer matters if we remove an entry that is going out in the
+    // current
+    // batch, because we already put the latest value on the tail of the
+    // queue, and
+    // peekedIds list prevents us from removing an entry that was not peeked.
+    if (previousIndex != null) {
+      if (isDebugEnabled) {
+        logger.debug(
+            "{}: Indexes contains index={} for key={} head={} tail={} and it can be used.", this,
+            previousIndex, key, this.headKey, tailKey);
+      }
+      keepOldEntry = false;
+    } else {
+      if (isDebugEnabled) {
+        logger.debug("{}: No old entry for key={} head={} tail={} not removing old entry.", this,
+            key, this.headKey, tailKey);
+      }
+      this.stats.incConflationIndexesMapSize();
+      keepOldEntry = true;
+    }
+
+    // Replace the object's value into the queue if necessary
+    if (!keepOldEntry) {
+      Conflatable previous = (Conflatable) this.region.remove(previousIndex);
+      this.stats.decQueueSize(1);
+      if (isDebugEnabled) {
+        logger.debug("{}: Previous conflatable at key={} head={} tail={}: {}", this,
+            previousIndex, this.headKey, tailKey, previous);
+        logger.debug("{}: Current conflatable at key={} head={} tail={}: {}", this, tailKey,
+            this.headKey, tailKey, object);
+        if (previous != null) {
+          logger.debug(
+              "{}: Removed {} and added {} for key={} head={} tail={} in queue for region={} old event={}",
+              this, previous.getValueToConflate(), object.getValueToConflate(), key, this.headKey,
+              tailKey, rName, previous);
+        }
+      }
+    }
+
     return keepOldEntry;
   }
 
