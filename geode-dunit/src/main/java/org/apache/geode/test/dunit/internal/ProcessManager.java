@@ -236,33 +236,6 @@ class ProcessManager implements ChildVMLauncher {
     return classpath;
   }
 
-  private String removeStuffFromClasspath(String classpath) {
-    String[] entries = classpath.split(File.pathSeparator);
-    try {
-      Set<String> runTimeArtifactFileNames =
-          new HashSet<>(
-              Files.readAllLines(Paths.get("/tmp/classpath.txt"), StandardCharsets.UTF_8));
-      Set<String> dunitRunTimeArtifactFileNames =
-          new HashSet<>(
-              Files.readAllLines(Paths.get("/tmp/dunit-classpath.txt"), StandardCharsets.UTF_8));
-      dunitRunTimeArtifactFileNames.removeAll(runTimeArtifactFileNames);
-      List<String> testRuntimeClassPath = Arrays.stream(entries).map(entry -> {
-        String[] split = entry.split(File.separator);
-        return new String[] {split[split.length - 1], entry};
-      }).filter(entry -> !runTimeArtifactFileNames.contains(entry[0]))
-          .filter(entry -> !entry[0].contains(".jar"))
-          // .filter(entry -> !entry[0].contains("geode-"))
-          // .filter(entry -> !entry[0].contains("log4j"))
-          // .filter(entry -> !entry[0].contains("junit"))
-          .map(entry -> entry[1])
-          .collect(Collectors.toList());
-      return String.join(File.pathSeparator, testRuntimeClassPath);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return "";
-  }
-
   private String[] buildJavaCommand(int vmNum, int namingPort, String version, int remoteStubPort) {
     String cmd = System.getProperty("java.home") + File.separator
         + "bin" + File.separator + "java";
@@ -296,6 +269,7 @@ class ProcessManager implements ChildVMLauncher {
     String jreLib = separator + "jre" + separator + "lib" + separator;
     classPath = removeFromPath(classPath, jreLib);
     if (vmNum < 0) {
+      classPath = removeJbossFromPath(classPath);
       cmds.add("-classpath");
       cmds.add(classPath);
     } else {
@@ -368,6 +342,22 @@ class ProcessManager implements ChildVMLauncher {
     cmds.toArray(rst);
 
     return rst;
+  }
+
+  private String removeJbossFromPath(String classpath) {
+    String[] jars = classpath.split(File.pathSeparator);
+    StringBuilder sb = new StringBuilder(classpath.length());
+    boolean firstjar = true;
+    for (String jar : jars) {
+      if (!jar.contains("jboss") || jar.contains("distributedTest")) {
+        if (!firstjar) {
+          sb.append(File.pathSeparator);
+        }
+        sb.append(jar);
+        firstjar = false;
+      }
+    }
+    return sb.toString();
   }
 
   private void addJBossClassPath(String rootPath, List<String> commandLine) {

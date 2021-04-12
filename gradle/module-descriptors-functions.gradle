@@ -180,7 +180,7 @@ def writeThirdPartyModuleXml(String moduleName, moduleJar, moduleVersion, module
   def modulePath = "$moduleXMLRootPath/thirdParty/$moduleNamePath/$moduleVersion"
   mkdir(modulePath)
   def moduleFile = file("$modulePath/module.xml")
-  if (moduleFile.exists()) {
+  if (!moduleFile.exists()) {
     moduleFile.withWriter { writer ->
       // Create MarkupBuilder with 4 space indent
       def xml = new MarkupBuilder(new IndentPrinter(writer, "    ", true))
