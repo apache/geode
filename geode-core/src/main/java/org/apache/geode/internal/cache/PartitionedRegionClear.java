@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -402,15 +401,6 @@ public class PartitionedRegionClear {
       for (AsyncEventQueue asyncEventQueue : partitionedRegion.getCache()
           .getAsyncEventQueues(false)) {
         if (((AsyncEventQueueImpl) asyncEventQueue).isPartitionedRegionClearUnsupported()) {
-          throw new UnsupportedOperationException(
-              "PartitionedRegion clear is not supported on region with lucene index");
-        }
-      }
-      Iterator<AsyncEventQueue> allAEQsIterator =
-          partitionedRegion.getCache().getAsyncEventQueues(false).iterator();
-      while (allAEQsIterator.hasNext()) {
-        AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) allAEQsIterator.next();
-        if (aeq.isPartitionedRegionClearUnsupported()) {
           throw new UnsupportedOperationException(
               "PartitionedRegion clear is not supported on region "
                   + partitionedRegion.getFullPath() + " because it has a lucene index");
