@@ -40,6 +40,7 @@ build_test:
   ARTIFACT_SLUG: build
   CALL_STACK_TIMEOUT: '600'
   CPUS: '8'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '4'
   EXECUTE_TEST_TIMEOUT: 20m
   GRADLE_TASK: build
@@ -54,6 +55,7 @@ examples_test:
   ARTIFACT_SLUG: examples
   CALL_STACK_TIMEOUT: '1800'
   CPUS: '8'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '4'
   EXECUTE_TEST_TIMEOUT: 30m
   GRADLE_TASK: runAll
@@ -77,6 +79,7 @@ metadata:
 
 publish_artifacts:
   CPUS: '8'
+  DISK: '200GB'
   EXECUTE_TEST_TIMEOUT: 10m
   RAM: '16'
   name: publish-artifacts
@@ -88,6 +91,7 @@ tests:
 - ARTIFACT_SLUG: unittestfiles
   CALL_STACK_TIMEOUT: '1200'
   CPUS: '8'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 30m
   GRADLE_TASK: test
@@ -101,6 +105,7 @@ tests:
 - ARTIFACT_SLUG: acceptancetestfiles
   CALL_STACK_TIMEOUT: '6300'
   CPUS: '8'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 2h
   GRADLE_TASK: acceptanceTest
@@ -113,6 +118,7 @@ tests:
 - ARTIFACT_SLUG: distributedtestfiles
   CALL_STACK_TIMEOUT: '9900'
   CPUS: '96'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '24'
   EXECUTE_TEST_TIMEOUT: 3h00m
   GRADLE_TASK: distributedTest
@@ -124,6 +130,7 @@ tests:
 - ARTIFACT_SLUG: integrationtestfiles
   CALL_STACK_TIMEOUT: '1500'
   CPUS: '96'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '48'
   EXECUTE_TEST_TIMEOUT: 40m
   GRADLE_TASK: integrationTest
@@ -135,6 +142,7 @@ tests:
 - ARTIFACT_SLUG: upgradetestfiles
   CALL_STACK_TIMEOUT: '4800'
   CPUS: '96'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '48'
   EXECUTE_TEST_TIMEOUT: 90m
   GRADLE_TASK: upgradeTest
@@ -146,6 +154,7 @@ tests:
 - ARTIFACT_SLUG: redistests
   CALL_STACK_TIMEOUT: '1200'
   CPUS: '4'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 30m
   GRADLE_TASK: ':geode-apis-compatible-with-redis:redisAPITest'
@@ -159,6 +168,7 @@ tests:
 - ARTIFACT_SLUG: stressnewtestfiles
   CALL_STACK_TIMEOUT: '20700'
   CPUS: '96'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '24'
   EXECUTE_TEST_TIMEOUT: 10h
   GRADLE_TASK: repeatTest
@@ -169,6 +179,7 @@ tests:
   name: stress-new
 - ARTIFACT_SLUG: windows-acceptancetestfiles
   CPUS: '16'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
   GRADLE_TASK: :geode-assembly:acceptanceTest
@@ -180,6 +191,7 @@ tests:
   name: windows-acceptance
 - ARTIFACT_SLUG: windows-gfshdistributedtest
   CPUS: '16'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
   GRADLE_TASK: distributedTest
@@ -192,6 +204,7 @@ tests:
   name: windows-gfsh-distributed
 - ARTIFACT_SLUG: windows-integrationtestfiles
   CPUS: '16'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
   GRADLE_TASK: integrationTest
@@ -204,6 +217,7 @@ tests:
   name: windows-integration
 - ARTIFACT_SLUG: windows-coreintegrationtestfiles
   CPUS: '16'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
   GRADLE_TASK: geode-core:integrationTest
@@ -215,6 +229,7 @@ tests:
   name: windows-core-integration
 - ARTIFACT_SLUG: windows-unittestfiles
   CPUS: '16'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
   GRADLE_TASK: test
@@ -226,6 +241,7 @@ tests:
 - ARTIFACT_SLUG: apicheck
   CALL_STACK_TIMEOUT: '20700'
   CPUS: '4'
+  DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 1h
   GRADLE_TASK: geode-assembly:japicmp
