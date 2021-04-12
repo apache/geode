@@ -133,7 +133,7 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create 
   --network="${GCP_NETWORK}" \
   --subnet="${GCP_SUBNETWORK}" \
   --image="${IMAGE_NAME}" \
-  --boot-disk-size=100GB \
+  --boot-disk-size="${DISK}" \
   --boot-disk-type=pd-ssd \
   --labels="${LABELS}" \
   --tags="heavy-lifter" \
