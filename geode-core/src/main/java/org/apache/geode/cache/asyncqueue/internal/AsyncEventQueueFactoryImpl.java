@@ -282,8 +282,8 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
   }
 
   // keep this method internal
-  public AsyncEventQueueFactory setPartitionedRegionClearUnsupported(boolean supported) {
-    gatewaySenderAttributes.partitionedRegionClearUnsupported = supported;
+  public AsyncEventQueueFactory setPartitionedRegionClearUnsupported(boolean status) {
+    gatewaySenderAttributes.partitionedRegionClearUnsupported = status;
     return this;
   }
 

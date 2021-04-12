@@ -69,7 +69,6 @@ public class PartitionedRegionClearTest {
   public void setUp() {
 
     cache = mock(GemFireCacheImpl.class);
-    partitionedRegion = mock(PartitionedRegion.class);
     distributionManager = mock(DistributionManager.class);
     internalDistributedMember = mock(InternalDistributedMember.class);
     partitionedRegion = mock(PartitionedRegion.class);

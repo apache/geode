@@ -145,7 +145,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   /**
    * An attribute to specify if Partitioned region clear operation is unsupported.
-   * Default is false, i.e.
+   * Default is false.
    */
   protected boolean partitionedRegionClearUnsupported;
 
