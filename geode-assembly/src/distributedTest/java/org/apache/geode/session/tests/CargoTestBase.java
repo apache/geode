@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.categories.SessionTest;
 @Category({SessionTest.class})
 public abstract class CargoTestBase {
   private final UniquePortSupplier portSupplier = new UniquePortSupplier();
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @Rule
   public TestName testName = new TestName();
