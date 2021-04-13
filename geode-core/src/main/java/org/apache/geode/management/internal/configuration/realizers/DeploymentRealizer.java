@@ -20,8 +20,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Deployment;
@@ -84,11 +84,11 @@ public class DeploymentRealizer
 
   @VisibleForTesting
   ServiceResult<Deployment> getDeployed(String name) {
-    return JarDeploymentServiceFactory.getJarDeploymentServiceInstance().getDeployed(name);
+    return ClassPathLoader.getLatest().getJarDeploymentService().getDeployed(name);
   }
 
   @VisibleForTesting
   ServiceResult<Deployment> deploy(Deployment deployment) {
-    return JarDeploymentServiceFactory.getJarDeploymentServiceInstance().deploy(deployment);
+    return ClassPathLoader.getLatest().getJarDeploymentService().deploy(deployment);
   }
 }

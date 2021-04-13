@@ -21,11 +21,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.deployment.internal.JarDeploymentService;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.cli.domain.DeploymentInfo;
@@ -84,7 +84,7 @@ public class UndeployFunction implements InternalFunction<Object[]> {
 
   private List<DeploymentInfo> undeployAll(String memberId) {
     final JarDeploymentService jarDeploymentService =
-        JarDeploymentServiceFactory.getJarDeploymentServiceInstance();
+        ClassPathLoader.getLatest().getJarDeploymentService();
     List<DeploymentInfo> undeployedJars = new LinkedList<>();
     jarDeploymentService.listDeployed().forEach(deployment -> undeployedJars
         .addAll(undeployByDeploymentName(memberId, deployment.getDeploymentName())));
@@ -94,7 +94,7 @@ public class UndeployFunction implements InternalFunction<Object[]> {
   private List<DeploymentInfo> undeployByDeploymentName(String memberId,
       String... deploymentNames) {
     final JarDeploymentService jarDeploymentService =
-        JarDeploymentServiceFactory.getJarDeploymentServiceInstance();
+        ClassPathLoader.getLatest().getJarDeploymentService();
     List<DeploymentInfo> undeployedJars = new LinkedList<>();
     for (String deploymentName : deploymentNames) {
       logger.debug("Undeploying jar for deploymentName: {}", deploymentName);
@@ -115,7 +115,7 @@ public class UndeployFunction implements InternalFunction<Object[]> {
 
   private List<DeploymentInfo> undeployByFileNames(String memberId, String... filesToUndeploy) {
     final JarDeploymentService jarDeploymentService =
-        JarDeploymentServiceFactory.getJarDeploymentServiceInstance();
+        ClassPathLoader.getLatest().getJarDeploymentService();
     List<DeploymentInfo> undeployedJars = new LinkedList<>();
     for (String fileName : filesToUndeploy) {
       logger.debug("Undeploying jar for fileName: {}", fileName);

@@ -105,7 +105,7 @@ public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
     }
   }
 
-  boolean thisIsOld() {
+  public boolean thisIsOld() {
     return artifactIdsToClassLoader.get(artifactId) != this;
   }
 
