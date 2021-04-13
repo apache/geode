@@ -252,7 +252,7 @@ public class RedisHashTest {
 
     subject.hscan(client_ID, null, 1, 0);
 
-    GeodeAwaitility.await().atMost(2, SECONDS).untilAsserted(() -> {
+    GeodeAwaitility.await().atMost(4, SECONDS).untilAsserted(() -> {
       ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hscanSnapShotMap =
           subject.getHscanSnapShots();
       assertThat(hscanSnapShotMap).isEmpty();
