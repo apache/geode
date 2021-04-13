@@ -40,24 +40,10 @@ public class ModularDUnitTest implements Serializable {
 
     private transient static MemberVM locator;
 
-
-//  @Rule
-//  public DistributedRule distributedRule = new DistributedRule(1);
-
-//  @Rule
-//  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
-
   @Test
   public void test() {
     locator = clusterStartupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
-//    getVM(0).invoke(() -> {
-//      createLocator();
-//    });
-    assertThat(true).isTrue();
-  }
 
-  private void createLocator() throws IOException {
-    System.out.println("hello");
-    // return locatorLauncher.getPort();
+    assertThat(true).isTrue();
   }
 }

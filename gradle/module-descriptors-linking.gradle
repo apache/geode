@@ -23,6 +23,12 @@ import java.util.stream.Stream
 apply from: "${rootDir}/${scriptDir}/module-descriptors-functions.gradle"
 
 tasks.register('generateThirdPartyModuleXML') {
+  rootProject.subprojects.each { proj ->
+    if (!projectsToExclude.contains(proj.name) || testProjectsToInclude.contains(proj.name)) {
+      proj.getTasksByName('distributedTestClasses', true).each { dependentTask -> it.dependsOn(dependentTask) }
+      proj.getTasksByName('processDistributedTestResources', true).each { dependentTask -> it.dependsOn(dependentTask) }
+    }
+  }
   inputs.files {
     rootProject.getTasksByName('generateModuleXml', true).each { it.outputs.files.files }.flatten()
   }
@@ -40,7 +46,8 @@ tasks.register('generateThirdPartyModuleXML') {
           } catch (Throwable t) {
             generateModuleXmlForProject(projectToUse.tasks.getByName('jar').outputs.files.singleFile, projectToUse, 'distributedTest', [])
           }
-        } catch (Throwable t) {}
+        } catch (Throwable t) {
+        }
       }
     }
     def geodeAssemblyProj = project(":geode-assembly")
@@ -69,10 +76,9 @@ def copyDistributedTestLibs() {
 
   filesToCopy.each { artifactFile ->
     def newLibPath = null
-    if(artifactFile.getName().endsWith('.jar')) {
+    if (artifactFile.getName().endsWith('.jar')) {
       newLibPath = Paths.get("${project(':geode-assembly').buildDir}/distributedTesting/lib/${artifactFile.name}")
-    } else if(artifactFile.getName().endsWith('.war')) {
-      println("we have a war $artifactFile")
+    } else if (artifactFile.getName().endsWith('.war')) {
       newLibPath = Paths.get("${project(':geode-assembly').buildDir}/distributedTesting/tools/Extensions/${artifactFile.name}")
     }
     if (newLibPath != null && !file(newLibPath).exists()) {

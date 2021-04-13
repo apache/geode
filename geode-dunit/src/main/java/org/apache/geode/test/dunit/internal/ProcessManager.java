@@ -296,7 +296,7 @@ class ProcessManager implements ChildVMLauncher {
     if (DUnitLauncher.LOG4J != null) {
       cmds.add("-Dlog4j.configurationFile=" + DUnitLauncher.LOG4J);
     }
-    cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
+//    cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
     // cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
     cmds.add("-XX:+HeapDumpOnOutOfMemoryError");
     cmds.add("-Xmx512m");

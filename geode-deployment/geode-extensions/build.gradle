@@ -15,44 +15,22 @@
  * limitations under the License.
  */
 
-
-plugins {
-    id 'java'
-    id "com.github.johnrengelman.shadow" version "5.2.0"
-}
-
-apply plugin: 'com.github.johnrengelman.shadow'
-
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
-group 'test.org.apache.geode'
-version '1.0.0'
-
-repositories {
-    mavenCentral()
-}
+apply from: "${project.projectDir}/../../gradle/publish-java.gradle"
+apply from: "${project.projectDir}/../../gradle/warnings.gradle"
 
 dependencies {
-    implementation('org.springframework:spring-core:4.3.5.RELEASE')
-    implementation('org.springframework:spring-beans:4.3.5.RELEASE')
-    implementation('org.springframework:spring-context:4.3.5.RELEASE')
+    api(project(':geode-cq'))
+    api(project(':geode-gfsh'))
+    api(project(':geode-lucene'))
+    api(project(':geode-apis-compatible-with-redis'))
+    api(project(':geode-memcached'))
+    api(project(':geode-wan'))
+    api(project(':geode-connectors'))
+    api(project(':geode-deployment:geode-deployment-jboss-modules'))
 
-    compileOnly(project(':geode-core'))
+    api(project(':geode-log4j')) {
+        ext.optional = true
+    }
 }
-
-shadowJar {
-    archiveBaseName.set('spring-function')
-    archiveVersion.set(project.version.toString())
-    archiveClassifier.set('')
-}
-
-//project(':geode-assembly').tasks.withType(Test) {
-//    dependsOn shadowJar
-//    inputs.file {
-//        shadowJar.outputs.files.singleFile
-//    }
-//
-//    doFirst {
-//        environment 'DEPLOY_TEST_SPRING_JAR', shadowJar.outputs.files.singleFile
-//    }
-//}

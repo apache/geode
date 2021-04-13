@@ -55,4 +55,6 @@ dependencies {
   distributedTestImplementation(project(':geode-junit'))
   distributedTestImplementation(project(':geode-core'))
   distributedTestImplementation(project(path: ':geode-web-management', configuration: 'war'))
+  distributedTestImplementation(project(path: ':geode-web', configuration: 'war'))
+  distributedTestImplementation(project(path: ':geode-web-api', configuration: 'war'))
 }

@@ -325,7 +325,7 @@ dependencies {
     //copied into it, so it is an API dependency
     api(project(':geode-management'))
 
-    jbossModular(project(':geode-deployment:geode-deployment-jboss-modules'))
+    jbossModular(project(':geode-deployment:geode-extensions'))
 
     jcaCompile(sourceSets.main.output)
 

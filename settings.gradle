@@ -70,7 +70,7 @@ include 'geode-deployment:geode-jboss-extensions'
 include 'geode-deployment:geode-deployment-legacy'
 include 'geode-deployment:geode-deployment-jboss-modules'
 include 'geode-deployment:geode-deployment-test'
-
+include 'geode-deployment:geode-extensions'
 
 [
 //        '1.0.0-incubating',
@@ -105,3 +105,4 @@ buildCache {
     enabled = true
   }
 }
+

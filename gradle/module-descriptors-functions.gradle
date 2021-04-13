@@ -24,7 +24,7 @@ import java.nio.file.Paths
 // do not generate jars, and geode-deployment-legacy.
 ext.projectsToExclude = ["geode-pulse", "extensions", "geode-assembly", "geode-assembly-test", "geode-concurrency-test",
                          "geode-experimental-driver", "geode-jmh", "geode-lucene-test", "geode-modules-assembly",
-                         "geode-modules-test", "geode-protobuf-test", "geode-pulse-test", "pmd-rules",
+                         "geode-modules-test", "geode-pulse-test", "pmd-rules",
                          "static-analysis", "geode-old-versions",
                          "geode-deployment-legacy", "geode-modules", "geode-modules-session",
                          "geode-modules-session-internal", "geode-modules-tomcat7",
@@ -33,7 +33,7 @@ ext.projectsToExclude = ["geode-pulse", "extensions", "geode-assembly", "geode-a
                          "geode-all-bom", "geode-jboss-extensions", "geode-dunit",
                          "geode-junit", 'geode-deployment-test', 'boms']
 
-ext.testProjectsToInclude = ['geode-dunit', 'geode-junit', 'geode-web-management']
+ext.testProjectsToInclude = ['geode-dunit', 'geode-junit', 'geode-web-management', 'geode-web']
 
 def thirdPartyDepsNotToGenerate = { String targetConfigurationPrefix ->
   def depsNotToGenerate = []
@@ -165,7 +165,10 @@ def writeModuleXml(Project projectToUse, moduleJar, moduleVersion, moduleXMLRoot
           xml.'main-class'(['name': 'org.apache.geode.test.dunit.internal.ChildVM'])
         }
         xml.'dependencies' {
-          xml.'module'(['name': "java.se"])
+//          xml.'module'(['name': "java.se"])
+          if (projectName == 'geode-core') {
+            xml.'module'(['name': "geode-extensions", 'services': 'import'])
+          }
           projectDependencies.each { proj ->
             addModuleDependency(proj, namesAndVersions, apiProjectDeps, xml)
           }
@@ -192,7 +195,7 @@ def writeThirdPartyModuleXml(String moduleName, moduleJar, moduleVersion, module
           addResourceRootsForThirdParty(moduleJar, moduleNamePath, xml)
         }
         xml.'dependencies' {
-          xml.'module'(['name': "java.se"])
+//          xml.'module'(['name': "java.se"])
           xml.'module'(['name': "thirdParty", 'services': 'export', 'export': 'true'])
         }
       }
