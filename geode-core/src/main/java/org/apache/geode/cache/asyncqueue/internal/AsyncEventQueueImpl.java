@@ -201,6 +201,11 @@ public class AsyncEventQueueImpl implements InternalAsyncEventQueue {
     return sender.isForwardExpirationDestroy();
   }
 
+  // keep this method internal
+  public boolean isPartitionedRegionClearUnsupported() {
+    return sender.isPartitionedRegionClearUnsupported();
+  }
+
   public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
     return sender.waitUntilFlushed(timeout, unit);
   }
