@@ -33,7 +33,7 @@ ext.projectsToExclude = ["geode-pulse", "extensions", "geode-assembly", "geode-a
                          "geode-all-bom", "geode-jboss-extensions", "geode-dunit",
                          "geode-junit", 'geode-deployment-test', 'boms']
 
-ext.testProjectsToInclude = ['geode-dunit', 'geode-junit']
+ext.testProjectsToInclude = ['geode-dunit', 'geode-junit', 'geode-web-management']
 
 def thirdPartyDepsNotToGenerate = { String targetConfigurationPrefix ->
   def depsNotToGenerate = []
@@ -235,7 +235,11 @@ private def addResourceRoots(Project project, moduleJar, moduleNamePath, xmlBuil
       absolutePathPrefix = absolutePathPrefix.concat("../")
     }
     def moduleName = project.name
-    xmlBuilder.'resource-root'(['path': absolutePathPrefix + "lib/$moduleJar"])
+    String fileLocation ='lib'
+    if(moduleJar.endsWith('.war')) {
+      fileLocation = 'tools/Extensions'
+    }
+    xmlBuilder.'resource-root'(['path': absolutePathPrefix + "$fileLocation/$moduleJar"])
     if (moduleName.contains('geode-') && targetConfigurationPrefix.size() > 0) {
       addResourceRootsForConfiguration(project, targetConfigurationPrefix, xmlBuilder)
     }

@@ -18,6 +18,7 @@ import groovy.xml.MarkupBuilder
 
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.util.stream.Stream
 
 apply from: "${rootDir}/${scriptDir}/module-descriptors-functions.gradle"
 
@@ -34,9 +35,12 @@ tasks.register('generateThirdPartyModuleXML') {
     rootProject.subprojects.each { projectToUse ->
       if (!projectsToExclude.contains(projectToUse.name) || testProjectsToInclude.contains(projectToUse.name)) {
         try {
-          generateModuleXmlForProject(projectToUse.tasks.getByName('jar').outputs.files.singleFile, projectToUse, 'distributedTest', [])
-        } catch (Throwable t) {
-        }
+          try {
+            generateModuleXmlForProject(projectToUse.tasks.getByName('war').outputs.files.singleFile, projectToUse, 'distributedTest', [])
+          } catch (Throwable t) {
+            generateModuleXmlForProject(projectToUse.tasks.getByName('jar').outputs.files.singleFile, projectToUse, 'distributedTest', [])
+          }
+        } catch (Throwable t) {}
       }
     }
     def geodeAssemblyProj = project(":geode-assembly")
@@ -47,25 +51,32 @@ tasks.register('generateThirdPartyModuleXML') {
 }
 
 def copyDistributedTestLibs() {
-  Set<File> jarFilesToCopy = new HashSet<>()
+  Set<File> filesToCopy = new HashSet<>()
 
   mkdir("${project(':geode-assembly').buildDir}/distributedTesting/lib")
+  mkdir("${project(':geode-assembly').buildDir}/distributedTesting/tools/Extensions")
   rootProject.subprojects.each { proj ->
     proj.configurations.each { conf ->
-      if (conf.name == 'jbossModular' || conf.name == 'distributedTestRuntimeClasspath') {
-        jarFilesToCopy.addAll(conf.resolvedConfiguration.resolvedArtifacts
+      if (conf.name == 'jbossModular' || conf.name == 'distributedTestRuntimeClasspath' || conf.name == 'war') {
+        filesToCopy.addAll(conf.resolvedConfiguration.resolvedArtifacts
                 .stream()
                 .map { it.file }
-                .filter { it -> it.name.endsWith('.jar') && it.exists() }
+                .filter { it -> it.exists() }
                 .collect())
       }
     }
   }
 
-  jarFilesToCopy.each { jarFile ->
-    def newLibPath = Paths.get("${project(':geode-assembly').buildDir}/distributedTesting/lib/${jarFile.name}")
-    if (!file(newLibPath).exists()) {
-      Files.copy(jarFile.toPath(), newLibPath)
+  filesToCopy.each { artifactFile ->
+    def newLibPath = null
+    if(artifactFile.getName().endsWith('.jar')) {
+      newLibPath = Paths.get("${project(':geode-assembly').buildDir}/distributedTesting/lib/${artifactFile.name}")
+    } else if(artifactFile.getName().endsWith('.war')) {
+      println("we have a war $artifactFile")
+      newLibPath = Paths.get("${project(':geode-assembly').buildDir}/distributedTesting/tools/Extensions/${artifactFile.name}")
+    }
+    if (newLibPath != null && !file(newLibPath).exists()) {
+      Files.copy(artifactFile.toPath(), newLibPath)
     }
   }
 }

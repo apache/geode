@@ -20,10 +20,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
@@ -31,20 +35,24 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  */
 public class ModularDUnitTest implements Serializable {
 
-  // @ClassRule
-  // public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+   @ClassRule
+   public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
-  @Rule
-  public DistributedRule distributedRule = new DistributedRule(1);
+    private transient static MemberVM locator;
 
-  @Rule
-  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+
+//  @Rule
+//  public DistributedRule distributedRule = new DistributedRule(1);
+
+//  @Rule
+//  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Test
   public void test() {
-    getVM(0).invoke(() -> {
-      createLocator();
-    });
+    locator = clusterStartupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
+//    getVM(0).invoke(() -> {
+//      createLocator();
+//    });
     assertThat(true).isTrue();
   }
 

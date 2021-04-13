@@ -50,4 +50,9 @@ dependencies {
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.awaitility:awaitility')
+
+  distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation(project(':geode-junit'))
+  distributedTestImplementation(project(':geode-core'))
+  distributedTestImplementation(project(path: ':geode-web-management', configuration: 'war'))
 }

@@ -72,6 +72,13 @@ public class AgentUtil {
       logger.info("Located war: {} at location: {}", warFilePrefix, possiblePath);
       return possiblePath;
     }
+
+    possiblePath =
+        findPossibleWarLocationFromGeodeHome(versionedWarFileName, unversionedWarFileName);
+    if (possiblePath != null) {
+      logger.info("Located war: {} at location: {}", warFilePrefix, possiblePath);
+      return possiblePath;
+    }
     // if $GEODE_HOME is not set or we are not able to find it in all the possible locations under
     // $GEODE_HOME, try to find in the classpath
     possiblePath =
@@ -119,6 +126,15 @@ public class AgentUtil {
           geodeHome + "/tools/Pulse/" + unversionedWarFileName,
           geodeHome + "/lib/" + unversionedWarFileName};
     }
+    geodeHome = System.getenv("GEODE_DISTRIBUTED_TEST_HOME");
+    if (StringUtils.isNotBlank(geodeHome)) {
+    possibleFiles = new String[] {geodeHome + "/tools/Extensions/" + versionedWarFileName,
+        geodeHome + "/tools/Pulse/" + versionedWarFileName,
+        geodeHome + "/lib/" + versionedWarFileName,
+        geodeHome + "/tools/Extensions/" + unversionedWarFileName,
+        geodeHome + "/tools/Pulse/" + unversionedWarFileName,
+        geodeHome + "/lib/" + unversionedWarFileName};}
+
     return findPossibleWarLocationFromStream(Arrays.stream(possibleFiles));
   }
 

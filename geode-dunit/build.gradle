@@ -76,6 +76,8 @@ dependencies {
     exclude module: 'hamcrest'
   }
 
+  runtimeOnly('org.jboss.modules:jboss-modules')
+
 //  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
