@@ -27,6 +27,8 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.OperationAbortedException;
 import org.apache.geode.cache.PartitionedRegionPartialClearException;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -395,6 +397,15 @@ public class PartitionedRegionClear {
 
       // Force all primary buckets to be created before clear.
       assignAllPrimaryBuckets();
+
+      for (AsyncEventQueue asyncEventQueue : partitionedRegion.getCache()
+          .getAsyncEventQueues(false)) {
+        if (((AsyncEventQueueImpl) asyncEventQueue).isPartitionedRegionClearUnsupported()) {
+          throw new UnsupportedOperationException(
+              "Clear is not supported on region " + partitionedRegion.getFullPath()
+                  + " because it has a lucene index");
+        }
+      }
 
       // do cacheWrite
       if (cacheWrite) {

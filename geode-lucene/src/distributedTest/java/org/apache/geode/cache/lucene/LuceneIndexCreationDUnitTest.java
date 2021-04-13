@@ -28,7 +28,9 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.io.FileInputStream;
@@ -104,6 +106,27 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
 
     dataStore2.invoke(() -> initDataStore(createIndex, regionType));
     dataStore2.invoke(() -> verifyIndexes(numberOfIndexes));
+  }
+
+  @Test
+  public void verifyThrowExceptionWhenClearOnRegionWithLuceneIndex() {
+    SerializableRunnableIF createIndex = getFieldsIndexWithOneField();
+    dataStore1.invoke(() -> {
+      initDataStore(createIndex, RegionTestableType.PARTITION_REDUNDANT);
+      Region<Object, Object> region = cache.getRegion(REGION_NAME);
+      assertNotNull(region);
+      assertThrows(UnsupportedOperationException.class, () -> region.clear());
+    });
+  }
+
+  @Test
+  public void verifyNotThrowExceptionWhenClearOnRegionWithoutLuceneIndex() {
+    dataStore1.invoke(() -> {
+      initDataStore(RegionTestableType.PARTITION_REDUNDANT);
+      Region<Object, Object> region = cache.getRegion(REGION_NAME);
+      assertNotNull(region);
+      region.clear();
+    });
   }
 
   @Test
