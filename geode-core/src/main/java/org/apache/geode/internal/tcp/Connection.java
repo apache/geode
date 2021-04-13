@@ -57,7 +57,6 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ConflationKey;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
@@ -197,7 +196,7 @@ public class Connection implements Runnable {
    * True if this connection was accepted by a listening socket. This makes it a receiver. False if
    * this connection was explicitly created by a connect call. This makes it a sender.
    */
-  private final boolean isReceiver;
+  private boolean isReceiver;
 
   /**
    * count of how many unshared p2p-readers removed from the original action this thread is. For
@@ -316,9 +315,6 @@ public class Connection implements Runnable {
 
   /** the buffer used for message receipt */
   private ByteBuffer inputBuffer;
-
-  /** Lock used to protect the input buffer */
-  public final Object inputBufferLock = new Object();
 
   /** the length of the next message to be dispatched */
   private int messageLength;
@@ -866,11 +862,19 @@ public class Connection implements Runnable {
   }
 
   private void prepareForAsyncClose() {
+    if (hasBlockedReaderThread()) {
+      readerThread.interrupt();
+    }
+  }
+
+  /**
+   * Check to see if the readerThread, if it exists, is blocked reading from the socket
+   */
+  @VisibleForTesting
+  boolean hasBlockedReaderThread() {
     synchronized (stateLock) {
-      if (readerThread != null && isRunning && !readerShuttingDown
-          && (connectionState == STATE_READING || connectionState == STATE_READING_ACK)) {
-        readerThread.interrupt();
-      }
+      return readerThread != null && isRunning && !readerShuttingDown
+          && (connectionState == STATE_READING || connectionState == STATE_READING_ACK);
     }
   }
 
@@ -1358,31 +1362,25 @@ public class Connection implements Runnable {
         }
         // make sure our socket is closed
         asyncClose(false);
-        if (!isReceiver && !hasResidualReaderThread()) {
-          // receivers release the input buffer when exiting run(). Senders use the
-          // inputBuffer for reading direct-reply responses
-          releaseInputBuffer();
+        // if there isn't another thread that will release the input buffer we need to do it here
+        synchronized (stateLock) {
+          if (!isReceiver && !hasResidualReaderThread() && !hasBlockedReaderThread()) {
+            // receivers and handshake readers release the input buffer when exiting run(). Senders
+            // use the inputBuffer for reading direct-reply responses.
+            releaseInputBuffer();
+          }
         }
         lengthSet = false;
       }
 
       // Make sure anyone waiting for a handshake stops waiting
       notifyHandshakeWaiter(false);
-      // wait a bit for the our reader thread to exit don't wait if we are the reader thread
-      boolean isIBM = false;
-      // if network partition detection is enabled or this is an admin vm
-      // we can't wait for the reader thread when running in an IBM JRE
-      if (conduit.getConfig().getEnableNetworkPartitionDetection()
-          || conduit.getMemberId().getVmKind() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE
-          || conduit.getMemberId().getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
-        isIBM = "IBM Corporation".equals(System.getProperty("java.vm.vendor"));
-      }
 
       // Now that readerThread is returned to a pool after we close
       // we need to be more careful not to join on a thread that belongs
       // to someone else.
       Thread readerThreadSnapshot = readerThread;
-      if (!beingSick && readerThreadSnapshot != null && !isIBM && isRunning
+      if (!beingSick && readerThreadSnapshot != null && isRunning
           && !readerShuttingDown && readerThreadSnapshot != Thread.currentThread()) {
         try {
           readerThreadSnapshot.join(500);
@@ -1502,20 +1500,21 @@ public class Connection implements Runnable {
         }
       }
 
-      releaseInputBuffer();
 
       // make sure that if the reader thread exits we notify a thread waiting for the handshake.
       notifyHandshakeWaiter(false);
       readerThread.setName("unused p2p reader");
       synchronized (stateLock) {
         isRunning = false;
+        releaseInputBuffer();
         readerThread = null;
       }
     }
   }
 
-  private void releaseInputBuffer() {
-    synchronized (inputBufferLock) {
+  @VisibleForTesting
+  void releaseInputBuffer() {
+    synchronized (stateLock) {
       ByteBuffer tmp = inputBuffer;
       if (tmp != null) {
         inputBuffer = null;
@@ -1731,7 +1730,7 @@ public class Connection implements Runnable {
         }
       }
       if (logger.isDebugEnabled()) {
-        logger.debug("readMessages terminated id={} from {} isHandshakeReader={}", conduitIdStr,
+        logger.debug("readMessages terminated id={} from {} handshakeHasBeenRead={}", conduitIdStr,
             remoteAddr, handshakeHasBeenRead);
       }
     }
@@ -1907,6 +1906,11 @@ public class Connection implements Runnable {
     }
   }
 
+  @VisibleForTesting
+  void setIsReceiver(boolean receiver) {
+    isReceiver = receiver;
+  }
+
   /**
    * If {@code use} is true then "claim" the connection for our use. If {@code use} is
    * false then "release" the connection.
@@ -1936,6 +1940,10 @@ public class Connection implements Runnable {
     if (!use) {
       accessed();
     }
+  }
+
+  void setReaderThreadForTest(Thread threadForTest) {
+    readerThread = threadForTest;
   }
 
   /**

@@ -296,17 +296,16 @@ public class BufferPool {
     throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
   }
 
-
   /**
    * Releases a previously acquired buffer.
    */
   private void releaseBuffer(ByteBuffer buffer, boolean send) {
     if (buffer.isDirect()) {
-      buffer = getPoolableBuffer(buffer);
-      BBSoftReference bbRef = new BBSoftReference(buffer, send);
-      if (buffer.capacity() <= SMALL_BUFFER_SIZE) {
+      ByteBuffer poolableBuffer = getPoolableBuffer(buffer);
+      BBSoftReference bbRef = new BBSoftReference(poolableBuffer, send);
+      if (poolableBuffer.capacity() <= SMALL_BUFFER_SIZE) {
         bufferSmallQueue.offer(bbRef);
-      } else if (buffer.capacity() <= MEDIUM_BUFFER_SIZE) {
+      } else if (poolableBuffer.capacity() <= MEDIUM_BUFFER_SIZE) {
         bufferMiddleQueue.offer(bbRef);
       } else {
         bufferLargeQueue.offer(bbRef);

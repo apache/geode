@@ -15,11 +15,13 @@
 package org.apache.geode.internal.tcp;
 
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -148,6 +150,29 @@ public class ConnectionTest {
     Connection connection = new Connection(connectionTable, channel.socket());
     connection = spy(connection);
     return connection;
+  }
+
+  @Test
+  public void closeDoesNotReleaseInputBufferIfHandshakeIsActive() throws Exception {
+    Connection connection = createSpiedConnection();
+    when(connection.hasResidualReaderThread()).thenReturn(false);
+    when(connection.isReceiverStopped()).thenReturn(false);
+    connection.setIsReceiver(false);
+    when(connection.hasBlockedReaderThread()).thenReturn(true);
+    Thread threadForTest = new Thread(() -> {
+      try {
+        Thread.sleep(getTimeout().toMillis());
+      } catch (InterruptedException ignored) {
+      }
+    });
+    threadForTest.start();
+    connection.setReaderThreadForTest(threadForTest);
+    try {
+      connection.requestClose("for test");
+      verify(connection, never()).releaseInputBuffer();
+    } finally {
+      threadForTest.interrupt();
+    }
   }
 
   @Test
