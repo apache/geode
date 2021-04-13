@@ -41,7 +41,6 @@ import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -91,9 +90,6 @@ public class ConnectionIntegrationTest {
 
     when(connectionTable.getConduit()).thenReturn(tcpConduit);
     when(tcpConduit.getSocketId()).thenReturn(new InetSocketAddress("localhost", 1234));
-    when(config.getEnableNetworkPartitionDetection()).thenReturn(false);
-    when(tcpConduit.getConfig()).thenReturn(config);
-    when(tcpConduit.getMemberId()).thenReturn(new InternalDistributedMember("localhost", 2345));
     when(connectionTable.getSocketCloser()).thenReturn(mock(SocketCloser.class));
 
     Connection connection = new Connection(connectionTable, socket);
