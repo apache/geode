@@ -143,6 +143,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected boolean forwardExpirationDestroy;
 
+  /**
+   * An attribute to specify if Partitioned region clear operation is unsupported.
+   * Default is false.
+   */
+  protected boolean partitionedRegionClearUnsupported;
+
   protected GatewayEventSubstitutionFilter substitutionFilter;
 
   protected LocatorDiscoveryCallback locatorDiscoveryCallback;
@@ -291,6 +297,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     }
     isBucketSorted = attrs.isBucketSorted();
     forwardExpirationDestroy = attrs.isForwardExpirationDestroy();
+    partitionedRegionClearUnsupported = attrs.isPartitionedRegionClearUnsupported();
   }
 
   public GatewaySenderAdvisor getSenderAdvisor() {
@@ -385,6 +392,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   @Override
   public boolean isForwardExpirationDestroy() {
     return forwardExpirationDestroy;
+  }
+
+  @Override
+  public boolean isPartitionedRegionClearUnsupported() {
+    return this.partitionedRegionClearUnsupported;
   }
 
   @Override
