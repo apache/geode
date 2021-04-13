@@ -372,9 +372,8 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     // The number of keys must be equal to the number of different values the
     // positions map takes in region entries for the 'SUN' key:
-    // ("nothing", "more", null) + 1 for any entry that does not have
-    // a value for the "SUN" key (UNDEFINED)
-    assertThat(keys).isEqualTo(4);
+    // ("nothing", "more"). null or UNDEFINED not included
+    assertThat(keys).isEqualTo(2);
     // mapIndexKeys must be zero because the index used is a range index and not a map index
     assertThat(mapIndexKeys).isEqualTo(0);
     // The number of values must be equal to the number of region entries
@@ -403,14 +402,10 @@ public class MapRangeIndexMaintenanceJUnitTest {
         ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
 
     // The number of keys must be equal to the number of different values the
-    // positions map takes for the 'SUN' key ("nothing", "more") + 1 (if there
-    // are entries where positions is null) + 1 (if there are entries where
-    // the "SUN" key is not present or the mapped value is null) plus
+    // positions map takes for the 'SUN' key ("nothing", "more") plus
     // the number of different values the positions map takes for the 'ERICSSON' key
-    // ("hey") + 1 (if there are entries where positions is null) + 1
-    // (if there are entries where the "ERICSSON" key is not present or the mapped
-    // value is null)
-    assertThat(keys).isEqualTo(7);
+    // ("hey"). null or UNDEFINED not included.
+    assertThat(keys).isEqualTo(3);
     // The number of mapIndexKeys must be equal to the number of keys
     // in the index that appear in region entries:
     // 'SUN', 'ERICSSON'
@@ -442,9 +437,9 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     // The number of keys must be equal to the number of different values the
     // positions map takes for each key
-    // for each entry in the region:
-    // "something", null, "nothing", "more", "empty", "hey", "tip"
-    assertThat(keys).isEqualTo(7);
+    // for each entry in the region (null not included):
+    // "something", "nothing", "more", "empty", "hey", "tip"
+    assertThat(keys).isEqualTo(6);
     // The number of mapIndexKeys must be equal to the number of different keys
     // that appear in entries of the region:
     // "IBM", "ERICSSON", "HP", "SUN", null

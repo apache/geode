@@ -251,7 +251,7 @@ public class PRIndexStatisticsJUnitTest {
     assertEquals(89, keyIndexStats.getNumberOfBucketIndexes());
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(200, keyIndexStats.getNumberOfKeys());
+    assertEquals(100, keyIndexStats.getNumberOfKeys());
     assertEquals(200, keyIndexStats.getNumberOfValues());
     assertEquals(200, keyIndexStats.getNumUpdates());
 
@@ -260,7 +260,7 @@ public class PRIndexStatisticsJUnitTest {
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(200, keyIndexStats.getNumberOfKeys());
+    assertEquals(100, keyIndexStats.getNumberOfKeys());
     assertEquals(200, keyIndexStats.getNumberOfValues());
     assertEquals(400, keyIndexStats.getNumUpdates());
 
@@ -281,7 +281,7 @@ public class PRIndexStatisticsJUnitTest {
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(100, keyIndexStats.getNumberOfKeys());
+    assertEquals(50, keyIndexStats.getNumberOfKeys());
     assertEquals(100, keyIndexStats.getNumberOfValues());
     assertEquals(500, keyIndexStats.getNumUpdates());
 
@@ -290,7 +290,7 @@ public class PRIndexStatisticsJUnitTest {
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(100, keyIndexStats.getNumberOfKeys());
+    assertEquals(50, keyIndexStats.getNumberOfKeys());
     assertEquals(100, keyIndexStats.getNumberOfValues());
     assertEquals(500, keyIndexStats.getNumUpdates());
 
@@ -562,7 +562,7 @@ public class PRIndexStatisticsJUnitTest {
     assertEquals(89, keyIndexStats.getNumberOfBucketIndexes());
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(200, keyIndexStats.getNumberOfKeys());
+    assertEquals(100, keyIndexStats.getNumberOfKeys());
     assertEquals(200, keyIndexStats.getNumberOfValues());
     assertEquals(200, keyIndexStats.getNumUpdates());
 
@@ -572,7 +572,7 @@ public class PRIndexStatisticsJUnitTest {
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(200, keyIndexStats.getNumberOfKeys());
+    assertEquals(100, keyIndexStats.getNumberOfKeys());
     assertEquals(200, keyIndexStats.getNumberOfValues());
     assertEquals(400, keyIndexStats.getNumUpdates());
 
@@ -593,7 +593,7 @@ public class PRIndexStatisticsJUnitTest {
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(100, keyIndexStats.getNumberOfKeys());
+    assertEquals(50, keyIndexStats.getNumberOfKeys());
     assertEquals(100, keyIndexStats.getNumberOfValues());
     assertEquals(500, keyIndexStats.getNumUpdates());
 
@@ -602,7 +602,7 @@ public class PRIndexStatisticsJUnitTest {
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(100, keyIndexStats.getNumberOfKeys());
+    assertEquals(50, keyIndexStats.getNumberOfKeys());
     assertEquals(100, keyIndexStats.getNumberOfValues());
     assertEquals(500, keyIndexStats.getNumUpdates());
 

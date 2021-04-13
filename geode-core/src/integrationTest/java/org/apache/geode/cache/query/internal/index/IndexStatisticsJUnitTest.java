@@ -345,7 +345,7 @@ public class IndexStatisticsJUnitTest {
     IndexStatistics keyIndexStats = keyIndex3.getStatistics();
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(102, keyIndexStats.getNumberOfKeys());
+    assertEquals(100, keyIndexStats.getNumberOfKeys());
     assertEquals(200, keyIndexStats.getNumberOfValues());
     assertEquals(200, keyIndexStats.getNumUpdates());
 
@@ -354,7 +354,7 @@ public class IndexStatisticsJUnitTest {
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(102, keyIndexStats.getNumberOfKeys());
+    assertEquals(100, keyIndexStats.getNumberOfKeys());
     assertEquals(200, keyIndexStats.getNumberOfValues());
     assertEquals(400, keyIndexStats.getNumUpdates());
 
@@ -376,7 +376,7 @@ public class IndexStatisticsJUnitTest {
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(52, keyIndexStats.getNumberOfKeys());
+    assertEquals(50, keyIndexStats.getNumberOfKeys());
     assertEquals(100, keyIndexStats.getNumberOfValues());
     assertEquals(500, keyIndexStats.getNumUpdates());
 
@@ -385,7 +385,7 @@ public class IndexStatisticsJUnitTest {
     }
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
-    assertEquals(52, keyIndexStats.getNumberOfKeys());
+    assertEquals(50, keyIndexStats.getNumberOfKeys());
     assertEquals(100, keyIndexStats.getNumberOfValues());
     assertEquals(500, keyIndexStats.getNumUpdates());
 

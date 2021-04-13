@@ -147,7 +147,9 @@ public class MemoryIndexStore implements IndexStore {
           retry = true;
           continue;
         } else if (regionEntries == null) {
-          internalIndexStats.incNumKeys(1);
+          if (indexKey != IndexManager.NULL && indexKey != QueryService.UNDEFINED) {
+            internalIndexStats.incNumKeys(1);
+          }
           numIndexKeys.incrementAndGet();
         } else if (regionEntries instanceof RegionEntry) {
           IndexElemArray elemArray = new IndexElemArray();
@@ -323,8 +325,10 @@ public class MemoryIndexStore implements IndexStore {
             found = regionEntries == entry;
             if (found) {
               if (this.valueToEntriesMap.remove(newKey, regionEntries)) {
+                if (newKey != IndexManager.NULL && newKey != QueryService.UNDEFINED) {
+                  internalIndexStats.incNumKeys(-1);
+                }
                 numIndexKeys.decrementAndGet();
-                internalIndexStats.incNumKeys(-1);
               } else {
                 // is another thread has since done an add and shifted us into a collection
                 retry = true;
@@ -360,8 +364,10 @@ public class MemoryIndexStore implements IndexStore {
               synchronized (entries) {
                 if (entries.isEmpty()) {
                   if (valueToEntriesMap.remove(newKey, entries)) {
+                    if (newKey != IndexManager.NULL && newKey != QueryService.UNDEFINED) {
+                      internalIndexStats.incNumKeys(-1);
+                    }
                     numIndexKeys.decrementAndGet();
-                    internalIndexStats.incNumKeys(-1);
                   }
                 }
               }
