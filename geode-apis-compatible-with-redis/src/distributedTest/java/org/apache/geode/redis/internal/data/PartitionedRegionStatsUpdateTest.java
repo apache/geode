@@ -146,7 +146,7 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
-  public void should_showNoIncreaseInDatastoreBytesInUse_givenStringValueSizeDoesNotIncreases() {
+  public void should_showNoIncreaseInDatastoreBytesInUse_givenStringValueSizeDoesNotIncrease() {
     jedis1.set(STRING_KEY, "value");
 
     long initialDataStoreBytesInUse =
@@ -176,7 +176,7 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
-  public void should_showNoIncreaseInDatastoreBytesInUse_givenSetValueSizeDoesNotIncreases() {
+  public void should_showNoIncreaseInDatastoreBytesInUse_givenSetValueSizeDoesNotIncrease() {
     jedis1.sadd(SET_KEY, "value");
 
     long initialDataStoreBytesInUse =
@@ -199,6 +199,11 @@ public class PartitionedRegionStatsUpdateTest {
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
 
     jedis1.sadd(SET_KEY, "value");
+
+    long intermediateDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    assertThat(intermediateDataStoreBytesInUse).isGreaterThan(initialDataStoreBytesInUse);
+
     jedis1.del(SET_KEY);
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
@@ -262,6 +267,11 @@ public class PartitionedRegionStatsUpdateTest {
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
 
     jedis1.hset(HASH_KEY, FIELD, "value");
+
+    long intermediateDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    assertThat(intermediateDataStoreBytesInUse).isGreaterThan(initialDataStoreBytesInUse);
+
     jedis1.del(HASH_KEY);
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
@@ -273,6 +283,7 @@ public class PartitionedRegionStatsUpdateTest {
   public void should_showNoIncreaseInDatastoreBytesInUse_givenHSetDoesNotIncreaseHashSize() {
     jedis2.hset(HASH_KEY, FIELD, "initialvalue"); // two hsets are required to force
     jedis2.hset(HASH_KEY, FIELD, "value"); // deserialization on both servers
+    // otherwise primary/secondary can disagree on size, and which server is primary varies
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -326,6 +337,7 @@ public class PartitionedRegionStatsUpdateTest {
   public void should_showMembersAgreeUponUsedHashMemory_afterDeltaPropagation() {
     jedis1.hset(HASH_KEY, FIELD, "initialvalue"); // two hsets are required to force
     jedis1.hset(HASH_KEY, FIELD, "finalvalue"); // deserialization on both servers
+    // otherwise primary/secondary can disagree on size, and which server is primary varies
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -345,6 +357,7 @@ public class PartitionedRegionStatsUpdateTest {
   public void should_showMembersAgreeUponUsedSetMemory_afterDeltaPropagation() {
     jedis1.sadd(SET_KEY, "value"); // two sadds are required to force
     jedis1.sadd(SET_KEY, "value"); // deserialization on both servers
+    // otherwise primary/secondary can disagree on size, and which server is primary varies
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
@@ -364,6 +377,7 @@ public class PartitionedRegionStatsUpdateTest {
   public void should_showMembersAgreeUponUsedStringMemory_afterDeltaPropagation() {
     jedis1.set(STRING_KEY, "value"); // two sets are required to force
     jedis1.set(STRING_KEY, "value"); // deserialization on both servers
+    // otherwise primary/secondary can disagree on size, and which server is primary varies
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
