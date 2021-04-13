@@ -1374,7 +1374,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return sender.mustGroupTransactionEvents();
   }
 
-  private void peekEventsFromIncompleteTransactions(List<GatewaySenderEventImpl> batch,
+  @VisibleForTesting
+  void peekEventsFromIncompleteTransactions(List<GatewaySenderEventImpl> batch,
       PartitionedRegion prQ) {
     if (!mustGroupTransactionEvents()) {
       return;
@@ -1388,8 +1389,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     int retries = 0;
     while (true) {
-      for (Map.Entry<TransactionId, Integer> pendingTransaction : incompleteTransactionIdsInBatch
-          .entrySet()) {
+      for (Iterator<Map.Entry<TransactionId, Integer>> iter =
+          incompleteTransactionIdsInBatch.entrySet().iterator(); iter.hasNext();) {
+        Map.Entry<TransactionId, Integer> pendingTransaction = iter.next();
         TransactionId transactionId = pendingTransaction.getKey();
         int bucketId = pendingTransaction.getValue();
         List<Object> events = peekEventsWithTransactionId(prQ, bucketId, transactionId);
@@ -1403,7 +1405,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
                 event.getKey(), bucketId, event.isLastEventInTransaction(), batch.size());
           }
           if (event.isLastEventInTransaction()) {
-            incompleteTransactionIdsInBatch.remove(transactionId);
+            iter.remove();
           }
         }
       }

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -477,7 +478,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     // so no need to worry about off-heap refCount.
   }
 
-  private void peekEventsFromIncompleteTransactions(List<AsyncEvent<?, ?>> batch, long lastKey) {
+  @VisibleForTesting
+  void peekEventsFromIncompleteTransactions(List<AsyncEvent<?, ?>> batch, long lastKey) {
     if (!mustGroupTransactionEvents()) {
       return;
     }
@@ -489,7 +491,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     int retries = 0;
     while (true) {
-      for (TransactionId transactionId : incompleteTransactionIdsInBatch) {
+      for (Iterator<TransactionId> iter = incompleteTransactionIdsInBatch.iterator(); iter
+          .hasNext();) {
+        TransactionId transactionId = iter.next();
         List<KeyAndEventPair> keyAndEventPairs =
             peekEventsWithTransactionId(transactionId, lastKey);
         if (keyAndEventPairs.size() > 0
@@ -506,7 +510,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
                   event.getKey(), event.isLastEventInTransaction(), batch.size());
             }
           }
-          incompleteTransactionIdsInBatch.remove(transactionId);
+          iter.remove();
         }
       }
       if (incompleteTransactionIdsInBatch.size() == 0 ||

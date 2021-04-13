@@ -2784,10 +2784,9 @@ public class WANTestBase extends DistributedTestCase {
     assertNotNull(r);
 
     long keyOffset = offset * ((putsPerTransaction + (10 * transactions)) * 100);
-    long i = 0;
     long j = 0;
     CacheTransactionManager mgr = cache.getCacheTransactionManager();;
-    for (i = 0; i < transactions; i++) {
+    for (int i = 0; i < transactions; i++) {
       boolean done = false;
       do {
         try {
