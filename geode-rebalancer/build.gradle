@@ -22,8 +22,8 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
-  compile(project(':geode-core'))
+  api(platform(project(':boms:geode-all-bom')))
+  api(project(':geode-core'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-logging'))
   integrationTestImplementation(project(':geode-junit')) {

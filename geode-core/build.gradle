@@ -325,7 +325,7 @@ dependencies {
     api(project(':geode-management'))
 
 
-    jcaCompile(sourceSets.main.output)
+    jcaImplementation(sourceSets.main.output)
 
     testImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'
@@ -341,11 +341,11 @@ dependencies {
 
     testImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
-    testRuntime('commons-collections:commons-collections')
-    testRuntime('commons-configuration:commons-configuration')
-    testRuntime('commons-io:commons-io')
-    testRuntime('commons-validator:commons-validator')
-    testRuntime('com.pholser:junit-quickcheck-generators')
+    testRuntimeOnly('commons-collections:commons-collections')
+    testRuntimeOnly('commons-configuration:commons-configuration')
+    testRuntimeOnly('commons-io:commons-io')
+    testRuntimeOnly('commons-validator:commons-validator')
+    testRuntimeOnly('com.pholser:junit-quickcheck-generators')
 
     // Needed for JDK8, not JDK11, after nebula.facet v7.0.9
     integrationTestImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
@@ -359,7 +359,7 @@ dependencies {
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
-    integrationTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    integrationTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
     integrationTestRuntimeOnly('org.apache.derby:derby')
     integrationTestRuntimeOnly('xerces:xercesImpl')

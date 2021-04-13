@@ -48,7 +48,7 @@ configurations {
   war {}
 }
 dependencies {
-  compile(platform(project(':boms:geode-all-bom'))) {
+  api(platform(project(':boms:geode-all-bom'))) {
     exclude module: "jackson-annotations"
   }
   compileOnly(project(':geode-logging'))
