@@ -91,9 +91,9 @@ public class JGAddress extends UUID {
     StringBuilder sb = new StringBuilder();
 
     if (ip_addr == null)
-      sb.append("<null>");
+      sb.append("<no address>");
     else {
-      sb.append(ip_addr.getHostName());
+      sb.append(ip_addr);
     }
     if (vmViewId >= 0) {
       sb.append("<v").append(vmViewId).append('>');
