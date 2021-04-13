@@ -200,6 +200,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     factory.setDiskStoreName(attributes.getDiskStoreName());
     factory.setDiskSynchronous(true);
     factory.setForwardExpirationDestroy(true);
+    factory.setPartitionedRegionClearUnsupported(true);
     return factory;
   }
 
