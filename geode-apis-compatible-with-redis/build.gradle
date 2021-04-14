@@ -71,11 +71,11 @@ dependencies {
   }
   acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-data-redis')
   acceptanceTestImplementation('org.springframework.session:spring-session-data-redis')
-  acceptanceTestImplementation('org.apache.logging.log4j:log4j-core')
+  acceptanceTestImplementation(project(':geode-log4j'))
   // This only exists for debugging PubSubNativeRedisAcceptanceTest
   acceptanceTestImplementation('org.buildobjects:jproc:2.5.1')
 
-  distributedTestImplementation('org.apache.logging.log4j:log4j-core')
+  distributedTestImplementation(project(':geode-log4j'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(project(':geode-junit'))
   distributedTestImplementation(sourceSets.commonTest.output)

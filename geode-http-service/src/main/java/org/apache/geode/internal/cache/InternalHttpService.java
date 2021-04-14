@@ -180,7 +180,7 @@ public class InternalHttpService implements HttpService {
     WebAppContext webapp = new WebAppContext();
     webapp.setContextPath(webAppContext);
     webapp.setWar(warFilePath.toString());
-    webapp.setParentLoaderPriority(false);
+    webapp.setParentLoaderPriority(true);
 
     // GEODE-7334: load all jackson classes from war file except jackson annotations
     webapp.getSystemClasspathPattern().add("com.fasterxml.jackson.annotation.");
