@@ -59,8 +59,13 @@ public class RedisHash extends AbstractRedisData {
   private ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hScanSnapShots;
   private ConcurrentHashMap<UUID, Long> hScanSnapShotCreationTimes;
   private ScheduledExecutorService HSCANSnapshotExpirationExecutor = null;
+
+  // these values are empirically derived using ReflectionObjectSizer, which provides an exact size
+  // of the object. It can't be used directly because of its performance impact. These values cause
+  // the size we keep track of to converge to the actual size as it increases.
   private static final int PER_STRING_OVERHEAD = PER_OBJECT_OVERHEAD + 46;
   private static final int PER_HASH_OVERHEAD = PER_OBJECT_OVERHEAD + 116;
+
   private AtomicInteger hashSize = new AtomicInteger(PER_HASH_OVERHEAD);
 
   private static int defaultHscanSnapshotsExpireCheckFrequency =
