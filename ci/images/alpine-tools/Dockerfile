@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:latest as winrm-builder
+FROM bellsoft/liberica-openjdk-alpine:8 as winrm-builder
 RUN apk --no-cache add \
     git \
     go \
@@ -38,6 +38,7 @@ RUN apk --no-cache add \
       openssl \
       python3 \
       py3-pip \
+      py3-yaml \
       rsync \
       util-linux \
   && gcloud config set core/disable_usage_reporting true \
