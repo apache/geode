@@ -100,8 +100,9 @@ public class AlterRuntimeConfigCommand extends GfshCommand {
 
     Map<String, String> runTimeDistributionConfigAttributes = new HashMap<>();
     Map<String, String> rumTimeCacheAttributes = new HashMap<>();
+    Map<String, String> runTimeDistributionConfigAttributesLocators = new HashMap<>();
     Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
-
+    Set<DistributedMember> locators = null;
     if (targetMembers.isEmpty()) {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
@@ -131,6 +132,9 @@ public class AlterRuntimeConfigCommand extends GfshCommand {
     if (logLevel != null && !logLevel.isEmpty()) {
       runTimeDistributionConfigAttributes.put(CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL,
           logLevel);
+      runTimeDistributionConfigAttributesLocators.put(CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL,
+          logLevel);
+      locators = findAllLocators();
     }
 
     if (statisticArchiveFile != null && !statisticArchiveFile.isEmpty()) {
@@ -181,6 +185,8 @@ public class AlterRuntimeConfigCommand extends GfshCommand {
     }
 
     Map<String, String> allRunTimeAttributes = new HashMap<>();
+    Map<String, String> allRunTimeAttributesLocators = new HashMap<>();
+    allRunTimeAttributesLocators.putAll(runTimeDistributionConfigAttributesLocators);
     allRunTimeAttributes.putAll(runTimeDistributionConfigAttributes);
     allRunTimeAttributes.putAll(rumTimeCacheAttributes);
 
@@ -188,6 +194,14 @@ public class AlterRuntimeConfigCommand extends GfshCommand {
         ManagementUtils
             .executeFunction(alterRunTimeConfigFunction, allRunTimeAttributes, targetMembers);
     List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
+    // Alter log level must also be executed in locators
+    if (locators != null && locators.size() != 0) {
+
+      ResultCollector<?, ?> rcLocators =
+          ManagementUtils
+              .executeFunction(alterRunTimeConfigFunction, allRunTimeAttributesLocators, locators);
+      results.addAll(CliFunctionResult.cleanResults((List<?>) rcLocators.getResult()));
+    }
     Set<String> successfulMembers = new TreeSet<>();
     Set<String> errorMessages = new TreeSet<>();
 

@@ -126,6 +126,43 @@ public class AlterRuntimeCommandDistributedTest {
 
   @Test
   @Parameters({"true", "false"})
+  public void alterLogLevelOnAllMembersIncludingLocatorsIsSuccessful(boolean connectOverHttp)
+      throws Exception {
+    Properties props = new Properties();
+    props.setProperty(LOG_LEVEL, "fine");
+
+    MemberVM locator =
+        startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
+    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
+    MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
+
+    if (connectOverHttp) {
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
+    } else {
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+    }
+
+    verifyLogLevel(locator, server1, server2, LogWriterLevel.FINE.intLevel());
+
+    gfsh.executeAndAssertThat("alter runtime --log-level=info").statusIsSuccess();
+
+    verifyLogLevel(locator, server1, server2, LogWriterLevel.INFO.intLevel());
+  }
+
+  private void verifyLogLevel(MemberVM locator, MemberVM server1, MemberVM server2, int logLevel) {
+    for (MemberVM member : new MemberVM[] {locator, server1, server2}) {
+      member.invoke(() -> {
+        InternalCache cache = ClusterStartupRule.getCache();
+        DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+
+        assertThat(config.getLogLevel()).isEqualTo(logLevel);
+      });
+    }
+  }
+
+
+  @Test
+  @Parameters({"true", "false"})
   public void alterLogDiskSpaceLimitWithFileSizeLimitNotSet_OK(boolean connectOverHttp)
       throws Exception {
     Properties props = new Properties();
