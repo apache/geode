@@ -60,14 +60,6 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
     this.getLifeCycleLock().writeLock().lock();
 
     try {
-      if (this.remoteDSId != DEFAULT_DISTRIBUTED_SYSTEM_ID) {
-        String locators = this.cache.getInternalDistributedSystem().getConfig().getLocators();
-        if (locators.length() == 0) {
-          throw new IllegalStateException(
-              "Locators must be configured before recovering gateway-sender in stopped state.");
-        }
-      }
-
       eventProcessor =
           new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj(),
               false, true);

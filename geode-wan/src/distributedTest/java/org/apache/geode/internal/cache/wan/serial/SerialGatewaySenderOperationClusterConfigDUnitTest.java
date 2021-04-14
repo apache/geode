@@ -28,6 +28,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
@@ -45,6 +46,7 @@ import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -225,8 +227,19 @@ public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Seria
 
     executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
     verifyGatewaySenderStateOnMember(server2Site2, true, true);
+    /*
+     * The batch dispatcher thread blocks and waits for configured time (batch-time-interval) to
+     * read new events. The batch-time-interval default value is 1000 milliseconds. So even if
+     * gateway-sender is paused it will still collect all events(for batch) received within these
+     * 1000 milliseconds and dispatch them. After 1000 milliseconds expire dispatcher thread will be
+     * actually paused. So it is necessary to wait for batch-time-interval + offset,
+     * before putting new data.
+     */
+    GeodeAwaitility.await()
+        .atLeast(Duration.ofMillis(GatewaySender.DEFAULT_BATCH_TIME_INTERVAL + 500));
 
-    Set<String> keysQueued1 = clientSite2.invoke(() -> doPutsInRange(100, 110));
+    Set<String> keysQueued1 = clientSite2.invoke(() -> doPutsInRange(100, 200));
+    clientSite2.invoke(() -> checkDataAvailable(keysQueued1));
     server2Site2.invoke(() -> checkQueueSize("ln", keysQueued1.size()));
 
     // start again servers in Site #2
@@ -237,7 +250,6 @@ public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Seria
     thread.join();
 
     verifyGatewaySenderStateOnMember(server1Site2, true, true);
-    // queue recovered from persistent storage
     server1Site2.invoke(() -> checkQueueSize("ln", keysQueued1.size()));
 
     executeGfshCommand(CliStrings.RESUME_GATEWAYSENDER);
