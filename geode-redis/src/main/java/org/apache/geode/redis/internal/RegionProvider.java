@@ -29,6 +29,7 @@ public class RegionProvider {
    */
   public static final String REDIS_DATA_REGION = "REDIS_DATA";
   public static final String REDIS_CONFIG_REGION = "__REDIS_CONFIG";
+  public static final int REDIS_REPLICAS = Integer.getInteger("redis.replicas", 1);
   public static final int REDIS_REGION_BUCKETS = Integer.getInteger("redis.region.buckets", 128);
   public static final int REDIS_SLOTS = Integer.getInteger("redis.slots", 16384);
   public static final int REDIS_SLOTS_PER_BUCKET = REDIS_SLOTS / REDIS_REGION_BUCKETS;
@@ -44,6 +45,7 @@ public class RegionProvider {
 
     PartitionAttributesFactory<RedisKey, RedisData> attributesFactory =
         new PartitionAttributesFactory<>();
+    attributesFactory.setRedundantCopies(REDIS_REPLICAS);
     attributesFactory.setPartitionResolver(new RedisPartitionResolver());
     attributesFactory.setTotalNumBuckets(REDIS_REGION_BUCKETS);
     redisDataRegionFactory.setPartitionAttributes(attributesFactory.create());
