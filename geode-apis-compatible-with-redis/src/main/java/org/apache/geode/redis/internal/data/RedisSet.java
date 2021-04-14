@@ -49,6 +49,9 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 public class RedisSet extends AbstractRedisData {
   private HashSet<ByteArrayWrapper> members;
 
+  // these values are empirically derived using ReflectionObjectSizer, which provides an exact size
+  // of the object. It can't be used directly because of its performance impact. These values cause
+  // the size we keep track of to converge to the actual size as it increases.
   private static final int PER_MEMBER_OVERHEAD = PER_OBJECT_OVERHEAD + 70;
   private static final int PER_SET_OVERHEAD = PER_OBJECT_OVERHEAD + 240;
 
