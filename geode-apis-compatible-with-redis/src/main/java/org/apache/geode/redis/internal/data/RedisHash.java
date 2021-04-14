@@ -36,7 +36,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -65,7 +64,7 @@ public class RedisHash extends AbstractRedisData {
   private static final int PER_STRING_OVERHEAD = PER_OBJECT_OVERHEAD + 46;
   private static final int PER_HASH_OVERHEAD = PER_OBJECT_OVERHEAD + 116;
 
-  private AtomicInteger hashSize = new AtomicInteger(PER_HASH_OVERHEAD);
+  private int hashSize = PER_HASH_OVERHEAD;
 
   private static int defaultHscanSnapshotsExpireCheckFrequency =
       Integer.getInteger("redis.hscan-snapshot-cleanup-interval", 30000);
@@ -152,7 +151,7 @@ public class RedisHash extends AbstractRedisData {
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     DataSerializer.writeHashMap(hash, out);
-    DataSerializer.writeInteger(hashSize.get(), out);
+    DataSerializer.writeInteger(hashSize, out);
   }
 
   @Override
@@ -160,7 +159,7 @@ public class RedisHash extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     hash = DataSerializer.readHashMap(in);
-    hashSize.set(DataSerializer.readInteger(in));
+    hashSize = DataSerializer.readInteger(in);
   }
 
   @Override
@@ -172,9 +171,9 @@ public class RedisHash extends AbstractRedisData {
   private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
     ByteArrayWrapper oldvalue = hash.put(field, value);
     if (oldvalue == null) {
-      hashSize.addAndGet(2 * PER_STRING_OVERHEAD + field.length() + value.length());
+      hashSize += 2 * PER_STRING_OVERHEAD + field.length() + value.length();
     } else {
-      hashSize.addAndGet(value.length() - oldvalue.length());
+      hashSize += value.length() - oldvalue.length();
     }
     return oldvalue;
   }
@@ -183,7 +182,7 @@ public class RedisHash extends AbstractRedisData {
       ByteArrayWrapper value) {
     ByteArrayWrapper oldvalue = hash.putIfAbsent(field, value);
     if (oldvalue == null) {
-      hashSize.addAndGet(2 * PER_STRING_OVERHEAD + field.length() + value.length());
+      hashSize += 2 * PER_STRING_OVERHEAD + field.length() + value.length();
     }
     return oldvalue;
   }
@@ -191,7 +190,7 @@ public class RedisHash extends AbstractRedisData {
   private synchronized ByteArrayWrapper hashRemove(ByteArrayWrapper field) {
     ByteArrayWrapper oldValue = hash.remove(field);
     if (oldValue != null) {
-      hashSize.addAndGet(-(2 * PER_STRING_OVERHEAD + field.length() + oldValue.length()));
+      hashSize -= 2 * PER_STRING_OVERHEAD + field.length() + oldValue.length();
     }
     return oldValue;
   }
@@ -529,6 +528,16 @@ public class RedisHash extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return hashSize.get();
+    return hashSize;
+  }
+
+  @VisibleForTesting
+  protected static int getPerStringOverhead() {
+    return PER_STRING_OVERHEAD;
+  }
+
+  @VisibleForTesting
+  protected static int getPerHashOverhead() {
+    return PER_HASH_OVERHEAD;
   }
 }
