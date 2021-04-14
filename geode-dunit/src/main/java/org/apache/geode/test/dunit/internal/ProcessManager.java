@@ -25,21 +25,15 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.JavaVersion;
@@ -296,7 +290,7 @@ class ProcessManager implements ChildVMLauncher {
     if (DUnitLauncher.LOG4J != null) {
       cmds.add("-Dlog4j.configurationFile=" + DUnitLauncher.LOG4J);
     }
-//    cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
+    // cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
     // cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
     cmds.add("-XX:+HeapDumpOnOutOfMemoryError");
     cmds.add("-Xmx512m");
@@ -310,7 +304,7 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add("-XX:SoftRefLRUPolicyMSPerMB=1");
     cmds.add(agent);
     if (vmNum >= 0) {
-//       cmds.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + 5005 + vmNum);
+//       cmds.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + (5005 + vmNum));
     }
     if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
       // needed for client stats gathering, see VMStats50 class, it's using class inspection

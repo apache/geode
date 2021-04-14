@@ -14,14 +14,10 @@
  */
 package org.apache.geode.modules.distributed;
 
-import static org.apache.geode.test.dunit.VM.getVM;
-import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
@@ -30,10 +26,8 @@ import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
-import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.version.VersionManager;
 
 /**
@@ -41,14 +35,15 @@ import org.apache.geode.test.version.VersionManager;
  */
 public class ModularDUnitTest implements Serializable {
 
-   @ClassRule
-   public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  @ClassRule
+  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
-    private transient static MemberVM locator;
+  private static transient MemberVM locator;
 
   @Test
   public void test() {
-    locator = clusterStartupRule.startLocatorVM(0, 10334, VersionManager.CURRENT_VERSION, MemberStarterRule::withHttpService);
+    locator = clusterStartupRule.startLocatorVM(0, 10334, VersionManager.CURRENT_VERSION,
+        MemberStarterRule::withHttpService);
 
     Region region = new Region();
     region.setName("orders");

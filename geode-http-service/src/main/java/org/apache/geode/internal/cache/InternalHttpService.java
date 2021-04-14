@@ -181,13 +181,14 @@ public class InternalHttpService implements HttpService {
     webapp.setContextPath(webAppContext);
     webapp.setWar(warFilePath.toString());
     webapp.setParentLoaderPriority(true);
+    webapp.setClassLoader(this.getClass().getClassLoader());
 
     // GEODE-7334: load all jackson classes from war file except jackson annotations
     webapp.getSystemClasspathPattern().add("com.fasterxml.jackson.annotation.");
     webapp.getServerClasspathPattern().add("com.fasterxml.jackson.",
         "-com.fasterxml.jackson.annotation.");
     // add the member's working dir as the extra classpath
-    webapp.setExtraClasspath(new File(".").getAbsolutePath());
+     webapp.setExtraClasspath(new File(".").getAbsolutePath());
 
     webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
     webapp.addAliasCheck(new AllowSymLinkAliasChecker());
@@ -209,6 +210,7 @@ public class InternalHttpService implements HttpService {
       httpServer.start();
     } else {
       webapp.start();
+      logger.info("Webapp {} started", webAppContext);
     }
     webApps.add(webapp);
   }

@@ -21,12 +21,13 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  implementation(platform(project(':boms:geode-all-bom')))
+  compileOnly(platform(project(':boms:geode-all-bom')))
   implementation('org.apache.commons:commons-lang3')
   implementation('com.fasterxml.jackson.core:jackson-databind')
   implementation('com.fasterxml.jackson.core:jackson-core')
   implementation('com.fasterxml.jackson.core:jackson-annotations')
-  implementation('org.springframework:spring-web')
+  compileOnly('org.springframework:spring-web')
   implementation('org.apache.httpcomponents:httpclient')
   implementation('commons-io:commons-io')
 
@@ -53,7 +54,9 @@ dependencies {
 
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(project(':geode-junit'))
-  distributedTestImplementation(project(':geode-core'))
+  distributedTestImplementation(project(':geode-core')){
+    exclude module: 'geode-gfsh'
+  }
   distributedTestImplementation(project(path: ':geode-web-management', configuration: 'war'))
   distributedTestImplementation(project(path: ':geode-web', configuration: 'war'))
   distributedTestImplementation(project(path: ':geode-web-api', configuration: 'war'))
