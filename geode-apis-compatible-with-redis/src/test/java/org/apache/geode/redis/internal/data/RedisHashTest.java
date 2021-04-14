@@ -258,6 +258,13 @@ public class RedisHashTest {
     });
   }
 
+  @Test
+  public void hashSizeOverhead_shouldNotBeChanged_withoutForethoughtAndTesting() {
+    assertThat(RedisHash.PER_OBJECT_OVERHEAD).isEqualTo(8);
+    assertThat(RedisHash.getPerStringOverhead()).isEqualTo(RedisHash.PER_OBJECT_OVERHEAD + 46);
+    assertThat(RedisHash.getPerHashOverhead()).isEqualTo(RedisHash.PER_OBJECT_OVERHEAD + 116);
+  }
+
   private RedisHash createRedisHash(int NumberOfFields) {
     ArrayList<ByteArrayWrapper> elements = createListOfDataElements(NumberOfFields);
     return new RedisHash(elements);

@@ -351,4 +351,10 @@ public class RedisStringTest {
     o2.fromDelta(in);
     assertThat(o2).isEqualTo(o1);
   }
+
+  @Test
+  public void overheadConstants_shouldNotChange_withoutForethoughtAndTesting() {
+    assertThat(RedisString.PER_OBJECT_OVERHEAD).isEqualTo(8);
+    assertThat(RedisString.getPerStringOverhead()).isEqualTo(RedisString.PER_STRING_OVERHEAD);
+  }
 }

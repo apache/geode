@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -55,7 +54,7 @@ public class RedisSet extends AbstractRedisData {
   private static final int PER_MEMBER_OVERHEAD = PER_OBJECT_OVERHEAD + 70;
   private static final int PER_SET_OVERHEAD = PER_OBJECT_OVERHEAD + 240;
 
-  private AtomicInteger setSize = new AtomicInteger(PER_SET_OVERHEAD);
+  private int setSize = PER_SET_OVERHEAD;
 
   @SuppressWarnings("unchecked")
   RedisSet(Collection<ByteArrayWrapper> members) {
@@ -65,7 +64,7 @@ public class RedisSet extends AbstractRedisData {
       this.members = new HashSet<>(members);
     }
     for (ByteArrayWrapper value : this.members) {
-      setSize.addAndGet(PER_MEMBER_OVERHEAD + value.length());
+      setSize += PER_MEMBER_OVERHEAD + value.length();
     }
   }
 
@@ -210,7 +209,7 @@ public class RedisSet extends AbstractRedisData {
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     DataSerializer.writeHashSet(members, out);
-    DataSerializer.writeInteger(setSize.get(), out);
+    DataSerializer.writeInteger(setSize, out);
   }
 
   @Override
@@ -218,7 +217,7 @@ public class RedisSet extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     members = DataSerializer.readHashSet(in);
-    setSize.set(DataSerializer.readInteger(in));
+    setSize = DataSerializer.readInteger(in);
   }
 
   @Override
@@ -229,7 +228,7 @@ public class RedisSet extends AbstractRedisData {
   private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
     boolean actuallyAdded = members.add(memberToAdd);
     if (actuallyAdded) {
-      setSize.addAndGet(PER_MEMBER_OVERHEAD + memberToAdd.length());
+      setSize += PER_MEMBER_OVERHEAD + memberToAdd.length();
     }
     return actuallyAdded;
   }
@@ -237,20 +236,20 @@ public class RedisSet extends AbstractRedisData {
   private boolean membersRemove(ByteArrayWrapper memberToRemove) {
     boolean actuallyRemoved = members.remove(memberToRemove);
     if (actuallyRemoved) {
-      setSize.addAndGet(-(PER_MEMBER_OVERHEAD + memberToRemove.length()));
+      setSize -= PER_MEMBER_OVERHEAD + memberToRemove.length();
     }
     return actuallyRemoved;
   }
 
   private synchronized boolean membersAddAll(AddsDeltaInfo addsDeltaInfo) {
     ArrayList<ByteArrayWrapper> adds = addsDeltaInfo.getAdds();
-    setSize.addAndGet(adds.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum());
+    setSize += adds.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
     return members.addAll(adds);
   }
 
   private synchronized boolean membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
     ArrayList<ByteArrayWrapper> removes = remsDeltaInfo.getRemoves();
-    setSize.addAndGet(-removes.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum());
+    setSize -= removes.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
     return members.removeAll(removes);
   }
 
@@ -344,6 +343,16 @@ public class RedisSet extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return setSize.get();
+    return setSize;
+  }
+
+  @VisibleForTesting
+  protected static int getPerSetOverhead() {
+    return PER_SET_OVERHEAD;
+  }
+
+  @VisibleForTesting
+  protected static int getPerMemberOverhead() {
+    return PER_MEMBER_OVERHEAD;
   }
 }
