@@ -128,12 +128,13 @@ public class AgentUtil {
     }
     geodeHome = System.getenv("GEODE_DISTRIBUTED_TEST_HOME");
     if (StringUtils.isNotBlank(geodeHome)) {
-    possibleFiles = new String[] {geodeHome + "/tools/Extensions/" + versionedWarFileName,
-        geodeHome + "/tools/Pulse/" + versionedWarFileName,
-        geodeHome + "/lib/" + versionedWarFileName,
-        geodeHome + "/tools/Extensions/" + unversionedWarFileName,
-        geodeHome + "/tools/Pulse/" + unversionedWarFileName,
-        geodeHome + "/lib/" + unversionedWarFileName};}
+      possibleFiles = new String[] {geodeHome + "/tools/Extensions/" + versionedWarFileName,
+          geodeHome + "/tools/Pulse/" + versionedWarFileName,
+          geodeHome + "/lib/" + versionedWarFileName,
+          geodeHome + "/tools/Extensions/" + unversionedWarFileName,
+          geodeHome + "/tools/Pulse/" + unversionedWarFileName,
+          geodeHome + "/lib/" + unversionedWarFileName};
+    }
 
     return findPossibleWarLocationFromStream(Arrays.stream(possibleFiles));
   }

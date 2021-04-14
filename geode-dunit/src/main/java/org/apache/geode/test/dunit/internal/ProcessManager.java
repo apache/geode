@@ -304,7 +304,8 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add("-XX:SoftRefLRUPolicyMSPerMB=1");
     cmds.add(agent);
     if (vmNum >= 0) {
-//       cmds.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + (5005 + vmNum));
+      // cmds.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + (5005 +
+      // vmNum));
     }
     if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
       // needed for client stats gathering, see VMStats50 class, it's using class inspection

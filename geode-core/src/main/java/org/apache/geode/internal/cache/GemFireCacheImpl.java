@@ -1502,7 +1502,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Initialize any services provided as extensions to the cache using service loader.
    */
   private void initializeServices() {
-    ServiceLoader<CacheService> loader = ServiceLoader.load(CacheService.class, this.getClass().getClassLoader());
+    ServiceLoader<CacheService> loader =
+        ServiceLoader.load(CacheService.class, this.getClass().getClassLoader());
     for (CacheService service : loader) {
       try {
         if (service.init(this)) {

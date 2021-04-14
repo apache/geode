@@ -117,7 +117,8 @@ public interface RestoreRedundancyResults extends OperationResult {
    * Returns the total time spent transferring primaries as part of the restore redundancy
    * operations.
    *
-   * @return A {@literal long} representing the total time in milliseconds spent transferring primaries
+   * @return A {@literal long} representing the total time in milliseconds spent transferring
+   *         primaries
    */
   long getTotalPrimaryTransferTime();
 
