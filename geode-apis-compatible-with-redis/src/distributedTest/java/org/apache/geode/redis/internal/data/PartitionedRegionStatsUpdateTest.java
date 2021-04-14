@@ -103,16 +103,20 @@ public class PartitionedRegionStatsUpdateTest {
 
   @Test
   public void should_showDecreaseInDatastoreBytesInUse_givenStringValueDeleted() {
-    jedis1.set(STRING_KEY, "value");
-
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+
+    jedis1.set(STRING_KEY, "value");
+
+    long intermediateDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    assertThat(intermediateDataStoreBytesInUse).isGreaterThan(initialDataStoreBytesInUse);
 
     jedis1.del(STRING_KEY);
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
 
-    assertThat(finalDataStoreBytesInUse).isLessThan(initialDataStoreBytesInUse);
+    assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
   }
 
   @Test
@@ -246,22 +250,6 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
-  public void should_ShowNoIncreaseInDatastoreBytesInUse_givenHashValueSizeDoesNotIncrease() {
-    jedis1.hset(HASH_KEY, FIELD, "value");
-
-    long initialDataStoreBytesInUse =
-        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
-
-    for (int i = 0; i < 1000; i++) {
-      jedis1.hsetnx(HASH_KEY, FIELD, LONG_APPEND_VALUE);
-    }
-
-    long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
-
-    assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
-  }
-
-  @Test
   public void should_showDecreaseInDatastoreBytesInUse_givenHashValueDeleted() {
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
@@ -331,7 +319,7 @@ public class PartitionedRegionStatsUpdateTest {
     assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
   }
 
-  // confirm that the other member agrees upon size
+  /******* confirm that the other member agrees upon size *******/
 
   @Test
   public void should_showMembersAgreeUponUsedHashMemory_afterDeltaPropagation() {
@@ -393,7 +381,7 @@ public class PartitionedRegionStatsUpdateTest {
     assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
   }
 
-  // confirm our math is right
+  /******* confirm our math is right *******/
 
   @Test
   public void string_bytesInUse_shouldReflectActualSizeOfDataInRegion() {
