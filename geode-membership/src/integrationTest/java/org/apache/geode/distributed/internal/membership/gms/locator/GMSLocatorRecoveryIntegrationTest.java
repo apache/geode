@@ -38,6 +38,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.distributed.internal.membership.api.HostAddress;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipBuilder;
@@ -154,7 +155,7 @@ public class GMSLocatorRecoveryIntegrationTest {
     final TcpSocketCreatorImpl socketCreator = new TcpSocketCreatorImpl();
     locator = MembershipLocatorBuilder.newLocatorBuilder(socketCreator, serializer,
         temporaryFolder.getRoot().toPath(), executorServiceSupplier)
-        .setBindAddress(localHost).create();
+        .setBindAddress(new HostAddress(localHost)).create();
     final int port = locator.start();
 
     try {
@@ -182,7 +183,7 @@ public class GMSLocatorRecoveryIntegrationTest {
 
       // now create a peer location handler that should recover from our real locator and know
       // that real locator's identifier
-      GMSLocator gmsLocator = new GMSLocator(localHost,
+      GMSLocator gmsLocator = new GMSLocator(new HostAddress(localHost),
           membership.getLocalMember().getHost() + "[" + port + "]", true, true,
           new MembershipLocatorStatisticsNoOp(), "", temporaryFolder.getRoot().toPath(),
           locatorClient,

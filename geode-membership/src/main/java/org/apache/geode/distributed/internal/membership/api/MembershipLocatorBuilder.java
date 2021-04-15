@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.api;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
@@ -29,7 +28,7 @@ import org.apache.geode.internal.serialization.DSFIDSerializer;
 public interface MembershipLocatorBuilder<ID extends MemberIdentifier> {
   MembershipLocatorBuilder<ID> setPort(int port);
 
-  MembershipLocatorBuilder<ID> setBindAddress(InetAddress bindAddress);
+  MembershipLocatorBuilder<ID> setBindAddress(HostAddress bindAddress);
 
   MembershipLocatorBuilder<ID> setConfig(MembershipConfig membershipConfig);
 

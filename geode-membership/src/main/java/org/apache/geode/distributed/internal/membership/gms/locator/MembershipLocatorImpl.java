@@ -30,6 +30,7 @@ import java.util.function.Supplier;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.internal.membership.api.HostAddress;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
@@ -61,7 +62,7 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
   private final GMSLocator<ID> gmsLocator;
   private final TcpClient locatorClient;
 
-  public MembershipLocatorImpl(int port, InetAddress bindAddress,
+  public MembershipLocatorImpl(int port, HostAddress bindAddress,
       ProtocolChecker protocolChecker,
       Supplier<ExecutorService> executorServiceSupplier,
       TcpSocketCreator socketCreator,
@@ -77,9 +78,10 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
             () -> System.currentTimeMillis(), x -> Thread.sleep(x));
     String host = bindAddress == null ? LocalHostUtil.getLocalHostName()
         : bindAddress.getHostName();
+    InetAddress inetAddress = bindAddress == null ? null : bindAddress.getAddress();
     String threadName = "Distribution Locator on " + host + ": " + port;
 
-    this.server = new TcpServer(port, bindAddress, handler,
+    this.server = new TcpServer(port, inetAddress, handler,
         threadName, protocolChecker,
         locatorStats::getStatTime,
         executorServiceSupplier,
@@ -93,7 +95,7 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
         objectSerializer,
         objectDeserializer, Socket::new);
     gmsLocator =
-        new GMSLocator<>(bindAddress, config.getLocators(), locatorsAreCoordinators,
+        new GMSLocator<ID>(bindAddress, config.getLocators(), locatorsAreCoordinators,
             config.isNetworkPartitionDetectionEnabled(),
             locatorStats, config.getSecurityUDPDHAlgo(), workingDirectory, locatorClient,
             objectSerializer,

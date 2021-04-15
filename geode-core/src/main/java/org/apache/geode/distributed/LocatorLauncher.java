@@ -60,6 +60,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.membership.api.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
@@ -187,8 +188,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   private final boolean portSpecified;
   private final boolean workingDirectorySpecified;
 
-  private final InetAddress bindAddress;
-  private final String bindAddressString;
+  private final HostAddress bindAddress;
 
   private final Integer pid;
   private final Integer port;
@@ -260,8 +260,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     this.command = builder.getCommand();
     this.help = Boolean.TRUE.equals(builder.getHelp());
     this.bindAddressSpecified = builder.isBindAddressSpecified();
-    this.bindAddress = builder.getBindAddress();
-    this.bindAddressString = builder.getBindAddressString();
+    this.bindAddress = builder.getHostAddress();
     setDebug(Boolean.TRUE.equals(builder.getDebug()));
     this.deletePidFileOnStop = Boolean.TRUE.equals(builder.getDeletePidFileOnStop());
     this.distributedSystemProperties = builder.getDistributedSystemProperties();
@@ -443,7 +442,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see java.net.InetAddress
    */
   public InetAddress getBindAddress() {
-    return this.bindAddress;
+    return this.bindAddress.getAddress();
   }
 
   /**
@@ -462,13 +461,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   protected String getBindAddressAsString() {
     try {
-      if (bindAddressString != null) {
-        return bindAddressString;
+      if (bindAddress != null) {
+        return bindAddress.getHostName();
       }
-      if (getBindAddress() != null) {
-        return getBindAddress().getCanonicalHostName();
-      }
-
       return LocalHostUtil.getCanonicalLocalHostName();
     } catch (UnknownHostException handled) {
       // Returning localhost/127.0.0.1 implies the bindAddress was null and no IP address for
@@ -731,7 +726,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
         try {
           this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
-              getBindAddress(), bindAddressString, true, getDistributedSystemProperties(),
+              bindAddress, true, getDistributedSystemProperties(),
               getHostnameForClients(),
               Paths.get(workingDirectory));
         } finally {
@@ -1205,7 +1200,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   public String getBindAddressString() {
-    return bindAddressString;
+    return bindAddress == null ? null : bindAddress.getHostName();
   }
 
   private class LocatorControllerParameters implements ProcessControllerParameters {
@@ -1282,7 +1277,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     private Boolean loadSharedConfigFromDir;
     private Command command;
 
-    private InetAddress bindAddress;
+    private HostAddress bindAddress;
 
     private Integer pid;
     private Integer port;
@@ -1292,7 +1287,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     private String hostnameForClients;
     private String memberName;
     private String workingDirectory;
-    private String bindAddressString;
 
     /**
      * Default constructor used to create an instance of the Builder class for programmatical
@@ -1594,7 +1588,11 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see java.net.InetAddress
      */
     public InetAddress getBindAddress() {
-      return this.bindAddress;
+      return bindAddress == null ? null : bindAddress.getAddress();
+    }
+
+    HostAddress getHostAddress() {
+      return bindAddress;
     }
 
     /**
@@ -1612,14 +1610,12 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     public Builder setBindAddress(final String addressString) {
       if (isBlank(addressString)) {
         this.bindAddress = null;
-        bindAddressString = null;
         return this;
       } else {
         try {
           InetAddress address = InetAddress.getByName(addressString);
           if (LocalHostUtil.isLocalHost(address)) {
-            this.bindAddress = address;
-            this.bindAddressString = addressString;
+            this.bindAddress = new HostAddress(addressString);
             return this;
           } else {
             throw new IllegalArgumentException(
@@ -1941,10 +1937,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     public LocatorLauncher build() {
       validate();
       return new LocatorLauncher(this);
-    }
-
-    public String getBindAddressString() {
-      return bindAddressString;
     }
   }
 

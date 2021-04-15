@@ -16,6 +16,6 @@
  */
 
 tasks.withType(JavaCompile) {
-  options.compilerArgs << '-Xlint:unchecked' << "-Werror"
-  options.deprecation = true
+//  options.compilerArgs << '-Xlint:unchecked' << "-Werror"
+//  options.deprecation = true
 }

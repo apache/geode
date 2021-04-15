@@ -22,7 +22,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.internal.membership.api.HostAddress;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
@@ -108,7 +108,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
    * @param objectSerializer a serializer used to persist the membership view
    * @param objectDeserializer a deserializer used to recover the membership view
    */
-  public GMSLocator(InetAddress bindAddress, String locatorString, boolean usePreferredCoordinators,
+  public GMSLocator(HostAddress bindAddress, String locatorString, boolean usePreferredCoordinators,
       boolean networkPartitionDetectionEnabled, MembershipLocatorStatistics locatorStats,
       String securityUDPDHAlgo, Path workingDirectory, final TcpClient locatorClient,
       ObjectSerializer objectSerializer,
@@ -121,7 +121,8 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
     if (this.locatorString == null || this.locatorString.isEmpty()) {
       locators = new ArrayList<>(0);
     } else {
-      locators = GMSUtil.parseLocators(locatorString, bindAddress);
+      locators = GMSUtil.parseLocators(locatorString,
+          bindAddress == null ? null : bindAddress.getAddress());
     }
     this.locatorStats = locatorStats;
     this.workingDirectory = workingDirectory;

@@ -76,6 +76,7 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.api.HostAddress;
 import org.apache.geode.distributed.internal.membership.api.MembershipInformation;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
@@ -914,8 +915,8 @@ public class InternalDistributedSystem extends DistributedSystem
     try {
       startedLocator =
           InternalLocator.createLocator(locId.getPort(), NullLoggingSession.create(), null,
-              logWriter, securityLogWriter, locId.getHost().getAddress(),
-              config.getBindAddress(), locId.getHostnameForClients(), originalConfig.toProperties(),
+              logWriter, securityLogWriter, new HostAddress(locId.getHost()),
+              locId.getHostnameForClients(), originalConfig.toProperties(),
               false);
 
       // if locator is started this way, cluster config is not enabled, set the flag correctly

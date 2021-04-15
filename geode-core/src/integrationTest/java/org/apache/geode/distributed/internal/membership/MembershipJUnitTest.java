@@ -31,7 +31,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.net.InetAddress;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
@@ -54,6 +53,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
+import org.apache.geode.distributed.internal.membership.api.HostAddress;
 import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
@@ -137,12 +137,12 @@ public class MembershipJUnitTest {
 
       // boot up a locator
       int port = AvailablePortHelper.getRandomAvailableTCPPort();
-      InetAddress localHost = LocalHostUtil.getLocalHost();
+      HostAddress localHost = new HostAddress(LocalHostUtil.getLocalHost());
 
       // this locator will hook itself up with the first Membership
       // to be created
       internalLocator =
-          InternalLocator.startLocator(port, new File(""), null, null, localHost, "", false,
+          InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
               new Properties(), null, temporaryFolder.getRoot().toPath());
 
       // create configuration objects
@@ -328,13 +328,13 @@ public class MembershipJUnitTest {
 
       // boot up a locator
       int port = AvailablePortHelper.getRandomAvailableTCPPort();
-      InetAddress localHost = LocalHostUtil.getLocalHost();
+      HostAddress localHost = new HostAddress(LocalHostUtil.getLocalHost());
       Properties p = new Properties();
       p.setProperty(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
       // this locator will hook itself up with the first Membership
       // to be created
       internalLocator =
-          InternalLocator.startLocator(port, new File(""), null, null, localHost, "", false, p,
+          InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p,
               null,
               temporaryFolder.getRoot().toPath());
 
