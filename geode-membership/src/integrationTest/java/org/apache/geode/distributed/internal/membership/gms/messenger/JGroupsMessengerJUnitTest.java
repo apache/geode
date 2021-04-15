@@ -288,10 +288,10 @@ public class JGroupsMessengerJUnitTest {
         new BufferDataOutputStream(500, KnownVersion.getCurrentVersion());
     MemberIdentifier mbr = createAddress(8888);
     mbr.setMemberWeight((byte) 40);
-    mbr.toData(out, mock(SerializationContext.class));
+    mbr.toData(out, services.getSerializer().createSerializationContext(out));
     DataInputStream in = new DataInputStream(new ByteArrayInputStream(out.toByteArray()));
     mbr = new MemberIdentifierImpl();
-    mbr.fromData(in, mock(DeserializationContext.class));
+    mbr.fromData(in, services.getSerializer().createDeserializationContext(in));
     assertEquals(40, mbr.getMemberWeight());
   }
 
