@@ -13,10 +13,9 @@
  * the License.
  *
  */
-
 package org.apache.geode.redis.internal;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
 
 import java.util.Map;
@@ -37,20 +36,17 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class PassiveExpirationManager {
   private static final Logger logger = LogService.getLogger();
-
   private final Region<RedisKey, RedisData> dataRegion;
   private final ScheduledExecutorService expirationExecutor;
   private final RedisStats redisStats;
-
 
   public PassiveExpirationManager(Region<RedisKey, RedisData> dataRegion, RedisStats redisStats) {
     this.dataRegion = dataRegion;
     this.redisStats = redisStats;
     expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
-    int INTERVAL = 1;
+    int INTERVAL = 30;
     expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(dataRegion), INTERVAL,
-        INTERVAL,
-        SECONDS);
+        INTERVAL, MINUTES);
   }
 
   public void stop() {
