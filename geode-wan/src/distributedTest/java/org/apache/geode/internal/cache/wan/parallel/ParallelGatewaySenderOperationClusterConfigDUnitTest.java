@@ -274,7 +274,7 @@ public class ParallelGatewaySenderOperationClusterConfigDUnitTest implements Ser
   }
 
   /**
-   * Verify that collocated partition regions (gws queue and region) are created
+   * Verify that colocated partition regions (gws queue and region) are created
    * after servers are restarted and gateway-sender is created in stopped state.
    *
    * - Region type: PARTITION_PERSISTENT and non-redundant
