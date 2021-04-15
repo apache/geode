@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,6 +32,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
@@ -343,6 +346,14 @@ public class WANConfigurationJUnitTest {
   @Test
   public void test_ValidateParallelGatewaySenderAttributes() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
+    File directory =
+        new File("TKSender" + "_disk_" + System.currentTimeMillis());
+    directory.mkdir();
+    File[] dirs1 = new File[] {directory};
+    DiskStoreFactory dsf = cache.createDiskStoreFactory();
+    dsf.setDiskDirs(dirs1);
+    DiskStore diskStore = dsf.create("FORNY");
+
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
     fact.setParallel(true);
     fact.setManualStart(true);

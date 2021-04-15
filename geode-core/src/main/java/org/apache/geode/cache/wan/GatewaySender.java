@@ -216,8 +216,8 @@ public interface GatewaySender {
 
   /**
    * Recovers partition region used by parallel gateway-sender queue. Parallel gateway sender
-   * queue region is collocated with partition region on which is collecting events. It is necessary
-   * to recover collocated gateway sender queue region, so it doesn't block the collocated data
+   * queue region is colocated with partition region on which is collecting events. It is necessary
+   * to recover colocated gateway sender queue region, so it doesn't block the colocated data
    * region to reach the online status.
    */
   void recoverInStoppedState();

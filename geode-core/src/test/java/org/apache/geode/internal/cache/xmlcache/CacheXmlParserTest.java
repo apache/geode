@@ -26,6 +26,8 @@ import static org.apache.geode.internal.cache.xmlcache.CacheXml.REMOTE_DISTRIBUT
 import static org.apache.geode.internal.cache.xmlcache.CacheXml.SEARCH_TIMEOUT;
 import static org.apache.geode.internal.cache.xmlcache.CacheXml.STATE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,6 +38,7 @@ import org.mockito.Mock;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewaySenderState;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
@@ -169,6 +172,24 @@ public class CacheXmlParserTest {
         attrs);
 
     verify(gatewaySenderFactory).setState(null);
+  }
+
+  @Test
+  public void testGatewaySenderStateParameterInvalidValue() {
+    AttributesImpl attrs = new AttributesImpl();
+    XmlGeneratorUtils.addAttribute(attrs, CacheXml.ID, "sender1");
+    XmlGeneratorUtils.addAttribute(attrs, STATE, "pausede");
+
+    GatewaySenderFactory gatewaySenderFactory = mock(GatewaySenderFactory.class);
+    when(cacheCreation.createGatewaySenderFactory()).thenReturn(gatewaySenderFactory);
+
+    CacheXmlParser parser = new CacheXmlParser(cacheCreation);
+    Exception exception = assertThrows(InternalGemFireException.class,
+        () -> parser.startElement("http://geode.apache.org/schema/cache", "gateway-sender",
+            "gateway-sender",
+            attrs));
+    assertTrue(exception.getMessage()
+        .contains("An invalid state value (pausede) was configured for gateway sender sender1"));
   }
 
 }

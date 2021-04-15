@@ -660,14 +660,19 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       gatewaySenderFactory.setPersistenceEnabled(Boolean.parseBoolean(enablePersistence));
     }
 
+    String id = atts.getValue(ID);
     // Gateway-sender state
     String state = atts.getValue(STATE);
     if (Objects.equals(state, GatewaySenderState.RUNNING.getState()) ||
         Objects.equals(state, GatewaySenderState.STOPPED.getState()) ||
         Objects.equals(state, GatewaySenderState.PAUSED.getState())) {
       gatewaySenderFactory.setState(GatewaySenderState.valueOf(state.toUpperCase()));
-    } else {
+    } else if (state == null) {
       gatewaySenderFactory.setState(null);
+    } else {
+      throw new InternalGemFireException(
+          String.format("An invalid state value (%s) was configured for gateway sender %s",
+              state, id));
     }
 
     String diskStoreName = atts.getValue(DISK_STORE_NAME);
@@ -703,7 +708,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       gatewaySenderFactory.setDispatcherThreads(Integer.parseInt(dispatcherThreads));
     }
 
-    String id = atts.getValue(ID);
     String orderPolicy = atts.getValue(ORDER_POLICY);
     if (orderPolicy != null) {
       try {
