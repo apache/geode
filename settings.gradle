@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+// BRUCE: modified to force CI testing of the support/1.14 branch
+
 import org.gradle.util.GradleVersion
 
 rootProject.name = 'geode'
