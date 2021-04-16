@@ -21,14 +21,18 @@ package org.apache.geode.cache;
  */
 public class PartitionedRegionPartialClearException extends CacheRuntimeException {
 
-  public PartitionedRegionPartialClearException() {}
+  private static final long serialVersionUID = -3420558263697703892L;
 
-  public PartitionedRegionPartialClearException(String msg) {
-    super(msg);
+  public PartitionedRegionPartialClearException() {
+    // nothing
   }
 
-  public PartitionedRegionPartialClearException(String msg, Throwable cause) {
-    super(msg, cause);
+  public PartitionedRegionPartialClearException(String message) {
+    super(message);
+  }
+
+  public PartitionedRegionPartialClearException(String message, Throwable cause) {
+    super(message, cause);
   }
 
   public PartitionedRegionPartialClearException(Throwable cause) {
