@@ -75,7 +75,7 @@ dependencies {
     transitive = false
   }
 
-  testRuntime('cglib:cglib:' + DependencyConstraints.get('cglib.version')) {
+  testRuntimeOnly('cglib:cglib:' + DependencyConstraints.get('cglib.version')) {
     exclude module: 'org.apache.ant'
   }
 }

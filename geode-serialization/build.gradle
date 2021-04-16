@@ -43,7 +43,7 @@ dependencies {
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
 
-  testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  testRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-serialization'
