@@ -477,12 +477,16 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   @VisibleForTesting
   InternalLocator(int port, LoggingSession loggingSession, File logFile,
       InternalLogWriter logWriter, InternalLogWriter securityLogWriter,
-      HostAddress bindAddress, String hostnameForClients,
+      HostAddress hostAddress, String hostnameForClients,
       Properties distributedSystemProperties,
       DistributionConfigImpl distributionConfig, Path workingDirectory) {
     this.logFile = logFile;
-    this.bindAddress = bindAddress;
-    this.bindAddressString = bindAddressString;
+    this.hostAddress = hostAddress;
+    // bindAddress is superceded by hostAddress but must be kept for Locator API backward
+    // compatibility
+    if (hostAddress != null) {
+      this.bindAddress = hostAddress.getAddress();
+    }
     this.hostnameForClients = hostnameForClients;
 
     this.workingDirectory = workingDirectory;
@@ -492,8 +496,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     // set bind-address explicitly only if not wildcard and let any explicit
     // value in distributedSystemProperties take precedence
-    if (bindAddress != null) {
-      env.setProperty(BIND_ADDRESS, bindAddress.getHostName());
+    if (hostAddress != null) {
+      env.setProperty(BIND_ADDRESS, hostAddress.getHostName());
     }
 
     if (distributedSystemProperties != null) {
@@ -568,7 +572,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
               executor)
               .setConfig(config)
               .setPort(port)
-              .setBindAddress(bindAddress)
+              .setBindAddress(hostAddress)
               .setProtocolChecker(new ProtocolCheckerImpl())
               .setFallbackHandler(handler)
               .setLocatorsAreCoordinators(shouldLocatorsBeCoordinators())
@@ -705,8 +709,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     } else {
 
       StringBuilder sb = new StringBuilder(100);
-      if (bindAddressString != null && !bindAddressString.isEmpty()) {
-        sb.append(bindAddressString);
+      if (hostAddress != null && !StringUtils.isEmpty(hostAddress.getHostName())) {
+        sb.append(hostAddress.getHostName());
       } else {
         sb.append(LocalHostUtil.getLocalHost().getCanonicalHostName());
       }
@@ -896,7 +900,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
 
     ServerLocator serverLocator =
-        new ServerLocator(getPort(), bindAddressString, hostnameForClients,
+        new ServerLocator(getPort(), getBindAddressString(), hostnameForClients,
             logFile, getConfig().getName(), distributedSystem, locatorStats);
     restartHandlers.add(serverLocator);
     membershipLocator.addHandler(LocatorListRequest.class, serverLocator);
@@ -1422,7 +1426,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   }
 
   public String getBindAddressString() {
-    return bindAddressString;
+    if (hostAddress != null) {
+      return hostAddress.getHostName();
+    }
+    return null;
   }
 
   class FetchSharedConfigStatus implements Callable<SharedConfigurationStatusResponse> {

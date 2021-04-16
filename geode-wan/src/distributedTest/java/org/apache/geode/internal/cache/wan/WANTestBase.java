@@ -383,7 +383,7 @@ public class WANTestBase extends DistributedTestCase {
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
     props.setProperty(LOCATORS, "localhost[" + localPort + "]");
     props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
-    Locator locator = Locator.startLocatorAndDS(0, null, InetAddress.getByName("0.0.0.0"), props,
+    Locator locator = Locator.startLocatorAndDS(0, null, null, props,
         true, true, hostnameForClients);
     return locator.getPort();
   }

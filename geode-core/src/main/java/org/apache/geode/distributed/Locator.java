@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -64,11 +65,11 @@ public abstract class Locator {
   /** The file to which this locator logs */
   protected File logFile;
 
-  /** the bind address hostname for this locator */
-  protected String bindAddressString;
+  /** no longer used but kept for binary compatibility */
+  protected InetAddress bindAddress;
 
   /** The bind address for this locator */
-  protected HostAddress bindAddress;
+  protected HostAddress hostAddress;
 
   /**
    * the hostname to give to clients so they can connect to this locator.
@@ -169,8 +170,8 @@ public abstract class Locator {
    */
   public static Locator startLocator(int port, File logFile, InetAddress bindAddress)
       throws IOException {
-
-    return startLocator(port, logFile, false, new HostAddress(bindAddress), (Properties) null, true,
+    HostAddress hostAddress = bindAddress == null? null : new HostAddress(bindAddress);
+    return startLocator(port, logFile, false, hostAddress, (Properties) null, true,
         true, null);
   }
 
@@ -203,7 +204,8 @@ public abstract class Locator {
    */
   public static Locator startLocatorAndDS(int port, File logFile, InetAddress bindAddress,
       java.util.Properties dsProperties) throws IOException {
-    return startLocator(port, logFile, new HostAddress(bindAddress), dsProperties, true, true,
+    HostAddress hostAddress = bindAddress==null? null : new HostAddress(bindAddress);
+    return startLocator(port, logFile, hostAddress, dsProperties, true, true,
         null);
   }
 
@@ -245,7 +247,8 @@ public abstract class Locator {
   public static Locator startLocatorAndDS(int port, File logFile, InetAddress bindAddress,
       java.util.Properties dsProperties, boolean peerLocator, boolean serverLocator,
       String hostnameForClients) throws IOException {
-    return startLocator(port, logFile, new HostAddress(bindAddress), dsProperties, true, true,
+    HostAddress hostAddress = bindAddress == null? null : new HostAddress(bindAddress);
+    return startLocator(port, logFile, hostAddress, dsProperties, true, true,
         hostnameForClients);
   }
 
@@ -339,7 +342,7 @@ public abstract class Locator {
    * Returns the IP address to which this locator's listening socket is bound.
    */
   public InetAddress getBindAddress() {
-    return bindAddress == null ? null : bindAddress.getAddress();
+    return bindAddress;
   }
 
   /**
@@ -389,14 +392,16 @@ public abstract class Locator {
    * Get the string representation of this <code>Locator</code> in host[port] format.
    */
   public String asString() {
-    String ba = this.bindAddressString;
-    if (ba == null || ba.isEmpty()) {
+    String bindAddressString = null;
+    if (hostAddress == null) {
       try {
-        ba = LocalHostUtil.getLocalHostName();
+        bindAddressString = LocalHostUtil.getLocalHostName();
       } catch (java.net.UnknownHostException uh) {
       }
+    } else {
+      bindAddressString = hostAddress.getHostName();
     }
-    StringBuilder locatorString = new StringBuilder(String.valueOf(ba));
+    StringBuilder locatorString = new StringBuilder(String.valueOf(bindAddressString));
     Integer port = getPort();
     if (port != null && port.intValue() > 0) {
       locatorString.append('[').append(this.getPort()).append(']');

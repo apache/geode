@@ -442,7 +442,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see java.net.InetAddress
    */
   public InetAddress getBindAddress() {
-    return bindAddress==null? null : bindAddress.getAddress();
+    return bindAddress == null ? null : bindAddress.getAddress();
   }
 
   /**

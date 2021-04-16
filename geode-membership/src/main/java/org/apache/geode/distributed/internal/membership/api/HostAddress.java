@@ -70,6 +70,10 @@ public class HostAddress {
   }
 
   public String getHostName() {
+    String hostString = address.getHostString();
+    if (hostString != null) {
+      return hostString;
+    }
     return address.getHostName();
   }
 
