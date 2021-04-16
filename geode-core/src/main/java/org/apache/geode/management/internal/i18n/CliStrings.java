@@ -40,6 +40,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_C
 
 import java.text.MessageFormat;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -2624,14 +2625,22 @@ public class CliStrings {
   public static final String START_SERVER__PROPERTIES = "properties-file";
   public static final String START_SERVER__PROPERTIES__HELP =
       "The gemfire.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory.";
+  @Experimental
   public static final String START_SERVER__REDIS_BIND_ADDRESS =
       ConfigurationProperties.REDIS_BIND_ADDRESS;
+  @Experimental
   public static final String START_SERVER__REDIS_BIND_ADDRESS__HELP =
-      "Specifies the address on which the Redis API for Geode is listening. If set to the empty string or this property is not specified, the server listens on all local addresses.";
+      "Specifies the address on which the Redis API for Geode is listening. "
+          + "If set to the empty string or this property is not specified, the server listens on all local addresses.";
+  @Experimental
   public static final String START_SERVER__REDIS_PASSWORD = ConfigurationProperties.REDIS_PASSWORD;
+  @Experimental
   public static final String START_SERVER__REDIS_PASSWORD__HELP =
-      "Specifies the password that the server uses when a client attempts to authenticate. The default is none and no authentication will be required.";
+      "Specifies the password that the server uses when a client attempts to authenticate."
+          + " The default is none and no authentication will be required.";
+  @Experimental
   public static final String START_SERVER__REDIS_PORT = ConfigurationProperties.REDIS_PORT;
+  @Experimental
   public static final String START_SERVER__REDIS_PORT__HELP =
       "Specifies the port on which the server listens for Redis API for Geode connections. A value of 0 selects a random port.  Default is 6379.";
   public static final String START_SERVER__SECURITY_PROPERTIES = "security-properties-file";
