@@ -286,7 +286,9 @@ geode-management/src/test/script/update-management-wiki.sh        @onichols-pivo
 static-analysis/**                                                @rhoughton-pivot @onichols-pivotal
 geode-old-versions/**                                             @onichols-pivotal @dickcav
 KEYS                                                              @onichols-pivotal @dickcav
-geode-assembly/**                                                 @rhoughton-pivot @onichols-pivotal
+assembly_content.txt                                              @rhoughton-pivot @onichols-pivotal
+dependency_classpath.txt                                          @rhoughton-pivot @onichols-pivotal
+expected-pom.xml                                                  @rhoughton-pivot @onichols-pivotal
 
 #-----------------------------------------------------------------
 # Documentation
