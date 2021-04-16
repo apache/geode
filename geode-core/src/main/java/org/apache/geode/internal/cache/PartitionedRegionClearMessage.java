@@ -61,7 +61,8 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
 
   PartitionedRegionClearMessage(Set<InternalDistributedMember> recipients,
       PartitionedRegion partitionedRegion, ReplyProcessor21 replyProcessor21,
-      PartitionedRegionClearMessage.OperationType operationType, RegionEventImpl regionEvent) {
+      PartitionedRegionClearMessage.OperationType operationType,
+      final RegionEventImpl regionEvent) {
     super(recipients, partitionedRegion.getPRId(), replyProcessor21);
     this.partitionedRegion = partitionedRegion;
     this.operationType = operationType;
@@ -234,8 +235,8 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
      * @param distributionManager the distribution manager that is processing the message.
      */
     @Override
-    public void process(DistributionManager distributionManager,
-        ReplyProcessor21 replyProcessor21) {
+    public void process(final DistributionManager distributionManager,
+        final ReplyProcessor21 replyProcessor21) {
       long startTime = getTimestamp();
 
       if (replyProcessor21 == null) {
