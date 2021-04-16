@@ -32,6 +32,7 @@ import java.util.Properties;
 import javax.net.ssl.SSLSocket;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.DataSerializer;
@@ -160,11 +161,11 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   public ServerQueueStatus handshakeWithServer(Connection conn, ServerLocation location,
       CommunicationMode communicationMode) throws IOException, AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException {
-    try {
-      Socket sock = conn.getSocket();
-      DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
-      final InputStream in = sock.getInputStream();
-      DataInputStream dis = new DataInputStream(in);
+    try (
+        Socket sock = conn.getSocket();
+        DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+        final InputStream in = sock.getInputStream();
+        DataInputStream dis = new DataInputStream(in)) {
       InternalDistributedMember member = getIDForSocket(sock);
       // if running in a loner system, use the new port number in the ID to
       // help differentiate from other clients
@@ -209,57 +210,68 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         conn.setWanSiteVersion(wanSiteVersion);
         // establish a versioned stream for the other site, if necessary
         if (wanSiteVersion < KnownVersion.CURRENT_ORDINAL) {
-          dis = new VersionedDataInputStream(dis, Versioning
+          try (DataInputStream newdis = new VersionedDataInputStream(dis, Versioning
               .getKnownVersionOrDefault(Versioning.getVersion(wanSiteVersion),
-                  KnownVersion.CURRENT));
+                  KnownVersion.CURRENT))) {
+
+            return getServerQueueStatus(conn, communicationMode, dos, in, newdis, acceptanceCode);
+          } catch (IOException ignored) {
+          }
         }
       }
+      return getServerQueueStatus(conn, communicationMode, dos, in, dis, acceptanceCode);
 
-      // No need to check for return value since DataInputStream already throws
-      // EOFException in case of EOF
-      final byte endpointType = dis.readByte();
-      final int queueSize = dis.readInt();
-
-      member = readServerMember(dis);
-
-      final ServerQueueStatus serverQStatus =
-          new ServerQueueStatus(endpointType, queueSize, member);
-
-      // Read the message (if any)
-      readMessage(dis, dos, acceptanceCode, member);
-
-      // Read delta-propagation property value from server.
-      if (!communicationMode.isWAN()) {
-        ((InternalDistributedSystem) system).setDeltaEnabledOnServer(dis.readBoolean());
-      }
-
-      // validate that the remote side has a different distributed system id.
-      if (communicationMode.isWAN()) {
-        int remoteDistributedSystemId = in.read();
-        int localDistributedSystemId =
-            ((InternalDistributedSystem) system).getDistributionManager().getDistributedSystemId();
-        if (localDistributedSystemId >= 0
-            && localDistributedSystemId == remoteDistributedSystemId) {
-          throw new GatewayConfigurationException(
-              "Remote WAN site's distributed system id " + remoteDistributedSystemId
-                  + " matches this sites distributed system id " + localDistributedSystemId);
-        }
-      }
-      // Read the PDX registry size from the remote size
-      if (communicationMode.isWAN()
-          && KnownVersion.GFE_80
-              .compareTo(Versioning.getVersion(conn.getWanSiteVersion())) <= 0
-          && currentClientVersion.isNotOlderThan(KnownVersion.GFE_80)) {
-        int remotePdxSize = dis.readInt();
-        serverQStatus.setPdxSize(remotePdxSize);
-      }
-
-      return serverQStatus;
     } catch (IOException ex) {
       CancelCriterion stopper = system.getCancelCriterion();
       stopper.checkCancelInProgress(null);
       throw ex;
     }
+  }
+
+  @NotNull
+  private ServerQueueStatus getServerQueueStatus(Connection conn,
+      CommunicationMode communicationMode, DataOutputStream dos, InputStream in,
+      DataInputStream dis, byte acceptanceCode) throws IOException {
+    // No need to check for return value since DataInputStream already throws EOFException in case
+    // of EOF
+    final byte endpointType = dis.readByte();
+    final int queueSize = dis.readInt();
+
+    InternalDistributedMember member = readServerMember(dis);
+
+    final ServerQueueStatus serverQStatus =
+        new ServerQueueStatus(endpointType, queueSize, member);
+
+    // Read the message (if any)
+    readMessage(dis, dos, acceptanceCode, member);
+
+    // Read delta-propagation property value from server.
+    if (!communicationMode.isWAN()) {
+      ((InternalDistributedSystem) system).setDeltaEnabledOnServer(dis.readBoolean());
+    }
+
+    // validate that the remote side has a different distributed system id.
+    if (communicationMode.isWAN()) {
+      int remoteDistributedSystemId = in.read();
+      int localDistributedSystemId =
+          ((InternalDistributedSystem) system).getDistributionManager().getDistributedSystemId();
+      if (localDistributedSystemId >= 0
+          && localDistributedSystemId == remoteDistributedSystemId) {
+        throw new GatewayConfigurationException(
+            "Remote WAN site's distributed system id " + remoteDistributedSystemId
+                + " matches this sites distributed system id " + localDistributedSystemId);
+      }
+    }
+    // Read the PDX registry size from the remote size
+    if (communicationMode.isWAN()
+        && KnownVersion.GFE_80
+            .compareTo(Versioning.getVersion(conn.getWanSiteVersion())) <= 0
+        && currentClientVersion.isNotOlderThan(KnownVersion.GFE_80)) {
+      int remotePdxSize = dis.readInt();
+      serverQStatus.setPdxSize(remotePdxSize);
+    }
+
+    return serverQStatus;
   }
 
   private InternalDistributedMember readServerMember(DataInputStream p_dis) throws IOException {
@@ -286,10 +298,10 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   public ServerQueueStatus handshakeWithSubscriptionFeed(Socket sock, boolean isPrimary)
       throws IOException, AuthenticationRequiredException, AuthenticationFailedException,
       ServerRefusedConnectionException, ClassNotFoundException {
-    try {
-      final DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
-      final InputStream in = sock.getInputStream();
-      final DataInputStream dis = new DataInputStream(in);
+    try (
+        final DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+        final InputStream in = sock.getInputStream();
+        final DataInputStream dis = new DataInputStream(in)) {
       final DistributedMember member = getIDForSocket(sock);
       if (!multiuserSecureMode) {
         credentials = getCredentials(member);
