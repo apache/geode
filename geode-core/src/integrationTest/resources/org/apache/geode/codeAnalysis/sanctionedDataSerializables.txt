@@ -1384,14 +1384,6 @@ org/apache/geode/internal/cache/partitioned/BucketSizeMessage$BucketSizeReplyMes
 fromData,27
 toData,27
 
-org/apache/geode/internal/cache/partitioned/ClearPRMessage,2
-fromData,30
-toData,44
-
-org/apache/geode/internal/cache/partitioned/ClearPRMessage$ClearReplyMessage,2
-fromData,17
-toData,17
-
 org/apache/geode/internal/cache/partitioned/ColocatedRegionDetails,2
 fromData,81
 toData,133
