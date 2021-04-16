@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
 
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -170,7 +169,7 @@ public abstract class Locator {
    */
   public static Locator startLocator(int port, File logFile, InetAddress bindAddress)
       throws IOException {
-    HostAddress hostAddress = bindAddress == null? null : new HostAddress(bindAddress);
+    HostAddress hostAddress = bindAddress == null ? null : new HostAddress(bindAddress);
     return startLocator(port, logFile, false, hostAddress, (Properties) null, true,
         true, null);
   }
@@ -204,7 +203,7 @@ public abstract class Locator {
    */
   public static Locator startLocatorAndDS(int port, File logFile, InetAddress bindAddress,
       java.util.Properties dsProperties) throws IOException {
-    HostAddress hostAddress = bindAddress==null? null : new HostAddress(bindAddress);
+    HostAddress hostAddress = bindAddress == null ? null : new HostAddress(bindAddress);
     return startLocator(port, logFile, hostAddress, dsProperties, true, true,
         null);
   }
@@ -247,7 +246,7 @@ public abstract class Locator {
   public static Locator startLocatorAndDS(int port, File logFile, InetAddress bindAddress,
       java.util.Properties dsProperties, boolean peerLocator, boolean serverLocator,
       String hostnameForClients) throws IOException {
-    HostAddress hostAddress = bindAddress == null? null : new HostAddress(bindAddress);
+    HostAddress hostAddress = bindAddress == null ? null : new HostAddress(bindAddress);
     return startLocator(port, logFile, hostAddress, dsProperties, true, true,
         hostnameForClients);
   }
