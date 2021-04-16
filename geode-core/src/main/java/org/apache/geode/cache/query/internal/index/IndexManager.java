@@ -142,6 +142,9 @@ public class IndexManager {
   public static final String INDEX_ELEMARRAY_SIZE_PROP = "index_elemarray_size";
   public static final int INDEX_ELEMARRAY_THRESHOLD =
       Integer.parseInt(System.getProperty(INDEX_ELEMARRAY_THRESHOLD_PROP, "100"));
+  @MutableForTesting
+  public static int INDEX_ELEMARRAY_THRESHOLD_FOR_TESTING = -1;
+
   public static final int INDEX_ELEMARRAY_SIZE =
       Integer.parseInt(System.getProperty(INDEX_ELEMARRAY_SIZE_PROP, "5"));
   @MakeNotStatic

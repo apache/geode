@@ -57,7 +57,7 @@ public class CompactRangeIndexJUnitTest {
 
   @Before
   public void setUp() {
-    System.setProperty("index_elemarray_threshold", "3");
+    IndexManager.INDEX_ELEMARRAY_THRESHOLD_FOR_TESTING = 3;
     utils = new QueryTestUtils();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
@@ -68,7 +68,6 @@ public class CompactRangeIndexJUnitTest {
 
   @Test
   public void testCompactRangeIndex() throws Exception {
-    System.setProperty("index_elemarray_threshold", "3");
     index = utils.createIndex("type", "\"type\"", SEPARATOR + "exampleRegion");
     putValues(9);
     isUsingIndexElemArray("type1");
@@ -289,7 +288,6 @@ public class CompactRangeIndexJUnitTest {
       assertEquals("incorrect number of entries in collection", 3, count);
     } finally {
       DefaultQuery.testHook = null;
-      System.setProperty("index_elemarray_threshold", "100");
     }
   }
 
@@ -629,6 +627,7 @@ public class CompactRangeIndexJUnitTest {
 
   @After
   public void tearDown() throws Exception {
+    IndexManager.INDEX_ELEMARRAY_THRESHOLD_FOR_TESTING = -1;
     utils.closeCache();
   }
 
