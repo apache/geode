@@ -381,7 +381,7 @@ public class PartitionedRegionStatsUpdateTest {
     assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
   }
 
-  /******* confirm our math is right *******/
+  /******* check DatastoreBytesInUse using reflection *******/
 
   @Test
   public void string_bytesInUse_shouldReflectActualSizeOfDataInRegion() {
@@ -495,6 +495,8 @@ public class PartitionedRegionStatsUpdateTest {
 
     assertThat(actual).isCloseTo(expected, offset);
   }
+
+  /******* helper methods *******/
 
   private List<String> makeMemberList(int setSize, String baseString) {
     List<String> members = new ArrayList<>();
