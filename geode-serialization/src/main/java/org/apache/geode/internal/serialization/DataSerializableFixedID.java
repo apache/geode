@@ -59,9 +59,6 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short CLEAR_PARTITIONED_REGION_REPLY_MESSAGE = -166;
   short CLEAR_PARTITIONED_REGION_MESSAGE = -165;
 
-  short PR_CLEAR_REPLY_MESSAGE = -164;
-  short PR_CLEAR_MESSAGE = -163;
-
   short DISTRIBUTED_PING_MESSAGE = -162;
 
   short REGION_REDUNDANCY_STATUS = -161;
