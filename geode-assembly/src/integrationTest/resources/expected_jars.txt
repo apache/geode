@@ -22,9 +22,9 @@ commons-validator
 content-type
 error_prone_annotations
 failureaccess
+fastutil
 fastutil-core
 fastutil-extra
-fastutil
 findbugs-annotations
 geo
 gfsh-dependencies.jar
@@ -33,7 +33,6 @@ httpclient
 httpcore
 istack-commons-runtime
 j2objc-annotations
-jackson
 jackson-annotations
 jackson-core
 jackson-databind
@@ -44,6 +43,7 @@ javax.servlet-api
 javax.transaction-api
 jaxb-api
 jaxb-impl
+jboss-modules
 jcip-annotations
 jetty-http
 jetty-io
@@ -84,7 +84,6 @@ nimbus-jose-jwt
 oauth2-oidc-sdk
 ra.jar
 rmiio
-shiro
 shiro-cache
 shiro-config-core
 shiro-config-ogdl
@@ -127,7 +126,5 @@ springfox-spring-web
 springfox-swagger
 springfox-swagger-common
 springfox-swagger-ui
-springframework
-springshell
 swagger-annotations
 swagger-models

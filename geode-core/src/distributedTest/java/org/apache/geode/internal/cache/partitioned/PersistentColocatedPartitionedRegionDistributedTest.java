@@ -2184,7 +2184,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       System.setProperty(COLOCATION_LOGGER_FACTORY_PROPERTY,
           SpyColocationLoggerFactory.class.getName());
 
-      Logger logger = LogService.getLogger(ColocationLogger.class);
+      Logger logger = LogService.getLogger(ColocationLogger.class.getName());
       Consumer<String> consumer = mock(Consumer.class);
       doAnswer(logMessageTo(logger)).when(consumer).accept(anyString());
 

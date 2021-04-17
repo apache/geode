@@ -31,15 +31,19 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.version.VersionManager;
 
@@ -59,13 +63,13 @@ class ProcessManager implements ChildVMLauncher {
     this.registry = registry;
   }
 
-  public synchronized void launchVM(int vmNum) throws IOException {
-    launchVM(VersionManager.CURRENT_VERSION, vmNum, false, 0);
+  public synchronized void launchVM(int vmNum, boolean classLoaderIsolated) throws IOException {
+    launchVM(VersionManager.CURRENT_VERSION, vmNum, false, 0, classLoaderIsolated);
   }
 
   @Override
   public synchronized ProcessHolder launchVM(String version, int vmNum, boolean bouncedVM,
-      int remoteStubPort) throws IOException {
+      int remoteStubPort, boolean classLoaderIsolated) throws IOException {
     if (bouncedVM) {
       processes.remove(vmNum);
     }
@@ -88,7 +92,8 @@ class ProcessManager implements ChildVMLauncher {
       workingDir.mkdirs();
     }
 
-    String[] cmd = buildJavaCommand(vmNum, namingPort, version, remoteStubPort);
+    String[] cmd =
+        buildJavaCommand(vmNum, namingPort, version, remoteStubPort, classLoaderIsolated);
     System.out.println("Executing " + Arrays.toString(cmd));
 
     if (log4jConfig != null) {
@@ -98,8 +103,10 @@ class ProcessManager implements ChildVMLauncher {
     // TODO - delete directory contents, preferably with commons io FileUtils
     try {
       String[] envp = null;
+      ProcessBuilder processBuilder = new ProcessBuilder();
       if (!VersionManager.isCurrentVersion(version)) {
         envp = new String[] {"GEODE_HOME=" + versionManager.getInstall(version)};
+        processBuilder.environment().put("GEODE_HOME", versionManager.getInstall(version));
       }
       Process process = Runtime.getRuntime().exec(cmd, envp, workingDir);
       pendingVMs++;
@@ -226,7 +233,8 @@ class ProcessManager implements ChildVMLauncher {
     return classpath;
   }
 
-  private String[] buildJavaCommand(int vmNum, int namingPort, String version, int remoteStubPort) {
+  private String[] buildJavaCommand(int vmNum, int namingPort, String version, int remoteStubPort,
+      boolean classLoaderIsolated) {
     String cmd = System.getProperty("java.home") + File.separator
         + "bin" + File.separator + "java";
     String dunitClasspath = System.getProperty("java.class.path");
@@ -237,10 +245,10 @@ class ProcessManager implements ChildVMLauncher {
     } else {
       // remove current-version product classes and resources from the classpath
       dunitClasspath =
-          removeModulesFromPath(dunitClasspath, "geode-common", "geode-core", "geode-cq",
-              "geode-http-service", "geode-json", "geode-log4j", "geode-lucene",
-              "geode-serialization", "geode-wan", "geode-gfsh", "geode-redis",
-              "geode-connectors", "geode-memcached");
+          dunitClasspath =
+              removeModulesFromPath(dunitClasspath, "geode-common", "geode-core", "geode-cq",
+                  "geode-http-service", "geode-json", "geode-log4j", "geode-lucene",
+                  "geode-serialization", "geode-wan", "geode-gfsh");
       classPath = versionManager.getClasspath(version) + File.pathSeparator + dunitClasspath;
     }
 
@@ -256,10 +264,15 @@ class ProcessManager implements ChildVMLauncher {
     String jdkSuspend = vmNum == suspendVM ? "y" : "n"; // ignore version
     ArrayList<String> cmds = new ArrayList<String>();
     cmds.add(cmd);
-    cmds.add("-classpath");
     String jreLib = separator + "jre" + separator + "lib" + separator;
     classPath = removeFromPath(classPath, jreLib);
-    cmds.add(classPath);
+    if (classLoaderIsolated) {
+      cmds.add("-Djboss.modules.system.pkgs=javax.management,java.lang.management");
+    } else {
+      classPath = removeJbossFromPath(classPath);
+      cmds.add("-classpath");
+      cmds.add(classPath);
+    }
     cmds.add("-D" + DUnitLauncher.REMOTE_STUB_PORT_PARAM + "=" + remoteStubPort);
     cmds.add("-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort);
     cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
@@ -281,8 +294,8 @@ class ProcessManager implements ChildVMLauncher {
     if (DUnitLauncher.LOG4J != null) {
       cmds.add("-Dlog4j.configurationFile=" + DUnitLauncher.LOG4J);
     }
-    cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
-    cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
+    // cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
+    // cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
     cmds.add("-XX:+HeapDumpOnOutOfMemoryError");
     cmds.add("-Xmx512m");
     cmds.add("-D" + GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE=10");
@@ -294,6 +307,9 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add("-XX:MetaspaceSize=512m");
     cmds.add("-XX:SoftRefLRUPolicyMSPerMB=1");
     cmds.add(agent);
+    // if (classLoaderIsolated) {
+    // cmds.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + (5005 + vmNum));
+    // }
     if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
       // needed for client stats gathering, see VMStats50 class, it's using class inspection
       // to call getProcessCpuTime method
@@ -303,11 +319,69 @@ class ProcessManager implements ChildVMLauncher {
       cmds.add("--add-opens=java.base/jdk.internal.module=ALL-UNNAMED");
       cmds.add("--add-opens=java.base/java.lang.module=ALL-UNNAMED");
     }
-    cmds.add(ChildVM.class.getName());
+    if (classLoaderIsolated) {
+      cmds.add(
+          "-Dboot.module.loader=org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader");
+      // classPath = removeModulesFromPath(classPath, "geode-dunit", "");
+      // classPath = removeStuffFromClasspath(classPath);
+      final String GEODE_DISTRIBUTED_TEST_HOME =
+          System.getenv("GEODE_DISTRIBUTED_TEST_HOME") == null ? ""
+              : System.getenv("GEODE_DISTRIBUTED_TEST_HOME");
+      addJBossClassPath(GEODE_DISTRIBUTED_TEST_HOME, cmds);
+      cmds.add("org.jboss.modules.Main");
+      cmds.add("-mp");
+      cmds.add(GEODE_DISTRIBUTED_TEST_HOME + File.separator + "moduleDescriptors" + File.separator
+          + "distributedTest");
+      cmds.add("geode-dunit:" + GemFireVersion.getGemFireVersion());
+    } else {
+      cmds.add(ChildVM.class.getName());
+    }
     String[] rst = new String[cmds.size()];
     cmds.toArray(rst);
 
     return rst;
+  }
+
+  private String removeJbossFromPath(String classpath) {
+    String[] jars = classpath.split(File.pathSeparator);
+    StringBuilder sb = new StringBuilder(classpath.length());
+    boolean firstjar = true;
+    for (String jar : jars) {
+      if (!jar.contains("jboss") || jar.contains("distributedTest")) {
+        if (!firstjar) {
+          sb.append(File.pathSeparator);
+        }
+        sb.append(jar);
+        firstjar = false;
+      }
+    }
+    return sb.toString();
+  }
+
+  private void addJBossClassPath(String rootPath, List<String> commandLine) {
+    commandLine.add("-classpath");
+    String libPath = rootPath + File.separator + "lib";
+    File jbossJar = findJarByArtifactIdAtPath("jboss-modules", libPath).orElseThrow(
+        () -> new GemFireConfigException(
+            "jboss-modules jar not found in " + libPath));
+    File jbossExtensionsJar = findJarByArtifactIdAtPath("geode-jboss-extensions",
+        libPath).orElseThrow(
+            () -> new GemFireConfigException(
+                "geode-jboss-extensions jar not found in " + libPath));
+
+    commandLine.add(
+        jbossExtensionsJar.getAbsolutePath() + File.pathSeparator + jbossJar.getAbsolutePath());
+  }
+
+  private Optional<File> findJarByArtifactIdAtPath(String artifactId, String path) {
+    File libDir = new File(path);
+    if (libDir.isDirectory()) {
+      File[] files = libDir.listFiles((dir, name) -> name.startsWith(artifactId));
+      if (files.length > 0) {
+        return Optional.of(files[0]);
+      }
+    }
+    return Optional.empty();
   }
 
   private String removeFromPath(String classpath, String partialPath) {

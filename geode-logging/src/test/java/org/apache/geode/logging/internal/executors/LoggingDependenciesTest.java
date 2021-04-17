@@ -12,20 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.logging;
+package org.apache.geode.logging.internal.executors;
 
 import static com.tngtech.archunit.base.DescribedPredicate.not;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
-import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
-import com.tngtech.archunit.junit.ArchUnitRunner;
 import com.tngtech.archunit.lang.ArchRule;
-import org.junit.runner.RunWith;
 
-@RunWith(ArchUnitRunner.class)
-@AnalyzeClasses(packages = {"org.apache.geode.."})
+// @RunWith(ArchUnitRunner.class)
+// @AnalyzeClasses(packages = {"org.apache.geode.."})
 public class LoggingDependenciesTest {
   @ArchTest
   public static final ArchRule noTransitiveDependenciesOnCore = classes()

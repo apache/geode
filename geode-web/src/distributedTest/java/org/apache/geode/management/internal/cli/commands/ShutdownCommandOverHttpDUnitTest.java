@@ -78,7 +78,7 @@ public class ShutdownCommandOverHttpDUnitTest implements Serializable {
 
   @Before
   public void setUp() throws Exception {
-    locator = getVM(0);
+    locator = getVM(0).initializeAsLocatorVM();
     server1 = getVM(1);
     server2 = getVM(2);
 

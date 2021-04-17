@@ -385,8 +385,8 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       Source src = new SAXSource(this, new InputSource());
       Result res = new StreamResult(pw);
 
-      TransformerFactory xFactory = TransformerFactory.newInstance();
-      Transformer xform = xFactory.newTransformer();
+      TransformerFactory transformerFactory = TransformerFactory.newInstance();
+      Transformer xform = transformerFactory.newTransformer();
       xform.setOutputProperty(OutputKeys.METHOD, "xml");
       xform.setOutputProperty(OutputKeys.INDENT, "yes");
       if (!useSchema) {

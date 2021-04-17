@@ -30,7 +30,7 @@ import org.apache.geode.compression.SnappyCompressor;
 public class DistributedAckRegionCompressionDUnitTest extends DistributedAckRegionDUnitTest {
 
   @Override
-  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+  public <K, V> RegionAttributes<K, V> getRegionAttributes() {
     Compressor compressor = null;
     try {
       compressor = SnappyCompressor.getDefaultInstance();

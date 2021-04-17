@@ -20,16 +20,16 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.alerting.internal.spi.AlertLevel;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ClusterAlertingService implements InternalAlertingService {
 
-  private static final Logger logger = LogManager.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   // Listeners are ordered with the narrowest levels (e.g. FATAL) at the end
   private final CopyOnWriteArrayList<AlertListener> listeners = new CopyOnWriteArrayList<>();

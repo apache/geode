@@ -62,7 +62,6 @@ public class GeodeJBossDeploymentService implements DeploymentService {
       throw new IllegalArgumentException("Module name cannot be null");
     }
     try {
-      geodeModuleLoader.unregisterModuleDependencyFromModules(moduleName);
       geodeModuleLoader.unregisterModule(moduleName);
     } catch (ModuleLoadException e) {
       throw new RuntimeException(e);

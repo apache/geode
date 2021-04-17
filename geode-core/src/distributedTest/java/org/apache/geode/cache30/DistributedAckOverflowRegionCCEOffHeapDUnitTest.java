@@ -64,7 +64,7 @@ public class DistributedAckOverflowRegionCCEOffHeapDUnitTest
   }
 
   @Override
-  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+  public <K, V> RegionAttributes<K, V> getRegionAttributes() {
     RegionAttributes<K, V> attrs = super.getRegionAttributes();
     AttributesFactory<K, V> factory = new AttributesFactory<>(attrs);
     factory.setOffHeap(true);

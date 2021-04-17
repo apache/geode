@@ -46,13 +46,20 @@ shadowJar {
     archiveClassifier.set('')
 }
 
-//project(':geode-assembly').tasks.withType(Test) {
-//    dependsOn shadowJar
-//    inputs.file {
-//        shadowJar.outputs.files.singleFile
-//    }
-//
-//    doFirst {
-//        environment 'DEPLOY_TEST_SPRING_JAR', shadowJar.outputs.files.singleFile
-//    }
-//}
+
+project(":geode-assembly").tasks.forEach {
+    if(it.name == "acceptanceTest"){
+        it.dependsOn(":geode-deployment:geode-deployment-test:createShadowJar")
+        it.doFirst {
+            it.systemProperty 'DEPLOY_TEST_SPRING_JAR', shadowJar.outputs.files.singleFile
+        }
+    }
+
+}
+
+tasks.register("createShadowJar") {
+    dependsOn shadowJar
+    inputs.file {
+        shadowJar.outputs.files.singleFile
+    }
+}

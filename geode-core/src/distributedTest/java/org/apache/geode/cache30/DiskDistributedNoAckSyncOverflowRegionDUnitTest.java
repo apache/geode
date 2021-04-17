@@ -33,7 +33,7 @@ public class DiskDistributedNoAckSyncOverflowRegionDUnitTest
   }
 
   @Override
-  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+  public <K, V> RegionAttributes<K, V> getRegionAttributes() {
     AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
 

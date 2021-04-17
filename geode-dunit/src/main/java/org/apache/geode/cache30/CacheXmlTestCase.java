@@ -50,7 +50,7 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
   private File xmlFile;
 
   /** set this to false if a test needs a non-loner distributed system */
-  static boolean lonerDistributedSystem = true;
+  public static boolean lonerDistributedSystem = true;
   private static String previousMemoryEventTolerance;
 
   @Rule

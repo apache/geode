@@ -85,10 +85,17 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     jar3 = new File(subdirWithJars3and4, jarName3);
     jar4 = new File(subdirWithJars3and4, jarName4);
 
-    classBuilder.writeJarFromName(class1, jar1);
-    classBuilder.writeJarFromName(class2, jar2);
-    classBuilder.writeJarFromName(class3, jar3);
-    classBuilder.writeJarFromName(class4, jar4);
+    classBuilder.writeJarFromContent("org/example/" + class1,
+        "package org.example;\n public class " + class1 + "{}", jar1);
+    classBuilder.writeJarFromContent("org/example/" + class2,
+        "package org.example;\n public class " + class2 + "{}", jar2);
+    classBuilder.writeJarFromContent("org/example/" + class3,
+        "package org.example;\n public class " + class3 + "{}", jar3);
+    classBuilder.writeJarFromContent("org/example/" + class4,
+        "package org.example;\n public class " + class4 + "{}", jar4);
+    // classBuilder.writeJarFromName(class2, jar2);
+    // classBuilder.writeJarFromName(class3, jar3)
+    // classBuilder.writeJarFromName(class4, jar4);
 
     locator = lsRule.startLocatorVM(0);
 
@@ -113,8 +120,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     assertThat(resultString).doesNotContain(server2.getName());
     assertThat(resultString).contains(jarName2);
 
-    server1.invoke(() -> assertThatCanLoad(jarName2, class2));
-    server2.invoke(() -> assertThatCannotLoad(jarName2, class2));
+    server1.invoke(() -> assertThatCanLoad(jarName2, "org.example." + class2));
+    server2.invoke(() -> assertThatCannotLoad(jarName2, "org.example." + class2));
   }
 
   @Test
@@ -127,23 +134,23 @@ public class DeployWithGroupsDUnitTest implements Serializable {
         .containsOutput(jarName3).containsOutput(jarName4);
 
     server1.invoke(() -> {
-      assertThatCanLoad(jarName3, class3);
-      assertThatCanLoad(jarName4, class4);
+      assertThatCanLoad(jarName3, "org.example." + class3);
+      assertThatCanLoad(jarName4, "org.example." + class4);
     });
     server2.invoke(() -> {
-      assertThatCannotLoad(jarName3, class3);
-      assertThatCannotLoad(jarName4, class4);
+      assertThatCannotLoad(jarName3, "org.example." + class3);
+      assertThatCannotLoad(jarName4, "org.example." + class4);
     });
 
     // Undeploy of multiple jars by specifying group
     gfshConnector.executeAndAssertThat("undeploy --group=" + GROUP1).statusIsSuccess();
     server1.invoke(() -> {
-      assertThatCannotLoad(jarName3, class3);
-      assertThatCannotLoad(jarName4, class4);
+      assertThatCannotLoad(jarName3, "org.example." + class3);
+      assertThatCannotLoad(jarName4, "org.example." + class4);
     });
     server2.invoke(() -> {
-      assertThatCannotLoad(jarName3, class3);
-      assertThatCannotLoad(jarName4, class4);
+      assertThatCannotLoad(jarName3, "org.example." + class3);
+      assertThatCannotLoad(jarName4, "org.example." + class4);
     });
   }
 
@@ -157,12 +164,12 @@ public class DeployWithGroupsDUnitTest implements Serializable {
         .containsOutput(jarName3).containsOutput(jarName4);
 
     server1.invoke(() -> {
-      assertThatCanLoad(jarName3, class3);
-      assertThatCanLoad(jarName4, class4);
+      assertThatCanLoad(jarName3, "org.example." + class3);
+      assertThatCanLoad(jarName4, "org.example." + class4);
     });
     server2.invoke(() -> {
-      assertThatCannotLoad(jarName3, class3);
-      assertThatCannotLoad(jarName4, class4);
+      assertThatCannotLoad(jarName3, "org.example." + class3);
+      assertThatCannotLoad(jarName4, "org.example." + class4);
     });
 
     // Undeploy of multiple jars without specifying group
@@ -177,12 +184,12 @@ public class DeployWithGroupsDUnitTest implements Serializable {
         .hasAnyRow()
         .contains("server-2", "DeployCommandsDUnit4.jar", "DeployCommandsDUnit4.jar not deployed");
     server1.invoke(() -> {
-      assertThatCannotLoad(jarName3, class3);
-      assertThatCannotLoad(jarName4, class4);
+      assertThatCannotLoad(jarName3, "org.example." + class3);
+      assertThatCannotLoad(jarName4, "org.example." + class4);
     });
     server2.invoke(() -> {
-      assertThatCannotLoad(jarName3, class3);
-      assertThatCannotLoad(jarName4, class4);
+      assertThatCannotLoad(jarName3, "org.example." + class3);
+      assertThatCannotLoad(jarName4, "org.example." + class4);
     });
   }
 
@@ -196,8 +203,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     assertThat(resultString).contains(server2.getName());
     assertThat(resultString).contains(jarName1);
 
-    server1.invoke(() -> assertThatCanLoad(jarName1, class1));
-    server2.invoke(() -> assertThatCanLoad(jarName1, class1));
+    server1.invoke(() -> assertThatCanLoad(jarName1, "org.example." + class1));
+    server2.invoke(() -> assertThatCanLoad(jarName1, "org.example." + class1));
 
     // Undeploy of jar by specifying group
     gfshConnector.executeAndAssertThat("undeploy --group=" + GROUP1).statusIsSuccess();
@@ -215,8 +222,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     assertThat(resultString).contains(server2.getName());
     assertThat(resultString).contains(jarName1);
 
-    server1.invoke(() -> assertThatCanLoad(jarName1, class1));
-    server2.invoke(() -> assertThatCanLoad(jarName1, class1));
+    server1.invoke(() -> assertThatCanLoad(jarName1, "org.example." + class1));
+    server2.invoke(() -> assertThatCanLoad(jarName1, "org.example." + class1));
 
     server1.getVM().bounce();
     server2.getVM().bounce();
@@ -229,8 +236,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     props.setProperty(GROUPS, GROUP2);
     server2 = lsRule.startServerVM(2, props, locator.getPort());
 
-    server1.invoke(() -> assertThatCanLoad(jarName1, class1));
-    server2.invoke(() -> assertThatCanLoad(jarName1, class1));
+    server1.invoke(() -> assertThatCanLoad(jarName1, "org.example." + class1));
+    server2.invoke(() -> assertThatCanLoad(jarName1, "org.example." + class1));
   }
 
   @Test
@@ -243,8 +250,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     assertThat(resultString).contains(server2.getName());
     assertThat(resultString).contains(jarName1);
 
-    server1.invoke(() -> assertThatCanLoad(jarName1, class1));
-    server2.invoke(() -> assertThatCanLoad(jarName1, class1));
+    server1.invoke(() -> assertThatCanLoad(jarName1, "org.example." + class1));
+    server2.invoke(() -> assertThatCanLoad(jarName1, "org.example." + class1));
 
     gfshConnector.executeAndAssertThat("undeploy --jar=" + jar1.getName()).statusIsSuccess();
     server1.invoke(() -> assertThatCannotLoad(jarName1, class1));
@@ -261,8 +268,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     props.setProperty(GROUPS, GROUP2);
     server2 = lsRule.startServerVM(2, props, locator.getPort());
 
-    server1.invoke(() -> assertThatCannotLoad(jarName1, class1));
-    server2.invoke(() -> assertThatCannotLoad(jarName1, class1));
+    server1.invoke(() -> assertThatCannotLoad(jarName1, "org.example." + class1));
+    server2.invoke(() -> assertThatCannotLoad(jarName1, "org.example." + class1));
   }
 
   @Test
@@ -271,23 +278,23 @@ public class DeployWithGroupsDUnitTest implements Serializable {
         .statusIsSuccess();
 
     server1.invoke(() -> {
-      assertThatCanLoad(jarName3, class3);
-      assertThatCanLoad(jarName4, class4);
+      assertThatCanLoad(jarName3, "org.example." + class3);
+      assertThatCanLoad(jarName4, "org.example." + class4);
     });
     server2.invoke(() -> {
-      assertThatCanLoad(jarName3, class3);
-      assertThatCanLoad(jarName4, class4);
+      assertThatCanLoad(jarName3, "org.example." + class3);
+      assertThatCanLoad(jarName4, "org.example." + class4);
     });
 
     gfshConnector.executeAndAssertThat("undeploy").statusIsSuccess();
 
     server1.invoke(() -> {
-      assertThatCannotLoad(jarName3, class3);
-      assertThatCannotLoad(jarName4, class4);
+      assertThatCannotLoad(jarName3, "org.example." + class3);
+      assertThatCannotLoad(jarName4, "org.example." + class4);
     });
     server2.invoke(() -> {
-      assertThatCannotLoad(jarName3, class3);
-      assertThatCannotLoad(jarName4, class4);
+      assertThatCannotLoad(jarName3, "org.example." + class3);
+      assertThatCannotLoad(jarName4, "org.example." + class4);
     });
   }
 
@@ -297,23 +304,23 @@ public class DeployWithGroupsDUnitTest implements Serializable {
         .statusIsSuccess();
 
     server1.invoke(() -> {
-      assertThatCanLoad(jarName3, class3);
-      assertThatCanLoad(jarName4, class4);
+      assertThatCanLoad(jarName3, "org.example." + class3);
+      assertThatCanLoad(jarName4, "org.example." + class4);
     });
     server2.invoke(() -> {
-      assertThatCanLoad(jarName3, class3);
-      assertThatCanLoad(jarName4, class4);
+      assertThatCanLoad(jarName3, "org.example." + class3);
+      assertThatCanLoad(jarName4, "org.example." + class4);
     });
 
     gfshConnector.executeAndAssertThat("undeploy --jar=" + jar3.getName() + "," + jar4.getName())
         .statusIsSuccess();
     server1.invoke(() -> {
-      assertThatCannotLoad(jarName3, class3);
-      assertThatCannotLoad(jarName4, class4);
+      assertThatCannotLoad(jarName3, "org.example." + class3);
+      assertThatCannotLoad(jarName4, "org.example." + class4);
     });
     server2.invoke(() -> {
-      assertThatCannotLoad(jarName3, class3);
-      assertThatCannotLoad(jarName4, class4);
+      assertThatCannotLoad(jarName3, "org.example." + class3);
+      assertThatCannotLoad(jarName4, "org.example." + class4);
     });
   }
 

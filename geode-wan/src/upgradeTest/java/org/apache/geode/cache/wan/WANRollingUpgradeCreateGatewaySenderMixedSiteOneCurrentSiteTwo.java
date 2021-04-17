@@ -20,6 +20,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
 import org.assertj.core.api.Assertions;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -35,6 +36,9 @@ import org.apache.geode.test.version.VersionManager;
 
 public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
     extends WANRollingUpgradeDUnitTest {
+
+  @Rule
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Test
   public void CreateGatewaySenderMixedSiteOneCurrentSiteTwo() throws Exception {

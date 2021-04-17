@@ -37,7 +37,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * Class <code>ClientInterestList</code> provides a convenient interface for manipulating client
  * interest information.
  */
-class ClientInterestList {
+public class ClientInterestList {
   private static final Logger logger = LogService.getLogger();
 
   final CacheClientProxy ccp;
@@ -48,6 +48,10 @@ class ClientInterestList {
    * An object used for synchronizing the interest lists
    */
   private final Object interestListLock = new Object();
+
+  public Set<String> getRegions() {
+    return Collections.unmodifiableSet(regions);
+  }
 
   /**
    * Regions that this client is interested in

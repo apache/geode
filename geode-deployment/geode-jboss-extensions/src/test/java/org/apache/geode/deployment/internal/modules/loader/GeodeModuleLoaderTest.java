@@ -38,7 +38,6 @@ import org.apache.geode.test.compiler.JarBuilder;
 
 public class GeodeModuleLoaderTest {
 
-  private static final JarBuilder jarBuilder = new JarBuilder();
   @ClassRule
   public static TemporaryFolder stagingTempDir = new TemporaryFolder();
   private static File myJar;
@@ -46,6 +45,7 @@ public class GeodeModuleLoaderTest {
 
   @BeforeClass
   public static void setupClass() throws IOException {
+    JarBuilder jarBuilder = new JarBuilder();
     myJar = new File(stagingTempDir.newFolder(), "myJar.jar");
     jarBuilder.buildJarFromClassNames(myJar, "Class1");
   }

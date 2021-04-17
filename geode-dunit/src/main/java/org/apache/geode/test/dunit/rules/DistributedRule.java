@@ -128,7 +128,16 @@ public class DistributedRule extends AbstractDistributedRule {
    * Constructs DistributedRule and launches the default number of {@code VM}s (which is 4).
    */
   public DistributedRule() {
-    this(new Builder());
+    this(isClassLoaderIsolated());
+  }
+
+  private static boolean isClassLoaderIsolated() {
+    return System.getenv("CLASSLOADER_ISOLATED") != null
+        && Boolean.parseBoolean(System.getenv("CLASSLOADER_ISOLATED"));
+  }
+
+  public DistributedRule(boolean classloaderIsolated) {
+    this(new Builder().withClassloaderIsolation(classloaderIsolated));
   }
 
   /**
@@ -141,7 +150,7 @@ public class DistributedRule extends AbstractDistributedRule {
   }
 
   private DistributedRule(final Builder builder) {
-    super(builder.vmCount);
+    super(builder.vmCount, builder.classloaderIsolated);
   }
 
   @Override
@@ -168,6 +177,9 @@ public class DistributedRule extends AbstractDistributedRule {
 
     private int vmCount = DEFAULT_VM_COUNT;
 
+    private boolean classloaderIsolated = System.getenv("CLASSLOADER_ISOLATED") != null
+        && Boolean.parseBoolean(System.getenv("CLASSLOADER_ISOLATED"));
+
     public Builder withVMCount(final int vmCount) {
       if (vmCount < 0) {
         throw new IllegalArgumentException("VM count must be positive integer");
@@ -178,6 +190,11 @@ public class DistributedRule extends AbstractDistributedRule {
 
     public DistributedRule build() {
       return new DistributedRule(this);
+    }
+
+    public Builder withClassloaderIsolation(boolean classloaderIsolated) {
+      this.classloaderIsolated = classloaderIsolated;
+      return this;
     }
   }
 

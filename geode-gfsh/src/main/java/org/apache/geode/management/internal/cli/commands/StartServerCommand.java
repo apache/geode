@@ -641,9 +641,7 @@ public class StartServerCommand extends OfflineGfshCommand {
       addJBossClassPath(GEODE_HOME, commandLine);
       commandLine.add("org.jboss.modules.Main");
       commandLine.add("-mp");
-      commandLine.add(GEODE_HOME + File.separator + "moduleDescriptors" + File.separator + "main"
-          + File.pathSeparator + GEODE_HOME
-          + File.separator + "moduleDescriptors" + File.separator + "thirdParty");
+      commandLine.add(GEODE_HOME + File.separator + "moduleDescriptors" + File.separator + "main");
       commandLine.add("geode-core:" + GemFireVersion.getGemFireVersion());
     } else {
       commandLine.add(ServerLauncher.class.getName());
@@ -657,11 +655,11 @@ public class StartServerCommand extends OfflineGfshCommand {
     String libPath = GEODE_HOME + File.separator + "lib";
     File jbossJar = findJarByArtifactIdAtPath("jboss-modules", libPath).orElseThrow(
         () -> new GemFireConfigException(
-            "jboss-modules jar not fund in " + GEODE_HOME + File.separator + "lib"));
+            "jboss-modules jar not found in " + GEODE_HOME + File.separator + "lib"));
     File jbossExtensionsJar = findJarByArtifactIdAtPath("geode-jboss-extensions",
         libPath).orElseThrow(
             () -> new GemFireConfigException(
-                "geode-jboss-extensions jar not fund in " + libPath));
+                "geode-jboss-extensions jar not found in " + libPath));
 
     commandLine.add(
         jbossExtensionsJar.getAbsolutePath() + File.pathSeparator + jbossJar.getAbsolutePath());

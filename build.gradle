@@ -31,6 +31,7 @@ plugins {
   id "org.sonarqube" version "3.3" apply false
   id "me.champeau.gradle.japicmp" apply false // Version defined in buildSrc/build.gradle
   id 'me.champeau.gradle.jmh' version '0.5.3' apply false
+  id 'geode.jboss-modules-plugin' apply false
 }
 
 

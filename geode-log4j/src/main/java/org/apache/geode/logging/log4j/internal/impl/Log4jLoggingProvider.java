@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -34,6 +33,7 @@ import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.logging.internal.log4j.api.FastLogger;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateOccurs;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateScope;
@@ -102,7 +102,7 @@ public class Log4jLoggingProvider implements LoggingProvider {
   }
 
   private static LoggerContext getRootLoggerContext() {
-    return ((Logger) LogManager.getRootLogger()).getContext();
+    return ((Logger) LogService.getRootLogger()).getContext();
   }
 
   private static Configuration getConfiguration() {

@@ -17,7 +17,7 @@
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 evaluationDependsOn(":geode-core")
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
@@ -75,12 +75,10 @@ dependencies {
 
   implementation('com.zaxxer:HikariCP')
   implementation('org.apache.commons:commons-lang3')
-  implementation('javax.xml.bind:jaxb-api')
-  implementation('org.apache.logging.log4j:log4j-jcl') {
-    exclude module: 'log4j-api'
-    ext.optional = true
-    ext.set("should-not-generate", true)
-  }
+  implementation('javax.xml.bind:jaxb-api') {
+        ext.embed = true
+      }
+
   implementation('org.springframework.shell:spring-shell') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
@@ -123,3 +121,12 @@ dependencies {
 }
 
 integrationTest.forkEvery 0
+
+jbossModulesExtension {
+  geodeConfigurations {
+    main {
+      mainClass = "org.apache.geode.distributed.ServerLauncher"
+      jbossJdkModules = [ "java.base","java.sql"]
+    }
+  }
+}

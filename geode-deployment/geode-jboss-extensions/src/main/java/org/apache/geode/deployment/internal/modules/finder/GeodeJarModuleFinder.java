@@ -63,7 +63,7 @@ public class GeodeJarModuleFinder implements ModuleFinder {
   public ModuleSpec findModule(String name, ModuleLoader delegateLoader)
       throws ModuleLoadException {
     if (name.equals(moduleName)) {
-      ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder(moduleName, false);
+      ModuleSpec.Builder builder = ModuleSpecUtil.createBuilder(moduleName, true);
       builder = ModuleSpecBuilderUtils.addLocalDependencySpec(builder);
       builder = ModuleSpecBuilderUtils.addJarResourceToBuilder(builder, path);
       builder = ModuleSpecBuilderUtils.addModuleDependencies(builder, false, moduleDependencies);

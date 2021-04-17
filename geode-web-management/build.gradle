@@ -20,6 +20,8 @@ apply plugin: 'war'
 apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
+apply from: "${rootDir}/${scriptDir}/jboss-modules-distributedTest.gradle"
+
 jar.enabled = false
 
 apply plugin: 'nebula.facet'
@@ -152,9 +154,9 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  distributedTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
-    exclude module: 'slf4j-api'
-  }
+//  distributedTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
+//    exclude module: 'slf4j-api'
+//  }
 }
 
 war {

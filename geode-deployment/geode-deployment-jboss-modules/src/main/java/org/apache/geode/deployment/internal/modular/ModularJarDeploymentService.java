@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
@@ -36,6 +37,7 @@ import org.apache.geode.deployment.internal.modules.service.GeodeJBossDeployment
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
+import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.services.result.impl.Failure;
@@ -49,19 +51,19 @@ import org.apache.geode.services.result.impl.Success;
  */
 public class ModularJarDeploymentService implements JarDeploymentService {
 
+  private static final String GEODE_CORE_MODULE_NAME = "geode-core";
   private final Logger logger = LogService.getLogger();
   private final Map<String, Deployment> deployments = new ConcurrentHashMap<>();
   private final FunctionToFileTracker functionToFileTracker = new FunctionToFileTracker();
-  private final DeploymentService geodeJBossDeploymentService;
+  private final DeploymentService deploymentService;
   private File workingDirectory = new File(System.getProperty("user.dir"));
-  private static final String GEODE_CORE_MODULE_NAME = "geode-core";
 
   public ModularJarDeploymentService() {
     this(new GeodeJBossDeploymentService());
   }
 
   public ModularJarDeploymentService(DeploymentService deploymentService) {
-    this.geodeJBossDeploymentService = deploymentService;
+    this.deploymentService = deploymentService;
   }
 
   @Override
@@ -73,11 +75,27 @@ public class ModularJarDeploymentService implements JarDeploymentService {
     if (deployment.getFile() == null) {
       return Failure.of("Cannot deploy Deployment without jar file");
     }
+
+    Deployment existingDeployment = deployments.get(deployment.getDeploymentName());
+    if (existingDeployment != null
+        && JarFileUtils.hasSameContent(existingDeployment.getFile(), deployment.getFile())) {
+      return Success.of(null);
+    }
+
+    // Copy the file to the working directory.
+    try {
+      File deployedFile = new File(workingDirectory, deployment.getFile().getName());
+      FileUtils.copyFile(deployment.getFile(), deployedFile);
+      deployment.setFile(deployedFile);
+    } catch (IOException e) {
+      return Failure.of(e);
+    }
+
     List<String> moduleDependencies = new LinkedList<>(deployment.getModuleDependencyNames());
     moduleDependencies.add(GEODE_CORE_MODULE_NAME);
 
     boolean serviceResult =
-        geodeJBossDeploymentService
+        deploymentService
             .registerModule(deployment.getDeploymentName(), deployment.getFilePath(),
                 moduleDependencies);
     logger.debug("Register module result: {} for deployment: {}", serviceResult,
@@ -121,7 +139,7 @@ public class ModularJarDeploymentService implements JarDeploymentService {
     }
 
     boolean serviceResult =
-        geodeJBossDeploymentService.unregisterModule(deploymentName);
+        deploymentService.unregisterModule(deploymentName);
     if (serviceResult) {
       Deployment removedDeployment = deployments.remove(deploymentName);
       functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment.getDeploymentName());

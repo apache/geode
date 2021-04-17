@@ -62,7 +62,7 @@ public class DeployCommandFunctionRegistrationDUnitTest {
   public void deployImplements() throws Exception {
     JarBuilder jarBuilder = new JarBuilder();
     File source = loadTestResource(
-        "/org/apache/geode/management/internal/deployment/ImplementsFunction.java");
+        "/example/org/apache/geode/management/internal/deployment/ImplementsFunction.java");
 
     File outputJar = new File(temporaryFolder.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, source);
@@ -70,7 +70,7 @@ public class DeployCommandFunctionRegistrationDUnitTest {
     gfshConnector.executeAndAssertThat("deploy --jar=" + outputJar.getCanonicalPath())
         .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(
-        "org.apache.geode.management.internal.deployment.ImplementsFunction"));
+        "example.org.apache.geode.management.internal.deployment.ImplementsFunction"));
     server.invoke(() -> assertThatFunctionHasVersion("myTestFunction", "ImplementsFunctionResult"));
   }
 
@@ -78,7 +78,7 @@ public class DeployCommandFunctionRegistrationDUnitTest {
   public void deployExtends() throws Exception {
     JarBuilder jarBuilder = new JarBuilder();
     File source = loadTestResource(
-        "/org/apache/geode/management/internal/deployment/ExtendsFunctionAdapter.java");
+        "/example/org/apache/geode/management/internal/deployment/ExtendsFunctionAdapter.java");
 
     File outputJar = new File(temporaryFolder.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, source);
@@ -86,9 +86,9 @@ public class DeployCommandFunctionRegistrationDUnitTest {
     gfshConnector.executeAndAssertThat("deploy --jar=" + outputJar.getCanonicalPath())
         .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(
-        "org.apache.geode.management.internal.deployment.ExtendsFunctionAdapter"));
+        "example.org.apache.geode.management.internal.deployment.ExtendsFunctionAdapter"));
     server.invoke(() -> assertThatFunctionHasVersion(
-        "org.apache.geode.management.internal.deployment.ExtendsFunctionAdapter",
+        "example.org.apache.geode.management.internal.deployment.ExtendsFunctionAdapter",
         "ExtendsFunctionAdapterResult"));
   }
 

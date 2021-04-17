@@ -43,7 +43,7 @@ public class LogService {
     return new FastLogger(LogManager.getLogger(name, GemFireParameterizedMessageFactory.INSTANCE));
   }
 
-  public static Logger getLogger(Class<?> clazz) {
-    return new FastLogger(LogManager.getLogger(clazz, GemFireParameterizedMessageFactory.INSTANCE));
+  public static Logger getRootLogger() {
+    return LogManager.getRootLogger();
   }
 }

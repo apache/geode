@@ -70,26 +70,8 @@ publishing {
             if (dep.toString().contains("org.apache.geode")) {
               dep.remove(dep["version"])
             }
-            if (dep.toString().contains("org.apache.geode.frameworks")) {
-              nodesToReplace.add(dep)
-
-            }
           }
 
-          nodesToReplace.each { nodeToReplace ->
-            def proj = project(":frameworks:${nodeToReplace["artifactId"].text()}")
-            ['api', 'implementation', 'runtimeOnly'].each { config ->
-              proj.configurations
-                      .getByName(config)
-                      .getDependencies().each { dep ->
-                def geodeDependency = thisNode.dependencies*.appendNode('dependency')
-                geodeDependency*.appendNode('groupId')*.setValue(dep.getGroup())
-                geodeDependency*.appendNode('artifactId')*.setValue(dep.getName())
-                geodeDependency*.appendNode('scope')*.setValue('compile')
-              }
-            }
-            nodeToReplace.parent().remove(nodeToReplace)
-          }
           thisNode
         }
         afterEvaluate {

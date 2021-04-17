@@ -14,9 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import org.gradle.util.GradleVersion
 
+
+pluginManagement {
+  repositories {
+    mavenLocal()
+    gradlePluginPortal()
+  }
+}
 rootProject.name = 'geode'
 
 // We want to see all test results.  This is equivalent to setting --continue on the command line.
@@ -65,6 +71,7 @@ include 'geode-concurrency-test'
 include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
+include 'frameworks'
 include 'frameworks:geode-extensions'
 include 'frameworks:geode-custom-jar-deployments'
 include 'geode-deployment'
@@ -109,3 +116,4 @@ buildCache {
     enabled = true
   }
 }
+

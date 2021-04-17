@@ -18,10 +18,12 @@ package org.apache.geode.modules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.junit.Test;
 
+import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 public class LoggingAcceptanceTest extends AbstractDockerizedAcceptanceTest {
@@ -35,5 +37,37 @@ public class LoggingAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     assertThat(GfshScript.of(getLocatorGFSHConnectionString(),
         "show log --member=server1").execute(gfshRule).getOutputText())
             .contains("SystemLog").doesNotContain("There is no log for this member");
+  }
+
+  @Test
+  public void testLogLevelSetCorrectly() throws IOException {
+    JarBuilder jarBuilder = new JarBuilder();
+    File functionSource = loadTestResource("/example/test/function/DebugLoggingFunction.java");
+    File functionJar = new File(stagingTempDir.newFolder(), "functionJar.jar");
+    jarBuilder.buildJar(functionJar, functionSource);
+
+    GfshScript.of(getLocatorGFSHConnectionString(),
+        "deploy --jar=" + functionJar.getCanonicalPath()).execute(gfshRule);
+    assertThat(GfshScript
+        .of(getLocatorGFSHConnectionString(),
+            "execute function --id=DebugLoggingFunction --member=server1")
+        .execute(gfshRule).getOutputText()).contains("[INFO]");
+
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(),
+        "show log --member=server1 --lines=1000").execute(gfshRule).getOutputText())
+            .doesNotContain("[debug");
+
+    System.err.println(GfshScript
+        .of(getLocatorGFSHConnectionString(), "change loglevel --loglevel=DEBUG --member=server1")
+        .execute(gfshRule).getOutputText());
+
+    assertThat(GfshScript
+        .of(getLocatorGFSHConnectionString(),
+            "execute function --id=DebugLoggingFunction --member=server1")
+        .execute(gfshRule).getOutputText()).contains("[DEBUG]");
+
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(),
+        "show log --member=server1 --lines=1000").execute(gfshRule).getOutputText())
+            .contains("[debug").contains("This should show up now");
   }
 }

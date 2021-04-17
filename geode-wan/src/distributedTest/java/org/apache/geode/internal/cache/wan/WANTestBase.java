@@ -3408,7 +3408,7 @@ public class WANTestBase extends DistributedTestCase {
     try {
       GatewaySender sender = getGatewaySender(senderId);
       final AbstractGatewaySender abstractSender = (AbstractGatewaySender) sender;
-      RegionQueue queue = abstractSender.getEventProcessor().queue;
+      RegionQueue queue = abstractSender.getEventProcessor().getQueue();
       await().untilAsserted(() -> {
         assertEquals("Expected events in all primary queues are drained but actual is "
             + abstractSender.getEventQueueSize() + ". Queue content is: "

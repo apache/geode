@@ -573,7 +573,7 @@ public class ClientHealthMonitor {
    *         Test hook only.
    */
   @VisibleForTesting
-  Map<ClientProxyMembershipID, Long> getClientHeartbeats() {
+  public Map<ClientProxyMembershipID, Long> getClientHeartbeats() {
     return clientHeartbeats.entrySet().stream()
         .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get()));
   }

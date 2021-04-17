@@ -106,7 +106,7 @@ public class DUnitLauncher {
    */
   static final int LOCATOR_VM_NUM = -2;
 
-  static final long STARTUP_TIMEOUT = 120 * 1000;
+  static final long STARTUP_TIMEOUT = 120 * 1000000;
   static final String STARTUP_TIMEOUT_MESSAGE =
       "VMs did not start up within " + STARTUP_TIMEOUT / 1000 + " seconds";
 
@@ -127,6 +127,10 @@ public class DUnitLauncher {
   private static final String LAUNCHED_PROPERTY = GEMFIRE_PREFIX + "DUnitLauncher.LAUNCHED";
 
   private static final VMEventNotifier vmEventNotifier = new VMEventNotifier();
+
+  private static final boolean RUN_VM_CLASSLOADER_ISOLATED =
+      System.getenv("CLASSLOADER_ISOLATED") != null
+          && Boolean.parseBoolean(System.getenv("CLASSLOADER_ISOLATED"));
 
   private static Master master;
 
@@ -152,7 +156,7 @@ public class DUnitLauncher {
     launchIfNeeded(true);
   }
 
-  public static void launchIfNeeded(boolean launchLocator) {
+  public static void launchIfNeeded(boolean launchLocator, boolean classloaderIsolated) {
     if (System.getProperties().contains(VM_NUM_PARAM)) {
       // we're a dunit child vm, do nothing.
       return;
@@ -160,7 +164,7 @@ public class DUnitLauncher {
 
     if (!isHydra() && !isLaunched()) {
       try {
-        launch(launchLocator);
+        launch(launchLocator, classloaderIsolated);
       } catch (Exception e) {
         throw new RuntimeException("Unable to launch dunit VMs", e);
       }
@@ -169,12 +173,25 @@ public class DUnitLauncher {
     Host.setAllVMsToCurrentVersion();
   }
 
+  public static void launchIfNeeded(boolean launchLocator) {
+    launchIfNeeded(launchLocator, runClassloaderIsolated());
+  }
+
   /**
    * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
    */
   public static void launchIfNeeded(int vmCount) {
+    launchIfNeeded(vmCount, runClassloaderIsolated());
+  }
+
+  private static boolean runClassloaderIsolated() {
+    return Boolean.parseBoolean(System.getProperty("CLASSLOADER_ISOLATED", "true"))
+        && RUN_VM_CLASSLOADER_ISOLATED;
+  }
+
+  public static void launchIfNeeded(int vmCount, boolean classloaderIsolated) {
     NUM_VMS = vmCount;
-    launchIfNeeded();
+    launchIfNeeded(true, classloaderIsolated);
   }
 
   /**
@@ -188,7 +205,8 @@ public class DUnitLauncher {
     return "localhost[" + locatorPort + "]";
   }
 
-  private static void launch(boolean launchLocator) throws AlreadyBoundException, IOException,
+  private static void launch(boolean launchLocator, boolean classloaderIsolated)
+      throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
 
     deleteDunitSuspectFiles();
@@ -214,7 +232,7 @@ public class DUnitLauncher {
 
     if (launchLocator) {
       // Create a VM for the locator
-      processManager.launchVM(LOCATOR_VM_NUM);
+      processManager.launchVM(LOCATOR_VM_NUM, false);
 
       // wait for the VM to start up
       if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
@@ -228,7 +246,7 @@ public class DUnitLauncher {
 
     // Launch an initial set of VMs
     for (int i = 0; i < NUM_VMS; i++) {
-      processManager.launchVM(i);
+      processManager.launchVM(i, classloaderIsolated);
     }
 
     // wait for the VMS to start up
@@ -239,7 +257,7 @@ public class DUnitLauncher {
     // populate the Host class with our stubs. The tests use this host class
     DUnitHost host =
         new DUnitHost(InetAddress.getLocalHost().getCanonicalHostName(), processManager,
-            vmEventNotifier);
+            vmEventNotifier, classloaderIsolated);
     host.init(NUM_VMS, launchLocator);
   }
 
