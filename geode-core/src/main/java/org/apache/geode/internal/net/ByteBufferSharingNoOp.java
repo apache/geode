@@ -27,7 +27,7 @@ import java.nio.ByteBuffer;
  * meant for use with the {@link NioPlainEngine} only, since that engine keeps no buffers and so,
  * needs no reference counting on buffers, nor any synchronization around access to buffers.
  *
- * See also {@link ByteBufferSharingImpl}
+ * See also {@link ByteBufferVendor}
  */
 class ByteBufferSharingNoOp implements ByteBufferSharing {
 
