@@ -31,7 +31,7 @@ log4j-api-2.14.1.jar
 spring-shell-1.2.0.RELEASE.jar
 rmiio-2.1.2.jar
 antlr-2.7.7.jar
-istack-commons-runtime-4.0.0.jar
+istack-commons-runtime-4.0.1.jar
 jaxb-impl-2.3.2.jar
 commons-validator-1.7.jar
 shiro-core-1.7.1.jar

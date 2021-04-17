@@ -95,7 +95,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.nimbusds', name:'nimbus-jose-jwt', version:'8.11')
         // Pinning transitive dependency from spring-security-oauth2 to clean up our licenses.
         api(group: 'com.nimbusds', name: 'oauth2-oidc-sdk', version: '8.9')
-        api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '4.0.0')
+        api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '4.0.1')
         api(group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2')
         api(group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.2')
         api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.15.0')
