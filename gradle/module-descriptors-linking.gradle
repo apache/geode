@@ -40,13 +40,17 @@ tasks.register('generateThirdPartyModuleXML') {
   doLast {
     rootProject.subprojects.each { projectToUse ->
       if (!projectsToExclude.contains(projectToUse.name) || testProjectsToInclude.contains(projectToUse.name)) {
-        try {
+        if (projectToUse.name == 'geode-extensions' || projectToUse.name == 'geode-custom-jar-deployments') {
+          generateModuleXmlForProject(null, projectToUse, 'distributedTest', [])
+        } else {
           try {
-            generateModuleXmlForProject(projectToUse.tasks.getByName('war').outputs.files.singleFile, projectToUse, 'distributedTest', [])
+            try {
+              generateModuleXmlForProject(projectToUse.tasks.getByName('war').outputs.files.singleFile, projectToUse, 'distributedTest', [])
+            } catch (Throwable t) {
+              generateModuleXmlForProject(projectToUse.tasks.getByName('jar').outputs.files.singleFile, projectToUse, 'distributedTest', [])
+            }
           } catch (Throwable t) {
-            generateModuleXmlForProject(projectToUse.tasks.getByName('jar').outputs.files.singleFile, projectToUse, 'distributedTest', [])
           }
-        } catch (Throwable t) {
         }
       }
     }
@@ -76,6 +80,7 @@ def copyDistributedTestLibs() {
 
   filesToCopy.each { artifactFile ->
     def newLibPath = null
+    println("ArtifactFile: $artifactFile.name")
     if (artifactFile.getName().endsWith('.jar')) {
       newLibPath = Paths.get("${project(':geode-assembly').buildDir}/distributedTesting/lib/${artifactFile.name}")
     } else if (artifactFile.getName().endsWith('.war')) {

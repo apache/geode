@@ -65,7 +65,7 @@ public class ModularClasspathService implements ClasspathService {
 
   @Override
   public URL getResource(Class<?> contextClass, String name) {
-    return contextClass.getClassLoader().getResource(name);
+    return contextClass.getResource(name);
   }
 
   @Override
@@ -75,7 +75,7 @@ public class ModularClasspathService implements ClasspathService {
 
   @Override
   public InputStream getResourceAsStream(Class<?> contextClass, String name) {
-    return contextClass.getClassLoader().getResourceAsStream(name);
+    return contextClass.getResourceAsStream(name);
   }
 
   @Override

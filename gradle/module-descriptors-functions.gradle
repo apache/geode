@@ -165,7 +165,7 @@ def writeModuleXml(Project projectToUse, moduleJar, moduleVersion, moduleXMLRoot
           xml.'main-class'(['name': 'org.apache.geode.test.dunit.internal.ChildVM'])
         }
         xml.'dependencies' {
-//          xml.'module'(['name': "java.se"])
+          xml.'module'(['name': "java.se"])
           projectDependencies.each { proj ->
             addModuleDependency(proj, namesAndVersions, apiProjectDeps, xml)
           }
