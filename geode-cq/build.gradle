@@ -16,9 +16,17 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+jbossModulesExtension {
+  geodeConfigurations {
+    main {
+      outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
+      jbossJdkModules = [ "java.se","jdk.unsupported" ]
+    }
+  }
+}
 
 dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
@@ -36,6 +44,7 @@ dependencies {
   integrationTestImplementation('org.awaitility:awaitility')
 
 
+  distributedTestRuntimeOnly(project(':geode-core'))
   distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-junit'))
   distributedTestImplementation(project(':geode-dunit'))
@@ -55,6 +64,7 @@ dependencies {
   upgradeTestImplementation('org.mockito:mockito-core')
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+  upgradeTestImplementation(sourceSets.distributedTest.output)
 }
 
 ext.moduleName = group + '.cq'

@@ -118,7 +118,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   public void testCacheServerMBean() throws Exception {
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
-    VM client = host.getVM(1);
+    VM client = host.getVM(1).initializeAsClientVM();
     VM managingNode = host.getVM(2);
 
     // Managing Node is created first
@@ -176,9 +176,9 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   public void testCacheClient() throws Exception {
 
     final Host host = Host.getHost(0);
-    VM locator = host.getVM(0);
+    VM locator = host.getVM(0).initializeAsLocatorVM();
     VM server = host.getVM(1);
-    VM client = host.getVM(2);
+    VM client = host.getVM(2).initializeAsClientVM();
 
     int locatorPort = getRandomAvailableTCPPort();
     locator.invoke("Start Locator", () -> startLocator(locator.getHost(), locatorPort, ""));

@@ -16,9 +16,18 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
+
+jbossModulesExtension {
+  geodeConfigurations {
+    main {
+      outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
+      jbossJdkModules = [ "java.se","jdk.unsupported" ]
+    }
+  }
+}
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))

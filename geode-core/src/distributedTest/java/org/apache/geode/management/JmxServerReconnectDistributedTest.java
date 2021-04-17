@@ -134,8 +134,8 @@ public class JmxServerReconnectDistributedTest implements Serializable {
 
   @Before
   public void setUp() throws Exception {
-    locator1VM = getVM(0);
-    locator2VM = getVM(1);
+    locator1VM = getVM(0).initializeAsLocatorVM();
+    locator2VM = getVM(1).initializeAsLocatorVM();
     serverVM = getVM(2);
 
     File locator1Dir = temporaryFolder.newFolder(LOCATOR_1_NAME);

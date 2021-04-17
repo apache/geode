@@ -14,6 +14,7 @@
  */
 package org.apache.geode.modules;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -44,15 +45,15 @@ public abstract class AbstractDockerizedAcceptanceTest {
   private static final String LOCATOR_START_COMMAND =
       "start locator --name=locator1 --port=10334 --J=-Dgemfire.enable-network-partition-detection=false";
   private static final String SERVER1_START_COMMAND =
-      "start server --name=server1 --locators=localhost[10334] --compatible-with-redis-port=6379 --memcached-port=5678 "
-          + "--server-port=40404 --http-service-port=9090 --start-rest-api ";
+      "start server --name=server1 --locators=localhost[10334] --server-port=40404 --http-service-port=9090 --start-rest-api ";
   private static final String SERVER2_START_COMMAND =
-      "start server --name=server2 --locators=localhost[10334] --compatible-with-redis-port=6378 --memcached-port=5677 "
-          + "--server-port=40405 --http-service-port=9091 --start-rest-api ";
+      "start server --name=server2 --locators=localhost[10334] --server-port=40405 --http-service-port=9091 --start-rest-api ";
   private static final String GFSH_PATH = "/geode/bin/gfsh";
 
   private static final String NONMODULAR_LAUNCH_COMMAND = "";
   private static final String MODULAR_LAUNCH_COMMAND = "--experimental";
+
+  private static final String EMPTY_STRING = "";
 
   private static GenericContainer<?> geodeContainer = setupDockerContainer();
 
@@ -66,6 +67,7 @@ public abstract class AbstractDockerizedAcceptanceTest {
   static int httpPort;
   static int redisPort;
   static int memcachePort;
+  static int jmxHttpPort;
   static String host;
 
   protected String getLocatorGFSHConnectionString() {
@@ -112,30 +114,38 @@ public abstract class AbstractDockerizedAcceptanceTest {
   protected void launch(String launchCommand) throws IOException, InterruptedException {
     if (!geodeContainer.isRunning()) {
       startDockerContainer(launchCommand);
+      launchServicesInContainer(launchCommand);
+      mapPorts();
     } else if (!currentLaunchCommand.equals(launchCommand)) {
       geodeContainer.stop();
       startDockerContainer(launchCommand);
+      launchServicesInContainer(launchCommand);
+      mapPorts();
     }
   }
 
-  private void startDockerContainer(String launchCommand) throws IOException, InterruptedException {
+  protected void startDockerContainer(String launchCommand) {
     geodeContainer.withCommand("./launch.sh");
     geodeContainer.start();
     currentLaunchCommand = launchCommand;
+  }
 
-    launchServicesInContainer(launchCommand);
-
+  private void mapPorts() {
     host = geodeContainer.getHost();
-    locatorPort = geodeContainer.getMappedPort(10334);
-    serverPort = geodeContainer.getMappedPort(40404);
-    int jmxHttpPort = geodeContainer.getMappedPort(7070);
-    httpPort = geodeContainer.getMappedPort(9090);
-    redisPort = geodeContainer.getMappedPort(6379);
-    memcachePort = geodeContainer.getMappedPort(5678);
+    locatorPort = getMappedPort(10334);
+    serverPort = getMappedPort(40404);
+    jmxHttpPort = getMappedPort(7070);
+    httpPort = getMappedPort(9090);
+    redisPort = getMappedPort(6379);
+    memcachePort = getMappedPort(5678);
 
     previousLocatorGFSHConnectionString = locatorGFSHConnectionString =
         "connect --locator=" + host + "[" + locatorPort + "] --use-http --url=http://localhost:"
             + jmxHttpPort + "/gemfire/v1";
+  }
+
+  protected int getMappedPort(int port) {
+    return geodeContainer.getMappedPort(port);
   }
 
   protected void launchServicesInContainer(String launchCommand)
@@ -143,8 +153,18 @@ public abstract class AbstractDockerizedAcceptanceTest {
     runGfshCommandInContainer(LOCATOR_START_COMMAND);
     runGfshCommandInContainer("connect", "configure pdx --read-serialized=true");
 
-    runGfshCommandInContainer(SERVER1_START_COMMAND + launchCommand);
-    runGfshCommandInContainer(SERVER2_START_COMMAND + launchCommand);
+    runGfshCommandInContainer(
+        SERVER1_START_COMMAND + " " + getServer1SpecificGfshCommands() + " " + launchCommand);
+    runGfshCommandInContainer(
+        SERVER2_START_COMMAND + " " + getServer2SpecificGfshCommands() + " " + launchCommand);
+  }
+
+  protected String getServer1SpecificGfshCommands() {
+    return EMPTY_STRING;
+  }
+
+  protected String getServer2SpecificGfshCommands() {
+    return EMPTY_STRING;
   }
 
   private static GenericContainer<?> setupDockerContainer() {
@@ -153,20 +173,25 @@ public abstract class AbstractDockerizedAcceptanceTest {
         new ImageFromDockerfile()
             .withDockerfile(new File(
                 currentDirectory.substring(0, currentDirectory.indexOf("build"))
-                    .concat("build/docker/Dockerfile"))
+                    .concat("build/modularDocker/Dockerfile"))
                         .toPath()));
     geodeContainer.withExposedPorts(9090, 10334, 40404, 1099, 7070, 6379, 5678);
-    geodeContainer.withCreateContainerCmdModifier(cmd -> {
-      long availableProcessors = Runtime.getRuntime().availableProcessors();
-      cmd.getHostConfig().withCpuCount(availableProcessors);
-    });
+    geodeContainer.withReuse(true);
     geodeContainer.waitingFor(Wait.forHealthcheck());
     geodeContainer.withStartupTimeout(Duration.ofSeconds(120));
     return geodeContainer;
   }
 
+  protected static File loadTestResource(String fileName) {
+    String filePath =
+        createTempFileFromResource(DeployJarAcceptanceTest.class, fileName).getAbsolutePath();
+    assertThat(filePath).isNotNull();
+
+    return new File(filePath);
+  }
+
   @Parameterized.Parameters
   public static List<String> getStartServerCommand() {
-    return Arrays.asList(NONMODULAR_LAUNCH_COMMAND, MODULAR_LAUNCH_COMMAND);
+    return Arrays.asList(MODULAR_LAUNCH_COMMAND, NONMODULAR_LAUNCH_COMMAND);
   }
 }

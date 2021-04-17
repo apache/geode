@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,6 +72,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.StateFlushOperation;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.internal.cache.ha.HARegionQueueStats;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOp;
 import org.apache.geode.internal.cache.tier.sockets.command.Get70;
@@ -142,6 +144,10 @@ public class CacheClientProxy implements ClientSession {
    * The GemFire cache
    */
   protected final InternalCache _cache;
+
+  public List<ClientInterestList> getClientInterestList() {
+    return Arrays.asList(cils);
+  }
 
   /**
    * The list of keys that the client represented by this proxy is interested in (stored by region)
@@ -471,7 +477,7 @@ public class CacheClientProxy implements ClientSession {
    *
    * @return the socket between the server and the client
    */
-  protected Socket getSocket() {
+  public Socket getSocket() {
     return this._socket;
   }
 
@@ -615,6 +621,10 @@ public class CacheClientProxy implements ClientSession {
    */
   public int getQueueSizeStat() {
     return this._messageDispatcher == null ? 0 : this._messageDispatcher.getQueueSizeStat();
+  }
+
+  public HARegionQueueStats getRegionQueueStats() {
+    return this._messageDispatcher._messageQueue.stats;
   }
 
 
@@ -1849,15 +1859,15 @@ public class CacheClientProxy implements ClientSession {
     }
   }
 
-  protected boolean isDurable() {
+  public boolean isDurable() {
     return getProxyID().isDurable();
   }
 
-  protected String getDurableId() {
+  public String getDurableId() {
     return getProxyID().getDurableId();
   }
 
-  protected int getDurableTimeout() {
+  public int getDurableTimeout() {
     return getProxyID().getDurableTimeout();
   }
 
@@ -1865,7 +1875,7 @@ public class CacheClientProxy implements ClientSession {
     return this.keepalive;
   }
 
-  protected String getHARegionName() {
+  public String getHARegionName() {
     return getProxyID().getHARegionName();
   }
 

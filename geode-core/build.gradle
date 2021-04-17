@@ -22,6 +22,7 @@ apply plugin: 'antlr'
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/pmd.gradle"
 apply from: "${project.projectDir}/../gradle/jmh.gradle"
+apply from: "${rootProject.projectDir}/gradle/jboss-modules.gradle"
 
 sourceSets {
     jca {
@@ -155,7 +156,6 @@ configurations {
     }
 
     raOutput
-    jbossModular
 }
 
 artifacts {
@@ -249,7 +249,10 @@ dependencies {
 
 
     //FastUtil contains optimized collections that are used in multiple places in core
-    implementation('it.unimi.dsi:fastutil')
+    implementation('it.unimi.dsi:fastutil'){
+        ext.set('embed.children', ['fastutil-core', 'fastutil-extra'])
+    }
+
 
     //Mail API is used by the deprecated admin API
     implementation('javax.mail:javax.mail-api') {
@@ -308,15 +311,14 @@ dependencies {
 
     //Geode-common has annotations and other pieces used geode-core
     api(project(':geode-common'))
-    implementation(project(':geode-logging'))
+    api(project(':geode-logging'))
     implementation(project(':geode-membership'))
     implementation(project(':geode-unsafe'))
     implementation(project(':geode-serialization'))
     implementation(project(':geode-tcp-server'))
 
-    runtimeOnly(project(':geode-deployment:geode-deployment-legacy')) {
-        ext.optional = true
-    }
+    //Only for running non-modularly and will be excluded from the module descriptors.
+    runtimeOnly(project(':geode-deployment:geode-deployment-legacy'))
 
     //geode-management currently has pieces of the public API
     //copied into it, so it is an API dependency
@@ -355,7 +357,6 @@ dependencies {
     integrationTestImplementation(project(':geode-log4j'))
     integrationTestImplementation(project(':geode-concurrency-test'))
     integrationTestImplementation('org.apache.bcel:bcel')
-    integrationTestImplementation('org.apache.logging.log4j:log4j-core')
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
@@ -405,3 +406,13 @@ distributedTest {
 }
 
 rootProject.generate.dependsOn(generateGrammarSource)
+
+jbossModulesExtension {
+    geodeConfigurations {
+        main {
+            outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
+            jbossJdkModules = [ "java.se","jdk.unsupported" ]
+            mainClass = "org.apache.geode.distributed.ServerLauncher"
+        }
+    }
+}

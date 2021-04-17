@@ -14,9 +14,18 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
+
+jbossModulesExtension {
+    geodeConfigurations {
+        main {
+            outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
+            jbossJdkModules = [ "java.se","jdk.unsupported" ]
+        }
+    }
+}
 
 dependencies {
     implementation(platform(project(':boms:geode-all-bom')))
@@ -40,6 +49,7 @@ dependencies {
     upgradeTestImplementation(project(':geode-gfsh'))
     upgradeTestImplementation(project(':geode-dunit'))
     upgradeTestImplementation(project(':geode-membership'))
-
+    upgradeTestImplementation(project(':geode-core'))
+    upgradeTestImplementation(project(':geode-junit'))
     upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }

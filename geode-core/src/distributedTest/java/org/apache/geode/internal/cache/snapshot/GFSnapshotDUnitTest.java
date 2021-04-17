@@ -66,9 +66,9 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
   @Before
   public void before() {
     host = Host.getHost(0);
-    locator = host.getVM(0);
+    locator = host.getVM(0).initializeAsLocatorVM();
     server = host.getVM(1);
-    client = host.getVM(2);
+    client = host.getVM(2).initializeAsClientVM();
   }
 
   @Test

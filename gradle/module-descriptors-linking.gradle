@@ -40,13 +40,17 @@ tasks.register('generateThirdPartyModuleXML') {
   doLast {
     rootProject.subprojects.each { projectToUse ->
       if (!projectsToExclude.contains(projectToUse.name) || testProjectsToInclude.contains(projectToUse.name)) {
-        try {
+        if (projectToUse.name == 'geode-extensions' || projectToUse.name == 'geode-custom-jar-deployments') {
+          generateModuleXmlForProject(null, projectToUse, 'distributedTest', [])
+        } else {
           try {
-            generateModuleXmlForProject(projectToUse.tasks.getByName('war').outputs.files.singleFile, projectToUse, 'distributedTest', [])
+            try {
+              generateModuleXmlForProject(projectToUse.tasks.getByName('war').outputs.files.singleFile, projectToUse, 'distributedTest', [])
+            } catch (Throwable t) {
+              generateModuleXmlForProject(projectToUse.tasks.getByName('jar').outputs.files.singleFile, projectToUse, 'distributedTest', [])
+            }
           } catch (Throwable t) {
-            generateModuleXmlForProject(projectToUse.tasks.getByName('jar').outputs.files.singleFile, projectToUse, 'distributedTest', [])
           }
-        } catch (Throwable t) {
         }
       }
     }
@@ -122,6 +126,8 @@ def generateThirdPartyModuleXML(String moduleDescriptorsRoot) {
 
     xml.'module'('xmlns': 'urn:jboss:module:1.9', 'name': "thirdParty:$version") {
       xml.'dependencies' {
+        xml.'module'(['name': "java.se", 'services': 'export', 'export': 'true'])
+        xml.'module'(['name': "jdk.unsupported", 'services': 'export', 'export': 'true'])
         namesAndVersions.each {
           xml.'module'(['name': "${it.key}:${it.value}", 'services': 'export', 'export': 'true'])
         }

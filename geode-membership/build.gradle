@@ -16,8 +16,17 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+
+jbossModulesExtension {
+    geodeConfigurations {
+        main {
+            outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
+            jbossJdkModules = [ "java.se","jdk.unsupported" ]
+        }
+    }
+}
 
 dependencies {
     api(platform(project(':boms:geode-all-bom')))
@@ -31,7 +40,9 @@ dependencies {
 
     implementation('org.jgroups:jgroups')
     implementation('org.apache.commons:commons-lang3')
-    implementation('it.unimi.dsi:fastutil')
+    implementation('it.unimi.dsi:fastutil'){
+        ext.set('embed.children', ['fastutil-core', 'fastutil-extra'])
+    }
     implementation('com.github.stephenc.findbugs:findbugs-annotations')
     //Commons validator is used to validate inet addresses in membership
     implementation('commons-validator:commons-validator')
@@ -53,7 +64,7 @@ dependencies {
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
     integrationTestImplementation('pl.pragmatists:JUnitParams')
 
-    integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-core')
+    integrationTestRuntimeOnly(project(':geode-log4j'))
 
 
     distributedTestImplementation(project(':geode-junit'))

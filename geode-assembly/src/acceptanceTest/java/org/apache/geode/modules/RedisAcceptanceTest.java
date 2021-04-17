@@ -39,6 +39,16 @@ public class RedisAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     launch(launchCommand);
   }
 
+  @Override
+  protected String getServer1SpecificGfshCommands() {
+    return "--compatible-with-redis-port=6378";
+  }
+
+  @Override
+  protected String getServer2SpecificGfshCommands() {
+    return "--compatible-with-redis-port=6379";
+  }
+
   @Before
   public void setup() {
     redisClient = RedisClient.create(RedisURI.Builder.redis(host, redisPort).build());
@@ -59,8 +69,13 @@ public class RedisAcceptanceTest extends AbstractDockerizedAcceptanceTest {
   @Test
   public void testRedisCommands() {
     RedisCommands<String, String> redisCommands = connection.sync();
-    Long pushedValuesCount = redisCommands.sadd("testList", "value1", "value2");
-    assertThat(pushedValuesCount).isEqualTo(2);
+    try {
+
+      Long pushedValuesCount = redisCommands.sadd("testList", "value1", "value2");
+      assertThat(pushedValuesCount).isEqualTo(2);
+    } catch (Throwable t) {
+      t.printStackTrace();
+    }
 
     Set<String> members = redisCommands.smembers("testList");
     assertThat(members).contains("value1", "value2");
