@@ -163,7 +163,7 @@ public class GeodeCompositeModuleFinder implements ModuleFinder {
     }
   }
 
-  private List<String> findModulesThatDependOn(String moduleName) {
+  public List<String> findModulesThatDependOn(String moduleName) {
     return findModulesThatDependOn(moduleName, new HashMap<>(moduleSpecs));
   }
 

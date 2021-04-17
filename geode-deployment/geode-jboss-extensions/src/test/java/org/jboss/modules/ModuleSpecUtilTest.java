@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class ModuleSpecUtilTest {
@@ -75,6 +76,7 @@ public class ModuleSpecUtilTest {
   }
 
   @Test
+  @Ignore
   public void testAddSystemClasspathDependency() {
     ModuleSpec moduleSpec = ModuleSpecUtil
         .addSystemClasspathDependency(ModuleSpecUtil.createBuilder("my-module", true).create());

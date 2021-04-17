@@ -16,11 +16,6 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-  <!-- This module was also published with a richer model, Gradle metadata,  -->
-  <!-- which should be used instead. Do not delete the following line which  -->
-  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
-  <!-- that they should prefer consuming it instead. -->
-  <!-- do_not_remove: published-with-gradle-metadata -->
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.geode</groupId>
   <artifactId>geode-all-bom</artifactId>
@@ -61,6 +56,16 @@
         <groupId>com.carrotsearch.randomizedtesting</groupId>
         <artifactId>randomizedtesting-runner</artifactId>
         <version>2.7.8</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-joda</artifactId>
+        <version>2.9.8</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jsr310</artifactId>
+        <version>2.11.4</version>
       </dependency>
       <dependency>
         <groupId>com.github.davidmoten</groupId>
@@ -396,12 +401,6 @@
         <groupId>org.jboss.modules</groupId>
         <artifactId>jboss-modules</artifactId>
         <version>1.11.0.Final</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.modules</groupId>
-        <artifactId>jboss-modules</artifactId>
-        <version>1.11.0.Final</version>
-        <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.jgroups</groupId>
@@ -771,12 +770,6 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
-        <artifactId>geode-deployment-legacy</artifactId>
-        <version>${version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
         <artifactId>geode-dunit</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
@@ -921,7 +914,19 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-deployment-jboss-modules</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-deployment-legacy</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-jboss-extensions</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>

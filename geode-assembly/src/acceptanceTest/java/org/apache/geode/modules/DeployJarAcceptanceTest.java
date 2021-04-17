@@ -17,7 +17,6 @@
 package org.apache.geode.modules;
 
 
-import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -33,7 +32,7 @@ import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
-  private static final JarBuilder jarBuilder = new JarBuilder();
+  private static JarBuilder jarBuilder;
   private static File myJarV1;
   private static File myJarV2;
   private static File anotherJarFile;
@@ -47,6 +46,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
   @BeforeClass
   public static void setup() throws IOException {
+    jarBuilder = new JarBuilder();
     File stagingDir = stagingTempDir.newFolder("staging");
     myJarV1 = new File(stagingDir, "myJar-1.0.jar");
     myJarV2 = new File(stagingDir, "myJar-2.0.jar");
@@ -67,15 +67,25 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
   }
 
-  // @Override
-  // public String getLocatorGFSHConnectionString() {
-  // return "connect";
-  // }
-
   @After
   public void teardown() {
+    String list_regions = GfshScript.of(getLocatorGFSHConnectionString(), "list regions")
+        .execute(gfshRule).getOutputText();
+    System.err.println("list_regions = " + list_regions);
+    if (!list_regions.contains("No Regions Found")) {
+      GfshScript.of(getLocatorGFSHConnectionString(), "destroy region --name=/ExampleRegion")
+          .execute(gfshRule);
+    }
+
+    if (!GfshScript.of(getLocatorGFSHConnectionString(), "list disk-stores")
+        .execute(gfshRule).getOutputText().contains("No Disk Stores Found")) {
+      GfshScript.of(getLocatorGFSHConnectionString(), "destroy disk-store --name=ExampleDiskStore")
+          .execute(gfshRule);
+    }
+
     System.out.println(GfshScript.of(getLocatorGFSHConnectionString(), "undeploy")
         .execute(gfshRule).getOutputText());
+
   }
 
   @Test
@@ -188,9 +198,9 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
   @Test
   public void testDeployAndUndeployFunction() throws IOException {
 
-    GfshScript
+    System.out.println(GfshScript
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + functionJar.getCanonicalPath())
-        .execute(gfshRule);
+        .execute(gfshRule).getOutputText());
 
     assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list functions").execute(gfshRule)
         .getOutputText()).contains("ExampleFunction");
@@ -226,7 +236,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
     System.out.println(GfshScript
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + outputJar.getAbsolutePath())
-        .execute(gfshRule));
+        .execute(gfshRule).getOutputText());
 
     System.out.println(
         GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=PojoFunction")
@@ -282,11 +292,11 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
     System.out.println(GfshScript
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + pojoJar.getAbsolutePath())
-        .execute(gfshRule));
+        .execute(gfshRule).getOutputText());
 
     System.out.println(GfshScript
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + pojoFunctionJar.getAbsolutePath())
-        .execute(gfshRule));
+        .execute(gfshRule).getOutputText());
 
     assertThat(
         GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=PojoFunction")
@@ -302,7 +312,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
     System.out.println(GfshScript
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + pojoFunctionJar.getAbsolutePath())
-        .execute(gfshRule));
+        .execute(gfshRule).getOutputText());
 
     assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=PojoFunction")
         .expectExitCode(1)
@@ -315,7 +325,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
   @Test
   public void testSpringVersionsDoNotConflict() {
-    String jarPath = System.getenv("DEPLOY_TEST_SPRING_JAR");
+    String jarPath = System.getProperty("DEPLOY_TEST_SPRING_JAR");
 
     assertThat(jarPath).isNotNull();
 
@@ -327,6 +337,11 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
       assertThat(GfshScript
           .of(getLocatorGFSHConnectionString(), "execute function --id=" + "SpringFunction")
           .execute(gfshRule).getOutputText()).contains("Salutations, Earth");
+    } else {
+      assertThat(GfshScript
+          .of(getLocatorGFSHConnectionString(), "execute function --id=" + "SpringFunction")
+          .expectExitCode(1)
+          .execute(gfshRule));
     }
   }
 
@@ -337,9 +352,9 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     File functionJar = new File(stagingTempDir.newFolder(), "function.jar");
     jarBuilder.buildJar(functionJar, excludedFunctionSource, includedFunctionSource);
 
-    GfshScript
+    System.out.println(GfshScript
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + functionJar.getAbsolutePath())
-        .execute(gfshRule);
+        .execute(gfshRule).getOutputText());
 
     if (isModular()) {
       assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed").execute(gfshRule)
@@ -366,14 +381,14 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     jarBuilder.buildJar(functionVersion1Jar, functionVersion1Source);
     jarBuilder.buildJar(functionVersion2Jar, functionVersion2Source);
 
-    GfshScript.of(getLocatorGFSHConnectionString(),
-        "deploy --jar=" + functionVersion1Jar.getAbsolutePath()).execute(gfshRule);
+    System.out.println(GfshScript.of(getLocatorGFSHConnectionString(),
+        "deploy --jar=" + functionVersion1Jar.getAbsolutePath()).execute(gfshRule).getOutputText());
     assertThat(
         GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=VersionedFunction")
             .execute(gfshRule).getOutputText()).contains("Version1");
 
-    GfshScript.of(getLocatorGFSHConnectionString(),
-        "deploy --jar=" + functionVersion2Jar.getAbsolutePath()).execute(gfshRule);
+    System.out.println(GfshScript.of(getLocatorGFSHConnectionString(),
+        "deploy --jar=" + functionVersion2Jar.getAbsolutePath()).execute(gfshRule).getOutputText());
     assertThat(
         GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=VersionedFunction")
             .execute(gfshRule).getOutputText()).contains("Version2");
@@ -394,12 +409,12 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
         "create region --name=/ExampleRegion --type=PARTITION")
         .execute(gfshRule);
 
-    GfshScript
+    System.out.println(GfshScript
         .of(getLocatorGFSHConnectionString(), "deploy --jar=" + pojoVersion1Jar.getAbsolutePath())
-        .execute(gfshRule);
-    GfshScript
+        .execute(gfshRule).getOutputText());
+    System.out.println(GfshScript
         .of(getLocatorGFSHConnectionString(), "deploy --jar=" + pojoFunctionJar.getAbsolutePath())
-        .execute(gfshRule);
+        .execute(gfshRule).getOutputText());
     GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=PojoFunction")
         .execute(gfshRule);
     assertThat(GfshScript.of(getLocatorGFSHConnectionString(),
@@ -437,15 +452,5 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     assertThat(GfshScript
         .of(getLocatorGFSHConnectionString(), "list deployed").execute(gfshRule).getOutputText())
             .doesNotContain("geode-core");
-  }
-
-
-
-  private static File loadTestResource(String fileName) {
-    String filePath =
-        createTempFileFromResource(DeployJarAcceptanceTest.class, fileName).getAbsolutePath();
-    assertThat(filePath).isNotNull();
-
-    return new File(filePath);
   }
 }

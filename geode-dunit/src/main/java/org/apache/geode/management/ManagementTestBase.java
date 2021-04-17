@@ -250,7 +250,7 @@ public abstract class ManagementTestBase extends CacheTestCase {
     return managingNode;
   }
 
-  protected static ManagementService getManagementService() {
+  public static ManagementService getManagementService() {
     return managementService;
   }
 

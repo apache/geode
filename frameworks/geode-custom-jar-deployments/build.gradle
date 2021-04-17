@@ -16,6 +16,16 @@
  */
 
 // This module has no dependencies and will only be used for JBoss modules
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
+
 dependencies {
 
+}
+
+jbossModulesExtension {
+  geodeConfigurations {
+    main {
+      jbossJdkModules = [ "java.base","jdk.unsupported", "jdk.scripting.nashorn", "java.desktop" ]
+    }
+  }
 }

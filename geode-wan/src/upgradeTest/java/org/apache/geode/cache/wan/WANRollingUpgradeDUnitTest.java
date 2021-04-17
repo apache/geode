@@ -36,7 +36,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -67,7 +66,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.categories.WanTest;
-import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.VersionManager;
 
@@ -90,9 +88,6 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
   // the old version of Geode we're testing against
   @Parameterized.Parameter
   public String oldVersion;
-
-  @Rule
-  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   void startLocator(int port, int distributedSystemId, String locators,
       String remoteLocators) throws IOException {

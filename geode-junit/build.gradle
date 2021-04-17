@@ -16,21 +16,25 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules-distributedTest.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+configurations {
+  jbossModular
+}
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
   implementation(project(':geode-common'))
-  compileOnly(project(':geode-core'))
-  compileOnly(project(':geode-membership'))
-  compileOnly(project(':geode-serialization'))
-  compileOnly(project(':geode-unsafe'))
-  compileOnly(project(':geode-gfsh'))
+  implementation(project(':geode-core'))
+  implementation(project(':geode-membership'))
+  implementation(project(':geode-serialization'))
+  implementation(project(':geode-unsafe'))
+  implementation(project(':geode-gfsh'))
   implementation(project(':geode-logging'))
-
+  jbossModular(project(':geode-dunit'))
+  jbossModular(project(':geode-wan'))
 
   api('junit:junit') {
     exclude module: 'hamcrest'
@@ -58,7 +62,6 @@ dependencies {
   api('org.skyscreamer:jsonassert')
 
   testImplementation('pl.pragmatists:JUnitParams')
-
 }
 
 test {

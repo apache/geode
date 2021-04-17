@@ -20,6 +20,7 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 apply from: "${project.projectDir}/../gradle/jmh.gradle"
+apply from: "${rootProject.projectDir}/gradle/jboss-modules.gradle"
 
 dependencies {
   // main
@@ -35,4 +36,13 @@ dependencies {
   // jmhTest
   jmhTestImplementation('junit:junit')
   jmhTestImplementation('org.assertj:assertj-core')
+}
+
+jbossModulesExtension {
+  geodeConfigurations {
+    main {
+      mainClass = "org.apache.geode.distributed.ServerLauncher"
+      jbossJdkModules = [ "java.base", "java.naming"]
+    }
+  }
 }

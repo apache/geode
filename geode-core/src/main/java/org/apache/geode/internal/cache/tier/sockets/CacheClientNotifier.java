@@ -2009,7 +2009,7 @@ public class CacheClientNotifier {
   }
 
   /** returns the interval between "ping" messages sent to clients on idle connections */
-  static int getClientPingInterval() {
+  public static int getClientPingInterval() {
     return CLIENT_PING_TASK_PERIOD;
   }
 

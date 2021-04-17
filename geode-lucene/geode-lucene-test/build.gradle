@@ -16,7 +16,7 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules-distributedTest.gradle"
 
 
 
@@ -26,7 +26,7 @@ dependencies {
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
   api(project(':geode-core'))
-  compileOnly(project(':geode-lucene'))
+  implementation(project(':geode-lucene'))
 
   implementation('junit:junit')
   implementation('org.apache.lucene:lucene-test-framework')

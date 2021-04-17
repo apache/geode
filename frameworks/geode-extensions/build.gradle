@@ -14,6 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
+
+configurations {
+  distributedTestApi
+}
 
 dependencies {
   api(project(':geode-cq'))
@@ -28,4 +33,11 @@ dependencies {
   api(project(':geode-log4j')) {
     ext.optional = true
   }
+
+  distributedTestApi(project(':extensions:geode-modules'))
+  distributedTestApi(project(path: ':geode-web', configuration: 'war'))
+  distributedTestApi(project(':extensions:geode-modules-tomcat7'))
+  distributedTestApi(project(':extensions:geode-modules-tomcat8'))
+  distributedTestApi(project(':extensions:geode-modules-tomcat9'))
+  distributedTestApi(project(':geode-lucene:geode-lucene-test'))
 }

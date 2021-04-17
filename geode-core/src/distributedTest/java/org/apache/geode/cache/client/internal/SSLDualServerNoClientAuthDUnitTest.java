@@ -46,7 +46,6 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category(MembershipTest.class)
 public class SSLDualServerNoClientAuthDUnitTest extends JUnit4CacheTestCase {
-
   private static final String SERVER_1_KEYSTORE = "geodeserver1.keystore";
   private static final String SERVER_1_TRUSTSTORE = "geodeserver1.truststore";
 

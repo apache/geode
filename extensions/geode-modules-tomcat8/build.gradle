@@ -20,6 +20,7 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 apply from: "${rootDir}/${scriptDir}/publish-java.gradle"
+apply from: "${rootDir}/${scriptDir}/jboss-modules-distributedTest.gradle"
 
 evaluationDependsOn(":geode-core")
 
@@ -52,7 +53,10 @@ dependencies {
   distributedTestImplementation(project(':extensions:geode-modules-test'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(project(':geode-logging'))
-  distributedTestImplementation('org.httpunit:httpunit')
+  distributedTestImplementation('org.httpunit:httpunit'){
+    exclude module: 'xercesImpl'
+    exclude module: 'xmlParserAPIs'
+  }
   distributedTestImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version'))
 }
 

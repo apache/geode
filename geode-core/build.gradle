@@ -22,6 +22,7 @@ apply plugin: 'antlr'
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/pmd.gradle"
 apply from: "${project.projectDir}/../gradle/jmh.gradle"
+apply from: "${rootProject.projectDir}/gradle/jboss-modules.gradle"
 
 sourceSets {
     jca {
@@ -155,7 +156,6 @@ configurations {
     }
 
     raOutput
-    jbossModular
 }
 
 artifacts {
@@ -221,10 +221,15 @@ dependencies {
     implementation('commons-validator:commons-validator')
 
     //jaxb is used by cluster configuration
-    implementation('javax.xml.bind:jaxb-api')
+    implementation('javax.xml.bind:jaxb-api'){
+        ext.embed = true
+    }
 
     //jaxb is used by cluster configuration
-    implementation('com.sun.xml.bind:jaxb-impl')
+    implementation('com.sun.xml.bind:jaxb-impl'){
+        ext.embed = true
+    }
+
 
     //istack appears to be used only by jaxb, not in our code. jaxb doesn't
     //declare this as required dependency though. It's unclear if this is needed
@@ -246,7 +251,6 @@ dependencies {
 
     //micrometer is used for micrometer based metrics from geode geode
     api('io.micrometer:micrometer-core')
-
 
     //FastUtil contains optimized collections that are used in multiple places in core
     implementation('it.unimi.dsi:fastutil')
@@ -308,15 +312,14 @@ dependencies {
 
     //Geode-common has annotations and other pieces used geode-core
     api(project(':geode-common'))
-    implementation(project(':geode-logging'))
+    api(project(':geode-logging'))
     implementation(project(':geode-membership'))
     implementation(project(':geode-unsafe'))
     implementation(project(':geode-serialization'))
     implementation(project(':geode-tcp-server'))
 
-    runtimeOnly(project(':geode-deployment:geode-deployment-legacy')) {
-        ext.optional = true
-    }
+    //Only for running non-modularly and will be excluded from the module descriptors.
+    runtimeOnly(project(':geode-deployment:geode-deployment-legacy'))
 
     //geode-management currently has pieces of the public API
     //copied into it, so it is an API dependency
@@ -355,10 +358,8 @@ dependencies {
     integrationTestImplementation(project(':geode-log4j'))
     integrationTestImplementation(project(':geode-concurrency-test'))
     integrationTestImplementation('org.apache.bcel:bcel')
-    integrationTestImplementation('org.apache.logging.log4j:log4j-core')
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
-
 
     integrationTestRuntimeOnly('org.apache.derby:derby')
     integrationTestRuntimeOnly('xerces:xercesImpl')
@@ -405,3 +406,12 @@ distributedTest {
 }
 
 rootProject.generate.dependsOn(generateGrammarSource)
+
+jbossModulesExtension {
+    geodeConfigurations {
+        main {
+            mainClass = "org.apache.geode.distributed.ServerLauncher"
+            jbossJdkModules = [ "java.base","jdk.unsupported", "java.naming", "java.xml"]
+        }
+    }
+}
