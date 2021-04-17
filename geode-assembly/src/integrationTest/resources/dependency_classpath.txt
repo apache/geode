@@ -85,4 +85,4 @@ lucene-queryparser-6.6.6.jar
 lucene-core-6.6.6.jar
 lucene-queries-6.6.6.jar
 geo-0.7.7.jar
-netty-all-4.1.63.Final.jar
+netty-all-4.1.59.Final.jar
