@@ -263,7 +263,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-boot-starter-data-redis')
     }
 
-    dependencySet(group: 'org.springframework.session', version: '2.4.2') {
+    dependencySet(group: 'org.springframework.session', version: '2.4.3') {
       entry('spring-session-data-redis')
     }
 
