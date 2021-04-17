@@ -31,7 +31,7 @@ import org.apache.geode.internal.net.BufferPool.BufferType;
  * {@link ByteBuffer}) is available (for reading and modification) in the scope of the
  * try-with-resources.
  */
-class ByteBufferSharingImpl implements ByteBufferSharing {
+class ByteBufferVendor implements ByteBufferSharing {
 
   static class OpenAttemptTimedOut extends Exception {
   }
@@ -53,8 +53,8 @@ class ByteBufferSharingImpl implements ByteBufferSharing {
    * This constructor acquires no lock. The reference count will be 1 after this constructor
    * completes.
    */
-  ByteBufferSharingImpl(final ByteBuffer buffer, final BufferType bufferType,
-      final BufferPool bufferPool) {
+  ByteBufferVendor(final ByteBuffer buffer, final BufferType bufferType,
+                   final BufferPool bufferPool) {
     this.buffer = buffer;
     this.bufferType = bufferType;
     this.bufferPool = bufferPool;
