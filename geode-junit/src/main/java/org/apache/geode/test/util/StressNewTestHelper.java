@@ -140,10 +140,14 @@ public class StressNewTestHelper {
       String classFilename = classInfo.getClasspathElementURL().getFile();
       results.add(
           new TestClassInfo(classFilename, getCategory(classFilename), classInfo.getName(),
-              classInfo.getSimpleName()));
+              getSimpleName(classInfo.getName())));
     }
 
     return results;
+  }
+
+  static String getSimpleName(final String className) {
+    return className.substring(className.lastIndexOf('.') + 1);
   }
 
   private TestClassInfo createTestClassInfo(String javaFile) {
