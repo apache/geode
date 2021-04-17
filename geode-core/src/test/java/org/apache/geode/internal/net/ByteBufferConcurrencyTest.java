@@ -47,8 +47,8 @@ public class ByteBufferConcurrencyTest {
       throws Exception {
     poolMock = mock(BufferPool.class);
     ByteBuffer someBuffer = ByteBuffer.allocate(1);
-    ByteBufferSharingImpl sharing =
-        new ByteBufferSharingImpl(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+    ByteBufferVendor sharing =
+        new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
     executor.inParallel(() -> {
       sharing.destruct();
@@ -78,8 +78,8 @@ public class ByteBufferConcurrencyTest {
     }).when(poolMock).releaseBuffer(any(), any());
 
     ByteBuffer someBuffer = ByteBuffer.allocate(1);
-    ByteBufferSharingImpl sharing =
-        new ByteBufferSharingImpl(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+    ByteBufferVendor sharing =
+        new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
 
     executor.inParallel(() -> {
@@ -109,8 +109,8 @@ public class ByteBufferConcurrencyTest {
       throws Exception {
     poolMock = mock(BufferPool.class);
     ByteBuffer someBuffer = ByteBuffer.allocate(1);
-    ByteBufferSharingImpl sharing =
-        new ByteBufferSharingImpl(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+    ByteBufferVendor sharing =
+        new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
 
     final AtomicBoolean inUse = new AtomicBoolean(false);
@@ -134,8 +134,8 @@ public class ByteBufferConcurrencyTest {
       throws Exception {
     poolMock = mock(BufferPool.class);
     ByteBuffer someBuffer = ByteBuffer.allocate(1);
-    ByteBufferSharingImpl sharing =
-        new ByteBufferSharingImpl(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+    ByteBufferVendor sharing =
+        new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
 
     final AtomicBoolean inUse = new AtomicBoolean(false);
