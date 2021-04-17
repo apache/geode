@@ -14,9 +14,9 @@ geode-serialization-0.0.0.jar
 geode-tcp-server-0.0.0.jar
 geode-wan-0.0.0.jar
 geode-management-0.0.0.jar
-jackson-databind-2.12.2.jar
-jackson-annotations-2.12.2.jar
-jackson-core-2.12.2.jar
+jackson-databind-2.12.3.jar
+jackson-annotations-2.12.3.jar
+jackson-core-2.12.3.jar
 geode-deployment-legacy-0.0.0.jar
 geode-membership-0.0.0.jar
 geode-http-service-0.0.0.jar

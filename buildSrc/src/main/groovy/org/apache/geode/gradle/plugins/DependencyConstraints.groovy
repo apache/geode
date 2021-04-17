@@ -45,7 +45,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("shiro.version", "1.7.1")
     deps.put("slf4j-api.version", "1.7.30")
     deps.put("jboss-modules.version", "1.11.0.Final")
-    deps.put("jackson.version", "2.12.2")
+    deps.put("jackson.version", "2.12.3")
     deps.put("springshell.version", "1.2.0.RELEASE")
     deps.put("springframework.version", "5.3.5")
 

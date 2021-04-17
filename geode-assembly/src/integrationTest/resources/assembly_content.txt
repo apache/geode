@@ -1004,9 +1004,9 @@ lib/gfsh-dependencies.jar
 lib/httpclient-4.5.13.jar
 lib/httpcore-4.4.14.jar
 lib/istack-commons-runtime-4.0.0.jar
-lib/jackson-annotations-2.12.2.jar
-lib/jackson-core-2.12.2.jar
-lib/jackson-databind-2.12.2.jar
+lib/jackson-annotations-2.12.3.jar
+lib/jackson-core-2.12.3.jar
+lib/jackson-databind-2.12.3.jar
 lib/javax.activation-api-1.2.0.jar
 lib/javax.mail-api-1.6.2.jar
 lib/javax.resource-api-1.7.1.jar
