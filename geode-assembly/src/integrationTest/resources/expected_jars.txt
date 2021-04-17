@@ -22,6 +22,8 @@ commons-validator
 content-type
 error_prone_annotations
 failureaccess
+fastutil-core
+fastutil-extra
 fastutil
 findbugs-annotations
 geo

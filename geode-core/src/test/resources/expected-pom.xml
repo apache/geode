@@ -143,6 +143,16 @@
     </dependency>
     <dependency>
       <groupId>it.unimi.dsi</groupId>
+      <artifactId>fastutil-core</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>it.unimi.dsi</groupId>
+      <artifactId>fastutil-extra</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>it.unimi.dsi</groupId>
       <artifactId>fastutil</artifactId>
       <scope>runtime</scope>
     </dependency>

@@ -27,7 +27,7 @@ dependencies {
   implementation(project(':geode-common'))
 
   //FastUtil contains optimized collections that are used in multiple places in core
-  implementation('it.unimi.dsi:fastutil')
+  implementation('it.unimi.dsi:fastutil-core')
 
   //Log4j is used everywhere
   implementation('org.apache.logging.log4j:log4j-api')

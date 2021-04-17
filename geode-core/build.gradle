@@ -251,6 +251,8 @@ dependencies {
 
 
     //FastUtil contains optimized collections that are used in multiple places in core
+    implementation('it.unimi.dsi:fastutil-core')
+    implementation('it.unimi.dsi:fastutil-extra')
     implementation('it.unimi.dsi:fastutil')
 
     //Mail API is used by the deprecated admin API
