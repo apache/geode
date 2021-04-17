@@ -601,14 +601,13 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * @param socketChannel the socket's NIO channel
    * @param engine the sslEngine (see createSSLEngine)
    * @param timeout handshake timeout in milliseconds. No timeout if <= 0
-   * @param clientSocket set to true if you initiated the connect(), false if you accepted it
    * @param peerNetBuffer the buffer to use in reading data fron socketChannel. This should also be
    *        used in subsequent I/O operations
    * @return The SSLEngine to be used in processing data for sending/receiving from the channel
    */
-  public NioSslEngine handshakeSSLSocketChannel(SocketChannel socketChannel, SSLEngine engine,
+  public NioSslEngine handshakeSSLSocketChannel(SocketChannel socketChannel,
+      SSLEngine engine,
       int timeout,
-      boolean clientSocket,
       ByteBuffer peerNetBuffer,
       BufferPool bufferPool)
       throws IOException {
