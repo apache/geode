@@ -32,11 +32,11 @@ import org.junit.Test;
 public class ByteBufferVendorTest {
 
   @FunctionalInterface
-  private static interface Foo {
+  private interface Foo {
     void run() throws IOException;
   }
 
-  private ByteBufferVendor sharing;
+  private ByteBufferVendor sharingVendor;
   private BufferPool poolMock;
   private CountDownLatch clientHasOpenedResource;
   private CountDownLatch clientMayComplete;
@@ -44,7 +44,7 @@ public class ByteBufferVendorTest {
   @Before
   public void before() {
     poolMock = mock(BufferPool.class);
-    sharing =
+    sharingVendor =
         new ByteBufferVendor(mock(ByteBuffer.class), BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
     clientHasOpenedResource = new CountDownLatch(1);
@@ -54,7 +54,7 @@ public class ByteBufferVendorTest {
   @Test
   public void balancedCloseOwnerIsLastReferenceHolder() throws InterruptedException {
     resourceOwnerIsLastReferenceHolder("client with balanced close calls", () -> {
-      try (final ByteBufferSharing _unused = sharing.open()) {
+      try (final ByteBufferSharing _unused = sharingVendor.open()) {
       }
     });
   }
@@ -62,7 +62,7 @@ public class ByteBufferVendorTest {
   @Test
   public void extraCloseOwnerIsLastReferenceHolder() throws InterruptedException {
     resourceOwnerIsLastReferenceHolder("client with extra close calls", () -> {
-      final ByteBufferSharing sharing2 = sharing.open();
+      final ByteBufferSharing sharing2 = sharingVendor.open();
       sharing2.close();
       verify(poolMock, times(0)).releaseBuffer(any(), any());
       assertThatThrownBy(() -> sharing2.close()).isInstanceOf(IllegalMonitorStateException.class);
@@ -73,7 +73,7 @@ public class ByteBufferVendorTest {
   @Test
   public void balancedCloseClientIsLastReferenceHolder() throws InterruptedException {
     clientIsLastReferenceHolder("client with balanced close calls", () -> {
-      try (final ByteBufferSharing _unused = sharing.open()) {
+      try (final ByteBufferSharing _unused = sharingVendor.open()) {
         clientHasOpenedResource.countDown();
         blockClient();
       }
@@ -83,34 +83,40 @@ public class ByteBufferVendorTest {
   @Test
   public void extraCloseClientIsLastReferenceHolder() throws InterruptedException {
     clientIsLastReferenceHolder("client with extra close calls", () -> {
-      final ByteBufferSharing sharing2 = sharing.open();
+      final ByteBufferSharing sharing2 = sharingVendor.open();
       clientHasOpenedResource.countDown();
       blockClient();
       sharing2.close();
       verify(poolMock, times(1)).releaseBuffer(any(), any());
       assertThatThrownBy(() -> sharing2.close()).isInstanceOf(IllegalMonitorStateException.class);
-      System.out.println("here");
     });
   }
 
   @Test
   public void extraCloseDoesNotPrematurelyReturnBufferToPool() throws IOException {
-    final ByteBufferSharing sharing2 = sharing.open();
+    final ByteBufferSharing sharing2 = sharingVendor.open();
     sharing2.close();
     assertThatThrownBy(() -> sharing2.close()).isInstanceOf(IllegalMonitorStateException.class);
     verify(poolMock, times(0)).releaseBuffer(any(), any());
-    sharing.destruct();
+    sharingVendor.destruct();
     verify(poolMock, times(1)).releaseBuffer(any(), any());
   }
 
   @Test
   public void extraCloseDoesNotDecrementRefCount() throws IOException {
-    final ByteBufferSharing sharing2 = sharing.open();
+    final ByteBufferSharing sharing2 = sharingVendor.open();
     sharing2.close();
     assertThatThrownBy(() -> sharing2.close()).isInstanceOf(IllegalMonitorStateException.class);
-    final ByteBufferSharing sharing3 = this.sharing.open();
-    sharing.destruct();
+    final ByteBufferSharing sharing3 = this.sharingVendor.open();
+    sharingVendor.destruct();
     verify(poolMock, times(0)).releaseBuffer(any(), any());
+  }
+
+  @Test
+  public void destructIsIdempotent() {
+    sharingVendor.destruct();
+    sharingVendor.destruct();
+    verify(poolMock, times(1)).releaseBuffer(any(), any());
   }
 
   private void resourceOwnerIsLastReferenceHolder(final String name, final Foo client)
@@ -128,7 +134,7 @@ public class ByteBufferVendorTest {
 
     verify(poolMock, times(0)).releaseBuffer(any(), any());
 
-    sharing.destruct();
+    sharingVendor.destruct();
 
     verify(poolMock, times(1)).releaseBuffer(any(), any());
   }
@@ -147,7 +153,7 @@ public class ByteBufferVendorTest {
 
     clientHasOpenedResource.await();
 
-    sharing.destruct();
+    sharingVendor.destruct();
 
     verify(poolMock, times(0)).releaseBuffer(any(), any());
 

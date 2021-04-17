@@ -103,6 +103,9 @@ public class SSLSocketHostNameVerificationIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
+
+    SocketCreatorFactory.close(); // to clear socket creators made in previous tests
+
     IgnoredException.addIgnoredException("javax.net.ssl.SSLException: Read timed out");
 
     localHost = InetAddress.getLoopbackAddress();
@@ -172,7 +175,7 @@ public class SSLSocketHostNameVerificationIntegrationTest {
 
     try {
       socketCreator.handshakeSSLSocketChannel(clientSocket.getChannel(),
-          sslEngine, 0, true,
+          sslEngine, 0,
           ByteBuffer.allocate(sslEngine.getSession().getPacketBufferSize()),
           new BufferPool(mock(DMStats.class)));
 
@@ -205,7 +208,6 @@ public class SSLSocketHostNameVerificationIntegrationTest {
             sc.handshakeSSLSocketChannel(socket.getChannel(),
                 sslEngine,
                 timeoutMillis,
-                false,
                 ByteBuffer.allocate(sslEngine.getSession().getPacketBufferSize()),
                 new BufferPool(mock(DMStats.class)));
       } catch (Throwable throwable) {
