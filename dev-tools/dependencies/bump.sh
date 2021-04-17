@@ -24,7 +24,7 @@ fi
 
 if [ "$2" = "-l" ] ; then
   ./gradlew dependencyUpdates -Drevision=release ; find . | grep build/dependencyUpdates/report.txt | xargs cat \
-   | grep ' -> ' | egrep -v '(Gradle|antlr|lucene|JUnitParams|docker-compose-rule|javax.servlet-api|gradle-tooling-api|springfox|derby|classgraph|selenium|jgroups|jmh|\[6.0.37|commons-collections|jaxb|testcontainers)' \
+   | grep ' -> ' | egrep -v '(Gradle|antlr|lucene|JUnitParams|docker-compose-rule|javax.servlet-api|springfox|derby|selenium|jgroups|\[6.0.37|commons-collections|jaxb|testcontainers)' \
    | sort -u | tr -d '][' | sed -e 's/ -> / /' -e 's#.*:#'"$0 $1"' #'
   exit 0
 fi
