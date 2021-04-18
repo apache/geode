@@ -273,6 +273,8 @@ OTHER_JARS=(${GEODE}/lib/geode-core-${VERSION}.jar \
     ${GEODE}/lib/log4j-core-@LOG4J_VERSION@.jar \
     ${GEODE}/lib/log4j-api-@LOG4J_VERSION@.jar \
     ${GEODE}/lib/log4j-jul-@LOG4J_VERSION@.jar \
+    ${GEODE}/lib/fastutil-core-@FASTUTIL_VERSION@.jar \
+    ${GEODE}/lib/fastutil-extra-@FASTUTIL_VERSION@.jar \
     ${GEODE}/lib/fastutil-@FASTUTIL_VERSION@.jar \
     ${GEODE}/lib/javax.transaction-api-@TX_VERSION@.jar \
     ${GEODE}/lib/jetty-http-@JETTY_VERSION@.jar \

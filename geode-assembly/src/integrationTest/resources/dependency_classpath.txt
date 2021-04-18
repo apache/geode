@@ -44,7 +44,9 @@ commons-logging-1.2.jar
 classgraph-4.8.104.jar
 micrometer-core-1.6.6.jar
 swagger-annotations-1.6.2.jar
-fastutil-8.5.2.jar
+fastutil-core-8.5.4.jar
+fastutil-extra-8.5.4.jar
+fastutil-8.5.4.jar
 javax.resource-api-1.7.1.jar
 jetty-webapp-9.4.40.v20210413.jar
 jetty-servlet-9.4.40.v20210413.jar
