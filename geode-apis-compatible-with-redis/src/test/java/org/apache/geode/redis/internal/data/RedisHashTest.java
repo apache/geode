@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.assertj.core.data.Offset;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -40,10 +41,12 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class RedisHashTest {
+  private final ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
 
   @BeforeClass
   public static void beforeClass() {
@@ -59,7 +62,7 @@ public class RedisHashTest {
   public void confirmToDataIsSynchronized() throws NoSuchMethodException {
     assertThat(Modifier.isSynchronized(RedisHash.class
         .getMethod("toData", DataOutput.class, SerializationContext.class).getModifiers()))
-            .isTrue();
+        .isTrue();
   }
 
   @Test
@@ -261,8 +264,40 @@ public class RedisHashTest {
   @Test
   public void hashSizeOverhead_shouldNotBeChanged_withoutForethoughtAndTesting() {
     assertThat(RedisHash.PER_OBJECT_OVERHEAD).isEqualTo(8);
-    assertThat(RedisHash.getPerByteArrayWrapperOverhead()).isEqualTo(RedisHash.PER_OBJECT_OVERHEAD + 46);
+    assertThat(RedisHash.getPerByteArrayWrapperOverhead())
+        .isEqualTo(RedisHash.PER_OBJECT_OVERHEAD + 46);
     assertThat(RedisHash.getPerHashOverhead()).isEqualTo(RedisHash.PER_OBJECT_OVERHEAD + 116);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void should_calculateSize_closeToROSSize_ofIndividualInstance() {
+    RedisHash current = createRedisHash("k1", "v1", "k2", "v2");
+
+    int expected = reflectionObjectSizer.sizeof(current);
+    Long actual = Long.valueOf(current.getSizeInBytes());
+    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
+
+    assertThat(actual).isCloseTo(expected, offset);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void should_calculateSize_closeToROSSize_withManyEntries() {
+    final String baseString = "b";
+
+    ArrayList<ByteArrayWrapper> elements = new ArrayList<>();
+    for (int i = 0; i < 10_000; i++) {
+      elements.add(createByteArrayWrapper(baseString + i));
+      elements.add(createByteArrayWrapper(baseString + i));
+    }
+    RedisHash o1 = new RedisHash(elements);
+
+    Long actual = Long.valueOf(o1.getSizeInBytes());
+    int expected = reflectionObjectSizer.sizeof(o1);
+    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
+
+    assertThat(actual).isCloseTo(expected, offset);
   }
 
   private RedisHash createRedisHash(int NumberOfFields) {

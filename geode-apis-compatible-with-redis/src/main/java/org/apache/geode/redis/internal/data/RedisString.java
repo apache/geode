@@ -43,7 +43,7 @@ public class RedisString extends AbstractRedisData {
   // this value is empirically derived using ReflectionObjectSizer, which provides an exact size
   // of the object. It can't be used directly because of its performance impact. This value causes
   // the size we keep track of to converge to the actual size as it increases.
-  public static final int PER_STRING_OVERHEAD = 34;
+  public static final int PER_STRING_OVERHEAD = 74;
 
   public RedisString(ByteArrayWrapper value) {
     this.value = value;

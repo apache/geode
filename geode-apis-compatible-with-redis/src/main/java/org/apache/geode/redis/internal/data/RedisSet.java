@@ -52,7 +52,8 @@ public class RedisSet extends AbstractRedisData {
   // of the object. It can't be used directly because of its performance impact. These values cause
   // the size we keep track of to converge to the actual size as it increases.
   private static final int PER_MEMBER_OVERHEAD = PER_OBJECT_OVERHEAD + 70;
-  private static final int PER_SET_OVERHEAD = PER_OBJECT_OVERHEAD + 240;
+  private static final int PER_SET_OVERHEAD = PER_OBJECT_OVERHEAD + 104;
+  private static final int SET_CAPACITY_OVERHEAD_FACTOR = 0;
 
   private int setSize = PER_SET_OVERHEAD;
 
@@ -343,7 +344,7 @@ public class RedisSet extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return setSize;
+    return setSize + (SET_CAPACITY_OVERHEAD_FACTOR * (members.size() >> 4));
   }
 
   @VisibleForTesting
