@@ -926,7 +926,7 @@ public class ConnectionTable {
   }
 
   @VisibleForTesting
-  public static int getNumSenderSharedConnections() {
+  public static long getNumSenderSharedConnections() {
     ConnectionTable ct = (ConnectionTable) lastInstance.get();
     if (ct == null) {
       return 0;

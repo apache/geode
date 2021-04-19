@@ -90,7 +90,7 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
    * than the {@linkplain MemberHealthConfig#getMaxVMProcessSize threshold}. If not, the status is
    * "okay" health.
    */
-  void checkVMProcessSize(List status) {
+  void checkVMProcessSize(List<HealthStatus> status) {
     // There is no need to check isFirstEvaluation()
     if (this.processStats == null) {
       return;
@@ -112,7 +112,7 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
    * {@linkplain MemberHealthConfig#getMaxMessageQueueSize threshold}. If not, the status is "okay"
    * health.
    */
-  private void checkMessageQueueSize(List status) {
+  private void checkMessageQueueSize(List<HealthStatus> status) {
     long threshold = this.config.getMaxMessageQueueSize();
     long overflowSize = this.dmStats.getOverflowQueueSize();
     if (overflowSize > threshold) {
@@ -128,7 +128,7 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
    * does not exceed the {@linkplain MemberHealthConfig#getMaxReplyTimeouts threshold}. If not, the
    * status is "okay" health.
    */
-  private void checkReplyTimeouts(List status) {
+  private void checkReplyTimeouts(List<HealthStatus> status) {
     if (isFirstEvaluation()) {
       return;
     }
@@ -147,7 +147,7 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
    * The function keeps updating the health of the cache based on roles required by the regions and
    * their reliability policies.
    */
-  private void checkCacheRequiredRolesMeet(List status) {
+  private void checkCacheRequiredRolesMeet(List<HealthStatus> status) {
     // will have to call here okayHealth() or poorHealth()
 
     try {
@@ -156,21 +156,21 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
 
       if (cPStats.getReliableRegionsMissingFullAccess() > 0) {
         // health is okay.
-        int numRegions = cPStats.getReliableRegionsMissingFullAccess();
+        long numRegions = cPStats.getReliableRegionsMissingFullAccess();
         status.add(okayHealth(
             String.format(
                 "There are %s regions missing required roles; however, they are configured for full access.",
                 numRegions)));
       } else if (cPStats.getReliableRegionsMissingLimitedAccess() > 0) {
         // health is poor
-        int numRegions = cPStats.getReliableRegionsMissingLimitedAccess();
+        long numRegions = cPStats.getReliableRegionsMissingLimitedAccess();
         status.add(poorHealth(
             String.format(
                 "There are %s regions missing required roles and configured with limited access.",
                 numRegions)));
       } else if (cPStats.getReliableRegionsMissingNoAccess() > 0) {
         // health is poor
-        int numRegions = cPStats.getReliableRegionsMissingNoAccess();
+        long numRegions = cPStats.getReliableRegionsMissingNoAccess();
         status.add(poorHealth(
             String.format(
                 "There are %s regions missing required roles and configured without access.",
@@ -188,7 +188,7 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
   }
 
   @Override
-  protected void check(List status) {
+  protected void check(List<HealthStatus> status) {
     checkVMProcessSize(status);
     checkMessageQueueSize(status);
     checkReplyTimeouts(status);

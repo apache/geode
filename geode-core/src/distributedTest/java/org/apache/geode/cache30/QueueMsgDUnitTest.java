@@ -74,7 +74,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
     factory.setScope(DISTRIBUTED_ACK);
     DistributedRegion r = (DistributedRegion) createRootRegion(factory.create());
     final CachePerfStats stats = r.getCachePerfStats();
-    int queuedOps = stats.getReliableQueuedOps();
+    long queuedOps = stats.getReliableQueuedOps();
     r.create("createKey", "createValue", "createCBArg");
     r.invalidate("createKey", "invalidateCBArg");
     r.put("createKey", "putValue", "putCBArg");

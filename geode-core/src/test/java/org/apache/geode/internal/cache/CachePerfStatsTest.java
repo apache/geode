@@ -256,9 +256,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getPutAllsDelegatesToStatistics() {
-    statistics.incInt(putAllsId, Integer.MAX_VALUE);
+    statistics.incLong(putAllsId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getPutAlls()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getPutAlls()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -269,7 +269,7 @@ public class CachePerfStatsTest {
   public void endPutAllIncrementsPutAlls() {
     cachePerfStats.endPutAll(0);
 
-    assertThat(statistics.getInt(putAllsId)).isEqualTo(1);
+    assertThat(statistics.getLong(putAllsId)).isEqualTo(1);
   }
 
   /**
@@ -277,7 +277,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void putAllsWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(putAllsId, Integer.MAX_VALUE);
+    statistics.incLong(putAllsId, Long.MAX_VALUE);
 
     cachePerfStats.endPutAll(0);
 
@@ -286,9 +286,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getRemoveAllsDelegatesToStatistics() {
-    statistics.incInt(removeAllsId, Integer.MAX_VALUE);
+    statistics.incLong(removeAllsId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getRemoveAlls()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getRemoveAlls()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -299,7 +299,7 @@ public class CachePerfStatsTest {
   public void endRemoveAllIncrementsRemoveAll() {
     cachePerfStats.endRemoveAll(0);
 
-    assertThat(statistics.getInt(removeAllsId)).isEqualTo(1);
+    assertThat(statistics.getLong(removeAllsId)).isEqualTo(1);
   }
 
   /**
@@ -307,7 +307,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void removeAllsWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(removeAllsId, Integer.MAX_VALUE);
+    statistics.incLong(removeAllsId, Long.MAX_VALUE);
 
     cachePerfStats.endRemoveAll(0);
 
@@ -402,16 +402,16 @@ public class CachePerfStatsTest {
 
   @Test
   public void getRetriesDelegatesToStatistics() {
-    statistics.incInt(retriesId, Integer.MAX_VALUE);
+    statistics.incLong(retriesId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getRetries()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getRetries()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
   public void incRetriesIncrementsRetries() {
     cachePerfStats.incRetries();
 
-    assertThat(statistics.getInt(retriesId)).isEqualTo(1);
+    assertThat(statistics.getLong(retriesId)).isEqualTo(1);
   }
 
   /**
@@ -419,7 +419,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void retriesWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(retriesId, Integer.MAX_VALUE);
+    statistics.incLong(retriesId, Long.MAX_VALUE);
 
     cachePerfStats.incRetries();
 
@@ -432,6 +432,8 @@ public class CachePerfStatsTest {
 
     assertThat(cachePerfStats.getClearCount()).isEqualTo(Long.MAX_VALUE);
   }
+
+
 
   @Test
   public void incClearCountIncrementsClears() {
@@ -454,9 +456,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getLoadsCompletedDelegatesToStatistics() {
-    statistics.incInt(loadsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(loadsCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getLoadsCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getLoadsCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -467,7 +469,7 @@ public class CachePerfStatsTest {
   public void endLoadIncrementsMisses() {
     cachePerfStats.endLoad(0);
 
-    assertThat(statistics.getInt(loadsCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(loadsCompletedId)).isEqualTo(1);
   }
 
   /**
@@ -475,7 +477,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void loadsCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(loadsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(loadsCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.endLoad(0);
 
@@ -484,9 +486,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getNetloadsCompletedDelegatesToStatistics() {
-    statistics.incInt(netloadsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(netloadsCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getNetloadsCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getNetloadsCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -497,7 +499,7 @@ public class CachePerfStatsTest {
   public void endNetloadIncrementsNetloadsCompleted() {
     cachePerfStats.endNetload(0);
 
-    assertThat(statistics.getInt(netloadsCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(netloadsCompletedId)).isEqualTo(1);
   }
 
   /**
@@ -506,7 +508,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void netloadsCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(netloadsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(netloadsCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.endNetload(0);
 
@@ -515,9 +517,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getNetsearchesCompletedDelegatesToStatistics() {
-    statistics.incInt(netsearchesCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(netsearchesCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getNetsearchesCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getNetsearchesCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -528,7 +530,7 @@ public class CachePerfStatsTest {
   public void endLoadIncrementsNetsearchesCompleted() {
     cachePerfStats.endNetsearch(0);
 
-    assertThat(statistics.getInt(netsearchesCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(netsearchesCompletedId)).isEqualTo(1);
   }
 
   /**
@@ -537,7 +539,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void netsearchesCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(netsearchesCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(netsearchesCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.endNetsearch(0);
 
@@ -546,9 +548,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getCacheWriterCallsCompletedDelegatesToStatistics() {
-    statistics.incInt(cacheWriterCallsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(cacheWriterCallsCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getCacheWriterCallsCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getCacheWriterCallsCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -559,7 +561,7 @@ public class CachePerfStatsTest {
   public void endCacheWriterCallIncrementsCacheWriterCallsCompleted() {
     cachePerfStats.endCacheWriterCall(0);
 
-    assertThat(statistics.getInt(cacheWriterCallsCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(cacheWriterCallsCompletedId)).isEqualTo(1);
   }
 
   /**
@@ -568,7 +570,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void cacheWriterCallsCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(cacheWriterCallsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(cacheWriterCallsCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.endCacheWriterCall(0);
 
@@ -577,9 +579,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getCacheListenerCallsCompletedDelegatesToStatistics() {
-    statistics.incInt(cacheListenerCallsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(cacheListenerCallsCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getCacheListenerCallsCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getCacheListenerCallsCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -590,7 +592,7 @@ public class CachePerfStatsTest {
   public void endCacheWriterCallIncrementsCacheListenerCallsCompleted() {
     cachePerfStats.endCacheListenerCall(0);
 
-    assertThat(statistics.getInt(cacheListenerCallsCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(cacheListenerCallsCompletedId)).isEqualTo(1);
   }
 
   /**
@@ -599,7 +601,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void cacheListenerCallsCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(cacheListenerCallsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(cacheListenerCallsCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.endCacheListenerCall(0);
 
@@ -608,9 +610,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getGetInitialImagesCompletedDelegatesToStatistics() {
-    statistics.incInt(getInitialImagesCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(getInitialImagesCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getGetInitialImagesCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getGetInitialImagesCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -621,7 +623,7 @@ public class CachePerfStatsTest {
   public void endCacheWriterCallIncrementsGetInitialImagesCompleted() {
     cachePerfStats.endGetInitialImage(0);
 
-    assertThat(statistics.getInt(getInitialImagesCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(getInitialImagesCompletedId)).isEqualTo(1);
   }
 
   /**
@@ -630,7 +632,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void getInitialImagesCompletedCallsCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(getInitialImagesCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(getInitialImagesCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.endGetInitialImage(0);
 
@@ -639,16 +641,16 @@ public class CachePerfStatsTest {
 
   @Test
   public void getDeltaGetInitialImagesCompletedDelegatesToStatistics() {
-    statistics.incInt(deltaGetInitialImagesCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(deltaGetInitialImagesCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getDeltaGetInitialImagesCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getDeltaGetInitialImagesCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
   public void incDeltaGIICompletedIncrementsDeltaGetInitialImagesCompleted() {
     cachePerfStats.incDeltaGIICompleted();
 
-    assertThat(statistics.getInt(deltaGetInitialImagesCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(deltaGetInitialImagesCompletedId)).isEqualTo(1);
   }
 
   /**
@@ -657,7 +659,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void deltaGetInitialImagesCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(deltaGetInitialImagesCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(deltaGetInitialImagesCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.incDeltaGIICompleted();
 
@@ -666,9 +668,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getQueryExecutionsDelegatesToStatistics() {
-    statistics.incInt(queryExecutionsId, Integer.MAX_VALUE);
+    statistics.incLong(queryExecutionsId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getQueryExecutions()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getQueryExecutions()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -679,7 +681,7 @@ public class CachePerfStatsTest {
   public void endQueryExecutionIncrementsQueryExecutions() {
     cachePerfStats.endQueryExecution(1);
 
-    assertThat(statistics.getInt(queryExecutionsId)).isEqualTo(1);
+    assertThat(statistics.getLong(queryExecutionsId)).isEqualTo(1);
   }
 
   /**
@@ -688,7 +690,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void queryExecutionsWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(queryExecutionsId, Integer.MAX_VALUE);
+    statistics.incLong(queryExecutionsId, Long.MAX_VALUE);
 
     cachePerfStats.endQueryExecution(1);
 
@@ -697,9 +699,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getTxCommitsDelegatesToStatistics() {
-    statistics.incInt(txCommitsId, Integer.MAX_VALUE);
+    statistics.incLong(txCommitsId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getTxCommits()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getTxCommits()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -710,7 +712,7 @@ public class CachePerfStatsTest {
   public void txSuccessIncrementsTxCommits() {
     cachePerfStats.txSuccess(1, 1, 1);
 
-    assertThat(statistics.getInt(txCommitsId)).isEqualTo(1);
+    assertThat(statistics.getLong(txCommitsId)).isEqualTo(1);
   }
 
   /**
@@ -718,7 +720,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void txCommitsWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(txCommitsId, Integer.MAX_VALUE);
+    statistics.incLong(txCommitsId, Long.MAX_VALUE);
 
     cachePerfStats.txSuccess(1, 1, 1);
 
@@ -727,9 +729,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getTxFailuresDelegatesToStatistics() {
-    statistics.incInt(txFailuresId, Integer.MAX_VALUE);
+    statistics.incLong(txFailuresId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getTxFailures()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getTxFailures()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -740,7 +742,7 @@ public class CachePerfStatsTest {
   public void txFailureIncrementsTxFailures() {
     cachePerfStats.txFailure(1, 1, 1);
 
-    assertThat(statistics.getInt(txFailuresId)).isEqualTo(1);
+    assertThat(statistics.getLong(txFailuresId)).isEqualTo(1);
   }
 
   /**
@@ -748,7 +750,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void txFailuresWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(txFailuresId, Integer.MAX_VALUE);
+    statistics.incLong(txFailuresId, Long.MAX_VALUE);
 
     cachePerfStats.txFailure(1, 1, 1);
 
@@ -757,9 +759,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getTxRollbacksDelegatesToStatistics() {
-    statistics.incInt(txRollbacksId, Integer.MAX_VALUE);
+    statistics.incLong(txRollbacksId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getTxRollbacks()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getTxRollbacks()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -770,7 +772,7 @@ public class CachePerfStatsTest {
   public void txRollbackIncrementsTxRollbacks() {
     cachePerfStats.txRollback(1, 1, 1);
 
-    assertThat(statistics.getInt(txRollbacksId)).isEqualTo(1);
+    assertThat(statistics.getLong(txRollbacksId)).isEqualTo(1);
   }
 
   /**
@@ -778,7 +780,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void txRollbacksWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(txRollbacksId, Integer.MAX_VALUE);
+    statistics.incLong(txRollbacksId, Long.MAX_VALUE);
 
     cachePerfStats.txRollback(1, 1, 1);
 
@@ -787,9 +789,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getTxCommitChangesDelegatesToStatistics() {
-    statistics.incInt(txCommitChangesId, Integer.MAX_VALUE);
+    statistics.incLong(txCommitChangesId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getTxCommitChanges()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getTxCommitChanges()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -800,7 +802,7 @@ public class CachePerfStatsTest {
   public void txSuccessIncrementsTxCommitChanges() {
     cachePerfStats.txSuccess(1, 1, 1);
 
-    assertThat(statistics.getInt(txCommitChangesId)).isEqualTo(1);
+    assertThat(statistics.getLong(txCommitChangesId)).isEqualTo(1);
   }
 
   /**
@@ -809,7 +811,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void txCommitChangesWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(txCommitChangesId, Integer.MAX_VALUE);
+    statistics.incLong(txCommitChangesId, Long.MAX_VALUE);
 
     cachePerfStats.txSuccess(1, 1, 1);
 
@@ -818,9 +820,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getTxFailureChangesDelegatesToStatistics() {
-    statistics.incInt(txFailureChangesId, Integer.MAX_VALUE);
+    statistics.incLong(txFailureChangesId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getTxFailureChanges()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getTxFailureChanges()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -831,7 +833,7 @@ public class CachePerfStatsTest {
   public void txFailureIncrementsTxFailureChanges() {
     cachePerfStats.txFailure(1, 1, 1);
 
-    assertThat(statistics.getInt(txFailureChangesId)).isEqualTo(1);
+    assertThat(statistics.getLong(txFailureChangesId)).isEqualTo(1);
   }
 
   /**
@@ -840,7 +842,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void txFailureChangesWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(txFailureChangesId, Integer.MAX_VALUE);
+    statistics.incLong(txFailureChangesId, Long.MAX_VALUE);
 
     cachePerfStats.txFailure(1, 1, 1);
 
@@ -849,9 +851,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getTxRollbackChangesDelegatesToStatistics() {
-    statistics.incInt(txRollbackChangesId, Integer.MAX_VALUE);
+    statistics.incLong(txRollbackChangesId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getTxRollbackChanges()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getTxRollbackChanges()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -862,7 +864,7 @@ public class CachePerfStatsTest {
   public void txRollbackIncrementsTxRollbackChanges() {
     cachePerfStats.txRollback(1, 1, 1);
 
-    assertThat(statistics.getInt(txRollbackChangesId)).isEqualTo(1);
+    assertThat(statistics.getLong(txRollbackChangesId)).isEqualTo(1);
   }
 
   /**
@@ -871,7 +873,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void txRollbackChangesWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(txRollbackChangesId, Integer.MAX_VALUE);
+    statistics.incLong(txRollbackChangesId, Long.MAX_VALUE);
 
     cachePerfStats.txRollback(1, 1, 1);
 
@@ -880,16 +882,16 @@ public class CachePerfStatsTest {
 
   @Test
   public void getEvictorJobsStartedChangesDelegatesToStatistics() {
-    statistics.incInt(evictorJobsStartedId, Integer.MAX_VALUE);
+    statistics.incLong(evictorJobsStartedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getEvictorJobsStarted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getEvictorJobsStarted()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
   public void incEvictorJobsStartedIncrementsEvictorJobsStarted() {
     cachePerfStats.incEvictorJobsStarted();
 
-    assertThat(statistics.getInt(evictorJobsStartedId)).isEqualTo(1);
+    assertThat(statistics.getLong(evictorJobsStartedId)).isEqualTo(1);
   }
 
   /**
@@ -898,7 +900,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void evictorJobsStartedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(evictorJobsStartedId, Integer.MAX_VALUE);
+    statistics.incLong(evictorJobsStartedId, Long.MAX_VALUE);
 
     cachePerfStats.incEvictorJobsStarted();
 
@@ -907,16 +909,16 @@ public class CachePerfStatsTest {
 
   @Test
   public void getEvictorJobsCompletedChangesDelegatesToStatistics() {
-    statistics.incInt(evictorJobsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(evictorJobsCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getEvictorJobsCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getEvictorJobsCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
   public void incEvictorJobsCompletedIncrementsEvictorJobsCompleted() {
     cachePerfStats.incEvictorJobsCompleted();
 
-    assertThat(statistics.getInt(evictorJobsCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(evictorJobsCompletedId)).isEqualTo(1);
   }
 
   /**
@@ -925,7 +927,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void evictorJobsCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(evictorJobsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(evictorJobsCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.incEvictorJobsCompleted();
 
@@ -934,9 +936,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getIndexUpdateCompletedChangesDelegatesToStatistics() {
-    statistics.incInt(indexUpdateCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(indexUpdateCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getIndexUpdateCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getIndexUpdateCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -947,7 +949,7 @@ public class CachePerfStatsTest {
   public void endIndexUpdateIncrementsEvictorJobsCompleted() {
     cachePerfStats.endIndexUpdate(1);
 
-    assertThat(statistics.getInt(indexUpdateCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(indexUpdateCompletedId)).isEqualTo(1);
   }
 
   /**
@@ -956,7 +958,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void indexUpdateCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(indexUpdateCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(indexUpdateCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.endIndexUpdate(1);
 
@@ -965,9 +967,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getDeltaUpdatesDelegatesToStatistics() {
-    statistics.incInt(deltaUpdatesId, Integer.MAX_VALUE);
+    statistics.incLong(deltaUpdatesId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getDeltaUpdates()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getDeltaUpdates()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -978,7 +980,7 @@ public class CachePerfStatsTest {
   public void endDeltaUpdateIncrementsDeltaUpdates() {
     cachePerfStats.endDeltaUpdate(1);
 
-    assertThat(statistics.getInt(deltaUpdatesId)).isEqualTo(1);
+    assertThat(statistics.getLong(deltaUpdatesId)).isEqualTo(1);
   }
 
   /**
@@ -987,7 +989,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void deltaUpdatesWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(deltaUpdatesId, Integer.MAX_VALUE);
+    statistics.incLong(deltaUpdatesId, Long.MAX_VALUE);
 
     cachePerfStats.endDeltaUpdate(1);
 
@@ -996,16 +998,16 @@ public class CachePerfStatsTest {
 
   @Test
   public void getDeltaFailedUpdatesDelegatesToStatistics() {
-    statistics.incInt(deltaFailedUpdatesId, Integer.MAX_VALUE);
+    statistics.incLong(deltaFailedUpdatesId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getDeltaFailedUpdates()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getDeltaFailedUpdates()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
   public void incDeltaFailedUpdatesIncrementsDeltaFailedUpdates() {
     cachePerfStats.incDeltaFailedUpdates();
 
-    assertThat(statistics.getInt(deltaFailedUpdatesId)).isEqualTo(1);
+    assertThat(statistics.getLong(deltaFailedUpdatesId)).isEqualTo(1);
   }
 
   /**
@@ -1014,7 +1016,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void deltaFailedUpdatesWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(deltaFailedUpdatesId, Integer.MAX_VALUE);
+    statistics.incLong(deltaFailedUpdatesId, Long.MAX_VALUE);
 
     cachePerfStats.incDeltaFailedUpdates();
 
@@ -1023,9 +1025,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getDeltasPreparedUpdatesDelegatesToStatistics() {
-    statistics.incInt(deltasPreparedId, Integer.MAX_VALUE);
+    statistics.incLong(deltasPreparedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getDeltasPrepared()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getDeltasPrepared()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -1036,7 +1038,7 @@ public class CachePerfStatsTest {
   public void endDeltaPreparedIncrementsDeltasPrepared() {
     cachePerfStats.endDeltaPrepared(1);
 
-    assertThat(statistics.getInt(deltasPreparedId)).isEqualTo(1);
+    assertThat(statistics.getLong(deltasPreparedId)).isEqualTo(1);
   }
 
   /**
@@ -1045,7 +1047,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void deltasPreparedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(deltasPreparedId, Integer.MAX_VALUE);
+    statistics.incLong(deltasPreparedId, Long.MAX_VALUE);
 
     cachePerfStats.endDeltaPrepared(1);
 
@@ -1054,16 +1056,16 @@ public class CachePerfStatsTest {
 
   @Test
   public void getDeltasSentDelegatesToStatistics() {
-    statistics.incInt(deltasSentId, Integer.MAX_VALUE);
+    statistics.incLong(deltasSentId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getDeltasSent()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getDeltasSent()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
   public void incDeltasSentPreparedIncrementsDeltasSent() {
     cachePerfStats.incDeltasSent();
 
-    assertThat(statistics.getInt(deltasSentId)).isEqualTo(1);
+    assertThat(statistics.getLong(deltasSentId)).isEqualTo(1);
   }
 
   /**
@@ -1071,7 +1073,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void deltasSentWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(deltasSentId, Integer.MAX_VALUE);
+    statistics.incLong(deltasSentId, Long.MAX_VALUE);
 
     cachePerfStats.incDeltasSent();
 
@@ -1080,16 +1082,16 @@ public class CachePerfStatsTest {
 
   @Test
   public void getDeltaFullValuesSentDelegatesToStatistics() {
-    statistics.incInt(deltaFullValuesSentId, Integer.MAX_VALUE);
+    statistics.incLong(deltaFullValuesSentId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getDeltaFullValuesSent()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getDeltaFullValuesSent()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
   public void incDeltaFullValuesSentIncrementsDeltaFullValuesSent() {
     cachePerfStats.incDeltaFullValuesSent();
 
-    assertThat(statistics.getInt(deltaFullValuesSentId)).isEqualTo(1);
+    assertThat(statistics.getLong(deltaFullValuesSentId)).isEqualTo(1);
   }
 
   /**
@@ -1098,7 +1100,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void deltaFullValuesSentWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(deltaFullValuesSentId, Integer.MAX_VALUE);
+    statistics.incLong(deltaFullValuesSentId, Long.MAX_VALUE);
 
     cachePerfStats.incDeltaFullValuesSent();
 
@@ -1107,16 +1109,16 @@ public class CachePerfStatsTest {
 
   @Test
   public void getDeltaFullValuesRequestedDelegatesToStatistics() {
-    statistics.incInt(deltaFullValuesRequestedId, Integer.MAX_VALUE);
+    statistics.incLong(deltaFullValuesRequestedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getDeltaFullValuesRequested()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getDeltaFullValuesRequested()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
   public void incDeltaFullValuesRequestedIncrementsDeltaFullValuesRequested() {
     cachePerfStats.incDeltaFullValuesRequested();
 
-    assertThat(statistics.getInt(deltaFullValuesRequestedId)).isEqualTo(1);
+    assertThat(statistics.getLong(deltaFullValuesRequestedId)).isEqualTo(1);
   }
 
   /**
@@ -1125,7 +1127,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void deltaFullValuesRequestedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(deltaFullValuesRequestedId, Integer.MAX_VALUE);
+    statistics.incLong(deltaFullValuesRequestedId, Long.MAX_VALUE);
 
     cachePerfStats.incDeltaFullValuesRequested();
 

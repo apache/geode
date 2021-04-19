@@ -63,7 +63,7 @@ public class NioPlainEngineTest {
     int requestedCapacity = 210;
     ByteBuffer result = nioEngine.ensureWrappedCapacity(requestedCapacity, wrappedBuffer,
         BufferPool.BufferType.TRACKED_RECEIVER);
-    verify(mockStats, times(2)).incReceiverBufferSize(any(Integer.class), any(Boolean.class));
+    verify(mockStats, times(2)).incReceiverBufferSize(any(Long.class), any(Boolean.class));
     assertThat(result.capacity()).isGreaterThanOrEqualTo(requestedCapacity);
     assertThat(result).isGreaterThanOrEqualTo(wrappedBuffer);
     // make sure that data was transferred to the new buffer

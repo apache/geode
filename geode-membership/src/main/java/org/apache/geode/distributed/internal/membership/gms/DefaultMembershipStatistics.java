@@ -102,22 +102,22 @@ public class DefaultMembershipStatistics implements MembershipStatistics {
   }
 
   @Override
-  public void incUcastWriteBytes(final int bytesWritten) {
+  public void incUcastWriteBytes(final long bytesWritten) {
     ucastWriteBytes++;
   }
 
   @Override
-  public void incUcastReadBytes(final int amount) {
+  public void incUcastReadBytes(final long amount) {
     ucastReadBytes++;
   }
 
   @Override
-  public void incMcastWriteBytes(final int bytesWritten) {
+  public void incMcastWriteBytes(final long bytesWritten) {
     mcastWriteBytes++;
   }
 
   @Override
-  public void incMcastReadBytes(final int amount) {
+  public void incMcastReadBytes(final long amount) {
     mcastReadBytes++;
   }
 

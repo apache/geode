@@ -19,6 +19,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.PartitionedRegionStats.regionClearLocalDurationId;
+import static org.apache.geode.internal.cache.PartitionedRegionStats.regionClearTotalDurationId;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -476,5 +479,28 @@ public class PartitionedRegionStatsJUnitTest {
     }
 
     return bytes;
+  }
+
+  @Test
+  public void incPartitionedRegionClearLocalDurationIncrementsPartitionedRegionClearLocalDuration() {
+    String regionname = "testStats";
+    int localMaxMemory = 100;
+    PartitionedRegion pr = createPR(regionname + 1, localMaxMemory, 0);
+    PartitionedRegionStats partitionedRegionStats = pr.getPrStats();
+    partitionedRegionStats.incPartitionedRegionClearLocalDuration(100L);
+    assertThat(partitionedRegionStats.getStats().getLong(regionClearLocalDurationId))
+        .isEqualTo(100L);
+  }
+
+  @Test
+  public void incPartitionedRegionClearTotalDurationIncrementsPartitionedRegionClearTotalDuration() {
+    String regionname = "testStats";
+    int localMaxMemory = 100;
+    PartitionedRegion pr = createPR(regionname + 1, localMaxMemory, 0);
+    PartitionedRegionStats partitionedRegionStats = pr.getPrStats();
+    partitionedRegionStats.incPartitionedRegionClearTotalDuration(100L);
+
+    assertThat(partitionedRegionStats.getStats().getLong(regionClearTotalDurationId))
+        .isEqualTo(100L);
   }
 }

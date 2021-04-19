@@ -433,18 +433,18 @@ public class DLockStats implements DistributedLockStats {
 
   // time for call to lock() to complete
   @Override
-  public int getLockWaitsInProgress() {
-    return stats.getInt(lockWaitsInProgressId);
+  public long getLockWaitsInProgress() {
+    return stats.getLong(lockWaitsInProgressId);
   }
 
   @Override
-  public int getLockWaitsCompleted() {
-    return stats.getInt(lockWaitsCompletedId);
+  public long getLockWaitsCompleted() {
+    return stats.getLong(lockWaitsCompletedId);
   }
 
   @Override
-  public int getLockWaitsFailed() {
-    return stats.getInt(lockWaitsFailedId);
+  public long getLockWaitsFailed() {
+    return stats.getLong(lockWaitsFailedId);
   }
 
   @Override
@@ -459,21 +459,21 @@ public class DLockStats implements DistributedLockStats {
 
   @Override
   public long startLockWait() {
-    stats.incInt(lockWaitsInProgressId, 1);
+    stats.incLong(lockWaitsInProgressId, 1);
     return getTime();
   }
 
   @Override
   public void endLockWait(long start, boolean success) {
     long ts = getTime();
-    stats.incInt(lockWaitsInProgressId, -1);
+    stats.incLong(lockWaitsInProgressId, -1);
     if (success) {
-      stats.incInt(lockWaitsCompletedId, 1);
+      stats.incLong(lockWaitsCompletedId, 1);
       if (DistributionStats.enableClockStats) {
         stats.incLong(lockWaitTimeId, ts - start);
       }
     } else {
-      stats.incInt(lockWaitsFailedId, 1);
+      stats.incLong(lockWaitsFailedId, 1);
       if (DistributionStats.enableClockStats) {
         stats.incLong(lockWaitFailedTimeId, ts - start);
       }
@@ -482,125 +482,125 @@ public class DLockStats implements DistributedLockStats {
 
   // incSerialQueueSize everytime getWaitingQueueHelper add/remove called
   @Override
-  public int getWaitingQueueSize() {
-    return this.stats.getInt(waitingQueueSizeId);
+  public long getWaitingQueueSize() {
+    return this.stats.getLong(waitingQueueSizeId);
   }
 
   @Override
-  public void incWaitingQueueSize(int messages) { // TODO: prolly no callers
-    this.stats.incInt(waitingQueueSizeId, messages);
+  public void incWaitingQueueSize(long messages) { // TODO: prolly no callers
+    this.stats.incLong(waitingQueueSizeId, messages);
   }
 
   // incSerialQueueSize everytime getSerialQueueHelper add/remove called
   @Override
-  public int getSerialQueueSize() {
-    return this.stats.getInt(serialQueueSizeId);
+  public long getSerialQueueSize() {
+    return this.stats.getLong(serialQueueSizeId);
   }
 
   @Override
-  public void incSerialQueueSize(int messages) { // TODO: prolly no callers
-    this.stats.incInt(serialQueueSizeId, messages);
+  public void incSerialQueueSize(long messages) { // TODO: prolly no callers
+    this.stats.incLong(serialQueueSizeId, messages);
   }
 
   // incNumSerialThreads everytime we execute with dlock getSerialExecutor()
   @Override
-  public int getNumSerialThreads() {
-    return this.stats.getInt(serialThreadsId);
+  public long getNumSerialThreads() {
+    return this.stats.getLong(serialThreadsId);
   }
 
   @Override
-  public void incNumSerialThreads(int threads) { // TODO: no callers!
-    this.stats.incInt(serialThreadsId, threads);
+  public void incNumSerialThreads(long threads) { // TODO: no callers!
+    this.stats.incLong(serialThreadsId, threads);
   }
 
   // incWaitingThreads for every invoke of getWaitingPoolHelper startJob/endJob
   @Override
-  public int getWaitingThreads() {
-    return this.stats.getInt(waitingThreadsId);
+  public long getWaitingThreads() {
+    return this.stats.getLong(waitingThreadsId);
   }
 
   @Override
-  public void incWaitingThreads(int threads) { // TODO: prolly no callers
-    this.stats.incInt(waitingThreadsId, threads);
+  public void incWaitingThreads(long threads) { // TODO: prolly no callers
+    this.stats.incLong(waitingThreadsId, threads);
   }
 
   // current number of lock services used by this system member
   @Override
-  public int getServices() {
-    return this.stats.getInt(servicesId);
+  public long getServices() {
+    return this.stats.getLong(servicesId);
   }
 
   @Override
-  public void incServices(int val) {
-    this.stats.incInt(servicesId, val);
+  public void incServices(long val) {
+    this.stats.incLong(servicesId, val);
   }
 
   // current number of lock grantors hosted by this system member
   @Override
-  public int getGrantors() {
-    return this.stats.getInt(grantorsId);
+  public long getGrantors() {
+    return this.stats.getLong(grantorsId);
   }
 
   @Override
-  public void incGrantors(int val) {
-    this.stats.incInt(grantorsId, val);
+  public void incGrantors(long val) {
+    this.stats.incLong(grantorsId, val);
   }
 
   // current number of lock tokens used by this system member
   @Override
-  public int getTokens() {
-    return this.stats.getInt(tokensId);
+  public long getTokens() {
+    return this.stats.getLong(tokensId);
   }
 
   @Override
-  public void incTokens(int val) {
-    this.stats.incInt(tokensId, val);
+  public void incTokens(long val) {
+    this.stats.incLong(tokensId, val);
   }
 
   // current number of grant tokens used by local grantors
   @Override
-  public int getGrantTokens() {
-    return this.stats.getInt(grantTokensId);
+  public long getGrantTokens() {
+    return this.stats.getLong(grantTokensId);
   }
 
   @Override
-  public void incGrantTokens(int val) {
-    this.stats.incInt(grantTokensId, val);
+  public void incGrantTokens(long val) {
+    this.stats.incLong(grantTokensId, val);
   }
 
   // current number of lock request queues used by this system member
   @Override
-  public int getRequestQueues() {
-    return this.stats.getInt(requestQueuesId);
+  public long getRequestQueues() {
+    return this.stats.getLong(requestQueuesId);
   }
 
   @Override
-  public void incRequestQueues(int val) {
-    this.stats.incInt(requestQueuesId, val);
+  public void incRequestQueues(long val) {
+    this.stats.incLong(requestQueuesId, val);
   }
 
   // time for granting of lock requests to complete
   @Override
-  public int getGrantWaitsInProgress() {
-    return stats.getInt(grantWaitsInProgressId);
+  public long getGrantWaitsInProgress() {
+    return stats.getLong(grantWaitsInProgressId);
   }
 
   @Override
-  public int getGrantWaitsCompleted() {
-    return stats.getInt(grantWaitsCompletedId);
+  public long getGrantWaitsCompleted() {
+    return stats.getLong(grantWaitsCompletedId);
   }
 
   @Override
-  public int getGrantWaitsFailed() {
-    return stats.getInt(grantWaitsFailedId);
+  public long getGrantWaitsFailed() {
+    return stats.getLong(grantWaitsFailedId);
   }
 
-  public int getGrantWaitsSuspended() {
-    return stats.getInt(grantWaitsSuspendedId);
+  public long getGrantWaitsSuspended() {
+    return stats.getLong(grantWaitsSuspendedId);
   }
 
-  public int getGrantWaitsDestroyed() {
-    return stats.getInt(grantWaitsDestroyedId);
+  public long getGrantWaitsDestroyed() {
+    return stats.getLong(grantWaitsDestroyedId);
   }
 
   @Override
@@ -615,15 +615,15 @@ public class DLockStats implements DistributedLockStats {
 
   @Override
   public long startGrantWait() {
-    stats.incInt(grantWaitsInProgressId, 1);
+    stats.incLong(grantWaitsInProgressId, 1);
     return getTime();
   }
 
   @Override
   public void endGrantWait(long start) {
     long ts = getTime();
-    stats.incInt(grantWaitsInProgressId, -1);
-    stats.incInt(grantWaitsCompletedId, 1);
+    stats.incLong(grantWaitsInProgressId, -1);
+    stats.incLong(grantWaitsCompletedId, 1);
     if (DistributionStats.enableClockStats) {
       stats.incLong(grantWaitTimeId, ts - start);
     }
@@ -632,8 +632,8 @@ public class DLockStats implements DistributedLockStats {
   @Override
   public void endGrantWaitNotGrantor(long start) {
     long ts = getTime();
-    stats.incInt(grantWaitsInProgressId, -1);
-    stats.incInt(grantWaitsNotGrantorId, 1);
+    stats.incLong(grantWaitsInProgressId, -1);
+    stats.incLong(grantWaitsNotGrantorId, 1);
     if (DistributionStats.enableClockStats) {
       stats.incLong(grantWaitNotGrantorTimeId, ts - start);
     }
@@ -642,8 +642,8 @@ public class DLockStats implements DistributedLockStats {
   @Override
   public void endGrantWaitTimeout(long start) {
     long ts = getTime();
-    stats.incInt(grantWaitsInProgressId, -1);
-    stats.incInt(grantWaitsTimeoutId, 1);
+    stats.incLong(grantWaitsInProgressId, -1);
+    stats.incLong(grantWaitsTimeoutId, 1);
     if (DistributionStats.enableClockStats) {
       stats.incLong(grantWaitTimeoutTimeId, ts - start);
     }
@@ -652,8 +652,8 @@ public class DLockStats implements DistributedLockStats {
   @Override
   public void endGrantWaitNotHolder(long start) {
     long ts = getTime();
-    stats.incInt(grantWaitsInProgressId, -1);
-    stats.incInt(grantWaitsNotHolderId, 1);
+    stats.incLong(grantWaitsInProgressId, -1);
+    stats.incLong(grantWaitsNotHolderId, 1);
     if (DistributionStats.enableClockStats) {
       stats.incLong(grantWaitNotHolderTimeId, ts - start);
     }
@@ -662,8 +662,8 @@ public class DLockStats implements DistributedLockStats {
   @Override
   public void endGrantWaitFailed(long start) {
     long ts = getTime();
-    stats.incInt(grantWaitsInProgressId, -1);
-    stats.incInt(grantWaitsFailedId, 1);
+    stats.incLong(grantWaitsInProgressId, -1);
+    stats.incLong(grantWaitsFailedId, 1);
     if (DistributionStats.enableClockStats) {
       stats.incLong(grantWaitFailedTimeId, ts - start);
     }
@@ -672,8 +672,8 @@ public class DLockStats implements DistributedLockStats {
   @Override
   public void endGrantWaitSuspended(long start) {
     long ts = getTime();
-    stats.incInt(grantWaitsInProgressId, -1);
-    stats.incInt(grantWaitsSuspendedId, 1);
+    stats.incLong(grantWaitsInProgressId, -1);
+    stats.incLong(grantWaitsSuspendedId, 1);
     if (DistributionStats.enableClockStats) {
       stats.incLong(grantWaitSuspendedTimeId, ts - start);
     }
@@ -682,8 +682,8 @@ public class DLockStats implements DistributedLockStats {
   @Override
   public void endGrantWaitDestroyed(long start) {
     long ts = getTime();
-    stats.incInt(grantWaitsInProgressId, -1);
-    stats.incInt(grantWaitsDestroyedId, 1);
+    stats.incLong(grantWaitsInProgressId, -1);
+    stats.incLong(grantWaitsDestroyedId, 1);
     if (DistributionStats.enableClockStats) {
       stats.incLong(grantWaitDestroyedTimeId, ts - start);
     }
@@ -691,13 +691,13 @@ public class DLockStats implements DistributedLockStats {
 
   // time for creating initial grantor for lock service
   @Override
-  public int getCreateGrantorsInProgress() {
-    return stats.getInt(createGrantorsInProgressId);
+  public long getCreateGrantorsInProgress() {
+    return stats.getLong(createGrantorsInProgressId);
   }
 
   @Override
-  public int getCreateGrantorsCompleted() {
-    return stats.getInt(createGrantorsCompletedId);
+  public long getCreateGrantorsCompleted() {
+    return stats.getLong(createGrantorsCompletedId);
   }
 
   @Override
@@ -707,15 +707,15 @@ public class DLockStats implements DistributedLockStats {
 
   @Override
   public long startCreateGrantor() { // TODO: no callers!
-    stats.incInt(createGrantorsInProgressId, 1);
+    stats.incLong(createGrantorsInProgressId, 1);
     return getTime();
   }
 
   @Override
   public void endCreateGrantor(long start) {
     long ts = getTime();
-    stats.incInt(createGrantorsInProgressId, -1);
-    stats.incInt(createGrantorsCompletedId, 1);
+    stats.incLong(createGrantorsInProgressId, -1);
+    stats.incLong(createGrantorsCompletedId, 1);
     if (DistributionStats.enableClockStats) {
       stats.incLong(createGrantorTimeId, ts - start);
     }
@@ -723,18 +723,18 @@ public class DLockStats implements DistributedLockStats {
 
   // time for creating each lock service
   @Override
-  public int getServiceCreatesInProgress() {
-    return stats.getInt(serviceCreatesInProgressId);
+  public long getServiceCreatesInProgress() {
+    return stats.getLong(serviceCreatesInProgressId);
   }
 
   @Override
-  public int getServiceCreatesCompleted() {
-    return stats.getInt(serviceCreatesCompletedId);
+  public long getServiceCreatesCompleted() {
+    return stats.getLong(serviceCreatesCompletedId);
   }
 
   @Override
   public long startServiceCreate() { // TODO: no callers!
-    stats.incInt(serviceCreatesInProgressId, 1);
+    stats.incLong(serviceCreatesInProgressId, 1);
     return getTime();
   }
 
@@ -749,8 +749,8 @@ public class DLockStats implements DistributedLockStats {
   @Override
   public void serviceInitLatchReleased(long start) {
     long ts = getTime();
-    stats.incInt(serviceCreatesInProgressId, -1);
-    stats.incInt(serviceCreatesCompletedId, 1);
+    stats.incLong(serviceCreatesInProgressId, -1);
+    stats.incLong(serviceCreatesCompletedId, 1);
     if (DistributionStats.enableClockStats) {
       stats.incLong(serviceInitLatchTimeId, ts - start);
     }
@@ -768,18 +768,18 @@ public class DLockStats implements DistributedLockStats {
 
   // time spent waiting grantor latches
   @Override
-  public int getGrantorWaitsInProgress() {
-    return stats.getInt(grantorWaitsInProgressId);
+  public long getGrantorWaitsInProgress() {
+    return stats.getLong(grantorWaitsInProgressId);
   }
 
   @Override
-  public int getGrantorWaitsCompleted() {
-    return stats.getInt(grantorWaitsCompletedId);
+  public long getGrantorWaitsCompleted() {
+    return stats.getLong(grantorWaitsCompletedId);
   }
 
   @Override
-  public int getGrantorWaitsFailed() {
-    return stats.getInt(grantorWaitsFailedId);
+  public long getGrantorWaitsFailed() {
+    return stats.getLong(grantorWaitsFailedId);
   }
 
   @Override
@@ -794,21 +794,21 @@ public class DLockStats implements DistributedLockStats {
 
   @Override
   public long startGrantorWait() {
-    stats.incInt(grantorWaitsInProgressId, 1);
+    stats.incLong(grantorWaitsInProgressId, 1);
     return getTime();
   }
 
   @Override
   public void endGrantorWait(long start, boolean success) {
     long ts = getTime();
-    stats.incInt(grantorWaitsInProgressId, -1);
+    stats.incLong(grantorWaitsInProgressId, -1);
     if (success) {
-      stats.incInt(grantorWaitsCompletedId, 1);
+      stats.incLong(grantorWaitsCompletedId, 1);
       if (DistributionStats.enableClockStats) {
         stats.incLong(grantorWaitTimeId, ts - start);
       }
     } else {
-      stats.incInt(grantorWaitsFailedId, 1);
+      stats.incLong(grantorWaitsFailedId, 1);
       if (DistributionStats.enableClockStats) {
         stats.incLong(grantorWaitFailedTimeId, ts - start);
       }
@@ -817,13 +817,13 @@ public class DLockStats implements DistributedLockStats {
 
   // time spent by grantor threads
   @Override
-  public int getGrantorThreadsInProgress() {
-    return stats.getInt(grantorThreadsInProgressId);
+  public long getGrantorThreadsInProgress() {
+    return stats.getLong(grantorThreadsInProgressId);
   }
 
   @Override
-  public int getGrantorThreadsCompleted() {
-    return stats.getInt(grantorThreadsCompletedId);
+  public long getGrantorThreadsCompleted() {
+    return stats.getLong(grantorThreadsCompletedId);
   }
 
   @Override
@@ -848,7 +848,7 @@ public class DLockStats implements DistributedLockStats {
 
   @Override
   public long startGrantorThread() {
-    stats.incInt(grantorThreadsInProgressId, 1);
+    stats.incLong(grantorThreadsInProgressId, 1);
     return getTime();
   }
 
@@ -875,8 +875,8 @@ public class DLockStats implements DistributedLockStats {
   @Override
   public void endGrantorThread(long start) {
     long ts = getTime();
-    stats.incInt(grantorThreadsInProgressId, -1);
-    stats.incInt(grantorThreadsCompletedId, 1);
+    stats.incLong(grantorThreadsInProgressId, -1);
+    stats.incLong(grantorThreadsCompletedId, 1);
     if (DistributionStats.enableClockStats) {
       stats.incLong(grantorThreadTimeId, ts - start);
     }
@@ -884,29 +884,29 @@ public class DLockStats implements DistributedLockStats {
 
   // current number of requests waiting in lock grantor queues
   @Override
-  public int getPendingRequests() {
-    return this.stats.getInt(pendingRequestsId);
+  public long getPendingRequests() {
+    return this.stats.getLong(pendingRequestsId);
   }
 
   @Override
-  public void incPendingRequests(int val) {
-    this.stats.incInt(pendingRequestsId, val);
+  public void incPendingRequests(long val) {
+    this.stats.incLong(pendingRequestsId, val);
   }
 
   // acquisition of destroyReadLock in DLockService
   @Override
-  public int getDestroyReadWaitsInProgress() {
-    return stats.getInt(destroyReadWaitsInProgressId);
+  public long getDestroyReadWaitsInProgress() {
+    return stats.getLong(destroyReadWaitsInProgressId);
   }
 
   @Override
-  public int getDestroyReadWaitsCompleted() {
-    return stats.getInt(destroyReadWaitsCompletedId);
+  public long getDestroyReadWaitsCompleted() {
+    return stats.getLong(destroyReadWaitsCompletedId);
   }
 
   @Override
-  public int getDestroyReadWaitsFailed() {
-    return stats.getInt(destroyReadWaitsFailedId);
+  public long getDestroyReadWaitsFailed() {
+    return stats.getLong(destroyReadWaitsFailedId);
   }
 
   @Override
@@ -921,21 +921,21 @@ public class DLockStats implements DistributedLockStats {
 
   @Override
   public long startDestroyReadWait() { // TODO: no callers!
-    stats.incInt(destroyReadWaitsInProgressId, 1);
+    stats.incLong(destroyReadWaitsInProgressId, 1);
     return getTime();
   }
 
   @Override
   public void endDestroyReadWait(long start, boolean success) {
     long ts = getTime();
-    stats.incInt(destroyReadWaitsInProgressId, -1);
+    stats.incLong(destroyReadWaitsInProgressId, -1);
     if (success) {
-      stats.incInt(destroyReadWaitsCompletedId, 1);
+      stats.incLong(destroyReadWaitsCompletedId, 1);
       if (DistributionStats.enableClockStats) {
         stats.incLong(destroyReadWaitTimeId, ts - start);
       }
     } else {
-      stats.incInt(destroyReadWaitsFailedId, 1);
+      stats.incLong(destroyReadWaitsFailedId, 1);
       if (DistributionStats.enableClockStats) {
         stats.incLong(destroyReadWaitFailedTimeId, ts - start);
       }
@@ -944,18 +944,18 @@ public class DLockStats implements DistributedLockStats {
 
   // acquisition of destroyWriteLock in DLockService
   @Override
-  public int getDestroyWriteWaitsInProgress() {
-    return stats.getInt(destroyWriteWaitsInProgressId);
+  public long getDestroyWriteWaitsInProgress() {
+    return stats.getLong(destroyWriteWaitsInProgressId);
   }
 
   @Override
-  public int getDestroyWriteWaitsCompleted() {
-    return stats.getInt(destroyWriteWaitsCompletedId);
+  public long getDestroyWriteWaitsCompleted() {
+    return stats.getLong(destroyWriteWaitsCompletedId);
   }
 
   @Override
-  public int getDestroyWriteWaitsFailed() {
-    return stats.getInt(destroyWriteWaitsFailedId);
+  public long getDestroyWriteWaitsFailed() {
+    return stats.getLong(destroyWriteWaitsFailedId);
   }
 
   @Override
@@ -970,21 +970,21 @@ public class DLockStats implements DistributedLockStats {
 
   @Override
   public long startDestroyWriteWait() { // TODO: no callers!
-    stats.incInt(destroyWriteWaitsInProgressId, 1);
+    stats.incLong(destroyWriteWaitsInProgressId, 1);
     return getTime();
   }
 
   @Override
   public void endDestroyWriteWait(long start, boolean success) {
     long ts = getTime();
-    stats.incInt(destroyWriteWaitsInProgressId, -1);
+    stats.incLong(destroyWriteWaitsInProgressId, -1);
     if (success) {
-      stats.incInt(destroyWriteWaitsCompletedId, 1);
+      stats.incLong(destroyWriteWaitsCompletedId, 1);
       if (DistributionStats.enableClockStats) {
         stats.incLong(destroyWriteWaitTimeId, ts - start);
       }
     } else {
-      stats.incInt(destroyWriteWaitsFailedId, 1);
+      stats.incLong(destroyWriteWaitsFailedId, 1);
       if (DistributionStats.enableClockStats) {
         stats.incLong(destroyWriteWaitFailedTimeId, ts - start);
       }
@@ -993,35 +993,35 @@ public class DLockStats implements DistributedLockStats {
 
   // current number of DLockService destroy read locks held by this process
   @Override
-  public int getDestroyReads() {
-    return this.stats.getInt(destroyReadsId);
+  public long getDestroyReads() {
+    return this.stats.getLong(destroyReadsId);
   }
 
   @Override
-  public void incDestroyReads(int val) { // TODO: no callers!
-    this.stats.incInt(destroyReadsId, val);
+  public void incDestroyReads(long val) { // TODO: no callers!
+    this.stats.incLong(destroyReadsId, val);
   }
 
   // current number of DLockService destroy write locks held by this process
   @Override
-  public int getDestroyWrites() {
-    return this.stats.getInt(destroyWritesId);
+  public long getDestroyWrites() {
+    return this.stats.getLong(destroyWritesId);
   }
 
   @Override
-  public void incDestroyWrites(int val) { // TODO: no callers!
-    this.stats.incInt(destroyWritesId, val);
+  public void incDestroyWrites(long val) { // TODO: no callers!
+    this.stats.incLong(destroyWritesId, val);
   }
 
   // time for call to unlock() to complete
   @Override
-  public int getLockReleasesInProgress() {
-    return stats.getInt(lockReleasesInProgressId);
+  public long getLockReleasesInProgress() {
+    return stats.getLong(lockReleasesInProgressId);
   }
 
   @Override
-  public int getLockReleasesCompleted() {
-    return stats.getInt(lockReleasesCompletedId);
+  public long getLockReleasesCompleted() {
+    return stats.getLong(lockReleasesCompletedId);
   }
 
   @Override
@@ -1031,15 +1031,15 @@ public class DLockStats implements DistributedLockStats {
 
   @Override
   public long startLockRelease() {
-    stats.incInt(lockReleasesInProgressId, 1);
+    stats.incLong(lockReleasesInProgressId, 1);
     return getTime();
   }
 
   @Override
   public void endLockRelease(long start) {
     long ts = getTime();
-    stats.incInt(lockReleasesInProgressId, -1);
-    stats.incInt(lockReleasesCompletedId, 1);
+    stats.incLong(lockReleasesInProgressId, -1);
+    stats.incLong(lockReleasesCompletedId, 1);
     if (DistributionStats.enableClockStats) {
       stats.incLong(lockReleaseTimeId, ts - start);
     }
@@ -1047,33 +1047,33 @@ public class DLockStats implements DistributedLockStats {
 
   // total number of times this member has requested to become grantor
   @Override
-  public int getBecomeGrantorRequests() {
-    return this.stats.getInt(becomeGrantorRequestsId);
+  public long getBecomeGrantorRequests() {
+    return this.stats.getLong(becomeGrantorRequestsId);
   }
 
   @Override
   public void incBecomeGrantorRequests() {
-    this.stats.incInt(becomeGrantorRequestsId, 1);
+    this.stats.incLong(becomeGrantorRequestsId, 1);
   }
 
   @Override
-  public int getFreeResourcesCompleted() {
-    return this.stats.getInt(freeResourcesCompletedId);
+  public long getFreeResourcesCompleted() {
+    return this.stats.getLong(freeResourcesCompletedId);
   }
 
   @Override
   public void incFreeResourcesCompleted() {
-    this.stats.incInt(freeResourcesCompletedId, 1);
+    this.stats.incLong(freeResourcesCompletedId, 1);
   }
 
   @Override
-  public int getFreeResourcesFailed() {
-    return this.stats.getInt(freeResourcesFailedId);
+  public long getFreeResourcesFailed() {
+    return this.stats.getLong(freeResourcesFailedId);
   }
 
   @Override
   public void incFreeResourcesFailed() {
-    this.stats.incInt(freeResourcesFailedId, 1);
+    this.stats.incLong(freeResourcesFailedId, 1);
   }
 
   // -------------------------------------------------------------------------
@@ -1100,7 +1100,7 @@ public class DLockStats implements DistributedLockStats {
       }
 
       @Override
-      public void remove(int count) {
+      public void remove(long count) {
         incSerialQueueSize(-count);
       }
     };
@@ -1147,7 +1147,7 @@ public class DLockStats implements DistributedLockStats {
       }
 
       @Override
-      public void remove(int count) {
+      public void remove(long count) {
         incWaitingQueueSize(-count);
       }
     };
