@@ -142,7 +142,7 @@ public class ThrottlingMemLinkedQueueWithDMStats<E> extends OverflowQueueWithDMS
   }
 
   @Override
-  protected void postDrain(Collection c) {
+  protected void postDrain(Collection<? super E> c) {
     for (Object aC : c) {
       postRemove(aC);
     }

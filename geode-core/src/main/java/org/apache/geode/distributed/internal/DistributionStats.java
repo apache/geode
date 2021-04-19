@@ -1183,8 +1183,8 @@ public class DistributionStats implements DMStats {
     this.stats.incLong(waitingQueueSizeId, messages);
   }
 
-  protected void incOverflowQueueThrottleCount(long delays) {
-    this.stats.incLong(overflowQueueThrottleCountId, delays);
+  protected void incOverflowQueueThrottleCount() {
+    this.stats.incLong(overflowQueueThrottleCountId, 1);
   }
 
   protected void incOverflowQueueThrottleTime(long nanos) {
@@ -1197,8 +1197,8 @@ public class DistributionStats implements DMStats {
     this.stats.incLong(highPriorityQueueSizeId, messages);
   }
 
-  protected void incHighPriorityQueueThrottleCount(long delays) {
-    this.stats.incLong(highPriorityQueueThrottleCountId, delays);
+  protected void incHighPriorityQueueThrottleCount() {
+    this.stats.incLong(highPriorityQueueThrottleCountId, 1);
   }
 
   protected void incHighPriorityQueueThrottleTime(long nanos) {
@@ -1211,8 +1211,8 @@ public class DistributionStats implements DMStats {
     this.stats.incLong(partitionedRegionQueueSizeId, messages);
   }
 
-  protected void incPartitionedRegionQueueThrottleCount(long delays) {
-    this.stats.incLong(partitionedRegionQueueThrottleCountId, delays);
+  protected void incPartitionedRegionQueueThrottleCount() {
+    this.stats.incLong(partitionedRegionQueueThrottleCountId, 1);
   }
 
   protected void incPartitionedRegionQueueThrottleTime(long nanos) {
@@ -1225,8 +1225,8 @@ public class DistributionStats implements DMStats {
     this.stats.incLong(functionExecutionQueueSizeId, messages);
   }
 
-  protected void incFunctionExecutionQueueThrottleCount(long delays) {
-    this.stats.incLong(functionExecutionQueueThrottleCountId, delays);
+  protected void incFunctionExecutionQueueThrottleCount() {
+    this.stats.incLong(functionExecutionQueueThrottleCountId, 1);
   }
 
   protected void incFunctionExecutionQueueThrottleTime(long nanos) {
@@ -1252,8 +1252,8 @@ public class DistributionStats implements DMStats {
     this.stats.incLong(serialPooledThreadId, 1);
   }
 
-  protected void incSerialQueueThrottleCount(long delays) {
-    this.stats.incLong(serialQueueThrottleCountId, delays);
+  protected void incSerialQueueThrottleCount() {
+    this.stats.incLong(serialQueueThrottleCountId, 1);
   }
 
   protected void incSerialQueueThrottleTime(long nanos) {
@@ -1907,7 +1907,7 @@ public class DistributionStats implements DMStats {
     return new ThrottledQueueStatHelper() {
       @Override
       public void incThrottleCount() {
-        incOverflowQueueThrottleCount(1);
+        incOverflowQueueThrottleCount();
       }
 
       @Override
@@ -1967,7 +1967,7 @@ public class DistributionStats implements DMStats {
     return new ThrottledQueueStatHelper() {
       @Override
       public void incThrottleCount() {
-        incHighPriorityQueueThrottleCount(1);
+        incHighPriorityQueueThrottleCount();
       }
 
       @Override
@@ -2002,7 +2002,7 @@ public class DistributionStats implements DMStats {
     return new ThrottledQueueStatHelper() {
       @Override
       public void incThrottleCount() {
-        incPartitionedRegionQueueThrottleCount(1);
+        incPartitionedRegionQueueThrottleCount();
       }
 
       @Override
@@ -2057,7 +2057,7 @@ public class DistributionStats implements DMStats {
     return new ThrottledQueueStatHelper() {
       @Override
       public void incThrottleCount() {
-        incFunctionExecutionQueueThrottleCount(1);
+        incFunctionExecutionQueueThrottleCount();
       }
 
       @Override
@@ -2112,7 +2112,7 @@ public class DistributionStats implements DMStats {
     return new ThrottledMemQueueStatHelper() {
       @Override
       public void incThrottleCount() {
-        incSerialQueueThrottleCount(1);
+        incSerialQueueThrottleCount();
       }
 
       @Override
