@@ -60,9 +60,10 @@ public class RedisHash extends AbstractRedisData {
 
   // these values are empirically derived using ReflectionObjectSizer, which provides an exact size
   // of the object. It can't be used directly because of its performance impact. These values cause
-  // the size we keep track of to converge to the actual size as it increases.
+  // the size we keep track of to converge to the actual size as the number of entries/instances
+  // increases.
   private static final int PER_BYTE_ARRAY_WRAPPER_OVERHEAD = PER_OBJECT_OVERHEAD + 46;
-  private static final int PER_HASH_OVERHEAD = PER_OBJECT_OVERHEAD + 116;
+  private static final int PER_HASH_OVERHEAD = PER_OBJECT_OVERHEAD + 324;
 
   private int hashSize = PER_HASH_OVERHEAD;
 
@@ -539,5 +540,10 @@ public class RedisHash extends AbstractRedisData {
   @VisibleForTesting
   protected static int getPerHashOverhead() {
     return PER_HASH_OVERHEAD;
+  }
+
+  @VisibleForTesting
+  protected HashMap<ByteArrayWrapper, ByteArrayWrapper> getHashMap() {
+    return hash;
   }
 }

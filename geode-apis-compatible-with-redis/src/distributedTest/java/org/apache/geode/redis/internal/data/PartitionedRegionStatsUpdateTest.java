@@ -462,7 +462,7 @@ public class PartitionedRegionStatsUpdateTest {
         new ByteArrayWrapper(baseValue.getBytes()));
     jedis1.hset(HASH_KEY, baseField, baseValue);
 
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 10_000; i++) {
       jedis1.hset(HASH_KEY, baseField + i, baseValue + i);
       values.put(new ByteArrayWrapper((baseField + i).getBytes()),
           new ByteArrayWrapper((baseValue + i).getBytes()));
