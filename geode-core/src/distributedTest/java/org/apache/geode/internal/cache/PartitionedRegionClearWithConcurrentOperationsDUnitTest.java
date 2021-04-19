@@ -72,8 +72,6 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
 
   private static final int BUCKETS = 13;
   private static final String REGION_NAME = "PartitionedRegion";
-  private static final String TEST_CASE_NAME =
-      "[{index}] {method}(Coordinator:{0}, RegionType:{1})";
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule(3);
@@ -84,37 +82,298 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
   private VM server2;
   private VM accessor;
 
-  @SuppressWarnings("unused")
-  static TestVM[] coordinators() {
-    return new TestVM[] {
-        TestVM.SERVER1, TestVM.ACCESSOR
-    };
-  }
-
-  @SuppressWarnings("unused")
-  static Object[] coordinatorsAndRegionTypes() {
-    List<Object[]> parameters = new ArrayList<>();
-    RegionShortcut[] regionShortcuts = regionTypes();
-
-    Arrays.stream(regionShortcuts).forEach(regionShortcut -> {
-      parameters.add(new Object[] {TestVM.SERVER1, regionShortcut});
-      parameters.add(new Object[] {TestVM.ACCESSOR, regionShortcut});
-    });
-
-    return parameters.toArray();
-  }
-
-  private static RegionShortcut[] regionTypes() {
-    return new RegionShortcut[] {
-        RegionShortcut.PARTITION, RegionShortcut.PARTITION_REDUNDANT
-    };
-  }
-
   @Before
   public void setUp() throws Exception {
     server1 = getVM(TestVM.SERVER1.vmNumber);
     server2 = getVM(TestVM.SERVER2.vmNumber);
     accessor = getVM(TestVM.ACCESSOR.vmNumber);
+  }
+
+  /**
+   * The test does the following (clear coordinator and regionType are parametrized):
+   * - Launches one thread per VM to continuously execute removes, puts and gets for a given time.
+   * - Clears the Partition Region continuously every X milliseconds for a given time.
+   * - Asserts that, after the clears have finished, the Region Buckets are consistent across
+   * members.
+   */
+  @Test
+  @Parameters({"SERVER1,PARTITION", "ACCESSOR,PARTITION",
+      "SERVER1,PARTITION_REDUNDANT", "ACCESSOR,PARTITION_REDUNDANT"})
+  @TestCaseName("[{index}] {method}(Coordinator:{0}, RegionType:{1})")
+  public void clearWithConcurrentPutGetRemoveShouldWorkCorrectly(TestVM coordinatorVM,
+      RegionShortcut regionShortcut) throws InterruptedException {
+    parametrizedSetup(regionShortcut);
+
+    // Let all VMs continuously execute puts and gets for 60 seconds.
+    final int workMillis = 60000;
+    final int entries = 15000;
+    List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
+        server1.invokeAsync(() -> executePuts(entries, workMillis)),
+        server2.invokeAsync(() -> executeGets(entries, workMillis)),
+        accessor.invokeAsync(() -> executeRemoves(entries, workMillis)));
+
+    // Clear the region every second for 60 seconds.
+    getVM(coordinatorVM.vmNumber).invoke(() -> executeClears(workMillis, 1000));
+
+    // Let asyncInvocations finish.
+    for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
+      asyncInvocation.await();
+    }
+
+    // Assert Region Buckets are consistent.
+    asList(accessor, server1, server2).forEach(vm -> vm.invoke(this::waitForSilence));
+    accessor.invoke(this::assertRegionBucketsConsistency);
+  }
+
+  /**
+   * The test does the following (clear coordinator and regionType are parametrized):
+   * - Launches two threads per VM to continuously execute putAll and removeAll for a given time.
+   * - Clears the Partition Region continuously every X milliseconds for a given time.
+   * - Asserts that, after the clears have finished, the Region Buckets are consistent across
+   * members.
+   */
+  @Test
+  @Parameters({"SERVER1,PARTITION", "ACCESSOR,PARTITION",
+      "SERVER1,PARTITION_REDUNDANT", "ACCESSOR,PARTITION_REDUNDANT"})
+  @TestCaseName("[{index}] {method}(Coordinator:{0}, RegionType:{1})")
+  public void clearWithConcurrentPutAllRemoveAllShouldWorkCorrectly(TestVM coordinatorVM,
+      RegionShortcut regionShortcut) throws InterruptedException {
+    parametrizedSetup(regionShortcut);
+
+    // Let all VMs continuously execute putAll and removeAll for 15 seconds.
+    final int workMillis = 15000;
+    List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
+        server1.invokeAsync(() -> executePutAlls(0, 2000, workMillis)),
+        server1.invokeAsync(() -> executeRemoveAlls(0, 2000, workMillis)),
+        server2.invokeAsync(() -> executePutAlls(2000, 4000, workMillis)),
+        server2.invokeAsync(() -> executeRemoveAlls(2000, 4000, workMillis)),
+        accessor.invokeAsync(() -> executePutAlls(4000, 6000, workMillis)),
+        accessor.invokeAsync(() -> executeRemoveAlls(4000, 6000, workMillis)));
+
+    // Clear the region every half second for 15 seconds.
+    getVM(coordinatorVM.vmNumber).invoke(() -> executeClears(workMillis, 500));
+
+    // Let asyncInvocations finish.
+    for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
+      asyncInvocation.await();
+    }
+
+    // Assert Region Buckets are consistent.
+    asList(accessor, server1, server2).forEach(vm -> vm.invoke(this::waitForSilence));
+    accessor.invoke(this::assertRegionBucketsConsistency);
+  }
+
+  /**
+   * The test does the following (regionType is parametrized):
+   * - Populates the Partition Region.
+   * - Verifies that the entries are synchronized on all members.
+   * - Sets the {@link MemberKiller} as a {@link DistributionMessageObserver} to stop the
+   * coordinator VM while the clear is in progress.
+   * - Clears the Partition Region (at this point the coordinator is restarted).
+   * - Asserts that, after the member joins again, the Region Buckets are consistent.
+   */
+  @Test
+  @Parameters({"PARTITION", "PARTITION_REDUNDANT"})
+  @TestCaseName("[{index}] {method}(RegionType:{0})")
+  public void clearShouldFailWhenCoordinatorMemberIsBounced(RegionShortcut regionShortcut) {
+    parametrizedSetup(regionShortcut);
+    final int entries = 1000;
+    populateRegion(accessor, entries, asList(accessor, server1, server2));
+
+    // Set the CoordinatorMemberKiller and try to clear the region
+    server1.invoke(() -> {
+      DistributionMessageObserver.setInstance(new MemberKiller(true));
+      Region<String, String> region = cacheRule.getCache().getRegion(REGION_NAME);
+      assertThatThrownBy(region::clear)
+          .isInstanceOf(DistributedSystemDisconnectedException.class)
+          .hasCauseInstanceOf(ForcedDisconnectException.class);
+    });
+
+    // Wait for member to get back online and assign all buckets.
+    server1.invoke(() -> {
+      cacheRule.createCache();
+      initDataStore(regionShortcut);
+      await().untilAsserted(
+          () -> assertThat(InternalDistributedSystem.getConnectedInstance()).isNotNull());
+      PartitionRegionHelper.assignBucketsToPartitions(cacheRule.getCache().getRegion(REGION_NAME));
+    });
+
+    // Assert Region Buckets are consistent.
+    asList(accessor, server1, server2).forEach(vm -> vm.invoke(this::waitForSilence));
+    accessor.invoke(this::assertRegionBucketsConsistency);
+  }
+
+  /**
+   * The test does the following (clear coordinator is chosen through parameters):
+   * - Populates the Partition Region.
+   * - Verifies that the entries are synchronized on all members.
+   * - Sets the {@link MemberKiller} as a {@link DistributionMessageObserver} to stop a
+   * non-coordinator VM while the clear is in progress (the member has primary buckets, though, so
+   * participates on the clear operation).
+   * - Launches two threads per VM to continuously execute gets, puts and removes for a given time.
+   * - Clears the Partition Region (at this point the non-coordinator is restarted).
+   * - Asserts that, after the clear has finished, the Region Buckets are consistent across members.
+   */
+  @Test
+  @Parameters({"SERVER1", "ACCESSOR"})
+  @TestCaseName("[{index}] {method}(Coordinator:{0})")
+  public void clearOnRedundantPartitionRegionWithConcurrentPutGetRemoveShouldWorkCorrectlyWhenNonCoordinatorMembersAreBounced(
+      TestVM coordinatorVM) throws InterruptedException {
+    parametrizedSetup(RegionShortcut.PARTITION_REDUNDANT);
+    final int entries = 7500;
+    populateRegion(accessor, entries, asList(accessor, server1, server2));
+    server2.invoke(() -> DistributionMessageObserver.setInstance(new MemberKiller(false)));
+
+    // Let all VMs (except the one to kill) continuously execute gets, put and removes for 30"
+    final int workMillis = 30000;
+    List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
+        server1.invokeAsync(() -> executeGets(entries, workMillis)),
+        server1.invokeAsync(() -> executePuts(entries, workMillis)),
+        accessor.invokeAsync(() -> executeGets(entries, workMillis)),
+        accessor.invokeAsync(() -> executeRemoves(entries, workMillis)));
+
+    // Retry the clear operation on the region until success (server2 will go down, but other
+    // members will eventually become primary for those buckets previously hosted by server2).
+    executeClearWithRetry(getVM(coordinatorVM.vmNumber));
+
+    // Wait for member to get back online.
+    server2.invoke(() -> {
+      cacheRule.createCache();
+      initDataStore(RegionShortcut.PARTITION_REDUNDANT);
+      await().untilAsserted(
+          () -> assertThat(InternalDistributedSystem.getConnectedInstance()).isNotNull());
+    });
+
+    // Let asyncInvocations finish.
+    for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
+      asyncInvocation.await();
+    }
+
+    // Assert Region Buckets are consistent.
+    asList(accessor, server1, server2).forEach(vm -> vm.invoke(this::waitForSilence));
+    accessor.invoke(this::assertRegionBucketsConsistency);
+  }
+
+  /**
+   * The test does the following (clear coordinator is chosen through parameters):
+   * - Populates the Partition Region.
+   * - Verifies that the entries are synchronized on all members.
+   * - Sets the {@link MemberKiller} as a {@link DistributionMessageObserver} to stop a
+   * non-coordinator VM while the clear is in progress (the member has primary buckets, though, so
+   * participates on the clear operation).
+   * - Launches two threads per VM to continuously execute gets, puts and removes for a given time.
+   * - Clears the Partition Region (at this point the non-coordinator is restarted).
+   * - Asserts that the clear operation failed with PartitionedRegionPartialClearException (primary
+   * buckets on the the restarted members are not available).
+   */
+  @Test
+  @Parameters({"SERVER1", "ACCESSOR"})
+  @TestCaseName("[{index}] {method}(Coordinator:{0})")
+  public void clearOnNonRedundantPartitionRegionWithConcurrentPutGetRemoveShouldFailWhenNonCoordinatorMembersAreBounced(
+      TestVM coordinatorVM) throws InterruptedException {
+    parametrizedSetup(RegionShortcut.PARTITION);
+    final int entries = 7500;
+    populateRegion(accessor, entries, asList(accessor, server1, server2));
+    server2.invoke(() -> DistributionMessageObserver.setInstance(new MemberKiller(false)));
+
+    // Let all VMs (except the one to kill) continuously execute gets, put and removes for 30"
+    final int workMillis = 30000;
+    List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
+        server1.invokeAsync(() -> executeGets(entries, workMillis)),
+        server1.invokeAsync(() -> executePuts(entries, workMillis)),
+        accessor.invokeAsync(() -> executeGets(entries, workMillis)),
+        accessor.invokeAsync(() -> executeRemoves(entries, workMillis)));
+
+    // Clear the region.
+    getVM(coordinatorVM.vmNumber).invoke(() -> {
+      assertThatThrownBy(() -> cacheRule.getCache().getRegion(REGION_NAME).clear())
+          .isInstanceOf(PartitionedRegionPartialClearException.class);
+    });
+
+    // Let asyncInvocations finish.
+    for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
+      asyncInvocation.await();
+    }
+  }
+
+  /**
+   * The test does the following (clear coordinator is chosen through parameters):
+   * - Sets the {@link MemberKiller} as a {@link DistributionMessageObserver} to stop a
+   * non-coordinator VM while the clear is in progress (the member has primary buckets, though, so
+   * participates on the clear operation).
+   * - Launches one thread per VM to continuously execute putAll/removeAll for a given time.
+   * - Clears the Partition Region (at this point the non-coordinator is restarted).
+   * - Asserts that, after the clear has finished, the Region Buckets are consistent across members.
+   */
+  @Test
+  @Parameters({"SERVER1", "ACCESSOR"})
+  @TestCaseName("[{index}] {method}(Coordinator:{0})")
+  public void clearOnRedundantPartitionRegionWithConcurrentPutAllRemoveAllShouldWorkCorrectlyWhenNonCoordinatorMembersAreBounced(
+      TestVM coordinatorVM) throws InterruptedException {
+    parametrizedSetup(RegionShortcut.PARTITION_REDUNDANT);
+    server2.invoke(() -> DistributionMessageObserver.setInstance(new MemberKiller(false)));
+
+    // Let all VMs continuously execute putAll/removeAll for 30 seconds.
+    final int workMillis = 30000;
+    List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
+        server1.invokeAsync(() -> executePutAlls(0, 6000, workMillis)),
+        accessor.invokeAsync(() -> executeRemoveAlls(2000, 4000, workMillis)));
+
+    // Retry the clear operation on the region until success (server2 will go down, but other
+    // members will eventually become primary for those buckets previously hosted by server2).
+    executeClearWithRetry(getVM(coordinatorVM.vmNumber));
+
+    // Wait for member to get back online.
+    server2.invoke(() -> {
+      cacheRule.createCache();
+      initDataStore(RegionShortcut.PARTITION_REDUNDANT);
+      await().untilAsserted(
+          () -> assertThat(InternalDistributedSystem.getConnectedInstance()).isNotNull());
+    });
+
+    // Let asyncInvocations finish.
+    for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
+      asyncInvocation.await();
+    }
+
+    // Assert Region Buckets are consistent.
+    asList(accessor, server1, server2).forEach(vm -> vm.invoke(this::waitForSilence));
+    accessor.invoke(this::assertRegionBucketsConsistency);
+  }
+
+  /**
+   * The test does the following (clear coordinator is chosen through parameters):
+   * - Sets the {@link MemberKiller} as a {@link DistributionMessageObserver} to stop a
+   * non-coordinator VM while the clear is in progress (the member has primary buckets, though, so
+   * participates on the clear operation).
+   * - Launches one thread per VM to continuously execute putAll/removeAll for a given time.
+   * - Clears the Partition Region (at this point the non-coordinator is restarted).
+   * - Asserts that the clear operation failed with PartitionedRegionPartialClearException (primary
+   * buckets on the the restarted members are not available).
+   */
+  @Test
+  @Parameters({"SERVER1", "ACCESSOR"})
+  @TestCaseName("[{index}] {method}(Coordinator:{0})")
+  public void clearOnNonRedundantPartitionRegionWithConcurrentPutAllRemoveAllShouldFailWhenNonCoordinatorMembersAreBounced(
+      TestVM coordinatorVM) throws InterruptedException {
+    parametrizedSetup(RegionShortcut.PARTITION);
+    server2.invoke(() -> DistributionMessageObserver.setInstance(new MemberKiller(false)));
+
+    final int workMillis = 30000;
+    List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
+        server1.invokeAsync(() -> executePutAlls(0, 6000, workMillis)),
+        accessor.invokeAsync(() -> executeRemoveAlls(2000, 4000, workMillis)));
+
+    // Clear the region.
+    getVM(coordinatorVM.vmNumber).invoke(() -> {
+      assertThatThrownBy(() -> cacheRule.getCache().getRegion(REGION_NAME).clear())
+          .isInstanceOf(PartitionedRegionPartialClearException.class);
+    });
+
+    // Let asyncInvocations finish.
+    for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
+      asyncInvocation.await();
+    }
   }
 
   private void initAccessor(RegionShortcut regionShortcut) {
@@ -372,291 +631,6 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
 
     for (int invocationCount = 0; invocationCount < minimumInvocationCount; invocationCount++) {
       region.clear();
-    }
-  }
-
-  /**
-   * The test does the following (clear coordinator and regionType are parametrized):
-   * - Launches one thread per VM to continuously execute removes, puts and gets for a given time.
-   * - Clears the Partition Region continuously every X milliseconds for a given time.
-   * - Asserts that, after the clears have finished, the Region Buckets are consistent across
-   * members.
-   */
-  @Test
-  @TestCaseName(TEST_CASE_NAME)
-  @Parameters(method = "coordinatorsAndRegionTypes")
-  public void clearWithConcurrentPutGetRemoveShouldWorkCorrectly(TestVM coordinatorVM,
-      RegionShortcut regionShortcut) throws InterruptedException {
-    parametrizedSetup(regionShortcut);
-
-    // Let all VMs continuously execute puts and gets for 60 seconds.
-    final int workMillis = 60000;
-    final int entries = 15000;
-    List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
-        server1.invokeAsync(() -> executePuts(entries, workMillis)),
-        server2.invokeAsync(() -> executeGets(entries, workMillis)),
-        accessor.invokeAsync(() -> executeRemoves(entries, workMillis)));
-
-    // Clear the region every second for 60 seconds.
-    getVM(coordinatorVM.vmNumber).invoke(() -> executeClears(workMillis, 1000));
-
-    // Let asyncInvocations finish.
-    for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
-      asyncInvocation.await();
-    }
-
-    // Assert Region Buckets are consistent.
-    asList(accessor, server1, server2).forEach(vm -> vm.invoke(this::waitForSilence));
-    accessor.invoke(this::assertRegionBucketsConsistency);
-  }
-
-  /**
-   * The test does the following (clear coordinator and regionType are parametrized):
-   * - Launches two threads per VM to continuously execute putAll and removeAll for a given time.
-   * - Clears the Partition Region continuously every X milliseconds for a given time.
-   * - Asserts that, after the clears have finished, the Region Buckets are consistent across
-   * members.
-   */
-  @Test
-  @TestCaseName(TEST_CASE_NAME)
-  @Parameters(method = "coordinatorsAndRegionTypes")
-  public void clearWithConcurrentPutAllRemoveAllShouldWorkCorrectly(TestVM coordinatorVM,
-      RegionShortcut regionShortcut) throws InterruptedException {
-    parametrizedSetup(regionShortcut);
-
-    // Let all VMs continuously execute putAll and removeAll for 15 seconds.
-    final int workMillis = 15000;
-    List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
-        server1.invokeAsync(() -> executePutAlls(0, 2000, workMillis)),
-        server1.invokeAsync(() -> executeRemoveAlls(0, 2000, workMillis)),
-        server2.invokeAsync(() -> executePutAlls(2000, 4000, workMillis)),
-        server2.invokeAsync(() -> executeRemoveAlls(2000, 4000, workMillis)),
-        accessor.invokeAsync(() -> executePutAlls(4000, 6000, workMillis)),
-        accessor.invokeAsync(() -> executeRemoveAlls(4000, 6000, workMillis)));
-
-    // Clear the region every half second for 15 seconds.
-    getVM(coordinatorVM.vmNumber).invoke(() -> executeClears(workMillis, 500));
-
-    // Let asyncInvocations finish.
-    for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
-      asyncInvocation.await();
-    }
-
-    // Assert Region Buckets are consistent.
-    asList(accessor, server1, server2).forEach(vm -> vm.invoke(this::waitForSilence));
-    accessor.invoke(this::assertRegionBucketsConsistency);
-  }
-
-  /**
-   * The test does the following (regionType is parametrized):
-   * - Populates the Partition Region.
-   * - Verifies that the entries are synchronized on all members.
-   * - Sets the {@link MemberKiller} as a {@link DistributionMessageObserver} to stop the
-   * coordinator VM while the clear is in progress.
-   * - Clears the Partition Region (at this point the coordinator is restarted).
-   * - Asserts that, after the member joins again, the Region Buckets are consistent.
-   */
-  @Test
-  @TestCaseName("[{index}] {method}(RegionType:{0})")
-  @Parameters(method = "regionTypes")
-  public void clearShouldFailWhenCoordinatorMemberIsBounced(RegionShortcut regionShortcut) {
-    parametrizedSetup(regionShortcut);
-    final int entries = 1000;
-    populateRegion(accessor, entries, asList(accessor, server1, server2));
-
-    // Set the CoordinatorMemberKiller and try to clear the region
-    server1.invoke(() -> {
-      DistributionMessageObserver.setInstance(new MemberKiller(true));
-      Region<String, String> region = cacheRule.getCache().getRegion(REGION_NAME);
-      assertThatThrownBy(region::clear)
-          .isInstanceOf(DistributedSystemDisconnectedException.class)
-          .hasCauseInstanceOf(ForcedDisconnectException.class);
-    });
-
-    // Wait for member to get back online and assign all buckets.
-    server1.invoke(() -> {
-      cacheRule.createCache();
-      initDataStore(regionShortcut);
-      await().untilAsserted(
-          () -> assertThat(InternalDistributedSystem.getConnectedInstance()).isNotNull());
-      PartitionRegionHelper.assignBucketsToPartitions(cacheRule.getCache().getRegion(REGION_NAME));
-    });
-
-    // Assert Region Buckets are consistent.
-    asList(accessor, server1, server2).forEach(vm -> vm.invoke(this::waitForSilence));
-    accessor.invoke(this::assertRegionBucketsConsistency);
-  }
-
-  /**
-   * The test does the following (clear coordinator is chosen through parameters):
-   * - Populates the Partition Region.
-   * - Verifies that the entries are synchronized on all members.
-   * - Sets the {@link MemberKiller} as a {@link DistributionMessageObserver} to stop a
-   * non-coordinator VM while the clear is in progress (the member has primary buckets, though, so
-   * participates on the clear operation).
-   * - Launches two threads per VM to continuously execute gets, puts and removes for a given time.
-   * - Clears the Partition Region (at this point the non-coordinator is restarted).
-   * - Asserts that, after the clear has finished, the Region Buckets are consistent across members.
-   */
-  @Test
-  @Parameters(method = "coordinators")
-  @TestCaseName("[{index}] {method}(Coordinator:{0})")
-  public void clearOnRedundantPartitionRegionWithConcurrentPutGetRemoveShouldWorkCorrectlyWhenNonCoordinatorMembersAreBounced(
-      TestVM coordinatorVM) throws InterruptedException {
-    parametrizedSetup(RegionShortcut.PARTITION_REDUNDANT);
-    final int entries = 7500;
-    populateRegion(accessor, entries, asList(accessor, server1, server2));
-    server2.invoke(() -> DistributionMessageObserver.setInstance(new MemberKiller(false)));
-
-    // Let all VMs (except the one to kill) continuously execute gets, put and removes for 30"
-    final int workMillis = 30000;
-    List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
-        server1.invokeAsync(() -> executeGets(entries, workMillis)),
-        server1.invokeAsync(() -> executePuts(entries, workMillis)),
-        accessor.invokeAsync(() -> executeGets(entries, workMillis)),
-        accessor.invokeAsync(() -> executeRemoves(entries, workMillis)));
-
-    // Retry the clear operation on the region until success (server2 will go down, but other
-    // members will eventually become primary for those buckets previously hosted by server2).
-    executeClearWithRetry(getVM(coordinatorVM.vmNumber));
-
-    // Wait for member to get back online.
-    server2.invoke(() -> {
-      cacheRule.createCache();
-      initDataStore(RegionShortcut.PARTITION_REDUNDANT);
-      await().untilAsserted(
-          () -> assertThat(InternalDistributedSystem.getConnectedInstance()).isNotNull());
-    });
-
-    // Let asyncInvocations finish.
-    for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
-      asyncInvocation.await();
-    }
-
-    // Assert Region Buckets are consistent.
-    asList(accessor, server1, server2).forEach(vm -> vm.invoke(this::waitForSilence));
-    accessor.invoke(this::assertRegionBucketsConsistency);
-  }
-
-  /**
-   * The test does the following (clear coordinator is chosen through parameters):
-   * - Populates the Partition Region.
-   * - Verifies that the entries are synchronized on all members.
-   * - Sets the {@link MemberKiller} as a {@link DistributionMessageObserver} to stop a
-   * non-coordinator VM while the clear is in progress (the member has primary buckets, though, so
-   * participates on the clear operation).
-   * - Launches two threads per VM to continuously execute gets, puts and removes for a given time.
-   * - Clears the Partition Region (at this point the non-coordinator is restarted).
-   * - Asserts that the clear operation failed with PartitionedRegionPartialClearException (primary
-   * buckets on the the restarted members are not available).
-   */
-  @Test
-  @Parameters(method = "coordinators")
-  @TestCaseName("[{index}] {method}(Coordinator:{0})")
-  public void clearOnNonRedundantPartitionRegionWithConcurrentPutGetRemoveShouldFailWhenNonCoordinatorMembersAreBounced(
-      TestVM coordinatorVM) throws InterruptedException {
-    parametrizedSetup(RegionShortcut.PARTITION);
-    final int entries = 7500;
-    populateRegion(accessor, entries, asList(accessor, server1, server2));
-    server2.invoke(() -> DistributionMessageObserver.setInstance(new MemberKiller(false)));
-
-    // Let all VMs (except the one to kill) continuously execute gets, put and removes for 30"
-    final int workMillis = 30000;
-    List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
-        server1.invokeAsync(() -> executeGets(entries, workMillis)),
-        server1.invokeAsync(() -> executePuts(entries, workMillis)),
-        accessor.invokeAsync(() -> executeGets(entries, workMillis)),
-        accessor.invokeAsync(() -> executeRemoves(entries, workMillis)));
-
-    // Clear the region.
-    getVM(coordinatorVM.vmNumber).invoke(() -> {
-      assertThatThrownBy(() -> cacheRule.getCache().getRegion(REGION_NAME).clear())
-          .isInstanceOf(PartitionedRegionPartialClearException.class);
-    });
-
-    // Let asyncInvocations finish.
-    for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
-      asyncInvocation.await();
-    }
-  }
-
-  /**
-   * The test does the following (clear coordinator is chosen through parameters):
-   * - Sets the {@link MemberKiller} as a {@link DistributionMessageObserver} to stop a
-   * non-coordinator VM while the clear is in progress (the member has primary buckets, though, so
-   * participates on the clear operation).
-   * - Launches one thread per VM to continuously execute putAll/removeAll for a given time.
-   * - Clears the Partition Region (at this point the non-coordinator is restarted).
-   * - Asserts that, after the clear has finished, the Region Buckets are consistent across members.
-   */
-  @Test
-  @Parameters(method = "coordinators")
-  @TestCaseName("[{index}] {method}(Coordinator:{0})")
-  public void clearOnRedundantPartitionRegionWithConcurrentPutAllRemoveAllShouldWorkCorrectlyWhenNonCoordinatorMembersAreBounced(
-      TestVM coordinatorVM) throws InterruptedException {
-    parametrizedSetup(RegionShortcut.PARTITION_REDUNDANT);
-    server2.invoke(() -> DistributionMessageObserver.setInstance(new MemberKiller(false)));
-
-    // Let all VMs continuously execute putAll/removeAll for 30 seconds.
-    final int workMillis = 30000;
-    List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
-        server1.invokeAsync(() -> executePutAlls(0, 6000, workMillis)),
-        accessor.invokeAsync(() -> executeRemoveAlls(2000, 4000, workMillis)));
-
-    // Retry the clear operation on the region until success (server2 will go down, but other
-    // members will eventually become primary for those buckets previously hosted by server2).
-    executeClearWithRetry(getVM(coordinatorVM.vmNumber));
-
-    // Wait for member to get back online.
-    server2.invoke(() -> {
-      cacheRule.createCache();
-      initDataStore(RegionShortcut.PARTITION_REDUNDANT);
-      await().untilAsserted(
-          () -> assertThat(InternalDistributedSystem.getConnectedInstance()).isNotNull());
-    });
-
-    // Let asyncInvocations finish.
-    for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
-      asyncInvocation.await();
-    }
-
-    // Assert Region Buckets are consistent.
-    asList(accessor, server1, server2).forEach(vm -> vm.invoke(this::waitForSilence));
-    accessor.invoke(this::assertRegionBucketsConsistency);
-  }
-
-  /**
-   * The test does the following (clear coordinator is chosen through parameters):
-   * - Sets the {@link MemberKiller} as a {@link DistributionMessageObserver} to stop a
-   * non-coordinator VM while the clear is in progress (the member has primary buckets, though, so
-   * participates on the clear operation).
-   * - Launches one thread per VM to continuously execute putAll/removeAll for a given time.
-   * - Clears the Partition Region (at this point the non-coordinator is restarted).
-   * - Asserts that the clear operation failed with PartitionedRegionPartialClearException (primary
-   * buckets on the the restarted members are not available).
-   */
-  @Test
-  @Parameters(method = "coordinators")
-  @TestCaseName("[{index}] {method}(Coordinator:{0})")
-  public void clearOnNonRedundantPartitionRegionWithConcurrentPutAllRemoveAllShouldFailWhenNonCoordinatorMembersAreBounced(
-      TestVM coordinatorVM) throws InterruptedException {
-    parametrizedSetup(RegionShortcut.PARTITION);
-    server2.invoke(() -> DistributionMessageObserver.setInstance(new MemberKiller(false)));
-
-    final int workMillis = 30000;
-    List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
-        server1.invokeAsync(() -> executePutAlls(0, 6000, workMillis)),
-        accessor.invokeAsync(() -> executeRemoveAlls(2000, 4000, workMillis)));
-
-    // Clear the region.
-    getVM(coordinatorVM.vmNumber).invoke(() -> {
-      assertThatThrownBy(() -> cacheRule.getCache().getRegion(REGION_NAME).clear())
-          .isInstanceOf(PartitionedRegionPartialClearException.class);
-    });
-
-    // Let asyncInvocations finish.
-    for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
-      asyncInvocation.await();
     }
   }
 
