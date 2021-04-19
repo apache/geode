@@ -60,7 +60,7 @@ public class PartitionedRegionStatsUpdateTest {
   public static final String FIELD = "field";
   private static final int SET_SIZE = 1000;
 
-  private ReflectionObjectSizer ros = ReflectionObjectSizer.getInstance();
+  private final ReflectionObjectSizer ros = ReflectionObjectSizer.getInstance();
 
   @BeforeClass
   public static void classSetup() {
@@ -336,14 +336,19 @@ public class PartitionedRegionStatsUpdateTest {
 
     assertThat(jedis1.hgetAll(HASH_KEY).size()).isEqualTo(1);
 
-    long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+    long server2FinalDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+    long server1FinalDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
 
-    assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
+    assertThat(server1FinalDataStoreBytesInUse)
+        .isEqualTo(server2FinalDataStoreBytesInUse)
+        .isEqualTo(initialDataStoreBytesInUse);
   }
 
   @Test
   public void should_showMembersAgreeUponUsedSetMemory_afterDeltaPropagation() {
-    jedis1.sadd(SET_KEY, "value"); // two sadds are required to force
+    jedis1.sadd(SET_KEY, "initialValue"); // two sadds are required to force
     jedis1.sadd(SET_KEY, "value"); // deserialization on both servers
     // otherwise primary/secondary can disagree on size, and which server is primary varies
 
@@ -354,31 +359,51 @@ public class PartitionedRegionStatsUpdateTest {
       jedis1.sadd(SET_KEY, "value");
     }
 
-    assertThat(jedis1.scard(SET_KEY)).isEqualTo(1);
+    assertThat(jedis1.scard(SET_KEY)).isEqualTo(2);
 
-    long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+    long server1FinalDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    long server2FinalDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
 
-    assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
+    assertThat(server1FinalDataStoreBytesInUse)
+        .isEqualTo(server2FinalDataStoreBytesInUse)
+        .isEqualTo(initialDataStoreBytesInUse);
   }
 
   @Test
   public void should_showMembersAgreeUponUsedStringMemory_afterDeltaPropagation() {
-    jedis1.set(STRING_KEY, "value"); // two sets are required to force
-    jedis1.set(STRING_KEY, "value"); // deserialization on both servers
+    jedis1.set(STRING_KEY, "eulav"); // two sets are required to force
+    System.out.println("HERE server1:" + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
+    System.out.println("HERE server2: " + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2));
+    jedis2.set(STRING_KEY, "value"); // deserialization on both servers
+    System.out.println("HERE server1:" + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
+    System.out.println("HERE server2: " + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2));
     // otherwise primary/secondary can disagree on size, and which server is primary varies
 
     long initialDataStoreBytesInUse =
-        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
 
     for (int i = 0; i < 10; i++) {
       jedis1.set(STRING_KEY, "value");
     }
 
     assertThat(jedis1.exists(STRING_KEY)).isTrue();
+    assertThat(jedis2.exists(STRING_KEY)).isTrue();
 
-    long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+    assertThat(jedis1.get(STRING_KEY)).isEqualTo("value");
+    assertThat(jedis2.get(STRING_KEY)).isEqualTo("value");
 
-    assertThat(finalDataStoreBytesInUse).isEqualTo(initialDataStoreBytesInUse);
+    long server1FinalDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    long server2FinalDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    assertThat(server1FinalDataStoreBytesInUse)
+        .isEqualTo(initialDataStoreBytesInUse);
+
+    assertThat(server2FinalDataStoreBytesInUse)
+        .isEqualTo(initialDataStoreBytesInUse);
   }
 
   /******* check DatastoreBytesInUse using reflection *******/
