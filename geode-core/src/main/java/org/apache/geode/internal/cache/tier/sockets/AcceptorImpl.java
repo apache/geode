@@ -1479,14 +1479,14 @@ public class AcceptorImpl implements Acceptor, Runnable {
             new Object[] {socket.getInetAddress(), curCnt,
                 maxConnections});
 
-          try {
-            refuseHandshake(socket.getOutputStream(),
-                String.format("exceeded max-connections %s",
-                    maxConnections),
-                REPLY_REFUSED, ioFilter, socket);
-          } catch (Exception ex) {
-            logger.debug("rejection message failed", ex);
-          }
+        try {
+          refuseHandshake(socket.getOutputStream(),
+              String.format("exceeded max-connections %s",
+                  maxConnections),
+              REPLY_REFUSED, ioFilter, socket);
+        } catch (Exception ex) {
+          logger.debug("rejection message failed", ex);
+        }
 
         closeSocket(socket);
         return;
@@ -2007,7 +2007,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
       channel.socket().setSendBufferSize(packetBufferSize);
     }
     NioSslEngine nioSslEngine =
-        socketCreator.handshakeSSLSocketChannel(channel, engine, acceptTimeout, false, inbuffer,
+        socketCreator.handshakeSSLSocketChannel(channel, engine, acceptTimeout, inbuffer,
             bufferPool);
 
     return nioSslEngine;

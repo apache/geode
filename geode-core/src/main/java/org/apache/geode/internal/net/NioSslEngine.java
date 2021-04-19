@@ -104,7 +104,7 @@ public class NioSslEngine implements NioFilter {
           peerNetData.capacity(), engine.getSession().getPacketBufferSize()));
     }
 
-    final ByteBuffer handshakeBuffer = peerNetData;
+    handshakeBuffer = peerNetData;
 
     handshakeBuffer.clear();
 
@@ -374,7 +374,7 @@ public class NioSslEngine implements NioFilter {
 
   @Override
   public ByteBufferSharing getUnwrappedBuffer(ByteBuffer unwrappedBuffer) throws IOException {
-    return shareInputBuffer();
+    return inputBufferVendor.open();
   }
 
   @Override
