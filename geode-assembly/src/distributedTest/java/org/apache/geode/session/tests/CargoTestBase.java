@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.categories.SessionTest;
 @Category({SessionTest.class})
 public abstract class CargoTestBase {
   private final UniquePortSupplier portSupplier = new UniquePortSupplier();
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @Rule
   public TestName testName = new TestName();
@@ -106,15 +106,14 @@ public abstract class CargoTestBase {
   public void stop() throws IOException {
     try {
       manager.stopAllActiveContainers();
+    } catch (Exception exception) {
+      manager.dumpLogs();
+      throw exception;
     } finally {
       try {
-        manager.dumpLogs();
+        manager.cleanUp();
       } finally {
-        try {
-          manager.cleanUp();
-        } finally {
-          announceTest("END");
-        }
+        announceTest("END");
       }
     }
   }
@@ -368,6 +367,10 @@ public abstract class CargoTestBase {
   @Test
   public void newContainersShouldShareDataAccess() throws Exception {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     String key = "value_testSessionAdd";
     String value = "Foo";
