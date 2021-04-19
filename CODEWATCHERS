@@ -38,12 +38,12 @@ geode-book/redirects.rb                                           @onichols-pivo
 #-----------------------------------------------------------------
 # Jar Deployment
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/classloader/**                    @kohlmu-pivotal @yozaner1324
-geode-core/**/org/apache/geode/deployment/**                     @kohlmu-pivotal @yozaner1324
-geode-core/**/org/apache/geode/internal/classloader/**           @kohlmu-pivotal @yozaner1324
-geode-core/**/org/apache/geode/internal/deployment/**            @kohlmu-pivotal @yozaner1324
-geode-deployment/**                                              @kohlmu-pivotal @yozaner1324
-geode-core/**/org/apache/geode/cache/internal/execute/*          @kohlmu-pivotal @yozaner1324
+geode-core/**/org/apache/geode/classloader/**                     @kohlmu-pivotal
+geode-core/**/org/apache/geode/deployment/**                      @kohlmu-pivotal
+geode-core/**/org/apache/geode/internal/classloader/**            @kohlmu-pivotal
+geode-core/**/org/apache/geode/internal/deployment/**             @kohlmu-pivotal
+geode-deployment/**                                               @kohlmu-pivotal
+geode-core/**/org/apache/geode/cache/internal/execute/*           @kohlmu-pivotal
 
 
 #-----------------------------------------------------------------
