@@ -62,7 +62,7 @@ public class RedisHash extends AbstractRedisData {
   // these values are empirically derived using ReflectionObjectSizer, which provides an exact size
   // of the object. It can't be used directly because of its performance impact. These values cause
   // the size we keep track of to converge to the actual size as it increases.
-  private static final int PER_STRING_OVERHEAD = PER_OBJECT_OVERHEAD + 46;
+  private static final int PER_BYTE_ARRAY_WRAPPER_OVERHEAD = PER_OBJECT_OVERHEAD + 46;
   private static final int PER_HASH_OVERHEAD = PER_OBJECT_OVERHEAD + 116;
 
   private int hashSize = PER_HASH_OVERHEAD;
@@ -172,7 +172,7 @@ public class RedisHash extends AbstractRedisData {
   private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
     ByteArrayWrapper oldvalue = hash.put(field, value);
     if (oldvalue == null) {
-      hashSize += 2 * PER_STRING_OVERHEAD + field.length() + value.length();
+      hashSize += 2 * PER_BYTE_ARRAY_WRAPPER_OVERHEAD + field.length() + value.length();
     } else {
       hashSize += value.length() - oldvalue.length();
     }
@@ -183,7 +183,7 @@ public class RedisHash extends AbstractRedisData {
       ByteArrayWrapper value) {
     ByteArrayWrapper oldvalue = hash.putIfAbsent(field, value);
     if (oldvalue == null) {
-      hashSize += 2 * PER_STRING_OVERHEAD + field.length() + value.length();
+      hashSize += 2 * PER_BYTE_ARRAY_WRAPPER_OVERHEAD + field.length() + value.length();
     }
     return oldvalue;
   }
@@ -191,7 +191,7 @@ public class RedisHash extends AbstractRedisData {
   private synchronized ByteArrayWrapper hashRemove(ByteArrayWrapper field) {
     ByteArrayWrapper oldValue = hash.remove(field);
     if (oldValue != null) {
-      hashSize -= 2 * PER_STRING_OVERHEAD + field.length() + oldValue.length();
+      hashSize -= 2 * PER_BYTE_ARRAY_WRAPPER_OVERHEAD + field.length() + oldValue.length();
     }
     return oldValue;
   }
@@ -537,8 +537,8 @@ public class RedisHash extends AbstractRedisData {
   }
 
   @VisibleForTesting
-  protected static int getPerStringOverhead() {
-    return PER_STRING_OVERHEAD;
+  protected static int getPerByteArrayWrapperOverhead() {
+    return PER_BYTE_ARRAY_WRAPPER_OVERHEAD;
   }
 
   @VisibleForTesting
