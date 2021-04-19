@@ -2136,12 +2136,12 @@ public class DistributionStats implements DMStats {
       }
 
       @Override
-      public void addMem(int amount) {
+      public void addMem(long amount) {
         incSerialQueueBytes(amount);
       }
 
       @Override
-      public void removeMem(int amount) {
+      public void removeMem(long amount) {
         incSerialQueueBytes(amount * (-1));
       }
     };
