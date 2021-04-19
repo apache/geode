@@ -35,6 +35,16 @@ geode-docs/**                                                     @karensmolermi
 geode-book/config.yml                                             @onichols-pivotal
 geode-book/redirects.rb                                           @onichols-pivotal
 
+#-----------------------------------------------------------------
+# Jar Deployment
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/classloader/**                     @kohlmu-pivotal
+geode-core/**/org/apache/geode/deployment/**                      @kohlmu-pivotal
+geode-core/**/org/apache/geode/internal/classloader/**            @kohlmu-pivotal
+geode-core/**/org/apache/geode/internal/deployment/**             @kohlmu-pivotal
+geode-deployment/**                                               @kohlmu-pivotal
+geode-core/**/org/apache/geode/cache/internal/execute/*           @kohlmu-pivotal
+
 
 #-----------------------------------------------------------------
 # Client/server messaging and cache operations
