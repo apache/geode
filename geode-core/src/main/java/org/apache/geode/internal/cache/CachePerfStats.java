@@ -286,11 +286,6 @@ public class CachePerfStats {
         "Current number of regions configured for reliablity that are missing required roles with Limited access";
     final String reliableRegionsMissingNoAccessDesc =
         "Current number of regions configured for reliablity that are missing required roles with No access";
-    final String regionClearsDesc =
-        "The total number of times a clear has been done on this cache.";
-    final String bucketClearsDesc =
-        "The total number of times a clear has been done on this region and it's bucket regions";
-
     final String clearsDesc = "The total number of times a clear has been done on this cache.";
     final String metaDataRefreshCountDesc =
         "Total number of times the meta data is refreshed due to hopping observed.";
