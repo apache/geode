@@ -154,16 +154,14 @@ public class DistributionLocator {
           hostAddress == null ? null : hostAddress.getAddress());
       lockFile.deleteOnExit();
 
+      InetAddress address = hostAddress == null ? null : hostAddress.getAddress();
       try {
-
         InternalLocator locator = InternalLocator.startLocator(port, new File(DEFAULT_LOG_FILE),
             null, null, hostAddress, true, (Properties) null, hostnameForClients);
-
-        ManagerInfo.setLocatorStarted(directory, port, hostAddress.getAddress());
+        ManagerInfo.setLocatorStarted(directory, port, address);
         locator.waitToStop();
-
       } finally {
-        shutdown(port, hostAddress.getAddress());
+        shutdown(port, address);
       }
 
     } catch (InterruptedException ex) {
