@@ -150,7 +150,8 @@ public class DistributionLocator {
             }));
       }
 
-      lockFile = ManagerInfo.setLocatorStarting(directory, port, hostAddress.getAddress());
+      lockFile = ManagerInfo.setLocatorStarting(directory, port,
+          hostAddress == null ? null : hostAddress.getAddress());
       lockFile.deleteOnExit();
 
       try {
