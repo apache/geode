@@ -40,8 +40,6 @@ import static org.mockito.quality.Strictness.STRICT_STUBS;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -75,15 +73,12 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 
 @RunWith(JUnitParamsRunner.class)
-@SuppressWarnings({"deprecation", "unchecked", "unused"})
 public class PartitionedRegionTest {
 
   private InternalCache cache;
   private InternalDistributedSystem system;
   private DistributionManager distributionManager;
-  private InternalResourceManager resourceManager;
-  private AttributesFactory attributesFactory;
-
+  private AttributesFactory<Object, Object> attributesFactory;
   private PartitionedRegion partitionedRegion;
 
   @Rule
@@ -97,9 +92,9 @@ public class PartitionedRegionTest {
     InternalResourceManager resourceManager = mock(InternalResourceManager.class);
 
     cache = mock(InternalCache.class);
-    attributesFactory = new AttributesFactory();
+    attributesFactory = new AttributesFactory<>();
     attributesFactory.setPartitionAttributes(
-        new PartitionAttributesFactory().setTotalNumBuckets(1).setRedundantCopies(1).create());
+        new PartitionAttributesFactory<>().setTotalNumBuckets(1).setRedundantCopies(1).create());
 
     when(cache.getDistributedSystem())
         .thenReturn(system);
@@ -124,8 +119,8 @@ public class PartitionedRegionTest {
   }
 
   private Object[] cacheLoaderAndWriter() {
-    CacheLoader mockLoader = mock(CacheLoader.class);
-    CacheWriter mockWriter = mock(CacheWriter.class);
+    CacheLoader<Object, Object> mockLoader = mock(CacheLoader.class);
+    CacheWriter<Object, Object> mockWriter = mock(CacheWriter.class);
     return new Object[] {
         new Object[] {mockLoader, null},
         new Object[] {null, mockWriter},
@@ -137,8 +132,8 @@ public class PartitionedRegionTest {
   @Test
   @Parameters(method = "cacheLoaderAndWriter")
   @TestCaseName("{method}(CacheLoader={0}, CacheWriter={1})")
-  public void verifyPRConfigUpdatedAfterLoaderUpdate(CacheLoader cacheLoader,
-      CacheWriter cacheWriter) {
+  public void verifyPRConfigUpdatedAfterLoaderUpdate(CacheLoader<Object, Object> cacheLoader,
+      CacheWriter<Object, Object> cacheWriter) {
     // ARRANGE
     PartitionRegionConfig partitionRegionConfig = mock(PartitionRegionConfig.class);
     Region<String, PartitionRegionConfig> partitionedRegionRoot = mock(LocalRegion.class);
@@ -199,6 +194,7 @@ public class PartitionedRegionTest {
     verify(spyPartitionedRegion)
         .updatePRConfig(partitionRegionConfig, false);
 
+    assertThat(verifyOurNode).isNotNull();
     assertThat(verifyOurNode.isCacheLoaderAttached())
         .isEqualTo(cacheLoader != null);
     assertThat(verifyOurNode.isCacheWriterAttached())
@@ -219,7 +215,6 @@ public class PartitionedRegionTest {
     // ARRANGE
     EntryEventImpl clientEvent = mock(EntryEventImpl.class);
     InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
-    InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
     when(clientEvent.getOperation())
@@ -244,7 +239,6 @@ public class PartitionedRegionTest {
   public void getBucketNodeForReadOrWriteReturnsSecondaryNodeForNonRegisterInterest() {
     // ARRANGE
     EntryEventImpl clientEvent = mock(EntryEventImpl.class);
-    InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
@@ -269,7 +263,6 @@ public class PartitionedRegionTest {
   @Test
   public void getBucketNodeForReadOrWriteReturnsSecondaryNodeWhenClientEventIsNotPresent() {
     // ARRANGE
-    InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
@@ -291,7 +284,6 @@ public class PartitionedRegionTest {
   @Test
   public void getBucketNodeForReadOrWriteReturnsSecondaryNodeWhenClientEventOperationIsNotPresent() {
     // ARRANGE
-    InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
@@ -314,7 +306,6 @@ public class PartitionedRegionTest {
   public void updateBucketMapsForInterestRegistrationWithSetOfKeysFetchesPrimaryBucketsForRead() {
     // ARRANGE
     InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
-    InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
     doReturn(primaryMember)
@@ -334,14 +325,14 @@ public class PartitionedRegionTest {
   public void updateBucketMapsForInterestRegistrationWithAllKeysFetchesPrimaryBucketsForRead() {
     // ARRANGE
     InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
-    InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
     doReturn(primaryMember)
         .when(spyPartitionedRegion).getNodeForBucketWrite(anyInt(), isNull());
 
-    HashMap<InternalDistributedMember, HashMap<Integer, HashSet>> nodeToBuckets = new HashMap<>();
-    HashMap<Integer, HashSet> bucketKeys = (HashMap) asMapOfSet(0, (HashSet) asSet(0, 1));
+    HashMap<InternalDistributedMember, HashMap<Integer, HashSet<Integer>>> nodeToBuckets =
+        new HashMap<>();
+    HashMap<Integer, HashSet<Integer>> bucketKeys = asMapOfSet(0, 0, 1);
 
     // ACT
     spyPartitionedRegion.updateNodeToBucketMap(nodeToBuckets, bucketKeys);
@@ -609,14 +600,14 @@ public class PartitionedRegionTest {
     assertThat(partitionedRegion.isRegionCreateNotified()).isTrue();
   }
 
-  private static <K> Set<K> asSet(K... values) {
-    Set<K> set = new HashSet<>();
+  private static <K> HashSet<K> asSet(K... values) {
+    HashSet<K> set = new HashSet<>();
     Collections.addAll(set, values);
     return set;
   }
 
-  private static <K, V> Map<K, Set<V>> asMapOfSet(K key, V... values) {
-    Map<K, Set<V>> map = new HashMap<>();
+  private static <K, V> HashMap<K, HashSet<V>> asMapOfSet(K key, V... values) {
+    HashMap<K, HashSet<V>> map = new HashMap<>();
     map.put(key, asSet(values));
     return map;
   }

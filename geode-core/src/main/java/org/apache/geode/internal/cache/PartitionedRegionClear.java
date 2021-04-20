@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
@@ -46,9 +47,7 @@ public class PartitionedRegionClear {
   private static final Logger logger = LogService.getLogger();
 
   protected static final String CLEAR_OPERATION = "_clearOperation";
-
-  private final int retryTime = 2 * 60 * 1000;
-
+  public static final long RETRY_TIME = TimeUnit.MINUTES.toMillis(2);
   private final PartitionedRegion partitionedRegion;
 
   private final DistributedLockService distributedLockService;
@@ -194,7 +193,7 @@ public class PartitionedRegionClear {
    */
   public Set<Integer> clearRegionLocal(RegionEventImpl regionEvent) {
     Set<Integer> clearedBuckets = new HashSet<>();
-    long clearStartTime = System.nanoTime();
+
     setMembershipChange(false);
     // Synchronized to handle the requester departure.
     synchronized (lockForListenerAndClientNotification) {
@@ -203,7 +202,7 @@ public class PartitionedRegionClear {
         try {
           boolean retry;
           do {
-            waitForPrimary(new PartitionedRegion.RetryTimeKeeper(retryTime));
+            waitForPrimary(new PartitionedRegion.RetryTimeKeeper(RETRY_TIME));
             RegionEventImpl bucketRegionEvent;
             for (BucketRegion localPrimaryBucketRegion : partitionedRegion.getDataStore()
                 .getAllLocalPrimaryBucketRegions()) {
@@ -228,11 +227,7 @@ public class PartitionedRegionClear {
           doAfterClear(regionEvent);
         } finally {
           partitionedRegion.getDataStore().unlockBucketCreationForRegionClear();
-          if (clearedBuckets.size() != 0 && partitionedRegion.getCachePerfStats() != null) {
-            partitionedRegion.getRegionCachePerfStats().incRegionClearCount();
-            partitionedRegion.getRegionCachePerfStats()
-                .incPartitionedRegionClearLocalDuration(System.nanoTime() - clearStartTime);
-          }
+
         }
       } else {
         // Non data-store with client queue and listener
@@ -435,14 +430,12 @@ public class PartitionedRegionClear {
 
   void doClear(RegionEventImpl regionEvent, boolean cacheWrite) {
     String lockName = CLEAR_OPERATION + partitionedRegion.getName();
-    long clearStartTime = 0;
 
     allServerVersionsSupportPartitionRegionClear();
 
     try {
       // distributed lock to make sure only one clear op is in progress in the cluster.
       acquireDistributedClearLock(lockName);
-      clearStartTime = System.nanoTime();
 
       // Force all primary buckets to be created before clear.
       assignAllPrimaryBuckets();
@@ -483,11 +476,6 @@ public class PartitionedRegionClear {
       }
     } finally {
       releaseDistributedClearLock(lockName);
-      CachePerfStats stats = partitionedRegion.getRegionCachePerfStats();
-      if (stats != null) {
-        partitionedRegion.getRegionCachePerfStats()
-            .incPartitionedRegionClearTotalDuration(System.nanoTime() - clearStartTime);
-      }
     }
   }
 
@@ -514,7 +502,7 @@ public class PartitionedRegionClear {
     }
   }
 
-  class LockForListenerAndClientNotification {
+  static class LockForListenerAndClientNotification {
 
     private boolean locked = false;
 

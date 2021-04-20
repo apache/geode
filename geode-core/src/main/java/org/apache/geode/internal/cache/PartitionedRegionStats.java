@@ -176,8 +176,17 @@ public class PartitionedRegionStats {
   private static final int prMetaDataSentCountId;
 
   private static final int localMaxMemoryId;
+  static final int bucketClearsId;
+  static final int bucketClearTimeId;
+  static final int bucketClearsInProgressId;
 
   static {
+    final String bucketClearsDesc =
+        "The total number of times a bucket of this partitioned region has been cleared";
+    final String bucketClearTimeDesc =
+        "The total amount of time, in nanoseconds, spent clearing buckets on this partitioned region";
+    final String bucketClearsInProgressDesc =
+        "The current number bucket clears on this partitioned region that are in progress";
 
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     type = f.createType("PartitionedRegionStats",
@@ -426,6 +435,9 @@ public class PartitionedRegionStats {
 
             f.createLongGauge("localMaxMemory",
                 "local max memory in bytes for this region on this member", "bytes"),
+            f.createLongCounter("bucketClears", bucketClearsDesc, "operations"),
+            f.createLongCounter("bucketClearTime", bucketClearTimeDesc, "nanoseconds"),
+            f.createLongCounter("bucketClearsInProgress", bucketClearsInProgressDesc, "operations")
         });
 
     bucketCountId = type.nameToId("bucketCount");
@@ -530,6 +542,10 @@ public class PartitionedRegionStats {
     prMetaDataSentCountId = type.nameToId("prMetaDataSentCount");
 
     localMaxMemoryId = type.nameToId("localMaxMemory");
+
+    bucketClearsId = type.nameToId("bucketClears");
+    bucketClearsInProgressId = type.nameToId("bucketClearsInProgress");
+    bucketClearTimeId = type.nameToId("bucketClearTime");
   }
 
   private final Statistics stats;
@@ -1191,6 +1207,20 @@ public class PartitionedRegionStats {
     stats.incLong(putLocalTimeId, delta);
   }
 
+  public long startBucketClear() {
+    stats.incLong(bucketClearsInProgressId, 1L);
+    return clock.getTime();
+  }
+
+  public void endBucketClear(long start) {
+    long delta = clock.getTime() - start;
+    stats.incLong(bucketClearsId, 1);
+    stats.incLong(bucketClearsInProgressId, -1L);
+    if (clock.isEnabled()) {
+      stats.incLong(bucketClearTimeId, delta);
+    }
+  }
+
   public void incPRMetaDataSentCount() {
     this.stats.incLong(prMetaDataSentCountId, 1);
   }
@@ -1198,4 +1228,21 @@ public class PartitionedRegionStats {
   public long getPRMetaDataSentCount() {
     return this.stats.getLong(prMetaDataSentCountId);
   }
+
+  public long getBucketClearCount() {
+    return stats.getLong(bucketClearsId);
+  }
+
+  public void incBucketClearTime(Long nanoseconds) {
+    stats.incLong(bucketClearTimeId, nanoseconds);
+  }
+
+  public long getBucketClearTime() {
+    return stats.getLong(bucketClearTimeId);
+  }
+
+  public long getBucketClearsInProgress() {
+    return stats.getLong(bucketClearsInProgressId);
+  }
+
 }

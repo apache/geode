@@ -83,10 +83,11 @@ public class PRQueryRegionDestroyedJUnitTest {
 
     logger.info("PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStore: creating PR Region ");
 
-    final Region region =
+    final Region<Integer, PortfolioData> region =
         PartitionedRegionTestHelper.createPartitionedRegion(regionName, localMaxMemory, redundancy);
 
-    final Region localRegion = PartitionedRegionTestHelper.createLocalRegion(localRegionName);
+    final Region<Integer, PortfolioData> localRegion =
+        PartitionedRegionTestHelper.createLocalRegion(localRegionName);
 
     final StringBuffer errorBuf = new StringBuffer("");
 

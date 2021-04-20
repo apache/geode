@@ -505,6 +505,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     checkForLimitedOrNoAccess();
     RegionEventImpl regionEvent = new RegionEventImpl(this, Operation.REGION_CLEAR, null, false,
         getMyId(), generateEventID());
+
+
     basicClear(regionEvent);
   }
 

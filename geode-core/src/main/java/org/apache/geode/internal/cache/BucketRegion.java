@@ -578,8 +578,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     // get rvvLock
     Set<InternalDistributedMember> participants =
         getCacheDistributionAdvisor().adviseInvalidateRegion();
-
     try {
+
       obtainWriteLocksForClear(regionEvent, participants);
       // no need to dominate my own rvv.
       // Clear is on going here, there won't be GII for this member
@@ -2142,13 +2142,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   @Override
   void updateSizeOnClearRegion(int sizeBeforeClear) {
-    // This method is only called when the bucket is destroyed. If we
-    // start supporting clear of partitioned regions, this logic needs to change
-    // we can't just set these counters to zero, because there could be
-    // concurrent operations that are also updating these stats. For example,
-    // a destroy could have already been applied to the map, and then updates
-    // the stat after we reset it, making the state negative.
-
     final PartitionedRegionDataStore prDs = partitionedRegion.getDataStore();
     long oldMemValue;
 
@@ -2540,6 +2533,21 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   @Override
   protected void basicClear(RegionEventImpl regionEvent) {
     basicClear(regionEvent, false);
+  }
+
+  @Override
+  public long startClear() {
+    return getPartitionedRegion().getPrStats().startBucketClear();
+  }
+
+  @Override
+  public void endClear(long startTime) {
+    getPartitionedRegion().getPrStats().endBucketClear(startTime);
+  }
+
+  @Override
+  public void clear() {
+    throw new UnsupportedOperationException("BucketRegion.clear should never be called");
   }
 
 }
