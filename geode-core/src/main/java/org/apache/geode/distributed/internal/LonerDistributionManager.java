@@ -1034,7 +1034,6 @@ public class LonerDistributionManager implements DistributionManager {
 
   private int lonerPort = 0;
 
-  // private static final long CHARS_32KB = 16384;
   private InternalDistributedMember generateMemberId() {
     InternalDistributedMember result;
     String host;

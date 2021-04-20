@@ -426,13 +426,6 @@ public class PartitionedRegionStats {
 
             f.createLongGauge("localMaxMemory",
                 "local max memory in bytes for this region on this member", "bytes"),
-            f.createLongCounter("partitionedRegionClearLocalDuration",
-                "The time in nanoseconds partitioned region clear has been running for the region on this member",
-                "nanoseconds"),
-            f.createLongCounter("partitionedRegionClearTotalDuration",
-                "The time in nanoseconds partitioned region clear has been running for the region with this member as coordinator.",
-                "nanoseconds"),
-
         });
 
     bucketCountId = type.nameToId("bucketCount");

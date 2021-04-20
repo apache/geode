@@ -678,10 +678,10 @@ public class ClusterOperationExecutors implements OperationExecutors {
     }
 
     /*
-     * Returns an id of the thread in serialQueuedExecutorMap, that's mapped to the given seder.
+     * Returns an id of the thread in serialQueuedExecutorMap, that's mapped to the given sender.
      *
      *
-     * @param createNew boolean flag to indicate whether to create a new id, if id does not exists.
+     * @param createNew boolean flag to indicate whether to create a new id, if id does not exist.
      */
     private Integer getQueueId(InternalDistributedMember sender, boolean createNew) {
       // Create a new Id.
@@ -696,7 +696,7 @@ public class ClusterOperationExecutors implements OperationExecutors {
         }
 
         // Create new.
-        // Check if any threads are availabe that is marked for Use.
+        // Check if any threads are available that is marked for Use.
         if (!threadMarkedForUse.isEmpty()) {
           queueId = threadMarkedForUse.remove(0);
         }
