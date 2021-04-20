@@ -374,11 +374,7 @@ public class PartitionedRegionStatsUpdateTest {
   @Test
   public void should_showMembersAgreeUponUsedStringMemory_afterDeltaPropagation() {
     jedis1.set(STRING_KEY, "eulav"); // two sets are required to force
-    System.out.println("HERE server1:" + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
-    System.out.println("HERE server2: " + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2));
     jedis2.set(STRING_KEY, "value"); // deserialization on both servers
-    System.out.println("HERE server1:" + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1));
-    System.out.println("HERE server2: " + clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2));
     // otherwise primary/secondary can disagree on size, and which server is primary varies
 
     long initialDataStoreBytesInUse =

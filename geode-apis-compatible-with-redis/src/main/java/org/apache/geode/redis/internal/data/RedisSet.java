@@ -48,14 +48,14 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 public class RedisSet extends AbstractRedisData {
   private HashSet<ByteArrayWrapper> members;
 
-  // these values are empirically derived using ReflectionObjectSizer, which provides an exact size
+  // These values are empirically derived using ReflectionObjectSizer, which provides an exact size
   // of the object. It can't be used directly because of its performance impact. These values cause
-  // the size we keep track of to converge to the actual size as it increases.
+  // the size we keep track of to converge to the actual size as the number of members increases.
   private static final int PER_MEMBER_OVERHEAD = PER_OBJECT_OVERHEAD + 70;
-  private static final int PER_SET_OVERHEAD = PER_OBJECT_OVERHEAD + 104;
-  private static final int SET_CAPACITY_OVERHEAD_FACTOR = 0;
+  private static final int BASE_REDISSET_OVERHEAD = PER_OBJECT_OVERHEAD + 104;
+  private static final int INTERNAL_HASHSET_STORAGE_OVERHEAD = 82;
 
-  private int setSize = PER_SET_OVERHEAD;
+  private int myCalculatedSize = BASE_REDISSET_OVERHEAD;
 
   @SuppressWarnings("unchecked")
   RedisSet(Collection<ByteArrayWrapper> members) {
@@ -65,7 +65,7 @@ public class RedisSet extends AbstractRedisData {
       this.members = new HashSet<>(members);
     }
     for (ByteArrayWrapper value : this.members) {
-      setSize += PER_MEMBER_OVERHEAD + value.length();
+      myCalculatedSize += PER_MEMBER_OVERHEAD + value.length();
     }
   }
 
@@ -210,7 +210,7 @@ public class RedisSet extends AbstractRedisData {
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     DataSerializer.writeHashSet(members, out);
-    DataSerializer.writeInteger(setSize, out);
+    DataSerializer.writeInteger(myCalculatedSize, out);
   }
 
   @Override
@@ -218,7 +218,7 @@ public class RedisSet extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     members = DataSerializer.readHashSet(in);
-    setSize = DataSerializer.readInteger(in);
+    myCalculatedSize = DataSerializer.readInteger(in);
   }
 
   @Override
@@ -229,7 +229,7 @@ public class RedisSet extends AbstractRedisData {
   private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
     boolean actuallyAdded = members.add(memberToAdd);
     if (actuallyAdded) {
-      setSize += PER_MEMBER_OVERHEAD + memberToAdd.length();
+      myCalculatedSize += PER_MEMBER_OVERHEAD + memberToAdd.length();
     }
     return actuallyAdded;
   }
@@ -237,20 +237,20 @@ public class RedisSet extends AbstractRedisData {
   private boolean membersRemove(ByteArrayWrapper memberToRemove) {
     boolean actuallyRemoved = members.remove(memberToRemove);
     if (actuallyRemoved) {
-      setSize -= PER_MEMBER_OVERHEAD + memberToRemove.length();
+      myCalculatedSize -= PER_MEMBER_OVERHEAD + memberToRemove.length();
     }
     return actuallyRemoved;
   }
 
   private synchronized boolean membersAddAll(AddsDeltaInfo addsDeltaInfo) {
     ArrayList<ByteArrayWrapper> adds = addsDeltaInfo.getAdds();
-    setSize += adds.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
+    myCalculatedSize += adds.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
     return members.addAll(adds);
   }
 
   private synchronized boolean membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
     ArrayList<ByteArrayWrapper> removes = remsDeltaInfo.getRemoves();
-    setSize -= removes.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
+    myCalculatedSize -= removes.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
     return members.removeAll(removes);
   }
 
@@ -344,12 +344,17 @@ public class RedisSet extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return setSize + (SET_CAPACITY_OVERHEAD_FACTOR * (members.size() >> 4));
+    return myCalculatedSize + getInternalHashSetOverhead();
+  }
+
+  private int getInternalHashSetOverhead() {
+    // If there are no members, the HashSet doesn't allocate entire storage
+    return members.size() > 0 ? INTERNAL_HASHSET_STORAGE_OVERHEAD : 0;
   }
 
   @VisibleForTesting
   protected static int getPerSetOverhead() {
-    return PER_SET_OVERHEAD;
+    return BASE_REDISSET_OVERHEAD;
   }
 
   @VisibleForTesting
