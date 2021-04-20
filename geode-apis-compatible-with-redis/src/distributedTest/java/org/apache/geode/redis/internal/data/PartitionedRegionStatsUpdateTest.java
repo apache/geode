@@ -32,6 +32,7 @@ import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
@@ -372,23 +373,24 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
+  @Ignore("confirm that bucket size stats are being calculated correctly before enabling")
   public void should_showMembersAgreeUponUsedStringMemory_afterDeltaPropagation() {
-    jedis1.set(STRING_KEY, "eulav"); // two sets are required to force
-    jedis2.set(STRING_KEY, "value"); // deserialization on both servers
+    jedis1.set(STRING_KEY, "12345"); // two sets are required to force
+    jedis1.set(STRING_KEY, "value"); // deserialization on both servers
     // otherwise primary/secondary can disagree on size, and which server is primary varies
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
 
     for (int i = 0; i < 10; i++) {
-      jedis1.set(STRING_KEY, "value");
+      jedis1.append(STRING_KEY, "a");
     }
 
     assertThat(jedis1.exists(STRING_KEY)).isTrue();
     assertThat(jedis2.exists(STRING_KEY)).isTrue();
 
-    assertThat(jedis1.get(STRING_KEY)).isEqualTo("value");
-    assertThat(jedis2.get(STRING_KEY)).isEqualTo("value");
+    assertThat(jedis1.get(STRING_KEY)).isEqualTo("valueaaaaaaaaaa");
+    assertThat(jedis2.get(STRING_KEY)).isEqualTo("valueaaaaaaaaaa");
 
     long server1FinalDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
@@ -400,138 +402,5 @@ public class PartitionedRegionStatsUpdateTest {
 
     assertThat(server2FinalDataStoreBytesInUse)
         .isEqualTo(initialDataStoreBytesInUse);
-  }
-
-  /******* check DatastoreBytesInUse using reflection *******/
-
-  @Test
-  public void string_bytesInUse_shouldReflectActualSizeOfDataInRegion() {
-    String value = "value";
-
-    jedis1.set("key2", value);
-
-    Long regionOverhead = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
-
-    jedis1.set(STRING_KEY, value);
-
-    for (int i = 0; i < 100; i++) {
-      jedis1.append(STRING_KEY, LONG_APPEND_VALUE);
-      value += LONG_APPEND_VALUE;
-    }
-
-    Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
-    Long expected = ros.sizeof(value.getBytes()) + regionOverhead;
-    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
-
-    assertThat(actual).isCloseTo(expected, offset);
-  }
-
-  @Test
-  @SuppressWarnings("unchecked")
-  public void set_bytesInUse_shouldReflectActualSizeOfDataInRegion() {
-    String baseValue = "string";
-
-    Set values = new HashSet<ByteArrayWrapper>();
-    values.add(new ByteArrayWrapper(baseValue.getBytes()));
-    jedis1.sadd(SET_KEY, baseValue);
-
-    for (int i = 0; i < 1000; i++) {
-      jedis1.sadd(SET_KEY, baseValue + i);
-      values.add(new ByteArrayWrapper((baseValue + i).getBytes()));
-    }
-
-    Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
-    int expected = ros.sizeof(values);
-    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
-
-    assertThat(actual).isCloseTo(expected, offset);
-  }
-
-  @Test
-  @SuppressWarnings("unchecked")
-  public void hash_bytesInUse_shouldReflectActualSizeOfDataInRegion() {
-    String baseValue = "value";
-    String baseField = "field";
-
-    HashMap<ByteArrayWrapper, ByteArrayWrapper> values = new HashMap<>();
-    values.put(new ByteArrayWrapper(baseField.getBytes()),
-        new ByteArrayWrapper(baseValue.getBytes()));
-    jedis1.hset(HASH_KEY, baseField, baseValue);
-
-    for (int i = 0; i < 10_000; i++) {
-      jedis1.hset(HASH_KEY, baseField + i, baseValue + i);
-      values.put(new ByteArrayWrapper((baseField + i).getBytes()),
-          new ByteArrayWrapper((baseValue + i).getBytes()));
-    }
-
-    Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
-    int expected = ros.sizeof(values);
-    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
-
-    assertThat(actual).isCloseTo(expected, offset);
-  }
-
-  @Test
-  public void should_getAccurateSize_whenUsingRedisSetConstructor() {
-    final String KEY = "key1";
-    List<String> members1 = makeMemberList(SET_SIZE, "member1-");
-
-    HashSet<ByteArrayWrapper> localHashSetCopy = new HashSet<>(
-        members1.stream().map(a -> new ByteArrayWrapper(a.getBytes()))
-            .collect(Collectors.toSet()));
-
-    jedis1.sadd(KEY, members1.toArray(new String[] {}));
-    jedis1.sadd(KEY, "forceDelta");
-
-    Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
-    int expected = ros.sizeof(localHashSetCopy);
-    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
-
-    assertThat(actual).isCloseTo(expected, offset);
-  }
-
-  @Test
-  public void should_notCountDuplicates_whenUsingRedisSetConstructor() {
-    final String KEY = "key1";
-    final String MEMBER_BASE_STRING = "member1-";
-
-    List<String> distinctMembers = makeMemberList(SET_SIZE, MEMBER_BASE_STRING);
-    HashSet<ByteArrayWrapper> localHashSetCopy = new HashSet<>(
-        distinctMembers.stream().distinct().map(a -> new ByteArrayWrapper(a.getBytes()))
-            .collect(Collectors.toSet()));
-
-    jedis1.sadd(KEY, distinctMembers.toArray(new String[] {}));
-    assertThat(jedis1.scard(KEY)).isEqualTo(SET_SIZE);
-
-    localHashSetCopy.add(new ByteArrayWrapper(MEMBER_BASE_STRING.getBytes()));
-    assertThat(localHashSetCopy.size()).isEqualTo(SET_SIZE + 1);
-
-    List<String> duplicateMembers = makeListOfDuplicates(SET_SIZE, MEMBER_BASE_STRING);
-    jedis1.sadd(KEY, duplicateMembers.toArray(new String[] {}));
-    assertThat(jedis1.scard(KEY)).isEqualTo(SET_SIZE + 1);
-
-    Long actual = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
-    int expected = ros.sizeof(localHashSetCopy);
-    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
-
-    assertThat(actual).isCloseTo(expected, offset);
-  }
-
-  /******* helper methods *******/
-
-  private List<String> makeMemberList(int setSize, String baseString) {
-    List<String> members = new ArrayList<>();
-    for (int i = 0; i < setSize; i++) {
-      members.add(baseString + i);
-    }
-    return members;
-  }
-
-  private List<String> makeListOfDuplicates(int setSize, String baseString) {
-    List<String> members = new ArrayList<>();
-    for (int i = 0; i < setSize; i++) {
-      members.add(baseString);
-    }
-    return members;
   }
 }
