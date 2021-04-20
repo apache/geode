@@ -69,13 +69,13 @@ public class RedisSetTest {
     assertThat(Modifier
         .isSynchronized(RedisSet.class
             .getMethod("toData", DataOutput.class, SerializationContext.class).getModifiers()))
-        .isTrue();
+                .isTrue();
   }
 
   private RedisSet createRedisSet(int m1, int m2) {
     return new RedisSet(Arrays.asList(
-        new ByteArrayWrapper(new byte[]{(byte) m1}),
-        new ByteArrayWrapper(new byte[]{(byte) m2})));
+        new ByteArrayWrapper(new byte[] {(byte) m1}),
+        new ByteArrayWrapper(new byte[] {(byte) m2})));
   }
 
   @Test
@@ -118,7 +118,7 @@ public class RedisSetTest {
   public void sadd_stores_delta_that_is_stable() throws IOException {
     Region<RedisKey, RedisData> region = mock(Region.class);
     RedisSet o1 = createRedisSet(1, 2);
-    ByteArrayWrapper member3 = new ByteArrayWrapper(new byte[]{3});
+    ByteArrayWrapper member3 = new ByteArrayWrapper(new byte[] {3});
     ArrayList<ByteArrayWrapper> adds = new ArrayList<>();
     adds.add(member3);
     o1.sadd(adds, region, null);
@@ -138,7 +138,7 @@ public class RedisSetTest {
   public void srem_stores_delta_that_is_stable() throws IOException {
     Region<RedisKey, RedisData> region = mock(Region.class);
     RedisSet o1 = createRedisSet(1, 2);
-    ByteArrayWrapper member1 = new ByteArrayWrapper(new byte[]{1});
+    ByteArrayWrapper member1 = new ByteArrayWrapper(new byte[] {1});
     ArrayList<ByteArrayWrapper> removes = new ArrayList<>();
     removes.add(member1);
     o1.srem(removes, region, null);
@@ -179,13 +179,12 @@ public class RedisSetTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void should_calculateSize_closeToROSSize_ofIndividualInstances() {
+  public void should_calculateSize_closeToROS_withVaryingMemberCounts() {
     for (int i = 0; i < 1024; i += 16) {
       RedisSet set = createRedisSetOfSpecifiedSize(i);
 
       int expected = reflectionObjectSizer.sizeof(set);
       Long actual = Long.valueOf(set.getSizeInBytes());
-      System.out.println(i + ", " + actual);
       Offset<Long> offset = Offset.offset(Math.round(expected * 0.06));
 
       assertThat(actual).isCloseTo(expected, offset);
@@ -194,12 +193,11 @@ public class RedisSetTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void should_calculateSize_closeToROSSize_withManyEntries() {
+  public void should_calculateSize_closeToROS_withVaryingMemberSize() {
     for (int i = 0; i < 16; i++) {
       RedisSet set = createRedisSetWithMemberOfSpecifiedSize(i * 64);
       int expected = reflectionObjectSizer.sizeof(set);
-      Long actual = Long.valueOf(set.getSizeInBytes()) + 82; // TODO: should not need '82'!!!!
-      System.out.println(i + ", " + actual);
+      Long actual = Long.valueOf(set.getSizeInBytes());
       Offset<Long> offset = Offset.offset(Math.round(expected * 0.06));
 
       assertThat(actual).isCloseTo(expected, offset);
@@ -209,24 +207,26 @@ public class RedisSetTest {
   private RedisSet createRedisSetOfSpecifiedSize(int setSize) {
     ArrayList<ByteArrayWrapper> arrayList = new ArrayList<>();
     for (int i = 0; i < setSize; i++) {
-
-      arrayList.add(new ByteArrayWrapper(("a" + i).getBytes()));
+      arrayList.add(new ByteArrayWrapper(("abcdefgh" + i).getBytes()));
     }
     return new RedisSet(arrayList);
   }
 
   private RedisSet createRedisSetWithMemberOfSpecifiedSize(int memberSize) {
     ArrayList<ByteArrayWrapper> arrayList = new ArrayList<>();
-    arrayList.add(new ByteArrayWrapper(createMemberOfSpecifiedSize("a", memberSize).getBytes()));
+    ByteArrayWrapper member =
+        new ByteArrayWrapper(createMemberOfSpecifiedSize("a", memberSize).getBytes());
+    if (member.length() > 0) {
+      arrayList.add(member);
+    }
     return new RedisSet(arrayList);
   }
 
   private String createMemberOfSpecifiedSize(final String base, final int stringSize) {
     Random random = new Random();
     if (base.length() > stringSize) {
-      return base;
+      return "";
     }
-    System.out.println("gonna loop to:" + stringSize);
     StringBuffer sb = new StringBuffer(stringSize);
     sb.append(base);
     for (int i = base.length(); i < stringSize; i++) {
