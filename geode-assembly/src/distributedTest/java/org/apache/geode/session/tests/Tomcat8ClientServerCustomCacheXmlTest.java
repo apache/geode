@@ -13,35 +13,35 @@
  * the License.
  */
 
-package org.apache.geode.session.tests;
-
-import java.util.HashMap;
-
-public class Tomcat8ClientServerCustomCacheXmlTest extends Tomcat8ClientServerTest {
-
-  @Override
-  public void customizeContainers() throws Exception {
-    for (int i = 0; i < manager.numContainers(); i++) {
-      ServerContainer container = manager.getContainer(i);
-
-      HashMap<String, String> regionAttributes = new HashMap<>();
-      regionAttributes.put("refid", "PROXY");
-      regionAttributes.put("name", "gemfire_modules_sessions");
-
-      ContainerInstall.editXMLFile(
-          container.cacheXMLFile.getAbsolutePath(),
-          null,
-          "region",
-          "client-cache",
-          regionAttributes);
-    }
-  }
-
-  @Override
-  public void afterStartServers() throws Exception {
-    gfsh.connect(locatorVM);
-    gfsh.executeAndAssertThat("create region --name=gemfire_modules_sessions --type=PARTITION")
-        .statusIsSuccess();
-  }
-
-}
+//package org.apache.geode.session.tests;
+//
+//import java.util.HashMap;
+//
+//public class Tomcat8ClientServerCustomCacheXmlTest extends Tomcat8ClientServerTest {
+//
+//  @Override
+//  public void customizeContainers() throws Exception {
+//    for (int i = 0; i < manager.numContainers(); i++) {
+//      ServerContainer container = manager.getContainer(i);
+//
+//      HashMap<String, String> regionAttributes = new HashMap<>();
+//      regionAttributes.put("refid", "PROXY");
+//      regionAttributes.put("name", "gemfire_modules_sessions");
+//
+//      ContainerInstall.editXMLFile(
+//          container.cacheXMLFile.getAbsolutePath(),
+//          null,
+//          "region",
+//          "client-cache",
+//          regionAttributes);
+//    }
+//  }
+//
+//  @Override
+//  public void afterStartServers() throws Exception {
+//    gfsh.connect(locatorVM);
+//    gfsh.executeAndAssertThat("create region --name=gemfire_modules_sessions --type=PARTITION")
+//        .statusIsSuccess();
+//  }
+//
+//}

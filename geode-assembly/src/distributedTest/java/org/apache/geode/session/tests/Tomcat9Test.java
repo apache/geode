@@ -12,17 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.session.tests;
-
-import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.PEER_TO_PEER;
-import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT9;
-
-import java.util.function.IntSupplier;
-
-public class Tomcat9Test extends CargoTestBase {
-  @Override
-  public ContainerInstall getInstall(IntSupplier portSupplier) throws Exception {
-    return new TomcatInstall(getClass().getSimpleName(), TOMCAT9, PEER_TO_PEER, portSupplier,
-        TomcatInstall.CommitValve.DEFAULT);
-  }
-}
+//package org.apache.geode.session.tests;
+//
+//import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.PEER_TO_PEER;
+//import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT9;
+//
+//import java.util.function.IntSupplier;
+//
+//public class Tomcat9Test extends CargoTestBase {
+//  @Override
+//  public ContainerInstall getInstall(IntSupplier portSupplier) throws Exception {
+//    return new TomcatInstall(getClass().getSimpleName(), TOMCAT9, PEER_TO_PEER, portSupplier,
+//        TomcatInstall.CommitValve.DEFAULT);
+//  }
+//}

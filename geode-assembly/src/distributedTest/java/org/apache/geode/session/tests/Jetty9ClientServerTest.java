@@ -12,19 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.session.tests;
-
-import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.CLIENT_SERVER;
-import static org.apache.geode.session.tests.GenericAppServerInstall.GenericAppServerVersion.JETTY9;
-
-import java.io.IOException;
-import java.util.function.IntSupplier;
-
-public class Jetty9ClientServerTest extends GenericAppServerClientServerTest {
-  @Override
-  public ContainerInstall getInstall(IntSupplier portSupplier)
-      throws IOException, InterruptedException {
-    return new GenericAppServerInstall(getClass().getSimpleName(), JETTY9, CLIENT_SERVER,
-        portSupplier);
-  }
-}
+//package org.apache.geode.session.tests;
+//
+//import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.CLIENT_SERVER;
+//import static org.apache.geode.session.tests.GenericAppServerInstall.GenericAppServerVersion.JETTY9;
+//
+//import java.io.IOException;
+//import java.util.function.IntSupplier;
+//
+//public class Jetty9ClientServerTest extends GenericAppServerClientServerTest {
+//  @Override
+//  public ContainerInstall getInstall(IntSupplier portSupplier)
+//      throws IOException, InterruptedException {
+//    return new GenericAppServerInstall(getClass().getSimpleName(), JETTY9, CLIENT_SERVER,
+//        portSupplier);
+//  }
+//}
