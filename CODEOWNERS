@@ -295,7 +295,7 @@ expected-pom.xml                                                  @rhoughton-piv
 #-----------------------------------------------------------------
 BUILDING.md                                                       @rhoughton-pivot @upthewaterspout
 CODE_OF_CONDUCT.md                                                @upthewaterspout @pivotal-amurmann @nonbinaryprogrammer
-LICENSE                                                           @onichols-pivotal @dickcav @metatype
-NOTICE                                                            @onichols-pivotal @dickcav @metatype
+LICENSE                                                           @onichols-pivotal @dickcav
+NOTICE                                                            @onichols-pivotal @dickcav
 /README.md                                                        @upthewaterspout @pivotal-amurmann
 #TESTING.md

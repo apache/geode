@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-# This file follows the same format as CODEOWNERS, but adds you as 
+# This file follows the same format as CODEOWNERS, but adds you as
 # an optional reviewer rather than a required code owner reviewer.
 
 
@@ -30,10 +30,12 @@ CODEWATCHERS                                                      @onichols-pivo
 #-----------------------------------------------------------------
 # Documentation
 #-----------------------------------------------------------------
-geode-book/**                                                     @karensmolermiller @davebarnes97
-geode-docs/**                                                     @karensmolermiller @davebarnes97
+geode-book/**                                                     @davebarnes97
+geode-docs/**                                                     @davebarnes97
 geode-book/config.yml                                             @onichols-pivotal
 geode-book/redirects.rb                                           @onichols-pivotal
+LICENSE                                                           @metatype
+NOTICE                                                            @metatype
 
 
 #-----------------------------------------------------------------
