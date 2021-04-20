@@ -33,9 +33,7 @@ import io.netty.handler.codec.redis.RedisArrayAggregator;
 import io.netty.handler.codec.redis.RedisBulkStringAggregator;
 import io.netty.handler.codec.redis.RedisDecoder;
 import io.netty.handler.codec.redis.RedisEncoder;
-import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This proxy handles mangling Redis responses in whatever way is necessary. In the case of
@@ -43,12 +41,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * addresses - see {@link RedisProxyInboundHandler#channelRead(ChannelHandlerContext, Object)}.
  */
 public final class RedisProxy {
-
-  private static final Logger logger = LogService.getLogger();
-
-  private static final int LOCAL_PORT = Integer.parseInt(System.getProperty("localPort", "5379"));
-  private static final String REMOTE_HOST = System.getProperty("remoteHost", "localhost");
-  private static final int REMOTE_PORT = Integer.parseInt(System.getProperty("remotePort", "6379"));
 
   private final EventLoopGroup bossGroup;
   private final EventLoopGroup workerGroup;
@@ -65,7 +57,6 @@ public final class RedisProxy {
           @Override
           protected void initChannel(SocketChannel ch) throws Exception {
             ChannelPipeline p = ch.pipeline();
-            // p.addLast(new LoggingHandler(LogLevel.INFO));
             p.addLast(new RedisEncoder());
             p.addLast(new RedisDecoder());
             p.addLast(new RedisBulkStringAggregator());

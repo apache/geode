@@ -73,7 +73,6 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
           @Override
           protected void initChannel(SocketChannel ch) throws Exception {
             ChannelPipeline p = ch.pipeline();
-            // p.addLast(new LoggingHandler(LogLevel.INFO));
             p.addLast(new RedisEncoder());
             p.addLast(new RedisDecoder());
             p.addLast(new RedisBulkStringAggregator());
@@ -82,7 +81,6 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
             p.addLast(outboundHandler);
           }
         });
-    // .option(ChannelOption.AUTO_READ, false);
     ChannelFuture f = b.connect(remoteHost, remotePort);
     outboundChannel = f.channel();
     f.addListener((ChannelFutureListener) future -> {
@@ -110,8 +108,6 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
       // Commands always consist of an array of bulk strings
       ArrayRedisMessage rMessage = (ArrayRedisMessage) msg;
       String command = getArg(rMessage, 0);
-
-      // logger.info("--- {}", command);
 
       switch (command.toLowerCase()) {
         case "cluster":

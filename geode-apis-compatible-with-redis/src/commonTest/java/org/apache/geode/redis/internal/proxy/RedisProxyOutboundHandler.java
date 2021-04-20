@@ -53,7 +53,6 @@ public class RedisProxyOutboundHandler extends ChannelInboundHandlerAdapter {
         .addListener((ChannelFutureListener) future -> {
           if (future.isSuccess()) {
             inboundChannel.read();
-            // ctx.channel().read();
           } else {
             logger.error("Failed to return response on inboundChannel", future.cause());
             future.channel().close();
