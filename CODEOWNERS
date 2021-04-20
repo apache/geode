@@ -18,7 +18,7 @@
 # CODEOWNERS and .asf.yml - ownerless so everyone "owns" it
 #-----------------------------------------------------------------
 #CODEOWNERS
-#.asf.yml
+#.asf.yaml
 
 #-----------------------------------------------------------------
 # Serialization

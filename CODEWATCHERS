@@ -24,7 +24,7 @@
 #-----------------------------------------------------------------
 CODEOWNERS                                                        @onichols-pivotal @rhoughton-pivot
 CODEWATCHERS                                                      @onichols-pivotal @rhoughton-pivot
-.asf.yml                                                          @onichols-pivotal @rhoughton-pivot
+.asf.yaml                                                         @onichols-pivotal @rhoughton-pivot
 
 
 #-----------------------------------------------------------------
