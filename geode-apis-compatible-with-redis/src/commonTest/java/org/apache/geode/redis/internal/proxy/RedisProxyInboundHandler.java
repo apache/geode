@@ -71,7 +71,7 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
         .channel(ctx.channel().getClass())
         .handler(new ChannelInitializer<SocketChannel>() {
           @Override
-          protected void initChannel(SocketChannel ch) throws Exception {
+          protected void initChannel(SocketChannel ch) {
             ChannelPipeline p = ch.pipeline();
             p.addLast(new RedisEncoder());
             p.addLast(new RedisDecoder());
