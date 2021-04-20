@@ -46,8 +46,6 @@ public class PartitionedRegionClear {
 
   protected static final String CLEAR_OPERATION = "_clearOperation";
 
-  private final int retryTime = 2 * 60 * 1000;
-
   private final PartitionedRegion partitionedRegion;
 
   private final DistributedLockService distributedLockService;
@@ -204,6 +202,7 @@ public class PartitionedRegionClear {
         try {
           boolean retry;
           do {
+            int retryTime = 2 * 60 * 1000;
             waitForPrimary(new PartitionedRegion.RetryTimeKeeper(retryTime));
             RegionEventImpl bucketRegionEvent;
             for (BucketRegion localPrimaryBucketRegion : partitionedRegion.getDataStore()
@@ -230,9 +229,9 @@ public class PartitionedRegionClear {
         } finally {
           partitionedRegion.getDataStore().unlockBucketCreationForRegionClear();
           if (clearedBuckets.size() != 0 && partitionedRegion.getCachePerfStats() != null) {
-            partitionedRegion.getRegionCachePerfStats().incRegionClearCount();
-            partitionedRegion.getRegionCachePerfStats()
-                .incPartitionedRegionClearLocalDuration(System.nanoTime() - clearStartTime);
+            partitionedRegion.getRegionCachePerfStats().incClearCount();
+            partitionedRegion.getPrStats()
+                .incClearLocalDuration(System.nanoTime() - clearStartTime);
           }
         }
       } else {
@@ -486,8 +485,8 @@ public class PartitionedRegionClear {
       releaseDistributedClearLock(lockName);
       CachePerfStats stats = partitionedRegion.getRegionCachePerfStats();
       if (stats != null) {
-        partitionedRegion.getRegionCachePerfStats()
-            .incPartitionedRegionClearTotalDuration(System.nanoTime() - clearStartTime);
+        partitionedRegion.getPrStats()
+            .incClearTotalDuration(System.nanoTime() - clearStartTime);
       }
     }
   }
@@ -515,7 +514,7 @@ public class PartitionedRegionClear {
     }
   }
 
-  class LockForListenerAndClientNotification {
+  static class LockForListenerAndClientNotification {
 
     private boolean locked = false;
 

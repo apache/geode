@@ -25,16 +25,15 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
+import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
@@ -44,15 +43,16 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
  */
 @Category({OQLQueryTest.class})
 public class PRQueryJUnitTest {
-  String regionName = "portfolios";
+  final String regionName = "portfolios";
 
   LogWriter logger = null;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     if (logger == null) {
       logger = PartitionedRegionTestHelper.getLogger();
     }
+
   }
 
   /**
@@ -63,7 +63,8 @@ public class PRQueryJUnitTest {
    */
   @Test
   public void testQueryOnSingleDataStore() throws Exception {
-    Region region = PartitionedRegionTestHelper.createPartitionedRegion(regionName, "100", 0);
+    Region<Integer, Object> region =
+        PartitionedRegionTestHelper.createPartitionedRegion(regionName, "100", 0);
     PortfolioData[] portfolios = new PortfolioData[100];
     for (int j = 0; j < 100; j++) {
       portfolios[j] = new PortfolioData(j);
@@ -72,7 +73,7 @@ public class PRQueryJUnitTest {
       populateData(region, portfolios);
 
       String queryString = "ID < 5";
-      SelectResults resSet = region.query(queryString);
+      SelectResults<PortfolioData> resSet = region.query(queryString);
       Assert.assertTrue(resSet.size() == 5);
 
       queryString = "ID > 5 and ID <=15";
@@ -85,24 +86,26 @@ public class PRQueryJUnitTest {
 
   @Test
   public void testQueryWithNullProjectionValue() throws Exception {
-    Region region = PartitionedRegionTestHelper.createPartitionedRegion(regionName, "100", 0);
+    Region<String, HashMap<String, String>> region =
+        PartitionedRegionTestHelper.createPartitionedRegion(regionName, "100", 0);
     int size = 10;
-    HashMap value = null;
+    HashMap<String, String> value;
     for (int j = 0; j < size; j++) {
-      value = new HashMap();
+      value = new HashMap<>();
       value.put("account" + j, "account" + j);
       region.put("" + j, value);
     }
 
     String queryString = "Select p.get('account') from " + SEPARATOR + region.getName() + " p ";
-    Query query = region.getCache().getQueryService().newQuery(queryString);
-    SelectResults sr = (SelectResults) query.execute();
+    Query query = PartitionedRegionTestHelper.getCache().getQueryService().newQuery(queryString);
+    SelectResults<HashMap<String, String>> sr =
+        (SelectResults<HashMap<String, String>>) query.execute();
     Assert.assertTrue(sr.size() == size);
 
     try {
       queryString = "Select p.get('acc') from " + SEPARATOR + region.getName() + " p ";
-      query = region.getCache().getQueryService().newQuery(queryString);
-      sr = (SelectResults) query.execute();
+      query = PartitionedRegionTestHelper.getCache().getQueryService().newQuery(queryString);
+      sr = (SelectResults<HashMap<String, String>>) query.execute();
       Assert.assertTrue(sr.size() == 10);
       for (Object r : sr.asList()) {
         if (r != null) {
@@ -116,10 +119,11 @@ public class PRQueryJUnitTest {
 
   @Test
   public void testOrderByQuery() throws Exception {
-    Region region = PartitionedRegionTestHelper.createPartitionedRegion(regionName, "100", 0);
+    Region<Integer, Object> region =
+        PartitionedRegionTestHelper.createPartitionedRegion(regionName, "100", 0);
     String[] values = new String[100];
     for (int j = 0; j < 100; j++) {
-      values[j] = new String("" + j);
+      values[j] = "" + j;
     }
 
     try {
@@ -127,7 +131,7 @@ public class PRQueryJUnitTest {
 
       String queryString =
           "Select distinct p from " + SEPARATOR + region.getName() + " p order by p";
-      Query query = region.getCache().getQueryService().newQuery(queryString);
+      Query query = PartitionedRegionTestHelper.getCache().getQueryService().newQuery(queryString);
       SelectResults sr = (SelectResults) query.execute();
 
       Assert.assertTrue(sr.size() == 100);
@@ -138,9 +142,12 @@ public class PRQueryJUnitTest {
 
   @Test
   public void testNestedPRQuery() throws Exception {
-    Cache cache = CacheUtils.getCache();
-    QueryService queryService = CacheUtils.getCache().getQueryService();
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("TEST_REGION");
+
+    Region<String, PdxInstance> region =
+        PartitionedRegionTestHelper.createPartitionedRegion("TEST_REGION");
+
+    InternalCache cache = PartitionedRegionTestHelper.getCache();
+    QueryService queryService = cache.getQueryService();
     Query query = queryService.newQuery(
         "SELECT distinct COUNT(*) FROM (SELECT DISTINCT tr.id, tr.domain FROM " + SEPARATOR
             + "TEST_REGION tr)");
@@ -178,9 +185,9 @@ public class PRQueryJUnitTest {
    * Populates the region with the Objects stores in the data Object array.
    *
    */
-  private void populateData(Region region, Object[] data) {
+  private void populateData(Region<Integer, Object> region, Object[] data) {
     for (int j = 0; j < data.length; j++) {
-      region.put(new Integer(j), data[j]);
+      region.put(j, data[j]);
     }
   }
 }

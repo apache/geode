@@ -61,7 +61,7 @@ public class PartitionedRegionLocalMaxMemoryOffHeapDUnitTest
       long recoveryDelay, EvictionAttributes evictionAttributes) {
     RegionAttributes<?, ?> regionAttributes = PartitionedRegionTestHelper.createRegionAttrsForPR(
         redundancy, localMaxMemory, recoveryDelay, evictionAttributes, null);
-    AttributesFactory attributesFactory = new AttributesFactory(regionAttributes);
+    AttributesFactory<?, ?> attributesFactory = new AttributesFactory<>(regionAttributes);
     attributesFactory.setOffHeap(true);
     return attributesFactory.create();
   }

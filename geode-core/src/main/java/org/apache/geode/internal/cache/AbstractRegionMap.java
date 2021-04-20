@@ -345,9 +345,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
       CachePerfStats stats = lr.getCachePerfStats();
       if (stats != null) {
         if (lr.isUsedForPartitionedRegionBucket()) {
-          stats.incBucketClearCount();
+          lr.getPartitionedRegion().getPrStats().incBucketClearCount();
         } else {
-          stats.incRegionClearCount();
+          stats.incClearCount();
         }
 
       }

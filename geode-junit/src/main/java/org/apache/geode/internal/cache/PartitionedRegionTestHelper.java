@@ -35,10 +35,10 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.distributed.DistributedSystem;
 
 
 /**
@@ -52,29 +52,33 @@ public class PartitionedRegionTestHelper
 {
   static InternalCache cache = null;
 
+  public static InternalCache getCache() {
+    return cache;
+  }
+
   /**
    * This method creates a partitioned region with all the default values. The cache created is a
    * loner, so this is only suitable for single VM tests.
    *
    */
 
-  public static Region createPartionedRegion(String regionname) throws RegionExistsException {
-    return createPartionedRegion(regionname, new PartitionAttributesFactory().create());
+  public static <K, V> Region<K, V> createPartitionedRegion(String regionName)
+      throws RegionExistsException {
+    return createPartitionedRegion(regionName, new PartitionAttributesFactory<K, V>().create());
   }
 
   /**
    * This method creates a partitioned region with the given PR attributes. The cache created is a
    * loner, so this is only suitable for single VM tests.
    */
-  public static Region createPartionedRegion(String regionname, PartitionAttributes prattribs)
+  public static <K, V> Region<K, V> createPartitionedRegion(String regionName,
+      PartitionAttributes<K, V> partitionAttributes)
       throws RegionExistsException {
-    AttributesFactory attribFactory = new AttributesFactory();
-    attribFactory.setDataPolicy(DataPolicy.PARTITION);
-    attribFactory.setPartitionAttributes(prattribs);
-    RegionAttributes regionAttribs = attribFactory.create();
-
-    Region partitionedregion = createCache().createRegion(regionname, regionAttribs);
-    return partitionedregion;
+    createCache();
+    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
+    regionFactory.setDataPolicy(DataPolicy.PARTITION);
+    regionFactory.setPartitionAttributes(partitionAttributes);
+    return regionFactory.create(regionName);
   }
 
 
@@ -83,14 +87,12 @@ public class PartitionedRegionTestHelper
    * so this is only suitable for single VM tests.
    */
 
-  public static Region createLocalRegion(String regionName) throws RegionExistsException {
-
-    AttributesFactory attr = new AttributesFactory();
-
-    attr.setScope(Scope.LOCAL);
-    Region localRegion = createCache().createRegion(regionName, attr.create());
-
-    return localRegion;
+  public static <K, V> Region<K, V> createLocalRegion(String regionName)
+      throws RegionExistsException {
+    createCache();
+    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
+    regionFactory.setScope(Scope.LOCAL);
+    return regionFactory.create(regionName);
   }
 
   /**
@@ -98,8 +100,6 @@ public class PartitionedRegionTestHelper
    * SelectResults#CollectionType#ElementType()
    */
   public static String compareResultSets(SelectResults sr1, SelectResults sr2) {
-
-
     ObjectType type1, type2;
     String failureString = null;
     type1 = sr1.getCollectionType().getElementType();
@@ -117,13 +117,10 @@ public class PartitionedRegionTestHelper
     } else {
       getLogger().error("PartitionedRegionTestHelper#compareTwoQueryResults: Classes are : "
           + type1.getClass().getName() + " " + type2.getClass().getName());
-      failureString =
-          "PartitionedRegionTestHelper#compareResultSets: FAILED:Search result Type is different in both the cases"
-              + type1.getClass().getName() + " " + type2.getClass().getName();
-
       Assert.fail(
           "PartitionedRegionTestHelper#compareResultSets: FAILED:Search result Type is different in both the cases");
-      return failureString;
+      return "PartitionedRegionTestHelper#compareResultSets: FAILED:Search result Type is different in both the cases"
+          + type1.getClass().getName() + " " + type2.getClass().getName();
     }
     if ((sr1.size()) == (sr2.size())) {
       getLogger().info(
@@ -133,18 +130,19 @@ public class PartitionedRegionTestHelper
     } else {
       getLogger().error(
           "PartitionedRegionTestHelper#compareResultSets: FAILED:Search resultSet size are different in both the cases");
-      failureString =
-          "PartitionedRegionTestHelper#compareResultSets: FAILED:Search resultSet size are different in both the cases"
-              + sr1.size() + " " + sr2.size();
+
       Assert.fail(
           "PartitionedRegionTestHelper#compareResultSets: FAILED:Search resultSet size are different in both the cases");
 
+      return "PartitionedRegionTestHelper#compareResultSets: FAILED:Search resultSet size are different in both the cases"
+          + sr1.size() + " " + sr2.size();
+
     }
-    return failureString;
+    return null;
   }
 
   /**
-   * This is a function to create partitioned region with following paramaters:
+   * This is a function to create partitioned region with following parameters:
    * </p>
    * 1) name
    * </p>
@@ -155,13 +153,9 @@ public class PartitionedRegionTestHelper
    * The cache created is a loner, so this is only suitable for single VM tests.
    */
 
-  public static Region createPartitionedRegion(String regionName, String localMaxMemory,
+  public static <K, V> Region<K, V> createPartitionedRegion(String regionName,
+      String localMaxMemory,
       int redundancy) {
-    Region pr = null;
-    PartitionAttributes pa;
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    AttributesFactory af = new AttributesFactory();
-    RegionAttributes ra;
     // setting property
     // setting partition attributes to partitionAttributesFactory
     int lmax;
@@ -171,16 +165,19 @@ public class PartitionedRegionTestHelper
       throw new IllegalArgumentException(
           "localMaxMemory must be an integer (" + localMaxMemory + ")");
     }
-    pa = paf.setLocalMaxMemory(lmax).setRedundantCopies(redundancy).create();
-    // setting attribute factor
-    af.setPartitionAttributes(pa);
-    // creating region attributes
-    ra = af.create();
     cache = createCache();
+    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
+    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
+    paf.setLocalMaxMemory(lmax);
+    paf.setRedundantCopies(redundancy);
+    regionFactory.setPartitionAttributes(paf.create());
+
+    Region<K, V> pr;
+
     try {
-      pr = cache.createRegion(regionName, ra);
+      pr = regionFactory.create(regionName);
     } catch (RegionExistsException rex) {
-      pr = cache.getRegion(regionName);
+      pr = regionFactory.create(regionName);
     }
     return pr;
   }
@@ -190,8 +187,7 @@ public class PartitionedRegionTestHelper
    *
    */
   public static SerializableObject createPRSerializableObject(String name, int id) {
-    Object obj = new SerializableObject(name, id);
-    return (SerializableObject) obj;
+    return new SerializableObject(name, id);
 
   }
 
@@ -205,13 +201,11 @@ public class PartitionedRegionTestHelper
       Properties dsp = new Properties();
       dsp.setProperty(MCAST_PORT, "0");
       dsp.setProperty(LOCATORS, "");
-      DistributedSystem sys = DistributedSystem.connect(dsp);
+      CacheFactory cacheFactory = new CacheFactory(dsp);
       try {
-        cache = (InternalCache) CacheFactory.create(sys);
-      } catch (CacheExistsException exp) {
-        cache = (InternalCache) CacheFactory.getInstance(sys);
-      } catch (RegionExistsException rex) {
-        cache = (InternalCache) CacheFactory.getInstance(sys);
+        cache = (InternalCache) cacheFactory.create();
+      } catch (CacheExistsException | RegionExistsException exp) {
+        cache = (InternalCache) cacheFactory.create(); // hmm not happy here.
       }
     }
     return cache;
@@ -233,7 +227,7 @@ public class PartitionedRegionTestHelper
    * This method is used to return existing region.
    *
    */
-  public static Region getExistingRegion(String PRName) {
+  public static <K, V> Region<K, V> getExistingRegion(String PRName) {
     createCache();
     return cache.getRegion(PRName);
   }
@@ -247,34 +241,28 @@ public class PartitionedRegionTestHelper
     return createCache().getLogger();
   }
 
-  public static RegionAttributes createRegionAttrsForPR(int red, int localMaxMem) {
+  public static <K, V> RegionAttributes<K, V> createRegionAttrsForPR(int red, int localMaxMem) {
     return createRegionAttrsForPR(red, localMaxMem,
         PartitionAttributesFactory.RECOVERY_DELAY_DEFAULT);
   }
 
-  public static RegionAttributes createRegionAttrsForPR(int red, int localMaxMem,
-      PartitionResolver resolver) {
-    return createRegionAttrsForPR(red, localMaxMem,
-        PartitionAttributesFactory.RECOVERY_DELAY_DEFAULT, null, resolver);
-  }
-
   /**
-   * This function creates Region attributes with provided scope,redundancy and localmaxMemory
+   * This function creates Region attributes with provided scope,redundancy and localMaxMemory
    */
-  public static RegionAttributes createRegionAttrsForPR(int red, int localMaxMem,
+  public static <K, V> RegionAttributes<K, V> createRegionAttrsForPR(int red, int localMaxMem,
       long recoveryDelay) {
     return createRegionAttrsForPR(red, localMaxMem, recoveryDelay, null, null);
   }
 
   /**
-   * This function creates Region attributes with provided scope,redundancy and localmaxMemory
+   * This function creates Region attributes with provided scope,redundancy and localMaxMemory
    */
-  public static RegionAttributes createRegionAttrsForPR(int red, int localMaxMem,
-      long recoveryDelay, EvictionAttributes evictionAttrs, PartitionResolver resolver) {
+  public static <K, V> RegionAttributes<K, V> createRegionAttrsForPR(int red, int localMaxMem,
+      long recoveryDelay, EvictionAttributes evictionAttrs, PartitionResolver<K, V> resolver) {
 
-    AttributesFactory attr = new AttributesFactory();
+    AttributesFactory<K, V> attr = new AttributesFactory<>();
     attr.setDataPolicy(DataPolicy.PARTITION);
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(red).setLocalMaxMemory(localMaxMem).setRecoveryDelay(recoveryDelay);
     if (resolver != null) {
       paf.setPartitionResolver(resolver);
@@ -284,7 +272,6 @@ public class PartitionedRegionTestHelper
     attr.setEvictionAttributes(evictionAttrs);
     return attr.create();
   }
-
 }
 
 
@@ -293,9 +280,9 @@ public class PartitionedRegionTestHelper
  */
 
 class SerializableObject implements Serializable {
-  String str;
+  final String str;
 
-  int i;
+  final int i;
 
   public SerializableObject(String str, int i) {
     this.str = str;

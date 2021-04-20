@@ -176,8 +176,16 @@ public class PartitionedRegionStats {
   private static final int prMetaDataSentCountId;
 
   private static final int localMaxMemoryId;
+  static final int clearLocalDurationId;
+  static final int clearTotalDurationId;
+  static final int bucketClearsId;
+
+
 
   static {
+    final String bucketClearsDesc =
+        "The total number of times a clear has been done on this region and it's bucket regions";
+
     final boolean largerIsBetter = true;
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     type = f.createType("PartitionedRegionStats",
@@ -425,7 +433,14 @@ public class PartitionedRegionStats {
                 false),
 
             f.createLongGauge("localMaxMemory",
-                "local max memory in bytes for this region on this member", "bytes")
+                "local max memory in bytes for this region on this member", "bytes"),
+            f.createLongCounter("clearLocalDuration",
+                "The time in nanoseconds partitioned region clear has been running for the region on this member",
+                "nanoseconds"),
+            f.createLongCounter("clearTotalDuration",
+                "The time in nanoseconds partitioned region clear has been running for the region with this member as coordinator.",
+                "nanoseconds"),
+            f.createLongCounter("bucketClears", bucketClearsDesc, "operations"),
 
         });
 
@@ -531,6 +546,11 @@ public class PartitionedRegionStats {
     prMetaDataSentCountId = type.nameToId("prMetaDataSentCount");
 
     localMaxMemoryId = type.nameToId("localMaxMemory");
+
+    bucketClearsId = type.nameToId("bucketClears");
+    clearLocalDurationId = type.nameToId("clearLocalDuration");
+    clearTotalDurationId = type.nameToId("clearTotalDuration");
+
   }
 
   private final Statistics stats;
@@ -1195,4 +1215,29 @@ public class PartitionedRegionStats {
   public long getPRMetaDataSentCount() {
     return this.stats.getLong(prMetaDataSentCountId);
   }
+
+  public void incClearLocalDuration(long durationNanos) {
+    stats.incLong(clearLocalDurationId, durationNanos);
+  }
+
+  public void incClearTotalDuration(long durationNanos) {
+    stats.incLong(clearTotalDurationId, durationNanos);
+  }
+
+  public long getClearLocalDuration() {
+    return stats.getLong(clearLocalDurationId);
+  }
+
+  public long getClearTotalDuration() {
+    return stats.getLong(clearTotalDurationId);
+  }
+
+  public long getBucketClearCount() {
+    return stats.getLong(bucketClearsId);
+  }
+
+  public void incBucketClearCount() {
+    stats.incLong(bucketClearsId, 1L);
+  }
+
 }

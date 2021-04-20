@@ -19,6 +19,10 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.PartitionedRegionStats.bucketClearsId;
+import static org.apache.geode.internal.cache.PartitionedRegionStats.clearLocalDurationId;
+import static org.apache.geode.internal.cache.PartitionedRegionStats.clearTotalDurationId;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -476,5 +480,53 @@ public class PartitionedRegionStatsJUnitTest {
     }
 
     return bytes;
+  }
+
+  @Test
+  public void incBucketClearCountIncrementsClears() {
+    String regionName = "testStats";
+    int localMaxMemory = 100;
+    PartitionedRegion pr = createPR(regionName + 1, localMaxMemory, 0);
+
+    pr.getPrStats().incBucketClearCount();
+
+    assertThat(pr.getPrStats().getStats().getLong(bucketClearsId)).isEqualTo(1L);
+  }
+
+  @Test
+  public void bucketClearsWrapsFromMaxLongToNegativeValue() {
+    String regionName = "testStats";
+    int localMaxMemory = 100;
+    PartitionedRegion pr = createPR(regionName + 1, localMaxMemory, 0);
+    PartitionedRegionStats partitionedRegionStats = pr.getPrStats();
+    partitionedRegionStats.getStats().incLong(bucketClearsId, Long.MAX_VALUE);
+
+    partitionedRegionStats.incBucketClearCount();
+
+    assertThat(partitionedRegionStats.getBucketClearCount()).isNegative();
+  }
+
+  @Test
+  public void incPartitionedRegionClearLocalDurationIncrementsPartitionedRegionClearLocalDuration() {
+    String regionName = "testStats";
+    int localMaxMemory = 100;
+    PartitionedRegion pr = createPR(regionName + 1, localMaxMemory, 0);
+    PartitionedRegionStats partitionedRegionStats = pr.getPrStats();
+    partitionedRegionStats.incClearLocalDuration(100L);
+
+    assertThat(partitionedRegionStats.getStats().getLong(clearLocalDurationId))
+        .isEqualTo(100L);
+  }
+
+  @Test
+  public void incPartitionedRegionClearTotalDurationIncrementsPartitionedRegionClearTotalDuration() {
+    String regionName = "testStats";
+    int localMaxMemory = 100;
+    PartitionedRegion pr = createPR(regionName + 1, localMaxMemory, 0);
+    PartitionedRegionStats partitionedRegionStats = pr.getPrStats();
+    partitionedRegionStats.incClearTotalDuration(100L);
+
+    assertThat(partitionedRegionStats.getStats().getLong(clearTotalDurationId))
+        .isEqualTo(100L);
   }
 }

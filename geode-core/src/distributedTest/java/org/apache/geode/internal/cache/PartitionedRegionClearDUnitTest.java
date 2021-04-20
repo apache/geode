@@ -79,11 +79,10 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   }
 
   protected Properties getProperties() {
-    Properties properties = new Properties();
-    return properties;
+    return new Properties();
   }
 
-  private Region getRegion(boolean isClient) {
+  private <K, V> Region<K, V> getRegion(boolean isClient) {
     if (isClient) {
       return getClientCache().getRegion(REGION_NAME);
     } else {
@@ -96,15 +95,16 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   }
 
   private void initClientCache() {
-    Region region = getClientCache().createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-        .create(REGION_NAME);
+    Region<Object, Object> region =
+        getClientCache().createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+            .create(REGION_NAME);
     region.registerInterestForAllKeys(InterestResultPolicy.KEYS);
   }
 
   private void initDataStore(boolean withWriter) {
-    RegionFactory factory = getCache().createRegionFactory(getRegionShortCut())
+    RegionFactory<Object, Object> factory = getCache().createRegionFactory(getRegionShortCut())
         .setPartitionAttributes(
-            new PartitionAttributesFactory().setTotalNumBuckets(TOTAL_BUCKET_NUM).create());
+            new PartitionAttributesFactory<>().setTotalNumBuckets(TOTAL_BUCKET_NUM).create());
     if (withWriter) {
       factory.setCacheWriter(new CountingCacheWriter());
     }
@@ -128,10 +128,10 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
         fail("Wrong region type:" + shortcut);
       }
     }
-    RegionFactory factory = getCache().createRegionFactory(shortcut)
+    RegionFactory<Object, Object> factory = getCache().createRegionFactory(shortcut)
         .setPartitionAttributes(
-            new PartitionAttributesFactory().setTotalNumBuckets(10).setLocalMaxMemory(0).create())
-        .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(10).create());
+            new PartitionAttributesFactory<>().setTotalNumBuckets(10).setLocalMaxMemory(0).create())
+        .setPartitionAttributes(new PartitionAttributesFactory<>().setTotalNumBuckets(10).create());
     if (withWriter) {
       factory.setCacheWriter(new CountingCacheWriter());
     }
@@ -141,7 +141,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   }
 
   private void feed(boolean isClient) {
-    Region region = getRegion(isClient);
+    Region<Object, Object> region = getRegion(isClient);
     IntStream.range(0, NUM_ENTRIES).forEach(i -> region.put(i, "value" + i));
   }
 
@@ -160,21 +160,22 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
       for (BucketRegion bucket : region.getDataStore().getAllLocalBucketRegions()) {
         if (clearCount == 0) {
-          clearCount = bucket.getCachePerfStats().getBucketClearCount();
+          clearCount = bucket.getPartitionedRegion().getPrStats().getBucketClearCount();
         }
-        assertThat(bucket.getCachePerfStats().getBucketClearCount()).isEqualTo(bucketCount);
+        assertThat(bucket.getPartitionedRegion().getPrStats().getBucketClearCount())
+            .isEqualTo(bucketCount);
       }
 
       CachePerfStats stats = region.getRegionCachePerfStats();
 
-      assertThat(stats.getRegionClearCount()).isEqualTo(1);
-      assertThat(stats.getPartitionedRegionClearLocalDuration())
+      assertThat(stats.getClearCount()).isEqualTo(1);
+      assertThat(region.getPrStats().getClearLocalDuration())
           .isGreaterThan(0);
       if (isCoordinator) {
-        assertThat(stats.getPartitionedRegionClearTotalDuration())
+        assertThat(region.getPrStats().getClearTotalDuration())
             .isGreaterThan(0);
       } else {
-        assertThat(stats.getPartitionedRegionClearTotalDuration())
+        assertThat(region.getPrStats().getClearTotalDuration())
             .isEqualTo(0);
       }
     });
@@ -186,17 +187,11 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     // client2.invoke(()->verifyRegionSize(true, expectedNum));
   }
 
-  SerializableCallableIF<Integer> getWriterClears = () -> {
-    int clears =
-        clearsByRegion.get(REGION_NAME) == null ? 0 : clearsByRegion.get(REGION_NAME).get();
-    return clears;
-  };
+  SerializableCallableIF<Integer> getWriterClears =
+      () -> clearsByRegion.get(REGION_NAME) == null ? 0 : clearsByRegion.get(REGION_NAME).get();
 
-  SerializableCallableIF<Integer> getWriterDestroys = () -> {
-    int destroys =
-        destroysByRegion.get(REGION_NAME) == null ? 0 : destroysByRegion.get(REGION_NAME).get();
-    return destroys;
-  };
+  SerializableCallableIF<Integer> getWriterDestroys =
+      () -> destroysByRegion.get(REGION_NAME) == null ? 0 : destroysByRegion.get(REGION_NAME).get();
 
   SerializableCallableIF<Integer> getBucketRegionWriterClears = () -> {
     int clears = 0;
@@ -225,11 +220,11 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     accessor.invoke(() -> initAccessor(accessorWithWriter));
     // make sure only datastore3 has cacheWriter
     dataStore1.invoke(() -> {
-      Region region = getRegion(false);
+      Region<Object, Object> region = getRegion(false);
       region.getAttributesMutator().setCacheWriter(null);
     });
     dataStore2.invoke(() -> {
-      Region region = getRegion(false);
+      Region<Object, Object> region = getRegion(false);
       region.getAttributesMutator().setCacheWriter(null);
     });
   }
@@ -247,7 +242,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
     // do the region destroy to compare that the same callbacks will be triggered
     dataStore3.invoke(() -> {
-      Region region = getRegion(false);
+      Region<Object, Object> region = getRegion(false);
       region.destroyRegion();
     });
 
@@ -278,7 +273,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
     // do the region destroy to compare that the same callbacks will be triggered
     dataStore1.invoke(() -> {
-      Region region = getRegion(false);
+      Region<Object, Object> region = getRegion(false);
       region.destroyRegion();
     });
 
@@ -309,7 +304,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
     // do the region destroy to compare that the same callbacks will be triggered
     accessor.invoke(() -> {
-      Region region = getRegion(false);
+      Region<Object, Object> region = getRegion(false);
       region.destroyRegion();
     });
 
@@ -340,7 +335,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
     // do the region destroy to compare that the same callbacks will be triggered
     accessor.invoke(() -> {
-      Region region = getRegion(false);
+      Region<Object, Object> region = getRegion(false);
       region.destroyRegion();
     });
 
@@ -369,7 +364,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
       PartitionedRegion region = (PartitionedRegion) getRegion(false);
 
       for (BucketRegion bucket : region.getDataStore().getAllLocalBucketRegions()) {
-        long clearCount = bucket.getCachePerfStats().getRegionClearCount();
+        long clearCount = bucket.getCachePerfStats().getClearCount();
         assertThat(clearCount).isEqualTo(0);
       }
     });
@@ -390,9 +385,9 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
       PartitionedRegion region = (PartitionedRegion) getRegion(false);
 
       assertThat(region.getRegionCachePerfStats()).isNull();
-      assertThat(region.getCachePerfStats().getRegionClearCount()).isEqualTo(0);
-      assertThat(region.getCachePerfStats().getPartitionedRegionClearLocalDuration()).isEqualTo(0);
-      assertThat(region.getCachePerfStats().getPartitionedRegionClearTotalDuration()).isEqualTo(0);
+      assertThat(region.getCachePerfStats().getClearCount()).isEqualTo(0);
+      assertThat(region.getPrStats().getClearLocalDuration()).isEqualTo(0);
+      assertThat(region.getPrStats().getClearTotalDuration()).isEqualTo(0);
     });
   }
 
@@ -412,7 +407,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
     // do the region destroy to compare that the same callbacks will be triggered
     client1.invoke(() -> {
-      Region region = getRegion(true);
+      Region<Object, Object> region = getRegion(true);
       region.destroyRegion();
     });
 
@@ -433,10 +428,10 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   public static HashMap<String, AtomicInteger> clearsByRegion = new HashMap<>();
   public static HashMap<String, AtomicInteger> destroysByRegion = new HashMap<>();
 
-  private static class CountingCacheWriter extends CacheWriterAdapter {
+  private static class CountingCacheWriter extends CacheWriterAdapter<Object, Object> {
     @Override
-    public void beforeRegionClear(RegionEvent event) throws CacheWriterException {
-      Region region = event.getRegion();
+    public void beforeRegionClear(RegionEvent<Object, Object> event) throws CacheWriterException {
+      Region<Object, Object> region = event.getRegion();
       AtomicInteger clears = clearsByRegion.get(region.getName());
       if (clears == null) {
         clears = new AtomicInteger(1);
@@ -449,8 +444,8 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     }
 
     @Override
-    public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {
-      Region region = event.getRegion();
+    public void beforeRegionDestroy(RegionEvent<Object, Object> event) throws CacheWriterException {
+      Region<Object, Object> region = event.getRegion();
       AtomicInteger destroys = destroysByRegion.get(region.getName());
       if (destroys == null) {
         destroys = new AtomicInteger(1);

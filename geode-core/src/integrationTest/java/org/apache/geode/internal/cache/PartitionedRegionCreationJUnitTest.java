@@ -274,7 +274,7 @@ public class PartitionedRegionCreationJUnitTest {
   @Test
   public void testPartionedRegionInitialization() throws RegionExistsException {
     String PRName = "testpartionedRegionInitialization";
-    PartitionedRegionTestHelper.createPartionedRegion(PRName);
+    PartitionedRegionTestHelper.createPartitionedRegion(PRName);
 
     Region root = (PartitionedRegionTestHelper
         .getExistingRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME));
@@ -365,7 +365,7 @@ public class PartitionedRegionCreationJUnitTest {
     public void run() {
       String prName = "PartitionedRegionCreationJUnitTest_" + getPRNumber();
       try {
-        Region region = PartitionedRegionTestHelper.createPartionedRegion(prName);
+        Region region = PartitionedRegionTestHelper.createPartitionedRegion(prName);
         PRRegionList.add(region);
         updatePRCreate();
       } catch (RegionExistsException rex) {
