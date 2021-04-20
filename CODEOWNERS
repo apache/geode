@@ -50,14 +50,14 @@ geode-core/**/org/apache/geode/distributed/internal/*             @echobravopapa
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/cache/client/**                    @echobravopapa @Bill @kirklund
 geode-core/**/org/apache/geode/cache/server/**                    @echobravopapa @Bill @kirklund
-geode-core/**/org/apache/geode/internal/cache/client/**           @Bill @echobravopapa
+geode-core/**/org/apache/geode/cache/client/internal/**           @Bill @echobravopapa
 geode-core/**/org/apache/geode/internal/cache/tier/**             @Bill @echobravopapa @agingade
 
 #-----------------------------------------------------------------
 # Client Queues
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/internal/cache/ha/**               @agingade @boglesby @nabarunnag
-geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*   @agingade @boglesby @nabarunnag
+geode-core/**/org/apache/geode/internal/cache/**/CacheClient*     @agingade @boglesby @nabarunnag
 
 #-----------------------------------------------------------------
 # Core Public API packages - Cache, Region, etc.
@@ -262,7 +262,7 @@ geode-core/**/org/apache/geode/internal/cache/control/**          @kirklund @Don
 geode-dunit/**                                                    @mhansonp @kirklund
 geode-junit/**                                                    @mhansonp @kirklund
 #geode-jmh/**
-geode-junit/**/org/apache/geode/test/util                         @jdeppe-pivotal @onichols-pivotal
+geode-junit/**/org/apache/geode/test/util/**                      @jdeppe-pivotal @onichols-pivotal
 
 #-----------------------------------------------------------------
 # Redis API
