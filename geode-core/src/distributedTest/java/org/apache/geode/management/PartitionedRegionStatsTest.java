@@ -73,5 +73,4 @@ public class PartitionedRegionStatsTest extends JUnit4DistributedTestCase {
     assertThat(cacheStats.getMisses()).isEqualTo(1);
 
   }
-
 }

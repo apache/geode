@@ -176,10 +176,6 @@ public class PartitionedRegionStats {
   private static final int prMetaDataSentCountId;
 
   private static final int localMaxMemoryId;
-  static final int regionClearLocalDurationId;
-  static final int regionClearTotalDurationId;
-
-
 
   static {
 
@@ -541,10 +537,6 @@ public class PartitionedRegionStats {
     prMetaDataSentCountId = type.nameToId("prMetaDataSentCount");
 
     localMaxMemoryId = type.nameToId("localMaxMemory");
-
-    regionClearLocalDurationId = type.nameToId("partitionedRegionClearLocalDuration");
-    regionClearTotalDurationId = type.nameToId("partitionedRegionClearTotalDuration");
-
   }
 
   private final Statistics stats;
@@ -1208,21 +1200,5 @@ public class PartitionedRegionStats {
 
   public long getPRMetaDataSentCount() {
     return this.stats.getLong(prMetaDataSentCountId);
-  }
-
-  public void incPartitionedRegionClearLocalDuration(long durationNanos) {
-    stats.incLong(regionClearLocalDurationId, durationNanos);
-  }
-
-  public void incPartitionedRegionClearTotalDuration(long durationNanos) {
-    stats.incLong(regionClearTotalDurationId, durationNanos);
-  }
-
-  public long getRegionClearLocalDuration() {
-    return stats.getLong(regionClearLocalDurationId);
-  }
-
-  public long getRegionClearTotalDuration() {
-    return stats.getLong(regionClearTotalDurationId);
   }
 }
