@@ -43,7 +43,6 @@ NOTICE                                                            @metatype
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/cache/client/**                    @albertogpz
 geode-core/**/org/apache/geode/cache/server/**                    @albertogpz
-geode-core/**/org/apache/geode/internal/cache/client/**           @albertogpz
 geode-core/**/org/apache/geode/internal/cache/tier/**             @albertogpz
 
 
