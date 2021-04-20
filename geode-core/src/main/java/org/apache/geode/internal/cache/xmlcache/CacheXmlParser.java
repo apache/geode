@@ -663,12 +663,12 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     String id = atts.getValue(ID);
     // Gateway-sender state
     String state = atts.getValue(STATE);
-    if (Objects.equals(state, GatewaySenderState.RUNNING.getState()) ||
+    if (state == null) {
+      gatewaySenderFactory.setState(null);
+    } else if (Objects.equals(state, GatewaySenderState.RUNNING.getState()) ||
         Objects.equals(state, GatewaySenderState.STOPPED.getState()) ||
         Objects.equals(state, GatewaySenderState.PAUSED.getState())) {
       gatewaySenderFactory.setState(GatewaySenderState.valueOf(state.toUpperCase()));
-    } else if (state == null) {
-      gatewaySenderFactory.setState(null);
     } else {
       throw new InternalGemFireException(
           String.format("An invalid state value (%s) was configured for gateway sender %s",
