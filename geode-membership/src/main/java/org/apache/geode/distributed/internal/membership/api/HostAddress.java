@@ -26,7 +26,7 @@ import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
  * HostAddress is a holder of a host name/address. It is the primary
  * way to specify a host address that may or may not have been resolved to an InetAddress.
  *
- * @See HostAddress which can hold both a hast name and a port
+ * @See HostAddress which can hold both a host name and a port
  */
 public class HostAddress {
 
