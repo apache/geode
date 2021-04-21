@@ -251,7 +251,9 @@ public class ResourceUtils {
   public static void copyDirectoryResource(final URL resource, final File targetFolder) {
     try {
       File source = new File(resource.getPath());
-      assertThat(source.exists()).as("Source does not exist: " + resource.getPath());
+      assertThat(source)
+          .withFailMessage("Source does not exist: " + resource.getPath())
+          .exists();
       FileUtils.copyDirectory(source, targetFolder);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
