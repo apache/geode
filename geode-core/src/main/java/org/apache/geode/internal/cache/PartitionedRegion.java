@@ -10122,4 +10122,8 @@ public class PartitionedRegion extends LocalRegion
     this.getSystem().handleResourceEvent(ResourceEvent.REGION_CREATE, this);
     this.regionCreationNotified = true;
   }
+
+  public boolean areRecoveriesInProgress() {
+    return prStats.getRecoveriesInProgress() > 0;
+  }
 }

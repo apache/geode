@@ -21,13 +21,14 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.CancelCriterion;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
@@ -41,6 +42,15 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class DistributedEventTracker implements EventTracker {
   private static final Logger logger = LogService.getLogger();
 
+  @VisibleForTesting
+  protected static final String EVENT_HAS_PREVIOUSLY_BEEN_SEEN_PREFIX =
+      "Event has previously been seen ";
+
+  private static final String EVENT_HAS_PREVIOUSLY_BEEN_SEEN_PARAMETERS =
+      "for region={}; operation={}; key={}; eventId={}; highestSequenceNumberSeen={}";
+
+  private static final String EVENT_HAS_PREVIOUSLY_BEEN_SEEN =
+      EVENT_HAS_PREVIOUSLY_BEEN_SEEN_PREFIX + EVENT_HAS_PREVIOUSLY_BEEN_SEEN_PARAMETERS;
   /**
    * a mapping of originator to the last event applied to this cache
    *
@@ -79,9 +89,9 @@ public class DistributedEventTracker implements EventTracker {
   private volatile InternalDistributedMember initialImageProvider;
 
   /**
-   * The cache associated with this tracker
+   * The region associated with this tracker
    */
-  private InternalCache cache;
+  private final DistributedRegion region;
 
   /**
    * The name of this tracker
@@ -102,28 +112,25 @@ public class DistributedEventTracker implements EventTracker {
   /**
    * Create an event tracker
    *
-   * @param cache the cache of the region to associate with this tracker
-   * @param stopper the CancelCriterion for the region
-   * @param regionName name of the region
+   * @param region the region
    */
-  public DistributedEventTracker(InternalCache cache, CancelCriterion stopper, String regionName) {
-
-    this.cache = cache;
-    this.name = "Event Tracker for " + regionName;
-    this.initializationLatch = new StoppableCountDownLatch(stopper, 1);
+  public DistributedEventTracker(DistributedRegion region) {
+    this.region = region;
+    name = "Event Tracker for " + region.getName();
+    initializationLatch = new StoppableCountDownLatch(region.getCancelCriterion(), 1);
   }
 
   @Override
   public void start() {
-    if (cache.getEventTrackerTask() != null) {
-      cache.getEventTrackerTask().addTracker(this);
+    if (region.getCache().getEventTrackerTask() != null) {
+      region.getCache().getEventTrackerTask().addTracker(this);
     }
   }
 
   @Override
   public void stop() {
-    if (cache.getEventTrackerTask() != null) {
-      cache.getEventTrackerTask().removeTracker(this);
+    if (region.getCache().getEventTrackerTask() != null) {
+      region.getCache().getEventTrackerTask().removeTracker(this);
     }
   }
 
@@ -356,20 +363,56 @@ public class DistributedEventTracker implements EventTracker {
       if (evh.isRemoved() || evh.getLastSequenceNumber() < eventID.getSequenceID()) {
         return false;
       }
-      // log at fine because partitioned regions can send event multiple times
-      // during normal operation during bucket region initialization
-      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE)) {
-        logger.trace(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE,
-            "Cache encountered replay of event with ID {}.  Highest recorded for this source is {}",
-            eventID, evh.getLastSequenceNumber());
+      if (shouldLogPreviouslySeenEvent(tagHolder, evh)) {
+        logger.info(EVENT_HAS_PREVIOUSLY_BEEN_SEEN, region.getName(),
+            tagHolder == null ? "unknown" : ((EntryEventImpl) tagHolder).getKey(),
+            tagHolder == null ? "unknown" : tagHolder.getOperation(), eventID.expensiveToString(),
+            evh.getLastSequenceNumber());
       }
       // bug #44956 - recover version tag for duplicate event
       if (evh.getLastSequenceNumber() == eventID.getSequenceID() && tagHolder != null
           && evh.getVersionTag() != null) {
         ((EntryEventImpl) tagHolder).setVersionTag(evh.getVersionTag());
       }
+
+      // Increment the previously seen events statistic
+      region.getCachePerfStats().incPreviouslySeenEvents();
+
       return true;
     }
+  }
+
+  private boolean shouldLogPreviouslySeenEvent(InternalCacheEvent event,
+      EventSequenceNumberHolder evh) {
+    boolean shouldLogSeenEvent = true;
+    String message = null;
+    if (event != null && ((EntryEventImpl) event).isPossibleDuplicate()) {
+      // Ignore the previously seen event if it is a possible duplicate
+      message = "possible duplicate";
+      shouldLogSeenEvent = false;
+    } else if (region instanceof BucketRegion) {
+      BucketRegion br = (BucketRegion) region;
+      if (br.hasLowRedundancy()) {
+        // Ignore the previously seen event while the bucket has low redundancy
+        message = "low redundancy";
+        shouldLogSeenEvent = false;
+      } else if (br.getPartitionedRegion().areRecoveriesInProgress()) {
+        // Ignore the previously seen event while recoveries are in progress
+        message = "recoveries in progress";
+        shouldLogSeenEvent = false;
+      }
+    }
+    if (!shouldLogSeenEvent && logger.isDebugEnabled()) {
+      if (event == null) {
+        logger.debug("Ignoring previously seen event due to {}", message);
+      } else {
+        logger.debug(
+            "Ignoring previously seen event due to {} for region={}; operation={}; key={}; eventId={}; highestSequenceNumberSeen={}",
+            message, region.getName(), ((EntryEventImpl) event).getKey(), event.getOperation(),
+            event.getEventId().expensiveToString(), evh.getLastSequenceNumber());
+      }
+    }
+    return shouldLogSeenEvent;
   }
 
   private EventSequenceNumberHolder getSequenceHolderForEvent(EventID eventID) {
