@@ -1474,7 +1474,8 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     long nanoTime();
   }
 
-  interface Logger2 {
+  @FunctionalInterface
+  interface Warner {
     void warn(String message);
   }
 
@@ -1494,7 +1495,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     @VisibleForTesting
     void sendPeriodicHeartbeats(final Sleeper sleeper,
         final NanoTimer nanoTimer,
-        final Logger2 logger2) {
+        final Warner warner) {
       while (!isStopping && !services.getCancelCriterion().isCancelInProgress()) {
         try {
           final long timeBeforeSleep = nanoTimer.nanoTime();
@@ -1502,7 +1503,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
           final long timeAfterSleep = nanoTimer.nanoTime();
           final long asleepNanos = timeAfterSleep - timeBeforeSleep;
           if (asleepNanos > sleepLimitNanos) {
-            logger2.warn(
+            warner.warn(
                 String.format(
                     "Failure detection heartbeat-generation thread overslept by more than a full period. Asleep time: %,d nanoseconds. Period: %,d nanoseconds.",
                     asleepNanos, sleepPeriodNanos));
