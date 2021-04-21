@@ -51,7 +51,7 @@ RUN set -eux; \
 	; do \
 		target="$(basename "$file")"; \
 		for url in \
-      "https://www.apache.org/dyn/closer.lua/$file?action=download"
+			"https://www.apache.org/dyn/closer.lua/$file?action=download"
 			"https://downloads.apache.org/$file" \
 			"https://archive.apache.org/dist/$file" \
 		; do \
