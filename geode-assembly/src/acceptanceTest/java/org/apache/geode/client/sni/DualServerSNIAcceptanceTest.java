@@ -109,6 +109,7 @@ public class DualServerSNIAcceptanceTest {
 
   @AfterClass
   public static void afterClass() throws Exception {
+    // if you need to capture logs for one of the processes use this pattern:
     // try {
     // String output =
     // docker.get().exec(options("-T"), "locator-maeve",

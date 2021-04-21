@@ -18,7 +18,6 @@ package org.apache.geode.internal;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
@@ -111,8 +110,6 @@ public class DistributionLocator {
 
     final int port = parsePort(args[0]);
     HostAddress hostAddress = null;
-    boolean peerLocator = true;
-    boolean serverLocator = true;
     String hostnameForClients = null;
     try {
       if (args.length > 1 && !args[1].equals("")) {
@@ -128,36 +125,29 @@ public class DistributionLocator {
       } else {
         // address = null; // was InetAddress.getLocalHost(); (redundant assignment)
       }
-      if (args.length > 2) {
-        peerLocator = "true".equalsIgnoreCase(args[2]);
-      }
-      if (args.length > 3) {
-        serverLocator = "true".equalsIgnoreCase(args[3]);
-      }
       if (args.length > 4) {
         hostnameForClients = args[4];
       }
 
+      final InetAddress inetAddress = hostAddress == null ? null : hostAddress.getAddress();
       if (!Boolean.getBoolean(InternalDistributedSystem.DISABLE_SHUTDOWN_HOOK_PROPERTY)) {
-        final HostAddress faddress = hostAddress;
         Runtime.getRuntime()
             .addShutdownHook(new LoggingThread("LocatorShutdownThread", false, () -> {
               try {
-                DistributionLocator.shutdown(port, faddress.getAddress());
+                DistributionLocator.shutdown(port, inetAddress);
               } catch (IOException e) {
                 e.printStackTrace();
               }
             }));
       }
 
-      lockFile = ManagerInfo.setLocatorStarting(directory, port,
-          hostAddress == null ? null : hostAddress.getAddress());
+      lockFile = ManagerInfo.setLocatorStarting(directory, port, inetAddress);
       lockFile.deleteOnExit();
 
       InetAddress address = hostAddress == null ? null : hostAddress.getAddress();
       try {
         InternalLocator locator = InternalLocator.startLocator(port, new File(DEFAULT_LOG_FILE),
-            null, null, hostAddress, true, (Properties) null, hostnameForClients);
+            null, null, hostAddress, true, null, hostnameForClients);
         ManagerInfo.setLocatorStarted(directory, port, address);
         locator.waitToStop();
       } finally {

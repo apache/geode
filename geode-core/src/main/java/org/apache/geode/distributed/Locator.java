@@ -105,7 +105,7 @@ public abstract class Locator {
    */
   public static Locator startLocator(int port, File logFile) throws IOException {
 
-    return startLocator(port, logFile, false, (HostAddress) null, (Properties) null, true, true,
+    return startLocator(port, logFile, false, null, null, true, true,
         null);
   }
 
@@ -140,7 +140,7 @@ public abstract class Locator {
   public static Locator startLocatorAndDS(int port, File logFile,
       Properties distributedSystemProperties) throws IOException {
 
-    return startLocator(port, logFile, (HostAddress) null, distributedSystemProperties, true, true,
+    return startLocator(port, logFile, null, distributedSystemProperties, true, true,
         null);
   }
 
@@ -170,7 +170,7 @@ public abstract class Locator {
   public static Locator startLocator(int port, File logFile, InetAddress bindAddress)
       throws IOException {
     HostAddress hostAddress = bindAddress == null ? null : new HostAddress(bindAddress);
-    return startLocator(port, logFile, false, hostAddress, (Properties) null, true,
+    return startLocator(port, logFile, false, hostAddress, null, true,
         true, null);
   }
 
