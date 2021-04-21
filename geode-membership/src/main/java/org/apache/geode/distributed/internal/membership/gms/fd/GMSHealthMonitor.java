@@ -758,82 +758,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
    * process
    */
   private void startHeartbeatThread() {
-    checkExecutor.execute(new Runnable() {
-      @Override
-      public void run() {
-        Thread.currentThread().setName("Geode Heartbeat Sender");
-        sendPeriodicHeartbeats();
-      }
-
-      private void sendPeriodicHeartbeats() {
-        while (!isStopping && !services.getCancelCriterion().isCancelInProgress()) {
-          try {
-            Thread.sleep(memberTimeout / LOGICAL_INTERVAL);
-          } catch (InterruptedException e) {
-            return;
-          }
-          GMSMembershipView<ID> v = currentView;
-          if (v != null) {
-            List<ID> mbrs = v.getMembers();
-            int index = mbrs.indexOf(localAddress);
-            if (index < 0 || mbrs.size() < 2) {
-              continue;
-            }
-            if (!playingDead) {
-              sendHeartbeats(mbrs, index);
-            }
-          }
-        }
-      }
-
-      private void sendHeartbeats(List<ID> mbrs, int startIndex) {
-        ID coordinator = currentView.getCoordinator();
-        if (coordinator != null && !coordinator.equals(localAddress)) {
-          HeartbeatMessage<ID> message = new HeartbeatMessage<>(-1);
-          message.setRecipient(coordinator);
-          try {
-            if (isStopping) {
-              return;
-            }
-            services.getMessenger().sendUnreliably(message);
-            GMSHealthMonitor.this.stats.incHeartbeatsSent();
-          } catch (MembershipClosedException e) {
-            return;
-          }
-        }
-
-        int index = startIndex;
-        int numSent = 0;
-        for (;;) {
-          index--;
-          if (index < 0) {
-            index = mbrs.size() - 1;
-          }
-          ID mbr = mbrs.get(index);
-          if (mbr.equals(localAddress)) {
-            break;
-          }
-          if (mbr.equals(coordinator)) {
-            continue;
-          }
-          if (isStopping) {
-            return;
-          }
-          HeartbeatMessage<ID> message = new HeartbeatMessage<>(-1);
-          message.setRecipient(mbr);
-          try {
-            services.getMessenger().sendUnreliably(message);
-            GMSHealthMonitor.this.stats.incHeartbeatsSent();
-            numSent++;
-            if (numSent >= NUM_HEARTBEATS) {
-              break;
-            }
-          } catch (MembershipClosedException e) {
-            return;
-          }
-        }
-      } // for (;;)
-    });
+    checkExecutor.execute(new Heart());
   }
 
   @Override
@@ -1537,5 +1462,114 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
 
   public MembershipStatistics getStats() {
     return this.stats;
+  }
+
+  @FunctionalInterface
+  interface Sleeper {
+    void sleep(long millis) throws InterruptedException;
+  }
+
+  @FunctionalInterface
+  interface NanoTimer {
+    long nanoTime();
+  }
+
+  interface Logger2 {
+    void warn(String message);
+  }
+
+  class Heart implements Runnable {
+
+    public final long sleepPeriodMillis = memberTimeout / LOGICAL_INTERVAL;
+    public final long sleepPeriodNanos =
+        TimeUnit.NANOSECONDS.convert(sleepPeriodMillis, TimeUnit.MILLISECONDS);
+    public final long sleepLimitNanos = 2 * sleepPeriodNanos;
+
+    @Override
+    public void run() {
+      Thread.currentThread().setName("Geode Heartbeat Sender");
+      sendPeriodicHeartbeats(Thread::sleep, System::nanoTime, logger::warn);
+    }
+
+    @VisibleForTesting
+    void sendPeriodicHeartbeats(final Sleeper sleeper,
+        final NanoTimer nanoTimer,
+        final Logger2 logger2) {
+      while (!isStopping && !services.getCancelCriterion().isCancelInProgress()) {
+        try {
+          final long timeBeforeSleep = nanoTimer.nanoTime();
+          sleeper.sleep(sleepPeriodMillis);
+          final long timeAfterSleep = nanoTimer.nanoTime();
+          final long asleepNanos = timeAfterSleep - timeBeforeSleep;
+          if (asleepNanos > sleepLimitNanos) {
+            logger2.warn(
+                String.format(
+                    "Failure detection heartbeat-generation thread overslept by more than a full period. Asleep time: %,d nanoseconds. Period: %,d nanoseconds.",
+                    asleepNanos, sleepPeriodNanos));
+          }
+        } catch (InterruptedException e) {
+          return;
+        }
+        GMSMembershipView<ID> v = currentView;
+        if (v != null) {
+          List<ID> mbrs = v.getMembers();
+          int index = mbrs.indexOf(localAddress);
+          if (index < 0 || mbrs.size() < 2) {
+            continue;
+          }
+          if (!playingDead) {
+            sendHeartbeats(mbrs, index);
+          }
+        }
+      }
+    }
+
+    private void sendHeartbeats(List<ID> mbrs, int startIndex) {
+      ID coordinator = currentView.getCoordinator();
+      if (coordinator != null && !coordinator.equals(localAddress)) {
+        HeartbeatMessage<ID> message = new HeartbeatMessage<>(-1);
+        message.setRecipient(coordinator);
+        try {
+          if (isStopping) {
+            return;
+          }
+          services.getMessenger().sendUnreliably(message);
+          GMSHealthMonitor.this.stats.incHeartbeatsSent();
+        } catch (MembershipClosedException e) {
+          return;
+        }
+      }
+
+      int index = startIndex;
+      int numSent = 0;
+      for (;;) {
+        index--;
+        if (index < 0) {
+          index = mbrs.size() - 1;
+        }
+        ID mbr = mbrs.get(index);
+        if (mbr.equals(localAddress)) {
+          break;
+        }
+        if (mbr.equals(coordinator)) {
+          continue;
+        }
+        if (isStopping) {
+          return;
+        }
+        HeartbeatMessage<ID> message = new HeartbeatMessage<>(-1);
+        message.setRecipient(mbr);
+        try {
+          services.getMessenger().sendUnreliably(message);
+          GMSHealthMonitor.this.stats.incHeartbeatsSent();
+          numSent++;
+          if (numSent >= NUM_HEARTBEATS) {
+            break;
+          }
+        } catch (MembershipClosedException e) {
+          return;
+        }
+      }
+    } // for (;;)
   }
 }
