@@ -228,7 +228,7 @@ tests:
   RAM: '6'
   name: WindowsCoreIntegration
 - ARTIFACT_SLUG: windows-unittestfiles
-  CPUS: '8'
+  CPUS: '10'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
@@ -236,7 +236,7 @@ tests:
   MAX_IN_FLIGHT: 1
   PARALLEL_DUNIT: 'false'
   PLATFORM: windows
-  RAM: '8'
+  RAM: '10'
   name: WindowsUnit
 - ARTIFACT_SLUG: apicheck
   CALL_STACK_TIMEOUT: '20700'
