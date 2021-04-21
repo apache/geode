@@ -51,8 +51,7 @@ RUN set -eux; \
 	; do \
 		target="$(basename "$file")"; \
 		for url in \
-# https://issues.apache.org/jira/browse/INFRA-8753?focusedCommentId=14735394#comment-14735394
-			"https://www.apache.org/dyn/closer.cgi?action=download&filename=$file" \
+      "https://www.apache.org/dyn/closer.lua/$file?action=download"
 			"https://downloads.apache.org/$file" \
 			"https://archive.apache.org/dist/$file" \
 		; do \
