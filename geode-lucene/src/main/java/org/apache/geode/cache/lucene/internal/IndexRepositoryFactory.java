@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionRegionConfig;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class IndexRepositoryFactory {
@@ -102,6 +103,12 @@ public class IndexRepositoryFactory {
     if (oldRepository != null) {
       oldRepository.cleanup();
     }
+
+    if (userRegion.getCache() != null
+        && userRegion.getCache().hasMemberOlderThan(KnownVersion.CURRENT)) {
+      return null;
+    }
+
     DistributedLockService lockService = getLockService();
     String lockName = getLockName(fileAndChunkBucket);
     while (!lockService.lock(lockName, 100, -1)) {

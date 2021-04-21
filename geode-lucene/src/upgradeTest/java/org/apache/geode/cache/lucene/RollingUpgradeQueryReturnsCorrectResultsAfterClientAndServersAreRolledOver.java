@@ -91,11 +91,9 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRol
           shortcut.name(), regionName, locatorPorts, reindex);
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[1]), server3);
       expectedRegionSize += 10;
-      putSerializableObjectAndVerifyLuceneQueryResult(client, regionName, expectedRegionSize, 20,
-          30, server3, server2);
+      putSerializableObject(client, regionName, 20, 30);
       expectedRegionSize += 10;
-      putSerializableObjectAndVerifyLuceneQueryResult(server3, regionName, expectedRegionSize, 30,
-          40, server2);
+      putSerializableObject(server3, regionName, 30, 40);
 
       server2 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server2, regionType, null,
           shortcut.name(), regionName, locatorPorts, reindex);
