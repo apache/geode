@@ -169,6 +169,10 @@ public abstract class CargoTestBase {
   @Test
   public void containersShouldReplicateCookies() throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.get(null);
@@ -182,6 +186,10 @@ public abstract class CargoTestBase {
   @Test
   public void containersShouldHavePersistentSessionData() throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     String key = "value_testSessionPersists";
     String value = "Foo";
@@ -199,6 +207,10 @@ public abstract class CargoTestBase {
   public void failureShouldStillAllowOtherContainersDataAccess()
       throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     String key = "value_testSessionPersists";
     String value = "Foo";
@@ -219,6 +231,10 @@ public abstract class CargoTestBase {
   @Test
   public void invalidationShouldRemoveValueAccessForAllContainers() throws Exception {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     String key = "value_testInvalidate";
     String value = "Foo";
@@ -245,6 +261,10 @@ public abstract class CargoTestBase {
   public void containersShouldExpireInSetTimeframe()
       throws IOException, URISyntaxException, InterruptedException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     String key = "value_testSessionExpiration";
     String value = "Foo";
@@ -271,6 +291,10 @@ public abstract class CargoTestBase {
   public void sessionPicksUpSessionTimeoutConfiguredInWebXml()
       throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     String key = "value_testSessionExpiration";
     String value = "Foo";
@@ -309,6 +333,10 @@ public abstract class CargoTestBase {
   public void containersShouldShareSessionExpirationReset()
       throws URISyntaxException, IOException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     int timeToExp = 30;
     String key = "value_testSessionExpiration";
@@ -347,6 +375,10 @@ public abstract class CargoTestBase {
   @Test
   public void containersShouldShareDataRemovals() throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
     String key = "value_testSessionRemove";
     String value = "Foo";
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
@@ -393,6 +425,11 @@ public abstract class CargoTestBase {
   @Test
   public void attributesCanBeReplaced() throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
+
     String key = "value_testSessionUpdate";
     String value = "Foo";
     String updateValue = "Bar";
