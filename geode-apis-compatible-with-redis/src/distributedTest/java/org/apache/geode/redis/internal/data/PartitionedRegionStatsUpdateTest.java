@@ -29,7 +29,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -52,9 +51,6 @@ public class PartitionedRegionStatsUpdateTest {
   public static final String HASH_KEY = "hash key";
   public static final String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
   public static final String FIELD = "field";
-  private static final int SET_SIZE = 1000;
-
-  private final ReflectionObjectSizer ros = ReflectionObjectSizer.getInstance();
 
   @BeforeClass
   public static void classSetup() {
