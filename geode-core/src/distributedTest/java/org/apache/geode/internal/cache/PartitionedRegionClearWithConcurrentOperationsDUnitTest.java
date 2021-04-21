@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.time.Duration.ofMillis;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.internal.util.ArrayUtils.asList;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
@@ -21,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,11 +77,16 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
 
   private static final int BUCKETS = 13;
   private static final String REGION_NAME = "PartitionedRegion";
+  private static final Duration WORK_DURATION = Duration.ofSeconds(15);
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule(3);
   @Rule
-  public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();
+  public CacheRule cacheRule = CacheRule.builder()
+      .addSystemProperty(MAX_WAIT_TIME_RECONNECT, "1000")
+      .addSystemProperty(MEMBER_TIMEOUT, "2000")
+      .createCacheInAll()
+      .build();
 
   private VM server1;
   private VM server2;
@@ -106,15 +115,15 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
     createRegions(regionShortcut);
 
     // Let all VMs continuously execute puts and gets for 60 seconds.
-    final int workMillis = 60000;
+    // final int workMillis = 60000;
     final int entries = 15000;
     List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
-        server1.invokeAsync(() -> executePuts(entries, workMillis)),
-        server2.invokeAsync(() -> executeGets(entries, workMillis)),
-        accessor.invokeAsync(() -> executeRemoves(entries, workMillis)));
+        server1.invokeAsync(() -> executePuts(entries, WORK_DURATION)),
+        server2.invokeAsync(() -> executeGets(entries, WORK_DURATION)),
+        accessor.invokeAsync(() -> executeRemoves(entries, WORK_DURATION)));
 
     // Clear the region every second for 60 seconds.
-    getVM(coordinatorVM.getVmId()).invoke(() -> executeClears(workMillis, 1000));
+    getVM(coordinatorVM.getVmId()).invoke(() -> executeClears(WORK_DURATION, ofMillis(1000)));
 
     // Let asyncInvocations finish.
     for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
@@ -142,17 +151,17 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
     createRegions(regionShortcut);
 
     // Let all VMs continuously execute putAll and removeAll for 15 seconds.
-    final int workMillis = 15000;
+    // final int workMillis = 15000;
     List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
-        server1.invokeAsync(() -> executePutAlls(0, 2000, workMillis)),
-        server1.invokeAsync(() -> executeRemoveAlls(0, 2000, workMillis)),
-        server2.invokeAsync(() -> executePutAlls(2000, 4000, workMillis)),
-        server2.invokeAsync(() -> executeRemoveAlls(2000, 4000, workMillis)),
-        accessor.invokeAsync(() -> executePutAlls(4000, 6000, workMillis)),
-        accessor.invokeAsync(() -> executeRemoveAlls(4000, 6000, workMillis)));
+        server1.invokeAsync(() -> executePutAlls(0, 2000, WORK_DURATION)),
+        server1.invokeAsync(() -> executeRemoveAlls(0, 2000, WORK_DURATION)),
+        server2.invokeAsync(() -> executePutAlls(2000, 4000, WORK_DURATION)),
+        server2.invokeAsync(() -> executeRemoveAlls(2000, 4000, WORK_DURATION)),
+        accessor.invokeAsync(() -> executePutAlls(4000, 6000, WORK_DURATION)),
+        accessor.invokeAsync(() -> executeRemoveAlls(4000, 6000, WORK_DURATION)));
 
     // Clear the region every half second for 15 seconds.
-    getVM(coordinatorVM.getVmId()).invoke(() -> executeClears(workMillis, 500));
+    getVM(coordinatorVM.getVmId()).invoke(() -> executeClears(WORK_DURATION, ofMillis(500)));
 
     // Let asyncInvocations finish.
     for (AsyncInvocation<Void> asyncInvocation : asyncInvocationList) {
@@ -226,12 +235,12 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
     server2.invoke(() -> DistributionMessageObserver.setInstance(new MemberKiller(false)));
 
     // Let all VMs (except the one to kill) continuously execute gets, put and removes for 30"
-    final int workMillis = 30000;
+    // final int workMillis = 30000;
     List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
-        server1.invokeAsync(() -> executeGets(entries, workMillis)),
-        server1.invokeAsync(() -> executePuts(entries, workMillis)),
-        accessor.invokeAsync(() -> executeGets(entries, workMillis)),
-        accessor.invokeAsync(() -> executeRemoves(entries, workMillis)));
+        server1.invokeAsync(() -> executeGets(entries, WORK_DURATION)),
+        server1.invokeAsync(() -> executePuts(entries, WORK_DURATION)),
+        accessor.invokeAsync(() -> executeGets(entries, WORK_DURATION)),
+        accessor.invokeAsync(() -> executeRemoves(entries, WORK_DURATION)));
 
     // Retry the clear operation on the region until success (server2 will go down, but other
     // members will eventually become primary for those buckets previously hosted by server2).
@@ -278,12 +287,12 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
     server2.invoke(() -> DistributionMessageObserver.setInstance(new MemberKiller(false)));
 
     // Let all VMs (except the one to kill) continuously execute gets, put and removes for 30"
-    final int workMillis = 30000;
+    // final int workMillis = 30000;
     List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
-        server1.invokeAsync(() -> executeGets(entries, workMillis)),
-        server1.invokeAsync(() -> executePuts(entries, workMillis)),
-        accessor.invokeAsync(() -> executeGets(entries, workMillis)),
-        accessor.invokeAsync(() -> executeRemoves(entries, workMillis)));
+        server1.invokeAsync(() -> executeGets(entries, WORK_DURATION)),
+        server1.invokeAsync(() -> executePuts(entries, WORK_DURATION)),
+        accessor.invokeAsync(() -> executeGets(entries, WORK_DURATION)),
+        accessor.invokeAsync(() -> executeRemoves(entries, WORK_DURATION)));
 
     // Clear the region.
     getVM(coordinatorVM.getVmId()).invoke(() -> {
@@ -315,10 +324,10 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
     server2.invoke(() -> DistributionMessageObserver.setInstance(new MemberKiller(false)));
 
     // Let all VMs continuously execute putAll/removeAll for 30 seconds.
-    final int workMillis = 30000;
+    // final int workMillis = 30000;
     List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
-        server1.invokeAsync(() -> executePutAlls(0, 6000, workMillis)),
-        accessor.invokeAsync(() -> executeRemoveAlls(2000, 4000, workMillis)));
+        server1.invokeAsync(() -> executePutAlls(0, 6000, WORK_DURATION)),
+        accessor.invokeAsync(() -> executeRemoveAlls(2000, 4000, WORK_DURATION)));
 
     // Retry the clear operation on the region until success (server2 will go down, but other
     // members will eventually become primary for those buckets previously hosted by server2).
@@ -360,10 +369,9 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
     createRegions(RegionShortcut.PARTITION);
     server2.invoke(() -> DistributionMessageObserver.setInstance(new MemberKiller(false)));
 
-    final int workMillis = 30000;
     List<AsyncInvocation<Void>> asyncInvocationList = Arrays.asList(
-        server1.invokeAsync(() -> executePutAlls(0, 6000, workMillis)),
-        accessor.invokeAsync(() -> executeRemoveAlls(2000, 4000, workMillis)));
+        server1.invokeAsync(() -> executePutAlls(0, 6000, WORK_DURATION)),
+        accessor.invokeAsync(() -> executeRemoveAlls(2000, 4000, WORK_DURATION)));
 
     // Clear the region.
     getVM(coordinatorVM.getVmId()).invoke(() -> {
@@ -520,12 +528,12 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
   }
 
   /**
-   * Continuously execute get operations on the PartitionedRegion for the given durationInMillis.
+   * Continuously execute get operations on the PartitionedRegion for the given duration.
    */
-  private void executeGets(final int numEntries, final long durationInMillis) {
+  private void executeGets(final int numEntries, final Duration duration) {
     Cache cache = cacheRule.getCache();
     Region<String, String> region = cache.getRegion(REGION_NAME);
-    Instant finishTime = Instant.now().plusMillis(durationInMillis);
+    Instant finishTime = Instant.now().plusMillis(duration.toMillis());
 
     while (Instant.now().isBefore(finishTime)) {
       // Region might have been cleared in between, that's why we check for null.
@@ -537,12 +545,12 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
   }
 
   /**
-   * Continuously execute put operations on the PartitionedRegion for the given durationInMillis.
+   * Continuously execute put operations on the PartitionedRegion for the given duration.
    */
-  private void executePuts(final int numEntries, final long durationInMillis) {
+  private void executePuts(final int numEntries, final Duration duration) {
     Cache cache = cacheRule.getCache();
     Region<String, String> region = cache.getRegion(REGION_NAME);
-    Instant finishTime = Instant.now().plusMillis(durationInMillis);
+    Instant finishTime = Instant.now().plusMillis(duration.toMillis());
 
     while (Instant.now().isBefore(finishTime)) {
       IntStream.range(0, numEntries).forEach(i -> region.put(String.valueOf(i), "Value_" + i));
@@ -550,16 +558,15 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
   }
 
   /**
-   * Continuously execute putAll operations on the PartitionedRegion for the given
-   * durationInMillis.
+   * Continuously execute putAll operations on the PartitionedRegion for the given duration.
    */
-  private void executePutAlls(final int startKey, final int finalKey, final long durationInMillis) {
+  private void executePutAlls(final int startKey, final int finalKey, final Duration duration) {
     Cache cache = cacheRule.getCache();
     Map<String, String> valuesToInsert = new HashMap<>();
     Region<String, String> region = cache.getRegion(REGION_NAME);
     IntStream.range(startKey, finalKey)
         .forEach(i -> valuesToInsert.put(String.valueOf(i), "Value_" + i));
-    Instant finishTime = Instant.now().plusMillis(durationInMillis);
+    Instant finishTime = Instant.now().plusMillis(duration.toMillis());
 
     while (Instant.now().isBefore(finishTime)) {
       region.putAll(valuesToInsert);
@@ -567,13 +574,12 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
   }
 
   /**
-   * Continuously execute remove operations on the PartitionedRegion for the given
-   * durationInMillis.
+   * Continuously execute remove operations on the PartitionedRegion for the given duration.
    */
-  private void executeRemoves(final int numEntries, final long durationInMillis) {
+  private void executeRemoves(final int numEntries, final Duration duration) {
     Cache cache = cacheRule.getCache();
     Region<String, String> region = cache.getRegion(REGION_NAME);
-    Instant finishTime = Instant.now().plusMillis(durationInMillis);
+    Instant finishTime = Instant.now().plusMillis(duration.toMillis());
 
     while (Instant.now().isBefore(finishTime)) {
       // Region might have been cleared in between, that's why we check for null.
@@ -585,16 +591,14 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
   }
 
   /**
-   * Continuously execute removeAll operations on the PartitionedRegion for the given
-   * durationInMillis.
+   * Continuously execute removeAll operations on the PartitionedRegion for the given duration.
    */
-  private void executeRemoveAlls(final int startKey, final int finalKey,
-      final long durationInMillis) {
+  private void executeRemoveAlls(final int startKey, final int finalKey, final Duration duration) {
     Cache cache = cacheRule.getCache();
     List<String> keysToRemove = new ArrayList<>();
     Region<String, String> region = cache.getRegion(REGION_NAME);
     IntStream.range(startKey, finalKey).forEach(i -> keysToRemove.add(String.valueOf(i)));
-    Instant finishTime = Instant.now().plusMillis(durationInMillis);
+    Instant finishTime = Instant.now().plusMillis(duration.toMillis());
 
     while (Instant.now().isBefore(finishTime)) {
       region.removeAll(keysToRemove);
@@ -622,13 +626,13 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
   }
 
   /**
-   * Continuously execute clear operations on the PartitionedRegion every periodInMillis for the
-   * given durationInMillis.
+   * Continuously execute clear operations on the PartitionedRegion every period for the
+   * given duration.
    */
-  private void executeClears(final long durationInMillis, final long periodInMillis) {
+  private void executeClears(final Duration duration, final Duration period) {
     Cache cache = cacheRule.getCache();
     Region<String, String> region = cache.getRegion(REGION_NAME);
-    long minimumInvocationCount = durationInMillis / periodInMillis;
+    long minimumInvocationCount = duration.toMillis() / period.toMillis();
 
     for (int invocationCount = 0; invocationCount < minimumInvocationCount; invocationCount++) {
       region.clear();
