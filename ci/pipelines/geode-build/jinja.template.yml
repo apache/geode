@@ -372,7 +372,7 @@ jobs:
           - name: instance-data
           outputs:
           - name: geode-results
-        timeout: 15m
+        timeout: 20m
         attempts: 5
       ensure:
         do:
