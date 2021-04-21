@@ -68,19 +68,19 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
 
   @Override
   public GatewaySenderFactory setParallel(boolean isParallel) {
-    this.attrs.isParallel = isParallel;
+    this.attrs.setParallel(isParallel);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setGroupTransactionEvents(boolean groupTransactionEvents) {
-    this.attrs.groupTransactionEvents = groupTransactionEvents;
+    this.attrs.setGroupTransactionEvents(groupTransactionEvents);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setForInternalUse(boolean isForInternalUse) {
-    this.attrs.isForInternalUse = isForInternalUse;
+    this.attrs.setForInternalUse(isForInternalUse);
     return this;
   }
 
@@ -104,108 +104,108 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
 
   @Override
   public GatewaySenderFactory setSocketBufferSize(int socketBufferSize) {
-    this.attrs.socketBufferSize = socketBufferSize;
+    this.attrs.setSocketBufferSize(socketBufferSize);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setSocketReadTimeout(int socketReadTimeout) {
-    this.attrs.socketReadTimeout = socketReadTimeout;
+    this.attrs.setSocketReadTimeout(socketReadTimeout);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setDiskStoreName(String diskStoreName) {
-    this.attrs.diskStoreName = diskStoreName;
+    this.attrs.setDiskStoreName(diskStoreName);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setMaximumQueueMemory(int maximumQueueMemory) {
-    this.attrs.maximumQueueMemory = maximumQueueMemory;
+    this.attrs.setMaximumQueueMemory(maximumQueueMemory);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setBatchSize(int batchSize) {
-    this.attrs.batchSize = batchSize;
+    this.attrs.setBatchSize(batchSize);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setBatchTimeInterval(int batchTimeInterval) {
-    this.attrs.batchTimeInterval = batchTimeInterval;
+    this.attrs.setBatchTimeInterval(batchTimeInterval);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setBatchConflationEnabled(boolean enableBatchConflation) {
-    this.attrs.isBatchConflationEnabled = enableBatchConflation;
+    this.attrs.setBatchConflationEnabled(enableBatchConflation);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setPersistenceEnabled(boolean enablePersistence) {
-    this.attrs.isPersistenceEnabled = enablePersistence;
+    this.attrs.setPersistenceEnabled(enablePersistence);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setAlertThreshold(int threshold) {
-    this.attrs.alertThreshold = threshold;
+    this.attrs.setAlertThreshold(threshold);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setManualStart(boolean start) {
-    this.attrs.manualStart = start;
+    this.attrs.setManualStart(start);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setLocatorDiscoveryCallback(LocatorDiscoveryCallback locCallback) {
-    this.attrs.locatorDiscoveryCallback = locCallback;
+    this.attrs.setLocatorDiscoveryCallback(locCallback);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setDiskSynchronous(boolean isSynchronous) {
-    this.attrs.isDiskSynchronous = isSynchronous;
+    this.attrs.setDiskSynchronous(isSynchronous);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setDispatcherThreads(int numThreads) {
-    if ((numThreads > 1) && this.attrs.policy == null) {
-      this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
+    if ((numThreads > 1) && this.attrs.getOrderPolicy() == null) {
+      this.attrs.setOrderPolicy(GatewaySender.DEFAULT_ORDER_POLICY);
     }
-    this.attrs.dispatcherThreads = numThreads;
+    this.attrs.setDispatcherThreads(numThreads);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setParallelFactorForReplicatedRegion(int parallel) {
-    this.attrs.parallelism = parallel;
-    this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
+    this.attrs.setParallelism(parallel);
+    this.attrs.setOrderPolicy(GatewaySender.DEFAULT_ORDER_POLICY);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setOrderPolicy(OrderPolicy policy) {
-    this.attrs.policy = policy;
+    this.attrs.setOrderPolicy(policy);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setBucketSorted(boolean isBucketSorted) {
-    this.attrs.isBucketSorted = isBucketSorted;
+    this.attrs.setBucketSorted(isBucketSorted);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setEnforceThreadsConnectSameReceiver(
       boolean enforceThreadsConnectSameReceiver) {
-    this.attrs.enforceThreadsConnectSameReceiver = enforceThreadsConnectSameReceiver;
+    this.attrs.setEnforceThreadsConnectSameReceiver(enforceThreadsConnectSameReceiver);
     return this;
   }
 
@@ -224,8 +224,8 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
           String.format("GatewaySender %s cannot be created with remote DS Id less than 0. ",
               id));
     }
-    this.attrs.id = id;
-    this.attrs.remoteDs = remoteDSId;
+    this.attrs.setId(id);
+    this.attrs.setRemoteDs(remoteDSId);
     GatewaySender sender = null;
 
     if (this.attrs.getDispatcherThreads() <= 0) {
@@ -245,7 +245,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
             "{} cannot configure socket read timeout of {} milliseconds because it is less than the minimum of {} milliseconds. The default will be used instead.",
             new Object[] {"GatewaySender " + id, this.attrs.getSocketReadTimeout(),
                 GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT});
-        this.attrs.socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT;
+        this.attrs.setSocketReadTimeout(GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT);
       }
 
       // Log a warning if the old system property is set.
@@ -297,7 +297,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
                 id));
       }
       if (this.attrs.getOrderPolicy() == null && this.attrs.getDispatcherThreads() > 1) {
-        this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
+        this.attrs.setOrderPolicy(GatewaySender.DEFAULT_ORDER_POLICY);
       }
       if (this.cache instanceof GemFireCacheImpl) {
         sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
@@ -315,7 +315,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
 
   @Override
   public GatewaySender create(String id) {
-    this.attrs.id = id;
+    this.attrs.setId(id);
     GatewaySender sender = null;
 
     if (this.attrs.getDispatcherThreads() <= 0) {
@@ -345,7 +345,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       }
     } else {
       if (this.attrs.getOrderPolicy() == null && this.attrs.getDispatcherThreads() > 1) {
-        this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
+        this.attrs.setOrderPolicy(GatewaySender.DEFAULT_ORDER_POLICY);
       }
       if (this.cache instanceof GemFireCacheImpl) {
         sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
@@ -363,48 +363,48 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
 
   @Override
   public GatewaySenderFactory removeGatewayEventFilter(GatewayEventFilter filter) {
-    this.attrs.eventFilters.remove(filter);
+    this.attrs.getGatewayEventFilters().remove(filter);
     return this;
   }
 
   @Override
   public GatewaySenderFactory removeGatewayTransportFilter(GatewayTransportFilter filter) {
-    this.attrs.transFilters.remove(filter);
+    this.attrs.getGatewayTransportFilters().remove(filter);
     return this;
   }
 
   @Override
   public GatewaySenderFactory setGatewayEventSubstitutionFilter(
       GatewayEventSubstitutionFilter filter) {
-    this.attrs.eventSubstitutionFilter = filter;
+    this.attrs.setEventSubstitutionFilter(filter);
     return this;
   }
 
   @Override
   public void configureGatewaySender(GatewaySender senderCreation) {
-    this.attrs.isParallel = senderCreation.isParallel();
-    this.attrs.manualStart = senderCreation.isManualStart();
-    this.attrs.socketBufferSize = senderCreation.getSocketBufferSize();
-    this.attrs.socketReadTimeout = senderCreation.getSocketReadTimeout();
-    this.attrs.isBatchConflationEnabled = senderCreation.isBatchConflationEnabled();
-    this.attrs.batchSize = senderCreation.getBatchSize();
-    this.attrs.batchTimeInterval = senderCreation.getBatchTimeInterval();
-    this.attrs.isPersistenceEnabled = senderCreation.isPersistenceEnabled();
-    this.attrs.diskStoreName = senderCreation.getDiskStoreName();
-    this.attrs.isDiskSynchronous = senderCreation.isDiskSynchronous();
-    this.attrs.maximumQueueMemory = senderCreation.getMaximumQueueMemory();
-    this.attrs.alertThreshold = senderCreation.getAlertThreshold();
-    this.attrs.dispatcherThreads = senderCreation.getDispatcherThreads();
-    this.attrs.policy = senderCreation.getOrderPolicy();
+    this.attrs.setParallel(senderCreation.isParallel());
+    this.attrs.setManualStart(senderCreation.isManualStart());
+    this.attrs.setSocketBufferSize(senderCreation.getSocketBufferSize());
+    this.attrs.setSocketReadTimeout(senderCreation.getSocketReadTimeout());
+    this.attrs.setBatchConflationEnabled(senderCreation.isBatchConflationEnabled());
+    this.attrs.setBatchSize(senderCreation.getBatchSize());
+    this.attrs.setBatchTimeInterval(senderCreation.getBatchTimeInterval());
+    this.attrs.setPersistenceEnabled(senderCreation.isPersistenceEnabled());
+    this.attrs.setDiskStoreName(senderCreation.getDiskStoreName());
+    this.attrs.setDiskSynchronous(senderCreation.isDiskSynchronous());
+    this.attrs.setMaximumQueueMemory(senderCreation.getMaximumQueueMemory());
+    this.attrs.setAlertThreshold(senderCreation.getAlertThreshold());
+    this.attrs.setDispatcherThreads(senderCreation.getDispatcherThreads());
+    this.attrs.setOrderPolicy(senderCreation.getOrderPolicy());
     for (GatewayEventFilter filter : senderCreation.getGatewayEventFilters()) {
-      this.attrs.eventFilters.add(filter);
+      this.attrs.getGatewayEventFilters().add(filter);
     }
     for (GatewayTransportFilter filter : senderCreation.getGatewayTransportFilters()) {
-      this.attrs.transFilters.add(filter);
+      this.attrs.getGatewayTransportFilters().add(filter);
     }
-    this.attrs.eventSubstitutionFilter = senderCreation.getGatewayEventSubstitutionFilter();
-    this.attrs.groupTransactionEvents = senderCreation.mustGroupTransactionEvents();
-    this.attrs.enforceThreadsConnectSameReceiver =
-        senderCreation.getEnforceThreadsConnectSameReceiver();
+    this.attrs.setEventSubstitutionFilter(senderCreation.getGatewayEventSubstitutionFilter());
+    this.attrs.setGroupTransactionEvents(senderCreation.mustGroupTransactionEvents());
+    this.attrs.setEnforceThreadsConnectSameReceiver(
+        senderCreation.getEnforceThreadsConnectSameReceiver());
   }
 }

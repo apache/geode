@@ -272,7 +272,7 @@ public class CreateGatewaySenderCommandTest {
     assertThat(argsArgumentCaptor.getValue().getAlertThreshold()).isNull();
     assertThat(argsArgumentCaptor.getValue().getDispatcherThreads()).isNull();
     assertThat(argsArgumentCaptor.getValue().getOrderPolicy()).isNull();
-    assertThat(argsArgumentCaptor.getValue().getGatewayEventFilter()).isNotNull().isEmpty();
+    assertThat(argsArgumentCaptor.getValue().getGatewayEventFilter()).isNull();
     assertThat(argsArgumentCaptor.getValue().getGatewayTransportFilter()).isNotNull().isEmpty();
     assertThat(argsArgumentCaptor.getValue().mustGroupTransactionEvents()).isNotNull();
     assertThat(argsArgumentCaptor.getValue().getEnforceThreadsConnectSameReceiver()).isFalse();

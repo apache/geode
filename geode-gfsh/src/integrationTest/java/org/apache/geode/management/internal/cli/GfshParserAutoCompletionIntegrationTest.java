@@ -431,7 +431,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void testCompletionCreateGatewaySenderWithSpace() {
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForCreateGatewaySenderWithSpace() {
     String buffer = "create gateway-sender ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(2);
@@ -441,10 +441,130 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
-  public void testCompletionCreateGatewaySenderWithDash() {
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForCreateGatewaySenderWithDash() {
     String buffer = "create gateway-sender --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(1);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "id");
   }
+
+  @Test
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForChangeLogLevelWithSpace() {
+    String buffer = "change loglevel ";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--loglevel");
+  }
+
+  @Test
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForChangeLogLevelWithDash() {
+    String buffer = "change loglevel --";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "loglevel");
+  }
+
+  @Test
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForCreateDiskStoreWithSpace() {
+    String buffer = "create disk-store ";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(2);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--dir");
+    assertThat(candidate.getCandidate(1)).isEqualTo(buffer + "--name");
+  }
+
+  @Test
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForCreateDiskStoreWithDash() {
+    String buffer = "create disk-store --";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "dir");
+  }
+
+  @Test
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForCreateJndiBindingWithSpace() {
+    String buffer = "create jndi-binding ";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(3);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--connection-url");
+    assertThat(candidate.getCandidate(1)).isEqualTo(buffer + "--name");
+    assertThat(candidate.getCandidate(2)).isEqualTo(buffer + "--url");
+  }
+
+  @Test
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForCreateJndiBindingWithDash() {
+    String buffer = "create jndi-binding --";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(2);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "connection-url");
+    assertThat(candidate.getCandidate(1)).isEqualTo(buffer + "url");
+  }
+
+  @Test
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForDestroyGwSenderWithSpace() {
+    String buffer = "destroy gateway-sender ";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--id");
+  }
+
+  @Test
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForDestroyGwSenderWithDash() {
+    String buffer = "destroy gateway-sender --";
+
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "id");
+  }
+
+  @Test
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForExportDataWithSpace() {
+    String buffer = "export data ";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(2);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--member");
+    assertThat(candidate.getCandidate(1)).isEqualTo(buffer + "--region");
+  }
+
+  @Test
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForExportDataWithDash() {
+    String buffer = "export data --";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "member");
+  }
+
+  @Test
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForImportDataWithSpace() {
+    String buffer = "import data ";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(2);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--member");
+    assertThat(candidate.getCandidate(1)).isEqualTo(buffer + "--region");
+  }
+
+  @Test
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForImportDataWithDash() {
+    String buffer = "import data --";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "member");
+  }
+
+  @Test
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForRemoveWithSpace() {
+    String buffer = "remove ";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--region");
+  }
+
+  @Test
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForRemoveWithDash() {
+    String buffer = "remove --";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "region");
+  }
+
 }

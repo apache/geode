@@ -31,62 +31,162 @@ public class GatewaySenderAttributes {
   public static final boolean DEFAULT_IS_META_QUEUE = false;
 
 
-  public int socketBufferSize = GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE;
+  private int socketBufferSize = GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE;
 
-  public int socketReadTimeout = GatewaySender.DEFAULT_SOCKET_READ_TIMEOUT;
+  private int socketReadTimeout = GatewaySender.DEFAULT_SOCKET_READ_TIMEOUT;
 
-  public int maximumQueueMemory = GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY;
+  private int maximumQueueMemory = GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY;
 
-  public int batchSize = GatewaySender.DEFAULT_BATCH_SIZE;
+  private int batchSize = GatewaySender.DEFAULT_BATCH_SIZE;
 
-  public int batchTimeInterval = GatewaySender.DEFAULT_BATCH_TIME_INTERVAL;
+  private int batchTimeInterval = GatewaySender.DEFAULT_BATCH_TIME_INTERVAL;
 
-  public boolean isBatchConflationEnabled = GatewaySender.DEFAULT_BATCH_CONFLATION;
+  private boolean isBatchConflationEnabled = GatewaySender.DEFAULT_BATCH_CONFLATION;
 
-  public boolean isPersistenceEnabled = GatewaySender.DEFAULT_PERSISTENCE_ENABLED;
+  private boolean isPersistenceEnabled = GatewaySender.DEFAULT_PERSISTENCE_ENABLED;
 
-  public int alertThreshold = GatewaySender.DEFAULT_ALERT_THRESHOLD;
+  private int alertThreshold = GatewaySender.DEFAULT_ALERT_THRESHOLD;
 
-  public boolean manualStart = GatewaySender.DEFAULT_MANUAL_START;
+  private boolean manualStart = GatewaySender.DEFAULT_MANUAL_START;
 
-  public String diskStoreName;
+  private String diskStoreName;
 
-  public List<GatewayEventFilter> eventFilters = new ArrayList<GatewayEventFilter>();
+  private List<GatewayEventFilter> eventFilters = new ArrayList<GatewayEventFilter>();
 
-  public ArrayList<GatewayTransportFilter> transFilters = new ArrayList<GatewayTransportFilter>();
+  private ArrayList<GatewayTransportFilter> transFilters = new ArrayList<GatewayTransportFilter>();
 
-  public List<AsyncEventListener> listeners = new ArrayList<AsyncEventListener>();
+  private List<AsyncEventListener> listeners = new ArrayList<AsyncEventListener>();
 
-  public GatewayEventSubstitutionFilter eventSubstitutionFilter;
+  private GatewayEventSubstitutionFilter eventSubstitutionFilter;
 
-  public String id;
+  private String id;
 
-  public int remoteDs = GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID;
+  private int remoteDs = GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID;
 
-  public LocatorDiscoveryCallback locatorDiscoveryCallback;
+  private LocatorDiscoveryCallback locatorDiscoveryCallback;
 
-  public boolean isDiskSynchronous = GatewaySender.DEFAULT_DISK_SYNCHRONOUS;
+  private boolean isDiskSynchronous = GatewaySender.DEFAULT_DISK_SYNCHRONOUS;
 
-  public OrderPolicy policy;
+  private OrderPolicy policy;
 
-  public int dispatcherThreads = GatewaySender.DEFAULT_DISPATCHER_THREADS;
+  private int dispatcherThreads = GatewaySender.DEFAULT_DISPATCHER_THREADS;
 
-  public int parallelism = GatewaySender.DEFAULT_PARALLELISM_REPLICATED_REGION;
+  private int parallelism = GatewaySender.DEFAULT_PARALLELISM_REPLICATED_REGION;
 
-  public boolean isParallel = GatewaySender.DEFAULT_IS_PARALLEL;
+  private boolean isParallel = GatewaySender.DEFAULT_IS_PARALLEL;
 
-  public boolean groupTransactionEvents = GatewaySender.DEFAULT_MUST_GROUP_TRANSACTION_EVENTS;
+  private boolean groupTransactionEvents = GatewaySender.DEFAULT_MUST_GROUP_TRANSACTION_EVENTS;
 
-  public boolean isForInternalUse = GatewaySender.DEFAULT_IS_FOR_INTERNAL_USE;
+  private boolean isForInternalUse = GatewaySender.DEFAULT_IS_FOR_INTERNAL_USE;
 
-  public boolean isBucketSorted = GatewaySenderAttributes.DEFAULT_IS_BUCKETSORTED;
+  private boolean isBucketSorted = GatewaySenderAttributes.DEFAULT_IS_BUCKETSORTED;
 
-  public boolean isMetaQueue = GatewaySenderAttributes.DEFAULT_IS_META_QUEUE;
+  private boolean isMetaQueue = GatewaySenderAttributes.DEFAULT_IS_META_QUEUE;
 
-  public boolean forwardExpirationDestroy = GatewaySender.DEFAULT_FORWARD_EXPIRATION_DESTROY;
+  private boolean forwardExpirationDestroy = GatewaySender.DEFAULT_FORWARD_EXPIRATION_DESTROY;
 
-  public boolean enforceThreadsConnectSameReceiver =
+  private boolean enforceThreadsConnectSameReceiver =
       GatewaySender.DEFAULT_ENFORCE_THREADS_CONNECT_SAME_RECEIVER;
+
+  public void setSocketBufferSize(int bufferSize) {
+    socketBufferSize = bufferSize;
+  }
+
+  public void setSocketReadTimeout(int readTimeout) {
+    socketReadTimeout = readTimeout;
+  }
+
+  public void setMaximumQueueMemory(int maxQueueMemory) {
+    maximumQueueMemory = maxQueueMemory;
+  }
+
+  public void setBatchSize(int batchsize) {
+    batchSize = batchsize;
+  }
+
+  public void setBatchTimeInterval(int batchtimeinterval) {
+    batchTimeInterval = batchtimeinterval;
+  }
+
+  public void setBatchConflationEnabled(boolean batchConfEnabled) {
+    isBatchConflationEnabled = batchConfEnabled;
+  }
+
+  public void setPersistenceEnabled(boolean persistenceEnabled) {
+    isPersistenceEnabled = persistenceEnabled;
+  }
+
+  public void setAlertThreshold(int alertThresh) {
+    alertThreshold = alertThresh;
+  }
+
+  public void setManualStart(boolean manualstart) {
+    manualStart = manualstart;
+  }
+
+  public void setDiskStoreName(String diskstorename) {
+    diskStoreName = diskstorename;
+  }
+
+  public void setEventSubstitutionFilter(GatewayEventSubstitutionFilter eventsubstitutionfilter) {
+    eventSubstitutionFilter = eventsubstitutionfilter;
+  }
+
+  public void setId(String idString) {
+    id = idString;
+  }
+
+  public void setRemoteDs(int rDs) {
+    remoteDs = rDs;
+  }
+
+  public void setLocatorDiscoveryCallback(LocatorDiscoveryCallback locatorDiscCall) {
+    locatorDiscoveryCallback = locatorDiscCall;
+  }
+
+  public void setDiskSynchronous(boolean diskSynchronous) {
+    isDiskSynchronous = diskSynchronous;
+  }
+
+  public void setOrderPolicy(OrderPolicy orderpolicy) {
+    policy = orderpolicy;
+  }
+
+  public void setDispatcherThreads(int dispatchThreads) {
+    dispatcherThreads = dispatchThreads;
+  }
+
+  public void setParallelism(int tempParallelism) {
+    parallelism = tempParallelism;
+  }
+
+  public void setParallel(boolean parallel) {
+    isParallel = parallel;
+  }
+
+  public void setGroupTransactionEvents(boolean groupTransEvents) {
+    groupTransactionEvents = groupTransEvents;
+  }
+
+  public void setForInternalUse(boolean forInternalUse) {
+    isForInternalUse = forInternalUse;
+  }
+
+  public void setBucketSorted(boolean bucketSorted) {
+    isBucketSorted = bucketSorted;
+  }
+
+  public void setMetaQueue(boolean metaQueue) {
+    isMetaQueue = metaQueue;
+  }
+
+  public void setForwardExpirationDestroy(boolean forwardexpirationdestroy) {
+    forwardExpirationDestroy = forwardexpirationdestroy;
+  }
+
+  public void setEnforceThreadsConnectSameReceiver(boolean enforcethreadsconnectsamereceiver) {
+    enforceThreadsConnectSameReceiver = enforcethreadsconnectsamereceiver;
+  }
 
   public int getSocketBufferSize() {
     return this.socketBufferSize;
@@ -211,4 +311,5 @@ public class GatewaySenderAttributes {
   public boolean getEnforceThreadsConnectSameReceiver() {
     return this.enforceThreadsConnectSameReceiver;
   }
+
 }

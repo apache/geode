@@ -26,7 +26,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
@@ -44,7 +43,6 @@ public class GfshCompatibilityTest {
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(s -> TestVersion.compare(s, "1.11.0") < 0);
     return result;
   }
 
@@ -72,7 +70,7 @@ public class GfshCompatibilityTest {
       assertThat(gfsh.isConnected()).isFalse();
       assertThat(gfsh.getGfshOutput()).contains("Cannot use a")
           .contains("gfsh client to connect to this cluster.");
-    } else if (TestVersion.compare(oldVersion, "1.11.0") < 0) {
+    } else if (TestVersion.compare(oldVersion, "1.10.0") < 0) {
       gfsh.connect(oldLocator.getPort(), GfshCommandRule.PortType.locator);
       assertThat(gfsh.isConnected()).isFalse();
       assertThat(gfsh.getGfshOutput()).contains("Cannot use a")
@@ -87,30 +85,4 @@ public class GfshCompatibilityTest {
           .statusIsSuccess();
     }
   }
-
-  @Test
-  public void whenCurrentVersionLocatorsExecuteRebalanceOnOldServersThenItMustSucceed()
-      throws Exception {
-    MemberVM locator1 = cluster.startLocatorVM(0, oldVersion);
-    int locatorPort1 = locator1.getPort();
-    MemberVM locator2 =
-        cluster.startLocatorVM(1, 0, oldVersion, x -> x.withConnectionToLocator(locatorPort1));
-    int locatorPort2 = locator2.getPort();
-    cluster
-        .startServerVM(2, oldVersion, s -> s.withRegion(RegionShortcut.PARTITION, "region")
-            .withConnectionToLocator(locatorPort1, locatorPort2));
-    cluster
-        .startServerVM(3, oldVersion, s -> s.withRegion(RegionShortcut.PARTITION, "region")
-            .withConnectionToLocator(locatorPort1, locatorPort2));
-    cluster.stop(0);
-    locator1 = cluster.startLocatorVM(0, x -> x.withConnectionToLocator(locatorPort2));
-    cluster.stop(1);
-    int locatorPort1_v2 = locator1.getPort();
-    cluster.startLocatorVM(1, x -> x.withConnectionToLocator(locatorPort1_v2));
-    gfsh.connectAndVerify(locator1);
-    gfsh.executeAndAssertThat("rebalance ")
-        .statusIsSuccess();
-
-  }
-
 }

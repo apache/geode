@@ -60,6 +60,7 @@
 GCP_PROJECT: ((gcp-project))
 CPUS: {{ test.CPUS }}
 RAM: {{ test.RAM }}
+DISK: {{ test.DISK }}
 {%- endmacro %}
 
 {% macro common_test_params(test) -%}

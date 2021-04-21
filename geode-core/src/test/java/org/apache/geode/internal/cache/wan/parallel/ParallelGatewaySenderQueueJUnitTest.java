@@ -27,6 +27,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -457,6 +458,30 @@ public class ParallelGatewaySenderQueueJUnitTest {
   }
 
   @Test
+  public void peekEventsFromIncompleteTransactionsDoesNotThrowConcurrentModificationExceptionWhenCompletingTwoTransactions() {
+    mockGatewaySenderStats();
+    GatewaySenderEventImpl event1 = createGatewaySenderEventImpl(1, false);
+    GatewaySenderEventImpl event2 = createGatewaySenderEventImpl(2, false);
+    GatewaySenderEventImpl event3 = createGatewaySenderEventImpl(1, true);
+    GatewaySenderEventImpl event4 = createGatewaySenderEventImpl(2, true);
+
+    Queue backingList = new LinkedList();
+    backingList.add(event3);
+    backingList.add(event4);
+    BucketRegionQueue bucketRegionQueue = mockBucketRegionQueue(backingList);
+
+    TestableParallelGatewaySenderQueue queue = new TestableParallelGatewaySenderQueue(sender,
+        Collections.emptySet(), 0, 1, metaRegionFactory);
+    queue.setGroupTransactionEvents(true);
+    queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
+
+    List<GatewaySenderEventImpl> batch = new ArrayList<>(Arrays.asList(event1, event2));
+    PartitionedRegion mockBucketRegion = mockPR("bucketRegion");
+    queue.peekEventsFromIncompleteTransactions(batch, mockBucketRegion);
+  }
+
+
+  @Test
   public void testCalculateTimeToSleepNegativeInputReturnsZero() {
     assertEquals(0L, ParallelGatewaySenderQueue.calculateTimeToSleep(-3));
   }
@@ -475,6 +500,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
   public void testCalculateTimeToSleepInputSmallerThanOneThousand() {
     assertEquals(2L, ParallelGatewaySenderQueue.calculateTimeToSleep(40));
   }
+
 
   private GatewaySenderEventImpl createGatewaySenderEventImpl(int transactionId,
       boolean isLastEventInTransaction) {

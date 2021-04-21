@@ -44,11 +44,11 @@ public class RemoveCommand extends GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @CliCommand(value = {CliStrings.REMOVE}, help = CliStrings.REMOVE__HELP)
   public ResultModel remove(
-      @CliOption(key = {CliStrings.REMOVE__KEY}, help = CliStrings.REMOVE__KEY__HELP,
-          specifiedDefaultValue = "") String key,
       @CliOption(key = {CliStrings.REMOVE__REGION}, mandatory = true,
           help = CliStrings.REMOVE__REGION__HELP,
           optionContext = ConverterHint.REGION_PATH) String regionPath,
+      @CliOption(key = {CliStrings.REMOVE__KEY}, help = CliStrings.REMOVE__KEY__HELP,
+          specifiedDefaultValue = "") String key,
       @CliOption(key = CliStrings.REMOVE__ALL, help = CliStrings.REMOVE__ALL__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean removeAllKeys,
       @CliOption(key = {CliStrings.REMOVE__KEYCLASS},

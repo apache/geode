@@ -1,7 +1,7 @@
 import org.apache.geode.gradle.TestPropertiesWriter
-import org.apache.geode.gradle.RepeatTest
+
 import org.apache.geode.gradle.plugins.DependencyConstraints
-import org.apache.geode.gradle.RunInSubdirectoryTestFramework
+import org.apache.geode.gradle.testing.repeat.RepeatTest
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -41,6 +41,7 @@ test {
   }
 }
 
+
 apply plugin: 'nebula.facet'
 facets {
   integrationTest {
@@ -74,7 +75,7 @@ dependencies {
     transitive = false
   }
 
-  testRuntime('cglib:cglib:' + DependencyConstraints.get('cglib.version')) {
+  testRuntimeOnly('cglib:cglib:' + DependencyConstraints.get('cglib.version')) {
     exclude module: 'org.apache.ant'
   }
 }
@@ -136,17 +137,6 @@ task repeatUnitTest(type: RepeatTest) {
 configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
   if (project.hasProperty('excludeTest')) {
     exclude project.getProperty('excludeTest').split(',')
-  }
-}
-
-configure([acceptanceTest, distributedTest, integrationTest, uiTest, upgradeTest, repeatAcceptanceTest, repeatDistributedTest, repeatIntegrationTest, repeatUnitTest, repeatUpgradeTest]) {
-  doFirst {
-    // Wrap the task's test framework in a wrapper that runs each test worker JVM in a unique
-    // subdirectory.
-    def subdirFramework = new RunInSubdirectoryTestFramework(testFramework)
-    // This call works for now, but the Test class declares useTestFramework() as protected, so
-    // this could become troublesome in a future version of Gradle/Groovy.
-    useTestFramework subdirFramework
   }
 }
 
@@ -212,7 +202,7 @@ gradle.taskGraph.whenReady({ graph ->
 
       // The distributed tests seem to need to use /tmp directly,
       // so exclude them from using the supplied temp directory.
-      if (!test.name.contains("distributed")) {
+      if (!test.name.contains("distributed") && !test.name.contains("repeatDistributed")) {
         systemProperty 'java.io.tmpdir', System.getProperty('java.io.tmpdir')
       }
 
@@ -238,7 +228,7 @@ gradle.taskGraph.whenReady({ graph ->
 acceptanceTest {
   // Acceptance tests may reach out and run a gfsh command from the assembled gfsh.
   // If the test JVM version is specified, we must have the correct JAVA_HOME set for gfsh to use.
-  // See also environment configuration for parallel testing in docker.gradle
+  // See also environment configuration for parallel testing in multi-process-test.gradle
   if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
     environment "JAVA_HOME", "${project.testJVM}"
   }

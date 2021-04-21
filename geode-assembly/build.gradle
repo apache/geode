@@ -125,14 +125,16 @@ artifacts {
   compositeTarget distTar
 }
 
-//This "repository" only exists to download tomcat-6, because the zip for tomcat 6 is
-//not in a maven repo. Later versions of tomcat are.
 repositories {
+  //This "repository" only exists to download tomcat-6, because the zip for tomcat 6 is
+  //not in a maven repo. Later versions of tomcat are.
   ivy {
     url 'https://archive.apache.org/'
     patternLayout {
       artifact '/dist/tomcat/tomcat-6/v6.0.37/bin/[organisation]-[module]-[revision].[ext]'
     }
+    // Infer the metadata from the presence of the artifact
+    metadataSources { artifact() }
   }
   // For gradle tooling dependencies
   maven {
@@ -161,7 +163,7 @@ task downloadWebServers(type:Copy) {
 }
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
   gfshDependencies(platform(project(':boms:geode-all-bom')))
 
   dependentProjectNames.each {
@@ -215,7 +217,7 @@ dependencies {
   integrationTestImplementation('javax.annotation:javax.annotation-api')
   integrationTestImplementation('javax.servlet:javax.servlet-api')
 
-  integrationTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  integrationTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
   integrationTestRuntimeOnly('io.swagger:swagger-annotations')
   // these two modules are for testing only
@@ -300,7 +302,7 @@ dependencies {
   upgradeTestRuntimeOnly(project(':extensions:session-testing-war'))
   upgradeTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')
   upgradeTestRuntimeOnly('org.apache.httpcomponents:httpclient')
-  upgradeTestRuntime files({ downloadWebServers } )
+  upgradeTestRuntimeOnly files({ downloadWebServers } )
 
   //Web servers used for session module testing
   webServerTomcat6('apache:tomcat:' + DependencyConstraints.get('tomcat6.version') + '@zip')
@@ -492,7 +494,7 @@ tasks.register('docs', Javadoc) {
 
 distributions {
   src {
-    baseName = 'apache-geode'
+    distributionBaseName = 'apache-geode'
     contents {
       from rootProject.tasks.writeBuildInfo
       from (rootDir) {
@@ -532,7 +534,7 @@ distributions {
     }
   }
   named('main') {
-    baseName = 'apache-geode'
+    distributionBaseName = 'apache-geode'
     contents {
       duplicatesStrategy 'exclude'
       exclude '*.asc'

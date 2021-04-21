@@ -49,15 +49,15 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.deployment.internal.JarDeploymentService;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
+import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
@@ -94,7 +94,7 @@ public class ClusterConfigurationLoader {
     if (!jarFileNames.isEmpty()) {
       logger.info("Got response with jars: {}", String.join(",", jarFileNames));
       JarDeploymentService jarDeploymentService =
-          JarDeploymentServiceFactory.getJarDeploymentServiceInstance();
+          ClassPathLoader.getLatest().getJarDeploymentService();
 
       Set<File> stagedJarFiles =
           getJarsFromLocator(response.getMember(), response.getJarNames());

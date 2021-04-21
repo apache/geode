@@ -185,7 +185,6 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -1493,7 +1492,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   void applyJarAndXmlFromClusterConfig() {
     if (configurationResponse == null) {
       // Deploy all the jars from the deploy working dir.
-      JarDeploymentServiceFactory.getJarDeploymentServiceInstance().loadJarsFromWorkingDirectory();
+      ClassPathLoader.getLatest().getJarDeploymentService().loadJarsFromWorkingDirectory();
     }
     clusterConfigurationLoader.applyClusterXmlConfiguration(this, configurationResponse,
         system.getConfig().getGroups());
@@ -2163,7 +2162,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   boolean doClose(String reason, Throwable systemFailureCause, boolean keepAlive,
       boolean keepDS, boolean skipAwait) {
     securityService.close();
-    JarDeploymentServiceFactory.shutdownJarDeploymentService();
 
     if (waitIfClosing(skipAwait)) {
       return false;
@@ -2470,6 +2468,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         isClosedLatch.countDown();
       } finally {
         CLOSING_THREAD.remove();
+        ClassPathLoader.setLatestToDefault(null);
       }
       return true;
     }

@@ -146,12 +146,14 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
    * occurs.
    */
   private int batchSize;
+  private int batchTimeInterval;
 
   public AbstractGatewaySenderEventProcessor(String string,
       GatewaySender sender, ThreadsMonitoring tMonitoring) {
     super(string);
     this.sender = (AbstractGatewaySender) sender;
     this.batchSize = sender.getBatchSize();
+    this.batchTimeInterval = sender.getBatchTimeInterval();
     this.threadMonitoring = tMonitoring;
   }
 
@@ -260,6 +262,10 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       logger.info("Set the batch size from {} to {} events",
           new Object[] {currentBatchSize, this.batchSize});
     }
+  }
+
+  protected void setBatchTimeInterval(int batchTimeInterval) {
+    this.batchTimeInterval = batchTimeInterval;
   }
 
   /**
@@ -433,7 +439,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     final boolean isDebugEnabled = logger.isDebugEnabled();
     final boolean isTraceEnabled = logger.isTraceEnabled();
 
-    final int batchTimeInterval = sender.getBatchTimeInterval();
     final GatewaySenderStats statistics = this.sender.getStatistics();
 
     if (isDebugEnabled) {
@@ -515,7 +520,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
                * Thread.currentThread().interrupt(); } } }
                */
             }
-            events = this.queue.peek(this.batchSize, batchTimeInterval);
+            events = this.queue.peek(this.batchSize, this.batchTimeInterval);
           } catch (InterruptedException e) {
             interrupted = true;
             this.sender.getCancelCriterion().checkCancelInProgress(e);

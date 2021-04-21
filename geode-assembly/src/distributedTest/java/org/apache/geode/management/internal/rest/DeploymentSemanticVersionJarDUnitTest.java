@@ -30,7 +30,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -218,7 +217,7 @@ public class DeploymentSemanticVersionJarDUnitTest {
 
   private static void verifyLoadAndHasVersion(String artifactId, String className, String version)
       throws Exception {
-    assertThat(JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
+    assertThat(ClassPathLoader.getLatest().getJarDeploymentService()
         .getDeployed(artifactId).isSuccessful()).isTrue();
     Class<?> klass = ClassPathLoader.getLatest().forName(className);
     assertThat(klass).isNotNull();

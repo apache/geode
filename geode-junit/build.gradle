@@ -21,7 +21,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
 
   testImplementation(project(':geode-common'))
   compileOnly(project(':geode-core'))
@@ -59,7 +59,7 @@ dependencies {
 
   testImplementation('pl.pragmatists:JUnitParams')
 
-  testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  testRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
 test {
