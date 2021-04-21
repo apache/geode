@@ -173,7 +173,7 @@ public class RedisSetTest {
   @Test
   public void overheadConstants_shouldNotChange_withoutForethoughtAndTesting() {
     assertThat(RedisSet.PER_OBJECT_OVERHEAD).isEqualTo(8);
-    assertThat(RedisSet.getPerSetOverhead()).isEqualTo(RedisSet.PER_OBJECT_OVERHEAD + 240);
+    assertThat(RedisSet.getPerSetOverhead()).isEqualTo(RedisSet.PER_OBJECT_OVERHEAD + 104);
     assertThat(RedisSet.getPerMemberOverhead()).isEqualTo(RedisSet.PER_OBJECT_OVERHEAD + 70);
   }
 

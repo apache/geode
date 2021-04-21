@@ -266,7 +266,7 @@ public class RedisHashTest {
     assertThat(RedisHash.PER_OBJECT_OVERHEAD).isEqualTo(8);
     assertThat(RedisHash.getPerByteArrayWrapperOverhead())
         .isEqualTo(RedisHash.PER_OBJECT_OVERHEAD + 46);
-    assertThat(RedisHash.getPerHashOverhead()).isEqualTo(RedisHash.PER_OBJECT_OVERHEAD + 116);
+    assertThat(RedisHash.getPerHashOverhead()).isEqualTo(RedisHash.PER_OBJECT_OVERHEAD + 324);
   }
 
   @SuppressWarnings("unchecked")
