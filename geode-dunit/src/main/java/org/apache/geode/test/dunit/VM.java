@@ -78,6 +78,8 @@ public class VM implements Serializable {
 
   private final transient ChildVMLauncher childVMLauncher;
 
+  private boolean classLoaderIsolated = false;
+
   /**
    * Returns the {@code VM} identity. For {@link StandAloneDUnitEnv} the number returned is a
    * zero-based sequence representing the order in with the DUnit {@code VM}s were launched.
@@ -235,7 +237,8 @@ public class VM implements Serializable {
   }
 
   public VM(final Host host, final String version, final int id, final RemoteDUnitVMIF client,
-      final ProcessHolder processHolder, final ChildVMLauncher childVMLauncher) {
+      final ProcessHolder processHolder, final ChildVMLauncher childVMLauncher,
+      boolean isClassLoaderIsolated) {
     this.host = host;
     this.id = id;
     this.version = version;
@@ -243,6 +246,19 @@ public class VM implements Serializable {
     this.processHolder = processHolder;
     this.childVMLauncher = childVMLauncher;
     available = true;
+    this.classLoaderIsolated = isClassLoaderIsolated;
+  }
+
+  public void initializeAsLocatorVM() {
+    bounceClassLoaderIsolated(this.version, false);
+  }
+
+  public void initializeAsServerVM() {
+    bounceClassLoaderIsolated(this.version, true);
+  }
+
+  public void initializeAsClientVM() {
+    bounceClassLoaderIsolated(this.version, false);
   }
 
   /**
@@ -522,6 +538,13 @@ public class VM implements Serializable {
     }
   }
 
+  private VM bounceClassLoaderIsolated(String targetVersion, boolean newClassLoaderIsolated) {
+    if (classLoaderIsolated != newClassLoaderIsolated) {
+      bounce(targetVersion, false, newClassLoaderIsolated);
+    }
+    return this;
+  }
+
   /**
    * Synchronously bounces (nice kill and restarts) this {@code VM}. Concurrent bounce attempts are
    * synchronized but attempts to invoke methods on a bouncing {@code VM} will cause test failure.
@@ -535,7 +558,7 @@ public class VM implements Serializable {
    * @throws RMIException if an exception occurs while bouncing this {@code VM}
    */
   public VM bounce() {
-    bounce(version, false);
+    bounce(version, false, classLoaderIsolated);
     return this;
   }
 
@@ -553,16 +576,17 @@ public class VM implements Serializable {
    * @throws RMIException if an exception occurs while bouncing this {@code VM}
    */
   public VM bounceForcibly() {
-    bounce(version, true);
+    bounce(version, true, classLoaderIsolated);
     return this;
   }
 
   public VM bounce(final String targetVersion) {
-    bounce(targetVersion, false);
+    bounce(targetVersion, false, classLoaderIsolated);
     return this;
   }
 
-  private synchronized void bounce(final String targetVersion, boolean force) {
+  private synchronized void bounce(final String targetVersion, boolean force,
+      boolean classLoaderIsolated) {
     checkAvailability(getClass().getName(), "bounceVM");
 
     logger.info("Bouncing {} old pid is {} and version is {}", id, getPid(), version);
@@ -592,7 +616,8 @@ public class VM implements Serializable {
       // fixed ports. So when we bounce a VM, use an RMI port outside the usual range of ephemeral
       // ports for MacOS (49152–65535) and Linux (32768-60999).
       int remoteStubPort = AvailablePortHelper.getRandomAvailableTCPPort();
-      processHolder = childVMLauncher.launchVM(targetVersion, id, true, remoteStubPort);
+      processHolder =
+          childVMLauncher.launchVM(targetVersion, id, true, remoteStubPort, classLoaderIsolated);
       version = targetVersion;
       client = childVMLauncher.getStub(id);
       available = true;

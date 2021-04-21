@@ -142,6 +142,7 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
   }
 
   protected int startLocatorInVM(final VM vm, final String hostName, final String otherLocators) {
+    vm.initializeAsLocatorVM();
     return vm.invoke("create locator", () -> startLocator(hostName, otherLocators));
   }
 
@@ -171,12 +172,14 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
 
   protected int startBridgeServerInVM(VM vm, String[] groups, String locators,
       boolean useGroupsProperty) {
+    vm.initializeAsServerVM();
     return startBridgeServerInVM(vm, groups, locators, new String[] {REGION_NAME},
         CacheServer.DEFAULT_LOAD_PROBE, useGroupsProperty);
   }
 
   protected int startBridgeServerInVM(VM vm, final String[] groups, final String locators,
       final String[] regions, final ServerLoadProbe probe, final boolean useGroupsProperty) {
+    vm.initializeAsServerVM();
     return vm.invoke("start cache server",
         () -> startBridgeServer(groups, locators, regions, probe, useGroupsProperty));
   }
@@ -236,11 +239,13 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
 
   protected void startBridgeClientInVM(VM vm, final String group, final String host, final int port)
       throws Exception {
+    vm.initializeAsClientVM();
     startBridgeClientInVM(vm, group, host, port, REGION_NAME);
   }
 
   protected void startBridgeClientInVM(VM vm, final String group, final String host, final int port,
       final String... regions) throws Exception {
+    vm.initializeAsClientVM();
     vm.invoke(() -> {
       PoolFactoryImpl pf = new PoolFactoryImpl(null);
       pf.addLocator(host, port).setServerGroup(group).setPingInterval(200)
@@ -260,6 +265,7 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
     if (vm == null) {
       connect.run();
     } else {
+      vm.initializeAsClientVM();
       vm.invoke(connect);
     }
   }

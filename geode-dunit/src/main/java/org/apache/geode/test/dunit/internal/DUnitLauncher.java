@@ -214,7 +214,7 @@ public class DUnitLauncher {
 
     if (launchLocator) {
       // Create a VM for the locator
-      processManager.launchVM(LOCATOR_VM_NUM);
+      processManager.launchVM(LOCATOR_VM_NUM, false);
 
       // wait for the VM to start up
       if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
@@ -228,7 +228,7 @@ public class DUnitLauncher {
 
     // Launch an initial set of VMs
     for (int i = 0; i < NUM_VMS; i++) {
-      processManager.launchVM(i);
+      processManager.launchVM(i, true);
     }
 
     // wait for the VMS to start up

@@ -80,7 +80,6 @@ def copyDistributedTestLibs() {
 
   filesToCopy.each { artifactFile ->
     def newLibPath = null
-    println("ArtifactFile: $artifactFile.name")
     if (artifactFile.getName().endsWith('.jar')) {
       newLibPath = Paths.get("${project(':geode-assembly').buildDir}/distributedTesting/lib/${artifactFile.name}")
     } else if (artifactFile.getName().endsWith('.war')) {

@@ -50,6 +50,8 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelPropagationConcurrentArtifacts() throws Exception {
+    vm0.initializeAsLocatorVM();
+    vm1.initializeAsLocatorVM();
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -118,6 +120,8 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelPropagation() throws Exception {
+    vm0.initializeAsLocatorVM();
+    vm1.initializeAsLocatorVM();
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -176,6 +180,8 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelPropagationWithUnEqualBucketDivision() throws Exception {
+    vm0.initializeAsLocatorVM();
+    vm1.initializeAsLocatorVM();
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -233,6 +239,8 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelPropagation_withoutRemoteSite() throws Exception {
+    vm0.initializeAsLocatorVM();
+    vm1.initializeAsLocatorVM();
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -293,6 +301,8 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelPropagationColocatedPartitionedRegions() {
+    vm0.initializeAsLocatorVM();
+    vm1.initializeAsLocatorVM();
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -356,6 +366,8 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelPropagationWithLocalCacheClosedAndRebuilt() throws Exception {
+    vm0.initializeAsLocatorVM();
+    vm1.initializeAsLocatorVM();
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -462,6 +474,8 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelColocatedPropagation() throws Exception {
+    vm0.initializeAsLocatorVM();
+    vm1.initializeAsLocatorVM();
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -513,6 +527,8 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelColocatedPropagationOrderPolicyPartition() throws Exception {
+    vm0.initializeAsLocatorVM();
+    vm1.initializeAsLocatorVM();
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -585,6 +601,8 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
   public void testPartitionedParallelPropagationHA() throws Exception {
     IgnoredException.addIgnoredException(SocketException.class.getName()); // for Connection reset
 
+    vm0.initializeAsLocatorVM();
+    vm1.initializeAsLocatorVM();
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
     String regionName = getTestMethodName() + "_PR";
@@ -659,6 +677,8 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
 
   @Test
   public void testWANPDX_PR_MultipleVM_ConcurrentParallelSender() {
+    vm0.initializeAsLocatorVM();
+    vm1.initializeAsLocatorVM();
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -689,6 +709,8 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
 
   @Test
   public void testWANPDX_PR_MultipleVM_ConcurrentParallelSender_StartedLater() {
+    vm0.initializeAsLocatorVM();
+    vm1.initializeAsLocatorVM();
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 

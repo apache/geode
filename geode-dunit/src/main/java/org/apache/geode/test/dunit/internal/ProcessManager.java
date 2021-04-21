@@ -63,13 +63,13 @@ class ProcessManager implements ChildVMLauncher {
     this.registry = registry;
   }
 
-  public synchronized void launchVM(int vmNum) throws IOException {
-    launchVM(VersionManager.CURRENT_VERSION, vmNum, false, 0);
+  public synchronized void launchVM(int vmNum, boolean classLoaderIsolated) throws IOException {
+    launchVM(VersionManager.CURRENT_VERSION, vmNum, false, 0, classLoaderIsolated);
   }
 
   @Override
   public synchronized ProcessHolder launchVM(String version, int vmNum, boolean bouncedVM,
-      int remoteStubPort) throws IOException {
+      int remoteStubPort, boolean classLoaderIsolated) throws IOException {
     if (bouncedVM) {
       processes.remove(vmNum);
     }
@@ -92,7 +92,8 @@ class ProcessManager implements ChildVMLauncher {
       workingDir.mkdirs();
     }
 
-    String[] cmd = buildJavaCommand(vmNum, namingPort, version, remoteStubPort);
+    String[] cmd =
+        buildJavaCommand(vmNum, namingPort, version, remoteStubPort, classLoaderIsolated);
     System.out.println("Executing " + Arrays.toString(cmd));
 
     if (log4jConfig != null) {
@@ -230,8 +231,9 @@ class ProcessManager implements ChildVMLauncher {
     return classpath;
   }
 
-  private String[] buildJavaCommand(int vmNum, int namingPort, String version, int remoteStubPort) {
-    boolean modular = true;// vmNum > 0;
+  private String[] buildJavaCommand(int vmNum, int namingPort, String version, int remoteStubPort,
+      boolean classLoaderIsolated) {
+    boolean modular = classLoaderIsolated;// vmNum > 0;
     String cmd = System.getProperty("java.home") + File.separator
         + "bin" + File.separator + "java";
     String dunitClasspath = System.getProperty("java.class.path");
@@ -305,8 +307,8 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add("-XX:SoftRefLRUPolicyMSPerMB=1");
     cmds.add(agent);
     // if (modular) {
-//     cmds.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + (5005 +
-//     vmNum));
+    // cmds.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + (5005 +
+    // vmNum));
     // }
     if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
       // needed for client stats gathering, see VMStats50 class, it's using class inspection

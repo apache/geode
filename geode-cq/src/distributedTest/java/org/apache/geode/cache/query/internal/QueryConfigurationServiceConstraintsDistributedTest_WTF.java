@@ -77,7 +77,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @Category({OQLQueryTest.class, SecurityTest.class})
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
-public class QueryConfigurationServiceConstraintsDistributedTest implements Serializable {
+public class QueryConfigurationServiceConstraintsDistributedTest_WTF implements Serializable {
 
   private static final String GET_ID_METHOD = "getId";
   private static final String GET_NAME_METHOD = "getName";
@@ -114,7 +114,9 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
   @Before
   public void setUp() {
     serverVM = getVM(0);
+    serverVM.initializeAsServerVM();
     clientVM = getController();
+    clientVM.initializeAsClientVM();
 
     regionName = testName.getMethodName();
     queryString = String.join(" ",

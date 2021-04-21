@@ -20,7 +20,8 @@ import java.rmi.RemoteException;
 
 public interface ChildVMLauncher {
 
-  ProcessHolder launchVM(String version, int vmNum, boolean bouncedVM, int remoteStubPort)
+  ProcessHolder launchVM(String version, int vmNum, boolean bouncedVM, int remoteStubPort,
+      boolean classLoaderIsolated)
       throws IOException;
 
   RemoteDUnitVMIF getStub(int i) throws RemoteException, NotBoundException, InterruptedException;
