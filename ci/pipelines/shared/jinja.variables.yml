@@ -225,7 +225,7 @@ tests:
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
-  RAM: '6'
+  RAM: '10'
   name: WindowsCoreIntegration
 - ARTIFACT_SLUG: windows-unittestfiles
   CPUS: '10'
