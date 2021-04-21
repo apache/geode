@@ -20,15 +20,8 @@ package org.apache.geode.redis.internal.data;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
