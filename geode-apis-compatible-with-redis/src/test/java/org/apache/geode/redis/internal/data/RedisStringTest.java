@@ -389,7 +389,6 @@ public class RedisStringTest {
     int expected = reflectionObjectSizer.sizeof(string);
     Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
 
-    assertThat(actual).isEqualTo(expected);
     assertThat(actual).isCloseTo(expected, offset);
   }
 
