@@ -179,7 +179,7 @@ else
   fi
   git checkout -b apache-geode-${VERSION}
   set +x
-  sed -e 's# *url ".*#  url "https://www.apache.org/dyn/closer.lua?path=geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
+  sed -e 's# *url ".*#  url "https://www.apache.org/dyn/closer.lua?/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz?action=download"#' \
       -e '/ *mirror ".*www.*/d' \
       -e '/ *mirror ".*downloads.*/d' \
       -e 's# *mirror ".*archive.*#  mirror "https://archive.apache.org/dist/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"\
