@@ -329,6 +329,7 @@ public class RebalanceOperationPerformer {
 
     if (listMemberRegion.size() == 0) {
       rebalanceResult.setStatusMessage(CliStrings.REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS);
+      rebalanceResult.setSuccess(true);
       return rebalanceResult;
     }
 
