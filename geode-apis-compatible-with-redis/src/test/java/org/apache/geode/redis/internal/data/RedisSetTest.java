@@ -29,6 +29,7 @@ import java.util.Random;
 
 import org.assertj.core.data.Offset;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.DataSerializer;
@@ -171,6 +172,7 @@ public class RedisSetTest {
   }
 
   @Test
+  @Ignore
   public void overheadConstants_shouldNotChange_withoutForethoughtAndTesting() {
     assertThat(RedisSet.PER_OBJECT_OVERHEAD).isEqualTo(8);
     assertThat(RedisSet.getPerSetOverhead()).isEqualTo(RedisSet.PER_OBJECT_OVERHEAD + 104);
