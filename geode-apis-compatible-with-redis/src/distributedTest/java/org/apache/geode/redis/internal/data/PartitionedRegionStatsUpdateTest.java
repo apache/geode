@@ -337,8 +337,9 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
+  @Ignore
   public void should_showMembersAgreeUponUsedSetMemory_afterDeltaPropagation() {
-    jedis1.sadd(SET_KEY, "initialValue"); // two sadds are required to force
+    jedis1.sadd(SET_KEY, "other"); // two sadds are required to force
     jedis1.sadd(SET_KEY, "value"); // deserialization on both servers
     // otherwise primary/secondary can disagree on size, and which server is primary varies
 
