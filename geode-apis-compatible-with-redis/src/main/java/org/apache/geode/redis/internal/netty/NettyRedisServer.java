@@ -50,6 +50,7 @@ import io.netty.util.concurrent.Future;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfig;
@@ -85,12 +86,13 @@ public class NettyRedisServer {
   private final InetAddress bindAddress;
   private final Channel serverChannel;
   private final int serverPort;
+  private final DistributedMember member;
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
       RegionProvider regionProvider, PubSub pubsub,
       Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker, int port, String requestedAddress,
-      RedisStats redisStats, ExecutorService backgroundExecutor) {
+      RedisStats redisStats, ExecutorService backgroundExecutor, DistributedMember member) {
     this.configSupplier = configSupplier;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
@@ -98,6 +100,7 @@ public class NettyRedisServer {
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
     this.backgroundExecutor = backgroundExecutor;
+    this.member = member;
 
     if (port < RANDOM_PORT_INDICATOR) {
       throw new IllegalArgumentException(
@@ -175,7 +178,7 @@ public class NettyRedisServer {
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, regionProvider, pubsub,
                 allowUnsupportedSupplier, shutdownInvoker, redisStats, backgroundExecutor,
-                subscriberGroup, redisPasswordBytes, getPort()));
+                subscriberGroup, redisPasswordBytes, getPort(), member));
       }
     };
   }

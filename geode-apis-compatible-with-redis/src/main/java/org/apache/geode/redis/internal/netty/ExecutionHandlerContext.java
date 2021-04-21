@@ -43,6 +43,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.GeodeRedisServer;
@@ -82,6 +83,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
   private final EventLoopGroup subscriberGroup;
+  private final DistributedMember member;
   private BigInteger scanCursor;
   private BigInteger sscanCursor;
   private int hscanCursor;
@@ -111,7 +113,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       ExecutorService backgroundExecutor,
       EventLoopGroup subscriberGroup,
       byte[] password,
-      int serverPort) {
+      int serverPort,
+      DistributedMember member) {
     this.channel = channel;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
@@ -124,6 +127,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.authPassword = password;
     this.isAuthenticated = password == null;
     this.serverPort = serverPort;
+    this.member = member;
     this.scanCursor = new BigInteger("0");
     this.sscanCursor = new BigInteger("0");
     this.hscanCursor = 0;
@@ -440,6 +444,10 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   public void setHscanCursor(int hscanCursor) {
     this.hscanCursor = hscanCursor;
+  }
+
+  public String getMemberName() {
+    return member.getUniqueId();
   }
 
   /**

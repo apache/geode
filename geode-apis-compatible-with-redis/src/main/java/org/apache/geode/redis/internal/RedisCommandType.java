@@ -20,6 +20,7 @@ import static org.apache.geode.redis.internal.RedisCommandSupportLevel.SUPPORTED
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.UNSUPPORTED;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
+import org.apache.geode.redis.internal.ParameterRequirements.ClusterParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.EvenParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.ExactParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.MaximumParameterRequirements;
@@ -32,6 +33,7 @@ import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParamete
 import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
+import org.apache.geode.redis.internal.executor.cluster.ClusterExecutor;
 import org.apache.geode.redis.internal.executor.connection.AuthExecutor;
 import org.apache.geode.redis.internal.executor.connection.EchoExecutor;
 import org.apache.geode.redis.internal.executor.connection.PingExecutor;
@@ -198,6 +200,9 @@ public enum RedisCommandType {
   PSUBSCRIBE(new PsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
   UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
+
+  /************* Cluster *****************/
+  CLUSTER(new ClusterExecutor(), SUPPORTED, new ClusterParameterRequirements()),
 
   /***************************************
    ********* Internal Commands ***********
