@@ -230,7 +230,7 @@ if [ -r .travis.yml ] ; then
       -i.bak .travis.yml
 fi
 sed -e "s/GEODE_VERSION=.*/GEODE_VERSION=${VERSION}/" \
-       "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
+    -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
     -i.bak $(git grep -l GEODE_VERSION= ; git grep -l 'ENV GEODE_VERSION')
 rm $(find . -name '*.bak')
 set -x
