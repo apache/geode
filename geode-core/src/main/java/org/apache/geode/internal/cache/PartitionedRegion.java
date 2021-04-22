@@ -319,7 +319,7 @@ public class PartitionedRegion extends LocalRegion
     }
   };
 
-  private final PartitionedRegionClear partitionedRegionClear = new PartitionedRegionClear(this);
+  private final PartitionedRegionClear partitionedRegionClear = PartitionedRegionClear.create(this);
 
   /**
    * Global Region for storing PR config ( PRName->PRConfig). This region would be used to resolve
