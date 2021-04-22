@@ -438,7 +438,7 @@ tasks.register('depsJar', Jar) {
     configureDepsJar
   }
   description 'Assembles the jar archive that defines the gemfire classpath.'
-  archiveName 'geode-dependencies.jar'
+  archiveFileName='geode-dependencies.jar'
   doFirst {
     manifest {
       attributes("Class-Path": configureDepsJar.outputs.files.singleFile.text)
@@ -451,7 +451,7 @@ tasks.register('gfshDepsJar', Jar) {
     configureGfshDepsJar
   }
   description 'Assembles the jar archive that defines the gfsh classpath.'
-  archiveName 'gfsh-dependencies.jar'
+  archiveFileName='gfsh-dependencies.jar'
   doFirst {
     manifest {
       attributes("Class-Path": configureGfshDepsJar.outputs.files.singleFile.text)
@@ -619,7 +619,7 @@ distributions {
  tasks.named('srcDistTar'),
 ]*.configure {
   compression Compression.GZIP
-  extension 'tgz'
+  archiveExtension='tgz'
   build.dependsOn(it)
 }
 // Make build final task to generate all test and product resources

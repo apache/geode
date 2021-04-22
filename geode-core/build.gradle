@@ -130,13 +130,13 @@ task raJar(type: Jar, dependsOn: classes) {
     description 'Assembles the jar archive that contains the JCA classes'
     from sourceSets.jca.output
     exclude 'org/apache/geode/ra/**'
-    archiveName 'ra.jar'
+    archiveFileName='ra.jar'
 }
 
 task jcaJar(type: Jar, dependsOn: raJar) {
     description 'Assembles the jar archive that contains the JCA bundle'
-    baseName 'geode-jca'
-    extension 'rar'
+    archiveBaseName='geode-jca'
+    archiveExtension='rar'
     metaInf { from 'src/jca/ra.xml' }
     from raJar.archivePath
 }
