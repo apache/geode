@@ -53,12 +53,8 @@ public class RedisSet extends AbstractRedisData {
   // of the object. It can't be used directly because of its performance impact. These values cause
   // the size we keep track of to converge to the actual size as the number of members increases.
 
-  // private static final int member_overhead = PER_OBJECT_OVERHEAD + 70;
-  // private static final int BASE_REDISSET_OVERHEAD = PER_OBJECT_OVERHEAD + 104;
-  // private static final int INTERNAL_HASHSET_STORAGE_OVERHEAD = 82;
-
-  private static int base_redisset_oh;
-  private static int member_overhead;
+  private static int base_redisset_overhead;
+  private static int per_member_overhead;
   private static int internal_hashset_storage_overhead;
 
   private int myCalculatedSize;
@@ -74,17 +70,17 @@ public class RedisSet extends AbstractRedisData {
     }
 
     for (ByteArrayWrapper value : this.members) {
-      myCalculatedSize += member_overhead + value.length();
+      myCalculatedSize += per_member_overhead + value.length();
     }
   }
 
   private void calibrate_memory_values() {
     ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
-    base_redisset_oh = reflectionObjectSizer.sizeof(this) + 18;
+    base_redisset_overhead = reflectionObjectSizer.sizeof(this) + 18;
 
     HashSet<ByteArrayWrapper> temp_hashset = new HashSet<>();
     int base_hashset_size = reflectionObjectSizer.sizeof(temp_hashset);
-    base_redisset_oh += base_hashset_size;
+    base_redisset_overhead += base_hashset_size;
 
     ByteArrayWrapper baw1 = new ByteArrayWrapper("a".getBytes());
     ByteArrayWrapper baw2 = new ByteArrayWrapper("b".getBytes());
@@ -93,18 +89,18 @@ public class RedisSet extends AbstractRedisData {
     temp_hashset.add(baw2);
     int two_entries_hashset_size = reflectionObjectSizer.sizeof(temp_hashset);
 
-    member_overhead = two_entries_hashset_size - one_entry_hashset_size + 5;
+    per_member_overhead = two_entries_hashset_size - one_entry_hashset_size + 5;
     internal_hashset_storage_overhead =
-        two_entries_hashset_size - (2 * member_overhead) - base_hashset_size;
+        two_entries_hashset_size - (2 * per_member_overhead) - base_hashset_size;
 
     System.out.println("JVM version:" + System.getProperty("java.version"));
-    System.out.println("brs:" + base_redisset_oh
+    System.out.println("brs:" + base_redisset_overhead
         + " bhs:" + base_hashset_size
         + " oes:" + one_entry_hashset_size
         + " tes:" + two_entries_hashset_size
-        + " mo:" + member_overhead
+        + " mo:" + per_member_overhead
         + " ihso: " + internal_hashset_storage_overhead);
-    myCalculatedSize = base_redisset_oh;
+    myCalculatedSize = base_redisset_overhead;
   }
 
   // for serialization
@@ -267,7 +263,7 @@ public class RedisSet extends AbstractRedisData {
   private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
     boolean actuallyAdded = members.add(memberToAdd);
     if (actuallyAdded) {
-      myCalculatedSize += member_overhead + memberToAdd.length();
+      myCalculatedSize += per_member_overhead + memberToAdd.length();
     }
     return actuallyAdded;
   }
@@ -275,20 +271,20 @@ public class RedisSet extends AbstractRedisData {
   private boolean membersRemove(ByteArrayWrapper memberToRemove) {
     boolean actuallyRemoved = members.remove(memberToRemove);
     if (actuallyRemoved) {
-      myCalculatedSize -= member_overhead + memberToRemove.length();
+      myCalculatedSize -= per_member_overhead + memberToRemove.length();
     }
     return actuallyRemoved;
   }
 
   private synchronized boolean membersAddAll(AddsDeltaInfo addsDeltaInfo) {
     ArrayList<ByteArrayWrapper> adds = addsDeltaInfo.getAdds();
-    myCalculatedSize += adds.stream().mapToInt(a -> a.length() + member_overhead).sum();
+    myCalculatedSize += adds.stream().mapToInt(a -> a.length() + per_member_overhead).sum();
     return members.addAll(adds);
   }
 
   private synchronized boolean membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
     ArrayList<ByteArrayWrapper> removes = remsDeltaInfo.getRemoves();
-    myCalculatedSize -= removes.stream().mapToInt(a -> a.length() + member_overhead).sum();
+    myCalculatedSize -= removes.stream().mapToInt(a -> a.length() + per_member_overhead).sum();
     return members.removeAll(removes);
   }
 
@@ -392,11 +388,11 @@ public class RedisSet extends AbstractRedisData {
 
   @VisibleForTesting
   protected static int getPerSetOverhead() {
-    return base_redisset_oh;
+    return base_redisset_overhead;
   }
 
   @VisibleForTesting
   protected static int getPerMemberOverhead() {
-    return member_overhead;
+    return per_member_overhead;
   }
 }
