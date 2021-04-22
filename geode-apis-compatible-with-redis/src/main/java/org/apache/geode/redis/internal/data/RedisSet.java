@@ -89,13 +89,6 @@ public class RedisSet extends AbstractRedisData {
     internalHashsetStorageOverhead =
         two_entries_hashset_size - (2 * perMemberOverhead) - base_hashset_size;
 
-    System.out.println("JVM version:" + System.getProperty("java.version"));
-    System.out.println("brs:" + baseRedissetOverhead
-        + " bhs:" + base_hashset_size
-        + " oes:" + one_entry_hashset_size
-        + " tes:" + two_entries_hashset_size
-        + " mo:" + perMemberOverhead
-        + " ihso: " + internalHashsetStorageOverhead);
     myCalculatedSize = baseRedissetOverhead;
   }
 
