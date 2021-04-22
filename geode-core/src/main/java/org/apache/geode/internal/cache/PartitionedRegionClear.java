@@ -64,7 +64,27 @@ public class PartitionedRegionClear {
   private final AssignBucketsToPartitions assignBucketsToPartitions;
   private final UpdateAttributesProcessorFactory updateAttributesProcessorFactory;
 
-  public PartitionedRegionClear(PartitionedRegion partitionedRegion) {
+  public static PartitionedRegionClear create(PartitionedRegion partitionedRegion) {
+    PartitionedRegionClear partitionedRegionClear = new PartitionedRegionClear(partitionedRegion);
+    partitionedRegionClear.initialize();
+    return partitionedRegionClear;
+  }
+
+  @VisibleForTesting
+  static PartitionedRegionClear create(PartitionedRegion partitionedRegion,
+      DistributedLockService distributedLockService,
+      ColocationLeaderRegionProvider colocationLeaderRegionProvider,
+      AssignBucketsToPartitions assignBucketsToPartitions,
+      UpdateAttributesProcessorFactory updateAttributesProcessorFactory) {
+    PartitionedRegionClear partitionedRegionClear =
+        new PartitionedRegionClear(partitionedRegion, distributedLockService,
+            colocationLeaderRegionProvider, assignBucketsToPartitions,
+            updateAttributesProcessorFactory);
+    partitionedRegionClear.initialize();
+    return partitionedRegionClear;
+  }
+
+  private PartitionedRegionClear(PartitionedRegion partitionedRegion) {
     this(partitionedRegion,
         partitionedRegion.getPartitionedRegionLockService(),
         ColocationHelper::getLeaderRegion,
@@ -72,8 +92,7 @@ public class PartitionedRegionClear {
         pr -> new UpdateAttributesProcessor(pr, true));
   }
 
-  @VisibleForTesting
-  PartitionedRegionClear(PartitionedRegion partitionedRegion,
+  private PartitionedRegionClear(PartitionedRegion partitionedRegion,
       DistributedLockService distributedLockService,
       ColocationLeaderRegionProvider colocationLeaderRegionProvider,
       AssignBucketsToPartitions assignBucketsToPartitions,
@@ -83,9 +102,6 @@ public class PartitionedRegionClear {
     this.colocationLeaderRegionProvider = colocationLeaderRegionProvider;
     this.assignBucketsToPartitions = assignBucketsToPartitions;
     this.updateAttributesProcessorFactory = updateAttributesProcessorFactory;
-
-    // TODO: initialize needs to move out of constructor to prevent escape of reference to 'this'
-    initialize();
   }
 
   private void initialize() {

@@ -115,8 +115,8 @@ public class PartitionedRegionClearTest {
 
     doNothing().when(distributedLockService).unlock(anyString());
 
-    partitionedRegionClear = new PartitionedRegionClear(partitionedRegion, distributedLockService,
-        colocationLeaderRegionProvider, assignBucketsToPartitions,
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
         updateAttributesProcessorFactory);
   }
 
