@@ -52,6 +52,7 @@ geode-core/**/org/apache/geode/cache/client/**                    @echobravopapa
 geode-core/**/org/apache/geode/cache/server/**                    @echobravopapa @Bill @kirklund
 geode-core/**/org/apache/geode/cache/client/internal/**           @Bill @echobravopapa
 geode-core/**/org/apache/geode/internal/cache/tier/**             @Bill @echobravopapa @agingade
+geode-assembly/**/apache/geode/client/sni/**                      @Bill @echobravopapa
 
 #-----------------------------------------------------------------
 # Client Queues
@@ -269,6 +270,7 @@ geode-junit/**                                                    @mhansonp @kir
 #geode-jmh/**
 geode-junit/**/org/apache/geode/test/util/**                      @jdeppe-pivotal @onichols-pivotal
 geode-assembly/**/org/apache/geode/test/junit/**                  @jdeppe-pivotal @jinmeiliao
+geode-assembly/**/org/apache/geode/launchers                      @dschneider-pivotal @boglesby @kirklund @nabarunnag
 
 #-----------------------------------------------------------------
 # Redis API
