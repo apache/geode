@@ -2321,6 +2321,10 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void doPutsSameKey(String regionName, int numPuts, String key) {
+    doPutsSameKeyFrom(regionName, numPuts, 0, key);
+  }
+
+  public static void doPutsSameKeyFrom(String regionName, int numPuts, int from, String key) {
     IgnoredException exp1 =
         IgnoredException.addIgnoredException(InterruptedException.class.getName());
     IgnoredException exp2 =
@@ -2328,7 +2332,7 @@ public class WANTestBase extends DistributedTestCase {
     try {
       Region r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
-      for (long i = 0; i < numPuts; i++) {
+      for (long i = from; i < numPuts + from; i++) {
         r.put(key, "Value_" + i);
       }
     } finally {

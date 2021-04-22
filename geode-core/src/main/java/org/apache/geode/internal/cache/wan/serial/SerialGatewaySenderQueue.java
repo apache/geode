@@ -591,6 +591,18 @@ public class SerialGatewaySenderQueue implements RegionQueue {
           this.indexes.put(rName, latestIndexesForRegion);
         }
 
+        previousIndex = latestIndexesForRegion.get(key);
+        if (previousIndex != null) {
+          GatewaySenderEventImpl previousEvent =
+              (GatewaySenderEventImpl) this.region.get(previousIndex);
+          GatewaySenderEventImpl currentEvent = (GatewaySenderEventImpl) object;
+          if (previousEvent.getVersionTimeStamp() > currentEvent.getVersionTimeStamp()) {
+            logger.info("{}: Not conflating {} due to {} has more recent timestamp", this,
+                currentEvent, previousEvent);
+            return true;
+          }
+        }
+
         previousIndex = latestIndexesForRegion.put(key, tailKey);
       }
 
