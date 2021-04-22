@@ -103,7 +103,7 @@ public class PRClearCreateIndexDUnitTest implements Serializable {
 
     // assert that secondary member received these messages
     primary.invoke(() -> verifyEvents(false, false, false, false));
-    secondary.invoke(() -> verifyEvents(false, true, true, true));
+    secondary.invoke(() -> verifyEvents(true, true, true, true));
   }
 
   @Test
@@ -117,7 +117,7 @@ public class PRClearCreateIndexDUnitTest implements Serializable {
     clear.get();
 
     // assert that secondary member received these messages
-    primary.invoke(() -> verifyEvents(false, true, false, false));
+    primary.invoke(() -> verifyEvents(true, true, false, false));
     secondary.invoke(() -> verifyEvents(false, false, true, true));
   }
 
