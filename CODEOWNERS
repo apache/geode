@@ -201,6 +201,7 @@ geode-assembly/**/org/apache/geode/management/**                  @jdeppe-pivota
 geode-assembly/**/org/apache/geode/tools/pulse/**                 @jdeppe-pivotal @jinmeiliao
 geode-web-management/**                                           @jdeppe-pivotal @jinmeiliao
 geode-gfsh/**                                                     @jdeppe-pivotal @jinmeiliao @mhansonp @kirklund
+geode-assembly/**/bin/**                                          @jdeppe-pivotal @jinmeiliao @mhansonp @kirklund
 geode-pulse/**                                                    @jdeppe-pivotal @jinmeiliao @mhansonp
 geode-http-service/**                                             @jdeppe-pivotal @jinmeiliao
 geode-web/**                                                      @jdeppe-pivotal @jinmeiliao
@@ -224,6 +225,7 @@ geode-core/**/org/apache/geode/security/**                        @jdeppe-pivota
 geode-core/**/org/apache/geode/internal/security/**               @jdeppe-pivotal @jinmeiliao
 geode-core/**/org/apache/geode/cache/operations/**                @jdeppe-pivotal @jinmeiliao
 geode-core/**/org/apache/geode/internal/cache/operations/**       @jdeppe-pivotal @jinmeiliao
+geode-assembly/**/apache/geode/ssl/**                             @jdeppe-pivotal @jinmeiliao
 
 #-----------------------------------------------------------------
 # Logging
@@ -274,6 +276,7 @@ geode-junit/**                                                    @mhansonp @kir
 geode-junit/**/org/apache/geode/test/util/**                      @jdeppe-pivotal @onichols-pivotal
 geode-assembly/**/org/apache/geode/test/junit/**                  @jdeppe-pivotal @jinmeiliao
 geode-assembly/**/org/apache/geode/launchers/**                   @dschneider-pivotal @boglesby @kirklund @nabarunnag
+geode-assembly/**/resources/**                                    @boglesby @kirklund @nabarunnag @jdeppe-pivotal @jinmeiliao
 
 #-----------------------------------------------------------------
 # Redis API
@@ -297,6 +300,7 @@ geode-management/src/test/script/update-management-wiki.sh        @onichols-pivo
 static-analysis/**                                                @rhoughton-pivot @onichols-pivotal
 geode-old-versions/**                                             @onichols-pivotal @dickcav
 KEYS                                                              @onichols-pivotal @dickcav
+geode-assembly/**/org/apache/geode/**                             @rhoughton-pivot @onichols-pivotal @dickcav
 assembly_content.txt                                              @rhoughton-pivot @onichols-pivotal
 dependency_classpath.txt                                          @rhoughton-pivot @onichols-pivotal
 expected-pom.xml                                                  @rhoughton-pivot @onichols-pivotal
