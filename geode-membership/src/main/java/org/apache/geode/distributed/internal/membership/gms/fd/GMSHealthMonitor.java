@@ -1481,10 +1481,12 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
 
   class Heart implements Runnable {
 
+    // If we sleep longer than this number of periods then log a warning
+    public static final int OVERSLEEP_WARNING_THRESHOLD_PERIODS = 2;
     public final long sleepPeriodMillis = memberTimeout / LOGICAL_INTERVAL;
     public final long sleepPeriodNanos =
         TimeUnit.NANOSECONDS.convert(sleepPeriodMillis, TimeUnit.MILLISECONDS);
-    public final long sleepLimitNanos = 2 * sleepPeriodNanos;
+    public final long sleepLimitNanos = OVERSLEEP_WARNING_THRESHOLD_PERIODS * sleepPeriodNanos;
 
     @Override
     public void run() {
@@ -1509,6 +1511,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
                     asleepNanos, sleepPeriodNanos));
           }
         } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
           return;
         }
         GMSMembershipView<ID> v = currentView;
