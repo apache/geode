@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.membership.api.HostAddress;
+import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.internal.inet.LocalHostUtil;
 
 /**

@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
 import org.apache.geode.distributed.internal.membership.gms.MembershipLocatorBuilderImpl;
+import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.ProtocolChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
