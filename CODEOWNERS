@@ -132,11 +132,13 @@ geode-core/**/org/apache/geode/cache/query/**                     @nabarunnag @D
 #-----------------------------------------------------------------
 extensions/**                                                     @sabbey37 @jdeppe-pivotal @BenjaminPerryRoss
 geode-core/**/org/apache/geode/internal/modules/util/**           @sabbey37 @jdeppe-pivotal @BenjaminPerryRoss
+geode-assembly/**/org/apache/geode/session/**                     @sabbey37 @jdeppe-pivotal @BenjaminPerryRoss
 
 #-----------------------------------------------------------------
 # DEV rest API
 #-----------------------------------------------------------------
 geode-web-api/**                                                  @jdeppe-pivotal @jinmeiliao
+geode-assembly/**/org/apache/geode/rest/**                        @jdeppe-pivotal @jinmeiliao
 
 #-----------------------------------------------------------------
 # Lucene integration
@@ -192,6 +194,7 @@ geode-core/**/org/apache/geode/internal/cache/wan/**              @gesterzhou @b
 # Management
 #-----------------------------------------------------------------
 geode-management/**                                               @jdeppe-pivotal @jinmeiliao
+geode-assembly/**/org/apache/geode/management/**                  @jdeppe-pivotal @jinmeiliao
 geode-web-management/**                                           @jdeppe-pivotal @jinmeiliao
 geode-gfsh/**                                                     @jdeppe-pivotal @jinmeiliao @mhansonp @kirklund
 geode-pulse/**                                                    @jdeppe-pivotal @jinmeiliao @mhansonp
