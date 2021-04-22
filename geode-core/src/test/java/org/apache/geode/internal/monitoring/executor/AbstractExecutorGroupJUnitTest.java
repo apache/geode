@@ -15,9 +15,9 @@
 package org.apache.geode.internal.monitoring.executor;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -78,11 +78,6 @@ public class AbstractExecutorGroupJUnitTest {
       public void run() {
         blockedThreadWaiting[0] = true;
         synchronized (syncObject) {
-          try {
-            syncObject.wait(timeoutInMilliseconds);
-          } catch (InterruptedException e) {
-            return;
-          }
         }
       }
     };
@@ -99,7 +94,11 @@ public class AbstractExecutorGroupJUnitTest {
       };
       await().untilAsserted(() -> {
         String threadReport = executor.createThreadReport(60000);
-        Assertions.assertThat(threadReport).contains(AbstractExecutor.LOCK_OWNER_THREAD_STACK);
+        assertThat(threadReport)
+            .contains(AbstractExecutor.LOCK_OWNER_THREAD_STACK + " for \"blocking thread\"");
+        assertThat(threadReport).contains("Waiting on <" + syncObject + ">");
+        assertThat(threadReport).contains("Owned By <blocking thread>");
+        assertThat(threadReport).contains("- locked " + syncObject);
       });
     } finally {
       blockingThread.interrupt();
