@@ -206,10 +206,5 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>org.jboss.modules</groupId>
-      <artifactId>jboss-modules</artifactId>
-      <scope>runtime</scope>
-    </dependency>
   </dependencies>
 </project>

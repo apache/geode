@@ -99,10 +99,10 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
   @Override
   public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
-    client1 = host.getVM(0);
-    client2 = host.getVM(1);
-    server1 = host.getVM(2);
-    server2 = host.getVM(3);
+    client1 = host.getVM(0).initializeAsClientVM();
+    client2 = host.getVM(1).initializeAsClientVM();
+    server1 = host.getVM(2).initializeAsServerVM();
+    server2 = host.getVM(3).initializeAsServerVM();
   }
 
   private void createCache(Properties props) throws Exception {

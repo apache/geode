@@ -186,7 +186,7 @@ public abstract class SessionDUnitTest {
 
   protected static void startSpringApp(int sessionApp, long sessionTimeout, int... serverPorts) {
     int httpPort = ports.get(sessionApp);
-    VM host = cluster.getVM(sessionApp);
+    VM host = cluster.getVM(sessionApp).initializeAsClientVM();
     host.invoke("Start a Spring app", () -> {
       System.setProperty("server.port", "" + httpPort);
       System.setProperty("server.servlet.session.timeout", "" + sessionTimeout + "s");

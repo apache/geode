@@ -27,12 +27,13 @@ configurations {
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
+  // this is used only for Dunit tests when run using classloader isolation
+  jbossModular(project(':extensions:geode-modules'))
   jbossModular(project(path: ':geode-web-management', configuration: 'war'))
   jbossModular(project(':geode-web-management'))
+  jbossModular(project(':frameworks:geode-extensions'))
   jbossModular(project(':geode-deployment:geode-deployment-jboss-modules'))
   jbossModular('org.jboss.modules:jboss-modules')
-  runtimeOnly('org.jboss.modules:jboss-modules')
-//  runtimeOnly(project(':geode-deployment:geode-deployment-jboss-modules'))
 
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))

@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+configurations {
+  distributedTestApi
+}
+
 dependencies {
   api(project(':geode-cq'))
   api(project(':geode-gfsh'))
@@ -28,4 +32,6 @@ dependencies {
   api(project(':geode-log4j')) {
     ext.optional = true
   }
+
+  distributedTestApi(project(':extensions:geode-modules'))
 }
