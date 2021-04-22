@@ -39,7 +39,7 @@ public class PassiveExpirationManager {
   private final Region<RedisKey, RedisData> dataRegion;
   private final ScheduledExecutorService expirationExecutor;
   private final RedisStats redisStats;
-  public final static int INTERVAL = 3;
+  public static final int INTERVAL = 3;
 
   public PassiveExpirationManager(Region<RedisKey, RedisData> dataRegion, RedisStats redisStats) {
     this.dataRegion = dataRegion;
