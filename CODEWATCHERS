@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-# This file follows the same format as CODEOWNERS, but adds you as 
+# This file follows the same format as CODEOWNERS, but adds you as
 # an optional reviewer rather than a required code owner reviewer.
 
 
@@ -24,16 +24,18 @@
 #-----------------------------------------------------------------
 CODEOWNERS                                                        @onichols-pivotal @rhoughton-pivot
 CODEWATCHERS                                                      @onichols-pivotal @rhoughton-pivot
-.asf.yml                                                          @onichols-pivotal @rhoughton-pivot
+.asf.yaml                                                         @onichols-pivotal @rhoughton-pivot
 
 
 #-----------------------------------------------------------------
 # Documentation
 #-----------------------------------------------------------------
-geode-book/**                                                     @karensmolermiller @davebarnes97
-geode-docs/**                                                     @karensmolermiller @davebarnes97
+geode-book/**                                                     @davebarnes97
+geode-docs/**                                                     @davebarnes97
 geode-book/config.yml                                             @onichols-pivotal
 geode-book/redirects.rb                                           @onichols-pivotal
+LICENSE                                                           @metatype
+NOTICE                                                            @metatype
 
 #-----------------------------------------------------------------
 # Jar Deployment
@@ -51,7 +53,6 @@ geode-core/**/org/apache/geode/cache/internal/execute/*           @kohlmu-pivota
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/cache/client/**                    @albertogpz
 geode-core/**/org/apache/geode/cache/server/**                    @albertogpz
-geode-core/**/org/apache/geode/internal/cache/client/**           @albertogpz
 geode-core/**/org/apache/geode/internal/cache/tier/**             @albertogpz
 
 

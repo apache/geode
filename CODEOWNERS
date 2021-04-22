@@ -18,7 +18,7 @@
 # CODEOWNERS and .asf.yml - ownerless so everyone "owns" it
 #-----------------------------------------------------------------
 #CODEOWNERS
-#.asf.yml
+#.asf.yaml
 
 #-----------------------------------------------------------------
 # Serialization
@@ -50,14 +50,15 @@ geode-core/**/org/apache/geode/distributed/internal/*             @echobravopapa
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/cache/client/**                    @echobravopapa @Bill @kirklund
 geode-core/**/org/apache/geode/cache/server/**                    @echobravopapa @Bill @kirklund
-geode-core/**/org/apache/geode/internal/cache/client/**           @Bill @echobravopapa
+geode-core/**/org/apache/geode/cache/client/internal/**           @Bill @echobravopapa
 geode-core/**/org/apache/geode/internal/cache/tier/**             @Bill @echobravopapa @agingade
+geode-assembly/**/apache/geode/client/sni/**                      @Bill @echobravopapa
 
 #-----------------------------------------------------------------
 # Client Queues
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/internal/cache/ha/**               @agingade @boglesby @nabarunnag
-geode-core/**/org/apache/geode/internal/cache/tier/CacheClient*   @agingade @boglesby @nabarunnag
+geode-core/**/org/apache/geode/internal/cache/**/CacheClient*     @agingade @boglesby @nabarunnag
 
 #-----------------------------------------------------------------
 # Core Public API packages - Cache, Region, etc.
@@ -132,11 +133,13 @@ geode-core/**/org/apache/geode/cache/query/**                     @nabarunnag @D
 #-----------------------------------------------------------------
 extensions/**                                                     @sabbey37 @jdeppe-pivotal @BenjaminPerryRoss
 geode-core/**/org/apache/geode/internal/modules/util/**           @sabbey37 @jdeppe-pivotal @BenjaminPerryRoss
+geode-assembly/**/org/apache/geode/session/**                     @sabbey37 @jdeppe-pivotal @BenjaminPerryRoss
 
 #-----------------------------------------------------------------
 # DEV rest API
 #-----------------------------------------------------------------
 geode-web-api/**                                                  @jdeppe-pivotal @jinmeiliao
+geode-assembly/**/org/apache/geode/rest/**                        @jdeppe-pivotal @jinmeiliao
 
 #-----------------------------------------------------------------
 # Lucene integration
@@ -173,6 +176,7 @@ geode-unsafe/**                                                   @nabarunnag @b
 geode-core/**/org/apache/geode/cache/persistence/**               @dschneider-pivotal @jchen21 @upthewaterspout @gesterzhou
 geode-core/**/org/apache/geode/internal/cache/persistence/**      @dschneider-pivotal @jchen21 @upthewaterspout @gesterzhou
 geode-core/**/org/apache/geode/internal/cache/backup/**           @dschneider-pivotal @agingade @jchen21 @upthewaterspout @gesterzhou
+geode-assembly/**/org/apache/geode/cache/persistence/**           @dschneider-pivotal @jchen21 @upthewaterspout @gesterzhou
 
 #-----------------------------------------------------------------
 # Region Version Vectors - used for sychronization on
@@ -187,13 +191,17 @@ geode-wan/**                                                      @gesterzhou @b
 geode-core/**/org/apache/geode/cache/asyncqueue/**                @gesterzhou @boglesby @nabarunnag
 geode-core/**/org/apache/geode/cache/wan/**                       @gesterzhou @boglesby @nabarunnag
 geode-core/**/org/apache/geode/internal/cache/wan/**              @gesterzhou @boglesby @nabarunnag
+geode-assembly/**/apache/geode/cache/wan/**                       @gesterzhou @boglesby @nabarunnag
 
 #-----------------------------------------------------------------
 # Management
 #-----------------------------------------------------------------
 geode-management/**                                               @jdeppe-pivotal @jinmeiliao
+geode-assembly/**/org/apache/geode/management/**                  @jdeppe-pivotal @jinmeiliao
+geode-assembly/**/org/apache/geode/tools/pulse/**                 @jdeppe-pivotal @jinmeiliao
 geode-web-management/**                                           @jdeppe-pivotal @jinmeiliao
 geode-gfsh/**                                                     @jdeppe-pivotal @jinmeiliao @mhansonp @kirklund
+geode-assembly/**/bin/**                                          @jdeppe-pivotal @jinmeiliao @mhansonp @kirklund
 geode-pulse/**                                                    @jdeppe-pivotal @jinmeiliao @mhansonp
 geode-http-service/**                                             @jdeppe-pivotal @jinmeiliao
 geode-web/**                                                      @jdeppe-pivotal @jinmeiliao
@@ -217,6 +225,7 @@ geode-core/**/org/apache/geode/security/**                        @jdeppe-pivota
 geode-core/**/org/apache/geode/internal/security/**               @jdeppe-pivotal @jinmeiliao
 geode-core/**/org/apache/geode/cache/operations/**                @jdeppe-pivotal @jinmeiliao
 geode-core/**/org/apache/geode/internal/cache/operations/**       @jdeppe-pivotal @jinmeiliao
+geode-assembly/**/apache/geode/ssl/**                             @jdeppe-pivotal @jinmeiliao
 
 #-----------------------------------------------------------------
 # Logging
@@ -228,6 +237,7 @@ geode-core/**/org/apache/geode/internal/logging/**                @mhansonp @kir
 geode-core/**/org/apache/geode/i18n/**                            @agingade @kirklund
 geode-core/**/org/apache/geode/internal/i18n/**                   @agingade @kirklund
 geode-core/**/org/apache/geode/internal/io/**                     @agingade @kirklund
+geode-assembly/**/org/apache/geode/logging/**                     @agingade @kirklund
 
 #-----------------------------------------------------------------
 # Metrics & Statistics
@@ -235,6 +245,7 @@ geode-core/**/org/apache/geode/internal/io/**                     @agingade @kir
 geode-core/**/org/apache/geode/internal/statistics/**             @mhansonp @kirklund
 geode-core/**/org/apache/geode/internal/stats50/**                @mhansonp @kirklund
 geode-core/**/org/apache/geode/metrics/**                         @mhansonp @kirklund
+geode-assembly/**/org/apache/geode/metrics/**                     @mhansonp @kirklund
 
 #-----------------------------------------------------------------
 # Region Snapshots
@@ -262,7 +273,10 @@ geode-core/**/org/apache/geode/internal/cache/control/**          @kirklund @Don
 geode-dunit/**                                                    @mhansonp @kirklund
 geode-junit/**                                                    @mhansonp @kirklund
 #geode-jmh/**
-geode-junit/**/org/apache/geode/test/util                         @jdeppe-pivotal @onichols-pivotal
+geode-junit/**/org/apache/geode/test/util/**                      @jdeppe-pivotal @onichols-pivotal
+geode-assembly/**/org/apache/geode/test/junit/**                  @jdeppe-pivotal @jinmeiliao
+geode-assembly/**/org/apache/geode/launchers/**                   @dschneider-pivotal @boglesby @kirklund @nabarunnag
+geode-assembly/**/resources/**                                    @boglesby @kirklund @nabarunnag @jdeppe-pivotal @jinmeiliao
 
 #-----------------------------------------------------------------
 # Redis API
@@ -286,14 +300,17 @@ geode-management/src/test/script/update-management-wiki.sh        @onichols-pivo
 static-analysis/**                                                @rhoughton-pivot @onichols-pivotal
 geode-old-versions/**                                             @onichols-pivotal @dickcav
 KEYS                                                              @onichols-pivotal @dickcav
-geode-assembly/**                                                 @rhoughton-pivot @onichols-pivotal
+geode-assembly/**/org/apache/geode/**                             @rhoughton-pivot @onichols-pivotal @dickcav
+assembly_content.txt                                              @rhoughton-pivot @onichols-pivotal
+dependency_classpath.txt                                          @rhoughton-pivot @onichols-pivotal
+expected-pom.xml                                                  @rhoughton-pivot @onichols-pivotal
 
 #-----------------------------------------------------------------
 # Documentation
 #-----------------------------------------------------------------
 BUILDING.md                                                       @rhoughton-pivot @upthewaterspout
 CODE_OF_CONDUCT.md                                                @upthewaterspout @pivotal-amurmann @nonbinaryprogrammer
-LICENSE                                                           @onichols-pivotal @dickcav @metatype
-NOTICE                                                            @onichols-pivotal @dickcav @metatype
+LICENSE                                                           @onichols-pivotal @dickcav
+NOTICE                                                            @onichols-pivotal @dickcav
 /README.md                                                        @upthewaterspout @pivotal-amurmann
 #TESTING.md
