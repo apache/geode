@@ -621,16 +621,17 @@ public class CreateMappingCommandDUnitTest {
     String region1Name = "region1";
     setupReplicate(region1Name);
 
-    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(REGION_NAME, region1Name);
-    csb.addOption(DATA_SOURCE_NAME, "connection");
-    csb.addOption(TABLE_NAME, "employeeRegion");
-    csb.addOption(PDX_NAME, "org.apache.geode.connectors.jdbc.internal.cli.ResourcePDX");
-    csb.addOption(ID_NAME, "id");
-    csb.addOption(SCHEMA_NAME, "mySchema");
+    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CREATE_MAPPING);
+    commandStringBuilder.addOption(REGION_NAME, region1Name);
+    commandStringBuilder.addOption(DATA_SOURCE_NAME, "connection");
+    commandStringBuilder.addOption(TABLE_NAME, "employeeRegion");
+    commandStringBuilder.addOption(PDX_NAME,
+        "org.apache.geode.connectors.jdbc.internal.cli.ResourcePDX");
+    commandStringBuilder.addOption(ID_NAME, "id");
+    commandStringBuilder.addOption(SCHEMA_NAME, "mySchema");
 
     deployJar();
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    gfsh.executeAndAssertThat(commandStringBuilder.toString()).statusIsSuccess();
 
     server1.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(region1Name);

@@ -76,11 +76,7 @@ dependencies {
   implementation('com.zaxxer:HikariCP')
   implementation('org.apache.commons:commons-lang3')
   implementation('javax.xml.bind:jaxb-api')
-  implementation('org.apache.logging.log4j:log4j-jcl') {
-    exclude module: 'log4j-api'
-    ext.optional = true
-    ext.set("should-not-generate", true)
-  }
+
   implementation('org.springframework.shell:spring-shell') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
