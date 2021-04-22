@@ -198,6 +198,7 @@ geode-assembly/**/apache/geode/cache/wan/**                       @gesterzhou @b
 #-----------------------------------------------------------------
 geode-management/**                                               @jdeppe-pivotal @jinmeiliao
 geode-assembly/**/org/apache/geode/management/**                  @jdeppe-pivotal @jinmeiliao
+geode-assembly/**/org/apache/geode/tools/pulse/**                 @jdeppe-pivotal @jinmeiliao
 geode-web-management/**                                           @jdeppe-pivotal @jinmeiliao
 geode-gfsh/**                                                     @jdeppe-pivotal @jinmeiliao @mhansonp @kirklund
 geode-pulse/**                                                    @jdeppe-pivotal @jinmeiliao @mhansonp
@@ -234,6 +235,7 @@ geode-core/**/org/apache/geode/internal/logging/**                @mhansonp @kir
 geode-core/**/org/apache/geode/i18n/**                            @agingade @kirklund
 geode-core/**/org/apache/geode/internal/i18n/**                   @agingade @kirklund
 geode-core/**/org/apache/geode/internal/io/**                     @agingade @kirklund
+geode-assembly/**/org/apache/geode/logging/**                     @agingade @kirklund
 
 #-----------------------------------------------------------------
 # Metrics & Statistics
@@ -241,6 +243,7 @@ geode-core/**/org/apache/geode/internal/io/**                     @agingade @kir
 geode-core/**/org/apache/geode/internal/statistics/**             @mhansonp @kirklund
 geode-core/**/org/apache/geode/internal/stats50/**                @mhansonp @kirklund
 geode-core/**/org/apache/geode/metrics/**                         @mhansonp @kirklund
+geode-assembly/**/org/apache/geode/metrics/**                     @mhansonp @kirklund
 
 #-----------------------------------------------------------------
 # Region Snapshots
@@ -270,7 +273,7 @@ geode-junit/**                                                    @mhansonp @kir
 #geode-jmh/**
 geode-junit/**/org/apache/geode/test/util/**                      @jdeppe-pivotal @onichols-pivotal
 geode-assembly/**/org/apache/geode/test/junit/**                  @jdeppe-pivotal @jinmeiliao
-geode-assembly/**/org/apache/geode/launchers                      @dschneider-pivotal @boglesby @kirklund @nabarunnag
+geode-assembly/**/org/apache/geode/launchers/**                   @dschneider-pivotal @boglesby @kirklund @nabarunnag
 
 #-----------------------------------------------------------------
 # Redis API
