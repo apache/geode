@@ -175,6 +175,7 @@ geode-unsafe/**                                                   @nabarunnag @b
 geode-core/**/org/apache/geode/cache/persistence/**               @dschneider-pivotal @jchen21 @upthewaterspout @gesterzhou
 geode-core/**/org/apache/geode/internal/cache/persistence/**      @dschneider-pivotal @jchen21 @upthewaterspout @gesterzhou
 geode-core/**/org/apache/geode/internal/cache/backup/**           @dschneider-pivotal @agingade @jchen21 @upthewaterspout @gesterzhou
+geode-assembly/**/org/apache/geode/cache/persistence/**           @dschneider-pivotal @jchen21 @upthewaterspout @gesterzhou
 
 #-----------------------------------------------------------------
 # Region Version Vectors - used for sychronization on
@@ -189,6 +190,7 @@ geode-wan/**                                                      @gesterzhou @b
 geode-core/**/org/apache/geode/cache/asyncqueue/**                @gesterzhou @boglesby @nabarunnag
 geode-core/**/org/apache/geode/cache/wan/**                       @gesterzhou @boglesby @nabarunnag
 geode-core/**/org/apache/geode/internal/cache/wan/**              @gesterzhou @boglesby @nabarunnag
+geode-assembly/**/apache/geode/cache/wan/**                       @gesterzhou @boglesby @nabarunnag
 
 #-----------------------------------------------------------------
 # Management
