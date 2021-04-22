@@ -39,12 +39,12 @@ public class PassiveExpirationManager {
   private final Region<RedisKey, RedisData> dataRegion;
   private final ScheduledExecutorService expirationExecutor;
   private final RedisStats redisStats;
+  public final static int INTERVAL = 3;
 
   public PassiveExpirationManager(Region<RedisKey, RedisData> dataRegion, RedisStats redisStats) {
     this.dataRegion = dataRegion;
     this.redisStats = redisStats;
     expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
-    int INTERVAL = 3;
     expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(dataRegion), INTERVAL,
         INTERVAL, MINUTES);
   }

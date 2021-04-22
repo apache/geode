@@ -31,6 +31,7 @@ import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.redis.internal.PassiveExpirationManager;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
@@ -168,7 +169,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   @Test
   public void testPassiveExpiration() {
     runCommandAndAssertNoStatUpdates("hash", (k) -> {
-      jedis.expire(k, 1);
+      jedis.expire(k, PassiveExpirationManager.INTERVAL);
       GeodeAwaitility.await().during(Duration.ofSeconds(3)).until(() -> true);
     });
   }
