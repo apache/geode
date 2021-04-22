@@ -337,7 +337,7 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
-  @Ignore
+  @Ignore("confirm that bucket size stats are being calculated correctly before enabling")
   public void should_showMembersAgreeUponUsedSetMemory_afterDeltaPropagation() {
     jedis1.sadd(SET_KEY, "other"); // two sadds are required to force
     jedis1.sadd(SET_KEY, "value"); // deserialization on both servers
