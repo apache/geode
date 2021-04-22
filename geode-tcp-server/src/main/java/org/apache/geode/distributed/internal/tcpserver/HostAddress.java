@@ -37,14 +37,15 @@ public class HostAddress extends InetSocketWrapper {
     inetSocketAddress = new InetSocketAddress(address, 0);
   }
 
-  public HostAddress(HostAndPort host) {
-    inetSocketAddress = host.getSocketInetAddress();
+  public HostAddress(HostAndPort hostAndPort) {
+    hostName = hostAndPort.hostName;
+    inetSocketAddress = hostAndPort.inetSocketAddress;
   }
 
   @Override
   public String toString() {
-    if (inetSocketAddress.getHostString() != null) {
-      return inetSocketAddress.getHostString();
+    if (hostName != null) {
+      return hostName;
     } else {
       return inetSocketAddress.getAddress().toString();
     }

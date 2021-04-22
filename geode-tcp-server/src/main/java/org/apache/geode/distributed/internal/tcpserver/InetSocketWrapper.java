@@ -21,12 +21,14 @@ import java.util.Objects;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
 class InetSocketWrapper {
+  String hostName;
   protected InetSocketAddress inetSocketAddress;
   private InetSocketAddress attemptedToResolve;
 
   protected InetSocketWrapper() {}
 
   protected InetSocketWrapper(String hostName, int port) {
+    this.hostName = hostName;
     if (hostName == null) {
       inetSocketAddress = new InetSocketAddress(port);
     } else if (InetAddressValidator.getInstance().isValid(hostName)) {
@@ -39,6 +41,9 @@ class InetSocketWrapper {
   }
 
   public String getHostName() {
+    if (hostName != null) {
+      return hostName;
+    }
     return inetSocketAddress.getHostName();
   }
 
