@@ -266,6 +266,7 @@ geode-dunit/**                                                    @mhansonp @kir
 geode-junit/**                                                    @mhansonp @kirklund
 #geode-jmh/**
 geode-junit/**/org/apache/geode/test/util/**                      @jdeppe-pivotal @onichols-pivotal
+geode-assembly/**/org/apache/geode/test/junit/**                  @jdeppe-pivotal @jinmeiliao
 
 #-----------------------------------------------------------------
 # Redis API
