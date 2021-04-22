@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -176,6 +177,21 @@ public class QueryCommandDUnitTestBase {
   }
 
   @Test
+  public void testSimpleQueryWithUUID() {
+    server1.invoke(() -> prepareDataForRegionWithUUID(DATA_PAR_REGION_NAME_PATH));
+    String uuidKey = String.valueOf(new UUID(1, 1));
+    String query = "query --query=\"select key from " + DATA_PAR_REGION_NAME_PATH
+        + ".entries\"";
+    String query1 = "query --query=\"select key,value from " + DATA_PAR_REGION_NAME_PATH
+        + ".entries\"";
+
+    gfsh.executeAndAssertThat(query).statusIsSuccess()
+        .containsOutput(uuidKey);
+    gfsh.executeAndAssertThat(query1).statusIsSuccess()
+        .containsOutput(uuidKey, "value");
+  }
+
+  @Test
   public void testQueryEvictedDataDeserializable() {
     server1.invoke(() -> setupReplicatedRegionWithEviction(DATA_REGION_WITH_EVICTION_NAME));
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_WITH_EVICTION_NAME_PATH, 1);
@@ -218,6 +234,13 @@ public class QueryCommandDUnitTestBase {
 
     dataRegion.put(1, "value$");
     dataRegion.put(2, "value%");
+  }
+
+  private static void prepareDataForRegionWithUUID(String regionPath) {
+    InternalCache cache = ClusterStartupRule.getCache();
+    Region<UUID, String> dataRegion = cache.getRegion(regionPath);
+
+    dataRegion.put(new UUID(1, 1), "value");
   }
 
   private static void prepareNotDeserializableDataForRegion(String regionPath) {
