@@ -86,6 +86,7 @@ include 'geode-deployment:geode-deployment-legacy'
  '1.11.0',
  '1.12.0',
  '1.12.1',
+ '1.12.2',
  '1.13.0',
  '1.13.1',
  '1.13.2'].each {
