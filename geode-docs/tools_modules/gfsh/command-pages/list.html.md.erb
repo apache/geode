@@ -116,8 +116,8 @@ gfsh>list clients
 
 ClientList
 
-            Client Name / ID              | Server Name / ID
------------------------------------------ | -----------------------------------------------------
+          Client Name / ID           | Server Name / ID
+------------------------------------ | -----------------------------------------------------
 192.0.2.0(4987:loner):58922:7b3398cf | member=server2,port=53508;  member=server1,port=56806
 192.0.2.0(5065:loner):39906:a6f598cf | member=server2,port=53508;  member=server1,port=56806
 ```
@@ -190,8 +190,8 @@ list disk-stores
 ``` pre
 gfsh> list disk-stores
 
-   Member Name   |                   Member Id                   | Disk Store Name |            Disk Store ID
-  -------------- | --------------------------------------------- | --------------- | ------------------------------------
+   Member Name   |                   Member Id               | Disk Store Name |            Disk Store ID
+  -------------- | ------------------------------------------| --------------- | ------------------------------------
   consumerServer | 192.0.2.0(consumerServer:13825)<v5>:3545  | consumerData    | 4029af26-fd82-4997-bd6c-33382cdbb5e9
   consumerServer | 192.0.2.0(consumerServer:13825)<v5>:3545  | observerData    | 7e0316ad-963c-49b0-9b01-8f59b8d9e29e
   producerServer | 192.0.2.0(producerServer:13826)<v3>:53764 | producerData    | 4670e4eb-1c50-4465-b418-08ede3d5dbed
@@ -292,7 +292,7 @@ gfsh> list functions --matches=reconcile.*
 **Sample Output:**
 
 ``` pre
-list functions
+gfsh> list functions
 
    Member   |          Function
   --------- | --------------------------
@@ -300,20 +300,20 @@ list functions
   camelot   | reconcileWeeklyExpenses
   excalibur | loadDataFromExternalSource
   excalibur | reconcileDailyExpenses
-
+```
 
 Example of 'list function' with a "matches" filter:
-
+``` pre
 gfsh> list functions --matches=reconcile.*
 
    Member   |        Function
   --------- | -----------------------
   camelot   | reconcileWeeklyExpenses
   excalibur | reconcileDailyExpenses
-
+```
 
 Example of 'list functions' when no functions are found in <%=vars.product_name%> :
-
+``` pre
 gfsh> list functions
 No Functions Found.
 ```
@@ -348,6 +348,32 @@ list gateways --senders-only
 list gateways --receivers-only
 ```
 
+**Sample Output:**
+
+``` pre
+
+gfsh>list gateways
+
+GatewaySender Section
+
+GatewaySender Id |              Member               | Remote Cluster Id |  Type    | Status  | Queued Events | Receiver Location
+---------------- | --------------------------------- |  ---------------- | -------- | ------- | ------------- | -----------------
+ln               | boglesbymac(ny-1:88641)<v2>:33491 | 2                 | Parallel | Running | 0             | boglesbymac:5037
+ln               | boglesbymac(ny-2:88705)<v3>:29329 | 2                 | Parallel | Running | 0             | boglesbymac:5064
+ln               | boglesbymac(ny-3:88715)<v4>:36808 | 2                 | Parallel | Running | 0             | boglesbymac:5132
+ln               | boglesbymac(ny-4:88724)<v5>:52993 | 2                 | Parallel | Running | 0             | boglesbymac:5324
+
+GatewayReceiver Section
+
+         Member                   | Port | Sender Count | Sender's Connected
+--------------------------------- | ---- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------
+boglesbymac(ny-1:88641)<v2>:33491 | 5057 | 9            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675","boglesbymac(ln-2:88662)<v3>:12796"]
+boglesbymac(ny-2:88705)<v3>:29329 | 5082 | 4            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
+boglesbymac(ny-3:88715)<v4>:36808 | 5371 | 4            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
+boglesbymac(ny-4:88724)<v5>:52993 | 5247 | 3            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
+
+```
+
 ## <a id="topic_B3B51B6DEA484EE086C4F657EC9831F2" class="no-quick-link"></a>list indexes
 
 Display the list of indexes created for all members.
@@ -379,14 +405,15 @@ list indexes --with-stats
 
 ``` pre
 gfsh>list indexes
-Member Name    |                   Member ID                   | Region Path |   Name   | Type  | Indexed Expression | From Clause
--------------- | --------------------------------------------- | ----------- | -------- | ----- | ------------------ | -----------
+Member Name    |                   Member ID               | Region Path |   Name   | Type  | Indexed Expression | From Clause
+-------------- | ----------------------------------------- | ----------- | -------- | ----- | ------------------ | -----------
 consumerServer | 192.0.2.0(consumerServer:13873):6317      | /consumers  | cidIdx   | KEY   | id                 | /consumers
 consumerServer | 192.0.2.0(consumerServer:13873):6317      | /consumers  | cnameIdx | RANGE | name               | /consumers
 producerServer | 192.0.2.0(producerServer:13874):19198     | /producers  | pidIdx   | RANGE | id                 | /producers
+```
 
 Example of 'list indexes' with stats printed:
-
+``` pre
 gfsh>list indexes --with-stats
 
 Member Name  | Member ID | Region Path |   Name   | Type  | Indexed Expression | From Clause | Uses | Updates | Update Time | Keys | Values
