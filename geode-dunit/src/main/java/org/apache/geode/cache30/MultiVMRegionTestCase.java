@@ -140,8 +140,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
   private static int afterCreates;
 
-  static LocalRegion CCRegion;
-  static int distributedSystemID;
+  public static LocalRegion CCRegion;
+  protected static int distributedSystemID;
   protected VM vm0;
   protected VM vm1;
   protected VM vm2;

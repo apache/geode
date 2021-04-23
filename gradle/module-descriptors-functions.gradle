@@ -105,7 +105,7 @@ private Map<String, String[]> generateModuleNamesAndVersionsMap(runtimeList, dep
     def artifactVersion = moduleVersionIdentifier.version
     def resource = dependency.file.name
     namesAndVersion.put(artifactName, [artifactVersion, resource])
-    if (!depsToNotGenerate.contains(artifactName) && !artifactName.contains('geode-')) {
+    if (!depsToNotGenerate.contains(artifactName) && !artifactName.contains('geode-') && artifactName != 'jboss-modules') {
       writeThirdPartyModuleXml(artifactName, resource, artifactVersion, moduleDescriptorsRoot)
     }
   }
@@ -117,7 +117,6 @@ def generateDependentProjects(Project projectToUse, String targetConfigurationPr
   projectToUse.configurations.each {
     if (it.name.toLowerCase() == "${targetConfigurationPrefix}runtimeClasspath".toLowerCase() || it.name == 'jbossModular') {
       it.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-        def moduleVersionIdentifier = artifact.getModuleVersion().id
         runtimeList.add(artifact)
       }
     }
@@ -204,9 +203,8 @@ def writeThirdPartyModuleXml(String moduleName, moduleJar, moduleVersion, module
 
 private def addModuleDependency(projectToUse, namesAndVersions, apiProjectDeps, xmlBuilder) {
   def projectName = projectToUse.name
-  if (!projectsToExclude.contains(projectName)
-      && !projectToUse.ext.has('should-not-generate')
-      || testProjectsToInclude.contains(projectName)) {
+  if ((!projectsToExclude.contains(projectName) || testProjectsToInclude.contains(projectName))
+      && !projectToUse.ext.has('should-not-generate') && projectName != 'jboss-modules') {
 
     String projectVersion = projectToUse.version
     if (projectVersion == null) {

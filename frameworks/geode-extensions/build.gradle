@@ -34,4 +34,5 @@ dependencies {
   }
 
   distributedTestApi(project(':extensions:geode-modules'))
+  distributedTestApi(project(':geode-lucene:geode-lucene-test'))
 }

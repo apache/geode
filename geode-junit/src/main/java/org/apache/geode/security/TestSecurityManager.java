@@ -168,7 +168,7 @@ public class TestSecurityManager implements SecurityManager {
 
   public boolean initializeFromJsonResource(final String jsonResource) {
     try {
-      InputStream input = ClassLoader.getSystemResourceAsStream(jsonResource);
+      InputStream input = getClass().getResourceAsStream(jsonResource);
       if (input != null) {
         return initializeFromJson(readJsonFromInputStream(input));
       }
