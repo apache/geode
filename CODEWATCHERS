@@ -62,3 +62,17 @@ geode-wan/**                                                      @albertogpz
 geode-core/**/org/apache/geode/cache/asyncqueue/**                @albertogpz
 geode-core/**/org/apache/geode/cache/wan/**                       @albertogpz
 geode-core/**/org/apache/geode/internal/cache/wan/**              @albertogpz
+
+
+#-----------------------------------------------------------------
+# Metrics & Statistics
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/statistics/**             @mkevo
+geode-core/**/org/apache/geode/internal/stats50/**                @mkevo
+geode-core/**/org/apache/geode/metrics/**                         @mkevo
+
+#-----------------------------------------------------------------
+# Querying
+#-----------------------------------------------------------------
+geode-cq/**                                                       @mkevo
+geode-core/**/org/apache/geode/cache/query/**                     @mkevo
