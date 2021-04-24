@@ -46,7 +46,6 @@ public class ClusterSlotsAndNodesDUnitTest {
   private static final String LOCAL_HOST = "127.0.0.1";
   private static MemberVM locator;
   private static MemberVM server1;
-  private static MemberVM server2;
 
   private static Jedis jedis1;
   private static Jedis jedis2;
@@ -55,7 +54,7 @@ public class ClusterSlotsAndNodesDUnitTest {
   public static void classSetup() {
     locator = cluster.startLocatorVM(0);
     server1 = cluster.startRedisVM(1, locator.getPort());
-    server2 = cluster.startRedisVM(2, locator.getPort());
+    cluster.startRedisVM(2, locator.getPort());
 
     int redisServerPort1 = cluster.getRedisPort(1);
     int redisServerPort2 = cluster.getRedisPort(2);

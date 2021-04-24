@@ -55,9 +55,6 @@ public class ClusterExecutor extends AbstractExecutor {
     List<byte[]> args = command.getProcessedCommand();
     String subCommand = new String(args.get(1));
 
-    StringBuilder strArgs = new StringBuilder();
-    args.forEach(x -> strArgs.append(new String(x)).append(" "));
-
     switch (subCommand.toLowerCase()) {
       case "info":
         return getInfo(context);

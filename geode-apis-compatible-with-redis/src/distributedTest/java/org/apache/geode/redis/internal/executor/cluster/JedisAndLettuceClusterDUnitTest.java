@@ -42,20 +42,15 @@ public class JedisAndLettuceClusterDUnitTest {
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static final String LOCAL_HOST = "127.0.0.1";
-  private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
   private static int redisServerPort1;
-  private static int redisServerPort2;
 
   @BeforeClass
   public static void classSetup() {
-    locator = cluster.startLocatorVM(0);
-    server1 = cluster.startRedisVM(1, locator.getPort());
-    server2 = cluster.startRedisVM(2, locator.getPort());
+    MemberVM locator = cluster.startLocatorVM(0);
+    cluster.startRedisVM(1, locator.getPort());
+    cluster.startRedisVM(2, locator.getPort());
 
     redisServerPort1 = cluster.getRedisPort(1);
-    redisServerPort2 = cluster.getRedisPort(2);
   }
 
   @Test

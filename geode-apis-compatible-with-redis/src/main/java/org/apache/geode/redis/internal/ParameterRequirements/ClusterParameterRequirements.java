@@ -36,9 +36,10 @@ public class ClusterParameterRequirements implements ParameterRequirements {
   }
 
   private void confirmKnownSubcommands(Command command) {
-    if (!command.getStringKey().equalsIgnoreCase("slots") &&
-        !command.getStringKey().equalsIgnoreCase("nodes") &&
-        !command.getStringKey().equalsIgnoreCase("info")) {
+    String subCommand = command.getStringKey().toLowerCase();
+    if (!subCommand.equals("slots") &&
+        !subCommand.equals("nodes") &&
+        !subCommand.equals("info")) {
       throw new RedisParametersMismatchException(
           String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, command.getStringKey()));
     }

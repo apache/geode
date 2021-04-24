@@ -32,7 +32,7 @@ import org.apache.geode.redis.internal.data.RedisKey;
 
 public class BucketInfoRetrievalFunction implements InternalFunction<Void> {
 
-  public static final String ID = "REDIS_BUCKET_SLOT_FUNCTION";
+  public static final String ID = BucketInfoRetrievalFunction.class.getName();
   private final String hostAddress;
   private final int redisPort;
 
