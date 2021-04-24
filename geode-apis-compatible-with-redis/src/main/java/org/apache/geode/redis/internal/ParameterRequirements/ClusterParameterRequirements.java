@@ -27,19 +27,7 @@ public class ClusterParameterRequirements implements ParameterRequirements {
 
     if (numberOfArguments < 2) {
       throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
-    } else if (numberOfArguments == 2) {
-      confirmKnownSubcommands(command);
-    } else { // numberOfArguments > 3
-      throw new RedisParametersMismatchException(
-          String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, command.getStringKey()));
-    }
-  }
-
-  private void confirmKnownSubcommands(Command command) {
-    String subCommand = command.getStringKey().toLowerCase();
-    if (!subCommand.equals("slots") &&
-        !subCommand.equals("nodes") &&
-        !subCommand.equals("info")) {
+    } else if (numberOfArguments > 2) {
       throw new RedisParametersMismatchException(
           String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, command.getStringKey()));
     }
