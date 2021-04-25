@@ -567,19 +567,13 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    */
   @Override
   public void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
-    if (!getBucketAdvisor().isPrimary()) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Not primary bucket when doing clear, do nothing");
-      }
-      return;
-    }
-
     // get rvvLock
     Set<InternalDistributedMember> participants =
         getCacheDistributionAdvisor().adviseInvalidateRegion();
     boolean isLockedAlready = this.partitionedRegion.getPartitionedRegionClear()
         .isLockedForListenerAndClientNotification();
 
+    boolean lockedForPrimary = doLockForPrimary(false);
     try {
       obtainWriteLocksForClear(regionEvent, participants, isLockedAlready);
       // no need to dominate my own rvv.
@@ -590,6 +584,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       // TODO: call reindexUserDataRegion if there're lucene indexes
     } finally {
       releaseWriteLocksForClear(regionEvent, participants, isLockedAlready);
+      if (lockedForPrimary) {
+        doUnlockForPrimary();
+      }
     }
   }
 

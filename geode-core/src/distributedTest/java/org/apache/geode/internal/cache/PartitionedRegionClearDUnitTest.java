@@ -130,8 +130,8 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     }
     RegionFactory factory = getCache().createRegionFactory(shortcut)
         .setPartitionAttributes(
-            new PartitionAttributesFactory().setTotalNumBuckets(10).setLocalMaxMemory(0).create())
-        .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(10).create());
+            new PartitionAttributesFactory().setTotalNumBuckets(TOTAL_BUCKET_NUM)
+                .setLocalMaxMemory(0).create());
     if (withWriter) {
       factory.setCacheWriter(new CountingCacheWriter());
     }

@@ -846,12 +846,12 @@ public class InitialImageOperation {
       }
       List<Entry> entriesToSynchronize = new ArrayList<>();
 
+      if (internalDuringApplyDelta != null && !internalDuringApplyDelta.isRunning
+          && internalDuringApplyDelta.getRegionName().equals(this.region.getName())) {
+        internalDuringApplyDelta.run();
+      }
       for (int i = 0; i < entryCount; i++) {
         // stream is null-terminated
-        if (internalDuringApplyDelta != null && !internalDuringApplyDelta.isRunning
-            && internalDuringApplyDelta.getRegionName().equals(this.region.getName())) {
-          internalDuringApplyDelta.run();
-        }
         if (slow > 0) {
           // make sure we are still slow
           slow = slowImageProcessing;

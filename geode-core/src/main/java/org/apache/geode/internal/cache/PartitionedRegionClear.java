@@ -165,8 +165,8 @@ public class PartitionedRegionClear {
                     new RegionEventImpl(localPrimaryBucketRegion, Operation.REGION_CLEAR, null,
                         false, partitionedRegion.getMyId(), regionEvent.getEventId());
                 localPrimaryBucketRegion.cmnClearRegion(bucketRegionEvent, false, true);
+                clearedBuckets.add(localPrimaryBucketRegion.getId());
               }
-              clearedBuckets.add(localPrimaryBucketRegion.getId());
             }
 
             if (getMembershipChange()) {
