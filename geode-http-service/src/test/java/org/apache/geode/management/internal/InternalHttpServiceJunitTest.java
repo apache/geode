@@ -28,7 +28,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalHttpService;
+import org.apache.geode.internal.cache.http.service.InternalHttpService;
 
 /**
  * The InternalHttpServiceJunitTest class is a test suite of test cases testing the contract and
