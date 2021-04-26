@@ -82,6 +82,8 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
         Jedis jedis = new Jedis("localhost", port);
         List<ClusterNode> nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes()).getNodes();
 
+        nodes.forEach(logger::info);
+
         assertThat(nodes.stream().mapToInt(x -> x.primary ? 1 : 0).sum())
             .as("Incorrect primary node count")
             .isEqualTo(3);
