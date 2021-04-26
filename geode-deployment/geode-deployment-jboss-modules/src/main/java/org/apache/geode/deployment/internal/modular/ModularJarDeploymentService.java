@@ -52,7 +52,7 @@ public class ModularJarDeploymentService implements JarDeploymentService {
   private final Logger logger = LogService.getLogger();
   private final Map<String, Deployment> deployments = new ConcurrentHashMap<>();
   private final FunctionToFileTracker functionToFileTracker = new FunctionToFileTracker();
-  private final DeploymentService geodeJBossDeploymentService;
+  private final DeploymentService deploymentService;
   private File workingDirectory = new File(System.getProperty("user.dir"));
   private static final String GEODE_CORE_MODULE_NAME = "geode-core";
 
@@ -61,7 +61,7 @@ public class ModularJarDeploymentService implements JarDeploymentService {
   }
 
   public ModularJarDeploymentService(DeploymentService deploymentService) {
-    this.geodeJBossDeploymentService = deploymentService;
+    this.deploymentService = deploymentService;
   }
 
   @Override
@@ -77,7 +77,7 @@ public class ModularJarDeploymentService implements JarDeploymentService {
     moduleDependencies.add(GEODE_CORE_MODULE_NAME);
 
     boolean serviceResult =
-        geodeJBossDeploymentService
+        deploymentService
             .registerModule(deployment.getDeploymentName(), deployment.getFilePath(),
                 moduleDependencies);
     logger.debug("Register module result: {} for deployment: {}", serviceResult,
@@ -121,7 +121,7 @@ public class ModularJarDeploymentService implements JarDeploymentService {
     }
 
     boolean serviceResult =
-        geodeJBossDeploymentService.unregisterModule(deploymentName);
+        deploymentService.unregisterModule(deploymentName);
     if (serviceResult) {
       Deployment removedDeployment = deployments.remove(deploymentName);
       functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment.getDeploymentName());
