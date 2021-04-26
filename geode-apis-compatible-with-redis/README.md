@@ -1,4 +1,6 @@
-# Apache Geode APIs Compatible with Redis - EXPERIMENTAL
+# Apache Geode APIs Compatible with Redis
+
+Note: This feature is experimental and is subject to change in future releases of Apache Geode.
 
 [Introduction](#introduction)  
 [How To Try It](#how-to-try-it)  
@@ -7,7 +9,6 @@
 [Adding an Additional Geode Server Compatible with Redis](#adding-a-server)  
 [Shutting Down](#shutting-down)  
 [Redis Commands](#redis-commands)
-
 
 ## <a name="introduction"></a>Introduction
 
