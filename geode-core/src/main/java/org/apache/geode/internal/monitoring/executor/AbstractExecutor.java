@@ -17,11 +17,11 @@ package org.apache.geode.internal.monitoring.executor;
 import static java.lang.Integer.min;
 
 import java.lang.management.LockInfo;
-import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
@@ -49,37 +49,28 @@ public abstract class AbstractExecutor {
     this.threadID = threadID;
   }
 
-  public void handleExpiry(long stuckTime) {
+  public void handleExpiry(long stuckTime, Map<Long, ThreadInfo> threadInfoMap) {
     this.incNumIterationsStuck();
-    logger.warn(createThreadReport(stuckTime));
+    logger.warn(createThreadReport(stuckTime, threadInfoMap));
   }
 
-  private static ThreadInfo getThreadInfo(long threadId) {
-    ThreadInfo[] threadInfos =
-        ManagementFactory.getThreadMXBean().getThreadInfo(new long[] {threadId}, true, true);
-    if (threadInfos != null) {
-      return threadInfos[0];
-    } else {
-      return null;
-    }
-  }
 
-  String createThreadReport(long stuckTime) {
+  String createThreadReport(long stuckTime, Map<Long, ThreadInfo> threadInfoMap) {
 
-    DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss zzz");
+    final DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss zzz");
 
-    ThreadInfo thread = getThreadInfo(threadID);
-    boolean logThreadDetails = (thread != null);
+    final ThreadInfo thread = threadInfoMap.get(threadID);
+    final boolean logThreadDetails = (thread != null);
 
-    StringBuilder stringBuilder = new StringBuilder();
+    final StringBuilder stringBuilder = new StringBuilder();
     final String lineSeparator = System.lineSeparator();
 
-    stringBuilder.append("Thread <").append(this.threadID).append("> (0x")
-        .append(Long.toHexString(this.threadID)).append(") that was executed at <")
-        .append(dateFormat.format(this.getStartTime())).append("> has been stuck for <")
+    stringBuilder.append("Thread <").append(threadID).append("> (0x")
+        .append(Long.toHexString(threadID)).append(") that was executed at <")
+        .append(dateFormat.format(getStartTime())).append("> has been stuck for <")
         .append((float) stuckTime / 1000)
         .append(" seconds> and number of thread monitor iteration <")
-        .append(this.numIterationsStuck).append("> ").append(lineSeparator);
+        .append(numIterationsStuck).append("> ").append(lineSeparator);
     if (logThreadDetails) {
       stringBuilder.append("Thread Name <").append(thread.getThreadName()).append(">")
           .append(" state <").append(thread.getThreadState())
@@ -94,7 +85,6 @@ public abstract class AbstractExecutor {
             .append(thread.getLockOwnerId()).append(">").append(lineSeparator);
     }
 
-
     stringBuilder.append("Executor Group <").append(groupName).append(">").append(
         lineSeparator)
         .append("Monitored metric <ResourceManagerStats.numThreadsStuck>")
@@ -105,7 +95,7 @@ public abstract class AbstractExecutor {
     }
 
     if (logThreadDetails && thread.getLockOwnerName() != null) {
-      ThreadInfo lockOwnerThread = getThreadInfo(thread.getLockOwnerId());
+      final ThreadInfo lockOwnerThread = threadInfoMap.get(thread.getLockOwnerId());
       if (lockOwnerThread != null) {
         writeThreadStack(lockOwnerThread, LOCK_OWNER_THREAD_STACK, stringBuilder);
       }
