@@ -29,7 +29,7 @@ List existing <%=vars.product_name%> resources such as deployed applications, di
 
 -   **[list clients](#topic_ts1_qb1_dk)**
 
-    Displays a list of connected clients.
+    Display a list of connected clients.
 
 -   **[list deployed](#topic_59DF60DE71AD4097B281749425254BFF)**
 
@@ -49,7 +49,7 @@ List existing <%=vars.product_name%> resources such as deployed applications, di
 
 -   **[list gateways](#topic_B1D89671C7B74074899C7D52F15849ED)**
 
-    Displays the gateway senders and receivers for a member or members.
+    Display the gateway senders and receivers for a member or members.
 
 -   **[list indexes](#topic_B3B51B6DEA484EE086C4F657EC9831F2)**
 
@@ -91,9 +91,7 @@ list async-event-queues
 
 ## <a id="topic_ts1_qb1_dk" class="no-quick-link"></a>list clients
 
-Displays a list of connected clients.
-
-Displays a list of connected clients and the servers they are connected to.
+Display a list of connected clients and the servers to which they connect.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -167,9 +165,9 @@ No JAR Files Found
 
 ## <a id="topic_BC14AD57EA304FB3845766898D01BD04" class="no-quick-link"></a>list disk-stores
 
-List all available disk stores across the <%=vars.product_name%> cluster
+List all available disk stores across the <%=vars.product_name%> cluster.
 
-The command also lists the configured disk directories and any Regions, Cache Servers, Gateways, PDX Serialization and Async Event Queues using Disk Stores to either overflow and/or persist information to disk. Use the `describe                         disk-store` command to see the details for a particular Disk Store.
+The command also lists the configured disk directories and any Regions, Cache Servers, Gateways, PDX Serialization and Async Event Queues using Disk Stores to either overflow and/or persist information to disk. Use the `describe disk-store` command to see the details for a particular Disk Store.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -200,9 +198,7 @@ gfsh> list disk-stores
 **Error Messages:**
 
 ``` pre
-gfsh> list disk-stores
 No Disk Stores Found
-
 ```
 
 ## <a id="topic_66016A698C334F4EBA19B99F51B0204B" class="no-quick-link"></a>list durable-cqs
@@ -249,8 +245,6 @@ server4 | cq3
 **Error Messages:**
 
 ``` pre
-gfsh>list durable-cqs --durable-client-id=client1
-
 Unable to list durable-cqs for durable-client-id : "client1" due to following reasons.
 
 No client found with client-id : client1
@@ -277,7 +271,7 @@ list functions [--matches=value] [--groups=value(,value)*]
 
 | Name                                             | Description                                                                                                                                                                                     |
 |--------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-matches </span> | Pattern that the function ID must match in order to be included. Uses Java pattern matching rules, not UNIX. For example, to match any character any number of times use ".\*" instead of "\*". |
+| <span class="keyword parmname">\\-\\-matches </span> | Pattern that the function ID must match in order to be included. Uses Java pattern matching rules, not UNIX. For example, to match any character any number of times use ".\*" rather than "\*". |
 | <span class="keyword parmname">\\-\\-groups</span>    | Group(s) of members for which functions will be displayed. Use a comma separated list for multiple groups.                                                                                      |
 | <span class="keyword parmname">&#8209;&#8209;members </span>  | Name or ID of the member(s) for which functions will be displayed. Use a comma separated list for multiple members.                                                                             |
 
@@ -285,8 +279,8 @@ list functions [--matches=value] [--groups=value(,value)*]
 **Example Commands:**
 
 ``` pre
-gfsh> list functions
-gfsh> list functions --matches=reconcile.*
+list functions
+list functions --matches=reconcile.*
 ```
 
 **Sample Output:**
@@ -302,7 +296,8 @@ gfsh> list functions
   excalibur | reconcileDailyExpenses
 ```
 
-Example of 'list function' with a "matches" filter:
+Example of `list functions` with a "matches" filter:
+
 ``` pre
 gfsh> list functions --matches=reconcile.*
 
@@ -312,15 +307,15 @@ gfsh> list functions --matches=reconcile.*
   excalibur | reconcileDailyExpenses
 ```
 
-Example of 'list functions' when no functions are found in <%=vars.product_name%> :
+**Error Messages:**
+
 ``` pre
-gfsh> list functions
-No Functions Found.
+No Functions Found
 ```
 
 ## <a id="topic_B1D89671C7B74074899C7D52F15849ED" class="no-quick-link"></a>list gateways
 
-Displays the gateway senders and receivers for a member or members.
+Display the gateway senders and receivers for a member or members.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -336,8 +331,8 @@ list gateways [--members=value(,value)*] [--groups=value(,value)*] [--senders-on
 |------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">&#8209;&#8209;members</span> | Member(s) whose gateways senders and receiver display.                                                                         |
 | <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members for which Gateway Senders and Receivers will be displayed. Use a comma separated list for multiple groups. |
-| \\-\\-senders-only                                  | List only gateway senders. This parameter cannot be used together with `--receivers-only`                                                                                                     |
-| \\-\\-receivers-only                                | List only gateway receivers. This parameter cannot be used together with `--senders-only`.                                                                                                   |
+| \\-\\-senders\\-only                                  | List only gateway senders. This parameter cannot be used together with `--receivers-only`                                                                                                     |
+| \\-\\-receivers\\-only                                | List only gateway receivers. This parameter cannot be used together with `--senders-only`.                                                                                                   |
 
 
 **Example Commands:**
@@ -356,21 +351,21 @@ gfsh>list gateways
 
 GatewaySender Section
 
-GatewaySender Id |              Member               | Remote Cluster Id |  Type    | Status  | Queued Events | Receiver Location
----------------- | --------------------------------- |  ---------------- | -------- | ------- | ------------- | -----------------
-ln               | boglesbymac(ny-1:88641)<v2>:33491 | 2                 | Parallel | Running | 0             | boglesbymac:5037
-ln               | boglesbymac(ny-2:88705)<v3>:29329 | 2                 | Parallel | Running | 0             | boglesbymac:5064
-ln               | boglesbymac(ny-3:88715)<v4>:36808 | 2                 | Parallel | Running | 0             | boglesbymac:5132
-ln               | boglesbymac(ny-4:88724)<v5>:52993 | 2                 | Parallel | Running | 0             | boglesbymac:5324
+GatewaySender Id |              Member         | Remote Cluster Id |  Type    | Status  | Queued Events | Receiver Location
+---------------- | --------------------------- | ----------------- | -------- | ------- | ------------- | -----------------
+ln               | mymac(ny-1:88641)<v2>:33491 | 2                 | Parallel | Running | 0             | mymac:5037
+ln               | mymac(ny-2:88705)<v3>:29329 | 2                 | Parallel | Running | 0             | mymac:5064
+ln               | mymac(ny-3:88715)<v4>:36808 | 2                 | Parallel | Running | 0             | mymac:5132
+ln               | mymac(ny-4:88724)<v5>:52993 | 2                 | Parallel | Running | 0             | mymac:5324
 
 GatewayReceiver Section
 
-         Member                   | Port | Sender Count | Sender's Connected
---------------------------------- | ---- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------
-boglesbymac(ny-1:88641)<v2>:33491 | 5057 | 9            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675","boglesbymac(ln-2:88662)<v3>:12796"]
-boglesbymac(ny-2:88705)<v3>:29329 | 5082 | 4            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
-boglesbymac(ny-3:88715)<v4>:36808 | 5371 | 4            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
-boglesbymac(ny-4:88724)<v5>:52993 | 5247 | 3            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
+         Member             | Port | Sender Count | Senders Connected
+--------------------------- | ---- | ------------ | -----------------------------------------------------------------------------------------------------------------------
+mymac(ny-1:88641)<v2>:33491 | 5057 | 9            |["mymac(ln-1:88651)<v2>:48277","mymac(ln-4:88681)<v5>:42784","mymac(ln-3:88672)<v4>:43675","mymac(ln-2:88662)<v3>:12796"]
+mymac(ny-2:88705)<v3>:29329 | 5082 | 4            |["mymac(ln-1:88651)<v2>:48277","mymac(ln-4:88681)<v5>:42784","mymac(ln-3:88672)<v4>:43675"]
+mymac(ny-3:88715)<v4>:36808 | 5371 | 4            |["mymac(ln-1:88651)<v2>:48277","mymac(ln-4:88681)<v5>:42784","mymac(ln-3:88672)<v4>:43675"]
+mymac(ny-4:88724)<v5>:52993 | 5247 | 3            |["mymac(ln-1:88651)<v2>:48277","mymac(ln-4:88681)<v5>:42784","mymac(ln-3:88672)<v4>:43675"]
 
 ```
 
@@ -397,7 +392,6 @@ list indexes [--with-stats(=value)?]
 
 ``` pre
 list indexes
-
 list indexes --with-stats
 ```
 
@@ -413,6 +407,7 @@ producerServer | 192.0.2.0(producerServer:13874):19198     | /producers  | pidId
 ```
 
 Example of 'list indexes' with stats printed:
+
 ``` pre
 gfsh>list indexes --with-stats
 
@@ -425,10 +420,7 @@ ps...        | 192...    | /producers  | pidIdx   | RANGE | id                 |
 
 **Error Messages:**
 
-Example of output when no indexes are found in <%=vars.product_name%>:
-
 ``` pre
-gfsh> list indexes
 No Indexes Found
 ```
 
@@ -485,7 +477,7 @@ list lucene indexes [--with-stats(=value)]
 
 | Name                                               | Description                                            | Default Value |
 |----------------------------------------------------|--------------------------------------------------------|---------------|
-| <span class="keyword parmname">\\-\\-with-stats</span> | Specifies whether statistics should also be displayed. | false if not specified, true if specified         |
+| <span class="keyword parmname">\\-\\-with\\-stats</span> | Specifies whether statistics should also be displayed. | false if not specified, true if specified         |
 
 
 **Example Commands:**
