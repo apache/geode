@@ -286,17 +286,58 @@ public class RedisHashTest {
 //    assertThat(RedisHash.getPerHashOverhead()).isEqualTo(RedisHash.PER_OBJECT_OVERHEAD + 324);
   }
 
+  @Test
+  public void should_calculateSize_closeToROSSize_ofEmptyIndividualInstance() {
+    RedisHash subject = new RedisHash();
+
+    int expected = reflectionObjectSizer.sizeof(subject);
+
+    Long actual = Long.valueOf(subject.getSizeInBytes());
+
+    assertThat(actual).isEqualTo(expected);
+  }
+
+
+  @Test
+  public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithSingleValue() {
+
+    ArrayList<ByteArrayWrapper> data = new ArrayList<>();
+    ByteArrayWrapper field1 = new ByteArrayWrapper("fet333333".getBytes());
+    ByteArrayWrapper value1= new ByteArrayWrapper("vw58888888888".getBytes());
+    data.add(field1);
+    data.add(value1);
+//    data.add(new ByteArrayWrapper("g".getBytes()));
+//    data.add(new ByteArrayWrapper("w".getBytes()));
+
+    RedisHash subject = new RedisHash(data);
+
+    int expected = reflectionObjectSizer.sizeof(subject);
+
+
+    Long actual = Long.valueOf(subject.getSizeInBytes());
+
+    System.out.println("field1: "+ field1.length());
+    System.out.println("value1: "+ value1.length());
+    System.out.println("total length:" + (field1.length() + value1.length()));
+
+    System.out.println("difference: "+  (expected - actual) );
+
+
+    assertThat(actual).isEqualTo(expected);
+  }
+
   @SuppressWarnings("unchecked")
   @Test
-  public void should_calculateSize_closeToROSSize_ofIndividualInstance() {
-    RedisHash current = createRedisHash("k1", "v1", "k2", "v2");
+  public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithData() {
+    RedisHash subject = createRedisHash("k", "v", "z", "x");
 
-    int expected = reflectionObjectSizer.sizeof(current);
-    Long actual = Long.valueOf(current.getSizeInBytes());
+    int expected = reflectionObjectSizer.sizeof(subject);
+    Long actual = Long.valueOf(subject.getSizeInBytes());
     Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
 
     assertThat(actual).isCloseTo(expected, Offset.offset(0l));
   }
+
 
   @SuppressWarnings("unchecked")
   @Test
