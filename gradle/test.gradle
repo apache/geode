@@ -157,6 +157,18 @@ tasks.named("distributedTest").configure {
   dependsOn(':geode-assembly:installDist')
 }
 
+tasks.named("acceptanceTest").configure {
+  dependsOn(':geode-assembly:installDist')
+}
+
+tasks.named("upgradeTest").configure {
+  dependsOn(':geode-assembly:installDist')
+}
+
+tasks.named("integrationTest").configure {
+  dependsOn(':geode-assembly:installDist')
+}
+
 // apply common test configuration
 gradle.taskGraph.whenReady({ graph ->
   tasks.withType(Test).each { test ->
@@ -250,13 +262,20 @@ acceptanceTest {
     environment "JAVA_HOME", "${project.testJVM}"
   }
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
+  environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/distributedTesting"
 }
 
 upgradeTest {
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
+  environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/distributedTesting"
 }
 
 distributedTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
+  environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/distributedTesting"
+}
+
+integrationTest {
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
   environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/distributedTesting"
 }
