@@ -23,6 +23,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
@@ -39,6 +40,9 @@ public class PassiveExpirationManager {
   private final Region<RedisKey, RedisData> dataRegion;
   private final ScheduledExecutorService expirationExecutor;
   private final RedisStats redisStats;
+  public static final int INTERVAL = 3;
+
+  @VisibleForTesting
   public static final int INTERVAL = 3;
 
   public PassiveExpirationManager(Region<RedisKey, RedisData> dataRegion, RedisStats redisStats) {
