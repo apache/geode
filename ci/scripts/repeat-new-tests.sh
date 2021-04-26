@@ -42,7 +42,7 @@ function changes_for_path() {
       echo "Could not determine merge base. Exiting..."
       exit 1
     fi
-    git diff --name-only ${mergeBase} -- $path
+    git diff --name-only --diff-filter=ACMR ${mergeBase} -- $path
   popd >> /dev/null
 }
 
