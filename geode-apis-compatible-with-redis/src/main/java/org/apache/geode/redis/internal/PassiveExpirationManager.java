@@ -40,7 +40,6 @@ public class PassiveExpirationManager {
   private final Region<RedisKey, RedisData> dataRegion;
   private final ScheduledExecutorService expirationExecutor;
   private final RedisStats redisStats;
-  public static final int INTERVAL = 3;
 
   @VisibleForTesting
   public static final int INTERVAL = 3;
