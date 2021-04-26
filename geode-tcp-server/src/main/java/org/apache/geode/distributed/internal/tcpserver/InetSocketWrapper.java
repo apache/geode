@@ -28,6 +28,9 @@ class InetSocketWrapper {
   protected InetSocketWrapper() {}
 
   protected InetSocketWrapper(String hostName, int port) {
+    // preserve the hostName string since InetSocketAddress will throw it away if it's a numeric
+    // address. Invoking getHostName on the InetSocketAddress would possibly return a different
+    // string.
     this.hostName = hostName;
     if (hostName == null) {
       inetSocketAddress = new InetSocketAddress(port);

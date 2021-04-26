@@ -30,6 +30,9 @@ import org.apache.geode.internal.serialization.StaticSerialization;
  * HostAndPort is a holder of a host name/address and a port. It is the primary
  * way to specify a connection endpoint in the socket-creator methods.
  * <p>
+ * This class preserves the hostName string passed in to its constructor that takes a
+ * hostName string and will respond with that string when asked for a hostName.
+ * <p>
  * Note: This class is serializable for testing. A number of client/server and WAN tests
  * transmit PoolAttributes between unit test JVMs using RMI. PoolAttributes are
  * Externalizable for this purpose and use Geode serialization to transmit HostAndPort
@@ -40,6 +43,7 @@ import org.apache.geode.internal.serialization.StaticSerialization;
  * @see ClientSocketCreator
  * @see AdvancedSocketCreator
  * @see TcpClient
+ * @see HostAddress
  */
 public class HostAndPort extends InetSocketWrapper implements DataSerializableFixedID {
 

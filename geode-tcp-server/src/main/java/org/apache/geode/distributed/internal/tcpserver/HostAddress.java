@@ -20,7 +20,10 @@ import java.net.InetSocketAddress;
 
 /**
  * HostAddress is a holder of a host name/address. It is the primary
- * way to specify a host address that may or may not have been resolved to an InetAddress.
+ * way to specify a host address that may or may not be resolvable to an InetAddress.
+ * <p>
+ * This class preserves the hostName string passed in to its constructor that takes a
+ * hostName string and will respond with that string when asked for a hostName.
  *
  * @See HostAndPort which can hold both a host name and a port
  */
