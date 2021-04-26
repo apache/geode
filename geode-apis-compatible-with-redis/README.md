@@ -1,4 +1,4 @@
-# Apache Geode APIs Compatible with Redis
+# Apache Geode APIs Compatible with Redis - EXPERIMENTAL
 
 [Introduction](#introduction)  
 [How To Try It](#how-to-try-it)  
