@@ -211,13 +211,10 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
       }
     }
 
-    /**
-     * Process locally uses a executor as the thread releases DLock can potentially
-     * send a GRANT message to remote node later
-     */
-    void processLocally(final DistributionManager dm) {
+    /** Process locally without using messaging or executor */
+    protected void processLocally(final DistributionManager dm) {
       this.svc = DLockService.getInternalServiceNamed(this.serviceName);
-      executeBasicProcess(dm); // use executor
+      basicProcess(dm, true); // don't use executor
     }
 
     /**
@@ -226,7 +223,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
      * <p>
      * this.svc and this.grantor must be set before calling this method.
      */
-    void executeBasicProcess(final DistributionManager dm) {
+    private void executeBasicProcess(final DistributionManager dm) {
       final DLockReleaseMessage msg = this;
       dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
         @Override
