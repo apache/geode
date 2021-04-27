@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.event;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
-import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.internal.cache.event.DistributedEventTracker.EVENT_HAS_PREVIOUSLY_BEEN_SEEN_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -57,7 +56,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 public class DistributedEventTrackerIntegrationTest {
 
   @Parameterized.Parameters(name = "possibleDuplicate={0}")
-  public static Collection booleans() {
+  public static Collection<Boolean> booleans() {
     return Arrays.asList(true, false);
   }
 
@@ -103,19 +102,24 @@ public class DistributedEventTrackerIntegrationTest {
 
   private void invokeHasSeenEventAndVerifyResults(DistributedRegion region)
       throws IOException {
-    // Record an event with a high sequence number
-    recordHighSequenceNumberEvent(region);
+    byte[] memberId = new byte[0];
+    long threadId = 1L;
+
+    // Create an event with a high sequence number
+    EntryEventImpl event1 = createEvent(region, new EventID(memberId, threadId, 1000L), false);
+
+    // Record the event
+    region.getEventTracker().recordEvent(event1);
 
     // Create an event with a lower sequence number and possibleDuplicate set appropriately
-    EntryEventImpl event =
-        createEvent(region, new EventID(new byte[0], 1l, 0l));
-    event.setPossibleDuplicate(possibleDuplicate);
+    EntryEventImpl event2 =
+        createEvent(region, new EventID(memberId, threadId, 0L), possibleDuplicate);
 
     // Invoke hasSeenEvent
-    boolean hasSeenEvent = region.getEventTracker().hasSeenEvent(event);
+    boolean hasSeenEvent = region.getEventTracker().hasSeenEvent(event2);
 
     // Assert hasSeenEvent is true
-    assertTrue(hasSeenEvent);
+    assertThat(hasSeenEvent).isTrue();
 
     // Verify the log does or does not contain the message depending on possibleDuplicate
     File logFile = ((InternalDistributedSystem) server.getCache().getDistributedSystem())
@@ -129,15 +133,11 @@ public class DistributedEventTrackerIntegrationTest {
     assertThat(region.getCachePerfStats().getPreviouslySeenEvents()).isEqualTo(1);
   }
 
-  private void recordHighSequenceNumberEvent(DistributedRegion region) {
-    EventID eventId = new EventID(new byte[0], 1l, 1000l);
-    EntryEventImpl event = createEvent(region, eventId);
-    region.getEventTracker().recordEvent(event);
-  }
-
-  private EntryEventImpl createEvent(LocalRegion region, EventID eventId) {
+  private EntryEventImpl createEvent(LocalRegion region, EventID eventId,
+      boolean possibleDuplicate) {
     EntryEventImpl event = EntryEventImpl.create(region, Operation.CREATE, 0, 0, null, true,
         region.getCache().getMyId(), false, eventId);
+    event.setPossibleDuplicate(possibleDuplicate);
 
     // Set the client context so that the event won't be ignored by the tracker
     event.setContext(mock(ClientProxyMembershipID.class));
