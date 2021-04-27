@@ -115,11 +115,19 @@ public class ClientSNICQAcceptanceTest {
   }
 
   @AfterClass
-  public static void afterClass() throws Exception {
-    String output =
-        docker.get().exec(options("-T"), "geode",
-            arguments("cat", "server-dolores/server-dolores.log"));
-    System.out.println("Server log file--------------------------------\n" + output);
+  public static void afterClass() {
+    printlog("locator-maeve");
+    printlog("server-dolores");
+  }
+
+  private static void printlog(String name) {
+    try {
+      String output =
+          docker.get().exec(options("-T"), "geode",
+              arguments("cat", name + "/" + name + ".log"));
+      System.out.println(name + " log file--------------------------------\n" + output);
+    } catch (Throwable ignore) {
+    }
   }
 
   @Before

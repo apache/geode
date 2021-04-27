@@ -47,6 +47,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -88,7 +89,9 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
           Disconnect.disconnectFromDS();
           dsProperties = null;
           Properties props = getDistributedSystemProperties();
-          locator = Locator.startLocatorAndDS(locatorPorts[locatorNumber], new File(""), props);
+          locator = InternalLocator.startLocator(locatorPorts[locatorNumber], new File(""),
+              null, null, new HostAddress(LocalHostUtil.getLocalHost()), true,
+              props, null, Paths.get(workingDir));
           system = locator.getDistributedSystem();
           cache = ((InternalLocator) locator).getCache();
           IgnoredException.addIgnoredException(
