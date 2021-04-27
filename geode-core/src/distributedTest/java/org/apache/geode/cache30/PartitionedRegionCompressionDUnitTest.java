@@ -33,7 +33,7 @@ public class PartitionedRegionCompressionDUnitTest extends PartitionedRegionDUni
   }
 
   @Override
-  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+  public <K, V> RegionAttributes<K, V> getRegionAttributes() {
     return getRegionAttributes(null);
   }
 

@@ -84,7 +84,7 @@ public class QueryExecutionContext extends ExecutionContext {
   }
 
   @Override
-  void cachePut(Object key, Object value) {
+  public void cachePut(Object key, Object value) {
     if (key.equals(CompiledValue.QUERY_INDEX_HINTS)) {
       setHints((ArrayList) value);
       return;

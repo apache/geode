@@ -106,7 +106,7 @@ public class DUnitLauncher {
    */
   static final int LOCATOR_VM_NUM = -2;
 
-  static final long STARTUP_TIMEOUT = 120 * 1000;
+  static final long STARTUP_TIMEOUT = 120 * 1000000;
   static final String STARTUP_TIMEOUT_MESSAGE =
       "VMs did not start up within " + STARTUP_TIMEOUT / 1000 + " seconds";
 

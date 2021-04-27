@@ -156,11 +156,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     testCacheListener = listener;
   }
 
-  protected static <K, V> TestCacheLoader<K, V> loader() {
+  public static <K, V> TestCacheLoader<K, V> loader() {
     return testCacheLoader;
   }
 
-  protected static <K, V> void setLoader(TestCacheLoader<K, V> loader) {
+  public static <K, V> void setLoader(TestCacheLoader<K, V> loader) {
     testCacheLoader = loader;
   }
 
