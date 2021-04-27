@@ -17,13 +17,14 @@ package org.apache.geode.redis.internal.cluster;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.redis.internal.RegionProvider;
@@ -62,16 +63,25 @@ public class BucketInfoRetrievalFunction implements InternalFunction<Void> {
 
     String memberId =
         context.getCache().getDistributedSystem().getDistributedMember().getUniqueId();
-    LocalDataSet localPrimary = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(region);
 
     MemberBuckets mb = new MemberBuckets(memberId, hostAddress, redisPort,
-        localPrimary.getBucketSet());
+        getLocalPrimaryBucketIds(region));
     context.getResultSender().lastResult(mb);
   }
 
   @Override
   public String getId() {
     return ID;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static Set<Integer> getLocalPrimaryBucketIds(Region region) {
+    PartitionedRegion pr = (PartitionedRegion) region;
+    if (pr.getDataStore() != null) {
+      return new HashSet<>(pr.getDataStore().getAllLocalPrimaryBucketIds());
+    } else {
+      return Collections.EMPTY_SET;
+    }
   }
 
   public static class MemberBuckets implements Serializable {

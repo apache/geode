@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
@@ -39,6 +40,7 @@ import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.cluster.BucketInfoRetrievalFunction;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
@@ -48,6 +50,8 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ClusterExecutor extends AbstractExecutor {
+
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
@@ -85,16 +89,19 @@ public class ClusterExecutor extends AbstractExecutor {
     }
 
     if (retrievedBucketCount != REDIS_REGION_BUCKETS) {
-      return RedisResponse.error("Internal error: bucket count mismatch " + retrievedBucketCount
-          + " != " + REDIS_REGION_BUCKETS);
+      logger.warn("Bucket count mismatch {} != {}", retrievedBucketCount, REDIS_REGION_BUCKETS);
     }
 
     int index = 0;
     List<Object> slots = new ArrayList<>();
 
     for (int i = 0; i < REDIS_REGION_BUCKETS; i++) {
-      Pair<String, Integer> primaryHostAndPort =
-          memberToHostPortMap.get(primaryBucketToMemberMap.get(i));
+      String member = primaryBucketToMemberMap.get(i);
+      if (member == null) {
+        continue;
+      }
+
+      Pair<String, Integer> primaryHostAndPort = memberToHostPortMap.get(member);
 
       List<Object> entry = new ArrayList<>();
       entry.add(index * REDIS_SLOTS_PER_BUCKET);
@@ -113,9 +120,9 @@ public class ClusterExecutor extends AbstractExecutor {
       ExecutionHandlerContext ctx) {
     Region<RedisKey, RedisData> dataRegion = ctx.getRegionProvider().getDataRegion();
 
-    // Really only need this in situations where the cluster is empty and no data has been
-    // added yet.
-    PartitionRegionHelper.assignBucketsToPartitions(dataRegion);
+    if (BucketInfoRetrievalFunction.getLocalPrimaryBucketIds(dataRegion).isEmpty()) {
+      PartitionRegionHelper.assignBucketsToPartitions(dataRegion);
+    }
 
     Set<DistributedMember> membersWithDataRegion = new HashSet<>();
     for (PartitionMemberInfo memberInfo : getRegionMembers(ctx)) {
