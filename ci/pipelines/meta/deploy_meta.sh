@@ -108,6 +108,29 @@ YML
 
   python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml pipelineProperties.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml --debug || exit 1
 
+  unamestr=$(uname)
+  platform='unknown'
+  if [[ "${unamestr}" == 'Darwin' ]]; then
+    platform='darwin'
+  elif [[ "${unamestr}" == 'Linux' ]]; then
+    platform='linux'
+  fi
+
+  FLY_URL="${CONCOURSE_URL}/api/v1/cli?arch=amd64&platform=${platform}"
+  FLY="${SCRIPTDIR}/fly"
+  if [[ ! -e "${FLY}" ]]; then
+    curl -so ${FLY} ${FLY_URL}
+  fi
+  chmod +x ${FLY}
+  set +e
+  if [[ ! $(${FLY} targets | grep "${FLY_TARGET}") ]]; then
+    echo "Creating target for ${FLY_TARGET}"
+    ${FLY} -t ${FLY_TARGET} login -n "${CONCOURSE_TEAM}" -c "${CONCOURSE_URL}"
+  else
+    echo "Target ${FLY_TARGET} already exists."
+  fi
+
+
   set -e
   if [[ ${UPSTREAM_FORK} != "apache" ]]; then
     fly -t ${FLY_TARGET} status || \
