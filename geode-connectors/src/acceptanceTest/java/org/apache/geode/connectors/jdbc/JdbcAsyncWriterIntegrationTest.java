@@ -47,7 +47,6 @@ import org.apache.geode.pdx.WritablePdxInstance;
 
 public abstract class JdbcAsyncWriterIntegrationTest {
 
-  static final String DB_NAME = "test";
   private static final String REGION_TABLE_NAME = "employees";
 
   private InternalCache cache;

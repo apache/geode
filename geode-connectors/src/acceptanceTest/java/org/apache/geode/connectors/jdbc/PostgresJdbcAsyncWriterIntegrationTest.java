@@ -27,7 +27,7 @@ import org.apache.geode.connectors.jdbc.test.junit.rules.PostgresConnectionRule;
 public class PostgresJdbcAsyncWriterIntegrationTest extends JdbcAsyncWriterIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      PostgresJdbcAsyncWriterIntegrationTest.class.getResource("postgres.yml");
+      PostgresJdbcAsyncWriterIntegrationTest.class.getResource("/postgres.yml");
 
   @ClassRule
   public static DatabaseConnectionRule dbRule =
