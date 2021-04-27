@@ -26,7 +26,9 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -90,6 +92,28 @@ public class FileWatchingX509ExtendedKeyManagerIntegrationTest {
     storeCertificates(keyStore, alias);
 
     target = newFileWatchingKeyManager(sslConfigFor(keyStore, alias));
+
+    pauseForFileWatcherToStartDetectingChanges();
+
+    Map<String, CertificateMaterial> updated = storeCertificates(keyStore, alias);
+
+    await().untilAsserted(() -> {
+      X509Certificate[] chain = target.getCertificateChain(alias);
+      assertThat(chain).containsExactly(updated.get(alias).getCertificate());
+    });
+  }
+
+  @Test
+  public void updatesKeyManagerBehindSymbolicLink() throws Exception {
+    // symlink requires elevated permissions on Windows
+    Assume.assumeFalse("Test ignored on Windows.", SystemUtils.IS_OS_WINDOWS);
+
+    storeCertificates(keyStore, alias);
+
+    Path symlink = temporaryFolder.getRoot().toPath().resolve("keystore-symlink.jks");
+    Files.createSymbolicLink(symlink, keyStore);
+
+    target = newFileWatchingKeyManager(sslConfigFor(symlink, alias));
 
     pauseForFileWatcherToStartDetectingChanges();
 
