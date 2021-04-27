@@ -38,6 +38,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.ProtocolChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -61,7 +62,7 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
   private final GMSLocator<ID> gmsLocator;
   private final TcpClient locatorClient;
 
-  public MembershipLocatorImpl(int port, InetAddress bindAddress,
+  public MembershipLocatorImpl(int port, HostAddress bindAddress,
       ProtocolChecker protocolChecker,
       Supplier<ExecutorService> executorServiceSupplier,
       TcpSocketCreator socketCreator,
@@ -75,9 +76,10 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
     handler = new PrimaryHandler(fallbackHandler, config.getLocatorWaitTime());
     String host = bindAddress == null ? LocalHostUtil.getLocalHostName()
         : bindAddress.getHostName();
+    InetAddress inetAddress = bindAddress == null ? null : bindAddress.getAddress();
     String threadName = "Distribution Locator on " + host + ": " + port;
 
-    this.server = new TcpServer(port, bindAddress, handler,
+    this.server = new TcpServer(port, inetAddress, handler,
         threadName, protocolChecker,
         locatorStats::getStatTime,
         executorServiceSupplier,
@@ -91,7 +93,7 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
         objectSerializer,
         objectDeserializer, Socket::new);
     gmsLocator =
-        new GMSLocator<>(bindAddress, config.getLocators(), locatorsAreCoordinators,
+        new GMSLocator<ID>(bindAddress, config.getLocators(), locatorsAreCoordinators,
             config.isNetworkPartitionDetectionEnabled(),
             locatorStats, config.getSecurityUDPDHAlgo(), workingDirectory, locatorClient,
             objectSerializer,

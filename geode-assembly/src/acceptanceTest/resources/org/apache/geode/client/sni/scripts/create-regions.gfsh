@@ -15,8 +15,6 @@
 # limitations under the License.
 #
 
-start locator --name=locator-maeve --connect=false --hostname-for-clients=locator-maeve --jmx-manager-hostname-for-clients=geode --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/locator-maeve-keystore.jks
-start server --name=server-dolores --max-heap=256m --hostname-for-clients=server-dolores --locators=geode[10334] --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/server-dolores-keystore.jks
-connect --locator=geode[10334] --use-ssl=true --security-properties-file=/geode/config/gfsecurity.properties
-create region --name=jellyfish --type=REPLICATE
-
+connect --locator=locator-maeve[10334] --use-ssl=true --security-properties-file=/geode/config/gfsecurity.properties
+create region --name=region-dolores --group=group-dolores --type=REPLICATE
+create region --name=region-clementine --group=group-clementine --type=REPLICATE
