@@ -125,7 +125,7 @@ YML
   set +e
   if [[ ! $(${FLY} targets | grep "${FLY_TARGET}") ]]; then
     echo "Creating target for ${FLY_TARGET}"
-    ${FLY} -t ${FLY_TARGET} login -c "${CONCOURSE_URL}"
+    ${FLY} -t ${FLY_TARGET} login -n "${CONCOURSE_TEAM}" -c "${CONCOURSE_URL}"
   else
     echo "Target ${FLY_TARGET} already exists."
   fi
