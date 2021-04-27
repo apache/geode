@@ -59,14 +59,10 @@ public class RedisHash extends AbstractRedisData {
   private ConcurrentHashMap<UUID, Long> hScanSnapShotCreationTimes;
   private ScheduledExecutorService HSCANSnapshotExpirationExecutor = null;
 
-  // these values are empirically derived using ReflectionObjectSizer, which provides an exact size
-  // of the object. It can't be used directly because of its performance impact. These values cause
-  // the size we keep track of to converge to the actual size as the number of entries/instances
-  // increases.
-  private static final int PER_BYTE_ARRAY_WRAPPER_OVERHEAD = PER_OBJECT_OVERHEAD + 46;
-//  private static final int PER_HASH_OVERHEAD = PER_OBJECT_OVERHEAD + 324;
-
   private int myCalculatedSize;
+  private static int baseRedisHashOverhead;
+  private static int hashMapInternalValuePairOverhead;
+  private static int sizeOfOverheadOfFirstPair;
 
   private static int defaultHscanSnapshotsExpireCheckFrequency =
       Integer.getInteger("redis.hscan-snapshot-cleanup-interval", 30000);
@@ -80,7 +76,7 @@ public class RedisHash extends AbstractRedisData {
 
   @VisibleForTesting
   public RedisHash(List<ByteArrayWrapper> fieldsToSet, int hscanSnapShotExpirationCheckFrequency,
-                   int minimumLifeForHscanSnaphot) {
+      int minimumLifeForHscanSnaphot) {
     this();
     this.HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS =
         hscanSnapShotExpirationCheckFrequency;
@@ -113,56 +109,33 @@ public class RedisHash extends AbstractRedisData {
     calibrate_memory_values();
   }
 
-  private static int baseRedisHashOverhead;
-
-  private static int hashMapInternalValuePairOverhead;
-  private static int sizeOfOverheadOfFirstPair;
-  private static int internalHashMapStorageOverhead;
-
-
   private void calibrate_memory_values() {
     ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
 
-    myCalculatedSize = reflectionObjectSizer.sizeof(this);
+    myCalculatedSize = baseRedisHashOverhead = reflectionObjectSizer.sizeof(this);
 
+    HashMap<ByteArrayWrapper, ByteArrayWrapper> tempHashmap = new HashMap<>();
 
-    HashMap<ByteArrayWrapper, ByteArrayWrapper> temp_hashmap = new HashMap<>();
+    int baseHashmapSize = reflectionObjectSizer.sizeof(tempHashmap);
 
-    int base_hashmap_size = reflectionObjectSizer.sizeof(temp_hashmap);
-
-    ByteArrayWrapper field1 = new ByteArrayWrapper("a".getBytes());
-    ByteArrayWrapper value1 = new ByteArrayWrapper("b".getBytes());
-    ByteArrayWrapper field2 = new ByteArrayWrapper("c".getBytes());
+    ByteArrayWrapper field1 = new ByteArrayWrapper("a".getBytes()); // this method breaks if you
+    ByteArrayWrapper value1 = new ByteArrayWrapper("b".getBytes()); // make these fields and values
+    ByteArrayWrapper field2 = new ByteArrayWrapper("c".getBytes()); // longer than one character
     ByteArrayWrapper value2 = new ByteArrayWrapper("d".getBytes());
 
-    temp_hashmap.put(field1, value1);
+    tempHashmap.put(field1, value1);
+    int oneEntryHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
 
-    int hashmapWithSinglePairSize = reflectionObjectSizer.sizeof(temp_hashmap);
-
-    int one_entry_hashmap_size = reflectionObjectSizer.sizeof(temp_hashmap);
-
-    temp_hashmap.put(field2, value2);
-
-    int two_entries_hashmap_size = reflectionObjectSizer.sizeof(temp_hashmap);
+    tempHashmap.put(field2, value2);
+    int twoEntriesHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
 
     int sizeOfDataForOneFieldValuePair = 2;
 
     hashMapInternalValuePairOverhead =
-        two_entries_hashmap_size - one_entry_hashmap_size - sizeOfDataForOneFieldValuePair;
+        twoEntriesHashMapSize - oneEntryHashMapSize - sizeOfDataForOneFieldValuePair;
 
-    sizeOfOverheadOfFirstPair = hashmapWithSinglePairSize - base_hashmap_size
+    sizeOfOverheadOfFirstPair = oneEntryHashMapSize - baseHashmapSize
         - hashMapInternalValuePairOverhead - sizeOfDataForOneFieldValuePair;
-
-    System.out.println("3 letters in byte array wrapper: "
-        + "" +reflectionObjectSizer.sizeof(new ByteArrayWrapper("abc".getBytes())));
-
-    System.out.println("byte array wrapper: "
-        + "" +reflectionObjectSizer.sizeof(new ByteArrayWrapper()));
-
-    //wrong!!! correct before use!!!
-//    internalHashMapStorageOverhead =
-//        two_entries_hashmap_size - (2 * hashMapInternalValuePairOverhead) - base_hashmap_size;
-
   }
 
 
@@ -226,43 +199,27 @@ public class RedisHash extends AbstractRedisData {
 
 
   private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
-    if (this.hash.isEmpty()){
-      this.myCalculatedSize +=sizeOfOverheadOfFirstPair;
+    if (this.hash.isEmpty()) {
+      this.myCalculatedSize += sizeOfOverheadOfFirstPair;
     }
 
     ByteArrayWrapper oldvalue = hash.put(field, value);
 
     if (oldvalue == null) {
-      int fieldValuePairSize =
-          (int) (hashMapInternalValuePairOverhead + Math.ceil(field.length()/8) + Math.ceil(value.length()/8));
-
-      System.out.println("hashMapInternalValuePairOverhead: " + hashMapInternalValuePairOverhead);
-      System.out.println("field size length: " + field.length());
-      System.out.println("value size length : " + value.length());
-
-
-      System.out.println("adding to non-existing value using calculated weights: " + fieldValuePairSize);
-
-      this.myCalculatedSize += fieldValuePairSize;
-
+      calculateSizeOfNewFieldValuePair(field, value);
     } else {
-
-      int newValueSize = value.length() - oldvalue.length();
-
-      System.out.println("adding to existing value" + newValueSize);
-
-      this.myCalculatedSize += newValueSize;
+      this.myCalculatedSize += value.length() - oldvalue.length();
     }
 
     return oldvalue;
   }
 
   private synchronized ByteArrayWrapper hashPutIfAbsent(ByteArrayWrapper field,
-                                                        ByteArrayWrapper value) {
+      ByteArrayWrapper value) {
     ByteArrayWrapper oldvalue = hash.putIfAbsent(field, value);
 
     if (oldvalue == null) {
-      myCalculatedSize += 2 * hashMapInternalValuePairOverhead + field.length() + value.length();
+      calculateSizeOfNewFieldValuePair(field, value);
     }
     return oldvalue;
   }
@@ -272,6 +229,11 @@ public class RedisHash extends AbstractRedisData {
     if (oldValue != null) {
       myCalculatedSize -= hashMapInternalValuePairOverhead + field.length() + oldValue.length();
     }
+
+    if (myCalculatedSize <= baseRedisHashOverhead + sizeOfOverheadOfFirstPair) {
+      myCalculatedSize = baseRedisHashOverhead;
+    }
+
     return oldValue;
   }
 
@@ -294,7 +256,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public int hset(Region<RedisKey, RedisData> region, RedisKey key,
-                  List<ByteArrayWrapper> fieldsToSet, boolean nx) {
+      List<ByteArrayWrapper> fieldsToSet, boolean nx) {
     int fieldsAdded = 0;
     AddsDeltaInfo deltaInfo = null;
     Iterator<ByteArrayWrapper> iterator = fieldsToSet.iterator();
@@ -327,7 +289,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public int hdel(Region<RedisKey, RedisData> region, RedisKey key,
-                  List<ByteArrayWrapper> fieldsToRemove) {
+      List<ByteArrayWrapper> fieldsToRemove) {
     int fieldsRemoved = 0;
     RemsDeltaInfo deltaInfo = null;
     for (ByteArrayWrapper fieldToRemove : fieldsToRemove) {
@@ -390,7 +352,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public ImmutablePair<Integer, List<Object>> hscan(UUID clientID, Pattern matchPattern,
-                                                    int count, int startCursor) {
+      int count, int startCursor) {
 
     List<ByteArrayWrapper> keysToScan = getSnapShotOfKeySet(clientID);
 
@@ -422,9 +384,7 @@ public class RedisHash extends AbstractRedisData {
 
   @SuppressWarnings("unchecked")
   private Pair<Integer, List<Object>> getResultsPair(List<ByteArrayWrapper> keysSnapShot,
-                                                     int startCursor,
-                                                     int count,
-                                                     Pattern matchPattern) {
+      int startCursor, int count, Pattern matchPattern) {
 
     int indexOfKeys = startCursor;
 
@@ -459,9 +419,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   private int getCursorValueToReturn(int startCursor,
-                                     int numberOfIterationsCompleted,
-                                     List<ByteArrayWrapper> keySnapshot) {
-
+      int numberOfIterationsCompleted, List<ByteArrayWrapper> keySnapshot) {
     if (startCursor + numberOfIterationsCompleted >= keySnapshot.size()) {
       return 0;
     }
@@ -494,7 +452,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public long hincrby(Region<RedisKey, RedisData> region, RedisKey key,
-                      ByteArrayWrapper field, long increment)
+      ByteArrayWrapper field, long increment)
       throws NumberFormatException, ArithmeticException {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {
@@ -530,7 +488,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public BigDecimal hincrbyfloat(Region<RedisKey, RedisData> region, RedisKey key,
-                                 ByteArrayWrapper field, BigDecimal increment)
+      ByteArrayWrapper field, BigDecimal increment)
       throws NumberFormatException {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {
@@ -612,17 +570,13 @@ public class RedisHash extends AbstractRedisData {
   }
 
   @VisibleForTesting
-  protected static int getPerByteArrayWrapperOverhead() {
-    return PER_BYTE_ARRAY_WRAPPER_OVERHEAD;
-  }
-
-//  @VisibleForTesting
-//  protected static int getPerHashOverhead() {
-//    return PER_HASH_OVERHEAD;
-//  }
-
-  @VisibleForTesting
   protected HashMap<ByteArrayWrapper, ByteArrayWrapper> getHashMap() {
     return hash;
+  }
+
+  private void calculateSizeOfNewFieldValuePair(ByteArrayWrapper field, ByteArrayWrapper value) {
+    int diffBetweenFieldLengthAndValueLength = field.length() - value.length();
+    this.myCalculatedSize += hashMapInternalValuePairOverhead + Math.ceil(field.length() / 8.0)
+        + Math.ceil(value.length() / 8.0) + Math.ceil(diffBetweenFieldLengthAndValueLength / 8.0);
   }
 }
