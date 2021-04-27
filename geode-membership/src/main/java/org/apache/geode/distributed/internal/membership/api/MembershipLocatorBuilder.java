@@ -14,13 +14,13 @@
  */
 package org.apache.geode.distributed.internal.membership.api;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
 import org.apache.geode.distributed.internal.membership.gms.MembershipLocatorBuilderImpl;
+import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.ProtocolChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
@@ -29,7 +29,7 @@ import org.apache.geode.internal.serialization.DSFIDSerializer;
 public interface MembershipLocatorBuilder<ID extends MemberIdentifier> {
   MembershipLocatorBuilder<ID> setPort(int port);
 
-  MembershipLocatorBuilder<ID> setBindAddress(InetAddress bindAddress);
+  MembershipLocatorBuilder<ID> setBindAddress(HostAddress bindAddress);
 
   MembershipLocatorBuilder<ID> setConfig(MembershipConfig membershipConfig);
 
