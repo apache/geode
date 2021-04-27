@@ -426,8 +426,8 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     protected transient DLockService svc;
     protected transient DLockGrantor grantor;
     private transient long statStart = -1;
-    private transient volatile DistributionManager receivingDM;
-    private transient DLockResponseMessage response;
+    transient volatile DistributionManager receivingDM;
+    transient DLockResponseMessage response;
     private transient RemoteThread rThread;
 
     /** True if we've responded to this request */
@@ -813,7 +813,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
       return false;
     }
 
-    private void endGrantWaitStatistic() {
+    void endGrantWaitStatistic() {
       if (this.statStart == -1)
         return; // failed to start the stat
       DistributedLockStats stats = DLockService.getDistributedLockStats();
@@ -846,7 +846,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     }
 
     /** Callers must be synchronized on this */
-    private void sendResponse() {
+    void sendResponse() {
       try {
         if (this.responded)
           return;
@@ -857,7 +857,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
           if (debugReleaseOrphanedGrant()) {
             waitToProcessDLockResponse(this.receivingDM);
           }
-          ReplyProcessor21 processor = ReplyProcessor21.getProcessor(processorId);
+          ReplyProcessor21 processor = getReplyProcessor();
           if (processor == null) {
             // lock request was probably interrupted so we need to release it...
             logger.warn(LogMarker.DLS_MARKER,
@@ -885,12 +885,30 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
 
         // remote... use messaging
         else {
-          this.receivingDM.putOutgoing(this.response);
-          endGrantWaitStatistic();
+          DLockResponseMessage responseMessage = response;
+          executeGrantToRemote(responseMessage);
         }
       } finally {
         this.responded = true;
       }
+    }
+
+    ReplyProcessor21 getReplyProcessor() {
+      return ReplyProcessor21.getProcessor(processorId);
+    }
+
+    void executeGrantToRemote(DLockResponseMessage responseMessage) {
+      if (!Thread.currentThread().getName().startsWith("Pooled Waiting Message Processor")) {
+        receivingDM.getExecutors().getWaitingThreadPool()
+            .execute(() -> grantToRemote(responseMessage));
+      } else {
+        grantToRemote(responseMessage);
+      }
+    }
+
+    void grantToRemote(DLockResponseMessage responseMessage) {
+      receivingDM.putOutgoing(responseMessage);
+      endGrantWaitStatistic();
     }
 
     synchronized void handleDepartureOfSender() {
