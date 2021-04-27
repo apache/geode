@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.function.Supplier;
 
 import org.junit.ClassRule;
 
@@ -29,8 +30,8 @@ public class PostgresJdbcAsyncWriterIntegrationTest extends JdbcAsyncWriterInteg
       PostgresJdbcAsyncWriterIntegrationTest.class.getResource("postgres.yml");
 
   @ClassRule
-  public static DatabaseConnectionRule dbRule = new PostgresConnectionRule.Builder()
-      .file(COMPOSE_RESOURCE_PATH.getPath()).serviceName("db").port(5432).database(DB_NAME).build();
+  public static DatabaseConnectionRule dbRule =
+      new PostgresConnectionRule.Builder().file(COMPOSE_RESOURCE_PATH.getPath()).build();
 
   @Override
   public Connection getConnection() throws SQLException {
@@ -38,7 +39,7 @@ public class PostgresJdbcAsyncWriterIntegrationTest extends JdbcAsyncWriterInteg
   }
 
   @Override
-  public String getConnectionUrl() {
-    return dbRule.getConnectionUrl();
+  public Supplier<String> getConnectionUrlSupplier() {
+    return () -> dbRule.getConnectionUrl();
   }
 }

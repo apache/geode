@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.awaitility.core.ThrowingRunnable;
 import org.junit.After;
@@ -61,7 +62,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   private Employee employee2;
   private Employee illegalEmployee;
   private final TestDataSourceFactory testDataSourceFactory =
-      new TestDataSourceFactory(getConnectionUrl());
+      new TestDataSourceFactory(getConnectionUrlSupplier());
 
   @Before
   public void setup() throws Exception {
@@ -125,7 +126,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
 
   public abstract Connection getConnection() throws SQLException;
 
-  public abstract String getConnectionUrl();
+  public abstract Supplier<String> getConnectionUrlSupplier();
 
   @Test
   public void validateJDBCAsyncWriterTotalEvents()

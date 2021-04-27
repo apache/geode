@@ -21,18 +21,17 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import com.palantir.docker.compose.DockerComposeRule;
-
 public class MySqlConnectionRule extends SqlDatabaseConnectionRule {
+
+  private static final int MYSQL_PORT = 3306;
+
   private static final String CREATE_DB_CONNECTION_STRING =
-      "jdbc:mysql://$HOST:$EXTERNAL_PORT?user=root&useSSL=false";
+      "jdbc:mysql://%s:%d?user=root&useSSL=false";
 
-  private static final String CONNECTION_STRING =
-      "jdbc:mysql://$HOST:$EXTERNAL_PORT/%s?user=root&useSSL=false";
+  private static final String CONNECTION_STRING = "jdbc:mysql://%s:%d/%s?user=root&useSSL=false";
 
-  protected MySqlConnectionRule(DockerComposeRule dockerRule, String serviceName, int port,
-      String dbName) {
-    super(dockerRule, serviceName, port, dbName);
+  protected MySqlConnectionRule(String composeFile, String serviceName, int port, String dbName) {
+    super(composeFile, serviceName, port, dbName);
   }
 
   @Override
@@ -50,23 +49,23 @@ public class MySqlConnectionRule extends SqlDatabaseConnectionRule {
 
   @Override
   public String getConnectionUrl() {
-    return getDockerPort().inFormat(String.format(CONNECTION_STRING, getDbName()));
+    return String.format(CONNECTION_STRING, "localhost", getDockerPort(), getDbName());
   }
 
 
   public String getCreateDbConnectionUrl() {
-    return getDockerPort().inFormat(CREATE_DB_CONNECTION_STRING);
+    return String.format(CREATE_DB_CONNECTION_STRING, "localhost", getDockerPort());
   }
 
   public static class Builder extends SqlDatabaseConnectionRule.Builder {
 
     public Builder() {
-      super();
+      super(MYSQL_PORT, DEFAULT_SERVICE_NAME, DEFAULT_DB_NAME);
     }
 
     @Override
     public MySqlConnectionRule build() {
-      return new MySqlConnectionRule(createDockerRule(), getServiceName(), getPort(), getDbName());
+      return new MySqlConnectionRule(getComposeFile(), getServiceName(), getPort(), getDbName());
     }
   }
 }
