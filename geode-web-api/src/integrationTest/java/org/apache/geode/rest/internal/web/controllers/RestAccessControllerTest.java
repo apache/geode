@@ -33,10 +33,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -44,6 +46,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.IntStream;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
@@ -67,6 +74,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.GenericWebApplicationContext;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
@@ -105,6 +113,12 @@ public class RestAccessControllerTest {
   private static final String ORDER_CAS_OLD_JSON = "order-cas-old.json";
   private static final String ORDER_CAS_NEW_JSON = "order-cas-new.json";
   private static final String ORDER_CAS_WRONG_OLD_JSON = "order-cas-wrong-old.json";
+  private static final String CUSTOMER_CONTAINING_NON_ASCII_JSON =
+      "customer-containing-non-ascii.json";
+  private static final String CUSTOMER_CONTAINING_NON_ASCII_QUERY_FULL_RESULT_JSON =
+      "customer-containing-non-ascii-query-full-result.json";
+  private static final String CUSTOMER_CONTAINING_NON_ASCII_QUERY_STRUCT_RESULT_JSON =
+      "customer-containing-non-ascii-query-struct-result.json";
 
   private static final String SLASH = "/";
   private static final String KEY_PREFIX = "/?+ @&./";
@@ -167,6 +181,9 @@ public class RestAccessControllerTest {
     loadResource(ORDER_CAS_OLD_JSON);
     loadResource(ORDER_CAS_NEW_JSON);
     loadResource(ORDER_CAS_WRONG_OLD_JSON);
+    loadResource(CUSTOMER_CONTAINING_NON_ASCII_JSON);
+    loadResource(CUSTOMER_CONTAINING_NON_ASCII_QUERY_FULL_RESULT_JSON);
+    loadResource(CUSTOMER_CONTAINING_NON_ASCII_QUERY_STRUCT_RESULT_JSON);
 
     RestAgent.createParameterizedQueryRegion();
 
@@ -189,7 +206,8 @@ public class RestAccessControllerTest {
 
   @Before
   public void setup() {
-    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilter(new UTF8Filter())
+        .build();
 
     customerRegion.clear();
     orderRegion.clear();
@@ -1356,6 +1374,39 @@ public class RestAccessControllerTest {
         .andExpect(header().string("Resource-Count", "60"));
   }
 
+  @Test
+  @WithMockUser
+  public void putGetQueryCustomerContainingNonAscii() throws Exception {
+    // Put customer containing mandarin
+    mockMvc.perform(put("/v1/customers/1")
+        .content(jsonResources.get(CUSTOMER_CONTAINING_NON_ASCII_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Location", BASE_URL + "/customers/1"));
+
+    // Get customer containing mandarin
+    mockMvc.perform(get("/v1/customers/1")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(content().json(jsonResources.get(CUSTOMER_CONTAINING_NON_ASCII_JSON)));
+
+    // Query full customer containing mandarin
+    mockMvc.perform(
+        get("/v1/queries/adhoc?q=SELECT * FROM " + SEPARATOR + "customers WHERE customerId = 1")
+            .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .json(jsonResources.get(CUSTOMER_CONTAINING_NON_ASCII_QUERY_FULL_RESULT_JSON)));
+
+    // Query struct customer containing mandarin
+    mockMvc.perform(get("/v1/queries/adhoc?q=SELECT firstName, lastName FROM " + SEPARATOR
+        + "customers WHERE customerId = 1")
+            .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(content()
+            .json(jsonResources.get(CUSTOMER_CONTAINING_NON_ASCII_QUERY_STRUCT_RESULT_JSON)));
+  }
 
   private void deleteAllQueries() throws Exception {
     MvcResult result = mockMvc.perform(get("/v1/queries")
@@ -1435,6 +1486,15 @@ public class RestAccessControllerTest {
     @Override
     public void beforeRegionClear(RegionEvent<Object, Object> event) throws CacheWriterException {
       // nothing
+    }
+  }
+
+  private static class UTF8Filter extends OncePerRequestFilter {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+        FilterChain filterChain) throws ServletException, IOException {
+      response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
+      filterChain.doFilter(request, response);
     }
   }
 }
