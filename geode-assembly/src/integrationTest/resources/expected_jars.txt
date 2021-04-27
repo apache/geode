@@ -2,7 +2,6 @@ HdrHistogram
 HikariCP
 LatencyUtils
 accessors-smart
-activation
 antlr
 asm
 byte-buddy
@@ -37,7 +36,6 @@ jackson-core
 jackson-databind
 javax.activation
 javax.activation-api
-javax.mail
 javax.mail-api
 javax.resource-api
 javax.servlet-api
