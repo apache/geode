@@ -114,10 +114,12 @@ public class RedisHash extends AbstractRedisData {
     ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
 
     myCalculatedSize = baseRedisHashOverhead = reflectionObjectSizer.sizeof(this);
+    System.out.println("baseRedisHashOverhead: " + baseRedisHashOverhead);
 
     HashMap<ByteArrayWrapper, ByteArrayWrapper> tempHashmap = new HashMap<>();
 
-    int baseHashmapSize = reflectionObjectSizer.sizeof(tempHashmap);
+    int emptyHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
+    System.out.println("emptyHashMapSize: " + emptyHashMapSize);
 
     ByteArrayWrapper field1 = new ByteArrayWrapper("a".getBytes()); // this method breaks if you
     ByteArrayWrapper value1 = new ByteArrayWrapper("b".getBytes()); // make these fields and values
@@ -126,17 +128,21 @@ public class RedisHash extends AbstractRedisData {
 
     tempHashmap.put(field1, value1);
     int oneEntryHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
+    System.out.println("oneEntryHashMapSize: " + oneEntryHashMapSize);
 
     tempHashmap.put(field2, value2);
     int twoEntriesHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
+    System.out.println("twoEntryHashMapSize: " + twoEntriesHashMapSize);
 
     int sizeOfDataForOneFieldValuePair = 2;
 
     hashMapInternalValuePairOverhead =
         twoEntriesHashMapSize - oneEntryHashMapSize - sizeOfDataForOneFieldValuePair;
+    System.out.println("hashMapInternalValuePairOverhead: " + hashMapInternalValuePairOverhead);
 
-    sizeOfOverheadOfFirstPair = oneEntryHashMapSize - baseHashmapSize
+    sizeOfOverheadOfFirstPair = oneEntryHashMapSize - emptyHashMapSize
         - hashMapInternalValuePairOverhead - sizeOfDataForOneFieldValuePair;
+    System.out.println("sizeOfOverheadOfFirstPair: " + sizeOfOverheadOfFirstPair);
   }
 
 
@@ -202,6 +208,7 @@ public class RedisHash extends AbstractRedisData {
   private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
     if (this.hash.isEmpty()) {
       this.myCalculatedSize += sizeOfOverheadOfFirstPair;
+      System.out.println("adding in sizeOfOverheadOfFirstPair: " + myCalculatedSize);
     }
 
     ByteArrayWrapper oldvalue = hash.put(field, value);
@@ -209,7 +216,11 @@ public class RedisHash extends AbstractRedisData {
     if (oldvalue == null) {
       calculateSizeOfNewFieldValuePair(field, value);
     } else {
+      System.out.println("update path: pre-change calculated size: " + myCalculatedSize);
       this.myCalculatedSize += value.length() - oldvalue.length();
+      System.out.println("update path: post-change calculated size: " + myCalculatedSize);
+      System.out.println(
+          "update path: newValueSize: " + value.length() + " oldvalueSize: " + oldvalue.length());
     }
 
     return oldvalue;
@@ -580,8 +591,11 @@ public class RedisHash extends AbstractRedisData {
   }
 
   private void calculateSizeOfNewFieldValuePair(ByteArrayWrapper field, ByteArrayWrapper value) {
-    int diffBetweenFieldLengthAndValueLength = field.length() - value.length();
-    this.myCalculatedSize += hashMapInternalValuePairOverhead + Math.ceil(field.length() / 8.0)
-        + Math.ceil(value.length() / 8.0) + Math.ceil(diffBetweenFieldLengthAndValueLength / 8.0);
+    int diffBetweenFieldLengthAndValueLength = Math.abs(field.length() - value.length());
+    System.out.println("diff: " + diffBetweenFieldLengthAndValueLength
+        + " pre-final calculated size: " + this.myCalculatedSize);
+    this.myCalculatedSize += hashMapInternalValuePairOverhead + field.length() + value.length()
+        - diffBetweenFieldLengthAndValueLength;
+    System.out.println("final myCalculatedSize: " + this.myCalculatedSize);
   }
 }

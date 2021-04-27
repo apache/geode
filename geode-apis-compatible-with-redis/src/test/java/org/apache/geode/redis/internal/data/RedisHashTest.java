@@ -16,8 +16,10 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static java.lang.Math.round;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.Offset.offset;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -260,7 +262,7 @@ public class RedisHashTest {
   /************* Hash Size *************/
   /******* put *******/
   @Test
-  public void should_calculateSize_closeToROSSize_ofEmptyIndividualInstance() {
+  public void should_calculateSize_equalToROSSize_ofEmptyIndividualInstance() {
     RedisHash subject = new RedisHash();
 
     int expected = reflectionObjectSizer.sizeof(subject);
@@ -270,28 +272,28 @@ public class RedisHashTest {
   }
 
   @Test
-  public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithSingleValue() {
+  public void should_calculateSize_equalToROSSize_ofIndividualInstanceWithSingleValue() {
     ArrayList<ByteArrayWrapper> data = new ArrayList<>();
-    ByteArrayWrapper field1 = new ByteArrayWrapper("field".getBytes());
-    ByteArrayWrapper value1 = new ByteArrayWrapper("value".getBytes());
-    data.add(field1);
-    data.add(value1);
+    data.add(new ByteArrayWrapper("field".getBytes()));
+    data.add(new ByteArrayWrapper("valuethatislonggggggggggggggggggggggggggggggg".getBytes()));
 
-    RedisHash subject = new RedisHash(data);
+    RedisHash redisHash = new RedisHash(data);
 
-    int expected = reflectionObjectSizer.sizeof(subject);
-    int actual = subject.getSizeInBytes();
+    int expected = reflectionObjectSizer.sizeof(redisHash);
+    int actual = redisHash.getSizeInBytes();
+
+    System.out.println("expected-actual diff: " + (expected - actual));
 
     assertThat(actual).isEqualTo(expected);
   }
 
   @SuppressWarnings("unchecked")
   @Test
-  public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithMultipleValues() {
-    RedisHash subject = createRedisHash("k11", "v11", "z11", "x11");
+  public void should_calculateSize_equalToROSSize_ofIndividualInstanceWithMultipleValues() {
+    RedisHash redisHash = createRedisHash("aSuperLongField", "value", "field", "aSuperLongValue");
 
-    int expected = reflectionObjectSizer.sizeof(subject);
-    Long actual = Long.valueOf(subject.getSizeInBytes());
+    int expected = reflectionObjectSizer.sizeof(redisHash);
+    int actual = redisHash.getSizeInBytes();
 
     assertThat(actual).isEqualTo(expected);
   }
@@ -299,50 +301,24 @@ public class RedisHashTest {
   @SuppressWarnings("unchecked")
   @Test
   public void should_calculateSize_closeToROSSize_withManyEntries() {
-    final String baseString = "b";
+    final String baseField = "longerbase";
+    final String baseValue = "base";
 
     ArrayList<ByteArrayWrapper> elements = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
-      elements.add(createByteArrayWrapper(baseString + i));
-      elements.add(createByteArrayWrapper(baseString + i));
+      elements.add(createByteArrayWrapper(baseField + i));
+      elements.add(createByteArrayWrapper(baseValue + i));
     }
-    RedisHash o1 = new RedisHash(elements);
+    RedisHash hash = new RedisHash(elements);
 
-    Long actual = Long.valueOf(o1.getSizeInBytes());
-    int expected = reflectionObjectSizer.sizeof(o1);
-    Offset<Long> offset = Offset.offset(Math.round(expected * 0.06));
+    Long actual = Long.valueOf(hash.getSizeInBytes());
+    int expected = reflectionObjectSizer.sizeof(hash);
+    Offset<Long> offset = offset(round(expected * 0.05));
 
     assertThat(actual).isCloseTo(expected, offset);
   }
 
   /************* test with mocked region *************/
-  /******* put if absent *******/
-  @SuppressWarnings("unchecked")
-  @Test
-  public void putIfAbsentShould_calculateSize_CloseToROSSize_forMultipleEntries() {
-    final RedisKey key = new RedisKey("key".getBytes());
-    final String baseField = "field";
-    final String baseValue = "value";
-    final Region region = mock(Region.class);
-    final RedisData returnData = mock(RedisData.class);
-    when(region.put(Object.class, Object.class)).thenReturn(returnData);
-
-    RedisHash hash = new RedisHash();
-    assertThat(hash.getSizeInBytes()).isEqualTo(reflectionObjectSizer.sizeof(hash));
-
-    List<ByteArrayWrapper> data = new ArrayList<>();
-    // for(int i=0; i<100; i++) {
-    // data.add(new ByteArrayWrapper((baseField + i).getBytes()));
-    // data.add(new ByteArrayWrapper((baseValue + i).getBytes()));
-    // }
-    data.add(new ByteArrayWrapper(baseField.getBytes()));
-    data.add(new ByteArrayWrapper(baseValue.getBytes()));
-
-    hash.hset(region, key, data, true);
-
-    assertThat(hash.getSizeInBytes()).isEqualTo(reflectionObjectSizer.sizeof(hash));
-  }
-
   /******* put *******/
   @SuppressWarnings("unchecked")
   @Test
@@ -350,23 +326,171 @@ public class RedisHashTest {
     final RedisKey key = new RedisKey("key".getBytes());
     final String baseField = "field";
     final String baseValue = "value";
+
     final Region region = mock(Region.class);
     final RedisData returnData = mock(RedisData.class);
     when(region.put(Object.class, Object.class)).thenReturn(returnData);
 
     RedisHash hash = new RedisHash();
-
     List<ByteArrayWrapper> data = new ArrayList<>();
-    // for(int i=0; i<100; i++) {
-    // data.add(new ByteArrayWrapper((baseField + i).getBytes()));
-    // data.add(new ByteArrayWrapper((baseValue + i).getBytes()));
-    // }
-    data.add(new ByteArrayWrapper(baseField.getBytes()));
-    data.add(new ByteArrayWrapper(baseValue.getBytes()));
+    for (int i = 0; i < 10_000; i++) {
+      data.add(new ByteArrayWrapper((baseField + i).getBytes()));
+      data.add(new ByteArrayWrapper((baseValue + i).getBytes()));
+    }
 
     hash.hset(region, key, data, false);
+    RedisHash expectedRedisHash = new RedisHash(new ArrayList<>(data));
+    Offset<Integer> offset = offset((int) round(expectedRedisHash.getSizeInBytes() * 0.05));
 
-    assertThat(hash.getSizeInBytes()).isEqualTo(reflectionObjectSizer.sizeof(hash));
+    assertThat(hash.getSizeInBytes()).isCloseTo(reflectionObjectSizer.sizeof(expectedRedisHash),
+        offset);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void should_calculateSize_equalToROSSize_whenUpdatingExistingEntry_newIsShorterThanOld() {
+    final RedisKey key = new RedisKey("key".getBytes());
+    final String field = "field";
+    final String initialValue = "initialValue";
+    final String finalValue = "finalValue";
+
+    testThatSizeIsUpdatedWhenUpdatingValue(key, field, initialValue, finalValue);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void should_calculateSize_equalToROSSize_whenUpdatingExistingEntry_oldIsShorterThanNew() {
+    final RedisKey key = new RedisKey("key".getBytes());
+    final String field = "field";
+    final String initialValue = "initialValue";
+    final String finalValue = "longerfinalValue";
+
+    testThatSizeIsUpdatedWhenUpdatingValue(key, field, initialValue, finalValue);
+  }
+
+  @SuppressWarnings("unchecked")
+  public void testThatSizeIsUpdatedWhenUpdatingValue(final RedisKey key, final String field,
+      final String initialValue, final String finalValue) {
+    final Region region = mock(Region.class);
+    final RedisData returnData = mock(RedisData.class);
+    when(region.put(Object.class, Object.class)).thenReturn(returnData);
+
+    RedisHash hash = new RedisHash();
+    List<ByteArrayWrapper> initialData = new ArrayList<>();
+    initialData.add(new ByteArrayWrapper(field.getBytes()));
+    initialData.add(new ByteArrayWrapper(initialValue.getBytes()));
+
+    hash.hset(region, key, initialData, false);
+    RedisHash expectedRedisHash = new RedisHash(new ArrayList<>(initialData));
+
+    assertThat(hash.getSizeInBytes()).isEqualTo(reflectionObjectSizer.sizeof(expectedRedisHash));
+
+    List<ByteArrayWrapper> finalData = new ArrayList<>();
+    finalData.add(new ByteArrayWrapper(field.getBytes()));
+    finalData.add(new ByteArrayWrapper(finalValue.getBytes()));
+
+    hash.hset(region, key, finalData, false);
+
+    int expectedUpdatedRedisHashSize = expectedRedisHash.getSizeInBytes()
+        + (finalValue.getBytes().length - initialValue.getBytes().length);
+
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedUpdatedRedisHashSize);
+  }
+
+  /******* put if absent *******/
+  @SuppressWarnings("unchecked")
+  @Test
+  public void putIfAbsentShould_calculateSize_CloseToROSSize_forMultipleUniqueEntries() {
+    final RedisKey key = new RedisKey("key".getBytes());
+    final String baseField = "field";
+    final String baseValue = "value";
+
+    final Region region = mock(Region.class);
+    final RedisData returnData = mock(RedisData.class);
+    when(region.put(Object.class, Object.class)).thenReturn(returnData);
+
+    RedisHash hash = new RedisHash();
+    List<ByteArrayWrapper> data = new ArrayList<>();
+    for (int i = 0; i < 10_000; i++) {
+      data.add(new ByteArrayWrapper((baseField + i).getBytes()));
+      data.add(new ByteArrayWrapper((baseValue + i).getBytes()));
+    }
+
+    hash.hset(region, key, data, true);
+    RedisHash expectedRedisHash = new RedisHash(new ArrayList<>(data));
+    Offset<Integer> offset = offset((int) round(expectedRedisHash.getSizeInBytes() * 0.05));
+
+    assertThat(hash.getSizeInBytes()).isCloseTo(reflectionObjectSizer.sizeof(expectedRedisHash),
+        offset);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void putIfAbsentShould_calculateSize_CloseToROSSize_whenSameDataIsSetTwice() {
+    final RedisKey key = new RedisKey("key".getBytes());
+    final String baseField = "field";
+    final String baseValue = "value";
+
+    final Region region = mock(Region.class);
+    final RedisData returnData = mock(RedisData.class);
+    when(region.put(Object.class, Object.class)).thenReturn(returnData);
+
+    RedisHash hash = new RedisHash();
+    List<ByteArrayWrapper> data = new ArrayList<>();
+    for (int i = 0; i < 10_000; i++) {
+      data.add(new ByteArrayWrapper((baseField + i).getBytes()));
+      data.add(new ByteArrayWrapper((baseValue + i).getBytes()));
+    }
+
+    hash.hset(region, key, data, true);
+
+    RedisHash expectedRedisHash = new RedisHash(new ArrayList<>(data));
+    Offset<Integer> offset = offset((int) round(expectedRedisHash.getSizeInBytes() * 0.05));
+    assertThat(hash.getSizeInBytes())
+        .isCloseTo(reflectionObjectSizer.sizeof(expectedRedisHash), offset);
+
+    hash.hset(region, key, data, true);
+
+    assertThat(hash.getSizeInBytes())
+        .isCloseTo(reflectionObjectSizer.sizeof(expectedRedisHash), offset);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void putIfAbsent_shouldNotChangeSize_whenPuttingToExistingFields() {
+    final RedisKey key = new RedisKey("key".getBytes());
+    final String baseField = "field";
+    final String initialBaseValue = "value";
+    final String finalBaseValue = "longerValue";
+
+    final Region region = mock(Region.class);
+    final RedisData returnData = mock(RedisData.class);
+    when(region.put(Object.class, Object.class)).thenReturn(returnData);
+
+    RedisHash hash = new RedisHash();
+    List<ByteArrayWrapper> initialData = new ArrayList<>();
+    for (int i = 0; i < 10_000; i++) {
+      initialData.add(new ByteArrayWrapper((baseField + i).getBytes()));
+      initialData.add(new ByteArrayWrapper((initialBaseValue + i).getBytes()));
+    }
+
+    hash.hset(region, key, initialData, true);
+
+    RedisHash expectedRedisHash = new RedisHash(new ArrayList<>(initialData));
+    Offset<Integer> offset = offset((int) round(expectedRedisHash.getSizeInBytes() * 0.05));
+    assertThat(hash.getSizeInBytes())
+        .isCloseTo(reflectionObjectSizer.sizeof(expectedRedisHash), offset);
+
+    List<ByteArrayWrapper> finalData = new ArrayList<>();
+    for (int i = 0; i < 10_000; i++) {
+      finalData.add(new ByteArrayWrapper((baseField + i).getBytes()));
+      finalData.add(new ByteArrayWrapper((finalBaseValue + i).getBytes()));
+    }
+
+    hash.hset(region, key, finalData, true);
+
+    assertThat(hash.getSizeInBytes())
+        .isCloseTo(reflectionObjectSizer.sizeof(expectedRedisHash), offset);
   }
 
   /******* remove *******/
