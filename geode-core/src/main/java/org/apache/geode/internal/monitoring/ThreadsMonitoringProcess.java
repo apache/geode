@@ -17,13 +17,13 @@ package org.apache.geode.internal.monitoring;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
@@ -54,40 +54,39 @@ public class ThreadsMonitoringProcess extends TimerTask {
     this.internalDistributedSystem = iDistributedSystem;
   }
 
-  @VisibleForTesting
   /**
    * Returns true if a stuck thread was detected
    */
+  @VisibleForTesting
   public boolean mapValidation() {
     final long currentTime = System.currentTimeMillis();
-    final List<AbstractExecutor> stuckThreads = new ArrayList<>();
-    final List<Long> stuckThreadIds = new ArrayList<>();
+    final Set<AbstractExecutor> stuckThreads = new HashSet<>();
+    final Set<Long> stuckThreadIds = new HashSet<>();
     checkForStuckThreads(threadsMonitoring.getMonitorMap().values(), currentTime,
         (executor, stuckTime) -> {
           final long threadId = executor.getThreadID();
           stuckThreads.add(executor);
           stuckThreadIds.add(threadId);
-          rememberLockOwnerThreadId(stuckThreadIds, threadId);
+          addLockOwnerThreadId(stuckThreadIds, threadId);
         });
 
     final Map<Long, ThreadInfo> threadInfoMap = createThreadInfoMap(stuckThreadIds);
-    final AtomicInteger numOfStuck = new AtomicInteger();
-    checkForStuckThreads(stuckThreads, currentTime, (executor, stuckTime) -> {
-      long threadId = executor.getThreadID();
-      logger.warn("Thread {} (0x{}) is stuck", threadId, Long.toHexString(threadId));
-      executor.handleExpiry(stuckTime, threadInfoMap);
-      numOfStuck.incrementAndGet();
-    });
+    final int numOfStuck =
+        checkForStuckThreads(stuckThreads, currentTime, (executor, stuckTime) -> {
+          final long threadId = executor.getThreadID();
+          logger.warn("Thread {} (0x{}) is stuck", threadId, Long.toHexString(threadId));
+          executor.handleExpiry(stuckTime, threadInfoMap);
+        });
 
-    updateNumThreadStuckStatistic(numOfStuck.get());
-    if (numOfStuck.get() == 0) {
+    updateNumThreadStuckStatistic(numOfStuck);
+    if (numOfStuck == 0) {
       logger.trace("There are no stuck threads in the system");
-    } else if (numOfStuck.get() != 1) {
-      logger.warn("There are {} stuck threads in this node", numOfStuck.get());
+    } else if (numOfStuck != 1) {
+      logger.warn("There are {} stuck threads in this node", numOfStuck);
     } else {
       logger.warn("There is 1 stuck thread in this node");
     }
-    return numOfStuck.get() != 0;
+    return numOfStuck != 0;
   }
 
   private interface StuckAction {
@@ -96,9 +95,12 @@ public class ThreadsMonitoringProcess extends TimerTask {
 
   /**
    * Iterate over "executors" calling "action" on each one that is stuck.
+   *
+   * @return the number of times action was called
    */
-  private void checkForStuckThreads(Collection<AbstractExecutor> executors, long currentTime,
+  private int checkForStuckThreads(Collection<AbstractExecutor> executors, long currentTime,
       StuckAction action) {
+    int result = 0;
     for (AbstractExecutor executor : executors) {
       if (executor.isMonitoringSuspended()) {
         continue;
@@ -111,12 +113,22 @@ public class ThreadsMonitoringProcess extends TimerTask {
       long delta = currentTime - startTime;
       if (delta >= timeLimitMillis) {
         action.run(executor, delta);
+        result++;
       }
     }
+    return result;
   }
 
   @VisibleForTesting
-  public static Map<Long, ThreadInfo> createThreadInfoMap(List<Long> stuckThreadIds) {
+  public static Map<Long, ThreadInfo> createThreadInfoMap(Set<Long> stuckThreadIds) {
+    /*
+     * NOTE: at last some implementations of getThreadInfo(long[], boolean, boolean)
+     * will core dump if the long array contains a duplicate value.
+     * That is why stuckThreadIds is a Set instead of a List.
+     */
+    if (stuckThreadIds.isEmpty()) {
+      return Collections.emptyMap();
+    }
     long[] ids = new long[stuckThreadIds.size()];
     int idx = 0;
     for (long id : stuckThreadIds) {
@@ -133,7 +145,7 @@ public class ThreadsMonitoringProcess extends TimerTask {
     return result;
   }
 
-  private void rememberLockOwnerThreadId(List<Long> stuckThreadIds, long threadId) {
+  private void addLockOwnerThreadId(Set<Long> stuckThreadIds, long threadId) {
     final long lockOwnerId = getLockOwnerId(threadId);
     if (lockOwnerId != -1) {
       stuckThreadIds.add(lockOwnerId);
@@ -141,6 +153,12 @@ public class ThreadsMonitoringProcess extends TimerTask {
   }
 
   private long getLockOwnerId(long threadId) {
+    /*
+     * NOTE: the following getThreadInfo call is much cheaper than the one made
+     * in createThreadInfoMap because it does not figure out what locks are being
+     * help by the thread and also does not get the call stack.
+     * All we need from it is the lockOwnerId.
+     */
     final ThreadInfo threadInfo = ManagementFactory.getThreadMXBean().getThreadInfo(threadId, 0);
     if (threadInfo != null) {
       return threadInfo.getLockOwnerId();

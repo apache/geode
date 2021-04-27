@@ -19,10 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.management.ThreadInfo;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -100,7 +100,7 @@ public class AbstractExecutorGroupJUnitTest {
         }
       };
       await().untilAsserted(() -> {
-        List<Long> threadIds = new ArrayList<>();
+        Set<Long> threadIds = new HashSet<>();
         threadIds.add(blockedThread.getId());
         threadIds.add(blockingThread.getId());
         String threadReport = executor.createThreadReport(60000,
