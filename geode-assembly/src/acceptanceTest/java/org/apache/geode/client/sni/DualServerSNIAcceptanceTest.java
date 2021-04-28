@@ -14,8 +14,6 @@
  */
 package org.apache.geode.client.sni;
 
-import static com.palantir.docker.compose.execution.DockerComposeExecArgument.arguments;
-import static com.palantir.docker.compose.execution.DockerComposeExecOption.options;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
@@ -29,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.net.URL;
 import java.util.Properties;
 
-import com.palantir.docker.compose.DockerComposeRule;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -41,10 +38,11 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
+import org.apache.geode.rules.DockerComposeRule;
 
 /**
- * These tests run against a 2-server, 1-locator Geode cluster. The servers and locator run inside
- * a (single) Docker container and are not route-able from the host (where this JUnit test is
+ * These tests run against a 2-server, 1-locator Geode cluster. The servers and locator run inside a
+ * (single) Docker container and are not route-able from the host (where this JUnit test is
  * running). Another Docker container is running the HAProxy image and it's set up as an SNI
  * gateway. The test connects to the gateway via SNI and the gateway (in one Docker container)
  * forwards traffic to Geode members (running in the other Docker container).
@@ -53,29 +51,28 @@ import org.apache.geode.cache.client.proxy.ProxySocketFactories;
  * groups: group-dolores, and group-clementine, respectively. Also each server has a separate
  * REPLICATE region on it: region-dolores, and region-clementine, respectively.
  *
- * This test creates a connection pool to each group in turn. For that group, the test verifies
- * it can update data to the region of interest. There's also a pair of negative tests that verify
- * the correct exception is thrown when an attempt is made to operate on an unreachable region.
+ * This test creates a connection pool to each group in turn. For that group, the test verifies it
+ * can update data to the region of interest. There's also a pair of negative tests that verify the
+ * correct exception is thrown when an attempt is made to operate on an unreachable region.
  */
 public class DualServerSNIAcceptanceTest {
 
   private static final URL DOCKER_COMPOSE_PATH =
       SingleServerSNIAcceptanceTest.class.getResource("docker-compose.yml");
 
-  // Docker compose does not work on windows in CI. Ignore this test on windows
-  // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
-  public static NotOnWindowsDockerRule docker =
-      new NotOnWindowsDockerRule(() -> DockerComposeRule.builder()
-          .file(DOCKER_COMPOSE_PATH.getPath()).build());
+  public static DockerComposeRule docker = new DockerComposeRule.Builder()
+      .file(DOCKER_COMPOSE_PATH.getPath())
+      .service("haproxy", 15443)
+      .build();
 
   private static Properties clientCacheProperties;
   private ClientCache cache;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    docker.get().exec(options("-T"), "geode",
-        arguments("gfsh", "run", "--file=/geode/scripts/geode-starter-2.gfsh"));
+    docker.loggingExecForService("geode",
+            "gfsh", "run", "--file=/geode/scripts/geode-starter-2.gfsh");
 
     final String trustStorePath =
         createTempFileFromResource(SingleServerSNIAcceptanceTest.class,
@@ -135,10 +132,7 @@ public class DualServerSNIAcceptanceTest {
    * modifies cache field as a side-effect
    */
   private Region<String, String> getRegion(final String groupName, final String regionName) {
-    final int proxyPort = docker.get().containers()
-        .container("haproxy")
-        .port(15443)
-        .getExternalPort();
+    final int proxyPort = docker.getExternalPortForService("haproxy", 15443);
     ensureCacheClosed();
     cache = new ClientCacheFactory(clientCacheProperties)
         .addPoolLocator("locator-maeve", 10334)
