@@ -16,6 +16,8 @@ package org.apache.geode.connectors.jdbc;
 
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -23,8 +25,9 @@ import java.sql.Types;
 
 import org.junit.ClassRule;
 
+import org.apache.geode.connectors.jdbc.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.connectors.jdbc.test.junit.rules.PostgresConnectionRule;
-import org.apache.geode.connectors.jdbc.test.junit.rules.SqlDatabaseConnectionRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 
 /**
  * End-to-end dunits for jdbc connector
@@ -32,19 +35,11 @@ import org.apache.geode.connectors.jdbc.test.junit.rules.SqlDatabaseConnectionRu
 public class PostgresJdbcDistributedTest extends JdbcDistributedTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      PostgresJdbcDistributedTest.class.getResource("postgres.yml");
+      PostgresJdbcDistributedTest.class.getResource("/postgres.yml");
 
   @ClassRule
-  public static transient SqlDatabaseConnectionRule dbRule = createConnectionRule();
-
-  private static SqlDatabaseConnectionRule createConnectionRule() {
-    try {
-      return new PostgresConnectionRule.Builder().file(COMPOSE_RESOURCE_PATH.getPath())
-          .serviceName("db").port(5432).database(DB_NAME).build();
-    } catch (IllegalStateException e) {
-      return null;
-    }
-  }
+  public static DatabaseConnectionRule dbRule =
+      new PostgresConnectionRule.Builder().file(COMPOSE_RESOURCE_PATH.getPath()).build();
 
   @Override
   public Connection getConnection() throws SQLException {
@@ -68,7 +63,26 @@ public class PostgresJdbcDistributedTest extends JdbcDistributedTest {
   }
 
   @Override
-  protected void createNullStatement(String key, PreparedStatement statement) throws SQLException {
+  protected void insertNullDataForAllSupportedFieldsTable(MemberVM dataserver, String key,
+      String tableName) {
+    String finalUrl = getConnectionUrl();
+    dataserver.invoke(() -> {
+      Connection connection = DriverManager.getConnection(finalUrl);
+      DatabaseMetaData metaData = connection.getMetaData();
+      String quote = metaData.getIdentifierQuoteString();
+
+      String insertQuery =
+          "Insert into " + quote + tableName + quote + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+      System.out.println("### Query is :" + insertQuery);
+      PreparedStatement statement = connection.prepareStatement(insertQuery);
+      createNullStatement(key, statement);
+
+      statement.execute();
+    });
+  }
+
+  private static void createNullStatement(String key, PreparedStatement statement)
+      throws SQLException {
     statement.setObject(1, key);
     statement.setNull(2, Types.BOOLEAN);
     statement.setNull(3, Types.SMALLINT);

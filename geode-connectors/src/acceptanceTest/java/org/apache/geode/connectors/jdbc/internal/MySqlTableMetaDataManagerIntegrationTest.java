@@ -27,11 +27,11 @@ import org.apache.geode.connectors.jdbc.test.junit.rules.MySqlConnectionRule;
 public class MySqlTableMetaDataManagerIntegrationTest extends TableMetaDataManagerIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      MySqlTableMetaDataManagerIntegrationTest.class.getResource("mysql.yml");
+      MySqlTableMetaDataManagerIntegrationTest.class.getResource("/mysql.yml");
 
   @ClassRule
-  public static DatabaseConnectionRule dbRule = new MySqlConnectionRule.Builder()
-      .file(COMPOSE_RESOURCE_PATH.getPath()).serviceName("db").port(3306).database(DB_NAME).build();
+  public static DatabaseConnectionRule dbRule =
+      new MySqlConnectionRule.Builder().file(COMPOSE_RESOURCE_PATH.getPath()).build();
 
   @Override
   public Connection getConnection() throws SQLException {
