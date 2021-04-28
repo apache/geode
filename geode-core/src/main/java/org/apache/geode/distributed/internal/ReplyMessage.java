@@ -18,6 +18,7 @@ package org.apache.geode.distributed.internal;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.NotSerializableException;
 
 import org.apache.logging.log4j.Logger;
 
@@ -225,9 +226,9 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
     if (this.returnValueIsException) {
       ReplyException exception = (ReplyException) this.returnValue;
       if (exception != null) {
-        InternalDistributedMember sendr = getSender();
-        if (sendr != null) {
-          exception.setSenderIfNull(sendr);
+        InternalDistributedMember sender = getSender();
+        if (sender != null) {
+          exception.setSenderIfNull(sender);
         }
       }
       return exception;
@@ -295,7 +296,14 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
       out.writeInt(processorId);
     }
     if (this.returnValueIsException || this.returnValue != null) {
-      DataSerializer.writeObject(this.returnValue, out);
+      try {
+        DataSerializer.writeObject(this.returnValue, out);
+      } catch (NotSerializableException e) {
+        // When this happens data has already been written to the output stream for the
+        // non-serializable object. The recipient will get a java.io.WriteAbortedException when
+        // attempting to deserialize the value, so we handle that in fromData()
+        logger.warn("Unable to send a reply to " + getRecipientsDescription(), e);
+      }
     }
   }
 
@@ -309,11 +317,17 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
     if (testFlag(status, PROCESSOR_ID_FLAG)) {
       this.processorId = in.readInt();
     }
-    if (testFlag(status, EXCEPTION_FLAG)) {
-      this.returnValue = DataSerializer.readObject(in);
-      this.returnValueIsException = true;
-    } else if (testFlag(status, OBJECT_FLAG)) {
-      this.returnValue = DataSerializer.readObject(in);
+    try {
+      if (testFlag(status, EXCEPTION_FLAG)) {
+        this.returnValue = DataSerializer.readObject(in);
+        this.returnValueIsException = true;
+      } else if (testFlag(status, OBJECT_FLAG)) {
+        this.returnValue = DataSerializer.readObject(in);
+        this.returnValueIsException = (returnValue instanceof ReplyException);
+      }
+    } catch (IOException e) {
+      returnValue = new ReplyException(e);
+      returnValueIsException = true;
     }
     this.internal = testFlag(status, INTERNAL_FLAG);
   }
