@@ -14,13 +14,18 @@
  */
 package org.apache.geode.internal.monitoring.executor;
 
-import java.lang.management.ManagementFactory;
+import static java.lang.Integer.min;
+
+import java.lang.management.LockInfo;
+import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public abstract class AbstractExecutor {
@@ -44,28 +49,28 @@ public abstract class AbstractExecutor {
     this.threadID = threadID;
   }
 
-  public void handleExpiry(long stuckTime) {
+  public void handleExpiry(long stuckTime, Map<Long, ThreadInfo> threadInfoMap) {
     this.incNumIterationsStuck();
-    logger.warn(createThreadReport(stuckTime));
+    logger.warn(createThreadReport(stuckTime, threadInfoMap));
   }
 
-  String createThreadReport(long stuckTime) {
 
-    DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss zzz");
+  String createThreadReport(long stuckTime, Map<Long, ThreadInfo> threadInfoMap) {
 
-    ThreadInfo thread =
-        ManagementFactory.getThreadMXBean().getThreadInfo(this.threadID, THREAD_DUMP_DEPTH);
-    boolean logThreadDetails = (thread != null);
+    final DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss zzz");
 
-    StringBuilder stringBuilder = new StringBuilder();
+    final ThreadInfo thread = threadInfoMap.get(threadID);
+    final boolean logThreadDetails = (thread != null);
+
+    final StringBuilder stringBuilder = new StringBuilder();
     final String lineSeparator = System.lineSeparator();
 
-    stringBuilder.append("Thread <").append(this.threadID).append("> (0x")
-        .append(Long.toHexString(this.threadID)).append(") that was executed at <")
-        .append(dateFormat.format(this.getStartTime())).append("> has been stuck for <")
+    stringBuilder.append("Thread <").append(threadID).append("> (0x")
+        .append(Long.toHexString(threadID)).append(") that was executed at <")
+        .append(dateFormat.format(getStartTime())).append("> has been stuck for <")
         .append((float) stuckTime / 1000)
         .append(" seconds> and number of thread monitor iteration <")
-        .append(this.numIterationsStuck).append("> ").append(lineSeparator);
+        .append(numIterationsStuck).append("> ").append(lineSeparator);
     if (logThreadDetails) {
       stringBuilder.append("Thread Name <").append(thread.getThreadName()).append(">")
           .append(" state <").append(thread.getThreadState())
@@ -80,19 +85,17 @@ public abstract class AbstractExecutor {
             .append(thread.getLockOwnerId()).append(">").append(lineSeparator);
     }
 
-
     stringBuilder.append("Executor Group <").append(groupName).append(">").append(
         lineSeparator)
         .append("Monitored metric <ResourceManagerStats.numThreadsStuck>")
         .append(lineSeparator);
 
     if (logThreadDetails) {
-      writeThreadStack(thread, "Thread stack:", stringBuilder);
+      writeThreadStack(thread, "Thread stack", stringBuilder);
     }
 
     if (logThreadDetails && thread.getLockOwnerName() != null) {
-      ThreadInfo lockOwnerThread = ManagementFactory.getThreadMXBean()
-          .getThreadInfo(thread.getLockOwnerId(), THREAD_DUMP_DEPTH);
+      final ThreadInfo lockOwnerThread = threadInfoMap.get(thread.getLockOwnerId());
       if (lockOwnerThread != null) {
         writeThreadStack(lockOwnerThread, LOCK_OWNER_THREAD_STACK, stringBuilder);
       }
@@ -101,12 +104,47 @@ public abstract class AbstractExecutor {
     return stringBuilder.toString();
   }
 
+  @Immutable
+  private static final String INDENT = "  ";
+  @Immutable
+  private static final String lineSeparator = System.lineSeparator();
+
   private void writeThreadStack(ThreadInfo thread, String header, StringBuilder strb) {
-    final String lineSeparator = System.lineSeparator();
-    strb.append(header).append(lineSeparator);
-    for (int i = 0; i < thread.getStackTrace().length; i++) {
+    strb.append(header).append(" for \"")
+        .append(thread.getThreadName())
+        .append("\" (0x").append(Long.toHexString(thread.getThreadId()))
+        .append("):").append(lineSeparator);
+    strb.append("java.lang.ThreadState: ").append(thread.getThreadState());
+    if (thread.isSuspended()) {
+      strb.append(" (suspended)");
+    }
+    if (thread.isInNative()) {
+      strb.append(" (in native)");
+    }
+    strb.append(lineSeparator);
+    MonitorInfo[] lockedMonitors = thread.getLockedMonitors();
+    for (int i = 0; i < min(thread.getStackTrace().length, THREAD_DUMP_DEPTH); i++) {
       String row = thread.getStackTrace()[i].toString();
-      strb.append(row).append(lineSeparator);
+      strb.append(INDENT).append("at ").append(row).append(lineSeparator);
+      appendLockedMonitor(strb, i, lockedMonitors);
+    }
+    strb.append("Locked ownable synchronizers:").append(lineSeparator);
+    LockInfo[] lockedSynchronizers = thread.getLockedSynchronizers();
+    if (lockedSynchronizers.length == 0) {
+      strb.append(INDENT).append("- None").append(lineSeparator);
+    } else {
+      for (LockInfo lockInfo : lockedSynchronizers) {
+        strb.append(INDENT).append("- ").append(lockInfo).append(lineSeparator);
+      }
+    }
+  }
+
+  private void appendLockedMonitor(StringBuilder strb, int stackDepth,
+      MonitorInfo[] lockedMonitors) {
+    for (MonitorInfo monitorInfo : lockedMonitors) {
+      if (stackDepth == monitorInfo.getLockedStackDepth()) {
+        strb.append(INDENT).append("  - locked " + monitorInfo).append(lineSeparator);
+      }
     }
   }
 

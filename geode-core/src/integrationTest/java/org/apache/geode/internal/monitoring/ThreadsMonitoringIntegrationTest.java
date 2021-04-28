@@ -34,7 +34,6 @@ import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
  */
 public class ThreadsMonitoringIntegrationTest {
 
-  private Properties nonDefault;
   private InternalCache cache;
 
   @Before
@@ -52,7 +51,7 @@ public class ThreadsMonitoringIntegrationTest {
   }
 
   private void initInternalDistributedSystem() {
-    nonDefault = new Properties();
+    Properties nonDefault = new Properties();
     nonDefault.put(ConfigurationProperties.MCAST_PORT, "0");
     nonDefault.put(ConfigurationProperties.LOCATORS, "");
     nonDefault.put(ConfigurationProperties.THREAD_MONITOR_ENABLED, "true");
@@ -84,9 +83,9 @@ public class ThreadsMonitoringIntegrationTest {
         .describedAs("ThreadMonitor monitoring process map validation should still be false.")
         .isFalse();
 
-    AbstractExecutor abstractExecutorGroup =
+    AbstractExecutor abstractExecutor =
         impl.getMonitorMap().get(Thread.currentThread().getId());
-    abstractExecutorGroup.setStartTime(abstractExecutorGroup.getStartTime()
+    abstractExecutor.setStartTime(abstractExecutor.getStartTime()
         - cache.getInternalDistributedSystem().getConfig().getThreadMonitorTimeLimit() - 1);
 
     assertThat(impl.getThreadsMonitoringProcess().mapValidation())
@@ -96,20 +95,15 @@ public class ThreadsMonitoringIntegrationTest {
         .describedAs("ThreadMonitor monitoring process should identify one stuck thread.")
         .isEqualTo(1);
 
-    impl.getMonitorMap().put(abstractExecutorGroup.getThreadID() + 1, abstractExecutorGroup);
-    impl.getMonitorMap().put(abstractExecutorGroup.getThreadID() + 2, abstractExecutorGroup);
-    impl.getThreadsMonitoringProcess().mapValidation();
-
-    assertThat((impl.getThreadsMonitoringProcess().getResourceManagerStats().getNumThreadStuck()))
-        .describedAs("ThreadMonitor monitoring process should identify three stuck threads.")
-        .isEqualTo(3);
-
     threadMonitoring.endMonitor();
-    impl.getThreadsMonitoringProcess().mapValidation();
+
+    assertThat(impl.getThreadsMonitoringProcess().mapValidation())
+        .describedAs("ThreadMonitor monitoring process map validation should now be false.")
+        .isFalse();
 
     assertThat((impl.getThreadsMonitoringProcess().getResourceManagerStats().getNumThreadStuck()))
-        .describedAs("ThreadMonitor monitoring process should identify two stuck threads.")
-        .isEqualTo(2);
+        .describedAs("ThreadMonitor monitoring process should identify no stuck threads.")
+        .isEqualTo(0);
   }
 
   @Test
