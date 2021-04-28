@@ -698,3 +698,12 @@ acceptanceTest {
 }
 
 apply from: Paths.get("${rootDir}", 'gradle', 'japicmp.gradle')
+
+def needyTestNames = ['upgradeTest', 'integrationTest']
+dependentProjectNames.each { depProj ->
+  needyTestNames.each { needyTest ->
+    project(depProj).tasks.named(needyTest).configure {
+      dependsOn(tasks.named('installDist'))
+    }
+  }
+}
