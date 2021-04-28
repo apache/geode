@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.function.Supplier;
 
 import org.junit.ClassRule;
 
@@ -26,11 +27,11 @@ import org.apache.geode.connectors.jdbc.test.junit.rules.MySqlConnectionRule;
 public class MySqlJdbcWriterIntegrationTest extends JdbcWriterIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      MySqlJdbcWriterIntegrationTest.class.getResource("mysql.yml");
+      MySqlJdbcWriterIntegrationTest.class.getResource("/mysql.yml");
 
   @ClassRule
-  public static DatabaseConnectionRule dbRule = new MySqlConnectionRule.Builder()
-      .file(COMPOSE_RESOURCE_PATH.getPath()).serviceName("db").port(3306).database(DB_NAME).build();
+  public static DatabaseConnectionRule dbRule =
+      new MySqlConnectionRule.Builder().file(COMPOSE_RESOURCE_PATH.getPath()).build();
 
   @Override
   public Connection getConnection() throws SQLException {
@@ -38,8 +39,8 @@ public class MySqlJdbcWriterIntegrationTest extends JdbcWriterIntegrationTest {
   }
 
   @Override
-  public String getConnectionUrl() {
-    return dbRule.getConnectionUrl();
+  public Supplier<String> getConnectionUrlSupplier() {
+    return () -> dbRule.getConnectionUrl();
   }
 
   @Override

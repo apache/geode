@@ -17,13 +17,8 @@
 version: '3'
 services:
   geode:
-    container_name: 'geode'
     image: 'geode:develop'
     hostname: geode
-    expose:
-      - '10334'
-      - '8501'
-      - '8502'
     entrypoint: 'sh'
     command: '-c /geode/scripts/forever'
     networks:
@@ -32,10 +27,7 @@ services:
       - ./geode-config:/geode/config:ro
       - ./scripts:/geode/scripts
   haproxy:
-    container_name: 'haproxy'
     image: 'haproxy:2.1'
-    ports:
-      - "15443"
     networks:
       geode-sni-test:
     volumes:

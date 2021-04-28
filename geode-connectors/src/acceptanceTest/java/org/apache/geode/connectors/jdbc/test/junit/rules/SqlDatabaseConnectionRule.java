@@ -17,44 +17,58 @@ package org.apache.geode.connectors.jdbc.test.junit.rules;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import com.palantir.docker.compose.DockerComposeRule;
-import com.palantir.docker.compose.connection.DockerPort;
-import com.palantir.docker.compose.connection.waiting.HealthChecks;
 import org.junit.rules.ExternalResource;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+import org.testcontainers.containers.DockerComposeContainer;
 
 public abstract class SqlDatabaseConnectionRule extends ExternalResource
     implements DatabaseConnectionRule {
 
-  private final DockerComposeRule dockerRule;
+  public static final String DEFAULT_DB_NAME = "test";
+  protected static final String DEFAULT_SERVICE_NAME = "db";
+  private DockerComposeContainer<?> dbContainer;
+  private final String composeFile;
   private final String serviceName;
   private final int port;
   private final String dbName;
 
-  protected SqlDatabaseConnectionRule(DockerComposeRule dockerRule, String serviceName, int port,
+  protected SqlDatabaseConnectionRule(String composeFile, String serviceName, int port,
       String dbName) {
-    this.dockerRule = dockerRule;
+    this.composeFile = composeFile;
     this.serviceName = serviceName;
     this.port = port;
     this.dbName = dbName;
   }
 
   @Override
-  public void before() throws IOException, InterruptedException {
-    dockerRule.before();
+  public Statement apply(Statement base, Description description) {
+    Statement dbStatement = new Statement() {
+      @Override
+      public void evaluate() throws Throwable {
+
+        dbContainer = new DockerComposeContainer<>("db", new File(composeFile))
+            .withExposedService(serviceName, port);
+        dbContainer.start();
+
+        try {
+          base.evaluate(); // run the test
+        } finally {
+          dbContainer.stop();
+        }
+      }
+    };
+
+    return dbStatement;
   }
 
-  @Override
-  public void after() {
-    dockerRule.after();
-  }
-
-  protected DockerPort getDockerPort() {
-    return dockerRule.containers().container(serviceName).port(port);
+  protected Integer getDockerPort() {
+    return dbContainer.getServicePort(serviceName, port);
   }
 
   protected String getDbName() {
@@ -79,6 +93,12 @@ public abstract class SqlDatabaseConnectionRule extends ExternalResource
     private int port;
     private String dbName;
 
+    protected Builder(int port, String serviceName, String dbName) {
+      this.port = port;
+      this.serviceName = serviceName;
+      this.dbName = dbName;
+    }
+
     public abstract SqlDatabaseConnectionRule build();
 
     public Builder file(String filePath) {
@@ -101,6 +121,10 @@ public abstract class SqlDatabaseConnectionRule extends ExternalResource
       return this;
     }
 
+    protected String getComposeFile() {
+      return filePath;
+    }
+
     protected String getDbName() {
       return dbName;
     }
@@ -111,11 +135,6 @@ public abstract class SqlDatabaseConnectionRule extends ExternalResource
 
     protected int getPort() {
       return port;
-    }
-
-    protected DockerComposeRule createDockerRule() {
-      return DockerComposeRule.builder().file(filePath)
-          .waitingForService(serviceName, HealthChecks.toHaveAllPortsOpen()).build();
     }
 
   }

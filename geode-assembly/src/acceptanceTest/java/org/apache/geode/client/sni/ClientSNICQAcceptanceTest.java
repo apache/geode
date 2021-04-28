@@ -14,8 +14,6 @@
  */
 package org.apache.geode.client.sni;
 
-import static com.palantir.docker.compose.execution.DockerComposeExecArgument.arguments;
-import static com.palantir.docker.compose.execution.DockerComposeExecOption.options;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
@@ -27,19 +25,16 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.palantir.docker.compose.DockerComposeRule;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
@@ -57,22 +52,18 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
-import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
+import org.apache.geode.rules.DockerComposeRule;
 
 public class ClientSNICQAcceptanceTest {
 
   private static final URL DOCKER_COMPOSE_PATH =
       ClientSNICQAcceptanceTest.class.getResource("docker-compose.yml");
 
-  // Docker compose does not work on windows in CI. Ignore this test on windows
-  // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
-  public static TestRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
-
-  @ClassRule
-  public static NotOnWindowsDockerRule docker =
-      new NotOnWindowsDockerRule(() -> DockerComposeRule.builder()
-          .file(DOCKER_COMPOSE_PATH.getPath()).build());
+  public static DockerComposeRule docker = new DockerComposeRule.Builder()
+      .file(DOCKER_COMPOSE_PATH.getPath())
+      .service("haproxy", 15443)
+      .build();
 
   private CqQuery cqTracker;
 
@@ -80,15 +71,13 @@ public class ClientSNICQAcceptanceTest {
   AtomicInteger eventUpdateCounter = new AtomicInteger(0);
   private ClientCache cache;
   private Region<String, Integer> region;
+  private static String trustStorePath;
 
   class SNICQListener implements CqListener {
-
 
     @Override
     public void onEvent(CqEvent cqEvent) {
       Operation queryOperation = cqEvent.getQueryOperation();
-
-
       if (queryOperation.isUpdate()) {
         eventUpdateCounter.incrementAndGet();
       } else if (queryOperation.isCreate()) {
@@ -102,17 +91,14 @@ public class ClientSNICQAcceptanceTest {
     }
   }
 
-  private static String trustStorePath;
-
   @BeforeClass
-  public static void beforeClass() throws IOException, InterruptedException {
+  public static void beforeClass() {
     trustStorePath =
         createTempFileFromResource(ClientSNICQAcceptanceTest.class,
             "geode-config/truststore.jks")
                 .getAbsolutePath();
-    docker.get().exec(options("-T"), "geode",
-        arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
-
+    docker.loggingExecForService("geode",
+        "gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh");
   }
 
   @AfterClass
@@ -122,13 +108,8 @@ public class ClientSNICQAcceptanceTest {
   }
 
   private static void printlog(String name) {
-    try {
-      String output =
-          docker.get().exec(options("-T"), "geode",
-              arguments("cat", name + "/" + name + ".log"));
-      System.out.println(name + " log file--------------------------------\n" + output);
-    } catch (Throwable ignore) {
-    }
+    String output = docker.execForService("geode", "cat", name + "/" + name + ".log");
+    System.out.println(name + " log file--------------------------------\n" + output);
   }
 
   @Before
@@ -142,10 +123,7 @@ public class ClientSNICQAcceptanceTest {
     gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
     gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
 
-    int proxyPort = docker.get().containers()
-        .container("haproxy")
-        .port(15443)
-        .getExternalPort();
+    int proxyPort = docker.getExternalPortForService("haproxy", 15443);
     cache = new ClientCacheFactory(gemFireProps)
         .addPoolLocator("locator-maeve", 10334)
         .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
@@ -188,10 +166,10 @@ public class ClientSNICQAcceptanceTest {
     // the CQ has been closed. StatArchiveReader has a main() that we can use to get a printout
     // of stat values
     await().untilAsserted(() -> {
-      String stats = docker.get().exec(options("-T"), "geode",
-          arguments("java", "-cp", "/geode/lib/geode-dependencies.jar",
-              "org.apache.geode.internal.statistics.StatArchiveReader",
-              "stat", "server-dolores/statArchive.gfs", "CqServiceStats.numCqsClosed"));
+      String stats = docker.execForService("geode",
+          "java", "-cp", "/geode/lib/geode-dependencies.jar",
+          "org.apache.geode.internal.statistics.StatArchiveReader",
+          "stat", "server-dolores/statArchive.gfs", "CqServiceStats.numCqsClosed");
       // the stat should transition from zero to one at some point
       assertThat(stats).contains("0.0 1.0");
     });

@@ -26,6 +26,7 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.junit.After;
 import org.junit.Before;
@@ -50,7 +51,6 @@ import org.apache.geode.pdx.internal.AutoSerializableManager;
 
 public abstract class JdbcLoaderIntegrationTest {
 
-  static final String DB_NAME = "test";
   protected static final String SCHEMA_NAME = "mySchema";
   protected static final String REGION_TABLE_NAME = "employees";
 
@@ -62,7 +62,7 @@ public abstract class JdbcLoaderIntegrationTest {
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private final TestDataSourceFactory testDataSourceFactory =
-      new TestDataSourceFactory(getConnectionUrl());
+      new TestDataSourceFactory(getConnectionUrlSupplier());
 
   @Before
   public void setUp() throws Exception {
@@ -84,7 +84,7 @@ public abstract class JdbcLoaderIntegrationTest {
 
   public abstract Connection getConnection() throws SQLException;
 
-  public abstract String getConnectionUrl();
+  public abstract Supplier<String> getConnectionUrlSupplier();
 
   protected abstract void createClassWithSupportedPdxFieldsTable(Statement statement,
       String tableName) throws SQLException;

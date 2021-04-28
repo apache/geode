@@ -590,18 +590,6 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
-        <groupId>com.palantir.docker.compose</groupId>
-        <artifactId>docker-compose-rule-core</artifactId>
-        <version>0.31.1</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.palantir.docker.compose</groupId>
-        <artifactId>docker-compose-rule-junit4</artifactId>
-        <version>0.31.1</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
         <groupId>com.pholser</groupId>
         <artifactId>junit-quickcheck-core</artifactId>
         <version>1.0</version>
