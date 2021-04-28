@@ -76,7 +76,7 @@ public class DLockRequestProcessorTest {
   }
 
   @Test
-  public void sendResponseDoesNotInvokeExecuteGrantToRemoteIfRequestedRemotely() {
+  public void sendResponseInvokesExecuteGrantToRemoteIfRequestedRemotely() {
     doReturn(mock(InternalDistributedMember.class)).when(message).getSender();
 
     message.sendResponse();
