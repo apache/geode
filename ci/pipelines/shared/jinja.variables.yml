@@ -48,7 +48,7 @@ build_test:
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
-  RAM: '16'
+  RAM: '12'
   name: Build
 
 examples_test:
@@ -104,7 +104,7 @@ tests:
   name: Unit
 - ARTIFACT_SLUG: acceptancetestfiles
   CALL_STACK_TIMEOUT: '6300'
-  CPUS: '8'
+  CPUS: '6'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 2h
@@ -113,7 +113,7 @@ tests:
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
-  RAM: '12'
+  RAM: '8'
   name: Acceptance
 - ARTIFACT_SLUG: distributedtestfiles
   CALL_STACK_TIMEOUT: '9900'
@@ -178,7 +178,7 @@ tests:
   RAM: '280'
   name: StressNew
 - ARTIFACT_SLUG: windows-acceptancetestfiles
-  CPUS: '16'
+  CPUS: '6'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
@@ -187,10 +187,10 @@ tests:
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
-  RAM: '64'
+  RAM: '8'
   name: WindowsAcceptance
 - ARTIFACT_SLUG: windows-gfshdistributedtest
-  CPUS: '16'
+  CPUS: '6'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
@@ -200,10 +200,10 @@ tests:
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
-  RAM: '64'
+  RAM: '6'
   name: WindowsGfshDistributed
 - ARTIFACT_SLUG: windows-integrationtestfiles
-  CPUS: '16'
+  CPUS: '6'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
@@ -213,10 +213,10 @@ tests:
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
-  RAM: '64'
+  RAM: '8'
   name: WindowsIntegration
 - ARTIFACT_SLUG: windows-coreintegrationtestfiles
-  CPUS: '16'
+  CPUS: '6'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
@@ -225,10 +225,10 @@ tests:
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
-  RAM: '64'
+  RAM: '10'
   name: WindowsCoreIntegration
 - ARTIFACT_SLUG: windows-unittestfiles
-  CPUS: '16'
+  CPUS: '10'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
@@ -236,7 +236,7 @@ tests:
   MAX_IN_FLIGHT: 1
   PARALLEL_DUNIT: 'false'
   PLATFORM: windows
-  RAM: '64'
+  RAM: '10'
   name: WindowsUnit
 - ARTIFACT_SLUG: apicheck
   CALL_STACK_TIMEOUT: '20700'
@@ -250,5 +250,5 @@ tests:
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
-  RAM: '16'
+  RAM: '8'
   name: ApiCheck
