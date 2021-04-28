@@ -2027,13 +2027,13 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
               getCacheDistributionAdvisor().adviseInvalidateRegion();
           // pause all generation of versions and flush from the other members to this one
           try {
-            obtainWriteLocksForClear(regionEvent, participants, false);
+            obtainWriteLocksForClear(regionEvent, participants);
             clearRegionLocally(regionEvent, cacheWrite, null);
             if (!regionEvent.isOriginRemote() && regionEvent.getOperation().isDistributed()) {
               distributeClearOperation(regionEvent, null, participants);
             }
           } finally {
-            releaseWriteLocksForClear(regionEvent, participants, false);
+            releaseWriteLocksForClear(regionEvent, participants);
           }
         } finally {
           distributedUnlockForClear();
@@ -2082,30 +2082,31 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
   }
 
-
   /**
    * obtain locks preventing generation of new versions in other members
    */
   protected void obtainWriteLocksForClear(RegionEventImpl regionEvent,
-      Set<InternalDistributedMember> participants, boolean localLockedAlready) {
-    if (!localLockedAlready) {
-      lockLocallyForClear(getDistributionManager(), getMyId(), regionEvent);
-    }
-    lockAndFlushClearToOthers(regionEvent, participants);
+      Set<InternalDistributedMember> recipients) {
+    lockLocallyForClear(getDistributionManager(), getMyId(), regionEvent);
+    lockAndFlushClearToOthers(regionEvent, recipients);
   }
 
   /**
    * releases the locks obtained in obtainWriteLocksForClear
    */
   protected void releaseWriteLocksForClear(RegionEventImpl regionEvent,
-      Set<InternalDistributedMember> participants,
-      boolean localLockedAlready) {
-    if (!localLockedAlready) {
-      releaseLockLocallyForClear(regionEvent);
-    }
-    DistributedClearOperation.releaseLocks(regionEvent, participants);
+      Set<InternalDistributedMember> recipients) {
+    releaseLockLocallyForClear(regionEvent);
+    distributedClearOperationReleaseLocks(regionEvent, recipients);
   }
 
+  @VisibleForTesting
+  void distributedClearOperationReleaseLocks(RegionEventImpl regionEvent,
+      Set<InternalDistributedMember> recipients) {
+    DistributedClearOperation.releaseLocks(regionEvent, recipients);
+  }
+
+  @VisibleForTesting
   void lockAndFlushClearToOthers(RegionEventImpl regionEvent,
       Set<InternalDistributedMember> participants) {
     DistributedClearOperation.lockAndFlushToOthers(regionEvent, participants);
