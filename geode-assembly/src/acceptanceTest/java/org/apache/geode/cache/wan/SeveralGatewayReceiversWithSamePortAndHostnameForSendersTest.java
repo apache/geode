@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.wan;
 
-import static com.palantir.docker.compose.execution.DockerComposeExecArgument.arguments;
-import static com.palantir.docker.compose.execution.DockerComposeExecOption.options;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -26,7 +24,6 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +31,6 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import com.palantir.docker.compose.DockerComposeRule;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -48,12 +44,12 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
-import org.apache.geode.client.sni.NotOnWindowsDockerRule;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
+import org.apache.geode.rules.DockerComposeRule;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -63,20 +59,17 @@ import org.apache.geode.test.junit.categories.WanTest;
 /**
  * These tests use two Geode sites:
  *
- * - One site (the remote one) consisting of a 2-server, 1-locator Geode cluster.
- * The servers host a partition region (region-wan) and have gateway senders to receive events
- * from the other site with the same value for hostname-for-senders and listening on the
- * same port (2324).
- * The servers and locator run each inside a Docker container and are not route-able
- * from the host (where this JUnit test is running).
- * Another Docker container is running the HAProxy image and it's set up as a TCP load balancer.
- * The other site connects to the locator and to the gateway receivers via the
- * TCP load balancer that forwards traffic directed to the 20334 port to the locator and
- * traffic directed to the 2324 port to the receivers in a round robin fashion.
+ * - One site (the remote one) consisting of a 2-server, 1-locator Geode cluster. The servers host a
+ * partition region (region-wan) and have gateway senders to receive events from the other site with
+ * the same value for hostname-for-senders and listening on the same port (2324). The servers and
+ * locator run each inside a Docker container and are not route-able from the host (where this JUnit
+ * test is running). Another Docker container is running the HAProxy image and it's set up as a TCP
+ * load balancer. The other site connects to the locator and to the gateway receivers via the TCP
+ * load balancer that forwards traffic directed to the 20334 port to the locator and traffic
+ * directed to the 2324 port to the receivers in a round robin fashion.
  *
- * - Another site consisting of a 1-server, 1-locator Geode cluster.
- * The server hosts a partition region (region-wan) and has a gateway receiver
- * to send events to the remote site.
+ * - Another site consisting of a 1-server, 1-locator Geode cluster. The server hosts a partition
+ * region (region-wan) and has a gateway receiver to send events to the remote site.
  */
 @Category({WanTest.class})
 public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
@@ -89,12 +82,12 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
       SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest.class
           .getResource("docker-compose.yml");
 
-  // Docker compose does not work on windows in CI. Ignore this test on windows
-  // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
-  public static NotOnWindowsDockerRule docker =
-      new NotOnWindowsDockerRule(() -> DockerComposeRule.builder()
-          .file(DOCKER_COMPOSE_PATH.getPath()).build());
+  public static DockerComposeRule docker = new DockerComposeRule.Builder()
+      .file(DOCKER_COMPOSE_PATH.getPath())
+      .service("haproxy", 20334)
+      .service("haproxy", 2324)
+      .build();
 
   @Rule
   public DistributedRule distributedRule =
@@ -103,17 +96,17 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     // Start locator
-    docker.get().exec(options("-T"), "locator",
-        arguments("gfsh", "run", "--file=/geode/scripts/geode-starter-locator.gfsh"));
+    docker.execForService("locator", "gfsh", "run",
+        "--file=/geode/scripts/geode-starter-locator.gfsh");
     // Start server1
-    docker.get().exec(options("-T"), "server1",
-        arguments("gfsh", "run", "--file=/geode/scripts/geode-starter-server1.gfsh"));
+    docker.execForService("server1", "gfsh", "run",
+        "--file=/geode/scripts/geode-starter-server1.gfsh");
     // Start server2
-    docker.get().exec(options("-T"), "server2",
-        arguments("gfsh", "run", "--file=/geode/scripts/geode-starter-server2.gfsh"));
+    docker.execForService("server2", "gfsh", "run",
+        "--file=/geode/scripts/geode-starter-server2.gfsh");
     // Create partition region and gateway receiver
-    docker.get().exec(options("-T"), "locator",
-        arguments("gfsh", "run", "--file=/geode/scripts/geode-starter-create.gfsh"));
+    docker.execForService("locator", "gfsh", "run",
+        "--file=/geode/scripts/geode-starter-create.gfsh");
   }
 
   public SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest() {
@@ -121,18 +114,17 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   }
 
   /**
-   * The aim of this test is verify that when several gateway receivers in a remote site
-   * share the same port and hostname-for-senders, the pings sent from the gateway senders
-   * reach the right gateway receiver and not just any of the receivers. Failure to do this
-   * may result in the closing of connections by a gateway receiver for not having
-   * received the ping in time.
+   * The aim of this test is verify that when several gateway receivers in a remote site share the
+   * same port and hostname-for-senders, the pings sent from the gateway senders reach the right
+   * gateway receiver and not just any of the receivers. Failure to do this may result in the
+   * closing of connections by a gateway receiver for not having received the ping in time.
    */
   @Test
   public void testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceivers()
       throws InterruptedException {
     String senderId = "ln";
     String regionName = "region-wan";
-    final int remoteLocPort = 20334;
+    final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
 
     int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
 
@@ -168,7 +160,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   public void testSerialGatewaySenderThreadsConnectToSameReceiver() {
     String senderId = "ln";
     String regionName = "region-wan";
-    final int remoteLocPort = 20334;
+    final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
 
     int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
 
@@ -188,7 +180,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   @Test
   public void testTwoSendersWithSameIdShouldUseSameValueForEnforceThreadsConnectToSameServer() {
     String senderId = "ln";
-    final int remoteLocPort = 20334;
+    final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
 
     int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
 
@@ -225,20 +217,9 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     return true;
   }
 
-
   private String runListGatewayReceiversCommandInServer(int serverN) {
-    String result = "";
-    try {
-      result = docker.get().exec(options("-T"), "locator",
-          arguments("gfsh", "run",
-              "--file=/geode/scripts/geode-list-gateway-receivers-server" + serverN + ".gfsh"));
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    } finally {
-      return result;
-    }
+    return docker.execForService("locator", "gfsh", "run",
+        "--file=/geode/scripts/geode-list-gateway-receivers-server" + serverN + ".gfsh");
   }
 
   private Vector<String> parseSendersConnectedFromGfshOutput(String gfshOutput) {
@@ -293,7 +274,8 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   public static void createGatewaySender(VM vm, String dsName, int remoteDsId,
       boolean isParallel, Integer batchSize,
       int numDispatchers,
-      GatewaySender.OrderPolicy orderPolicy, boolean enforceThreadsConnectToSameReceiver) {
+      GatewaySender.OrderPolicy orderPolicy,
+      boolean enforceThreadsConnectToSameReceiver) {
     vm.invoke(() -> {
       final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
       try {
