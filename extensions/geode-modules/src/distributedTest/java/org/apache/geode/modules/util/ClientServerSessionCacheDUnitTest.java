@@ -49,7 +49,6 @@ import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.modules.session.catalina.ClientServerSessionCache;
 import org.apache.geode.modules.session.catalina.SessionManager;
-import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
@@ -57,9 +56,9 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 
 public class ClientServerSessionCacheDUnitTest implements Serializable {
   private static final String SESSION_REGION_NAME = RegionHelper.NAME + "_sessions";
-  private CacheRule cacheRule = new CacheRule();
-  private DistributedRule distributedRule = new DistributedRule();
-  private ClientCacheRule clientCacheRule = new ClientCacheRule();
+  private final CacheRule cacheRule = new CacheRule();
+  private final DistributedRule distributedRule = new DistributedRule();
+  private final ClientCacheRule clientCacheRule = new ClientCacheRule();
 
   @Rule
   public transient RuleChain ruleChain = RuleChain.outerRule(distributedRule)
@@ -83,7 +82,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
   }
 
   @Test
-  public void addServerToExistingClusterCreatesSessionRegion() {
+  public void addServerToExistingClusterCopiesSessionRegion() {
     final VM server0 = VM.getVM(0);
     final VM server1 = VM.getVM(1);
     final VM client = VM.getVM(2);
@@ -98,6 +97,34 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
 
     // Session region may be created asynchronously on the second server
     server1.invoke(() -> await().untilAsserted(this::validateServer));
+  }
+
+  @Test
+  public void addServerToExistingClusterDoesNotCopyPreCreatedSessionRegion() {
+    final VM server0 = VM.getVM(0);
+    final VM server1 = VM.getVM(1);
+    final VM client = VM.getVM(2);
+
+    server0.invoke(this::startCacheServer);
+
+
+    server0.invoke(this::createSessionRegion);
+
+
+    client.invoke(this::startClientSessionCache);
+    server1.invoke(this::startCacheServer);
+
+    server0.invoke(() -> await().untilAsserted(this::validateBootstrapped));
+    server1.invoke(() -> await().untilAsserted(this::validateBootstrapped));
+
+    // server1 should not have created the session region
+    // If the user precreated the region, they must manually
+    // create it on all servers
+    server1.invoke(() -> {
+      Region<Object, Object> region = cacheRule.getCache().getRegion(SESSION_REGION_NAME);
+      assertThat(region).isNull();
+    });
+
   }
 
   @Test
@@ -124,33 +151,6 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
 
     server0.invoke(this::validateServer);
     server1.invoke(this::validateServer);
-  }
-
-  @Test
-  public void preCreatedRegionIsNotCopiedToNewlyStartedServers() {
-    final VM server0 = VM.getVM(0);
-    final VM server1 = VM.getVM(1);
-    final VM client = VM.getVM(2);
-
-    server0.invoke(this::startCacheServer);
-
-
-    server0.invoke(this::createSessionRegion);
-
-
-    client.invoke(this::startClientSessionCache);
-    server1.invoke(this::startCacheServer);
-
-    server1.invoke(() -> await().untilAsserted(this::validateBootstrapped));
-
-    // server1 should not have created the session region
-    // If the user precreated the region, they must manually
-    // create it on all servers
-    server1.invoke(() -> {
-      Region<Object, Object> region = cacheRule.getCache().getRegion(SESSION_REGION_NAME);
-      assertThat(region).isNull();
-    });
-
   }
 
   @Test
@@ -189,7 +189,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
           .thenReturn(RegionShortcut.PARTITION_REDUNDANT.toString());
 
       final ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
-      clientCacheFactory.addPoolLocator("localhost", DistributedTestUtils.getLocatorPort());
+      clientCacheFactory.addPoolLocator("localhost", DistributedRule.getLocatorPort());
       clientCacheFactory.setPoolSubscriptionEnabled(true);
       clientCacheRule.createClientCache(clientCacheFactory);
 
@@ -233,7 +233,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     final RegionAttributes<Object, Object> expectedAttributes =
         cache.getRegionAttributes(RegionShortcut.PARTITION_REDUNDANT.toString());
 
-    final RegionAttributes attributes = region.getAttributes();
+    final RegionAttributes<String, HttpSession> attributes = region.getAttributes();
     assertThat(attributes.getScope()).isEqualTo(expectedAttributes.getScope());
     assertThat(attributes.getDataPolicy()).isEqualTo(expectedAttributes.getDataPolicy());
     assertThat(attributes.getPartitionAttributes())
@@ -294,7 +294,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
         .thenReturn(RegionShortcut.PARTITION_REDUNDANT.toString());
 
     final ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
-    clientCacheFactory.addPoolLocator("localhost", DistributedTestUtils.getLocatorPort());
+    clientCacheFactory.addPoolLocator("localhost", DistributedRule.getLocatorPort());
     clientCacheFactory.setPoolSubscriptionEnabled(true);
     clientCacheRule.createClientCache(clientCacheFactory);
 
@@ -307,5 +307,6 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     final CacheServer cacheServer = cache.addCacheServer();
     cacheServer.setPort(0);
     cacheServer.start();
+    await().until(cacheServer::isRunning);
   }
 }
