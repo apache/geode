@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc;
 
+import static org.apache.geode.connectors.jdbc.test.junit.rules.SqlDatabaseConnectionRule.DEFAULT_DB_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URL;
@@ -23,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -37,11 +39,11 @@ import org.apache.geode.pdx.PdxInstance;
 public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      PostgresJdbcLoaderIntegrationTest.class.getResource("postgres.yml");
+      PostgresJdbcLoaderIntegrationTest.class.getResource("/postgres.yml");
 
   @ClassRule
-  public static DatabaseConnectionRule dbRule = new PostgresConnectionRule.Builder()
-      .file(COMPOSE_RESOURCE_PATH.getPath()).serviceName("db").port(5432).database(DB_NAME).build();
+  public static DatabaseConnectionRule dbRule =
+      new PostgresConnectionRule.Builder().file(COMPOSE_RESOURCE_PATH.getPath()).build();
 
   @Override
   public Connection getConnection() throws SQLException {
@@ -49,8 +51,8 @@ public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest
   }
 
   @Override
-  public String getConnectionUrl() {
-    return dbRule.getConnectionUrl();
+  public Supplier<String> getConnectionUrlSupplier() {
+    return () -> dbRule.getConnectionUrl();
   }
 
   @Override
@@ -94,19 +96,21 @@ public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest
 
   private void createEmployeeTableWithSchemaAndCatalog() throws Exception {
     statement.execute("CREATE SCHEMA " + SCHEMA_NAME);
-    statement.execute("Create Table " + DB_NAME + '.' + SCHEMA_NAME + '.' + REGION_TABLE_NAME
-        + " (id varchar(10) primary key not null, name varchar(10), age int)");
+    statement
+        .execute("Create Table " + DEFAULT_DB_NAME + '.' + SCHEMA_NAME + '.' + REGION_TABLE_NAME
+            + " (id varchar(10) primary key not null, name varchar(10), age int)");
   }
 
   @Test
   public void verifyGetWithSchemaCatalogAndPdxClassNameAndCompositeKey() throws Exception {
     createEmployeeTableWithSchemaAndCatalog();
     statement
-        .execute("Insert into " + DB_NAME + '.' + SCHEMA_NAME + '.' + REGION_TABLE_NAME
+        .execute("Insert into " + DEFAULT_DB_NAME + '.' + SCHEMA_NAME + '.' + REGION_TABLE_NAME
             + "(id, name, age) values('1', 'Emp1', 21)");
     String ids = "id,name";
     Region<String, Employee> region =
-        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids, DB_NAME,
+        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids,
+            DEFAULT_DB_NAME,
             SCHEMA_NAME, getEmployeeTableFieldMappings());
     createPdxType();
 
