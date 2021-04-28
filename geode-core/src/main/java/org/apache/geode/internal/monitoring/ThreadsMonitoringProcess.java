@@ -122,7 +122,7 @@ public class ThreadsMonitoringProcess extends TimerTask {
   @VisibleForTesting
   public static Map<Long, ThreadInfo> createThreadInfoMap(Set<Long> stuckThreadIds) {
     /*
-     * NOTE: at last some implementations of getThreadInfo(long[], boolean, boolean)
+     * NOTE: at least some implementations of getThreadInfo(long[], boolean, boolean)
      * will core dump if the long array contains a duplicate value.
      * That is why stuckThreadIds is a Set instead of a List.
      */
@@ -152,11 +152,15 @@ public class ThreadsMonitoringProcess extends TimerTask {
     }
   }
 
+  /**
+   * @param threadId identifies the thread that may have a lock owner
+   * @return the lock owner thread id or -1 if no lock owner
+   */
   private long getLockOwnerId(long threadId) {
     /*
      * NOTE: the following getThreadInfo call is much cheaper than the one made
      * in createThreadInfoMap because it does not figure out what locks are being
-     * help by the thread and also does not get the call stack.
+     * held by the thread and also does not get the call stack.
      * All we need from it is the lockOwnerId.
      */
     final ThreadInfo threadInfo = ManagementFactory.getThreadMXBean().getThreadInfo(threadId, 0);
