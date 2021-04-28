@@ -20,12 +20,14 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.cluster.BucketInfoRetrievalFunction;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
@@ -86,10 +88,14 @@ public class GeodeRedisServer {
     redisCommandExecutor =
         LoggingExecutors.newCachedThreadPool("GeodeRedisServer-Command-", true);
 
+    DistributedMember member = cache.getDistributedSystem().getDistributedMember();
+
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
-        redisCommandExecutor);
+        redisCommandExecutor, member);
+
+    BucketInfoRetrievalFunction.register(bindAddress, nettyRedisServer.getPort());
   }
 
   @VisibleForTesting

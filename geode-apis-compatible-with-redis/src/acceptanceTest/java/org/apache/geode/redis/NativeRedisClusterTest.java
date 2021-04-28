@@ -28,9 +28,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 
-import org.apache.geode.test.dunit.rules.ClusterNode;
-import org.apache.geode.test.dunit.rules.NativeRedisClusterTestRule;
-
 /**
  * This class serves merely as an example of using the {@link NativeRedisClusterTestRule}.
  * Eventually it can be deleted since we'll end up with more comprehensive tests for various
@@ -46,8 +43,8 @@ public class NativeRedisClusterTest {
     for (Integer port : cluster.getExposedPorts()) {
       try (Jedis jedis = new Jedis("localhost", port)) {
         List<ClusterNode> nodes =
-            NativeRedisClusterTestRule.parseClusterNodes(jedis.clusterNodes());
-        List<Integer> ports = nodes.stream().map(f -> f.port).collect(Collectors.toList());
+            ClusterNodes.parseClusterNodes(jedis.clusterNodes()).getNodes();
+        List<Integer> ports = nodes.stream().map(f -> (int) f.port).collect(Collectors.toList());
         assertThat(ports).containsExactlyInAnyOrderElementsOf(cluster.getExposedPorts());
       }
     }

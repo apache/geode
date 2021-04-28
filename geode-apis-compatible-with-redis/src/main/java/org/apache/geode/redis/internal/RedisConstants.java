@@ -54,4 +54,6 @@ public class RedisConstants {
 
   public static final String ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND =
       "Unknown subcommand or wrong number of arguments for '%s'. Try SLOWLOG HELP.";
+  public static final String ERROR_UNKNOWN_CLUSTER_SUBCOMMAND =
+      "Unknown subcommand or wrong number of arguments for '%s'. Try CLUSTER HELP.";
 }

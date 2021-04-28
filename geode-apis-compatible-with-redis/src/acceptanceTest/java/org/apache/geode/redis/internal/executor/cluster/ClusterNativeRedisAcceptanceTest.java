@@ -13,23 +13,19 @@
  * the License.
  */
 
-package org.apache.geode.test.dunit.rules;
+package org.apache.geode.redis.internal.executor.cluster;
 
-public class ClusterNode {
-  public final String guid;
-  public final String ipAddress;
-  public final int port;
-  public final boolean primary;
-  public final int slotStart;
-  public final int slotEnd;
+import org.junit.ClassRule;
 
-  public ClusterNode(String guid, String ipAddress, int port, boolean primary, int slotStart,
-      int slotEnd) {
-    this.guid = guid;
-    this.ipAddress = ipAddress;
-    this.port = port;
-    this.primary = primary;
-    this.slotStart = slotStart;
-    this.slotEnd = slotEnd;
+import org.apache.geode.redis.NativeRedisClusterTestRule;
+
+public class ClusterNativeRedisAcceptanceTest extends AbstractClusterIntegrationTest {
+
+  @ClassRule
+  public static NativeRedisClusterTestRule cluster = new NativeRedisClusterTestRule();
+
+  @Override
+  public int getPort() {
+    return cluster.getExposedPorts().get(0);
   }
 }

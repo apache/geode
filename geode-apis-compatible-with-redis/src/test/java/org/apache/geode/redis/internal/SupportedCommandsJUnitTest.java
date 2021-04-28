@@ -32,6 +32,7 @@ public class SupportedCommandsJUnitTest {
   private final String[] supportedCommands = new String[] {
       "APPEND",
       "AUTH",
+      "CLUSTER",
       "DECR",
       "DECRBY",
       "DEL",

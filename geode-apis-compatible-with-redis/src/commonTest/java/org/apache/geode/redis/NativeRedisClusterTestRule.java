@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.test.dunit.rules;
+package org.apache.geode.redis;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.github.dockerjava.api.model.ContainerNetwork;
 import org.apache.logging.log4j.Logger;
@@ -44,7 +42,6 @@ import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 public class NativeRedisClusterTestRule extends ExternalResource implements Serializable {
 
   private static final Logger logger = LogService.getLogger();
-  private static final Pattern ipPortCportRE = Pattern.compile("([^:]*):([0-9]*)@([0-9]*)");
   private static final String REDIS_COMPOSE_YML = "/redis-cluster-compose.yml";
   private static final int NODE_COUNT = 6;
 
@@ -83,7 +80,9 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
 
         int port = redisCluster.getServicePort("redis-node-0", REDIS_PORT);
         Jedis jedis = new Jedis("localhost", port);
-        List<ClusterNode> nodes = parseClusterNodes(jedis.clusterNodes());
+        List<ClusterNode> nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes()).getNodes();
+
+        nodes.forEach(logger::info);
 
         assertThat(nodes.stream().mapToInt(x -> x.primary ? 1 : 0).sum())
             .as("Incorrect primary node count")
@@ -124,53 +123,6 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
     };
 
     return delegate.apply(containerStatement, description);
-  }
-
-  public static List<ClusterNode> parseClusterNodes(String rawInput) {
-    List<ClusterNode> nodes = new ArrayList<>();
-
-    for (String line : rawInput.split("\\n")) {
-      nodes.add(parseOneClusterNodeLine(line));
-    }
-
-    return nodes;
-  }
-
-  private static ClusterNode parseOneClusterNodeLine(String line) {
-    String[] parts = line.split(" ");
-
-    Matcher addressMatcher = ipPortCportRE.matcher(parts[1]);
-    if (!addressMatcher.matches()) {
-      throw new IllegalArgumentException("Unable to extract ip:port@cport from " + line);
-    }
-
-    boolean primary = parts[2].contains("master");
-
-    int slotStart = -1;
-    int slotEnd = -1;
-    if (primary) {
-      // Sometimes we see a 'primary' without slots which seems to imply it hasn't yet transitioned
-      // to being a 'replica'.
-      if (parts.length > 8) {
-        String[] startEnd = parts[8].split("-");
-        slotStart = Integer.parseInt(startEnd[0]);
-        if (startEnd.length > 1) {
-          slotEnd = Integer.parseInt(startEnd[1]);
-        } else {
-          slotEnd = slotStart;
-        }
-      } else {
-        primary = false;
-      }
-    }
-
-    return new ClusterNode(
-        parts[0],
-        addressMatcher.group(1),
-        Integer.parseInt(addressMatcher.group(2)),
-        primary,
-        slotStart,
-        slotEnd);
   }
 
 }
