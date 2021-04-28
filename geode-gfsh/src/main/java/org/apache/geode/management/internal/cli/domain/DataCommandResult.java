@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -687,6 +688,8 @@ public class DataCommandResult implements Serializable {
         resolvePdxToColumns(columnData, (PdxInstance) value);
       } else if (value instanceof Struct) {
         resolveStructToColumns(columnData, (StructImpl) value);
+      } else if (value instanceof UUID) {
+        columnData.put("Result", valueToJson(value));
       } else {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode node = mapper.valueToTree(value);
