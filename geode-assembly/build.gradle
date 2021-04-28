@@ -638,7 +638,7 @@ tasks.named('srcDistTar').configure {
 
 tasks.withType(Test) {
   dependsOn installDist
-  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
+  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.distributionBaseName.get()}"
 }
 
 
