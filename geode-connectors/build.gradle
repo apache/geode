@@ -19,13 +19,6 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 evaluationDependsOn(":geode-core")
 
-repositories {
-  maven {
-    // docker-compose-rule is published on bintray
-    url 'https://dl.bintray.com/palantir/releases'
-  }
-}
-
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 configurations {
@@ -112,9 +105,8 @@ dependencies {
   acceptanceTestCompile('org.assertj:assertj-core')
   acceptanceTestCompile('org.awaitility:awaitility')
   acceptanceTestCompile('org.mockito:mockito-core')
-  acceptanceTestCompile('com.palantir.docker.compose:docker-compose-rule-core')
   acceptanceTestCompile('pl.pragmatists:JUnitParams')
-  acceptanceTestCompile('com.palantir.docker.compose:docker-compose-rule-junit4')
+  acceptanceTestCompile('org.testcontainers:testcontainers')
 
   acceptanceTestRuntime('mysql:mysql-connector-java')
   acceptanceTestRuntime('org.apache.derby:derby')

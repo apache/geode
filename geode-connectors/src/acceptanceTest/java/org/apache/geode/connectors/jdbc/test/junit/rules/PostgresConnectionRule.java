@@ -14,31 +14,31 @@
  */
 package org.apache.geode.connectors.jdbc.test.junit.rules;
 
-import com.palantir.docker.compose.DockerComposeRule;
-
 public class PostgresConnectionRule extends SqlDatabaseConnectionRule {
-  private static final String CONNECTION_STRING =
-      "jdbc:postgresql://$HOST:$EXTERNAL_PORT/%s?user=postgres";
 
-  protected PostgresConnectionRule(DockerComposeRule dockerRule, String serviceName, int port,
+  private static final int POSTGRES_PORT = 5432;
+
+  private static final String CONNECTION_STRING = "jdbc:postgresql://%s:%d/%s?user=postgres";
+
+  protected PostgresConnectionRule(String composeFile, String serviceName, int port,
       String dbName) {
-    super(dockerRule, serviceName, port, dbName);
+    super(composeFile, serviceName, port, dbName);
   }
 
   @Override
   public String getConnectionUrl() {
-    return getDockerPort().inFormat(String.format(CONNECTION_STRING, getDbName()));
+    return String.format(CONNECTION_STRING, "localhost", getDockerPort(), getDbName());
   }
 
   public static class Builder extends SqlDatabaseConnectionRule.Builder {
 
     public Builder() {
-      super();
+      super(POSTGRES_PORT, DEFAULT_SERVICE_NAME, DEFAULT_DB_NAME);
     }
 
     @Override
     public PostgresConnectionRule build() {
-      return new PostgresConnectionRule(createDockerRule(), getServiceName(), getPort(),
+      return new PostgresConnectionRule(getComposeFile(), getServiceName(), getPort(),
           getDbName());
     }
   }
