@@ -191,10 +191,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
       return true;
     }
 
-    if (!(obj instanceof BootstrappingFunction)) {
-      return false;
-    }
-    return true;
+    return obj instanceof BootstrappingFunction;
   }
 
   @Override

@@ -307,5 +307,6 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     final CacheServer cacheServer = cache.addCacheServer();
     cacheServer.setPort(0);
     cacheServer.start();
+    await().until(cacheServer::isRunning);
   }
 }
