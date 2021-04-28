@@ -14,11 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.Collections.emptySet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -29,6 +31,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -36,6 +39,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
@@ -183,17 +187,6 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
   }
 
   @Test
-  public void obtainWriteLocksForClearInBRShouldDistribute() {
-    RegionEventImpl event = createClearRegionEvent();
-    BucketRegion region = (BucketRegion) event.getRegion();
-    doNothing().when(region).lockLocallyForClear(any(), any(), any());
-    doNothing().when(region).lockAndFlushClearToOthers(any(), any());
-    region.obtainWriteLocksForClear(event, null, false);
-    verify(region).lockLocallyForClear(any(), any(), eq(event));
-    verify(region).lockAndFlushClearToOthers(eq(event), eq(null));
-  }
-
-  @Test
   public void updateSizeToZeroOnClearBucketRegion() {
     RegionEventImpl event = createClearRegionEvent();
     BucketRegion region = (BucketRegion) event.getRegion();
@@ -210,5 +203,49 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     region.updateSizeOnClearRegion((int) sizeBeforeClear);
     long sizeAfterClear = region.getTotalBytes();
     assertEquals(0, sizeAfterClear);
+  }
+
+  @Test
+  public void obtainWriteLocksForClearInBRShouldLockAndFlushToOthers() {
+    RegionEventImpl event = createClearRegionEvent();
+    BucketRegion region = (BucketRegion) event.getRegion();
+    doNothing().when(region).lockAndFlushClearToOthers(any(), any());
+    region.obtainWriteLocksForClear(event, null);
+    verify(region).lockAndFlushClearToOthers(eq(event), eq(null));
+  }
+
+  @Test
+  public void obtainWriteLocksForClear_invokes_lockAndFlushClearToOthers() {
+    Set<InternalDistributedMember> recipients = emptySet();
+    BucketRegion bucketRegion = bucketRegionForClearLocking();
+    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+
+    bucketRegion.obtainWriteLocksForClear(regionEvent, recipients);
+
+    verify(bucketRegion).lockAndFlushClearToOthers(regionEvent, recipients);
+  }
+
+  @Test
+  public void releaseWriteLocksForClear_invokes_distributedClearOperationReleaseLocks() {
+    Set<InternalDistributedMember> recipients = emptySet();
+    BucketRegion bucketRegion = bucketRegionForClearLocking();
+    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+
+    bucketRegion.releaseWriteLocksForClear(regionEvent, recipients);
+
+    verify(bucketRegion).distributedClearOperationReleaseLocks(regionEvent, recipients);
+  }
+
+  private BucketRegion bucketRegionForClearLocking() {
+    // use partial-mock with null fields to verify method invocations
+    BucketRegion bucketRegion = mock(BucketRegion.class, CALLS_REAL_METHODS);
+
+    // doNothing when invoking locking methods for clear
+    doNothing().when(bucketRegion).lockAndFlushClearToOthers(any(), any());
+
+    // doNothing when invoking unlocking methods for clear
+    doNothing().when(bucketRegion).distributedClearOperationReleaseLocks(any(), any());
+
+    return bucketRegion;
   }
 }
