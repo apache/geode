@@ -147,21 +147,21 @@ public class SecurityTestUtils {
 
   private static Region regionRef = null;
 
-  protected static void setJavaProps(final Properties javaProps) {
+  public static void setJavaProps(final Properties javaProps) {
     removeJavaProperties(currentJavaProps);
     addJavaProperties(javaProps);
     currentJavaProps = javaProps;
   }
 
-  protected static ProxyCache getProxyCaches(final int index) {
+  public static ProxyCache getProxyCaches(final int index) {
     return proxyCaches[index];
   }
 
-  protected static void initDynamicRegionFactory() {
+  public static void initDynamicRegionFactory() {
     DynamicRegionFactory.get().open(new DynamicRegionFactory.Config(null, null, false, true));
   }
 
-  protected static Properties concatProperties(final Properties[] propsList) {
+  public static Properties concatProperties(final Properties[] propsList) {
     Properties props = new Properties();
     for (int index = 0; index < propsList.length; ++index) {
       if (propsList[index] != null) {
@@ -171,22 +171,22 @@ public class SecurityTestUtils {
     return props;
   }
 
-  protected static void registerExpectedExceptions(final String[] expectedExceptions) {
+  public static void registerExpectedExceptions(final String[] expectedExceptions) {
     SecurityTestUtils.ignoredExceptions = expectedExceptions;
   }
 
-  protected static int createCacheServer(String authenticatorFactoryMethodName) {
+  public static int createCacheServer(String authenticatorFactoryMethodName) {
     Properties authProps = new Properties();
     authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR, authenticatorFactoryMethodName);
     return createCacheServer(authProps, null, 0, false, NO_EXCEPTION);
   }
 
-  protected static int createCacheServer(final Properties authProps, final Properties javaProps,
+  public static int createCacheServer(final Properties authProps, final Properties javaProps,
       final int serverPort, final int expectedResult) {
     return createCacheServer(authProps, javaProps, serverPort, false, expectedResult);
   }
 
-  protected static int createCacheServer(Properties authProps, final Properties javaProps,
+  public static int createCacheServer(Properties authProps, final Properties javaProps,
       final int serverPort, final boolean setupDynamicRegionFactory, final int expectedResult) {
     if (authProps == null) {
       authProps = new Properties();
@@ -257,7 +257,7 @@ public class SecurityTestUtils {
   }
 
   // 1
-  protected static void createCacheClient(final String authInitModule, final Properties authProps,
+  public static void createCacheClient(final String authInitModule, final Properties authProps,
       final Properties javaProps, final int[] ports, final int numConnections,
       final int expectedResult) {
     createCacheClient(authInitModule, authProps, javaProps, ports, numConnections, false,
@@ -265,7 +265,7 @@ public class SecurityTestUtils {
   }
 
   // 2 a
-  protected static void createCacheClient(final String authInitModule, final Properties authProps,
+  public static void createCacheClient(final String authInitModule, final Properties authProps,
       final Properties javaProps, final int[] ports, final int numConnections,
       final boolean multiUserMode, final int expectedResult) {
     createCacheClient(authInitModule, authProps, javaProps, ports, numConnections, false,
@@ -273,7 +273,7 @@ public class SecurityTestUtils {
   }
 
   // 3
-  protected static void createCacheClientWithDynamicRegion(final String authInitModule,
+  public static void createCacheClientWithDynamicRegion(final String authInitModule,
       final Properties authProps, final Properties javaProps, final int[] ports,
       final int numConnections, final boolean setupDynamicRegionFactory, final int expectedResult) {
     createCacheClient(authInitModule, authProps, javaProps, ports, numConnections,
@@ -281,7 +281,7 @@ public class SecurityTestUtils {
   }
 
   /** create a client cache using the dunit locator to find servers */
-  protected static void createCacheClientWithDynamicRegion(final String authInitModule,
+  public static void createCacheClientWithDynamicRegion(final String authInitModule,
       final Properties authProps, final Properties javaProps, final int numConnections,
       final boolean setupDynamicRegionFactory, final int expectedResult) {
     createCacheClient(authInitModule, authProps, javaProps, new int[0], numConnections,
@@ -289,7 +289,7 @@ public class SecurityTestUtils {
   }
 
   // 4
-  protected static void createCacheClient(final String authInitModule, final Properties authProps,
+  public static void createCacheClient(final String authInitModule, final Properties authProps,
       final Properties javaProps, final int[] ports, final int numConnections,
       final boolean setupDynamicRegionFactory, final boolean multiUserMode,
       final int expectedResult) {
@@ -298,7 +298,7 @@ public class SecurityTestUtils {
   }
 
   // 5
-  protected static void createCacheClient(final String authInitModule, Properties authProps,
+  public static void createCacheClient(final String authInitModule, Properties authProps,
       final Properties javaProps, int[] ports, final int numConnections,
       final boolean setupDynamicRegionFactory, final boolean multiUserMode,
       final boolean subscriptionEnabled, final int expectedResult) {
@@ -411,7 +411,7 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void createCacheClientForMultiUserMode(final int numOfUsers,
+  public static void createCacheClientForMultiUserMode(final int numOfUsers,
       final String authInitModule, final Properties[] authProps, final Properties javaProps,
       final int[] ports, final int numConnections, final boolean setupDynamicRegionFactory,
       final int expectedResult) {
@@ -419,7 +419,7 @@ public class SecurityTestUtils {
         numConnections, setupDynamicRegionFactory, null, expectedResult);
   }
 
-  protected static void createCacheClientForMultiUserMode(final int numOfUsers,
+  public static void createCacheClientForMultiUserMode(final int numOfUsers,
       final String authInitModule, final Properties[] authProps, final Properties javaProps,
       final int[] ports, final int numConnections, final boolean setupDynamicRegionFactory,
       final String durableClientId, final int expectedResult) {
@@ -527,7 +527,7 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void createProxyCache(final int[] userIndices, final Properties[] props) {
+  public static void createProxyCache(final int[] userIndices, final Properties[] props) {
     int j = 0;
     for (int i : userIndices) {
       proxyCaches[i] = (ProxyCache) ((PoolImpl) pool).createAuthenticatedCacheView(props[j]);
@@ -535,7 +535,7 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void startLocator(final String name, int port, final Properties extraProps,
+  public static void startLocator(final String name, int port, final Properties extraProps,
       final Properties javaProps, final String[] expectedExceptions) {
     try {
       Properties authProps = new Properties();
@@ -568,7 +568,7 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void stopLocator(final int port, final String[] expectedExceptions) {
+  public static void stopLocator(final int port, final String[] expectedExceptions) {
     try {
       locator.stop();
 
@@ -577,11 +577,11 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static Cache getCache() {
+  public static Cache getCache() {
     return cache;
   }
 
-  protected static Object getLocalValue(final Region region, final Object key) {
+  public static Object getLocalValue(final Region region, final Object key) {
     Region.Entry entry = region.getEntry(key);
     if (entry != null) {
       try { // Handle race conditions with concurrent destroy ops
@@ -594,13 +594,13 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void doProxyCacheClose() {
+  public static void doProxyCacheClose() {
     for (int i = 0; i < proxyCaches.length; i++) {
       proxyCaches[i].close();
     }
   }
 
-  protected static void doPutAllP() throws Exception {
+  public static void doPutAllP() throws Exception {
     Region region = getCache().getRegion(REGION_NAME);
     assertNotNull(region);
 
@@ -610,23 +610,23 @@ public class SecurityTestUtils {
     region.putAll(map);
   }
 
-  protected static void doPuts(final int num) {
+  public static void doPuts(final int num) {
     doPutsP(num, NO_EXCEPTION, false);
   }
 
-  protected static void doPuts(final int num, final int expectedResult) {
+  public static void doPuts(final int num, final int expectedResult) {
     doPutsP(num, expectedResult, false);
   }
 
-  protected static void verifySizeOnServer(final int size) {
+  public static void verifySizeOnServer(final int size) {
     verifySizeOnServer(size, NO_EXCEPTION);
   }
 
-  protected static void verifyIsEmptyOnServer(final boolean isEmpty) {
+  public static void verifyIsEmptyOnServer(final boolean isEmpty) {
     verifyIsEmptyOnServer(isEmpty, NO_EXCEPTION);
   }
 
-  protected static void doMultiUserPuts(final int num, final int numOfUsers,
+  public static void doMultiUserPuts(final int num, final int numOfUsers,
       final int[] expectedResults) {
     if (numOfUsers != expectedResults.length) {
       fail("SecurityTestUtils.doMultiUserPuts(): numOfUsers = " + numOfUsers
@@ -639,19 +639,19 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void doGets(final int num) {
+  public static void doGets(final int num) {
     doGetsP(num, NO_EXCEPTION, false);
   }
 
-  protected static void doGets(final int num, final int expectedResult) {
+  public static void doGets(final int num, final int expectedResult) {
     doGetsP(num, expectedResult, false);
   }
 
-  protected static void doMultiUserGetAll(final int numOfUsers, final int[] expectedResults) {
+  public static void doMultiUserGetAll(final int numOfUsers, final int[] expectedResults) {
     doMultiUserGetAll(numOfUsers, expectedResults, false);
   }
 
-  protected static void doMultiUserGetAll(final int numOfUsers, final int[] expectedResults,
+  public static void doMultiUserGetAll(final int numOfUsers, final int[] expectedResults,
       final boolean useTX) {
     if (numOfUsers != expectedResults.length) {
       fail("SecurityTestUtils.doMultiUserGetAll(): numOfUsers = " + numOfUsers
@@ -664,7 +664,7 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void doMultiUserGets(final int num, final int numOfUsers,
+  public static void doMultiUserGets(final int num, final int numOfUsers,
       final int[] expectedResults) {
     if (numOfUsers != expectedResults.length) {
       fail("SecurityTestUtils.doMultiUserGets(): numOfUsers = " + numOfUsers
@@ -677,7 +677,7 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void doMultiUserRegionDestroys(final int numOfUsers,
+  public static void doMultiUserRegionDestroys(final int numOfUsers,
       final int[] expectedResults) {
     if (numOfUsers != expectedResults.length) {
       fail("SecurityTestUtils.doMultiUserRegionDestroys(): numOfUsers = " + numOfUsers
@@ -690,7 +690,7 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void doMultiUserDestroys(final int num, final int numOfUsers,
+  public static void doMultiUserDestroys(final int num, final int numOfUsers,
       final int[] expectedResults) {
     if (numOfUsers != expectedResults.length) {
       fail("SecurityTestUtils.doMultiUserDestroys(): numOfUsers = " + numOfUsers
@@ -703,7 +703,7 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void doMultiUserInvalidates(final int num, final int numOfUsers,
+  public static void doMultiUserInvalidates(final int num, final int numOfUsers,
       final int[] expectedResults) {
     if (numOfUsers != expectedResults.length) {
       fail("SecurityTestUtils.doMultiUserInvalidates(): numOfUsers = " + numOfUsers
@@ -716,7 +716,7 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void doMultiUserContainsKeys(final int num, final int numOfUsers,
+  public static void doMultiUserContainsKeys(final int num, final int numOfUsers,
       final int[] expectedResults, final boolean[] results) {
     if (numOfUsers != expectedResults.length) {
       fail("SecurityTestUtils.doMultiUserContainsKeys(): numOfUsers = " + numOfUsers
@@ -734,7 +734,7 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void doMultiUserQueries(final int numOfUsers, final int[] expectedResults,
+  public static void doMultiUserQueries(final int numOfUsers, final int[] expectedResults,
       final int valueSize) {
     if (numOfUsers != expectedResults.length) {
       fail("SecurityTestUtils.doMultiUserQueries(): numOfUsers = " + numOfUsers
@@ -747,7 +747,7 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void doMultiUserFE(final int numOfUsers, final Function function,
+  public static void doMultiUserFE(final int numOfUsers, final Function function,
       final int[] expectedResults, final boolean isFailOverCase) {
     if (numOfUsers != expectedResults.length) {
       fail("SecurityTestUtils.doMultiUserFE(): numOfUsers = " + numOfUsers
@@ -772,7 +772,7 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void doMultiUserQueryExecute(final int numOfUsers, final int[] expectedResults,
+  public static void doMultiUserQueryExecute(final int numOfUsers, final int[] expectedResults,
       final int result) {
     if (numOfUsers != expectedResults.length) {
       fail("SecurityTestUtils.doMultiUserFE(): numOfUsers = " + numOfUsers
@@ -785,31 +785,31 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void doLocalGets(final int num) {
+  public static void doLocalGets(final int num) {
     doLocalGetsP(num, false);
   }
 
-  protected static void doNPuts(final int num) {
+  public static void doNPuts(final int num) {
     doPutsP(num, NO_EXCEPTION, true);
   }
 
-  protected static void doNPuts(final int num, final int expectedResult) {
+  public static void doNPuts(final int num, final int expectedResult) {
     doPutsP(num, expectedResult, true);
   }
 
-  protected static void doNGets(final int num) {
+  public static void doNGets(final int num) {
     doGetsP(num, NO_EXCEPTION, true);
   }
 
-  protected static void doNGets(final int num, final int expectedResult) {
+  public static void doNGets(final int num, final int expectedResult) {
     doGetsP(num, expectedResult, true);
   }
 
-  protected static void doNLocalGets(final int num) {
+  public static void doNLocalGets(final int num) {
     doLocalGetsP(num, true);
   }
 
-  protected static void doSimpleGet(final String expectedResult) {
+  public static void doSimpleGet(final String expectedResult) {
     if (regionRef != null) {
       try {
         regionRef.get("KEY");
@@ -828,7 +828,7 @@ public class SecurityTestUtils {
     }
   }
 
-  protected static void doSimplePut(final String expectedResult) {
+  public static void doSimplePut(final String expectedResult) {
     if (regionRef != null) {
       try {
         regionRef.put("KEY", "VALUE");
@@ -852,7 +852,7 @@ public class SecurityTestUtils {
    * the javax.* store related properties has no effect during the course of running dunit suite
    * unless the VMs are restarted.
    */
-  protected static void clearStaticSSLContext() {
+  public static void clearStaticSSLContext() {
     ServerSocketFactory defaultServerFact = SSLServerSocketFactory.getDefault();
 
     // Get the class of this and use reflection to blank out any static SSLContext objects inside
@@ -885,7 +885,7 @@ public class SecurityTestUtils {
     makeNullStaticField(SSLContext.class);
   }
 
-  protected static void closeCache() {
+  public static void closeCache() {
     if (cache != null && !cache.isClosed()) {
       DistributedSystem sys = cache.getDistributedSystem();
       cache.close();
@@ -896,7 +896,7 @@ public class SecurityTestUtils {
     disconnectFromDS();
   }
 
-  protected static void closeCache(final Boolean keepAlive) {
+  public static void closeCache(final Boolean keepAlive) {
     if (cache != null && !cache.isClosed()) {
       DistributedSystem sys = cache.getDistributedSystem();
       cache.close(keepAlive);

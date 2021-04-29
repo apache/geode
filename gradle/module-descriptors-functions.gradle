@@ -197,7 +197,7 @@ def writeThirdPartyModuleXml(String moduleName, moduleJar, moduleVersion, module
           }
         }
         xml.'dependencies' {
-          xml.'module'(['name': "java.se"])
+//          xml.'module'(['name': "java.se"])
           xml.'module'(['name': "thirdParty", 'services': 'export', 'export': 'true'])
         }
       }

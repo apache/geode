@@ -126,6 +126,8 @@ def generateThirdPartyModuleXML(String moduleDescriptorsRoot) {
 
     xml.'module'('xmlns': 'urn:jboss:module:1.9', 'name': "thirdParty:$version") {
       xml.'dependencies' {
+        xml.'module'(['name': "java.se", 'services': 'export', 'export': 'true'])
+        xml.'module'(['name': "jdk.unsupported", 'services': 'export', 'export': 'true'])
         namesAndVersions.each {
           xml.'module'(['name': "${it.key}:${it.value}", 'services': 'export', 'export': 'true'])
         }
