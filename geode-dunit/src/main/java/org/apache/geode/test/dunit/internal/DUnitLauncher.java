@@ -83,6 +83,10 @@ public class DUnitLauncher {
 
   public static final String LOG4J = System.getProperty("log4j.configurationFile");
 
+  private static final boolean RUN_VM_CLASSLOADER_ISOLATED =
+      System.getenv("CLASSLOADER_ISOLATED") != null
+          && Boolean.parseBoolean(System.getenv("CLASSLOADER_ISOLATED"));
+
   /**
    * change this to have dunit/vmX directories deleted and recreated when processes are launched
    */
@@ -228,7 +232,7 @@ public class DUnitLauncher {
 
     // Launch an initial set of VMs
     for (int i = 0; i < NUM_VMS; i++) {
-      processManager.launchVM(i, true);
+      processManager.launchVM(i, RUN_VM_CLASSLOADER_ISOLATED);
     }
 
     // wait for the VMS to start up

@@ -29,6 +29,10 @@ class DUnitHost extends Host {
   private final transient ProcessManager processManager;
   private final transient VMEventNotifier vmEventNotifier;
 
+  private static final boolean RUN_VM_CLASSLOADER_ISOLATED =
+      System.getenv("CLASSLOADER_ISOLATED") != null
+          && Boolean.parseBoolean(System.getenv("CLASSLOADER_ISOLATED"));
+
   DUnitHost(String hostName, ProcessManager processManager, VMEventNotifier vmEventNotifier)
       throws RemoteException {
     super(hostName, vmEventNotifier);
@@ -94,7 +98,7 @@ class DUnitHost extends Host {
       try {
         // first fill in any gaps, to keep the superclass, Host, happy
         for (int i = oldVMCount; i < n; i++) {
-          processManager.launchVM(i, true);
+          processManager.launchVM(i, RUN_VM_CLASSLOADER_ISOLATED);
         }
         processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
 
