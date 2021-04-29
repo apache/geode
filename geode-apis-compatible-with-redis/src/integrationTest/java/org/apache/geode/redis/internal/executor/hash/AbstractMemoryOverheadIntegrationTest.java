@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 /**
@@ -39,6 +40,8 @@ public abstract class AbstractMemoryOverheadIntegrationTest implements RedisPort
   private static final int WARM_UP_ENTRY_COUNT = 1000;
   private static final int TOTAL_ENTRY_COUNT = 5000;
   private static final int SAMPLE_INTERVAL = 100;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   // Native redis uses an optimized data structure (a zip list) for very small hashes and sets. This
   // value
@@ -57,7 +60,7 @@ public abstract class AbstractMemoryOverheadIntegrationTest implements RedisPort
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
