@@ -23,7 +23,6 @@ import java.io.NotSerializableException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
