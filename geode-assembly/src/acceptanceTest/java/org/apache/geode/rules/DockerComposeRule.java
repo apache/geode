@@ -138,12 +138,12 @@ public class DockerComposeRule extends ExternalResource {
    *
    * @return the stdout of the container if the command was successful, else the stderr
    */
-  public String execForService(String serviceName, String... args) {
+  public String execForService(String serviceName, String... command) {
     ContainerState container = composeContainer.getContainerByServiceName(serviceName + "_1")
         .orElseThrow(() -> new IllegalArgumentException("Unknown service name: " + serviceName));
     Container.ExecResult result;
     try {
-      result = container.execInContainer(args);
+      result = container.execInContainer(command);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -152,7 +152,7 @@ public class DockerComposeRule extends ExternalResource {
   }
 
   /**
-   * Execute a commond in a service container, logging the output
+   * Execute a command in a service container, logging the output
    *
    * @return the exit code of the command
    */
