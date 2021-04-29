@@ -27,7 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
-import org.apache.geode.internal.lang.utils.JavaWorkarounds;
+import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
 

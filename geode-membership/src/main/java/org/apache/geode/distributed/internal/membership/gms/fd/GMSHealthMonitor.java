@@ -71,7 +71,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequ
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
-import org.apache.geode.internal.lang.utils.JavaWorkarounds;
+import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.util.internal.GeodeGlossary;

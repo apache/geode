@@ -15,7 +15,7 @@
 package org.apache.geode.internal.inet;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.internal.utils.Retry.tryFor;
+import static org.apache.geode.internal.Retry.tryFor;
 
 import java.net.Inet4Address;
 import java.net.Inet6Address;

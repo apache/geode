@@ -51,7 +51,7 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.lang.utils.JavaWorkarounds;
+import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCloser;
