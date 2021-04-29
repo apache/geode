@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -142,6 +143,10 @@ public class CacheClientProxy implements ClientSession {
    * The GemFire cache
    */
   protected final InternalCache _cache;
+
+  public List<ClientInterestList> getClientInterestList() {
+    return Arrays.asList(cils);
+  }
 
   /**
    * The list of keys that the client represented by this proxy is interested in (stored by region)
@@ -1849,15 +1854,15 @@ public class CacheClientProxy implements ClientSession {
     }
   }
 
-  protected boolean isDurable() {
+  public boolean isDurable() {
     return getProxyID().isDurable();
   }
 
-  protected String getDurableId() {
+  public String getDurableId() {
     return getProxyID().getDurableId();
   }
 
-  protected int getDurableTimeout() {
+  public int getDurableTimeout() {
     return getProxyID().getDurableTimeout();
   }
 

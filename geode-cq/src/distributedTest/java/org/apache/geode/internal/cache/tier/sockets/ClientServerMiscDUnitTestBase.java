@@ -1101,7 +1101,8 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       assertNotNull(bs.getAcceptor().getCacheClientNotifier());
       for (CacheClientProxy ccp : bs.getAcceptor().getCacheClientNotifier().getClientProxies()) {
         // CCP should not contain region1
-        Set<String> akr = ccp.cils[RegisterInterestTracker.interestListIndex].regions;
+        Set<String> akr =
+            ccp.getClientInterestList().get(RegisterInterestTracker.interestListIndex).getRegions();
         assertNotNull(akr);
         assertTrue(!akr.contains(SEPARATOR + REGION_NAME1));
         // CCP should contain region2

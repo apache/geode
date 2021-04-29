@@ -5533,7 +5533,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     getDataView().updateEntryVersion(event);
   }
 
-  boolean basicUpdate(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
+  public boolean basicUpdate(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
       final long lastModified, final boolean overwriteDestroyed)
       throws TimeoutException, CacheWriterException {
     return this.basicUpdate(event, ifNew, ifOld, lastModified, overwriteDestroyed, true, false);
@@ -5560,7 +5560,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @return false if ifNew is true and there is an existing key, or ifOld is true and there is no
    *         existing entry; otherwise return true.
    */
-  boolean basicUpdate(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
+  public boolean basicUpdate(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
       final long lastModified, final boolean overwriteDestroyed, final boolean invokeCallbacks,
       final boolean throwConcurrentModificationException)
       throws TimeoutException, CacheWriterException {
