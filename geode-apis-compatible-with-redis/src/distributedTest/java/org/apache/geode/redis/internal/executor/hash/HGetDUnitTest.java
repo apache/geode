@@ -97,7 +97,7 @@ public class HGetDUnitTest {
           jedis1.hset(key, field, value);
           expectedMap.put(field, value);
         },
-        (i) -> GeodeAwaitility.await().atMost(Duration.ofSeconds(1)).untilAsserted(
+        (i) -> GeodeAwaitility.await().atMost(Duration.ofSeconds(60)).untilAsserted(
             () -> assertThat(jedis2.hget(key, "field-" + i)).isEqualTo("value-" + (i))))
                 .runInLockstep();
 
