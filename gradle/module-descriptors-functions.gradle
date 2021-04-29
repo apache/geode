@@ -34,7 +34,10 @@ ext.projectsToExclude = ["geode-pulse", "extensions", "geode-assembly", "geode-a
                          "geode-junit", 'geode-deployment-test', 'boms']
 
 ext.testProjectsToInclude = ['geode-dunit', 'geode-junit', 'geode-web-management',
-                             'geode-web', 'geode-modules', 'geode-lucene-test','geode-assembly']
+                             'geode-web', 'geode-modules', 'geode-modules-tomcat7',
+                             'geode-modules-tomcat8', 'geode-modules-tomcat9', 'geode-modules-test',
+                             'geode-modules-session', 'geode-modules-session-internal',
+                             'geode-lucene-test','geode-assembly']
 
 def thirdPartyDepsNotToGenerate = { String targetConfigurationPrefix ->
   def depsNotToGenerate = []

@@ -34,5 +34,8 @@ dependencies {
   }
 
   distributedTestApi(project(':extensions:geode-modules'))
+  distributedTestApi(project(':extensions:geode-modules-tomcat7'))
+  distributedTestApi(project(':extensions:geode-modules-tomcat8'))
+  distributedTestApi(project(':extensions:geode-modules-tomcat9'))
   distributedTestApi(project(':geode-lucene:geode-lucene-test'))
 }
