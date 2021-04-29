@@ -116,7 +116,7 @@ private Map<String, String[]> generateModuleNamesAndVersionsMap(runtimeList, dep
   namesAndVersion
 }
 
-def generateDependentProjects(Project projectToUse, String targetConfigurationPrefix) {
+static def generateDependentProjects(Project projectToUse, String targetConfigurationPrefix) {
   def runtimeList = []
   projectToUse.configurations.each {
     if (it.name.toLowerCase() == "${targetConfigurationPrefix}runtimeClasspath".toLowerCase() || it.name == "${targetConfigurationPrefix}jbossModular") {
@@ -169,6 +169,8 @@ def writeModuleXml(Project projectToUse, moduleJar, moduleVersion, moduleXMLRoot
         }
         xml.'dependencies' {
           xml.'module'(['name': "java.se"])
+          xml.'module'(['name': "jdk.unsupported"])
+          xml.'module'(['name': "jdk.scripting.nashorn"])
           projectDependencies.each { proj ->
             addModuleDependency(proj, namesAndVersions, apiProjectDeps, xml)
           }
