@@ -302,7 +302,9 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     new ClientServerSessionCache(sessionManager, clientCache).initialize();
   }
 
-  private void startCacheServer() throws IOException {
+  private void startCacheServer() throws IOException, InterruptedException {
+    // temporarily added to see if test fails in StressNewTest CI job
+    Thread.sleep(10);
     final Cache cache = cacheRule.getOrCreateCache();
     final CacheServer cacheServer = cache.addCacheServer();
     cacheServer.setPort(0);
