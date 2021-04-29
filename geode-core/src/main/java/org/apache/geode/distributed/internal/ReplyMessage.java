@@ -298,7 +298,7 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
     }
     if (this.returnValueIsException || this.returnValue != null) {
       try {
-        DataSerializer.writeObject(this.returnValue, out);
+        context.getSerializer().writeObject(this.returnValue, out);
       } catch (NotSerializableException e) {
         // When this happens data has already been written to the output stream for the
         // non-serializable object. The recipient will get a java.io.WriteAbortedException when
@@ -320,10 +320,10 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
     }
     try {
       if (testFlag(status, EXCEPTION_FLAG)) {
-        this.returnValue = DataSerializer.readObject(in);
+        this.returnValue = context.getDeserializer().readObject(in);
         this.returnValueIsException = true;
       } else if (testFlag(status, OBJECT_FLAG)) {
-        this.returnValue = DataSerializer.readObject(in);
+        this.returnValue = context.getDeserializer().readObject(in);
         this.returnValueIsException = (returnValue instanceof ReplyException);
       }
     } catch (IOException e) {
