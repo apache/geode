@@ -30,26 +30,26 @@ dependencies {
 
     api('org.apache.logging.log4j:log4j-core') {
         exclude module: 'log4j-api'
-        ext.set("should-not-generate", true)
+        ext.set("embed", true)
     }
 
     //This routes slf4j logs to log4j. Shiro and micrometer use slf4j
     runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
         exclude module: 'slf4j-api'
         exclude module: 'log4j-api'
-        ext.set("should-not-generate", true)
+        ext.set("embed", true)
         ext.optional = true
     }
     //This routes commons logging logs to log4j. Several apache commons dependencies use commons logging
     runtimeOnly('org.apache.logging.log4j:log4j-jcl') {
         exclude module: 'log4j-api'
-        ext.set("should-not-generate", true)
+        ext.set("embed", true)
         ext.optional = true
     }
     //This routes jdk logs to log4j. Several dependencies use JDK logs (jackson, jaxb, ...)
     runtimeOnly('org.apache.logging.log4j:log4j-jul') {
         exclude module: 'log4j-api'
-        ext.set("should-not-generate", true)
+        ext.set("embed", true)
         ext.optional = true
     }
 

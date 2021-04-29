@@ -21,6 +21,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 configurations {
   jbossModular
+  distributedTestJbossModular
 }
 
 
@@ -52,7 +53,7 @@ dependencies {
 
   implementation('com.jayway.jsonpath:json-path')
 //  implementation('org.apache.logging.log4j:log4j-core') {
-//    ext.setProperty('should-not-generate', true)
+//    ext.setProperty('embed', true)
 //  }
   implementation('commons-io:commons-io')
   implementation('org.apache.commons:commons-lang3')
@@ -81,6 +82,7 @@ dependencies {
   }
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+  distributedTestJbossModular(project(":geode-assembly"))
 }
 
 distributedTest {

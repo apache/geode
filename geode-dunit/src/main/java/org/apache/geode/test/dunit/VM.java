@@ -249,6 +249,11 @@ public class VM implements Serializable {
     this.classLoaderIsolated = isClassLoaderIsolated;
   }
 
+  public VM initializeAsNonClassLoaderIsolatedVM() {
+    bounceClassLoaderIsolated(this.version, false);
+    return this;
+  }
+
   public VM initializeAsLocatorVM() {
     bounceClassLoaderIsolated(this.version, false);
     return this;

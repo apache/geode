@@ -80,10 +80,10 @@ public class RestAPITestBase implements Serializable {
       fail("unable to locate geode-web-api WAR file");
     }
 
-    vm0 = VM.getVM(0);
-    vm1 = VM.getVM(1);
-    vm2 = VM.getVM(2);
-    vm3 = VM.getVM(3);
+    vm0 = VM.getVM(0).initializeAsNonClassLoaderIsolatedVM();
+    vm1 = VM.getVM(1).initializeAsNonClassLoaderIsolatedVM();
+    vm2 = VM.getVM(2).initializeAsNonClassLoaderIsolatedVM();
+    vm3 = VM.getVM(3).initializeAsNonClassLoaderIsolatedVM();
 
     // gradle sets a property telling us where the build is located
     final String buildDir = System.getProperty("geode.build.dir", System.getProperty("user.dir"));
