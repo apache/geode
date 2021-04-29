@@ -206,7 +206,7 @@ tasks.register('distAppServer', Zip) {
     from('release/session/bin/') {
       include 'modify_war'
 
-      filter(ReplaceTokens, tokens:['GEODE_VERSION': version])
+      filter(ReplaceTokens, tokens:['GEODE_VERSION': archiveVersion.get()])
       filter(ReplaceTokens, tokens:['SLF4J_VERSION': DependencyConstraints.get('slf4j-api.version')])
       filter(ReplaceTokens, tokens:['LOG4J_VERSION': DependencyConstraints.get('log4j.version')])
       filter(ReplaceTokens, tokens:['FASTUTIL_VERSION': DependencyConstraints.get('fastutil.version')])
