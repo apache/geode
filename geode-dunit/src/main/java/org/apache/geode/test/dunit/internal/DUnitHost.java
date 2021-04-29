@@ -108,7 +108,7 @@ class DUnitHost extends Host {
         }
 
         // now create the one we really want
-        processManager.launchVM(version, n, false, 0, true);
+        processManager.launchVM(version, n, false, 0, RUN_VM_CLASSLOADER_ISOLATED);
         processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
         addVM(n, version, processManager.getStub(n), processManager.getProcessHolder(n),
             processManager, true);
