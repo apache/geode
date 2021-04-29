@@ -24,9 +24,7 @@ import java.nio.file.Path;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.After;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -73,28 +71,6 @@ public class FileWatchingX509ExtendedTrustManagerIntegrationTest {
     storeCa(trustStore);
 
     target = newFileWatchingTrustManager(sslConfigFor(trustStore));
-
-    pauseForFileWatcherToStartDetectingChanges();
-
-    CertificateMaterial updated = storeCa(trustStore);
-
-    await().untilAsserted(() -> {
-      X509Certificate[] issuers = target.getAcceptedIssuers();
-      assertThat(issuers).containsExactly(updated.getCertificate());
-    });
-  }
-
-  @Test
-  public void updatesTrustManagerBehindSymbolicLink() throws Exception {
-    // symlink requires elevated permissions on Windows
-    Assume.assumeFalse("Test ignored on Windows.", SystemUtils.IS_OS_WINDOWS);
-
-    storeCa(trustStore);
-
-    Path symlink = temporaryFolder.getRoot().toPath().resolve("truststore-symlink.jks");
-    Files.createSymbolicLink(symlink, trustStore);
-
-    target = newFileWatchingTrustManager(sslConfigFor(symlink));
 
     pauseForFileWatcherToStartDetectingChanges();
 
