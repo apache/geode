@@ -61,8 +61,6 @@ public class DualServerSNIAcceptanceTest {
   private static final URL DOCKER_COMPOSE_PATH =
       DualServerSNIAcceptanceTest.class.getResource("dual-server-docker-compose.yml");
 
-  // Docker compose does not work on windows in CI. Ignore this test on windows
-  // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
   public static DockerComposeRule docker = new DockerComposeRule.Builder()
       .file(DOCKER_COMPOSE_PATH.getPath())
@@ -74,9 +72,9 @@ public class DualServerSNIAcceptanceTest {
 
   @BeforeClass
   public static void beforeClass() {
-    docker.normalizeContainerName("locator-maeve");
-    docker.normalizeContainerName("server-dolores");
-    docker.normalizeContainerName("server-clementine");
+    docker.setContainerName("locator-maeve", "locator-maeve");
+    docker.setContainerName("server-dolores", "server-dolores");
+    docker.setContainerName("server-clementine", "server-clementine");
 
     docker.loggingExecForService("locator-maeve",
         "gfsh", "run", "--file=/geode/scripts/locator-maeve.gfsh");

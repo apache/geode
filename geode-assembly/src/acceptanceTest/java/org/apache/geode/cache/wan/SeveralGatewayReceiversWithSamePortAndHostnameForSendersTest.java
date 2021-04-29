@@ -82,8 +82,6 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
       SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest.class
           .getResource("docker-compose.yml");
 
-  // Docker compose does not work on windows in CI. Ignore this test on windows
-  // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
   public static DockerComposeRule docker = new DockerComposeRule.Builder()
       .file(DOCKER_COMPOSE_PATH.getPath())
