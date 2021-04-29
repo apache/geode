@@ -49,7 +49,6 @@ import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.modules.session.catalina.ClientServerSessionCache;
 import org.apache.geode.modules.session.catalina.SessionManager;
-import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
@@ -57,9 +56,9 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 
 public class ClientServerSessionCacheDUnitTest implements Serializable {
   private static final String SESSION_REGION_NAME = RegionHelper.NAME + "_sessions";
-  private CacheRule cacheRule = new CacheRule();
-  private DistributedRule distributedRule = new DistributedRule();
-  private ClientCacheRule clientCacheRule = new ClientCacheRule();
+  private final CacheRule cacheRule = new CacheRule();
+  private final DistributedRule distributedRule = new DistributedRule();
+  private final ClientCacheRule clientCacheRule = new ClientCacheRule();
 
   @Rule
   public transient RuleChain ruleChain = RuleChain.outerRule(distributedRule)
@@ -189,7 +188,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
           .thenReturn(RegionShortcut.PARTITION_REDUNDANT.toString());
 
       final ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
-      clientCacheFactory.addPoolLocator("localhost", DistributedTestUtils.getLocatorPort());
+      clientCacheFactory.addPoolLocator("localhost", DistributedRule.getLocatorPort());
       clientCacheFactory.setPoolSubscriptionEnabled(true);
       clientCacheRule.createClientCache(clientCacheFactory);
 
@@ -233,7 +232,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     final RegionAttributes<Object, Object> expectedAttributes =
         cache.getRegionAttributes(RegionShortcut.PARTITION_REDUNDANT.toString());
 
-    final RegionAttributes attributes = region.getAttributes();
+    final RegionAttributes<String, HttpSession> attributes = region.getAttributes();
     assertThat(attributes.getScope()).isEqualTo(expectedAttributes.getScope());
     assertThat(attributes.getDataPolicy()).isEqualTo(expectedAttributes.getDataPolicy());
     assertThat(attributes.getPartitionAttributes())
@@ -294,7 +293,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
         .thenReturn(RegionShortcut.PARTITION_REDUNDANT.toString());
 
     final ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
-    clientCacheFactory.addPoolLocator("localhost", DistributedTestUtils.getLocatorPort());
+    clientCacheFactory.addPoolLocator("localhost", DistributedRule.getLocatorPort());
     clientCacheFactory.setPoolSubscriptionEnabled(true);
     clientCacheRule.createClientCache(clientCacheFactory);
 
