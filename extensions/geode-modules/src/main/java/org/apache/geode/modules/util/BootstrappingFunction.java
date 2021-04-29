@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -37,13 +39,14 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
 
 public class BootstrappingFunction implements Function, MembershipListener, DataSerializable {
 
   private static final long serialVersionUID = 1856043174458190605L;
-
+  private static final Logger logger = LogService.getLogger();
   public static final String ID = "bootstrapping-function";
   private static final ReentrantLock registerFunctionLock = new ReentrantLock();
 
@@ -97,6 +100,9 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     }
 
     if (cache == null) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Creating a new cache in BootstrappingFunction");
+      }
       cache = new CacheFactory().create();
     }
 
