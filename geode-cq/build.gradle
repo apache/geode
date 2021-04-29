@@ -55,6 +55,7 @@ dependencies {
   upgradeTestImplementation('org.mockito:mockito-core')
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+  upgradeTestImplementation(sourceSets.distributedTest.output)
 }
 
 ext.moduleName = group + '.cq'

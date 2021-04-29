@@ -78,6 +78,10 @@ public class VM implements Serializable {
 
   private final transient ChildVMLauncher childVMLauncher;
 
+  private static final boolean RUN_VM_CLASSLOADER_ISOLATED =
+      System.getenv("CLASSLOADER_ISOLATED") != null
+          && Boolean.parseBoolean(System.getenv("CLASSLOADER_ISOLATED"));
+
   private boolean classLoaderIsolated = false;
 
   /**
@@ -260,7 +264,7 @@ public class VM implements Serializable {
   }
 
   public VM initializeAsServerVM() {
-    bounceClassLoaderIsolated(this.version, true);
+    bounceClassLoaderIsolated(this.version, RUN_VM_CLASSLOADER_ISOLATED);
     return this;
   }
 

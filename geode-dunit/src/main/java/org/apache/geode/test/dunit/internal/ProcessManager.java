@@ -323,7 +323,9 @@ class ProcessManager implements ChildVMLauncher {
           "-Dboot.module.loader=org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader");
       // classPath = removeModulesFromPath(classPath, "geode-dunit", "");
       // classPath = removeStuffFromClasspath(classPath);
-      final String GEODE_DISTRIBUTED_TEST_HOME = System.getenv("GEODE_DISTRIBUTED_TEST_HOME");
+      final String GEODE_DISTRIBUTED_TEST_HOME =
+          System.getenv("GEODE_DISTRIBUTED_TEST_HOME") == null ? ""
+              : System.getenv("GEODE_DISTRIBUTED_TEST_HOME");
       addJBossClassPath(GEODE_DISTRIBUTED_TEST_HOME, cmds);
       cmds.add("org.jboss.modules.Main");
       cmds.add("-mp");

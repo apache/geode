@@ -262,22 +262,20 @@ acceptanceTest {
     environment "JAVA_HOME", "${project.testJVM}"
   }
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
-  environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/distributedTesting"
 }
 
 upgradeTest {
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
-  environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/distributedTesting"
 }
 
 distributedTest {
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
   environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/distributedTesting"
+  environment 'CLASSLOADER_ISOLATED' , 'true'
 }
 
 integrationTest {
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
-  environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/distributedTesting"
 }
 
 // Make precheckin task run all validation tests for checking in code.
