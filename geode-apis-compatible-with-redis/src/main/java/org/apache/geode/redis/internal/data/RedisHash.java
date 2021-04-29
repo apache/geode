@@ -47,7 +47,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -60,9 +59,9 @@ public class RedisHash extends AbstractRedisData {
   private ScheduledExecutorService HSCANSnapshotExpirationExecutor = null;
 
   private int myCalculatedSize;
-  private static int baseRedisHashOverhead;
-  private static int hashMapInternalValuePairOverhead;
-  private static int sizeOfOverheadOfFirstPair;
+  private static final int BASE_REDIS_HASH_OVERHEAD = 232;
+  protected static final int HASH_MAP_VALUE_PAIR_OVERHEAD = 96;
+  protected static final int SIZE_OF_OVERHEAD_OF_FIRST_PAIR = 96;
 
   private static int defaultHscanSnapshotsExpireCheckFrequency =
       Integer.getInteger("redis.hscan-snapshot-cleanup-interval", 30000);
@@ -106,45 +105,8 @@ public class RedisHash extends AbstractRedisData {
     this.MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE =
         this.defaultHscanSnapshotsMillisecondsToLive;
 
-    calibrate_memory_values();
+    this.myCalculatedSize = BASE_REDIS_HASH_OVERHEAD;
   }
-
-  private void calibrate_memory_values() {
-    ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
-
-    myCalculatedSize = baseRedisHashOverhead = reflectionObjectSizer.sizeof(this);
-    System.out.println("baseRedisHashOverhead: " + baseRedisHashOverhead);
-
-    HashMap<ByteArrayWrapper, ByteArrayWrapper> tempHashmap = new HashMap<>();
-
-    int emptyHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
-    System.out.println("emptyHashMapSize: " + emptyHashMapSize);
-
-    ByteArrayWrapper field1 = new ByteArrayWrapper("a".getBytes()); // this method breaks if you
-    ByteArrayWrapper value1 = new ByteArrayWrapper("b".getBytes()); // make these fields and values
-    ByteArrayWrapper field2 = new ByteArrayWrapper("c".getBytes()); // longer than one character
-    ByteArrayWrapper value2 = new ByteArrayWrapper("d".getBytes());
-
-    tempHashmap.put(field1, value1);
-    int oneEntryHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
-    System.out.println("oneEntryHashMapSize: " + oneEntryHashMapSize);
-
-    tempHashmap.put(field2, value2);
-    int twoEntriesHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
-    System.out.println("twoEntryHashMapSize: " + twoEntriesHashMapSize);
-
-    int sizeOfDataForOneFieldValuePair = 2;
-
-    hashMapInternalValuePairOverhead =
-        twoEntriesHashMapSize - oneEntryHashMapSize - sizeOfDataForOneFieldValuePair;
-    System.out.println("hashMapInternalValuePairOverhead: " + hashMapInternalValuePairOverhead);
-
-    sizeOfOverheadOfFirstPair = oneEntryHashMapSize - emptyHashMapSize
-        - hashMapInternalValuePairOverhead - sizeOfDataForOneFieldValuePair;
-    System.out.println("sizeOfOverheadOfFirstPair: " + sizeOfOverheadOfFirstPair);
-  }
-
-
 
   private void expireHScanSnapshots() {
     this.hScanSnapShotCreationTimes.entrySet().forEach(entry -> {
@@ -206,8 +168,7 @@ public class RedisHash extends AbstractRedisData {
 
   private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
     if (this.hash.isEmpty()) {
-      this.myCalculatedSize += sizeOfOverheadOfFirstPair;
-      System.out.println("adding in sizeOfOverheadOfFirstPair: " + myCalculatedSize);
+      this.myCalculatedSize += SIZE_OF_OVERHEAD_OF_FIRST_PAIR;
     }
 
     ByteArrayWrapper oldvalue = hash.put(field, value);
@@ -215,11 +176,7 @@ public class RedisHash extends AbstractRedisData {
     if (oldvalue == null) {
       calculateSizeOfNewFieldValuePair(field, value);
     } else {
-      System.out.println("update path: pre-change calculated size: " + myCalculatedSize);
       this.myCalculatedSize += value.length() - oldvalue.length();
-      System.out.println("update path: post-change calculated size: " + myCalculatedSize);
-      System.out.println(
-          "update path: newValueSize: " + value.length() + " oldvalueSize: " + oldvalue.length());
     }
 
     return oldvalue;
@@ -235,14 +192,18 @@ public class RedisHash extends AbstractRedisData {
     return oldvalue;
   }
 
+  private void calculateSizeOfNewFieldValuePair(ByteArrayWrapper field, ByteArrayWrapper value) {
+    this.myCalculatedSize += HASH_MAP_VALUE_PAIR_OVERHEAD + field.length() + value.length();
+  }
+
   private synchronized ByteArrayWrapper hashRemove(ByteArrayWrapper field) {
     ByteArrayWrapper oldValue = hash.remove(field);
     if (oldValue != null) {
-      myCalculatedSize -= hashMapInternalValuePairOverhead + field.length() + oldValue.length();
+      myCalculatedSize -= HASH_MAP_VALUE_PAIR_OVERHEAD + field.length() + oldValue.length();
     }
 
-    if (myCalculatedSize <= baseRedisHashOverhead + sizeOfOverheadOfFirstPair) {
-      myCalculatedSize = baseRedisHashOverhead;
+    if (hash.size() == 0) {
+      myCalculatedSize = BASE_REDIS_HASH_OVERHEAD;
     }
 
     return oldValue;
@@ -296,6 +257,7 @@ public class RedisHash extends AbstractRedisData {
       }
     }
     storeChanges(region, key, deltaInfo);
+
     return fieldsAdded;
   }
 
@@ -578,19 +540,5 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public int getSizeInBytes() {
     return myCalculatedSize;
-  }
-
-  @VisibleForTesting
-  protected HashMap<ByteArrayWrapper, ByteArrayWrapper> getHashMap() {
-    return hash;
-  }
-
-  private void calculateSizeOfNewFieldValuePair(ByteArrayWrapper field, ByteArrayWrapper value) {
-    int diffBetweenFieldLengthAndValueLength = Math.abs(field.length() - value.length());
-    System.out.println("diff: " + diffBetweenFieldLengthAndValueLength
-        + " pre-final calculated size: " + this.myCalculatedSize);
-    this.myCalculatedSize += hashMapInternalValuePairOverhead + field.length() + value.length()
-        - diffBetweenFieldLengthAndValueLength;
-    System.out.println("final myCalculatedSize: " + this.myCalculatedSize);
   }
 }
