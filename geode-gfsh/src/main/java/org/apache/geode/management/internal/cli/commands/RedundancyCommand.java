@@ -14,30 +14,20 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl.NO_REDUNDANT_COPIES_FOR_REGIONS;
 import static org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl.PRIMARY_TRANSFERS_COMPLETED;
 import static org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl.PRIMARY_TRANSFER_TIME;
 import static org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl.REDUNDANCY_NOT_SATISFIED_FOR_REGIONS;
 import static org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl.REDUNDANCY_SATISFIED_FOR_REGIONS;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.control.SerializableRestoreRedundancyResultsImpl;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.operation.RebalanceOperationPerformer;
 import org.apache.geode.management.internal.operation.RestoreRedundancyPerformer;
 import org.apache.geode.management.operation.RestoreRedundancyRequest;
 import org.apache.geode.management.runtime.RegionRedundancyStatus;
@@ -66,7 +56,6 @@ public class RedundancyCommand extends GfshCommand {
   public static final String SATISFIED_REDUNDANCY_SECTION = "satisfied-redundancy";
   public static final String PRIMARIES_INFO_SECTION = "primaries-info";
 
-  public static final KnownVersion ADDED_VERSION = KnownVersion.GEODE_1_13_0;
   public static final String INDENT = "  ";
 
   ResultModel execute(String[] includeRegions, String[] excludeRegions, boolean reassignPrimaries,
@@ -85,44 +74,6 @@ public class RedundancyCommand extends GfshCommand {
     RestoreRedundancyResults results = performer.perform(getCache(), request, isStatusCommand);
     return buildResultModelFromFunctionResults(results, isStatusCommand);
 
-  }
-
-  List<DistributedMember> filterViableMembers(
-      RebalanceOperationPerformer.MemberPRInfo prInfo) {
-    return prInfo.dsMemberList.stream()
-        .map(InternalDistributedMember.class::cast)
-        .filter(member -> member.getVersion().compareTo(ADDED_VERSION) >= 0)
-        .collect(Collectors.toList());
-  }
-
-  void populateLists(List<RebalanceOperationPerformer.MemberPRInfo> membersForEachRegion,
-      List<String> noMemberRegions, String[] includeRegions, String[] excludeRegions) {
-    // Include all regions
-    if (includeRegions == null) {
-      // Exclude these regions
-      List<String> excludedRegionList =
-          excludeRegions != null ? Arrays.asList(excludeRegions) : new ArrayList<>();
-
-      List<RebalanceOperationPerformer.MemberPRInfo> memberRegionList =
-          getMembersForEachRegion(excludedRegionList);
-      membersForEachRegion.addAll(memberRegionList);
-    } else {
-      for (String regionName : includeRegions) {
-        DistributedMember memberForRegion = getOneMemberForRegion(regionName);
-
-        // If we did not find a member for this region name, add it to the list of regions with no
-        // members
-        if (memberForRegion == null) {
-          noMemberRegions.add(regionName);
-        } else {
-          RebalanceOperationPerformer.MemberPRInfo memberPRInfo =
-              new RebalanceOperationPerformer.MemberPRInfo();
-          memberPRInfo.region = regionName;
-          memberPRInfo.dsMemberList.add(memberForRegion);
-          membersForEachRegion.add(memberPRInfo);
-        }
-      }
-    }
   }
 
   ResultModel buildResultModelFromFunctionResults(RestoreRedundancyResults results,
@@ -239,29 +190,5 @@ public class RedundancyCommand extends GfshCommand {
         .addLine(PRIMARY_TRANSFERS_COMPLETED + resultCollector.getTotalPrimaryTransfersCompleted());
     primaries
         .addLine(PRIMARY_TRANSFER_TIME + resultCollector.getTotalPrimaryTransferTime());
-  }
-
-  // Extracted for testing
-  List<RebalanceOperationPerformer.MemberPRInfo> getMembersForEachRegion(
-      List<String> excludedRegionList) {
-    InternalCache cache = (InternalCache) getCache();
-    return RebalanceOperationPerformer.getMemberRegionList(
-        ManagementService.getManagementService(cache), cache, excludedRegionList);
-  }
-
-  // Extracted for testing
-  DistributedMember getOneMemberForRegion(String regionName) {
-    String regionNameWithSeparator = regionName;
-    // The getAssociatedMembers method requires region names start with '/'
-    if (!regionName.startsWith(SEPARATOR)) {
-      regionNameWithSeparator = SEPARATOR + regionName;
-    }
-    return RebalanceOperationPerformer.getAssociatedMembers(regionNameWithSeparator,
-        (InternalCache) getCache());
-  }
-
-  // Extracted for testing
-  SerializableRestoreRedundancyResultsImpl getNewRestoreRedundancyResults() {
-    return new SerializableRestoreRedundancyResultsImpl();
   }
 }
