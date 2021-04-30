@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
 
 import java.util.Map;
@@ -24,6 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
@@ -42,15 +43,15 @@ public class PassiveExpirationManager {
   private final ScheduledExecutorService expirationExecutor;
   private final RedisStats redisStats;
 
+  @VisibleForTesting
+  public static final int INTERVAL = 3;
 
   public PassiveExpirationManager(Region<RedisKey, RedisData> dataRegion, RedisStats redisStats) {
     this.dataRegion = dataRegion;
     this.redisStats = redisStats;
     expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
-    int INTERVAL = 1;
     expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(dataRegion), INTERVAL,
-        INTERVAL,
-        SECONDS);
+        INTERVAL, MINUTES);
   }
 
   public void stop() {
