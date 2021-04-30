@@ -125,7 +125,7 @@ public class JMXMBeanDUnitTest implements Serializable {
     sslProperties.setProperty(SSL_TRUSTSTORE, singleKeystore);
     sslProperties.setProperty(SSL_ENABLED_COMPONENTS,
         SecurableCommunicationChannel.JMX.getConstant());
-    sslProperties.setProperty(SSL_PROTOCOLS, "TLSv1.2,TLSv1.1");
+    sslProperties.setProperty(SSL_PROTOCOLS, "TLSv1.2");
 
     sslPropertiesWithMultiKey = new Properties();
     sslPropertiesWithMultiKey.putAll(Maps.fromProperties(sslProperties));
