@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
@@ -655,27 +656,14 @@ public class CompiledComparison extends AbstractCompiledValue
         indexData = QueryUtils.getAvailableIndexIfAny(path, context, this._operator);
       }
 
-      // Do not use indexes when map index with allkeys and != condition or when comparing with null
-      try {
-        if (indexData != null
-            && indexData.getIndex() instanceof AbstractMapIndex
-            && ((AbstractMapIndex) indexData.getIndex()).getIsAllKeys()
-            && (this._operator == TOK_NE ||
-                (this._right != null && (this._right instanceof CompiledLiteral)
-                    && this._right.evaluate(context) == null)
-                ||
-                (this._left != null && (this._left instanceof CompiledLiteral)
-                    && this._left.evaluate(context) == null))) {
-          Index prIndex = ((AbstractIndex) indexData.getIndex()).getPRIndex();
-          if (prIndex != null) {
-            ((PartitionedIndex) prIndex).releaseIndexReadLockForRemove();
-          } else {
-            ((AbstractIndex) indexData.getIndex()).releaseIndexReadLockForRemove();
-          }
-          return null;
+      if (indexCannotBeUsed(context, indexData)) {
+        Index prIndex = ((AbstractIndex) indexData.getIndex()).getPRIndex();
+        if (prIndex != null) {
+          ((PartitionedIndex) prIndex).releaseIndexReadLockForRemove();
+        } else {
+          ((AbstractIndex) indexData.getIndex()).releaseIndexReadLockForRemove();
         }
-      } catch (Exception e) {
-        // Ignore. Should not throw with a CompiledLiteral.evaluate.
+        return null;
       }
 
       IndexProtocol index = null;
@@ -694,6 +682,42 @@ public class CompiledComparison extends AbstractCompiledValue
       privSetIndexInfo(NO_INDEXES_IDENTIFIER, context);
     }
     return newIndexInfo;
+  }
+
+  /**
+   *
+   * @return true if the index is a MapIndex of type allkeys ([*]) and this is a != comparison
+   *         or it is comparing the map value against null
+   */
+  @VisibleForTesting
+  boolean indexCannotBeUsed(ExecutionContext context, IndexData indexData) {
+    if (indexData == null) {
+      return false;
+    }
+    if (!(indexData.getIndex() instanceof AbstractMapIndex)) {
+      return false;
+    }
+    if (!(((AbstractMapIndex) indexData.getIndex()).getIsAllKeys())) {
+      return false;
+    }
+    if (this._operator == TOK_NE) {
+      return true;
+    }
+    try {
+      if (this._right != null
+          && (this._right instanceof CompiledLiteral)
+          && this._right.evaluate(context) == null) {
+        return true;
+      }
+      if (this._left != null
+          && (this._left instanceof CompiledLiteral)
+          && this._left.evaluate(context) == null) {
+        return true;
+      }
+    } catch (Exception e) {
+      return false;
+    }
+    return false;
   }
 
   CompiledValue getKey(ExecutionContext context)

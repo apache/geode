@@ -16,7 +16,6 @@ package org.apache.geode.cache.query.internal.index;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -353,9 +352,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
       if (key == null) {
         return;
       }
-      Iterator<Map.Entry<?, ?>> entries = ((Map) key).entrySet().iterator();
-      while (entries.hasNext()) {
-        Map.Entry<?, ?> mapEntry = entries.next();
+      for (Map.Entry<?, ?> mapEntry : ((Map<?, ?>) key).entrySet()) {
         Object mapKey = mapEntry.getKey();
         Object indexKey = mapEntry.getValue();
         if (isAdd) {
@@ -370,7 +367,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
         if (key == null) {
           indexKey = QueryService.UNDEFINED;
         } else {
-          indexKey = ((Map) key).get(mapKey);
+          indexKey = ((Map<?, ?>) key).get(mapKey);
         }
         if (isAdd) {
           this.doIndexAddition(mapKey, indexKey, value, entry);

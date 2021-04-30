@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -359,27 +358,11 @@ public class MapRangeIndexMaintenanceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN']", SEPARATOR + "portfolio ");
-    assertThat(keyIndex1).isInstanceOf(CompactRangeIndex.class);
+
+    Class<CompactRangeIndex> indexType = CompactRangeIndex.class;
+    assertThat(keyIndex1).isInstanceOf(indexType);
     testQueriesForValueInMapField(region, qs);
-
-    long keys = ((CompactRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
-    long mapIndexKeys =
-        ((CompactRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
-    long values =
-        ((CompactRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
-    long uses =
-        ((CompactRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
-
-    // The number of keys must be equal to the number of different values the
-    // positions map takes in region entries for the 'SUN' key:
-    // ("nothing", "more"). null or UNDEFINED not included
-    assertThat(keys).isEqualTo(2);
-    // mapIndexKeys must be zero because the index used is a range index and not a map index
-    assertThat(mapIndexKeys).isEqualTo(0);
-    // The number of values must be equal to the number of region entries
-    assertThat(values).isEqualTo(7);
-    // The index must be used in every query
-    assertThat(uses).isEqualTo(4);
+    verifyStatsForQueriesForValueInMapFieldWithAnyRangeIndexWithOneKey(indexType);
   }
 
   @Test
@@ -390,31 +373,11 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     keyIndex1 =
         qs.createIndex(INDEX_NAME, "positions['SUN', 'ERICSSON']", SEPARATOR + "portfolio ");
-    assertThat(keyIndex1).isInstanceOf(CompactMapRangeIndex.class);
+
+    Class<CompactMapRangeIndex> indexType = CompactMapRangeIndex.class;
+    assertThat(keyIndex1).isInstanceOf(indexType);
     testQueriesForValueInMapField(region, qs);
-
-    long keys = ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
-    long mapIndexKeys =
-        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
-    long values =
-        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
-    long uses =
-        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
-
-    // The number of keys must be equal to the number of different values the
-    // positions map takes for the 'SUN' key ("nothing", "more") plus
-    // the number of different values the positions map takes for the 'ERICSSON' key
-    // ("hey"). null or UNDEFINED not included.
-    assertThat(keys).isEqualTo(3);
-    // The number of mapIndexKeys must be equal to the number of keys
-    // in the index that appear in region entries:
-    // 'SUN', 'ERICSSON'
-    assertThat(mapIndexKeys).isEqualTo(2);
-    // The number of values must be equal to the number of entries
-    // times the number of indexed keys in the map
-    assertThat(values).isEqualTo(14);
-    // The index must be used in all queries
-    assertThat(uses).isEqualTo(4);
+    verifyStatsForQueriesForValueInMapFieldWithAnyMapIndexWithSeveralKeys(indexType);
   }
 
   @Test
@@ -424,33 +387,11 @@ public class MapRangeIndexMaintenanceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio ");
-    assertThat(keyIndex1).isInstanceOf(CompactMapRangeIndex.class);
+
+    Class<CompactMapRangeIndex> indexType = CompactMapRangeIndex.class;
+    assertThat(keyIndex1).isInstanceOf(indexType);
     testQueriesForValueInMapField(region, qs);
-
-    long keys = ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
-    long mapIndexKeys =
-        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
-    long values =
-        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
-    long uses =
-        ((CompactMapRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
-
-    // The number of keys must be equal to the number of different values the
-    // positions map takes for each key
-    // for each entry in the region (null not included):
-    // "something", "nothing", "more", "empty", "hey", "tip"
-    assertThat(keys).isEqualTo(6);
-    // The number of mapIndexKeys must be equal to the number of different keys
-    // that appear in entries of the region:
-    // "IBM", "ERICSSON", "HP", "SUN", null
-    assertThat(mapIndexKeys).isEqualTo(5);
-    // The number of values must be equal to the number of values the
-    // positions map takes for each key
-    // for each entry in the region:
-    // "something", null, "nothing", "more", "empty", "hey", "more", "tip"
-    assertThat(values).isEqualTo(8);
-    // The index must not be used in queries with "!=" or when comparing with null
-    assertThat(uses).isEqualTo(1);
+    verifyStatsForQueriesForValueInMapFieldWithAnyMapIndexWithStar(indexType);
   }
 
   @Test
@@ -461,27 +402,11 @@ public class MapRangeIndexMaintenanceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 = qs.createIndex(INDEX_NAME, "positions['SUN']", SEPARATOR + "portfolio ");
-    assertThat(keyIndex1).isInstanceOf(RangeIndex.class);
+
+    Class<RangeIndex> indexType = RangeIndex.class;
+    assertThat(keyIndex1).isInstanceOf(indexType);
     testQueriesForValueInMapField(region, qs);
-
-    long keys = ((RangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
-    long mapIndexKeys =
-        ((RangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
-    long values =
-        ((RangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
-    long uses =
-        ((RangeIndex) keyIndex1).internalIndexStats.getTotalUses();
-
-    // The number of keys must be equal to the number of different values the
-    // positions map takes in region entries for the 'SUN' key:
-    // ("nothing", "more") excluding null.
-    assertThat(keys).isEqualTo(2);
-    // mapIndexKeys must be zero because the index used is a range index and not a map index
-    assertThat(mapIndexKeys).isEqualTo(0);
-    // The number of values must be equal to the number of region entries
-    assertThat(values).isEqualTo(7);
-    // The index must be used in every query
-    assertThat(uses).isEqualTo(4);
+    verifyStatsForQueriesForValueInMapFieldWithAnyRangeIndexWithOneKey(indexType);
   }
 
   @Test
@@ -493,31 +418,11 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
     keyIndex1 =
         qs.createIndex(INDEX_NAME, "positions['SUN', 'ERICSSON']", SEPARATOR + "portfolio ");
-    assertThat(keyIndex1).isInstanceOf(MapRangeIndex.class);
+
+    Class<MapRangeIndex> indexType = MapRangeIndex.class;
+    assertThat(keyIndex1).isInstanceOf(indexType);
     testQueriesForValueInMapField(region, qs);
-
-    long keys = ((MapRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
-    long mapIndexKeys =
-        ((MapRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
-    long values =
-        ((MapRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
-    long uses =
-        ((MapRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
-
-    // The number of keys must be equal to the number of different values the
-    // positions map takes for the 'SUN' key ("nothing", "more") plus
-    // the number of different values the positions map takes for the 'ERICSSON' key
-    // ("hey") for each entry in the region (null values not counted).
-    assertThat(keys).isEqualTo(3);
-    // The number of mapIndexKeys must be equal to the number of keys
-    // in the index that appear in the positions map of region entries:
-    // 'SUN', 'ERICSSON'
-    assertThat(mapIndexKeys).isEqualTo(2);
-    // The number of values must be equal to the number of
-    // entries times the number of keys in the index
-    assertThat(values).isEqualTo(14);
-    // The index must be used for all queries
-    assertThat(uses).isEqualTo(4);
+    verifyStatsForQueriesForValueInMapFieldWithAnyMapIndexWithSeveralKeys(indexType);
   }
 
   @Test
@@ -528,31 +433,11 @@ public class MapRangeIndexMaintenanceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", SEPARATOR + "portfolio ");
-    assertThat(keyIndex1).isInstanceOf(MapRangeIndex.class);
+
+    Class<MapRangeIndex> indexType = MapRangeIndex.class;
+    assertThat(keyIndex1).isInstanceOf(indexType);
     testQueriesForValueInMapField(region, qs);
-
-    long keys = ((MapRangeIndex) keyIndex1).internalIndexStats.getNumberOfKeys();
-    long mapIndexKeys =
-        ((MapRangeIndex) keyIndex1).internalIndexStats.getNumberOfMapIndexKeys();
-    long values =
-        ((MapRangeIndex) keyIndex1).internalIndexStats.getNumberOfValues();
-    long uses =
-        ((MapRangeIndex) keyIndex1).internalIndexStats.getTotalUses();
-
-    // The number of keys must be equal to the number of different values the
-    // positions map takes for each key for each entry in the region:
-    // "something", null, "nothing", "more", "hey", "tip"
-    assertThat(keys).isEqualTo(6);
-    // The number of mapIndexKeys must be equal to the number of different keys
-    // that appear in entries of the region:
-    // "IBM", "ERICSSON", "HP", "SUN", "cannotBeNull"
-    assertThat(mapIndexKeys).isEqualTo(5);
-    // The number of values must be equal to the number of values the
-    // positions map takes for each key for each entry in the region:
-    // "something", null, "nothing", "more", "hey", "more", "tip"
-    assertThat(values).isEqualTo(8);
-    // The index must not be used in queries with "!=" or when comparing with null
-    assertThat(uses).isEqualTo(1);
+    verifyStatsForQueriesForValueInMapFieldWithAnyMapIndexWithStar(indexType);
   }
 
   public void testQueriesForValueInMapField(Region<Object, Object> region, QueryService qs)
@@ -607,36 +492,106 @@ public class MapRangeIndexMaintenanceJUnitTest {
     SelectResults<Object> result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
         .execute());
-    assertThat(result.size()).isEqualTo(3);
-    assertThat(result.containsAll(Arrays.asList(p1, p3, p6))).isTrue();
+    assertThat(result).containsExactlyInAnyOrder(p1, p3, p6);
 
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] != null";
     result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
         .execute());
-    assertThat(result.size()).isEqualTo(4);
-    assertThat(result.containsAll(Arrays.asList(p2, p4, p5, p7))).isTrue();
+    assertThat(result).containsExactlyInAnyOrder(p2, p4, p5, p7);
 
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] = 'nothing'";
     result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
         .execute());
-    assertThat(result.size()).isEqualTo(1);
-    assertThat(result.contains(p4)).isTrue();
+    assertThat(result).containsExactly(p4);
 
     query = "select * from " + SEPARATOR + "portfolio p where p.positions['SUN'] != 'nothing'";
     result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
         .execute());
-    assertThat(result.size()).isEqualTo(6);
-    assertThat(result.containsAll(Arrays.asList(p1, p2, p3, p5, p6, p7))).isTrue();
+    assertThat(result).containsExactlyInAnyOrder(p1, p2, p3, p5, p6, p7);
 
     query = "select * from " + SEPARATOR + "portfolio p";
     result = UncheckedUtils.uncheckedCast(qs
         .newQuery(query)
         .execute());
-    assertThat(result.size()).isEqualTo(7);
-    assertThat(result.containsAll(Arrays.asList(p1, p2, p3, p4, p5, p6, p7))).isTrue();
+    assertThat(result).containsExactlyInAnyOrder(p1, p2, p3, p4, p5, p6, p7);
+  }
+
+  private <T extends AbstractIndex> void verifyStatsForQueriesForValueInMapFieldWithAnyRangeIndexWithOneKey(
+      Class<T> indexType) {
+    long keys = (indexType.cast(keyIndex1)).internalIndexStats.getNumberOfKeys();
+    long mapIndexKeys =
+        (indexType.cast(keyIndex1)).internalIndexStats.getNumberOfMapIndexKeys();
+    long values =
+        (indexType.cast(keyIndex1)).internalIndexStats.getNumberOfValues();
+    long uses =
+        (indexType.cast(keyIndex1)).internalIndexStats.getTotalUses();
+
+    // The number of keys must be equal to the number of different values the
+    // positions map takes in region entries for the 'SUN' key:
+    // ("nothing", "more"). null or UNDEFINED not included.
+    assertThat(keys).isEqualTo(2);
+    // mapIndexKeys must be zero because the index used is a range index and not a map index.
+    assertThat(mapIndexKeys).isEqualTo(0);
+    // The number of values must be equal to the number of region entries.
+    assertThat(values).isEqualTo(region.keySet().size());
+    // The index must be used in all the queries that have positions['SUN'] in the filter.
+    assertThat(uses).isEqualTo(4);
+  }
+
+  private <T extends AbstractMapIndex> void verifyStatsForQueriesForValueInMapFieldWithAnyMapIndexWithSeveralKeys(
+      Class<T> indexType) {
+    long keys = (indexType.cast(keyIndex1)).internalIndexStats.getNumberOfKeys();
+    long mapIndexKeys =
+        (indexType.cast(keyIndex1)).internalIndexStats.getNumberOfMapIndexKeys();
+    long values =
+        (indexType.cast(keyIndex1)).internalIndexStats.getNumberOfValues();
+    long uses =
+        (indexType.cast(keyIndex1)).internalIndexStats.getTotalUses();
+
+    // The number of keys must be equal to the number of different values the
+    // positions map takes for the 'SUN' key ("nothing", "more") plus
+    // the number of different values the positions map takes for the 'ERICSSON' key
+    // ("hey"). null or UNDEFINED not included.
+    assertThat(keys).isEqualTo(3);
+    // The number of mapIndexKeys must be equal to the number of keys
+    // in the index that appear in region entries:
+    // 'SUN', 'ERICSSON'
+    assertThat(mapIndexKeys).isEqualTo(2);
+    // The number of values must be equal to the number of entries
+    // in the region times the number of indexed keys in the map: 'SUN', 'ERICSSON'.
+    assertThat(values).isEqualTo(region.keySet().size() * 2L);
+    // The index must be used in all the queries that have positions['SUN'] in the filter.
+    assertThat(uses).isEqualTo(4);
+  }
+
+  private <T extends AbstractMapIndex> void verifyStatsForQueriesForValueInMapFieldWithAnyMapIndexWithStar(
+      Class<T> indexType) {
+    long keys = (indexType.cast(keyIndex1)).internalIndexStats.getNumberOfKeys();
+    long mapIndexKeys =
+        (indexType.cast(keyIndex1)).internalIndexStats.getNumberOfMapIndexKeys();
+    long values =
+        (indexType.cast(keyIndex1)).internalIndexStats.getNumberOfValues();
+    long uses =
+        (indexType.cast(keyIndex1)).internalIndexStats.getTotalUses();
+
+    // The number of keys must be equal to the number of different values the
+    // positions map takes for each key for each entry in the region (null not included):
+    // "something", "nothing", "more", "empty", "hey", "tip"
+    assertThat(keys).isEqualTo(6);
+    // The number of mapIndexKeys must be equal to the number of different keys
+    // that appear in entries of the region:
+    // "IBM", "ERICSSON", "HP", "SUN", "cannotBeNull".
+    assertThat(mapIndexKeys).isEqualTo(5);
+    // The number of values must be equal to the number of values the
+    // positions map takes for each key for each entry in the region:
+    // "something", null, "nothing", "more", "empty", "hey", "more", "tip".
+    assertThat(values).isEqualTo(8);
+    // The index must be used in all the queries that have positions['SUN'] in the filter
+    // except for those using "!=" to compare with it or when comparing it with null.
+    assertThat(uses).isEqualTo(1);
   }
 
   @Test

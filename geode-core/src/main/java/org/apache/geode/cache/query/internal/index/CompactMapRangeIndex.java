@@ -109,9 +109,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
       if (key == null) {
         return;
       }
-      Iterator<Map.Entry<?, ?>> entries = ((Map) key).entrySet().iterator();
-      while (entries.hasNext()) {
-        Map.Entry<?, ?> mapEntry = entries.next();
+      for (Map.Entry<?, ?> mapEntry : ((Map<?, ?>) key).entrySet()) {
         Object mapKey = mapEntry.getKey();
         Object indexKey = mapEntry.getValue();
         this.saveIndexAddition(mapKey, indexKey, value, entry);
@@ -123,7 +121,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
         if (key == null) {
           indexKey = QueryService.UNDEFINED;
         } else {
-          indexKey = ((Map) key).get(mapKey);
+          indexKey = ((Map<?, ?>) key).get(mapKey);
         }
         this.saveIndexAddition(mapKey, indexKey, value, entry);
       }
