@@ -328,22 +328,6 @@ public class RestAPIsWithSSLDUnitTest {
   }
 
   @Test
-  public void testSSLWithTLSv11Protocol() throws Exception {
-    Properties props = new Properties();
-    props.setProperty(SSL_KEYSTORE, findTrustedJKSWithSingleEntry().getCanonicalPath());
-    props.setProperty(SSL_TRUSTSTORE, findTrustedJKSWithSingleEntry().getCanonicalPath());
-    props.setProperty(SSL_KEYSTORE_PASSWORD, "password");
-    props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
-    props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    props.setProperty(SSL_PROTOCOLS, "TLSv1.1");
-    props.setProperty(SSL_CIPHERS, "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
-    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
-
-    startClusterWithSSL(props);
-    validateConnection(props);
-  }
-
-  @Test
   public void testSSLWithTLSv12Protocol() throws Exception {
     Properties props = new Properties();
     props.setProperty(SSL_KEYSTORE, findTrustedJKSWithSingleEntry().getCanonicalPath());
@@ -503,20 +487,6 @@ public class RestAPIsWithSSLDUnitTest {
         findTrustedJKSWithSingleEntry().getCanonicalPath());
     props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
     props.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLS");
-
-    startClusterWithSSL(props);
-    validateConnection(props);
-  }
-
-  @Test
-  public void testSSLWithTLSv11ProtocolLegacy() throws Exception {
-    Properties props = new Properties();
-    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
-    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE,
-        findTrustedJKSWithSingleEntry().getCanonicalPath());
-    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
-    props.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.1");
-    props.setProperty(HTTP_SERVICE_SSL_CIPHERS, "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
 
     startClusterWithSSL(props);
     validateConnection(props);

@@ -424,7 +424,7 @@ public class LocatorDUnitTest implements Serializable {
     properties.setProperty(SSL_KEYSTORE, getSingleKeyKeystore());
     properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    properties.setProperty(SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
+    properties.setProperty(SSL_PROTOCOLS, "TLSv1.2");
     properties.setProperty(SSL_TRUSTSTORE, getSingleKeyKeystore());
     properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
 
