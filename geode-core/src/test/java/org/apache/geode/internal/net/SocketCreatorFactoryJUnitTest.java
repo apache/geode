@@ -369,7 +369,7 @@ public class SocketCreatorFactoryJUnitTest {
     properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
     properties.setProperty(SSL_CIPHERS,
         "TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_DSS_WITH_AES_256_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
-    properties.setProperty(SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
+    properties.setProperty(SSL_PROTOCOLS, "TLSv1.2");
     properties.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
     properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
@@ -399,7 +399,7 @@ public class SocketCreatorFactoryJUnitTest {
     properties.setProperty(SERVER_SSL_ENABLED, "true");
     properties.setProperty(SERVER_SSL_CIPHERS,
         "TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_DSS_WITH_AES_256_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
-    properties.setProperty(SERVER_SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
+    properties.setProperty(SERVER_SSL_PROTOCOLS, "TLSv1.2");
     properties.setProperty(SERVER_SSL_KEYSTORE, jks.getCanonicalPath());
     properties.setProperty(SERVER_SSL_KEYSTORE_PASSWORD, "password");
     properties.setProperty(SERVER_SSL_KEYSTORE_TYPE, "JKS");
@@ -433,7 +433,7 @@ public class SocketCreatorFactoryJUnitTest {
     properties.setProperty(CLUSTER_SSL_ENABLED, "true");
     properties.setProperty(CLUSTER_SSL_CIPHERS,
         "TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_DSS_WITH_AES_256_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
-    properties.setProperty(CLUSTER_SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
+    properties.setProperty(CLUSTER_SSL_PROTOCOLS, "TLSv1.2");
     properties.setProperty(CLUSTER_SSL_KEYSTORE, jks.getCanonicalPath());
     properties.setProperty(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
     properties.setProperty(CLUSTER_SSL_KEYSTORE_TYPE, "JKS");
@@ -467,7 +467,7 @@ public class SocketCreatorFactoryJUnitTest {
     properties.setProperty(JMX_MANAGER_SSL_ENABLED, "true");
     properties.setProperty(JMX_MANAGER_SSL_CIPHERS,
         "TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_DSS_WITH_AES_256_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
-    properties.setProperty(JMX_MANAGER_SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
+    properties.setProperty(JMX_MANAGER_SSL_PROTOCOLS, "TLSv1.2");
     properties.setProperty(JMX_MANAGER_SSL_KEYSTORE, jks.getCanonicalPath());
     properties.setProperty(JMX_MANAGER_SSL_KEYSTORE_PASSWORD, "password");
     properties.setProperty(JMX_MANAGER_SSL_KEYSTORE_TYPE, "JKS");
@@ -501,7 +501,7 @@ public class SocketCreatorFactoryJUnitTest {
     properties.setProperty(GATEWAY_SSL_ENABLED, "true");
     properties.setProperty(GATEWAY_SSL_CIPHERS,
         "TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_DSS_WITH_AES_256_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
-    properties.setProperty(GATEWAY_SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
+    properties.setProperty(GATEWAY_SSL_PROTOCOLS, "TLSv1.2");
     properties.setProperty(GATEWAY_SSL_KEYSTORE, jks.getCanonicalPath());
     properties.setProperty(GATEWAY_SSL_KEYSTORE_PASSWORD, "password");
     properties.setProperty(GATEWAY_SSL_KEYSTORE_TYPE, "JKS");
@@ -535,7 +535,7 @@ public class SocketCreatorFactoryJUnitTest {
     properties.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
     properties.setProperty(HTTP_SERVICE_SSL_CIPHERS,
         "TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_DSS_WITH_AES_256_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
-    properties.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
+    properties.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.2");
     properties.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
     properties.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
     properties.setProperty(HTTP_SERVICE_SSL_KEYSTORE_TYPE, "JKS");
