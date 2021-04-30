@@ -33,7 +33,6 @@ import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.PassiveExpirationManager;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrationTest {
