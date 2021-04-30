@@ -76,11 +76,11 @@ public class SSLUtilTest {
 
   @Test
   public void getARealProtocolAfterProcessingAny() throws Exception {
-    final String[] algorithms = {"dream weaver", "any", "TLSv1.1"};
+    final String[] algorithms = {"dream weaver", "any", "TLSv1.2"};
     final String[] algorithmsForAny = new String[] {"sweet dreams (are made of this)"};
     final SSLContext sslContextInstance = SSLUtil.findSSLContextForProtocols(algorithms,
         algorithmsForAny);
-    assertThat(sslContextInstance.getProtocol().equalsIgnoreCase("TLSv1.1")).isTrue();
+    assertThat(sslContextInstance.getProtocol().equalsIgnoreCase("TLSv1.2")).isTrue();
   }
 
   @Test
