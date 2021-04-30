@@ -16,6 +16,11 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
+  <!-- This module was also published with a richer model, Gradle metadata,  -->
+  <!-- which should be used instead. Do not delete the following line which  -->
+  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+  <!-- that they should prefer consuming it instead. -->
+  <!-- do_not_remove: published-with-gradle-metadata -->
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.geode</groupId>
   <artifactId>geode-all-bom</artifactId>
@@ -587,18 +592,6 @@
         <groupId>com.jayway.jsonpath</groupId>
         <artifactId>json-path</artifactId>
         <version>2.5.0</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.palantir.docker.compose</groupId>
-        <artifactId>docker-compose-rule-core</artifactId>
-        <version>0.31.1</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.palantir.docker.compose</groupId>
-        <artifactId>docker-compose-rule-junit4</artifactId>
-        <version>0.31.1</version>
         <scope>compile</scope>
       </dependency>
       <dependency>

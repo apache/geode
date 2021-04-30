@@ -14,8 +14,6 @@
  */
 package org.apache.geode.client.sni;
 
-import static com.palantir.docker.compose.execution.DockerComposeExecArgument.arguments;
-import static com.palantir.docker.compose.execution.DockerComposeExecOption.options;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
@@ -26,14 +24,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import com.palantir.docker.compose.DockerComposeRule;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -46,6 +42,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
+import org.apache.geode.rules.DockerComposeRule;
 
 /**
  * This test runs against a 1-server, 1-locator Geode cluster. The server and locator run inside
@@ -62,22 +59,20 @@ public class SingleServerSNIAcceptanceTest {
   private static final URL DOCKER_COMPOSE_PATH =
       SingleServerSNIAcceptanceTest.class.getResource("docker-compose.yml");
 
-  // Docker compose does not work on windows in CI. Ignore this test on windows
-  // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
-  public static NotOnWindowsDockerRule docker =
-      new NotOnWindowsDockerRule(() -> DockerComposeRule.builder()
-          .file(DOCKER_COMPOSE_PATH.getPath()).build());
+  public static DockerComposeRule docker = new DockerComposeRule.Builder()
+      .file(DOCKER_COMPOSE_PATH.getPath())
+      .service("haproxy", 15443)
+      .build();
 
   private static ClientCache cache;
   private static Region<String, String> region;
   private static Map<String, String> bulkData;
 
   @BeforeClass
-  public static void beforeClass() throws IOException, InterruptedException {
+  public static void beforeClass() {
     // start up server/locator processes and initialize the server cache
-    docker.get().exec(options("-T"), "geode",
-        arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
+    docker.execForService("geode", "gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh");
 
     final String trustStorePath =
         createTempFileFromResource(SingleServerSNIAcceptanceTest.class,
@@ -104,8 +99,7 @@ public class SingleServerSNIAcceptanceTest {
 
   @AfterClass
   public static void afterClass() throws Exception {
-    String logs = docker.get().exec(options("-T"), "geode",
-        arguments("cat", "server-dolores/server-dolores.log"));
+    String logs = docker.execForService("geode", "cat", "server-dolores/server-dolores.log");
     System.out.println("server logs------------------------------------------");
     System.out.println(logs);
 
@@ -191,10 +185,7 @@ public class SingleServerSNIAcceptanceTest {
   }
 
   protected static ClientCache getClientCache(Properties properties) {
-    int proxyPort = docker.get().containers()
-        .container("haproxy")
-        .port(15443)
-        .getExternalPort();
+    int proxyPort = docker.getExternalPortForService("haproxy", 15443);
     return new ClientCacheFactory(properties)
         .addPoolLocator("locator-maeve", 10334)
         .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
