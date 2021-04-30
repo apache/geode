@@ -14,14 +14,19 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.Collections.emptySet;
 import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -29,6 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -43,33 +49,19 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 
-
 public class DistributedRegionTest {
+
   private RegionVersionVector<VersionSource<Object>> vector;
   private RegionVersionHolder<VersionSource<Object>> holder;
   private VersionSource<Object> lostMemberVersionID;
   private InternalDistributedMember member;
 
   @Before
-  @SuppressWarnings("unchecked")
   public void setup() {
-    vector = mock(RegionVersionVector.class);
-    holder = mock(RegionVersionHolder.class);
-    lostMemberVersionID = mock(VersionSource.class);
+    vector = uncheckedCast(mock(RegionVersionVector.class));
+    holder = uncheckedCast(mock(RegionVersionHolder.class));
+    lostMemberVersionID = uncheckedCast(mock(VersionSource.class));
     member = mock(InternalDistributedMember.class);
-  }
-
-  @Test
-  public void shouldBeMockable() throws Exception {
-    DistributedRegion mockDistributedRegion = mock(DistributedRegion.class);
-    EntryEventImpl mockEntryEventImpl = mock(EntryEventImpl.class);
-    Object returnValue = new Object();
-
-    when(mockDistributedRegion.validatedDestroy(any(), eq(mockEntryEventImpl)))
-        .thenReturn(returnValue);
-
-    assertThat(mockDistributedRegion.validatedDestroy(new Object(), mockEntryEventImpl))
-        .isSameAs(returnValue);
   }
 
   @Test
@@ -99,7 +91,7 @@ public class DistributedRegionTest {
 
     distributedRegion.cleanUpAfterFailedGII(true);
 
-    verify(diskRegion).resetRecoveredEntries(eq(distributedRegion));
+    verify(diskRegion).resetRecoveredEntries(distributedRegion);
     verify(distributedRegion, never()).closeEntries();
   }
 
@@ -259,5 +251,66 @@ public class DistributedRegionTest {
         .isInstanceOf(GatewaySenderConfigurationException.class)
         .hasMessage("Parallel Gateway Sender " + senderId
             + " can not be used with replicated region " + regionPath);
+  }
+
+  @Test
+  public void obtainWriteLocksForClear_invokes_lockLocallyForClear() {
+    DistributedRegion distributedRegion = distributedRegionForClearLocking();
+    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+
+    distributedRegion.obtainWriteLocksForClear(regionEvent, emptySet());
+
+    verify(distributedRegion).lockLocallyForClear(any(), any(), eq(regionEvent));
+  }
+
+  @Test
+  public void obtainWriteLocksForClear_invokes_lockAndFlushClearToOthers() {
+    Set<InternalDistributedMember> recipients = emptySet();
+    DistributedRegion distributedRegion = distributedRegionForClearLocking();
+    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+
+    distributedRegion.obtainWriteLocksForClear(regionEvent, recipients);
+
+    verify(distributedRegion).lockAndFlushClearToOthers(regionEvent, recipients);
+  }
+
+  @Test
+  public void releaseWriteLocksForClear_invokes_releaseLockLocallyForClear() {
+    DistributedRegion distributedRegion = distributedRegionForClearLocking();
+    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+
+    distributedRegion.releaseWriteLocksForClear(regionEvent, emptySet());
+
+    verify(distributedRegion).releaseLockLocallyForClear(regionEvent);
+  }
+
+  @Test
+  public void releaseWriteLocksForClear_invokes_distributedClearOperationReleaseLocks() {
+    Set<InternalDistributedMember> recipients = emptySet();
+    DistributedRegion distributedRegion = distributedRegionForClearLocking();
+    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+
+    distributedRegion.releaseWriteLocksForClear(regionEvent, recipients);
+
+    verify(distributedRegion).distributedClearOperationReleaseLocks(regionEvent, recipients);
+  }
+
+  private DistributedRegion distributedRegionForClearLocking() {
+    // use partial-mock with null fields to verify method invocations
+    DistributedRegion distributedRegion = mock(DistributedRegion.class, CALLS_REAL_METHODS);
+
+    // stub out getDistributionManager and getMyId
+    doReturn(null).when(distributedRegion).getDistributionManager();
+    doReturn(null).when(distributedRegion).getMyId();
+
+    // doNothing when invoking locking methods for clear
+    doNothing().when(distributedRegion).lockAndFlushClearToOthers(any(), any());
+    doNothing().when(distributedRegion).lockLocallyForClear(any(), any(), any());
+
+    // doNothing when invoking unlocking methods for clear
+    doNothing().when(distributedRegion).distributedClearOperationReleaseLocks(any(), any());
+    doNothing().when(distributedRegion).releaseLockLocallyForClear(any());
+
+    return distributedRegion;
   }
 }
