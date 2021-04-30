@@ -30,6 +30,7 @@ dependencies {
   implementation(project(':geode-unsafe'))
   implementation(project(':geode-gfsh'))
   implementation(project(':geode-logging'))
+  jbossModular(project(':geode-dunit'))
 
 
   api('junit:junit') {

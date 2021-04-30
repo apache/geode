@@ -125,7 +125,7 @@ public class SecurityTestUtils {
   protected static final int NOFORCE_AUTHREQ_EXCEPTION = 16;
 
   protected static final String REGION_NAME = "AuthRegion";
-  protected static final String[] KEYS =
+  public static final String[] KEYS =
       {"key1", "key2", "key3", "key4", "key5", "key6", "key7", "key8"};
   protected static final String[] VALUES =
       {"value1", "value2", "value3", "value4", "value5", "value6", "value7", "value8"};
