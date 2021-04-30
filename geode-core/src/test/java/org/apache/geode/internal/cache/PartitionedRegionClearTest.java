@@ -21,15 +21,16 @@ import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentCaptor.forClass;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -127,7 +128,7 @@ public class PartitionedRegionClearTest {
     partitionedRegionClear.obtainClearLockLocal(internalDistributedMember);
 
     // act
-    boolean result = partitionedRegionClear.isLockedForListenerAndClientNotification();
+    boolean result = partitionedRegionClear.isLockedForListenerAndClientNotificationForTesting();
 
     // assert
     assertThat(result).isTrue();
@@ -139,7 +140,7 @@ public class PartitionedRegionClearTest {
     when(distributionManager.isCurrentMember(internalDistributedMember)).thenReturn(false);
 
     // act
-    boolean result = partitionedRegionClear.isLockedForListenerAndClientNotification();
+    boolean result = partitionedRegionClear.isLockedForListenerAndClientNotificationForTesting();
 
     // assert
     assertThat(result).isFalse();
@@ -355,6 +356,8 @@ public class PartitionedRegionClearTest {
           .thenReturn(bucketAdvisor);
       when(bucketRegion.getId())
           .thenReturn(i + buckets.size());
+      when(bucketRegion.isEmpty())
+          .thenReturn(false);
       when(bucketRegion.size())
           .thenReturn(1);
       allBuckets.add(bucketRegion);
@@ -388,6 +391,8 @@ public class PartitionedRegionClearTest {
       Region<?, ?> region = captor.getValue().getRegion();
       assertThat(region).isEqualTo(bucketRegion);
     }
+
+    verify(spyPartitionedRegionClear, times(2)).getMembershipChange();
   }
 
   @Test
@@ -448,8 +453,7 @@ public class PartitionedRegionClearTest {
     partitionedRegionClear.obtainClearLockLocal(internalDistributedMember);
 
     // assert
-    // TODO: encapsulate lockForListenerAndClientNotification
-    assertThat(partitionedRegionClear.lockForListenerAndClientNotification.getLockRequester())
+    assertThat(partitionedRegionClear.getLockRequesterForTesting())
         .isSameAs(internalDistributedMember);
     for (BucketRegion bucketRegion : buckets) {
       verify(bucketRegion)
@@ -477,7 +481,7 @@ public class PartitionedRegionClearTest {
     partitionedRegionClear.obtainClearLockLocal(internalDistributedMember);
 
     // assert
-    assertThat(partitionedRegionClear.lockForListenerAndClientNotification.getLockRequester())
+    assertThat(partitionedRegionClear.getLockRequesterForTesting())
         .isNull();
     for (BucketRegion bucketRegion : buckets) {
       verify(bucketRegion, never())
@@ -501,8 +505,7 @@ public class PartitionedRegionClearTest {
 
     Set<BucketRegion> buckets = setupBucketRegions(dataStore, bucketAdvisor);
 
-    partitionedRegionClear.lockForListenerAndClientNotification
-        .setLocked(internalDistributedMember);
+    partitionedRegionClear.setLockedForTesting(internalDistributedMember);
 
     // act
     partitionedRegionClear.releaseClearLockLocal();
@@ -531,7 +534,7 @@ public class PartitionedRegionClearTest {
     partitionedRegionClear.releaseClearLockLocal();
 
     // assert
-    assertThat(partitionedRegionClear.lockForListenerAndClientNotification.getLockRequester())
+    assertThat(partitionedRegionClear.getLockRequesterForTesting())
         .isNull();
     for (BucketRegion bucketRegion : buckets) {
       verify(bucketRegion, never())
@@ -819,14 +822,14 @@ public class PartitionedRegionClearTest {
     assertThat(thrown)
         .isInstanceOf(UnsupportedOperationException.class)
         .hasMessage(
-            "A server's [oldMember] version was too old (< GEODE 1.14.0) for : Partitioned Region Clear");
+            "Server(s) [oldMember] version was too old (< GEODE 1.14.0) for partitioned region clear");
   }
 
   @Test
   public void handleClearFromDepartedMemberReleasesTheLockForRequesterDeparture() {
     // arrange
     InternalDistributedMember member = mock(InternalDistributedMember.class);
-    partitionedRegionClear.lockForListenerAndClientNotification.setLocked(member);
+    partitionedRegionClear.setLockedForTesting(member);
 
     // partial mocking to verify
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
@@ -843,7 +846,7 @@ public class PartitionedRegionClearTest {
     // arrange
     InternalDistributedMember requesterMember = mock(InternalDistributedMember.class);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
-    partitionedRegionClear.lockForListenerAndClientNotification.setLocked(requesterMember);
+    partitionedRegionClear.setLockedForTesting(requesterMember);
 
     // partial mocking to verify
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
@@ -859,7 +862,7 @@ public class PartitionedRegionClearTest {
   public void partitionedRegionClearRegistersMembershipListener() {
     // assert
     MembershipListener membershipListener =
-        partitionedRegionClear.getPartitionedRegionClearListener();
+        partitionedRegionClear.getPartitionedRegionClearListenerForTesting();
     verify(distributionManager).addMembershipListener(membershipListener);
   }
 
@@ -867,9 +870,9 @@ public class PartitionedRegionClearTest {
   public void lockRequesterDepartureReleasesTheLock() {
     // arrange
     InternalDistributedMember member = mock(InternalDistributedMember.class);
-    partitionedRegionClear.lockForListenerAndClientNotification.setLocked(member);
+    partitionedRegionClear.setLockedForTesting(member);
     PartitionedRegionClearListener partitionedRegionClearListener =
-        partitionedRegionClear.getPartitionedRegionClearListener();
+        partitionedRegionClear.getPartitionedRegionClearListenerForTesting();
 
     // act
     partitionedRegionClearListener.memberDeparted(distributionManager, member, true);
@@ -877,7 +880,7 @@ public class PartitionedRegionClearTest {
     // assert
     assertThat(partitionedRegionClear.getMembershipChange())
         .isTrue();
-    assertThat(partitionedRegionClear.lockForListenerAndClientNotification.getLockRequester())
+    assertThat(partitionedRegionClear.getLockRequesterForTesting())
         .isNull();
   }
 
@@ -886,9 +889,9 @@ public class PartitionedRegionClearTest {
     // arrange
     InternalDistributedMember requesterMember = mock(InternalDistributedMember.class);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
-    partitionedRegionClear.lockForListenerAndClientNotification.setLocked(requesterMember);
+    partitionedRegionClear.setLockedForTesting(requesterMember);
     PartitionedRegionClearListener partitionedRegionClearListener =
-        partitionedRegionClear.getPartitionedRegionClearListener();
+        partitionedRegionClear.getPartitionedRegionClearListenerForTesting();
 
     // act
     partitionedRegionClearListener.memberDeparted(distributionManager, member, true);
@@ -896,7 +899,7 @@ public class PartitionedRegionClearTest {
     // assert
     assertThat(partitionedRegionClear.getMembershipChange())
         .isTrue();
-    assertThat(partitionedRegionClear.lockForListenerAndClientNotification.getLockRequester())
+    assertThat(partitionedRegionClear.getLockRequesterForTesting())
         .isNotNull();
   }
 
@@ -973,6 +976,8 @@ public class PartitionedRegionClearTest {
           .thenReturn(bucketAdvisor);
       when(bucketRegion.getId())
           .thenReturn(i);
+      when(bucketRegion.isEmpty())
+          .thenReturn(false);
       when(bucketRegion.size())
           .thenReturn(1)
           .thenReturn(0);

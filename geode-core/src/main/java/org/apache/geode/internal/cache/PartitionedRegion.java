@@ -8075,8 +8075,12 @@ public class PartitionedRegion extends LocalRegion
 
     private final long maxTimeInRetry;
 
-    public RetryTimeKeeper(int maxTime) {
-      this.maxTimeInRetry = maxTime;
+    public RetryTimeKeeper(int maxTimeInRetry) {
+      this.maxTimeInRetry = maxTimeInRetry;
+    }
+
+    public RetryTimeKeeper(long maxTimeInRetry) {
+      this.maxTimeInRetry = maxTimeInRetry;
     }
 
     /**

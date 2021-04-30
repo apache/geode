@@ -28,4 +28,6 @@ public interface InternalAsyncEventQueue extends AsyncEventQueue {
   void stop();
 
   void destroy();
+
+  boolean isPartitionedRegionClearUnsupported();
 }
