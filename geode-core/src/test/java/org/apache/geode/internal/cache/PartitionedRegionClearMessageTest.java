@@ -202,7 +202,7 @@ public class PartitionedRegionClearMessageTest {
     ClusterDistributionManager clusterDistributionManager = mock(ClusterDistributionManager.class);
     PartitionedRegionClear partitionedRegionClear = mock(PartitionedRegionClear.class);
     when(partitionedRegion.getPartitionedRegionClear()).thenReturn(partitionedRegionClear);
-    when(partitionedRegionClear.clearRegionLocal(any())).thenReturn(emptySet());
+    when(partitionedRegionClear.clearLocalBuckets(any())).thenReturn(emptySet());
     PartitionedRegionClearMessage message =
         new PartitionedRegionClearMessage(recipients, distributionManager, 1,
             replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false,
@@ -243,7 +243,7 @@ public class PartitionedRegionClearMessageTest {
         message.operateOnPartitionedRegion(clusterDistributionManager, partitionedRegion, 30);
 
     assertThat(result).isTrue();
-    verify(partitionedRegionClear).obtainClearLockLocal(any());
+    verify(partitionedRegionClear).lockLocalPrimaryBucketsUnderLock(any());
   }
 
   @Test
@@ -260,7 +260,7 @@ public class PartitionedRegionClearMessageTest {
         message.operateOnPartitionedRegion(clusterDistributionManager, partitionedRegion, 30);
 
     assertThat(result).isTrue();
-    verify(partitionedRegionClear).releaseClearLockLocal();
+    verify(partitionedRegionClear).unlockLocalPrimaryBucketsUnderLock();
   }
 
   @Test
@@ -280,6 +280,6 @@ public class PartitionedRegionClearMessageTest {
         message.operateOnPartitionedRegion(clusterDistributionManager, partitionedRegion, 30);
 
     assertThat(result).isTrue();
-    verify(partitionedRegionClear).clearRegionLocal(any(RegionEventImpl.class));
+    verify(partitionedRegionClear).clearLocalBuckets(any(RegionEventImpl.class));
   }
 }

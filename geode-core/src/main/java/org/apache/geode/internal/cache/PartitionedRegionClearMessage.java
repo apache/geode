@@ -139,14 +139,14 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
     PartitionedRegionClear partitionedRegionClear = partitionedRegion.getPartitionedRegionClear();
 
     if (operationType == OperationType.OP_LOCK_FOR_PR_CLEAR) {
-      partitionedRegionClear.obtainClearLockLocal(getSender());
+      partitionedRegionClear.lockLocalPrimaryBucketsUnderLock(getSender());
     } else if (operationType == OperationType.OP_UNLOCK_FOR_PR_CLEAR) {
-      partitionedRegionClear.releaseClearLockLocal();
+      partitionedRegionClear.unlockLocalPrimaryBucketsUnderLock();
     } else {
-      RegionEventImpl event = (RegionEventImpl) regionEventFactory
+      InternalCacheEvent event = (InternalCacheEvent) regionEventFactory
           .create(partitionedRegion, Operation.REGION_CLEAR, callbackArgument, true,
               partitionedRegion.getMyId(), getEventID());
-      bucketsCleared = partitionedRegionClear.clearRegionLocal(event);
+      bucketsCleared = partitionedRegionClear.clearLocalBuckets(event);
     }
     return true;
   }
