@@ -1932,7 +1932,7 @@ public interface ConfigurationProperties {
    * <U>Default</U>: ""
    *
    * <p>
-   * Experimental: Geode API compatible with Redis is a new addition to Geode and the API may change
+   * Experimental: Geode API compatible with Redis is subject to change in future releases
    * <p/>
    */
 
@@ -1952,7 +1952,7 @@ public interface ConfigurationProperties {
    * </p>
    *
    * <p>
-   * Experimental: Geode API compatible with Redis is a new addition to Geode and the API may change
+   * Experimental: Geode API compatible with Redis is subject to change in future releases
    * <p/>
    */
   @Experimental
@@ -1967,7 +1967,7 @@ public interface ConfigurationProperties {
    * <U>Default</U>: no password set
    *
    * <p>
-   * Experimental: Geode API compatible with Redis is a new addition to Geode and the API may change
+   * Experimental: Geode API compatible with Redis is subject to change in future releases
    * <p/>
    */
   @Experimental
@@ -1984,7 +1984,7 @@ public interface ConfigurationProperties {
    * <U>Allowed values</U>: 0..65535
    *
    * <p>
-   * Experimental: Geode API compatible with Redis is a new addition to Geode and the API may change
+   * Experimental: Geode API compatible with Redis is subject to change in future releases
    * <p/>
    */
   @Experimental
