@@ -35,59 +35,60 @@ import org.assertj.core.util.Maps;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractHashesIntegrationTest implements RedisIntegrationTest {
+
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   private Random rand;
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
+  private JedisCluster jedis2;
   private static int ITERATION_COUNT = 4000;
 
   @Before
   public void setUp() {
     rand = new Random();
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
     jedis2.close();
   }
 
   @Test
   public void testHMSet_givenWrongNumberOfArguments() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.HMSET, "key"))
         .hasMessage("ERR wrong number of arguments for 'hmset' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1"))
-        .hasMessage("ERR wrong number of arguments for 'hmset' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1", "2"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.HMSET, "key", "1"))
         .hasMessage("ERR wrong number of arguments for 'hmset' command");
     // Redis is somewhat inconsistent with the error response here
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HMSET, "1", "2", "3", "4"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.HMSET, "key", "1", "2", "3"))
         .hasMessageContaining("wrong number of arguments");
   }
 
   @Test
   public void testHSet_givenWrongNumberOfArguments() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.HSET, "key"))
         .hasMessage("ERR wrong number of arguments for 'hset' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET, "1"))
-        .hasMessage("ERR wrong number of arguments for 'hset' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET, "1", "2"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.HSET, "key", "1"))
         .hasMessage("ERR wrong number of arguments for 'hset' command");
     // Redis is somewhat inconsistent with the error response here
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSET, "1", "2", "3", "4"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.HSET, "key", "1", "2", "3"))
         .hasMessageContaining("wrong number of arguments");
   }
 
@@ -100,7 +101,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   public void testHMSet() {
     int num = 10;
     String key = "key";
-    Map<String, String> hash = new HashMap<String, String>();
+    Map<String, String> hash = new HashMap<>();
     for (int i = 0; i < num; i++) {
       hash.put("field_" + i, "member_" + i);
     }
@@ -128,7 +129,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
   @Test
   public void testHSet() {
     String key = "key";
-    Map<String, String> hash = new HashMap<String, String>();
+    Map<String, String> hash = new HashMap<>();
 
     for (int i = 0; i < 10; i++) {
       hash.put("field_" + i, "member_" + i);
@@ -903,7 +904,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisPortSupplier
     assertThat(jedis.hstrlen(zero, zero)).isEqualTo(1);
   }
 
-  private void doABunchOfHSets(String key, Map<String, String> record, Jedis jedis) {
+  private void doABunchOfHSets(String key, Map<String, String> record, JedisCluster jedis) {
     String field;
     String fieldValue;
 

@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.proxy;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 
 import io.netty.bootstrap.Bootstrap;
@@ -85,6 +86,17 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
     outboundChannel = f.channel();
     f.addListener((ChannelFutureListener) future -> {
       if (future.isSuccess()) {
+        InetSocketAddress target = (InetSocketAddress) inboundChannel.localAddress();
+        for (Map.Entry<HostPort, HostPort> entry : mappings.entrySet()) {
+          HostPort exposed = entry.getValue();
+          if (target.getPort() == exposed.getPort()) {
+            logger.info("Established proxy connection {} -> {} -> {}",
+                inboundChannel.remoteAddress(),
+                inboundChannel.localAddress(),
+                entry.getKey());
+            break;
+          }
+        }
         // connection complete start to read first data
         inboundChannel.read();
       } else {
