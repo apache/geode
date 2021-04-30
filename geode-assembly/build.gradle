@@ -140,10 +140,6 @@ repositories {
   maven {
     url 'https://repo.gradle.org/gradle/libs-releases'
   }
-  // docker-compose-rule is published on bintray
-  maven {
-    url 'https://dl.bintray.com/palantir/releases'
-  }
 }
 
 def webServersDir = "$buildDir/generated-resources/webservers"
@@ -269,8 +265,7 @@ dependencies {
   // don't have it be the same version as the outer gradle version.
   acceptanceTestImplementation('org.gradle:gradle-tooling-api:5.1.1')
 
-  acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-core')
-  acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-junit4')
+  acceptanceTestImplementation('org.testcontainers:testcontainers')
 
   uiTestImplementation(project(':geode-core'))
   uiTestImplementation(project(':geode-dunit')) {

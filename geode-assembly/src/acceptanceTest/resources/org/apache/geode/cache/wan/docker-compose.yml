@@ -17,12 +17,8 @@
 version: '3'
 services:
   locator:
-    container_name: 'locator'
     image: 'geode:develop'
     hostname: locator
-    expose:
-      - '20334'
-      - '1099'
     entrypoint: 'sh'
     command: '-c /geode/scripts/forever'
     networks:
@@ -31,12 +27,8 @@ services:
       - ./geode-config:/geode/config:ro
       - ./scripts:/geode/scripts
   server1:
-    container_name: 'server1'
     image: 'geode:develop'
     hostname: server1
-    expose:
-      - '40404'
-      - '2324'
     entrypoint: 'sh'
     command: '-c /geode/scripts/forever'
     networks:
@@ -45,12 +37,8 @@ services:
       - ./geode-config:/geode/config:ro
       - ./scripts:/geode/scripts
   server2:
-    container_name: 'server2'
     image: 'geode:develop'
     hostname: server2
-    expose:
-      - '40404'
-      - '2324'
     entrypoint: 'sh'
     command: '-c /geode/scripts/forever'
     networks:
@@ -59,11 +47,7 @@ services:
       - ./geode-config:/geode/config:ro
       - ./scripts:/geode/scripts
   haproxy:
-    container_name: 'haproxy'
     image: 'haproxy:2.1'
-    ports:
-      - "20334:20334"
-      - "2324:2324"
     networks:
       geode-wan-test:
     volumes:
