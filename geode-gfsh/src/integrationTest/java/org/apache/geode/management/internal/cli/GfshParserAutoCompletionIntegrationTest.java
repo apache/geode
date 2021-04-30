@@ -17,11 +17,18 @@ package org.apache.geode.management.internal.cli;
 import static java.lang.System.lineSeparator;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.core.Completion;
+import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.management.internal.cli.commands.StartServerCommand;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -29,6 +36,28 @@ import org.apache.geode.test.junit.rules.GfshParserRule.CommandCandidate;
 
 @Category(GfshTest.class)
 public class GfshParserAutoCompletionIntegrationTest {
+
+  private static int startServerCommandCliOptions = 0;
+
+  @BeforeClass
+  public static void calculateStartServerCommandParameters() {
+    Object o = new StartServerCommand();
+    for (Method method : o.getClass().getDeclaredMethods()) {
+      if (method.getName().equals("startServer")) {
+        for (Parameter param : method.getParameters()) {
+          CliOption annotation = param.getAnnotation(CliOption.class);
+          startServerCommandCliOptions += annotation.key().length;
+        }
+        break;
+      }
+    }
+    assertThat(startServerCommandCliOptions).isNotZero();
+  }
+
+  @AfterClass
+  public static void cleanup() {
+    startServerCommandCliOptions = 0;
+  }
 
   @Rule
   public GfshParserRule gfshParserRule = new GfshParserRule();
@@ -148,7 +177,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --name=name1 --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length() - 2);
-    assertThat(candidate.getCandidates()).hasSize(53);
+    assertThat(candidate.getCandidates()).hasSize(startServerCommandCliOptions - 1);
     assertThat(candidate.getCandidates()).contains(new Completion("--properties-file"));
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "J");
   }
@@ -158,7 +187,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --name=name1 ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length() - 1);
-    assertThat(candidate.getCandidates()).hasSize(53);
+    assertThat(candidate.getCandidates()).hasSize(startServerCommandCliOptions - 1);
     assertThat(candidate.getCandidates()).contains(new Completion(" --properties-file"));
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--J");
   }
@@ -168,7 +197,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --name=name1";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length());
-    assertThat(candidate.getCandidates()).hasSize(53);
+    assertThat(candidate.getCandidates()).hasSize(startServerCommandCliOptions - 1);
     assertThat(candidate.getCandidates()).contains(new Completion(" --properties-file"));
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " --J");
   }
@@ -193,7 +222,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   public void testCompleteWithDash() {
     String buffer = "start server --name=name1 --J=-Dfoo.bar --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(52);
+    assertThat(candidate.getCandidates()).hasSize(startServerCommandCliOptions - 2);
   }
 
   @Test
@@ -211,7 +240,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --name=name1 --J=-Dtest=test1 --J=-Dfoo=bar";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length());
-    assertThat(candidate.getCandidates()).hasSize(52);
+    assertThat(candidate.getCandidates()).hasSize(startServerCommandCliOptions - 2);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " --assign-buckets");
   }
 
@@ -220,7 +249,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --J=-Dtest=test1 --J=-Dfoo=bar --name=name1";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length());
-    assertThat(candidate.getCandidates()).hasSize(52);
+    assertThat(candidate.getCandidates()).hasSize(startServerCommandCliOptions - 2);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " --assign-buckets");
   }
 
@@ -229,7 +258,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --name=name1 --locators=localhost --J=-Dfoo=bar";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length());
-    assertThat(candidate.getCandidates()).hasSize(51);
+    assertThat(candidate.getCandidates()).hasSize(startServerCommandCliOptions - 3);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " --assign-buckets");
   }
 
@@ -238,7 +267,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String buffer = "start server --name=name1 --locators=localhost  --J=-Dfoo=bar --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCursor()).isEqualTo(buffer.length() - 2);
-    assertThat(candidate.getCandidates()).hasSize(51);
+    assertThat(candidate.getCandidates()).hasSize(startServerCommandCliOptions - 3);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "assign-buckets");
   }
 
