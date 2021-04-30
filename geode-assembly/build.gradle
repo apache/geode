@@ -102,6 +102,10 @@ configurations {
     setDescription('Projects that must be included in the JavaDocs.')
     extendsFrom geodeArchives
   }
+
+  distributedTest {
+    environment 'CLASSLOADER_ISOLATED' , 'false'
+  }
 }
 
 publishing {
