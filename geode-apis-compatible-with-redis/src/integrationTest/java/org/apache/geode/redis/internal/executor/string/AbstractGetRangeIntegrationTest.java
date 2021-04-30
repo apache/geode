@@ -30,10 +30,10 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractGetRangeIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractGetRangeIntegrationTest implements RedisIntegrationTest {
 
   private Random random = new Random();
   private Jedis jedis;

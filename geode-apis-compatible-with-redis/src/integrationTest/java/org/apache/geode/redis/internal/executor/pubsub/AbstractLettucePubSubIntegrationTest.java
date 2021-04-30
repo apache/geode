@@ -37,11 +37,11 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public abstract class AbstractLettucePubSubIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractLettucePubSubIntegrationTest implements RedisIntegrationTest {
 
   private static final String CHANNEL = "best-channel";
   private static final String PATTERN = "best-*";

@@ -39,15 +39,15 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractRenameIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractRenameIntegrationTest implements RedisIntegrationTest {
   private Jedis jedis;
   private Jedis jedis2;
   private Jedis jedis3;

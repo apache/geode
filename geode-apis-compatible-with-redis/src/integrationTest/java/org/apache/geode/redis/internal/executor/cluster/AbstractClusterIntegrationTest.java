@@ -24,9 +24,9 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.redis.RedisIntegrationTest;
 
-public abstract class AbstractClusterIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractClusterIntegrationTest implements RedisIntegrationTest {
 
   private JedisCluster jedis;
 
