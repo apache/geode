@@ -326,7 +326,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     memberVM.invoke("perform update", () -> {
       DMStats stats = ((InternalDistributedSystem) cache.getDistributedSystem())
           .getDistributionManager().getStats();
-      int reconnectAttempts = stats.getReconnectAttempts();
+      long reconnectAttempts = stats.getReconnectAttempts();
       cache.getRegion(regionName).put("testKey", "updatedTestValue");
       assertThat(stats.getReconnectAttempts()).isEqualTo(reconnectAttempts);
     });

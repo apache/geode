@@ -143,17 +143,17 @@ public interface DMStats extends MembershipStatistics {
    */
   void incMessageProcessingScheduleTime(long nanos);
 
-  int getOverflowQueueSize();
+  long getOverflowQueueSize();
 
-  void incOverflowQueueSize(int messages);
+  void incOverflowQueueSize(long messages);
 
-  int getNumProcessingThreads();
+  long getNumProcessingThreads();
 
-  void incNumProcessingThreads(int threads);
+  void incNumProcessingThreads(long threads);
 
-  int getNumSerialThreads();
+  long getNumSerialThreads();
 
-  void incNumSerialThreads(int threads);
+  void incNumSerialThreads(long threads);
 
   void incMessageChannelTime(long val);
 
@@ -169,14 +169,14 @@ public interface DMStats extends MembershipStatistics {
 
   long startSocketWrite(boolean sync);
 
-  void endSocketWrite(boolean sync, long start, int bytesWritten, int retries);
+  void endSocketWrite(boolean sync, long start, long bytesWritten, long retries);
 
   /**
    * returns the current value of the mcastWrites statistic
    */
-  int getMcastWrites();
+  long getMcastWrites();
 
-  int getMcastReads();
+  long getMcastReads();
 
   long startSerialization();
 
@@ -186,19 +186,19 @@ public interface DMStats extends MembershipStatistics {
 
   void endDeserialization(long start, int bytes);
 
-  long getUDPMsgEncryptionTiime();
+  long getUDPMsgEncryptionTime();
 
   long getUDPMsgDecryptionTime();
 
-  int getNodes();
+  long getNodes();
 
-  void setNodes(int val);
+  void setNodes(long val);
 
-  void incNodes(int val);
+  void incNodes(long val);
 
-  int getReplyWaitsInProgress();
+  long getReplyWaitsInProgress();
 
-  int getReplyWaitsCompleted();
+  long getReplyWaitsCompleted();
 
   long getReplyWaitTime();
 
@@ -253,7 +253,7 @@ public interface DMStats extends MembershipStatistics {
   void incReconnectAttempts();
 
 
-  int getReconnectAttempts();
+  long getReconnectAttempts();
 
   /**
    * @since GemFire 4.1
@@ -273,27 +273,27 @@ public interface DMStats extends MembershipStatistics {
   /**
    * @since GemFire 4.1
    */
-  int getSendersSU();
+  long getSendersSU();
 
   /**
    * returns the current number of multicast retransmission requests processed
    */
-  int getMcastRetransmits();
+  long getMcastRetransmits();
 
   /**
    * @since GemFire 4.2.2
    */
-  int getAsyncSocketWritesInProgress();
+  long getAsyncSocketWritesInProgress();
 
   /**
    * @since GemFire 4.2.2
    */
-  int getAsyncSocketWrites();
+  long getAsyncSocketWrites();
 
   /**
    * @since GemFire 4.2.2
    */
-  int getAsyncSocketWriteRetries();
+  long getAsyncSocketWriteRetries();
 
   /**
    * @since GemFire 4.2.2
@@ -308,22 +308,22 @@ public interface DMStats extends MembershipStatistics {
   /**
    * @since GemFire 4.2.2
    */
-  int getAsyncQueues();
+  long getAsyncQueues();
 
   /**
    * @since GemFire 4.2.2
    */
-  void incAsyncQueues(int inc);
+  void incAsyncQueues(long inc);
 
   /**
    * @since GemFire 4.2.2
    */
-  int getAsyncQueueFlushesInProgress();
+  long getAsyncQueueFlushesInProgress();
 
   /**
    * @since GemFire 4.2.2
    */
-  int getAsyncQueueFlushesCompleted();
+  long getAsyncQueueFlushesCompleted();
 
   /**
    * @since GemFire 4.2.2
@@ -343,27 +343,27 @@ public interface DMStats extends MembershipStatistics {
   /**
    * @since GemFire 4.2.2
    */
-  int getAsyncQueueTimeouts();
+  long getAsyncQueueTimeouts();
 
   /**
    * @since GemFire 4.2.2
    */
-  void incAsyncQueueTimeouts(int inc);
+  void incAsyncQueueTimeouts(long inc);
 
   /**
    * @since GemFire 4.2.2
    */
-  int getAsyncQueueSizeExceeded();
+  long getAsyncQueueSizeExceeded();
 
   /**
    * @since GemFire 4.2.2
    */
-  void incAsyncQueueSizeExceeded(int inc);
+  void incAsyncQueueSizeExceeded(long inc);
 
   /**
    * @since GemFire 4.2.2
    */
-  int getAsyncDistributionTimeoutExceeded();
+  long getAsyncDistributionTimeoutExceeded();
 
   /**
    * @since GemFire 4.2.2
@@ -413,22 +413,22 @@ public interface DMStats extends MembershipStatistics {
   /**
    * @since GemFire 4.2.2
    */
-  int getAsyncThreads();
+  long getAsyncThreads();
 
   /**
    * @since GemFire 4.2.2
    */
-  void incAsyncThreads(int inc);
+  void incAsyncThreads(long inc);
 
   /**
    * @since GemFire 4.2.2
    */
-  int getAsyncThreadInProgress();
+  long getAsyncThreadInProgress();
 
   /**
    * @since GemFire 4.2.2
    */
-  int getAsyncThreadCompleted();
+  long getAsyncThreadCompleted();
 
   /**
    * @since GemFire 4.2.2
@@ -468,12 +468,12 @@ public interface DMStats extends MembershipStatistics {
   /**
    * @since GemFire 5.0.2.4
    */
-  void incReceiverBufferSize(int inc, boolean direct);
+  void incReceiverBufferSize(long inc, boolean direct);
 
   /**
    * @since GemFire 5.0.2.4
    */
-  void incSenderBufferSize(int inc, boolean direct);
+  void incSenderBufferSize(long inc, boolean direct);
 
   /**
    * @since GemFire 5.0.2.4
@@ -500,7 +500,7 @@ public interface DMStats extends MembershipStatistics {
    *
    * @param dominoCount thread-owned connection chain count
    */
-  void incThreadOwnedReceivers(long value, int dominoCount);
+  void incThreadOwnedReceivers(long value, long dominoCount);
 
   /**
    * Called when a new message is received.
@@ -510,7 +510,7 @@ public interface DMStats extends MembershipStatistics {
    * @param bytes the number of bytes read, so far, for the message being received.
    * @since GemFire 5.0.2
    */
-  void incMessagesBeingReceived(boolean newMsg, int bytes);
+  void incMessagesBeingReceived(boolean newMsg, long bytes);
 
   /**
    * Called when we finish processing a received message.
@@ -518,7 +518,7 @@ public interface DMStats extends MembershipStatistics {
    * @param bytes the number of bytes read off the wire for the message we have finished with.
    * @since GemFire 5.0.2
    */
-  void decMessagesBeingReceived(int bytes);
+  void decMessagesBeingReceived(long bytes);
 
   void incReplyHandOffTime(long start);
 
@@ -527,28 +527,28 @@ public interface DMStats extends MembershipStatistics {
    *
    * @return 1 if the system elder is this member, else returns 0
    */
-  int getElders();
+  long getElders();
 
-  void incElders(int val);
+  void incElders(long val);
 
   /**
    * Returns the number of initial image reply messages sent from this member which have not yet
    * been acked.
    */
-  int getInitialImageMessagesInFlight();
+  long getInitialImageMessagesInFlight();
 
-  void incInitialImageMessagesInFlight(int val);
+  void incInitialImageMessagesInFlight(long val);
 
   /**
    * Returns the number of initial images this member is currently requesting.
    */
-  int getInitialImageRequestsInProgress();
+  long getInitialImageRequestsInProgress();
 
-  void incInitialImageRequestsInProgress(int val);
+  void incInitialImageRequestsInProgress(long val);
 
-  void incPdxSerialization(int bytesWritten);
+  void incPdxSerialization(long bytesWritten);
 
-  void incPdxDeserialization(int i);
+  void incPdxDeserialization(long i);
 
   long startPdxInstanceDeserialization();
 

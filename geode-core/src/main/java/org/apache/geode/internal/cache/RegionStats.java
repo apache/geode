@@ -17,25 +17,25 @@ package org.apache.geode.internal.cache;
 
 public interface RegionStats {
 
-  void incReliableQueuedOps(int inc);
+  void incReliableQueuedOps(long inc);
 
-  void incReliableQueueSize(int inc);
+  void incReliableQueueSize(long inc);
 
-  void incReliableQueueMax(int inc);
+  void incReliableQueueMax(long inc);
 
-  void incReliableRegions(int inc);
+  void incReliableRegions(long inc);
 
-  void incReliableRegionsMissing(int inc);
+  void incReliableRegionsMissing(long inc);
 
-  void incReliableRegionsQueuing(int inc);
+  void incReliableRegionsQueuing(long inc);
 
-  void incReliableRegionsMissingFullAccess(int inc);
+  void incReliableRegionsMissingFullAccess(long inc);
 
-  void incReliableRegionsMissingLimitedAccess(int inc);
+  void incReliableRegionsMissingLimitedAccess(long inc);
 
-  void incReliableRegionsMissingNoAccess(int inc);
+  void incReliableRegionsMissingNoAccess(long inc);
 
-  void incQueuedEvents(int inc);
+  void incQueuedEvents(long inc);
 
   long startLoad();
 
@@ -69,9 +69,9 @@ public interface RegionStats {
 
   void endIndexUpdate(long start);
 
-  void incRegions(int inc);
+  void incRegions(long inc);
 
-  void incPartitionedRegions(int inc);
+  void incPartitionedRegions(long inc);
 
   void incDestroys();
 
@@ -79,7 +79,7 @@ public interface RegionStats {
 
   void incInvalidates();
 
-  void incTombstoneCount(int amount);
+  void incTombstoneCount(long amount);
 
   void incTombstoneGCCount();
 
@@ -103,21 +103,21 @@ public interface RegionStats {
 
   void incTxConflictCheckTime(long delta);
 
-  void txSuccess(long opTime, long txLifeTime, int txChanges);
+  void txSuccess(long opTime, long txLifeTime, long txChanges);
 
-  void txFailure(long opTime, long txLifeTime, int txChanges);
+  void txFailure(long opTime, long txLifeTime, long txChanges);
 
-  void txRollback(long opTime, long txLifeTime, int txChanges);
+  void txRollback(long opTime, long txLifeTime, long txChanges);
 
-  void incEventQueueSize(int items);
+  void incEventQueueSize(long items);
 
-  void incEventQueueThrottleCount(int items);
+  void incEventQueueThrottleCount(long items);
 
   void incEventQueueThrottleTime(long nanos);
 
-  void incEventThreads(int items);
+  void incEventThreads(long items);
 
-  void incEntryCount(int delta);
+  void incEntryCount(long delta);
 
   void incRetries();
 
@@ -125,13 +125,13 @@ public interface RegionStats {
 
   void decDiskTasksWaiting();
 
-  void decDiskTasksWaiting(int count);
+  void decDiskTasksWaiting(long count);
 
   void incEvictorJobsStarted();
 
   void incEvictorJobsCompleted();
 
-  void incEvictorQueueSize(int delta);
+  void incEvictorQueueSize(long delta);
 
   void incEvictWorkTime(long delta);
 

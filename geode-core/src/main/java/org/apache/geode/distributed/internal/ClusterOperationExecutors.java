@@ -111,22 +111,20 @@ public class ClusterOperationExecutors implements OperationExecutors {
    *
    * @see ViewAckMessage
    */
-  public static final int VIEW_EXECUTOR = 79;
 
+  private final InternalDistributedSystem system;
 
-  private InternalDistributedSystem system;
-
-  private DistributionStats stats;
+  private final DistributionStats stats;
 
 
   /** Message processing thread pool */
-  private ExecutorService threadPool;
+  private final ExecutorService threadPool;
 
   /**
    * High Priority processing thread pool, used for initializing messages such as UpdateAttributes
    * and CreateRegion messages
    */
-  private ExecutorService highPriorityPool;
+  private final ExecutorService highPriorityPool;
 
   /**
    * Waiting Pool, used for messages that may have to wait on something. Use this separate pool with
@@ -134,9 +132,9 @@ public class ClusterOperationExecutors implements OperationExecutors {
    * Used for threads that will most likely have to wait for a region to be finished initializing
    * before it can proceed
    */
-  private ExecutorService waitingPool;
+  private final ExecutorService waitingPool;
 
-  private ExecutorService prMetaDataCleanupThreadPool;
+  private final ExecutorService prMetaDataCleanupThreadPool;
 
   /**
    * Thread used to decouple {@link org.apache.geode.internal.cache.partitioned.PartitionMessage}s
@@ -152,7 +150,7 @@ public class ClusterOperationExecutors implements OperationExecutors {
   private ExecutorService functionExecutionPool;
 
   /** Message processing executor for serial, ordered, messages. */
-  private ExecutorService serialThread;
+  private final ExecutorService serialThread;
 
   /**
    * If using a throttling queue for the serialThread, we cache the queue here so we can see if
@@ -165,7 +163,7 @@ public class ClusterOperationExecutors implements OperationExecutors {
    *
    * @see org.apache.geode.internal.monitoring.ThreadsMonitoring
    */
-  private ThreadsMonitoring threadMonitor;
+  private final ThreadsMonitoring threadMonitor;
 
   private SerialQueuedExecutorPool serialQueuedExecutorPool;
 
@@ -302,7 +300,7 @@ public class ClusterOperationExecutors implements OperationExecutors {
       case WAITING_POOL_EXECUTOR:
         return getWaitingThreadPool();
       case PARTITIONED_REGION_EXECUTOR:
-        return getPartitionedRegionExcecutor();
+        return getPartitionedRegionExecutor();
       case REGION_FUNCTION_EXECUTION_EXECUTOR:
         return getFunctionExecutor();
       default:
@@ -331,7 +329,7 @@ public class ClusterOperationExecutors implements OperationExecutors {
     return prMetaDataCleanupThreadPool;
   }
 
-  private Executor getPartitionedRegionExcecutor() {
+  private Executor getPartitionedRegionExecutor() {
     if (partitionedRegionThread != null) {
       return partitionedRegionThread;
     } else {
@@ -680,10 +678,10 @@ public class ClusterOperationExecutors implements OperationExecutors {
     }
 
     /*
-     * Returns an id of the thread in serialQueuedExecutorMap, thats mapped to the given seder.
+     * Returns an id of the thread in serialQueuedExecutorMap, that's mapped to the given sender.
      *
      *
-     * @param createNew boolean flag to indicate whether to create a new id, if id doesnot exists.
+     * @param createNew boolean flag to indicate whether to create a new id, if id does not exist.
      */
     private Integer getQueueId(InternalDistributedMember sender, boolean createNew) {
       // Create a new Id.
@@ -698,7 +696,7 @@ public class ClusterOperationExecutors implements OperationExecutors {
         }
 
         // Create new.
-        // Check if any threads are availabe that is marked for Use.
+        // Check if any threads are available that is marked for Use.
         if (!threadMarkedForUse.isEmpty()) {
           queueId = threadMarkedForUse.remove(0);
         }

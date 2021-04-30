@@ -28,17 +28,17 @@ import org.apache.geode.distributed.internal.QueueStatHelper;
 public class DummyDLockStats implements DistributedLockStats {
 
   @Override
-  public int getLockWaitsInProgress() {
+  public long getLockWaitsInProgress() {
     return -1;
   }
 
   @Override
-  public int getLockWaitsCompleted() {
+  public long getLockWaitsCompleted() {
     return -1;
   }
 
   @Override
-  public int getLockWaitsFailed() {
+  public long getLockWaitsFailed() {
     return -1;
   }
 
@@ -61,65 +61,65 @@ public class DummyDLockStats implements DistributedLockStats {
   public void endLockWait(long start, boolean success) {}
 
   @Override
-  public int getWaitingQueueSize() {
+  public long getWaitingQueueSize() {
     return -1;
   }
 
   @Override
-  public void incWaitingQueueSize(int messages) {}
+  public void incWaitingQueueSize(long messages) {}
 
   @Override
-  public int getSerialQueueSize() {
+  public long getSerialQueueSize() {
     return -1;
   }
 
   @Override
-  public void incSerialQueueSize(int messages) {}
+  public void incSerialQueueSize(long messages) {}
 
   @Override
-  public int getNumSerialThreads() {
+  public long getNumSerialThreads() {
     return -1;
   }
 
   @Override
-  public void incNumSerialThreads(int threads) {}
+  public void incNumSerialThreads(long threads) {}
 
   @Override
-  public int getWaitingThreads() {
+  public long getWaitingThreads() {
     return -1;
   }
 
   @Override
-  public void incWaitingThreads(int threads) {}
+  public void incWaitingThreads(long threads) {}
 
   @Override
-  public int getServices() {
+  public long getServices() {
     return -1;
   }
 
   @Override
-  public void incServices(int val) {}
+  public void incServices(long val) {}
 
   @Override
-  public int getGrantors() {
+  public long getGrantors() {
     return -1;
   }
 
   @Override
-  public void incGrantors(int val) {}
+  public void incGrantors(long val) {}
 
   @Override
-  public int getGrantWaitsInProgress() {
+  public long getGrantWaitsInProgress() {
     return -1;
   }
 
   @Override
-  public int getGrantWaitsCompleted() {
+  public long getGrantWaitsCompleted() {
     return -1;
   }
 
   @Override
-  public int getGrantWaitsFailed() {
+  public long getGrantWaitsFailed() {
     return -1;
   }
 
@@ -160,12 +160,12 @@ public class DummyDLockStats implements DistributedLockStats {
   public void endGrantWaitDestroyed(long start) {}
 
   @Override
-  public int getCreateGrantorsInProgress() {
+  public long getCreateGrantorsInProgress() {
     return -1;
   }
 
   @Override
-  public int getCreateGrantorsCompleted() {
+  public long getCreateGrantorsCompleted() {
     return -1;
   }
 
@@ -183,12 +183,12 @@ public class DummyDLockStats implements DistributedLockStats {
   public void endCreateGrantor(long start) {}
 
   @Override
-  public int getServiceCreatesInProgress() {
+  public long getServiceCreatesInProgress() {
     return -1;
   }
 
   @Override
-  public int getServiceCreatesCompleted() {
+  public long getServiceCreatesCompleted() {
     return -1;
   }
 
@@ -214,17 +214,17 @@ public class DummyDLockStats implements DistributedLockStats {
   }
 
   @Override
-  public int getGrantorWaitsInProgress() {
+  public long getGrantorWaitsInProgress() {
     return -1;
   }
 
   @Override
-  public int getGrantorWaitsCompleted() {
+  public long getGrantorWaitsCompleted() {
     return -1;
   }
 
   @Override
-  public int getGrantorWaitsFailed() {
+  public long getGrantorWaitsFailed() {
     return -1;
   }
 
@@ -262,12 +262,12 @@ public class DummyDLockStats implements DistributedLockStats {
   }
 
   @Override
-  public int getGrantorThreadsInProgress() {
+  public long getGrantorThreadsInProgress() {
     return -1;
   }
 
   @Override
-  public int getGrantorThreadsCompleted() {
+  public long getGrantorThreadsCompleted() {
     return -1;
   }
 
@@ -313,25 +313,25 @@ public class DummyDLockStats implements DistributedLockStats {
   public void endGrantorThread(long start) {}
 
   @Override
-  public int getPendingRequests() {
+  public long getPendingRequests() {
     return -1;
   }
 
   @Override
-  public void incPendingRequests(int val) {}
+  public void incPendingRequests(long val) {}
 
   @Override
-  public int getDestroyReadWaitsInProgress() {
+  public long getDestroyReadWaitsInProgress() {
     return -1;
   }
 
   @Override
-  public int getDestroyReadWaitsCompleted() {
+  public long getDestroyReadWaitsCompleted() {
     return -1;
   }
 
   @Override
-  public int getDestroyReadWaitsFailed() {
+  public long getDestroyReadWaitsFailed() {
     return -1;
   }
 
@@ -354,17 +354,17 @@ public class DummyDLockStats implements DistributedLockStats {
   public void endDestroyReadWait(long start, boolean success) {}
 
   @Override
-  public int getDestroyWriteWaitsInProgress() {
+  public long getDestroyWriteWaitsInProgress() {
     return -1;
   }
 
   @Override
-  public int getDestroyWriteWaitsCompleted() {
+  public long getDestroyWriteWaitsCompleted() {
     return -1;
   }
 
   @Override
-  public int getDestroyWriteWaitsFailed() {
+  public long getDestroyWriteWaitsFailed() {
     return -1;
   }
 
@@ -387,28 +387,28 @@ public class DummyDLockStats implements DistributedLockStats {
   public void endDestroyWriteWait(long start, boolean success) {}
 
   @Override
-  public int getDestroyReads() {
+  public long getDestroyReads() {
     return -1;
   }
 
   @Override
-  public void incDestroyReads(int val) {}
+  public void incDestroyReads(long val) {}
 
   @Override
-  public int getDestroyWrites() {
+  public long getDestroyWrites() {
     return -1;
   }
 
   @Override
-  public void incDestroyWrites(int val) {}
+  public void incDestroyWrites(long val) {}
 
   @Override
-  public int getLockReleasesInProgress() {
+  public long getLockReleasesInProgress() {
     return -1;
   }
 
   @Override
-  public int getLockReleasesCompleted() {
+  public long getLockReleasesCompleted() {
     return -1;
   }
 
@@ -426,7 +426,7 @@ public class DummyDLockStats implements DistributedLockStats {
   public void endLockRelease(long start) {}
 
   @Override
-  public int getBecomeGrantorRequests() {
+  public long getBecomeGrantorRequests() {
     return -1;
   }
 
@@ -434,31 +434,31 @@ public class DummyDLockStats implements DistributedLockStats {
   public void incBecomeGrantorRequests() {}
 
   @Override
-  public int getTokens() {
+  public long getTokens() {
     return -1;
   }
 
   @Override
-  public void incTokens(int val) {}
+  public void incTokens(long val) {}
 
   @Override
-  public int getGrantTokens() {
+  public long getGrantTokens() {
     return -1;
   }
 
   @Override
-  public void incGrantTokens(int val) {}
+  public void incGrantTokens(long val) {}
 
   @Override
-  public int getRequestQueues() {
+  public long getRequestQueues() {
     return -1;
   }
 
   @Override
-  public void incRequestQueues(int val) {}
+  public void incRequestQueues(long val) {}
 
   @Override
-  public int getFreeResourcesCompleted() {
+  public long getFreeResourcesCompleted() {
     return -1;
   }
 
@@ -466,7 +466,7 @@ public class DummyDLockStats implements DistributedLockStats {
   public void incFreeResourcesCompleted() {}
 
   @Override
-  public int getFreeResourcesFailed() {
+  public long getFreeResourcesFailed() {
     return -1;
   }
 
@@ -489,7 +489,7 @@ public class DummyDLockStats implements DistributedLockStats {
     public void remove() {}
 
     @Override
-    public void remove(int count) {}
+    public void remove(long count) {}
   }
 
 }

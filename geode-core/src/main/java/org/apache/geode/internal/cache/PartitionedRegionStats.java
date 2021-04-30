@@ -178,7 +178,7 @@ public class PartitionedRegionStats {
   private static final int localMaxMemoryId;
 
   static {
-    final boolean largerIsBetter = true;
+
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     type = f.createType("PartitionedRegionStats",
         "Statistics for operations and connections in the Partitioned Region",
@@ -186,23 +186,23 @@ public class PartitionedRegionStats {
 
             f.createLongGauge("bucketCount", "Number of buckets in this node.", "buckets"),
             f.createLongCounter("putsCompleted", "Number of puts completed.", "operations",
-                largerIsBetter),
+                true),
             f.createLongCounter("putOpsRetried",
                 "Number of put operations which had to be retried due to failures.", "operations",
                 false),
             f.createLongCounter("putRetries",
                 "Total number of times put operations had to be retried.", "retry attempts", false),
             f.createLongCounter("createsCompleted", "Number of creates completed.", "operations",
-                largerIsBetter),
+                true),
             f.createLongCounter("createOpsRetried",
                 "Number of create operations which had to be retried due to failures.",
                 "operations", false),
             f.createLongCounter("createRetries",
                 "Total number of times put operations had to be retried.", "retry attempts", false),
             f.createLongCounter("preferredReadLocal", "Number of reads satisfied from local store",
-                "operations", largerIsBetter),
+                "operations", true),
             f.createLongCounter(PUTALLS_COMPLETED, "Number of putAlls completed.", "operations",
-                largerIsBetter),
+                true),
             f.createLongCounter(PUTALL_MSGS_RETRIED,
                 "Number of putAll messages which had to be retried due to failures.", "operations",
                 false),
@@ -210,9 +210,9 @@ public class PartitionedRegionStats {
                 "Total number of times putAll messages had to be retried.", "retry attempts",
                 false),
             f.createLongCounter(PUTALL_TIME, "Total time spent doing putAlls.", "nanoseconds",
-                !largerIsBetter),
+                false),
             f.createLongCounter(REMOVE_ALLS_COMPLETED, "Number of removeAlls completed.",
-                "operations", largerIsBetter),
+                "operations", true),
             f.createLongCounter(REMOVE_ALL_MSGS_RETRIED,
                 "Number of removeAll messages which had to be retried due to failures.",
                 "operations", false),
@@ -220,19 +220,19 @@ public class PartitionedRegionStats {
                 "Total number of times removeAll messages had to be retried.", "retry attempts",
                 false),
             f.createLongCounter(REMOVE_ALL_TIME, "Total time spent doing removeAlls.",
-                "nanoseconds", !largerIsBetter),
+                "nanoseconds", false),
             f.createLongCounter("preferredReadRemote",
                 "Number of reads satisfied from remote store",
                 "operations", false),
             f.createLongCounter("getsCompleted", "Number of gets completed.", "operations",
-                largerIsBetter),
+                true),
             f.createLongCounter("getOpsRetried",
                 "Number of get operations which had to be retried due to failures.", "operations",
                 false),
             f.createLongCounter("getRetries",
                 "Total number of times get operations had to be retried.", "retry attempts", false),
             f.createLongCounter("destroysCompleted", "Number of destroys completed.", "operations",
-                largerIsBetter),
+                true),
             f.createLongCounter("destroyOpsRetried",
                 "Number of destroy operations which had to be retried due to failures.",
                 "operations", false),
@@ -240,7 +240,7 @@ public class PartitionedRegionStats {
                 "Total number of times destroy operations had to be retried.", "retry attempts",
                 false),
             f.createLongCounter("invalidatesCompleted", "Number of invalidates completed.",
-                "operations", largerIsBetter),
+                "operations", true),
 
             f.createLongCounter("invalidateOpsRetried",
                 "Number of invalidate operations which had to be retried due to failures.",
@@ -249,7 +249,7 @@ public class PartitionedRegionStats {
                 "Total number of times invalidate operations had to be retried.", "retry attempts",
                 false),
             f.createLongCounter("containsKeyCompleted", "Number of containsKeys completed.",
-                "operations", largerIsBetter),
+                "operations", true),
 
             f.createLongCounter("containsKeyOpsRetried",
                 "Number of containsKey or containsValueForKey operations which had to be retried due to failures.",
@@ -258,14 +258,14 @@ public class PartitionedRegionStats {
                 "Total number of times containsKey or containsValueForKey operations had to be retried.",
                 "operations", false),
             f.createLongCounter("containsValueForKeyCompleted",
-                "Number of containsValueForKeys completed.", "operations", largerIsBetter),
+                "Number of containsValueForKeys completed.", "operations", true),
             f.createLongCounter("PartitionMessagesSent", "Number of PartitionMessages Sent.",
-                "operations", largerIsBetter),
+                "operations", true),
             f.createLongCounter("PartitionMessagesReceived",
                 "Number of PartitionMessages Received.",
-                "operations", largerIsBetter),
+                "operations", true),
             f.createLongCounter("PartitionMessagesProcessed",
-                "Number of PartitionMessages Processed.", "operations", largerIsBetter),
+                "Number of PartitionMessages Processed.", "operations", true),
             f.createLongCounter("putTime", "Total time spent doing puts.", "nanoseconds", false),
             f.createLongCounter("createTime", "Total time spent doing create operations.",
                 "nanoseconds", false),
@@ -322,7 +322,7 @@ public class PartitionedRegionStats {
             f.createLongGauge("actualRedundantCopies",
                 "Actual number of redundant copies for this partitioned region.", "copies"),
             f.createLongCounter("getEntryCompleted", "Number of getEntry operations completed.",
-                "operations", largerIsBetter),
+                "operations", true),
             f.createLongCounter("getEntryTime", "Total time spent performing getEntry operations.",
                 "nanoseconds", false),
 
@@ -361,40 +361,40 @@ public class PartitionedRegionStats {
 
             f.createLongCounter("applyReplicationCompleted",
                 "Total number of replicated values sent from a primary to this redundant data store.",
-                "operations", largerIsBetter),
+                "operations", true),
             f.createLongGauge("applyReplicationInProgress",
                 "Current number of replication operations in progress on this redundant data store.",
-                "operations", !largerIsBetter),
+                "operations", false),
             f.createLongCounter("applyReplicationTime",
                 "Total time spent storing replicated values on this redundant data store.",
-                "nanoseconds", !largerIsBetter),
+                "nanoseconds", false),
             f.createLongCounter("sendReplicationCompleted",
                 "Total number of replicated values sent from this primary to a redundant data store.",
-                "operations", largerIsBetter),
+                "operations", true),
             f.createLongGauge("sendReplicationInProgress",
                 "Current number of replication operations in progress from this primary.",
-                "operations", !largerIsBetter),
+                "operations", false),
             f.createLongCounter("sendReplicationTime",
                 "Total time spent replicating values from this primary to a redundant data store.",
-                "nanoseconds", !largerIsBetter),
+                "nanoseconds", false),
             f.createLongCounter("putRemoteCompleted",
                 "Total number of completed puts that did not originate in the primary. These puts require an extra network hop to the primary.",
-                "operations", largerIsBetter),
+                "operations", true),
             f.createLongGauge("putRemoteInProgress",
                 "Current number of puts in progress that did not originate in the primary.",
-                "operations", !largerIsBetter),
+                "operations", false),
             f.createLongCounter("putRemoteTime",
                 "Total time spent doing puts that did not originate in the primary.", "nanoseconds",
-                !largerIsBetter),
+                false),
             f.createLongCounter("putLocalCompleted",
                 "Total number of completed puts that did originate in the primary. These puts are optimal.",
-                "operations", largerIsBetter),
+                "operations", true),
             f.createLongGauge("putLocalInProgress",
                 "Current number of puts in progress that did originate in the primary.",
-                "operations", !largerIsBetter),
+                "operations", false),
             f.createLongCounter("putLocalTime",
                 "Total time spent doing puts that did originate in the primary.", "nanoseconds",
-                !largerIsBetter),
+                false),
 
             f.createLongGauge("rebalanceBucketCreatesInProgress",
                 "Current number of bucket create operations being performed for rebalancing.",
@@ -425,8 +425,7 @@ public class PartitionedRegionStats {
                 false),
 
             f.createLongGauge("localMaxMemory",
-                "local max memory in bytes for this region on this member", "bytes")
-
+                "local max memory in bytes for this region on this member", "bytes"),
         });
 
     bucketCountId = type.nameToId("bucketCount");
@@ -546,13 +545,13 @@ public class PartitionedRegionStats {
    * lot of unused longs. Volunteering is a rare event and thus the performance implications of a
    * HashMap lookup is small and preferrable to so many longs. Key: BucketAdvisor, Value: Long
    */
-  private final Map startTimeMap;
+  private final Map<Object, Long> startTimeMap;
 
   public PartitionedRegionStats(StatisticsFactory factory, String name, StatisticsClock clock) {
     stats = factory.createAtomicStatistics(type, name);
 
     if (clock.isEnabled()) {
-      startTimeMap = new ConcurrentHashMap();
+      startTimeMap = new ConcurrentHashMap<>();
     } else {
       startTimeMap = Collections.emptyMap();
     }
@@ -945,14 +944,14 @@ public class PartitionedRegionStats {
   /** Put stat start time in holding map for later removal and use by caller */
   public void putStartTime(Object key, long startTime) {
     if (clock.isEnabled()) {
-      this.startTimeMap.put(key, Long.valueOf(startTime));
+      this.startTimeMap.put(key, startTime);
     }
   }
 
   /** Remove stat start time from holding map to complete a clock stat */
   public long removeStartTime(Object key) {
     Long startTime = (Long) this.startTimeMap.remove(key);
-    return startTime == null ? 0 : startTime.longValue();
+    return startTime == null ? 0 : startTime;
   }
 
   /**

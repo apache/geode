@@ -462,115 +462,116 @@ public class DistributionStats implements DMStats {
             false),
         f.createLongCounter("messageProcessingScheduleTime", messageProcessingScheduleTimeDesc,
             "nanoseconds", false),
-        f.createIntGauge("overflowQueueSize", overflowQueueSizeDesc, "messages"),
-        f.createIntGauge("waitingQueueSize", waitingQueueSizeDesc, "messages"),
-        f.createIntGauge("overflowQueueThrottleCount", overflowQueueThrottleCountDesc, "delays"),
+        f.createLongGauge("overflowQueueSize", overflowQueueSizeDesc, "messages"),
+        f.createLongGauge("waitingQueueSize", waitingQueueSizeDesc, "messages"),
+        f.createLongGauge("overflowQueueThrottleCount", overflowQueueThrottleCountDesc, "delays"),
         f.createLongCounter("overflowQueueThrottleTime", overflowQueueThrottleTimeDesc,
             "nanoseconds", false),
-        f.createIntGauge("highPriorityQueueSize", highPriorityQueueSizeDesc, "messages"),
-        f.createIntGauge("highPriorityQueueThrottleCount", highPriorityQueueThrottleCountDesc,
+        f.createLongGauge("highPriorityQueueSize", highPriorityQueueSizeDesc, "messages"),
+        f.createLongGauge("highPriorityQueueThrottleCount", highPriorityQueueThrottleCountDesc,
             "delays"),
         f.createLongCounter("highPriorityQueueThrottleTime", highPriorityQueueThrottleTimeDesc,
             "nanoseconds", false),
-        f.createIntGauge("partitionedRegionQueueSize", highPriorityQueueSizeDesc, "messages"),
-        f.createIntGauge("partitionedRegionQueueThrottleCount", highPriorityQueueThrottleCountDesc,
+        f.createLongGauge("partitionedRegionQueueSize", highPriorityQueueSizeDesc, "messages"),
+        f.createLongGauge("partitionedRegionQueueThrottleCount", highPriorityQueueThrottleCountDesc,
             "delays"),
         f.createLongCounter("partitionedRegionQueueThrottleTime", highPriorityQueueThrottleTimeDesc,
             "nanoseconds", false),
-        f.createIntGauge("functionExecutionQueueSize", highPriorityQueueSizeDesc, "messages"),
-        f.createIntGauge("functionExecutionQueueThrottleCount", highPriorityQueueThrottleCountDesc,
+        f.createLongGauge("functionExecutionQueueSize", highPriorityQueueSizeDesc, "messages"),
+        f.createLongGauge("functionExecutionQueueThrottleCount", highPriorityQueueThrottleCountDesc,
             "delays"),
         f.createLongCounter("functionExecutionQueueThrottleTime", highPriorityQueueThrottleTimeDesc,
             "nanoseconds", false),
-        f.createIntGauge("serialQueueSize", serialQueueSizeDesc, "messages"),
-        f.createIntGauge("serialQueueBytes", serialQueueBytesDesc, "bytes"),
-        f.createIntCounter("serialPooledThread", serialPooledThreadDesc, "threads"),
-        f.createIntGauge("serialQueueThrottleCount", serialQueueThrottleCountDesc, "delays"),
+        f.createLongGauge("serialQueueSize", serialQueueSizeDesc, "messages"),
+        f.createLongGauge("serialQueueBytes", serialQueueBytesDesc, "bytes"),
+        f.createLongCounter("serialPooledThread", serialPooledThreadDesc, "threads"),
+        f.createLongGauge("serialQueueThrottleCount", serialQueueThrottleCountDesc, "delays"),
         f.createLongCounter("serialQueueThrottleTime", serialQueueThrottleTimeDesc, "nanoseconds",
             false),
-        f.createIntGauge("serialThreads", serialThreadsDesc, "threads"),
-        f.createIntGauge("processingThreads", processingThreadsDesc, "threads"),
-        f.createIntGauge("highPriorityThreads", highPriorityThreadsDesc, "threads"),
-        f.createIntGauge("partitionedRegionThreads", partitionedRegionThreadsDesc, "threads"),
-        f.createIntGauge("functionExecutionThreads", functionExecutionThreadsDesc, "threads"),
-        f.createIntGauge("waitingThreads", waitingThreadsDesc, "threads"),
+        f.createLongGauge("serialThreads", serialThreadsDesc, "threads"),
+        f.createLongGauge("processingThreads", processingThreadsDesc, "threads"),
+        f.createLongGauge("highPriorityThreads", highPriorityThreadsDesc, "threads"),
+        f.createLongGauge("partitionedRegionThreads", partitionedRegionThreadsDesc, "threads"),
+        f.createLongGauge("functionExecutionThreads", functionExecutionThreadsDesc, "threads"),
+        f.createLongGauge("waitingThreads", waitingThreadsDesc, "threads"),
         f.createLongCounter("messageChannelTime", messageChannelTimeDesc, "nanoseconds", false),
         f.createLongCounter("udpDispatchRequestTime", udpDispatchRequestTimeDesc, "nanoseconds",
             false),
         f.createLongCounter("replyMessageTime", replyMessageTimeDesc, "nanoseconds", false),
         f.createLongCounter("distributeMessageTime", distributeMessageTimeDesc, "nanoseconds",
             false),
-        f.createIntGauge("nodes", nodesDesc, "nodes"),
-        f.createIntGauge("replyWaitsInProgress", replyWaitsInProgressDesc, "operations"),
-        f.createIntCounter("replyWaitsCompleted", replyWaitsCompletedDesc, "operations"),
+        f.createLongGauge("nodes", nodesDesc, "nodes"),
+        f.createLongGauge("replyWaitsInProgress", replyWaitsInProgressDesc, "operations"),
+        f.createLongCounter("replyWaitsCompleted", replyWaitsCompletedDesc, "operations"),
         f.createLongCounter("replyWaitTime", replyWaitTimeDesc, "nanoseconds", false),
         f.createLongGauge("replyWaitMaxTime", replyWaitMaxTimeDesc, "milliseconds", false),
         f.createLongCounter("replyTimeouts", replyTimeoutsDesc, "timeouts", false),
-        f.createIntGauge("receivers", receiverConnectionsDesc, "sockets"),
-        f.createIntGauge("sendersSO", sharedOrderedSenderConnectionsDesc, "sockets"),
-        f.createIntGauge("sendersSU", sharedUnorderedSenderConnectionsDesc, "sockets"),
-        f.createIntGauge("sendersTO", threadOrderedSenderConnectionsDesc, "sockets"),
-        f.createIntGauge("sendersTU", threadUnorderedSenderConnectionsDesc, "sockets"),
-        f.createIntCounter("failedAccepts", failedAcceptsDesc, "accepts"),
-        f.createIntCounter("failedConnects", failedConnectsDesc, "connects"),
-        f.createIntCounter("reconnectAttempts", reconnectAttemptsDesc, "connects"),
-        f.createIntCounter("senderTimeouts", lostConnectionLeaseDesc, "expirations"),
+        f.createLongGauge("receivers", receiverConnectionsDesc, "sockets"),
+        f.createLongGauge("sendersSO", sharedOrderedSenderConnectionsDesc, "sockets"),
+        f.createLongGauge("sendersSU", sharedUnorderedSenderConnectionsDesc, "sockets"),
+        f.createLongGauge("sendersTO", threadOrderedSenderConnectionsDesc, "sockets"),
+        f.createLongGauge("sendersTU", threadUnorderedSenderConnectionsDesc, "sockets"),
+        f.createLongCounter("failedAccepts", failedAcceptsDesc, "accepts"),
+        f.createLongCounter("failedConnects", failedConnectsDesc, "connects"),
+        f.createLongCounter("reconnectAttempts", reconnectAttemptsDesc, "connects"),
+        f.createLongCounter("senderTimeouts", lostConnectionLeaseDesc, "expirations"),
 
-        f.createIntGauge("syncSocketWritesInProgress",
+        f.createLongGauge("syncSocketWritesInProgress",
             "Current number of synchronous/blocking socket write calls in progress.", "writes"),
         f.createLongCounter("syncSocketWriteTime",
             "Total amount of time, in nanoseconds, spent in synchronous/blocking socket write calls.",
             "nanoseconds"),
-        f.createIntCounter("syncSocketWrites",
+        f.createLongCounter("syncSocketWrites",
             "Total number of completed synchronous/blocking socket write calls.", "writes"),
         f.createLongCounter("syncSocketWriteBytes",
             "Total number of bytes sent out in synchronous/blocking mode on sockets.", "bytes"),
 
-        f.createIntCounter("ucastReads", "Total number of unicast datagrams received", "datagrams"),
+        f.createLongCounter("ucastReads", "Total number of unicast datagrams received",
+            "datagrams"),
         f.createLongCounter("ucastReadBytes", "Total number of bytes received in unicast datagrams",
             "bytes"),
-        f.createIntCounter("ucastWrites", "Total number of unicast datagram socket write calls.",
+        f.createLongCounter("ucastWrites", "Total number of unicast datagram socket write calls.",
             "writes"),
         f.createLongCounter("ucastWriteBytes",
             "Total number of bytes sent out on unicast datagram sockets.", "bytes"),
-        f.createIntCounter("ucastRetransmits",
+        f.createLongCounter("ucastRetransmits",
             "Total number of unicast datagram socket retransmissions", "writes"),
 
-        f.createIntCounter("mcastReads", "Total number of multicast datagrams received",
+        f.createLongCounter("mcastReads", "Total number of multicast datagrams received",
             "datagrams"),
         f.createLongCounter("mcastReadBytes",
             "Total number of bytes received in multicast datagrams", "bytes"),
-        f.createIntCounter("mcastWrites", "Total number of multicast datagram socket write calls.",
+        f.createLongCounter("mcastWrites", "Total number of multicast datagram socket write calls.",
             "writes"),
         f.createLongCounter("mcastWriteBytes",
             "Total number of bytes sent out on multicast datagram sockets.", "bytes"),
-        f.createIntCounter("mcastRetransmits",
+        f.createLongCounter("mcastRetransmits",
             "Total number of multicast datagram socket retransmissions", "writes"),
-        f.createIntCounter("mcastRetransmitRequests",
+        f.createLongCounter("mcastRetransmitRequests",
             "Total number of multicast datagram socket retransmission requests sent to other processes",
             "requests"),
 
         f.createLongCounter("serializationTime",
             "Total amount of time, in nanoseconds, spent serializing objects. This includes pdx serializations.",
             "nanoseconds"),
-        f.createIntCounter("serializations",
+        f.createLongCounter("serializations",
             "Total number of object serialization calls. This includes pdx serializations.", "ops"),
         f.createLongCounter("serializedBytes",
             "Total number of bytes produced by object serialization. This includes pdx serializations.",
             "bytes"),
-        f.createIntCounter("pdxSerializations", "Total number of pdx serializations.", "ops"),
+        f.createLongCounter("pdxSerializations", "Total number of pdx serializations.", "ops"),
         f.createLongCounter("pdxSerializedBytes",
             "Total number of bytes produced by pdx serialization.", "bytes"),
         f.createLongCounter("deserializationTime",
             "Total amount of time, in nanoseconds, spent deserializing objects. This includes deserialization that results in a PdxInstance.",
             "nanoseconds"),
-        f.createIntCounter("deserializations",
+        f.createLongCounter("deserializations",
             "Total number of object deserialization calls. This includes deserialization that results in a PdxInstance.",
             "ops"),
         f.createLongCounter("deserializedBytes",
             "Total number of bytes read by object deserialization. This includes deserialization that results in a PdxInstance.",
             "bytes"),
-        f.createIntCounter("pdxDeserializations", "Total number of pdx deserializations.", "ops"),
+        f.createLongCounter("pdxDeserializations", "Total number of pdx deserializations.", "ops"),
         f.createLongCounter("pdxDeserializedBytes",
             "Total number of bytes read by pdx deserialization.", "bytes"),
         f.createLongCounter("msgSerializationTime",
@@ -581,12 +582,12 @@ public class DistributionStats implements DMStats {
             "Total amount of time, in nanoseconds, spent encrypting udp messages.", "nanoseconds"),
         f.createLongCounter("udpMsgDecryptionTime",
             "Total amount of time, in nanoseconds, spent decrypting udp messages.", "nanoseconds"),
-        f.createIntCounter("pdxInstanceDeserializations",
+        f.createLongCounter("pdxInstanceDeserializations",
             "Total number of times getObject has been called on a PdxInstance.", "ops"),
         f.createLongCounter("pdxInstanceDeserializationTime",
             "Total amount of time, in nanoseconds, spent deserializing PdxInstances by calling getObject.",
             "nanoseconds"),
-        f.createIntCounter("pdxInstanceCreations",
+        f.createLongCounter("pdxInstanceCreations",
             "Total number of times a deserialization created a PdxInstance.", "ops"),
 
         f.createLongCounter("batchSendTime",
@@ -600,11 +601,11 @@ public class DistributionStats implements DMStats {
             "Total amount of time, in nanoseconds, spent flushing batched messages to the network",
             "nanoseconds"),
 
-        f.createIntGauge("asyncSocketWritesInProgress",
+        f.createLongGauge("asyncSocketWritesInProgress",
             "Current number of non-blocking socket write calls in progress.", "writes"),
-        f.createIntCounter("asyncSocketWrites",
+        f.createLongCounter("asyncSocketWrites",
             "Total number of non-blocking socket write calls completed.", "writes"),
-        f.createIntCounter("asyncSocketWriteRetries",
+        f.createLongCounter("asyncSocketWriteRetries",
             "Total number of retries needed to write a single block of data using non-blocking socket write calls.",
             "writes"),
         f.createLongCounter("asyncSocketWriteTime",
@@ -620,24 +621,25 @@ public class DistributionStats implements DMStats {
             "Total amount of time, in nanoseconds, spent in removing messages from async queue.",
             "nanoseconds"),
 
-        f.createIntGauge("asyncQueues", asyncQueuesDesc, "queues"),
-        f.createIntGauge("asyncQueueFlushesInProgress", asyncQueueFlushesInProgressDesc,
+        f.createLongGauge("asyncQueues", asyncQueuesDesc, "queues"),
+        f.createLongGauge("asyncQueueFlushesInProgress", asyncQueueFlushesInProgressDesc,
             "operations"),
-        f.createIntCounter("asyncQueueFlushesCompleted", asyncQueueFlushesCompletedDesc,
+        f.createLongCounter("asyncQueueFlushesCompleted", asyncQueueFlushesCompletedDesc,
             "operations"),
         f.createLongCounter("asyncQueueFlushTime", asyncQueueFlushTimeDesc, "nanoseconds", false),
-        f.createIntCounter("asyncQueueTimeoutExceeded", asyncQueueTimeoutExceededDesc, "timeouts"),
-        f.createIntCounter("asyncQueueSizeExceeded", asyncQueueSizeExceededDesc, "operations"),
-        f.createIntCounter("asyncDistributionTimeoutExceeded", asyncDistributionTimeoutExceededDesc,
+        f.createLongCounter("asyncQueueTimeoutExceeded", asyncQueueTimeoutExceededDesc, "timeouts"),
+        f.createLongCounter("asyncQueueSizeExceeded", asyncQueueSizeExceededDesc, "operations"),
+        f.createLongCounter("asyncDistributionTimeoutExceeded",
+            asyncDistributionTimeoutExceededDesc,
             "operations"),
         f.createLongGauge("asyncQueueSize", asyncQueueSizeDesc, "bytes"),
         f.createLongCounter("asyncQueuedMsgs", asyncQueuedMsgsDesc, "msgs"),
         f.createLongCounter("asyncDequeuedMsgs", asyncDequeuedMsgsDesc, "msgs"),
         f.createLongCounter("asyncConflatedMsgs", asyncConflatedMsgsDesc, "msgs"),
 
-        f.createIntGauge("asyncThreads", asyncThreadsDesc, "threads"),
-        f.createIntGauge("asyncThreadInProgress", asyncThreadInProgressDesc, "operations"),
-        f.createIntCounter("asyncThreadCompleted", asyncThreadCompletedDesc, "operations"),
+        f.createLongGauge("asyncThreads", asyncThreadsDesc, "threads"),
+        f.createLongGauge("asyncThreadInProgress", asyncThreadInProgressDesc, "operations"),
+        f.createLongCounter("asyncThreadCompleted", asyncThreadCompletedDesc, "operations"),
         f.createLongCounter("asyncThreadTime", asyncThreadTimeDesc, "nanoseconds", false),
 
         f.createLongGauge("receiversTO",
@@ -651,20 +653,20 @@ public class DistributionStats implements DMStats {
         f.createLongGauge("receiverHeapBufferSize", receiverHeapBufferSizeDesc, "bytes"),
         f.createLongGauge("senderDirectBufferSize", senderDirectBufferSizeDesc, "bytes"),
         f.createLongGauge("senderHeapBufferSize", senderHeapBufferSizeDesc, "bytes"),
-        f.createIntGauge("socketLocksInProgress",
+        f.createLongGauge("socketLocksInProgress",
             "Current number of threads waiting to lock a socket", "threads", false),
-        f.createIntCounter("socketLocks", "Total number of times a socket has been locked.",
+        f.createLongCounter("socketLocks", "Total number of times a socket has been locked.",
             "locks"),
         f.createLongCounter("socketLockTime",
             "Total amount of time, in nanoseconds, spent locking a socket", "nanoseconds", false),
-        f.createIntGauge("bufferAcquiresInProgress",
+        f.createLongGauge("bufferAcquiresInProgress",
             "Current number of threads waiting to acquire a buffer", "threads", false),
-        f.createIntCounter("bufferAcquires", "Total number of times a buffer has been acquired.",
+        f.createLongCounter("bufferAcquires", "Total number of times a buffer has been acquired.",
             "operations"),
         f.createLongCounter("bufferAcquireTime",
             "Total amount of time, in nanoseconds, spent acquiring a socket", "nanoseconds", false),
 
-        f.createIntGauge("messagesBeingReceived",
+        f.createLongGauge("messagesBeingReceived",
             "Current number of message being received off the network or being processed after reception.",
             "messages"),
         f.createLongGauge("messageBytesBeingReceived",
@@ -695,20 +697,20 @@ public class DistributionStats implements DMStats {
             "messages", false),
         f.createLongCounter("replyHandoffTime", replyHandoffTimeDesc, "nanoseconds"),
 
-        f.createIntGauge("partitionedRegionThreadJobs", partitionedRegionThreadJobsDesc,
+        f.createLongGauge("partitionedRegionThreadJobs", partitionedRegionThreadJobsDesc,
             "messages"),
-        f.createIntGauge("functionExecutionThreadJobs", functionExecutionThreadJobsDesc,
+        f.createLongGauge("functionExecutionThreadJobs", functionExecutionThreadJobsDesc,
             "messages"),
-        f.createIntGauge("serialThreadJobs", serialThreadJobsDesc, "messages"),
-        f.createIntGauge("serialPooledThreadJobs", serialPooledThreadJobsDesc, "messages"),
-        f.createIntGauge("processingThreadJobs", processingThreadJobsDesc, "messages"),
-        f.createIntGauge("highPriorityThreadJobs", highPriorityThreadJobsDesc, "messages"),
-        f.createIntGauge("waitingThreadJobs", waitingThreadJobsDesc, "messages"),
+        f.createLongGauge("serialThreadJobs", serialThreadJobsDesc, "messages"),
+        f.createLongGauge("serialPooledThreadJobs", serialPooledThreadJobsDesc, "messages"),
+        f.createLongGauge("processingThreadJobs", processingThreadJobsDesc, "messages"),
+        f.createLongGauge("highPriorityThreadJobs", highPriorityThreadJobsDesc, "messages"),
+        f.createLongGauge("waitingThreadJobs", waitingThreadJobsDesc, "messages"),
 
-        f.createIntGauge("elders", eldersDesc, "elders"),
-        f.createIntGauge("initialImageMessagesInFlight", initialImageMessagesInFlightDesc,
+        f.createLongGauge("elders", eldersDesc, "elders"),
+        f.createLongGauge("initialImageMessagesInFlight", initialImageMessagesInFlightDesc,
             "messages"),
-        f.createIntGauge("initialImageRequestsInProgress", initialImageRequestsInProgressDesc,
+        f.createLongGauge("initialImageRequestsInProgress", initialImageRequestsInProgressDesc,
             "requests"),
 
         // For GMSHealthMonitor
@@ -931,7 +933,7 @@ public class DistributionStats implements DMStats {
 
   private final MaxLongGauge maxReplyWaitTime;
   private final MaxLongGauge maxSentMessagesTime;
-  private LongAdder serialQueueBytes = new LongAdder();
+  private final LongAdder serialQueueBytes = new LongAdder();
 
   //////////////////////// Constructors ////////////////////////
 
@@ -1168,21 +1170,21 @@ public class DistributionStats implements DMStats {
   }
 
   @Override
-  public int getOverflowQueueSize() {
-    return this.stats.getInt(overflowQueueSizeId);
+  public long getOverflowQueueSize() {
+    return this.stats.getLong(overflowQueueSizeId);
   }
 
   @Override
-  public void incOverflowQueueSize(int messages) {
-    this.stats.incInt(overflowQueueSizeId, messages);
+  public void incOverflowQueueSize(long messages) {
+    this.stats.incLong(overflowQueueSizeId, messages);
   }
 
-  protected void incWaitingQueueSize(int messages) {
-    this.stats.incInt(waitingQueueSizeId, messages);
+  protected void incWaitingQueueSize(long messages) {
+    this.stats.incLong(waitingQueueSizeId, messages);
   }
 
-  protected void incOverflowQueueThrottleCount(int delays) {
-    this.stats.incInt(overflowQueueThrottleCountId, delays);
+  protected void incOverflowQueueThrottleCount() {
+    this.stats.incLong(overflowQueueThrottleCountId, 1);
   }
 
   protected void incOverflowQueueThrottleTime(long nanos) {
@@ -1191,12 +1193,12 @@ public class DistributionStats implements DMStats {
     }
   }
 
-  protected void incHighPriorityQueueSize(int messages) {
-    this.stats.incInt(highPriorityQueueSizeId, messages);
+  protected void incHighPriorityQueueSize(long messages) {
+    this.stats.incLong(highPriorityQueueSizeId, messages);
   }
 
-  protected void incHighPriorityQueueThrottleCount(int delays) {
-    this.stats.incInt(highPriorityQueueThrottleCountId, delays);
+  protected void incHighPriorityQueueThrottleCount() {
+    this.stats.incLong(highPriorityQueueThrottleCountId, 1);
   }
 
   protected void incHighPriorityQueueThrottleTime(long nanos) {
@@ -1205,12 +1207,12 @@ public class DistributionStats implements DMStats {
     }
   }
 
-  protected void incPartitionedRegionQueueSize(int messages) {
-    this.stats.incInt(partitionedRegionQueueSizeId, messages);
+  protected void incPartitionedRegionQueueSize(long messages) {
+    this.stats.incLong(partitionedRegionQueueSizeId, messages);
   }
 
-  protected void incPartitionedRegionQueueThrottleCount(int delays) {
-    this.stats.incInt(partitionedRegionQueueThrottleCountId, delays);
+  protected void incPartitionedRegionQueueThrottleCount() {
+    this.stats.incLong(partitionedRegionQueueThrottleCountId, 1);
   }
 
   protected void incPartitionedRegionQueueThrottleTime(long nanos) {
@@ -1219,12 +1221,12 @@ public class DistributionStats implements DMStats {
     }
   }
 
-  protected void incFunctionExecutionQueueSize(int messages) {
-    this.stats.incInt(functionExecutionQueueSizeId, messages);
+  protected void incFunctionExecutionQueueSize(long messages) {
+    this.stats.incLong(functionExecutionQueueSizeId, messages);
   }
 
-  protected void incFunctionExecutionQueueThrottleCount(int delays) {
-    this.stats.incInt(functionExecutionQueueThrottleCountId, delays);
+  protected void incFunctionExecutionQueueThrottleCount() {
+    this.stats.incLong(functionExecutionQueueThrottleCountId, 1);
   }
 
   protected void incFunctionExecutionQueueThrottleTime(long nanos) {
@@ -1233,13 +1235,13 @@ public class DistributionStats implements DMStats {
     }
   }
 
-  protected void incSerialQueueSize(int messages) {
-    this.stats.incInt(serialQueueSizeId, messages);
+  protected void incSerialQueueSize(long messages) {
+    this.stats.incLong(serialQueueSizeId, messages);
   }
 
-  protected void incSerialQueueBytes(int amount) {
+  protected void incSerialQueueBytes(long amount) {
     serialQueueBytes.add(amount);
-    this.stats.incInt(serialQueueBytesId, amount);
+    this.stats.incLong(serialQueueBytesId, amount);
   }
 
   public long getInternalSerialQueueBytes() {
@@ -1247,11 +1249,11 @@ public class DistributionStats implements DMStats {
   }
 
   protected void incSerialPooledThread() {
-    this.stats.incInt(serialPooledThreadId, 1);
+    this.stats.incLong(serialPooledThreadId, 1);
   }
 
-  protected void incSerialQueueThrottleCount(int delays) {
-    this.stats.incInt(serialQueueThrottleCountId, delays);
+  protected void incSerialQueueThrottleCount() {
+    this.stats.incLong(serialQueueThrottleCountId, 1);
   }
 
   protected void incSerialQueueThrottleTime(long nanos) {
@@ -1261,39 +1263,39 @@ public class DistributionStats implements DMStats {
   }
 
   @Override
-  public int getNumProcessingThreads() {
-    return this.stats.getInt(processingThreadsId);
+  public long getNumProcessingThreads() {
+    return this.stats.getLong(processingThreadsId);
   }
 
   @Override
-  public void incNumProcessingThreads(int threads) {
-    this.stats.incInt(processingThreadsId, threads);
+  public void incNumProcessingThreads(long threads) {
+    this.stats.incLong(processingThreadsId, threads);
   }
 
   @Override
-  public int getNumSerialThreads() {
-    return this.stats.getInt(serialThreadsId);
+  public long getNumSerialThreads() {
+    return this.stats.getLong(serialThreadsId);
   }
 
   @Override
-  public void incNumSerialThreads(int threads) {
-    this.stats.incInt(serialThreadsId, threads);
+  public void incNumSerialThreads(long threads) {
+    this.stats.incLong(serialThreadsId, threads);
   }
 
-  protected void incWaitingThreads(int threads) {
-    this.stats.incInt(waitingThreadsId, threads);
+  protected void incWaitingThreads(long threads) {
+    this.stats.incLong(waitingThreadsId, threads);
   }
 
-  protected void incHighPriorityThreads(int threads) {
-    this.stats.incInt(highPriorityThreadsId, threads);
+  protected void incHighPriorityThreads(long threads) {
+    this.stats.incLong(highPriorityThreadsId, threads);
   }
 
-  protected void incPartitionedRegionThreads(int threads) {
-    this.stats.incInt(partitionedRegionThreadsId, threads);
+  protected void incPartitionedRegionThreads(long threads) {
+    this.stats.incLong(partitionedRegionThreadsId, threads);
   }
 
-  protected void incFunctionExecutionThreads(int threads) {
-    this.stats.incInt(functionExecutionThreadsId, threads);
+  protected void incFunctionExecutionThreads(long threads) {
+    this.stats.incLong(functionExecutionThreadsId, threads);
   }
 
   @Override
@@ -1345,28 +1347,28 @@ public class DistributionStats implements DMStats {
   }
 
   @Override
-  public int getNodes() {
-    return this.stats.getInt(nodesId);
+  public long getNodes() {
+    return this.stats.getLong(nodesId);
   }
 
   @Override
-  public void setNodes(int val) {
-    this.stats.setInt(nodesId, val);
+  public void setNodes(long val) {
+    this.stats.setLong(nodesId, val);
   }
 
   @Override
-  public void incNodes(int val) {
-    this.stats.incInt(nodesId, val);
+  public void incNodes(long val) {
+    this.stats.incLong(nodesId, val);
   }
 
   @Override
-  public int getReplyWaitsInProgress() {
-    return stats.getInt(replyWaitsInProgressId);
+  public long getReplyWaitsInProgress() {
+    return stats.getLong(replyWaitsInProgressId);
   }
 
   @Override
-  public int getReplyWaitsCompleted() {
-    return stats.getInt(replyWaitsCompletedId);
+  public long getReplyWaitsCompleted() {
+    return stats.getLong(replyWaitsCompletedId);
   }
 
   @Override
@@ -1377,28 +1379,28 @@ public class DistributionStats implements DMStats {
   @Override
   public long startSocketWrite(boolean sync) {
     if (sync) {
-      stats.incInt(syncSocketWritesInProgressId, 1);
+      stats.incLong(syncSocketWritesInProgressId, 1);
     } else {
-      stats.incInt(asyncSocketWritesInProgressId, 1);
+      stats.incLong(asyncSocketWritesInProgressId, 1);
     }
     return getTime();
   }
 
   @Override
-  public void endSocketWrite(boolean sync, long start, int bytesWritten, int retries) {
+  public void endSocketWrite(boolean sync, long start, long bytesWritten, long retries) {
     final long now = getTime();
     if (sync) {
-      stats.incInt(syncSocketWritesInProgressId, -1);
-      stats.incInt(syncSocketWritesId, 1);
+      stats.incLong(syncSocketWritesInProgressId, -1);
+      stats.incLong(syncSocketWritesId, 1);
       stats.incLong(syncSocketWriteBytesId, bytesWritten);
       if (enableClockStats) {
         stats.incLong(syncSocketWriteTimeId, now - start);
       }
     } else {
-      stats.incInt(asyncSocketWritesInProgressId, -1);
-      stats.incInt(asyncSocketWritesId, 1);
+      stats.incLong(asyncSocketWritesInProgressId, -1);
+      stats.incLong(asyncSocketWritesId, 1);
       if (retries != 0) {
-        stats.incInt(asyncSocketWriteRetriesId, retries);
+        stats.incLong(asyncSocketWriteRetriesId, retries);
       }
       stats.incLong(asyncSocketWriteBytesId, bytesWritten);
       if (enableClockStats) {
@@ -1409,52 +1411,52 @@ public class DistributionStats implements DMStats {
 
   @Override
   public long startSocketLock() {
-    stats.incInt(socketLocksInProgressId, 1);
+    stats.incLong(socketLocksInProgressId, 1);
     return getTime();
   }
 
   @Override
   public void endSocketLock(long start) {
     long ts = getTime();
-    stats.incInt(socketLocksInProgressId, -1);
-    stats.incInt(socketLocksId, 1);
+    stats.incLong(socketLocksInProgressId, -1);
+    stats.incLong(socketLocksId, 1);
     stats.incLong(socketLockTimeId, ts - start);
   }
 
   @Override
   public long startBufferAcquire() {
-    stats.incInt(bufferAcquiresInProgressId, 1);
+    stats.incLong(bufferAcquiresInProgressId, 1);
     return getTime();
   }
 
   @Override
   public void endBufferAcquire(long start) {
     long ts = getTime();
-    stats.incInt(bufferAcquiresInProgressId, -1);
-    stats.incInt(bufferAcquiresId, 1);
+    stats.incLong(bufferAcquiresInProgressId, -1);
+    stats.incLong(bufferAcquiresId, 1);
     stats.incLong(bufferAcquireTimeId, ts - start);
   }
 
   @Override
-  public void incUcastWriteBytes(int bytesWritten) {
-    stats.incInt(ucastWritesId, 1);
+  public void incUcastWriteBytes(long bytesWritten) {
+    stats.incLong(ucastWritesId, 1);
     stats.incLong(ucastWriteBytesId, bytesWritten);
   }
 
   @Override
-  public void incMcastWriteBytes(int bytesWritten) {
-    stats.incInt(mcastWritesId, 1);
+  public void incMcastWriteBytes(long bytesWritten) {
+    stats.incLong(mcastWritesId, 1);
     stats.incLong(mcastWriteBytesId, bytesWritten);
   }
 
   @Override
-  public int getMcastWrites() {
-    return stats.getInt(mcastWritesId);
+  public long getMcastWrites() {
+    return stats.getLong(mcastWritesId);
   }
 
   @Override
-  public int getMcastReads() {
-    return stats.getInt(mcastReadsId);
+  public long getMcastReads() {
+    return stats.getLong(mcastReadsId);
   }
 
   @Override
@@ -1463,19 +1465,19 @@ public class DistributionStats implements DMStats {
   }
 
   @Override
-  public long getUDPMsgEncryptionTiime() {
+  public long getUDPMsgEncryptionTime() {
     return stats.getLong(udpMsgEncryptionTimeId);
   }
 
   @Override
-  public void incMcastReadBytes(int amount) {
-    stats.incInt(mcastReadsId, 1);
+  public void incMcastReadBytes(long amount) {
+    stats.incLong(mcastReadsId, 1);
     stats.incLong(mcastReadBytesId, amount);
   }
 
   @Override
-  public void incUcastReadBytes(int amount) {
-    stats.incInt(ucastReadsId, 1);
+  public void incUcastReadBytes(long amount) {
+    stats.incLong(ucastReadsId, 1);
     stats.incLong(ucastReadBytesId, amount);
   }
 
@@ -1489,7 +1491,7 @@ public class DistributionStats implements DMStats {
     if (enableClockStats) {
       stats.incLong(serializationTimeId, getTime() - start);
     }
-    stats.incInt(serializationsId, 1);
+    stats.incLong(serializationsId, 1);
     stats.incLong(serializedBytesId, bytes);
   }
 
@@ -1503,24 +1505,24 @@ public class DistributionStats implements DMStats {
     if (enableClockStats) {
       stats.incLong(pdxInstanceDeserializationTimeId, getTime() - start);
     }
-    stats.incInt(pdxInstanceDeserializationsId, 1);
+    stats.incLong(pdxInstanceDeserializationsId, 1);
   }
 
   @Override
-  public void incPdxSerialization(int bytes) {
-    stats.incInt(pdxSerializationsId, 1);
+  public void incPdxSerialization(long bytes) {
+    stats.incLong(pdxSerializationsId, 1);
     stats.incLong(pdxSerializedBytesId, bytes);
   }
 
   @Override
-  public void incPdxDeserialization(int bytes) {
-    stats.incInt(pdxDeserializationsId, 1);
+  public void incPdxDeserialization(long bytes) {
+    stats.incLong(pdxDeserializationsId, 1);
     stats.incLong(pdxDeserializedBytesId, bytes);
   }
 
   @Override
   public void incPdxInstanceCreations() {
-    stats.incInt(pdxInstanceCreationsId, 1);
+    stats.incLong(pdxInstanceCreationsId, 1);
   }
 
   @Override
@@ -1533,7 +1535,7 @@ public class DistributionStats implements DMStats {
     if (enableClockStats) {
       stats.incLong(deserializationTimeId, getTime() - start);
     }
-    stats.incInt(deserializationsId, 1);
+    stats.incLong(deserializationsId, 1);
     stats.incLong(deserializedBytesId, bytes);
   }
 
@@ -1590,7 +1592,7 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public long startReplyWait() {
-    stats.incInt(replyWaitsInProgressId, 1);
+    stats.incLong(replyWaitsInProgressId, 1);
     return getTime();
   }
 
@@ -1605,8 +1607,8 @@ public class DistributionStats implements DMStats {
       long waitTime = System.currentTimeMillis() - initTime;
       maxReplyWaitTime.recordMax(waitTime);
     }
-    stats.incInt(replyWaitsInProgressId, -1);
-    stats.incInt(replyWaitsCompletedId, 1);
+    stats.incLong(replyWaitsInProgressId, -1);
+    stats.incLong(replyWaitsCompletedId, 1);
 
     Breadcrumbs.setSendSide(null); // clear any recipient breadcrumbs set by the message
     Breadcrumbs.setProblem(null); // clear out reply-wait errors
@@ -1624,91 +1626,91 @@ public class DistributionStats implements DMStats {
 
   @Override
   public void incReceivers() {
-    stats.incInt(receiverConnectionsId, 1);
+    stats.incLong(receiverConnectionsId, 1);
   }
 
   @Override
   public void decReceivers() {
-    stats.incInt(receiverConnectionsId, -1);
+    stats.incLong(receiverConnectionsId, -1);
   }
 
   @Override
   public void incFailedAccept() {
-    stats.incInt(failedAcceptsId, 1);
+    stats.incLong(failedAcceptsId, 1);
   }
 
   @Override
   public void incFailedConnect() {
-    stats.incInt(failedConnectsId, 1);
+    stats.incLong(failedConnectsId, 1);
   }
 
   @Override
   public void incReconnectAttempts() {
-    stats.incInt(reconnectAttemptsId, 1);
+    stats.incLong(reconnectAttemptsId, 1);
   }
 
   @Override
-  public int getReconnectAttempts() {
-    return stats.getInt(reconnectAttemptsId);
+  public long getReconnectAttempts() {
+    return stats.getLong(reconnectAttemptsId);
   }
 
   @Override
   public void incLostLease() {
-    stats.incInt(lostConnectionLeaseId, 1);
+    stats.incLong(lostConnectionLeaseId, 1);
   }
 
   @Override
   public void incSenders(boolean shared, boolean preserveOrder) {
     if (shared) {
       if (preserveOrder) {
-        stats.incInt(sharedOrderedSenderConnectionsId, 1);
+        stats.incLong(sharedOrderedSenderConnectionsId, 1);
       } else {
-        stats.incInt(sharedUnorderedSenderConnectionsId, 1);
+        stats.incLong(sharedUnorderedSenderConnectionsId, 1);
       }
     } else {
       if (preserveOrder) {
-        stats.incInt(threadOrderedSenderConnectionsId, 1);
+        stats.incLong(threadOrderedSenderConnectionsId, 1);
       } else {
-        stats.incInt(threadUnorderedSenderConnectionsId, 1);
+        stats.incLong(threadUnorderedSenderConnectionsId, 1);
       }
     }
   }
 
   @Override
-  public int getSendersSU() {
-    return stats.getInt(sharedUnorderedSenderConnectionsId);
+  public long getSendersSU() {
+    return stats.getLong(sharedUnorderedSenderConnectionsId);
   }
 
   @Override
   public void decSenders(boolean shared, boolean preserveOrder) {
     if (shared) {
       if (preserveOrder) {
-        stats.incInt(sharedOrderedSenderConnectionsId, -1);
+        stats.incLong(sharedOrderedSenderConnectionsId, -1);
       } else {
-        stats.incInt(sharedUnorderedSenderConnectionsId, -1);
+        stats.incLong(sharedUnorderedSenderConnectionsId, -1);
       }
     } else {
       if (preserveOrder) {
-        stats.incInt(threadOrderedSenderConnectionsId, -1);
+        stats.incLong(threadOrderedSenderConnectionsId, -1);
       } else {
-        stats.incInt(threadUnorderedSenderConnectionsId, -1);
+        stats.incLong(threadUnorderedSenderConnectionsId, -1);
       }
     }
   }
 
   @Override
-  public int getAsyncSocketWritesInProgress() {
-    return stats.getInt(asyncSocketWritesInProgressId);
+  public long getAsyncSocketWritesInProgress() {
+    return stats.getLong(asyncSocketWritesInProgressId);
   }
 
   @Override
-  public int getAsyncSocketWrites() {
-    return stats.getInt(asyncSocketWritesId);
+  public long getAsyncSocketWrites() {
+    return stats.getLong(asyncSocketWritesId);
   }
 
   @Override
-  public int getAsyncSocketWriteRetries() {
-    return stats.getInt(asyncSocketWriteRetriesId);
+  public long getAsyncSocketWriteRetries() {
+    return stats.getLong(asyncSocketWriteRetriesId);
   }
 
   @Override
@@ -1746,23 +1748,23 @@ public class DistributionStats implements DMStats {
   }
 
   @Override
-  public int getAsyncQueues() {
-    return stats.getInt(asyncQueuesId);
+  public long getAsyncQueues() {
+    return stats.getLong(asyncQueuesId);
   }
 
   @Override
-  public void incAsyncQueues(int inc) {
-    stats.incInt(asyncQueuesId, inc);
+  public void incAsyncQueues(long inc) {
+    stats.incLong(asyncQueuesId, inc);
   }
 
   @Override
-  public int getAsyncQueueFlushesInProgress() {
-    return stats.getInt(asyncQueueFlushesInProgressId);
+  public long getAsyncQueueFlushesInProgress() {
+    return stats.getLong(asyncQueueFlushesInProgressId);
   }
 
   @Override
-  public int getAsyncQueueFlushesCompleted() {
-    return stats.getInt(asyncQueueFlushesCompletedId);
+  public long getAsyncQueueFlushesCompleted() {
+    return stats.getLong(asyncQueueFlushesCompletedId);
   }
 
   @Override
@@ -1772,47 +1774,47 @@ public class DistributionStats implements DMStats {
 
   @Override
   public long startAsyncQueueFlush() {
-    stats.incInt(asyncQueueFlushesInProgressId, 1);
+    stats.incLong(asyncQueueFlushesInProgressId, 1);
     return getTime();
   }
 
   @Override
   public void endAsyncQueueFlush(long start) {
-    stats.incInt(asyncQueueFlushesInProgressId, -1);
-    stats.incInt(asyncQueueFlushesCompletedId, 1);
+    stats.incLong(asyncQueueFlushesInProgressId, -1);
+    stats.incLong(asyncQueueFlushesCompletedId, 1);
     if (enableClockStats) {
       stats.incLong(asyncQueueFlushTimeId, getTime() - start);
     }
   }
 
   @Override
-  public int getAsyncQueueTimeouts() {
-    return stats.getInt(asyncQueueTimeoutExceededId);
+  public long getAsyncQueueTimeouts() {
+    return stats.getLong(asyncQueueTimeoutExceededId);
   }
 
   @Override
-  public void incAsyncQueueTimeouts(int inc) {
-    stats.incInt(asyncQueueTimeoutExceededId, inc);
+  public void incAsyncQueueTimeouts(long inc) {
+    stats.incLong(asyncQueueTimeoutExceededId, inc);
   }
 
   @Override
-  public int getAsyncQueueSizeExceeded() {
-    return stats.getInt(asyncQueueSizeExceededId);
+  public long getAsyncQueueSizeExceeded() {
+    return stats.getLong(asyncQueueSizeExceededId);
   }
 
   @Override
-  public void incAsyncQueueSizeExceeded(int inc) {
-    stats.incInt(asyncQueueSizeExceededId, inc);
+  public void incAsyncQueueSizeExceeded(long inc) {
+    stats.incLong(asyncQueueSizeExceededId, inc);
   }
 
   @Override
-  public int getAsyncDistributionTimeoutExceeded() {
-    return stats.getInt(asyncDistributionTimeoutExceededId);
+  public long getAsyncDistributionTimeoutExceeded() {
+    return stats.getLong(asyncDistributionTimeoutExceededId);
   }
 
   @Override
   public void incAsyncDistributionTimeoutExceeded() {
-    stats.incInt(asyncDistributionTimeoutExceededId, 1);
+    stats.incLong(asyncDistributionTimeoutExceededId, 1);
   }
 
   @Override
@@ -1856,23 +1858,23 @@ public class DistributionStats implements DMStats {
   }
 
   @Override
-  public int getAsyncThreads() {
-    return stats.getInt(asyncThreadsId);
+  public long getAsyncThreads() {
+    return stats.getLong(asyncThreadsId);
   }
 
   @Override
-  public void incAsyncThreads(int inc) {
-    stats.incInt(asyncThreadsId, inc);
+  public void incAsyncThreads(long inc) {
+    stats.incLong(asyncThreadsId, inc);
   }
 
   @Override
-  public int getAsyncThreadInProgress() {
-    return stats.getInt(asyncThreadInProgressId);
+  public long getAsyncThreadInProgress() {
+    return stats.getLong(asyncThreadInProgressId);
   }
 
   @Override
-  public int getAsyncThreadCompleted() {
-    return stats.getInt(asyncThreadCompletedId);
+  public long getAsyncThreadCompleted() {
+    return stats.getLong(asyncThreadCompletedId);
   }
 
   @Override
@@ -1882,14 +1884,14 @@ public class DistributionStats implements DMStats {
 
   @Override
   public long startAsyncThread() {
-    stats.incInt(asyncThreadInProgressId, 1);
+    stats.incLong(asyncThreadInProgressId, 1);
     return getTime();
   }
 
   @Override
   public void endAsyncThread(long start) {
-    stats.incInt(asyncThreadInProgressId, -1);
-    stats.incInt(asyncThreadCompletedId, 1);
+    stats.incLong(asyncThreadInProgressId, -1);
+    stats.incLong(asyncThreadCompletedId, 1);
     if (enableClockStats) {
       stats.incLong(asyncThreadTimeId, getTime() - start);
     }
@@ -1905,7 +1907,7 @@ public class DistributionStats implements DMStats {
     return new ThrottledQueueStatHelper() {
       @Override
       public void incThrottleCount() {
-        incOverflowQueueThrottleCount(1);
+        incOverflowQueueThrottleCount();
       }
 
       @Override
@@ -1924,7 +1926,7 @@ public class DistributionStats implements DMStats {
       }
 
       @Override
-      public void remove(int count) {
+      public void remove(long count) {
         incOverflowQueueSize(-count);
       }
     };
@@ -1949,7 +1951,7 @@ public class DistributionStats implements DMStats {
       }
 
       @Override
-      public void remove(int count) {
+      public void remove(long count) {
         incWaitingQueueSize(-count);
       }
     };
@@ -1965,7 +1967,7 @@ public class DistributionStats implements DMStats {
     return new ThrottledQueueStatHelper() {
       @Override
       public void incThrottleCount() {
-        incHighPriorityQueueThrottleCount(1);
+        incHighPriorityQueueThrottleCount();
       }
 
       @Override
@@ -1984,7 +1986,7 @@ public class DistributionStats implements DMStats {
       }
 
       @Override
-      public void remove(int count) {
+      public void remove(long count) {
         incHighPriorityQueueSize(-count);
       }
     };
@@ -2000,7 +2002,7 @@ public class DistributionStats implements DMStats {
     return new ThrottledQueueStatHelper() {
       @Override
       public void incThrottleCount() {
-        incPartitionedRegionQueueThrottleCount(1);
+        incPartitionedRegionQueueThrottleCount();
       }
 
       @Override
@@ -2019,7 +2021,7 @@ public class DistributionStats implements DMStats {
       }
 
       @Override
-      public void remove(int count) {
+      public void remove(long count) {
         incPartitionedRegionQueueSize(-count);
       }
     };
@@ -2055,7 +2057,7 @@ public class DistributionStats implements DMStats {
     return new ThrottledQueueStatHelper() {
       @Override
       public void incThrottleCount() {
-        incFunctionExecutionQueueThrottleCount(1);
+        incFunctionExecutionQueueThrottleCount();
       }
 
       @Override
@@ -2074,7 +2076,7 @@ public class DistributionStats implements DMStats {
       }
 
       @Override
-      public void remove(int count) {
+      public void remove(long count) {
         incFunctionExecutionQueueSize(-count);
       }
     };
@@ -2110,7 +2112,7 @@ public class DistributionStats implements DMStats {
     return new ThrottledMemQueueStatHelper() {
       @Override
       public void incThrottleCount() {
-        incSerialQueueThrottleCount(1);
+        incSerialQueueThrottleCount();
       }
 
       @Override
@@ -2129,17 +2131,17 @@ public class DistributionStats implements DMStats {
       }
 
       @Override
-      public void remove(int count) {
+      public void remove(long count) {
         incSerialQueueSize(-count);
       }
 
       @Override
-      public void addMem(int amount) {
+      public void addMem(long amount) {
         incSerialQueueBytes(amount);
       }
 
       @Override
-      public void removeMem(int amount) {
+      public void removeMem(long amount) {
         incSerialQueueBytes(amount * (-1));
       }
     };
@@ -2235,26 +2237,26 @@ public class DistributionStats implements DMStats {
 
   @Override
   public void incUcastRetransmits() {
-    stats.incInt(ucastRetransmitsId, 1);
+    stats.incLong(ucastRetransmitsId, 1);
   }
 
   @Override
   public void incMcastRetransmits() {
-    stats.incInt(mcastRetransmitsId, 1);
+    stats.incLong(mcastRetransmitsId, 1);
   }
 
   @Override
   public void incMcastRetransmitRequests() {
-    stats.incInt(mcastRetransmitRequestsId, 1);
+    stats.incLong(mcastRetransmitRequestsId, 1);
   }
 
   @Override
-  public int getMcastRetransmits() {
-    return stats.getInt(mcastRetransmitsId);
+  public long getMcastRetransmits() {
+    return stats.getLong(mcastRetransmitsId);
   }
 
   @Override
-  public void incThreadOwnedReceivers(long value, int dominoCount) {
+  public void incThreadOwnedReceivers(long value, long dominoCount) {
     if (dominoCount < 2) {
       stats.incLong(threadOwnedReceiversId, value);
     } else {
@@ -2266,7 +2268,7 @@ public class DistributionStats implements DMStats {
    * @since GemFire 5.0.2.4
    */
   @Override
-  public void incReceiverBufferSize(int inc, boolean direct) {
+  public void incReceiverBufferSize(long inc, boolean direct) {
     if (direct) {
       stats.incLong(receiverDirectBufferSizeId, inc);
     } else {
@@ -2278,7 +2280,7 @@ public class DistributionStats implements DMStats {
    * @since GemFire 5.0.2.4
    */
   @Override
-  public void incSenderBufferSize(int inc, boolean direct) {
+  public void incSenderBufferSize(long inc, boolean direct) {
     if (direct) {
       stats.incLong(senderDirectBufferSizeId, inc);
     } else {
@@ -2287,16 +2289,16 @@ public class DistributionStats implements DMStats {
   }
 
   @Override
-  public void incMessagesBeingReceived(boolean newMsg, int bytes) {
+  public void incMessagesBeingReceived(boolean newMsg, long bytes) {
     if (newMsg) {
-      stats.incInt(messagesBeingReceivedId, 1);
+      stats.incLong(messagesBeingReceivedId, 1L);
     }
     stats.incLong(messageBytesBeingReceivedId, bytes);
   }
 
   @Override
-  public void decMessagesBeingReceived(int bytes) {
-    stats.incInt(messagesBeingReceivedId, -1);
+  public void decMessagesBeingReceived(long bytes) {
+    stats.incLong(messagesBeingReceivedId, -1);
     stats.incLong(messageBytesBeingReceivedId, -bytes);
   }
 
@@ -2337,12 +2339,12 @@ public class DistributionStats implements DMStats {
     }
   }
 
-  protected void incPartitionedRegionThreadJobs(int i) {
-    this.stats.incInt(partitionedRegionThreadJobsId, i);
+  protected void incPartitionedRegionThreadJobs(long i) {
+    this.stats.incLong(partitionedRegionThreadJobsId, i);
   }
 
-  protected void incFunctionExecutionThreadJobs(int i) {
-    this.stats.incInt(functionExecutionThreadJobsId, i);
+  protected void incFunctionExecutionThreadJobs(long i) {
+    this.stats.incLong(functionExecutionThreadJobsId, i);
   }
 
   public PoolStatHelper getSerialProcessorHelper() {
@@ -2363,8 +2365,8 @@ public class DistributionStats implements DMStats {
     };
   }
 
-  protected void incNumSerialThreadJobs(int jobs) {
-    this.stats.incInt(serialThreadJobsId, jobs);
+  protected void incNumSerialThreadJobs(long jobs) {
+    this.stats.incLong(serialThreadJobsId, jobs);
   }
 
   public PoolStatHelper getSerialPooledProcessorHelper() {
@@ -2381,50 +2383,50 @@ public class DistributionStats implements DMStats {
     };
   }
 
-  protected void incSerialPooledProcessorThreadJobs(int jobs) {
-    this.stats.incInt(serialPooledThreadJobsId, jobs);
+  protected void incSerialPooledProcessorThreadJobs(long jobs) {
+    this.stats.incLong(serialPooledThreadJobsId, jobs);
   }
 
-  protected void incNormalPoolThreadJobs(int jobs) {
-    this.stats.incInt(pooledMessageThreadJobsId, jobs);
+  protected void incNormalPoolThreadJobs(long jobs) {
+    this.stats.incLong(pooledMessageThreadJobsId, jobs);
   }
 
-  protected void incHighPriorityThreadJobs(int jobs) {
-    this.stats.incInt(highPriorityThreadJobsId, jobs);
+  protected void incHighPriorityThreadJobs(long jobs) {
+    this.stats.incLong(highPriorityThreadJobsId, jobs);
   }
 
-  protected void incWaitingPoolThreadJobs(int jobs) {
-    this.stats.incInt(waitingPoolThreadJobsId, jobs);
-  }
-
-  @Override
-  public int getElders() {
-    return this.stats.getInt(eldersId);
+  protected void incWaitingPoolThreadJobs(long jobs) {
+    this.stats.incLong(waitingPoolThreadJobsId, jobs);
   }
 
   @Override
-  public void incElders(int val) {
-    this.stats.incInt(eldersId, val);
+  public long getElders() {
+    return this.stats.getLong(eldersId);
   }
 
   @Override
-  public int getInitialImageMessagesInFlight() {
-    return this.stats.getInt(initialImageMessagesInFlightId);
+  public void incElders(long val) {
+    this.stats.incLong(eldersId, val);
   }
 
   @Override
-  public void incInitialImageMessagesInFlight(int val) {
-    this.stats.incInt(initialImageMessagesInFlightId, val);
+  public long getInitialImageMessagesInFlight() {
+    return this.stats.getLong(initialImageMessagesInFlightId);
   }
 
   @Override
-  public int getInitialImageRequestsInProgress() {
-    return this.stats.getInt(initialImageRequestsInProgressId);
+  public void incInitialImageMessagesInFlight(long val) {
+    this.stats.incLong(initialImageMessagesInFlightId, val);
   }
 
   @Override
-  public void incInitialImageRequestsInProgress(int val) {
-    this.stats.incInt(initialImageRequestsInProgressId, val);
+  public long getInitialImageRequestsInProgress() {
+    return this.stats.getLong(initialImageRequestsInProgressId);
+  }
+
+  @Override
+  public void incInitialImageRequestsInProgress(long val) {
+    this.stats.incLong(initialImageRequestsInProgressId, val);
   }
 
   public Statistics getStats() {

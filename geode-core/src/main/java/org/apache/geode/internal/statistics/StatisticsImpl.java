@@ -110,7 +110,7 @@ public abstract class StatisticsImpl implements SuppliableStatistics {
   StatisticsImpl(StatisticsType type, String textId, long numericId, long uniqueId,
       int osStatFlags, StatisticsManager statisticsManager) {
     this(type, textId, numericId, uniqueId, osStatFlags, statisticsManager,
-        (message, textId1, statId, throwable) -> logger.warn(message, textId1, statId, throwable));
+        logger::warn);
   }
 
   /**
@@ -444,15 +444,13 @@ public abstract class StatisticsImpl implements SuppliableStatistics {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("uniqueId=").append(uniqueId);
-    sb.append(", numericId=").append(numericId);
-    sb.append(", textId=").append(textId);
-    sb.append(", type=").append(type.getName());
-    sb.append(", closed=").append(closed);
-    sb.append("}");
-    return sb.toString();
+    return getClass().getName() + "@" + System.identityHashCode(this) + "{"
+        + "uniqueId=" + uniqueId
+        + ", numericId=" + numericId
+        + ", textId=" + textId
+        + ", type=" + type.getName()
+        + ", closed=" + closed
+        + "}";
   }
 
   @Override
