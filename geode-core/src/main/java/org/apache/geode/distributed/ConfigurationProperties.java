@@ -15,6 +15,7 @@
 
 package org.apache.geode.distributed;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 
 /**
@@ -1935,6 +1936,7 @@ public interface ConfigurationProperties {
    * <p/>
    */
 
+  @Experimental
   String REDIS_BIND_ADDRESS = "compatible-with-redis-bind-address";
   /**
    * The static String definition of the <i>"compatible-with-redis-enabled"</i> property <a
@@ -1953,7 +1955,7 @@ public interface ConfigurationProperties {
    * Experimental: Geode API compatible with Redis is a new addition to Geode and the API may change
    * <p/>
    */
-
+  @Experimental
   String REDIS_ENABLED = "compatible-with-redis-enabled";
   /**
    * The static String definition of the <i>"compatible-with-redis-password"</i> property <a
@@ -1968,7 +1970,7 @@ public interface ConfigurationProperties {
    * Experimental: Geode API compatible with Redis is a new addition to Geode and the API may change
    * <p/>
    */
-
+  @Experimental
   String REDIS_PASSWORD = "compatible-with-redis-password";
   /**
    * The static String definition of the <i>"compatible-with-redis-port"</i> property <a
@@ -1985,7 +1987,7 @@ public interface ConfigurationProperties {
    * Experimental: Geode API compatible with Redis is a new addition to Geode and the API may change
    * <p/>
    */
-
+  @Experimental
   String REDIS_PORT = "compatible-with-redis-port";
   /**
    * The static String definition of the <i>"lock-memory"</i> property <a name="lock-memory"/a>
