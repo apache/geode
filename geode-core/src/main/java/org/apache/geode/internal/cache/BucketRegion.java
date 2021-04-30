@@ -588,11 +588,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     // get rvvLock
     Set<InternalDistributedMember> participants =
         getCacheDistributionAdvisor().adviseInvalidateRegion();
-    boolean isLockedAlready = this.partitionedRegion.getPartitionedRegionClear()
-        .isLockedForListenerAndClientNotification();
 
     try {
-      obtainWriteLocksForClear(regionEvent, participants, isLockedAlready);
+      obtainWriteLocksForClear(regionEvent, participants);
       // no need to dominate my own rvv.
       // Clear is on going here, there won't be GII for this member
       clearRegionLocally(regionEvent, cacheWrite, null);
@@ -600,8 +598,26 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
       // TODO: call reindexUserDataRegion if there're lucene indexes
     } finally {
-      releaseWriteLocksForClear(regionEvent, participants, isLockedAlready);
+      releaseWriteLocksForClear(regionEvent, participants);
     }
+  }
+
+  @Override
+  protected void obtainWriteLocksForClear(RegionEventImpl regionEvent,
+      Set<InternalDistributedMember> participants) {
+    lockAndFlushClearToOthers(regionEvent, participants);
+  }
+
+  @Override
+  protected void releaseWriteLocksForClear(RegionEventImpl regionEvent,
+      Set<InternalDistributedMember> participants) {
+    distributedClearOperationReleaseLocks(regionEvent, participants);
+  }
+
+  @VisibleForTesting
+  void distributedClearOperationReleaseLocks(RegionEventImpl regionEvent,
+      Set<InternalDistributedMember> participants) {
+    DistributedClearOperation.releaseLocks(regionEvent, participants);
   }
 
   long generateTailKey() {

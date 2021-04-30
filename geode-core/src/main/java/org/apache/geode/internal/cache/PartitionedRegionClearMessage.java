@@ -14,15 +14,19 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.Collections.unmodifiableSet;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -52,22 +56,47 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
   private Object callbackArgument;
   private OperationType operationType;
   private EventID eventId;
-  private PartitionedRegion partitionedRegion;
   private Set<Integer> bucketsCleared;
+  private DistributionManager distributionManager;
+  private RegionEventFactory regionEventFactory;
 
   public PartitionedRegionClearMessage() {
     // nothing
   }
 
-  PartitionedRegionClearMessage(Set<InternalDistributedMember> recipients,
-      PartitionedRegion partitionedRegion, ReplyProcessor21 replyProcessor21,
-      PartitionedRegionClearMessage.OperationType operationType,
+  PartitionedRegionClearMessage(Collection<InternalDistributedMember> recipients,
+      PartitionedRegion partitionedRegion,
+      ReplyProcessor21 replyProcessor21,
+      OperationType operationType,
       final RegionEventImpl regionEvent) {
-    super(recipients, partitionedRegion.getPRId(), replyProcessor21);
-    this.partitionedRegion = partitionedRegion;
+    this(recipients,
+        partitionedRegion.getDistributionManager(),
+        partitionedRegion.getPRId(),
+        replyProcessor21,
+        operationType,
+        regionEvent.getRawCallbackArgument(),
+        regionEvent.getEventId(),
+        partitionedRegion.getCache().getTxManager().isDistributed(),
+        RegionEventImpl::new);
+  }
+
+  @VisibleForTesting
+  PartitionedRegionClearMessage(Collection<InternalDistributedMember> recipients,
+      DistributionManager distributionManager,
+      int partitionedRegionId,
+      ReplyProcessor21 replyProcessor21,
+      OperationType operationType,
+      Object callbackArgument,
+      EventID eventId,
+      boolean isTransactionDistributed,
+      RegionEventFactory regionEventFactory) {
+    super(recipients, partitionedRegionId, replyProcessor21);
+    setTransactionDistributed(isTransactionDistributed);
+    this.distributionManager = distributionManager;
     this.operationType = operationType;
-    callbackArgument = regionEvent.getRawCallbackArgument();
-    eventId = regionEvent.getEventId();
+    this.callbackArgument = callbackArgument;
+    this.eventId = eventId;
+    this.regionEventFactory = regionEventFactory;
   }
 
   @Override
@@ -82,8 +111,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
   public void send() {
     Objects.requireNonNull(getRecipients(), "ClearMessage NULL recipients set");
 
-    setTransactionDistributed(partitionedRegion.getCache().getTxManager().isDistributed());
-    partitionedRegion.getDistributionManager().putOutgoing(this);
+    distributionManager.putOutgoing(this);
   }
 
   @Override
@@ -108,15 +136,17 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
       return true;
     }
 
+    PartitionedRegionClear partitionedRegionClear = partitionedRegion.getPartitionedRegionClear();
+
     if (operationType == OperationType.OP_LOCK_FOR_PR_CLEAR) {
-      partitionedRegion.getPartitionedRegionClear().obtainClearLockLocal(getSender());
+      partitionedRegionClear.obtainClearLockLocal(getSender());
     } else if (operationType == OperationType.OP_UNLOCK_FOR_PR_CLEAR) {
-      partitionedRegion.getPartitionedRegionClear().releaseClearLockLocal();
+      partitionedRegionClear.releaseClearLockLocal();
     } else {
-      RegionEventImpl event =
-          new RegionEventImpl(partitionedRegion, Operation.REGION_CLEAR, callbackArgument, true,
+      RegionEventImpl event = (RegionEventImpl) regionEventFactory
+          .create(partitionedRegion, Operation.REGION_CLEAR, callbackArgument, true,
               partitionedRegion.getMyId(), getEventID());
-      bucketsCleared = partitionedRegion.getPartitionedRegionClear().clearRegionLocal(event);
+      bucketsCleared = partitionedRegionClear.clearRegionLocal(event);
     }
     return true;
   }
@@ -125,9 +155,9 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
   protected void appendFields(StringBuilder stringBuilder) {
     super.appendFields(stringBuilder);
     stringBuilder
-        .append(" cbArg=")
+        .append(" callbackArgument=")
         .append(callbackArgument)
-        .append(" op=")
+        .append(" operationType=")
         .append(operationType);
   }
 
@@ -141,8 +171,10 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     callbackArgument = DataSerializer.readObject(in);
-    operationType = PartitionedRegionClearMessage.OperationType.values()[in.readByte()];
+    operationType = OperationType.values()[in.readByte()];
     eventId = DataSerializer.readObject(in);
+
+    regionEventFactory = RegionEventImpl::new;
   }
 
   @Override
@@ -160,9 +192,24 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
     if (partitionedRegion != null && startTime > 0) {
       partitionedRegion.getPrStats().endPartitionMessagesProcessing(startTime);
     }
-    PartitionedRegionClearMessage.PartitionedRegionClearReplyMessage
+    PartitionedRegionClearReplyMessage
         .send(recipient, processorId, getReplySender(distributionManager), operationType,
             bucketsCleared, replyException);
+  }
+
+  @VisibleForTesting
+  DistributionManager getDistributionManagerForTesting() {
+    return distributionManager;
+  }
+
+  @VisibleForTesting
+  Object getCallbackArgumentForTesting() {
+    return callbackArgument;
+  }
+
+  @VisibleForTesting
+  RegionEventFactory getRegionEventFactoryForTesting() {
+    return regionEventFactory;
   }
 
   /**
@@ -171,10 +218,10 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
    */
   public static class PartitionedRegionClearResponse extends ReplyProcessor21 {
 
-    CopyOnWriteHashSet<Integer> bucketsCleared = new CopyOnWriteHashSet<>();
+    private final Set<Integer> bucketsCleared = new CopyOnWriteHashSet<>();
 
     public PartitionedRegionClearResponse(InternalDistributedSystem system,
-        Set<InternalDistributedMember> recipients) {
+        Collection<InternalDistributedMember> recipients) {
       super(system, recipients);
     }
 
@@ -188,12 +235,15 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
       }
       process(message, true);
     }
+
+    Set<Integer> getBucketsCleared() {
+      return unmodifiableSet(bucketsCleared);
+    }
   }
 
   public static class PartitionedRegionClearReplyMessage extends ReplyMessage {
 
     private Set<Integer> bucketsCleared;
-
     private OperationType operationType;
 
     @Override
@@ -201,14 +251,17 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
       return true;
     }
 
-    public static void send(InternalDistributedMember recipient, int processorId,
-        ReplySender replySender, OperationType operationType, Set<Integer> bucketsCleared,
+    private static void send(InternalDistributedMember recipient,
+        int processorId,
+        ReplySender replySender,
+        OperationType operationType,
+        Set<Integer> bucketsCleared,
         ReplyException replyException) {
       Objects.requireNonNull(recipient, "partitionedRegionClearReplyMessage NULL reply message");
 
-      PartitionedRegionClearMessage.PartitionedRegionClearReplyMessage replyMessage =
-          new PartitionedRegionClearMessage.PartitionedRegionClearReplyMessage(processorId,
-              operationType, bucketsCleared, replyException);
+      PartitionedRegionClearReplyMessage replyMessage =
+          new PartitionedRegionClearReplyMessage(processorId, operationType, bucketsCleared,
+              replyException);
 
       replyMessage.setRecipient(recipient);
       replySender.putOutgoing(replyMessage);
@@ -260,7 +313,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
     public void fromData(DataInput in, DeserializationContext context)
         throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      operationType = PartitionedRegionClearMessage.OperationType.values()[in.readByte()];
+      operationType = OperationType.values()[in.readByte()];
       bucketsCleared = DataSerializer.readObject(in);
     }
 
