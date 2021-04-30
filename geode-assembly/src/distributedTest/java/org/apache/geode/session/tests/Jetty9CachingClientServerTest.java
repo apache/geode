@@ -65,7 +65,7 @@ public class Jetty9CachingClientServerTest extends GenericAppServerClientServerT
     resp = client.get(key);
     assertThat(resp.getResponse()).isEqualTo(localValue);
 
-    serverVM.invoke("set bogus session key", () -> {
+    serverVM.invoke("set remote session key", () -> {
       final InternalCache cache = ClusterStartupRule.memberStarter.getCache();
       Region<String, HttpSession> region = cache.getRegion("gemfire_modules_sessions");
       region.values().forEach(session -> session.setAttribute(key, remoteValue));
@@ -76,6 +76,5 @@ public class Jetty9CachingClientServerTest extends GenericAppServerClientServerT
       Client.Response response = client.get(key);
       assertThat(response.getResponse()).isEqualTo(remoteValue);
     });
-    // assertThat(resp.getResponse()).isEqualTo(remoteValue);
   }
 }
