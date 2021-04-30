@@ -25,6 +25,7 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 jar.enabled = false
 
 configurations {
+  distributedTestJbossModular
   war {}
 }
 dependencies {
@@ -66,6 +67,8 @@ dependencies {
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 
   distributedTestRuntimeOnly(files(war.destinationDirectory))
+
+  distributedTestJbossModular(project(':geode-core'))
 
   upgradeTestImplementation(project(':geode-dunit')) {
   }

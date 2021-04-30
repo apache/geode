@@ -34,6 +34,7 @@ dependencies {
   }
 
   distributedTestApi(project(':extensions:geode-modules'))
+  distributedTestApi(project(path: ':geode-web', configuration: 'war'))
   distributedTestApi(project(':extensions:geode-modules-tomcat7'))
   distributedTestApi(project(':extensions:geode-modules-tomcat8'))
   distributedTestApi(project(':extensions:geode-modules-tomcat9'))
