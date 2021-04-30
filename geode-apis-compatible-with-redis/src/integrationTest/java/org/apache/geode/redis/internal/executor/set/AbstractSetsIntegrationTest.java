@@ -36,10 +36,10 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractSetsIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTest {
 
   private Jedis jedis;
   private Jedis jedis2;

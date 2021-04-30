@@ -28,9 +28,9 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.redis.RedisIntegrationTest;
 
-public abstract class AbstractAppendIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractAppendIntegrationTest implements RedisIntegrationTest {
 
   private Jedis jedis;
   private Jedis jedis2;

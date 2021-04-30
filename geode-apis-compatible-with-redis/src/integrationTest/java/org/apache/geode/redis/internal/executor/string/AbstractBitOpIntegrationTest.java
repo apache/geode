@@ -28,9 +28,9 @@ import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.redis.RedisIntegrationTest;
 
-public abstract class AbstractBitOpIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractBitOpIntegrationTest implements RedisIntegrationTest {
 
   private Jedis jedis;
 

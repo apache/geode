@@ -31,11 +31,11 @@ import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.PassiveExpirationManager;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrationTest {
 
   private static final String HITS = "keyspace_hits";
   private static final String MISSES = "keyspace_misses";

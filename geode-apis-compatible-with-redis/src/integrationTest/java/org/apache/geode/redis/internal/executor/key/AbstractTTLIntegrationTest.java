@@ -27,10 +27,10 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractTTLIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractTTLIntegrationTest implements RedisIntegrationTest {
 
   private Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
