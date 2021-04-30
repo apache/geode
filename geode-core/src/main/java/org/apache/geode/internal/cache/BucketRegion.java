@@ -1400,6 +1400,10 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     return redundancy;
   }
 
+  public boolean hasLowRedundancy() {
+    return redundancy < getBucketAdvisor().getBucketRedundancy();
+  }
+
   @Override
   public boolean isPrimary() {
     throw new UnsupportedOperationException(

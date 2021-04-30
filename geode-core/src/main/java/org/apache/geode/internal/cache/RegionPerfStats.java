@@ -593,6 +593,12 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
     }
   }
 
+  @Override
+  public void incPreviouslySeenEvents() {
+    stats.incLong(previouslySeenEventsId, 1l);
+    cachePerfStats.incPreviouslySeenEvents();
+  }
+
   private static Gauge registerEntriesGauge(InternalRegion region, MeterRegistry meterRegistry) {
     return Gauge.builder("geode.cache.entries", region::getLocalSize)
         .description("Current number of entries in the region.")

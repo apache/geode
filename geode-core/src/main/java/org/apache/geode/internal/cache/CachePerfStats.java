@@ -166,6 +166,8 @@ public class CachePerfStats {
   static final int handlingNetsearchesFailedId;
   @VisibleForTesting
   static final int handlingNetsearchesFailedTimeId;
+  @VisibleForTesting
+  protected static final int previouslySeenEventsId;
 
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -354,6 +356,8 @@ public class CachePerfStats {
         "Total number of times handling a network search initiated by a remote cache failed without success.";
     final String handlingNetsearchesFailedTimeDesc =
         "Total time spent handling failed network searches for remote caches.";
+    final String previouslySeenEventsDesc =
+        "The number of previously seen events ignored by the event tracker.";
 
     type = f.createType("CachePerfStats", "Statistics about GemFire cache performance",
         new StatisticDescriptor[] {
@@ -526,7 +530,8 @@ public class CachePerfStats {
             f.createLongCounter("handlingNetsearchesFailed", handlingNetsearchesFailedDesc,
                 "operations"),
             f.createLongCounter("handlingNetsearchesFailedTime", handlingNetsearchesFailedTimeDesc,
-                "nanoseconds")
+                "nanoseconds"),
+            f.createLongCounter("previouslySeenEvents", previouslySeenEventsDesc, "events")
         });
 
     loadsInProgressId = type.nameToId("loadsInProgress");
@@ -654,6 +659,8 @@ public class CachePerfStats {
     handlingNetsearchesTimeId = type.nameToId("handlingNetsearchesTime");
     handlingNetsearchesFailedId = type.nameToId("handlingNetsearchesFailed");
     handlingNetsearchesFailedTimeId = type.nameToId("handlingNetsearchesFailedTime");
+
+    previouslySeenEventsId = type.nameToId("previouslySeenEvents");
   }
 
   /** The Statistics object that we delegate most behavior to */
@@ -1522,5 +1529,13 @@ public class CachePerfStats {
 
   public long getHandlingNetsearchesFailed() {
     return stats.getLong(handlingNetsearchesFailedId);
+  }
+
+  public long getPreviouslySeenEvents() {
+    return stats.getLong(previouslySeenEventsId);
+  }
+
+  public void incPreviouslySeenEvents() {
+    stats.incLong(previouslySeenEventsId, 1l);
   }
 }

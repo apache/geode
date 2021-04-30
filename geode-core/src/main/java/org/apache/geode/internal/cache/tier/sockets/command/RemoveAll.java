@@ -198,7 +198,7 @@ public class RemoveAll extends BaseCommand {
 
       response = region.basicBridgeRemoveAll(keys, uncheckedCast(retryVersions),
           serverConnection.getProxyID(),
-          eventId, callbackArg);
+          eventId, callbackArg, clientMessage.isRetry());
       if (!region.getConcurrencyChecksEnabled() || clientIsEmpty || !clientHasCCEnabled) {
         // the client only needs this if versioning is being used and the client
         // has storage

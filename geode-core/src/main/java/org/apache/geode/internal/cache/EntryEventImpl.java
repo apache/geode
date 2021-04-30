@@ -453,6 +453,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
         e = EntryEventImpl.create(region, entryOp, entryKey, entryNewValue,
             event.getCallbackArgument(), false, region.getMyId(), event.isGenerateCallbacks());
       }
+      e.setPossibleDuplicate(event.isPossibleDuplicate());
 
     } else {
       e = EntryEventImpl.create(region, entryOp, entryKey, entryNewValue, null, false,
@@ -479,6 +480,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
         e = EntryEventImpl.create(region, entryOp, entryKey, null, event.getCallbackArgument(),
             false, region.getMyId(), event.isGenerateCallbacks());
       }
+      e.setPossibleDuplicate(event.isPossibleDuplicate());
 
     } else {
       e = EntryEventImpl.create(region, entryOp, entryKey, null, null, false, region.getMyId(),
