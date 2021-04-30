@@ -71,29 +71,7 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
 
       retVal.setTailKey(tailKey);
 
-      FilterRoutingInfo.FilterInfo localRouting = null;
-      boolean computeFilterInfo = false;
-      if (filterRoutingInfo != null) {
-        localRouting = filterRoutingInfo.getLocalFilterInfo();
-        if (localRouting != null) {
-          // routing was computed in this VM but may need to perform local interest processing
-          computeFilterInfo = !filterRoutingInfo.hasLocalInterestBeenComputed()
-              && !localRouting.filterProcessedLocally;
-        } else {
-          // routing was computed elsewhere and is in the "remote" routing table
-          localRouting = filterRoutingInfo.getFilterInfo(internalRegion.getMyId());
-        }
-        if (localRouting != null) {
-          if (!computeFilterInfo) {
-            retVal.setLocalFilterInfo(localRouting);
-          }
-        }
-      }
-      if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
-        TxCallbackEventFactoryImpl.logger.trace(
-            "createCBEvent filterRouting={} computeFilterInfo={} local routing={}",
-            filterRoutingInfo, computeFilterInfo, localRouting);
-      }
+      setLocalFilterInfo(internalRegion, filterRoutingInfo, retVal);
 
       if (internalRegion.isUsedForPartitionedRegionBucket()) {
         BucketRegion bucket = (BucketRegion) internalRegion;
@@ -117,6 +95,25 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
       if (!returnedRetVal) {
         retVal.release();
       }
+    }
+  }
+
+  void setLocalFilterInfo(InternalRegion internalRegion, FilterRoutingInfo filterRoutingInfo,
+      EntryEventImpl retVal) {
+    FilterRoutingInfo.FilterInfo localRouting = null;
+    if (filterRoutingInfo != null) {
+      // On tx host hosting the primary bucket, the filter routing is null now as it is
+      // calculated after tx is applied to cache.
+      // This can only occur on node hosting secondary bucket. Should use the routing
+      // computed on remote primary.
+      localRouting = filterRoutingInfo.getFilterInfo(internalRegion.getMyId());
+      if (localRouting != null) {
+        retVal.setLocalFilterInfo(localRouting);
+      }
+    }
+    if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
+      TxCallbackEventFactoryImpl.logger.trace(
+          "createCBEvent filterRouting={} local routing={}", filterRoutingInfo, localRouting);
     }
   }
 }
