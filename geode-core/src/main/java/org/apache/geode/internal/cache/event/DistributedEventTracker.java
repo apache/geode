@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -44,13 +45,19 @@ public class DistributedEventTracker implements EventTracker {
 
   @VisibleForTesting
   protected static final String EVENT_HAS_PREVIOUSLY_BEEN_SEEN_PREFIX =
-      "Event has previously been seen ";
+      "Event has previously been seen";
+
+  protected static final String IGNORING_PREVIOUSLY_SEEN_EVENT_PREFIX =
+      "Ignoring previously seen event due to {}";
 
   private static final String EVENT_HAS_PREVIOUSLY_BEEN_SEEN_PARAMETERS =
-      "for region={}; operation={}; key={}; eventId={}; highestSequenceNumberSeen={}";
+      " for region={}; operation={}; key={}; eventId={}; highestSequenceNumberSeen={}";
 
   private static final String EVENT_HAS_PREVIOUSLY_BEEN_SEEN =
       EVENT_HAS_PREVIOUSLY_BEEN_SEEN_PREFIX + EVENT_HAS_PREVIOUSLY_BEEN_SEEN_PARAMETERS;
+
+  private static final String IGNORING_PREVIOUSLY_SEEN_EVENT =
+      IGNORING_PREVIOUSLY_SEEN_EVENT_PREFIX + EVENT_HAS_PREVIOUSLY_BEEN_SEEN_PARAMETERS;
   /**
    * a mapping of originator to the last event applied to this cache
    *
@@ -363,11 +370,24 @@ public class DistributedEventTracker implements EventTracker {
       if (evh.isRemoved() || evh.getLastSequenceNumber() < eventID.getSequenceID()) {
         return false;
       }
-      if (shouldLogPreviouslySeenEvent(tagHolder, evh)) {
+      Pair<Boolean, String> shouldLogPreviouslySeenEvent =
+          shouldLogPreviouslySeenEvent(tagHolder, evh);
+      if (shouldLogPreviouslySeenEvent.getLeft()) {
         logger.info(EVENT_HAS_PREVIOUSLY_BEEN_SEEN, region.getName(),
             tagHolder == null ? "unknown" : ((EntryEventImpl) tagHolder).getKey(),
             tagHolder == null ? "unknown" : tagHolder.getOperation(), eventID.expensiveToString(),
             evh.getLastSequenceNumber());
+      } else {
+        if (logger.isDebugEnabled()) {
+          if (tagHolder == null) {
+            logger.debug(IGNORING_PREVIOUSLY_SEEN_EVENT_PREFIX,
+                shouldLogPreviouslySeenEvent.getRight());
+          } else {
+            logger.debug(IGNORING_PREVIOUSLY_SEEN_EVENT, shouldLogPreviouslySeenEvent.getRight(),
+                region.getName(), ((EntryEventImpl) tagHolder).getKey(), tagHolder.getOperation(),
+                tagHolder.getEventId().expensiveToString(), evh.getLastSequenceNumber());
+          }
+        }
       }
       // bug #44956 - recover version tag for duplicate event
       if (evh.getLastSequenceNumber() == eventID.getSequenceID() && tagHolder != null
@@ -382,7 +402,7 @@ public class DistributedEventTracker implements EventTracker {
     }
   }
 
-  private boolean shouldLogPreviouslySeenEvent(InternalCacheEvent event,
+  private Pair<Boolean, String> shouldLogPreviouslySeenEvent(InternalCacheEvent event,
       EventSequenceNumberHolder evh) {
     boolean shouldLogSeenEvent = true;
     String message = null;
@@ -402,17 +422,7 @@ public class DistributedEventTracker implements EventTracker {
         shouldLogSeenEvent = false;
       }
     }
-    if (!shouldLogSeenEvent && logger.isDebugEnabled()) {
-      if (event == null) {
-        logger.debug("Ignoring previously seen event due to {}", message);
-      } else {
-        logger.debug(
-            "Ignoring previously seen event due to {} for region={}; operation={}; key={}; eventId={}; highestSequenceNumberSeen={}",
-            message, region.getName(), ((EntryEventImpl) event).getKey(), event.getOperation(),
-            event.getEventId().expensiveToString(), evh.getLastSequenceNumber());
-      }
-    }
-    return shouldLogSeenEvent;
+    return Pair.of(shouldLogSeenEvent, message);
   }
 
   private EventSequenceNumberHolder getSequenceHolderForEvent(EventID eventID) {
