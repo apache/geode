@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 public class Jetty9CachingClientServerTest extends GenericAppServerClientServerTest {
@@ -44,7 +45,7 @@ public class Jetty9CachingClientServerTest extends GenericAppServerClientServerT
    * request
    */
   @Test
-  public void shouldCacheSessionOnClient()
+  public void shouldUpdateSessionAttributesFromServer()
       throws Exception {
     manager.startAllInactiveContainers();
     await().until(() -> {
@@ -52,21 +53,29 @@ public class Jetty9CachingClientServerTest extends GenericAppServerClientServerT
       return container.getState().isStarted();
     });
     String key = "value_testSessionExpiration";
-    String value = "Foo";
+    String localValue = "bogus";
+    String remoteValue = "Foo";
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
-    Client.Response resp = client.set(key, value);
+    Client.Response resp = client.set(key, localValue);
     assertThat(resp.getResponse()).isEqualTo("");
     assertThat(resp.getSessionCookie()).isNotEqualTo("");
+
+    // Make sure the client correctly set its original cached value
+    resp = client.get(key);
+    assertThat(resp.getResponse()).isEqualTo(localValue);
 
     serverVM.invoke("set bogus session key", () -> {
       final InternalCache cache = ClusterStartupRule.memberStarter.getCache();
       Region<String, HttpSession> region = cache.getRegion("gemfire_modules_sessions");
-      region.values().forEach(session -> session.setAttribute(key, "bogus"));
+      region.values().forEach(session -> session.setAttribute(key, remoteValue));
     });
 
-    // Make sure the client still sees its original cached value
-    resp = client.get(key);
-    assertThat(resp.getResponse()).isEqualTo(value);
+    // Make sure the client is now retrieving the value changed in the cluster
+    GeodeAwaitility.await().untilAsserted(() -> {
+      Client.Response response = client.get(key);
+      assertThat(response.getResponse()).isEqualTo(remoteValue);
+    });
+    // assertThat(resp.getResponse()).isEqualTo(remoteValue);
   }
 }
