@@ -36,6 +36,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.PartitionedRegionClearMessage.OperationType;
 import org.apache.geode.internal.cache.PartitionedRegionClearMessage.PartitionedRegionClearResponse;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -141,8 +142,7 @@ public class PartitionedRegionClear {
    */
   void obtainLockForClear(RegionEventImpl event) {
     obtainClearLockLocal(partitionedRegion.getDistributionManager().getId());
-    sendPartitionedRegionClearMessage(event,
-        PartitionedRegionClearMessage.OperationType.OP_LOCK_FOR_PR_CLEAR);
+    sendPartitionedRegionClearMessage(event, OperationType.OP_LOCK_FOR_PR_CLEAR);
   }
 
   /**
@@ -150,8 +150,7 @@ public class PartitionedRegionClear {
    */
   void releaseLockForClear(RegionEventImpl event) {
     releaseClearLockLocal();
-    sendPartitionedRegionClearMessage(event,
-        PartitionedRegionClearMessage.OperationType.OP_UNLOCK_FOR_PR_CLEAR);
+    sendPartitionedRegionClearMessage(event, OperationType.OP_UNLOCK_FOR_PR_CLEAR);
   }
 
   /**
@@ -162,7 +161,7 @@ public class PartitionedRegionClear {
     Set<Integer> localPrimaryBuckets = clearRegionLocal(regionEvent);
     // this includes all remote primary buckets and their secondaries
     Set<Integer> remotePrimaryBuckets = sendPartitionedRegionClearMessage(regionEvent,
-        PartitionedRegionClearMessage.OperationType.OP_PR_CLEAR);
+        OperationType.OP_PR_CLEAR);
 
     Set<Integer> allBucketsCleared = new HashSet<>();
     allBucketsCleared.addAll(localPrimaryBuckets);
@@ -332,7 +331,7 @@ public class PartitionedRegionClear {
   }
 
   protected Set<Integer> sendPartitionedRegionClearMessage(RegionEventImpl event,
-      PartitionedRegionClearMessage.OperationType op) {
+      OperationType op) {
     RegionEventImpl eventForLocalClear = (RegionEventImpl) event.clone();
     eventForLocalClear.setOperation(Operation.REGION_LOCAL_CLEAR);
 
@@ -349,7 +348,7 @@ public class PartitionedRegionClear {
    * @return buckets that are cleared. empty set if any exception happened
    */
   protected Set<Integer> attemptToSendPartitionedRegionClearMessage(RegionEventImpl event,
-      PartitionedRegionClearMessage.OperationType op)
+      OperationType op)
       throws ForceReattemptException {
     Set<Integer> clearedBuckets = new HashSet<>();
 
@@ -394,7 +393,7 @@ public class PartitionedRegionClear {
       clearMessage.send();
 
       clearResponse.waitForRepliesUninterruptibly();
-      clearedBuckets = clearResponse.bucketsCleared;
+      clearedBuckets = clearResponse.getBucketsCleared();
 
     } catch (ReplyException e) {
       Throwable cause = e.getCause();
