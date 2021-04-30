@@ -18,13 +18,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.EnumMap;
 
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
-import org.junit.Test;
 import org.springframework.shell.converters.AvailableCommandsConverter;
 
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.JvmSizeUtils;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -34,11 +34,11 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class MemoryOverheadIntegrationTest extends AbstractMemoryOverheadIntegrationTest {
-  protected static ObjectGraphSizer.ObjectFilter filter =
-      (parent, object) -> !(object instanceof AvailableCommandsConverter);
+  protected static ObjectGraphSizer.ObjectFilter filter = new SkipBrokenClassesFilter();
 
   @Rule
-  public GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public GeodeRedisServerRule server = new GeodeRedisServerRule()
+      .withProperty(ConfigurationProperties.LOG_LEVEL, "error");
 
   @Before
   public void checkJVMPlatform() {
@@ -51,36 +51,30 @@ public class MemoryOverheadIntegrationTest extends AbstractMemoryOverheadIntegra
   @Override
   EnumMap<Measurement, Integer> expectedPerEntryOverhead() {
     EnumMap<Measurement, Integer> result = new EnumMap<>(Measurement.class);
-    result.put(Measurement.STRING, 191);
-    result.put(Measurement.SET, 382);
+    result.put(Measurement.STRING, 201);
+    result.put(Measurement.SET, 386);
     result.put(Measurement.SET_ENTRY, 72);
-    result.put(Measurement.HASH, 550);
+    result.put(Measurement.HASH, 554);
     result.put(Measurement.HASH_ENTRY, 106);
 
     return result;
   }
 
   /**
-   * Sample test that can show where the memory use of one of our redis entries is actually
-   * coming from. It will print out a breakdown of each object reachable from the radish region
-   * entry and how many bytes they use
+   * Print out a histogram of one of our redis keys. This may help track down where memory
+   * usage is coming from.
    */
-  @Test
-  @Ignore
-  public void showStringEntryHistogram() throws IllegalAccessException {
-
-    // Set the empty key
-    String response = jedis.set("", "");
-    assertThat(response).isEqualTo("OK");
-
-    // Extract the region entry from geode and show it's size
-
+  @After
+  public void printHistogramOfOneRedisKey() throws IllegalAccessException {
     final PartitionedRegion dataRegion =
         (PartitionedRegion) CacheFactory.getAnyInstance()
             .getRegion(RegionProvider.REDIS_DATA_REGION);
     final Object redisKey = dataRegion.keys().iterator().next();
     BucketRegion bucket = dataRegion.getBucketRegion(redisKey);
     RegionEntry entry = bucket.entries.getEntry(redisKey);
+    System.out.println("----------------------------------------------------");
+    System.out.println("Histogram of memory usage of first region entry");
+    System.out.println("----------------------------------------------------");
     System.out.println(ObjectGraphSizer.histogram(entry, false));
   }
 
@@ -95,6 +89,18 @@ public class MemoryOverheadIntegrationTest extends AbstractMemoryOverheadIntegra
       return ObjectGraphSizer.size(server.getServer(), filter, true);
     } catch (IllegalAccessException e) {
       throw new RuntimeException("Couldn't compute size of cache", e);
+    }
+  }
+
+  private static class SkipBrokenClassesFilter implements ObjectGraphSizer.ObjectFilter {
+    @Override
+    public boolean accept(Object parent, Object object) {
+      return !(object instanceof AvailableCommandsConverter) && !isThirdPartyClass(object);
+    }
+
+    private boolean isThirdPartyClass(Object object) {
+      return object instanceof Class
+          && !((Class<?>) object).getName().startsWith("org.apache.geode");
     }
   }
 }
