@@ -147,13 +147,6 @@ public class RegionPerfStatsTest {
   }
 
   @Test
-  public void incPreviouslySeenEvents_incrementsCachePerfStatsPreviouslySeenEvents() {
-    regionPerfStats.incPreviouslySeenEvents();
-
-    verify(cachePerfStats).incPreviouslySeenEvents();
-  }
-
-  @Test
   public void entryCountGaugeFetchesValueFromRegionLocalSize() {
     when(region.getLocalSize()).thenReturn(3);
 

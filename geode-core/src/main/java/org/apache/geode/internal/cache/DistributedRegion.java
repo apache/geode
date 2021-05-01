@@ -280,7 +280,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   protected EventTracker createEventTracker() {
-    EventTracker tracker = new DistributedEventTracker(this);
+    EventTracker tracker = new DistributedEventTracker(cache, getCancelCriterion(), getName());
     tracker.start();
     return tracker;
   }

@@ -38,12 +38,11 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheEvent;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -51,21 +50,19 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 
 public class DistributedEventTrackerTest {
 
-  private DistributedRegion region;
+  private LocalRegion region;
   private DistributedEventTracker eventTracker;
   private ClientProxyMembershipID memberId;
   private DistributedMember member;
 
   @Before
   public void setup() {
-    region = mock(DistributedRegion.class);
+    region = mock(LocalRegion.class);
     RegionAttributes<?, ?> regionAttributes = mock(RegionAttributes.class);
     memberId = mock(ClientProxyMembershipID.class);
     when(region.getAttributes()).thenReturn(regionAttributes);
     when(regionAttributes.getDataPolicy()).thenReturn(mock(DataPolicy.class));
     when(region.getConcurrencyChecksEnabled()).thenReturn(true);
-    when(region.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
-    when(region.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
 
     InternalCache cache = mock(InternalCache.class);
     InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
@@ -74,7 +71,8 @@ public class DistributedEventTrackerTest {
     when(ids.getOffHeapStore()).thenReturn(null);
 
     member = mock(DistributedMember.class);
-    eventTracker = new DistributedEventTracker(region);
+    eventTracker = new DistributedEventTracker(region.getCache(), mock(CancelCriterion.class),
+        region.getName());
   }
 
   @Test
@@ -133,7 +131,8 @@ public class DistributedEventTrackerTest {
   public void returnsCorrectNameOfCache() {
     String testName = "testing";
     when(region.getName()).thenReturn(testName);
-    eventTracker = new DistributedEventTracker(region);
+    eventTracker = new DistributedEventTracker(region.getCache(), mock(CancelCriterion.class),
+        region.getName());
     assertEquals("Event Tracker for " + testName, eventTracker.getName());
   }
 
@@ -151,7 +150,8 @@ public class DistributedEventTrackerTest {
     InternalCache cache = mock(InternalCache.class);
     when(region.getCache()).thenReturn(cache);
     when(cache.getEventTrackerTask()).thenReturn(task);
-    eventTracker = new DistributedEventTracker(region);
+    eventTracker = new DistributedEventTracker(region.getCache(), mock(CancelCriterion.class),
+        region.getName());
     eventTracker.start();
     verify(task, times(1)).addTracker(eventTracker);
     eventTracker.stop();

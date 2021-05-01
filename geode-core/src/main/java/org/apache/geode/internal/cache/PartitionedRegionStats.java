@@ -991,10 +991,6 @@ public class PartitionedRegionStats {
     this.stats.incLong(recoveriesCompletedId, 1);
   }
 
-  public long getRecoveriesInProgress() {
-    return this.stats.getLong(recoveriesInProgressId);
-  }
-
   public long startBucketCreate(boolean isRebalance) {
     this.stats.incLong(bucketCreatesInProgressId, 1);
     if (isRebalance) {

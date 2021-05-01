@@ -261,7 +261,7 @@ public class PutAll80 extends BaseCommand {
 
       response =
           region.basicBridgePutAll(map, uncheckedCast(retryVersions), serverConnection.getProxyID(),
-              eventId, skipCallbacks, callbackArg, clientMessage.isRetry());
+              eventId, skipCallbacks, callbackArg);
       if (!region.getConcurrencyChecksEnabled() || clientIsEmpty || !clientHasCCEnabled) {
         // the client only needs this if versioning is being used and the client
         // has storage

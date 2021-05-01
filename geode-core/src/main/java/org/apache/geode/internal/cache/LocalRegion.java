@@ -8806,11 +8806,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *        retried client event, we need to make sure we send the original version tag along with
    *        the event.
    * @param callbackArg callback argument from client
-   * @param isRetry whether this is a client retry
    */
   public VersionedObjectList basicBridgePutAll(Map map, Map<Object, VersionTag> retryVersions,
-      ClientProxyMembershipID memberId, EventID eventId, boolean skipCallbacks, Object callbackArg,
-      boolean isRetry)
+      ClientProxyMembershipID memberId, EventID eventId, boolean skipCallbacks, Object callbackArg)
       throws TimeoutException, CacheWriterException {
 
     long startPut = getStatisticsClock().getTime();
@@ -8823,7 +8821,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     try {
       event.setContext(memberId);
-      event.setPossibleDuplicate(isRetry);
       DistributedPutAllOperation putAllOp = new DistributedPutAllOperation(event, map.size(), true);
       try {
         VersionedObjectList result = basicPutAll(map, putAllOp, retryVersions);
@@ -8845,11 +8842,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *        keys slot will be non-null in this collection. Note that keys and retryVersions are
    *        parallel lists.
    * @param callbackArg callback argument from client
-   * @param isRetry whether this is a client retry
    */
   public VersionedObjectList basicBridgeRemoveAll(List<Object> keys,
       ArrayList<VersionTag> retryVersions, ClientProxyMembershipID memberId, EventID eventId,
-      Object callbackArg, boolean isRetry) throws TimeoutException, CacheWriterException {
+      Object callbackArg) throws TimeoutException, CacheWriterException {
 
     long startOp = getStatisticsClock().getTime();
 
@@ -8861,7 +8857,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     try {
       event.setContext(memberId);
-      event.setPossibleDuplicate(isRetry);
       DistributedRemoveAllOperation removeAllOp =
           new DistributedRemoveAllOperation(event, keys.size(), true);
       try {
@@ -9506,7 +9501,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (tagHolder != null) {
         event.setVersionTag(tagHolder.getVersionTag());
         event.setFromServer(tagHolder.isFromServer());
-        event.setPossibleDuplicate(tagHolder.isPossibleDuplicate());
       }
       if (generateEventID()) {
         event.setEventId(new EventID(putallOp.getBaseEvent().getEventId(), offset));
@@ -9543,7 +9537,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (tagHolder != null) {
         event.setVersionTag(tagHolder.getVersionTag());
         event.setFromServer(tagHolder.isFromServer());
-        event.setPossibleDuplicate(tagHolder.isPossibleDuplicate());
       }
       if (generateEventID()) {
         event.setEventId(new EventID(op.getBaseEvent().getEventId(), offset));

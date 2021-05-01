@@ -43,7 +43,6 @@ import static org.apache.geode.internal.cache.CachePerfStats.loadsCompletedId;
 import static org.apache.geode.internal.cache.CachePerfStats.missesId;
 import static org.apache.geode.internal.cache.CachePerfStats.netloadsCompletedId;
 import static org.apache.geode.internal.cache.CachePerfStats.netsearchesCompletedId;
-import static org.apache.geode.internal.cache.CachePerfStats.previouslySeenEventsId;
 import static org.apache.geode.internal.cache.CachePerfStats.putAllsId;
 import static org.apache.geode.internal.cache.CachePerfStats.putTimeId;
 import static org.apache.geode.internal.cache.CachePerfStats.putsId;
@@ -1241,12 +1240,5 @@ public class CachePerfStatsTest {
     cachePerfStats.endHandlingNetsearch(startTime, false);
 
     assertThat(statistics.getLong(handlingNetsearchesInProgressId)).isZero();
-  }
-
-  @Test
-  public void incPreviouslySeenEventsIncrementsPreviouslySeenEvents() {
-    cachePerfStats.incPreviouslySeenEvents();
-
-    assertThat(statistics.getLong(previouslySeenEventsId)).isEqualTo(1L);
   }
 }

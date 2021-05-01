@@ -16,13 +16,12 @@ package org.apache.geode.internal.cache.event;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 
 public class EventTrackerExpiryTaskTest {
@@ -86,8 +85,7 @@ public class EventTrackerExpiryTaskTest {
   }
 
   private DistributedEventTracker constructTestTracker() {
-    DistributedRegion region = mock(DistributedRegion.class);
-    when(region.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
-    return new DistributedEventTracker(region);
+    return new DistributedEventTracker(mock(InternalCache.class), mock(CancelCriterion.class),
+        "test region");
   }
 }
