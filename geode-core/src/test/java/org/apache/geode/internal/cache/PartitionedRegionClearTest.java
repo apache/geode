@@ -53,6 +53,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.PartitionedRegion.RetryTimeKeeper;
 import org.apache.geode.internal.cache.PartitionedRegionClear.AssignBucketsToPartitions;
 import org.apache.geode.internal.cache.PartitionedRegionClear.ColocationLeaderRegionProvider;
+import org.apache.geode.internal.cache.PartitionedRegionClear.LockForListenerAndClientNotification;
 import org.apache.geode.internal.cache.PartitionedRegionClear.PartitionedRegionClearListener;
 import org.apache.geode.internal.cache.PartitionedRegionClear.UpdateAttributesProcessorFactory;
 import org.apache.geode.internal.cache.PartitionedRegionClearMessage.OperationType;
@@ -117,7 +118,8 @@ public class PartitionedRegionClearTest {
     doNothing().when(distributedLockService).unlock(anyString());
 
     partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
-        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        distributedLockService, new LockForListenerAndClientNotification(),
+        colocationLeaderRegionProvider, assignBucketsToPartitions,
         updateAttributesProcessorFactory);
   }
 
@@ -125,7 +127,7 @@ public class PartitionedRegionClearTest {
   public void isLockedForListenerAndClientNotificationReturnsTrueWhenLocked() {
     // arrange
     when(distributionManager.isCurrentMember(internalDistributedMember)).thenReturn(true);
-    partitionedRegionClear.obtainClearLockLocal(internalDistributedMember);
+    partitionedRegionClear.lockLocalPrimaryBuckets(internalDistributedMember);
 
     // act
     boolean result = partitionedRegionClear.isLockedForListenerAndClientNotificationForTesting();
@@ -192,7 +194,7 @@ public class PartitionedRegionClearTest {
 
     // assert
     verify(spyPartitionedRegionClear)
-        .obtainClearLockLocal(internalDistributedMember);
+        .lockLocalPrimaryBuckets(internalDistributedMember);
     verify(spyPartitionedRegionClear)
         .sendPartitionedRegionClearMessage(regionEvent, OperationType.OP_LOCK_FOR_PR_CLEAR);
   }
@@ -220,7 +222,7 @@ public class PartitionedRegionClearTest {
 
     // assert
     verify(spyPartitionedRegionClear)
-        .releaseClearLockLocal();
+        .unlockLocalPrimaryBuckets();
     verify(spyPartitionedRegionClear)
         .sendPartitionedRegionClearMessage(regionEvent, OperationType.OP_UNLOCK_FOR_PR_CLEAR);
   }
@@ -375,7 +377,7 @@ public class PartitionedRegionClearTest {
 
     // partial mocking to stub some methods
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
-    when(spyPartitionedRegionClear.getMembershipChange())
+    when(spyPartitionedRegionClear.getAndClearMembershipChange())
         .thenReturn(true)
         .thenReturn(false);
 
@@ -392,7 +394,7 @@ public class PartitionedRegionClearTest {
       assertThat(region).isEqualTo(bucketRegion);
     }
 
-    verify(spyPartitionedRegionClear, times(2)).getMembershipChange();
+    verify(spyPartitionedRegionClear, times(2)).getAndClearMembershipChange();
   }
 
   @Test
@@ -450,7 +452,7 @@ public class PartitionedRegionClearTest {
     Set<BucketRegion> buckets = setupBucketRegions(dataStore, bucketAdvisor);
 
     // act
-    partitionedRegionClear.obtainClearLockLocal(internalDistributedMember);
+    partitionedRegionClear.lockLocalPrimaryBuckets(internalDistributedMember);
 
     // assert
     assertThat(partitionedRegionClear.getLockRequesterForTesting())
@@ -478,7 +480,7 @@ public class PartitionedRegionClearTest {
     Set<BucketRegion> buckets = setupBucketRegions(dataStore, bucketAdvisor);
 
     // act
-    partitionedRegionClear.obtainClearLockLocal(internalDistributedMember);
+    partitionedRegionClear.lockLocalPrimaryBuckets(internalDistributedMember);
 
     // assert
     assertThat(partitionedRegionClear.getLockRequesterForTesting())
@@ -508,7 +510,7 @@ public class PartitionedRegionClearTest {
     partitionedRegionClear.setLockedForTesting(internalDistributedMember);
 
     // act
-    partitionedRegionClear.releaseClearLockLocal();
+    partitionedRegionClear.unlockLocalPrimaryBuckets();
 
     // assert
     for (BucketRegion bucketRegion : buckets) {
@@ -531,7 +533,7 @@ public class PartitionedRegionClearTest {
     Set<BucketRegion> buckets = setupBucketRegions(dataStore, bucketAdvisor);
 
     // act
-    partitionedRegionClear.releaseClearLockLocal();
+    partitionedRegionClear.unlockLocalPrimaryBuckets();
 
     // assert
     assertThat(partitionedRegionClear.getLockRequesterForTesting())
@@ -838,7 +840,7 @@ public class PartitionedRegionClearTest {
     spyPartitionedRegionClear.handleClearFromDepartedMember(member);
 
     // assert
-    verify(spyPartitionedRegionClear).releaseClearLockLocal();
+    verify(spyPartitionedRegionClear).unlockLocalPrimaryBuckets();
   }
 
   @Test
@@ -855,7 +857,7 @@ public class PartitionedRegionClearTest {
     spyPartitionedRegionClear.handleClearFromDepartedMember(member);
 
     // assert
-    verify(spyPartitionedRegionClear, never()).releaseClearLockLocal();
+    verify(spyPartitionedRegionClear, never()).unlockLocalPrimaryBuckets();
   }
 
   @Test
@@ -878,7 +880,7 @@ public class PartitionedRegionClearTest {
     partitionedRegionClearListener.memberDeparted(distributionManager, member, true);
 
     // assert
-    assertThat(partitionedRegionClear.getMembershipChange())
+    assertThat(partitionedRegionClear.getAndClearMembershipChange())
         .isTrue();
     assertThat(partitionedRegionClear.getLockRequesterForTesting())
         .isNull();
@@ -897,7 +899,7 @@ public class PartitionedRegionClearTest {
     partitionedRegionClearListener.memberDeparted(distributionManager, member, true);
 
     // assert
-    assertThat(partitionedRegionClear.getMembershipChange())
+    assertThat(partitionedRegionClear.getAndClearMembershipChange())
         .isTrue();
     assertThat(partitionedRegionClear.getLockRequesterForTesting())
         .isNotNull();

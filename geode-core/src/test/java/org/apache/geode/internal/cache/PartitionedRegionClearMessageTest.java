@@ -243,7 +243,7 @@ public class PartitionedRegionClearMessageTest {
         message.operateOnPartitionedRegion(clusterDistributionManager, partitionedRegion, 30);
 
     assertThat(result).isTrue();
-    verify(partitionedRegionClear).obtainClearLockLocal(any());
+    verify(partitionedRegionClear).lockLocalPrimaryBuckets(any());
   }
 
   @Test
@@ -260,7 +260,7 @@ public class PartitionedRegionClearMessageTest {
         message.operateOnPartitionedRegion(clusterDistributionManager, partitionedRegion, 30);
 
     assertThat(result).isTrue();
-    verify(partitionedRegionClear).releaseClearLockLocal();
+    verify(partitionedRegionClear).unlockLocalPrimaryBuckets();
   }
 
   @Test

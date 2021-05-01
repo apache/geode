@@ -209,9 +209,7 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
 
     // Assert Region Buckets are consistent.
     asList(accessor, server1, server2).forEach(vm -> vm.invoke(this::waitForSilence));
-    await().untilAsserted(() -> {
-      accessor.invoke(this::assertRegionBucketsConsistency); // TODO: fails intermittently
-    });
+    accessor.invoke(this::assertRegionBucketsConsistency);
   }
 
   /**

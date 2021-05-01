@@ -139,9 +139,9 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
     PartitionedRegionClear partitionedRegionClear = partitionedRegion.getPartitionedRegionClear();
 
     if (operationType == OperationType.OP_LOCK_FOR_PR_CLEAR) {
-      partitionedRegionClear.obtainClearLockLocal(getSender());
+      partitionedRegionClear.lockLocalPrimaryBuckets(getSender());
     } else if (operationType == OperationType.OP_UNLOCK_FOR_PR_CLEAR) {
-      partitionedRegionClear.releaseClearLockLocal();
+      partitionedRegionClear.unlockLocalPrimaryBuckets();
     } else {
       RegionEventImpl event = (RegionEventImpl) regionEventFactory
           .create(partitionedRegion, Operation.REGION_CLEAR, callbackArgument, true,

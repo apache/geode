@@ -8129,6 +8129,10 @@ public class PartitionedRegion extends LocalRegion
     public long getRetryTime() {
       return this.totalTimeInRetry;
     }
+
+    public void reset() {
+      totalTimeInRetry = 0;
+    }
   }
 
   public String getBucketName(int bucketId) {
