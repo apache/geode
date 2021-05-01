@@ -23,7 +23,7 @@ groups:
   jobs:
   - {{ build_test.name }}
 {%- for test in tests %}
-  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" %}
+  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" or test.name == "StressNew" or test.name == "Distributed" %}
   - {{test.name}}Test{{java_test_version.name}}
   {%- endfor %}
 {%- endfor %}
@@ -275,7 +275,7 @@ jobs:
 
 
 {% for test in tests %}
-  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" %}
+  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" or test.name == "StressNew" or test.name == "Distributed" %}
 - name: {{test.name}}Test{{java_test_version.name}}
   public: true
   plan:

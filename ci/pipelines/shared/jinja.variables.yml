@@ -23,17 +23,17 @@ benchmarks:
   - title: '_base'
     flag: ''
     options: ''
-    max_in_flight: 4
+    max_in_flight: 5
     timeout: 24h
   - title: '_with_ssl'
     flag: '-PwithSsl -PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64'
     options: '--tests=*GetBenchmark --tests=*PutBenchmark'
-    max_in_flight: 1
+    max_in_flight: 2
     timeout: 8h
   - title: '_with_security_manager'
     flag: '-PwithSecurityManager'
     options: '--tests=Partitioned*'
-    max_in_flight: 2
+    max_in_flight: 3
     timeout: 12h
 
 build_test:
@@ -44,7 +44,7 @@ build_test:
   DUNIT_PARALLEL_FORKS: '4'
   EXECUTE_TEST_TIMEOUT: 20m
   GRADLE_TASK: build
-  MAX_IN_FLIGHT: 2
+  MAX_IN_FLIGHT: 1
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
@@ -116,13 +116,13 @@ tests:
   RAM: '8'
   name: Acceptance
 - ARTIFACT_SLUG: distributedtestfiles
-  CALL_STACK_TIMEOUT: '9900'
+  CALL_STACK_TIMEOUT: '11700'
   CPUS: '96'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '24'
-  EXECUTE_TEST_TIMEOUT: 3h00m
+  EXECUTE_TEST_TIMEOUT: 3h30m
   GRADLE_TASK: distributedTest
-  MAX_IN_FLIGHT: 3
+  MAX_IN_FLIGHT: 6
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
   RAM: '250'
@@ -168,7 +168,7 @@ tests:
 - ARTIFACT_SLUG: stressnewtestfiles
   CALL_STACK_TIMEOUT: '20700'
   CPUS: '96'
-  DISK: '200GB'
+  DISK: '300GB'
   DUNIT_PARALLEL_FORKS: '24'
   EXECUTE_TEST_TIMEOUT: 10h
   GRADLE_TASK: repeatTest
