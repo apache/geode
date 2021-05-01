@@ -55,7 +55,7 @@ public class FunctionScannerTest {
 
     Collection<String> functionsFoundInJar = functionScanner.findFunctionsInJar(outputJar);
     assertThat(functionsFoundInJar)
-        .contains("org.apache.geode.management.internal.deployment.ImplementsFunction");
+        .contains("example.org.apache.geode.management.internal.deployment.ImplementsFunction");
   }
 
   @Test
@@ -66,7 +66,7 @@ public class FunctionScannerTest {
 
     Collection<String> functionsFoundInJar = functionScanner.findFunctionsInJar(outputJar);
     assertThat(functionsFoundInJar)
-        .contains("org.apache.geode.management.internal.deployment.ExtendsFunctionAdapter");
+        .contains("example.org.apache.geode.management.internal.deployment.ExtendsFunctionAdapter");
   }
 
   @Test

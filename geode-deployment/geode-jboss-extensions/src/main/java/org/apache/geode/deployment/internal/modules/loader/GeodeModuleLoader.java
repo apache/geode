@@ -78,6 +78,7 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
     if (loadedModuleLocal != null) {
       unloadModuleLocal(moduleName, loadedModuleLocal);
     }
+    relinkModule(CORE_MODULE_NAME);
   }
 
   private void validate(String moduleName) {

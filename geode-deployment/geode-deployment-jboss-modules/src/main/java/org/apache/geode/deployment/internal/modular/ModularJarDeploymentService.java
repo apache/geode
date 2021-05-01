@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
@@ -73,6 +74,16 @@ public class ModularJarDeploymentService implements JarDeploymentService {
     if (deployment.getFile() == null) {
       return Failure.of("Cannot deploy Deployment without jar file");
     }
+
+    // Copy the file to the working directory.
+    try {
+      File deployedFile = new File(workingDirectory, deployment.getFile().getName());
+      FileUtils.copyFile(deployment.getFile(), deployedFile);
+      deployment.setFile(deployedFile);
+    } catch (IOException e) {
+      return Failure.of(e);
+    }
+
     List<String> moduleDependencies = new LinkedList<>(deployment.getModuleDependencyNames());
     moduleDependencies.add(GEODE_CORE_MODULE_NAME);
 

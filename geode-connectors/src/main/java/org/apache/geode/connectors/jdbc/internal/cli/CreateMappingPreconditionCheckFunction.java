@@ -302,7 +302,8 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
 
   // unit test mocks this method
   Class<?> loadClass(String className, URL url) throws ClassNotFoundException {
-    return URLClassLoader.newInstance(new URL[] {url}, ClassPathLoader.getLatestAsClassLoader()).loadClass(className);
+    return URLClassLoader.newInstance(new URL[] {url}, ClassPathLoader.getLatestAsClassLoader())
+        .loadClass(className);
   }
 
   // unit test mocks this method
