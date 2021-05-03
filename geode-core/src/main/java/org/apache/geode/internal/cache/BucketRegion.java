@@ -1401,7 +1401,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   public boolean hasLowRedundancy() {
-    return redundancy < getBucketAdvisor().getBucketRedundancy();
+    return redundancy > getBucketAdvisor().getBucketRedundancy();
   }
 
   @Override
