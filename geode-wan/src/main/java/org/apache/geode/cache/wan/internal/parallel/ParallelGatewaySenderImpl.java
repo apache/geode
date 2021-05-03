@@ -14,8 +14,12 @@
  */
 package org.apache.geode.cache.wan.internal.parallel;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -28,6 +32,8 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
@@ -58,8 +64,25 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
   @Override
   public void recoverInStoppedState() {
     this.getLifeCycleLock().writeLock().lock();
-
     try {
+      if (eventProcessor != null) {
+        // Already recovered in stopped state
+        return;
+      }
+
+      Set<Region> targetRs = new HashSet<Region>();
+      for (InternalRegion pr : this.getCache().getApplicationRegions()) {
+        if (((LocalRegion) pr).getAllGatewaySenderIds().contains(this.getId())) {
+          targetRs.add(pr);
+        }
+      }
+      if (targetRs.isEmpty()) {
+        // Do not do anything if data region for which gateway-sender is configured is not
+        // available.
+        // Gateway-sender queue will be recovered during creation of that data region.
+        return;
+      }
+
       eventProcessor =
           new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj(),
               false, true);
