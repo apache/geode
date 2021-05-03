@@ -53,7 +53,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.PartitionedRegion.RetryTimeKeeper;
 import org.apache.geode.internal.cache.PartitionedRegionClear.AssignBucketsToPartitions;
 import org.apache.geode.internal.cache.PartitionedRegionClear.ColocationLeaderRegionProvider;
-import org.apache.geode.internal.cache.PartitionedRegionClear.LockForListenerAndClientNotification;
 import org.apache.geode.internal.cache.PartitionedRegionClear.PartitionedRegionClearListener;
 import org.apache.geode.internal.cache.PartitionedRegionClear.UpdateAttributesProcessorFactory;
 import org.apache.geode.internal.cache.PartitionedRegionClearMessage.OperationType;
@@ -118,8 +117,7 @@ public class PartitionedRegionClearTest {
     doNothing().when(distributedLockService).unlock(anyString());
 
     partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
-        distributedLockService, new LockForListenerAndClientNotification(),
-        colocationLeaderRegionProvider, assignBucketsToPartitions,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
         updateAttributesProcessorFactory);
   }
 
