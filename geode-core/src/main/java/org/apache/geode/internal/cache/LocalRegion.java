@@ -8451,7 +8451,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     cmnClearRegion(regionEvent, cacheWrite, true);
   }
 
-  // TODO: what does cmn refer to?
   void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
     RegionVersionVector rvv = null;
     if (useRVV && getDataPolicy().withReplication() && getConcurrencyChecksEnabled()) {
