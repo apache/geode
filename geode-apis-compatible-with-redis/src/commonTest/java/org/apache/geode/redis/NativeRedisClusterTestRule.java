@@ -76,6 +76,10 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
           redisCluster.withExposedService("redis-node-" + i, REDIS_PORT);
         }
 
+        // This assumes docker-compose is installed locally. Removing this line will automatically
+        // pull a container containing docker-compose, but it will run slower (at least on MacOS).
+        redisCluster.withLocalCompose(true);
+
         redisCluster.start();
 
         int port = redisCluster.getServicePort("redis-node-0", REDIS_PORT);

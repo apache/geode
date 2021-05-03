@@ -97,8 +97,7 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
             break;
           }
         }
-        // connection complete start to read first data
-        inboundChannel.read();
+        inboundChannel.config().setAutoRead(true);
       } else {
         logger.error("Failed to connect", future.cause());
         inboundChannel.close();
@@ -108,11 +107,11 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
 
   /**
    * Any redis commands which return an IP or port which needs to be translated into an external
-   * IP/port need to be added to this method and an appropriate {@link RedisResponseProcessor}
-   * needs to be implemented.
+   * IP/port need to be added to this method and an appropriate {@link RedisResponseProcessor} needs
+   * to be implemented.
    * <p/>
-   * Note that each inbound command has an explicit outbound processor associated. Commands that
-   * do not need any processing are simply handled by a {@link NoopRedisResponseProcessor}.
+   * Note that each inbound command has an explicit outbound processor associated. Commands that do
+   * not need any processing are simply handled by a {@link NoopRedisResponseProcessor}.
    */
   @Override
   public void channelRead(final ChannelHandlerContext ctx, Object msg) {
