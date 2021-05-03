@@ -347,6 +347,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
    */
   private void bringGatewaySenderToConfiguredState(GatewaySender sender) {
     GatewaySenderState state = getGatewaySenderDesiredState();
+
     switch (state) {
       case RUNNING:
         sender.start();
@@ -356,10 +357,9 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         sender.start();
         sender.setStartEventProcessorInPausedState(false);
         break;
-      case STOPPED:
-        sender.recoverInStoppedState();
-        break;
       default:
+        // GatewaySenderState.STOPPED and/or manual-start == true
+        sender.recoverInStoppedState();
     }
   }
 
