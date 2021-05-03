@@ -11,32 +11,17 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
-package org.apache.geode.redis.internal.data;
-
+package org.apache.geode.redis.internal.executor.sortedset;
 
 
-import java.util.ArrayList;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
+public abstract class SortedSetExecutor extends AbstractExecutor {
 
-public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
-    implements
-    RedisSortedSetCommands {
-
-  public RedisSortedSetCommandsFunctionExecutor(
-      CommandHelper helper) {
-    super(helper);
+  RedisSortedSetCommands createRedisSortedSetCommands(ExecutionHandlerContext context) {
+    return new RedisSortedSetCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
   }
 
-  private RedisSortedSet getRedisSortedSet(RedisKey key, boolean updateStats) {
-    return helper.getRedisSortedSet(key, updateStats);
-  }
-
-  @Override
-  public long zadd(RedisKey key, ArrayList<byte[]> scoresAndMembersToAdd) {
-    return 0;
-  }
 }

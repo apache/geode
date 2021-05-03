@@ -15,9 +15,11 @@
 
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import java.util.ArrayList;
+
 import org.apache.geode.redis.internal.data.RedisKey;
 
 public interface RedisSortedSetCommands {
 
-  long zadd(RedisKey key, byte[] score, byte[] member);
+  long zadd(RedisKey key, ArrayList<byte[]> scoresAndMembersToAdd);
 }

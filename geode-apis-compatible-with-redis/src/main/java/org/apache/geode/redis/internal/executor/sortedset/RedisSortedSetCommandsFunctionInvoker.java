@@ -11,28 +11,28 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
-package org.apache.geode.redis.internal.data;
-
+package org.apache.geode.redis.internal.executor.sortedset;
 
 
 import java.util.ArrayList;
 
-import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
 
-public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
-    implements
-    RedisSortedSetCommands {
+/**
+ * This class is used by netty redis set command executors
+ * to invoke a geode function that will run on a
+ * particular server to do the redis command.
+ */
+public class RedisSortedSetCommandsFunctionInvoker extends RedisCommandsFunctionInvoker
+    implements RedisSortedSetCommands {
 
-  public RedisSortedSetCommandsFunctionExecutor(
-      CommandHelper helper) {
-    super(helper);
-  }
-
-  private RedisSortedSet getRedisSortedSet(RedisKey key, boolean updateStats) {
-    return helper.getRedisSortedSet(key, updateStats);
+  public RedisSortedSetCommandsFunctionInvoker(Region<RedisKey, RedisData> region) {
+    super(region);
   }
 
   @Override
