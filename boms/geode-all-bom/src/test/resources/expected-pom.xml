@@ -513,6 +513,11 @@
         <version>3.0.0</version>
       </dependency>
       <dependency>
+        <groupId>io.springfox</groupId>
+        <artifactId>springfox-schema</artifactId>
+        <version>3.0.0</version>
+      </dependency>
+      <dependency>
         <groupId>mx4j</groupId>
         <artifactId>mx4j-remote</artifactId>
         <version>3.0.2</version>
