@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -53,6 +54,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @Category({RegionsTest.class})
+@Ignore
 public class DistributedEventTrackerIntegrationTest {
 
   @Parameterized.Parameters(name = "possibleDuplicate={0}")
