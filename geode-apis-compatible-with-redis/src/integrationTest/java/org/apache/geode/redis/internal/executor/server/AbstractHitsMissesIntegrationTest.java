@@ -170,8 +170,8 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisPortSupp
   public void testPassiveExpiration() {
     runCommandAndAssertNoStatUpdates("hash", (k) -> {
       jedis.expire(k, 1);
-      GeodeAwaitility.await().atMost(Duration.ofMinutes(PassiveExpirationManager.INTERVAL))
-          .until(() -> jedis.hkeys("hash").isEmpty());
+      GeodeAwaitility.await().atMost(Duration.ofMinutes(PassiveExpirationManager.INTERVAL * 2))
+          .until(() -> jedis.keys("hash").isEmpty());
     });
   }
 
