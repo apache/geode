@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.shell.converters.EnumConverter;
 import org.springframework.shell.converters.SimpleFileConverter;
@@ -89,7 +90,7 @@ public class CommandManager {
     loadCommands();
   }
 
-  private static void raiseExceptionIfEmpty(Set<Class<?>> foundClasses, String errorFor)
+  private static void raiseExceptionIfEmpty(Set<?> foundClasses, String errorFor)
       throws IllegalStateException {
     if (foundClasses == null || foundClasses.isEmpty()) {
       throw new IllegalStateException(
@@ -176,16 +177,15 @@ public class CommandManager {
   private void loadCommands() {
     Set<String> userCommandPackages = getUserCommandPackages();
     Set<String> packagesToScan = new HashSet<>(userCommandPackages);
-    packagesToScan.add("org.apache.geode");
     packagesToScan.add("org.springframework.shell.converters");
-    packagesToScan.add(GfshCommand.class.getPackage().getName());
-    packagesToScan.add(VersionCommand.class.getPackage().getName());
+    // packagesToScan.add(GfshCommand.class.getPackage().getName());
+    // packagesToScan.add(VersionCommand.class.getPackage().getName());
 
     // Create one scanner to be used everywhere
     try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan)) {
       loadUserCommands(scanner, userCommandPackages);
       loadPluginCommands();
-      loadGeodeCommands(scanner);
+      // loadGeodeCommands(scanner);
       loadConverters(scanner);
     }
   }
@@ -194,19 +194,16 @@ public class CommandManager {
     Set<Class<?>> foundClasses;
     // Converters
     try {
-      foundClasses = scanner.scanPackagesForClassesImplementing(Converter.class,
-          "org.apache.geode.*.converters.**");
-      for (Class<?> klass : foundClasses) {
-        try {
-          Converter<?> object = (Converter<?>) klass.newInstance();
-          add(object);
-
-        } catch (Exception e) {
-          logWrapper.warning(
-              "Could not load Converter from: " + klass + " due to " + e.getLocalizedMessage()); // continue
-        }
+      ServiceLoader<Converter> load =
+          ServiceLoader.load(Converter.class, ClassPathLoader.getLatestAsClassLoader());
+      AtomicInteger count = new AtomicInteger(0);
+      load.forEach(converter -> {
+        add(converter);
+        count.incrementAndGet();
+      });
+      if (count.get() == 0) {
+        raiseExceptionIfEmpty(Collections.EMPTY_SET, "Converters");
       }
-      raiseExceptionIfEmpty(foundClasses, "Converters");
 
       // Spring shell's converters
       foundClasses = scanner.scanPackagesForClassesImplementing(Converter.class,
@@ -222,7 +219,9 @@ public class CommandManager {
         }
       }
       raiseExceptionIfEmpty(foundClasses, "Basic Converters");
-    } catch (IllegalStateException e) {
+    } catch (
+
+    IllegalStateException e) {
       logWrapper.warning(e.getMessage(), e);
       throw e;
     }

@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.cache.lucene.internal.cli;
+package org.apache.geode.cache.lucene.internal.cli.commands;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -27,6 +27,8 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
 import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
