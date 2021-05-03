@@ -49,7 +49,7 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
   }
 
