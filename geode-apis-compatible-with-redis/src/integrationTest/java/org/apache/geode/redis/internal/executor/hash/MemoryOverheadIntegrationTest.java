@@ -18,6 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.EnumMap;
 
+import javax.management.MBeanServer;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -86,7 +88,7 @@ public class MemoryOverheadIntegrationTest extends AbstractMemoryOverheadIntegra
   @Override
   long getUsedMemory() {
     try {
-      return ObjectGraphSizer.size(server.getServer(), filter, true);
+      return ObjectGraphSizer.size(server.getServer(), filter, false);
     } catch (IllegalAccessException e) {
       throw new RuntimeException("Couldn't compute size of cache", e);
     }
@@ -95,12 +97,8 @@ public class MemoryOverheadIntegrationTest extends AbstractMemoryOverheadIntegra
   private static class SkipBrokenClassesFilter implements ObjectGraphSizer.ObjectFilter {
     @Override
     public boolean accept(Object parent, Object object) {
-      return !(object instanceof AvailableCommandsConverter) && !isThirdPartyClass(object);
-    }
-
-    private boolean isThirdPartyClass(Object object) {
-      return object instanceof Class
-          && !((Class<?>) object).getName().startsWith("org.apache.geode");
+      return !(object instanceof AvailableCommandsConverter)
+          && !(object instanceof MBeanServer);
     }
   }
 }
