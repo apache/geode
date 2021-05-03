@@ -179,6 +179,7 @@ gradle.taskGraph.whenReady({ graph ->
         jvmArgs += ["--add-opens", "java.base/jdk.internal.misc=ALL-UNNAMED"]
         jvmArgs += ["--add-opens", "java.base/jdk.internal.util.jar=ALL-UNNAMED"]
         jvmArgs += ["--add-opens", "jdk.management/com.sun.management.internal=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.platform.cgroupv1=ALL-UNNAMED"]
       }
       if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
         executable = "${testJVM}/bin/java"
