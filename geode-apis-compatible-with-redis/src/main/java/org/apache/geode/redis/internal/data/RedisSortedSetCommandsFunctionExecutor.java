@@ -13,25 +13,28 @@
  * the License.
  *
  */
+
 package org.apache.geode.redis.internal.data;
 
 
-public enum RedisDataType {
 
-  REDIS_STRING("string"),
-  REDIS_HASH("hash"),
-  REDIS_SET("set"),
-  REDIS_SORTED_SET("sortedset"),
-  REDIS_PUBSUB("pubsub");
+import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
 
-  private final String toStringValue;
+public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
+    implements
+    RedisSortedSetCommands {
 
-  RedisDataType(String toString) {
-    toStringValue = toString;
+  public RedisSortedSetCommandsFunctionExecutor(
+      CommandHelper helper) {
+    super(helper);
+  }
+
+  private RedisSortedSet getRedisSortedSet(RedisKey key, boolean updateStats) {
+    return helper.getRedisSortedSet(key, updateStats);
   }
 
   @Override
-  public String toString() {
-    return toStringValue;
+  public long zadd(RedisKey key, byte[] score, byte[] member) {
+    return 0;
   }
 }

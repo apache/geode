@@ -18,9 +18,11 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_HASH;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_STRING;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_HASH;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
 import org.apache.geode.cache.Region;
@@ -103,6 +105,28 @@ public class CommandHelper {
       throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
     }
     return (RedisSet) redisData;
+  }
+
+  RedisSortedSet getRedisSortedSet(RedisKey key, boolean updateStats) {
+    RedisData redisData = getRedisData(key, NULL_REDIS_SORTED_SET);
+    if (updateStats) {
+      if (redisData == NULL_REDIS_SORTED_SET) {
+        redisStats.incKeyspaceMisses();
+      } else {
+        redisStats.incKeyspaceHits();
+      }
+    }
+    return checkSortedSetType(redisData);
+  }
+
+  private RedisSortedSet checkSortedSetType(RedisData redisData) {
+    if (redisData == null) {
+      return null;
+    }
+    if (redisData.getType() != REDIS_SORTED_SET) {
+      throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
+    }
+    return (RedisSortedSet) redisData;
   }
 
   RedisHash getRedisHash(RedisKey key, boolean updateStats) {

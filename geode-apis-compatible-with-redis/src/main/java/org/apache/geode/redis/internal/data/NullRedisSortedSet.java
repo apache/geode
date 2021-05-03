@@ -13,25 +13,22 @@
  * the License.
  *
  */
+
 package org.apache.geode.redis.internal.data;
 
 
-public enum RedisDataType {
+import java.util.HashSet;
 
-  REDIS_STRING("string"),
-  REDIS_HASH("hash"),
-  REDIS_SET("set"),
-  REDIS_SORTED_SET("sortedset"),
-  REDIS_PUBSUB("pubsub");
 
-  private final String toStringValue;
+class NullRedisSortedSet extends RedisSortedSet {
 
-  RedisDataType(String toString) {
-    toStringValue = toString;
+  NullRedisSortedSet() {
+    super(new HashSet<>());
   }
 
   @Override
-  public String toString() {
-    return toStringValue;
+  public boolean isNull() {
+    return true;
   }
+
 }
