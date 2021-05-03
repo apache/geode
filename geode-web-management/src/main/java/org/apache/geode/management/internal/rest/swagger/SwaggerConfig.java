@@ -30,14 +30,12 @@ import springfox.documentation.service.StringVendorExtension;
 import springfox.documentation.service.VendorExtension;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import org.apache.geode.management.internal.rest.security.GeodeAuthenticationProvider;
 
 
 @PropertySource({"classpath:swagger-management.properties"})
 @Configuration
-@EnableSwagger2
 @SuppressWarnings("unused")
 public class SwaggerConfig {
 

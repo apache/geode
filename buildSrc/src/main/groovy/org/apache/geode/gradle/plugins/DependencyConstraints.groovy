@@ -193,7 +193,7 @@ class DependencyConstraints implements Plugin<Project> {
     dependencySet(group: 'io.springfox', version: '3.0.0') {
       entry('springfox-swagger-ui')
       entry('springfox-swagger2')
-      entry('springfox-schema')
+      entry('springfox-boot-starter')
     }
 
     dependencySet(group: 'mx4j', version: '3.0.2') {
