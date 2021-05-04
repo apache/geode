@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-
 import org.junit.ClassRule;
 
 import org.apache.geode.NativeRedisTestRule;

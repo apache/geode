@@ -15,6 +15,9 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_GT_LT_NX;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
@@ -49,4 +52,15 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
     assertAtLeastNArgs(jedis, Protocol.Command.ZADD, 3);
   }
 
+  @Test
+  public void zaddErrors_givenBothNXAndXXOptions() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "NX", "XX"))
+        .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_NX_XX);
+  }
+
+  @Test
+  public void zaddErrors_givenBothGTAndLTOptions() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "GT", "LT"))
+        .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_GT_LT_NX);
+  }
 }
