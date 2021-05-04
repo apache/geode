@@ -24,7 +24,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -39,9 +41,7 @@ public class HvalsDUnitTest {
   private static final String LOCAL_HOST = "127.0.0.1";
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static Jedis jedis1;
-  private static Jedis jedis2;
-  private static Jedis jedis3;
+  private static JedisCluster jedis;
 
   @BeforeClass
   public static void classSetup() {
@@ -49,17 +49,17 @@ public class HvalsDUnitTest {
     clusterStartUp.startRedisVM(1, locator.getPort());
     clusterStartUp.startRedisVM(2, locator.getPort());
 
-    int redisServerPort1 = clusterStartUp.getRedisPort(1);
-    int redisServerPort2 = clusterStartUp.getRedisPort(2);
+    int redisServerPort = clusterStartUp.getRedisPort(1);
 
-    jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
-    jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
-    jedis3 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
+
   }
 
   @Before
   public void testSetup() {
-    jedis1.flushAll();
+    try (Jedis conn = jedis.getConnectionFromSlot(0)) {
+      conn.flushAll();
+    }
   }
 
   @Test
@@ -70,21 +70,20 @@ public class HvalsDUnitTest {
     Random rand = new Random();
 
     for (int i = 0; i < fieldCount; i++) {
-      jedis1.hset(key, "field-" + i, "" + i);
+      jedis.hset(key, "field-" + i, "" + i);
     }
 
     new ConcurrentLoopingThreads(iterations,
         (i) -> {
           int x = rand.nextInt(fieldCount);
           String field = "field-" + x;
-          String currentValue = jedis1.hget(key, field);
-          jedis1.hset(key, field, "" + (Long.parseLong(currentValue) + i));
+          String currentValue = jedis.hget(key, field);
+          jedis.hset(key, field, "" + (Long.parseLong(currentValue) + i));
         },
-        (i) -> assertThat(jedis2.hvals(key)).hasSize(fieldCount),
-        (i) -> assertThat(jedis3.hvals(key)).hasSize(fieldCount))
+        (i) -> assertThat(jedis.hvals(key)).hasSize(fieldCount))
             .run();
 
-    List<String> values = jedis1.hvals(key);
+    List<String> values = jedis.hvals(key);
     long finalTotal = values.stream().mapToLong(Long::valueOf).sum();
 
     // Spell out the formula for a sum of an arithmetic sequence which is: (n / 2) * (start + end)
