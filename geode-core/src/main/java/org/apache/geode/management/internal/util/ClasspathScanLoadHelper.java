@@ -36,13 +36,11 @@ public class ClasspathScanLoadHelper implements AutoCloseable {
   private final ScanResult scanResult;
 
   public ClasspathScanLoadHelper(Collection<String> packagesToScan) {
-    scanResult = new ClassGraph().whitelistPackages(packagesToScan.toArray(new String[] {}))
-        .enableClassInfo()
-        .enableAnnotationInfo().scan(1);
+    this(packagesToScan.toArray(new String[] {}));
   }
 
   public ClasspathScanLoadHelper(String... packagesToScan) {
-    scanResult = new ClassGraph().whitelistPackages(packagesToScan)
+    scanResult = new ClassGraph().acceptPackages(packagesToScan)
         .enableClassInfo()
         .enableAnnotationInfo().scan(1);
   }

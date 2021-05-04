@@ -143,8 +143,7 @@ public class CommandManager {
 
     // Load commands found in all of the packages
     try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(userCommandPackages)) {
-      Set<Class<?>> foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
-          userCommandPackages);
+      Set<Class<?>> foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class);
       for (Class<?> klass : foundClasses) {
         try {
           add((CommandMarker) klass.newInstance());
@@ -193,8 +192,7 @@ public class CommandManager {
   private void loadSpringDefinedConverters() {
     try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(SPRING_CONVERTER_PACKAGE)) {
       // Spring shell's converters
-      Set<Class<?>> foundClasses = scanner.scanPackagesForClassesImplementing(Converter.class,
-          SPRING_CONVERTER_PACKAGE);
+      Set<Class<?>> foundClasses = scanner.scanPackagesForClassesImplementing(Converter.class);
       for (Class<?> klass : foundClasses) {
         if (!SPRING_CONVERTERS_TO_SKIP.contains(klass)) {
           try {
