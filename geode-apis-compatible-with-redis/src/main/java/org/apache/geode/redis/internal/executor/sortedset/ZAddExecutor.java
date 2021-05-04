@@ -22,6 +22,7 @@ import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.commons.lang3.StringUtils;
 
 public class ZAddExecutor extends SortedSetExecutor {
   @Override
@@ -35,27 +36,33 @@ public class ZAddExecutor extends SortedSetExecutor {
     // confirm scores are numbers
     // add pairs to scoresAndMembersToAdd (turn into byte[])
     ArrayList<byte[]> scoresAndMembersToAdd = new ArrayList<>();
-    Iterator<ByteArrayWrapper> ittybitty = commandElements.iterator();
+    Iterator<ByteArrayWrapper> commandIterator = commandElements.iterator();
     boolean adding = false;
     int count = 0;
-    while (ittybitty.hasNext()) {
-      ByteArrayWrapper next = ittybitty.next();
+    while (commandIterator.hasNext()) {
+      ByteArrayWrapper next = commandIterator.next();
       if (count < 2) {
+        count++;
         continue;
+      } else {
+        adding = true;
       }
       if (adding) {
         byte[] score = next.toBytes();
         // TODO: ensure score is a number
-        scoresAndMembersToAdd.add(score);
+        if (StringUtils.isNumeric(score.toString()) {
+          scoresAndMembersToAdd.add(score);
+        } else {
+          // TODO: throw exception
+        }
         // member can be any old thing
-        ByteArrayWrapper member = ittybitty.next();
-        scoresAndMembersToAdd.add(member.toBytes());
-      } else {
-        // TODO: parse, is it alphanumeric?
+        if (commandIterator.hasNext()) {
+          ByteArrayWrapper member = commandIterator.next();
+          scoresAndMembersToAdd.add(member.toBytes());
+        } else {
+          // TODO: throw exception
+        }
       }
-    }
-    while (ittybitty.hasNext()) {
-      ByteArrayWrapper next = ittybitty.next();
     }
 
     long entriesAdded = redisSortedSetCommands.zadd(command.getKey(), scoresAndMembersToAdd);

@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.emptyList;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -47,14 +49,14 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 
 public class RedisSortedSet extends AbstractRedisData {
 
-  private HashSet<ByteArrayWrapper> members;
+  private HashMap<byte[], byte[]> members;
 
   @SuppressWarnings("unchecked")
-  RedisSortedSet(Collection<ByteArrayWrapper> members) {
+  RedisSortedSet(Collection<byte[]> members) {
     if (members instanceof HashSet) {
-      this.members = (HashSet<ByteArrayWrapper>) members;
+      this.members = (HashMap<byte[], byte[]>) members;
     } else {
-      this.members = new HashSet<>(members);
+      this.members = new HashMap<byte[], byte[]>(members);
     }
   }
 
@@ -249,38 +251,9 @@ public class RedisSortedSet extends AbstractRedisData {
     return membersAdded;
   }
 
-  /**
-   * @param membersToRemove members to remove from this set; NOTE this list may by
-   *        modified by this call
-   * @param region the region this instance is stored in
-   * @param key the name of the set to remove from
-   * @return the number of members actually removed
-   */
-  long srem(ArrayList<ByteArrayWrapper> membersToRemove, Region<RedisKey, RedisData> region,
-      RedisKey key) {
-
-    membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
-    int membersRemoved = membersToRemove.size();
-    if (membersRemoved != 0) {
-      storeChanges(region, key, new RemsDeltaInfo(membersToRemove));
-    }
-    return membersRemoved;
-  }
-
-  /**
-   * The returned set is a copy and will not be changed
-   * by future changes to this instance.
-   *
-   * @return a set containing all the members in this set
-   */
-  @VisibleForTesting
-  Set<ByteArrayWrapper> smembers() {
-    return new HashSet<>(members);
-  }
-
   @Override
   public RedisDataType getType() {
-    return REDIS_SET;
+    return REDIS_SORTED_SET;
   }
 
   @Override
