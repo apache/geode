@@ -93,7 +93,7 @@ public class GeodeModuleLoaderTest {
     geodeModuleLoader.registerModule("my-module", myJar.getPath(), Collections.emptyList());
     Module module = geodeModuleLoader.loadModule("my-module");
     assertThat(module.getName()).isEqualTo("my-module");
-    assertThat(module.getDependencies().length).isEqualTo(2);
+    assertThat(module.getDependencies().length).isEqualTo(3);
   }
 
   @Test
@@ -104,7 +104,7 @@ public class GeodeModuleLoaderTest {
         .registerModule("my-module", myJar.getPath(), Collections.singletonList("other-module"));
     Module module = geodeModuleLoader.loadModule("my-module");
     assertThat(module.getName()).isEqualTo("my-module");
-    assertThat(module.getDependencies().length).isEqualTo(3);
+    assertThat(module.getDependencies().length).isEqualTo(4);
   }
 
   @Test
@@ -121,7 +121,7 @@ public class GeodeModuleLoaderTest {
         .registerModule("my-module", myJar.getPath(), null);
     Module module = geodeModuleLoader.loadModule("my-module");
     assertThat(module.getName()).isEqualTo("my-module");
-    assertThat(module.getDependencies().length).isEqualTo(2);
+    assertThat(module.getDependencies().length).isEqualTo(3);
   }
 
   @Test
@@ -191,9 +191,9 @@ public class GeodeModuleLoaderTest {
         .registerModule("other-module", myJar.getPath(), Collections.emptyList());
     geodeModuleLoader
         .registerModule("my-module", myJar.getPath(), Collections.singletonList("other-module"));
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
+    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(4);
     geodeModuleLoader.unregisterModule("other-module");
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(2);
+    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
     assertThatThrownBy(() -> geodeModuleLoader.loadModule("other-module"))
         .isInstanceOf(ModuleNotFoundException.class).hasMessageContaining("other-module");
   }
@@ -230,9 +230,9 @@ public class GeodeModuleLoaderTest {
   public void testRegisterModuleAsDependencyOfModule() throws ModuleLoadException {
     geodeModuleLoader.registerModule("other-module", myJar.getPath(), Collections.emptyList());
     geodeModuleLoader.registerModule("my-module", myJar.getPath(), Collections.emptyList());
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(2);
-    geodeModuleLoader.registerModuleAsDependencyOfModule("my-module", "other-module");
     assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
+    geodeModuleLoader.registerModuleAsDependencyOfModule("my-module", "other-module");
+    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(4);
   }
 
   @Test
@@ -257,9 +257,9 @@ public class GeodeModuleLoaderTest {
     geodeModuleLoader.registerModule("my-module", myJar.getPath(), Collections.emptyList());
     geodeModuleLoader.loadModule("my-module");
     geodeModuleLoader.registerModuleAsDependencyOfModule("my-module", "other-module");
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
+    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(4);
     geodeModuleLoader.unregisterModuleDependencyFromModules("other-module");
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(2);
+    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
     assertThat(geodeModuleLoader.loadModule("other-module")).isNotNull();
   }
 
@@ -268,18 +268,18 @@ public class GeodeModuleLoaderTest {
     geodeModuleLoader.registerModule("other-module", myJar.getPath(), Collections.emptyList());
     geodeModuleLoader
         .registerModule("my-module", myJar.getPath(), Collections.singletonList("other-module"));
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
+    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(4);
     geodeModuleLoader.unregisterModuleDependencyFromModules("other-module");
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(2);
+    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
     assertThat(geodeModuleLoader.loadModule("other-module")).isNotNull();
   }
 
   @Test
   public void testUnregisterInvalidModuleDependencyFromModules() throws ModuleLoadException {
     geodeModuleLoader.registerModule("my-module", myJar.getPath(), Collections.emptyList());
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(2);
+    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
     geodeModuleLoader.unregisterModuleDependencyFromModules("wrong-module");
-    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(2);
+    assertThat(geodeModuleLoader.loadModule("my-module").getDependencies().length).isEqualTo(3);
   }
 
   @Test

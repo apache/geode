@@ -37,6 +37,7 @@ import org.apache.geode.deployment.internal.modules.service.GeodeJBossDeployment
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
+import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.services.result.impl.Failure;
@@ -50,12 +51,12 @@ import org.apache.geode.services.result.impl.Success;
  */
 public class ModularJarDeploymentService implements JarDeploymentService {
 
+  private static final String GEODE_CORE_MODULE_NAME = "geode-core";
   private final Logger logger = LogService.getLogger();
   private final Map<String, Deployment> deployments = new ConcurrentHashMap<>();
   private final FunctionToFileTracker functionToFileTracker = new FunctionToFileTracker();
   private final DeploymentService deploymentService;
   private File workingDirectory = new File(System.getProperty("user.dir"));
-  private static final String GEODE_CORE_MODULE_NAME = "geode-core";
 
   public ModularJarDeploymentService() {
     this(new GeodeJBossDeploymentService());
@@ -73,6 +74,12 @@ public class ModularJarDeploymentService implements JarDeploymentService {
     }
     if (deployment.getFile() == null) {
       return Failure.of("Cannot deploy Deployment without jar file");
+    }
+
+    Deployment existingDeployment = deployments.get(deployment.getDeploymentName());
+    if (existingDeployment != null
+        && JarFileUtils.hasSameContent(existingDeployment.getFile(), deployment.getFile())) {
+      return Success.of(null);
     }
 
     // Copy the file to the working directory.

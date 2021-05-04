@@ -60,7 +60,7 @@ public class GeodeJarModuleFinderTest {
     ModuleSpec moduleSpec = geodeJarModuleFinder.findModule("my-module", moduleLoader);
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpec;
     assertThat(concreteModuleSpec.getName()).isEqualTo("my-module");
-    assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(2);
+    assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(3);
   }
 
   @Test
@@ -73,7 +73,7 @@ public class GeodeJarModuleFinderTest {
     ModuleSpec moduleSpec = geodeJarModuleFinder.findModule("my-module", moduleLoader);
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpec;
     assertThat(concreteModuleSpec.getName()).isEqualTo("my-module");
-    assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(3);
+    assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(4);
   }
 
   @Test
@@ -114,6 +114,6 @@ public class GeodeJarModuleFinderTest {
     ModuleSpec moduleSpec = geodeJarModuleFinder.findModule("my-module", moduleLoader);
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpec;
     assertThat(concreteModuleSpec.getName()).isEqualTo("my-module");
-    assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(2);
+    assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(3);
   }
 }

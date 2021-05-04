@@ -176,7 +176,7 @@ public class CommandResultAssert
       }
 
       // check if entire row is equal, but if not, continue to next row
-      if (Arrays.deepEquals(expectedValues, rowValues)) {
+      if (compareArrays(expectedValues, rowValues)) {
         return this;
       }
     }
@@ -187,6 +187,27 @@ public class CommandResultAssert
             + StringUtils.join(expectedValues, ","))
         .isEqualTo(0);
     return this;
+  }
+
+  private static boolean compareArrays(String[] expectedValues, Object[] rowValues) {
+    if (expectedValues.length != rowValues.length) {
+      return false;
+    }
+
+    for (int i = 0; i < expectedValues.length; i++) {
+      String rowValue = (String) rowValues[i];
+      String expectedValue = expectedValues[i];
+      if (expectedValue.compareTo(rowValue) == 0) {
+        // values are the same
+        continue;
+      } else if (rowValue.startsWith(expectedValue) && expectedValue.contains("Exception")
+          && rowValue.contains("from [Module")) {
+        // It's an exception with extra modular info.
+        continue;
+      }
+      return false;
+    }
+    return true;
   }
 
   public CommandResultAssert tableHasRowCount(int rowSize) {

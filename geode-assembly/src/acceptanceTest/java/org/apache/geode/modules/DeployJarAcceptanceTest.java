@@ -448,8 +448,6 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
             .doesNotContain("geode-core");
   }
 
-
-
   private static File loadTestResource(String fileName) {
     String filePath =
         createTempFileFromResource(DeployJarAcceptanceTest.class, fileName).getAbsolutePath();
