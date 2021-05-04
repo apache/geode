@@ -89,7 +89,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void shouldDistributeDataAmongMultipleServers_thenRemoveHalfOfData() {
+  public void shouldDistributeDataAmongCluster_thenRemoveHalfOfData() {
 
     String key = "key";
 
@@ -108,7 +108,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void shouldDistributeDataAmongMultipleServers_removingDifferentDataFromSameSetConcurrently() {
+  public void shouldDistributeDataAmongCluster_thenRemoveDifferentDataFromSameSetConcurrently() {
 
     String key = "key";
 
@@ -131,7 +131,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_removingSameDataFromSameSetConcurrently() {
+  public void shouldDistributeDataAmongCluster_thenRemoveSameDataFromSameSetConcurrently() {
 
     String key = "key";
 
@@ -149,7 +149,7 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void shouldDistributeDataAmongMultipleServers_removingFromDifferentSetsConcurrently() {
+  public void shouldDistributeDataAmongCluster_thenRemoveFromDifferentSetsConcurrently() {
 
     String key1 = "key1";
     String key2 = "key2";
@@ -173,10 +173,10 @@ public class SremDUnitTest {
   }
 
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_removingSameDataFromSameSetConcurrently() {
+  public void shouldDistributeDataAmongCluster_givenMultipleClientsOnDifferentServer_removingSameDataFromSameSetConcurrently() {
 
-    //Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
-    //Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);
+    int redisServerPort2 = clusterStartUp.getRedisPort(2);
+    JedisCluster jedis2 = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
 
     String key = "key";
 
@@ -185,23 +185,40 @@ public class SremDUnitTest {
 
     new ConcurrentLoopingThreads(SET_SIZE,
         (i) -> jedis.srem(key, members.get(i)),
-        //(i) -> jedis1B.srem(key, members.get(i)),
-        //(i) -> jedis2.srem(key, members.get(i)),
-        (i) -> jedis.srem(key, members.get(i))).run();
+        (i) -> jedis2.srem(key, members.get(i))).run();
 
     Set<String> results = jedis.smembers(key);
 
     assertThat(results).isEmpty();
 
-    //jedis1B.disconnect();
-    //jedis2B.disconnect();
+    jedis2.close();
   }
 
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_removingDifferentDataFromSameSetConcurrently() {
+  public void shouldDistributeDataAmongCluster_givenMultipleClientsOnSameServer_removingSameDataFromSameSetConcurrently() {
 
-    //Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
-    //Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);
+    JedisCluster jedis2 = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort);
+
+    String key = "key";
+
+    List<String> members = makeMemberList(SET_SIZE, "member1-");
+    jedis.sadd(key, members.toArray(new String[] {}));
+
+    new ConcurrentLoopingThreads(SET_SIZE,
+        (i) -> jedis.srem(key, members.get(i)),
+        (i) -> jedis2.srem(key, members.get(i))).run();
+
+    Set<String> results = jedis.smembers(key);
+
+    assertThat(results).isEmpty();
+
+    jedis2.close();
+  }
+
+  @Test
+  public void shouldDistributeDataAmongCluster_givenMultipleClientsOnSameServer_removingDifferentDataFromSameSetConcurrently() {
+
+    JedisCluster jedis2 = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort);
 
     String key = "key1";
 
@@ -216,16 +233,13 @@ public class SremDUnitTest {
 
     new ConcurrentLoopingThreads(SET_SIZE,
         (i) -> jedis.srem(key, members1.get(i)),
-        //(i) -> jedis1B.srem(key, members1.get(i)),
-        //(i) -> jedis2.srem(key, members2.get(i)),
-        (i) -> jedis.srem(key, members2.get(i))).run();
+        (i) -> jedis2.srem(key, members2.get(i))).run();
 
     Set<String> results = jedis.smembers(key);
 
     assertThat(results).isEmpty();
 
-    //jedis1B.disconnect();
-    //jedis2B.disconnect();
+    jedis2.close();
   }
 
   private List<String> makeMemberList(int setSize, String baseString) {

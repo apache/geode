@@ -91,33 +91,23 @@ public class SaddDUnitTest {
     server3.stop();
   }
 
+
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients() {
-    // how do we modify this to check data distributed to multiple slots?
+  public void shouldDistributeDataAmongCluster() {
     String key = "key";
 
     List<String> members = makeMemberList(SET_SIZE, "member1-");
 
     jedis.sadd(key, members.toArray(new String[]{}));
 
-    /*
-    String baseString = "member1-";
-    List<String> members = new ArrayList<>();
-    for (int i = 0; i < SET_SIZE; i++) {
-      members.add(baseString+i);
-      jedis.sadd(key, baseString + i);
-    }
-    */
-
     Set<String> result = jedis.smembers(key);
 
     assertThat(result.toArray()).containsExactlyInAnyOrder(members.toArray());
-
   }
 
+
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_ConcurrentlyAddingDifferentDataToSameSet() {
-    // again distribute among multiple slots -> servers, how to check data among multiple servers
+  public void shouldDistributeDataAmongCluster_givenConcurrentlyAddingDifferentDataToSameSet() {
     String key = "key";
 
     List<String> members1 = makeMemberList(SET_SIZE, "member1-");
@@ -136,8 +126,9 @@ public class SaddDUnitTest {
     assertThat(results.toArray()).containsExactlyInAnyOrder(allMembers.toArray());
   }
 
+
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_ConcurrentlyAddingSameDataToSameSet() {
+  public void shouldDistributeDataAmongCluster_givenConcurrentlyAddingSameDataToSameSet() {
 
     String key = "key";
 
@@ -150,12 +141,11 @@ public class SaddDUnitTest {
     Set<String> results = jedis.smembers(key);
 
     assertThat(results.toArray()).containsExactlyInAnyOrder(members.toArray());
-
   }
 
 
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_ConcurrentlyAddingDifferentSets() {
+  public void shouldDistributeDataAmongCluster_givenConcurrentlyAddingDifferentSets() {
 
     String key1 = "key1";
     String key2 = "key2";
@@ -176,10 +166,10 @@ public class SaddDUnitTest {
   }
 
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSetConcurrently() {
+  public void shouldDistributeDataAmongCluster_givenTwoClients_OperatingOnTheSameSetConcurrently() {
 
-    //Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
-    //Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);
+    int redisServerPort2 = clusterStartUp.getRedisPort(2);
+    JedisCluster jedis2 = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
 
     String key = "key";
 
@@ -187,24 +177,22 @@ public class SaddDUnitTest {
 
     new ConcurrentLoopingThreads(SET_SIZE,
         (i) -> jedis.sadd(key, members.get(i)),
-        //(i) -> jedis1B.sadd(key, members.get(i)),
-        //(i) -> jedis2.sadd(key, members.get(i)),
-        (i) -> jedis.sadd(key, members.get(i))).runInLockstep();
+        (i) -> jedis2.sadd(key, members.get(i))
+      ).runInLockstep();
 
     Set<String> results = jedis.smembers(key);
 
     assertThat(results.toArray()).containsExactlyInAnyOrder(members.toArray());
 
-    //jedis1B.disconnect();
-    //jedis2B.disconnect();
+    jedis2.close();
   }
 
 
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenTwoSetsOfClients_OperatingOnTheSameSet_withDifferentData_Concurrently() {
+  public void shouldDistributeDataAmongCluster_givenTwoClients_OperatingOnTheSameSet_withDifferentData_Concurrently() {
 
-    //Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
-    //Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);
+    int redisServerPort2 = clusterStartUp.getRedisPort(2);
+    JedisCluster jedis2 = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
 
     String key = "key1";
 
@@ -217,16 +205,14 @@ public class SaddDUnitTest {
 
     new ConcurrentLoopingThreads(SET_SIZE,
         (i) -> jedis.sadd(key, members1.get(i)),
-        //(i) -> jedis1B.sadd(key, members1.get(i)),
-        //(i) -> jedis2.sadd(key, members2.get(i)),
-        (i) -> jedis.sadd(key, members2.get(i))).runInLockstep();
+        (i) -> jedis2.sadd(key, members2.get(i))
+      ).runInLockstep();
 
     Set<String> results = jedis.smembers(key);
 
     assertThat(results.toArray()).containsExactlyInAnyOrder(allMembers.toArray());
 
-    //jedis1B.disconnect();
-    //jedis2B.disconnect();
+    jedis2.close();
   }
 
   private List<String> makeMemberList(int setSize, String baseString) {
