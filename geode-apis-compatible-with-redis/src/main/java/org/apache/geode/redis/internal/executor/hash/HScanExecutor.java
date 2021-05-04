@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
@@ -41,6 +42,8 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  * Implementation of the HScan command used to incrementally iterate over a collection of elements.
  */
 public class HScanExecutor extends AbstractScanExecutor {
+
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public RedisResponse executeCommand(Command command,
@@ -104,8 +107,7 @@ public class HScanExecutor extends AbstractScanExecutor {
     try {
       matchPattern = convertGlobToRegex(globPattern);
     } catch (PatternSyntaxException e) {
-
-      LogService.getLogger().warn(
+      logger.warn(
           "Could not compile the pattern: '{}' due to the following exception: '{}'. HSCAN will return an empty list.",
           globPattern, e.getMessage());
 

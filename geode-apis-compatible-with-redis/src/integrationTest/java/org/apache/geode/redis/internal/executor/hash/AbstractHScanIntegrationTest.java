@@ -36,6 +36,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ScanParams;
@@ -43,6 +44,8 @@ import redis.clients.jedis.ScanResult;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.executor.cluster.CRC16;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTest {
@@ -465,9 +468,13 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, INITIAL_HASH_DATA);
     final int ITERATION_COUNT = 500;
 
+    int slot = getSlotForKey(HASH_KEY);
+    Jedis jedis1 = jedis.getConnectionFromSlot(slot);
+    Jedis jedis2 = jedis.getConnectionFromSlot(slot);
+
     new ConcurrentLoopingThreads(ITERATION_COUNT,
-        (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis, INITIAL_HASH_DATA),
-        (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis, INITIAL_HASH_DATA),
+        (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis1, INITIAL_HASH_DATA),
+        (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis2, INITIAL_HASH_DATA),
         (i) -> {
           int fieldSuffix = i % SIZE_OF_INITIAL_HASH_DATA;
           jedis.hset(HASH_KEY, BASE_FIELD + fieldSuffix, "new_value_" + i);
@@ -480,15 +487,21 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, INITIAL_HASH_DATA);
     final int ITERATION_COUNT = 500;
 
+    int slot = getSlotForKey(HASH_KEY);
+    Jedis jedis1 = jedis.getConnectionFromSlot(slot);
+    Jedis jedis2 = jedis.getConnectionFromSlot(slot);
+
     new ConcurrentLoopingThreads(ITERATION_COUNT,
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis, INITIAL_HASH_DATA),
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis, INITIAL_HASH_DATA),
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis1, INITIAL_HASH_DATA),
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis2, INITIAL_HASH_DATA),
         (i) -> {
           String field = "new_" + BASE_FIELD + i;
           jedis.hset(HASH_KEY, field, "whatever");
           jedis.hdel(HASH_KEY, field);
         }).run();
 
+    jedis1.close();
+    jedis2.close();
   }
 
   @Test
@@ -497,16 +510,23 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, INITIAL_HASH_DATA);
     final int ITERATION_COUNT = 500;
 
+    int slot = getSlotForKey(HASH_KEY);
+    Jedis jedis1 = jedis.getConnectionFromSlot(slot);
+    Jedis jedis2 = jedis.getConnectionFromSlot(slot);
+
     new ConcurrentLoopingThreads(ITERATION_COUNT,
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis, INITIAL_HASH_DATA),
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis, INITIAL_HASH_DATA));
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis1, INITIAL_HASH_DATA),
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis2, INITIAL_HASH_DATA))
+            .run();
 
     INITIAL_HASH_DATA
         .forEach((field, value) -> assertThat(jedis.hget(HASH_KEY, field).equals(value)));
 
+    jedis1.close();
+    jedis2.close();
   }
 
-  private void multipleHScanAndAssertOnContentOfResultSet(JedisCluster jedis,
+  private void multipleHScanAndAssertOnContentOfResultSet(int iteration, Jedis jedis,
       final Map<String, String> initialHashData) {
 
     List<String> allEntries = new ArrayList<>();
@@ -521,10 +541,11 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
           .forEach((entry) -> allEntries.add(entry.getKey()));
     } while (!result.isCompleteIteration());
 
-    assertThat(allEntries).containsAll(initialHashData.keySet());
+    assertThat(allEntries).as("failed on iteration " + iteration)
+        .containsAll(initialHashData.keySet());
   }
 
-  private void multipleHScanAndAssertOnSizeOfResultSet(JedisCluster jedis,
+  private void multipleHScanAndAssertOnSizeOfResultSet(Jedis jedis,
       final Map<String, String> initialHashData) {
     List<Map.Entry<String, String>> allEntries = new ArrayList<>();
     ScanResult<Map.Entry<String, String>> result;
@@ -552,5 +573,10 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
       dataSet.put(BASE_FIELD + i, "value_" + i);
     }
     return dataSet;
+  }
+
+  private int getSlotForKey(String key) {
+    int crc = CRC16.calculate(key);
+    return crc % RegionProvider.REDIS_SLOTS;
   }
 }
