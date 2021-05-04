@@ -53,21 +53,18 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
 
   private Random rand;
   private JedisCluster jedis;
-  private JedisCluster jedis2;
   private static int ITERATION_COUNT = 4000;
 
   @Before
   public void setUp() {
     rand = new Random();
     jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -372,7 +369,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
         (i) -> {
           int increment = ThreadLocalRandom.current().nextInt(-50, 50);
           expectedValue.addAndGet(increment);
-          jedis2.hincrBy(key, field, increment);
+          jedis.hincrBy(key, field, increment);
         }).run();
 
     assertThat(Integer.parseInt(jedis.hget(key, field))).isEqualTo(expectedValue.get());
@@ -728,11 +725,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hmset(key1, Maps.newHashMap("field" + i, "value" + i)),
-        (i) -> jedis2.hmset(key2, Maps.newHashMap("field" + i, "value" + i)))
+        (i) -> jedis.hmset(key2, Maps.newHashMap("field" + i, "value" + i)))
             .run();
 
     assertThat(jedis.hgetAll(key1)).isEqualTo(expectedMap);
-    assertThat(jedis2.hgetAll(key2)).isEqualTo(expectedMap);
+    assertThat(jedis.hgetAll(key2)).isEqualTo(expectedMap);
   }
 
   @Test
@@ -741,7 +738,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hmset(key, Maps.newHashMap("fieldA" + i, "valueA" + i)),
-        (i) -> jedis2.hmset(key, Maps.newHashMap("fieldB" + i, "valueB" + i)))
+        (i) -> jedis.hmset(key, Maps.newHashMap("fieldB" + i, "valueB" + i)))
             .run();
 
     Map<String, String> result = jedis.hgetAll(key);
@@ -755,7 +752,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
     AtomicLong successCount = new AtomicLong();
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> successCount.addAndGet(jedis.hsetnx(key, "field" + i, "A")),
-        (i) -> successCount.addAndGet(jedis2.hsetnx(key, "field" + i, "B")))
+        (i) -> successCount.addAndGet(jedis.hsetnx(key, "field" + i, "B")))
             .run();
 
     assertThat(successCount.get()).isEqualTo(ITERATION_COUNT);
@@ -772,7 +769,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hset(key1, "field" + i, "value" + i),
-        (i) -> jedis2.hset(key2, "field" + i, "value" + i))
+        (i) -> jedis.hset(key2, "field" + i, "value" + i))
             .run();
 
     assertThat(jedis.hgetAll(key1)).isEqualTo(expectedMap);
@@ -785,7 +782,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hset(key1, "fieldA" + i, "value" + i),
-        (i) -> jedis2.hset(key1, "fieldB" + i, "value" + i))
+        (i) -> jedis.hset(key1, "fieldB" + i, "value" + i))
             .run();
     Map<String, String> result = jedis.hgetAll(key1);
 
@@ -801,7 +798,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hincrBy(key, field, 1),
-        (i) -> jedis2.hincrBy(key, field, 1))
+        (i) -> jedis.hincrBy(key, field, 1))
             .run();
 
     String value = jedis.hget(key, field);
@@ -817,7 +814,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hincrByFloat(key, field, 0.5),
-        (i) -> jedis2.hincrByFloat(key, field, 1.0)).run();
+        (i) -> jedis.hincrByFloat(key, field, 1.0)).run();
 
     String value = jedis.hget(key, field);
     assertThat(Double.valueOf(value)).isEqualTo(ITERATION_COUNT * 1.5);
@@ -846,7 +843,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
         (i) -> {
           try {
             String fieldToDelete = blockingQueue.take();
-            jedis2.hdel(key, fieldToDelete);
+            jedis.hdel(key, fieldToDelete);
           } catch (InterruptedException e) {
             throw new RuntimeException(e);
           }
@@ -873,7 +870,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
           }
         },
         (i) -> {
-          if (jedis2.hgetAll(key).size() == ITERATION_COUNT) {
+          if (jedis.hgetAll(key).size() == ITERATION_COUNT) {
             successCount.incrementAndGet();
           }
         })

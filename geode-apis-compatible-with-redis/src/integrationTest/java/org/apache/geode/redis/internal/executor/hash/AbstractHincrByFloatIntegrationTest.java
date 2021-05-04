@@ -40,20 +40,17 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisIntegr
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   private JedisCluster jedis;
-  private JedisCluster jedis2;
   private static int ITERATION_COUNT = 4000;
 
   @Before
   public void setUp() {
     jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -176,7 +173,7 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisIntegr
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hincrByFloat(key, field, 0.5),
-        (i) -> jedis2.hincrByFloat(key, field, 1.0)).run();
+        (i) -> jedis.hincrByFloat(key, field, 1.0)).run();
 
     String value = jedis.hget(key, field);
     assertThat(Float.valueOf(value)).isEqualTo(ITERATION_COUNT * 1.5f);

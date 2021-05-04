@@ -48,8 +48,6 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTest {
 
   protected JedisCluster jedis;
-  private static JedisCluster jedis2;
-  private static JedisCluster jedis3;
 
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -57,16 +55,12 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
   @Before
   public void setUp() {
     jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
-    jedis3 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     flushAll();
     jedis.close();
-    jedis2.close();
-    jedis3.close();
   }
 
   /********* Parameter Checks **************/
@@ -473,10 +467,10 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis, INITIAL_HASH_DATA),
-        (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis2, INITIAL_HASH_DATA),
+        (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis, INITIAL_HASH_DATA),
         (i) -> {
           int fieldSuffix = i % SIZE_OF_INITIAL_HASH_DATA;
-          jedis3.hset(HASH_KEY, BASE_FIELD + fieldSuffix, "new_value_" + i);
+          jedis.hset(HASH_KEY, BASE_FIELD + fieldSuffix, "new_value_" + i);
         }).run();
   }
 
@@ -488,11 +482,11 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis, INITIAL_HASH_DATA),
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis2, INITIAL_HASH_DATA),
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis, INITIAL_HASH_DATA),
         (i) -> {
           String field = "new_" + BASE_FIELD + i;
-          jedis3.hset(HASH_KEY, field, "whatever");
-          jedis3.hdel(HASH_KEY, field);
+          jedis.hset(HASH_KEY, field, "whatever");
+          jedis.hdel(HASH_KEY, field);
         }).run();
 
   }
@@ -505,10 +499,10 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis, INITIAL_HASH_DATA),
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis2, INITIAL_HASH_DATA));
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis, INITIAL_HASH_DATA));
 
     INITIAL_HASH_DATA
-        .forEach((field, value) -> assertThat(jedis3.hget(HASH_KEY, field).equals(value)));
+        .forEach((field, value) -> assertThat(jedis.hget(HASH_KEY, field).equals(value)));
 
   }
 
