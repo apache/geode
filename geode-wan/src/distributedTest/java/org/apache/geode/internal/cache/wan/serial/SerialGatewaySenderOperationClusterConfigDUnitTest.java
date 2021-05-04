@@ -149,6 +149,8 @@ public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Seria
 
     executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
     verifyGatewaySenderState(true, true);
+    server2Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
+    server1Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
 
     Set<String> keysQueued = clientSite2.invoke(() -> doPutsInRange(70, 85));
     clientSite2.invoke(() -> checkDataAvailable(keysQueued));
@@ -213,6 +215,8 @@ public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Seria
 
     executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
     verifyGatewaySenderState(true, true);
+    server2Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
+    server1Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
 
     Set<String> keysQueued = clientSite2.invoke(() -> doPutsInRange(70, 85));
     server1Site2.invoke(() -> checkQueueSize("ln", keysQueued.size()));
@@ -228,14 +232,6 @@ public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Seria
     executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
     verifyGatewaySenderStateOnMember(server2Site2, true, true);
 
-    /*
-     * The batch dispatcher thread blocks and waits for configured time (batch-time-interval) to
-     * read new events. The batch-time-interval default value is 1000 milliseconds. So even if
-     * gateway-sender is paused it will still collect all events (for batch) received within these
-     * 1000 milliseconds and dispatch them. After 1000 milliseconds expire dispatcher thread will be
-     * actually paused. So it is necessary to wait for all dispatching threads to pause before
-     * sending new traffic.
-     */
     server2Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
 
     Set<String> keysQueued1 = clientSite2.invoke(() -> doPutsInRange(100, 200));
@@ -397,6 +393,8 @@ public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Seria
 
     executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
     verifyGatewaySenderState(true, true);
+    server2Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
+    server1Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
 
     Set<String> keysQueued = clientSite2.invoke(() -> doPutsInRange(70, 85));
     clientSite2.invoke(() -> checkDataAvailable(keysQueued));
@@ -611,6 +609,14 @@ public class SerialGatewaySenderOperationClusterConfigDUnitTest implements Seria
     assertEquals(numQueueEntries, size);
   }
 
+  /*
+   * The batch dispatcher thread blocks and waits for configured time (batch-time-interval) to
+   * read new events. The batch-time-interval default value is 1000 milliseconds. So even if
+   * gateway-sender is paused it will still collect all events (for batch) received within these
+   * 1000 milliseconds and dispatch them. After 1000 milliseconds expire dispatcher thread will be
+   * actually paused. So it is necessary to wait for all dispatching threads to pause before
+   * sending new traffic.
+   */
   public static void waitAllDispatcherThreadsToPause(String senderId) {
     await()
         .untilAsserted(() -> testDispatcherThreadsToPause(senderId));
