@@ -223,6 +223,35 @@ public class SremDUnitTest {
     jedis2.close();
   }
 
+  @Test
+  public void shouldDistributeDataAmongCluster_givenMultipleClientsOnDifferentServer_removingDifferentDataFromSameSetConcurrently() {
+
+    int redisServerPort2 = clusterStartUp.getRedisPort(2);
+    JedisCluster jedis2 =
+        new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
+
+    String key = "key1";
+
+    List<String> members1 = makeMemberList(SET_SIZE, "member1-");
+    List<String> members2 = makeMemberList(SET_SIZE, "member2-");
+
+    List<String> allMembers = new ArrayList<>();
+    allMembers.addAll(members1);
+    allMembers.addAll(members2);
+
+    jedis.sadd(key, allMembers.toArray(new String[] {}));
+
+    new ConcurrentLoopingThreads(SET_SIZE,
+        (i) -> jedis.srem(key, members1.get(i)),
+        (i) -> jedis2.srem(key, members2.get(i))).run();
+
+    Set<String> results = jedis.smembers(key);
+
+    assertThat(results).isEmpty();
+
+    jedis2.close();
+  }
+
 
   @Test
   public void shouldDistributeDataAmongCluster_givenMultipleClientsOnSameServer_removingDifferentDataFromSameSetConcurrently() {
