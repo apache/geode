@@ -24,11 +24,13 @@ import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.ver
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -43,6 +45,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -91,6 +94,8 @@ public class ParallelGatewaySenderOperationClusterConfigDUnitTest implements Ser
 
     executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
     verifyGatewaySenderState(true, true);
+    server2Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
+    server1Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
 
     // Do some puts and check that data has been enqueued
     Set<String> keysQueue = clientSite2.invoke(() -> doPutsInRange(0, 15));
@@ -141,6 +146,8 @@ public class ParallelGatewaySenderOperationClusterConfigDUnitTest implements Ser
 
     executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
     verifyGatewaySenderState(true, true);
+    server2Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
+    server1Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
 
     // Do some puts and check that data has been enqueued
     Set<String> keysQueue = clientSite2.invoke(() -> doPutsInRange(0, 15));
@@ -197,6 +204,8 @@ public class ParallelGatewaySenderOperationClusterConfigDUnitTest implements Ser
 
     executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
     verifyGatewaySenderState(true, true);
+    server2Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
+    server1Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
 
     // Do some puts and check that data has been enqueued
     Set<String> keys1 = clientSite2.invoke(() -> doPutsInRange(0, 15));
@@ -356,6 +365,8 @@ public class ParallelGatewaySenderOperationClusterConfigDUnitTest implements Ser
 
     executeGfshCommand(CliStrings.PAUSE_GATEWAYSENDER);
     verifyGatewaySenderState(true, true);
+    server2Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
+    server1Site2.invoke(() -> waitAllDispatcherThreadsToPause("ln"));
 
     Set<String> keysQueued = clientSite2.invoke(() -> doPutsInRange(70, 85));
     clientSite2.invoke(() -> checkDataAvailable(keysQueued));
@@ -564,5 +575,32 @@ public class ParallelGatewaySenderOperationClusterConfigDUnitTest implements Ser
       }
     }
     assertEquals(numQueueEntries, totalSize);
+  }
+
+  /*
+   * The batch dispatcher thread blocks and waits for configured time (batch-time-interval) to
+   * read new events. The batch-time-interval default value is 1000 milliseconds. So even if
+   * gateway-sender is paused it will still collect all events (for batch) received within these
+   * 1000 milliseconds and dispatch them. After 1000 milliseconds expire dispatcher thread will be
+   * actually paused. So it is necessary to wait for all dispatching threads to pause before
+   * sending new traffic.
+   */
+  public static void waitAllDispatcherThreadsToPause(String senderId) {
+    await()
+        .untilAsserted(() -> testDispatcherThreadsToPause(senderId));
+  }
+
+  public static void testDispatcherThreadsToPause(String senderId) {
+    assertThat(ClusterStartupRule.getCache()).isNotNull();
+    InternalCache internalCache = ClusterStartupRule.getCache();
+    AbstractGatewaySender sender = (AbstractGatewaySender) internalCache.getGatewaySender(senderId);
+    ConcurrentParallelGatewaySenderEventProcessor abProc =
+        (ConcurrentParallelGatewaySenderEventProcessor) sender.getEventProcessor();
+    List<ParallelGatewaySenderEventProcessor> lproc = abProc.getProcessors();
+    assertFalse(lproc.isEmpty());
+    for (ParallelGatewaySenderEventProcessor serialProc : lproc) {
+      AbstractGatewaySenderEventProcessor abstProc = serialProc;
+      abstProc.waitForDispatcherToPause();
+    }
   }
 }
