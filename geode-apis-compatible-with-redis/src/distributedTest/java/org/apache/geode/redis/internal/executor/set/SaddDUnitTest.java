@@ -164,56 +164,6 @@ public class SaddDUnitTest {
   }
 
 
-  @Test
-  public void shouldDistributeDataAmongCluster_givenTwoClients_OperatingOnTheSameSetConcurrently() {
-
-    int redisServerPort2 = clusterStartUp.getRedisPort(2);
-    JedisCluster jedis2 =
-        new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
-
-    String key = "key";
-
-    List<String> members = makeMemberList(SET_SIZE, "member1-");
-
-    new ConcurrentLoopingThreads(SET_SIZE,
-        (i) -> jedis.sadd(key, members.get(i)),
-        (i) -> jedis2.sadd(key, members.get(i))).runInLockstep();
-
-    Set<String> results = jedis.smembers(key);
-
-    assertThat(results.toArray()).containsExactlyInAnyOrder(members.toArray());
-
-    jedis2.close();
-  }
-
-
-  @Test
-  public void shouldDistributeDataAmongCluster_givenTwoClients_OperatingOnTheSameSet_withDifferentData_Concurrently() {
-
-    int redisServerPort2 = clusterStartUp.getRedisPort(2);
-    JedisCluster jedis2 =
-        new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
-
-    String key = "key1";
-
-    List<String> members1 = makeMemberList(SET_SIZE, "member1-");
-    List<String> members2 = makeMemberList(SET_SIZE, "member2-");
-
-    List<String> allMembers = new ArrayList<>();
-    allMembers.addAll(members1);
-    allMembers.addAll(members2);
-
-    new ConcurrentLoopingThreads(SET_SIZE,
-        (i) -> jedis.sadd(key, members1.get(i)),
-        (i) -> jedis2.sadd(key, members2.get(i))).runInLockstep();
-
-    Set<String> results = jedis.smembers(key);
-
-    assertThat(results.toArray()).containsExactlyInAnyOrder(allMembers.toArray());
-
-    jedis2.close();
-  }
-
   private List<String> makeMemberList(int setSize, String baseString) {
     List<String> members = new ArrayList<>();
     for (int i = 0; i < setSize; i++) {

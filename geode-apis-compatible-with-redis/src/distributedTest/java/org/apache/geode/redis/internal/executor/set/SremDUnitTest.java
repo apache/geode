@@ -106,6 +106,7 @@ public class SremDUnitTest {
 
     assertThat(result.toArray().length).isEqualTo(otherHalfOfMembers.size());
     assertThat(result.toArray()).containsExactlyInAnyOrder(otherHalfOfMembers.toArray());
+
   }
 
 
@@ -130,6 +131,7 @@ public class SremDUnitTest {
     Set<String> results = jedis.smembers(key);
 
     assertThat(results).isEmpty();
+
   }
 
 
@@ -149,6 +151,7 @@ public class SremDUnitTest {
     Set<String> results = jedis.smembers(key);
 
     assertThat(results).isEmpty();
+
   }
 
 
@@ -176,110 +179,6 @@ public class SremDUnitTest {
 
   }
 
-
-  @Test
-  public void shouldDistributeDataAmongCluster_givenMultipleClientsOnDifferentServer_removingSameDataFromSameSetConcurrently() {
-
-    int redisServerPort2 = clusterStartUp.getRedisPort(2);
-    JedisCluster jedis2 =
-        new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
-
-    String key = "key";
-
-    List<String> members = makeMemberList(SET_SIZE, "member1-");
-    jedis.sadd(key, members.toArray(new String[] {}));
-
-    new ConcurrentLoopingThreads(SET_SIZE,
-        (i) -> jedis.srem(key, members.get(i)),
-        (i) -> jedis2.srem(key, members.get(i))).run();
-
-    Set<String> results = jedis.smembers(key);
-
-    assertThat(results).isEmpty();
-
-    jedis2.close();
-  }
-
-
-  @Test
-  public void shouldDistributeDataAmongCluster_givenMultipleClientsOnSameServer_removingSameDataFromSameSetConcurrently() {
-
-    JedisCluster jedis2 =
-        new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort);
-
-    String key = "key";
-
-    List<String> members = makeMemberList(SET_SIZE, "member1-");
-    jedis.sadd(key, members.toArray(new String[] {}));
-
-    new ConcurrentLoopingThreads(SET_SIZE,
-        (i) -> jedis.srem(key, members.get(i)),
-        (i) -> jedis2.srem(key, members.get(i))).run();
-
-    Set<String> results = jedis.smembers(key);
-
-    assertThat(results).isEmpty();
-
-    jedis2.close();
-  }
-
-  @Test
-  public void shouldDistributeDataAmongCluster_givenMultipleClientsOnDifferentServer_removingDifferentDataFromSameSetConcurrently() {
-
-    int redisServerPort2 = clusterStartUp.getRedisPort(2);
-    JedisCluster jedis2 =
-        new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
-
-    String key = "key1";
-
-    List<String> members1 = makeMemberList(SET_SIZE, "member1-");
-    List<String> members2 = makeMemberList(SET_SIZE, "member2-");
-
-    List<String> allMembers = new ArrayList<>();
-    allMembers.addAll(members1);
-    allMembers.addAll(members2);
-
-    jedis.sadd(key, allMembers.toArray(new String[] {}));
-
-    new ConcurrentLoopingThreads(SET_SIZE,
-        (i) -> jedis.srem(key, members1.get(i)),
-        (i) -> jedis2.srem(key, members2.get(i))).run();
-
-    Set<String> results = jedis.smembers(key);
-
-    assertThat(results).isEmpty();
-
-    jedis2.close();
-  }
-
-
-  @Test
-  public void shouldDistributeDataAmongCluster_givenMultipleClientsOnSameServer_removingDifferentDataFromSameSetConcurrently() {
-
-    JedisCluster jedis2 =
-        new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort);
-
-    String key = "key1";
-
-    List<String> members1 = makeMemberList(SET_SIZE, "member1-");
-    List<String> members2 = makeMemberList(SET_SIZE, "member2-");
-
-    List<String> allMembers = new ArrayList<>();
-    allMembers.addAll(members1);
-    allMembers.addAll(members2);
-
-    jedis.sadd(key, allMembers.toArray(new String[] {}));
-
-    new ConcurrentLoopingThreads(SET_SIZE,
-        (i) -> jedis.srem(key, members1.get(i)),
-        (i) -> jedis2.srem(key, members2.get(i))).run();
-
-    Set<String> results = jedis.smembers(key);
-
-    assertThat(results).isEmpty();
-
-    jedis2.close();
-  }
 
   private List<String> makeMemberList(int setSize, String baseString) {
     List<String> members = new ArrayList<>();
