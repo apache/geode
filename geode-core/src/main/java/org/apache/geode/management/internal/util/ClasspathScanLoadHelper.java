@@ -41,6 +41,12 @@ public class ClasspathScanLoadHelper implements AutoCloseable {
         .enableAnnotationInfo().scan(1);
   }
 
+  public ClasspathScanLoadHelper(String... packagesToScan) {
+    scanResult = new ClassGraph().whitelistPackages(packagesToScan)
+        .enableClassInfo()
+        .enableAnnotationInfo().scan(1);
+  }
+
   public Set<Class<?>> scanPackagesForClassesImplementing(Class<?> implementedInterface,
       String... onlyFromPackages) {
     ClassInfoList classInfoList = scanResult.getClassesImplementing(implementedInterface.getName())
