@@ -28,7 +28,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
@@ -49,135 +51,19 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 
 public class RedisSortedSet extends AbstractRedisData {
 
+  private enum AddOrChange {
+    ADDED, CHANGED, NOOP;
+  }
+
   private HashMap<byte[], byte[]> members;
 
   @SuppressWarnings("unchecked")
-  RedisSortedSet(Collection<byte[]> members) {
-    if (members instanceof HashSet) {
-      this.members = (HashMap<byte[], byte[]>) members;
-    } else {
-      this.members = new HashMap<byte[], byte[]>(members);
-    }
+  RedisSortedSet(Map<byte[], byte[]> members) {
+    this.members = (HashMap<byte[], byte[]>) members;
   }
 
   // for serialization
-  public RedisSortedSet() {}
-
-  Pair<BigInteger, List<Object>> sscan(Pattern matchPattern, int count, BigInteger cursor) {
-
-    List<Object> returnList = new ArrayList<>();
-    int size = members.size();
-    BigInteger beforeCursor = new BigInteger("0");
-    int numElements = 0;
-    int i = -1;
-    for (ByteArrayWrapper value : members) {
-      i++;
-      if (beforeCursor.compareTo(cursor) < 0) {
-        beforeCursor = beforeCursor.add(new BigInteger("1"));
-        continue;
-      }
-
-      if (matchPattern != null) {
-        if (matchPattern.matcher(value.toString()).matches()) {
-          returnList.add(value);
-          numElements++;
-        }
-      } else {
-        returnList.add(value);
-        numElements++;
-      }
-
-      if (numElements == count) {
-        break;
-      }
-    }
-
-    Pair<BigInteger, List<Object>> scanResult;
-    if (i >= size - 1) {
-      scanResult = new ImmutablePair<>(new BigInteger("0"), returnList);
-    } else {
-      scanResult = new ImmutablePair<>(new BigInteger(String.valueOf(i + 1)), returnList);
-    }
-    return scanResult;
-  }
-
-  Collection<ByteArrayWrapper> spop(Region<RedisKey, RedisData> region,
-      RedisKey key, int popCount) {
-    int originalSize = scard();
-    if (originalSize == 0) {
-      return emptyList();
-    }
-
-    if (popCount >= originalSize) {
-      region.remove(key, this);
-      return this.members;
-    }
-
-    ArrayList<ByteArrayWrapper> popped = new ArrayList<>();
-    ByteArrayWrapper[] setMembers = members.toArray(new ByteArrayWrapper[originalSize]);
-    Random rand = new Random();
-    while (popped.size() < popCount) {
-      int idx = rand.nextInt(originalSize);
-      ByteArrayWrapper memberToPop = setMembers[idx];
-      if (memberToPop != null) {
-        setMembers[idx] = null;
-        popped.add(memberToPop);
-        membersRemove(memberToPop);
-      }
-    }
-    if (!popped.isEmpty()) {
-      storeChanges(region, key, new RemsDeltaInfo(popped));
-    }
-    return popped;
-  }
-
-  Collection<ByteArrayWrapper> srandmember(int count) {
-    int membersSize = members.size();
-    boolean duplicatesAllowed = count < 0;
-    if (duplicatesAllowed) {
-      count = -count;
-    }
-
-    if (!duplicatesAllowed && membersSize <= count && count != 1) {
-      return new ArrayList<>(members);
-    }
-
-    Random rand = new Random();
-
-    ByteArrayWrapper[] entries = members.toArray(new ByteArrayWrapper[membersSize]);
-
-    if (count == 1) {
-      ByteArrayWrapper randEntry = entries[rand.nextInt(entries.length)];
-      // Note using ArrayList because Collections.singleton has serialization issues.
-      ArrayList<ByteArrayWrapper> result = new ArrayList<>(1);
-      result.add(randEntry);
-      return result;
-    }
-    if (duplicatesAllowed) {
-      ArrayList<ByteArrayWrapper> result = new ArrayList<>(count);
-      while (count > 0) {
-        result.add(entries[rand.nextInt(entries.length)]);
-        count--;
-      }
-      return result;
-    } else {
-      Set<ByteArrayWrapper> result = new HashSet<>();
-      // Note that rand.nextInt can return duplicates when "count" is high
-      // so we need to use a Set to collect the results.
-      while (result.size() < count) {
-        ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
-        result.add(s);
-      }
-      return result;
-    }
-  }
-
-  public boolean sismember(ByteArrayWrapper member) {
-    return members.contains(member);
-  }
-
-  public int scard() {
-    return members.size();
+  public RedisSortedSet() {
   }
 
   @Override
@@ -191,64 +77,99 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
+  //
+//  /**
+//   * Since GII (getInitialImage) can come in and call toData while other threads
+//   * are modifying this object, the striped executor will not protect toData.
+//   * So any methods that modify "members" needs to be thread safe with toData.
+//   */
+//
+//  @Override
+//  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
+//    super.toData(out, context);
+//    InternalDataSerializer.writeHashSet(members, out);
+//  }
+//
+//  @Override
+//  public void fromData(DataInput in, DeserializationContext context)
+//      throws IOException, ClassNotFoundException {
+//    super.fromData(in, context);
+//    members = InternalDataSerializer.readHashSet(in);
+//  }
+//
+//  @Override
+//  public int getDSFID() {
+//    return REDIS_SORTED_SET_ID;
+//  }
+//
+  private synchronized AddOrChange membersAdd(byte[] scoreToAdd, byte[] memberToAdd, boolean CH) {
+    byte[] oldScore = members.get(memberToAdd);
+    boolean added = (members.put(scoreToAdd, memberToAdd) == null);
+    if (CH && !added) {
+      return oldScore.equals(scoreToAdd) ? AddOrChange.NOOP : AddOrChange.CHANGED;
+    }
+    return added ? AddOrChange.ADDED : AddOrChange.NOOP;
+  }
+
+  private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
+    Iterator<ByteArrayWrapper> iterator = addsDeltaInfo.getAdds().iterator();
+    while (iterator.hasNext()) {
+      ByteArrayWrapper member = iterator.next();
+      ByteArrayWrapper score = iterator.next();
+      members.put(member.toBytes(), score.toBytes()); // TODO: get rid of ByteArrayWrapper
+    }
+  }
+
+  private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
+    // TODO: get rid of ByteArrayWrapper
+    for (ByteArrayWrapper member : remsDeltaInfo.getRemoves()) {
+      members.remove(member);
+    }
+  }
+
   /**
-   * Since GII (getInitialImage) can come in and call toData while other threads
-   * are modifying this object, the striped executor will not protect toData.
-   * So any methods that modify "members" needs to be thread safe with toData.
-   */
-
-  @Override
-  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
-    super.toData(out, context);
-    InternalDataSerializer.writeHashSet(members, out);
-  }
-
-  @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    super.fromData(in, context);
-    members = InternalDataSerializer.readHashSet(in);
-  }
-
-  @Override
-  public int getDSFID() {
-    return REDIS_SET_ID;
-  }
-
-  private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
-    return members.add(memberToAdd);
-  }
-
-  private boolean membersRemove(ByteArrayWrapper memberToRemove) {
-    return members.remove(memberToRemove);
-  }
-
-  private synchronized boolean membersAddAll(AddsDeltaInfo addsDeltaInfo) {
-    return members.addAll(addsDeltaInfo.getAdds());
-  }
-
-  private synchronized boolean membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
-    return members.removeAll(remsDeltaInfo.getRemoves());
-  }
-
-
-
-  /**
-   * @param membersToAdd members to add to this set; NOTE this list may by
-   *        modified by this call
-   * @param region the region this instance is stored in
-   * @param key the name of the set to add to
+   * @param membersToAdd members to add to this set; NOTE this list may by modified by this call
+   * @param region       the region this instance is stored in
+   * @param key          the name of the set to add to
    * @return the number of members actually added
    */
-  long sadd(ArrayList<ByteArrayWrapper> membersToAdd, Region<RedisKey, RedisData> region,
-      RedisKey key) {
+  long zadd(List<byte[]> membersToAdd, Region<RedisKey, RedisData> region,
+            RedisKey key) {
+    int membersAdded = 0;
+    long membersChanged = 0; // TODO: really implement changed
 
-    membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
-    int membersAdded = membersToAdd.size();
-    if (membersAdded != 0) {
-      storeChanges(region, key, new AddsDeltaInfo(membersToAdd));
+    AddsDeltaInfo deltaInfo = null;
+    Iterator<byte[]> iterator = membersToAdd.iterator();
+    while (iterator.hasNext()) {
+      byte[] member = iterator.next();
+      byte[] score = iterator.next();
+
+      switch (membersAdd(member, score, false)) {
+        case ADDED:
+          membersAdded++;
+          makeAddsDeltaInfo(deltaInfo, member, score);
+          break;
+        case CHANGED:
+          membersChanged++;
+          makeAddsDeltaInfo(deltaInfo, member, score);
+          break;
+        default:
+          // do nothing
+      }
+    }
+    if (deltaInfo != null) {
+      storeChanges(region, key, deltaInfo);
     }
     return membersAdded;
+  }
+
+  private AddsDeltaInfo makeAddsDeltaInfo(AddsDeltaInfo deltaInfo, byte[] member, byte[] score) {
+    if (deltaInfo == null) {
+      deltaInfo = new AddsDeltaInfo();
+    }
+    deltaInfo.add(new ByteArrayWrapper(member)); // TODO: get rid of ByteArrayWrapper
+    deltaInfo.add(new ByteArrayWrapper(score));
+    return deltaInfo;
   }
 
   @Override
