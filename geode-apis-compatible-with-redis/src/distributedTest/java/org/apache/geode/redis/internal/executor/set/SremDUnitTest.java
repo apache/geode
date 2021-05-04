@@ -181,7 +181,8 @@ public class SremDUnitTest {
   public void shouldDistributeDataAmongCluster_givenMultipleClientsOnDifferentServer_removingSameDataFromSameSetConcurrently() {
 
     int redisServerPort2 = clusterStartUp.getRedisPort(2);
-    JedisCluster jedis2 = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
+    JedisCluster jedis2 =
+        new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
 
     String key = "key";
 
@@ -203,7 +204,8 @@ public class SremDUnitTest {
   @Test
   public void shouldDistributeDataAmongCluster_givenMultipleClientsOnSameServer_removingSameDataFromSameSetConcurrently() {
 
-    JedisCluster jedis2 = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort);
+    JedisCluster jedis2 =
+        new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort);
 
     String key = "key";
 
@@ -225,7 +227,8 @@ public class SremDUnitTest {
   @Test
   public void shouldDistributeDataAmongCluster_givenMultipleClientsOnSameServer_removingDifferentDataFromSameSetConcurrently() {
 
-    JedisCluster jedis2 = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort);
+    JedisCluster jedis2 =
+        new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort);
 
     String key = "key1";
 

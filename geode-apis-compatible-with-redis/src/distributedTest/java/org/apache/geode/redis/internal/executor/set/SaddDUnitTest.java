@@ -96,7 +96,7 @@ public class SaddDUnitTest {
 
     List<String> members = makeMemberList(SET_SIZE, "member1-");
 
-    jedis.sadd(key, members.toArray(new String[]{}));
+    jedis.sadd(key, members.toArray(new String[] {}));
 
     Set<String> result = jedis.smembers(key);
 
@@ -168,7 +168,8 @@ public class SaddDUnitTest {
   public void shouldDistributeDataAmongCluster_givenTwoClients_OperatingOnTheSameSetConcurrently() {
 
     int redisServerPort2 = clusterStartUp.getRedisPort(2);
-    JedisCluster jedis2 = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
+    JedisCluster jedis2 =
+        new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
 
     String key = "key";
 
@@ -176,8 +177,7 @@ public class SaddDUnitTest {
 
     new ConcurrentLoopingThreads(SET_SIZE,
         (i) -> jedis.sadd(key, members.get(i)),
-        (i) -> jedis2.sadd(key, members.get(i))
-      ).runInLockstep();
+        (i) -> jedis2.sadd(key, members.get(i))).runInLockstep();
 
     Set<String> results = jedis.smembers(key);
 
@@ -191,7 +191,8 @@ public class SaddDUnitTest {
   public void shouldDistributeDataAmongCluster_givenTwoClients_OperatingOnTheSameSet_withDifferentData_Concurrently() {
 
     int redisServerPort2 = clusterStartUp.getRedisPort(2);
-    JedisCluster jedis2 = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
+    JedisCluster jedis2 =
+        new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), redisServerPort2);
 
     String key = "key1";
 
@@ -204,8 +205,7 @@ public class SaddDUnitTest {
 
     new ConcurrentLoopingThreads(SET_SIZE,
         (i) -> jedis.sadd(key, members1.get(i)),
-        (i) -> jedis2.sadd(key, members2.get(i))
-      ).runInLockstep();
+        (i) -> jedis2.sadd(key, members2.get(i))).runInLockstep();
 
     Set<String> results = jedis.smembers(key);
 
@@ -223,4 +223,3 @@ public class SaddDUnitTest {
   }
 
 }
-
