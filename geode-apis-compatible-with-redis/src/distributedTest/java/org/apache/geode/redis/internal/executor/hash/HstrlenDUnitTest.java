@@ -23,7 +23,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -38,9 +40,7 @@ public class HstrlenDUnitTest {
   private static final String LOCAL_HOST = "127.0.0.1";
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static Jedis jedis1;
-  private static Jedis jedis2;
-  private static Jedis jedis3;
+  private static JedisCluster jedis;
 
   @BeforeClass
   public static void classSetup() {
@@ -48,17 +48,16 @@ public class HstrlenDUnitTest {
     clusterStartUp.startRedisVM(1, locator.getPort());
     clusterStartUp.startRedisVM(2, locator.getPort());
 
-    int redisServerPort1 = clusterStartUp.getRedisPort(1);
-    int redisServerPort2 = clusterStartUp.getRedisPort(2);
+    int redisServerPort = clusterStartUp.getRedisPort(1);
 
-    jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
-    jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
-    jedis3 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
   }
 
   @Before
   public void testSetup() {
-    jedis1.flushAll();
+    try (Jedis conn = jedis.getConnectionFromSlot(0)) {
+      conn.flushAll();
+    }
   }
 
   @Test
@@ -68,29 +67,29 @@ public class HstrlenDUnitTest {
     int iterations = 10000;
     Random rand = new Random();
 
-    jedis1.hset(key, field, "22");
+    jedis.hset(key, field, "22");
 
     new ConcurrentLoopingThreads(iterations,
         (i) -> {
           int newLength = rand.nextInt(9) + 1;
           String newVal = makeStringOfRepeatedDigits(newLength);
-          jedis1.hset(key, field, newVal);
+          jedis.hset(key, field, newVal);
         },
-        (i) -> assertThat(jedis2.hstrlen(key, field)).isBetween(1L, 9L),
-        (i) -> assertThat(jedis3.hstrlen(key, field)).isBetween(1L, 9L))
+        (i) -> assertThat(jedis.hstrlen(key, field)).isBetween(1L, 9L),
+        (i) -> assertThat(jedis.hstrlen(key, field)).isBetween(1L, 9L))
             .run();
 
-    String value = jedis1.hget(key, field);
+    String value = jedis.hget(key, field);
     String encodedStringLength = Character.toString(value.charAt(0));
     int expectedLength = Integer.parseInt(encodedStringLength);
-    assertThat(jedis2.hstrlen(key, field)).isEqualTo(expectedLength);
+    assertThat(jedis.hstrlen(key, field)).isEqualTo(expectedLength);
   }
 
   private String makeStringOfRepeatedDigits(int newLength) {
-    String stringOfRepeatedDigits = "";
+    StringBuilder stringOfRepeatedDigits = new StringBuilder();
     for (int i = 0; i < newLength; i++) {
-      stringOfRepeatedDigits += newLength;
+      stringOfRepeatedDigits.append(newLength);
     }
-    return stringOfRepeatedDigits;
+    return stringOfRepeatedDigits.toString();
   }
 }

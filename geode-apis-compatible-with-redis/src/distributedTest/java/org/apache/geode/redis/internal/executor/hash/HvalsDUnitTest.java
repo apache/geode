@@ -80,6 +80,7 @@ public class HvalsDUnitTest {
           String currentValue = jedis.hget(key, field);
           jedis.hset(key, field, "" + (Long.parseLong(currentValue) + i));
         },
+        (i) -> assertThat(jedis.hvals(key)).hasSize(fieldCount),
         (i) -> assertThat(jedis.hvals(key)).hasSize(fieldCount))
             .run();
 
