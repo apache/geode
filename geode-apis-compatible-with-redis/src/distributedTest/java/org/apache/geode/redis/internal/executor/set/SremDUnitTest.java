@@ -88,6 +88,7 @@ public class SremDUnitTest {
     server3.stop();
   }
 
+
   @Test
   public void shouldDistributeDataAmongCluster_thenRemoveHalfOfData() {
 
@@ -106,6 +107,7 @@ public class SremDUnitTest {
     assertThat(result.toArray().length).isEqualTo(otherHalfOfMembers.size());
     assertThat(result.toArray()).containsExactlyInAnyOrder(otherHalfOfMembers.toArray());
   }
+
 
   @Test
   public void shouldDistributeDataAmongCluster_thenRemoveDifferentDataFromSameSetConcurrently() {
@@ -130,6 +132,7 @@ public class SremDUnitTest {
     assertThat(results).isEmpty();
   }
 
+
   @Test
   public void shouldDistributeDataAmongCluster_thenRemoveSameDataFromSameSetConcurrently() {
 
@@ -147,6 +150,7 @@ public class SremDUnitTest {
 
     assertThat(results).isEmpty();
   }
+
 
   @Test
   public void shouldDistributeDataAmongCluster_thenRemoveFromDifferentSetsConcurrently() {
@@ -172,6 +176,7 @@ public class SremDUnitTest {
 
   }
 
+
   @Test
   public void shouldDistributeDataAmongCluster_givenMultipleClientsOnDifferentServer_removingSameDataFromSameSetConcurrently() {
 
@@ -194,6 +199,7 @@ public class SremDUnitTest {
     jedis2.close();
   }
 
+
   @Test
   public void shouldDistributeDataAmongCluster_givenMultipleClientsOnSameServer_removingSameDataFromSameSetConcurrently() {
 
@@ -214,6 +220,7 @@ public class SremDUnitTest {
 
     jedis2.close();
   }
+
 
   @Test
   public void shouldDistributeDataAmongCluster_givenMultipleClientsOnSameServer_removingDifferentDataFromSameSetConcurrently() {

@@ -75,12 +75,10 @@ public class SaddDUnitTest {
 
   @Before
   public void testSetup() {
-    // Sufficient to connect to one slot to delete from keys from the whole cluster
     try (Jedis conn = jedis.getConnectionFromSlot(0)) {
       conn.flushAll();
     }
   }
-
 
   @AfterClass
   public static void tearDown() {
@@ -164,6 +162,7 @@ public class SaddDUnitTest {
     assertThat(results2.toArray()).containsExactlyInAnyOrder(members2.toArray());
 
   }
+
 
   @Test
   public void shouldDistributeDataAmongCluster_givenTwoClients_OperatingOnTheSameSetConcurrently() {
