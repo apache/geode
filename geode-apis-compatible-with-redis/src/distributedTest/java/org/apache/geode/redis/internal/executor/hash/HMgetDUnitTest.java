@@ -100,6 +100,7 @@ public class HMgetDUnitTest {
 
     Map<String, String> expectedResult = makeHashMap(HASH_SIZE, "field-", "changedValue-");
     assertThat(jedis.hgetAll(key)).containsExactlyInAnyOrderEntriesOf(expectedResult);
+
   }
 
   private Map<String, String> makeHashMap(int hashSize, String baseFieldName,

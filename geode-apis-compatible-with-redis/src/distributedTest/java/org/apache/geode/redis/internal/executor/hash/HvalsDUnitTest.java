@@ -68,6 +68,7 @@ public class HvalsDUnitTest {
     jedis.close();
   }
 
+
   @Test
   public void hvalsWorks_whileAlsoUpdatingHash() {
     String key = "key";
@@ -97,6 +98,7 @@ public class HvalsDUnitTest {
     long sumOfBothSequenceSums = (fieldCount / 2) * ((fieldCount - 1) + 0) +
         (iterations / 2) * ((iterations - 1) + 0);
     assertThat(finalTotal).isEqualTo(sumOfBothSequenceSums);
+
   }
 
 }

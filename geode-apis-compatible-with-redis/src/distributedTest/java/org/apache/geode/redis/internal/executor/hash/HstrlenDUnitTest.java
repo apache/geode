@@ -90,6 +90,7 @@ public class HstrlenDUnitTest {
     String encodedStringLength = Character.toString(value.charAt(0));
     int expectedLength = Integer.parseInt(encodedStringLength);
     assertThat(jedis.hstrlen(key, field)).isEqualTo(expectedLength);
+
   }
 
   private String makeStringOfRepeatedDigits(int newLength) {

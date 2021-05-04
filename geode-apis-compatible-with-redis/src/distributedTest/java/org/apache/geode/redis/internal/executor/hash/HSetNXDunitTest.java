@@ -21,10 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import io.lettuce.core.ClientOptions;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.cluster.ClusterClientOptions;
+import io.lettuce.core.cluster.RedisClusterClient;
+import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import io.lettuce.core.resource.ClientResources;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -50,8 +50,8 @@ public class HSetNXDunitTest {
   private static MemberVM server1;
   private static MemberVM server2;
   private static int[] redisPorts;
-  private static RedisCommands<String, String> lettuce;
-  private static StatefulRedisConnection<String, String> connection;
+  private static RedisAdvancedClusterCommands<String, String> lettuce;
+  private static StatefulRedisClusterConnection<String, String> connection;
   private static ClientResources resources;
 
   @BeforeClass
@@ -73,8 +73,8 @@ public class HSetNXDunitTest {
         .socketAddressResolver(dnsResolver)
         .build();
 
-    RedisClient redisClient = RedisClient.create(resources, "redis://localhost");
-    redisClient.setOptions(ClientOptions.builder()
+    RedisClusterClient redisClient = RedisClusterClient.create(resources, "redis://localhost");
+    redisClient.setOptions(ClusterClientOptions.builder()
         .autoReconnect(true)
         .build());
     connection = redisClient.connect();
@@ -94,6 +94,7 @@ public class HSetNXDunitTest {
     server2.stop();
   }
 
+
   @Test
   public void testHSETNXReturnsOneWhenKeyDoesNotExistAndZeroWhenItDoes()
       throws ExecutionException, InterruptedException {
@@ -108,6 +109,7 @@ public class HSetNXDunitTest {
           () -> lettuce.hsetnx(key, "field" + local_i, "value" + local_i));
 
       assertThat(server_1_counter.get() ^ server_2_counter.get()).isTrue();
+
     }
   }
 
