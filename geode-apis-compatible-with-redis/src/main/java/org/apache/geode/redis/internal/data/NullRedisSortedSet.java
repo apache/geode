@@ -17,13 +17,13 @@
 package org.apache.geode.redis.internal.data;
 
 
-import java.util.HashSet;
+import java.util.HashMap;
 
 
 class NullRedisSortedSet extends RedisSortedSet {
 
   NullRedisSortedSet() {
-    super(new HashSet<>());
+    super(new HashMap<>());
   }
 
   @Override

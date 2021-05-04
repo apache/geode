@@ -16,35 +16,16 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static java.util.Collections.emptyList;
-import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
-import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -63,8 +44,7 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   // for serialization
-  public RedisSortedSet() {
-  }
+  public RedisSortedSet() {}
 
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
@@ -78,30 +58,32 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   //
-//  /**
-//   * Since GII (getInitialImage) can come in and call toData while other threads
-//   * are modifying this object, the striped executor will not protect toData.
-//   * So any methods that modify "members" needs to be thread safe with toData.
-//   */
-//
-//  @Override
-//  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
-//    super.toData(out, context);
-//    InternalDataSerializer.writeHashSet(members, out);
-//  }
-//
-//  @Override
-//  public void fromData(DataInput in, DeserializationContext context)
-//      throws IOException, ClassNotFoundException {
-//    super.fromData(in, context);
-//    members = InternalDataSerializer.readHashSet(in);
-//  }
-//
-//  @Override
-//  public int getDSFID() {
-//    return REDIS_SORTED_SET_ID;
-//  }
-//
+  // /**
+  // * Since GII (getInitialImage) can come in and call toData while other threads
+  // * are modifying this object, the striped executor will not protect toData.
+  // * So any methods that modify "members" needs to be thread safe with toData.
+  // */
+  //
+  // @Override
+  // public synchronized void toData(DataOutput out, SerializationContext context) throws
+  // IOException {
+  // super.toData(out, context);
+  // InternalDataSerializer.writeHashSet(members, out);
+  // }
+  //
+  // @Override
+  // public void fromData(DataInput in, DeserializationContext context)
+  // throws IOException, ClassNotFoundException {
+  // super.fromData(in, context);
+  // members = InternalDataSerializer.readHashSet(in);
+  // }
+  //
+  @Override
+  public int getDSFID() {
+    return REDIS_SORTED_SET_ID;
+  }
+
+  //
   private synchronized AddOrChange membersAdd(byte[] scoreToAdd, byte[] memberToAdd, boolean CH) {
     byte[] oldScore = members.get(memberToAdd);
     boolean added = (members.put(scoreToAdd, memberToAdd) == null);
@@ -128,13 +110,12 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   /**
+   * @param region the region this instance is stored in
+   * @param key the name of the set to add to
    * @param membersToAdd members to add to this set; NOTE this list may by modified by this call
-   * @param region       the region this instance is stored in
-   * @param key          the name of the set to add to
    * @return the number of members actually added
    */
-  long zadd(List<byte[]> membersToAdd, Region<RedisKey, RedisData> region,
-            RedisKey key) {
+  long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd) {
     int membersAdded = 0;
     long membersChanged = 0; // TODO: really implement changed
 

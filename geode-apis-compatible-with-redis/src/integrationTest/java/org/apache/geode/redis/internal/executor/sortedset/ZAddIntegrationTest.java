@@ -11,33 +11,21 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
+package org.apache.geode.redis.internal.executor.sortedset;
 
-package org.apache.geode.redis.internal.data;
+import org.junit.ClassRule;
 
+import org.apache.geode.redis.GeodeRedisServerRule;
 
-import java.util.List;
+public class ZAddIntegrationTest extends AbstractZAddIntegrationTest {
 
-import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
-
-public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
-    implements
-    RedisSortedSetCommands {
-
-  public RedisSortedSetCommandsFunctionExecutor(
-      CommandHelper helper) {
-    super(helper);
-  }
-
-  private RedisSortedSet getRedisSortedSet(RedisKey key, boolean updateStats) {
-    return helper.getRedisSortedSet(key, updateStats);
-  }
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
-  public long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd) {
-    return stripedExecute(key,
-        () -> getRedisSortedSet(key, false)
-            .zadd(getRegion(), key, scoresAndMembersToAdd));
+  public int getPort() {
+    return server.getPort();
   }
+
 }

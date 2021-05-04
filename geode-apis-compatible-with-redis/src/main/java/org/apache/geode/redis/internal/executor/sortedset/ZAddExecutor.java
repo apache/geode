@@ -14,15 +14,18 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
-import org.apache.commons.lang3.StringUtils;
 
 public class ZAddExecutor extends SortedSetExecutor {
   @Override
@@ -35,7 +38,7 @@ public class ZAddExecutor extends SortedSetExecutor {
     // loop through elements, starting at 2 (or whatever)
     // confirm scores are numbers
     // add pairs to scoresAndMembersToAdd (turn into byte[])
-    ArrayList<byte[]> scoresAndMembersToAdd = new ArrayList<>();
+    List<byte[]> scoresAndMembersToAdd = new ArrayList<>();
     Iterator<ByteArrayWrapper> commandIterator = commandElements.iterator();
     boolean adding = false;
     int count = 0;
@@ -49,11 +52,10 @@ public class ZAddExecutor extends SortedSetExecutor {
       }
       if (adding) {
         byte[] score = next.toBytes();
-        // TODO: ensure score is a number
-        if (StringUtils.isNumeric(score.toString()) {
+        if (StringUtils.isNumeric(score.toString())) {
           scoresAndMembersToAdd.add(score);
         } else {
-          // TODO: throw exception
+          return RedisResponse.error(ERROR_NOT_A_VALID_FLOAT);
         }
         // member can be any old thing
         if (commandIterator.hasNext()) {

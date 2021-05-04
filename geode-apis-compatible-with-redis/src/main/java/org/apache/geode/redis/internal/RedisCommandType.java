@@ -30,6 +30,7 @@ import org.apache.geode.redis.internal.ParameterRequirements.ParameterRequiremen
 import org.apache.geode.redis.internal.ParameterRequirements.SlowlogParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.SpopParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParameterRequirements;
+import org.apache.geode.redis.internal.ParameterRequirements.ZAddParameterRequirements;
 import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
@@ -93,6 +94,7 @@ import org.apache.geode.redis.internal.executor.set.SRemExecutor;
 import org.apache.geode.redis.internal.executor.set.SScanExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionStoreExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZAddExecutor;
 import org.apache.geode.redis.internal.executor.string.AppendExecutor;
 import org.apache.geode.redis.internal.executor.string.BitCountExecutor;
 import org.apache.geode.redis.internal.executor.string.BitOpExecutor;
@@ -189,6 +191,10 @@ public enum RedisCommandType {
   SADD(new SAddExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
   SMEMBERS(new SMembersExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   SREM(new SRemExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
+
+  /************ Sorted Sets **************/
+
+  ZADD(new ZAddExecutor(), SUPPORTED, new ZAddParameterRequirements()),
 
   /************* Server *****************/
   SLOWLOG(new SlowlogExecutor(), SUPPORTED, new SlowlogParameterRequirements()),
