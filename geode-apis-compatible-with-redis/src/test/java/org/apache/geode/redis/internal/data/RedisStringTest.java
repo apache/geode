@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.data.RedisString.BASE_REDIS_STRING_OVERHEAD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -25,7 +26,6 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 
-import org.assertj.core.data.Offset;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -355,49 +355,94 @@ public class RedisStringTest {
     assertThat(o2).isEqualTo(o1);
   }
 
-  @Test
-  public void overheadConstants_shouldNotChange_withoutForethoughtAndTesting() {
-    assertThat(RedisString.PER_OBJECT_OVERHEAD).isEqualTo(8);
-    assertThat(RedisString.getPerStringOverhead()).isEqualTo(RedisString.PER_STRING_OVERHEAD);
-  }
-
-  @SuppressWarnings("unchecked")
-  @Test
-  public void should_calculateSize_closeToROSSize_ofIndividualInstances() {
-    String javaString;
-    for (int i = 0; i < 512; i += 8) {
-      javaString = makeStringOfSpecifiedSize(i);
-      RedisString string = new RedisString(new RedisKey(javaString.getBytes()));
-
-      int expected = reflectionObjectSizer.sizeof(string);
-      Long actual = Long.valueOf(string.getSizeInBytes());
-      Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
-
-      assertThat(actual).isCloseTo(expected, offset);
-    }
-  }
-
+  /************* Size in Bytes Tests *************/
+  /******* constructors *******/
   @SuppressWarnings("unchecked")
   @Test
   public void should_calculateSize_closeToROSSize_ofLargeStrings() {
     String javaString = makeStringOfSpecifiedSize(10_000);
+    RedisString string = new RedisString(new ByteArrayWrapper(javaString.getBytes()));
 
-    RedisKey byteArrayWrapper = new RedisKey(javaString.getBytes());
-    RedisString string = new RedisString(byteArrayWrapper);
-
-    Long actual = Long.valueOf(string.getSizeInBytes());
+    int actual = string.getSizeInBytes();
     int expected = reflectionObjectSizer.sizeof(string);
-    Offset<Long> offset = Offset.offset(Math.round(expected * 0.05));
 
-    assertThat(actual).isCloseTo(expected, offset);
+    assertThat(actual).isEqualTo(expected);
   }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void should_calculateSize_closeToROSSize_ofStringOfVariousSizes() {
+    String javaString;
+    for (int i = 0; i < 512; i += 8) {
+      javaString = makeStringOfSpecifiedSize(i);
+      RedisString string = new RedisString(new ByteArrayWrapper(javaString.getBytes()));
+
+      int expected = reflectionObjectSizer.sizeof(string);
+      int actual = string.getSizeInBytes();
+
+      assertThat(actual).isEqualTo(expected);
+    }
+  }
+
+  /******* changing values *******/
+  @Test
+  public void changingStringValue_toShorterString_shouldDecreaseSizeInBytes() {
+    String baseString = "baseString";
+    RedisString string = new RedisString(new ByteArrayWrapper((baseString + "asdf").getBytes()));
+
+    int initialSize = string.getSizeInBytes();
+
+    string.set(new ByteArrayWrapper(baseString.getBytes()));
+
+    int finalSize = string.getSizeInBytes();
+
+    assertThat(finalSize).isEqualTo(initialSize - 4);
+  }
+
+  @Test
+  public void changingStringValue_toLongerString_shouldIncreaseSizeInBytes() {
+    String baseString = "baseString";
+    RedisString string = new RedisString(new ByteArrayWrapper(baseString.getBytes()));
+
+    int initialSize = string.getSizeInBytes();
+
+    string.set(new ByteArrayWrapper((baseString + "asdf").getBytes()));
+
+    int finalSize = string.getSizeInBytes();
+
+    assertThat(finalSize).isEqualTo(initialSize + 4);
+  }
+
+  @Test
+  public void changingStringValue_toEmptyString_shouldDecreaseSizeInBytes_toBaseSize() {
+    String baseString = "baseString";
+    RedisString string = new RedisString(new ByteArrayWrapper((baseString + "asdf").getBytes()));
+
+    string.set(new ByteArrayWrapper("".getBytes()));
+
+    int finalSize = string.getSizeInBytes();
+
+    assertThat(finalSize).isEqualTo(BASE_REDIS_STRING_OVERHEAD);
+  }
+
+  /******* constants *******/
+  @Test
+  public void overheadConstants_shouldMatchCalculatedValue() {
+    assertThat(RedisString.PER_OBJECT_OVERHEAD).isEqualTo(8); // see todo in RedisString
+
+    RedisString redisString = new RedisString(new ByteArrayWrapper("".getBytes()));
+    int calculatedSize = reflectionObjectSizer.sizeof(redisString);
+
+    assertThat(BASE_REDIS_STRING_OVERHEAD).isEqualTo(calculatedSize);
+  }
+
+  /******* helper methods *******/
 
   private String makeStringOfSpecifiedSize(final int stringSize) {
     StringBuffer sb = new StringBuffer(stringSize);
     for (int i = 0; i < stringSize; i++) {
       sb.append("a");
     }
-    String javaString = sb.toString();
-    return javaString;
+    return sb.toString();
   }
 }

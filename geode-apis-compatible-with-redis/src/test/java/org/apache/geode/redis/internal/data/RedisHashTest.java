@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 import static java.lang.Math.round;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.redis.internal.data.RedisHash.BASE_REDIS_HASH_OVERHEAD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.Offset.offset;
 import static org.mockito.Mockito.mock;
@@ -263,8 +264,15 @@ public class RedisHashTest {
   /************* Hash Size *************/
   /******* constants *******/
   @Test
+  public void constantBaseRedisHashOverhead_shouldEqualCalculatedOverhead() {
+    ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
+    int baseRedisHashOverhead = reflectionObjectSizer.sizeof(new RedisHash());
+
+    assertThat(baseRedisHashOverhead).isEqualTo(BASE_REDIS_HASH_OVERHEAD);
+  }
+
+  @Test
   public void constantValuePairOverhead_shouldEqualCalculatedOverhead() {
-    RedisHash redisHash = new RedisHash();
     int sizeOfDataForOneFieldValuePair = 16; // initial byte[]s are 8 bytes each
 
     HashMap<ByteArrayWrapper, ByteArrayWrapper> tempHashmap = new HashMap<>();
@@ -316,7 +324,7 @@ public class RedisHashTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void should_calculateSize_equalToROSSize_ofIndividualInstanceWithSingleValue() {
+  public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithSingleValue() {
     ArrayList<ByteArrayWrapper> data = new ArrayList<>();
     data.add(new ByteArrayWrapper("field".getBytes()));
     data.add(new ByteArrayWrapper("valuethatisverylonggggggggg".getBytes()));

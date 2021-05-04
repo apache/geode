@@ -16,8 +16,12 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.data.RedisSet.BASE_REDIS_SET_OVERHEAD;
+import static org.apache.geode.redis.internal.data.RedisSet.INTERNAL_HASH_SET_STORAGE_OVERHEAD;
+import static org.apache.geode.redis.internal.data.RedisSet.PER_MEMBER_OVERHEAD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.DataOutput;
 import java.io.IOException;
@@ -25,6 +29,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Random;
 
 import org.assertj.core.data.Offset;
@@ -195,6 +200,83 @@ public class RedisSetTest {
 
       assertThat(actual).isCloseTo(expected, offset);
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void size_shouldDecrease_WhenValueIsRemoved() {
+    Region region = mock(Region.class);
+    final RedisData returnData = mock(RedisData.class);
+    when(region.put(Object.class, Object.class)).thenReturn(returnData);
+    final RedisKey key = new RedisKey("key".getBytes());
+    final ByteArrayWrapper value = new ByteArrayWrapper("value".getBytes());
+
+    RedisSet set = createRedisSetOfSpecifiedSize(10);
+
+    ArrayList<ByteArrayWrapper> members = new ArrayList<>();
+    members.add(value);
+    set.sadd(members, region, key);
+
+    int initialSize = set.getSizeInBytes();
+
+    set.srem(members, region, key);
+
+    int finalSize = set.getSizeInBytes();
+    int expectedSize = initialSize - value.length() - PER_MEMBER_OVERHEAD;
+
+    assertThat(finalSize).isEqualTo(expectedSize);
+  }
+
+  /******** constants *******/
+  @Test
+  public void baseOverheadConstant_shouldMatchCalculatedValue() {
+    ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
+    int baseRedisSetOverhead = reflectionObjectSizer.sizeof(new RedisSet()) + 18;
+
+    HashSet<ByteArrayWrapper> temp_hashset = new HashSet<>();
+    int base_hashset_size = reflectionObjectSizer.sizeof(temp_hashset);
+    baseRedisSetOverhead += base_hashset_size;
+
+    assertThat(baseRedisSetOverhead).isEqualTo(BASE_REDIS_SET_OVERHEAD);
+  }
+
+  @Test
+  public void perMemberOverheadConstant_shouldMatchCalculatedValue() {
+    ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
+
+    HashSet<ByteArrayWrapper> temp_hashset = new HashSet<>();
+    ByteArrayWrapper member1 = new ByteArrayWrapper("a".getBytes());
+    ByteArrayWrapper member2 = new ByteArrayWrapper("b".getBytes());
+    temp_hashset.add(member1);
+    int one_entry_hashset_size = reflectionObjectSizer.sizeof(temp_hashset);
+
+    temp_hashset.add(member2);
+    int two_entries_hashset_size = reflectionObjectSizer.sizeof(temp_hashset);
+
+    int perMemberOverhead = two_entries_hashset_size - one_entry_hashset_size + 5;
+
+    assertThat(perMemberOverhead).isEqualTo(PER_MEMBER_OVERHEAD);
+  }
+
+  @Test
+  public void internalHashsetStorageOverheadConstant_shouldMatchCalculatedValue() {
+    ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
+
+    HashSet<ByteArrayWrapper> temp_hashset = new HashSet<>();
+    int base_hashset_size = reflectionObjectSizer.sizeof(temp_hashset);
+
+    ByteArrayWrapper baw1 = new ByteArrayWrapper("a".getBytes());
+    ByteArrayWrapper baw2 = new ByteArrayWrapper("b".getBytes());
+
+    temp_hashset.add(baw1);
+    temp_hashset.add(baw2);
+
+    int two_entries_hashset_size = reflectionObjectSizer.sizeof(temp_hashset);
+
+    int internalHashsetStorageOverhead =
+        two_entries_hashset_size - (2 * PER_MEMBER_OVERHEAD) - base_hashset_size;
+
+    assertThat(internalHashsetStorageOverhead).isEqualTo(INTERNAL_HASH_SET_STORAGE_OVERHEAD);
   }
 
   private RedisSet createRedisSetOfSpecifiedSize(int setSize) {

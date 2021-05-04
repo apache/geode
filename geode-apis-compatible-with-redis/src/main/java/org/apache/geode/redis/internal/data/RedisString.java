@@ -43,7 +43,7 @@ public class RedisString extends AbstractRedisData {
   // this value is empirically derived using ReflectionObjectSizer, which provides an exact size
   // of the object. It can't be used directly because of its performance impact. This value causes
   // the size we keep track of to converge to the actual size as it increases.
-  public static final int PER_STRING_OVERHEAD = 74;
+  protected static final int BASE_REDIS_STRING_OVERHEAD = 64;
 
   public RedisString(ByteArrayWrapper value) {
     this.value = value;
@@ -717,8 +717,8 @@ public class RedisString extends AbstractRedisData {
   }
 
   @VisibleForTesting
-  protected static int getPerStringOverhead() {
-    return PER_STRING_OVERHEAD;
+  protected static int getBaseRedisStringOverhead() {
+    return BASE_REDIS_STRING_OVERHEAD;
   }
 
   ////// methods that modify the "value" field ////////////
@@ -742,6 +742,6 @@ public class RedisString extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return PER_STRING_OVERHEAD + value.length();
+    return BASE_REDIS_STRING_OVERHEAD + value.length();
   }
 }
