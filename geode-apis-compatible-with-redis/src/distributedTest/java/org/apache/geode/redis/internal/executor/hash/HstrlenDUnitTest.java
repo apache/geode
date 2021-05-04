@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Random;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -59,6 +60,12 @@ public class HstrlenDUnitTest {
       conn.flushAll();
     }
   }
+
+  @AfterClass
+  public static void tearDown() {
+    jedis.close();
+  }
+
 
   @Test
   public void hstrlenDoesNotCorruptData_whileHashIsConcurrentlyUpdated() {

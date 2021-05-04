@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Random;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -60,6 +61,11 @@ public class HvalsDUnitTest {
     try (Jedis conn = jedis.getConnectionFromSlot(0)) {
       conn.flushAll();
     }
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    jedis.close();
   }
 
   @Test
