@@ -88,8 +88,9 @@ public class HsetDUnitTest {
     server3.stop();
   }
 
+
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients() {
+  public void shouldDistributeDataAmongCluster_givenMultipleClients() {
 
     String key = "key";
 
@@ -103,8 +104,9 @@ public class HsetDUnitTest {
     assertThat(result.values().toArray()).containsExactlyInAnyOrder(testMap.values().toArray());
   }
 
+
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_addingDifferentDataToSameHashConcurrently() {
+  public void shouldDistributeDataAmongCluster_givenMultipleThreadsAddingDifferentDataToSameHashConcurrently() {
 
     String key = "key";
 
@@ -121,17 +123,18 @@ public class HsetDUnitTest {
     Consumer<Integer> hsetJedis1Consumer = makeHSetConsumer(testMap1, testMap1Fields, key, jedis);
     Consumer<Integer> hsetJedis2Consumer = makeHSetConsumer(testMap2, testMap2Fields, key, jedis);
 
-
     new ConcurrentLoopingThreads(HASH_SIZE, hsetJedis1Consumer, hsetJedis2Consumer).run();
 
     Map<String, String> results = jedis.hgetAll(key);
 
     assertThat(results.keySet().toArray()).containsExactlyInAnyOrder(wholeMap.keySet().toArray());
     assertThat(results.values().toArray()).containsExactlyInAnyOrder(wholeMap.values().toArray());
+
   }
 
+
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenMultipleClients_addingSameDataToSameHashConcurrently() {
+  public void shouldDistributeDataAmongCluster_givenMultipleThreadsAddingSameDataToSameHashConcurrently() {
 
     String key = "key";
 
@@ -148,10 +151,12 @@ public class HsetDUnitTest {
 
     assertThat(results.keySet().toArray()).containsExactlyInAnyOrder(testMap.keySet().toArray());
     assertThat(results.values().toArray()).containsExactlyInAnyOrder(testMap.values().toArray());
+
   }
 
+
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenAddingToDifferentHashesConcurrently() {
+  public void shouldDistributeDataAmongCluster_givenMultipleThreadsAddingToDifferentHashesConcurrently() {
 
     String key1 = "key1";
     String key2 = "key2";
@@ -174,10 +179,12 @@ public class HsetDUnitTest {
     assertThat(results1.values().toArray()).containsExactlyInAnyOrder(testMap1.values().toArray());
     assertThat(results2.values().toArray()).containsExactlyInAnyOrder(testMap2.values().toArray());
     assertThat(results2.values().toArray()).containsExactlyInAnyOrder(testMap2.values().toArray());
+
   }
 
+
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenAddingSameDataToSameSetConcurrently() {
+  public void shouldDistributeDataAmongCluster_givenMultipleThreadsAddingSameDataToSameSetConcurrently() {
 
     String key = "key";
 
@@ -200,8 +207,9 @@ public class HsetDUnitTest {
 
   }
 
+
   @Test
-  public void shouldDistributeDataAmongMultipleServers_givenMultipleClientsOnSameServer_addingDifferentDataToSameSetConcurrently() {
+  public void shouldDistributeDataAmongCluster_givenMultipleThreadsAddingDifferentDataToSameSetConcurrently() {
 
     String key = "key1";
 
