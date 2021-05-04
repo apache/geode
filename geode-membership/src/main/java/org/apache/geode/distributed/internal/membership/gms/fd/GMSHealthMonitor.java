@@ -24,6 +24,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -71,6 +72,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequ
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.lang.utils.JavaWorkarounds;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -877,14 +879,32 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   @Override
   public void started() throws MemberStartupException {
     setLocalAddress(services.getMessenger().getMemberID());
+    createServerSocket();
+    startTcpServer(serverSocket);
+    startHeartbeatThread();
+  }
+
+  private void createServerSocket() throws MemberStartupException {
     try {
-      serverSocket = createServerSocket(localAddress.getInetAddress(),
-          services.getConfig().getMembershipPortRange());
+      InetAddress address = localAddress.getInetAddress();
+      String bindAddrStr = services.getConfig().getBindAddress();
+      if (bindAddrStr != null && !bindAddrStr.isEmpty()) {
+        try {
+          if (LocalHostUtil.isWildcardAddress(bindAddrStr)) {
+            address = LocalHostUtil.getAnyLocalAddress();
+          } else {
+            address = InetAddress.getByName(bindAddrStr);
+          }
+        } catch (UnknownHostException e) {
+          logger.error(
+              "Error when configuring {} as bind address in membership, default address will be used. Exception: {}",
+              services.getConfig().getBindAddress(), e.getMessage());
+        }
+      }
+      serverSocket = createServerSocket(address, services.getConfig().getMembershipPortRange());
     } catch (IOException e) {
       throw new MemberStartupException("Problem creating HealthMonitor socket", e);
     }
-    startTcpServer(serverSocket);
-    startHeartbeatThread();
   }
 
   @Override

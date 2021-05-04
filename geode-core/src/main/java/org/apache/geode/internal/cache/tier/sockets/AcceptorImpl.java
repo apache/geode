@@ -1748,6 +1748,9 @@ public class AcceptorImpl implements Acceptor, Runnable {
     if (bindHostName == null || bindHostName.isEmpty()) {
       return null; // pick default local address
     }
+    if (bindHostName.equals("*")) {
+      return InetAddress.getByName(LocalHostUtil.getWildcardIp());
+    }
     return InetAddress.getByName(bindHostName);
   }
 

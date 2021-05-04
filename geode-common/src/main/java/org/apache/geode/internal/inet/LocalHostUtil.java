@@ -242,6 +242,17 @@ public class LocalHostUtil {
     return new InetSocketAddress(0).getAddress();
   }
 
+  public static boolean isWildcardAddress(String address) {
+    return "0.0.0.0".equals(address) || "::".equals(address) || "*".equals(address);
+  }
+
+  public static String getWildcardIp() {
+    if (LocalHostUtil.getAnyLocalAddress() instanceof Inet6Address) {
+      return "::";
+    }
+    return "0.0.0.0";
+  }
+
   /**
    * Returns true if host matches the LOCALHOST.
    */
@@ -272,6 +283,9 @@ public class LocalHostUtil {
         }
       }
     } else {
+      if (isWildcardAddress(host.toString())) {
+        return true;
+      }
       return isLocalHost((Object) toInetAddress(host.toString()));
     }
   }

@@ -281,7 +281,7 @@ start locator --name=value [--bind-address=value] [--force(=value)]
 | Name         | Description    | Default Value |
 |--------------|----------------|---------------|
 | \\-\\-name                                | Name to be used for this <%=vars.product_name%> locator service. If not specified, gfsh generates a random name. | |
-| \\-\\-bind-address                        | IP address on which the locator will be bound. | bind to all addresses |
+| \\-\\-bind-address                        | IP address on which the locator will be bound. The '*' character is accepted for wildcard addresses.<p>**Note:** When the locator is bound to all local addresses, the default for UDP membership-related traffic is to bind to the local host machine's address.| bind to all addresses, except for membership endpoints which are bound to the local host machine's address |
 | \\-\\-force                               | Whether to allow the PID file from a previous locator run to be overwritten. | false |
 | \\-\\-groups                              | Group(s) the locator will be a part of. | |
 | \\-\\-hostname-for-clients                | Host name or IP address that will be sent to clients so they can connect to this locator. | uses `bind-address` |
@@ -386,7 +386,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 |--------------|----------------|---------------|
 | \\-\\-name                            | Member name for this server. If not specified, gfsh generates a random name. | |
 | \\-\\-assign-buckets                  | Whether to assign buckets to the partitioned regions of the cache on server start. | false |
-| \\-\\-bind-address                    | The IP address on which the server will be bound. | binds to all local addresses |
+| \\-\\-bind-address                    | The IP address on which the server will be bound. The '*' character is accepted for wildcard addresses.<p>**Note:** When the server is bound to all local addresses, the default for UDP membership-related traffic is to bind to the local host machine's address. | binds to all local addresses, except for membership endpoints which are bound to the local host machine's address |
 | \\-\\-cache-xml-file                  | Specifies the name of the XML file or resource to initialize the cache with when it is created. | |
 | \\-\\-classpath                       | Application classes to be added to the server's CLASSPATH after the core jar file.<br/>See <a href="../../../getting_started/setup_classpath.html">Setting Up the CLASSPATH</a> for details. | |
 | \\-\\-include-system-classpath        | When true, include the System CLASSPATH on the Server's CLASSPATH, as the System CLASSPATH is not included by default. If specified without a value, the value is set to true. | false |

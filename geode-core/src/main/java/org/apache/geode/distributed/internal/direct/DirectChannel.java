@@ -683,14 +683,15 @@ public class DirectChannel {
   private InetAddress initAddress(DistributionConfig dc) {
 
     String bindAddress = dc.getBindAddress();
-
     try {
-      /*
-       * note: had to change the following to make sure the prop wasn't empty in addition to not
-       * null for admin.DistributedSystemFactory
-       */
       if (bindAddress != null && bindAddress.length() > 0) {
-        return InetAddress.getByName(bindAddress);
+        InetAddress address;
+        if (LocalHostUtil.isWildcardAddress(bindAddress)) {
+          address = LocalHostUtil.getAnyLocalAddress();
+        } else {
+          address = InetAddress.getByName(bindAddress);
+        }
+        return address;
 
       } else {
         return LocalHostUtil.getLocalHost();

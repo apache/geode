@@ -36,6 +36,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.util.IOUtils;
@@ -62,7 +63,7 @@ public class StartServerCommand extends OfflineGfshCommand {
           specifiedDefaultValue = "true",
           help = CliStrings.START_SERVER__ASSIGN_BUCKETS__HELP) final Boolean assignBuckets,
       @CliOption(key = CliStrings.START_SERVER__BIND_ADDRESS,
-          help = CliStrings.START_SERVER__BIND_ADDRESS__HELP) final String bindAddress,
+          help = CliStrings.START_SERVER__BIND_ADDRESS__HELP) String bindAddress,
       @CliOption(key = CliStrings.START_SERVER__CACHE_XML_FILE,
           optionContext = ConverterHint.FILE_PATH,
           help = CliStrings.START_SERVER__CACHE_XML_FILE__HELP) String cacheXmlPathname,
@@ -202,6 +203,10 @@ public class StartServerCommand extends OfflineGfshCommand {
     }
 
     String resolvedWorkingDirectory = resolveWorkingDirectory(workingDirectory, memberName);
+
+    if (bindAddress != null && bindAddress.equals("*")) {
+      bindAddress = LocalHostUtil.getWildcardIp();
+    }
 
     return doStartServer(memberName, assignBuckets, bindAddress, cacheXmlPathname, classpath,
         criticalHeapPercentage, criticalOffHeapPercentage, resolvedWorkingDirectory,
