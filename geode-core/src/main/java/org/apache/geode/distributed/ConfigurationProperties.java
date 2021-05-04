@@ -15,6 +15,7 @@
 
 package org.apache.geode.distributed;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 
 /**
@@ -1929,7 +1930,13 @@ public interface ConfigurationProperties {
    * all local addresses.
    * </p>
    * <U>Default</U>: ""
+   *
+   * <p>
+   * Experimental: Geode API compatible with Redis is subject to change in future releases
+   * <p/>
    */
+
+  @Experimental
   String REDIS_BIND_ADDRESS = "compatible-with-redis-bind-address";
   /**
    * The static String definition of the <i>"compatible-with-redis-enabled"</i> property <a
@@ -1943,7 +1950,12 @@ public interface ConfigurationProperties {
    * When the default value of false, the Geode APIs compatible with Redis are not available.
    * Set to true to enable the Geode APIs compatible with Redis.
    * </p>
+   *
+   * <p>
+   * Experimental: Geode API compatible with Redis is subject to change in future releases
+   * <p/>
    */
+  @Experimental
   String REDIS_ENABLED = "compatible-with-redis-enabled";
   /**
    * The static String definition of the <i>"compatible-with-redis-password"</i> property <a
@@ -1953,7 +1965,12 @@ public interface ConfigurationProperties {
    * authenticate.
    * </p>
    * <U>Default</U>: no password set
+   *
+   * <p>
+   * Experimental: Geode API compatible with Redis is subject to change in future releases
+   * <p/>
    */
+  @Experimental
   String REDIS_PASSWORD = "compatible-with-redis-password";
   /**
    * The static String definition of the <i>"compatible-with-redis-port"</i> property <a
@@ -1965,7 +1982,12 @@ public interface ConfigurationProperties {
    * <U>Default</U>: 6379
    * </p>
    * <U>Allowed values</U>: 0..65535
+   *
+   * <p>
+   * Experimental: Geode API compatible with Redis is subject to change in future releases
+   * <p/>
    */
+  @Experimental
   String REDIS_PORT = "compatible-with-redis-port";
   /**
    * The static String definition of the <i>"lock-memory"</i> property <a name="lock-memory"/a>
