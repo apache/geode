@@ -85,7 +85,7 @@
         "Move-Item \"C:\\Program Files\\BellSoft\\LibericaJDK-11*\" c:\\java11",
         "choco install -y liberica8jdk",
         "Move-Item \"C:\\Program Files\\BellSoft\\LibericaJDK-8*\" c:\\java8",
-        "choco install -y openssh --version 7.7.2.1 /SSHServerFeature",
+        "choco install openssh -params '/SSHServerFeature' -confirm",
         "refreshenv",
         "$OldPath = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH).Path",
         "$NewPath = $OldPath + ';' + 'c:\\Program Files\\Git\\bin' + ';' + 'c:\\tools\\cygwin\\bin'",
