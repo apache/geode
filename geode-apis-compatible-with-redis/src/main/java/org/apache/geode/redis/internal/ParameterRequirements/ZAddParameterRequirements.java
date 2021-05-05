@@ -23,12 +23,15 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ZAddParameterRequirements implements ParameterRequirements {
+  private static final Logger logger = LogService.getLogger();
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext context) {
     int numberOfArguments = command.getProcessedCommand().size();
@@ -55,10 +58,15 @@ public class ZAddParameterRequirements implements ParameterRequirements {
 
     while (commandIterator.hasNext()) {
       ByteArrayWrapper subcommand = commandIterator.next();
-      if (StringUtils.isNumeric(subcommand.toString())) {
-        break;
-      }
       String subCommandString = subcommand.toString().toLowerCase();
+      try {
+        double dubby = Double.valueOf(subCommandString);
+        System.out.println("Val is: " + dubby);
+        break;
+      } catch (NumberFormatException nfe) {
+        System.out.println("Got exception on: " + subCommandString);
+        nfe.printStackTrace();
+      }
       switch (subCommandString) {
         case "ch":
           break;

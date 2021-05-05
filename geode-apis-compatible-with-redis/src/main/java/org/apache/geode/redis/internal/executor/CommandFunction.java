@@ -33,6 +33,7 @@ import org.apache.geode.redis.internal.data.RedisHashCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.data.RedisKeyCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisSetCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.data.RedisSortedSetCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisStringCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.statistics.RedisStats;
@@ -46,6 +47,7 @@ public class CommandFunction extends SingleResultRedisFunction {
   private final transient RedisHashCommandsFunctionExecutor hashCommands;
   private final transient RedisSetCommandsFunctionExecutor setCommands;
   private final transient RedisStringCommandsFunctionExecutor stringCommands;
+  private final transient RedisSortedSetCommandsFunctionExecutor sortedSetCommands;
 
   public static void register(Region<RedisKey, RedisData> dataRegion,
       StripedExecutor stripedExecutor,
@@ -75,6 +77,7 @@ public class CommandFunction extends SingleResultRedisFunction {
     hashCommands = new RedisHashCommandsFunctionExecutor(helper);
     setCommands = new RedisSetCommandsFunctionExecutor(helper);
     stringCommands = new RedisStringCommandsFunctionExecutor(helper);
+    sortedSetCommands = new RedisSortedSetCommandsFunctionExecutor(helper);
   }
 
   @Override
@@ -271,6 +274,10 @@ public class CommandFunction extends SingleResultRedisFunction {
         byte[] field = (byte[]) args[1];
         BigDecimal increment = (BigDecimal) args[2];
         return hashCommands.hincrbyfloat(key, field, increment);
+      }
+      case ZADD: {
+        List<byte[]> scoresAndMembersToAdd = (List<byte[]>) args[1];
+        return sortedSetCommands.zadd(key, scoresAndMembersToAdd);
       }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);

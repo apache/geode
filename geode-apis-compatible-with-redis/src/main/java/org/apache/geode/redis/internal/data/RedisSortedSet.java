@@ -118,19 +118,22 @@ public class RedisSortedSet extends AbstractRedisData {
   long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd) {
     int membersAdded = 0;
     long membersChanged = 0; // TODO: really implement changed
-
+    System.out.println("RedisSortedSet zadd starting.");
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
     while (iterator.hasNext()) {
       byte[] member = iterator.next();
       byte[] score = iterator.next();
+      System.out.println("member:" + member.toString() + " score: " + score);
 
       switch (membersAdd(member, score, false)) {
         case ADDED:
+          System.out.println("added!");
           membersAdded++;
           makeAddsDeltaInfo(deltaInfo, member, score);
           break;
         case CHANGED:
+          System.out.println("changed!");
           membersChanged++;
           makeAddsDeltaInfo(deltaInfo, member, score);
           break;
@@ -139,6 +142,7 @@ public class RedisSortedSet extends AbstractRedisData {
       }
     }
     if (deltaInfo != null) {
+      System.out.println("deltaInfo not null, storing changes...");
       storeChanges(region, key, deltaInfo);
     }
     return membersAdded;

@@ -52,11 +52,12 @@ public class ZAddExecutor extends SortedSetExecutor {
       }
       if (adding) {
         byte[] score = next.toBytes();
-        if (StringUtils.isNumeric(score.toString())) {
-          scoresAndMembersToAdd.add(score);
-        } else {
-          return RedisResponse.error(ERROR_NOT_A_VALID_FLOAT);
-        }
+        scoresAndMembersToAdd.add(score);
+//        if (StringUtils.isNumeric(score.toString())) {
+//          scoresAndMembersToAdd.add(score);
+//        } else {
+//          return RedisResponse.error(ERROR_NOT_A_VALID_FLOAT);
+//        }
         // member can be any old thing
         if (commandIterator.hasNext()) {
           ByteArrayWrapper member = commandIterator.next();
@@ -66,9 +67,13 @@ public class ZAddExecutor extends SortedSetExecutor {
         }
       }
     }
-
-    long entriesAdded = redisSortedSetCommands.zadd(command.getKey(), scoresAndMembersToAdd);
-
+    System.out.println("Executor about to call rssc.zadd...");
+    long entriesAdded = 0;
+    try {
+      entriesAdded = redisSortedSetCommands.zadd(command.getKey(), scoresAndMembersToAdd);
+    } catch (Exception e) {
+      System.out.println(e.getCause() + " : " + e.getMessage());
+    }
     return RedisResponse.integer(entriesAdded);
   }
 }

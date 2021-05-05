@@ -18,6 +18,7 @@ import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLea
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_GT_LT_NX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import org.junit.After;
 import org.junit.Before;
@@ -62,5 +63,11 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
   public void zaddErrors_givenBothGTAndLTOptions() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "GT", "LT"))
         .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_GT_LT_NX);
+  }
+
+  @Test
+  public void zaddDoesNotError_givenCorrectArguments() {
+    long added = jedis.zadd("ss_key", 2, "member01");
+    assertThat(added).isEqualTo(1L);
   }
 }
