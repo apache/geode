@@ -173,6 +173,13 @@ gradle.taskGraph.whenReady({ graph ->
         jvmArgs += ["--add-opens", "java.xml/jdk.xml.internal=ALL-UNNAMED"]
         jvmArgs += ["--add-opens", "java.base/jdk.internal.module=ALL-UNNAMED"]
         jvmArgs += ["--add-opens", "java.base/java.lang.module=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.ref=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.reflect=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.loader=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.misc=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.util.jar=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "jdk.management/com.sun.management.internal=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.platform.cgroupv1=ALL-UNNAMED"]
       }
       if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
         executable = "${testJVM}/bin/java"
