@@ -50,7 +50,7 @@ public final class RedisProxy {
 
   public RedisProxy(int targetPort) {
     bossGroup = new NioEventLoopGroup(1);
-    workerGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("RedisProxy"));
+    workerGroup = new NioEventLoopGroup(2, new DefaultThreadFactory("RedisProxy"));
 
     ChannelFuture future = new ServerBootstrap().group(bossGroup, workerGroup)
         .channel(NioServerSocketChannel.class)
