@@ -55,14 +55,14 @@ public class StartMemberUtilsTest {
     when(userSpecifiedDir.exists()).thenReturn(false);
     when(userSpecifiedDir.mkdirs()).thenReturn(false);
     assertThatThrownBy(
-        () -> StartMemberUtils.resolveWorkingDir(userSpecifiedDir, new File("server1")))
+        () -> StartMemberUtils.resolveWorkingDirectory(userSpecifiedDir))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("Could not create directory");
   }
 
   @Test
   public void workingDirDefaultsToMemberName() {
-    String workingDir = StartMemberUtils.resolveWorkingDir(null, new File("server1"));
+    String workingDir = StartMemberUtils.resolveWorkingDirectory(null, "server1");
     assertThat(new File(workingDir)).exists();
     assertThat(workingDir).endsWith("server1");
   }
@@ -73,7 +73,7 @@ public class StartMemberUtilsTest {
     FileUtils.deleteQuietly(workingDir);
     String workingDirString = workingDir.getAbsolutePath();
     String resolvedWorkingDir =
-        StartMemberUtils.resolveWorkingDir(new File(workingDirString), new File("server1"));
+        StartMemberUtils.resolveWorkingDirectory(workingDirString, "server1");
     assertThat(new File(resolvedWorkingDir)).exists();
     assertThat(workingDirString).endsWith("foo");
   }
@@ -83,7 +83,7 @@ public class StartMemberUtilsTest {
     Path relativePath = Paths.get("some").resolve("relative").resolve("path");
     assertThat(relativePath.isAbsolute()).isFalse();
     String resolvedWorkingDir =
-        StartMemberUtils.resolveWorkingDir(new File(relativePath.toString()), new File("server1"));
+        StartMemberUtils.resolveWorkingDirectory(relativePath.toString(), "server1");
     assertThat(resolvedWorkingDir).isEqualTo(relativePath.toAbsolutePath().toString());
   }
 
@@ -191,5 +191,50 @@ public class StartMemberUtilsTest {
     fileWriter.write("\n");
     fileWriter.flush();
     IOUtils.close(fileWriter);
+  }
+
+  @Test
+  public void whenResolveWorkingDirectoryIsCalledWithTwoNonEmptyStrings_thenTheUserSpecifiedDirectoryIsReturned()
+      throws Exception {
+    String userSpecifiedDir = "locator1Directory";
+    String memberNameDir = "member1";
+    assertThat(StartMemberUtils.resolveWorkingDirectory(userSpecifiedDir, memberNameDir))
+        .isEqualTo(new File(userSpecifiedDir).getAbsolutePath());
+  }
+
+  @Test
+  public void whenResolveWorkingDirectoryIsCalledWithNullUserSpecifiedDir_thenTheMemberNameDirectoryIsReturned()
+      throws Exception {
+    String memberNameDir = "member1";
+    assertThat(StartMemberUtils.resolveWorkingDirectory(null, memberNameDir))
+        .isEqualTo(new File(memberNameDir).getAbsolutePath());
+  }
+
+  @Test
+  public void whenResolveWorkingDirectoryIsCalledWithEmptyUserSpecifiedDir_thenTheMemberNameDirectoryIsReturned()
+      throws Exception {
+    String userSpecifiedDir = "";
+    String memberNameDir = "member1";
+    assertThat(StartMemberUtils.resolveWorkingDirectory(userSpecifiedDir, memberNameDir))
+        .isEqualTo(new File(memberNameDir).getAbsolutePath());
+  }
+
+  @Test
+  public void whenResolveWorkingDirectoryIsCalledWithUserSpecifiedDirAsDot_thenTheUserSpecifiedDirectoryIsReturned()
+      throws Exception {
+    String userSpecifiedDir = ".";
+    String memberNameDir = "member1";
+    assertThat(StartMemberUtils.resolveWorkingDirectory(userSpecifiedDir, memberNameDir))
+        .isEqualTo(
+            StartMemberUtils.resolveWorkingDirectory(new File(userSpecifiedDir)));
+  }
+
+  @Test
+  public void whenResolveWorkingDirectoryIsCalledWithUserSpecifiedDirAsAbsolutePath_thenTheUserSpecifiedDirectoryIsReturned()
+      throws Exception {
+    String userSpecifiedDir = new File(System.getProperty("user.dir")).getAbsolutePath();
+    String memberNameDir = "member1";
+    assertThat(StartMemberUtils.resolveWorkingDirectory(userSpecifiedDir, memberNameDir))
+        .isEqualTo(new File(userSpecifiedDir).getAbsolutePath());
   }
 }
