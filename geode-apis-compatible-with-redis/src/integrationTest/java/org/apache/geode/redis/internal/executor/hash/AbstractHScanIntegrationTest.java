@@ -479,6 +479,9 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
           int fieldSuffix = i % SIZE_OF_INITIAL_HASH_DATA;
           jedis.hset(HASH_KEY, BASE_FIELD + fieldSuffix, "new_value_" + i);
         }).run();
+
+    jedis1.close();
+    jedis2.close();
   }
 
   @Test
