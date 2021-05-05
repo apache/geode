@@ -382,6 +382,7 @@ public interface ConfigurationProperties {
    * <U>Default</U>: "false"
    */
   String DISABLE_AUTO_RECONNECT = "disable-auto-reconnect";
+  String QUORUM_ABSOLUTE_LOCATOR_COUNT = "quorum-absolute-locator-count";
   /**
    * The static String definition of the <i>"disable-tcp"</i> property <a name="disable-tcp"/a>
    * <p>

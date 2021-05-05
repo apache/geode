@@ -150,7 +150,7 @@ public class Services<ID extends MemberIdentifier> {
     this.stats = stats;
     this.config = membershipConfig;
     this.manager = membershipManager;
-    this.joinLeave = new GMSJoinLeave<>(locatorClient);
+    this.joinLeave = new GMSJoinLeave<>(locatorClient, config.getQuorumAbsoluteLocatorCount());
     this.healthMon = new GMSHealthMonitor<>(socketCreator);
     this.messenger = new JGroupsMessenger<>();
     this.auth = authenticator;

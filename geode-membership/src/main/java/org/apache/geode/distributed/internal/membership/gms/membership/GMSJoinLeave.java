@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.membership;
 
+import static org.apache.geode.distributed.internal.membership.api.MemberIdentifier.LOCATOR_DM_TYPE;
 import static org.apache.geode.distributed.internal.membership.api.MembershipConfig.MEMBER_REQUEST_COLLECTION_INTERVAL;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_REQUEST;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimerTask;
@@ -248,17 +251,19 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   private volatile boolean playingDead;
 
   /**
-   * the view where quorum was most recently lost
-   */
-  GMSMembershipView<ID> quorumLostView;
-
-  /**
    * for messaging locator
    */
   private final TcpClient locatorClient;
 
-  public GMSJoinLeave(final TcpClient locatorClient) {
+  private final Quorum<ID> quorum;
+
+  public GMSJoinLeave(final TcpClient locatorClient, final int quorumAbsoluteLocatorCount) {
     this.locatorClient = locatorClient;
+    if (quorumAbsoluteLocatorCount > 0) {
+      quorum = new AbsoluteQuorum<>(quorumAbsoluteLocatorCount);
+    } else {
+      quorum = new DifferentialQuorum<>();
+    }
   }
 
   static class SearchState<ID extends MemberIdentifier> {
@@ -1238,30 +1243,45 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         }
       }
     } while (!anyResponses && System.currentTimeMillis() < giveUpTime);
-    if (possibleCoordinators.isEmpty()) {
-      return false;
+
+    final Optional<ID> coordinator = chooseCoordinator(coordinatorsWithView, possibleCoordinators,
+        services.getMemberFactory().getComparator());
+
+    if (coordinator.isPresent()) {
+      state.possibleCoordinator = coordinator.get();
+      logger.info("findCoordinator chose {} out of these possible coordinators: {}",
+          state.possibleCoordinator, possibleCoordinators);
     }
 
-    if (coordinatorsWithView.size() > 0) {
-      possibleCoordinators = coordinatorsWithView;// lets check current coordinators in view only
-    }
+    return coordinator.isPresent();
+  }
 
-    Iterator<ID> it = possibleCoordinators.iterator();
-    if (possibleCoordinators.size() == 1) {
-      state.possibleCoordinator = it.next();
+  private Optional<ID> chooseCoordinator(
+      final Set<ID> possibleCoordinatorsWithView,
+      final Set<ID> allPossibleCoordinators,
+      final Comparator<ID> comparator) {
+
+    final Set<ID> coordinators;
+    if (possibleCoordinatorsWithView.size() > 0) {
+      /*
+       * It may seem that we have a problem here if coordinators have a different view (id).
+       * But at this point in the code we rely on the condition that split-brains are impossible.
+       * So all the coordinators have the same view (id). Also, there will be only one!
+       */
+      coordinators = possibleCoordinatorsWithView;// lets check current coordinators in view only
+    } else if (quorum.isInitialQuorum(allPossibleCoordinators)) {
+      /*
+       * In this branch no coordinator candidate had a view. This means that all the candidates
+       * are locators starting essentially simultaneously. There is a competition for which
+       * member (including the local one) will become coordinator. The ordering operation
+       * below (min()) ensures that the choice of winner, by each process, is deterministic.
+       */
+      coordinators = allPossibleCoordinators;
     } else {
-      ID oldest = it.next();
-      while (it.hasNext()) {
-        ID candidate = it.next();
-        if (services.getMemberFactory().getComparator().compare(oldest, candidate) > 0) {
-          oldest = candidate;
-        }
-      }
-      state.possibleCoordinator = oldest;
+      coordinators = Collections.emptySet();
     }
-    logger.info("findCoordinator chose {} out of these possible coordinators: {}",
-        state.possibleCoordinator, possibleCoordinators);
-    return true;
+
+    return coordinators.stream().min(comparator);
   }
 
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "WA_NOT_IN_LOOP")
@@ -1519,7 +1539,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
 
       newView.correctWrongVersionIn(localAddress);
 
-      if (isJoined && isNetworkPartition(newView, true)) {
+      if (isJoined && isLostQuorum(newView)) {
         if (quorumRequired) {
           Set<ID> crashes = newView.getActualCrashedMembers(currentView);
           forceDisconnect(String.format(
@@ -1642,30 +1662,25 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     return this.preparedView;
   }
 
-  /**
-   * check to see if the new view shows a drop of 51% or more
-   */
-  private boolean isNetworkPartition(GMSMembershipView<ID> newView, boolean logWeights) {
+  private boolean isLostQuorum(GMSMembershipView<ID> newView) {
     if (currentView == null) {
       return false;
     }
-    int oldWeight = currentView.memberWeight();
-    int failedWeight = newView.getCrashedMemberWeight(currentView);
-    if (failedWeight > 0 && logWeights) {
-      if (logger.isInfoEnabled() && newView.getCreator().equals(localAddress)) { // view-creator
-                                                                                 // logs this
-        newView.logCrashedMemberWeights(currentView, logger);
-      }
-      int failurePoint = (int) (Math.round(51.0 * oldWeight) / 100.0);
-      if (failedWeight > failurePoint && quorumLostView != newView) {
-        quorumLostView = newView;
-        logger.warn("total weight lost in this view change is {} of {}.  Quorum has been lost!",
-            failedWeight, oldWeight);
-        services.getManager().quorumLost(newView.getActualCrashedMembers(currentView), currentView);
-        return true;
-      }
+
+    final Set<ID> crashedMembers = newView.getActualCrashedMembers(currentView);
+
+    if (logger.isInfoEnabled() && newView.getCreator().equals(localAddress)) { // view-creator
+      // logs this
+      newView.logCrashedMemberWeights(currentView, logger);
     }
-    return false;
+
+    final boolean quorumLost = quorum.isLostQuorum(currentView, newView);
+    if (quorumLost) {
+      logger.warn(quorum.quorumLostMessage(currentView, newView));
+      services.getManager()
+          .quorumLost(crashedMembers, currentView);
+    }
+    return quorumLost;
   }
 
   private void stopCoordinatorServices() {
@@ -1720,7 +1735,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       boolean preferred = false;
       if (services.getLocator() != null || services.getConfig().getHasLocator()
           || !services.getConfig().getStartLocator().isEmpty()
-          || localAddress.getVmKind() == MemberIdentifier.LOCATOR_DM_TYPE) {
+          || localAddress.getVmKind() == LOCATOR_DM_TYPE) {
         logger
             .info("This member is hosting a locator will be preferred as a membership coordinator");
         preferred = true;
@@ -2579,7 +2594,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
           return;
         }
 
-        if (quorumRequired && isNetworkPartition(newView, true)) {
+        if (quorumRequired && isLostQuorum(newView)) {
           sendNetworkPartitionMessage(newView);
           Thread.sleep(BROADCAST_MESSAGE_SLEEP_TIME);
 
@@ -2628,9 +2643,9 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             lastConflictingView = conflictingView;
             // if I am not a locator and the conflicting view is from a locator I should
             // let it take control and stop sending membership views
-            if (localAddress.getVmKind() != MemberIdentifier.LOCATOR_DM_TYPE
+            if (localAddress.getVmKind() != LOCATOR_DM_TYPE
                 && conflictingView.getCreator()
-                    .getVmKind() == MemberIdentifier.LOCATOR_DM_TYPE) {
+                    .getVmKind() == LOCATOR_DM_TYPE) {
               logger.info("View preparation interrupted - a locator is taking over as "
                   + "membership coordinator in this view: {}", conflictingView);
               abandonedViews++;

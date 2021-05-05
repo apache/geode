@@ -111,6 +111,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_POR
 import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_PROTOCOL;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.apache.geode.distributed.ConfigurationProperties.QUORUM_ABSOLUTE_LOCATOR_COUNT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PASSWORD;
@@ -4085,6 +4086,12 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   @ConfigAttributeGetter(name = DISABLE_AUTO_RECONNECT)
   boolean getDisableAutoReconnect();
 
+  int DEFAULT_QUORUM_ABSOLUTE_LOCATOR_COUNT =
+      MembershipConfig.DEFAULT_QUORUM_ABSOLUTE_LOCATOR_COUNT;
+
+  @ConfigAttributeGetter(name = QUORUM_ABSOLUTE_LOCATOR_COUNT)
+  int getQuorumAbsoluteLocatorCount();
+
   /**
    * Sets the value of {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT}
    *
@@ -4092,6 +4099,9 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    */
   @ConfigAttributeSetter(name = DISABLE_AUTO_RECONNECT)
   void setDisableAutoReconnect(boolean value);
+
+  @ConfigAttributeSetter(name = QUORUM_ABSOLUTE_LOCATOR_COUNT)
+  void setQuorumAbsoluteLocatorCount(int quorumAbsoluteLocatorCount);
 
   /**
    * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}

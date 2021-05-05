@@ -181,9 +181,9 @@ public class GMSJoinLeaveJUnitTest {
     locatorClient = mock(TcpClient.class);
 
     if (useTestGMSJoinLeave) {
-      gmsJoinLeave = new GMSJoinLeaveTest(locatorClient);
+      gmsJoinLeave = new GMSJoinLeaveTest(locatorClient, 0);
     } else {
-      gmsJoinLeave = new GMSJoinLeave(locatorClient);
+      gmsJoinLeave = new GMSJoinLeave(locatorClient, 0);
     }
     gmsJoinLeave.init(services);
     gmsJoinLeave.start();
@@ -1514,7 +1514,7 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testPauseIfThereIsNoCoordinator() throws InterruptedException {
     locatorClient = mock(TcpClient.class);
-    gmsJoinLeave = new GMSJoinLeave(locatorClient);
+    gmsJoinLeave = new GMSJoinLeave(locatorClient, 0);
     assertThat(gmsJoinLeave.pauseIfThereIsNoCoordinator(-1, GMSJoinLeave.JOIN_RETRY_SLEEP))
         .isFalse();
     assertThat(gmsJoinLeave.pauseIfThereIsNoCoordinator(1, GMSJoinLeave.JOIN_RETRY_SLEEP)).isTrue();
@@ -1565,8 +1565,8 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   class GMSJoinLeaveTest extends GMSJoinLeave {
-    public GMSJoinLeaveTest(final TcpClient locatorClient) {
-      super(locatorClient);
+    public GMSJoinLeaveTest(final TcpClient locatorClient, final int quorumAbsoluteLocatorCount) {
+      super(locatorClient, quorumAbsoluteLocatorCount);
     }
 
     @Override
@@ -1650,7 +1650,7 @@ public class GMSJoinLeaveJUnitTest {
     when(membershipConfig.getMcastAddress()).thenReturn("scooby.dooby.doo");
     when(services.getConfig()).thenReturn(membershipConfig);
 
-    GMSJoinLeave joinLeave = new GMSJoinLeave(null);
+    GMSJoinLeave joinLeave = new GMSJoinLeave(null, 0);
     try {
       joinLeave.init(services);
       throw new Error(

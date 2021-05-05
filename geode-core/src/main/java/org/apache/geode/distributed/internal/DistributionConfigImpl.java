@@ -394,6 +394,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    */
   private boolean disableAutoReconnect = DEFAULT_DISABLE_AUTO_RECONNECT;
 
+  private int quorumAbsoluteLocatorCount = DEFAULT_QUORUM_ABSOLUTE_LOCATOR_COUNT;
+
   /**
    * The security log file
    */
@@ -744,6 +746,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
     enableNetworkPartitionDetection = other.getEnableNetworkPartitionDetection();
     disableAutoReconnect = other.getDisableAutoReconnect();
+
+    quorumAbsoluteLocatorCount = other.getQuorumAbsoluteLocatorCount();
 
     securityClientAuthInit = other.getSecurityClientAuthInit();
     securityClientAuthenticator = other.getSecurityClientAuthenticator();
@@ -2458,8 +2462,18 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
+  public int getQuorumAbsoluteLocatorCount() {
+    return quorumAbsoluteLocatorCount;
+  }
+
+  @Override
   public void setDisableAutoReconnect(boolean value) {
     disableAutoReconnect = value;
+  }
+
+  @Override
+  public void setQuorumAbsoluteLocatorCount(final int quorumAbsoluteLocatorCount) {
+    this.quorumAbsoluteLocatorCount = quorumAbsoluteLocatorCount;
   }
 
   @Override
@@ -3243,6 +3257,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(securityLogLevel, that.securityLogLevel)
         .append(enableNetworkPartitionDetection, that.enableNetworkPartitionDetection)
         .append(disableAutoReconnect, that.disableAutoReconnect)
+        .append(quorumAbsoluteLocatorCount, that.quorumAbsoluteLocatorCount)
         .append(securityPeerMembershipTimeout, that.securityPeerMembershipTimeout)
         .append(removeUnresponsiveClient, that.removeUnresponsiveClient)
         .append(deltaPropagation, that.deltaPropagation)
@@ -3394,6 +3409,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(securityPeerAuthenticator).append(securityClientAccessor)
         .append(securityClientAccessorPP).append(securityLogLevel)
         .append(enableNetworkPartitionDetection).append(disableAutoReconnect)
+        .append(quorumAbsoluteLocatorCount)
         .append(securityLogFile).append(securityPeerMembershipTimeout).append(security)
         .append(userDefinedProps).append(removeUnresponsiveClient).append(deltaPropagation)
         .append(props).append(distributedSystemId).append(remoteLocators).append(enforceUniqueHost)
