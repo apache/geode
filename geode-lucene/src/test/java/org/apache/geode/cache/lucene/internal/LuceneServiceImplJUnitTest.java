@@ -172,8 +172,8 @@ public class LuceneServiceImplJUnitTest {
     }
 
     @Override
-    public void validateAllMembersAreTheSameVersion(PartitionedRegion region) {
+    protected void validateAllMembersAreTheSameVersion(PartitionedRegion region) {}
 
-    }
   }
+
 }

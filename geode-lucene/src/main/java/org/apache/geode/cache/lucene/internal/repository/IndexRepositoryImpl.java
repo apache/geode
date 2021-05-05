@@ -147,7 +147,7 @@ public class IndexRepositoryImpl implements IndexRepository {
     long start = stats.startRepositoryQuery();
     long totalHits = 0;
     IndexSearcher searcher = searcherManager.acquire();
-    searcher.setSimilarity(new Similarity());
+    searcher.setSimilarity(new LuceneSimilarity());
     try {
       TopDocs docs = searcher.search(query, limit);
       totalHits = docs.totalHits;
@@ -231,7 +231,7 @@ public class IndexRepositoryImpl implements IndexRepository {
     }
   }
 
-  private static class Similarity extends TFIDFSimilarity {
+  private static class LuceneSimilarity extends TFIDFSimilarity {
     @Override
     public float tf(float freq) {
       return (float) Math.sqrt(freq);

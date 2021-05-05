@@ -28,12 +28,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 
-public class LuceneQueryWithDifferentVersions
+public class RollingUpgradeQueryThrowsExceptionWithDifferentVersions
     extends LuceneSearchWithRollingUpgradeDUnit {
 
   // 2 locator, 2 servers
   @Test
-  public void luceneQueryCannotBeExecuted()
+  public void luceneQueryCannotBeExecutedWithDifferentVersions()
       throws Exception {
     final Host host = Host.getHost(0);
     VM locator1 = host.getVM(oldVersion, 0);
@@ -49,7 +49,7 @@ public class LuceneQueryWithDifferentVersions
     locator1.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts));
     locator2.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts));
 
-    String hostName = NetworkUtils.getServerHostName(host);
+    String hostName = NetworkUtils.getServerHostName();
     String locatorString = getLocatorString(locatorPorts);
     try {
       locator1.invoke(
@@ -61,14 +61,14 @@ public class LuceneQueryWithDifferentVersions
       // Locators before 1.4 handled configuration asynchronously.
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       locator1.invoke(
-          () -> await().untilAsserted(() -> await().untilAsserted(() -> {
+          () -> await().untilAsserted(() -> {
             assertThat(InternalLocator.getLocator().isSharedConfigurationRunning()).isTrue();
-          })));
+          }));
       locator2.invoke(
           () -> await()
-              .untilAsserted(() -> await().untilAsserted(() -> {
+              .untilAsserted(() -> {
                 assertThat(InternalLocator.getLocator().isSharedConfigurationRunning()).isTrue();
-              })));
+              }));
 
       server1.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
       server2.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
@@ -86,10 +86,9 @@ public class LuceneQueryWithDifferentVersions
       server1 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server1, regionType, null,
           shortcut.name(), regionName, locatorPorts, reindex);
 
-      Throwable thrown = catchThrowable(() -> {
-        putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, 20, 15,
-            25, server2);
-      });
+      Throwable thrown = catchThrowable(
+          () -> putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, 20, 15,
+              25, server2));
 
       assertThat(thrown.getCause()).isInstanceOf(AssertionError.class);
 

@@ -1116,6 +1116,11 @@ public class CacheCreation implements InternalCache {
 
   }
 
+  @Override
+  public boolean hasMemberOlderThan(KnownVersion version) {
+    return false;
+  }
+
   public QueryConfigurationServiceCreation getQueryConfigurationServiceCreation() {
     return queryConfigurationServiceCreation;
   }
@@ -1125,13 +1130,6 @@ public class CacheCreation implements InternalCache {
     this.queryConfigurationServiceCreation = queryConfigurationServiceCreation;
   }
 
-  @Override
-  public boolean hasMemberOlderThan(KnownVersion version) {
-    return getMembers().stream()
-        .map(InternalDistributedMember.class::cast)
-        .map(InternalDistributedMember::getVersion)
-        .anyMatch(v -> v.compareTo(version) < 0);
-  }
 
   @Override
   public JSONFormatter getJsonFormatter() {
