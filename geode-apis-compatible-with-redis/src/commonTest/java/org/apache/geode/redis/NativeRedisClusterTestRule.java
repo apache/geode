@@ -122,6 +122,7 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
         } finally {
           redisCluster.stop();
           proxies.forEach(RedisProxy::stop);
+          exposedPorts.clear();
         }
       }
     };
