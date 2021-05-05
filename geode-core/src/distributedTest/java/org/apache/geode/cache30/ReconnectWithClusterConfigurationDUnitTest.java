@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +40,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -50,6 +52,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipManagerHel
 import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -70,9 +73,11 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
 
   @Rule
   public DistributedRule distributedRule = DistributedRule.builder().withVMCount(NUM_VMS).build();
+  @Rule
+  public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
-  public void setup() {
+  public void setup() throws IOException {
     List<AvailablePort.Keeper> randomAvailableTCPPortKeepers =
         AvailablePortHelper.getRandomAvailableTCPPortKeepers(NUM_LOCATORS);
     for (int i = 0; i < NUM_LOCATORS; i++) {
@@ -82,6 +87,7 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
     final int[] locPorts = locatorPorts;
     Invoke.invokeInEveryVM("set locator ports", () -> locatorPorts = locPorts);
     for (int i = 0; i < NUM_LOCATORS; i++) {
+      final String workingDir = temporaryFolder.newFolder().getAbsolutePath();
       final int locatorNumber = i;
       randomAvailableTCPPortKeepers.get(locatorNumber).release();
       VM.getVM(i).invoke("start locator", () -> {

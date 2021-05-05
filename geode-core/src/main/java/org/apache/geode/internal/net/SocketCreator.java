@@ -62,7 +62,6 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509ExtendedKeyManager;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
