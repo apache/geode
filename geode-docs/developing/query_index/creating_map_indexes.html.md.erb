@@ -60,5 +60,5 @@ You can still query against Map or HashMap fields without querying against a map
 
 **Note:**
 Map indexes on all keys (when `*` is specified) are not used in queries where the map field is compared with `null` or when it is compared using `!=`, e.g. `p.positions['company1'] = null` or `p.positions['company1'] != '3'`.
-These types of queries will be executed without making use of the index which could make them slower.
+These types of queries will be executed without making use of the index, which could make them slower.
 
