@@ -14,10 +14,8 @@
  */
 package org.apache.geode.session.tests;
 
-import static java.lang.String.valueOf;
 import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER;
 import static org.apache.geode.session.tests.GenericAppServerInstall.GenericAppServerVersion.JETTY9;
-import static org.apache.geode.test.awaitility.GeodeAwaitility.TIMEOUT_SECONDS_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,9 +52,6 @@ public class Jetty9CachingClientServerTest extends GenericAppServerClientServerT
       ServerContainer container = manager.getContainer(0);
       return container.getState().isStarted();
     });
-
-    System.setProperty(TIMEOUT_SECONDS_PROPERTY, valueOf(600));
-
     String key = "value_testSessionExpiration";
     String localValue = "bogus";
     String remoteValue = "Foo";
