@@ -34,7 +34,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
@@ -54,13 +56,8 @@ public class RenameDUnitTest {
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   ExecutorService pool = Executors.newCachedThreadPool();
 
-  static Jedis jedis;
-  static Jedis jedis2;
-  static Jedis jedis3;
-  static Jedis jedis4;
-
+  static JedisCluster jedisCluster;
   static Properties locatorProperties;
-
   static MemberVM locator;
   static MemberVM server1;
   static MemberVM server2;
@@ -75,25 +72,18 @@ public class RenameDUnitTest {
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
-    int redisServerPort2 = clusterStartUp.getRedisPort(2);
 
-    jedis = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
-    jedis2 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
-    jedis3 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
-    jedis4 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
+    jedisCluster = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort1), JEDIS_TIMEOUT);
   }
 
   @Before
   public void testSetup() {
-    jedis.flushAll();
+    flushall();
   }
 
   @AfterClass
   public static void tearDown() {
-    jedis.disconnect();
-    jedis2.disconnect();
-    jedis3.disconnect();
-    jedis4.disconnect();
+    jedisCluster.close();
 
     server1.stop();
     server2.stop();
@@ -106,16 +96,16 @@ public class RenameDUnitTest {
 
     List<String> listOfKeys = new ArrayList<>(getKeysOnAnyStripe(numRenames * 8));
 
-    listOfKeys.forEach(key -> jedis.sadd(key, "value"));
+    listOfKeys.forEach(key -> jedisCluster.sadd(key, "value"));
 
     for (int i = 0; i < numRenames; i++) {
       int index = i * 8;
       doConcurrentRenames(listOfKeys.subList(index, index + 2),
-          listOfKeys.subList(index + 2, index + 4), listOfKeys.subList(index + 4, index + 6),
+          listOfKeys.subList(index + 2, index + 4),
+          listOfKeys.subList(index + 4, index + 6),
           listOfKeys.subList(index + 6, index + 8));
     }
   }
-
 
   @Test
   public void testRenameWithKeysOnSameStripeDifferentServers()
@@ -124,7 +114,7 @@ public class RenameDUnitTest {
 
     List<String> listOfKeys = new ArrayList<>(getKeysOnSameRandomStripe(numRenames * 8));
 
-    listOfKeys.forEach(key -> jedis.sadd(key, "value"));
+    listOfKeys.forEach(key -> jedisCluster.sadd(key, "value"));
 
     for (int i = 0; i < numRenames; i++) {
       int index = i * 8;
@@ -136,14 +126,14 @@ public class RenameDUnitTest {
 
   private Set<String> getKeysOnSameRandomStripe(int numKeysNeeded) {
     Random random = new Random();
-    String key1 = "keyz" + random.nextInt();
+    String key1 = "{rename}keyz" + random.nextInt();
     RedisKey key1ByteArrayWrapper = new RedisKey(key1.getBytes());
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     Set<String> keys = new HashSet<>();
     keys.add(key1);
 
     do {
-      String key2 = "key" + random.nextInt();
+      String key2 = "{rename}key" + random.nextInt();
       if (stripedExecutor.compareStripes(key1ByteArrayWrapper,
           new ByteArrayWrapper(key2.getBytes())) == 0) {
         keys.add(key2);
@@ -158,13 +148,12 @@ public class RenameDUnitTest {
     Set<String> keys = new HashSet<>();
 
     do {
-      String key = "key" + random.nextInt();
+      String key = "{rename}key" + random.nextInt();
       keys.add(key);
     } while (keys.size() < numKeysNeeded);
 
     return keys;
   }
-
 
   private void doConcurrentRenames(List<String> listOfKeys1, List<String> listOfKeys2,
       List<String> listOfKeys3, List<String> listOfKeys4)
@@ -182,22 +171,22 @@ public class RenameDUnitTest {
 
     Runnable renameOldKey1ToNewKey1 = () -> {
       cyclicBarrierAwait(startCyclicBarrier);
-      jedis.rename(oldKey1, newKey1);
+      jedisCluster.rename(oldKey1, newKey1);
     };
 
     Runnable renameOldKey2ToNewKey2 = () -> {
       cyclicBarrierAwait(startCyclicBarrier);
-      jedis2.rename(oldKey2, newKey2);
+      jedisCluster.rename(oldKey2, newKey2);
     };
 
     Runnable renameOldKey3ToNewKey3 = () -> {
       cyclicBarrierAwait(startCyclicBarrier);
-      jedis3.rename(oldKey3, newKey3);
+      jedisCluster.rename(oldKey3, newKey3);
     };
 
     Runnable renameOldKey4ToNewKey4 = () -> {
       cyclicBarrierAwait(startCyclicBarrier);
-      jedis4.rename(oldKey4, newKey4);
+      jedisCluster.rename(oldKey4, newKey4);
     };
 
     Future<?> future1 = pool.submit(renameOldKey1ToNewKey1);
@@ -209,6 +198,12 @@ public class RenameDUnitTest {
     future2.get();
     future3.get();
     future4.get();
+  }
+
+  private void flushall() {
+    try (Jedis connection = jedisCluster.getConnectionFromSlot(0)) {
+      connection.flushAll();
+    }
   }
 
   private void cyclicBarrierAwait(CyclicBarrier startCyclicBarrier) {

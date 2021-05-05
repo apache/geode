@@ -23,7 +23,8 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -37,16 +38,13 @@ import org.apache.geode.test.junit.categories.RedisTest;
 public class PersistDUnitTest implements Serializable {
 
   @ClassRule
-  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule(5);
-
+  public static RedisClusterStartupRule redisClusterStartupRule = new RedisClusterStartupRule(5);
+  private static JedisCluster jedis;
   private static String LOCALHOST = "localhost";
 
-  public static final String KEY = "key";
   private static VM client1;
   private static VM client2;
-
-  private static int server1Port;
-  private static int server2Port;
+  private static int serverPort;
 
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -61,16 +59,15 @@ public class PersistDUnitTest implements Serializable {
 
   @BeforeClass
   public static void setup() {
-    MemberVM locator = cluster.startLocatorVM(0);
+    MemberVM locator = redisClusterStartupRule.startLocatorVM(0);
+    redisClusterStartupRule.startRedisVM(1, locator.getPort());
+    redisClusterStartupRule.startRedisVM(2, locator.getPort());
+    serverPort = redisClusterStartupRule.getRedisPort(1);
 
-    cluster.startRedisVM(1, locator.getPort());
-    cluster.startRedisVM(2, locator.getPort());
+    client1 = redisClusterStartupRule.getVM(3);
+    client2 = redisClusterStartupRule.getVM(4);
 
-    server1Port = cluster.getRedisPort(1);
-    server2Port = cluster.getRedisPort(2);
-
-    client1 = cluster.getVM(3);
-    client2 = cluster.getVM(4);
+    jedis = new JedisCluster(new HostAndPort(LOCALHOST, serverPort), JEDIS_TIMEOUT);;
   }
 
   class ConcurrentPersistOperation extends ClientTestBase {
@@ -88,30 +85,32 @@ public class PersistDUnitTest implements Serializable {
 
     @Override
     public AtomicLong call() {
-      Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
+      JedisCluster internalJedisCluster =
+          new JedisCluster(new HostAndPort(LOCALHOST, port), JEDIS_TIMEOUT);
 
       for (int i = 0; i < this.iterationCount; i++) {
         String key = this.keyBaseName + i;
-        this.persistedCount.addAndGet(jedis.persist(key));
+        this.persistedCount.addAndGet(internalJedisCluster.persist(key));
       }
-
       return this.persistedCount;
     }
   }
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testConcurrentPersistOperations() throws InterruptedException {
+  public void testConcurrentPersistOperations_shouldReportCorrectNumberOfTotalKeysPersisted()
+      throws InterruptedException {
     Long iterationCount = 5000L;
-    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
+
     setKeysWithExpiration(jedis, iterationCount, "key");
 
     AsyncInvocation<AtomicLong> remotePersistInvocationClient1 =
         (AsyncInvocation<AtomicLong>) client1
-            .invokeAsync(new ConcurrentPersistOperation(server1Port, "key", iterationCount));
+            .invokeAsync(new ConcurrentPersistOperation(serverPort, "key", iterationCount));
+
     AtomicLong remotePersistInvocationClient2 =
         (AtomicLong) client2.invoke("remotePersistInvocation2",
-            new ConcurrentPersistOperation(server2Port, "key", iterationCount));
+            new ConcurrentPersistOperation(serverPort, "key", iterationCount));
 
     remotePersistInvocationClient1.await();
 
@@ -121,7 +120,7 @@ public class PersistDUnitTest implements Serializable {
         .isEqualTo(iterationCount);
   }
 
-  private void setKeysWithExpiration(Jedis jedis, Long iterationCount, String key) {
+  private void setKeysWithExpiration(JedisCluster jedis, Long iterationCount, String key) {
     for (int i = 0; i < iterationCount; i++) {
       jedis.sadd(key + i, "value" + 9);
       jedis.expire(key + i, 600);
