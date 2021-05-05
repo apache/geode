@@ -102,11 +102,17 @@ class ProcessManager implements ChildVMLauncher {
 
     // TODO - delete directory contents, preferably with commons io FileUtils
     try {
-      String[] envp = null;
+
+      Map<String, String> envp = new HashMap<>();
       if (!VersionManager.isCurrentVersion(version)) {
-        envp = new String[] {"GEODE_HOME=" + versionManager.getInstall(version)};
+        envp.put("GEODE_HOME=", versionManager.getInstall(version));
       }
-      Process process = Runtime.getRuntime().exec(cmd, envp, workingDir);
+
+      ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+      processBuilder.inheritIO().directory(workingDir);
+      processBuilder.environment().putAll(envp);
+      Process process = processBuilder.start();
+      // Process process = Runtime.getRuntime().exec(cmd, envp, workingDir);
       pendingVMs++;
       ProcessHolder holder = new ProcessHolder(process);
       processes.put(vmNum, holder);
