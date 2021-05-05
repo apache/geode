@@ -106,9 +106,9 @@ public class HScanDunitTest {
   @Before
   public void testSetup() {
     addIgnoredException(FunctionException.class);
-
+    String redisPort1 = "" + redisPorts[0];
     DUnitSocketAddressResolver dnsResolver =
-        new DUnitSocketAddressResolver(new String[] {redisPorts[0] + ""});
+        new DUnitSocketAddressResolver(new String[] {redisPort1});
 
     ClientResources resources = ClientResources.builder()
         .socketAddressResolver(dnsResolver)

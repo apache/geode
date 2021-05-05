@@ -30,12 +30,12 @@ import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.lettuce.core.ClientOptions;
-import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.RedisException;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.cluster.ClusterClientOptions;
+import io.lettuce.core.cluster.RedisClusterClient;
+import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import io.lettuce.core.resource.ClientResources;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -76,9 +76,9 @@ public class HashesAndCrashesDUnitTest {
 
   private static int[] redisPorts;
 
-  private RedisClient redisClient;
-  private StatefulRedisConnection<String, String> connection;
-  private RedisCommands<String, String> commands;
+  private RedisClusterClient redisClient;
+  private StatefulRedisClusterConnection<String, String> connection;
+  private RedisAdvancedClusterCommands<String, String> commands;
 
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
@@ -125,11 +125,7 @@ public class HashesAndCrashesDUnitTest {
   public void before() {
     addIgnoredException(FunctionException.class);
     String redisPort1 = "" + redisPorts[0];
-    String redisPort2 = "" + redisPorts[1];
-    String redisPort3 = "" + redisPorts[2];
-    // For now only tell the client about redisPort1.
-    // That server is never restarted so clients should
-    // never fail due to the server they are connected to failing.
+
     DUnitSocketAddressResolver dnsResolver =
         new DUnitSocketAddressResolver(new String[] {redisPort1});
 
@@ -137,8 +133,8 @@ public class HashesAndCrashesDUnitTest {
         .socketAddressResolver(dnsResolver)
         .build();
 
-    redisClient = RedisClient.create(resources, "redis://localhost");
-    redisClient.setOptions(ClientOptions.builder()
+    redisClient = RedisClusterClient.create(resources, "redis://localhost");
+    redisClient.setOptions(ClusterClientOptions.builder()
         .autoReconnect(true)
         .build());
     connection = redisClient.connect();
@@ -162,16 +158,19 @@ public class HashesAndCrashesDUnitTest {
             .withConnectionToLocator(locatorPort));
   }
 
+
   @Test
   public void givenServerCrashesDuringHSET_thenDataIsNotLost_andNoExceptionsAreLogged()
       throws Exception {
     modifyDataWhileCrashingVMs(DataType.HSET);
   }
 
+
   @Test
   public void givenServerCrashesDuringSADD_thenDataIsNotLost() throws Exception {
     modifyDataWhileCrashingVMs(DataType.SADD);
   }
+
 
   @Test
   public void givenServerCrashesDuringSET_thenDataIsNotLost() throws Exception {
