@@ -290,8 +290,16 @@ public interface DistributedRegionMXBean {
   boolean isPersistentEnabled();
 
   /**
-   * Returns the aggregate entry size (in megabytes) of all entries. This will provide a correct
-   * value only if the eviction algorithm has been set to {@link EvictionAlgorithm#LRU_MEMORY}.
+   * Returns the aggregate entry size (in bytes) of all entries. 
+   * For replicated regions, provides a value only if the eviction algorithm
+   * is set to {@link EvictionAlgorithm#LRU_MEMORY}.
+   * The entry size in this distributed context represents the sum total of memory
+   * used for data in the region across all members, so the reported value may include
+   * redundancies.
+   *
+   * All partitioned regions can report entry size, but the value also includes
+   * redundant entries and also counts the size of all the secondary entries in 
+   * on the node.
    */
   long getEntrySize();
 
