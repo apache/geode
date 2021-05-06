@@ -25,6 +25,7 @@
 #-----------------------------------------------------------------
 geode-serialization/**                                            @echobravopapa @Bill
 geode-core/**/org/apache/geode/pdx/**                             @upthewaterspout @dschneider-pivotal @agingade
+geode-core/**/org/apache/geode/codeAnalysis/**                    @upthewaterspout @dschneider-pivotal @agingade
 geode-core/**/org/apache/geode/internal/*                         @echobravopapa @Bill @kirklund
 
 #-----------------------------------------------------------------
@@ -308,6 +309,7 @@ expected-pom.xml                                                  @rhoughton-piv
 #-----------------------------------------------------------------
 # Documentation
 #-----------------------------------------------------------------
+apache-copyright-notice.txt                                       @upthewaterspout @pivotal-amurmann
 BUILDING.md                                                       @rhoughton-pivot @upthewaterspout
 CODE_OF_CONDUCT.md                                                @upthewaterspout @pivotal-amurmann @nonbinaryprogrammer
 LICENSE                                                           @onichols-pivotal @dickcav
