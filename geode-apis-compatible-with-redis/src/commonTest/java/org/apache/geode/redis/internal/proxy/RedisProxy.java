@@ -33,6 +33,7 @@ import io.netty.handler.codec.redis.RedisArrayAggregator;
 import io.netty.handler.codec.redis.RedisBulkStringAggregator;
 import io.netty.handler.codec.redis.RedisDecoder;
 import io.netty.handler.codec.redis.RedisEncoder;
+import io.netty.util.concurrent.DefaultThreadFactory;
 
 
 /**
@@ -49,7 +50,7 @@ public final class RedisProxy {
 
   public RedisProxy(int targetPort) {
     bossGroup = new NioEventLoopGroup(1);
-    workerGroup = new NioEventLoopGroup(1);
+    workerGroup = new NioEventLoopGroup(2, new DefaultThreadFactory("RedisProxy"));
 
     ChannelFuture future = new ServerBootstrap().group(bossGroup, workerGroup)
         .channel(NioServerSocketChannel.class)

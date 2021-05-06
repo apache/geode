@@ -37,7 +37,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -386,11 +385,7 @@ public class RedisHash extends AbstractRedisData {
   @SuppressWarnings("unchecked")
   private List<ByteArrayWrapper> createKeySnapShot(UUID clientID) {
 
-    List<ByteArrayWrapper> keySnapShot =
-        hash.keySet()
-            .stream()
-            .map(key -> new ByteArrayWrapper(key.toBytes()))
-            .collect(Collectors.toList());
+    List<ByteArrayWrapper> keySnapShot = new ArrayList<>(hash.keySet());
 
     this.hScanSnapShots.put(clientID, keySnapShot);
     this.hScanSnapShotCreationTimes.put(clientID, currentTimeMillis());

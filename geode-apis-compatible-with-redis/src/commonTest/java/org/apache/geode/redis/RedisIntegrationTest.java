@@ -13,9 +13,17 @@
  * the License.
  */
 
-package org.apache.geode.test.dunit.rules;
+package org.apache.geode.redis;
 
-public interface RedisPortSupplier {
+import redis.clients.jedis.Jedis;
+
+public interface RedisIntegrationTest {
 
   int getPort();
+
+  default void flushAll() {
+    try (Jedis jedis = new Jedis("localhost", getPort())) {
+      jedis.flushAll();
+    }
+  }
 }

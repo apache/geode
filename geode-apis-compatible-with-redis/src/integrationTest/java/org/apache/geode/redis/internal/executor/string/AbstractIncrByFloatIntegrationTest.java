@@ -29,10 +29,10 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractIncrByFloatIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegrationTest {
 
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());

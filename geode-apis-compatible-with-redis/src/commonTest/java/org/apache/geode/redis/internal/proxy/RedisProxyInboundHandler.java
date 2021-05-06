@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.proxy;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 
 import io.netty.bootstrap.Bootstrap;
@@ -85,8 +86,18 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
     outboundChannel = f.channel();
     f.addListener((ChannelFutureListener) future -> {
       if (future.isSuccess()) {
-        // connection complete start to read first data
-        inboundChannel.read();
+        InetSocketAddress target = (InetSocketAddress) inboundChannel.localAddress();
+        for (Map.Entry<HostPort, HostPort> entry : mappings.entrySet()) {
+          HostPort exposed = entry.getValue();
+          if (target.getPort() == exposed.getPort()) {
+            logger.info("Established proxy connection {} -> {} -> {}",
+                inboundChannel.remoteAddress(),
+                inboundChannel.localAddress(),
+                entry.getKey());
+            break;
+          }
+        }
+        inboundChannel.config().setAutoRead(true);
       } else {
         logger.error("Failed to connect", future.cause());
         inboundChannel.close();
@@ -96,11 +107,11 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
 
   /**
    * Any redis commands which return an IP or port which needs to be translated into an external
-   * IP/port need to be added to this method and an appropriate {@link RedisResponseProcessor}
-   * needs to be implemented.
+   * IP/port need to be added to this method and an appropriate {@link RedisResponseProcessor} needs
+   * to be implemented.
    * <p/>
-   * Note that each inbound command has an explicit outbound processor associated. Commands that
-   * do not need any processing are simply handled by a {@link NoopRedisResponseProcessor}.
+   * Note that each inbound command has an explicit outbound processor associated. Commands that do
+   * not need any processing are simply handled by a {@link NoopRedisResponseProcessor}.
    */
   @Override
   public void channelRead(final ChannelHandlerContext ctx, Object msg) {

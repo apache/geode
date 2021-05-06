@@ -25,10 +25,10 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public abstract class AbstractLettuceAppendIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractLettuceAppendIntegrationTest implements RedisIntegrationTest {
 
   protected RedisClient client;
 

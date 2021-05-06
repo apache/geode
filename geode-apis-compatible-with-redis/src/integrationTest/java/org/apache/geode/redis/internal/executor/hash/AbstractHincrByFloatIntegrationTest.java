@@ -25,34 +25,32 @@ import java.math.BigDecimal;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-public abstract class AbstractHincrByFloatIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractHincrByFloatIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private Jedis jedis2;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+
+  private JedisCluster jedis;
   private static int ITERATION_COUNT = 4000;
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
-  }
-
-  @After
-  public void flushAll() {
-    jedis.flushAll();
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
+    flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -65,35 +63,35 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisPortSu
     jedis.hset("key", "number", "1.4");
 
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, "key", "number", "+inf"))
+        () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "+inf"))
             .hasMessage("ERR increment would produce NaN or Infinity");
 
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, "key", "number", "-inf"))
+        () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "-inf"))
             .hasMessage("ERR increment would produce NaN or Infinity");
 
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, "key", "number", "inf"))
+        () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "inf"))
             .hasMessage("ERR increment would produce NaN or Infinity");
 
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, "key", "number", "+infinity"))
+        () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "+infinity"))
             .hasMessage("ERR increment would produce NaN or Infinity");
 
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, "key", "number", "-infinity"))
+        () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "-infinity"))
             .hasMessage("ERR increment would produce NaN or Infinity");
 
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, "key", "number", "infinity"))
+        () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "infinity"))
             .hasMessage("ERR increment would produce NaN or Infinity");
 
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, "key", "number", "nan"))
+        () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "nan"))
             .hasMessage("ERR value is not a valid float");
 
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, "key", "number", "infant"))
+        () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "infant"))
             .hasMessage("ERR value is not a valid float");
   }
 
@@ -113,13 +111,13 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisPortSu
     String key = "key";
     String field = "field";
 
-    Object response = jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, key, field, "1.23");
+    Object response = jedis.sendCommand(key, Protocol.Command.HINCRBYFLOAT, key, field, "1.23");
     assertThat(new String((byte[]) response)).isEqualTo("1.23");
 
-    response = jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, key, field, "0.77");
+    response = jedis.sendCommand(key, Protocol.Command.HINCRBYFLOAT, key, field, "0.77");
     assertThat(new String((byte[]) response)).isEqualTo("2");
 
-    response = jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, key, field, "-0.1");
+    response = jedis.sendCommand(key, Protocol.Command.HINCRBYFLOAT, key, field, "-0.1");
     assertThat(new String((byte[]) response)).isEqualTo("1.9");
   }
 
@@ -149,7 +147,8 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisPortSu
     jedis.hset("key", "number", biggy.toPlainString());
 
     // Beyond this, native redis produces inconsistent results.
-    Object rawResult = jedis.sendCommand(Protocol.Command.HINCRBYFLOAT, "key", "number", "1");
+    Object rawResult =
+        jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "1");
     BigDecimal result = new BigDecimal(new String((byte[]) rawResult));
 
     assertThat(result.toPlainString()).isEqualTo(biggy.add(BigDecimal.ONE).toPlainString());
@@ -174,7 +173,7 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisPortSu
 
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.hincrByFloat(key, field, 0.5),
-        (i) -> jedis2.hincrByFloat(key, field, 1.0)).run();
+        (i) -> jedis.hincrByFloat(key, field, 1.0)).run();
 
     String value = jedis.hget(key, field);
     assertThat(Float.valueOf(value)).isEqualTo(ITERATION_COUNT * 1.5f);

@@ -27,6 +27,7 @@ import io.netty.handler.codec.redis.IntegerRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 import io.netty.handler.codec.redis.SimpleStringRedisMessage;
 import io.netty.util.CharsetUtil;
+import io.netty.util.ReferenceCountUtil;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class ClusterSlotsResponseProcessor implements RedisResponseProcessor {
@@ -79,9 +80,13 @@ public class ClusterSlotsResponseProcessor implements RedisResponseProcessor {
 
       for (int i = 2; i < inner.children().size(); i++) {
         ArrayRedisMessage hostPortArray = (ArrayRedisMessage) inner.children().get(i);
-        String host = ((FullBulkStringRedisMessage) hostPortArray.children().get(0))
+        RedisMessage hostMessagePart = hostPortArray.children().get(0);
+        String host = ((FullBulkStringRedisMessage) hostMessagePart)
             .content().toString(CharsetUtil.UTF_8);
-        Integer port = (int) ((IntegerRedisMessage) hostPortArray.children().get(1)).value();
+
+        RedisMessage portMessagePart = hostPortArray.children().get(1);
+        Integer port = (int) ((IntegerRedisMessage) portMessagePart).value();
+
         Pair<String, Integer> newMapping = getMapping(host, port);
 
         List<RedisMessage> newHostPortArray = new ArrayList<>();
@@ -92,6 +97,10 @@ public class ClusterSlotsResponseProcessor implements RedisResponseProcessor {
         }
 
         newInner.add(new ArrayRedisMessage(newHostPortArray));
+
+        // Since we've replaced these, we need to free up the originals
+        ReferenceCountUtil.release(hostMessagePart);
+        ReferenceCountUtil.release(portMessagePart);
       }
 
       response.add(new ArrayRedisMessage(newInner));
