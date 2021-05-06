@@ -45,6 +45,8 @@ dependencies {
   testImplementation(project(':geode-junit'))
   testImplementation('org.mockito:mockito-core')
   testImplementation('redis.clients:jedis')
+  testImplementation('com.pholser:junit-quickcheck-core')
+  testImplementation('com.pholser:junit-quickcheck-generators')
 
   commonTestImplementation(project(':geode-junit'))
   commonTestImplementation(project(':geode-dunit'))
