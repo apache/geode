@@ -109,7 +109,7 @@ class ProcessManager implements ChildVMLauncher {
       }
 
       ProcessBuilder processBuilder = new ProcessBuilder(cmd);
-      processBuilder.inheritIO().directory(workingDir);
+      processBuilder.directory(workingDir);
       processBuilder.environment().putAll(envp);
       Process process = processBuilder.start();
       // Process process = Runtime.getRuntime().exec(cmd, envp, workingDir);

@@ -84,7 +84,10 @@ public class CommandResultAssert
    * Verifies the gfsh output contains the given output
    */
   public CommandResultAssert containsOutput(String... expectedOutputs) {
-    assertThat(commandOutput).contains(expectedOutputs);
+    for (String expectedOutput : expectedOutputs) {
+      assertThat(commandOutput).contains(expectedOutput);
+    }
+
     return this;
   }
 
@@ -110,8 +113,7 @@ public class CommandResultAssert
    * Verifies that gfsh executed with status ERROR
    */
   public CommandResultAssert statusIsError() {
-    Assertions.assertThat(actual.getStatus()).describedAs(commandOutput)
-        .isEqualTo(Result.Status.ERROR);
+    Assertions.assertThat(actual.getStatus()).isEqualTo(Result.Status.ERROR);
 
     return this;
   }
