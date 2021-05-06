@@ -77,7 +77,7 @@ public class StringsDUnitTest {
   }
 
   @After
-  public void after(){
+  public void after() {
     flushall();
   }
 
@@ -233,9 +233,8 @@ public class StringsDUnitTest {
           long stringLength = jedisCluster.strlen("key-" + i);
           assertThat(
               stringLength == ("changedValue-" + i).length()
-              || stringLength == ("value-" + i).length()
-          ).isTrue();
-    }).runInLockstep();
+                  || stringLength == ("value-" + i).length()).isTrue();
+        }).runInLockstep();
 
     for (int i = 0; i < LIST_SIZE; i++) {
       String key = "key-" + i;
@@ -248,7 +247,7 @@ public class StringsDUnitTest {
   }
 
 
-  private void flushall(){
+  private void flushall() {
     try (Jedis connection = jedisCluster.getConnectionFromSlot(0)) {
       connection.flushAll();
     }
