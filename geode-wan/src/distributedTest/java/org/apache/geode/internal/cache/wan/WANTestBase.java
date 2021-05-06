@@ -107,6 +107,9 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ConnectionStats;
@@ -2197,6 +2200,18 @@ public class WANTestBase extends DistributedTestCase {
     return port;
   }
 
+  public static void createClientWithLocator(int port0, String host, String regionName,
+      ClientRegionShortcut regionType) {
+    ClientCache cache = new ClientCacheFactory().addPoolLocator(host, port0).create();
+
+    Region region =
+        cache.createClientRegionFactory(regionType)
+            .create(regionName);
+
+    assertNotNull(region);
+  }
+
+
   public static void createClientWithLocator(int port0, String host, String regionName) {
     createClientWithLocator(port0, host);
 
@@ -2352,6 +2367,15 @@ public class WANTestBase extends DistributedTestCase {
       r.put(i, "Value_" + i);
     }
   }
+
+  public static void doClientPutsFrom(String regionName, int from, int numPuts) {
+    Region r = ClientCacheFactory.getAnyInstance().getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
+    for (long i = from; i < numPuts; i++) {
+      r.put(i, "Value_" + i);
+    }
+  }
+
 
   public static void doDestroys(String regionName, int keyNum) {
     Region r = cache.getRegion(SEPARATOR + regionName);

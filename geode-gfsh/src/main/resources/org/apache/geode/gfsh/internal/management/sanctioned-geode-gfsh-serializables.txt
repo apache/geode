@@ -93,6 +93,7 @@ org/apache/geode/management/internal/cli/functions/RegionFunctionArgs,true,22049
 org/apache/geode/management/internal/cli/functions/RegionFunctionArgs$EvictionAttrs,true,9015454906371076014,evictionAction:java/lang/String,maxEntryCount:java/lang/Integer,maxMemory:java/lang/Integer,objectSizer:java/lang/String
 org/apache/geode/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,true,1474255033398008063,action:org/apache/geode/cache/ExpirationAction,time:java/lang/Integer
 org/apache/geode/management/internal/cli/functions/RegionFunctionArgs$PartitionArgs,true,5907052187323280919,partitionResolver:java/lang/String,prColocatedWith:java/lang/String,prLocalMaxMemory:java/lang/Integer,prRecoveryDelay:java/lang/Long,prRedundantCopies:java/lang/Integer,prStartupRecoveryDelay:java/lang/Long,prTotalMaxMemory:java/lang/Long,prTotalNumBuckets:java/lang/Integer
+org/apache/geode/management/internal/cli/functions/ReplicateRegionFunction,true,1
 org/apache/geode/management/internal/cli/functions/ResumeAsyncEventQueueDispatcherFunction,false
 org/apache/geode/management/internal/cli/functions/ShowMissingDiskStoresFunction,false
 org/apache/geode/management/internal/cli/functions/ShutDownFunction,true,1

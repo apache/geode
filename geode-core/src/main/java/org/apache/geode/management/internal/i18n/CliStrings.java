@@ -1425,6 +1425,26 @@ public class CliStrings {
   public static final String EXPORT_DATA__SUCCESS__MESSAGE =
       "Data successfully exported from region : {0} to file : {1} on host : {2}";
 
+  /* 'replicate region' command */
+  public static final String REPLICATE_REGION = "replicate region";
+  public static final String REPLICATE_REGION__HELP =
+      "Replicate a region with a senderId via WAN replication";
+  public static final String REPLICATE_REGION__REGION = "region";
+  public static final String REPLICATE_REGION__REGION__HELP =
+      "Region from which data will be exported.";
+  public static final String REPLICATE_REGION__SENDERID = "senderId";
+  public static final String REPLICATE_REGION__SENDERID__HELP =
+      "senderId to use to replicate the region.";
+  public static final String REPLICATE_REGION__MAXRATE = "maxrate";
+  public static final String REPLICATE_REGION__MAXRATE__HELP =
+      "maximum rate for replication in events per second.";
+  public static final String REPLICATE_REGION__BATCHSIZE = "batchSize";
+  public static final String REPLICATE_REGION__BATCHSIZE__HELP =
+      "size for batches or events to be replicated.";
+  public static final String REPLICATE_REGION__CANCEL = "cancel";
+  public static final String REPLICATE_REGION__CANCEL__HELP =
+      "cancel an ongoing replication command";
+
   /* export logs command */
   public static final String EXPORT_LOGS = "export logs";
   public static final String EXPORT_LOGS__HELP = "Export the log files for a member or members.";
