@@ -60,6 +60,8 @@ public class CacheClientProxyStats implements MessageStats {
   private static final String DELTA_FULL_MESSAGES_SENT = "deltaFullMessagesSent";
   /** Name of the CQ count statistic */
   private static final String CQ_COUNT = "cqCount";
+  /** Name of the number of threads currently adding message in queue statistic */
+  private static final String NUMBER_THREADS_PUT_IN_QUEUE = "numberThreadsPutInQueue";
 
   /** Id of the messages received statistic */
   private static final int _messagesReceivedId;
@@ -84,6 +86,9 @@ public class CacheClientProxyStats implements MessageStats {
   /** Id of the CQ count statistic */
   private static final int _cqCountId;
   private static final int _sentBytesId;
+
+  /** Id of the number of threads currently adding message in queue statistic */
+  private static final int _numberThreadsPutInQueueId;
 
   /*
    * Static initializer to create and initialize the <code>StatisticsType</code>
@@ -128,7 +133,10 @@ public class CacheClientProxyStats implements MessageStats {
             "operations"),
 
         f.createLongCounter(CQ_COUNT, "Number of CQs on the client.", "operations"),
-        f.createLongCounter("sentBytes", "Total number of bytes sent to client.", "bytes"),});
+        f.createLongCounter("sentBytes", "Total number of bytes sent to client.", "bytes"),
+        f.createIntCounter(NUMBER_THREADS_PUT_IN_QUEUE,
+            "Number of threads currently adding message in queue", "operations"),
+    });
 
     // Initialize id fields
     _messagesReceivedId = _type.nameToId(MESSAGES_RECEIVED);
@@ -143,6 +151,8 @@ public class CacheClientProxyStats implements MessageStats {
     _deltaFullMessagesSentId = _type.nameToId(DELTA_FULL_MESSAGES_SENT);
     _cqCountId = _type.nameToId(CQ_COUNT);
     _sentBytesId = _type.nameToId("sentBytes");
+    _numberThreadsPutInQueueId = _type.nameToId(NUMBER_THREADS_PUT_IN_QUEUE);
+
   }
 
   ////////////////////// Instance Fields //////////////////////
@@ -272,6 +282,15 @@ public class CacheClientProxyStats implements MessageStats {
   }
 
   /**
+   * Returns the current value of the "numberThreadsPutInQueue" stat.
+   *
+   * @return the current value of the "numberThreadsPutInQueue" stat
+   */
+  public int getNumberThreadsPutInQueue() {
+    return this._stats.getInt(_numberThreadsPutInQueueId);
+  }
+
+  /**
    * Increments the "messagesReceived" stat.
    */
   public void incMessagesReceived() {
@@ -314,6 +333,16 @@ public class CacheClientProxyStats implements MessageStats {
   }
 
   /**
+   * Increments the "numberThreadsPutInQueue" stat.
+   */
+  public void incNumberThreadsPutInQueue() {
+    synchronized (this) {
+      this._stats.incInt(_numberThreadsPutInQueueId, 1);
+    }
+  }
+
+
+  /**
    * Decrements the "cqCount" stat.
    */
   public void decCqCount() {
@@ -321,11 +350,20 @@ public class CacheClientProxyStats implements MessageStats {
   }
 
   /**
+   * Decrements the "numberThreadsPutInQueue" stat.
+   */
+  public void decNumberThreadsPutInQueue() {
+    synchronized (this) {
+      this._stats.incInt(_numberThreadsPutInQueueId, -1);
+    }
+  }
+
+  /**
    * Sets the "messageQueueSize" stat.
    *
    * @param size The size of the queue
    */
-  public void setQueueSize(int size) {
+  public synchronized void setQueueSize(int size) {
     this._stats.setInt(_messageQueueSizeId, size);
   }
 
