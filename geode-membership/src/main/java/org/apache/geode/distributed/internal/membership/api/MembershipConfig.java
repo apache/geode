@@ -37,7 +37,6 @@ public interface MembershipConfig {
   String DEFAULT_SECURITY_UDP_DHALGO = "";
   int DEFAULT_UDP_FRAGMENT_SIZE = 60000;
   String DEFAULT_START_LOCATOR = "";
-  String DEFAULT_MEMBERSHIP_BIND_ADDRESS = "";
   int DEFAULT_MEMBER_TIMEOUT = 5000;
   int DEFAULT_LOSS_THRESHOLD = 51;
   int DEFAULT_MEMBER_WEIGHT = 0;
@@ -131,10 +130,6 @@ public interface MembershipConfig {
 
   default String getStartLocator() {
     return DEFAULT_START_LOCATOR;
-  }
-
-  default String getMembershipBindAddress() {
-    return DEFAULT_MEMBERSHIP_BIND_ADDRESS;
   }
 
   default String getBindAddress() {

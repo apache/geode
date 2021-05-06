@@ -272,7 +272,7 @@ start locator --name=value [--bind-address=value] [--force(=value)]
  [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-cluster-configuration-from-dir(=value)]
  [--cluster-config-dir=value] [--redirect-output(=value)]
  [--http-service-port=value] [--http-service-bind-address=value] 
- [--membership-bind-address=value] [--J=value(,value)*]
+ [--J=value(,value)*]
 ```
 
 **Parameters, start locator**
@@ -416,11 +416,6 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 <td>the local host machine's address</td>
 </tr>
 <tr>
-<td><span class="keyword parmname">\-\-membership-bind-address</span></td>
-<td>Specifies the IP address to which the membership-related traffic will be bound.</td>
-<td>the local host machine's address</td>
-</tr>
-<tr>
 <td><span class="keyword parmname">\-\-J </span></td>
 <td>Argument passed to the JVM on which the Locator will run. For example, specifying <code class="ph codeph">--J=-Dfoo.bar=true</code> sets property &quot;foo.bar&quot; to &quot;true&quot;.
 <div class="note note">
@@ -500,7 +495,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
     [--socket-buffer-size=value] [--lock-memory=value] [--off-heap-memory-size=value]
     [--start-rest-api=value] [--redirect-output(=value)]
     [--http-service-port=value] [--http-service-bind-address=value]
-    [--user=value] [--password=value] [--membership-bind-address=value]
+    [--user=value] [--password=value]
 ```
 
 **Parameters, start server**
@@ -666,11 +661,6 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <b>Note:</b> The additional GC parameters introduced by the <code class="ph codeph">-max-heap</code> option are not compatible with the usage of G1 garbage collector.
 </div></td>
 <td> </td>
-</tr>
-<tr>
-<td><span class="keyword parmname">\-\-membership-bind-address</span></td>
-<td>Specifies the IP address to which the membership-related traffic will be bound. The '*' character is accepted for wildcard addresses.</td>
-<td>the local host machine's address</td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-J</span></td>

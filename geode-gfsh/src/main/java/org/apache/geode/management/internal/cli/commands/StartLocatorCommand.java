@@ -32,7 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.LocatorLauncher;
@@ -121,30 +120,23 @@ public class StartLocatorCommand extends OfflineGfshCommand {
           help = CliStrings.START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS__HELP) final String httpServiceBindAddress,
       @CliOption(key = CliStrings.START_LOCATOR__REDIRECT_OUTPUT, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
-          help = CliStrings.START_LOCATOR__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput,
-      @CliOption(key = CliStrings.START_LOCATOR__MEMBERSHIP_BIND_ADDRESS,
-          help = CliStrings.START_LOCATOR__MEMBERSHIP_BIND_ADDRESS__HELP) final String membershipBindAddress)
+          help = CliStrings.START_LOCATOR__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput)
       throws Exception {
     if (StringUtils.isBlank(memberName)) {
       // when the user doesn't give us a name, we make one up!
       memberName = StartMemberUtils.getNameGenerator().generate('-');
     }
 
-    workingDirectory = resolveWorkingDirectory(workingDirectory, memberName);
+    workingDirectory = StartMemberUtils.resolveWorkingDir(
+        workingDirectory == null ? null : new File(workingDirectory), new File(memberName));
 
     return doStartLocator(memberName, bindAddress, classpath, force, group, hostnameForClients,
         jmxManagerHostnameForClients, includeSystemClasspath, locators, logLevel, mcastBindAddress,
         mcastPort, port, workingDirectory, gemfirePropertiesFile, gemfireSecurityPropertiesFile,
         initialHeap, maxHeap, jvmArgsOpts, connect, enableSharedConfiguration,
         loadSharedConfigurationFromDirectory, clusterConfigDir, httpServicePort,
-        httpServiceBindAddress, redirectOutput, membershipBindAddress);
+        httpServiceBindAddress, redirectOutput);
 
-  }
-
-  @VisibleForTesting
-  protected static String resolveWorkingDirectory(String workDirValue, String memberName) {
-    return StartMemberUtils.resolveWorkingDir(
-        workDirValue == null ? null : new File(workDirValue), new File(memberName));
   }
 
   ResultModel doStartLocator(
@@ -173,8 +165,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
       String clusterConfigDir,
       Integer httpServicePort,
       String httpServiceBindAddress,
-      Boolean redirectOutput,
-      String membershipBindAddress)
+      Boolean redirectOutput)
       throws MalformedObjectNameException, IOException, InterruptedException,
       ClassNotFoundException {
     if (gemfirePropertiesFile != null && !gemfirePropertiesFile.exists()) {
@@ -223,7 +214,6 @@ public class StartLocatorCommand extends OfflineGfshCommand {
     if (memberName != null) {
       locatorLauncherBuilder.setMemberName(memberName);
     }
-    locatorLauncherBuilder.setMembershipBindAddress(membershipBindAddress);
     LocatorLauncher locatorLauncher = locatorLauncherBuilder.build();
 
     String[] locatorCommandLine = createStartLocatorCommandLine(locatorLauncher,
@@ -494,8 +484,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
     }
 
     if (launcher.getBindAddress() != null) {
-      commandLine.add("--" + CliStrings.START_LOCATOR__BIND_ADDRESS + "="
-          + launcher.getBindAddress().getHostAddress());
+      commandLine.add("--bind-address=" + launcher.getBindAddress().getHostAddress());
     }
 
     if (launcher.isDebugging() || isDebugging()) {
@@ -503,25 +492,19 @@ public class StartLocatorCommand extends OfflineGfshCommand {
     }
 
     if (launcher.isForcing()) {
-      commandLine.add("--" + CliStrings.START_LOCATOR__FORCE);
+      commandLine.add("--force");
     }
 
     if (StringUtils.isNotBlank(launcher.getHostnameForClients())) {
-      commandLine.add("--" + CliStrings.START_LOCATOR__HOSTNAME_FOR_CLIENTS + "="
-          + launcher.getHostnameForClients());
+      commandLine.add("--hostname-for-clients=" + launcher.getHostnameForClients());
     }
 
     if (launcher.getPort() != null) {
-      commandLine.add("--" + CliStrings.START_LOCATOR__PORT + "=" + launcher.getPort());
+      commandLine.add("--port=" + launcher.getPort());
     }
 
     if (launcher.isRedirectingOutput()) {
-      commandLine.add("--" + CliStrings.START_LOCATOR__REDIRECT_OUTPUT);
-    }
-
-    if (launcher.membershipBindAddressSpecified()) {
-      commandLine.add("--" + CliStrings.START_LOCATOR__MEMBERSHIP_BIND_ADDRESS + "="
-          + launcher.getMembershipBindAddress());
+      commandLine.add("--redirect-output");
     }
 
     return commandLine.toArray(new String[] {});

@@ -249,41 +249,4 @@ public class StartServerCommandTest {
 
     assertThat(commandLineElements).containsAll(expectedCommandLineElements);
   }
-
-  @Test
-  public void startLocatorWithRelativeWorkingDirectory() throws Exception {
-    final String workDir = "server1Directory";
-    final String memberName = "member1";
-    assertThat(StartServerCommand.resolveWorkingDirectory(workDir, memberName))
-        .isEqualTo(new File(workDir).getAbsolutePath());
-  }
-
-  @Test
-  public void startServerWithNullWorkingDirectory() throws Exception {
-    final String memberName = "member1";
-    assertThat(StartServerCommand.resolveWorkingDirectory(null, memberName))
-        .isEqualTo(new File(memberName).getAbsolutePath());
-  }
-
-  @Test
-  public void startServerWithEmptyWorkingDirectory() throws Exception {
-    final String memberName = "member1";
-    assertThat(StartServerCommand.resolveWorkingDirectory("", memberName))
-        .isEqualTo(new File(memberName).getAbsolutePath());
-  }
-
-  @Test
-  public void startServerWithDotWorkingDirectory() throws Exception {
-    final String workDir = ".";
-    final String memberName = "member1";
-    assertThat(StartServerCommand.resolveWorkingDirectory(workDir, memberName))
-        .isEqualTo(StartMemberUtils.resolveWorkingDir(new File(workDir), new File(memberName)));
-  }
-
-  @Test
-  public void startServerWithAbsoluteWorkingDirectory() throws Exception {
-    String workDir = new File(System.getProperty("user.dir")).getAbsolutePath();
-    assertThat(StartServerCommand.resolveWorkingDirectory(workDir, "member1"))
-        .isEqualTo(new File(workDir).getAbsolutePath());
-  }
 }

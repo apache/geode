@@ -21,11 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -940,23 +938,8 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   public void started() throws MemberStartupException {
     setLocalAddress(services.getMessenger().getMemberID());
     try {
-      InetAddress address = localAddress.getInetAddress();
-      if (services.getConfig().getMembershipBindAddress() != null
-          && !services.getConfig().getMembershipBindAddress().isEmpty()) {
-        try {
-          if (services.getConfig().getMembershipBindAddress().equals("*")) {
-            address = (new InetSocketAddress(0)).getAddress();
-          } else {
-            address = InetAddress.getByName(services.getConfig().getMembershipBindAddress());
-          }
-        } catch (UnknownHostException e) {
-          logger
-              .error("Exception when configuring " + services.getConfig().getMembershipBindAddress()
-                  + " as bind address in GMSHealthMonitor, default address will be used: "
-                  + e.getMessage());
-        }
-      }
-      serverSocket = createServerSocket(address, services.getConfig().getMembershipPortRange());
+      serverSocket = createServerSocket(localAddress.getInetAddress(),
+          services.getConfig().getMembershipPortRange());
     } catch (IOException e) {
       throw new MemberStartupException("Problem creating HealthMonitor socket", e);
     }

@@ -19,7 +19,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
@@ -95,7 +94,7 @@ import org.apache.geode.management.internal.util.JsonUtil;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
- * The LocatorLauncher class is a launcher for a Geode Locator.
+ * The LocatorLauncher class is a launcher for a GemFire Locator.
  *
  * @see org.apache.geode.distributed.AbstractLauncher
  * @see org.apache.geode.distributed.ServerLauncher
@@ -115,16 +114,16 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   static {
     final Map<String, String> help = new HashMap<>();
     help.put("launcher",
-        "A Geode launcher used to start, stop and determine a Locator's status.");
+        "A GemFire launcher used to start, stop and determine a Locator's status.");
     help.put(Command.START.getName(), String.format(
-        "Starts a Locator running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Locator must be given a member name in the Geode cluster.  The default bind-address and port may be overridden using the corresponding command-line options.",
+        "Starts a Locator running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Locator must be given a member name in the GemFire cluster.  The default bind-address and port may be overridden using the corresponding command-line options.",
         String.valueOf(getDefaultLocatorPort())));
     help.put(Command.STATUS.getName(),
         "Displays the status of a Locator given any combination of the bind-address[port], member name/ID, PID, or the directory in which the Locator is running.");
     help.put(Command.STOP.getName(),
         "Stops a running Locator given a member name/ID, PID, or the directory in which the Locator is running.");
     help.put(Command.VERSION.getName(),
-        "Displays Geode product version information.");
+        "Displays GemFire product version information.");
     help.put("bind-address",
         "Specifies the IP address on which to bind, or on which the Locator is bound, listening for client requests.  Defaults to all IP addresses available to the localhost.");
     help.put("debug", "Displays verbose information during the invocation of the launcher.");
@@ -135,18 +134,16 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     help.put("force",
         "Enables any existing Locator PID file to be overwritten on start.  The default is to throw an error if a PID file already exists and --force is not specified.");
     help.put("help",
-        "Causes Geode to print out information instead of performing the command. This option is supported by all commands.");
+        "Causes GemFire to print out information instead of performing the command. This option is supported by all commands.");
     help.put("hostname-for-clients",
         "An option to specify the hostname or IP address to send to clients so they can connect to this Locator. The default is to use the IP address to which the Locator is bound.");
-    help.put("member", "Identifies the Locator by member name or ID in the Geode cluster.");
-    help.put(MEMBERSHIP_BIND_ADDRESS,
-        "Specifies the IP address to which the membership-related traffic will be bound.");
+    help.put("member", "Identifies the Locator by member name or ID in the GemFire cluster.");
     help.put("pid", "Indicates the OS process ID of the running Locator.");
     help.put("port", String.format(
         "Specifies the port on which the Locator is listening for client requests. Defaults to %s.",
         String.valueOf(getDefaultLocatorPort())));
     help.put("redirect-output",
-        "An option to cause the Locator to redirect standard out and standard error to the Geode log file.");
+        "An option to cause the Locator to redirect standard out and standard error to the GemFire log file.");
 
     helpMap = Collections.unmodifiableMap(help);
   }
@@ -157,7 +154,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   static {
     Map<Command, String> usage = new TreeMap<>();
     usage.put(Command.START,
-        "start <member-name> [--bind-address=<IP-address>] [--hostname-for-clients=<IP-address>] [--port=<port>] [--dir=<Locator-working-directory>] [--force] [--membership-bind-address=<IP-address>] [--debug] [--help]");
+        "start <member-name> [--bind-address=<IP-address>] [--hostname-for-clients=<IP-address>] [--port=<port>] [--dir=<Locator-working-directory>] [--force] [--debug] [--help]");
     usage.put(Command.STATUS,
         "status [--bind-address=<IP-address>] [--port=<port>] [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Locator-working-directory>] [--debug] [--help]");
     usage.put(Command.STOP,
@@ -211,9 +208,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   private final transient LocatorControllerParameters controllerParameters;
 
   /**
-   * Launches a Geode Locator from the command-line configured with the given arguments.
+   * Launches a GemFire Locator from the command-line configured with the given arguments.
    *
-   * @param args the command-line arguments used to configure the Geode Locator at runtime.
+   * @param args the command-line arguments used to configure the GemFire Locator at runtime.
    */
   public static void main(final String... args) {
     try {
@@ -229,10 +226,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Gets the instance of the LocatorLauncher used to launch the Geode Locator, or null if this VM
-   * does not have an instance of LocatorLauncher indicating no Geode Locator is running.
+   * Gets the instance of the LocatorLauncher used to launch the GemFire Locator, or null if this VM
+   * does not have an instance of LocatorLauncher indicating no GemFire Locator is running.
    *
-   * @return the instance of LocatorLauncher used to launcher a Geode Locator in this VM.
+   * @return the instance of LocatorLauncher used to launcher a GemFire Locator in this VM.
    */
   public static LocatorLauncher getInstance() {
     return INSTANCE.get();
@@ -289,10 +286,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         return statusInProcess();
       }
     };
-    if (builder.membershipBindAddressSpecified()) {
-      this.distributedSystemProperties.setProperty(MEMBERSHIP_BIND_ADDRESS,
-          builder.getMembershipBindAddress());
-    }
   }
 
   /**
@@ -426,24 +419,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   public boolean isRedirectingOutput() {
     return this.redirectOutput;
-  }
-
-  /**
-   * Determines whether the membership-bind-address property is defined or not.
-   *
-   * @return a boolean value indicating if the membership-bind-address property is defined or not.
-   */
-  public boolean membershipBindAddressSpecified() {
-    return (this.distributedSystemProperties.getProperty(MEMBERSHIP_BIND_ADDRESS) != null);
-  }
-
-  /**
-   * Gets the IP address to be used for membership-related traffic binding.
-   *
-   * @return a String containing the IP address to be used for membership-related traffic binding.
-   */
-  public String getMembershipBindAddress() {
-    return this.distributedSystemProperties.getProperty(MEMBERSHIP_BIND_ADDRESS);
   }
 
   /**
@@ -1286,7 +1261,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     private Command command;
 
     private InetAddress bindAddress;
-    private String membershipBindAddress;
 
     private Integer pid;
     private Integer port;
@@ -1334,7 +1308,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       parser.accepts("port").withRequiredArg().ofType(Integer.class);
       parser.accepts("redirect-output");
       parser.accepts("version");
-      parser.accepts(MEMBERSHIP_BIND_ADDRESS).withRequiredArg().ofType(String.class);
 
       return parser;
     }
@@ -1384,11 +1357,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
           if (options.has("version")) {
             setCommand(Command.VERSION);
           }
-
-          if (options.has(MEMBERSHIP_BIND_ADDRESS)) {
-            setMembershipBindAddress(
-                ObjectUtils.toString(options.valueOf(MEMBERSHIP_BIND_ADDRESS)));
-          }
         }
       } catch (OptionException e) {
         throw new IllegalArgumentException(
@@ -1409,7 +1377,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      */
     protected void parseCommand(final String... args) {
       // search the list of arguments for the command; technically, the command should be the first
-      // argument in the list, but does it really matter? stop after we find one valid command.
+      // argument in the
+      // list, but does it really matter? stop after we find one valid command.
       if (args != null) {
         for (String arg : args) {
           final Command command = Command.valueOfName(arg);
@@ -1767,37 +1736,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       }
       this.port = port;
       return this;
-    }
-
-    /**
-     * Sets the IP address to be used for membership-related traffic binding.
-     *
-     * @param membershipBindAddress a String containing the IP address to be used for
-     *        membership-related traffic binding.
-     * @return this Builder instance.
-     * @see #getMembershipBindAddress()
-     */
-    public Builder setMembershipBindAddress(final String membershipBindAddress) {
-      this.membershipBindAddress = membershipBindAddress;
-      return this;
-    }
-
-    /**
-     * Gets the IP address to be used for membership-related traffic binding.
-     *
-     * @return a String containing the IP address to be used for membership-related traffic binding.
-     */
-    public String getMembershipBindAddress() {
-      return this.membershipBindAddress;
-    }
-
-    /**
-     * Determines whether the membership-bind-address property is defined or not.
-     *
-     * @return a boolean value indicating if the membership-bind-address property is defined or not.
-     */
-    public boolean membershipBindAddressSpecified() {
-      return this.membershipBindAddress != null;
     }
 
     /**

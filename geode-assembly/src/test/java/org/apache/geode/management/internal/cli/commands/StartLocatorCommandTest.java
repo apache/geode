@@ -192,48 +192,4 @@ public class StartLocatorCommandTest {
 
     assertThat(commandLineElements).containsAll(expectedCommandLineElements);
   }
-
-  @Test
-  public void startLocatorWithRelativeWorkingDirectory() throws Exception {
-    String workingDirectory = "locator1Directory";
-    String memberName = "member1";
-
-    assertThat(StartLocatorCommand.resolveWorkingDirectory(workingDirectory, memberName))
-        .isEqualTo(new File(workingDirectory).getAbsolutePath());
-  }
-
-  @Test
-  public void startLocatorWithNullWorkingDirectory() throws Exception {
-    String memberName = "member1";
-
-    assertThat(StartLocatorCommand.resolveWorkingDirectory(null, memberName))
-        .isEqualTo(new File(memberName).getAbsolutePath());
-  }
-
-  @Test
-  public void startLocatorWithEmptyWorkingDirectory() throws Exception {
-    String workingDirectory = "";
-    String memberName = "member1";
-
-    assertThat(StartLocatorCommand.resolveWorkingDirectory(workingDirectory, memberName))
-        .isEqualTo(new File(memberName).getAbsolutePath());
-  }
-
-  @Test
-  public void startLocatorWithDotWorkingDirectory() throws Exception {
-    String workingDirectory = ".";
-    String memberName = "member1";
-
-    assertThat(StartLocatorCommand.resolveWorkingDirectory(workingDirectory, memberName))
-        .isEqualTo(
-            StartMemberUtils.resolveWorkingDir(new File(workingDirectory), new File(memberName)));
-  }
-
-  @Test
-  public void startLocatorWithAbsoluteWorkingDirectory() throws Exception {
-    String workingDirectory = new File(System.getProperty("user.dir")).getAbsolutePath();
-    String memberName = "member1";
-    assertThat(StartLocatorCommand.resolveWorkingDirectory(workingDirectory, memberName))
-        .isEqualTo(workingDirectory);
-  }
 }

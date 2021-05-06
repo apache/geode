@@ -21,7 +21,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
@@ -107,8 +106,8 @@ import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
- * The ServerLauncher class is a launcher class with main method to start a Geode Server (implying
- * a Geode Cache Server process).
+ * The ServerLauncher class is a launcher class with main method to start a GemFire Server (implying
+ * a GemFire Cache Server process).
  *
  * @see AbstractLauncher
  * @see LocatorLauncher
@@ -125,37 +124,35 @@ public class ServerLauncher extends AbstractLauncher<String> {
   static {
     Map<String, String> help = new HashMap<>();
     help.put("launcher",
-        "A Geode launcher used to start, stop and determine a Server's status.");
+        "A GemFire launcher used to start, stop and determine a Server's status.");
     help.put(Command.START.getName(), String.format(
-        "Starts a Server running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Server must be given a member name in the Geode cluster.  The default server-bind-address and server-port may be overridden using the corresponding command-line options.",
+        "Starts a Server running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Server must be given a member name in the GemFire cluster.  The default server-bind-address and server-port may be overridden using the corresponding command-line options.",
         String.valueOf(getDefaultServerPort())));
     help.put(Command.STATUS.getName(),
         "Displays the status of a Server given any combination of the member name/ID, PID, or the directory in which the Server is running.");
     help.put(Command.STOP.getName(),
         "Stops a running Server given given a member name/ID, PID, or the directory in which the Server is running.");
     help.put(Command.VERSION.getName(),
-        "Displays Geode product version information.");
+        "Displays GemFire product version information.");
     help.put("assign-buckets",
-        "Causes buckets to be assigned to the partitioned regions in the Geode cache on Server start.");
+        "Causes buckets to be assigned to the partitioned regions in the GemFire cache on Server start.");
     help.put("debug", "Displays verbose information during the invocation of the launcher.");
     help.put("delete-pid-file-on-stop",
         "Specifies that this Server's PID file should be deleted on stop.  The default is to not delete this Server's PID file until JVM exit if --delete-pid-file-on-stop is not specified.");
     help.put("dir",
         "Specifies the working directory where the Server is running.  Defaults to the current working directory.");
     help.put("disable-default-server",
-        "Disables the addition of a default Geode cache server.");
+        "Disables the addition of a default GemFire cache server.");
     help.put("force",
         "Enables any existing Server PID file to be overwritten on start.  The default is to throw an error if a PID file already exists and --force is not specified.");
     help.put("help",
-        "Causes Geode to print out information instead of performing the command. This option is supported by all commands.");
-    help.put("member", "Identifies the Server by member name or ID in the Geode cluster.");
-    help.put(MEMBERSHIP_BIND_ADDRESS,
-        "Specifies the IP address to which the membership-related traffic will be bound.");
+        "Causes GemFire to print out information instead of performing the command. This option is supported by all commands.");
+    help.put("member", "Identifies the Server by member name or ID in the GemFire cluster.");
     help.put("pid", "Indicates the OS process ID of the running Server.");
     help.put("rebalance",
-        "An option to cause the Geode cache's partitioned regions to be rebalanced on start.");
+        "An option to cause the GemFire cache's partitioned regions to be rebalanced on start.");
     help.put("redirect-output",
-        "An option to cause the Server to redirect standard out and standard error to the Geode log file.");
+        "An option to cause the Server to redirect standard out and standard error to the GemFire log file.");
     help.put(SERVER_BIND_ADDRESS,
         "Specifies the IP address on which to bind, or on which the Server is bound, listening for client requests.  Defaults to all IP addresses available to the localhost.");
     help.put("hostname-for-clients",
@@ -172,7 +169,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   static {
     Map<Command, String> usage = new TreeMap<>();
     usage.put(Command.START,
-        "start <member-name> [--assign-buckets] [--disable-default-server] [--rebalance] [--server-bind-address=<IP-address>] [--server-port=<port>] [--membership-bind-address=<IP-address>] [--force] [--debug] [--help]");
+        "start <member-name> [--assign-buckets] [--disable-default-server] [--rebalance] [--server-bind-address=<IP-address>] [--server-port=<port>] [--force] [--debug] [--help]");
     usage.put(Command.STATUS,
         "status [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Server-working-directory>] [--debug] [--help]");
     usage.put(Command.STOP,
@@ -351,10 +348,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     String serverBindAddress =
         builder.isServerBindAddressSetByUser() && this.serverBindAddress != null
             ? this.serverBindAddress.getHostAddress() : null;
-    if (builder.membershipBindAddressSpecified()) {
-      this.distributedSystemProperties.setProperty(MEMBERSHIP_BIND_ADDRESS,
-          builder.getMembershipBindAddress());
-    }
+
     ServerLauncherParameters.INSTANCE
         .withPort(serverPort)
         .withMaxThreads(maxThreads)
@@ -489,24 +483,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
    */
   public boolean isRedirectingOutput() {
     return redirectOutput;
-  }
-
-  /**
-   * Determines whether the membership-bind-address property is defined or not.
-   *
-   * @return a boolean value indicating if the membership-bind-address property is defined or not.
-   */
-  public boolean membershipBindAddressSpecified() {
-    return (this.distributedSystemProperties.getProperty(MEMBERSHIP_BIND_ADDRESS) != null);
-  }
-
-  /**
-   * Gets the IP address to be used for membership-related traffic binding.
-   *
-   * @return a String containing the IP address to be used for membership-related traffic binding.
-   */
-  public String getMembershipBindAddress() {
-    return this.distributedSystemProperties.getProperty(MEMBERSHIP_BIND_ADDRESS);
   }
 
   /**
@@ -1478,7 +1454,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
     private Command command;
 
     private InetAddress serverBindAddress;
-    private String membershipBindAddress;
 
     private Integer pid;
     private Integer serverPort;
@@ -1570,7 +1545,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
           .ofType(Integer.class);
       parser.accepts(CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS).withRequiredArg()
           .ofType(String.class);
-      parser.accepts(MEMBERSHIP_BIND_ADDRESS).withRequiredArg().ofType(String.class);
 
       return parser;
     }
@@ -1667,11 +1641,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
           if (options.has("version")) {
             setCommand(Command.VERSION);
-          }
-
-          if (options.has(MEMBERSHIP_BIND_ADDRESS)) {
-            setMembershipBindAddress(
-                ObjectUtils.toString(options.valueOf(MEMBERSHIP_BIND_ADDRESS)));
           }
         }
 
@@ -2028,37 +1997,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
       }
       this.memberName = memberName;
       return this;
-    }
-
-    /**
-     * Sets the IP address to be used for membership-related traffic binding.
-     *
-     * @param membershipBindAddress a String containing the IP address to be used for
-     *        membership-related traffic binding.
-     * @return this Builder instance.
-     * @see #getMembershipBindAddress()
-     */
-    public Builder setMembershipBindAddress(final String membershipBindAddress) {
-      this.membershipBindAddress = membershipBindAddress;
-      return this;
-    }
-
-    /**
-     * Gets the IP address to be used for membership-related traffic binding.
-     *
-     * @return a String containing the IP address to be used for membership-related traffic binding.
-     */
-    public String getMembershipBindAddress() {
-      return this.membershipBindAddress;
-    }
-
-    /**
-     * Determines whether the membership-bind-address property is defined or not.
-     *
-     * @return a boolean value indicating if the membership-bind-address property is defined or not.
-     */
-    public boolean membershipBindAddressSpecified() {
-      return this.membershipBindAddress != null;
     }
 
     /**

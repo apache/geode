@@ -17,9 +17,7 @@ package org.apache.geode.distributed.internal.direct;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -61,9 +59,10 @@ import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * DirectChannel is used to interact directly with other Direct servers to distribute Geode
- * messages to other nodes. It is held by org.apache.geode.distributed.internal.Distribution,
- * which is used by the DistributionManager to send and receive asynchronous messages.
+ * DirectChannel is used to interact directly with other Direct servers to distribute GemFire
+ * messages to other nodes. It is held by a
+ * org.apache.geode.internal.cache.distribution.DistributionChannel, which is used by the
+ * DistributionManager to send and receive asynchronous messages.
  */
 public class DirectChannel {
 
@@ -138,22 +137,7 @@ public class DirectChannel {
       props.setProperty("membership_port_range_start", "" + range[0]);
       props.setProperty("membership_port_range_end", "" + range[1]);
 
-      InetAddress conduitAddress = address;
-      if (!dc.getMembershipBindAddress().isEmpty()) {
-        try {
-          if (dc.getMembershipBindAddress().equals("*")) {
-            conduitAddress = (new InetSocketAddress(0)).getAddress();
-          } else {
-            conduitAddress = InetAddress.getByName(dc.getMembershipBindAddress());
-          }
-        } catch (UnknownHostException e) {
-          logger.error("Exception when configuring " + dc.getMembershipBindAddress()
-              + " as bind address in DirectChannel, default address will be used: "
-              + e.getMessage());
-        }
-      }
-
-      this.conduit = new TCPConduit(mgr, port, conduitAddress, isBindAddress, this, props);
+      this.conduit = new TCPConduit(mgr, port, address, isBindAddress, this, props);
       disconnected = false;
       disconnectCompleted = false;
       logger.info("GemFire P2P Listener started on {}",

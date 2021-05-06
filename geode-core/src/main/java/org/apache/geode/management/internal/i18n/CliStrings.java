@@ -2494,10 +2494,6 @@ public class CliStrings {
   public static final String START_LOCATOR__REDIRECT_OUTPUT = "redirect-output";
   public static final String START_LOCATOR__REDIRECT_OUTPUT__HELP =
       "Causes the member to redirect standard out and standard error to its own log file";
-  public static final String START_LOCATOR__MEMBERSHIP_BIND_ADDRESS =
-      "membership-bind-address";
-  public static final String START_LOCATOR__MEMBERSHIP_BIND_ADDRESS__HELP =
-      "Sets the IP address to which the membership-related traffic will be bound.";
 
   /* 'start manager' command */
   public static final String START_MANAGER = "start manager";
@@ -2599,9 +2595,9 @@ public class CliStrings {
   public static final String START_SERVER__MCAST_PORT = MCAST_PORT;
   public static final String START_SERVER__MCAST_PORT__HELP =
       "Sets the port used for multi-cast networking so the Cache Server can communicate with other members of the Geode cluster.  A zero value disables mcast.";
-  public static final String START_SERVER__MEMBERSHIP_BIND_ADDRESS = "membership-bind-address";
-  public static final String START_SERVER__MEMBERSHIP_BIND_ADDRESS__HELP =
-      "Sets the IP address to which the membership-related traffic will be bound.";
+  public static final String START_SERVER__NAME = "name";
+  public static final String START_SERVER__NAME__HELP =
+      "The member name to give this Cache Server in the Geode cluster.";
   public static final String START_SERVER__MEMCACHED_PORT = MEMCACHED_PORT;
   public static final String START_SERVER__MEMCACHED_PORT__HELP =
       "Sets the port that the Geode memcached service listens on for memcached clients.";
@@ -2611,9 +2607,6 @@ public class CliStrings {
   public static final String START_SERVER__MEMCACHED_BIND_ADDRESS = MEMCACHED_BIND_ADDRESS;
   public static final String START_SERVER__MEMCACHED_BIND_ADDRESS__HELP =
       "Sets the IP address the Geode memcached service listens on for memcached clients. The default is to bind to the first non-loopback address for this machine.";
-  public static final String START_SERVER__NAME = "name";
-  public static final String START_SERVER__NAME__HELP =
-      "The member name to give this Cache Server in the Geode cluster.";
   public static final String START_SERVER__OFF_HEAP_MEMORY_SIZE =
       ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
   public static final String START_SERVER__OFF_HEAP_MEMORY_SIZE__HELP =

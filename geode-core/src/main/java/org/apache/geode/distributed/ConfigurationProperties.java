@@ -1774,18 +1774,6 @@ public interface ConfigurationProperties {
    * <U>Default</U>: "" (doesn't start a locator)
    */
   String START_LOCATOR = MembershipConfig.START_LOCATOR;
-
-  /**
-   * The static String definition of the <i>"membership-bind-address"</i> property <a
-   * name="membership-bind-address"/a>
-   * </p>
-   * <U>Description</U>: Specifies the IP address to which the membership-related traffic will be
-   * bound.
-   * <p>
-   * <U>Default</U>: ""
-   */
-  String MEMBERSHIP_BIND_ADDRESS = "membership-bind-address";
-
   /**
    * The static String definition of the <i>"statistic-archive-file"</i> property <a
    * name="statistic-archive-file"/a>
