@@ -25,6 +25,7 @@
 #-----------------------------------------------------------------
 geode-serialization/**                                            @echobravopapa @Bill
 geode-core/**/org/apache/geode/pdx/**                             @upthewaterspout @dschneider-pivotal @agingade
+geode-core/**/org/apache/geode/codeAnalysis/**                    @upthewaterspout @dschneider-pivotal @agingade
 geode-core/**/org/apache/geode/internal/*                         @echobravopapa @Bill @kirklund
 
 #-----------------------------------------------------------------
@@ -71,6 +72,7 @@ geode-core/**/org/apache/geode/cache/util/**                      @dschneider-pi
 # Distributed Locks
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/distributed/internal/locks/**      @dschneider-pivotal @pivotal-eshu @kirklund
+geode-core/**/org/apache/geode/distributed/internal/deadlock/**   @dschneider-pivotal @pivotal-eshu @kirklund
 
 #-----------------------------------------------------------------
 # Core region implementations and plumbing
@@ -154,6 +156,7 @@ geode-memcached/**                                                @nabarunnag @D
 #-----------------------------------------------------------------
 # Misc Utilities
 #-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/util/**                   @nabarunnag @boglesby
 geode-core/**/org/apache/geode/internal/util/concurrent/**        @nabarunnag @boglesby @kirklund
 geode-core/**/org/apache/geode/internal/shared/**                 @nabarunnag @boglesby
 geode-core/**/org/apache/geode/internal/sequencelog/**            @nabarunnag @boglesby
@@ -164,7 +167,6 @@ geode-core/**/org/apache/geode/internal/monitoring/**             @nabarunnag @b
 geode-core/**/org/apache/geode/internal/exception/**              @nabarunnag @boglesby @kirklund
 geode-core/**/org/apache/geode/lang/**                            @nabarunnag @boglesby @kirklund
 geode-core/**/org/apache/geode/ra/**                              @nabarunnag @boglesby
-geode-core/**/org/apache/geode/internal/util/**                   @nabarunnag @boglesby
 geode-core/**/org/apache/geode/internal/cache/vmotion/**          @nabarunnag @boglesby
 geode-core/**/org/apache/geode/internal/jndi/**                   @nabarunnag @boglesby
 geode-common/**                                                   @nabarunnag @boglesby @kirklund
@@ -219,8 +221,8 @@ geode-core/**/org/apache/geode/cache/internal/*                   @jdeppe-pivota
 #-----------------------------------------------------------------
 # Security
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/examples/security/**               @jdeppe-pivotal @jinmeiliao
 geode-core/**/org/apache/geode/examples/**                        @jdeppe-pivotal @jinmeiliao @mhansonp
+geode-core/**/org/apache/geode/examples/security/**               @jdeppe-pivotal @jinmeiliao
 geode-core/**/org/apache/geode/security/**                        @jdeppe-pivotal @jinmeiliao
 geode-core/**/org/apache/geode/internal/security/**               @jdeppe-pivotal @jinmeiliao
 geode-core/**/org/apache/geode/cache/operations/**                @jdeppe-pivotal @jinmeiliao
@@ -275,6 +277,7 @@ geode-junit/**                                                    @mhansonp @kir
 #geode-jmh/**
 geode-junit/**/org/apache/geode/test/util/**                      @jdeppe-pivotal @onichols-pivotal
 geode-assembly/**/org/apache/geode/test/junit/**                  @jdeppe-pivotal @jinmeiliao
+geode-assembly/**/org/apache/geode/rules/**                       @jdeppe-pivotal @jinmeiliao
 geode-assembly/**/org/apache/geode/launchers/**                   @dschneider-pivotal @boglesby @kirklund @nabarunnag
 geode-assembly/**/resources/**                                    @boglesby @kirklund @nabarunnag @jdeppe-pivotal @jinmeiliao
 
@@ -300,7 +303,6 @@ geode-management/src/test/script/update-management-wiki.sh        @onichols-pivo
 static-analysis/**                                                @rhoughton-pivot @onichols-pivotal
 geode-old-versions/**                                             @onichols-pivotal @dickcav
 KEYS                                                              @onichols-pivotal @dickcav
-geode-assembly/**/org/apache/geode/**                             @rhoughton-pivot @onichols-pivotal @dickcav
 assembly_content.txt                                              @rhoughton-pivot @onichols-pivotal
 dependency_classpath.txt                                          @rhoughton-pivot @onichols-pivotal
 expected-pom.xml                                                  @rhoughton-pivot @onichols-pivotal
@@ -308,6 +310,7 @@ expected-pom.xml                                                  @rhoughton-piv
 #-----------------------------------------------------------------
 # Documentation
 #-----------------------------------------------------------------
+apache-copyright-notice.txt                                       @upthewaterspout @pivotal-amurmann
 BUILDING.md                                                       @rhoughton-pivot @upthewaterspout
 CODE_OF_CONDUCT.md                                                @upthewaterspout @pivotal-amurmann @nonbinaryprogrammer
 LICENSE                                                           @onichols-pivotal @dickcav
