@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.lucene.internal.cli;
+package org.apache.geode.cache.lucene.internal.cli.commands;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,6 +51,13 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
+import org.apache.geode.cache.lucene.internal.cli.LuceneDestroyIndexInfo;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexStatus;
+import org.apache.geode.cache.lucene.internal.cli.LuceneQueryInfo;
+import org.apache.geode.cache.lucene.internal.cli.LuceneSearchResults;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDestroyIndexFunction;

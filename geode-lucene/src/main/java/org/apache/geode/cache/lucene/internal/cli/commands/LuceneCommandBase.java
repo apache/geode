@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.cache.lucene.internal.cli;
+package org.apache.geode.cache.lucene.internal.cli.commands;
 
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +22,11 @@ import java.util.stream.Collectors;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
+import org.apache.geode.cache.lucene.internal.cli.LuceneFunctionSerializable;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexStatus;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
