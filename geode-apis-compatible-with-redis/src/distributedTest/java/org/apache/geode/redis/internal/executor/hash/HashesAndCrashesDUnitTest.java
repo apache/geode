@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -85,13 +86,14 @@ public class HashesAndCrashesDUnitTest {
 
   @BeforeClass
   public static void classSetup() throws Exception {
-    redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
     locator = clusterStartUp.startLocatorVM(0, locatorProperties);
 
     int locatorPort = locator.getPort();
+
+    redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
 
     String redisPort1 = redisPorts[0] + "";
     server1 = clusterStartUp.startServerVM(1,
@@ -147,7 +149,6 @@ public class HashesAndCrashesDUnitTest {
     redisClient.shutdown();
   }
 
-
   private MemberVM startRedisVM(int vmID, int redisPort) {
     int locatorPort = locator.getPort();
     return clusterStartUp.startServerVM(vmID,
@@ -158,19 +159,16 @@ public class HashesAndCrashesDUnitTest {
             .withConnectionToLocator(locatorPort));
   }
 
-
   @Test
   public void givenServerCrashesDuringHSET_thenDataIsNotLost_andNoExceptionsAreLogged()
       throws Exception {
     modifyDataWhileCrashingVMs(DataType.HSET);
   }
 
-
   @Test
   public void givenServerCrashesDuringSADD_thenDataIsNotLost() throws Exception {
     modifyDataWhileCrashingVMs(DataType.SADD);
   }
-
 
   @Test
   public void givenServerCrashesDuringSET_thenDataIsNotLost() throws Exception {
@@ -254,9 +252,7 @@ public class HashesAndCrashesDUnitTest {
         iterationCount += 1;
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
-        if (ex.getMessage().contains("Connection reset by peer")) {
-          // ignore it
-        } else {
+        if (!ex.getMessage().contains("Connection reset by peer")) {
           throw ex;
         }
       }
@@ -282,9 +278,7 @@ public class HashesAndCrashesDUnitTest {
         iterationCount += 1;
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
-        if (ex.getMessage().contains("Connection reset by peer")) {
-          // ignore it
-        } else {
+        if (!ex.getMessage().contains("Connection reset by peer")) {
           throw ex;
         }
       }
@@ -312,9 +306,7 @@ public class HashesAndCrashesDUnitTest {
         iterationCount += 1;
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
-        if (ex.getMessage().contains("Connection reset by peer")) {
-          // ignore it
-        } else {
+        if (!ex.getMessage().contains("Connection reset by peer")) {
           throw ex;
         }
       }
@@ -331,7 +323,8 @@ public class HashesAndCrashesDUnitTest {
 
   private static void rebalanceAllRegions(MemberVM vm) {
     vm.invoke(() -> {
-      ResourceManager manager = ClusterStartupRule.getCache().getResourceManager();
+      ResourceManager manager =
+          Objects.requireNonNull(ClusterStartupRule.getCache()).getResourceManager();
 
       RebalanceFactory factory = manager.createRebalanceFactory();
 

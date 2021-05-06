@@ -105,7 +105,6 @@ public class HlenDUnitTest {
     server2.stop();
   }
 
-
   @Test
   public void testConcurrentHLens_returnExpectedLength() {
     AtomicLong client1Len = new AtomicLong();
@@ -129,9 +128,7 @@ public class HlenDUnitTest {
             .run();
 
     assertThat(client1Len.get() + client2Len.get()).isEqualTo(NUM_ITERATIONS * HASH_SIZE * 2);
-
   }
-
 
   @Test
   public void testConcurrentHLen_whileAddingFields() {
@@ -161,9 +158,7 @@ public class HlenDUnitTest {
     long finalActualLength = lettuce.hlen(key);
     long finalExpectedLength = Long.parseLong(lettuce.get(storeKey));
     assertThat(finalActualLength).isEqualTo(finalExpectedLength);
-
   }
-
 
   @Test
   public void testConcurrentHLen_whileDeletingFields() {
@@ -190,7 +185,6 @@ public class HlenDUnitTest {
         }).run();
 
     assertThat(lettuce.hlen(key)).isEqualTo(0L);
-
   }
 
   private Map<String, String> makeInitialHashMap(int hashSize, String baseFieldName,

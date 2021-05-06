@@ -88,7 +88,6 @@ public class HKeysDUnitTest {
     locator.stop();
   }
 
-
   @Test
   public void testConcurrentHKeys_whileAddingValues() {
     String key = "key";
@@ -115,9 +114,7 @@ public class HKeysDUnitTest {
         }).run();
 
     assertThat(jedis.hkeys(key)).containsExactlyInAnyOrderElementsOf(expectedFields);
-
   }
-
 
   @Test
   public void testConcurrentHKeys_whileDeletingValues() {
@@ -131,9 +128,7 @@ public class HKeysDUnitTest {
         (i) -> jedis.hkeys(key)).run();
 
     assertThat(jedis.hkeys(key).size()).isEqualTo(0);
-
   }
-
 
   @Test
   public void testConcurrentHKeys_whileUpdatingValues() {
@@ -154,7 +149,6 @@ public class HKeysDUnitTest {
     for (String field : testMap.keySet()) {
       assertThat(jedis.hget(key, field)).isEqualTo(testMap.get(field));
     }
-
   }
 
   private Map<String, String> makeHashMap(int hashSize, String baseFieldName,

@@ -85,7 +85,6 @@ public class HExistsDUnitTest {
     server2.stop();
   }
 
-
   @Test
   public void testConcurrentHExists_whileUpdatingValues() {
     String key = "key";
@@ -101,9 +100,7 @@ public class HExistsDUnitTest {
 
     Map<String, String> expectedResult = makeHashMap(HASH_SIZE, "field-", "changedValue-");
     assertThat(jedis.hgetAll(key)).containsExactlyInAnyOrderEntriesOf(expectedResult);
-
   }
-
 
   @Test
   public void testConcurrentHExists_whileAddingValues() {
@@ -121,7 +118,6 @@ public class HExistsDUnitTest {
                 .runInLockstep();
 
     assertThat(jedis.hgetAll(key)).containsExactlyInAnyOrderEntriesOf(expectedValues);
-
   }
 
 
@@ -140,7 +136,6 @@ public class HExistsDUnitTest {
                 .runInLockstep();
 
     assertThat(jedis.hgetAll(key)).isEmpty();
-
   }
 
   private Map<String, String> makeHashMap(int hashSize, String baseFieldName,

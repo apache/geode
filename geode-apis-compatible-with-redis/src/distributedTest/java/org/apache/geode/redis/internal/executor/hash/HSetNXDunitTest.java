@@ -94,7 +94,6 @@ public class HSetNXDunitTest {
     server2.stop();
   }
 
-
   @Test
   public void testHSETNXReturnsOneWhenKeyDoesNotExistAndZeroWhenItDoes()
       throws ExecutionException, InterruptedException {
@@ -109,7 +108,6 @@ public class HSetNXDunitTest {
           () -> lettuce.hsetnx(key, "field" + local_i, "value" + local_i));
 
       assertThat(server_1_counter.get() ^ server_2_counter.get()).isTrue();
-
     }
   }
 
