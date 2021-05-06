@@ -24,8 +24,8 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
 /**
  * Contains tests that measure the used memory of redis or radish and assert that the memory
@@ -35,7 +35,7 @@ import org.apache.geode.test.dunit.rules.RedisPortSupplier;
  * @see #measureAndCheckPerEntryOverhead(AddEntryFunction, Measurement) (IntToLongFunction,
  *      Measurement)
  */
-public abstract class AbstractMemoryOverheadIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractMemoryOverheadIntegrationTest implements RedisIntegrationTest {
 
   private static final int WARM_UP_ENTRY_COUNT = 1000;
   private static final int TOTAL_ENTRY_COUNT = 5000;
