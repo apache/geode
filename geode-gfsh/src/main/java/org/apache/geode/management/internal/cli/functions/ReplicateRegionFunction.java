@@ -14,8 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -43,6 +46,7 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
@@ -205,27 +209,38 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
     }
 
     final InternalCache cache = (InternalCache) context.getCache();
-    final List<Integer> remoteDSIds = getRemoteDsIds(cache, region);
     int replicatedEntries = 0;
     final long startTime = clock.millis();
-    for (Object entry : entries) {
-      try {
-        if (replicateEntry(cache, (InternalRegion) region, sender, (Region.Entry) entry,
-            replicatedEntries, batchSize, maxRate, startTime, remoteDSIds)) {
-          replicatedEntries++;
+
+    Iterator<?> iter = entries.iterator();
+
+    while (iter.hasNext()) {
+      int batchIndex = 0;
+      List<GatewaySenderEventImpl> batch = new ArrayList<>();
+      while (iter.hasNext() && batchIndex < batchSize) {
+        GatewaySenderEventImpl event = createGatewaySenderEvent(cache, (InternalRegion) region,
+            sender, (Region.Entry) iter.next());
+        if (event != null) {
+          batch.add(event);
+          batchIndex++;
         }
+      }
+      try {
+        sendBatch(sender,
+            replicatedEntries, maxRate, startTime, batch);
+        replicatedEntries += batch.size();
       } catch (InterruptedException e) {
         return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
             "Operation canceled after having replicated " + replicatedEntries + " entries");
       }
     }
+
     return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
         "Entries replicated: " + replicatedEntries);
   }
 
-  private boolean replicateEntry(InternalCache cache, InternalRegion region, GatewaySender sender,
-      Region.Entry entry, int replicatedEntries, int batchSize, long maxRate, long startTime,
-      List<Integer> remoteDSIds) throws InterruptedException {
+  private GatewaySenderEventImpl createGatewaySenderEvent(InternalCache cache,
+      InternalRegion region, GatewaySender sender, Region.Entry entry) {
     final EntryEventImpl event;
     if (region instanceof PartitionedRegion) {
       event = createEventForPartitionedRegion(sender, cache, region, entry);
@@ -233,12 +248,22 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
       event = createEventForReplicatedRegion(cache, region, entry);
     }
     if (event == null) {
-      return false;
+      return null;
     }
-    ((AbstractGatewaySender) sender).distribute(EnumListenerEvent.AFTER_UPDATE, event,
-        remoteDSIds, true);
-    doActionsIfBatchReplicated(startTime, replicatedEntries + 1, batchSize, maxRate);
-    return true;
+    try {
+      return new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE, event, null, true);
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
+
+  private void sendBatch(GatewaySender sender,
+      int replicatedEntries, long maxRate, long startTime,
+      List batch) throws InterruptedException {
+    ((AbstractGatewaySender) sender).getEventProcessor().getDispatcher().dispatchBatch(batch, false,
+        false);
+    doActionsIfBatchReplicated(startTime, replicatedEntries + batch.size(), maxRate);
   }
 
   final CliFunctionResult cancelReplicateRegion(FunctionContext<String[]> context, Region region,
@@ -271,15 +296,10 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
    *
    * @param startTime time at which the entries started to be replicated
    * @param replicatedEntries number of entries replicated so far
-   * @param batchSize size of the batch
    * @param maxRate maximum rate of replication
    */
-  void doActionsIfBatchReplicated(long startTime, int replicatedEntries,
-      int batchSize, long maxRate)
+  void doActionsIfBatchReplicated(long startTime, int replicatedEntries, long maxRate)
       throws InterruptedException {
-    if (replicatedEntries % batchSize != 0) {
-      return;
-    }
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }

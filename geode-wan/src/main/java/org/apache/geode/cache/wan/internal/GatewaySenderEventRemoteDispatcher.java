@@ -192,6 +192,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     } finally {
       messageProcessingAttempted.accept(false);
     }
+    processor.incrementBatchId();
     return success;
   }
 

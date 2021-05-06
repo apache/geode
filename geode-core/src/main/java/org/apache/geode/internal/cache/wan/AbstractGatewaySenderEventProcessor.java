@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
@@ -82,7 +83,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   /**
    * An int id used to identify each batch.
    */
-  protected int batchId = 0;
+  protected AtomicInteger batchId = new AtomicInteger(0);
 
   /**
    * A boolean verifying whether this <code>AbstractGatewaySenderEventProcessor</code> is running.
@@ -221,21 +222,17 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   }
 
   /**
-   * Increment the batch id. This method is not synchronized because this dispatcher is the caller
+   * Increment the batch id.
    */
   public void incrementBatchId() {
-    // If _batchId + 1 == maximum, then roll over
-    if (this.batchId + 1 == Integer.MAX_VALUE) {
-      this.batchId = -1;
-    }
-    this.batchId++;
+    batchId.getAndUpdate(x -> x == Integer.MAX_VALUE ? -1 : x + 1);
   }
 
   /**
-   * Reset the batch id. This method is not synchronized because this dispatcher is the caller
+   * Reset the batch id.
    */
-  public void resetBatchId() {
-    this.batchId = 0;
+  public synchronized void resetBatchId() {
+    batchId.set(0);
     // dont reset first time when first batch is put for dispatch
     // if (this.batchIdToEventsMap.size() == 1) {
     // if (this.batchIdToEventsMap.containsKey(0)) {
@@ -274,7 +271,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
    * @return the current batch id to be used to identify the next batch
    */
   public int getBatchId() {
-    return this.batchId;
+    return this.batchId.get();
   }
 
   public boolean isConnectionReset() {
