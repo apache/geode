@@ -382,7 +382,6 @@ public interface ConfigurationProperties {
    * <U>Default</U>: "false"
    */
   String DISABLE_AUTO_RECONNECT = "disable-auto-reconnect";
-  String QUORUM_ABSOLUTE_LOCATOR_COUNT = "quorum-absolute-locator-count";
   /**
    * The static String definition of the <i>"disable-tcp"</i> property <a name="disable-tcp"/a>
    * <p>
@@ -1922,6 +1921,7 @@ public interface ConfigurationProperties {
    * <U>Since</U>: Geode 1.0
    */
   String OFF_HEAP_MEMORY_SIZE = "off-heap-memory-size";
+  String QUORUM_ABSOLUTE_LOCATOR_COUNT = MembershipConfig.QUORUM_ABSOLUTE_LOCATOR_COUNT;
   /**
    * The static String definition of the <i>"compatible-with-redis-bind-address"</i> property <a
    * name="compatible-with-redis-bind-address"/a>

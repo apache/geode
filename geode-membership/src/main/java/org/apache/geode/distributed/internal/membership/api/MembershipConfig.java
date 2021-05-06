@@ -72,6 +72,7 @@ public interface MembershipConfig {
 
   String LOCATORS = "locators";
   String START_LOCATOR = "start-locator";
+  String QUORUM_ABSOLUTE_LOCATOR_COUNT = "quorum-absolute-locator-count";
 
   default boolean isReconnecting() {
     return false;

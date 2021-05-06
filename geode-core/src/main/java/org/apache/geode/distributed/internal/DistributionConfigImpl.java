@@ -2462,13 +2462,13 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public int getQuorumAbsoluteLocatorCount() {
-    return quorumAbsoluteLocatorCount;
+  public void setDisableAutoReconnect(boolean value) {
+    disableAutoReconnect = value;
   }
 
   @Override
-  public void setDisableAutoReconnect(boolean value) {
-    disableAutoReconnect = value;
+  public int getQuorumAbsoluteLocatorCount() {
+    return quorumAbsoluteLocatorCount;
   }
 
   @Override

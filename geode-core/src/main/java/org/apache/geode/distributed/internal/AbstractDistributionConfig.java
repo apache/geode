@@ -111,6 +111,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_POR
 import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_PROTOCOL;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.apache.geode.distributed.ConfigurationProperties.QUORUM_ABSOLUTE_LOCATOR_COUNT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PASSWORD;
@@ -1312,6 +1313,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "The protocol that GemFireMemcachedServer understands. Default is ASCII. Values may be ASCII or BINARY");
     m.put(MEMCACHED_BIND_ADDRESS,
         "The address the GemFireMemcachedServer will listen on for remote connections. Default is \"\" which causes the GemFireMemcachedServer to listen on the host's default address. This property is ignored if memcached-port is \"0\".");
+    m.put(QUORUM_ABSOLUTE_LOCATOR_COUNT,
+        "When set to an integer value greater than 0, specifies the minimum number of locators required for quorum.");
     m.put(REDIS_BIND_ADDRESS,
         "Specifies the address on which the Redis API for Geode is listening. If set to the empty string or this property is not specified, localhost is requested from the operating system.");
     m.put(REDIS_ENABLED,

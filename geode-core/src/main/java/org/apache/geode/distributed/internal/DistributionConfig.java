@@ -4086,12 +4086,6 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   @ConfigAttributeGetter(name = DISABLE_AUTO_RECONNECT)
   boolean getDisableAutoReconnect();
 
-  int DEFAULT_QUORUM_ABSOLUTE_LOCATOR_COUNT =
-      MembershipConfig.DEFAULT_QUORUM_ABSOLUTE_LOCATOR_COUNT;
-
-  @ConfigAttributeGetter(name = QUORUM_ABSOLUTE_LOCATOR_COUNT)
-  int getQuorumAbsoluteLocatorCount();
-
   /**
    * Sets the value of {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT}
    *
@@ -4100,8 +4094,16 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   @ConfigAttributeSetter(name = DISABLE_AUTO_RECONNECT)
   void setDisableAutoReconnect(boolean value);
 
+  @ConfigAttributeGetter(name = QUORUM_ABSOLUTE_LOCATOR_COUNT)
+  int getQuorumAbsoluteLocatorCount();
+
   @ConfigAttributeSetter(name = QUORUM_ABSOLUTE_LOCATOR_COUNT)
   void setQuorumAbsoluteLocatorCount(int quorumAbsoluteLocatorCount);
+
+  @ConfigAttribute(type = Integer.class, min = 1)
+  String QUORUM_ABSOLUTE_LOCATOR_COUNT_NAME = QUORUM_ABSOLUTE_LOCATOR_COUNT;
+  int DEFAULT_QUORUM_ABSOLUTE_LOCATOR_COUNT =
+      MembershipConfig.DEFAULT_QUORUM_ABSOLUTE_LOCATOR_COUNT;
 
   /**
    * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
