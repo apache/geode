@@ -265,10 +265,11 @@ public class RedisHashTest {
   /******* constants *******/
   @Test
   public void constantBaseRedisHashOverhead_shouldEqualCalculatedOverhead() {
-    ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
-    int baseRedisHashOverhead = reflectionObjectSizer.sizeof(new RedisHash());
+    RedisHash hash = new RedisHash();
+    int baseRedisHashOverhead = reflectionObjectSizer.sizeof(hash);
 
     assertThat(baseRedisHashOverhead).isEqualTo(BASE_REDIS_HASH_OVERHEAD);
+    assertThat(hash.getSizeInBytes()).isEqualTo(baseRedisHashOverhead);
   }
 
   @Test
@@ -312,15 +313,6 @@ public class RedisHashTest {
   }
 
   /******* constructor *******/
-  @Test
-  public void should_calculateSize_equalToROSSize_ofEmptyIndividualInstance() {
-    RedisHash redisHash = new RedisHash();
-
-    int expected = reflectionObjectSizer.sizeof(redisHash);
-    int actual = redisHash.getSizeInBytes();
-
-    assertThat(actual).isEqualTo(expected);
-  }
 
   @SuppressWarnings("unchecked")
   @Test
