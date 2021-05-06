@@ -4100,7 +4100,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   @ConfigAttributeSetter(name = QUORUM_ABSOLUTE_LOCATOR_COUNT)
   void setQuorumAbsoluteLocatorCount(int quorumAbsoluteLocatorCount);
 
-  @ConfigAttribute(type = Integer.class, min = 1)
+  @ConfigAttribute(type = Integer.class, min = 0)
   String QUORUM_ABSOLUTE_LOCATOR_COUNT_NAME = QUORUM_ABSOLUTE_LOCATOR_COUNT;
   int DEFAULT_QUORUM_ABSOLUTE_LOCATOR_COUNT =
       MembershipConfig.DEFAULT_QUORUM_ABSOLUTE_LOCATOR_COUNT;

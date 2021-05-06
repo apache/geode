@@ -1667,8 +1667,6 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       return false;
     }
 
-    final Set<ID> crashedMembers = newView.getActualCrashedMembers(currentView);
-
     if (logger.isInfoEnabled() && newView.getCreator().equals(localAddress)) { // view-creator
       // logs this
       newView.logCrashedMemberWeights(currentView, logger);
@@ -1677,6 +1675,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     final boolean quorumLost = quorum.isLostQuorum(currentView, newView);
     if (quorumLost) {
       logger.warn(quorum.quorumLostMessage(currentView, newView));
+      final Set<ID> crashedMembers = newView.getActualCrashedMembers(currentView);
       services.getManager()
           .quorumLost(crashedMembers, currentView);
     }
