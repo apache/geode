@@ -44,20 +44,26 @@ OUTPUT_DIR=${BASE_DIR}/geode-results
 case $ARTIFACT_SLUG in
   windows*)
     JAVA_BUILD_PATH=C:/java8
-    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH}; cd geode; ./gradlew --no-daemon combineReports'"
+    del=";"
     ;;
   *)
     # JAVA_BUILD_PATH=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64
     JAVA_BUILD_PATH=/usr/lib/jvm/bellsoft-java${JAVA_BUILD_VERSION}-amd64
-    EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH} && cd geode && ./gradlew --no-daemon combineReports'"
+    del="&&"
     ;;
 esac
 
-ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND}"
+EXEC_COMMAND="bash -c 'export JAVA_HOME=${JAVA_BUILD_PATH} \
+  ${del} cd geode \
+  ${del} ./gradlew --no-daemon combineReports \
+  ${del} ./gradlew --stop \
+  ${del} cd .. \
+  ${del} rm -rf .gradle/caches .gradle/wrapper'"
 
-time rsync -e "ssh ${SSH_OPTIONS}" -ah geode@${INSTANCE_IP_ADDRESS}:geode ${OUTPUT_DIR}/ &
-time rsync -e "ssh ${SSH_OPTIONS}" -ah geode@${INSTANCE_IP_ADDRESS}:.gradle ${OUTPUT_DIR}/geode/.gradle_logs &
+time ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND}"
 
-wait
+time ssh ${SSH_OPTIONS} "geode@${INSTANCE_IP_ADDRESS}" tar -czf - geode .gradle | tar -C "${OUTPUT_DIR}" -zxf -
+
+mv "${OUTPUT_DIR}/.gradle" "${OUTPUT_DIR}/geode/.gradle_logs"
 
 set +x
