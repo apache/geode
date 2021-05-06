@@ -25,7 +25,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
@@ -34,20 +35,23 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegrationTest {
 
-  private static final int JEDIS_TIMEOUT =
+  private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
-  private Jedis jedis;
+  private JedisCluster jedis;
+  private JedisCluster jedis2;
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
+    jedis2.close();
   }
 
   @Test
@@ -80,7 +84,7 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
     jedis.set(key1, "5e2");
 
     double incr1 = 2.0e4;
-    jedis.sendCommand(Protocol.Command.INCRBYFLOAT, key1, "2.0e4");
+    jedis.sendCommand(key1, Protocol.Command.INCRBYFLOAT, key1, "2.0e4");
     assertThat(Double.valueOf(jedis.get(key1))).isEqualTo(num1 + incr1);
   }
 
@@ -102,50 +106,53 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
 
   @Test
   public void testCorrectErrorIsReturned_whenIncrByIsInvalid() {
+    String key = "number";
     double number1 = 1.4;
-    jedis.set("number", "" + number1);
+    jedis.set(key, "" + number1);
 
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", " a b c"))
+    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, " a b c"))
         .hasMessage("ERR value is not a valid float");
   }
 
   @Test
   public void testIncrByFloat_withInfinityAndVariants() {
-    jedis.set("number", "1.4");
+    String key = "number";
+    jedis.set(key, "1.4");
 
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "+inf"))
+    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "+inf"))
         .hasMessage("ERR increment would produce NaN or Infinity");
 
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "-inf"))
+    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "-inf"))
         .hasMessage("ERR increment would produce NaN or Infinity");
 
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "inf"))
+    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "inf"))
         .hasMessage("ERR increment would produce NaN or Infinity");
 
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "+infinity"))
+    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "+infinity"))
         .hasMessage("ERR increment would produce NaN or Infinity");
 
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "-infinity"))
+    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "-infinity"))
         .hasMessage("ERR increment would produce NaN or Infinity");
 
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "infinity"))
+    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "infinity"))
         .hasMessage("ERR increment would produce NaN or Infinity");
 
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "nan"))
+    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "nan"))
         .hasMessage("ERR value is not a valid float");
 
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "infant"))
+    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "infant"))
         .hasMessage("ERR value is not a valid float");
   }
 
   @Test
   public void testIncrByFloat_withReallyBigNumbers() {
+    String key = "number";
     // max unsigned long long - 1
     BigDecimal biggy = new BigDecimal("18446744073709551614");
-    jedis.set("number", biggy.toPlainString());
+    jedis.set(key, biggy.toPlainString());
 
     // Beyond this, native redis produces inconsistent results.
-    Object rawResult = jedis.sendCommand(Protocol.Command.INCRBYFLOAT, "number", "1");
+    Object rawResult = jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "1");
     BigDecimal result = new BigDecimal(new String((byte[]) rawResult));
 
     assertThat(result.toPlainString()).isEqualTo(biggy.add(BigDecimal.ONE).toPlainString());
@@ -155,7 +162,6 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
   public void testConcurrentIncrByFloat_performsAllIncrByFloats() {
     String key = "key";
     Random random = new Random();
-    Jedis jedis2 = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
 
     AtomicReference<BigDecimal> expectedValue = new AtomicReference<>();
     expectedValue.set(new BigDecimal(0));
@@ -166,16 +172,14 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
         (i) -> {
           BigDecimal increment = BigDecimal.valueOf(random.nextInt(37));
           expectedValue.getAndUpdate(x -> x.add(increment));
-          jedis.sendCommand(Protocol.Command.INCRBYFLOAT, key, increment.toPlainString());
+          jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, increment.toPlainString());
         },
         (i) -> {
           BigDecimal increment = BigDecimal.valueOf(random.nextInt(37));
           expectedValue.getAndUpdate(x -> x.add(increment));
-          jedis2.sendCommand(Protocol.Command.INCRBYFLOAT, key, increment.toPlainString());
+          jedis2.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, increment.toPlainString());
         }).run();
 
     assertThat(new BigDecimal(jedis.get(key))).isEqualTo(expectedValue.get());
-
-    jedis2.close();
   }
 }

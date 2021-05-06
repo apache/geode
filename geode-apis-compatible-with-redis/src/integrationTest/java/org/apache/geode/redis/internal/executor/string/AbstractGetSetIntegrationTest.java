@@ -29,7 +29,8 @@ import java.util.concurrent.Future;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -39,21 +40,21 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractGetSetIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
+  private JedisCluster jedis2;
   private static final int ITERATION_COUNT = 4000;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
     jedis2.close();
   }
@@ -139,7 +140,8 @@ public abstract class AbstractGetSetIntegrationTest implements RedisIntegrationT
     assertThat(future1.get() + future2.get()).isEqualTo(2 * ITERATION_COUNT);
   }
 
-  private Integer doABunchOfIncrs(Jedis jedis, CountDownLatch latch) throws InterruptedException {
+  private Integer doABunchOfIncrs(JedisCluster jedis, CountDownLatch latch)
+      throws InterruptedException {
     latch.await();
     for (int i = 0; i < ITERATION_COUNT; i++) {
       jedis.incr("contestedKey");
@@ -147,7 +149,8 @@ public abstract class AbstractGetSetIntegrationTest implements RedisIntegrationT
     return ITERATION_COUNT;
   }
 
-  private Integer doABunchOfGetSets(Jedis jedis, CountDownLatch latch) throws InterruptedException {
+  private Integer doABunchOfGetSets(JedisCluster jedis, CountDownLatch latch)
+      throws InterruptedException {
     int sum = 0;
     latch.await();
 

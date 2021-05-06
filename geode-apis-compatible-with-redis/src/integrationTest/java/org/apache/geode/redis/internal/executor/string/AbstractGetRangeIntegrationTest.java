@@ -26,7 +26,8 @@ import java.util.Random;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
@@ -36,19 +37,22 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public abstract class AbstractGetRangeIntegrationTest implements RedisIntegrationTest {
 
   private Random random = new Random();
-  private Jedis jedis;
+  private JedisCluster jedis;
+  private JedisCluster jedis2;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
+    jedis2.close();
   }
 
   @Test
@@ -59,36 +63,38 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisIntegratio
   @Test
   public void givenStartIndexIsNotAnInteger_returnsNotIntegerError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "NaN", "5"))
+        () -> jedis.sendCommand("key", Protocol.Command.GETRANGE, "key", "NaN", "5"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenEndIndexIsNotAnInteger_returnsNotIntegerError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "0", "NaN"))
+        () -> jedis.sendCommand("key", Protocol.Command.GETRANGE, "key", "0", "NaN"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenRangeIsBiggerThanMinOrMax_returnsNotIntegerError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "0", "9223372036854775808"))
-            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+        () -> jedis.sendCommand("key", Protocol.Command.GETRANGE, "key", "0",
+            "9223372036854775808"))
+                .hasMessage("ERR " + ERROR_NOT_INTEGER);
 
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "0", "-9223372036854775809"))
-            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+        () -> jedis.sendCommand("key", Protocol.Command.GETRANGE, "key", "0",
+            "-9223372036854775809"))
+                .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenWrongType_returnsWrongTypeError() {
     jedis.sadd("set", "value");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETRANGE, "set", "0", "1"))
+    assertThatThrownBy(() -> jedis.sendCommand("set", Protocol.Command.GETRANGE, "set", "0", "1"))
         .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
 
     jedis.hset("hash", "field", "value");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETRANGE, "hash", "0", "1"))
+    assertThatThrownBy(() -> jedis.sendCommand("hash", Protocol.Command.GETRANGE, "hash", "0", "1"))
         .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
@@ -258,7 +264,6 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisIntegratio
 
   @Test
   public void testConcurrentGetrange_whileUpdating() {
-    Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
     jedis.set("key", "1");
 
     new ConcurrentLoopingThreads(10000,

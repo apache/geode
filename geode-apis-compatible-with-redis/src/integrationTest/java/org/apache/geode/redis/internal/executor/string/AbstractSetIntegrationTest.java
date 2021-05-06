@@ -30,7 +30,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
@@ -42,90 +43,96 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
+  private JedisCluster jedis2;
   private static final int ITERATION_COUNT = 4000;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
     jedis2.close();
   }
 
   @Test
   public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET))
+    assertThatThrownBy(() -> jedis.sendCommand("any", Protocol.Command.SET))
         .hasMessageContaining("ERR wrong number of arguments for 'set' command");
   }
 
   @Test
   public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SET, "key"))
         .hasMessageContaining("ERR wrong number of arguments for 'set' command");
   }
 
   @Test
   public void givenEXKeyword_withoutParameter_returnsSyntaxError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "EX"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SET, "key", "value", "EX"))
         .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void givenEXKeyword_whenParameterIsNotAnInteger_returnsNotIntegerError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "EX", "NaN"))
-        .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(
+        () -> jedis.sendCommand("key", Protocol.Command.SET, "key", "value", "EX", "NaN"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenEXKeyword_whenParameterIsZero_returnsInvalidExpireTimeError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "PX", "0"))
-        .hasMessageContaining(ERROR_INVALID_EXPIRE_TIME);
+    assertThatThrownBy(
+        () -> jedis.sendCommand("key", Protocol.Command.SET, "key", "value", "PX", "0"))
+            .hasMessageContaining(ERROR_INVALID_EXPIRE_TIME);
   }
 
   @Test
   public void givenPXKeyword_withoutParameter_returnsSyntaxError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "PX"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SET, "key", "value", "PX"))
         .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void givenPXKeyword_whenParameterIsNotAnInteger_returnsNotIntegerError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "PX", "NaN"))
-        .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(
+        () -> jedis.sendCommand("key", Protocol.Command.SET, "key", "value", "PX", "NaN"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenPXKeyword_whenParameterIsZero_returnsInvalidExpireTimeError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "PX", "0"))
-        .hasMessageContaining(ERROR_INVALID_EXPIRE_TIME);
+    assertThatThrownBy(
+        () -> jedis.sendCommand("key", Protocol.Command.SET, "key", "value", "PX", "0"))
+            .hasMessageContaining(ERROR_INVALID_EXPIRE_TIME);
   }
 
   @Test
   public void givenPXAndEXInSameCommand_returnsSyntaxError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "PX", "3000", "EX", "3"))
-            .hasMessageContaining(ERROR_SYNTAX);
+        () -> jedis.sendCommand("key", Protocol.Command.SET, "key", "value", "PX", "3000", "EX",
+            "3"))
+                .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void givenNXAndXXInSameCommand_returnsSyntaxError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "NX", "XX"))
-        .hasMessageContaining(ERROR_SYNTAX);
+    assertThatThrownBy(
+        () -> jedis.sendCommand("key", Protocol.Command.SET, "key", "value", "NX", "XX"))
+            .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void givenInvalidKeyword_returnsSyntaxError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "invalidKeyword"))
+        () -> jedis.sendCommand("key", Protocol.Command.SET, "key", "value", "invalidKeyword"))
             .hasMessageContaining(ERROR_SYNTAX);
   }
 
@@ -513,49 +520,50 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
 
   @Test
   public void testSET_withInvalidOptions() {
+    String key = "foo";
     SoftAssertions soft = new SoftAssertions();
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET))
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET))
         .as("invalid options #1")
         .isInstanceOf(JedisDataException.class);
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "EX", "0"))
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, "EX", "0"))
         .as("invalid options #2")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "EX", "a"))
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, "bar", "EX", "a"))
         .as("invalid options #3")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("value is not an integer");
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "PX", "1", "EX", "0"))
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, "bar", "PX", "1", "EX", "0"))
         .as("invalid options #4")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "PX", "1", "XX", "0"))
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, "bar", "PX", "1", "XX", "0"))
         .as("invalid options #5")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "PX", "XX", "0"))
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, "bar", "PX", "XX", "0"))
         .as("invalid options #6")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "1", "PX", "1"))
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, "bar", "1", "PX", "1"))
         .as("invalid options #7")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "NX", "XX"))
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, "bar", "NX", "XX"))
         .as("invalid options #8")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "key", "value", "blah"))
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, "value", "blah"))
         .as("invalid options #9")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
