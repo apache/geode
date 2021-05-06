@@ -359,7 +359,7 @@ public class RedisStringTest {
   /******* constructors *******/
   @SuppressWarnings("unchecked")
   @Test
-  public void should_calculateSize_closeToROSSize_ofLargeStrings() {
+  public void should_calculateSize_equalToROSSize_ofLargeStrings() {
     String javaString = makeStringOfSpecifiedSize(10_000);
     RedisString string = new RedisString(new ByteArrayWrapper(javaString.getBytes()));
 
@@ -371,7 +371,7 @@ public class RedisStringTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void should_calculateSize_closeToROSSize_ofStringOfVariousSizes() {
+  public void should_calculateSize_equalToROSSize_ofStringOfVariousSizes() {
     String javaString;
     for (int i = 0; i < 512; i += 8) {
       javaString = makeStringOfSpecifiedSize(i);
@@ -428,8 +428,6 @@ public class RedisStringTest {
   /******* constants *******/
   @Test
   public void overheadConstants_shouldMatchCalculatedValue() {
-    assertThat(RedisString.PER_OBJECT_OVERHEAD).isEqualTo(8); // see todo in RedisString
-
     RedisString redisString = new RedisString(new ByteArrayWrapper("".getBytes()));
     int calculatedSize = reflectionObjectSizer.sizeof(redisString);
 

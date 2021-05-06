@@ -230,51 +230,45 @@ public class RedisSetTest {
   /******** constants *******/
   @Test
   public void baseOverheadConstant_shouldMatchCalculatedValue() {
-    ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
     int baseRedisSetOverhead = reflectionObjectSizer.sizeof(new RedisSet()) + 18;
 
-    HashSet<ByteArrayWrapper> temp_hashset = new HashSet<>();
-    int base_hashset_size = reflectionObjectSizer.sizeof(temp_hashset);
-    baseRedisSetOverhead += base_hashset_size;
+    int baseHashSetSize = reflectionObjectSizer.sizeof(new HashSet<>());
+    baseRedisSetOverhead += baseHashSetSize;
 
     assertThat(baseRedisSetOverhead).isEqualTo(BASE_REDIS_SET_OVERHEAD);
   }
 
   @Test
   public void perMemberOverheadConstant_shouldMatchCalculatedValue() {
-    ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
-
-    HashSet<ByteArrayWrapper> temp_hashset = new HashSet<>();
+    HashSet<ByteArrayWrapper> tempHashSet = new HashSet<>();
     ByteArrayWrapper member1 = new ByteArrayWrapper("a".getBytes());
     ByteArrayWrapper member2 = new ByteArrayWrapper("b".getBytes());
-    temp_hashset.add(member1);
-    int one_entry_hashset_size = reflectionObjectSizer.sizeof(temp_hashset);
+    tempHashSet.add(member1);
+    int oneEntryHashSetSize = reflectionObjectSizer.sizeof(tempHashSet);
 
-    temp_hashset.add(member2);
-    int two_entries_hashset_size = reflectionObjectSizer.sizeof(temp_hashset);
+    tempHashSet.add(member2);
+    int twoEntriesHashSetSize = reflectionObjectSizer.sizeof(tempHashSet);
 
-    int perMemberOverhead = two_entries_hashset_size - one_entry_hashset_size + 5;
+    int perMemberOverhead = twoEntriesHashSetSize - oneEntryHashSetSize + 5;
 
     assertThat(perMemberOverhead).isEqualTo(PER_MEMBER_OVERHEAD);
   }
 
   @Test
   public void internalHashsetStorageOverheadConstant_shouldMatchCalculatedValue() {
-    ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
-
-    HashSet<ByteArrayWrapper> temp_hashset = new HashSet<>();
-    int base_hashset_size = reflectionObjectSizer.sizeof(temp_hashset);
+    HashSet<ByteArrayWrapper> tempHashSet = new HashSet<>();
+    int baseHashSetSize = reflectionObjectSizer.sizeof(tempHashSet);
 
     ByteArrayWrapper baw1 = new ByteArrayWrapper("a".getBytes());
     ByteArrayWrapper baw2 = new ByteArrayWrapper("b".getBytes());
 
-    temp_hashset.add(baw1);
-    temp_hashset.add(baw2);
+    tempHashSet.add(baw1);
+    tempHashSet.add(baw2);
 
-    int two_entries_hashset_size = reflectionObjectSizer.sizeof(temp_hashset);
+    int twoEntryHashSetSize = reflectionObjectSizer.sizeof(tempHashSet);
 
     int internalHashsetStorageOverhead =
-        two_entries_hashset_size - (2 * PER_MEMBER_OVERHEAD) - base_hashset_size;
+        twoEntryHashSetSize - (2 * PER_MEMBER_OVERHEAD) - baseHashSetSize;
 
     assertThat(internalHashsetStorageOverhead).isEqualTo(INTERNAL_HASH_SET_STORAGE_OVERHEAD);
   }

@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -714,11 +713,6 @@ public class RedisString extends AbstractRedisData {
     } else if (options == null || !options.isKeepTTL()) {
       persistNoDelta();
     }
-  }
-
-  @VisibleForTesting
-  protected static int getBaseRedisStringOverhead() {
-    return BASE_REDIS_STRING_OVERHEAD;
   }
 
   ////// methods that modify the "value" field ////////////
