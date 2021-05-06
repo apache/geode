@@ -44,7 +44,6 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest {
 
   private JedisCluster jedis;
-  private JedisCluster jedis2;
   private static final int ITERATION_COUNT = 4000;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -52,14 +51,12 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
   @Before
   public void setUp() {
     jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -284,7 +281,7 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
             counter.addAndGet(1);
           }
         },
-        (i) -> jedis2.set(keys.get(i), values.get(i), setParams))
+        (i) -> jedis.set(keys.get(i), values.get(i), setParams))
             .run();
 
     assertThat(counter.get()).isEqualTo(ITERATION_COUNT);

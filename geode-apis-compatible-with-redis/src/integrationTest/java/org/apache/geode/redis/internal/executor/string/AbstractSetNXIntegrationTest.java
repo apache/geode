@@ -33,14 +33,12 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public abstract class AbstractSetNXIntegrationTest implements RedisIntegrationTest {
 
   private JedisCluster jedis;
-  private JedisCluster jedis2;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
     jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -98,7 +96,7 @@ public abstract class AbstractSetNXIntegrationTest implements RedisIntegrationTe
 
     new ConcurrentLoopingThreads(iterations,
         (i) -> updateCount.getAndAdd(jedis.setnx("key-" + i, "value-" + i)),
-        (i) -> updateCount.getAndAdd(jedis2.setnx("key-" + i, "value-" + i)))
+        (i) -> updateCount.getAndAdd(jedis.setnx("key-" + i, "value-" + i)))
             .runInLockstep();
 
     assertThat(iterations).isEqualTo(updateCount.get());

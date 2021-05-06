@@ -41,7 +41,6 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public abstract class AbstractGetSetIntegrationTest implements RedisIntegrationTest {
 
   private JedisCluster jedis;
-  private JedisCluster jedis2;
   private static final int ITERATION_COUNT = 4000;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -49,14 +48,12 @@ public abstract class AbstractGetSetIntegrationTest implements RedisIntegrationT
   @Before
   public void setUp() {
     jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -130,7 +127,7 @@ public abstract class AbstractGetSetIntegrationTest implements RedisIntegrationT
     CountDownLatch latch = new CountDownLatch(1);
     ExecutorService pool = Executors.newFixedThreadPool(2);
     Callable<Integer> callable1 = () -> doABunchOfIncrs(jedis, latch);
-    Callable<Integer> callable2 = () -> doABunchOfGetSets(jedis2, latch);
+    Callable<Integer> callable2 = () -> doABunchOfGetSets(jedis, latch);
     Future<Integer> future1 = pool.submit(callable1);
     Future<Integer> future2 = pool.submit(callable2);
 

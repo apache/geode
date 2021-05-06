@@ -39,19 +39,16 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   private JedisCluster jedis;
-  private JedisCluster jedis2;
 
   @Before
   public void setUp() {
     jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -177,7 +174,7 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
         (i) -> {
           BigDecimal increment = BigDecimal.valueOf(random.nextInt(37));
           expectedValue.getAndUpdate(x -> x.add(increment));
-          jedis2.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, increment.toPlainString());
+          jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, increment.toPlainString());
         }).run();
 
     assertThat(new BigDecimal(jedis.get(key))).isEqualTo(expectedValue.get());

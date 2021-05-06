@@ -37,7 +37,6 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationTest {
 
   private JedisCluster jedis1;
-  private JedisCluster jedis2;
   private Random rand;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -47,14 +46,12 @@ public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationT
     rand = new Random();
 
     jedis1 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     flushAll();
     jedis1.close();
-    jedis2.close();
   }
 
   @Test
@@ -124,7 +121,7 @@ public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationT
         (i) -> {
           int increment = ThreadLocalRandom.current().nextInt(-50, 50);
           expectedValue.addAndGet(increment);
-          jedis2.incrBy(key, increment);
+          jedis1.incrBy(key, increment);
         }).run();
 
     assertThat(Integer.parseInt(jedis1.get(key))).isEqualTo(expectedValue.get());

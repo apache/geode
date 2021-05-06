@@ -33,7 +33,6 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public abstract class AbstractMGetIntegrationTest implements RedisIntegrationTest {
 
   private JedisCluster jedis;
-  private JedisCluster jedis2;
   private final String hashTag = "{111}";
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -41,14 +40,12 @@ public abstract class AbstractMGetIntegrationTest implements RedisIntegrationTes
   @Before
   public void setUp() {
     jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
     flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -95,6 +92,6 @@ public abstract class AbstractMGetIntegrationTest implements RedisIntegrationTes
     // Should not result in any exceptions
     new ConcurrentLoopingThreads(1000,
         (i) -> jedis.set(keys[i % 10], "value-" + i),
-        (i) -> jedis2.mget(keys)).run();
+        (i) -> jedis.mget(keys)).run();
   }
 }
