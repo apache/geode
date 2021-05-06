@@ -23,8 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.Jedis;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -89,7 +88,7 @@ public class PersistDUnitTest implements Serializable {
 
     @Override
     public AtomicLong call() {
-      JedisCluster jedis = new JedisCluster(new HostAndPort(LOCALHOST, port), JEDIS_TIMEOUT);
+      Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
 
       for (int i = 0; i < this.iterationCount; i++) {
         String key = this.keyBaseName + i;
@@ -104,7 +103,7 @@ public class PersistDUnitTest implements Serializable {
   @Test
   public void testConcurrentPersistOperations() throws InterruptedException {
     Long iterationCount = 5000L;
-    JedisCluster jedis = new JedisCluster(new HostAndPort(LOCALHOST, server1Port), JEDIS_TIMEOUT);
+    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
     setKeysWithExpiration(jedis, iterationCount, "key");
 
     AsyncInvocation<AtomicLong> remotePersistInvocationClient1 =
@@ -122,7 +121,7 @@ public class PersistDUnitTest implements Serializable {
         .isEqualTo(iterationCount);
   }
 
-  private void setKeysWithExpiration(JedisCluster jedis, Long iterationCount, String key) {
+  private void setKeysWithExpiration(Jedis jedis, Long iterationCount, String key) {
     for (int i = 0; i < iterationCount; i++) {
       jedis.sadd(key + i, "value" + 9);
       jedis.expire(key + i, 600);
