@@ -27,7 +27,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -43,9 +45,7 @@ public class HMgetDUnitTest {
   private static final int HASH_SIZE = 1000;
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static Jedis jedis1;
-  private static Jedis jedis2;
-  private static Jedis jedis3;
+  private static JedisCluster jedis;
 
   private static Properties locatorProperties;
 
@@ -53,8 +53,7 @@ public class HMgetDUnitTest {
   private static MemberVM server1;
   private static MemberVM server2;
 
-  private static int redisServerPort1;
-  private static int redisServerPort2;
+  private static int redisServerPort;
 
   @BeforeClass
   public static void classSetup() {
@@ -65,27 +64,26 @@ public class HMgetDUnitTest {
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
 
-    redisServerPort1 = clusterStartUp.getRedisPort(1);
-    redisServerPort2 = clusterStartUp.getRedisPort(2);
+    redisServerPort = clusterStartUp.getRedisPort(1);
 
-    jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
-    jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
-    jedis3 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
   }
 
   @Before
   public void testSetup() {
-    jedis1.flushAll();
+    try (Jedis conn = jedis.getConnectionFromSlot(0)) {
+      conn.flushAll();
+    }
   }
 
   @AfterClass
   public static void tearDown() {
-    jedis1.disconnect();
-    jedis2.disconnect();
+    jedis.close();
 
     server1.stop();
     server2.stop();
   }
+
 
   @Test
   public void testConcurrentHMget_whileUpdatingValues() {
@@ -93,15 +91,16 @@ public class HMgetDUnitTest {
 
     Map<String, String> testMap = makeHashMap(HASH_SIZE, "field-", "value-");
 
-    jedis1.hset(key, testMap);
+    jedis.hset(key, testMap);
 
     new ConcurrentLoopingThreads(HASH_SIZE,
-        (i) -> jedis1.hset(key, "field-" + i, "changedValue-" + i),
-        (i) -> assertThat(jedis2.hmget(key, "field-" + i)).isNotNull(),
-        (i) -> assertThat(jedis3.hmget(key, "field-" + i)).isNotNull()).run();
+        (i) -> jedis.hset(key, "field-" + i, "changedValue-" + i),
+        (i) -> assertThat(jedis.hmget(key, "field-" + i)).isNotNull(),
+        (i) -> assertThat(jedis.hmget(key, "field-" + i)).isNotNull()).run();
 
     Map<String, String> expectedResult = makeHashMap(HASH_SIZE, "field-", "changedValue-");
-    assertThat(jedis1.hgetAll(key)).containsExactlyInAnyOrderEntriesOf(expectedResult);
+    assertThat(jedis.hgetAll(key)).containsExactlyInAnyOrderEntriesOf(expectedResult);
+
   }
 
   private Map<String, String> makeHashMap(int hashSize, String baseFieldName,

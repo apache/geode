@@ -20,6 +20,7 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,14 +30,14 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.lettuce.core.ClientOptions;
 import io.lettuce.core.MapScanCursor;
-import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.RedisException;
 import io.lettuce.core.ScanCursor;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.cluster.ClusterClientOptions;
+import io.lettuce.core.cluster.RedisClusterClient;
+import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import io.lettuce.core.resource.ClientResources;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -63,9 +64,9 @@ public class HScanDunitTest {
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
-  private static RedisCommands<String, String> commands;
-  private RedisClient redisClient;
-  private StatefulRedisConnection<String, String> connection;
+  private static RedisAdvancedClusterCommands<String, String> commands;
+  private RedisClusterClient redisClient;
+  private StatefulRedisClusterConnection<String, String> connection;
   private static Properties locatorProperties;
 
   private static MemberVM locator;
@@ -88,6 +89,7 @@ public class HScanDunitTest {
     locator = redisClusterStartupRule.startLocatorVM(0, locatorProperties);
     locatorPort = locator.getPort();
     redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    System.out.println("#LRJ redisPorts: " + Arrays.toString(redisPorts));
 
     // note: due to rules around member weighting in split-brain scenarios,
     // vm1 (server1) should not be crashed or it will cause additional (unrelated) failures
@@ -104,21 +106,16 @@ public class HScanDunitTest {
   @Before
   public void testSetup() {
     addIgnoredException(FunctionException.class);
-    String[] redisPortsAsStrings = new String[redisPorts.length];
-
-    for (int i = 0; i < redisPorts.length; i++) {
-      redisPortsAsStrings[i] = String.valueOf(redisPorts[i]);
-    }
-
+    String redisPort1 = "" + redisPorts[0];
     DUnitSocketAddressResolver dnsResolver =
-        new DUnitSocketAddressResolver(redisPortsAsStrings);
+        new DUnitSocketAddressResolver(new String[] {redisPort1});
 
     ClientResources resources = ClientResources.builder()
         .socketAddressResolver(dnsResolver)
         .build();
 
-    redisClient = RedisClient.create(resources, "redis://localhost");
-    redisClient.setOptions(ClientOptions.builder()
+    redisClient = RedisClusterClient.create(resources, "redis://localhost");
+    redisClient.setOptions(ClusterClientOptions.builder()
         .autoReconnect(true)
         .build());
 
@@ -136,6 +133,7 @@ public class HScanDunitTest {
     server3.stop();
   }
 
+
   @Test
   public void should_allowHscanIterationToCompleteSuccessfullyGivenServerCrashesDuringIteration()
       throws ExecutionException, InterruptedException {
@@ -151,6 +149,7 @@ public class HScanDunitTest {
 
     hScanFuture.get();
     crashingVmFuture.get();
+
   }
 
 
@@ -174,8 +173,7 @@ public class HScanDunitTest {
           scanCursor.setCursor(result.getCursor());
           Map<String, String> resultEntries = result.getMap();
 
-          resultEntries.entrySet().forEach(
-              entry -> allEntries.add(entry.getKey()));
+          resultEntries.forEach((key, value) -> allEntries.add(key));
 
         } while (!result.isFinished());
 
@@ -184,10 +182,10 @@ public class HScanDunitTest {
 
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
-        if (ex.getMessage().contains("Connection reset by peer")) {// ignore error
-        } else {
+        if (!ex.getMessage().contains("Connection reset by peer")) {
           throw ex;
-        }
+        } // ignore error
+
       }
     }
     keepCrashingVMs.set(false);

@@ -22,10 +22,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import io.lettuce.core.ClientOptions;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.cluster.ClusterClientOptions;
+import io.lettuce.core.cluster.RedisClusterClient;
+import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import io.lettuce.core.resource.ClientResources;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -55,8 +55,8 @@ public class HlenDUnitTest {
   private static MemberVM server1;
   private static MemberVM server2;
   private static int[] redisPorts;
-  private static RedisCommands<String, String> lettuce;
-  private static StatefulRedisConnection<String, String> connection;
+  private static RedisAdvancedClusterCommands<String, String> lettuce;
+  private static StatefulRedisClusterConnection<String, String> connection;
   private static ClientResources resources;
 
   @BeforeClass
@@ -76,8 +76,8 @@ public class HlenDUnitTest {
 
     resources = ClientResources.builder().socketAddressResolver(dnsResolver).build();
 
-    RedisClient redisClient = RedisClient.create(resources, "redis://localhost");
-    redisClient.setOptions(ClientOptions.builder().autoReconnect(true).build());
+    RedisClusterClient redisClient = RedisClusterClient.create(resources, "redis://localhost");
+    redisClient.setOptions(ClusterClientOptions.builder().autoReconnect(true).build());
 
     connection = redisClient.connect();
     lettuce = connection.sync();
@@ -105,6 +105,7 @@ public class HlenDUnitTest {
     server2.stop();
   }
 
+
   @Test
   public void testConcurrentHLens_returnExpectedLength() {
     AtomicLong client1Len = new AtomicLong();
@@ -128,7 +129,9 @@ public class HlenDUnitTest {
             .run();
 
     assertThat(client1Len.get() + client2Len.get()).isEqualTo(NUM_ITERATIONS * HASH_SIZE * 2);
+
   }
+
 
   @Test
   public void testConcurrentHLen_whileAddingFields() {
@@ -158,7 +161,9 @@ public class HlenDUnitTest {
     long finalActualLength = lettuce.hlen(key);
     long finalExpectedLength = Long.parseLong(lettuce.get(storeKey));
     assertThat(finalActualLength).isEqualTo(finalExpectedLength);
+
   }
+
 
   @Test
   public void testConcurrentHLen_whileDeletingFields() {
@@ -185,6 +190,7 @@ public class HlenDUnitTest {
         }).run();
 
     assertThat(lettuce.hlen(key)).isEqualTo(0L);
+
   }
 
   private Map<String, String> makeInitialHashMap(int hashSize, String baseFieldName,

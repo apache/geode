@@ -28,7 +28,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -43,8 +45,7 @@ public class HGetDUnitTest {
   private static final String LOCAL_HOST = "127.0.0.1";
   private static final int ITERATION_COUNT = 500;
   private static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static Jedis jedis1;
-  private static Jedis jedis2;
+  private static JedisCluster jedis;
 
   private static Properties locatorProperties;
 
@@ -52,8 +53,7 @@ public class HGetDUnitTest {
   private static MemberVM server1;
   private static MemberVM server2;
 
-  private static int redisServerPort1;
-  private static int redisServerPort2;
+  private static int redisServerPort;
 
   @BeforeClass
   public static void classSetup() {
@@ -64,26 +64,26 @@ public class HGetDUnitTest {
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
 
-    redisServerPort1 = clusterStartUp.getRedisPort(1);
-    redisServerPort2 = clusterStartUp.getRedisPort(2);
+    redisServerPort = clusterStartUp.getRedisPort(1);
 
-    jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
-    jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
   }
 
   @Before
   public void testSetup() {
-    jedis1.flushAll();
+    try (Jedis conn = jedis.getConnectionFromSlot(0)) {
+      conn.flushAll();
+    }
   }
 
   @AfterClass
   public static void tearDown() {
-    jedis1.disconnect();
-    jedis2.disconnect();
+    jedis.close();
 
     server1.stop();
     server2.stop();
   }
+
 
   @Test
   public void hgetReturnsNewValues_whenPuttingValues() {
@@ -94,13 +94,14 @@ public class HGetDUnitTest {
         (i) -> {
           String field = "field-" + i;
           String value = "value-" + i;
-          jedis1.hset(key, field, value);
+          jedis.hset(key, field, value);
           expectedMap.put(field, value);
         },
         (i) -> GeodeAwaitility.await().atMost(Duration.ofSeconds(60)).untilAsserted(
-            () -> assertThat(jedis2.hget(key, "field-" + i)).isEqualTo("value-" + (i))))
+            () -> assertThat(jedis.hget(key, "field-" + i)).isEqualTo("value-" + (i))))
                 .runInLockstep();
 
-    assertThat(jedis1.hgetAll(key)).containsExactlyInAnyOrderEntriesOf(expectedMap);
+    assertThat(jedis.hgetAll(key)).containsExactlyInAnyOrderEntriesOf(expectedMap);
+
   }
 }
