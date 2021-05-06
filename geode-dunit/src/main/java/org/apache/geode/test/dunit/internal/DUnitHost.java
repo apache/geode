@@ -47,7 +47,8 @@ class DUnitHost extends Host {
     for (int i = 0; i < numVMs; i++) {
       RemoteDUnitVMIF remote = processManager.getStub(i);
       ProcessHolder processHolder = processManager.getProcessHolder(i);
-      addVM(i, VersionManager.CURRENT_VERSION, remote, processHolder, processManager, true);
+      addVM(i, VersionManager.CURRENT_VERSION, remote, processHolder, processManager,
+          RUN_VM_CLASSLOADER_ISOLATED);
     }
 
     if (launchLocator) {

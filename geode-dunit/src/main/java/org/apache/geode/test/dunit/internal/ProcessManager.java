@@ -105,7 +105,7 @@ class ProcessManager implements ChildVMLauncher {
 
       Map<String, String> envp = new HashMap<>();
       if (!VersionManager.isCurrentVersion(version)) {
-        envp.put("GEODE_HOME=", versionManager.getInstall(version));
+        envp.put("GEODE_HOME", versionManager.getInstall(version));
       }
 
       ProcessBuilder processBuilder = new ProcessBuilder(cmd);
