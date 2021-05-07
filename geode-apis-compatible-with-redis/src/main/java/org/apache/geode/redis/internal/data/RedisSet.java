@@ -62,7 +62,7 @@ public class RedisSet extends AbstractRedisData {
   private int sizeInBytes;
 
   RedisSet(Collection<ByteArrayWrapper> members) {
-    sizeInBytes += BASE_REDIS_SET_OVERHEAD;
+    this();
 
     if (members instanceof HashSet) {
       this.members = (HashSet<ByteArrayWrapper>) members;
@@ -80,7 +80,9 @@ public class RedisSet extends AbstractRedisData {
   }
 
   // for serialization
-  public RedisSet() {}
+  public RedisSet() {
+    sizeInBytes += BASE_REDIS_SET_OVERHEAD;
+  }
 
   Pair<BigInteger, List<Object>> sscan(Pattern matchPattern, int count, BigInteger cursor) {
 
@@ -261,7 +263,7 @@ public class RedisSet extends AbstractRedisData {
   private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
     ArrayList<ByteArrayWrapper> adds = addsDeltaInfo.getAdds();
     sizeInBytes += adds.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
-    if (members.size() == 1) {
+    if (members.isEmpty()) {
       sizeInBytes += INTERNAL_HASH_SET_STORAGE_OVERHEAD;
     }
     members.addAll(adds);
@@ -269,7 +271,11 @@ public class RedisSet extends AbstractRedisData {
 
   private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
     ArrayList<ByteArrayWrapper> removes = remsDeltaInfo.getRemoves();
-    sizeInBytes = BASE_REDIS_SET_OVERHEAD;
+    if (members.size() == removes.size()) {
+      sizeInBytes = BASE_REDIS_SET_OVERHEAD;
+    } else {
+      sizeInBytes -= removes.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
+    }
     members.removeAll(removes);
   }
 

@@ -337,7 +337,6 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
-  @Ignore("confirm that bucket size stats are being calculated correctly before enabling")
   public void should_showMembersAgreeUponUsedSetMemory_afterDeltaPropagation() {
     jedis1.sadd(SET_KEY, "other"); // two sadds are required to force
     jedis1.sadd(SET_KEY, "value"); // deserialization on both servers
@@ -363,24 +362,26 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
-  @Ignore("confirm that bucket size stats are being calculated correctly before enabling")
+  @Ignore("find a way to force deserialization on both members before enabling")
   public void should_showMembersAgreeUponUsedStringMemory_afterDeltaPropagation() {
+    String value = "value";
+
     jedis1.set(STRING_KEY, "12345"); // two sets are required to force
-    jedis1.set(STRING_KEY, "value"); // deserialization on both servers
+    jedis1.set(STRING_KEY, value); // deserialization on both servers
     // otherwise primary/secondary can disagree on size, and which server is primary varies
 
     long initialDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
 
     for (int i = 0; i < 10; i++) {
-      jedis1.append(STRING_KEY, "a");
+      jedis1.set(STRING_KEY, value);
     }
 
     assertThat(jedis1.exists(STRING_KEY)).isTrue();
     assertThat(jedis2.exists(STRING_KEY)).isTrue();
 
-    assertThat(jedis1.get(STRING_KEY)).isEqualTo("valueaaaaaaaaaa");
-    assertThat(jedis2.get(STRING_KEY)).isEqualTo("valueaaaaaaaaaa");
+    assertThat(jedis1.get(STRING_KEY)).isEqualTo(value);
+    assertThat(jedis2.get(STRING_KEY)).isEqualTo(value);
 
     long server1FinalDataStoreBytesInUse =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
