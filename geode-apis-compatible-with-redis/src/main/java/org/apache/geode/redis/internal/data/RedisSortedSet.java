@@ -22,11 +22,13 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -36,9 +38,6 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
-
-import it.unimi.dsi.fastutil.bytes.ByteArrays;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
 public class RedisSortedSet extends AbstractRedisData {
 
@@ -51,7 +50,12 @@ public class RedisSortedSet extends AbstractRedisData {
 
   @SuppressWarnings("unchecked")
   RedisSortedSet(Map<byte[], byte[]> members) {
-    this.members = (Object2ObjectOpenCustomHashMap<byte[], byte[]>) members;
+    this.members = new Object2ObjectOpenCustomHashMap<>(members.size(), ByteArrays.HASH_STRATEGY);
+    Iterator<byte[]> iterator = members.keySet().iterator();
+    while (iterator.hasNext()) {
+      byte[] key = iterator.next();
+      this.members.put(key, members.get(key));
+    }
   }
 
   // for serialization
@@ -80,14 +84,25 @@ public class RedisSortedSet extends AbstractRedisData {
   public synchronized void toData(DataOutput out, SerializationContext context) throws
       IOException {
     super.toData(out, context);
-    InternalDataSerializer.writeHashMap(members, out);
+    InternalDataSerializer.writePrimitiveInt(members.size(), out);
+    for (Map.Entry<byte[], byte[]> entry : members.entrySet()) {
+      byte[] key = entry.getKey();
+      byte[] value = entry.getValue();
+      InternalDataSerializer.writeByteArray(key, out);
+      InternalDataSerializer.writeByteArray(value, out);
+    }
   }
 
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    members = (Object2ObjectOpenCustomHashMap<byte[], byte[]>) InternalDataSerializer.readHashMap(in);
+    int size = InternalDataSerializer.readPrimitiveInt(in);
+    members = new Object2ObjectOpenCustomHashMap<>(size, ByteArrays.HASH_STRATEGY);
+    for (int i = 0; i < size; i++) {
+      members.put(InternalDataSerializer.readByteArray(in),
+          InternalDataSerializer.readByteArray(in));
+    }
   }
 
   @Override

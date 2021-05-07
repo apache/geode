@@ -27,11 +27,9 @@ public class ZScoreExecutor extends SortedSetExecutor {
     RedisSortedSetCommands redisSortedSetCommands = createRedisSortedSetCommands(context);
     List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
 
-    System.out.println("Executor about to call rssc.zscore on: " +
-        command.getKey().toString() + " member: " + commandElements.get(2));
     byte[] score =
         redisSortedSetCommands.zscore(command.getKey(), commandElements.get(2).toBytes());
 
-    return RedisResponse.bulkString(score.toString());
+    return RedisResponse.bulkString(new String(score));
   }
 }
