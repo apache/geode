@@ -35,8 +35,4 @@ public class DelNativeRedisAcceptanceTest extends AbstractDelIntegrationTest {
     redis.flushAll();
   }
 
-  @Test
-  public void doNothing() {
-    // nothing done
-  }
 }
