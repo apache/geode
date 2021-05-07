@@ -30,7 +30,6 @@ import java.util.Objects;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -73,7 +72,6 @@ public class RedisSortedSet extends AbstractRedisData {
       membersRemoveAll(remsDeltaInfo);
     }
   }
-
 
   /**
    * Since GII (getInitialImage) can come in and call toData while other threads are modifying this
@@ -174,6 +172,7 @@ public class RedisSortedSet extends AbstractRedisData {
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
     while (iterator.hasNext()) {
+      boolean delta = true;
       byte[] score = iterator.next();
       byte[] member = iterator.next();
       System.out.println("Adding member:" + byteArrayStringer(member)
@@ -191,7 +190,16 @@ public class RedisSortedSet extends AbstractRedisData {
           makeAddsDeltaInfo(deltaInfo, member, score);
           break;
         default:
+          delta = false;
           // do nothing
+      }
+
+      if (delta) {
+        if (deltaInfo == null) {
+          deltaInfo = new AddsDeltaInfo();
+        }
+        deltaInfo.add(new ByteArrayWrapper(member));
+        deltaInfo.add(new ByteArrayWrapper(score));
       }
     }
     if (deltaInfo != null) {
