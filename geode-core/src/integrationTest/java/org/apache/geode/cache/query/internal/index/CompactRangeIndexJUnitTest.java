@@ -57,7 +57,7 @@ public class CompactRangeIndexJUnitTest {
 
   @Before
   public void setUp() {
-    System.setProperty("index_elemarray_threshold", "3");
+    IndexManager.INDEX_ELEMARRAY_THRESHOLD_FOR_TESTING = 3;
     utils = new QueryTestUtils();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
@@ -68,7 +68,6 @@ public class CompactRangeIndexJUnitTest {
 
   @Test
   public void testCompactRangeIndex() throws Exception {
-    System.setProperty("index_elemarray_threshold", "3");
     index = utils.createIndex("type", "\"type\"", SEPARATOR + "exampleRegion");
     putValues(9);
     isUsingIndexElemArray("type1");
@@ -289,7 +288,6 @@ public class CompactRangeIndexJUnitTest {
       assertEquals("incorrect number of entries in collection", 3, count);
     } finally {
       DefaultQuery.testHook = null;
-      System.setProperty("index_elemarray_threshold", "100");
     }
   }
 
@@ -477,7 +475,7 @@ public class CompactRangeIndexJUnitTest {
     p4.positions.put("SUN", null);
     region.put("KEY-" + 4, p4);
 
-    // execute query and check result size
+    // execute query for null value and check result size
     QueryService qs = utils.getCache().getQueryService();
     SelectResults<Object> results = UncheckedUtils.uncheckedCast(qs
         .newQuery(
@@ -486,6 +484,15 @@ public class CompactRangeIndexJUnitTest {
     assertThat(results.size()).isEqualTo(2);
     assertThat(results.contains(p2)).isTrue();
     assertThat(results.contains(p4)).isTrue();
+
+    // execute query for not null value and check result size
+    results = UncheckedUtils.uncheckedCast(qs
+        .newQuery(
+            "Select * from " + SEPARATOR + "exampleRegion r where r.positions['SUN'] != null")
+        .execute());
+    assertThat(results.size()).isEqualTo(2);
+    assertThat(results.contains(p1)).isTrue();
+    assertThat(results.contains(p3)).isTrue();
   }
 
   private void putValues(int num) {
@@ -620,6 +627,7 @@ public class CompactRangeIndexJUnitTest {
 
   @After
   public void tearDown() throws Exception {
+    IndexManager.INDEX_ELEMARRAY_THRESHOLD_FOR_TESTING = -1;
     utils.closeCache();
   }
 
