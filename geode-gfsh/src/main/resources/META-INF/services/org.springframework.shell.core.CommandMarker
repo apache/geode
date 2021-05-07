@@ -82,6 +82,7 @@ org.apache.geode.management.internal.cli.commands.QueryCommand
 org.apache.geode.management.internal.cli.commands.RebalanceCommand
 org.apache.geode.management.internal.cli.commands.RedundancyCommand
 org.apache.geode.management.internal.cli.commands.RemoveCommand
+org.apache.geode.management.internal.cli.commands.ReplicateRegionCommand
 org.apache.geode.management.internal.cli.commands.RestoreRedundancyCommand
 org.apache.geode.management.internal.cli.commands.ResumeAsyncEventQueueDispatcherCommand
 org.apache.geode.management.internal.cli.commands.ResumeGatewaySenderCommand
