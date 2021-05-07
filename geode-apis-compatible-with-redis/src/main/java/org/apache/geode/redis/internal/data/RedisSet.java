@@ -53,13 +53,14 @@ public class RedisSet extends AbstractRedisData {
   // have the advantage of saving us a lot of computation that would happen every time a new key was
   // added. if our internal implementation changes, these values may be incorrect. the tests will
   // catch this change. an increase in overhead should be carefully considered.
-  protected static final int BASE_REDIS_SET_OVERHEAD = 114;
+  // Note: the per member overhead is known to not be constant. it changes as more members are
+  // added, and/or as the members get longer
+  protected static final int BASE_REDIS_SET_OVERHEAD = 112;
   protected static final int PER_MEMBER_OVERHEAD = 77;
   protected static final int INTERNAL_HASH_SET_STORAGE_OVERHEAD = 86;
 
   private int sizeInBytes;
 
-  @SuppressWarnings("unchecked")
   RedisSet(Collection<ByteArrayWrapper> members) {
     sizeInBytes += BASE_REDIS_SET_OVERHEAD;
 
@@ -67,6 +68,10 @@ public class RedisSet extends AbstractRedisData {
       this.members = (HashSet<ByteArrayWrapper>) members;
     } else {
       this.members = new HashSet<>(members);
+    }
+
+    if (members.size() > 0) {
+      sizeInBytes += INTERNAL_HASH_SET_STORAGE_OVERHEAD;
     }
 
     for (ByteArrayWrapper value : this.members) {
@@ -235,6 +240,9 @@ public class RedisSet extends AbstractRedisData {
     boolean isAdded = members.add(memberToAdd);
     if (isAdded) {
       sizeInBytes += PER_MEMBER_OVERHEAD + memberToAdd.length();
+      if (members.size() == 1) {
+        sizeInBytes += INTERNAL_HASH_SET_STORAGE_OVERHEAD;
+      }
     }
     return isAdded;
   }
@@ -243,23 +251,27 @@ public class RedisSet extends AbstractRedisData {
     boolean isRemoved = members.remove(memberToRemove);
     if (isRemoved) {
       sizeInBytes -= PER_MEMBER_OVERHEAD + memberToRemove.length();
+      if (members.isEmpty()) {
+        sizeInBytes = BASE_REDIS_SET_OVERHEAD;
+      }
     }
     return isRemoved;
   }
 
-  private synchronized boolean membersAddAll(AddsDeltaInfo addsDeltaInfo) {
+  private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
     ArrayList<ByteArrayWrapper> adds = addsDeltaInfo.getAdds();
     sizeInBytes += adds.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
-    return members.addAll(adds);
+    if (members.size() == 1) {
+      sizeInBytes += INTERNAL_HASH_SET_STORAGE_OVERHEAD;
+    }
+    members.addAll(adds);
   }
 
-  private synchronized boolean membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
+  private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
     ArrayList<ByteArrayWrapper> removes = remsDeltaInfo.getRemoves();
-    sizeInBytes -= removes.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
-    return members.removeAll(removes);
+    sizeInBytes = BASE_REDIS_SET_OVERHEAD;
+    members.removeAll(removes);
   }
-
-
 
   /**
    * @param membersToAdd members to add to this set; NOTE this list may by
@@ -270,6 +282,7 @@ public class RedisSet extends AbstractRedisData {
    */
   long sadd(ArrayList<ByteArrayWrapper> membersToAdd, Region<RedisKey, RedisData> region,
       RedisKey key) {
+
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
@@ -349,11 +362,6 @@ public class RedisSet extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return sizeInBytes + getInternalHashSetOverhead();
-  }
-
-  private int getInternalHashSetOverhead() {
-    // If there are no members, the HashSet doesn't allocate entire storage
-    return members.size() > 0 ? INTERNAL_HASH_SET_STORAGE_OVERHEAD : 0;
+    return sizeInBytes;
   }
 }

@@ -19,8 +19,10 @@ package org.apache.geode.redis.internal.data;
 import static java.lang.Math.round;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.redis.internal.data.RedisHash.BASE_REDIS_HASH_OVERHEAD;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.Offset.offset;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -263,6 +265,10 @@ public class RedisHashTest {
 
   /************* Hash Size *************/
   /******* constants *******/
+  // these tests contain the math that was used to derive the constants in RedisHash. If these tests
+  // start failing, it is because the overhead of RedisHash has changed. If it has decreased, good
+  // job! You can change the constants in RedisHash to reflect that. If it has increased, carefully
+  // consider that increase before changing the constants.
   @Test
   public void constantBaseRedisHashOverhead_shouldEqualCalculatedOverhead() {
     RedisHash hash = new RedisHash();
@@ -314,7 +320,6 @@ public class RedisHashTest {
 
   /******* constructor *******/
 
-  @SuppressWarnings("unchecked")
   @Test
   public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithSingleValue() {
     ArrayList<ByteArrayWrapper> data = new ArrayList<>();
@@ -331,7 +336,6 @@ public class RedisHashTest {
     assertThat(actual).isCloseTo(expected, offset);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithMultipleValues() {
     RedisHash redisHash =
@@ -345,7 +349,6 @@ public class RedisHashTest {
     assertThat(actual).isCloseTo(expected, offset);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void should_calculateSize_closeToROSSize_withManyEntries() {
     final String baseField = "longerbase";
@@ -390,7 +393,6 @@ public class RedisHashTest {
     assertThat(hash.getSizeInBytes()).isEqualTo(expectedRedisHash.getSizeInBytes());
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void hsetShould_calculateSizeDifference_whenUpdatingExistingEntry_newIsShorterThanOld() {
     final RedisKey key = new RedisKey("key".getBytes());
@@ -401,7 +403,6 @@ public class RedisHashTest {
     testThatSizeIsUpdatedWhenUpdatingValue(key, field, initialValue, finalValue);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void hsetShould_calculateSizeDifference_whenUpdatingExistingEntry_oldIsShorterThanNew() {
     final RedisKey key = new RedisKey("key".getBytes());
@@ -412,7 +413,6 @@ public class RedisHashTest {
     testThatSizeIsUpdatedWhenUpdatingValue(key, field, initialValue, finalValue);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void hsetShould_calculateSizeDifference_whenUpdatingExistingEntry_valuesAreSameLength() {
     final RedisKey key = new RedisKey("key".getBytes());
@@ -423,12 +423,11 @@ public class RedisHashTest {
     testThatSizeIsUpdatedWhenUpdatingValue(key, field, initialValue, finalValue);
   }
 
-  @SuppressWarnings("unchecked")
   public void testThatSizeIsUpdatedWhenUpdatingValue(final RedisKey key, final String field,
       final String initialValue, final String finalValue) {
-    final Region region = mock(Region.class);
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     final RedisData returnData = mock(RedisData.class);
-    when(region.put(Object.class, Object.class)).thenReturn(returnData);
+    when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
     RedisHash hash = new RedisHash();
     List<ByteArrayWrapper> initialData = new ArrayList<>();
@@ -451,16 +450,15 @@ public class RedisHashTest {
   }
 
   /******* put if absent *******/
-  @SuppressWarnings("unchecked")
   @Test
   public void putIfAbsentShould_calculateSizeEqualToSizeCalculatedInConstructor_forMultipleUniqueEntries() {
     final RedisKey key = new RedisKey("key".getBytes());
     final String baseField = "field";
     final String baseValue = "value";
 
-    final Region region = mock(Region.class);
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     final RedisData returnData = mock(RedisData.class);
-    when(region.put(Object.class, Object.class)).thenReturn(returnData);
+    when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
     RedisHash hash = new RedisHash();
     List<ByteArrayWrapper> data = new ArrayList<>();
@@ -476,16 +474,15 @@ public class RedisHashTest {
     assertThat(hash.getSizeInBytes()).isCloseTo(expectedRedisHash.getSizeInBytes(), offset);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void putIfAbsentShould_notChangeSize_whenSameDataIsSetTwice() {
     final RedisKey key = new RedisKey("key".getBytes());
     final String baseField = "field";
     final String baseValue = "value";
 
-    final Region region = mock(Region.class);
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     final RedisData returnData = mock(RedisData.class);
-    when(region.put(Object.class, Object.class)).thenReturn(returnData);
+    when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
     RedisHash hash = new RedisHash();
     List<ByteArrayWrapper> data = new ArrayList<>();
@@ -503,7 +500,6 @@ public class RedisHashTest {
     assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void putIfAbsent_shouldNotChangeSize_whenPuttingToExistingFields() {
     final RedisKey key = new RedisKey("key".getBytes());
@@ -511,9 +507,9 @@ public class RedisHashTest {
     final String initialBaseValue = "value";
     final String finalBaseValue = "longerValue";
 
-    final Region region = mock(Region.class);
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     final RedisData returnData = mock(RedisData.class);
-    when(region.put(Object.class, Object.class)).thenReturn(returnData);
+    when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
     RedisHash hash = new RedisHash();
     List<ByteArrayWrapper> initialData = new ArrayList<>();
@@ -538,15 +534,14 @@ public class RedisHashTest {
   }
 
   /******* remove *******/
-  @SuppressWarnings("unchecked")
   @Test
   public void sizeShouldDecrease_whenValueIsRemoved() {
     final RedisKey key = new RedisKey("key".getBytes());
     final String baseField = "field";
     final String baseValue = "value";
-    final Region region = mock(Region.class);
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     final RedisData returnData = mock(RedisData.class);
-    when(region.put(Object.class, Object.class)).thenReturn(returnData);
+    when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
     List<ByteArrayWrapper> data = new ArrayList<>();
     List<ByteArrayWrapper> dataToRemove = new ArrayList<>();
@@ -566,20 +561,19 @@ public class RedisHashTest {
     redisHash.hdel(region, key, dataToRemove);
 
     int expectedSize = initialSize - RedisHash.HASH_MAP_VALUE_PAIR_OVERHEAD - field1.length();
-    Offset offset = Offset.offset((int) round(expectedSize * 0.05));
+    Offset<Integer> offset = Offset.offset((int) round(expectedSize * 0.05));
 
     assertThat(redisHash.getSizeInBytes()).isCloseTo(expectedSize, offset);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void dataStoreBytesInUse_shouldReturnToHashOverhead_whenAllFieldsAreRemoved() {
     final RedisKey key = new RedisKey("key".getBytes());
     final String baseField = "field";
     final String baseValue = "value";
-    final Region region = mock(Region.class);
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     final RedisData returnData = mock(RedisData.class);
-    when(region.put(Object.class, Object.class)).thenReturn(returnData);
+    when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
     RedisHash hash = new RedisHash();
     final int baseRedisHashOverhead = hash.getSizeInBytes();

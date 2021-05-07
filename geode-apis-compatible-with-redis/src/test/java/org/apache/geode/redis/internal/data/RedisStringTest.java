@@ -357,7 +357,6 @@ public class RedisStringTest {
 
   /************* Size in Bytes Tests *************/
   /******* constructors *******/
-  @SuppressWarnings("unchecked")
   @Test
   public void should_calculateSize_equalToROSSize_ofLargeStrings() {
     String javaString = makeStringOfSpecifiedSize(10_000);
@@ -369,7 +368,6 @@ public class RedisStringTest {
     assertThat(actual).isEqualTo(expected);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void should_calculateSize_equalToROSSize_ofStringOfVariousSizes() {
     String javaString;
@@ -426,6 +424,10 @@ public class RedisStringTest {
   }
 
   /******* constants *******/
+  // this test contains the math that was used to derive the constants in RedisString. If this test
+  // starts failing, it is because the overhead of RedisString has changed. If it has decreased,
+  // good job! You can change the constant in RedisString to reflect that. If it has increased,
+  // carefully consider that increase before changing the constant.
   @Test
   public void overheadConstants_shouldMatchCalculatedValue() {
     RedisString redisString = new RedisString(new ByteArrayWrapper("".getBytes()));
