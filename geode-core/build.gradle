@@ -314,9 +314,8 @@ dependencies {
     implementation(project(':geode-serialization'))
     implementation(project(':geode-tcp-server'))
 
-    runtimeOnly(project(':geode-deployment:geode-deployment-legacy')) {
-        ext.optional = true
-    }
+    //Only for running non-modularly and will be excluded from the module descriptors.
+    runtimeOnly(project(':geode-deployment:geode-deployment-legacy'))
 
     //geode-management currently has pieces of the public API
     //copied into it, so it is an API dependency
