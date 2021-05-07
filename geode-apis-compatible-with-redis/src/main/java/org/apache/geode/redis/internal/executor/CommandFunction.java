@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
@@ -261,8 +260,7 @@ public class CommandFunction extends SingleResultRedisFunction {
         Pattern pattern = (Pattern) args[1];
         int count = (int) args[2];
         int cursor = (int) args[3];
-        UUID clientID = (UUID) args[4];
-        return hashCommands.hscan(key, pattern, count, cursor, clientID);
+        return hashCommands.hscan(key, pattern, count, cursor);
       }
       case HINCRBY: {
         byte[] field = (byte[]) args[1];

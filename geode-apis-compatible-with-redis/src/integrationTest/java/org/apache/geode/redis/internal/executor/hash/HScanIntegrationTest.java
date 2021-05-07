@@ -17,17 +17,12 @@ package org.apache.geode.redis.internal.executor.hash;
 
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.ClassRule;
 import org.junit.Test;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
@@ -64,27 +59,4 @@ public class HScanIntegrationTest extends AbstractHScanIntegrationTest {
     assertThatThrownBy(() -> jedis.hscan("a", tooSmallCursor.toString()))
         .hasMessageContaining(ERROR_CURSOR);
   }
-
-
-  @Test
-  public void givenCount_shouldReturnExpectedNumberOfEntries() {
-    Map<byte[], byte[]> entryMap = new HashMap<>();
-    entryMap.put("1".getBytes(), "yellow".getBytes());
-    entryMap.put("2".getBytes(), "green".getBytes());
-    entryMap.put("3".getBytes(), "orange".getBytes());
-    jedis.hmset("colors".getBytes(), entryMap);
-
-    int COUNT_PARAM = 2;
-
-    ScanParams scanParams = new ScanParams();
-    scanParams.count(COUNT_PARAM);
-    ScanResult<Map.Entry<byte[], byte[]>> result;
-
-    String cursor = "0";
-
-    result = jedis.hscan("colors".getBytes(), cursor.getBytes(), scanParams);
-
-    assertThat(result.getResult().size()).isEqualTo(COUNT_PARAM);
-  }
-
 }

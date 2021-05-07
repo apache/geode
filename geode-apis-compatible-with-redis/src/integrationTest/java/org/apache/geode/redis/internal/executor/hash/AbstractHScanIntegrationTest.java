@@ -453,7 +453,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     ScanResult<Map.Entry<String, String>> result = jedis.hscan("colors", "5");
 
     assertThat(new HashSet<>(result.getResult()))
-        .containsExactlyInAnyOrderElementsOf(data.entrySet());
+        .isSubsetOf(data.entrySet());
   }
 
   /**** Concurrency ***/
