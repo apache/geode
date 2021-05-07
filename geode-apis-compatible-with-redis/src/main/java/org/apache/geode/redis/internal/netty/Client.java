@@ -17,7 +17,6 @@
 package org.apache.geode.redis.internal.netty;
 
 import java.util.Objects;
-import java.util.UUID;
 
 import io.netty.channel.Channel;
 import io.netty.util.concurrent.Future;
@@ -27,11 +26,8 @@ import io.netty.util.concurrent.GenericFutureListener;
 public class Client {
   private Channel channel;
 
-  private UUID id;
-
   public Client(Channel remoteAddress) {
     this.channel = remoteAddress;
-    this.id = UUID.randomUUID();
   }
 
   @Override
@@ -62,9 +58,5 @@ public class Client {
 
   public String toString() {
     return channel.toString();
-  }
-
-  public UUID getId() {
-    return id;
   }
 }

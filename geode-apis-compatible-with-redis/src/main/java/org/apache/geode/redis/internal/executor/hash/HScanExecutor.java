@@ -22,7 +22,6 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_HASH;
 
 import java.math.BigInteger;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -49,8 +48,6 @@ public class HScanExecutor extends AbstractScanExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
-    final UUID CLIENT_ID = context.getClientUUID();
-
     List<byte[]> commandElems = command.getProcessedCommand();
 
     String cursorString = Coder.bytesToString(commandElems.get(2));
@@ -63,10 +60,6 @@ public class HScanExecutor extends AbstractScanExecutor {
       cursor = Integer.parseInt(cursorString);
     } catch (NumberFormatException e) {
       return RedisResponse.error(ERROR_CURSOR);
-    }
-
-    if (cursor != context.getHscanCursor()) {
-      cursor = 0;
     }
 
     RedisKey key = command.getKey();
@@ -117,9 +110,7 @@ public class HScanExecutor extends AbstractScanExecutor {
         new RedisHashCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
 
     Pair<Integer, List<byte[]>> scanResult =
-        redisHashCommands.hscan(key, matchPattern, count, cursor, CLIENT_ID);
-
-    context.setHscanCursor(scanResult.getLeft());
+        redisHashCommands.hscan(key, matchPattern, count, cursor);
 
     return RedisResponse.scan(new BigInteger(String.valueOf(scanResult.getLeft())),
         scanResult.getRight());

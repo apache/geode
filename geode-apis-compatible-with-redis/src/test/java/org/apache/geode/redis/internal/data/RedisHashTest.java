@@ -17,7 +17,6 @@
 package org.apache.geode.redis.internal.data;
 
 import static java.lang.Math.round;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.redis.internal.data.RedisHash.BASE_REDIS_HASH_OVERHEAD;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,10 +33,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.assertj.core.data.Offset;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -52,7 +51,6 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class RedisHashTest {
   private final ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
@@ -180,85 +178,26 @@ public class RedisHashTest {
 
   /************* HSCAN *************/
   @Test
-  public void hscanSnaphots_shouldBeEmpty_givenHscanHasNotBeenCalled() {
-    RedisHash subject = createRedisHash(100);
-    assertThat(subject.getHscanSnapShots()).isEmpty();
+  public void hscanReturnsCorrectNumberOfElements() throws IOException, ClassNotFoundException {
+    RedisHash hash = createRedisHash("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4");
+    ImmutablePair<Integer, List<byte[]>> result =
+        hash.hscan(null, 2, 0);
+
+    assertThat(result.left).isNotEqualTo(0);
+    assertThat(result.right).hasSize(4);
+    result = hash.hscan(null, 3, result.left);
+    assertThat(result.left).isEqualTo(0);
+    assertThat(result.right).hasSize(4);
   }
 
   @Test
-  public void hscanSnaphots_shouldContainSnapshot_givenHscanHasBeenCalled() {
+  public void hscanOnlyReturnsElementsMatchingPattern() throws IOException, ClassNotFoundException {
+    RedisHash hash = createRedisHash("ak1", "v1", "k2", "v2", "ak3", "v3", "k4", "v4");
+    ImmutablePair<Integer, List<byte[]>> result =
+        hash.hscan(Pattern.compile("a.*"), 3, 0);
 
-    final List<byte[]> FIELDS_AND_VALUES_FOR_HASH = createListOfDataElements(100);
-    RedisHash subject = new RedisHash(FIELDS_AND_VALUES_FOR_HASH);
-    UUID clientID = UUID.randomUUID();
-
-    subject.hscan(clientID, null, 10, 0);
-
-    ConcurrentHashMap<UUID, List<byte[]>> hscanSnapShotMap = subject.getHscanSnapShots();
-
-    assertThat(hscanSnapShotMap.containsKey(clientID)).isTrue();
-
-    List<byte[]> keyList = hscanSnapShotMap.get(clientID);
-    assertThat(keyList).isNotEmpty();
-
-    FIELDS_AND_VALUES_FOR_HASH.forEach((entry) -> {
-      if (Coder.bytesToString(entry).contains("field")) {
-        assertThat(keyList).contains(entry);
-      } else if (Coder.bytesToString(entry).contains("value")) {
-        assertThat(keyList).doesNotContain(entry);
-      }
-    });
-
-  }
-
-  @Test
-  public void hscanSnaphots_shouldContainSnapshot_givenHscanHasBeenCalled_WithNonZeroCursor() {
-
-    final List<byte[]> FIELDS_AND_VALUES_FOR_HASH = createListOfDataElements(100);
-    RedisHash subject = new RedisHash(FIELDS_AND_VALUES_FOR_HASH);
-    UUID clientID = UUID.randomUUID();
-
-    subject.hscan(clientID, null, 10, 10);
-
-    ConcurrentHashMap<UUID, List<byte[]>> hscanSnapShotMap = subject.getHscanSnapShots();
-
-    assertThat(hscanSnapShotMap.containsKey(clientID)).isTrue();
-
-    List<byte[]> keyList = hscanSnapShotMap.get(clientID);
-    assertThat(keyList).isNotEmpty();
-
-    FIELDS_AND_VALUES_FOR_HASH.forEach((entry) -> {
-      if (Coder.bytesToString(entry).contains("field")) {
-        assertThat(keyList).contains(entry);
-      } else if (Coder.bytesToString(entry).contains("value")) {
-        assertThat(keyList).doesNotContain(entry);
-      }
-    });
-  }
-
-  @Test
-  public void hscanSnaphots_shouldBeRemoved_givenCompleteIteration() {
-    RedisHash subject = createRedisHashWithExpiration(1, 100000);
-    UUID client_ID = UUID.randomUUID();
-
-    subject.hscan(client_ID, null, 10, 0);
-
-    ConcurrentHashMap<UUID, List<byte[]>> hscanSnapShotMap = subject.getHscanSnapShots();
-    assertThat(hscanSnapShotMap).isEmpty();
-  }
-
-  @Test
-  public void hscanSnaphots_shouldExpireAfterExpiryPeriod() {
-    RedisHash subject = createRedisHashWithExpiration(1000, 1);
-    UUID client_ID = UUID.randomUUID();
-
-    subject.hscan(client_ID, null, 1, 0);
-
-    GeodeAwaitility.await().atMost(4, SECONDS).untilAsserted(() -> {
-      ConcurrentHashMap<UUID, List<byte[]>> hscanSnapShotMap =
-          subject.getHscanSnapShots();
-      assertThat(hscanSnapShotMap).isEmpty();
-    });
+    assertThat(result.left).isEqualTo(0);
+    assertThat(toListOfStrings(result.right)).containsExactly("ak1", "v1", "ak3", "v3");
   }
 
   /************* Hash Size *************/
@@ -594,9 +533,8 @@ public class RedisHashTest {
   }
 
   /************* Helper Methods *************/
-  private RedisHash createRedisHash(int NumberOfFields) {
-    ArrayList<byte[]> elements = createListOfDataElements(NumberOfFields);
-    return new RedisHash(elements);
+  private List<String> toListOfStrings(List<byte[]> byteList) {
+    return byteList.stream().map(Coder::bytesToString).collect(Collectors.toList());
   }
 
   private RedisHash createRedisHash(String... keysAndValues) {
@@ -614,11 +552,6 @@ public class RedisHashTest {
       elements.add(toBytes("value_" + i));
     }
     return elements;
-  }
-
-  private RedisHash createRedisHashWithExpiration(int NumberOfFields, int hcanSnapshotExpiry) {
-    ArrayList<byte[]> elements = createListOfDataElements(NumberOfFields);
-    return new RedisHash(elements, hcanSnapshotExpiry, hcanSnapshotExpiry);
   }
 
   private byte[] toBytes(String str) {
