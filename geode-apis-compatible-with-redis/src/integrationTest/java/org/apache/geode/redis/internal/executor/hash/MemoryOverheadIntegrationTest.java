@@ -53,7 +53,7 @@ public class MemoryOverheadIntegrationTest extends AbstractMemoryOverheadIntegra
   @Override
   EnumMap<Measurement, Integer> expectedPerEntryOverhead() {
     EnumMap<Measurement, Integer> result = new EnumMap<>(Measurement.class);
-    result.put(Measurement.STRING, 201);
+    result.put(Measurement.STRING, 185);
     result.put(Measurement.SET, 386);
     result.put(Measurement.SET_ENTRY, 72);
     result.put(Measurement.HASH, 543);

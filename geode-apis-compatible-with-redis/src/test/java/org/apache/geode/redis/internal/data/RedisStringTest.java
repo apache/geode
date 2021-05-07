@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.RedisString.BASE_REDIS_STRING_OVERHEAD;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -43,9 +45,6 @@ public class RedisStringTest {
 
   @BeforeClass
   public static void beforeClass() {
-    InternalDataSerializer
-        .getDSFIDSerializer()
-        .registerDSFID(DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER, ByteArrayWrapper.class);
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DataSerializableFixedID.REDIS_STRING_ID,
         RedisString.class);
@@ -53,75 +52,74 @@ public class RedisStringTest {
 
   @Test
   public void constructorSetsValue() {
-    ByteArrayWrapper byteArrayWrapper = new ByteArrayWrapper(new byte[] {0, 1, 2});
-    RedisString string = new RedisString(byteArrayWrapper);
-    ByteArrayWrapper returnedByteArrayWrapper = string.get();
-    assertThat(returnedByteArrayWrapper).isNotNull();
-    assertThat(returnedByteArrayWrapper.value).isEqualTo(byteArrayWrapper.value);
+    byte[] bytes = {0, 1, 2};
+    RedisString string = new RedisString(bytes);
+    byte[] returnedBytes = string.get();
+    assertThat(returnedBytes).isNotNull();
+    assertThat(returnedBytes).isEqualTo(bytes);
   }
 
   @Test
   public void setSetsValue() {
     RedisString string = new RedisString();
-    string.set(new ByteArrayWrapper(new byte[] {0, 1, 2}));
-    ByteArrayWrapper returnedByteArrayWrapper = string.get();
-    assertThat(returnedByteArrayWrapper).isNotNull();
-    assertThat(returnedByteArrayWrapper.value)
-        .isEqualTo(new ByteArrayWrapper(new byte[] {0, 1, 2}).value);
+    byte[] bytes = {0, 1, 2};
+    string.set(bytes);
+    byte[] returnedBytes = string.get();
+    assertThat(returnedBytes).isNotNull();
+    assertThat(returnedBytes).isEqualTo(bytes);
   }
 
   @Test
   public void getReturnsSetValue() {
-    RedisString string = new RedisString(new ByteArrayWrapper(new byte[] {0, 1}));
-    ByteArrayWrapper returnedByteArrayWrapper = string.get();
-    assertThat(returnedByteArrayWrapper).isNotNull();
-    assertThat(returnedByteArrayWrapper.value)
-        .isEqualTo(new ByteArrayWrapper(new byte[] {0, 1}).value);
+    byte[] bytes = {0, 1};
+    RedisString string = new RedisString(bytes);
+    byte[] returnedBytes = string.get();
+    assertThat(returnedBytes).isNotNull();
+    assertThat(returnedBytes).isEqualTo(bytes);
   }
 
   @Test
   public void appendResizesByteArray() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisString redisString = new RedisString(new ByteArrayWrapper(new byte[] {0, 1}));
-    ByteArrayWrapper part2 = new ByteArrayWrapper(new byte[] {2, 3, 4, 5});
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    RedisString redisString = new RedisString(new byte[] {0, 1});
     int redisStringSize = redisString.strlen();
-    int part2Size = part2.length();
-    int appendedStringSize = redisString.append(part2, region, null);
-    assertThat(appendedStringSize).isEqualTo(redisStringSize + part2Size);
+    byte[] bytesToAppend = {2, 3, 4, 5};
+    int appendedSize = bytesToAppend.length;
+    int appendedStringSize = redisString.append(bytesToAppend, region, null);
+    assertThat(appendedStringSize).isEqualTo(redisStringSize + appendedSize);
   }
 
   @Test
   public void appendStoresStableDelta() throws IOException {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisString o1 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1}));
-    ByteArrayWrapper part2 = new ByteArrayWrapper(new byte[] {2, 3});
-    o1.append(part2, region, null);
-    assertThat(o1.hasDelta()).isTrue();
-    assertThat(o1.get()).isEqualTo(new ByteArrayWrapper(new byte[] {0, 1, 2, 3}));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] baseBytes = {0, 1};
+    byte[] bytesToAppend = {2, 3};
+    byte[] baseAndAppendedBytes = {0, 1, 2, 3};
+
+    RedisString stringOne = new RedisString(baseBytes);
+    stringOne.append(bytesToAppend, region, null);
+    assertThat(stringOne.hasDelta()).isTrue();
+    assertThat(stringOne.get()).isEqualTo(baseAndAppendedBytes);
     HeapDataOutputStream out = new HeapDataOutputStream(100);
-    o1.toDelta(out);
-    assertThat(o1.hasDelta()).isFalse();
+    stringOne.toDelta(out);
+    assertThat(stringOne.hasDelta()).isFalse();
     ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-    RedisString o2 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1}));
-    assertThat(o2).isNotEqualTo(o1);
-    o2.fromDelta(in);
-    assertThat(o2.get()).isEqualTo(new ByteArrayWrapper(new byte[] {0, 1, 2, 3}));
-    assertThat(o2).isEqualTo(o1);
+    RedisString stringTwo = new RedisString(baseBytes);
+    assertThat(stringTwo).isNotEqualTo(stringOne);
+    stringTwo.fromDelta(in);
+    assertThat(stringTwo.get()).isEqualTo(baseAndAppendedBytes);
+    assertThat(stringTwo).isEqualTo(stringOne);
   }
 
   @Test
   public void confirmSerializationIsStable() throws IOException, ClassNotFoundException {
-    RedisString o1 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1, 2, 3}));
-    o1.setExpirationTimestampNoDelta(1000);
+    RedisString stringOne = new RedisString(new byte[] {0, 1, 2, 3});
+    stringOne.setExpirationTimestampNoDelta(1000);
     HeapDataOutputStream outputStream = new HeapDataOutputStream(100);
-    DataSerializer.writeObject(o1, outputStream);
+    DataSerializer.writeObject(stringOne, outputStream);
     ByteArrayDataInput dataInput = new ByteArrayDataInput(outputStream.toByteArray());
-    RedisString o2 = DataSerializer.readObject(dataInput);
-    assertThat(o2).isEqualTo(o1);
+    RedisString stringTwo = DataSerializer.readObject(dataInput);
+    assertThat(stringTwo).isEqualTo(stringOne);
   }
 
   @Test
@@ -134,225 +132,185 @@ public class RedisStringTest {
 
   @Test
   public void incrThrowsArithmeticErrorWhenNotALong() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0', ' ', '1'});
-    RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.incr(region, byteArrayWrapper))
-        .isInstanceOf(NumberFormatException.class);
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = "10 1".getBytes();
+    RedisString string = new RedisString(bytes);
+    assertThatThrownBy(() -> string.incr(region, null)).isInstanceOf(NumberFormatException.class);
   }
 
   @Test
   public void incrErrorsWhenValueOverflows() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(
-        // max value for signed long
-        new byte[] {'9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5', '4', '7', '7', '5',
-            '8', '0', '7'});
-    RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.incr(region, byteArrayWrapper))
-        .isInstanceOf(ArithmeticException.class);
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = String.valueOf(Long.MAX_VALUE).getBytes();
+    RedisString string = new RedisString(bytes);
+    assertThatThrownBy(() -> string.incr(region, null)).isInstanceOf(ArithmeticException.class);
   }
 
   @Test
   public void incrIncrementsValueAtGivenKey() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0'});
-    RedisString string = new RedisString(byteArrayWrapper);
-    string.incr(region, byteArrayWrapper);
-    assertThat(string.get().toString()).isEqualTo("11");
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = "10".getBytes();
+    RedisString string = new RedisString(bytes);
+    string.incr(region, null);
+    assertThat(string.get()).isEqualTo("11".getBytes());
   }
 
   @Test
   public void incrbyThrowsNumberFormatExceptionWhenNotALong() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0', ' ', '1'});
-    RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.incrby(region, byteArrayWrapper, 2L))
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = "10 1".getBytes();
+    RedisString string = new RedisString(bytes);
+    assertThatThrownBy(() -> string.incrby(region, null, 2L))
         .isInstanceOf(NumberFormatException.class);
   }
 
   @Test
   public void incrbyErrorsWhenValueOverflows() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(
-        // max value for signed long
-        new byte[] {'9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5', '4', '7', '7', '5',
-            '8', '0', '7'});
-    RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.incrby(region, byteArrayWrapper, 2L))
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = String.valueOf(Long.MAX_VALUE).getBytes();
+    RedisString string = new RedisString(bytes);
+    assertThatThrownBy(() -> string.incrby(region, null, 2L))
         .isInstanceOf(ArithmeticException.class);
   }
 
   @Test
   public void incrbyIncrementsValueByGivenLong() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0'});
-    RedisString string = new RedisString(byteArrayWrapper);
-    string.incrby(region, byteArrayWrapper, 2L);
-    assertThat(string.get().toString()).isEqualTo("12");
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = "10".getBytes();
+    RedisString string = new RedisString(bytes);
+    string.incrby(region, null, 2L);
+    assertThat(string.get()).isEqualTo("12".getBytes());
   }
 
   @Test
   public void incrbyfloatThrowsArithmeticErrorWhenNotADouble() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0', ' ', '1'});
-    RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.incrbyfloat(region, byteArrayWrapper, new BigDecimal("1.1")))
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = "10 1".getBytes();
+    RedisString string = new RedisString(bytes);
+    assertThatThrownBy(() -> string.incrbyfloat(region, null, new BigDecimal("1.1")))
         .isInstanceOf(NumberFormatException.class);
   }
 
   @Test
   public void incrbyfloatIncrementsValueByGivenFloat() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0'});
-    RedisString string = new RedisString(byteArrayWrapper);
-    string.incrbyfloat(region, byteArrayWrapper, new BigDecimal("2.20"));
-    assertThat(string.get().toString()).isEqualTo("12.20");
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = "10".getBytes();
+    RedisString string = new RedisString(bytes);
+    string.incrbyfloat(region, null, new BigDecimal("2.20"));
+    assertThat(string.get()).isEqualTo("12.20".getBytes());
   }
 
   @Test
   public void decrThrowsNumberFormatExceptionWhenNotALong() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(new byte[] {0});
-    RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.decr(region, byteArrayWrapper))
-        .isInstanceOf(NumberFormatException.class);
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = {0};
+    RedisString string = new RedisString(bytes);
+    assertThatThrownBy(() -> string.decr(region, null)).isInstanceOf(NumberFormatException.class);
   }
 
   @Test
   public void decrThrowsArithmeticExceptionWhenDecrementingMin() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(
-        new byte[] {'-', '9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5', '4', '7', '7',
-            '5',
-            '8', '0', '8'});
-    RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.decr(region, byteArrayWrapper))
-        .isInstanceOf(ArithmeticException.class);
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = String.valueOf(Long.MIN_VALUE).getBytes();
+    RedisString string = new RedisString(bytes);
+    assertThatThrownBy(() -> string.decr(region, null)).isInstanceOf(ArithmeticException.class);
   }
 
   @Test
   public void decrDecrementsValue() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0'});
-    RedisString string = new RedisString(byteArrayWrapper);
-    string.decr(region, byteArrayWrapper);
-    assertThat(string.get().toString()).isEqualTo("9");
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = "10".getBytes();
+    RedisString string = new RedisString(bytes);
+    string.decr(region, null);
+    assertThat(string.get()).isEqualTo("9".getBytes());
   }
 
   @Test
   public void decrbyThrowsNumberFormatExceptionWhenNotALong() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(new byte[] {1});
-    RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.decrby(region, byteArrayWrapper, 2))
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = {1};
+    RedisString string = new RedisString(bytes);
+    assertThatThrownBy(() -> string.decrby(region, null, 2))
         .isInstanceOf(NumberFormatException.class);
   }
 
   @Test
   public void decrbyThrowsArithmeticExceptionWhenDecrementingMin() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(
-        new byte[] {'-', '9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5', '4', '7', '7',
-            '5',
-            '8', '0', '7'});
-    RedisString string = new RedisString(byteArrayWrapper);
-    assertThatThrownBy(() -> string.decrby(region, byteArrayWrapper, 2))
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = String.valueOf(Long.MIN_VALUE).getBytes();
+    RedisString string = new RedisString(bytes);
+    assertThatThrownBy(() -> string.decrby(region, null, 2))
         .isInstanceOf(ArithmeticException.class);
   }
 
   @Test
   public void decrbyDecrementsValue() {
-    // allows unchecked cast of mock to Region<RedisKey, RedisData>
-    @SuppressWarnings("unchecked")
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisKey byteArrayWrapper = new RedisKey(new byte[] {'1', '0'});
-    RedisString string = new RedisString(byteArrayWrapper);
-    string.decrby(region, byteArrayWrapper, 2);
-    assertThat(string.get().toString()).isEqualTo("8");
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = "10".getBytes();
+    RedisString string = new RedisString(bytes);
+    string.decrby(region, null, 2);
+    assertThat(string.get()).isEqualTo("8".getBytes());
   }
 
   @Test
   public void strlenReturnsStringLength() {
-    RedisString string = new RedisString(new ByteArrayWrapper(new byte[] {1, 2, 3, 4}));
-    assertThat(string.strlen()).isEqualTo(4);
+    byte[] bytes = {1, 2, 3, 4};
+    RedisString string = new RedisString(bytes);
+    assertThat(string.strlen()).isEqualTo(bytes.length);
   }
 
   @Test
   public void strlenReturnsLengthOfEmptyString() {
-    RedisString string = new RedisString(new ByteArrayWrapper(new byte[] {}));
+    RedisString string = new RedisString(new byte[] {});
     assertThat(string.strlen()).isEqualTo(0);
   }
 
   @Test
   public void equals_returnsFalse_givenDifferentExpirationTimes() {
-    RedisString o1 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1, 2, 3}));
-    o1.setExpirationTimestampNoDelta(1000);
-    RedisString o2 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1, 2, 3}));
-    o2.setExpirationTimestampNoDelta(999);
-    assertThat(o1).isNotEqualTo(o2);
+    byte[] bytes = {0, 1, 2, 3};
+    RedisString stringOne = new RedisString(bytes);
+    stringOne.setExpirationTimestampNoDelta(1000);
+    RedisString stringTwo = new RedisString(bytes);
+    stringTwo.setExpirationTimestampNoDelta(999);
+    assertThat(stringOne).isNotEqualTo(stringTwo);
   }
 
   @Test
   public void equals_returnsFalse_givenDifferentValueBytes() {
-    RedisString o1 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1, 2, 3}));
-    o1.setExpirationTimestampNoDelta(1000);
-    RedisString o2 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1, 2, 2}));
-    o2.setExpirationTimestampNoDelta(1000);
-    assertThat(o1).isNotEqualTo(o2);
+    int expirationTimestamp = 1000;
+    RedisString stringOne = new RedisString(new byte[] {0, 1, 2, 3});
+    stringOne.setExpirationTimestampNoDelta(expirationTimestamp);
+    RedisString stringTwo = new RedisString(new byte[] {0, 1, 2, 2});
+    stringTwo.setExpirationTimestampNoDelta(expirationTimestamp);
+    assertThat(stringOne).isNotEqualTo(stringTwo);
   }
 
   @Test
   public void equals_returnsTrue_givenEqualValueBytesAndExpiration() {
-    RedisString o1 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1, 2, 3}));
-    o1.setExpirationTimestampNoDelta(1000);
-    RedisString o2 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1, 2, 3}));
-    o2.setExpirationTimestampNoDelta(1000);
-    assertThat(o1).isEqualTo(o2);
+    byte[] bytes = {0, 1, 2, 3};
+    int expirationTimestamp = 1000;
+    RedisString stringOne = new RedisString(bytes);
+    stringOne.setExpirationTimestampNoDelta(expirationTimestamp);
+    RedisString stringTwo = new RedisString(bytes);
+    stringTwo.setExpirationTimestampNoDelta(expirationTimestamp);
+    assertThat(stringOne).isEqualTo(stringTwo);
   }
 
-
-  @SuppressWarnings("unchecked")
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
-    Region<RedisKey, RedisData> region = mock(Region.class);
-    RedisString o1 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1}));
-    o1.setExpirationTimestamp(region, null, 999);
-    assertThat(o1.hasDelta()).isTrue();
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] bytes = {0, 1};
+    RedisString stringOne = new RedisString(bytes);
+    stringOne.setExpirationTimestamp(region, null, 999);
+    assertThat(stringOne.hasDelta()).isTrue();
     HeapDataOutputStream out = new HeapDataOutputStream(100);
-    o1.toDelta(out);
-    assertThat(o1.hasDelta()).isFalse();
+    stringOne.toDelta(out);
+    assertThat(stringOne.hasDelta()).isFalse();
     ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-    RedisString o2 = new RedisString(new ByteArrayWrapper(new byte[] {0, 1}));
-    assertThat(o2).isNotEqualTo(o1);
-    o2.fromDelta(in);
-    assertThat(o2).isEqualTo(o1);
+    RedisString stringTwo = new RedisString(bytes);
+    assertThat(stringTwo).isNotEqualTo(stringOne);
+    stringTwo.fromDelta(in);
+    assertThat(stringTwo).isEqualTo(stringOne);
   }
 
   /************* Size in Bytes Tests *************/
@@ -360,7 +318,7 @@ public class RedisStringTest {
   @Test
   public void should_calculateSize_equalToROSSize_ofLargeStrings() {
     String javaString = makeStringOfSpecifiedSize(10_000);
-    RedisString string = new RedisString(new ByteArrayWrapper(javaString.getBytes()));
+    RedisString string = new RedisString(javaString.getBytes());
 
     int actual = string.getSizeInBytes();
     int expected = reflectionObjectSizer.sizeof(string);
@@ -373,7 +331,7 @@ public class RedisStringTest {
     String javaString;
     for (int i = 0; i < 512; i += 8) {
       javaString = makeStringOfSpecifiedSize(i);
-      RedisString string = new RedisString(new ByteArrayWrapper(javaString.getBytes()));
+      RedisString string = new RedisString(javaString.getBytes());
 
       int expected = reflectionObjectSizer.sizeof(string);
       int actual = string.getSizeInBytes();
@@ -386,37 +344,39 @@ public class RedisStringTest {
   @Test
   public void changingStringValue_toShorterString_shouldDecreaseSizeInBytes() {
     String baseString = "baseString";
-    RedisString string = new RedisString(new ByteArrayWrapper((baseString + "asdf").getBytes()));
+    String stringToRemove = "asdf";
+    RedisString string = new RedisString((baseString + stringToRemove).getBytes());
 
     int initialSize = string.getSizeInBytes();
 
-    string.set(new ByteArrayWrapper(baseString.getBytes()));
+    string.set(baseString.getBytes());
 
     int finalSize = string.getSizeInBytes();
 
-    assertThat(finalSize).isEqualTo(initialSize - 4);
+    assertThat(finalSize).isEqualTo(initialSize - stringToRemove.length());
   }
 
   @Test
   public void changingStringValue_toLongerString_shouldIncreaseSizeInBytes() {
     String baseString = "baseString";
-    RedisString string = new RedisString(new ByteArrayWrapper(baseString.getBytes()));
+    RedisString string = new RedisString(baseString.getBytes());
 
     int initialSize = string.getSizeInBytes();
 
-    string.set(new ByteArrayWrapper((baseString + "asdf").getBytes()));
+    String addedString = "asdf";
+    string.set((baseString + addedString).getBytes());
 
     int finalSize = string.getSizeInBytes();
 
-    assertThat(finalSize).isEqualTo(initialSize + 4);
+    assertThat(finalSize).isEqualTo(initialSize + addedString.length());
   }
 
   @Test
   public void changingStringValue_toEmptyString_shouldDecreaseSizeInBytes_toBaseSize() {
     String baseString = "baseString";
-    RedisString string = new RedisString(new ByteArrayWrapper((baseString + "asdf").getBytes()));
+    RedisString string = new RedisString((baseString + "asdf").getBytes());
 
-    string.set(new ByteArrayWrapper("".getBytes()));
+    string.set("".getBytes());
 
     int finalSize = string.getSizeInBytes();
 
@@ -430,7 +390,7 @@ public class RedisStringTest {
   // carefully consider that increase before changing the constant.
   @Test
   public void overheadConstants_shouldMatchCalculatedValue() {
-    RedisString redisString = new RedisString(new ByteArrayWrapper("".getBytes()));
+    RedisString redisString = new RedisString("".getBytes());
     int calculatedSize = reflectionObjectSizer.sizeof(redisString);
 
     assertThat(BASE_REDIS_STRING_OVERHEAD).isEqualTo(calculatedSize);
@@ -439,10 +399,6 @@ public class RedisStringTest {
   /******* helper methods *******/
 
   private String makeStringOfSpecifiedSize(final int stringSize) {
-    StringBuffer sb = new StringBuffer(stringSize);
-    for (int i = 0; i < stringSize; i++) {
-      sb.append("a");
-    }
-    return sb.toString();
+    return StringUtils.repeat("a", stringSize);
   }
 }

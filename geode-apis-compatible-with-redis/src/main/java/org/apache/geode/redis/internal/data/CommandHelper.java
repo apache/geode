@@ -166,7 +166,7 @@ public class CommandHelper {
     return checkStringType(redisData, true);
   }
 
-  RedisString setRedisString(RedisKey key, ByteArrayWrapper value) {
+  RedisString setRedisString(RedisKey key, byte[] value) {
     RedisString result;
     RedisData redisData = getRedisData(key);
 

@@ -20,6 +20,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -37,34 +38,33 @@ import org.apache.geode.redis.internal.netty.Coder;
 public class RedisString extends AbstractRedisData {
   private int appendSequence;
 
-  private ByteArrayWrapper value;
+  private byte[] value;
 
   // this value is empirically derived using ReflectionObjectSizer, which provides an exact size
   // of the object. It can't be used directly because of its performance impact. This value causes
   // the size we keep track of to converge to the actual size as it increases.
-  protected static final int BASE_REDIS_STRING_OVERHEAD = 64;
+  protected static final int BASE_REDIS_STRING_OVERHEAD = 48;
 
-  public RedisString(ByteArrayWrapper value) {
+  public RedisString(byte[] value) {
     this.value = value;
   }
 
   // for serialization
   public RedisString() {}
 
-  public ByteArrayWrapper get() {
-    return new ByteArrayWrapper(value.toBytes());
+  public byte[] get() {
+    return value;
   }
 
-  public void set(ByteArrayWrapper value) {
+  public void set(byte[] value) {
     valueSet(value);
   }
 
-  public int append(ByteArrayWrapper appendValue, Region<RedisKey, RedisData> region,
-      RedisKey key) {
-    valueAppend(appendValue.toBytes());
+  public int append(byte[] appendValue, Region<RedisKey, RedisData> region, RedisKey key) {
+    valueAppend(appendValue);
     appendSequence++;
-    storeChanges(region, key, new AppendDeltaInfo(appendValue.toBytes(), appendSequence));
-    return value.length();
+    storeChanges(region, key, new AppendDeltaInfo(appendValue, appendSequence));
+    return value.length;
   }
 
   public long incr(Region<RedisKey, RedisData> region, RedisKey key)
@@ -74,7 +74,7 @@ public class RedisString extends AbstractRedisData {
       throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
     }
     longValue++;
-    valueSetBytes(Coder.longToBytes(longValue));
+    valueSet(Coder.longToBytes(longValue));
     // numeric strings are short so no need to use delta
     region.put(key, this);
     return longValue;
@@ -87,7 +87,7 @@ public class RedisString extends AbstractRedisData {
       throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
     }
     longValue += increment;
-    valueSetBytes(Coder.longToBytes(longValue));
+    valueSet(Coder.longToBytes(longValue));
     // numeric strings are short so no need to use delta
     region.put(key, this);
     return longValue;
@@ -98,7 +98,7 @@ public class RedisString extends AbstractRedisData {
       throws NumberFormatException, ArithmeticException {
     BigDecimal bigDecimalValue = parseValueAsBigDecimal();
     bigDecimalValue = bigDecimalValue.add(increment);
-    valueSetBytes(Coder.bigDecimalToBytes(bigDecimalValue));
+    valueSet(Coder.bigDecimalToBytes(bigDecimalValue));
 
     // numeric strings are short so no need to use delta
     region.put(key, this);
@@ -111,7 +111,7 @@ public class RedisString extends AbstractRedisData {
       throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
     }
     longValue -= decrement;
-    valueSetBytes(Coder.longToBytes(longValue));
+    valueSet(Coder.longToBytes(longValue));
     // numeric strings are short so no need to use delta
     region.put(key, this);
     return longValue;
@@ -124,7 +124,7 @@ public class RedisString extends AbstractRedisData {
       throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
     }
     longValue--;
-    valueSetBytes(Coder.longToBytes(longValue));
+    valueSet(Coder.longToBytes(longValue));
     // numeric strings are short so no need to use delta
     region.put(key, this);
     return longValue;
@@ -132,14 +132,14 @@ public class RedisString extends AbstractRedisData {
 
   private long parseValueAsLong() {
     try {
-      return Long.parseLong(value.toString());
+      return Coder.bytesToLong(value);
     } catch (NumberFormatException ex) {
       throw new NumberFormatException(RedisConstants.ERROR_NOT_INTEGER);
     }
   }
 
   private BigDecimal parseValueAsBigDecimal() {
-    String valueString = value.toString();
+    String valueString = Coder.bytesToString(value);
     if (valueString.contains(" ")) {
       throw new NumberFormatException(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
     }
@@ -150,44 +150,39 @@ public class RedisString extends AbstractRedisData {
     }
   }
 
-  public ByteArrayWrapper getrange(long start, long end) {
-    int length = value.length();
+  public byte[] getrange(long start, long end) {
+    int length = value.length;
     int boundedStart = getBoundedStartIndex(start, length);
     int boundedEnd = getBoundedEndIndex(end, length);
 
-    /*
-     * Can't 'start' at end of value
-     */
+    // Can't 'start' at end of value
     if (boundedStart > boundedEnd || boundedStart == length) {
-      return new ByteArrayWrapper(new byte[0]);
+      return new byte[0];
     }
-    /*
-     * 1 is added to end because the end in copyOfRange is exclusive but in Redis it is inclusive
-     */
+    // 1 is added to end because the end in copyOfRange is exclusive but in Redis it is inclusive
     if (boundedEnd != length) {
       boundedEnd++;
     }
-    byte[] returnRange = Arrays.copyOfRange(value.toBytes(), boundedStart, boundedEnd);
-    return new ByteArrayWrapper(returnRange);
+    return Arrays.copyOfRange(value, boundedStart, boundedEnd);
   }
 
   public int setrange(Region<RedisKey, RedisData> region, RedisKey key, int offset,
       byte[] valueToAdd) {
     if (valueToAdd.length == 0) {
-      return value.length();
+      return value.length;
     }
     int totalLength = offset + valueToAdd.length;
-    byte[] bytes = value.toBytes();
+    byte[] bytes = value;
     if (totalLength < bytes.length) {
       System.arraycopy(valueToAdd, 0, bytes, offset, valueToAdd.length);
     } else {
       byte[] newBytes = Arrays.copyOf(bytes, totalLength);
       System.arraycopy(valueToAdd, 0, newBytes, offset, valueToAdd.length);
-      valueSetBytes(newBytes);
+      valueSet(newBytes);
     }
     // TODO add delta support
     region.put(key, this);
-    return value.length();
+    return value.length;
   }
 
   private int getBoundedStartIndex(long index, int size) {
@@ -208,7 +203,7 @@ public class RedisString extends AbstractRedisData {
 
   public int bitpos(Region<RedisKey, RedisData> region, RedisKey key, int bit,
       int start, Integer end) {
-    int length = value.length();
+    int length = value.length;
     if (length == 0) {
       return -1;
     }
@@ -233,7 +228,7 @@ public class RedisString extends AbstractRedisData {
     if (start > length) {
       start = length - 1;
     }
-    if (end > length) {
+    if (end >= length) {
       end = length - 1;
     }
 
@@ -241,10 +236,9 @@ public class RedisString extends AbstractRedisData {
       return -1;
     }
 
-    byte[] bytes = value.toBytes();
     for (int i = start; i <= end; i++) {
       int cBit;
-      byte cByte = bytes[i];
+      byte cByte = value[i];
       for (int j = 0; j < 8; j++) {
         cBit = (cByte & (0x80 >> j)) >> (7 - j);
         if (cBit == bit) {
@@ -260,13 +254,12 @@ public class RedisString extends AbstractRedisData {
     return -1;
   }
 
-
   public long bitcount(int start, int end) {
     if (start < 0) {
-      start += value.length();
+      start += value.length;
     }
     if (end < 0) {
-      end += value.length();
+      end += value.length;
     }
 
     if (start < 0) {
@@ -276,23 +269,23 @@ public class RedisString extends AbstractRedisData {
       end = 0;
     }
 
-    if (end > value.length() - 1) {
-      end = value.length() - 1;
+    if (end > value.length - 1) {
+      end = value.length - 1;
     }
 
-    if (end < start || start >= value.length()) {
+    if (end < start) {
       return 0;
     }
 
     long setBits = 0;
     for (int j = start; j <= end; j++) {
-      setBits += bitcountTable[0xFF & value.toBytes()[j]];
+      setBits += bitcountTable[0xFF & value[j]];
     }
     return setBits;
   }
 
   public long bitcount() {
-    return bitcount(0, value.length() - 1);
+    return bitcount(0, value.length - 1);
   }
 
   private static final byte[] bitcountTable = {
@@ -556,32 +549,32 @@ public class RedisString extends AbstractRedisData {
 
 
   public int strlen() {
-    return value.length();
+    return value.length;
   }
 
   public int getbit(int offset) {
     if (offset < 0) {
-      offset += value.length() * 8;
+      offset += value.length * 8;
     }
 
-    if (offset < 0 || offset > value.length() * 8) {
+    if (offset < 0 || offset > value.length * 8) {
       return 0;
     }
 
     int byteIndex = offset / 8;
     offset %= 8;
 
-    if (byteIndex >= value.length()) {
+    if (byteIndex >= value.length) {
       return 0;
     }
 
-    return (value.toBytes()[byteIndex] & (0x80 >> offset)) >> (7 - offset);
+    return (value[byteIndex] & (0x80 >> offset)) >> (7 - offset);
   }
 
   public int setbit(Region<RedisKey, RedisData> region, RedisKey key,
       int bitValue, int byteIndex, byte bitIndex) {
     int returnBit;
-    byte[] bytes = value.toBytes();
+    byte[] bytes = value;
     if (byteIndex < bytes.length) {
       returnBit = (bytes[byteIndex] & (0x80 >> bitIndex)) >> (7 - bitIndex);
     } else {
@@ -596,7 +589,7 @@ public class RedisString extends AbstractRedisData {
       System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
       newBytes[byteIndex] = bitValue == 1 ? (byte) (newBytes[byteIndex] | (0x80 >> bitIndex))
           : (byte) (newBytes[byteIndex] & ~(0x80 >> bitIndex));
-      valueSetBytes(newBytes);
+      valueSet(newBytes);
     }
     // TODO: add delta support
     region.put(key, this);
@@ -613,7 +606,7 @@ public class RedisString extends AbstractRedisData {
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     DataSerializer.writePrimitiveInt(appendSequence, out);
-    DataSerializer.writeByteArray(value.toBytes(), out);
+    DataSerializer.writeByteArray(value, out);
   }
 
   @Override
@@ -621,7 +614,7 @@ public class RedisString extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     appendSequence = DataSerializer.readPrimitiveInt(in);
-    value = new ByteArrayWrapper(DataSerializer.readByteArray(in));
+    value = DataSerializer.readByteArray(in);
 
   }
 
@@ -636,7 +629,7 @@ public class RedisString extends AbstractRedisData {
     byte[] appendBytes = appendDeltaInfo.getBytes();
 
     if (value == null) {
-      value = new ByteArrayWrapper(appendBytes);
+      value = appendBytes;
       appendSequence = appendDeltaInfo.getSequence();
     } else {
       if (appendDeltaInfo.getSequence() == appendSequence + 1) {
@@ -656,11 +649,11 @@ public class RedisString extends AbstractRedisData {
     return RedisDataType.REDIS_STRING;
   }
 
-  public ByteArrayWrapper getset(Region<RedisKey, RedisData> region, RedisKey key,
-      ByteArrayWrapper newValue) {
+  public byte[] getset(Region<RedisKey, RedisData> region, RedisKey key,
+      byte[] newValue) {
     // No need to copy "value" since we are locked and will be calling set which replaces
     // "value" with a new instance.
-    ByteArrayWrapper result = value;
+    byte[] result = value;
     set(newValue);
     persistNoDelta();
     region.put(key, this);
@@ -684,7 +677,7 @@ public class RedisString extends AbstractRedisData {
       return false;
     }
     RedisString that = (RedisString) o;
-    return Objects.equals(value, that.value);
+    return Arrays.equals(value, that.value);
   }
 
   @Override
@@ -692,7 +685,7 @@ public class RedisString extends AbstractRedisData {
     return Objects.hash(super.hashCode(), value);
   }
 
-  ByteArrayWrapper getValue() {
+  byte[] getValue() {
     return value;
   }
 
@@ -700,7 +693,7 @@ public class RedisString extends AbstractRedisData {
   public String toString() {
     return "RedisString{" +
         super.toString() + ", " +
-        "value=" + value +
+        "value=" + new String(value, StandardCharsets.UTF_8) +
         '}';
   }
 
@@ -718,15 +711,16 @@ public class RedisString extends AbstractRedisData {
   ////// methods that modify the "value" field ////////////
 
   protected void valueAppend(byte[] bytes) {
-    value.append(bytes);
+    int initialLength = value.length;
+    int additionalLength = bytes.length;
+    byte[] combined = new byte[initialLength + additionalLength];
+    System.arraycopy(value, 0, combined, 0, initialLength);
+    System.arraycopy(bytes, 0, combined, initialLength, additionalLength);
+    value = combined;
   }
 
-  protected void valueSet(ByteArrayWrapper newValue) {
-    value = newValue;
-  }
-
-  protected void valueSetBytes(byte[] bytes) {
-    value.setBytes(bytes);
+  protected void valueSet(byte[] bytes) {
+    value = bytes;
   }
 
   @Override
@@ -736,6 +730,6 @@ public class RedisString extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return BASE_REDIS_STRING_OVERHEAD + value.length();
+    return BASE_REDIS_STRING_OVERHEAD + value.length;
   }
 }

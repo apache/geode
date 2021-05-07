@@ -76,8 +76,7 @@ public class SetOptions implements DataSerializableFixedID {
   }
 
   @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in, DeserializationContext context) throws IOException {
     exists = DataSerializer.readEnum(SetOptions.Exists.class, in);
     expirationMillis = in.readLong();
     keepTTL = in.readBoolean();
@@ -99,6 +98,6 @@ public class SetOptions implements DataSerializableFixedID {
     /**
      * Only set if key already exists
      */
-    XX;
+    XX
   }
 }

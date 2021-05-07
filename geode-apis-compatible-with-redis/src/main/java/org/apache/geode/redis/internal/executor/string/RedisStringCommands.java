@@ -17,27 +17,26 @@ package org.apache.geode.redis.internal.executor.string;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 
 public interface RedisStringCommands {
-  long append(RedisKey key, ByteArrayWrapper valueToAppend);
+  long append(RedisKey key, byte[] valueToAppend);
 
-  ByteArrayWrapper get(RedisKey key);
+  byte[] get(RedisKey key);
 
-  boolean set(RedisKey key, ByteArrayWrapper value, SetOptions options);
+  boolean set(RedisKey key, byte[] value, SetOptions options);
 
   long incr(RedisKey key);
 
   long decr(RedisKey key);
 
-  ByteArrayWrapper getset(RedisKey key, ByteArrayWrapper value);
+  byte[] getset(RedisKey key, byte[] value);
 
   long incrby(RedisKey key, long increment);
 
   long decrby(RedisKey key, long decrement);
 
-  ByteArrayWrapper getrange(RedisKey key, long start, long end);
+  byte[] getrange(RedisKey key, long start, long end);
 
   long bitcount(RedisKey key, int start, int end);
 
@@ -57,5 +56,5 @@ public interface RedisStringCommands {
 
   int setrange(RedisKey key, int offset, byte[] value);
 
-  ByteArrayWrapper mget(RedisKey key);
+  byte[] mget(RedisKey key);
 }
