@@ -63,6 +63,16 @@
         <version>2.7.8</version>
       </dependency>
       <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-joda</artifactId>
+        <version>2.9.8</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jsr310</artifactId>
+        <version>2.11.4</version>
+      </dependency>
+      <dependency>
         <groupId>com.github.davidmoten</groupId>
         <artifactId>geo</artifactId>
         <version>0.7.7</version>
@@ -396,12 +406,6 @@
         <groupId>org.jboss.modules</groupId>
         <artifactId>jboss-modules</artifactId>
         <version>1.11.0.Final</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.modules</groupId>
-        <artifactId>jboss-modules</artifactId>
-        <version>1.11.0.Final</version>
-        <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.jgroups</groupId>
@@ -771,12 +775,6 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
-        <artifactId>geode-deployment-legacy</artifactId>
-        <version>${version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
         <artifactId>geode-dunit</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
@@ -921,7 +919,19 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-deployment-jboss-modules</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-deployment-legacy</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-jboss-extensions</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>
