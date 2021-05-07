@@ -284,6 +284,11 @@ public class CommandFunction extends SingleResultRedisFunction {
         byte[] member = (byte[]) args[1];
         return sortedSetCommands.zscore(key, member);
       }
+      case ZSCORE: {
+        byte[] member = (byte[]) args[1];
+        System.out.println("command function about to invoke zscore");
+        return sortedSetCommands.zscore(key, member);
+      }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }
