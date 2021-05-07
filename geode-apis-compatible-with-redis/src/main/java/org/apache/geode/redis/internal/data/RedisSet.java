@@ -263,9 +263,6 @@ public class RedisSet extends AbstractRedisData {
   private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
     ArrayList<ByteArrayWrapper> adds = addsDeltaInfo.getAdds();
     sizeInBytes += adds.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
-    if (members.isEmpty()) {
-      sizeInBytes += INTERNAL_HASH_SET_STORAGE_OVERHEAD;
-    }
     members.addAll(adds);
   }
 
