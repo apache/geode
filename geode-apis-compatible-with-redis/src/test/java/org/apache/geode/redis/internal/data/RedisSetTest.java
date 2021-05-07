@@ -275,7 +275,7 @@ public class RedisSetTest {
           + (PER_MEMBER_OVERHEAD * (i + 1)) + currentDataSize;
       Offset<Long> offset = Offset.offset(Math.round(expected * percentTolerance));
 
-      assertThat(actual).as("i=" + i).isCloseTo(expected, offset);
+      assertThat(actual).isCloseTo(expected, offset);
     }
   }
 
