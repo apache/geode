@@ -22,7 +22,6 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -32,6 +31,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ZAddParameterRequirements implements ParameterRequirements {
   private static final Logger logger = LogService.getLogger();
+
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext context) {
     int numberOfArguments = command.getProcessedCommand().size();

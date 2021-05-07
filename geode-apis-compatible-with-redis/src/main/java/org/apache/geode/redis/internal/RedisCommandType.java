@@ -95,6 +95,7 @@ import org.apache.geode.redis.internal.executor.set.SScanExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionStoreExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZScoreExecutor;
 import org.apache.geode.redis.internal.executor.string.AppendExecutor;
 import org.apache.geode.redis.internal.executor.string.BitCountExecutor;
 import org.apache.geode.redis.internal.executor.string.BitOpExecutor;
@@ -195,6 +196,7 @@ public enum RedisCommandType {
   /************ Sorted Sets **************/
 
   ZADD(new ZAddExecutor(), SUPPORTED, new ZAddParameterRequirements()),
+  ZSCORE(new ZScoreExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
 
   /************* Server *****************/
   SLOWLOG(new SlowlogExecutor(), SUPPORTED, new SlowlogParameterRequirements()),

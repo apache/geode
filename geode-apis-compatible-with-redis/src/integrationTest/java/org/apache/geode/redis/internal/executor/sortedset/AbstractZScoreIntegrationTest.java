@@ -29,7 +29,7 @@ import redis.clients.jedis.Protocol;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractZScoreIntegrationTest implements RedisPortSupplier {
   private Jedis jedis;
   private Jedis jedis2;
   private static final int REDIS_CLIENT_TIMEOUT =
@@ -66,10 +66,8 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
-  public void zaddStoresScores_givenCorrectArguments() {
+  public void zaddDoesNotError_givenCorrectArguments() {
     long added = jedis.zadd("ss_key", 2, "member01");
     assertThat(added).isEqualTo(1L);
-    double score = jedis.zscore("ss_key", "member01");
-    assertThat(score).isEqualTo(2L);
   }
 }

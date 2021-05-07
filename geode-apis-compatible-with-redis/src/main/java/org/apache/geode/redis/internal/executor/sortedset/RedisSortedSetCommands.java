@@ -22,4 +22,6 @@ import org.apache.geode.redis.internal.data.RedisKey;
 public interface RedisSortedSetCommands {
 
   long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd);
+
+  byte[] zscore(RedisKey key, byte[] member);
 }

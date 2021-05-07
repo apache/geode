@@ -41,4 +41,10 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
         () -> getRedisSortedSet(key, false)
             .zadd(getRegion(), key, scoresAndMembersToAdd));
   }
+
+  @Override
+  public byte[] zscore(RedisKey key, byte[] member) {
+    System.out.println("function executor about to invoke zscore");
+    return stripedExecute(key, () -> getRedisSortedSet(key, true).zscore(member));
+  }
 }

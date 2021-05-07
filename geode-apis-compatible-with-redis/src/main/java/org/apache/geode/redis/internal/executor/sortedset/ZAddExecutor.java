@@ -14,13 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -53,11 +50,11 @@ public class ZAddExecutor extends SortedSetExecutor {
       if (adding) {
         byte[] score = next.toBytes();
         scoresAndMembersToAdd.add(score);
-//        if (StringUtils.isNumeric(score.toString())) {
-//          scoresAndMembersToAdd.add(score);
-//        } else {
-//          return RedisResponse.error(ERROR_NOT_A_VALID_FLOAT);
-//        }
+        // if (StringUtils.isNumeric(score.toString())) {
+        // scoresAndMembersToAdd.add(score);
+        // } else {
+        // return RedisResponse.error(ERROR_NOT_A_VALID_FLOAT);
+        // }
         // member can be any old thing
         if (commandIterator.hasNext()) {
           ByteArrayWrapper member = commandIterator.next();

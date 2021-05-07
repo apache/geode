@@ -18,6 +18,10 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -25,10 +29,16 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
+
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
 public class RedisSortedSet extends AbstractRedisData {
 
@@ -36,15 +46,17 @@ public class RedisSortedSet extends AbstractRedisData {
     ADDED, CHANGED, NOOP;
   }
 
-  private HashMap<byte[], byte[]> members;
+  private Object2ObjectOpenCustomHashMap<byte[], byte[]> members =
+      new Object2ObjectOpenCustomHashMap<>(ByteArrays.HASH_STRATEGY);
 
   @SuppressWarnings("unchecked")
   RedisSortedSet(Map<byte[], byte[]> members) {
-    this.members = (HashMap<byte[], byte[]>) members;
+    this.members = (Object2ObjectOpenCustomHashMap<byte[], byte[]>) members;
   }
 
   // for serialization
-  public RedisSortedSet() {}
+  public RedisSortedSet() {
+  }
 
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
@@ -57,36 +69,35 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
-  //
-  // /**
-  // * Since GII (getInitialImage) can come in and call toData while other threads
-  // * are modifying this object, the striped executor will not protect toData.
-  // * So any methods that modify "members" needs to be thread safe with toData.
-  // */
-  //
-  // @Override
-  // public synchronized void toData(DataOutput out, SerializationContext context) throws
-  // IOException {
-  // super.toData(out, context);
-  // InternalDataSerializer.writeHashSet(members, out);
-  // }
-  //
-  // @Override
-  // public void fromData(DataInput in, DeserializationContext context)
-  // throws IOException, ClassNotFoundException {
-  // super.fromData(in, context);
-  // members = InternalDataSerializer.readHashSet(in);
-  // }
-  //
+
+  /**
+   * Since GII (getInitialImage) can come in and call toData while other threads are modifying this
+   * object, the striped executor will not protect toData. So any methods that modify "members"
+   * needs to be thread safe with toData.
+   */
+
+  @Override
+  public synchronized void toData(DataOutput out, SerializationContext context) throws
+      IOException {
+    super.toData(out, context);
+    InternalDataSerializer.writeHashMap(members, out);
+  }
+
+  @Override
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
+    members = (Object2ObjectOpenCustomHashMap<byte[], byte[]>) InternalDataSerializer.readHashMap(in);
+  }
+
   @Override
   public int getDSFID() {
     return REDIS_SORTED_SET_ID;
   }
 
-  //
-  private synchronized AddOrChange membersAdd(byte[] scoreToAdd, byte[] memberToAdd, boolean CH) {
+  private synchronized AddOrChange membersAdd(byte[] memberToAdd, byte[] scoreToAdd, boolean CH) {
     byte[] oldScore = members.get(memberToAdd);
-    boolean added = (members.put(scoreToAdd, memberToAdd) == null);
+    boolean added = (members.put(memberToAdd, scoreToAdd) == null);
     if (CH && !added) {
       return oldScore.equals(scoreToAdd) ? AddOrChange.NOOP : AddOrChange.CHANGED;
     }
@@ -98,6 +109,7 @@ public class RedisSortedSet extends AbstractRedisData {
     while (iterator.hasNext()) {
       ByteArrayWrapper member = iterator.next();
       ByteArrayWrapper score = iterator.next();
+      System.out.println("Delta getting applied:" + member + " score:" + score);
       members.put(member.toBytes(), score.toBytes()); // TODO: get rid of ByteArrayWrapper
     }
   }
@@ -110,8 +122,8 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   /**
-   * @param region the region this instance is stored in
-   * @param key the name of the set to add to
+   * @param region       the region this instance is stored in
+   * @param key          the name of the set to add to
    * @param membersToAdd members to add to this set; NOTE this list may by modified by this call
    * @return the number of members actually added
    */
@@ -122,9 +134,10 @@ public class RedisSortedSet extends AbstractRedisData {
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
     while (iterator.hasNext()) {
-      byte[] member = iterator.next();
       byte[] score = iterator.next();
-      System.out.println("member:" + member.toString() + " score: " + score);
+      byte[] member = iterator.next();
+      System.out.println("Adding member:" + byteArrayStringer(member)
+          + " score: " + byteArrayStringer(score));
 
       switch (membersAdd(member, score, false)) {
         case ADDED:
@@ -146,6 +159,28 @@ public class RedisSortedSet extends AbstractRedisData {
       storeChanges(region, key, deltaInfo);
     }
     return membersAdded;
+  }
+
+  byte[] zscore(byte[] member) {
+    System.out.println("finally gonna get the data for zscore, member: "
+        + byteArrayStringer(member) + " members:" + members);
+    for (byte[] key : members.keySet()) {
+      System.out.println("member: " + byteArrayStringer(key) + " score:"
+          + byteArrayStringer(members.get(key)));
+      System.out.println("equality? " + Arrays.equals(member, key));
+      System.out.println("equality 2? " + (member.length == key.length));
+    }
+    byte[] score = members.get(member);
+    System.out.println("got score: " + score);
+    return score;
+  }
+
+  String byteArrayStringer(byte[] byteArray) {
+    String retVal = "";
+    for (int i = 0; i < byteArray.length; i++) {
+      retVal += byteArray[i];
+    }
+    return retVal;
   }
 
   private AddsDeltaInfo makeAddsDeltaInfo(AddsDeltaInfo deltaInfo, byte[] member, byte[] score) {
