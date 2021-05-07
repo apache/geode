@@ -26,29 +26,27 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractSInterIntegrationTest implements RedisIntegrationTest {
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -66,21 +64,21 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
     String[] secondSet = new String[] {"apple", "microsoft", "linux", "peach"};
     String[] thirdSet = new String[] {"luigi", "bowser", "peach", "mario"};
-    jedis.sadd("set1", firstSet);
-    jedis.sadd("set2", secondSet);
-    jedis.sadd("set3", thirdSet);
+    jedis.sadd("{user1}set1", firstSet);
+    jedis.sadd("{user1}set2", secondSet);
+    jedis.sadd("{user1}set3", thirdSet);
 
-    Set<String> resultSet = jedis.sinter("set1", "set2", "set3");
+    Set<String> resultSet = jedis.sinter("{user1}set1", "{user1}set2", "{user1}set3");
 
     String[] expected = new String[] {"peach"};
     assertThat(resultSet).containsExactlyInAnyOrder(expected);
 
-    Set<String> emptyResultSet = jedis.sinter("nonexistent", "set2", "set3");
+    Set<String> emptyResultSet = jedis.sinter("{user1}nonexistent", "{user1}set2", "{user1}set3");
     assertThat(emptyResultSet).isEmpty();
 
-    jedis.sadd("newEmpty", "born2die");
-    jedis.srem("newEmpty", "born2die");
-    Set<String> otherEmptyResultSet = jedis.sinter("set2", "newEmpty");
+    jedis.sadd("{user1}newEmpty", "born2die");
+    jedis.srem("{user1}newEmpty", "born2die");
+    Set<String> otherEmptyResultSet = jedis.sinter("{user1}set2", "{user1}newEmpty");
     assertThat(otherEmptyResultSet).isEmpty();
   }
 
@@ -89,35 +87,38 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
     String[] secondSet = new String[] {"apple", "microsoft", "linux", "peach"};
     String[] thirdSet = new String[] {"luigi", "bowser", "peach", "mario"};
-    jedis.sadd("set1", firstSet);
-    jedis.sadd("set2", secondSet);
-    jedis.sadd("set3", thirdSet);
+    jedis.sadd("{user1}set1", firstSet);
+    jedis.sadd("{user1}set2", secondSet);
+    jedis.sadd("{user1}set3", thirdSet);
 
-    Long resultSize = jedis.sinterstore("result", "set1", "set2", "set3");
-    Set<String> resultSet = jedis.smembers("result");
+    Long resultSize =
+        jedis.sinterstore("{user1}result", "{user1}set1", "{user1}set2", "{user1}set3");
+    Set<String> resultSet = jedis.smembers("{user1}result");
 
     String[] expected = new String[] {"peach"};
     assertThat(resultSize).isEqualTo(expected.length);
     assertThat(resultSet).containsExactlyInAnyOrder(expected);
 
-    Long otherResultSize = jedis.sinterstore("set1", "set1", "set2");
-    Set<String> otherResultSet = jedis.smembers("set1");
+    Long otherResultSize = jedis.sinterstore("{user1}set1", "{user1}set1", "{user1}set2");
+    Set<String> otherResultSet = jedis.smembers("{user1}set1");
     String[] otherExpected = new String[] {"apple", "peach"};
     assertThat(otherResultSize).isEqualTo(otherExpected.length);
     assertThat(otherResultSet).containsExactlyInAnyOrder(otherExpected);
 
-    Long emptySetSize = jedis.sinterstore("newEmpty", "nonexistent", "set2", "set3");
-    Set<String> emptyResultSet = jedis.smembers("newEmpty");
+    Long emptySetSize =
+        jedis.sinterstore("{user1}newEmpty", "{user1}nonexistent", "{user1}set2", "{user1}set3");
+    Set<String> emptyResultSet = jedis.smembers("{user1}newEmpty");
     assertThat(emptySetSize).isEqualTo(0L);
     assertThat(emptyResultSet).isEmpty();
 
-    emptySetSize = jedis.sinterstore("set1", "nonexistent", "set2", "set3");
-    emptyResultSet = jedis.smembers("set1");
+    emptySetSize =
+        jedis.sinterstore("{user1}set1", "{user1}nonexistent", "{user1}set2", "{user1}set3");
+    emptyResultSet = jedis.smembers("{user1}set1");
     assertThat(emptySetSize).isEqualTo(0L);
     assertThat(emptyResultSet).isEmpty();
 
-    Long copySetSize = jedis.sinterstore("copySet", "set2", "newEmpty");
-    Set<String> copyResultSet = jedis.smembers("copySet");
+    Long copySetSize = jedis.sinterstore("{user1}copySet", "{user1}set2", "{user1}newEmpty");
+    Set<String> copyResultSet = jedis.smembers("{user1}copySet");
     assertThat(copySetSize).isEqualTo(0);
     assertThat(copyResultSet).isEmpty();
   }
@@ -125,31 +126,33 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
   @Test
   public void testSInterStore_withNonExistentKeys() {
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
-    jedis.sadd("set1", firstSet);
+    jedis.sadd("{user1}set1", firstSet);
 
-    Long resultSize = jedis.sinterstore("set1", "nonExistent1", "nonExistent2");
+    Long resultSize =
+        jedis.sinterstore("{user1}set1", "{user1}nonExistent1", "{user1}nonExistent2");
     assertThat(resultSize).isEqualTo(0);
-    assertThat(jedis.exists("set1")).isFalse();
+    assertThat(jedis.exists("{user1}set1")).isFalse();
   }
 
   @Test
   public void testSInterStore_withNonExistentKeys_andNonSetTarget() {
     jedis.set("string1", "stringValue");
 
-    Long resultSize = jedis.sinterstore("string1", "nonExistent1", "nonExistent2");
+    Long resultSize =
+        jedis.sinterstore("{user1}string1", "{user1}nonExistent1", "{user1}nonExistent2");
     assertThat(resultSize).isEqualTo(0);
-    assertThat(jedis.exists("set1")).isFalse();
+    assertThat(jedis.exists("{user1}set1")).isFalse();
   }
 
   @Test
   public void testSInterStore_withNonSetKey() {
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
-    jedis.sadd("set1", firstSet);
-    jedis.set("string1", "value1");
+    jedis.sadd("{user1}set1", firstSet);
+    jedis.set("{user1}string1", "value1");
 
-    assertThatThrownBy(() -> jedis.sinterstore("set1", "string1"))
+    assertThatThrownBy(() -> jedis.sinterstore("{user1}set1", "{user1}string1"))
         .hasMessage("WRONGTYPE Operation against a key holding the wrong kind of value");
-    assertThat(jedis.exists("set1")).isTrue();
+    assertThat(jedis.exists("{user1}set1")).isTrue();
   }
 
   @Test
@@ -187,7 +190,7 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
 
     Runnable runnable2 = () -> {
       for (int i = 0; i < ENTRIES; i++) {
-        jedis2.sinterstore("master", "master", "set-" + i);
+        jedis.sinterstore("master", "master", "set-" + i);
         Thread.yield();
       }
     };

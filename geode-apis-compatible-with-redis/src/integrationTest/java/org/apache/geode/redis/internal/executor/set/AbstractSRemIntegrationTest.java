@@ -26,29 +26,27 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractSRemIntegrationTest implements RedisIntegrationTest {
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -163,7 +161,7 @@ public abstract class AbstractSRemIntegrationTest implements RedisIntegrationTes
     AtomicLong sremmed2 = new AtomicLong(0);
     Runnable runnable2 = () -> {
       for (int i = 0; i < ENTRIES; i++) {
-        sremmed2.addAndGet(jedis2.srem("master", masterSet.get(i)));
+        sremmed2.addAndGet(jedis.srem("master", masterSet.get(i)));
         Thread.yield();
       }
     };
