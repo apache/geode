@@ -105,14 +105,14 @@ class DUnitHost extends Host {
 
         for (int i = oldVMCount; i < n; i++) {
           addVM(i, VersionManager.CURRENT_VERSION, processManager.getStub(i),
-              processManager.getProcessHolder(i), processManager, true);
+              processManager.getProcessHolder(i), processManager, RUN_VM_CLASSLOADER_ISOLATED);
         }
 
         // now create the one we really want
         processManager.launchVM(version, n, false, 0, RUN_VM_CLASSLOADER_ISOLATED);
         processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
         addVM(n, version, processManager.getStub(n), processManager.getProcessHolder(n),
-            processManager, true);
+            processManager, RUN_VM_CLASSLOADER_ISOLATED);
 
       } catch (IOException | InterruptedException | NotBoundException e) {
         throw new RuntimeException("Could not dynamically launch vm + " + n, e);

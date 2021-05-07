@@ -308,7 +308,7 @@ dependencies {
 
     //Geode-common has annotations and other pieces used geode-core
     api(project(':geode-common'))
-    implementation(project(':geode-logging'))
+    api(project(':geode-logging'))
     implementation(project(':geode-membership'))
     implementation(project(':geode-unsafe'))
     implementation(project(':geode-serialization'))

@@ -36,6 +36,7 @@ dependencies {
   integrationTestImplementation('org.awaitility:awaitility')
 
 
+  distributedTestRuntimeOnly(project(':geode-core'))
   distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-junit'))
   distributedTestImplementation(project(':geode-dunit'))

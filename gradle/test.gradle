@@ -157,18 +157,6 @@ tasks.named("distributedTest").configure {
   dependsOn(':geode-assembly:installDist')
 }
 
-tasks.named("acceptanceTest").configure {
-  dependsOn(':geode-assembly:installDist')
-}
-
-tasks.named("upgradeTest").configure {
-  dependsOn(':geode-assembly:installDist')
-}
-
-tasks.named("integrationTest").configure {
-  dependsOn(':geode-assembly:installDist')
-}
-
 // apply common test configuration
 gradle.taskGraph.whenReady({ graph ->
   tasks.withType(Test).each { test ->

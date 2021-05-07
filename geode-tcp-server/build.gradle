@@ -40,6 +40,7 @@ dependencies {
     upgradeTestImplementation(project(':geode-gfsh'))
     upgradeTestImplementation(project(':geode-dunit'))
     upgradeTestImplementation(project(':geode-membership'))
-
+    upgradeTestImplementation(project(':geode-core'))
+    upgradeTestImplementation(project(':geode-junit'))
     upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }

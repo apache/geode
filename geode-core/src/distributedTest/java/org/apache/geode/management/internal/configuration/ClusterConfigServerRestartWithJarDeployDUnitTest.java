@@ -66,7 +66,7 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
     gfsh.connectAndVerify(locator0);
 
     gfsh.executeAndAssertThat(
-        "configure pdx --read-serialized=true --auto-serializable-classes=ClusterConfigServerRestartWithJarDeployFunction.*");
+        "configure pdx --read-serialized=true --auto-serializable-classes=example.org.apache.geode.management.function.ClusterConfigServerRestartWithJarDeployFunction.*");
 
     Properties props = new Properties();
     MemberVM server1 = rule.startServerVM(1, props, locator0.getPort());
@@ -88,7 +88,8 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
     JarBuilder jarBuilder = new JarBuilder();
     String filePath =
         createTempFileFromResource(this.getClass(),
-            "/ClusterConfigServerRestartWithJarDeployFunction.java").getAbsolutePath();
+            "/example/org/apache/geode/management/function/ClusterConfigServerRestartWithJarDeployFunction.java")
+                .getAbsolutePath();
     assertThat(filePath).as("java file resource not found").isNotBlank();
 
     File functionJar = new File(temporaryFolder.newFolder(), "output.jar");
@@ -107,7 +108,8 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
           InternalDistributedMember otherMember = others.stream().findFirst().get();
 
           Class<?> studentClass = ClassPathLoader.getLatest()
-              .forName("ClusterConfigServerRestartWithJarDeployFunction$Student");
+              .forName(
+                  "example.org.apache.geode.management.function.ClusterConfigServerRestartWithJarDeployFunction$Student");
 
           Object student = studentClass.getConstructor().newInstance();
 
