@@ -138,10 +138,7 @@ public abstract class AbstractRedisData implements RedisData {
       return false;
     }
     long now = System.currentTimeMillis();
-    if (now < expireTimestamp) {
-      return false;
-    }
-    return true;
+    return now >= expireTimestamp;
   }
 
   @Override
@@ -150,10 +147,7 @@ public abstract class AbstractRedisData implements RedisData {
     if (expireTimestamp == NO_EXPIRATION) {
       return false;
     }
-    if (now < expireTimestamp) {
-      return false;
-    }
-    return true;
+    return now >= expireTimestamp;
   }
 
   @Override
