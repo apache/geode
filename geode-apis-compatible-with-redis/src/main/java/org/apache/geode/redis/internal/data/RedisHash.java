@@ -361,12 +361,12 @@ public class RedisHash extends AbstractRedisData {
     }
   }
 
-  private Pair<Integer, List<ByteArrayWrapper>> getResultsPair(List<ByteArrayWrapper> keysSnapShot,
+  private Pair<Integer, List<Object>> getResultsPair(List<ByteArrayWrapper> keysSnapShot,
       int startCursor, int count, Pattern matchPattern) {
 
     int indexOfKeys = startCursor;
 
-    List<ByteArrayWrapper> resultList = new ArrayList<>();
+    List<Object> resultList = new ArrayList<>();
 
     for (int index = startCursor; index < keysSnapShot.size(); index++) {
       if ((index - startCursor) == count) {
