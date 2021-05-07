@@ -66,6 +66,7 @@ public abstract class AbstractDockerizedAcceptanceTest {
   static int httpPort;
   static int redisPort;
   static int memcachePort;
+  static int jmxHttpPort;
   static String host;
 
   protected String getLocatorGFSHConnectionString() {
@@ -112,30 +113,38 @@ public abstract class AbstractDockerizedAcceptanceTest {
   protected void launch(String launchCommand) throws IOException, InterruptedException {
     if (!geodeContainer.isRunning()) {
       startDockerContainer(launchCommand);
+      launchServicesInContainer(launchCommand);
+      mapPorts();
     } else if (!currentLaunchCommand.equals(launchCommand)) {
       geodeContainer.stop();
       startDockerContainer(launchCommand);
+      launchServicesInContainer(launchCommand);
+      mapPorts();
     }
   }
 
-  private void startDockerContainer(String launchCommand) throws IOException, InterruptedException {
+  protected void startDockerContainer(String launchCommand) {
     geodeContainer.withCommand("./launch.sh");
     geodeContainer.start();
     currentLaunchCommand = launchCommand;
+  }
 
-    launchServicesInContainer(launchCommand);
-
+  private void mapPorts() {
     host = geodeContainer.getHost();
-    locatorPort = geodeContainer.getMappedPort(10334);
-    serverPort = geodeContainer.getMappedPort(40404);
-    int jmxHttpPort = geodeContainer.getMappedPort(7070);
-    httpPort = geodeContainer.getMappedPort(9090);
-    redisPort = geodeContainer.getMappedPort(6379);
-    memcachePort = geodeContainer.getMappedPort(5678);
+    locatorPort = getMappedPort(10334);
+    serverPort = getMappedPort(40404);
+    jmxHttpPort = getMappedPort(7070);
+    httpPort = getMappedPort(9090);
+    redisPort = getMappedPort(6379);
+    memcachePort = getMappedPort(5678);
 
     previousLocatorGFSHConnectionString = locatorGFSHConnectionString =
         "connect --locator=" + host + "[" + locatorPort + "] --use-http --url=http://localhost:"
             + jmxHttpPort + "/gemfire/v1";
+  }
+
+  protected int getMappedPort(int port) {
+    return geodeContainer.getMappedPort(port);
   }
 
   protected void launchServicesInContainer(String launchCommand)
