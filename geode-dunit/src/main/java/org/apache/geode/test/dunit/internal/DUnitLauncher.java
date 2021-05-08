@@ -196,7 +196,8 @@ public class DUnitLauncher {
     return "localhost[" + locatorPort + "]";
   }
 
-  private static void launch(boolean launchLocator, boolean classloaderIsolated) throws AlreadyBoundException, IOException,
+  private static void launch(boolean launchLocator, boolean classloaderIsolated)
+      throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
 
     deleteDunitSuspectFiles();

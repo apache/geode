@@ -35,7 +35,8 @@ class DUnitHost extends Host {
 
   private final boolean classloaderIsolatedOverride;
 
-  DUnitHost(String hostName, ProcessManager processManager, VMEventNotifier vmEventNotifier, boolean classloaderIsolatedOverride)
+  DUnitHost(String hostName, ProcessManager processManager, VMEventNotifier vmEventNotifier,
+      boolean classloaderIsolatedOverride)
       throws RemoteException {
     super(hostName, vmEventNotifier);
     this.debuggingVM = new VM(this, VersionManager.CURRENT_VERSION, -1, new RemoteDUnitVM(0), null,
@@ -108,11 +109,13 @@ class DUnitHost extends Host {
 
         for (int i = oldVMCount; i < n; i++) {
           addVM(i, VersionManager.CURRENT_VERSION, processManager.getStub(i),
-              processManager.getProcessHolder(i), processManager, classloaderIsolatedOverride && RUN_VM_CLASSLOADER_ISOLATED);
+              processManager.getProcessHolder(i), processManager,
+              classloaderIsolatedOverride && RUN_VM_CLASSLOADER_ISOLATED);
         }
 
         // now create the one we really want
-        processManager.launchVM(version, n, false, 0, classloaderIsolatedOverride && RUN_VM_CLASSLOADER_ISOLATED);
+        processManager.launchVM(version, n, false, 0,
+            classloaderIsolatedOverride && RUN_VM_CLASSLOADER_ISOLATED);
         processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
         addVM(n, version, processManager.getStub(n), processManager.getProcessHolder(n),
             processManager, classloaderIsolatedOverride && RUN_VM_CLASSLOADER_ISOLATED);

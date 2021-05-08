@@ -258,7 +258,6 @@
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-deployment-legacy</artifactId>
       <scope>runtime</scope>
-      <optional>true</optional>
     </dependency>
   </dependencies>
 </project>

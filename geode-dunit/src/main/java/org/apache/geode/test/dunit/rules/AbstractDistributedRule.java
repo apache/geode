@@ -49,7 +49,8 @@ class AbstractDistributedRule implements SerializableTestRule {
     this(vmCount, classloaderIsolated, new RemoteInvoker());
   }
 
-  private AbstractDistributedRule(final int vmCount, boolean classloaderIsolated, final RemoteInvoker invoker) {
+  private AbstractDistributedRule(final int vmCount, boolean classloaderIsolated,
+      final RemoteInvoker invoker) {
     this.vmCount = vmCount;
     this.classloaderIsolated = classloaderIsolated;
     this.invoker = invoker;
