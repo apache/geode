@@ -37,7 +37,10 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,6 +64,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheXmlRule;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
@@ -93,7 +97,8 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
   private VM vm3;
 
   @Rule
-  public DistributedRule distributedRule = new DistributedRule();
+  // classloader isolation is turned off because Mockito does not work well across classloaders.
+  public DistributedRule distributedRule = new DistributedRule(false);
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
   @Rule

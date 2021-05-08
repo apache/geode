@@ -32,6 +32,7 @@ class AbstractDistributedRule implements SerializableTestRule {
 
   private final int vmCount;
   private final RemoteInvoker invoker;
+  private final boolean classloaderIsolated;
 
   // if you alter vmEventListener at all, make sure VmEventListenerDistributedTest still passes
   private volatile VMEventListener vmEventListener;
@@ -41,11 +42,16 @@ class AbstractDistributedRule implements SerializableTestRule {
   }
 
   AbstractDistributedRule(final int vmCount) {
-    this(vmCount, new RemoteInvoker());
+    this(vmCount, true);
   }
 
-  private AbstractDistributedRule(final int vmCount, final RemoteInvoker invoker) {
+  AbstractDistributedRule(final int vmCount, boolean classloaderIsolated) {
+    this(vmCount, classloaderIsolated, new RemoteInvoker());
+  }
+
+  private AbstractDistributedRule(final int vmCount, boolean classloaderIsolated, final RemoteInvoker invoker) {
     this.vmCount = vmCount;
+    this.classloaderIsolated = classloaderIsolated;
     this.invoker = invoker;
   }
 
@@ -67,7 +73,7 @@ class AbstractDistributedRule implements SerializableTestRule {
   void beforeDistributedTest(final Description description) throws Throwable {
     TestHistoryLogger.logTestHistory(description.getTestClass().getSimpleName(),
         description.getMethodName());
-    DUnitLauncher.launchIfNeeded(vmCount);
+    DUnitLauncher.launchIfNeeded(vmCount, classloaderIsolated);
     System.out.println("\n\n[setup] START TEST " + description.getClassName() + "."
         + description.getMethodName());
 

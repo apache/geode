@@ -69,8 +69,8 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
 
   @Test
   public void multipleGeodeServersCreateSessionRegion() {
-    final VM server0 = VM.getVM(0).initializeAsServerVM();
-    final VM server1 = VM.getVM(1).initializeAsServerVM();
+    final VM server0 = VM.getVM(0);
+    final VM server1 = VM.getVM(1);
     final VM client = VM.getVM(2).initializeAsClientVM();
 
     server0.invoke(this::startCacheServer);
@@ -86,7 +86,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
   public void addServerToExistingClusterCreatesSessionRegion() {
     final VM server0 = VM.getVM(0);
     final VM server1 = VM.getVM(1);
-    final VM client = VM.getVM(2);
+    final VM client = VM.getVM(2).initializeAsClientVM();
 
     server0.invoke(this::startCacheServer);
 

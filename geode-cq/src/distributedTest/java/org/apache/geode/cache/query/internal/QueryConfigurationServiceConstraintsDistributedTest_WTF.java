@@ -114,7 +114,6 @@ public class QueryConfigurationServiceConstraintsDistributedTest_WTF implements 
   @Before
   public void setUp() {
     serverVM = getVM(0);
-    serverVM.initializeAsServerVM();
     clientVM = getController();
     clientVM.initializeAsClientVM();
 

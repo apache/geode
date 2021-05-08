@@ -83,10 +83,6 @@ public class DUnitLauncher {
 
   public static final String LOG4J = System.getProperty("log4j.configurationFile");
 
-  private static final boolean RUN_VM_CLASSLOADER_ISOLATED =
-      System.getenv("CLASSLOADER_ISOLATED") != null
-          && Boolean.parseBoolean(System.getenv("CLASSLOADER_ISOLATED"));
-
   /**
    * change this to have dunit/vmX directories deleted and recreated when processes are launched
    */
@@ -156,7 +152,7 @@ public class DUnitLauncher {
     launchIfNeeded(true);
   }
 
-  public static void launchIfNeeded(boolean launchLocator) {
+  public static void launchIfNeeded(boolean launchLocator, boolean classloaderIsolated) {
     if (System.getProperties().contains(VM_NUM_PARAM)) {
       // we're a dunit child vm, do nothing.
       return;
@@ -164,7 +160,7 @@ public class DUnitLauncher {
 
     if (!isHydra() && !isLaunched()) {
       try {
-        launch(launchLocator);
+        launch(launchLocator, classloaderIsolated);
       } catch (Exception e) {
         throw new RuntimeException("Unable to launch dunit VMs", e);
       }
@@ -173,12 +169,20 @@ public class DUnitLauncher {
     Host.setAllVMsToCurrentVersion();
   }
 
+  public static void launchIfNeeded(boolean launchLocator) {
+    launchIfNeeded(launchLocator, true);
+  }
+
   /**
    * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
    */
   public static void launchIfNeeded(int vmCount) {
+    launchIfNeeded(vmCount, true);
+  }
+
+  public static void launchIfNeeded(int vmCount, boolean classloaderIsolated) {
     NUM_VMS = vmCount;
-    launchIfNeeded();
+    launchIfNeeded(true, classloaderIsolated);
   }
 
   /**
@@ -192,7 +196,7 @@ public class DUnitLauncher {
     return "localhost[" + locatorPort + "]";
   }
 
-  private static void launch(boolean launchLocator) throws AlreadyBoundException, IOException,
+  private static void launch(boolean launchLocator, boolean classloaderIsolated) throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
 
     deleteDunitSuspectFiles();
@@ -232,7 +236,7 @@ public class DUnitLauncher {
 
     // Launch an initial set of VMs
     for (int i = 0; i < NUM_VMS; i++) {
-      processManager.launchVM(i, RUN_VM_CLASSLOADER_ISOLATED);
+      processManager.launchVM(i, classloaderIsolated);
     }
 
     // wait for the VMS to start up
@@ -243,7 +247,7 @@ public class DUnitLauncher {
     // populate the Host class with our stubs. The tests use this host class
     DUnitHost host =
         new DUnitHost(InetAddress.getLocalHost().getCanonicalHostName(), processManager,
-            vmEventNotifier);
+            vmEventNotifier, classloaderIsolated);
     host.init(NUM_VMS, launchLocator);
   }
 
