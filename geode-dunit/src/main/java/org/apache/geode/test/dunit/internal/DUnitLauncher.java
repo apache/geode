@@ -128,6 +128,10 @@ public class DUnitLauncher {
 
   private static final VMEventNotifier vmEventNotifier = new VMEventNotifier();
 
+  private static final boolean RUN_VM_CLASSLOADER_ISOLATED =
+      System.getenv("CLASSLOADER_ISOLATED") != null
+          && Boolean.parseBoolean(System.getenv("CLASSLOADER_ISOLATED"));
+
   private static Master master;
 
   private DUnitLauncher() {}
@@ -170,7 +174,7 @@ public class DUnitLauncher {
   }
 
   public static void launchIfNeeded(boolean launchLocator) {
-    launchIfNeeded(launchLocator, true);
+    launchIfNeeded(launchLocator, RUN_VM_CLASSLOADER_ISOLATED);
   }
 
   /**
