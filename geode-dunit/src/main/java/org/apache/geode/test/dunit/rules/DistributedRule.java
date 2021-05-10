@@ -128,7 +128,12 @@ public class DistributedRule extends AbstractDistributedRule {
    * Constructs DistributedRule and launches the default number of {@code VM}s (which is 4).
    */
   public DistributedRule() {
-    this(true);
+    this(isClassLoaderIsolated());
+  }
+
+  private static boolean isClassLoaderIsolated() {
+    return System.getenv("CLASSLOADER_ISOLATED") != null
+        && Boolean.parseBoolean(System.getenv("CLASSLOADER_ISOLATED"));
   }
 
   public DistributedRule(boolean classloaderIsolated) {
@@ -171,7 +176,9 @@ public class DistributedRule extends AbstractDistributedRule {
   public static class Builder {
 
     private int vmCount = DEFAULT_VM_COUNT;
-    private boolean classloaderIsolated = true;
+
+    private boolean classloaderIsolated = System.getenv("CLASSLOADER_ISOLATED") != null
+        && Boolean.parseBoolean(System.getenv("CLASSLOADER_ISOLATED"));
 
     public Builder withVMCount(final int vmCount) {
       if (vmCount < 0) {
