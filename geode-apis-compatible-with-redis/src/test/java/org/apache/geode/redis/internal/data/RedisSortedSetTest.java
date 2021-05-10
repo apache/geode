@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -26,10 +25,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -44,12 +40,14 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class RedisSortedSetTest {
 
   @BeforeClass
   public static void beforeClass() {
+    InternalDataSerializer
+        .getDSFIDSerializer()
+        .registerDSFID(DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER, ByteArrayWrapper.class);
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DataSerializableFixedID.REDIS_SORTED_SET_ID,
         RedisSortedSet.class);
@@ -136,20 +134,20 @@ public class RedisSortedSetTest {
   @Test
   @Ignore("make sure to add this once ZREM implemented!")
   public void zrem_stores_delta_that_is_stable() throws IOException {
-//    Region<RedisKey, RedisData> region = mock(Region.class);
-//    RedisSortedSet o1 = createRedisSortedSet("k1", "v1", "k2", "v2");
-//    ArrayList<byte[]> removes = new ArrayList<>();
-//    removes.add("k1".getBytes());
-//    o1.zrem(region, null, removes);
-//    assertThat(o1.hasDelta()).isTrue();
-//    HeapDataOutputStream out = new HeapDataOutputStream(100);
-//    o1.toDelta(out);
-//    assertThat(o1.hasDelta()).isFalse();
-//    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-//    RedisSortedSet o2 = createRedisSortedSet("k1", "v1", "k2", "v2");
-//    assertThat(o2).isNotEqualTo(o1);
-//    o2.fromDelta(in);
-//    assertThat(o2).isEqualTo(o1);
+    // Region<RedisKey, RedisData> region = mock(Region.class);
+    // RedisSortedSet o1 = createRedisSortedSet("k1", "v1", "k2", "v2");
+    // ArrayList<byte[]> removes = new ArrayList<>();
+    // removes.add("k1".getBytes());
+    // o1.zrem(region, null, removes);
+    // assertThat(o1.hasDelta()).isTrue();
+    // HeapDataOutputStream out = new HeapDataOutputStream(100);
+    // o1.toDelta(out);
+    // assertThat(o1.hasDelta()).isFalse();
+    // ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
+    // RedisSortedSet o2 = createRedisSortedSet("k1", "v1", "k2", "v2");
+    // assertThat(o2).isNotEqualTo(o1);
+    // o2.fromDelta(in);
+    // assertThat(o2).isEqualTo(o1);
   }
 
   @SuppressWarnings("unchecked")
