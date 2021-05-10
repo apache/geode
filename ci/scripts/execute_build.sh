@@ -85,7 +85,6 @@ else
 fi
 
 
-# SET_JAVA_HOME="export JAVA_HOME=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64"
 SET_JAVA_HOME="export JAVA_HOME=/usr/lib/jvm/bellsoft-java${JAVA_BUILD_VERSION}-amd64"
 
 if [ -v CALL_STACK_TIMEOUT ]; then

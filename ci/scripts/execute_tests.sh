@@ -81,8 +81,6 @@ case $ARTIFACT_SLUG in
     SEP=";"
     ;;
   *)
-    # JAVA_BUILD_PATH=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-amd64
-    # JAVA_TEST_PATH=/usr/lib/jvm/java-${JAVA_TEST_VERSION}-openjdk-amd64
     JAVA_BUILD_PATH=/usr/lib/jvm/bellsoft-java${JAVA_BUILD_VERSION}-amd64
     JAVA_TEST_PATH=/usr/lib/jvm/bellsoft-java${JAVA_TEST_VERSION}-amd64
     SEP="&&"
