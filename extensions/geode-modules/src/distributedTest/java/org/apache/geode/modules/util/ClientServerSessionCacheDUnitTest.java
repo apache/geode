@@ -82,7 +82,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
   }
 
   @Test
-  public void addServerToExistingClusterCreatesSessionRegion() {
+  public void addServerToExistingClusterCopiesSessionRegion() {
     final VM server0 = VM.getVM(0);
     final VM server1 = VM.getVM(1);
     final VM client = VM.getVM(2);
@@ -96,7 +96,36 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     server1.invoke(this::startCacheServer);
 
     // Session region may be created asynchronously on the second server
+    server0.invoke(() -> await().untilAsserted(this::validateServer));
     server1.invoke(() -> await().untilAsserted(this::validateServer));
+  }
+
+  @Test
+  public void addServerToExistingClusterDoesNotCopyPreCreatedSessionRegion() {
+    final VM server0 = VM.getVM(0);
+    final VM server1 = VM.getVM(1);
+    final VM client = VM.getVM(2);
+
+    server0.invoke(this::startCacheServer);
+
+
+    server0.invoke(this::createSessionRegion);
+
+
+    client.invoke(this::startClientSessionCache);
+    server1.invoke(this::startCacheServer);
+
+    server0.invoke(() -> await().untilAsserted(this::validateBootstrapped));
+    server1.invoke(() -> await().untilAsserted(this::validateBootstrapped));
+
+    // server1 should not have created the session region
+    // If the user precreated the region, they must manually
+    // create it on all servers
+    server1.invoke(() -> {
+      Region<Object, Object> region = cacheRule.getCache().getRegion(SESSION_REGION_NAME);
+      assertThat(region).isNull();
+    });
+
   }
 
   @Test
@@ -123,33 +152,6 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
 
     server0.invoke(this::validateServer);
     server1.invoke(this::validateServer);
-  }
-
-  @Test
-  public void preCreatedRegionIsNotCopiedToNewlyStartedServers() {
-    final VM server0 = VM.getVM(0);
-    final VM server1 = VM.getVM(1);
-    final VM client = VM.getVM(2);
-
-    server0.invoke(this::startCacheServer);
-
-
-    server0.invoke(this::createSessionRegion);
-
-
-    client.invoke(this::startClientSessionCache);
-    server1.invoke(this::startCacheServer);
-
-    server1.invoke(() -> await().untilAsserted(this::validateBootstrapped));
-
-    // server1 should not have created the session region
-    // If the user precreated the region, they must manually
-    // create it on all servers
-    server1.invoke(() -> {
-      Region<Object, Object> region = cacheRule.getCache().getRegion(SESSION_REGION_NAME);
-      assertThat(region).isNull();
-    });
-
   }
 
   @Test
