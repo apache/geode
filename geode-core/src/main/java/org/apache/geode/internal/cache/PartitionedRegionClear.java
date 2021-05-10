@@ -59,7 +59,7 @@ public class PartitionedRegionClear {
       new AtomicReference<>();
 
   private final PartitionedRegionClearListener partitionedRegionClearListener =
-      new PartitionedRegionClearListener();
+      new PartitionedRegionClearListener(this);
 
   private final PartitionedRegion partitionedRegion;
   private final DistributedLockService distributedLockService;
@@ -179,8 +179,6 @@ public class PartitionedRegionClear {
       if (partitionedRegion.getDataStore() != null) {
         return clearLocalBucketsUnderLock(regionEvent, stats, startTime);
       }
-      // Non data-store with client queue and listener
-      doAfterClear(regionEvent); // TODO:KIRK: doAfterClear
     }
     return emptySet();
   }
@@ -192,7 +190,6 @@ public class PartitionedRegionClear {
     try {
       Set<Integer> clearedBuckets = doClearRegion(regionEvent);
       incStats = incStats && !clearedBuckets.isEmpty();
-      doAfterClear(regionEvent); // TODO:KIRK: doAfterClear
       return clearedBuckets;
     } finally {
       partitionedRegion.getDataStore().unlockBucketCreationForRegionClear();
@@ -243,13 +240,8 @@ public class PartitionedRegionClear {
 
   @VisibleForTesting
   void doAfterClear(InternalCacheEvent regionEvent) {
-    if (partitionedRegion.hasAnyClientsInterested()) {// TODO:KIRK: doAfterClear: remove conditional
-      notifyClients(regionEvent);
-    }
-
-    if (partitionedRegion.hasListener()) { // TODO:KIRK: doAfterClear: remove conditional
-      partitionedRegion.dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_CLEAR, regionEvent);
-    }
+    notifyClients(regionEvent);
+    partitionedRegion.dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_CLEAR, regionEvent);
   }
 
   /**
@@ -316,11 +308,17 @@ public class PartitionedRegionClear {
 
   @VisibleForTesting
   Set<Integer> sendPartitionedRegionClearMessage(InternalCacheEvent event, OperationType op) {
+    return sendPartitionedRegionClearMessage(event, op, false);
+  }
+
+  @VisibleForTesting
+  Set<Integer> sendPartitionedRegionClearMessage(InternalCacheEvent event, OperationType op,
+      boolean doEventNotifications) {
     RegionEventImpl eventForLocalClear = (RegionEventImpl) cast(event).clone();
     eventForLocalClear.setOperation(Operation.REGION_LOCAL_CLEAR);
     do {
       try {
-        return attemptToSendPartitionedRegionClearMessage(event, op);
+        return attemptToSendPartitionedRegionClearMessage(event, op, doEventNotifications);
       } catch (ForceReattemptException ignored) {
         // retry
       }
@@ -332,7 +330,7 @@ public class PartitionedRegionClear {
    */
   @VisibleForTesting
   Set<Integer> attemptToSendPartitionedRegionClearMessage(InternalCacheEvent event,
-      OperationType op)
+      OperationType op, boolean doEventNotifications)
       throws ForceReattemptException {
     if (partitionedRegion.getPRRoot() == null) {
       if (logger.isDebugEnabled()) {
@@ -346,7 +344,7 @@ public class PartitionedRegionClear {
       return emptySet();
     }
 
-    return sendClearMessage(event, op, getConfigRecipients());
+    return sendClearMessage(event, op, getConfigRecipients(), doEventNotifications);
   }
 
   private Set<InternalDistributedMember> getConfigRecipients() {
@@ -371,14 +369,14 @@ public class PartitionedRegionClear {
   }
 
   private Set<Integer> sendClearMessage(InternalCacheEvent event, OperationType op,
-      Set<InternalDistributedMember> recipients)
+      Set<InternalDistributedMember> recipients, boolean doEventNotifications)
       throws ForceReattemptException {
     try {
       PartitionedRegionClearResponse clearResponse =
           new PartitionedRegionClearResponse(partitionedRegion.getSystem(), recipients);
       PartitionedRegionClearMessage clearMessage =
           new PartitionedRegionClearMessage(recipients, partitionedRegion, clearResponse, op,
-              (RegionEventImpl) event);
+              (RegionEventImpl) event, doEventNotifications);
 
       clearMessage.send();
 
@@ -418,13 +416,10 @@ public class PartitionedRegionClear {
     try {
       // Force all primary buckets to be created before clear.
       assignAllPrimaryBuckets();
-
       requireAsyncEventQueuesSupportPartitionedRegionClear();
-
       if (cacheWrite) {
-        invokeCacheWriter((RegionEventImpl) regionEvent);
+        invokeCacheWriter(regionEvent);
       }
-
       doClearUnderLock(regionEvent);
     } finally {
       releaseDistributedClearLock(lockName);
@@ -450,14 +445,18 @@ public class PartitionedRegionClear {
   private void doClearUnderLock(InternalCacheEvent event) {
     // clear write locks need to be taken on all local and remote primary buckets
     // whether or not the partitioned region has any listeners clients interested
+    boolean doEventNotifications = false;
     lockLocalPrimaryBucketsUnderLock(partitionedRegion.getDistributionManager().getId());
     try {
       sendPartitionedRegionClearMessage(event, OperationType.OP_LOCK_FOR_PR_CLEAR);
       Set<Integer> bucketsCleared = clearRegion(event);
       requireAllBucketsWereCleared(bucketsCleared);
+      doEventNotifications = true;
+      doAfterClear(event);
     } finally {
       unlockLocalPrimaryBucketsUnderLock();
-      sendPartitionedRegionClearMessage(event, OperationType.OP_UNLOCK_FOR_PR_CLEAR);
+      sendPartitionedRegionClearMessage(event, OperationType.OP_UNLOCK_FOR_PR_CLEAR,
+          doEventNotifications);
     }
   }
 
@@ -565,18 +564,8 @@ public class PartitionedRegionClear {
   }
 
   @VisibleForTesting
-  boolean isLockedForListenerAndClientNotificationForTesting() {
-    return lockRequester.get() != null;
-  }
-
-  @VisibleForTesting
   void setLockedForTesting(InternalDistributedMember member) {
     lockRequester.set(member);
-  }
-
-  @VisibleForTesting
-  InternalDistributedMember getLockRequesterForTesting() {
-    return lockRequester.get();
   }
 
   private static RegionEventImpl cast(InternalCacheEvent event) {
@@ -596,15 +585,21 @@ public class PartitionedRegionClear {
   }
 
   @VisibleForTesting
-  class PartitionedRegionClearListener implements MembershipListener {
+  static class PartitionedRegionClearListener implements MembershipListener {
 
     private final AtomicBoolean membershipChange = new AtomicBoolean();
+    private final PartitionedRegionClear partitionedRegionClear;
+
+    @VisibleForTesting
+    PartitionedRegionClearListener(PartitionedRegionClear partitionedRegionClear) {
+      this.partitionedRegionClear = partitionedRegionClear;
+    }
 
     @Override
     public synchronized void memberDeparted(DistributionManager distributionManager,
         InternalDistributedMember id, boolean crashed) {
       setMembershipChange(true);
-      handleClearFromDepartedMember(id);
+      partitionedRegionClear.handleClearFromDepartedMember(id);
     }
 
     private void setMembershipChange(boolean newValue) {

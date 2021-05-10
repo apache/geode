@@ -63,7 +63,7 @@ public class PartitionedRegionClearMessageTest {
   public void construction_throwsNullPointerExceptionIfRecipientsIsNull() {
     Throwable thrown = catchThrowable(() -> {
       new PartitionedRegionClearMessage(null, distributionManager, 1,
-          replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false,
+          replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false, false,
           regionEventFactory);
     });
 
@@ -89,7 +89,8 @@ public class PartitionedRegionClearMessageTest {
         partitionedRegion,
         replyProcessor21,
         OperationType.OP_PR_CLEAR,
-        regionEvent);
+        regionEvent,
+        false);
 
     assertThat(message.getDistributionManagerForTesting()).isSameAs(distributionManager);
     assertThat(message.getCallbackArgumentForTesting()).isSameAs(callbackArgument);
@@ -109,7 +110,7 @@ public class PartitionedRegionClearMessageTest {
     boolean isTransactionDistributed = true;
     PartitionedRegionClearMessage message =
         new PartitionedRegionClearMessage(recipients, distributionManager, 1,
-            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId,
+            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false,
             isTransactionDistributed, regionEventFactory);
 
     boolean value = message.isTransactionDistributed();
@@ -121,7 +122,7 @@ public class PartitionedRegionClearMessageTest {
   public void getEventID_returnsTheEventId() {
     PartitionedRegionClearMessage message =
         new PartitionedRegionClearMessage(recipients, distributionManager, 1,
-            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false,
+            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false, false,
             regionEventFactory);
 
     EventID value = message.getEventID();
@@ -133,7 +134,7 @@ public class PartitionedRegionClearMessageTest {
   public void getOperationType_returnsTheOperationType() {
     PartitionedRegionClearMessage message =
         new PartitionedRegionClearMessage(recipients, distributionManager, 1,
-            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false,
+            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false, false,
             regionEventFactory);
 
     OperationType value = message.getOperationType();
@@ -145,7 +146,7 @@ public class PartitionedRegionClearMessageTest {
   public void send_putsOutgoing() {
     PartitionedRegionClearMessage message =
         new PartitionedRegionClearMessage(recipients, distributionManager, 1,
-            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false,
+            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false, false,
             regionEventFactory);
 
     message.send();
@@ -160,7 +161,7 @@ public class PartitionedRegionClearMessageTest {
     when(partitionedRegion.getDistributionAdvisor()).thenReturn(distributionAdvisor);
     PartitionedRegionClearMessage message =
         new PartitionedRegionClearMessage(recipients, distributionManager, 1,
-            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false,
+            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false, false,
             regionEventFactory);
 
     Throwable throwable = message.processCheckForPR(partitionedRegion, distributionManager);
@@ -174,7 +175,7 @@ public class PartitionedRegionClearMessageTest {
   public void processCheckForPR_returnsNull_whenRegionIsNull() {
     PartitionedRegionClearMessage message =
         new PartitionedRegionClearMessage(recipients, distributionManager, 1,
-            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false,
+            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false, false,
             regionEventFactory);
 
     Throwable throwable = message.processCheckForPR(null, distributionManager);
@@ -189,7 +190,7 @@ public class PartitionedRegionClearMessageTest {
     when(partitionedRegion.getDistributionAdvisor()).thenReturn(distributionAdvisor);
     PartitionedRegionClearMessage message =
         new PartitionedRegionClearMessage(recipients, distributionManager, 1,
-            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false,
+            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false, false,
             regionEventFactory);
 
     Throwable throwable = message.processCheckForPR(null, distributionManager);
@@ -205,7 +206,7 @@ public class PartitionedRegionClearMessageTest {
     when(partitionedRegionClear.clearLocalBuckets(any())).thenReturn(emptySet());
     PartitionedRegionClearMessage message =
         new PartitionedRegionClearMessage(recipients, distributionManager, 1,
-            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false,
+            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false, false,
             regionEventFactory);
 
     boolean result =
@@ -220,7 +221,7 @@ public class PartitionedRegionClearMessageTest {
     when(partitionedRegion.isDestroyed()).thenReturn(true);
     PartitionedRegionClearMessage message =
         new PartitionedRegionClearMessage(recipients, distributionManager, 1,
-            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false,
+            replyProcessor21, OperationType.OP_PR_CLEAR, callbackArgument, eventId, false, false,
             regionEventFactory);
 
     boolean result =
@@ -235,9 +236,8 @@ public class PartitionedRegionClearMessageTest {
     PartitionedRegionClear partitionedRegionClear = mock(PartitionedRegionClear.class);
     when(partitionedRegion.getPartitionedRegionClear()).thenReturn(partitionedRegionClear);
     PartitionedRegionClearMessage message = new PartitionedRegionClearMessage(recipients,
-        clusterDistributionManager, 1, replyProcessor21,
-        OperationType.OP_LOCK_FOR_PR_CLEAR, callbackArgument, eventId, false,
-        regionEventFactory);
+        clusterDistributionManager, 1, replyProcessor21, OperationType.OP_LOCK_FOR_PR_CLEAR,
+        callbackArgument, eventId, false, false, regionEventFactory);
 
     boolean result =
         message.operateOnPartitionedRegion(clusterDistributionManager, partitionedRegion, 30);
@@ -252,9 +252,8 @@ public class PartitionedRegionClearMessageTest {
     PartitionedRegionClear partitionedRegionClear = mock(PartitionedRegionClear.class);
     when(partitionedRegion.getPartitionedRegionClear()).thenReturn(partitionedRegionClear);
     PartitionedRegionClearMessage message = new PartitionedRegionClearMessage(recipients,
-        clusterDistributionManager, 1, replyProcessor21,
-        OperationType.OP_UNLOCK_FOR_PR_CLEAR, callbackArgument, eventId, false,
-        regionEventFactory);
+        clusterDistributionManager, 1, replyProcessor21, OperationType.OP_UNLOCK_FOR_PR_CLEAR,
+        callbackArgument, eventId, false, false, regionEventFactory);
 
     boolean result =
         message.operateOnPartitionedRegion(clusterDistributionManager, partitionedRegion, 30);
@@ -272,9 +271,8 @@ public class PartitionedRegionClearMessageTest {
     when(regionEventFactory.create(any(), any(), any(), anyBoolean(), any(), any()))
         .thenReturn(mock(RegionEventImpl.class));
     PartitionedRegionClearMessage message = new PartitionedRegionClearMessage(recipients,
-        clusterDistributionManager, 1, replyProcessor21,
-        OperationType.OP_PR_CLEAR, callbackArgument, eventId, false,
-        regionEventFactory);
+        clusterDistributionManager, 1, replyProcessor21, OperationType.OP_PR_CLEAR,
+        callbackArgument, eventId, false, false, regionEventFactory);
 
     boolean result =
         message.operateOnPartitionedRegion(clusterDistributionManager, partitionedRegion, 30);

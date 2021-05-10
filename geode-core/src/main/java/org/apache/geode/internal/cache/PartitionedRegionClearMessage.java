@@ -59,6 +59,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
   private Set<Integer> bucketsCleared;
   private DistributionManager distributionManager;
   private RegionEventFactory regionEventFactory;
+  private boolean doEventNotifications;
 
   public PartitionedRegionClearMessage() {
     // nothing
@@ -68,7 +69,8 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
       PartitionedRegion partitionedRegion,
       ReplyProcessor21 replyProcessor21,
       OperationType operationType,
-      final RegionEventImpl regionEvent) {
+      final RegionEventImpl regionEvent,
+      boolean doEventNotifications) {
     this(recipients,
         partitionedRegion.getDistributionManager(),
         partitionedRegion.getPRId(),
@@ -76,6 +78,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
         operationType,
         regionEvent.getRawCallbackArgument(),
         regionEvent.getEventId(),
+        doEventNotifications,
         partitionedRegion.getCache().getTxManager().isDistributed(),
         RegionEventImpl::new);
   }
@@ -88,6 +91,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
       OperationType operationType,
       Object callbackArgument,
       EventID eventId,
+      boolean doEventNotifications,
       boolean isTransactionDistributed,
       RegionEventFactory regionEventFactory) {
     super(recipients, partitionedRegionId, replyProcessor21);
@@ -96,6 +100,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
     this.operationType = operationType;
     this.callbackArgument = callbackArgument;
     this.eventId = eventId;
+    this.doEventNotifications = doEventNotifications;
     this.regionEventFactory = regionEventFactory;
   }
 
@@ -173,6 +178,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
     callbackArgument = DataSerializer.readObject(in);
     operationType = OperationType.values()[in.readByte()];
     eventId = DataSerializer.readObject(in);
+    doEventNotifications = in.readBoolean();
 
     regionEventFactory = RegionEventImpl::new;
   }
@@ -183,6 +189,7 @@ public class PartitionedRegionClearMessage extends PartitionMessage {
     DataSerializer.writeObject(callbackArgument, out);
     out.writeByte(operationType.ordinal());
     DataSerializer.writeObject(eventId, out);
+    out.writeBoolean(doEventNotifications);
   }
 
   @Override
