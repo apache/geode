@@ -79,9 +79,9 @@ public abstract class AbstractKeysIntegrationTest implements RedisIntegrationTes
         new byte[] {'{', 1, '}', (byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 'h', 'a', 's', 'h', '1'};
     byte[] key = new byte[] {'{', 1, '}', 'k', 'e', 'y', '1'};
     jedis.hset(hashKey, key, value);
-    assertThat(jedis.exists(stringKey));
-    assertThat(jedis.exists(setKey));
-    assertThat(jedis.exists(hashKey));
+    assertThat(jedis.exists(stringKey)).isTrue();
+    assertThat(jedis.exists(setKey)).isTrue();
+    assertThat(jedis.exists(hashKey)).isTrue();
     assertThat(jedis.keys(new byte[] {'{', 1, '}', '*'})).containsExactlyInAnyOrder(stringKey,
         setKey, hashKey);
     assertThat(jedis.keys(new byte[] {'{', 1, '}', (byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', '*'}))
