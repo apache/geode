@@ -21,8 +21,8 @@ import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentCaptor.forClass;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -33,13 +33,17 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.PartitionedRegionPartialClearException;
@@ -61,97 +65,51 @@ import org.apache.geode.internal.serialization.KnownVersion;
 
 public class PartitionedRegionClearTest {
 
-  private PartitionedRegionClear partitionedRegionClear;
+  private AssignBucketsToPartitions assignBucketsToPartitions;
+  private InternalCache cache;
+  private ColocationLeaderRegionProvider colocationLeaderRegionProvider;
+  private DistributedLockService distributedLockService;
   private DistributionManager distributionManager;
+  private InternalCacheEvent event;
+  private FilterProfile filterProfile;
+  private InternalDistributedMember internalDistributedMember;
   private PartitionedRegion partitionedRegion;
   private RegionAdvisor regionAdvisor;
-  private InternalDistributedMember internalDistributedMember;
-  private DistributedLockService distributedLockService;
+  private UpdateAttributesProcessorFactory updateAttributesProcessorFactory;
+
+  private PartitionedRegionClear partitionedRegionClear;
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
 
   @Before
   public void setUp() {
-    AssignBucketsToPartitions assignBucketsToPartitions = mock(AssignBucketsToPartitions.class);
-    GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
-    ColocationLeaderRegionProvider colocationLeaderRegionProvider =
-        mock(ColocationLeaderRegionProvider.class);
+    assignBucketsToPartitions = mock(AssignBucketsToPartitions.class);
+    cache = mock(InternalCache.class);
+    colocationLeaderRegionProvider = mock(ColocationLeaderRegionProvider.class);
     distributedLockService = mock(DistributedLockService.class);
     distributionManager = mock(DistributionManager.class);
-    FilterProfile filterProfile = mock(FilterProfile.class);
+    event = mock(InternalCacheEvent.class);
+    filterProfile = mock(FilterProfile.class);
     internalDistributedMember = mock(InternalDistributedMember.class);
     partitionedRegion = mock(PartitionedRegion.class);
     regionAdvisor = mock(RegionAdvisor.class);
-    UpdateAttributesProcessorFactory updateAttributesProcessorFactory =
-        mock(UpdateAttributesProcessorFactory.class);
-
-    when(cache.getAsyncEventQueues(false))
-        .thenReturn(emptySet());
-    when(colocationLeaderRegionProvider.getLeaderRegion(any()))
-        .thenReturn(partitionedRegion);
-    when(distributedLockService.lock(anyString(), anyInt(), anyInt()))
-        .thenReturn(true);
-    when(distributionManager.getDistributionManagerId())
-        .thenReturn(internalDistributedMember);
-    when(distributionManager.getId())
-        .thenReturn(internalDistributedMember);
-    when(internalDistributedMember.getVersion())
-        .thenReturn(KnownVersion.CURRENT);
-    when(partitionedRegion.getCache())
-        .thenReturn(cache);
-    when(partitionedRegion.getDistributionManager())
-        .thenReturn(distributionManager);
-    when(partitionedRegion.getName())
-        .thenReturn("prRegion");
-    when(partitionedRegion.getRegionAdvisor())
-        .thenReturn(regionAdvisor);
-    when(partitionedRegion.getFilterProfile())
-        .thenReturn(filterProfile);
-    when(filterProfile.getFilterRoutingInfoPart1(any(), any(), any()))
-        .thenReturn(mock(FilterRoutingInfo.class));
-    when(filterProfile.getFilterRoutingInfoPart2(any(), any()))
-        .thenReturn(mock(FilterRoutingInfo.class));
-    when(regionAdvisor.getDistributionManager())
-        .thenReturn(distributionManager);
-    when(updateAttributesProcessorFactory.create(any()))
-        .thenReturn(mock(UpdateAttributesProcessor.class));
-
-    doNothing().when(distributedLockService).unlock(anyString());
-
-    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
-        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
-        updateAttributesProcessorFactory);
-  }
-
-  @Test
-  public void isLockedForListenerAndClientNotificationReturnsTrueWhenLocked() {
-    // arrange
-    when(distributionManager.isCurrentMember(internalDistributedMember)).thenReturn(true);
-    partitionedRegionClear.lockLocalPrimaryBucketsUnderLock(internalDistributedMember);
-
-    // act
-    boolean result = partitionedRegionClear.isLockedForListenerAndClientNotificationForTesting();
-
-    // assert
-    assertThat(result).isTrue();
-  }
-
-  @Test
-  public void isLockedForListenerAndClientNotificationReturnsFalseWhenMemberNotInTheSystemRequestsLock() {
-    // arrange
-    when(distributionManager.isCurrentMember(internalDistributedMember)).thenReturn(false);
-
-    // act
-    boolean result = partitionedRegionClear.isLockedForListenerAndClientNotificationForTesting();
-
-    // assert
-    assertThat(result).isFalse();
+    updateAttributesProcessorFactory = mock(UpdateAttributesProcessorFactory.class);
   }
 
   @Test
   public void acquireDistributedClearLockGetsDistributedLock() {
     // arrange
-    String lockName = PartitionedRegionClear.CLEAR_OPERATION + partitionedRegion.getName();
+    when(distributedLockService.lock(anyString(), anyLong(), anyLong())).thenReturn(true);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+    when(partitionedRegion.getName()).thenReturn("prRegion");
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // act
+    String lockName = PartitionedRegionClear.CLEAR_OPERATION + partitionedRegion.getName();
     partitionedRegionClear.acquireDistributedClearLock(lockName);
 
     // assert
@@ -161,9 +119,16 @@ public class PartitionedRegionClearTest {
   @Test
   public void releaseDistributedClearLockReleasesDistributedLock() {
     // arrange
-    String lockName = PartitionedRegionClear.CLEAR_OPERATION + partitionedRegion.getName();
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+    when(partitionedRegion.getName()).thenReturn("prRegion");
+    doNothing().when(distributedLockService).unlock(anyString());
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // act
+    String lockName = PartitionedRegionClear.CLEAR_OPERATION + partitionedRegion.getName();
     partitionedRegionClear.releaseDistributedClearLock(lockName);
 
     // assert
@@ -173,39 +138,49 @@ public class PartitionedRegionClearTest {
   @Test
   public void clearRegionClearsLocalAndSendsMessageForRemote() throws Exception {
     // arrange
-    Region<String, PartitionRegionConfig> region = uncheckedCast(mock(Region.class));
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+    InternalCacheEvent event = regionClearEvent();
 
-    when(partitionedRegion.getPRRoot())
-        .thenReturn(region);
-    when(regionEvent.clone())
-        .thenReturn(mock(RegionEventImpl.class));
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // partial mocking to stub some methods and verify
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
     doReturn(emptySet())
         .when(spyPartitionedRegionClear)
-        .attemptToSendPartitionedRegionClearMessage(regionEvent, OperationType.OP_PR_CLEAR);
+        .attemptToSendPartitionedRegionClearMessage(event, OperationType.OP_PR_CLEAR);
 
     // act
-    spyPartitionedRegionClear.clearRegion(regionEvent);
+    spyPartitionedRegionClear.clearRegion(event);
 
     // assert
     verify(spyPartitionedRegionClear)
-        .clearLocalBuckets(regionEvent);
+        .clearLocalBuckets(event);
     verify(spyPartitionedRegionClear)
-        .sendPartitionedRegionClearMessage(regionEvent, OperationType.OP_PR_CLEAR);
+        .sendPartitionedRegionClearMessage(event, OperationType.OP_PR_CLEAR);
   }
 
   @Test
   public void waitForPrimaryReturnsAfterFindingAllPrimary() {
     // arrange
     BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
+    Set<BucketRegion> bucketRegions = bucketRegions(2);
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
     RetryTimeKeeper retryTimer = mock(RetryTimeKeeper.class);
+
     when(bucketAdvisor.hasPrimary()).thenReturn(true);
+    for (BucketRegion bucketRegion : bucketRegions) {
+      when(bucketRegion.getBucketAdvisor()).thenReturn(bucketAdvisor);
+    }
+    when(dataStore.getAllLocalBucketRegions()).thenReturn(bucketRegions);
     when(partitionedRegion.getDataStore()).thenReturn(dataStore);
-    setupBucketRegions(dataStore, bucketAdvisor);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // act
     partitionedRegionClear.waitForPrimary(retryTimer);
@@ -218,11 +193,23 @@ public class PartitionedRegionClearTest {
   public void waitForPrimaryReturnsAfterRetryForPrimary() {
     // arrange
     BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
+    Set<BucketRegion> bucketRegions = bucketRegions(2);
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
     RetryTimeKeeper retryTimer = mock(RetryTimeKeeper.class);
-    when(bucketAdvisor.hasPrimary()).thenReturn(false).thenReturn(true);
+
+    when(bucketAdvisor.hasPrimary())
+        .thenReturn(false)
+        .thenReturn(true);
+    for (BucketRegion bucketRegion : bucketRegions) {
+      when(bucketRegion.getBucketAdvisor()).thenReturn(bucketAdvisor);
+    }
+    when(dataStore.getAllLocalBucketRegions()).thenReturn(bucketRegions);
     when(partitionedRegion.getDataStore()).thenReturn(dataStore);
-    setupBucketRegions(dataStore, bucketAdvisor);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // act
     partitionedRegionClear.waitForPrimary(retryTimer);
@@ -235,13 +222,20 @@ public class PartitionedRegionClearTest {
   public void waitForPrimaryThrowsPartitionedRegionPartialClearException() {
     // arrange
     BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
+    BucketRegion bucketRegion = mock(BucketRegion.class);
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
     RetryTimeKeeper retryTimer = mock(RetryTimeKeeper.class);
-    when(partitionedRegion.getDataStore())
-        .thenReturn(dataStore);
-    when(retryTimer.overMaximum())
-        .thenReturn(true);
-    setupBucketRegions(dataStore, bucketAdvisor);
+
+    when(bucketRegion.getBucketAdvisor()).thenReturn(bucketAdvisor);
+    when(dataStore.getAllLocalBucketRegions()).thenReturn(singleton(bucketRegion));
+    when(partitionedRegion.getDataStore()).thenReturn(dataStore);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+    when(partitionedRegion.getName()).thenReturn("prRegion");
+    when(retryTimer.overMaximum()).thenReturn(true);
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // act
     Throwable thrown = catchThrowable(() -> partitionedRegionClear.waitForPrimary(retryTimer));
@@ -251,28 +245,43 @@ public class PartitionedRegionClearTest {
         .isInstanceOf(PartitionedRegionPartialClearException.class)
         .hasMessage(
             "Unable to find primary bucket region during clear operation on prRegion region.");
-    verify(retryTimer, never())
-        .waitForBucketsRecovery();
+    verify(retryTimer, never()).waitForBucketsRecovery();
   }
 
   @Test
   public void clearRegionLocalCallsClearOnLocalPrimaryBucketRegions() {
     // arrange
     BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
+    Set<BucketRegion> bucketRegions = bucketRegions(2);
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+
     when(bucketAdvisor.hasPrimary()).thenReturn(true);
+    int i = 0;
+    for (BucketRegion bucketRegion : bucketRegions) {
+      when(bucketRegion.getBucketAdvisor()).thenReturn(bucketAdvisor);
+      when(bucketRegion.getId()).thenReturn(i);
+      when(bucketRegion.size())
+          .thenReturn(1)
+          .thenReturn(0);
+      i++;
+    }
+    when(dataStore.getAllLocalBucketRegions()).thenReturn(bucketRegions);
+    when(dataStore.getAllLocalPrimaryBucketRegions()).thenReturn(bucketRegions);
     when(partitionedRegion.getDataStore()).thenReturn(dataStore);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
     doNothing().when(dataStore).lockBucketCreationForRegionClear();
-    Set<BucketRegion> buckets = setupBucketRegions(dataStore, bucketAdvisor);
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // act
-    Set<Integer> bucketsCleared = partitionedRegionClear.clearLocalBuckets(regionEvent);
+    Set<Integer> bucketsCleared = partitionedRegionClear.clearLocalBuckets(event);
 
     // assert
-    assertThat(bucketsCleared).hasSameSizeAs(buckets);
+    assertThat(bucketsCleared).hasSameSizeAs(bucketRegions);
     ArgumentCaptor<RegionEventImpl> captor = forClass(RegionEventImpl.class);
-    for (BucketRegion bucketRegion : buckets) {
+    for (BucketRegion bucketRegion : bucketRegions) {
       verify(bucketRegion).cmnClearRegion(captor.capture(), eq(false), eq(true));
       Region<?, ?> region = captor.getValue().getRegion();
       assertThat(region).isEqualTo(bucketRegion);
@@ -283,40 +292,48 @@ public class PartitionedRegionClearTest {
   public void clearRegionLocalRetriesClearOnNonClearedLocalPrimaryBucketRegionsWhenMembershipChanges() {
     // arrange
     BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
+    Set<BucketRegion> firstBuckets = bucketRegions(2);
+    Set<BucketRegion> secondBuckets = bucketRegions(3);
+    Set<BucketRegion> allBuckets = new HashSet<>();
+    allBuckets.addAll(firstBuckets);
+    allBuckets.addAll(secondBuckets);
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+    RegionEventImpl event = mock(RegionEventImpl.class);
 
-    when(bucketAdvisor.hasPrimary())
-        .thenReturn(true);
-    doNothing()
-        .when(dataStore)
-        .lockBucketCreationForRegionClear();
+    when(bucketAdvisor.hasPrimary()).thenReturn(true);
+    when(dataStore.getAllLocalBucketRegions()).thenReturn(firstBuckets);
+    when(dataStore.getAllLocalPrimaryBucketRegions()).thenReturn(firstBuckets);
+    when(partitionedRegion.getDataStore()).thenReturn(dataStore);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+    doNothing().when(dataStore).lockBucketCreationForRegionClear();
 
-    Set<BucketRegion> buckets = setupBucketRegions(dataStore, bucketAdvisor);
-
-    Set<BucketRegion> allBuckets = new HashSet<>(buckets);
-    for (int i = 0; i < 3; i++) {
-      BucketRegion bucketRegion = mock(BucketRegion.class);
-      when(bucketRegion.getBucketAdvisor())
-          .thenReturn(bucketAdvisor);
-      when(bucketRegion.getId())
-          .thenReturn(i + buckets.size());
-      when(bucketRegion.isEmpty())
-          .thenReturn(false);
+    int i = 0;
+    for (BucketRegion bucketRegion : firstBuckets) {
+      when(bucketRegion.getBucketAdvisor()).thenReturn(bucketAdvisor);
+      when(bucketRegion.getId()).thenReturn(i);
       when(bucketRegion.size())
-          .thenReturn(1);
-      allBuckets.add(bucketRegion);
+          .thenReturn(1)
+          .thenReturn(0);
+      i++;
+    }
+    for (BucketRegion bucketRegion : secondBuckets) {
+      when(bucketRegion.getBucketAdvisor()).thenReturn(bucketAdvisor);
+      when(bucketRegion.getId()).thenReturn(i);
+      when(bucketRegion.size()).thenReturn(1);
+      i++;
     }
 
     // After the first try, add 3 extra buckets to the local bucket regions
     when(dataStore.getAllLocalBucketRegions())
-        .thenReturn(buckets)
+        .thenReturn(firstBuckets)
         .thenReturn(allBuckets);
     when(dataStore.getAllLocalPrimaryBucketRegions())
-        .thenReturn(buckets)
+        .thenReturn(firstBuckets)
         .thenReturn(allBuckets);
-    when(partitionedRegion.getDataStore())
-        .thenReturn(dataStore);
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // partial mocking to stub some methods
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
@@ -325,18 +342,16 @@ public class PartitionedRegionClearTest {
         .thenReturn(false);
 
     // act
-    Set<Integer> bucketsCleared = spyPartitionedRegionClear.clearLocalBuckets(regionEvent);
+    Set<Integer> bucketsCleared = spyPartitionedRegionClear.clearLocalBuckets(event);
 
     // assert
     assertThat(bucketsCleared).hasSameSizeAs(allBuckets);
     ArgumentCaptor<RegionEventImpl> captor = forClass(RegionEventImpl.class);
     for (BucketRegion bucketRegion : allBuckets) {
-      verify(bucketRegion)
-          .cmnClearRegion(captor.capture(), eq(false), eq(true));
+      verify(bucketRegion).cmnClearRegion(captor.capture(), eq(false), eq(true));
       Region<?, ?> region = captor.getValue().getRegion();
       assertThat(region).isEqualTo(bucketRegion);
     }
-
     verify(spyPartitionedRegionClear, times(2)).getAndClearMembershipChange();
   }
 
@@ -351,26 +366,33 @@ public class PartitionedRegionClearTest {
         .thenReturn(filterRoutingInfo);
     when(filterProfile.getFilterRoutingInfoPart2(filterRoutingInfo, regionEvent))
         .thenReturn(filterRoutingInfo);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
     when(partitionedRegion.getFilterProfile()).thenReturn(filterProfile);
-    when(partitionedRegion.hasAnyClientsInterested())
-        .thenReturn(true);
+    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(true);
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // act
     partitionedRegionClear.doAfterClear(regionEvent);
 
     // assert
-    verify(regionEvent)
-        .setLocalFilterInfo(any());
-    verify(partitionedRegion)
-        .notifyBridgeClients(regionEvent);
+    verify(regionEvent).setLocalFilterInfo(any());
+    verify(partitionedRegion).notifyBridgeClients(regionEvent);
   }
 
   @Test
   public void doAfterClearDispatchesListenerEvents() {
     // arrange
     RegionEventImpl regionEvent = mock(RegionEventImpl.class);
-    when(partitionedRegion.hasListener())
-        .thenReturn(true);
+
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+    when(partitionedRegion.hasListener()).thenReturn(true);
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // act
     partitionedRegionClear.doAfterClear(regionEvent);
@@ -382,17 +404,17 @@ public class PartitionedRegionClearTest {
   @Test
   public void obtainClearLockLocalGetsLockOnPrimaryBuckets() {
     // arrange
-    BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
+    Set<BucketRegion> bucketRegions = bucketRegions(2);
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
 
-    when(bucketAdvisor.hasPrimary())
-        .thenReturn(true);
-    when(distributionManager.isCurrentMember(internalDistributedMember))
-        .thenReturn(true);
-    when(partitionedRegion.getDataStore())
-        .thenReturn(dataStore);
+    when(dataStore.getAllLocalPrimaryBucketRegions()).thenReturn(bucketRegions);
+    when(distributionManager.isCurrentMember(internalDistributedMember)).thenReturn(true);
+    when(partitionedRegion.getDataStore()).thenReturn(dataStore);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
 
-    Set<BucketRegion> buckets = setupBucketRegions(dataStore, bucketAdvisor);
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // act
     partitionedRegionClear.lockLocalPrimaryBucketsUnderLock(internalDistributedMember);
@@ -400,7 +422,7 @@ public class PartitionedRegionClearTest {
     // assert
     assertThat(partitionedRegionClear.getLockRequesterForTesting())
         .isSameAs(internalDistributedMember);
-    for (BucketRegion bucketRegion : buckets) {
+    for (BucketRegion bucketRegion : bucketRegions) {
       verify(bucketRegion)
           .lockLocallyForClear(partitionedRegion.getDistributionManager(),
               partitionedRegion.getMyId(), null);
@@ -410,25 +432,21 @@ public class PartitionedRegionClearTest {
   @Test
   public void obtainClearLockLocalDoesNotGetLocksOnPrimaryBucketsWhenMemberIsNotCurrent() {
     // arrange
-    BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
-    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    Set<BucketRegion> bucketRegions = bucketRegions(2);
 
-    when(bucketAdvisor.hasPrimary())
-        .thenReturn(true);
-    when(distributionManager.isCurrentMember(internalDistributedMember))
-        .thenReturn(false);
-    when(partitionedRegion.getDataStore())
-        .thenReturn(dataStore);
+    when(distributionManager.isCurrentMember(internalDistributedMember)).thenReturn(false);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
 
-    Set<BucketRegion> buckets = setupBucketRegions(dataStore, bucketAdvisor);
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // act
     partitionedRegionClear.lockLocalPrimaryBucketsUnderLock(internalDistributedMember);
 
     // assert
-    assertThat(partitionedRegionClear.getLockRequesterForTesting())
-        .isNull();
-    for (BucketRegion bucketRegion : buckets) {
+    assertThat(partitionedRegionClear.getLockRequesterForTesting()).isNull();
+    for (BucketRegion bucketRegion : bucketRegions) {
       verify(bucketRegion, never())
           .lockLocallyForClear(partitionedRegion.getDistributionManager(),
               partitionedRegion.getMyId(), null);
@@ -438,17 +456,16 @@ public class PartitionedRegionClearTest {
   @Test
   public void releaseClearLockLocalReleasesLockOnPrimaryBuckets() {
     // arrange
-    BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
+    Set<BucketRegion> bucketRegions = bucketRegions(2);
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
 
-    when(bucketAdvisor.hasPrimary())
-        .thenReturn(true);
-    when(distributionManager.isCurrentMember(internalDistributedMember))
-        .thenReturn(true);
-    when(partitionedRegion.getDataStore())
-        .thenReturn(dataStore);
+    when(dataStore.getAllLocalPrimaryBucketRegions()).thenReturn(bucketRegions);
+    when(partitionedRegion.getDataStore()).thenReturn(dataStore);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
 
-    Set<BucketRegion> buckets = setupBucketRegions(dataStore, bucketAdvisor);
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     partitionedRegionClear.setLockedForTesting(internalDistributedMember);
 
@@ -456,104 +473,101 @@ public class PartitionedRegionClearTest {
     partitionedRegionClear.unlockLocalPrimaryBucketsUnderLock();
 
     // assert
-    for (BucketRegion bucketRegion : buckets) {
-      verify(bucketRegion)
-          .releaseLockLocallyForClear(null);
+    for (BucketRegion bucketRegion : bucketRegions) {
+      verify(bucketRegion).releaseLockLocallyForClear(null);
     }
   }
 
   @Test
   public void releaseClearLockLocalDoesNotReleaseLocksOnPrimaryBucketsWhenMemberIsNotCurrent() {
     // arrange
-    BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
-    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    Set<BucketRegion> bucketRegions = bucketRegions(2);
 
-    when(bucketAdvisor.hasPrimary())
-        .thenReturn(true);
-    when(partitionedRegion.getDataStore())
-        .thenReturn(dataStore);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
 
-    Set<BucketRegion> buckets = setupBucketRegions(dataStore, bucketAdvisor);
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // act
     partitionedRegionClear.unlockLocalPrimaryBucketsUnderLock();
 
     // assert
-    assertThat(partitionedRegionClear.getLockRequesterForTesting())
-        .isNull();
-    for (BucketRegion bucketRegion : buckets) {
-      verify(bucketRegion, never())
-          .releaseLockLocallyForClear(null);
+    assertThat(partitionedRegionClear.getLockRequesterForTesting()).isNull();
+    for (BucketRegion bucketRegion : bucketRegions) {
+      verify(bucketRegion, never()).releaseLockLocallyForClear(null);
     }
   }
 
   @Test
   public void sendPartitionedRegionClearMessageSendsClearMessageToPRNodes() {
     // arrange
-    InternalCache internalCache = mock(InternalCache.class);
+    InternalCacheEvent event = regionClearEvent();
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     Node node = mock(Node.class);
     PartitionRegionConfig partitionRegionConfig = mock(PartitionRegionConfig.class);
     Region<String, PartitionRegionConfig> prRoot = uncheckedCast(mock(Region.class));
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     TXManagerImpl txManager = mock(TXManagerImpl.class);
 
     Set<InternalDistributedMember> prNodes = singleton(member);
     Set<Node> configNodes = singleton(node);
 
-    when(distributionManager.getCancelCriterion())
-        .thenReturn(mock(CancelCriterion.class));
-    when(distributionManager.getStats())
-        .thenReturn(mock(DMStats.class));
-    when(internalCache.getTxManager())
-        .thenReturn(txManager);
-    when(member.getVersion())
-        .thenReturn(KnownVersion.getCurrentVersion());
-    when(node.getMemberId())
-        .thenReturn(member);
-    when(partitionRegionConfig.getNodes())
-        .thenReturn(configNodes);
-    when(partitionedRegion.getPRRoot())
-        .thenReturn(prRoot);
-    when(regionAdvisor.adviseAllPRNodes())
-        .thenReturn(prNodes);
-    when(regionEvent.clone())
-        .thenReturn(mock(RegionEventImpl.class));
-    when(partitionedRegion.getSystem())
-        .thenReturn(system);
-    when(prRoot.get(anyString()))
-        .thenReturn(partitionRegionConfig);
-    when(system.getDistributionManager())
-        .thenReturn(distributionManager);
-    when(txManager.isDistributed())
-        .thenReturn(false);
-    when(partitionedRegion.getCache())
-        .thenReturn(internalCache);
+    when(distributionManager.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(distributionManager.getId()).thenReturn(internalDistributedMember);
+    when(distributionManager.getStats()).thenReturn(mock(DMStats.class));
+    when(cache.getTxManager()).thenReturn(txManager);
+    when(partitionRegionConfig.getNodes()).thenReturn(configNodes);
+    when(partitionedRegion.getCache()).thenReturn(this.cache);
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+    when(partitionedRegion.getPRRoot()).thenReturn(prRoot);
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(regionAdvisor);
+    when(partitionedRegion.getSystem()).thenReturn(system);
+    when(prRoot.get(any())).thenReturn(partitionRegionConfig);
+    when(node.getMemberId()).thenReturn(member);
+    when(regionAdvisor.adviseAllPRNodes()).thenReturn(prNodes);
+    when(system.getDistributionManager()).thenReturn(distributionManager);
+    when(txManager.isDistributed()).thenReturn(false);
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // act
     partitionedRegionClear
-        .sendPartitionedRegionClearMessage(regionEvent, OperationType.OP_PR_CLEAR);
+        .sendPartitionedRegionClearMessage(event, OperationType.OP_PR_CLEAR);
 
     // assert
-    verify(distributionManager)
-        .putOutgoing(any());
+    verify(distributionManager).putOutgoing(any());
   }
 
   @Test
   public void doClearAcquiresAndReleasesDistributedClearLockAndCreatesAllPrimaryBuckets() {
     // arrange
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
-    when(regionEvent.clone()).thenReturn(regionEvent);
+    InternalCacheEvent event = regionClearEvent();
+
+    when(cache.getAsyncEventQueues(false)).thenReturn(emptySet());
+    when(distributionManager.getId()).thenReturn(internalDistributedMember);
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+    when(partitionedRegion.getName()).thenReturn("prRegion");
+    when(updateAttributesProcessorFactory.create(any()))
+        .thenReturn(mock(UpdateAttributesProcessor.class));
+    doNothing().when(distributedLockService).unlock(anyString());
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // partial mocking to stub some methods and verify
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
     doNothing().when(spyPartitionedRegionClear).acquireDistributedClearLock(any());
     doNothing().when(spyPartitionedRegionClear).assignAllPrimaryBuckets();
-    doReturn(emptySet()).when(spyPartitionedRegionClear).clearRegion(regionEvent);
+    doReturn(emptySet()).when(spyPartitionedRegionClear).clearRegion(event);
 
     // act
-    spyPartitionedRegionClear.doClear(regionEvent, false);
+    spyPartitionedRegionClear.doClear(event, false);
 
     // assert
     verify(spyPartitionedRegionClear).acquireDistributedClearLock(any());
@@ -564,66 +578,91 @@ public class PartitionedRegionClearTest {
   @Test
   public void doClearInvokesCacheWriterWhenCacheWriteIsSet() {
     // arrange
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
-    when(regionEvent.clone()).thenReturn(regionEvent);
+    InternalCacheEvent event = regionClearEvent();
+
+    when(cache.getAsyncEventQueues(false)).thenReturn(emptySet());
+    when(distributionManager.getId()).thenReturn(internalDistributedMember);
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+    when(partitionedRegion.getName()).thenReturn("prRegion");
+    when(updateAttributesProcessorFactory.create(any()))
+        .thenReturn(mock(UpdateAttributesProcessor.class));
+    doNothing().when(distributedLockService).unlock(anyString());
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // partial mocking to stub some methods and verify
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
     doNothing().when(spyPartitionedRegionClear).acquireDistributedClearLock(any());
     doNothing().when(spyPartitionedRegionClear).assignAllPrimaryBuckets();
-    doReturn(emptySet()).when(spyPartitionedRegionClear).clearRegion(regionEvent);
+    doReturn(emptySet()).when(spyPartitionedRegionClear).clearRegion(event);
 
     // act
-    spyPartitionedRegionClear.doClear(regionEvent, true);
+    spyPartitionedRegionClear.doClear(event, true);
 
     // assert
-    verify(spyPartitionedRegionClear).invokeCacheWriter(regionEvent);
+    verify(spyPartitionedRegionClear).invokeCacheWriter(event);
   }
 
   @Test
   public void doClearDoesNotInvokesCacheWriterWhenCacheWriteIsNotSet() {
     // arrange
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
-    when(regionEvent.clone()).thenReturn(regionEvent);
+    InternalCacheEvent event = regionClearEvent();
+
+    when(cache.getAsyncEventQueues(false)).thenReturn(emptySet());
+    when(distributionManager.getId()).thenReturn(internalDistributedMember);
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+    when(partitionedRegion.getName()).thenReturn("prRegion");
+    when(updateAttributesProcessorFactory.create(any()))
+        .thenReturn(mock(UpdateAttributesProcessor.class));
+    doNothing().when(distributedLockService).unlock(anyString());
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // partial mocking to stub some methods and verify
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
     doNothing().when(spyPartitionedRegionClear).acquireDistributedClearLock(any());
     doNothing().when(spyPartitionedRegionClear).assignAllPrimaryBuckets();
-    doReturn(emptySet()).when(spyPartitionedRegionClear).clearRegion(regionEvent);
+    doReturn(emptySet()).when(spyPartitionedRegionClear).clearRegion(event);
 
     // act
-    spyPartitionedRegionClear.doClear(regionEvent, false);
+    spyPartitionedRegionClear.doClear(event, false);
 
     // assert
-    verify(spyPartitionedRegionClear, never()).invokeCacheWriter(regionEvent);
+    verify(spyPartitionedRegionClear, never()).invokeCacheWriter(event);
   }
 
   @Test
   public void doClearObtainsAndReleasesLockForClearWhenRegionHasListener() {
     // arrange
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+    when(cache.getAsyncEventQueues(false)).thenReturn(emptySet());
+    when(distributionManager.getId()).thenReturn(internalDistributedMember);
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+    when(partitionedRegion.getName()).thenReturn("prRegion");
+    doNothing().when(distributedLockService).unlock(anyString());
 
-    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(false);
-    when(partitionedRegion.hasListener()).thenReturn(true);
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // partial mocking to stub some methods and verify
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
-    doNothing()
-        .when(spyPartitionedRegionClear).acquireDistributedClearLock(any());
-    doNothing()
-        .when(spyPartitionedRegionClear).assignAllPrimaryBuckets();
-    doNothing()
-        .when(spyPartitionedRegionClear).lockLocalPrimaryBucketsUnderLock(any());
-    doNothing()
-        .when(spyPartitionedRegionClear).unlockLocalPrimaryBucketsUnderLock();
+    doNothing().when(spyPartitionedRegionClear).acquireDistributedClearLock(any());
+    doNothing().when(spyPartitionedRegionClear).assignAllPrimaryBuckets();
+    doNothing().when(spyPartitionedRegionClear).lockLocalPrimaryBucketsUnderLock(any());
+    doNothing().when(spyPartitionedRegionClear).unlockLocalPrimaryBucketsUnderLock();
+    doReturn(emptySet()).when(spyPartitionedRegionClear).clearRegion(event);
     doReturn(emptySet())
         .when(spyPartitionedRegionClear).sendPartitionedRegionClearMessage(any(), any());
-    doReturn(emptySet())
-        .when(spyPartitionedRegionClear).clearRegion(regionEvent);
 
     // act
-    spyPartitionedRegionClear.doClear(regionEvent, false);
+    spyPartitionedRegionClear.doClear(event, false);
 
     // assert
     verify(spyPartitionedRegionClear)
@@ -639,29 +678,29 @@ public class PartitionedRegionClearTest {
   @Test
   public void doClearObtainsAndReleasesLockForClearWhenRegionHasClientInterest() {
     // arrange
-    boolean cacheWrite = false;
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+    when(cache.getAsyncEventQueues(false)).thenReturn(emptySet());
+    when(distributionManager.getId()).thenReturn(internalDistributedMember);
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+    when(partitionedRegion.getName()).thenReturn("prRegion");
+    doNothing().when(distributedLockService).unlock(anyString());
 
-    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(true);
-    when(partitionedRegion.hasListener()).thenReturn(false);
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // partial mocking to stub some methods and verify
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
-    doNothing()
-        .when(spyPartitionedRegionClear).acquireDistributedClearLock(any());
-    doNothing()
-        .when(spyPartitionedRegionClear).assignAllPrimaryBuckets();
-    doNothing()
-        .when(spyPartitionedRegionClear).lockLocalPrimaryBucketsUnderLock(any());
-    doNothing()
-        .when(spyPartitionedRegionClear).unlockLocalPrimaryBucketsUnderLock();
-    doReturn(emptySet())
-        .when(spyPartitionedRegionClear).clearRegion(regionEvent);
+    doNothing().when(spyPartitionedRegionClear).acquireDistributedClearLock(any());
+    doNothing().when(spyPartitionedRegionClear).assignAllPrimaryBuckets();
+    doNothing().when(spyPartitionedRegionClear).lockLocalPrimaryBucketsUnderLock(any());
+    doNothing().when(spyPartitionedRegionClear).unlockLocalPrimaryBucketsUnderLock();
+    doReturn(emptySet()).when(spyPartitionedRegionClear).clearRegion(event);
     doReturn(emptySet())
         .when(spyPartitionedRegionClear).sendPartitionedRegionClearMessage(any(), any());
 
     // act
-    spyPartitionedRegionClear.doClear(regionEvent, cacheWrite);
+    spyPartitionedRegionClear.doClear(event, false);
 
     // assert
     verify(spyPartitionedRegionClear)
@@ -677,11 +716,16 @@ public class PartitionedRegionClearTest {
   @Test
   public void doClearObtainsLockForClearWhenRegionHasNoListenerAndNoClientInterest() {
     // arrange
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
+    when(cache.getAsyncEventQueues(false)).thenReturn(emptySet());
+    when(distributionManager.getId()).thenReturn(internalDistributedMember);
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+    when(partitionedRegion.getName()).thenReturn("prRegion");
+    doNothing().when(distributedLockService).unlock(anyString());
 
-    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(false);
-    when(partitionedRegion.hasListener()).thenReturn(false);
-    when(regionEvent.clone()).thenReturn(regionEvent);
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // partial mocking to stub some methods and verify
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
@@ -694,12 +738,12 @@ public class PartitionedRegionClearTest {
     doNothing()
         .when(spyPartitionedRegionClear).unlockLocalPrimaryBucketsUnderLock();
     doReturn(emptySet())
-        .when(spyPartitionedRegionClear).clearRegion(regionEvent);
+        .when(spyPartitionedRegionClear).clearRegion(event);
     doReturn(emptySet())
         .when(spyPartitionedRegionClear).sendPartitionedRegionClearMessage(any(), any());
 
     // act
-    spyPartitionedRegionClear.doClear(regionEvent, false);
+    spyPartitionedRegionClear.doClear(event, false);
 
     // assert
     verify(spyPartitionedRegionClear)
@@ -715,26 +759,32 @@ public class PartitionedRegionClearTest {
   @Test
   public void doClearThrowsPartitionedRegionPartialClearException() {
     // arrange
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
-
-    when(partitionedRegion.hasListener()).thenReturn(false);
-    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(false);
-    when(partitionedRegion.getTotalNumberOfBuckets()).thenReturn(1);
+    when(cache.getAsyncEventQueues(false)).thenReturn(emptySet());
+    when(distributionManager.getId()).thenReturn(internalDistributedMember);
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
     when(partitionedRegion.getName()).thenReturn("prRegion");
+    when(partitionedRegion.getTotalNumberOfBuckets()).thenReturn(1);
+    doNothing().when(distributedLockService).unlock(anyString());
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // partial mocking to stub some methods
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
     doNothing().when(spyPartitionedRegionClear).acquireDistributedClearLock(any());
     doNothing().when(spyPartitionedRegionClear).assignAllPrimaryBuckets();
     doNothing().when(spyPartitionedRegionClear).lockLocalPrimaryBucketsUnderLock(any());
+    doNothing().when(spyPartitionedRegionClear).unlockLocalPrimaryBucketsUnderLock();
+    doReturn(emptySet())
+        .when(spyPartitionedRegionClear).clearRegion(event);
     doReturn(emptySet())
         .when(spyPartitionedRegionClear).sendPartitionedRegionClearMessage(any(), any());
-    doNothing().when(spyPartitionedRegionClear).unlockLocalPrimaryBucketsUnderLock();
-    doReturn(emptySet()).when(spyPartitionedRegionClear).clearRegion(regionEvent);
 
     // act
     Throwable thrown =
-        catchThrowable(() -> spyPartitionedRegionClear.doClear(regionEvent, false));
+        catchThrowable(() -> spyPartitionedRegionClear.doClear(event, false));
 
     // assert
     assertThat(thrown)
@@ -751,60 +801,29 @@ public class PartitionedRegionClearTest {
     Node node = mock(Node.class);
     Node oldNode = mock(Node.class);
 
-    Set<InternalDistributedMember> prNodes = new HashSet<>();
-    prNodes.add(member);
-    prNodes.add(oldMember);
-
     Set<Node> configNodes = new HashSet<>();
     configNodes.add(node);
     configNodes.add(oldNode);
 
-    InternalCache cache = mock(InternalCache.class);
-    PartitionRegionConfig partitionRegionConfig = mock(PartitionRegionConfig.class);
-    Region<String, PartitionRegionConfig> prRoot = uncheckedCast(mock(Region.class));
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
-    InternalDistributedSystem system = mock(InternalDistributedSystem.class);
-    TXManagerImpl txManager = mock(TXManagerImpl.class);
+    Set<InternalDistributedMember> prNodes = new HashSet<>();
+    prNodes.add(member);
+    prNodes.add(oldMember);
 
-    when(member.getName()).thenReturn("member");
-    when(oldMember.getName()).thenReturn("oldMember");
-    when(node.getMemberId()).thenReturn(member);
-    when(oldNode.getMemberId()).thenReturn(oldMember);
     when(member.getVersion()).thenReturn(KnownVersion.getCurrentVersion());
+    when(oldMember.getName()).thenReturn("oldMember");
     when(oldMember.getVersion()).thenReturn(KnownVersion.GEODE_1_11_0);
-
-    when(cache.getTxManager()).thenReturn(txManager);
-    when(distributionManager.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
-    when(distributionManager.getStats()).thenReturn(mock(DMStats.class));
-    when(partitionRegionConfig.getNodes()).thenReturn(configNodes);
     when(partitionedRegion.getBucketPrimary(0)).thenReturn(member);
     when(partitionedRegion.getBucketPrimary(1)).thenReturn(oldMember);
-    when(partitionedRegion.getCache()).thenReturn(cache);
-    when(partitionedRegion.getName()).thenReturn("prRegion");
-    when(partitionedRegion.getPRRoot()).thenReturn(prRoot);
-    when(partitionedRegion.getSystem()).thenReturn(system);
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
     when(partitionedRegion.getTotalNumberOfBuckets()).thenReturn(2);
-    when(partitionedRegion.hasListener()).thenReturn(false);
-    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(false);
-    when(prRoot.get(anyString())).thenReturn(partitionRegionConfig);
-    when(regionAdvisor.adviseAllPRNodes()).thenReturn(prNodes);
-    when(regionEvent.clone()).thenReturn(mock(RegionEventImpl.class));
-    when(system.getDistributionManager()).thenReturn(distributionManager);
-    when(txManager.isDistributed()).thenReturn(false);
 
-    // partial mocking to stub some methods
-    PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
-    doNothing().when(spyPartitionedRegionClear).acquireDistributedClearLock(any());
-    doNothing().when(spyPartitionedRegionClear).assignAllPrimaryBuckets();
-    doNothing().when(spyPartitionedRegionClear).lockLocalPrimaryBucketsUnderLock(any());
-    doReturn(emptySet())
-        .when(spyPartitionedRegionClear).sendPartitionedRegionClearMessage(any(), any());
-    doNothing().when(spyPartitionedRegionClear).unlockLocalPrimaryBucketsUnderLock();
-    doReturn(singleton("2")).when(spyPartitionedRegionClear).clearRegion(regionEvent);
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     // act
     Throwable thrown =
-        catchThrowable(() -> spyPartitionedRegionClear.doClear(regionEvent, false));
+        catchThrowable(() -> partitionedRegionClear.doClear(event, false));
 
     // assert
     assertThat(thrown)
@@ -817,6 +836,13 @@ public class PartitionedRegionClearTest {
   public void handleClearFromDepartedMemberReleasesTheLockForRequesterDeparture() {
     // arrange
     InternalDistributedMember member = mock(InternalDistributedMember.class);
+
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
+
     partitionedRegionClear.setLockedForTesting(member);
 
     // partial mocking to verify
@@ -834,6 +860,13 @@ public class PartitionedRegionClearTest {
     // arrange
     InternalDistributedMember requesterMember = mock(InternalDistributedMember.class);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
+
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
+
     partitionedRegionClear.setLockedForTesting(requesterMember);
 
     // partial mocking to verify
@@ -848,6 +881,15 @@ public class PartitionedRegionClearTest {
 
   @Test
   public void partitionedRegionClearRegistersMembershipListener() {
+    // arrange
+    when(partitionedRegion.getDistributionManager())
+        .thenReturn(distributionManager);
+
+    // act
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
+
     // assert
     MembershipListener membershipListener =
         partitionedRegionClear.getPartitionedRegionClearListenerForTesting();
@@ -858,46 +900,81 @@ public class PartitionedRegionClearTest {
   public void lockRequesterDepartureReleasesTheLock() {
     // arrange
     InternalDistributedMember member = mock(InternalDistributedMember.class);
+
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
+
     partitionedRegionClear.setLockedForTesting(member);
-    PartitionedRegionClearListener partitionedRegionClearListener =
-        partitionedRegionClear.getPartitionedRegionClearListenerForTesting();
 
     // act
+    PartitionedRegionClearListener partitionedRegionClearListener =
+        partitionedRegionClear.getPartitionedRegionClearListenerForTesting();
     partitionedRegionClearListener.memberDeparted(distributionManager, member, true);
 
     // assert
-    assertThat(partitionedRegionClear.getAndClearMembershipChange())
-        .isTrue();
-    assertThat(partitionedRegionClear.getLockRequesterForTesting())
-        .isNull();
+    assertThat(partitionedRegionClear.getAndClearMembershipChange()).isTrue();
+    assertThat(partitionedRegionClear.getLockRequesterForTesting()).isNull();
   }
 
   @Test
   public void nonLockRequesterDepartureDoesNotReleasesTheLock() {
     // arrange
-    InternalDistributedMember requesterMember = mock(InternalDistributedMember.class);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
+    InternalDistributedMember requesterMember = mock(InternalDistributedMember.class);
+
+    when(partitionedRegion.getDistributionManager()).thenReturn(distributionManager);
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
+
     partitionedRegionClear.setLockedForTesting(requesterMember);
-    PartitionedRegionClearListener partitionedRegionClearListener =
-        partitionedRegionClear.getPartitionedRegionClearListenerForTesting();
 
     // act
+    PartitionedRegionClearListener partitionedRegionClearListener =
+        partitionedRegionClear.getPartitionedRegionClearListenerForTesting();
     partitionedRegionClearListener.memberDeparted(distributionManager, member, true);
 
     // assert
-    assertThat(partitionedRegionClear.getAndClearMembershipChange())
-        .isTrue();
-    assertThat(partitionedRegionClear.getLockRequesterForTesting())
-        .isNotNull();
+    assertThat(partitionedRegionClear.getAndClearMembershipChange()).isTrue();
+    assertThat(partitionedRegionClear.getLockRequesterForTesting()).isNotNull();
   }
 
   @Test
   public void doClearAcquiresLockForClearWhenHasAnyClientsInterestedIsTrue() {
     // arrange
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
-    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(true);
-    when(partitionedRegion.hasListener()).thenReturn(false);
-    when(regionEvent.clone()).thenReturn(regionEvent);
+    when(cache.getAsyncEventQueues(false))
+        .thenReturn(emptySet());
+    when(colocationLeaderRegionProvider.getLeaderRegion(any()))
+        .thenReturn(partitionedRegion);
+    when(distributedLockService.lock(anyString(), anyLong(), anyLong()))
+        .thenReturn(true);
+    when(distributionManager.getId())
+        .thenReturn(internalDistributedMember);
+    when(partitionedRegion.getCache())
+        .thenReturn(cache);
+    when(partitionedRegion.getDistributionManager())
+        .thenReturn(distributionManager);
+    when(partitionedRegion.getName())
+        .thenReturn("prRegion");
+    when(partitionedRegion.getFilterProfile())
+        .thenReturn(filterProfile);
+    when(partitionedRegion.hasAnyClientsInterested())
+        .thenReturn(true);
+    when(partitionedRegion.hasListener())
+        .thenReturn(false);
+    when(filterProfile.getFilterRoutingInfoPart1(any(), any(), any()))
+        .thenReturn(mock(FilterRoutingInfo.class));
+    when(filterProfile.getFilterRoutingInfoPart2(any(), any()))
+        .thenReturn(mock(FilterRoutingInfo.class));
+    doNothing().when(distributedLockService).unlock(anyString());
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
     doNothing()
@@ -906,7 +983,7 @@ public class PartitionedRegionClearTest {
         .when(spyPartitionedRegionClear).sendPartitionedRegionClearMessage(any(), any());
 
     // act
-    spyPartitionedRegionClear.doClear(regionEvent, false);
+    spyPartitionedRegionClear.doClear(event, false);
 
     // assert
     verify(spyPartitionedRegionClear)
@@ -922,10 +999,29 @@ public class PartitionedRegionClearTest {
   @Test
   public void doClearAcquiresLockForClearWhenHasListenerIsTrue() {
     // arrange
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
-    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(false);
-    when(partitionedRegion.hasListener()).thenReturn(true);
-    when(regionEvent.clone()).thenReturn(regionEvent);
+    when(cache.getAsyncEventQueues(false))
+        .thenReturn(emptySet());
+    when(colocationLeaderRegionProvider.getLeaderRegion(any()))
+        .thenReturn(partitionedRegion);
+    when(distributedLockService.lock(anyString(), anyLong(), anyLong()))
+        .thenReturn(true);
+    when(distributionManager.getId())
+        .thenReturn(internalDistributedMember);
+    when(partitionedRegion.getCache())
+        .thenReturn(cache);
+    when(partitionedRegion.getDistributionManager())
+        .thenReturn(distributionManager);
+    when(partitionedRegion.getName())
+        .thenReturn("prRegion");
+    when(partitionedRegion.hasAnyClientsInterested())
+        .thenReturn(false);
+    when(partitionedRegion.hasListener())
+        .thenReturn(true);
+    doNothing().when(distributedLockService).unlock(anyString());
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
     doNothing()
@@ -934,7 +1030,7 @@ public class PartitionedRegionClearTest {
         .when(spyPartitionedRegionClear).sendPartitionedRegionClearMessage(any(), any());
 
     // act
-    spyPartitionedRegionClear.doClear(regionEvent, false);
+    spyPartitionedRegionClear.doClear(event, false);
 
     // assert
     verify(spyPartitionedRegionClear)
@@ -950,10 +1046,29 @@ public class PartitionedRegionClearTest {
   @Test
   public void doClear_locksLocalPrimaryBuckets_whenHasAnyClientsInterestedAndHasListenerAreFalse() {
     // arrange
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
-    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(false);
-    when(partitionedRegion.hasListener()).thenReturn(false);
-    when(regionEvent.clone()).thenReturn(regionEvent);
+    when(cache.getAsyncEventQueues(false))
+        .thenReturn(emptySet());
+    when(colocationLeaderRegionProvider.getLeaderRegion(any()))
+        .thenReturn(partitionedRegion);
+    when(distributedLockService.lock(anyString(), anyLong(), anyLong()))
+        .thenReturn(true);
+    when(distributionManager.getId())
+        .thenReturn(internalDistributedMember);
+    when(partitionedRegion.getCache())
+        .thenReturn(cache);
+    when(partitionedRegion.getDistributionManager())
+        .thenReturn(distributionManager);
+    when(partitionedRegion.getName())
+        .thenReturn("prRegion");
+    when(partitionedRegion.hasAnyClientsInterested())
+        .thenReturn(false);
+    when(partitionedRegion.hasListener())
+        .thenReturn(false);
+    doNothing().when(distributedLockService).unlock(anyString());
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
     doNothing()
@@ -962,7 +1077,7 @@ public class PartitionedRegionClearTest {
         .when(spyPartitionedRegionClear).sendPartitionedRegionClearMessage(any(), any());
 
     // act
-    spyPartitionedRegionClear.doClear(regionEvent, false);
+    spyPartitionedRegionClear.doClear(event, false);
 
     // assert
     verify(spyPartitionedRegionClear)
@@ -972,10 +1087,29 @@ public class PartitionedRegionClearTest {
   @Test
   public void doClear_sendsOP_LOCK_FOR_PR_CLEAR_whenHasAnyClientsInterestedAndHasListenerAreFalse() {
     // arrange
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
-    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(false);
-    when(partitionedRegion.hasListener()).thenReturn(false);
-    when(regionEvent.clone()).thenReturn(regionEvent);
+    when(cache.getAsyncEventQueues(false))
+        .thenReturn(emptySet());
+    when(colocationLeaderRegionProvider.getLeaderRegion(any()))
+        .thenReturn(partitionedRegion);
+    when(distributedLockService.lock(anyString(), anyLong(), anyLong()))
+        .thenReturn(true);
+    when(distributionManager.getId())
+        .thenReturn(internalDistributedMember);
+    when(partitionedRegion.getCache())
+        .thenReturn(cache);
+    when(partitionedRegion.getDistributionManager())
+        .thenReturn(distributionManager);
+    when(partitionedRegion.getName())
+        .thenReturn("prRegion");
+    when(partitionedRegion.hasAnyClientsInterested())
+        .thenReturn(false);
+    when(partitionedRegion.hasListener())
+        .thenReturn(false);
+    doNothing().when(distributedLockService).unlock(anyString());
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
     doNothing()
@@ -984,20 +1118,39 @@ public class PartitionedRegionClearTest {
         .when(spyPartitionedRegionClear).sendPartitionedRegionClearMessage(any(), any());
 
     // act
-    spyPartitionedRegionClear.doClear(regionEvent, false);
+    spyPartitionedRegionClear.doClear(event, false);
 
     // assert
     verify(spyPartitionedRegionClear)
-        .sendPartitionedRegionClearMessage(regionEvent, OperationType.OP_LOCK_FOR_PR_CLEAR);
+        .sendPartitionedRegionClearMessage(event, OperationType.OP_LOCK_FOR_PR_CLEAR);
   }
 
   @Test
   public void doClear_sendsOP_UNLOCK_FOR_PR_CLEAR_whenHasAnyClientsInterestedAndHasListenerAreFalse() {
     // arrange
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
-    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(false);
-    when(partitionedRegion.hasListener()).thenReturn(false);
-    when(regionEvent.clone()).thenReturn(regionEvent);
+    when(cache.getAsyncEventQueues(false))
+        .thenReturn(emptySet());
+    when(colocationLeaderRegionProvider.getLeaderRegion(any()))
+        .thenReturn(partitionedRegion);
+    when(distributedLockService.lock(anyString(), anyLong(), anyLong()))
+        .thenReturn(true);
+    when(distributionManager.getId())
+        .thenReturn(internalDistributedMember);
+    when(partitionedRegion.getCache())
+        .thenReturn(cache);
+    when(partitionedRegion.getDistributionManager())
+        .thenReturn(distributionManager);
+    when(partitionedRegion.getName())
+        .thenReturn("prRegion");
+    when(partitionedRegion.hasAnyClientsInterested())
+        .thenReturn(false);
+    when(partitionedRegion.hasListener())
+        .thenReturn(false);
+    doNothing().when(distributedLockService).unlock(anyString());
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
     doNothing()
@@ -1006,11 +1159,11 @@ public class PartitionedRegionClearTest {
         .when(spyPartitionedRegionClear).sendPartitionedRegionClearMessage(any(), any());
 
     // act
-    spyPartitionedRegionClear.doClear(regionEvent, false);
+    spyPartitionedRegionClear.doClear(event, false);
 
     // assert
     verify(spyPartitionedRegionClear)
-        .sendPartitionedRegionClearMessage(regionEvent, OperationType.OP_UNLOCK_FOR_PR_CLEAR);
+        .sendPartitionedRegionClearMessage(event, OperationType.OP_UNLOCK_FOR_PR_CLEAR);
     verify(spyPartitionedRegionClear)
         .unlockLocalPrimaryBucketsUnderLock();
   }
@@ -1018,10 +1171,29 @@ public class PartitionedRegionClearTest {
   @Test
   public void doClear_unlocksLocalPrimaryBuckets_whenHasAnyClientsInterestedAndHasListenerAreFalse() {
     // arrange
-    RegionEventImpl regionEvent = mock(RegionEventImpl.class);
-    when(partitionedRegion.hasAnyClientsInterested()).thenReturn(false);
-    when(partitionedRegion.hasListener()).thenReturn(false);
-    when(regionEvent.clone()).thenReturn(regionEvent);
+    when(cache.getAsyncEventQueues(false))
+        .thenReturn(emptySet());
+    when(colocationLeaderRegionProvider.getLeaderRegion(any()))
+        .thenReturn(partitionedRegion);
+    when(distributedLockService.lock(anyString(), anyLong(), anyLong()))
+        .thenReturn(true);
+    when(distributionManager.getId())
+        .thenReturn(internalDistributedMember);
+    when(partitionedRegion.getCache())
+        .thenReturn(cache);
+    when(partitionedRegion.getDistributionManager())
+        .thenReturn(distributionManager);
+    when(partitionedRegion.getName())
+        .thenReturn("prRegion");
+    when(partitionedRegion.hasAnyClientsInterested())
+        .thenReturn(false);
+    when(partitionedRegion.hasListener())
+        .thenReturn(false);
+    doNothing().when(distributedLockService).unlock(anyString());
+
+    partitionedRegionClear = PartitionedRegionClear.create(partitionedRegion,
+        distributedLockService, colocationLeaderRegionProvider, assignBucketsToPartitions,
+        updateAttributesProcessorFactory);
 
     PartitionedRegionClear spyPartitionedRegionClear = spy(partitionedRegionClear);
     doNothing()
@@ -1030,46 +1202,24 @@ public class PartitionedRegionClearTest {
         .when(spyPartitionedRegionClear).sendPartitionedRegionClearMessage(any(), any());
 
     // act
-    spyPartitionedRegionClear.doClear(regionEvent, false);
+    spyPartitionedRegionClear.doClear(event, false);
 
     // assert
-    verify(spyPartitionedRegionClear)
-        .unlockLocalPrimaryBucketsUnderLock();
+    verify(spyPartitionedRegionClear).unlockLocalPrimaryBucketsUnderLock();
   }
 
-  private Set<BucketRegion> setupBucketRegions(
-      PartitionedRegionDataStore dataStore,
-      BucketAdvisor bucketAdvisor) {
-    return setupBucketRegions(dataStore, bucketAdvisor, 2);
-  }
-
-  private Set<BucketRegion> setupBucketRegions(
-      PartitionedRegionDataStore dataStore,
-      BucketAdvisor bucketAdvisor,
-      int bucketCount) {
+  private Set<BucketRegion> bucketRegions(int bucketCount) {
     Set<BucketRegion> bucketRegions = new HashSet<>();
-
     for (int i = 0; i < bucketCount; i++) {
       BucketRegion bucketRegion = mock(BucketRegion.class);
-
-      when(bucketRegion.getBucketAdvisor())
-          .thenReturn(bucketAdvisor);
-      when(bucketRegion.getId())
-          .thenReturn(i);
-      when(bucketRegion.isEmpty())
-          .thenReturn(false);
-      when(bucketRegion.size())
-          .thenReturn(1)
-          .thenReturn(0);
-
       bucketRegions.add(bucketRegion);
     }
-
-    when(dataStore.getAllLocalBucketRegions())
-        .thenReturn(bucketRegions);
-    when(dataStore.getAllLocalPrimaryBucketRegions())
-        .thenReturn(bucketRegions);
-
     return bucketRegions;
+  }
+
+  private InternalCacheEvent regionClearEvent() {
+    RegionEventImpl event = mock(RegionEventImpl.class);
+    when(event.clone()).thenReturn(event);
+    return event;
   }
 }

@@ -404,7 +404,7 @@ public class PartitionedRegionClear {
   }
 
   @VisibleForTesting
-  void doClear(RegionEventImpl regionEvent, boolean cacheWrite) {
+  void doClear(InternalCacheEvent regionEvent, boolean cacheWrite) {
     requireMemberVersionsSupportPartitionRegionClear();
 
     // distributed lock to make sure only one clear op is in progress in the cluster.
@@ -422,7 +422,7 @@ public class PartitionedRegionClear {
       requireAsyncEventQueuesSupportPartitionedRegionClear();
 
       if (cacheWrite) {
-        invokeCacheWriter(regionEvent);
+        invokeCacheWriter((RegionEventImpl) regionEvent);
       }
 
       doClearUnderLock(regionEvent);
@@ -476,9 +476,9 @@ public class PartitionedRegionClear {
   }
 
   @VisibleForTesting
-  void invokeCacheWriter(RegionEventImpl regionEvent) {
+  void invokeCacheWriter(InternalCacheEvent regionEvent) {
     try {
-      partitionedRegion.cacheWriteBeforeRegionClear(regionEvent);
+      partitionedRegion.cacheWriteBeforeRegionClear((RegionEventImpl) regionEvent);
     } catch (OperationAbortedException operationAbortedException) {
       throw new CacheWriterException(operationAbortedException);
     }

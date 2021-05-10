@@ -91,6 +91,13 @@ public class AsyncInvocation<V> implements Future<V> {
     return new AsyncInvocation<>(target, methodName, work, timeoutException -> timeoutException);
   }
 
+  public static void await(Iterable<AsyncInvocation<Void>> asyncInvocations)
+      throws InterruptedException {
+    for (AsyncInvocation<Void> asyncInvocation : asyncInvocations) {
+      asyncInvocation.await();
+    }
+  }
+
   /**
    * Creates a new {@code AsyncInvocation}.
    *
