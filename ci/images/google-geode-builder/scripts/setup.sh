@@ -59,8 +59,6 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 
 cp -R /etc/alternatives /etc/keep-alternatives
 apt-get install -y --no-install-recommends \
-    openjdk-8-jdk \
-    openjdk-11-jdk \
     bellsoft-java11 \
     bellsoft-java8
 rm -rf /etc/alternatives
