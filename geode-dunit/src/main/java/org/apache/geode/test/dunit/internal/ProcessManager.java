@@ -102,17 +102,11 @@ class ProcessManager implements ChildVMLauncher {
 
     // TODO - delete directory contents, preferably with commons io FileUtils
     try {
-
-      Map<String, String> envp = new HashMap<>();
+      String[] envp = null;
       if (!VersionManager.isCurrentVersion(version)) {
-        envp.put("GEODE_HOME", versionManager.getInstall(version));
+        envp = new String[] {"GEODE_HOME=" + versionManager.getInstall(version)};
       }
-
-      ProcessBuilder processBuilder = new ProcessBuilder(cmd);
-      processBuilder.directory(workingDir);
-      processBuilder.environment().putAll(envp);
-      Process process = processBuilder.start();
-      // Process process = Runtime.getRuntime().exec(cmd, envp, workingDir);
+      Process process = Runtime.getRuntime().exec(cmd, envp, workingDir);
       pendingVMs++;
       ProcessHolder holder = new ProcessHolder(process);
       processes.put(vmNum, holder);
@@ -250,10 +244,10 @@ class ProcessManager implements ChildVMLauncher {
     } else {
       // remove current-version product classes and resources from the classpath
       dunitClasspath =
-          removeModulesFromPath(dunitClasspath, "geode-common", "geode-core", "geode-cq",
-              "geode-http-service", "geode-json", "geode-log4j", "geode-lucene",
-              "geode-serialization", "geode-wan", "geode-gfsh", "geode-redis",
-              "geode-connectors", "geode-memcached");
+          dunitClasspath =
+              removeModulesFromPath(dunitClasspath, "geode-common", "geode-core", "geode-cq",
+                  "geode-http-service", "geode-json", "geode-log4j", "geode-lucene",
+                  "geode-serialization", "geode-wan", "geode-gfsh");
       classPath = versionManager.getClasspath(version) + File.pathSeparator + dunitClasspath;
     }
 
@@ -283,7 +277,7 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
     cmds.add("-D" + DUnitLauncher.VM_VERSION_PARAM + "=" + version);
     cmds.add("-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + new File(".").getAbsolutePath());
-    if (modular) { // let the locator print a banner
+    if (vmNum >= 0) { // let the locator print a banner
       if (version.equals(VersionManager.CURRENT_VERSION)) { // enable the banner for older versions
         cmds.add("-D" + InternalLocator.INHIBIT_DM_BANNER + "=true");
       }
