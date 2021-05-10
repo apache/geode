@@ -268,11 +268,7 @@ public class RedisSet extends AbstractRedisData {
 
   private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
     ArrayList<ByteArrayWrapper> removes = remsDeltaInfo.getRemoves();
-    if (members.size() == removes.size()) {
-      sizeInBytes = BASE_REDIS_SET_OVERHEAD;
-    } else {
-      sizeInBytes -= removes.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
-    }
+    sizeInBytes -= removes.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
     members.removeAll(removes);
   }
 

@@ -337,7 +337,7 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
-  public void should_showMembersAgreeUponUsedSetMemory_afterDeltaPropagation() {
+  public void should_showMembersAgreeUponUsedSetMemory_afterDeltaPropagationWhenAddingMembers() {
     jedis1.sadd(SET_KEY, "other"); // two sadds are required to force
     jedis1.sadd(SET_KEY, "value"); // deserialization on both servers
     // otherwise primary/secondary can disagree on size, and which server is primary varies
@@ -359,6 +359,28 @@ public class PartitionedRegionStatsUpdateTest {
     assertThat(server1FinalDataStoreBytesInUse)
         .isEqualTo(server2FinalDataStoreBytesInUse)
         .isEqualTo(initialDataStoreBytesInUse);
+  }
+
+  @Test
+  public void should_showMembersAgreeUponUsedSetMemory_afterDeltaPropagationWhenRemovingMembers() {
+    String value1 = "value1";
+    String value2 = "value2";
+    jedis1.sadd(SET_KEY, value1); // two sadds are required to force
+    jedis1.sadd(SET_KEY, value2); // deserialization on both servers
+    // otherwise primary/secondary can disagree on size, and which server is primary varies
+
+    jedis1.sadd(SET_KEY, "value3");
+
+    jedis2.srem(SET_KEY, value1, value2);
+
+    assertThat(jedis1.scard(SET_KEY)).isEqualTo(1);
+
+    long server1DataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    long server2DataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    assertThat(server1DataStoreBytesInUse).isEqualTo(server2DataStoreBytesInUse);
   }
 
   @Test
