@@ -77,10 +77,6 @@
       "inline": [
         "$ErrorActionPreference = \"Stop\"",
         "Set-ExecutionPolicy Bypass -Scope Process -Force",
-        "choco install -y git cygwin cyg-get adoptopenjdk11",
-        "Move-Item \"C:\\Program Files\\AdoptOpenJDK\\jdk-11*\" c:\\java11-adoptopenjdk",
-        "choco install -y jdk8 -params 'installdir=c:\\\\java8tmp;source=false'",
-        "Move-Item \"C:\\java8tmp\" c:\\java8-adoptopenjdk",
         "choco install -y git cygwin cyg-get liberica11jdk",
         "Move-Item \"C:\\Program Files\\BellSoft\\LibericaJDK-11*\" c:\\java11",
         "choco install -y liberica8jdk",

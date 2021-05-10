@@ -53,8 +53,6 @@ RUN  apt-get update \
   && useradd --shell /bin/bash -u 93043 -o -c "" -m geode \
   && cp -R /etc/alternatives /etc/keep-alternatives \
   && apt-get install -y --no-install-recommends \
-    openjdk-8-jdk \
-    openjdk-11-jdk \
     java-common \
     bellsoft-java11 \
     bellsoft-java8 \

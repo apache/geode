@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# FROM openjdk:8-jre-alpine
 FROM bellsoft/liberica-openjdk-alpine:8
 
 # runtime dependencies
