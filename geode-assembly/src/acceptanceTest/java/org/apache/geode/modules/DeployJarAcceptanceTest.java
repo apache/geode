@@ -324,7 +324,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
   @Test
   public void testSpringVersionsDoNotConflict() {
-    String jarPath = System.getenv("DEPLOY_TEST_SPRING_JAR");
+    String jarPath = System.getProperty("DEPLOY_TEST_SPRING_JAR");
 
     assertThat(jarPath).isNotNull();
 
@@ -336,6 +336,11 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
       assertThat(GfshScript
           .of(getLocatorGFSHConnectionString(), "execute function --id=" + "SpringFunction")
           .execute(gfshRule).getOutputText()).contains("Salutations, Earth");
+    } else {
+      assertThat(GfshScript
+          .of(getLocatorGFSHConnectionString(), "execute function --id=" + "SpringFunction")
+          .expectExitCode(1)
+          .execute(gfshRule));
     }
   }
 
