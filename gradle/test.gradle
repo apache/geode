@@ -142,6 +142,7 @@ configure([integrationTest, distributedTest, performanceTest, acceptanceTest, ui
 
 configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
   times = Integer.parseInt(repeat)
+  forkEvery 1
   useJUnit {}
   outputs.upToDateWhen { false }
 
