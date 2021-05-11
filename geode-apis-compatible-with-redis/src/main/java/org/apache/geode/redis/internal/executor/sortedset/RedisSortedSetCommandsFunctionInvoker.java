@@ -51,7 +51,6 @@ public class RedisSortedSetCommandsFunctionInvoker extends RedisCommandsFunction
 
   @Override
   public byte[] zscore(RedisKey key, byte[] member) {
-    System.out.println("function invoker about to invoke zscore");
     return invokeCommandFunction(key, ZSCORE, member);
   }
 }
