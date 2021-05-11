@@ -20,7 +20,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -105,6 +107,26 @@ public abstract class AbstractAppendIntegrationTest implements RedisIntegrationT
   }
 
   @Test
+  public void testAppend_actuallyIncreasesBucketSize() {
+    int listSize = 1000;
+    String key = "key";
+
+    Map<String, String> info = getInfo(jedis);
+    Long previousMemValue = Long.valueOf(info.get("used_memory"));
+
+    jedis.set(key, "initial");
+    for (int i = 0; i < listSize; i++) {
+      jedis.append(key, "morestuff");
+    }
+
+    info = getInfo(jedis);
+    Long finalMemValue = Long.valueOf(info.get("used_memory"));
+
+
+    assertThat(finalMemValue).isGreaterThan(previousMemValue);
+  }
+
+  @Test
   public void testAppend_withUTF16KeyAndValue() throws IOException {
     String test_utf16_string = "最𐐷𤭢";
     byte[] testBytes = test_utf16_string.getBytes(StandardCharsets.UTF_16);
@@ -130,5 +152,24 @@ public abstract class AbstractAppendIntegrationTest implements RedisIntegrationT
       strings.add(baseString + i);
     }
     return strings;
+  }
+
+  /**
+   * Convert the values returned by the INFO command into a basic param:value map.
+   */
+  static Map<String, String> getInfo(Jedis jedis) {
+    Map<String, String> results = new HashMap<>();
+    String rawInfo = jedis.info();
+
+    for (String line : rawInfo.split("\r\n")) {
+      int colonIndex = line.indexOf(":");
+      if (colonIndex > 0) {
+        String key = line.substring(0, colonIndex);
+        String value = line.substring(colonIndex + 1);
+        results.put(key, value);
+      }
+    }
+
+    return results;
   }
 }

@@ -54,27 +54,37 @@ import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHash extends AbstractRedisData {
   private HashMap<ByteArrayWrapper, ByteArrayWrapper> hash;
-  private ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hScanSnapShots;
-  private ConcurrentHashMap<UUID, Long> hScanSnapShotCreationTimes;
+  private final ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hScanSnapShots;
+  private final ConcurrentHashMap<UUID, Long> hScanSnapShotCreationTimes;
   private ScheduledExecutorService HSCANSnapshotExpirationExecutor = null;
 
-  private static int defaultHscanSnapshotsExpireCheckFrequency =
+  private int sizeInBytes;
+
+  // the following constants were calculated using reflection and math. you can find the tests for
+  // these values in RedisHashTest, which show the way these numbers were calculated. the constants
+  // have the advantage of saving us a lot of computation that would happen every time a new key was
+  // added. if our internal implementation changes, these values may be incorrect. the tests will
+  // catch this change. an increase in overhead should be carefully considered.
+  protected static final int BASE_REDIS_HASH_OVERHEAD = 232;
+  protected static final int HASH_MAP_VALUE_PAIR_OVERHEAD = 96;
+  protected static final int SIZE_OF_OVERHEAD_OF_FIRST_PAIR = 96;
+
+  private static final int defaultHscanSnapshotsExpireCheckFrequency =
       Integer.getInteger("redis.hscan-snapshot-cleanup-interval", 30000);
 
-  private static int defaultHscanSnapshotsMillisecondsToLive =
+  private static final int defaultHscanSnapshotsMillisecondsToLive =
       Integer.getInteger("redis.hscan-snapshot-expiry", 30000);
 
   private int HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS;
   private int MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE;
 
+
   @VisibleForTesting
   public RedisHash(List<ByteArrayWrapper> fieldsToSet, int hscanSnapShotExpirationCheckFrequency,
       int minimumLifeForHscanSnaphot) {
     this();
-
-    this.HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS =
-        hscanSnapShotExpirationCheckFrequency;
-    this.MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE = minimumLifeForHscanSnaphot;
+    HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS = hscanSnapShotExpirationCheckFrequency;
+    MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE = minimumLifeForHscanSnaphot;
 
     Iterator<ByteArrayWrapper> iterator = fieldsToSet.iterator();
     while (iterator.hasNext()) {
@@ -90,26 +100,22 @@ public class RedisHash extends AbstractRedisData {
 
   // for serialization
   public RedisHash() {
-    this.hash = new HashMap<>();
-    this.hScanSnapShots = new ConcurrentHashMap<>();
-    this.hScanSnapShotCreationTimes = new ConcurrentHashMap<>();
+    hash = new HashMap<>();
+    hScanSnapShots = new ConcurrentHashMap<>();
+    hScanSnapShotCreationTimes = new ConcurrentHashMap<>();
 
-    this.HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS =
-        this.defaultHscanSnapshotsExpireCheckFrequency;
+    HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS = defaultHscanSnapshotsExpireCheckFrequency;
 
-    this.MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE =
-        this.defaultHscanSnapshotsMillisecondsToLive;
+    MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE = defaultHscanSnapshotsMillisecondsToLive;
+
+    sizeInBytes = BASE_REDIS_HASH_OVERHEAD;
   }
 
-
   private void expireHScanSnapshots() {
-
-    this.hScanSnapShotCreationTimes.entrySet().forEach(entry -> {
-      Long creationTime = entry.getValue();
+    hScanSnapShotCreationTimes.forEach((client, creationTime) -> {
       long millisecondsSinceCreation = currentTimeMillis() - creationTime;
 
       if (millisecondsSinceCreation >= MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE) {
-        UUID client = entry.getKey();
         removeHSCANSnapshot(client);
       }
     });
@@ -117,22 +123,22 @@ public class RedisHash extends AbstractRedisData {
 
   @VisibleForTesting
   public ConcurrentHashMap<UUID, List<ByteArrayWrapper>> getHscanSnapShots() {
-    return this.hScanSnapShots;
+    return hScanSnapShots;
   }
 
   private void startHscanSnapshotScheduledRemoval() {
-    final int DELAY = this.HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS;
+    final int DELAY = HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS;
 
-    this.HSCANSnapshotExpirationExecutor =
+    HSCANSnapshotExpirationExecutor =
         newSingleThreadScheduledExecutor("GemFireRedis-HSCANSnapshotRemoval-");
 
-    this.HSCANSnapshotExpirationExecutor.scheduleWithFixedDelay(
+    HSCANSnapshotExpirationExecutor.scheduleWithFixedDelay(
         this::expireHScanSnapshots, DELAY, DELAY, MILLISECONDS);
   }
 
   private void shutDownHscanSnapshotScheduledRemoval() {
-    this.HSCANSnapshotExpirationExecutor.shutdown();
-    this.HSCANSnapshotExpirationExecutor = null;
+    HSCANSnapshotExpirationExecutor.shutdown();
+    HSCANSnapshotExpirationExecutor = null;
   }
 
   /**
@@ -144,6 +150,7 @@ public class RedisHash extends AbstractRedisData {
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     DataSerializer.writeHashMap(hash, out);
+    DataSerializer.writeInteger(sizeInBytes, out);
   }
 
   @Override
@@ -151,6 +158,7 @@ public class RedisHash extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     hash = DataSerializer.readHashMap(in);
+    sizeInBytes = DataSerializer.readInteger(in);
   }
 
   @Override
@@ -160,16 +168,50 @@ public class RedisHash extends AbstractRedisData {
 
 
   private synchronized ByteArrayWrapper hashPut(ByteArrayWrapper field, ByteArrayWrapper value) {
-    return hash.put(field, value);
+    if (hash.isEmpty()) {
+      sizeInBytes += SIZE_OF_OVERHEAD_OF_FIRST_PAIR;
+    }
+
+    ByteArrayWrapper oldvalue = hash.put(field, value);
+
+    if (oldvalue == null) {
+      sizeInBytes += calculateSizeOfNewFieldValuePair(field, value);
+    } else {
+      sizeInBytes += value.length() - oldvalue.length();
+    }
+
+    return oldvalue;
   }
 
   private synchronized ByteArrayWrapper hashPutIfAbsent(ByteArrayWrapper field,
       ByteArrayWrapper value) {
-    return hash.putIfAbsent(field, value);
+    if (hash.isEmpty()) {
+      sizeInBytes += SIZE_OF_OVERHEAD_OF_FIRST_PAIR;
+    }
+
+    ByteArrayWrapper oldvalue = hash.putIfAbsent(field, value);
+
+    if (oldvalue == null) {
+      sizeInBytes += calculateSizeOfNewFieldValuePair(field, value);
+    }
+    return oldvalue;
+  }
+
+  private int calculateSizeOfNewFieldValuePair(ByteArrayWrapper field, ByteArrayWrapper value) {
+    return HASH_MAP_VALUE_PAIR_OVERHEAD + field.length() + value.length();
   }
 
   private synchronized ByteArrayWrapper hashRemove(ByteArrayWrapper field) {
-    return hash.remove(field);
+    ByteArrayWrapper oldValue = hash.remove(field);
+    if (oldValue != null) {
+      sizeInBytes -= calculateSizeOfNewFieldValuePair(field, oldValue);
+    }
+
+    if (hash.isEmpty()) {
+      sizeInBytes = BASE_REDIS_HASH_OVERHEAD;
+    }
+
+    return oldValue;
   }
 
   @Override
@@ -220,6 +262,7 @@ public class RedisHash extends AbstractRedisData {
       }
     }
     storeChanges(region, key, deltaInfo);
+
     return fieldsAdded;
   }
 
@@ -287,8 +330,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public ImmutablePair<Integer, List<Object>> hscan(UUID clientID, Pattern matchPattern,
-      int count,
-      int startCursor) {
+      int count, int startCursor) {
 
     List<ByteArrayWrapper> keysToScan = getSnapShotOfKeySet(clientID);
 
@@ -310,33 +352,28 @@ public class RedisHash extends AbstractRedisData {
   }
 
   private void removeHSCANSnapshot(UUID clientID) {
-    this.hScanSnapShots.remove(clientID);
-    this.hScanSnapShotCreationTimes.remove(clientID);
+    hScanSnapShots.remove(clientID);
+    hScanSnapShotCreationTimes.remove(clientID);
 
-    if (this.hScanSnapShots.isEmpty()) {
+    if (hScanSnapShots.isEmpty()) {
       shutDownHscanSnapshotScheduledRemoval();
     }
   }
 
-  @SuppressWarnings("unchecked")
   private Pair<Integer, List<Object>> getResultsPair(List<ByteArrayWrapper> keysSnapShot,
-      int startCursor,
-      int count,
-      Pattern matchPattern) {
+      int startCursor, int count, Pattern matchPattern) {
 
     int indexOfKeys = startCursor;
 
-    List<ByteArrayWrapper> resultList = new ArrayList<>();
+    List<Object> resultList = new ArrayList<>();
 
     for (int index = startCursor; index < keysSnapShot.size(); index++) {
-
       if ((index - startCursor) == count) {
         break;
       }
 
       ByteArrayWrapper key = keysSnapShot.get(index);
       indexOfKeys++;
-
       ByteArrayWrapper value = hash.get(key);
       if (value == null) {
         continue;
@@ -355,13 +392,11 @@ public class RedisHash extends AbstractRedisData {
 
     Integer numberOfIterationsCompleted = indexOfKeys - startCursor;
 
-    return new ImmutablePair(numberOfIterationsCompleted, resultList);
+    return new ImmutablePair<>(numberOfIterationsCompleted, resultList);
   }
 
   private int getCursorValueToReturn(int startCursor,
-      int numberOfIterationsCompleted,
-      List<ByteArrayWrapper> keySnapshot) {
-
+      int numberOfIterationsCompleted, List<ByteArrayWrapper> keySnapshot) {
     if (startCursor + numberOfIterationsCompleted >= keySnapshot.size()) {
       return 0;
     }
@@ -369,12 +404,11 @@ public class RedisHash extends AbstractRedisData {
     return (startCursor + numberOfIterationsCompleted);
   }
 
-  @SuppressWarnings("unchecked")
   private List<ByteArrayWrapper> getSnapShotOfKeySet(UUID clientID) {
-    List<ByteArrayWrapper> keySnapShot = this.hScanSnapShots.get(clientID);
+    List<ByteArrayWrapper> keySnapShot = hScanSnapShots.get(clientID);
 
     if (keySnapShot == null) {
-      if (this.hScanSnapShots.isEmpty()) {
+      if (hScanSnapShots.isEmpty()) {
         startHscanSnapshotScheduledRemoval();
       }
       keySnapShot = createKeySnapShot(clientID);
@@ -382,20 +416,18 @@ public class RedisHash extends AbstractRedisData {
     return keySnapShot;
   }
 
-  @SuppressWarnings("unchecked")
   private List<ByteArrayWrapper> createKeySnapShot(UUID clientID) {
 
     List<ByteArrayWrapper> keySnapShot = new ArrayList<>(hash.keySet());
 
-    this.hScanSnapShots.put(clientID, keySnapShot);
-    this.hScanSnapShotCreationTimes.put(clientID, currentTimeMillis());
+    hScanSnapShots.put(clientID, keySnapShot);
+    hScanSnapShotCreationTimes.put(clientID, currentTimeMillis());
 
     return keySnapShot;
   }
 
   public long hincrby(Region<RedisKey, RedisData> region, RedisKey key,
-      ByteArrayWrapper field, long increment)
-      throws NumberFormatException, ArithmeticException {
+      ByteArrayWrapper field, long increment) throws NumberFormatException, ArithmeticException {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {
       ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.longToBytes(increment));
@@ -430,8 +462,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public BigDecimal hincrbyfloat(Region<RedisKey, RedisData> region, RedisKey key,
-      ByteArrayWrapper field, BigDecimal increment)
-      throws NumberFormatException {
+      ByteArrayWrapper field, BigDecimal increment) throws NumberFormatException {
     ByteArrayWrapper oldValue = hash.get(field);
     if (oldValue == null) {
       ByteArrayWrapper newValue = new ByteArrayWrapper(Coder.bigDecimalToBytes(increment));
@@ -504,5 +535,10 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public KnownVersion[] getSerializationVersions() {
     return null;
+  }
+
+  @Override
+  public int getSizeInBytes() {
+    return sizeInBytes;
   }
 }

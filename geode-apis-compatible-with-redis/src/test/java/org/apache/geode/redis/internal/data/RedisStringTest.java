@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.data.RedisString.BASE_REDIS_STRING_OVERHEAD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -35,8 +36,10 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.size.ReflectionObjectSizer;
 
 public class RedisStringTest {
+  private final ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
 
   @BeforeClass
   public static void beforeClass() {
@@ -350,5 +353,96 @@ public class RedisStringTest {
     assertThat(o2).isNotEqualTo(o1);
     o2.fromDelta(in);
     assertThat(o2).isEqualTo(o1);
+  }
+
+  /************* Size in Bytes Tests *************/
+  /******* constructors *******/
+  @Test
+  public void should_calculateSize_equalToROSSize_ofLargeStrings() {
+    String javaString = makeStringOfSpecifiedSize(10_000);
+    RedisString string = new RedisString(new ByteArrayWrapper(javaString.getBytes()));
+
+    int actual = string.getSizeInBytes();
+    int expected = reflectionObjectSizer.sizeof(string);
+
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void should_calculateSize_equalToROSSize_ofStringOfVariousSizes() {
+    String javaString;
+    for (int i = 0; i < 512; i += 8) {
+      javaString = makeStringOfSpecifiedSize(i);
+      RedisString string = new RedisString(new ByteArrayWrapper(javaString.getBytes()));
+
+      int expected = reflectionObjectSizer.sizeof(string);
+      int actual = string.getSizeInBytes();
+
+      assertThat(actual).isEqualTo(expected);
+    }
+  }
+
+  /******* changing values *******/
+  @Test
+  public void changingStringValue_toShorterString_shouldDecreaseSizeInBytes() {
+    String baseString = "baseString";
+    RedisString string = new RedisString(new ByteArrayWrapper((baseString + "asdf").getBytes()));
+
+    int initialSize = string.getSizeInBytes();
+
+    string.set(new ByteArrayWrapper(baseString.getBytes()));
+
+    int finalSize = string.getSizeInBytes();
+
+    assertThat(finalSize).isEqualTo(initialSize - 4);
+  }
+
+  @Test
+  public void changingStringValue_toLongerString_shouldIncreaseSizeInBytes() {
+    String baseString = "baseString";
+    RedisString string = new RedisString(new ByteArrayWrapper(baseString.getBytes()));
+
+    int initialSize = string.getSizeInBytes();
+
+    string.set(new ByteArrayWrapper((baseString + "asdf").getBytes()));
+
+    int finalSize = string.getSizeInBytes();
+
+    assertThat(finalSize).isEqualTo(initialSize + 4);
+  }
+
+  @Test
+  public void changingStringValue_toEmptyString_shouldDecreaseSizeInBytes_toBaseSize() {
+    String baseString = "baseString";
+    RedisString string = new RedisString(new ByteArrayWrapper((baseString + "asdf").getBytes()));
+
+    string.set(new ByteArrayWrapper("".getBytes()));
+
+    int finalSize = string.getSizeInBytes();
+
+    assertThat(finalSize).isEqualTo(BASE_REDIS_STRING_OVERHEAD);
+  }
+
+  /******* constants *******/
+  // this test contains the math that was used to derive the constants in RedisString. If this test
+  // starts failing, it is because the overhead of RedisString has changed. If it has decreased,
+  // good job! You can change the constant in RedisString to reflect that. If it has increased,
+  // carefully consider that increase before changing the constant.
+  @Test
+  public void overheadConstants_shouldMatchCalculatedValue() {
+    RedisString redisString = new RedisString(new ByteArrayWrapper("".getBytes()));
+    int calculatedSize = reflectionObjectSizer.sizeof(redisString);
+
+    assertThat(BASE_REDIS_STRING_OVERHEAD).isEqualTo(calculatedSize);
+  }
+
+  /******* helper methods *******/
+
+  private String makeStringOfSpecifiedSize(final int stringSize) {
+    StringBuffer sb = new StringBuffer(stringSize);
+    for (int i = 0; i < stringSize; i++) {
+      sb.append("a");
+    }
+    return sb.toString();
   }
 }

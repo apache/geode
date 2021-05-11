@@ -35,10 +35,14 @@ import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisString extends AbstractRedisData {
-
   private int appendSequence;
 
   private ByteArrayWrapper value;
+
+  // this value is empirically derived using ReflectionObjectSizer, which provides an exact size
+  // of the object. It can't be used directly because of its performance impact. This value causes
+  // the size we keep track of to converge to the actual size as it increases.
+  protected static final int BASE_REDIS_STRING_OVERHEAD = 64;
 
   public RedisString(ByteArrayWrapper value) {
     this.value = value;
@@ -728,5 +732,10 @@ public class RedisString extends AbstractRedisData {
   @Override
   public KnownVersion[] getSerializationVersions() {
     return null;
+  }
+
+  @Override
+  public int getSizeInBytes() {
+    return BASE_REDIS_STRING_OVERHEAD + value.length();
   }
 }

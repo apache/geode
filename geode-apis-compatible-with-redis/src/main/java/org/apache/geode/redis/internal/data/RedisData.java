@@ -20,8 +20,9 @@ package org.apache.geode.redis.internal.data;
 import org.apache.geode.Delta;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.size.Sizeable;
 
-public interface RedisData extends Delta, DataSerializableFixedID {
+public interface RedisData extends Delta, DataSerializableFixedID, Sizeable {
 
 
   /**
@@ -56,5 +57,9 @@ public interface RedisData extends Delta, DataSerializableFixedID {
   String type();
 
   boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey);
+
+  default boolean getForceRecalculateSize() {
+    return true;
+  }
 
 }

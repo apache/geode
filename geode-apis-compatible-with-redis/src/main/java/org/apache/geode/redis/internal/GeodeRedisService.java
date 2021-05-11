@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
@@ -127,5 +128,10 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
 
   public void setEnableUnsupported(boolean unsupported) {
     redisServer.setAllowUnsupportedCommands(unsupported);
+  }
+
+  @VisibleForTesting
+  public Long getDataStoreBytesInUseForDataRegion() {
+    return redisServer.getDataStoreBytesInUseForDataRegion();
   }
 }
