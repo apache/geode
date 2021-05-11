@@ -68,9 +68,8 @@ public class RedisHash extends AbstractRedisData {
   // have the advantage of saving us a lot of computation that would happen every time a new key was
   // added. if our internal implementation changes, these values may be incorrect. the tests will
   // catch this change. an increase in overhead should be carefully considered.
-  protected static final int BASE_REDIS_HASH_OVERHEAD = 232;
-  protected static final int HASH_MAP_VALUE_PAIR_OVERHEAD = 96;
-  protected static final int SIZE_OF_OVERHEAD_OF_FIRST_PAIR = 96;
+  protected static final int BASE_REDIS_HASH_OVERHEAD = 336;
+  protected static final int HASH_MAP_VALUE_PAIR_OVERHEAD = 47;
 
   private static final int defaultHscanSnapshotsExpireCheckFrequency =
       Integer.getInteger("redis.hscan-snapshot-cleanup-interval", 30000);
@@ -91,7 +90,7 @@ public class RedisHash extends AbstractRedisData {
     HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS = hscanSnapShotExpirationCheckFrequency;
     MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE = minimumLifeForHscanSnaphot;
 
-    hash = new Object2ObjectOpenCustomHashMap<>(fieldsToSet.size(), ByteArrays.HASH_STRATEGY);
+    hash = new Object2ObjectOpenCustomHashMap<>(fieldsToSet.size() / 2, ByteArrays.HASH_STRATEGY);
     Iterator<byte[]> iterator = fieldsToSet.iterator();
     while (iterator.hasNext()) {
       hashPut(iterator.next(), iterator.next());
@@ -105,7 +104,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public RedisHash() {
-    sizeInBytes = BASE_REDIS_HASH_OVERHEAD;
+    // For serialization only!
   }
 
   private void expireHScanSnapshots() {
@@ -174,11 +173,7 @@ public class RedisHash extends AbstractRedisData {
   }
 
 
-  private synchronized byte[] hashPut(byte[] field, byte[] value) {
-    if (hash.isEmpty()) {
-      sizeInBytes += SIZE_OF_OVERHEAD_OF_FIRST_PAIR;
-    }
-
+  synchronized byte[] hashPut(byte[] field, byte[] value) {
     byte[] oldvalue = hash.put(field, value);
 
     if (oldvalue == null) {
@@ -191,10 +186,6 @@ public class RedisHash extends AbstractRedisData {
   }
 
   private synchronized byte[] hashPutIfAbsent(byte[] field, byte[] value) {
-    if (hash.isEmpty()) {
-      sizeInBytes += SIZE_OF_OVERHEAD_OF_FIRST_PAIR;
-    }
-
     byte[] oldvalue = hash.putIfAbsent(field, value);
 
     if (oldvalue == null) {

@@ -32,8 +32,8 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -269,7 +269,7 @@ public class RedisHashTest {
   // consider that increase before changing the constants.
   @Test
   public void constantBaseRedisHashOverhead_shouldEqualCalculatedOverhead() {
-    RedisHash hash = new RedisHash();
+    RedisHash hash = new RedisHash(Collections.emptyList());
     int baseRedisHashOverhead = reflectionObjectSizer.sizeof(hash);
 
     assertThat(baseRedisHashOverhead).isEqualTo(BASE_REDIS_HASH_OVERHEAD);
@@ -278,42 +278,23 @@ public class RedisHashTest {
 
   @Test
   public void constantValuePairOverhead_shouldEqualCalculatedOverhead() {
-    int sizeOfDataForOneFieldValuePair = 16; // initial byte[]s are 8 bytes each
+    RedisHash hash = new RedisHash(Collections.emptyList());
+    long totalOverhead = 0;
+    final int totalFields = 1000;
+    Random random = new Random(0);
+    for (int fieldCount = 1; fieldCount < totalFields; fieldCount++) {
+      byte[] data = new byte[random.nextInt(30)];
+      random.nextBytes(data);
+      hash.hashPut(data, data);
+      int size = reflectionObjectSizer.sizeof(hash);
+      final int dataSize = 2 * data.length;
+      int overHeadPerField = (size - BASE_REDIS_HASH_OVERHEAD - dataSize) / fieldCount;
+      totalOverhead += overHeadPerField;
+    }
 
-    HashMap<byte[], byte[]> tempHashmap = new HashMap<>();
+    long averageOverhead = totalOverhead / totalFields;
 
-    byte[] field1 = Coder.stringToBytes("a");
-    byte[] value1 = Coder.stringToBytes("b");
-    byte[] field2 = Coder.stringToBytes("c");
-    byte[] value2 = Coder.stringToBytes("d");
-
-    tempHashmap.put(field1, value1);
-    int oneEntryHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
-
-    tempHashmap.put(field2, value2);
-    int twoEntriesHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
-
-    int expectedValuePairOverhead = twoEntriesHashMapSize - oneEntryHashMapSize
-        - sizeOfDataForOneFieldValuePair;
-
-    assertThat(RedisHash.HASH_MAP_VALUE_PAIR_OVERHEAD).isEqualTo(expectedValuePairOverhead);
-  }
-
-  @Test
-  public void constantFirstPairOverhead_shouldEqual_calculatedOverhead() {
-    HashMap<byte[], byte[]> tempHashmap = new HashMap<>();
-    int emptyHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
-
-    byte[] field = Coder.stringToBytes("a");
-    byte[] value = Coder.stringToBytes("b");
-
-    tempHashmap.put(field, value);
-    int oneEntryHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
-
-    int expectedFirstPairOverhead = oneEntryHashMapSize - emptyHashMapSize
-        - RedisHash.HASH_MAP_VALUE_PAIR_OVERHEAD;
-
-    assertThat(RedisHash.SIZE_OF_OVERHEAD_OF_FIRST_PAIR).isEqualTo(expectedFirstPairOverhead);
+    assertThat(RedisHash.HASH_MAP_VALUE_PAIR_OVERHEAD).isEqualTo(averageOverhead);
   }
 
   /******* constructor *******/
@@ -329,7 +310,7 @@ public class RedisHashTest {
     final int expected = reflectionObjectSizer.sizeof(redisHash);
     final int actual = redisHash.getSizeInBytes();
 
-    final Offset<Integer> offset = Offset.offset((int) round(expected * 0.05));
+    final Offset<Integer> offset = Offset.offset((int) round(expected * 0.03));
 
     assertThat(actual).isCloseTo(expected, offset);
   }
@@ -342,7 +323,7 @@ public class RedisHashTest {
     final int expected = reflectionObjectSizer.sizeof(redisHash);
     final int actual = redisHash.getSizeInBytes();
 
-    final Offset<Integer> offset = Offset.offset((int) round(expected * 0.05));
+    final Offset<Integer> offset = Offset.offset((int) round(expected * 0.03));
 
     assertThat(actual).isCloseTo(expected, offset);
   }
@@ -361,7 +342,7 @@ public class RedisHashTest {
 
     Integer actual = hash.getSizeInBytes();
     int expected = reflectionObjectSizer.sizeof(hash);
-    Offset<Integer> offset = offset((int) round(expected * 0.07));
+    Offset<Integer> offset = offset((int) round(expected * 0.03));
 
     assertThat(actual).isCloseTo(expected, offset);
   }
@@ -378,7 +359,7 @@ public class RedisHashTest {
     final RedisData returnData = mock(RedisData.class);
     when(region.put(Object.class, Object.class)).thenReturn(returnData);
 
-    RedisHash hash = new RedisHash();
+    RedisHash hash = new RedisHash(Collections.emptyList());
     List<byte[]> data = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
       data.add(Coder.stringToBytes((baseField + i)));
@@ -427,7 +408,7 @@ public class RedisHashTest {
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
-    RedisHash hash = new RedisHash();
+    RedisHash hash = new RedisHash(Collections.emptyList());
     List<byte[]> initialData = new ArrayList<>();
     initialData.add(Coder.stringToBytes(field));
     initialData.add(Coder.stringToBytes(initialValue));
@@ -458,7 +439,7 @@ public class RedisHashTest {
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
-    RedisHash hash = new RedisHash();
+    RedisHash hash = new RedisHash(Collections.emptyList());
     List<byte[]> data = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
       data.add(Coder.stringToBytes((baseField + i)));
@@ -482,7 +463,7 @@ public class RedisHashTest {
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
-    RedisHash hash = new RedisHash();
+    RedisHash hash = new RedisHash(Collections.emptyList());
     List<byte[]> data = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
       data.add(Coder.stringToBytes((baseField + i)));
@@ -509,7 +490,7 @@ public class RedisHashTest {
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
-    RedisHash hash = new RedisHash();
+    RedisHash hash = new RedisHash(Collections.emptyList());
     List<byte[]> initialData = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
       initialData.add(Coder.stringToBytes((baseField + i)));
@@ -573,7 +554,7 @@ public class RedisHashTest {
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
-    RedisHash hash = new RedisHash();
+    RedisHash hash = new RedisHash(Collections.emptyList());
     final int baseRedisHashOverhead = hash.getSizeInBytes();
 
     List<byte[]> data = new ArrayList<>();
