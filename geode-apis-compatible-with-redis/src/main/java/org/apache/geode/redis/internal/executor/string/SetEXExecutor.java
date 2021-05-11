@@ -19,7 +19,6 @@ import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -64,7 +63,7 @@ public class SetEXExecutor extends StringExecutor {
     }
     SetOptions setOptions = new SetOptions(NONE, expiration, false);
 
-    stringCommands.set(key, new ByteArrayWrapper(value), setOptions);
+    stringCommands.set(key, value, setOptions);
 
     return RedisResponse.string(SUCCESS);
   }

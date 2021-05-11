@@ -37,7 +37,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
@@ -55,17 +54,17 @@ public class RedisStringCommandsFunctionInvoker extends RedisCommandsFunctionInv
   }
 
   @Override
-  public long append(RedisKey key, ByteArrayWrapper valueToAppend) {
+  public long append(RedisKey key, byte[] valueToAppend) {
     return invokeCommandFunction(key, APPEND, valueToAppend);
   }
 
   @Override
-  public ByteArrayWrapper get(RedisKey key) {
+  public byte[] get(RedisKey key) {
     return invokeCommandFunction(key, GET);
   }
 
   @Override
-  public boolean set(RedisKey key, ByteArrayWrapper value, SetOptions options) {
+  public boolean set(RedisKey key, byte[] value, SetOptions options) {
     return invokeCommandFunction(key, SET, value, options);
   }
 
@@ -80,7 +79,7 @@ public class RedisStringCommandsFunctionInvoker extends RedisCommandsFunctionInv
   }
 
   @Override
-  public ByteArrayWrapper getset(RedisKey key, ByteArrayWrapper value) {
+  public byte[] getset(RedisKey key, byte[] value) {
     return invokeCommandFunction(key, GETSET, value);
   }
 
@@ -95,7 +94,7 @@ public class RedisStringCommandsFunctionInvoker extends RedisCommandsFunctionInv
   }
 
   @Override
-  public ByteArrayWrapper getrange(RedisKey key, long start, long end) {
+  public byte[] getrange(RedisKey key, long start, long end) {
     return invokeCommandFunction(key, GETRANGE, start, end);
   }
 
@@ -145,7 +144,7 @@ public class RedisStringCommandsFunctionInvoker extends RedisCommandsFunctionInv
   }
 
   @Override
-  public ByteArrayWrapper mget(RedisKey key) {
+  public byte[] mget(RedisKey key) {
     return invokeCommandFunction(key, MGET);
   }
 }
