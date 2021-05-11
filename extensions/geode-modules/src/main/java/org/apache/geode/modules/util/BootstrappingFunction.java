@@ -167,6 +167,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     // Get the result. Nothing is being done with it.
     try {
       collector.getResult();
+      logger.info("BR Result returned from bootstrap execution");
     } catch (Exception e) {
       // If an exception occurs in the function, log it.
       cache.getLogger().warning("Caught unexpected exception:", e);
