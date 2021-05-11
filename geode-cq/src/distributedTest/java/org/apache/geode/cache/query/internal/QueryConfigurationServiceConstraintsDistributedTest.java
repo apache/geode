@@ -30,8 +30,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -168,13 +170,13 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
         "REPLICATE, UPDATE, true", "REPLICATE, UPDATE, false",
         "REPLICATE, REPLACE, true", "REPLICATE, REPLACE, false",
         "REPLICATE, INVALIDATE, true", "REPLICATE, INVALIDATE, false",
-        "PARTITION, PUT, true", "REPLICATE, PUT, false",
-        "PARTITION, CREATE, true", "REPLICATE, CREATE, false",
-        "PARTITION, REMOVE, true", "REPLICATE, REMOVE, false",
-        "PARTITION, DESTROY, true", "REPLICATE, DESTROY, false",
-        "PARTITION, UPDATE, true", "REPLICATE, UPDATE, false",
-        "PARTITION, REPLACE, true", "REPLICATE, REPLACE, false",
-        "PARTITION, INVALIDATE, true", "REPLICATE, INVALIDATE, false"};
+        "PARTITION, PUT, true", "PARTITION, PUT, false",
+        "PARTITION, CREATE, true", "PARTITION, CREATE, false",
+        "PARTITION, REMOVE, true", "PARTITION, REMOVE, false",
+        "PARTITION, DESTROY, true", "PARTITION, DESTROY, false",
+        "PARTITION, UPDATE, true", "PARTITION, UPDATE, false",
+        "PARTITION, REPLACE, true", "PARTITION, REPLACE, false",
+        "PARTITION, INVALIDATE, true", "PARTITION, INVALIDATE, false"};
   }
 
   /**
