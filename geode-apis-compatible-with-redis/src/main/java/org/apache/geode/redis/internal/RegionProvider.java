@@ -45,6 +45,7 @@ public class RegionProvider {
   private final Region<RedisKey, RedisData> dataRegion;
   private final Region<String, Object> configRegion;
   private final RedisHashCommandsFunctionInvoker hashCommands;
+  private final SlotAdvisor slotAdvisor;
 
   public RegionProvider(InternalCache cache) {
     validateBucketCount(REDIS_REGION_BUCKETS);
@@ -67,6 +68,8 @@ public class RegionProvider {
     configRegion = redisConfigRegionFactory.create(REDIS_CONFIG_REGION);
 
     this.hashCommands = new RedisHashCommandsFunctionInvoker(dataRegion);
+
+    slotAdvisor = new SlotAdvisor(dataRegion, configRegion);
   }
 
   public Region<RedisKey, RedisData> getDataRegion() {
@@ -75,6 +78,10 @@ public class RegionProvider {
 
   public Region<String, Object> getConfigRegion() {
     return configRegion;
+  }
+
+  public SlotAdvisor getSlotAdvisor() {
+    return slotAdvisor;
   }
 
   /**

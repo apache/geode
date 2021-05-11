@@ -28,6 +28,8 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class RedisClusterStartupRule extends ClusterStartupRule {
 
+  private static final String LOCALHOST = "127.0.0.1";
+
   public RedisClusterStartupRule() {
     super();
   }
@@ -60,7 +62,7 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
   }
 
   private ServerStarterRule withRedis(ServerStarterRule rule) {
-    return rule.withProperty(REDIS_BIND_ADDRESS, "localhost")
+    return rule.withProperty(REDIS_BIND_ADDRESS, LOCALHOST)
         .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_ENABLED, "true")
         .withSystemProperty(GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM,
@@ -68,7 +70,7 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
   }
 
   private ServerStarterRule withRedis(ServerStarterRule rule, String redisPort) {
-    return rule.withProperty(REDIS_BIND_ADDRESS, "localhost")
+    return rule.withProperty(REDIS_BIND_ADDRESS, LOCALHOST)
         .withProperty(REDIS_PORT, redisPort)
         .withProperty(REDIS_ENABLED, "true")
         .withSystemProperty(GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM,

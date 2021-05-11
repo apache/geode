@@ -15,6 +15,9 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
+import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -53,6 +56,11 @@ public class RedisKey extends ByteArrayWrapper implements DataSerializableFixedI
     }
 
     crc16 = CRC16.calculate(value, startHashtag + 1, endHashtag);
+  }
+
+  public int getBucketId() {
+    // & (REDIS_SLOTS - 1) is equivalent to % REDIS_SLOTS but supposedly faster
+    return getCrc16() & (REDIS_SLOTS - 1) / REDIS_SLOTS_PER_BUCKET;
   }
 
   @Override

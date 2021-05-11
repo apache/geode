@@ -28,8 +28,7 @@ import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor implements
     RedisHashCommands {
 
-  public RedisHashCommandsFunctionExecutor(
-      CommandHelper helper) {
+  public RedisHashCommandsFunctionExecutor(CommandHelper helper) {
     super(helper);
   }
 
