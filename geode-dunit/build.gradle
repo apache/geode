@@ -85,6 +85,8 @@ dependencies {
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
   distributedTestJbossModular(project(":geode-assembly"))
   distributedTestJbossModular(project(":geode-core"))
+
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
 distributedTest {

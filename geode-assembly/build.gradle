@@ -106,6 +106,9 @@ configurations {
   distributedTest {
     environment 'CLASSLOADER_ISOLATED' , 'false'
   }
+  upgradeTest {
+    environment 'CLASSLOADER_ISOLATED' , 'false'
+  }
 }
 
 publishing {
@@ -298,6 +301,7 @@ dependencies {
   uiTestRuntimeOnly(project(':geode-core'))
   uiTestRuntimeOnly('org.seleniumhq.selenium:selenium-chrome-driver')
 
+  upgradeTestImplementation('org.apache.httpcomponents:httpclient')
   upgradeTestImplementation(project(':geode-gfsh'))
   upgradeTestImplementation(project(':geode-logging'))
   upgradeTestImplementation(project(':geode-serialization'))

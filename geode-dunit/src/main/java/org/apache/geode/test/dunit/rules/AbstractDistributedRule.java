@@ -37,12 +37,16 @@ class AbstractDistributedRule implements SerializableTestRule {
   // if you alter vmEventListener at all, make sure VmEventListenerDistributedTest still passes
   private volatile VMEventListener vmEventListener;
 
+  private static final boolean RUN_VM_CLASSLOADER_ISOLATED =
+      System.getenv("CLASSLOADER_ISOLATED") != null
+          && Boolean.parseBoolean(System.getenv("CLASSLOADER_ISOLATED"));
+
   AbstractDistributedRule() {
     this(DEFAULT_VM_COUNT);
   }
 
   AbstractDistributedRule(final int vmCount) {
-    this(vmCount, true);
+    this(vmCount, RUN_VM_CLASSLOADER_ISOLATED);
   }
 
   AbstractDistributedRule(final int vmCount, boolean classloaderIsolated) {
