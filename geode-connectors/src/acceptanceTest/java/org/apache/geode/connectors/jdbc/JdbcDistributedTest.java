@@ -88,8 +88,6 @@ public abstract class JdbcDistributedTest implements Serializable {
   public void setup() throws Exception {
     locator = startupRule.startLocatorVM(0);
     gfsh.connectAndVerify(locator);
-    int locatorPort = locator.getPort();
-    dataserver = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locatorPort));
   }
 
   public abstract Connection getConnection() throws SQLException;
@@ -97,7 +95,8 @@ public abstract class JdbcDistributedTest implements Serializable {
   public abstract String getConnectionUrl() throws IOException, InterruptedException;
 
   private void createTable() throws SQLException {
-
+    int locatorPort = locator.getPort();
+    dataserver = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locatorPort));
     Connection connection = getConnection();
     Statement statement = connection.createStatement();
     statement.execute("Create Table " + TABLE_NAME
@@ -245,8 +244,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   public void throwsExceptionWhenMappingDoesNotMatchTableDefinitionOnInitialOperation()
       throws Exception {
     IgnoredException.addIgnoredException(
-        "Error detected when comparing mapping for region \"employees\" with table definition:",
-        dataserver.getVM());
+        "Error detected when comparing mapping for region \"employees\" with table definition:");
     createTable();
     createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
@@ -302,11 +300,9 @@ public abstract class JdbcDistributedTest implements Serializable {
   public void throwsExceptionWhenMappingDoesNotMatchTableDefinitionOnServerStartup()
       throws Exception {
     IgnoredException.addIgnoredException(
-        "Jdbc mapping for \"employees\" does not match table definition, check logs for more details.",
-        dataserver.getVM());
+        "Error detected when comparing mapping for region \"employees\" with table definition:");
     IgnoredException.addIgnoredException(
-        "Error detected when comparing mapping for region \"employees\" with table definition:",
-        dataserver.getVM());
+        "Jdbc mapping for \"employees\" does not match table definition, check logs for more details.");
     createTable();
     createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
@@ -315,8 +311,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     int locatorPort = locator.getPort();
     assertThatThrownBy(
         () -> startupRule.startServerVM(3, x -> x.withConnectionToLocator(locatorPort)))
-            .hasCauseExactlyInstanceOf(JdbcConnectorException.class)
-            .hasStackTraceContaining(
+            .hasCauseExactlyInstanceOf(JdbcConnectorException.class).hasStackTraceContaining(
                 "Jdbc mapping for \"employees\" does not match table definition, check logs for more details.");
   }
 
