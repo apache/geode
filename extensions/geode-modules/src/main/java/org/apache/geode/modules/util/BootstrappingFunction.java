@@ -65,12 +65,14 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     // Register as membership listener
     registerAsMembershipListener(cache);
 
+    logger.info("BR About to register functions");
     if (!isLocator(cache)) {
       // Register functions
       registerFunctions();
     }
 
     // Return status
+    logger.info("BR About to register functions");
     context.getResultSender().lastResult(Boolean.TRUE);
   }
 
@@ -83,6 +85,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   protected Cache verifyCacheExists() {
     int timeToWait = 0;
     Cache cache = null;
+    logger.info("BR VerifyCacheExists starting");
     while (timeToWait < TIME_TO_WAIT_FOR_CACHE) {
       try {
         cache = CacheFactory.getAnyInstance();
@@ -97,6 +100,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
         break;
       }
       timeToWait += 250;
+      logger.info("BR VerifyCacheExists attmept " + timeToWait/250);
     }
 
     if (cache == null) {
@@ -115,6 +119,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   }
 
   private void registerAsMembershipListener(Cache cache) {
+    logger.info("BR Registering as membership listener");
     DistributionManager dm =
         ((InternalDistributedSystem) cache.getDistributedSystem()).getDistributionManager();
     dm.addMembershipListener(this);
@@ -127,21 +132,25 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     try {
       // Register the create region function if it is not already registered
       if (!FunctionService.isRegistered(CreateRegionFunction.ID)) {
+        logger.info("BR Registering CreateRegionFunction()");
         FunctionService.registerFunction(new CreateRegionFunction());
       }
 
       // Register the touch partitioned region entries function if it is not already registered
       if (!FunctionService.isRegistered(TouchPartitionedRegionEntriesFunction.ID)) {
+        logger.info("BR Registering TouchPartitionedRegionEntriesFunction()");
         FunctionService.registerFunction(new TouchPartitionedRegionEntriesFunction());
       }
 
       // Register the touch replicated region entries function if it is not already registered
       if (!FunctionService.isRegistered(TouchReplicatedRegionEntriesFunction.ID)) {
+        logger.info("BR Registering TouchReplicatedRegionEntriesFunction()");
         FunctionService.registerFunction(new TouchReplicatedRegionEntriesFunction());
       }
 
       // Register the region size function if it is not already registered
       if (!FunctionService.isRegistered(RegionSizeFunction.ID)) {
+        logger.info("BR Registering RegionSizeFunction()");
         FunctionService.registerFunction(new RegionSizeFunction());
       }
     } finally {
