@@ -24,7 +24,6 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -63,19 +62,20 @@ public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIn
 
   @Test
   public void memoryFragmentationRatio_shouldBeGreaterThanZero() {
-    double memoryFragmentationRatio = Double.valueOf(getInfo(jedis).get(MEM_FRAGMENTATION_RATIO));
+    double memoryFragmentationRatio =
+        Double.parseDouble(getInfo(jedis).get(MEM_FRAGMENTATION_RATIO));
     assertThat(memoryFragmentationRatio).isGreaterThan(0.0);
   }
 
   @Test
   public void usedMemory_shouldIncrease_givenAdditionalValuesAdded() {
-    Map addedData = makeHashMap(100_000, "field", "value");
+    Map<String, String> addedData = makeHashMap(100_000, "field", "value");
 
-    long initialUsedMemory = Long.valueOf(getInfo(jedis).get(USED_MEMORY));
+    long initialUsedMemory = Long.parseLong(getInfo(jedis).get(USED_MEMORY));
 
     jedis.hset(EXISTING_HASH_KEY, addedData);
 
-    long finalUsedMemory = Long.valueOf(getInfo(jedis).get(USED_MEMORY));
+    long finalUsedMemory = Long.parseLong(getInfo(jedis).get(USED_MEMORY));
     assertThat(finalUsedMemory).isGreaterThan(initialUsedMemory);
   }
 
