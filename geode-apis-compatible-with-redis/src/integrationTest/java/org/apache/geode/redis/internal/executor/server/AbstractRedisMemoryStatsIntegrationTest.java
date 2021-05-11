@@ -21,12 +21,9 @@ import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.internal.statistics.EnabledStatisticsClock;
-import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -34,29 +31,14 @@ public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIn
 
   private static final int TIMEOUT = (int) GeodeAwaitility.getTimeout().toMillis();
   private static final String EXISTING_HASH_KEY = "Existing_Hash";
-  private static final String EXISTING_STRING_KEY = "Existing_String";
-  private static final String EXISTING_SET_KEY_1 = "Existing_Set_1";
-  private static final String EXISTING_SET_KEY_2 = "Existing_Set_2";
 
   private Jedis jedis;
-  private static long START_TIME;
-  private static StatisticsClock statisticsClock;
-
-  private long preTestConnectionsReceived = 0;
-  private long preTestConnectedClients = 0;
 
   private static final String MAX_MEMORY = "maxmemory";
   private static final String USED_MEMORY = "used_memory";
   private static final String MEM_FRAGMENTATION_RATIO = "mem_fragmentation_ratio";
 
   public void configureMemoryAndEvictionPolicy(Jedis jedis) {}
-
-  // ------------------- Setup -------------------------- //
-  @BeforeClass
-  public static void beforeClass() {
-    statisticsClock = new EnabledStatisticsClock();
-    START_TIME = statisticsClock.getTime();
-  }
 
   @Before
   public void before() {
@@ -85,17 +67,17 @@ public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIn
   }
 
   @Test
-  public void usedMemory_shouldReflectActualMemoryUsage() {
+  public void usedMemory_shouldIncrease_givenAdditionalValuesAdded() {
+    Map addedData = makeHashMap(300_000, "field", "value");
+
     long initialUsedMemory = Long.valueOf(getInfo(jedis).get(USED_MEMORY));
 
-    jedis.set(EXISTING_STRING_KEY, "A_Value");
-    jedis.hset(EXISTING_HASH_KEY, "Field1", "Value1");
-    jedis.sadd(EXISTING_SET_KEY_1, "m1", "m2", "m3");
-    jedis.sadd(EXISTING_SET_KEY_2, "m4", "m5", "m6");
+    jedis.hset(EXISTING_HASH_KEY, addedData);
 
     long finalUsedMemory = Long.valueOf(getInfo(jedis).get(USED_MEMORY));
     assertThat(finalUsedMemory).isGreaterThan(initialUsedMemory);
   }
+
 
   // ------------------- Helper Methods ----------------------------- //
 
@@ -116,5 +98,14 @@ public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIn
     }
 
     return results;
+  }
+
+  private Map<String, String> makeHashMap(int hashSize, String baseFieldName,
+      String baseValueName) {
+    Map<String, String> map = new HashMap<>();
+    for (int i = 0; i < hashSize; i++) {
+      map.put(baseFieldName + i, baseValueName + i);
+    }
+    return map;
   }
 }
