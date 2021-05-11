@@ -96,6 +96,7 @@ public class DockerComposeRule extends ExternalResource {
         composeContainer = new DockerComposeContainer<>("compose", new File(composeFile));
         exposedServices.forEach((service, ports) -> ports
             .forEach(p -> composeContainer.withExposedService(service, p)));
+        composeContainer.withLocalCompose(true);
 
         composeContainer.start();
 
