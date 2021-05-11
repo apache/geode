@@ -31,10 +31,6 @@ public class ZAddExecutor extends SortedSetExecutor {
 
     List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
 
-    // zadd key score1 elem1 score2 elem2 ....
-    // loop through elements, starting at 2 (or whatever)
-    // confirm scores are numbers
-    // add pairs to scoresAndMembersToAdd (turn into byte[])
     List<byte[]> scoresAndMembersToAdd = new ArrayList<>();
     Iterator<ByteArrayWrapper> commandIterator = commandElements.iterator();
     boolean adding = false;
@@ -64,7 +60,6 @@ public class ZAddExecutor extends SortedSetExecutor {
         }
       }
     }
-    System.out.println("Executor about to call rssc.zadd...");
     long entriesAdded = 0;
     try {
       entriesAdded = redisSortedSetCommands.zadd(command.getKey(), scoresAndMembersToAdd);

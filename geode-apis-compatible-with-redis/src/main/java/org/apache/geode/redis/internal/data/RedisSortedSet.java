@@ -147,7 +147,6 @@ public class RedisSortedSet extends AbstractRedisData {
     while (iterator.hasNext()) {
       ByteArrayWrapper member = iterator.next();
       ByteArrayWrapper score = iterator.next();
-      System.out.println("Delta getting applied:" + member + " score:" + score);
       members.put(member.toBytes(), score.toBytes()); // TODO: get rid of ByteArrayWrapper
     }
   }
@@ -168,24 +167,19 @@ public class RedisSortedSet extends AbstractRedisData {
   long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd) {
     int membersAdded = 0;
     long membersChanged = 0; // TODO: really implement changed
-    System.out.println("RedisSortedSet zadd starting.");
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
     while (iterator.hasNext()) {
       boolean delta = true;
       byte[] score = iterator.next();
       byte[] member = iterator.next();
-      System.out.println("Adding member:" + byteArrayStringer(member)
-          + " score: " + byteArrayStringer(score));
 
       switch (membersAdd(member, score, false)) {
         case ADDED:
-          System.out.println("added!");
           membersAdded++;
           makeAddsDeltaInfo(deltaInfo, member, score);
           break;
         case CHANGED:
-          System.out.println("changed!");
           membersChanged++;
           makeAddsDeltaInfo(deltaInfo, member, score);
           break;
@@ -203,32 +197,13 @@ public class RedisSortedSet extends AbstractRedisData {
       }
     }
     if (deltaInfo != null) {
-      System.out.println("deltaInfo not null, storing changes...");
       storeChanges(region, key, deltaInfo);
     }
     return membersAdded;
   }
 
   byte[] zscore(byte[] member) {
-    System.out.println("finally gonna get the data for zscore, member: "
-        + byteArrayStringer(member) + " members:" + members);
-    for (byte[] key : members.keySet()) {
-      System.out.println("member: " + byteArrayStringer(key) + " score:"
-          + byteArrayStringer(members.get(key)));
-      System.out.println("equality? " + Arrays.equals(member, key));
-      System.out.println("equality 2? " + (member.length == key.length));
-    }
-    byte[] score = members.get(member);
-    System.out.println("got score: " + score);
-    return score;
-  }
-
-  String byteArrayStringer(byte[] byteArray) {
-    String retVal = "";
-    for (int i = 0; i < byteArray.length; i++) {
-      retVal += byteArray[i];
-    }
-    return retVal;
+    return members.get(member);
   }
 
   private AddsDeltaInfo makeAddsDeltaInfo(AddsDeltaInfo deltaInfo, byte[] member, byte[] score) {

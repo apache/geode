@@ -36,7 +36,6 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
 
   @Override
   public long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd) {
-    System.out.println("Function executor doing its thing.");
     return stripedExecute(key,
         () -> getRedisSortedSet(key, false)
             .zadd(getRegion(), key, scoresAndMembersToAdd));
@@ -44,7 +43,6 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
 
   @Override
   public byte[] zscore(RedisKey key, byte[] member) {
-    System.out.println("function executor about to invoke zscore");
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zscore(member));
   }
 }
