@@ -131,25 +131,6 @@ public class RedisSortedSetTest {
     assertThat(o2).isEqualTo(o1);
   }
 
-  @Test
-  @Ignore("make sure to add this once ZREM implemented!")
-  public void zrem_stores_delta_that_is_stable() throws IOException {
-    // Region<RedisKey, RedisData> region = mock(Region.class);
-    // RedisSortedSet o1 = createRedisSortedSet("k1", "v1", "k2", "v2");
-    // ArrayList<byte[]> removes = new ArrayList<>();
-    // removes.add("k1".getBytes());
-    // o1.zrem(region, null, removes);
-    // assertThat(o1.hasDelta()).isTrue();
-    // HeapDataOutputStream out = new HeapDataOutputStream(100);
-    // o1.toDelta(out);
-    // assertThat(o1.hasDelta()).isFalse();
-    // ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-    // RedisSortedSet o2 = createRedisSortedSet("k1", "v1", "k2", "v2");
-    // assertThat(o2).isNotEqualTo(o1);
-    // o2.fromDelta(in);
-    // assertThat(o2).isEqualTo(o1);
-  }
-
   @SuppressWarnings("unchecked")
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
