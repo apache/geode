@@ -25,6 +25,7 @@ dependencies {
 
     api(project(':geode-core'))
     api(project(':geode-common'))
+    api(project(':geode-wan'))
 
     implementation(project(':geode-logging'))
     implementation(project(':geode-membership'))

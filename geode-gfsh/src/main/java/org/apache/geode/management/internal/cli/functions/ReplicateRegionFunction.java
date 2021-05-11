@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 
@@ -34,8 +35,12 @@ import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.internal.GatewaySenderEventRemoteDispatcher;
+import org.apache.geode.cache.wan.internal.client.locator.GatewaySenderBatchOp;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DefaultEntryEventFactory;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -46,8 +51,11 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.BatchException70;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -161,15 +169,10 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
     Callable<CliFunctionResult> callable =
         new ReplicateRegionCallable(context, region, sender, maxRate, batchSize);
     FutureTask<CliFunctionResult> futureTask = new FutureTask<>(callable);
-    Thread t = new Thread(futureTask);
-    String origThreadName = Thread.currentThread().getName();
-    try {
-      t.setName(getReplicateRegionFunctionThreadName(region.getName(),
-          sender.getId()));
-    } finally {
-      Thread.currentThread().setName(origThreadName);
-    }
-    t.start();
+    ExecutorService executor = LoggingExecutors
+        .newSingleThreadExecutor(getReplicateRegionFunctionThreadName(region.getName(),
+            sender.getId()), true);
+    executor.execute(futureTask);
     return futureTask.get();
   }
 
@@ -232,6 +235,9 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
       } catch (InterruptedException e) {
         return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
             "Operation canceled after having replicated " + replicatedEntries + " entries");
+      } catch (Exception e) {
+        return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+            "Error in operation after having replicated " + replicatedEntries + " entries");
       }
     }
 
@@ -260,25 +266,37 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
 
   private void sendBatch(GatewaySender sender,
       int replicatedEntries, long maxRate, long startTime,
-      List batch) throws InterruptedException {
-    ((AbstractGatewaySender) sender).getEventProcessor().getDispatcher().dispatchBatch(batch, false,
-        false);
+      List batch) throws InterruptedException, BatchException70 {
+    PoolImpl senderPool = ((AbstractGatewaySender) sender).getProxy();
+    Connection connection = senderPool.acquireConnection();
+    int batchId = 1971;
+    GatewaySenderBatchOp.executeOn(connection, senderPool, batch, batchId, false, false);
+    GatewaySenderEventRemoteDispatcher.GatewayAck ack =
+        (GatewaySenderEventRemoteDispatcher.GatewayAck) GatewaySenderBatchOp.executeOn(connection,
+            senderPool);
+    if (ack == null) {
+      throw new BatchException70("Unknown error sending batch", null, 0, batchId);
+    }
+    if (ack.getBatchException() != null) {
+      throw ack.getBatchException();
+    }
     doActionsIfBatchReplicated(startTime, replicatedEntries + batch.size(), maxRate);
   }
 
   final CliFunctionResult cancelReplicateRegion(FunctionContext<String[]> context, Region region,
       String senderId) {
-    String threadName = getReplicateRegionFunctionThreadName(region.getName(), senderId);
+    String threadBaseName = getReplicateRegionFunctionThreadName(region.getName(), senderId);
     long threadId = 0;
     for (Thread t : Thread.getAllStackTraces().keySet()) {
-      if (t.getName().equals(threadName)) {
+      if (t.getName().startsWith(threadBaseName)) {
         t.interrupt();
         threadId = t.getId();
+        break;
       }
     }
     if (threadId == 0) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-          "No command running to be canceled");
+          "No running command to be canceled for region " + region + " and sender: " + senderId);
     }
     return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
         "Canceled command");
@@ -342,13 +360,17 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
     EntryEventImpl event = new DefaultEntryEventFactory().create(region, Operation.UPDATE,
         entry.getKey(),
         entry.getValue(), null, false,
-        (cache).getInternalDistributedSystem().getDistributedMember());
+        (cache).getInternalDistributedSystem().getDistributedMember(), false);
     if (entry instanceof NonTXEntry) {
       event.setVersionTag(((NonTXEntry) entry).getRegionEntry().getVersionStamp().asVersionTag());
     } else {
       event.setVersionTag(((EntrySnapshot) entry).getVersionTag());
     }
     event.setNewEventId(cache.getInternalDistributedSystem());
+    GatewaySenderEventCallbackArgument geCallbackArg = new GatewaySenderEventCallbackArgument(null,
+        cache.getInternalDistributedSystem().getDistributionManager().getDistributedSystemId(),
+        getRemoteDsIds(cache, region));
+    event.setCallbackArgument(geCallbackArg);
     return event;
   }
 
