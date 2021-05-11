@@ -286,7 +286,6 @@ public class CommandFunction extends SingleResultRedisFunction {
       }
       case ZSCORE: {
         byte[] member = (byte[]) args[1];
-        System.out.println("command function about to invoke zscore");
         return sortedSetCommands.zscore(key, member);
       }
       default:

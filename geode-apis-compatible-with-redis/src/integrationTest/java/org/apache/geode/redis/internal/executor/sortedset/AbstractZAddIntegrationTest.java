@@ -198,9 +198,43 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void zaddStoresScores_givenCorrectArguments() {
-    long added = jedis.zadd("ss_key", 2, "member01");
-    assertThat(added).isEqualTo(1L);
-    double score = jedis.zscore("ss_key", "member01");
-    assertThat(score).isEqualTo(2L);
+    String key = "ss_key";
+    Map<String, Double> map = getMemberScoreMap();
+
+    Set<String> keys = map.keySet();
+    Long count = 0L;
+
+    for (String member : keys) {
+      Double score = map.get(member);
+      Long res = jedis.zadd(key, score, member);
+      Assertions.assertThat(res).isEqualTo(1);
+      Assertions.assertThat(jedis.zscore(key, member)).isEqualTo(score);
+      count += res;
+    }
+    Assertions.assertThat(count).isEqualTo(keys.size());
+  }
+
+  @Test
+  public void zaddStoresScores_givenMultipleMembersAndScores() {
+    String key = "ss_key";
+    Map<String, Double> map = getMemberScoreMap();
+    Set<String> keys = map.keySet();
+
+    long added = jedis.zadd("ss_key", map);
+    assertThat(added).isEqualTo(keys.size());
+
+    for (String member : keys) {
+      Double score = map.get(member);
+      Assertions.assertThat(jedis.zscore(key, member)).isEqualTo(score);
+    }
+  }
+
+  private Map<String, Double> getMemberScoreMap() {
+    Map<String, Double> map = new HashMap<>();
+
+    for (int i = 0; i < 10; i++) {
+      map.put("member_" + i, Double.valueOf(i + ""));
+    }
+    return map;
   }
 }
