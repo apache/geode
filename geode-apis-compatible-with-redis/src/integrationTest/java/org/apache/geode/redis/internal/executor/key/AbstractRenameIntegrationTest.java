@@ -35,7 +35,8 @@ import java.util.concurrent.Future;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -48,9 +49,7 @@ import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractRenameIntegrationTest implements RedisIntegrationTest {
-  private Jedis jedis;
-  private Jedis jedis2;
-  private Jedis jedis3;
+  private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static Random rand;
@@ -58,17 +57,13 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
   @Before
   public void setUp() {
     rand = new Random();
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis3 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
-    jedis3.close();
   }
 
   @Test
@@ -78,22 +73,22 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
 
   @Test
   public void testNewKey() {
-    jedis.set("foo", "bar");
-    jedis.rename("foo", "newfoo");
-    assertThat(jedis.get("newfoo")).isEqualTo("bar");
+    jedis.set("{user1}foo", "bar");
+    jedis.rename("{user1}foo", "{user1}newfoo");
+    assertThat(jedis.get("{user1}newfoo")).isEqualTo("bar");
   }
 
   @Test
   public void testOldKeyIsDeleted() {
-    jedis.set("foo", "bar");
-    jedis.rename("foo", "newfoo");
-    assertThat(jedis.get("foo")).isNull();
+    jedis.set("{user1}foo", "bar");
+    jedis.rename("{user1}foo", "{user1}newfoo");
+    assertThat(jedis.get("{user1}foo")).isNull();
   }
 
   @Test
   public void testRenameKeyThatDoesNotExist() {
     try {
-      jedis.rename("foo", "newfoo");
+      jedis.rename("{user1}foo", "{user1}newfoo");
     } catch (JedisDataException e) {
       assertThat(e.getMessage()).contains(RedisConstants.ERROR_NO_SUCH_KEY);
     }
@@ -101,37 +96,37 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
 
   @Test
   public void testHashMap() {
-    jedis.hset("foo", "field", "va");
-    jedis.rename("foo", "newfoo");
-    assertThat(jedis.hget("newfoo", "field")).isEqualTo("va");
+    jedis.hset("{user1}foo", "field", "va");
+    jedis.rename("{user1}foo", "{user1}newfoo");
+    assertThat(jedis.hget("{user1}newfoo", "field")).isEqualTo("va");
   }
 
   @Test
   public void testSet() {
-    jedis.sadd("foo", "data");
-    jedis.rename("foo", "newfoo");
-    assertThat(jedis.smembers("newfoo")).contains("data");
+    jedis.sadd("{user1}foo", "data");
+    jedis.rename("{user1}foo", "{user1}newfoo");
+    assertThat(jedis.smembers("{user1}newfoo")).contains("data");
   }
 
   @Test
   public void testRenameSameKey() {
-    jedis.set("blue", "moon");
-    assertThat(jedis.rename("blue", "blue")).isEqualTo("OK");
-    assertThat(jedis.get("blue")).isEqualTo("moon");
+    jedis.set("{user1}blue", "moon");
+    assertThat(jedis.rename("{user1}blue", "{user1}blue")).isEqualTo("OK");
+    assertThat(jedis.get("{user1}blue")).isEqualTo("moon");
   }
 
   @Test
   public void testConcurrentSets() throws ExecutionException, InterruptedException {
-    Set<String> stringsForK1 = new HashSet<String>();
-    Set<String> stringsForK2 = new HashSet<String>();
+    Set<String> stringsForK1 = new HashSet<>();
+    Set<String> stringsForK2 = new HashSet<>();
 
     int numOfStrings = 500000;
     Callable<Long> callable1 =
-        () -> addStringsToKeys(stringsForK1, "k1", numOfStrings, jedis);
+        () -> addStringsToKeys(stringsForK1, "{user1}k1", numOfStrings, jedis);
     int numOfStringsForSecondKey = 30000;
     Callable<Long> callable2 =
-        () -> addStringsToKeys(stringsForK2, "k2", numOfStringsForSecondKey, jedis2);
-    Callable<String> callable3 = () -> renameKeys(jedis3);
+        () -> addStringsToKeys(stringsForK2, "{user1}k2", numOfStringsForSecondKey, jedis);
+    Callable<String> callable3 = () -> jedis.rename("{user1}k1", "{user1}k2");
 
     ExecutorService pool = Executors.newFixedThreadPool(4);
     Future<Long> future1 = pool.submit(callable1);
@@ -143,16 +138,13 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
     future2.get();
     try {
       future3.get();
-      assertThat(jedis.scard("k2")).isEqualTo(numOfStrings);
-      assertThat(jedis.get("k1")).isEqualTo(null);
+      assertThat(jedis.scard("{user1}k2")).isEqualTo(numOfStrings);
+      assertThat(jedis.get("{user1}k1")).isEqualTo(null);
     } catch (Exception e) {
       assertThat(e.getMessage()).contains(RedisConstants.ERROR_NO_SUCH_KEY);
-      assertThat(jedis.scard("k1")).isEqualTo(numOfStrings);
-      assertThat(jedis.scard("k2")).isEqualTo(numOfStringsForSecondKey);
+      assertThat(jedis.scard("{user1}k1")).isEqualTo(numOfStrings);
+      assertThat(jedis.scard("{user1}k2")).isEqualTo(numOfStringsForSecondKey);
     }
-
-    jedis2.close();
-    jedis3.close();
   }
 
   @Test
@@ -203,18 +195,17 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
     ExecutorService pool = Executors.newFixedThreadPool(2);
 
     for (int i = 0; i < 100; i++) {
-      jedis.set("oldKey", "foo");
+      jedis.set("{user1}oldKey", "foo");
 
       Runnable renameOldKeyToNewKey = () -> {
         cyclicBarrierAwait(startCyclicBarrier);
 
-        jedis.rename("oldKey", "newKey");
+        jedis.rename("{user1}oldKey", "{user1}newKey");
       };
 
       Runnable deleteOldKey = () -> {
         cyclicBarrierAwait(startCyclicBarrier);
-
-        jedis2.del("oldKey");
+        jedis.del("{user1}oldKey");
       };
 
       Future<?> future1 = pool.submit(renameOldKeyToNewKey);
@@ -222,13 +213,13 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
 
       try {
         future1.get();
-        assertThat(jedis.get("newKey")).isEqualTo("foo");
+        assertThat(jedis.get("{user1}newKey")).isEqualTo("foo");
       } catch (Exception e) {
         assertThat(e).hasMessageContaining("no such key");
       }
       future2.get();
 
-      assertThat(jedis.get("oldKey")).isNull();
+      assertThat(jedis.get("{user1}oldKey")).isNull();
     }
   }
 
@@ -245,14 +236,14 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
   }
 
   private List<String> getKeysOnDifferentStripes() {
-    String key1 = "keyz" + new Random().nextInt();
+    String key1 = "{user1}keyz" + new Random().nextInt();
 
     RedisKey key1ByteArrayWrapper = new RedisKey(key1.getBytes());
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     int iterator = 0;
     String key2;
     do {
-      key2 = "key" + iterator;
+      key2 = "{user1}key" + iterator;
       iterator++;
     } while (stripedExecutor.compareStripes(key1ByteArrayWrapper,
         new ByteArrayWrapper(key2.getBytes())) == 0);
@@ -262,14 +253,14 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
 
   private Set<String> getKeysOnSameRandomStripe(int numKeysNeeded) {
     Random random = new Random();
-    String key1 = "keyz" + random.nextInt();
+    String key1 = "{user1}keyz" + random.nextInt();
     RedisKey key1ByteArrayWrapper = new RedisKey(key1.getBytes());
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     Set<String> keys = new HashSet<>();
     keys.add(key1);
 
     do {
-      String key2 = "key" + random.nextInt();
+      String key2 = "{user1}key" + random.nextInt();
       if (stripedExecutor.compareStripes(key1ByteArrayWrapper,
           new ByteArrayWrapper(key2.getBytes())) == 0) {
         keys.add(key2);
@@ -301,8 +292,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
 
     Runnable renameOldKey2ToNewKey2 = () -> {
       cyclicBarrierAwait(startCyclicBarrier);
-
-      jedis2.rename(oldKey2, newKey2);
+      jedis.rename(oldKey2, newKey2);
     };
 
     Future<?> future1 = pool.submit(renameOldKey1ToNewKey1);
@@ -329,12 +319,12 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
     String key1;
     RedisKey key1ByteArrayWrapper;
     do {
-      key1 = "keyz" + new Random().nextInt();
+      key1 = "{user1}keyz" + new Random().nextInt();
       key1ByteArrayWrapper = new RedisKey(key1.getBytes());
     } while (stripedExecutor.compareStripes(key1ByteArrayWrapper, toAvoid) == 0 && keys.add(key1));
 
     do {
-      String key2 = "key" + new Random().nextInt();
+      String key2 = "{user1}key" + new Random().nextInt();
 
       if (stripedExecutor.compareStripes(key1ByteArrayWrapper,
           new ByteArrayWrapper(key2.getBytes())) == 0) {
@@ -364,7 +354,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
 
     Runnable renameKey2ToKey1 = () -> {
       cyclicBarrierAwait(startCyclicBarrier);
-      jedis2.rename(key2, key1);
+      jedis.rename(key2, key1);
     };
 
     Future<?> future1 = pool.submit(renameKey1ToKey2);
@@ -374,18 +364,11 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
     future2.get();
   }
 
-  private Long addStringsToKeys(
-      Set<String> strings,
-      String key,
-      int numOfStrings,
-      Jedis client) {
+  private Long addStringsToKeys(Set<String> strings, String key, int numOfStrings,
+      JedisCluster client) {
     generateStrings(numOfStrings, strings);
     String[] stringArray = strings.toArray(new String[strings.size()]);
     return client.sadd(key, stringArray);
-  }
-
-  private String renameKeys(Jedis client) {
-    return client.rename("k1", "k2");
   }
 
   private Set<String> generateStrings(int elements, Set<String> strings) {

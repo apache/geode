@@ -23,7 +23,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -31,18 +32,18 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractExpireIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
+  private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
-  public void flushAll() {
-    jedis.flushAll();
+  public void tearDown() {
+    flushAll();
     jedis.close();
   }
 
@@ -53,7 +54,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
 
   @Test
   public void givenInvalidTimestamp_returnsNotIntegerError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.EXPIRE, "key", "notInteger"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.EXPIRE, "key", "notInteger"))
         .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
@@ -178,9 +179,9 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
   @Test
   public void callingSDIFFSTOREonExistingKey_ShouldClearExpirationTime() {
 
-    String key1 = "key1";
-    String key2 = "key2";
-    String key3 = "key3";
+    String key1 = "{user1}key1";
+    String key2 = "{user1}key2";
+    String key3 = "{user1}key3";
     String value1 = "value1";
     String value2 = "value2";
     String value3 = "value3";
@@ -201,9 +202,9 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
 
   @Test
   public void callingSINTERSTOREonExistingKey_ShouldClearExpirationTime() {
-    String key1 = "key1";
-    String key2 = "key2";
-    String key3 = "key3";
+    String key1 = "{user1}key1";
+    String key2 = "{user1}key2";
+    String key3 = "{user1}key3";
     String value1 = "value1";
     String value2 = "value2";
     String value3 = "value3";
@@ -224,9 +225,9 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
 
   @Test
   public void callingSUNIONSTOREonExistingKey_ShouldClearExpirationTime() {
-    String key1 = "key1";
-    String key2 = "key2";
-    String key3 = "key3";
+    String key1 = "{user1}key1";
+    String key2 = "{user1}key2";
+    String key3 = "{user1}key3";
     String value1 = "value1";
     String value2 = "value2";
     String value3 = "value3";
@@ -279,8 +280,8 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
 
   @Test
   public void callingRENAMEonExistingKey_shouldTransferExpirationTimeToNewKeyName_GivenNewName_Not_InUse() {
-    String key = "key";
-    String newKeyName = "new key name";
+    String key = "{user1}key";
+    String newKeyName = "{user1}new key name";
     String value = "value";
     jedis.set(key, value);
     jedis.expire(key, 20);
@@ -293,8 +294,8 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
 
   @Test
   public void callingRENAMEonExistingKey_shouldTransferExpirationTimeToNewKeyName_GivenNewName_is_InUse_ButNo_ExpirationSet() {
-    String key = "key";
-    String key2 = "key2";
+    String key = "{user1}key";
+    String key2 = "{user1}key2";
     String value = "value";
 
     jedis.set(key, value);
@@ -310,8 +311,8 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
 
   @Test
   public void callingRENAMEonExistingKey_shouldTransferExpirationTimeToNewKeyName_GivenNewName_is_InUse_AndHas_ExpirationSet() {
-    String key = "key";
-    String key2 = "key2";
+    String key = "{user1}key";
+    String key2 = "{user1}key2";
     String value = "value";
 
     jedis.set(key, value);
