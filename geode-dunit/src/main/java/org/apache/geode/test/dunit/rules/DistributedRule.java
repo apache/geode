@@ -146,6 +146,10 @@ public class DistributedRule extends AbstractDistributedRule {
 
   @Override
   protected void after() {
+    /*TearDown.doTearDown();*/
+  }
+
+  public static void doTearDown() {
     TearDown.doTearDown();
   }
 
@@ -215,7 +219,7 @@ public class DistributedRule extends AbstractDistributedRule {
 
     @Override
     protected void after() {
-      doTearDown();
+      /*doTearDown();*/
     }
 
     private static void doTearDown() {

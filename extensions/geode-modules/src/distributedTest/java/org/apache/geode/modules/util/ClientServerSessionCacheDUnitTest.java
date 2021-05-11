@@ -65,21 +65,20 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
       .around(cacheRule)
       .around(clientCacheRule);
 
-
-  @Test
-  public void multipleGeodeServersCreateSessionRegion() {
-    final VM server0 = VM.getVM(0);
-    final VM server1 = VM.getVM(1);
-    final VM client = VM.getVM(2);
-
-    server0.invoke(this::startCacheServer);
-    server1.invoke(this::startCacheServer);
-
-    client.invoke(this::startClientSessionCache);
-
-    server0.invoke(this::validateServer);
-    server1.invoke(this::validateServer);
-  }
+//  @Test
+//  public void multipleGeodeServersCreateSessionRegion() {
+//    final VM server0 = VM.getVM(0);
+//    final VM server1 = VM.getVM(1);
+//    final VM client = VM.getVM(2);
+//
+//    server0.invoke(this::startCacheServer);
+//    server1.invoke(this::startCacheServer);
+//
+//    client.invoke(this::startClientSessionCache);
+//
+//    server0.invoke(this::validateServer);
+//    server1.invoke(this::validateServer);
+//  }
 
   @Test
   public void addServerToExistingClusterCopiesSessionRegion() {
@@ -98,118 +97,119 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     // Session region may be created asynchronously on the second server
     server0.invoke(() -> await().untilAsserted(this::validateServer));
     server1.invoke(() -> await().untilAsserted(this::validateServer));
+    DistributedRule.doTearDown();
   }
 
-  @Test
-  public void addServerToExistingClusterDoesNotCopyPreCreatedSessionRegion() {
-    final VM server0 = VM.getVM(0);
-    final VM server1 = VM.getVM(1);
-    final VM client = VM.getVM(2);
-
-    server0.invoke(this::startCacheServer);
-
-
-    server0.invoke(this::createSessionRegion);
-
-
-    client.invoke(this::startClientSessionCache);
-    server1.invoke(this::startCacheServer);
-
-    server0.invoke(() -> await().untilAsserted(this::validateBootstrapped));
-    server1.invoke(() -> await().untilAsserted(this::validateBootstrapped));
-
-    // server1 should not have created the session region
-    // If the user precreated the region, they must manually
-    // create it on all servers
-    server1.invoke(() -> {
-      Region<Object, Object> region = cacheRule.getCache().getRegion(SESSION_REGION_NAME);
-      assertThat(region).isNull();
-    });
-
-  }
-
-  @Test
-  public void startingAClientWithoutServersFails() {
-    final VM client = VM.getVM(2);
-
-    assertThatThrownBy(() -> client.invoke(this::startClientSessionCache))
-        .hasCauseInstanceOf(NoAvailableServersException.class);
-  }
-
-  @Test
-  public void canPreCreateSessionRegionBeforeStartingClient() {
-    final VM server0 = VM.getVM(0);
-    final VM server1 = VM.getVM(1);
-    final VM client = VM.getVM(2);
-
-    server0.invoke(this::startCacheServer);
-    server1.invoke(this::startCacheServer);
-
-    server0.invoke(this::createSessionRegion);
-    server1.invoke(this::createSessionRegion);
-
-    client.invoke(this::startClientSessionCache);
-
-    server0.invoke(this::validateServer);
-    server1.invoke(this::validateServer);
-  }
-
-  @Test
-  public void cantPreCreateMismatchedSessionRegionBeforeStartingClient() {
-    final VM server0 = VM.getVM(0);
-    final VM server1 = VM.getVM(1);
-    final VM client = VM.getVM(2);
-
-    server0.invoke(this::startCacheServer);
-    server1.invoke(this::startCacheServer);
-
-    server0.invoke(this::createMismatchedSessionRegion);
-    server1.invoke(this::createMismatchedSessionRegion);
-
-    assertThatThrownBy(() -> client.invoke(this::startClientSessionCache))
-        .hasCauseInstanceOf(IllegalStateException.class);
-  }
-
-  @Test
-  public void sessionCacheSizeShouldNotInvokeFunctionsOnTheCluster() {
-    final VM server1 = VM.getVM(0);
-    final VM server2 = VM.getVM(1);
-    final VM client1 = VM.getVM(3);
-
-    server1.invoke(this::startCacheServer);
-    server2.invoke(this::startCacheServer);
-    server1.invoke(this::createSessionRegion);
-    server2.invoke(this::createSessionRegion);
-
-    client1.invoke(() -> {
-      final SessionManager sessionManager = mock(SessionManager.class);
-      final Log logger = mock(Log.class);
-      when(sessionManager.getLogger()).thenReturn(logger);
-      when(sessionManager.getRegionName()).thenReturn(RegionHelper.NAME + "_sessions");
-      when(sessionManager.getRegionAttributesId())
-          .thenReturn(RegionShortcut.PARTITION_REDUNDANT.toString());
-
-      final ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
-      clientCacheFactory.addPoolLocator("localhost", DistributedRule.getLocatorPort());
-      clientCacheFactory.setPoolSubscriptionEnabled(true);
-      clientCacheRule.createClientCache(clientCacheFactory);
-
-      final ClientCache clientCache = clientCacheRule.getClientCache();
-      ClientServerSessionCache clientServerSessionCache =
-          new ClientServerSessionCache(sessionManager, clientCache);
-      clientServerSessionCache.initialize();
-
-      assertThat(clientServerSessionCache.size()).isEqualTo(0);
-    });
-
-    // Verify defaults
-    server1.invoke(this::validateServer);
-    server2.invoke(this::validateServer);
-
-    // Verify that RegionSizeFunction was never executed .
-    server1.invoke(this::validateRegionSizeFunctionCalls);
-    server2.invoke(this::validateRegionSizeFunctionCalls);
-  }
+//  @Test
+//  public void addServerToExistingClusterDoesNotCopyPreCreatedSessionRegion() {
+//    final VM server0 = VM.getVM(0);
+//    final VM server1 = VM.getVM(1);
+//    final VM client = VM.getVM(2);
+//
+//    server0.invoke(this::startCacheServer);
+//
+//
+//    server0.invoke(this::createSessionRegion);
+//
+//
+//    client.invoke(this::startClientSessionCache);
+//    server1.invoke(this::startCacheServer);
+//
+//    server0.invoke(() -> await().untilAsserted(this::validateBootstrapped));
+//    server1.invoke(() -> await().untilAsserted(this::validateBootstrapped));
+//
+//    // server1 should not have created the session region
+//    // If the user precreated the region, they must manually
+//    // create it on all servers
+//    server1.invoke(() -> {
+//      Region<Object, Object> region = cacheRule.getCache().getRegion(SESSION_REGION_NAME);
+//      assertThat(region).isNull();
+//    });
+//
+//  }
+//
+//  @Test
+//  public void startingAClientWithoutServersFails() {
+//    final VM client = VM.getVM(2);
+//
+//    assertThatThrownBy(() -> client.invoke(this::startClientSessionCache))
+//        .hasCauseInstanceOf(NoAvailableServersException.class);
+//  }
+//
+//  @Test
+//  public void canPreCreateSessionRegionBeforeStartingClient() {
+//    final VM server0 = VM.getVM(0);
+//    final VM server1 = VM.getVM(1);
+//    final VM client = VM.getVM(2);
+//
+//    server0.invoke(this::startCacheServer);
+//    server1.invoke(this::startCacheServer);
+//
+//    server0.invoke(this::createSessionRegion);
+//    server1.invoke(this::createSessionRegion);
+//
+//    client.invoke(this::startClientSessionCache);
+//
+//    server0.invoke(this::validateServer);
+//    server1.invoke(this::validateServer);
+//  }
+//
+//  @Test
+//  public void cantPreCreateMismatchedSessionRegionBeforeStartingClient() {
+//    final VM server0 = VM.getVM(0);
+//    final VM server1 = VM.getVM(1);
+//    final VM client = VM.getVM(2);
+//
+//    server0.invoke(this::startCacheServer);
+//    server1.invoke(this::startCacheServer);
+//
+//    server0.invoke(this::createMismatchedSessionRegion);
+//    server1.invoke(this::createMismatchedSessionRegion);
+//
+//    assertThatThrownBy(() -> client.invoke(this::startClientSessionCache))
+//        .hasCauseInstanceOf(IllegalStateException.class);
+//  }
+//
+//  @Test
+//  public void sessionCacheSizeShouldNotInvokeFunctionsOnTheCluster() {
+//    final VM server1 = VM.getVM(0);
+//    final VM server2 = VM.getVM(1);
+//    final VM client1 = VM.getVM(3);
+//
+//    server1.invoke(this::startCacheServer);
+//    server2.invoke(this::startCacheServer);
+//    server1.invoke(this::createSessionRegion);
+//    server2.invoke(this::createSessionRegion);
+//
+//    client1.invoke(() -> {
+//      final SessionManager sessionManager = mock(SessionManager.class);
+//      final Log logger = mock(Log.class);
+//      when(sessionManager.getLogger()).thenReturn(logger);
+//      when(sessionManager.getRegionName()).thenReturn(RegionHelper.NAME + "_sessions");
+//      when(sessionManager.getRegionAttributesId())
+//          .thenReturn(RegionShortcut.PARTITION_REDUNDANT.toString());
+//
+//      final ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
+//      clientCacheFactory.addPoolLocator("localhost", DistributedRule.getLocatorPort());
+//      clientCacheFactory.setPoolSubscriptionEnabled(true);
+//      clientCacheRule.createClientCache(clientCacheFactory);
+//
+//      final ClientCache clientCache = clientCacheRule.getClientCache();
+//      ClientServerSessionCache clientServerSessionCache =
+//          new ClientServerSessionCache(sessionManager, clientCache);
+//      clientServerSessionCache.initialize();
+//
+//      assertThat(clientServerSessionCache.size()).isEqualTo(0);
+//    });
+//
+//    // Verify defaults
+//    server1.invoke(this::validateServer);
+//    server2.invoke(this::validateServer);
+//
+//    // Verify that RegionSizeFunction was never executed .
+//    server1.invoke(this::validateRegionSizeFunctionCalls);
+//    server2.invoke(this::validateRegionSizeFunctionCalls);
+//  }
 
   private void createSessionRegion() {
     Cache cache = cacheRule.getCache();

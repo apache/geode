@@ -14,15 +14,7 @@
  */
 package org.apache.geode.test.dunit.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.distributed.ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.BufferedReader;
@@ -79,7 +71,7 @@ public class DUnitLauncher {
   /**
    * change this to use a different log level in unit tests
    */
-  public static final String logLevel = System.getProperty(LOG_LEVEL, "info");
+  public static final String logLevel = System.getProperty(LOG_LEVEL, "fine");
 
   public static final String LOG4J = System.getProperty("log4j.configurationFile");
 
@@ -114,7 +106,7 @@ public class DUnitLauncher {
 
   public static final String DUNIT_DIR = "dunit";
   public static final String WORKSPACE_DIR_PARAM = "WORKSPACE_DIR";
-  public static final boolean LOCATOR_LOG_TO_DISK = Boolean.getBoolean("locatorLogToDisk");
+  public static final boolean LOCATOR_LOG_TO_DISK = true;//Boolean.getBoolean("locatorLogToDisk");
 
   static final String MASTER_PARAM = "DUNIT_MASTER";
 
@@ -251,6 +243,7 @@ public class DUnitLauncher {
     p.setProperty(USE_CLUSTER_CONFIGURATION, "false");
     p.setProperty(VALIDATE_SERIALIZABLE_OBJECTS, "true");
     p.setProperty(LOG_LEVEL, logLevel);
+    p.setProperty(LOG_FILE, "pleaseLog.log");
     return p;
   }
 
