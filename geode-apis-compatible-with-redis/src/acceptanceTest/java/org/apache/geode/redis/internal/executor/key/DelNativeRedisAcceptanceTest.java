@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import org.junit.ClassRule;
-import org.junit.Test;
 
 import org.apache.geode.redis.NativeRedisClusterTestRule;
 
