@@ -230,6 +230,11 @@ gradle.taskGraph.whenReady({ graph ->
       }
     }
   }
+  repeatAcceptanceTest.exclude acceptanceTest.excludes
+  repeatDistributedTest.exclude distributedTest.excludes
+  repeatIntegrationTest.exclude integrationTest.excludes
+  repeatUnitTest.exclude test.excludes
+  repeatUpgradeTest.exclude upgradeTest.excludes
 })
 
 acceptanceTest {
