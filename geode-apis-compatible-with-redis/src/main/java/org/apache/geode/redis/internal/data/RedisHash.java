@@ -61,7 +61,7 @@ public class RedisHash extends AbstractRedisData {
       new ConcurrentHashMap<>();
   private ScheduledExecutorService HSCANSnapshotExpirationExecutor = null;
 
-  private int sizeInBytes;
+  private int sizeInBytes = BASE_REDIS_HASH_OVERHEAD;
 
   // the following constants were calculated using reflection and math. you can find the tests for
   // these values in RedisHashTest, which show the way these numbers were calculated. the constants
@@ -86,11 +86,16 @@ public class RedisHash extends AbstractRedisData {
   @VisibleForTesting
   public RedisHash(List<byte[]> fieldsToSet, int hscanSnapShotExpirationCheckFrequency,
       int minimumLifeForHscanSnaphot) {
-    sizeInBytes = BASE_REDIS_HASH_OVERHEAD;
+    final int numKeysAndValues = fieldsToSet.size();
+    if (numKeysAndValues % 2 != 0) {
+      throw new IllegalStateException(
+          "fieldsToSet should have an even number of elements but was size " + numKeysAndValues);
+    }
+
     HSCAN_SNAPSHOTS_EXPIRE_CHECK_FREQUENCY_MILLISECONDS = hscanSnapShotExpirationCheckFrequency;
     MINIMUM_MILLISECONDS_FOR_HSCAN_SNAPSHOTS_TO_LIVE = minimumLifeForHscanSnaphot;
 
-    hash = new Object2ObjectOpenCustomHashMap<>(fieldsToSet.size() / 2, ByteArrays.HASH_STRATEGY);
+    hash = new Object2ObjectOpenCustomHashMap<>(numKeysAndValues / 2, ByteArrays.HASH_STRATEGY);
     Iterator<byte[]> iterator = fieldsToSet.iterator();
     while (iterator.hasNext()) {
       hashPut(iterator.next(), iterator.next());
@@ -103,9 +108,10 @@ public class RedisHash extends AbstractRedisData {
         defaultHscanSnapshotsMillisecondsToLive);
   }
 
-  public RedisHash() {
-    // For serialization only!
-  }
+  /**
+   * For deserialization only.
+   */
+  public RedisHash() {}
 
   private void expireHScanSnapshots() {
     hScanSnapShotCreationTimes.forEach((client, creationTime) -> {
