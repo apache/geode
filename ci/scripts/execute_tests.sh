@@ -79,6 +79,7 @@ case $ARTIFACT_SLUG in
     JAVA_TEST_PATH=C:/java${JAVA_TEST_VERSION}
     GRADLE_SKIP_TASK_OPTIONS="${GRADLE_SKIP_TASK_OPTIONS} -x docker"
     SEP=";"
+    OPTIONAL_KILL_ALL_CMD="taskkill //F //IM java.exe //T"
     ;;
   *)
     JAVA_BUILD_PATH=/usr/lib/jvm/bellsoft-java${JAVA_BUILD_VERSION}-amd64
@@ -116,6 +117,9 @@ EXEC_COMMAND="bash -c 'echo Building with: $SEP \
   cd geode $SEP \
   cp gradlew gradlewStrict $SEP \
   sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.bak gradlewStrict $SEP \
-  GRADLE_JVM=${JAVA_BUILD_PATH} JAVA_TEST_PATH=${JAVA_TEST_PATH} ./gradlewStrict ${GRADLE_ARGS}'"
+  GRADLE_JVM=${JAVA_BUILD_PATH} JAVA_TEST_PATH=${JAVA_TEST_PATH} ./gradlewStrict ${GRADLE_ARGS} $SEP \
+  ${OPTIONAL_KILL_ALL_CMD}'"
+
 echo "${EXEC_COMMAND}"
 ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND}"
+
