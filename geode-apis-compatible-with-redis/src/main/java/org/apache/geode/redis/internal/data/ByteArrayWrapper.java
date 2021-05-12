@@ -147,20 +147,6 @@ public class ByteArrayWrapper
     return 0;
   }
 
-
-  private static byte[] concatArrays(byte[] o, byte[] n) {
-    int oLen = o.length;
-    int nLen = n.length;
-    byte[] combined = new byte[oLen + nLen];
-    System.arraycopy(o, 0, combined, 0, oLen);
-    System.arraycopy(n, 0, combined, oLen, nLen);
-    return combined;
-  }
-
-  public void append(byte[] appendBytes) {
-    setBytes(concatArrays(value, appendBytes));
-  }
-
   @Override
   public int getDSFID() {
     return DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER;
