@@ -489,38 +489,38 @@ public class DLockGrantor {
       cleanupSuspendState(request);
       return;
     }
-    if (!acquireDestroyReadLock(0)) {
+    if (acquireDestroyReadLock(0)) {
+      synchronized (batchLocks) { // assures serial processing
+        final boolean isTraceEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
+        if (isTraceEnabled_DLS) {
+          logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch]");
+        }
+
+        try {
+          checkDestroyed();
+          if (isTraceEnabled_DLS) {
+            logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch] request: {}",
+                request);
+          }
+
+          DLockBatch batch = (DLockBatch) request.getObjectName();
+          checkIfHostDeparted(batch.getOwner());
+          makeReservation(batch);
+          if (isTraceEnabled_DLS) {
+            logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch] granting {}",
+                batch.getBatchId());
+          }
+          batchLocks.put(batch.getBatchId(), batch);
+          request.respondWithGrant(Long.MAX_VALUE);
+        } catch (CommitConflictException ex) {
+          request.respondWithTryLockFailed(ex.getMessage());
+        } finally {
+          releaseDestroyReadLock();
+        }
+      }
+    } else {
       waitUntilDestroyed();
       checkDestroyed();
-    }
-
-    synchronized (batchLocks) { // assures serial processing
-      final boolean isTraceEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
-      if (isTraceEnabled_DLS) {
-        logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch]");
-      }
-
-      try {
-        checkDestroyed();
-        if (isTraceEnabled_DLS) {
-          logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch] request: {}",
-              request);
-        }
-
-        DLockBatch batch = (DLockBatch) request.getObjectName();
-        checkIfHostDeparted(batch.getOwner());
-        makeReservation(batch);
-        if (isTraceEnabled_DLS) {
-          logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch] granting {}",
-              batch.getBatchId());
-        }
-        batchLocks.put(batch.getBatchId(), batch);
-        request.respondWithGrant(Long.MAX_VALUE);
-      } catch (CommitConflictException ex) {
-        request.respondWithTryLockFailed(ex.getMessage());
-      } finally {
-        releaseDestroyReadLock();
-      }
     }
   }
 
@@ -604,24 +604,25 @@ public class DLockGrantor {
    * @see org.apache.geode.internal.cache.locks.TXLockBatch#getBatchId()
    */
   public DLockBatch getLockBatch(Object batchId) throws InterruptedException {
-    DLockBatch ret;
+    DLockBatch ret = null;
     final boolean isTraceEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
     if (isTraceEnabled_DLS) {
       logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.getLockBatch] enter: {}", batchId);
     }
 
     waitWhileInitializing();
-    if (!acquireDestroyReadLock(0)) {
+    if (acquireDestroyReadLock(0)) {
+      synchronized (batchLocks) {
+        try {
+          checkDestroyed();
+          ret = batchLocks.get(batchId);
+        } finally {
+          releaseDestroyReadLock();
+        }
+      }
+    } else {
       waitUntilDestroyed();
       checkDestroyed();
-    }
-    synchronized (batchLocks) {
-      try {
-        checkDestroyed();
-        ret = batchLocks.get(batchId);
-      } finally {
-        releaseDestroyReadLock();
-      }
     }
     if (isTraceEnabled_DLS) {
       logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.getLockBatch] exit: {}", batchId);
@@ -649,20 +650,22 @@ public class DLockGrantor {
       logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.updateLockBatch] enter: {}", batchId);
     }
     waitWhileInitializing();
-    if (!acquireDestroyReadLock(0)) {
+    if (acquireDestroyReadLock(0)) {
+
+      synchronized (batchLocks) {
+        try {
+          checkDestroyed();
+          final DLockBatch oldBatch = batchLocks.get(batchId);
+          if (oldBatch != null) {
+            batchLocks.put(batchId, newBatch);
+          }
+        } finally {
+          releaseDestroyReadLock();
+        }
+      }
+    } else {
       waitUntilDestroyed();
       checkDestroyed();
-    }
-    synchronized (batchLocks) {
-      try {
-        checkDestroyed();
-        final DLockBatch oldBatch = batchLocks.get(batchId);
-        if (oldBatch != null) {
-          batchLocks.put(batchId, newBatch);
-        }
-      } finally {
-        releaseDestroyReadLock();
-      }
     }
     if (isTraceEnabled_DLS) {
       logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.updateLockBatch] exit: {}", batchId);
@@ -685,22 +688,24 @@ public class DLockGrantor {
       logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.releaseLockBatch]");
     }
     waitWhileInitializing();
-    if (!acquireDestroyReadLock(0)) {
+    if (acquireDestroyReadLock(0)) {
+      synchronized (batchLocks) {
+        try {
+          checkDestroyed();
+          DLockBatch batch = batchLocks.remove(batchId);
+          if (batch != null) {
+            releaseReservation(batch);
+          }
+        } finally {
+          releaseDestroyReadLock();
+        }
+      }
+    } else {
       waitUntilDestroyed();
       checkDestroyed();
     }
-    synchronized (batchLocks) {
-      try {
-        checkDestroyed();
-        DLockBatch batch = batchLocks.remove(batchId);
-        if (batch != null) {
-          releaseReservation(batch);
-        }
-      } finally {
-        releaseDestroyReadLock();
-      }
-    }
   }
+
 
   void releaseReservation(DLockBatch batch) {
     resMgr.releaseReservation((IdentityArrayList) batch.getReqs());
