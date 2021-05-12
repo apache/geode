@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.version.VersionManager;
 
 @Category(GfshTest.class)
-public class GfshRuleIntegrationTest {
+public class GfshRuleUpgradeTest {
 
   private static final String GEODE_HOME = System.getenv("GEODE_HOME");
   private static final String GFSH_OLD_VERSION = "1.3.0";

@@ -185,8 +185,7 @@ dependencies {
   testImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-
-  acceptanceTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  testImplementation('org.assertj:assertj-core')
 
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-membership'))
@@ -213,7 +212,6 @@ dependencies {
   integrationTestImplementation('javax.annotation:javax.annotation-api')
   integrationTestImplementation('javax.servlet:javax.servlet-api')
 
-  integrationTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
   integrationTestRuntimeOnly('io.swagger:swagger-annotations')
   // these two modules are for testing only
@@ -290,14 +288,13 @@ dependencies {
   }
   upgradeTestImplementation(project(':geode-assembly:geode-assembly-test'))
 
+  upgradeTestImplementation('org.apache.httpcomponents:httpclient')
+
   upgradeTestCompileOnly(platform(project(':boms:geode-all-bom')))
   upgradeTestCompileOnly('io.swagger:swagger-annotations')
-  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
-  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
-  testImplementation('org.assertj:assertj-core')
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
   upgradeTestRuntimeOnly(project(':extensions:session-testing-war'))
   upgradeTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')
-  upgradeTestRuntimeOnly('org.apache.httpcomponents:httpclient')
   upgradeTestRuntimeOnly files({ downloadWebServers } )
 
   //Web servers used for session module testing
@@ -620,8 +617,14 @@ distributions {
 // Make build final task to generate all test and product resources
 build.dependsOn(installDist)
 
+def spotlessProjects = rootProject.subprojects.findAll { subproj ->
+  subproj.plugins.hasPlugin('com.diffplug.spotless')
+}
 tasks.named('srcDistTar').configure {
   classifier 'src'
+  spotlessProjects.each {spotlessProj ->
+    dependsOn {spotlessProj.tasks.named("spotlessApply")}
+  }
 }
 
 [tasks.named('distZip'),
@@ -640,9 +643,7 @@ tasks.withType(Test) {
 acceptanceTest.dependsOn(rootProject.getTasksByName("publishToMavenLocal", true))
 installDist.dependsOn ':extensions:geode-modules-assembly:dist'
 distributedTest.dependsOn ':extensions:session-testing-war:war'
-distributedTest.dependsOn ':geode-old-versions:build'
 upgradeTest.dependsOn ':extensions:session-testing-war:war'
-upgradeTest.dependsOn ':geode-old-versions:build'
 
 /**Print the names of all jar files in a fileTree */
 def printJars(tree) {

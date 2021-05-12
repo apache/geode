@@ -43,7 +43,6 @@ dependencies {
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
 
-  testRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-serialization'
@@ -59,8 +58,7 @@ dependencies {
     exclude module: 'geode-serialization'
   }
   distributedTestImplementation('pl.pragmatists:JUnitParams')
-  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
-  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }
 
 distributedTest {
