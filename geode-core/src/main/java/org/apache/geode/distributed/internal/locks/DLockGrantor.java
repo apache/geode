@@ -144,7 +144,7 @@ public class DLockGrantor {
    *
    * guarded.By batchLocks
    */
-  private final Map batchLocks = new HashMap();
+  final Map<Object, DLockBatch> batchLocks = new HashMap<>();
 
   /**
    * Handles special lock-reservation type for transactions.
@@ -472,7 +472,8 @@ public class DLockGrantor {
   /**
    * Handles request for a batch of locks using optimization for transactions.
    * <p>
-   * Synchronizes on {@link #batchLocks}.
+   * Acquired destroy read lock before synchronizes on {@link #batchLocks}.
+   * If read lock not acquired, wait for the Grantor to be destroyed.
    *
    * @throws LockGrantorDestroyedException if grantor is destroyed
    */
@@ -483,21 +484,22 @@ public class DLockGrantor {
     // when the member-departure is announced.
     handler.waitForInProcessDepartures();
 
-    synchronized (this.batchLocks) { // assures serial processing
-      waitWhileInitializing();
-      if (request.checkForTimeout()) {
-        cleanupSuspendState(request);
-        return;
-      }
+    waitWhileInitializing();
+    if (request.checkForTimeout()) {
+      cleanupSuspendState(request);
+      return;
+    }
+    if (!acquireDestroyReadLock(0)) {
+      waitUntilDestroyed();
+      checkDestroyed();
+    }
 
+    synchronized (batchLocks) { // assures serial processing
       final boolean isTraceEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
       if (isTraceEnabled_DLS) {
         logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch]");
       }
-      if (!acquireDestroyReadLock(0)) {
-        waitUntilDestroyed();
-        checkDestroyed();
-      }
+
       try {
         checkDestroyed();
         if (isTraceEnabled_DLS) {
@@ -507,12 +509,12 @@ public class DLockGrantor {
 
         DLockBatch batch = (DLockBatch) request.getObjectName();
         checkIfHostDeparted(batch.getOwner());
-        resMgr.makeReservation((IdentityArrayList) batch.getReqs());
+        makeReservation(batch);
         if (isTraceEnabled_DLS) {
           logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch] granting {}",
               batch.getBatchId());
         }
-        this.batchLocks.put(batch.getBatchId(), batch);
+        batchLocks.put(batch.getBatchId(), batch);
         request.respondWithGrant(Long.MAX_VALUE);
       } catch (CommitConflictException ex) {
         request.respondWithTryLockFailed(ex.getMessage());
@@ -522,7 +524,11 @@ public class DLockGrantor {
     }
   }
 
-  private void checkIfHostDeparted(InternalDistributedMember owner) {
+  void makeReservation(DLockBatch batch) {
+    resMgr.makeReservation((IdentityArrayList) batch.getReqs());
+  }
+
+  void checkIfHostDeparted(InternalDistributedMember owner) {
     // Already held batchLocks; hold membersDepartedTime lock just for clarity
     synchronized (membersDepartedTime) {
       // the transaction host/txLock requester has departed.
@@ -543,7 +549,7 @@ public class DLockGrantor {
    */
   public DLockBatch[] getLockBatches(InternalDistributedMember owner) {
     // Key: Object batchId, Value: DLockBatch batch
-    synchronized (this.batchLocks) {
+    synchronized (batchLocks) {
       // put owner into the map first so that no new threads will handle in-flight requests
       // from the departed member to lock keys
       recordMemberDepartedTime(owner);
@@ -587,7 +593,8 @@ public class DLockGrantor {
    * Get the batch for the given batchId (for example use a txLockId from TXLockBatch in order to
    * update its participants). This operation was added as part of the solution to bug 32999.
    * <p>
-   * Acquires acquireDestroyReadLock. Synchronizes on batchLocks.
+   * Acquired destroy read lock before synchronizes on {@link #batchLocks}.
+   * If read lock not acquired, wait for the Grantor to be destroyed.
    * <p>
    * see org.apache.geode.internal.cache.TXCommitMessage#updateLockMembers()
    *
@@ -597,20 +604,21 @@ public class DLockGrantor {
    * @see org.apache.geode.internal.cache.locks.TXLockBatch#getBatchId()
    */
   public DLockBatch getLockBatch(Object batchId) throws InterruptedException {
-    DLockBatch ret = null;
+    DLockBatch ret;
     final boolean isTraceEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
     if (isTraceEnabled_DLS) {
       logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.getLockBatch] enter: {}", batchId);
     }
-    synchronized (this.batchLocks) {
-      waitWhileInitializing();
-      if (!acquireDestroyReadLock(0)) {
-        waitUntilDestroyed();
-        checkDestroyed();
-      }
+
+    waitWhileInitializing();
+    if (!acquireDestroyReadLock(0)) {
+      waitUntilDestroyed();
+      checkDestroyed();
+    }
+    synchronized (batchLocks) {
       try {
         checkDestroyed();
-        ret = (DLockBatch) this.batchLocks.get(batchId);
+        ret = batchLocks.get(batchId);
       } finally {
         releaseDestroyReadLock();
       }
@@ -625,7 +633,8 @@ public class DLockGrantor {
    * Update the batch for the given batch. This operation was added as part of the solution to bug
    * 32999.
    * <p>
-   * Acquires acquireDestroyReadLock. Synchronizes on batchLocks.
+   * Acquired destroy read lock before synchronizes on {@link #batchLocks}.
+   * If read lock not acquired, wait for the Grantor to be destroyed.
    * <p>
    * see org.apache.geode.internal.cache.locks.TXCommitMessage#updateLockMembers()
    *
@@ -639,17 +648,17 @@ public class DLockGrantor {
     if (isTraceEnabled_DLS) {
       logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.updateLockBatch] enter: {}", batchId);
     }
-    synchronized (this.batchLocks) {
-      waitWhileInitializing();
-      if (!acquireDestroyReadLock(0)) {
-        waitUntilDestroyed();
-        checkDestroyed();
-      }
+    waitWhileInitializing();
+    if (!acquireDestroyReadLock(0)) {
+      waitUntilDestroyed();
+      checkDestroyed();
+    }
+    synchronized (batchLocks) {
       try {
         checkDestroyed();
-        final DLockBatch oldBatch = (DLockBatch) this.batchLocks.get(batchId);
+        final DLockBatch oldBatch = batchLocks.get(batchId);
         if (oldBatch != null) {
-          this.batchLocks.put(batchId, newBatch);
+          batchLocks.put(batchId, newBatch);
         }
       } finally {
         releaseDestroyReadLock();
@@ -663,7 +672,8 @@ public class DLockGrantor {
   /**
    * Releases the transaction optimized lock batch.
    * <p>
-   * Acquires acquireDestroyReadLock. Synchronizes on batchLocks.
+   * Acquired destroy read lock before synchronizes on {@link #batchLocks}.
+   * If read lock not acquired, wait for the Grantor to be destroyed.
    *
    * @param batchId the identify of the transaction lock batch to release
    * @param owner the member that has created and locked the lock batch
@@ -674,22 +684,26 @@ public class DLockGrantor {
     if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
       logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.releaseLockBatch]");
     }
-    synchronized (this.batchLocks) {
-      waitWhileInitializing();
-      if (!acquireDestroyReadLock(0)) {
-        waitUntilDestroyed();
-        checkDestroyed();
-      }
+    waitWhileInitializing();
+    if (!acquireDestroyReadLock(0)) {
+      waitUntilDestroyed();
+      checkDestroyed();
+    }
+    synchronized (batchLocks) {
       try {
         checkDestroyed();
-        DLockBatch batch = (DLockBatch) this.batchLocks.remove(batchId);
+        DLockBatch batch = batchLocks.remove(batchId);
         if (batch != null) {
-          this.resMgr.releaseReservation((IdentityArrayList) batch.getReqs());
+          releaseReservation(batch);
         }
       } finally {
         releaseDestroyReadLock();
       }
     }
+  }
+
+  void releaseReservation(DLockBatch batch) {
+    resMgr.releaseReservation((IdentityArrayList) batch.getReqs());
   }
 
   /**
@@ -1385,7 +1399,7 @@ public class DLockGrantor {
    * @return true if destroy read lock was acquired
    * @throws DistributedSystemDisconnectedException if system has been disconnected
    */
-  private boolean acquireDestroyReadLock(long millis) throws InterruptedException {
+  boolean acquireDestroyReadLock(long millis) throws InterruptedException {
     boolean interrupted = Thread.interrupted();
     try {
       if (interrupted && this.dlock.isInterruptibleLockRequest()) {
@@ -1411,7 +1425,7 @@ public class DLockGrantor {
   /**
    * Releases a read lock on the destroy ReadWrite lock.
    */
-  private void releaseDestroyReadLock() {
+  void releaseDestroyReadLock() {
     this.destroyLock.readLock().unlock();
   }
 
