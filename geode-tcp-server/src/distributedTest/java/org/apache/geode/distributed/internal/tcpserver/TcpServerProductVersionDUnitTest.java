@@ -159,7 +159,7 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     VM clientVM = Host.getHost(0).getVM(versions.clientProductVersion.toString(), clientVMNumber);
     VM locatorVM =
         Host.getHost(0).getVM(versions.locatorProductVersion.toString(), locatorVMNumber);
-    int locatorPort = createLocator(locatorVM, true);
+    int locatorPort = createLocator(locatorVM);
 
     clientVM.invoke("issue version request",
         createRequestResponseFunction(locatorPort, VersionRequest.class.getName(),
@@ -251,17 +251,15 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
         TcpSocketFactory.DEFAULT);
   }
 
-  private int createLocator(VM memberVM, boolean usingOldVersion) {
+  private int createLocator(VM memberVM) {
+    final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+
     return memberVM.invoke("create locator", () -> {
       System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
       try {
-        int port = 0;
         // for stress-tests make sure that an older-version locator doesn't try
         // to read state persisted by another run's newer-version locator
-        if (usingOldVersion) {
-          port = AvailablePortHelper.getRandomAvailableTCPPort();
-          DistributedTestUtils.deleteLocatorStateFile(port);
-        }
+        DistributedTestUtils.deleteLocatorStateFile(port);
         return Locator.startLocatorAndDS(port, new File(""), getDistributedSystemProperties())
             .getPort();
       } finally {
