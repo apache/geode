@@ -235,9 +235,10 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
       } catch (InterruptedException e) {
         return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
             "Operation canceled after having replicated " + replicatedEntries + " entries");
-      } catch (Exception e) {
+      } catch (BatchException70 e) {
         return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-            "Error in operation after having replicated " + replicatedEntries + " entries");
+            "Error (" + e.getMessage() + ") in operation after having replicated "
+                + replicatedEntries + " entries");
       }
     }
 
@@ -267,9 +268,15 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
   private void sendBatch(GatewaySender sender,
       int replicatedEntries, long maxRate, long startTime,
       List batch) throws InterruptedException, BatchException70 {
-    PoolImpl senderPool = ((AbstractGatewaySender) sender).getProxy();
-    Connection connection = senderPool.acquireConnection();
     int batchId = 1971;
+    PoolImpl senderPool = ((AbstractGatewaySender) sender).getProxy();
+    if (senderPool == null) {
+      throw new BatchException70("No connection pool available towards receiver", null, 0, batchId);
+    }
+    Connection connection = senderPool.acquireConnection();
+    if (connection == null) {
+      throw new BatchException70("No connection available towards receiver", null, 0, batchId);
+    }
     GatewaySenderBatchOp.executeOn(connection, senderPool, batch, batchId, false, false);
     GatewaySenderEventRemoteDispatcher.GatewayAck ack =
         (GatewaySenderEventRemoteDispatcher.GatewayAck) GatewaySenderBatchOp.executeOn(connection,
