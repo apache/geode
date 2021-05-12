@@ -59,7 +59,7 @@ dependencies {
     upgradeTestImplementation('org.assertj:assertj-core')
     upgradeTestImplementation('junit:junit')
     upgradeTestImplementation('xml-apis:xml-apis:2.0.2')
-    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 
     implementation('net.sf.jopt-simple:jopt-simple')
 

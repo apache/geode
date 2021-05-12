@@ -48,7 +48,6 @@ dependencies {
     testImplementation('org.assertj:assertj-core')
     testImplementation('com.tngtech.archunit:archunit-junit4')
 
-    testRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
     integrationTestImplementation(project(':geode-junit'))
@@ -62,10 +61,10 @@ dependencies {
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation('pl.pragmatists:JUnitParams')
 
-    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 
 
-    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }
 
 distributedTest {

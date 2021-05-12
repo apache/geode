@@ -186,7 +186,7 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  acceptanceTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  acceptanceTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-membership'))
@@ -213,7 +213,7 @@ dependencies {
   integrationTestImplementation('javax.annotation:javax.annotation-api')
   integrationTestImplementation('javax.servlet:javax.servlet-api')
 
-  integrationTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  integrationTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 
   integrationTestRuntimeOnly('io.swagger:swagger-annotations')
   // these two modules are for testing only
@@ -292,8 +292,8 @@ dependencies {
 
   upgradeTestCompileOnly(platform(project(':boms:geode-all-bom')))
   upgradeTestCompileOnly('io.swagger:swagger-annotations')
-  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
-  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
   testImplementation('org.assertj:assertj-core')
   upgradeTestRuntimeOnly(project(':extensions:session-testing-war'))
   upgradeTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')
@@ -640,9 +640,7 @@ tasks.withType(Test) {
 acceptanceTest.dependsOn(rootProject.getTasksByName("publishToMavenLocal", true))
 installDist.dependsOn ':extensions:geode-modules-assembly:dist'
 distributedTest.dependsOn ':extensions:session-testing-war:war'
-distributedTest.dependsOn ':geode-old-versions:build'
 upgradeTest.dependsOn ':extensions:session-testing-war:war'
-upgradeTest.dependsOn ':geode-old-versions:build'
 
 /**Print the names of all jar files in a fileTree */
 def printJars(tree) {
