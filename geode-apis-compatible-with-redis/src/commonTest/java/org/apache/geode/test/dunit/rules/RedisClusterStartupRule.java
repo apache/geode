@@ -92,4 +92,11 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
       service.setEnableUnsupported(enableUnsupported);
     });
   }
+
+  public Long getDataStoreBytesInUseForDataRegion(MemberVM vm) {
+    return vm.invoke(() -> {
+      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
+      return service.getDataStoreBytesInUseForDataRegion();
+    });
+  }
 }

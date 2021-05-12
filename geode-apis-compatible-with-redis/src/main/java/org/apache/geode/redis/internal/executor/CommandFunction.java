@@ -225,32 +225,32 @@ public class CommandFunction extends SingleResultRedisFunction {
         return setCommands.sdiffstore(key, setKeys);
       }
       case HSET: {
-        List<ByteArrayWrapper> fieldsToSet = (List<ByteArrayWrapper>) args[1];
+        List<byte[]> fieldsToSet = (List<byte[]>) args[1];
         boolean NX = (boolean) args[2];
         return hashCommands.hset(key, fieldsToSet, NX);
       }
       case HDEL: {
-        List<ByteArrayWrapper> fieldsToRemove = (List<ByteArrayWrapper>) args[1];
+        List<byte[]> fieldsToRemove = (List<byte[]>) args[1];
         return hashCommands.hdel(key, fieldsToRemove);
       }
       case HGETALL:
         return hashCommands.hgetall(key);
       case HEXISTS: {
-        ByteArrayWrapper field = (ByteArrayWrapper) args[1];
+        byte[] field = (byte[]) args[1];
         return hashCommands.hexists(key, field);
       }
       case HGET: {
-        ByteArrayWrapper field = (ByteArrayWrapper) args[1];
+        byte[] field = (byte[]) args[1];
         return hashCommands.hget(key, field);
       }
       case HLEN:
         return hashCommands.hlen(key);
       case HSTRLEN: {
-        ByteArrayWrapper field = (ByteArrayWrapper) args[1];
+        byte[] field = (byte[]) args[1];
         return hashCommands.hstrlen(key, field);
       }
       case HMGET: {
-        List<ByteArrayWrapper> fields = (List<ByteArrayWrapper>) args[1];
+        List<byte[]> fields = (List<byte[]>) args[1];
         return hashCommands.hmget(key, fields);
       }
       case HVALS:
@@ -265,13 +265,12 @@ public class CommandFunction extends SingleResultRedisFunction {
         return hashCommands.hscan(key, pattern, count, cursor, clientID);
       }
       case HINCRBY: {
-        ByteArrayWrapper field = (ByteArrayWrapper) args[1];
-
+        byte[] field = (byte[]) args[1];
         long increment = (long) args[2];
         return hashCommands.hincrby(key, field, increment);
       }
       case HINCRBYFLOAT: {
-        ByteArrayWrapper field = (ByteArrayWrapper) args[1];
+        byte[] field = (byte[]) args[1];
         BigDecimal increment = (BigDecimal) args[2];
         return hashCommands.hincrbyfloat(key, field, increment);
       }

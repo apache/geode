@@ -133,7 +133,7 @@ public class RedisResponse {
     return new RedisResponse((buffer) -> Coder.getWrongTypeResponse(buffer, error));
   }
 
-  public static RedisResponse scan(BigInteger cursor, List<Object> scanResult) {
+  public static RedisResponse scan(BigInteger cursor, List<?> scanResult) {
     return new RedisResponse((buffer) -> Coder.getScanResponse(buffer, cursor, scanResult));
   }
 

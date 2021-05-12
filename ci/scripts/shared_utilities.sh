@@ -108,13 +108,13 @@ is_source_from_pr_testable() {
           local files=$(git diff --name-only $(cat "${github_pr_dir}/base_sha") $(cat "${github_pr_dir}/head_sha") -- . $(echo ${exclude_pathspec}))
         popd &> /dev/null
         if [[ -z "${files}" ]]; then
-          >&2 echo "Code changes are from CI only"
+          >&2 echo "CI changes only, skipping tests..."
           return_code=1
         else
-          >&2 echo "real code change here!"
+          >&2 echo "Running PR tests..."
         fi
       else
-        >&2 echo "repo is not from a PR"
+        >&2 echo "Running tests..."
       fi
     popd 2>&1 >> /dev/null
   popd 2>&1 >> /dev/null

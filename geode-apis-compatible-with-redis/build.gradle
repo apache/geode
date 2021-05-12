@@ -35,6 +35,7 @@ dependencies {
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
   implementation(project(':geode-membership'))
+  implementation('it.unimi.dsi:fastutil')
   implementation('com.github.davidmoten:geo')
   implementation('io.netty:netty-all')
   implementation('org.apache.logging.log4j:log4j-api')

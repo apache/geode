@@ -77,10 +77,6 @@
       "inline": [
         "$ErrorActionPreference = \"Stop\"",
         "Set-ExecutionPolicy Bypass -Scope Process -Force",
-        "choco install -y git cygwin cyg-get adoptopenjdk11",
-        "Move-Item \"C:\\Program Files\\AdoptOpenJDK\\jdk-11*\" c:\\java11-adoptopenjdk",
-        "choco install -y jdk8 -params 'installdir=c:\\\\java8tmp;source=false'",
-        "Move-Item \"C:\\java8tmp\" c:\\java8-adoptopenjdk",
         "choco install -y git cygwin cyg-get liberica11jdk",
         "Move-Item \"C:\\Program Files\\BellSoft\\LibericaJDK-11*\" c:\\java11",
         "choco install -y liberica8jdk",
@@ -99,10 +95,7 @@
       "inline": [
         "winrm set winrm/config/service '@{AllowUnencrypted=\"true\"}'",
         "New-NetFirewallRule -DisplayName sshd -Direction inbound -Action allow -Protocol tcp -LocalPort 22",
-        "New-NetFirewallRule -DisplayName \"Docker containers\" -LocalAddress 172.0.0.0/8 -Action allow -Direction inbound",
-        "New-Service -name sshd -description 'OpenSSH sshd server' -binarypathname 'c:\\Program Files\\OpenSSH-Win64\\sshd.exe' -startuptype automatic",
-        "write-output '>>>>>>>>>> Modify sshd config to comment use of administrators authorized key file <<<<<<<<<<'",
-        "(Get-Content \"C:\\Program Files\\OpenSSH-Win64\\sshd_config_default\") -replace '(Match Group administrators)', '#$1' -replace '(\\s*AuthorizedKeysFile.*)', '#$1' | Out-File \"C:\\Program Files\\OpenSSH-Win64\\sshd_config_default\" -encoding UTF8"
+        "New-NetFirewallRule -DisplayName \"Docker containers\" -LocalAddress 172.0.0.0/8 -Action allow -Direction inbound"
       ]
     },
     {

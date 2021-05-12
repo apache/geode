@@ -23,7 +23,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.params.SetParams;
 
@@ -32,22 +33,19 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractPersistIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -118,7 +116,7 @@ public abstract class AbstractPersistIntegrationTest implements RedisIntegration
     AtomicLong persistedFromThread2 = new AtomicLong(0);
 
     Runnable runnable1 = () -> persistKeys(persistedFromThread1, jedis, iterationCount);
-    Runnable runnable2 = () -> persistKeys(persistedFromThread2, jedis2, iterationCount);
+    Runnable runnable2 = () -> persistKeys(persistedFromThread2, jedis, iterationCount);
 
     Thread thread1 = new Thread(runnable1);
     Thread thread2 = new Thread(runnable2);
@@ -131,7 +129,7 @@ public abstract class AbstractPersistIntegrationTest implements RedisIntegration
     assertThat(persistedFromThread1.get() + persistedFromThread2.get()).isEqualTo(iterationCount);
   }
 
-  private void setKeysWithExpiration(Jedis jedis, int iterationCount) {
+  private void setKeysWithExpiration(JedisCluster jedis, int iterationCount) {
     for (int i = 0; i < iterationCount; i++) {
       SetParams setParams = new SetParams();
       setParams.ex(600);
@@ -140,7 +138,7 @@ public abstract class AbstractPersistIntegrationTest implements RedisIntegration
     }
   }
 
-  private void persistKeys(AtomicLong atomicLong, Jedis jedis, int iterationCount) {
+  private void persistKeys(AtomicLong atomicLong, JedisCluster jedis, int iterationCount) {
     for (int i = 0; i < iterationCount; i++) {
       String key = "key" + i;
       atomicLong.addAndGet(jedis.persist(key));

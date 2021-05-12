@@ -31,13 +31,14 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -46,20 +47,43 @@ import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 
 public class RedisSet extends AbstractRedisData {
-
   private HashSet<ByteArrayWrapper> members;
 
-  @SuppressWarnings("unchecked")
+  // the following constants were calculated using reflection and math. you can find the tests for
+  // these values in RedisSetTest, which show the way these numbers were calculated. the constants
+  // have the advantage of saving us a lot of computation that would happen every time a new key was
+  // added. if our internal implementation changes, these values may be incorrect. the tests will
+  // catch this change. an increase in overhead should be carefully considered.
+  // Note: the per member overhead is known to not be constant. it changes as more members are
+  // added, and/or as the members get longer
+  protected static final int BASE_REDIS_SET_OVERHEAD = 112;
+  protected static final int PER_MEMBER_OVERHEAD = 77;
+  protected static final int INTERNAL_HASH_SET_STORAGE_OVERHEAD = 86;
+
+  private int sizeInBytes;
+
   RedisSet(Collection<ByteArrayWrapper> members) {
+    this();
+
     if (members instanceof HashSet) {
       this.members = (HashSet<ByteArrayWrapper>) members;
     } else {
       this.members = new HashSet<>(members);
     }
+
+    if (members.size() > 0) {
+      sizeInBytes += INTERNAL_HASH_SET_STORAGE_OVERHEAD;
+    }
+
+    for (ByteArrayWrapper value : this.members) {
+      sizeInBytes += PER_MEMBER_OVERHEAD + value.length();
+    }
   }
 
   // for serialization
-  public RedisSet() {}
+  public RedisSet() {
+    sizeInBytes += BASE_REDIS_SET_OVERHEAD;
+  }
 
   Pair<BigInteger, List<Object>> sscan(Pattern matchPattern, int count, BigInteger cursor) {
 
@@ -124,7 +148,7 @@ public class RedisSet extends AbstractRedisData {
       }
     }
     if (!popped.isEmpty()) {
-      storeChanges(region, key, new RemsDeltaInfo(popped));
+      storeChanges(region, key, new RemsDeltaInfo(unwrapByteArrayWrappers(popped)));
     }
     return popped;
   }
@@ -198,14 +222,16 @@ public class RedisSet extends AbstractRedisData {
   @Override
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
-    InternalDataSerializer.writeHashSet(members, out);
+    DataSerializer.writeHashSet(members, out);
+    DataSerializer.writeInteger(sizeInBytes, out);
   }
 
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    members = InternalDataSerializer.readHashSet(in);
+    members = DataSerializer.readHashSet(in);
+    sizeInBytes = DataSerializer.readInteger(in);
   }
 
   @Override
@@ -214,22 +240,61 @@ public class RedisSet extends AbstractRedisData {
   }
 
   private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
-    return members.add(memberToAdd);
+    boolean isAdded = members.add(memberToAdd);
+    if (isAdded) {
+      sizeInBytes += PER_MEMBER_OVERHEAD + memberToAdd.length();
+      if (members.size() == 1) {
+        sizeInBytes += INTERNAL_HASH_SET_STORAGE_OVERHEAD;
+      }
+    }
+    return isAdded;
   }
 
   private boolean membersRemove(ByteArrayWrapper memberToRemove) {
-    return members.remove(memberToRemove);
+    boolean isRemoved = members.remove(memberToRemove);
+    if (isRemoved) {
+      sizeInBytes -= PER_MEMBER_OVERHEAD + memberToRemove.length();
+      if (members.isEmpty()) {
+        sizeInBytes = BASE_REDIS_SET_OVERHEAD;
+      }
+    }
+    return isRemoved;
   }
 
-  private synchronized boolean membersAddAll(AddsDeltaInfo addsDeltaInfo) {
-    return members.addAll(addsDeltaInfo.getAdds());
+  private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
+    List<ByteArrayWrapper> adds = wrapByteArrays(addsDeltaInfo.getAdds());
+    sizeInBytes += adds.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
+    members.addAll(adds);
   }
 
-  private synchronized boolean membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
-    return members.removeAll(remsDeltaInfo.getRemoves());
+  private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
+    List<ByteArrayWrapper> removes = wrapByteArrays(remsDeltaInfo.getRemoves());
+    sizeInBytes -= removes.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
+    members.removeAll(removes);
   }
 
+  /**
+   * Unwraps all of the byte array wrappers in a list
+   *
+   * Temporary function to continue to use ByteArrayWrappers in RedisSet after
+   * delta info classes have already switched to using plan byte[]
+   */
+  private ArrayList<byte[]> unwrapByteArrayWrappers(ArrayList<ByteArrayWrapper> list) {
+    return list.stream()
+        .map(ByteArrayWrapper::toBytes)
+        .collect(Collectors.toCollection(ArrayList::new));
+  }
 
+  /**
+   * Wraps all of the byte[] values in byte array wrappers in a list
+   *
+   * Temporary function to continue to use ByteArrayWrappers in RedisSet after
+   * delta info classes have already switched to using plan byte[]
+   */
+  private List<ByteArrayWrapper> wrapByteArrays(List<byte[]> list) {
+    return list.stream().map(ByteArrayWrapper::new).collect(
+        Collectors.toList());
+  }
 
   /**
    * @param membersToAdd members to add to this set; NOTE this list may by
@@ -244,7 +309,8 @@ public class RedisSet extends AbstractRedisData {
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
-      storeChanges(region, key, new AddsDeltaInfo(membersToAdd));
+      final ArrayList<byte[]> rStream = unwrapByteArrayWrappers(membersToAdd);
+      storeChanges(region, key, new AddsDeltaInfo(rStream));
     }
     return membersAdded;
   }
@@ -262,7 +328,7 @@ public class RedisSet extends AbstractRedisData {
     membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
-      storeChanges(region, key, new RemsDeltaInfo(membersToRemove));
+      storeChanges(region, key, new RemsDeltaInfo(unwrapByteArrayWrappers(membersToRemove)));
     }
     return membersRemoved;
   }
@@ -316,5 +382,10 @@ public class RedisSet extends AbstractRedisData {
   @Override
   public KnownVersion[] getSerializationVersions() {
     return null;
+  }
+
+  @Override
+  public int getSizeInBytes() {
+    return sizeInBytes;
   }
 }

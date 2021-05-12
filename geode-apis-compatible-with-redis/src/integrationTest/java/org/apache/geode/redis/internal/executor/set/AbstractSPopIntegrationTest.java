@@ -28,46 +28,45 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTest {
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
   public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SPOP))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SPOP))
         .hasMessageContaining("ERR wrong number of arguments for 'spop' command");
   }
 
   @Test
   public void givenMoreThanThreeArguments_returnsSyntaxError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SPOP, "key", "NaN", "extraArg"))
-        .hasMessageContaining(ERROR_SYNTAX);
+    assertThatThrownBy(
+        () -> jedis.sendCommand("key", Protocol.Command.SPOP, "key", "NaN", "extraArg"))
+            .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void givenCountIsNotAnInteger_returnsNotIntegerError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SPOP, "key", "NaN"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SPOP, "key", "NaN"))
         .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
@@ -181,7 +180,7 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
     List<String> popped2 = new ArrayList<>();
     Runnable runnable2 = () -> {
       for (int i = 0; i < ENTRIES / 2; i++) {
-        popped2.add(jedis2.spop("master"));
+        popped2.add(jedis.spop("master"));
       }
     };
 
@@ -201,8 +200,7 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void testSPopWithOutCount_shouldReturnNil_givenEmptySet() {
-
-    Object result = jedis.sendCommand(Protocol.Command.SPOP, "noneSuch");
+    Object result = jedis.sendCommand("noneSuch", Protocol.Command.SPOP, "noneSuch");
 
     assertThat(result).isNull();
   }
@@ -218,7 +216,7 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
   public void testSPopWithCountOfOne_shouldReturnList() {
     jedis.sadd("set", "one");
 
-    Object actual = jedis.sendCommand(Protocol.Command.SPOP, "set", "1");
+    Object actual = jedis.sendCommand("set", Protocol.Command.SPOP, "set", "1");
 
     assertThat(actual).isInstanceOf(List.class);
   }
@@ -227,7 +225,7 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
   public void testSPopWithoutCount_shouldNotReturnList() {
     jedis.sadd("set", "one");
 
-    Object actual = jedis.sendCommand(Protocol.Command.SPOP, "set");
+    Object actual = jedis.sendCommand("set", Protocol.Command.SPOP, "set");
 
     assertThat(actual).isNotInstanceOf(List.class);
   }

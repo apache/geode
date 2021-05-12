@@ -23,7 +23,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
@@ -32,25 +33,19 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractExistsIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private Jedis jedis2;
-  private Jedis jedis3;
+  private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis3 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
-    jedis3.close();
   }
 
   @Test
@@ -151,13 +146,14 @@ public abstract class AbstractExistsIntegrationTest implements RedisIntegrationT
 
   @Test
   public void shouldReturnTotalNumber_givenMultipleKeys() {
-    String key1 = "key1";
-    String key2 = "key2";
+    String key1 = "{user1}key1";
+    String key2 = "{user1}key2";
 
     jedis.set(key1, "value1");
     jedis.set(key2, "value2");
 
-    assertThat(jedis.exists(toArray(key1, "doesNotExist1", key2, "doesNotExist2"))).isEqualTo(2L);
+    assertThat(jedis.exists(toArray(key1, "{user1}doesNotExist1", key2, "{user1}doesNotExist2")))
+        .isEqualTo(2L);
   }
 
   @Test
@@ -170,7 +166,7 @@ public abstract class AbstractExistsIntegrationTest implements RedisIntegrationT
     new ConcurrentLoopingThreads(
         iterationCount,
         (i) -> existsCount.addAndGet(jedis.exists(toArray("key" + i))),
-        (i) -> existsCount.addAndGet(jedis2.exists(toArray("key" + i))))
+        (i) -> existsCount.addAndGet(jedis.exists(toArray("key" + i))))
             .run();
 
     assertThat(existsCount.get()).isEqualTo(2 * iterationCount);
@@ -183,8 +179,8 @@ public abstract class AbstractExistsIntegrationTest implements RedisIntegrationT
     new ConcurrentLoopingThreads(
         iterationCount,
         (i) -> jedis.set("key", "value"),
-        (i) -> jedis2.exists(toArray("key")),
-        (i) -> jedis3.del("key"))
+        (i) -> jedis.exists(toArray("key")),
+        (i) -> jedis.del("key"))
             .run();
   }
 

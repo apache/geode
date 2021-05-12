@@ -98,13 +98,18 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
 
   @Override
   void saveMapping(Object key, Object value, RegionEntry entry) throws IMQException {
-    if (key == QueryService.UNDEFINED || !(key instanceof Map)) {
+    if (key == QueryService.UNDEFINED || (key != null && !(key instanceof Map))) {
       return;
     }
     if (this.isAllKeys) {
-      Iterator<Map.Entry<?, ?>> entries = ((Map) key).entrySet().iterator();
-      while (entries.hasNext()) {
-        Map.Entry<?, ?> mapEntry = entries.next();
+      // If the key is null or it has no elements then we cannot associate it
+      // to any index key (it would apply to all). That is why
+      // this type of index does not support !=
+      // queries or queries comparing with null.
+      if (key == null) {
+        return;
+      }
+      for (Map.Entry<?, ?> mapEntry : ((Map<?, ?>) key).entrySet()) {
         Object mapKey = mapEntry.getKey();
         Object indexKey = mapEntry.getValue();
         this.saveIndexAddition(mapKey, indexKey, value, entry);
@@ -112,11 +117,13 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
       removeOldMappings(((Map) key).keySet(), entry);
     } else {
       for (Object mapKey : mapKeys) {
-        Object indexKey = ((Map) key).get(mapKey);
-        if (indexKey != null) {
-          // Do not convert to IndexManager.NULL. We are only interested in specific keys
-          this.saveIndexAddition(mapKey, indexKey, value, entry);
+        Object indexKey;
+        if (key == null) {
+          indexKey = QueryService.UNDEFINED;
+        } else {
+          indexKey = ((Map<?, ?>) key).get(mapKey);
         }
+        this.saveIndexAddition(mapKey, indexKey, value, entry);
       }
     }
   }

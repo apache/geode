@@ -189,7 +189,7 @@ public class Coder {
   }
 
   public static ByteBuf getScanResponse(ByteBuf buffer, BigInteger cursor,
-      List<Object> scanResult) {
+      List<?> scanResult) {
     buffer.writeByte(ARRAY_ID);
     buffer.writeBytes(intToBytes(2));
     buffer.writeBytes(CRLFar);
@@ -204,21 +204,21 @@ public class Coder {
     buffer.writeBytes(CRLFar);
 
     for (Object nextObject : scanResult) {
+      byte[] bytes;
       if (nextObject instanceof String) {
         String next = (String) nextObject;
-        buffer.writeByte(BULK_STRING_ID);
-        buffer.writeBytes(intToBytes(next.length()));
-        buffer.writeBytes(CRLFar);
-        buffer.writeBytes(stringToBytes(next));
-        buffer.writeBytes(CRLFar);
+        bytes = stringToBytes(next);
       } else if (nextObject instanceof ByteArrayWrapper) {
-        byte[] next = ((ByteArrayWrapper) nextObject).toBytes();
-        buffer.writeByte(BULK_STRING_ID);
-        buffer.writeBytes(intToBytes(next.length));
-        buffer.writeBytes(CRLFar);
-        buffer.writeBytes(next);
-        buffer.writeBytes(CRLFar);
+        bytes = ((ByteArrayWrapper) nextObject).toBytes();
+      } else {
+        bytes = (byte[]) nextObject;
       }
+
+      buffer.writeByte(BULK_STRING_ID);
+      buffer.writeBytes(intToBytes(bytes.length));
+      buffer.writeBytes(CRLFar);
+      buffer.writeBytes(bytes);
+      buffer.writeBytes(CRLFar);
     }
     return buffer;
   }

@@ -142,6 +142,7 @@ configure([integrationTest, distributedTest, performanceTest, acceptanceTest, ui
 
 configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
   times = Integer.parseInt(repeat)
+  forkEvery 1
   useJUnit {}
   outputs.upToDateWhen { false }
 
@@ -230,6 +231,11 @@ gradle.taskGraph.whenReady({ graph ->
       }
     }
   }
+  repeatAcceptanceTest.exclude acceptanceTest.excludes
+  repeatDistributedTest.exclude distributedTest.excludes
+  repeatIntegrationTest.exclude integrationTest.excludes
+  repeatUnitTest.exclude test.excludes
+  repeatUpgradeTest.exclude upgradeTest.excludes
 })
 
 acceptanceTest {
