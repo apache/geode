@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.params.ZAddParams;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.RedisPortSupplier;
@@ -73,15 +74,17 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
   @Test
   public void zaddStoresScores_givenCorrectArguments() {
     String key = "ss_key";
-    Map<String, Double> map = getMemberScoreMap();
+    Map<String, Double> map = getMemberScoreMap("member_", 10, 0);
 
     Set<String> keys = map.keySet();
     Long count = 0L;
 
     for (String member : keys) {
       Double score = map.get(member);
+      System.out.println("test adding: member:" + member + " score:" + score);
       Long res = jedis.zadd(key, score, member);
       Assertions.assertThat(res).isEqualTo(1);
+      System.out.println("test getting: member:" + member + " score:" + score);
       Assertions.assertThat(jedis.zscore(key, member)).isEqualTo(score);
       count += res;
     }
@@ -90,24 +93,89 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void zaddStoresScores_givenMultipleMembersAndScores() {
-    String key = "ss_key";
-    Map<String, Double> map = getMemberScoreMap();
+    String otherKeyEntirely = "ss_key";
+
+    Map<String, Double> map = getMemberScoreMap("member_", 10, 0);
     Set<String> keys = map.keySet();
 
-    long added = jedis.zadd("ss_key", map);
+    long added = jedis.zadd(otherKeyEntirely, map);
+    System.out.println("**** actually added: " + added);
     assertThat(added).isEqualTo(keys.size());
 
     for (String member : keys) {
       Double score = map.get(member);
+      Assertions.assertThat(jedis.zscore(otherKeyEntirely, member)).isEqualTo(score);
+    }
+  }
+
+  @Test
+  public void zaddDoesNotUpdateMember_whenNXSpecified() {
+    String key = "ss_key";
+
+    Long res = jedis.zadd(key, 1.0, "mamba");
+    assertThat(res).isEqualTo(1);
+
+    ZAddParams zAddParams = new ZAddParams();
+    zAddParams.nx();
+    res = jedis.zadd(key, 2.0, "mamba", zAddParams);
+    assertThat(res).isEqualTo(0);
+    assertThat(jedis.zscore(key, "mamba")).isEqualTo(1.0);
+  }
+
+  @Test
+  public void zaddDoesNotAddMember_whenXXSpecified() {
+    String key = "ss_key";
+
+    ZAddParams zAddParams = new ZAddParams();
+    zAddParams.xx();
+    Long res = jedis.zadd(key, 1.0, "mamba", zAddParams);
+    assertThat(res).isEqualTo(0);
+    assertThat(jedis.keys("*").size()).isEqualTo(0);
+  }
+
+  @Test
+  public void zaddDoesNotAddNewMembers_whenXXSpecified() {
+    String key = "ss_key";
+    Map<String, Double> init_map = getMemberScoreMap("member_", 5, 0);
+    Set<String> keys = init_map.keySet();
+
+    long added = jedis.zadd(key, init_map);
+    assertThat(added).isEqualTo(5);
+
+    for (String member : keys) {
+      Double score = init_map.get(member);
+      Assertions.assertThat(jedis.zscore(key, member)).isEqualTo(score);
+    }
+
+    Map<String, Double> updateMap = getMemberScoreMap("member_", 10, 10);
+    Set<String> updateKeys = updateMap.keySet();
+
+    ZAddParams zAddParams = new ZAddParams();
+    zAddParams.xx();
+    added = jedis.zadd(key, updateMap, zAddParams);
+    assertThat(added).isEqualTo(0);
+
+    for (String member : updateKeys) {
+      Double score;
+      if (init_map.get(member) != null) {
+        score = updateMap.get(member);
+      } else {
+        score = null;
+      }
       Assertions.assertThat(jedis.zscore(key, member)).isEqualTo(score);
     }
   }
 
-  private Map<String, Double> getMemberScoreMap() {
+  @Test
+  public void zaddUpdatesScoresCorrectly_whenGTOptionSpecified() {
+
+  }
+
+  private Map<String, Double> getMemberScoreMap(String baseName, int memberCount, int baseScore) {
     Map<String, Double> map = new HashMap<>();
 
-    for (int i = 0; i < 10; i++) {
-      map.put("member_" + i, Double.valueOf(i + ""));
+    for (int i = 0; i < memberCount; i++) {
+      map.put(baseName + i, Double.valueOf((i + baseScore) + ""));
     }
     return map;
   }

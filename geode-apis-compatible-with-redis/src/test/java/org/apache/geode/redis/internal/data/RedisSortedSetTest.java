@@ -24,11 +24,9 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -100,7 +98,7 @@ public class RedisSortedSetTest {
 
   @Test
   public void equals_returnsTrue_givenDifferentEmptySortedSets() {
-    RedisSortedSet o1 = new RedisSortedSet(Collections.emptyMap());
+    RedisSortedSet o1 = new RedisSortedSet(Collections.emptyList());
     RedisSortedSet o2 = NullRedisDataStructures.NULL_REDIS_SORTED_SET;
     assertThat(o1).isEqualTo(o2);
     assertThat(o2).isEqualTo(o1);
@@ -116,7 +114,7 @@ public class RedisSortedSetTest {
     adds.add("k3".getBytes());
     adds.add("v3".getBytes());
 
-    o1.zadd(region, null, adds);
+    o1.zadd(region, null, adds, null);
     assertThat(o1.hasDelta()).isTrue();
 
     HeapDataOutputStream out = new HeapDataOutputStream(100);
@@ -150,9 +148,11 @@ public class RedisSortedSetTest {
 
 
   private RedisSortedSet createRedisSortedSet(String k1, String v1, String k2, String v2) {
-    Map<byte[], byte[]> elements = new HashMap<>();
-    elements.put(Coder.stringToBytes(k1), Coder.stringToBytes(v1));
-    elements.put(Coder.stringToBytes(k2), Coder.stringToBytes(v2));
+    List<byte[]> elements = new ArrayList<>();
+    elements.add(Coder.stringToBytes(k1));
+    elements.add(Coder.stringToBytes(v1));
+    elements.add(Coder.stringToBytes(k2));
+    elements.add(Coder.stringToBytes(v2));
     return new RedisSortedSet(elements);
   }
 

@@ -30,6 +30,9 @@ public class ZScoreExecutor extends SortedSetExecutor {
     byte[] score =
         redisSortedSetCommands.zscore(command.getKey(), commandElements.get(2).toBytes());
 
+    if (score == null) {
+      return RedisResponse.nil();
+    }
     return RedisResponse.bulkString(new String(score));
   }
 }

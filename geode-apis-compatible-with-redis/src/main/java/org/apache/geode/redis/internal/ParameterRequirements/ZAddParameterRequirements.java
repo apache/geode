@@ -54,22 +54,17 @@ public class ZAddParameterRequirements implements ParameterRequirements {
     commandIterator.next(); // Skip past command
     commandIterator.next(); // and key
 
+    boolean scoreFound = false;
     while (commandIterator.hasNext()) {
       ByteArrayWrapper subcommand = commandIterator.next();
       String subCommandString = subcommand.toString().toLowerCase();
-      try {
-        Double.valueOf(subCommandString);
-        break;
-      } catch (NumberFormatException nfe) {
-        System.out.println("Got exception on: " + subCommandString);
-        nfe.printStackTrace();
-      }
       switch (subCommandString) {
         case "ch":
           break;
         case "incr":
           break;
         case "nx":
+          System.out.println("YEAH WE GOT AN NX!!!!!");
           nxFound = true;
           break;
         case "xx":
@@ -82,7 +77,18 @@ public class ZAddParameterRequirements implements ParameterRequirements {
           ltFound = true;
           break;
         default:
-          throw new RedisParametersMismatchException(String.format(ERROR_SYNTAX));
+          try {
+            Double.valueOf(subCommandString);
+            scoreFound = true;
+            break;
+          } catch (NumberFormatException nfe) {
+            System.out.println("Got exception on: " + subCommandString);
+            nfe.printStackTrace();
+            throw new RedisParametersMismatchException(String.format(ERROR_SYNTAX));
+          }
+      }
+      if (scoreFound) {
+        break;
       }
       optionsFoundCount++;
     }

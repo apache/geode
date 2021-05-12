@@ -17,13 +17,17 @@
 package org.apache.geode.redis.internal.data;
 
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.executor.sortedset.ZSetOptions;
 
 
 class NullRedisSortedSet extends RedisSortedSet {
 
   NullRedisSortedSet() {
-    super(new HashMap<>());
+    super(new ArrayList<>());
   }
 
   @Override
@@ -31,4 +35,20 @@ class NullRedisSortedSet extends RedisSortedSet {
     return true;
   }
 
+  @Override
+  long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
+            ZSetOptions options) {
+    System.out.println("||||||||||||||||null zadd");
+    if (options.isXX()) {
+      return 0;
+    }
+    region.create(key, new RedisSortedSet(membersToAdd, options));
+    return membersToAdd.size() / 2;
+  }
+
+  @Override
+  byte[] zscore(byte[] member) {
+    System.out.println("||||||||||||||||null zscore");
+    return null;
+  }
 }

@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
@@ -38,6 +39,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
+import org.apache.geode.redis.internal.executor.sortedset.ZSetOptions;
 
 public class RedisSortedSet extends AbstractRedisData {
 
@@ -45,19 +47,31 @@ public class RedisSortedSet extends AbstractRedisData {
     ADDED, CHANGED, NOOP;
   }
 
-  private Object2ObjectOpenCustomHashMap<byte[], byte[]> members =
-      new Object2ObjectOpenCustomHashMap<>(ByteArrays.HASH_STRATEGY);
+  private Object2ObjectOpenCustomHashMap<byte[], byte[]> members;
 
   @SuppressWarnings("unchecked")
-  RedisSortedSet(Map<byte[], byte[]> members) {
+  RedisSortedSet(List<byte[]> members) {
     this.members = new Object2ObjectOpenCustomHashMap<>(members.size(), ByteArrays.HASH_STRATEGY);
-    Iterator<byte[]> iterator = members.keySet().iterator();
+    Iterator<byte[]> iterator = members.iterator();
     while (iterator.hasNext()) {
-      byte[] key = iterator.next();
-      this.members.put(key, members.get(key));
+      byte[] score = iterator.next();
+      byte[] member = iterator.next();
+      this.members.put(member, score);
     }
   }
 
+  RedisSortedSet(List<byte[]> members, ZSetOptions options) {
+    this.members = new Object2ObjectOpenCustomHashMap<>(members.size(), ByteArrays.HASH_STRATEGY);
+    if (options.isXX()) {
+      return;
+    }
+    Iterator<byte[]> iterator = members.iterator();
+    while (iterator.hasNext()) {
+      byte[] score = iterator.next();
+      byte[] member = iterator.next();
+      this.members.put(member, score);
+    }
+  }
   // for serialization
   public RedisSortedSet() {
   }
@@ -134,9 +148,16 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   private synchronized AddOrChange membersAdd(byte[] memberToAdd, byte[] scoreToAdd, boolean CH) {
+    System.out.println("**** ZADD mta member:" + byteArrayStringer(memberToAdd)
+        + " score: " + byteArrayStringer(scoreToAdd));
     byte[] oldScore = members.get(memberToAdd);
+    if (oldScore != null) {
+      System.out.println("**** ZADD oldscore:" + byteArrayStringer(oldScore));
+    }
     boolean added = (members.put(memberToAdd, scoreToAdd) == null);
+    System.out.println("**** ZADD got added:" + added);
     if (CH && !added) {
+      System.out.println("**** SHOULD NOT SEE THIS");
       return oldScore.equals(scoreToAdd) ? AddOrChange.NOOP : AddOrChange.CHANGED;
     }
     return added ? AddOrChange.ADDED : AddOrChange.NOOP;
@@ -158,15 +179,29 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
+  private String byteArrayStringer(byte[] byteArray) {
+    String retVal = "";
+    for (int i = 0; i < byteArray.length; i++) {
+      retVal += byteArray[i];
+    }
+    return retVal;
+  }
+
   /**
    * @param region       the region this instance is stored in
    * @param key          the name of the set to add to
    * @param membersToAdd members to add to this set; NOTE this list may by modified by this call
+   * @param options
    * @return the number of members actually added
    */
-  long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd) {
+  long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
+            ZSetOptions options) {
+    System.out.println("|||||||||||||||||||||zadd key:" + key+ " list size:" + membersToAdd.size());
     int membersAdded = 0;
     long membersChanged = 0; // TODO: really implement changed
+    if (options == null) {
+      options = new ZSetOptions(ZSetOptions.Exists.NONE, ZSetOptions.Update.NONE);
+    }
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
     while (iterator.hasNext()) {
@@ -174,6 +209,22 @@ public class RedisSortedSet extends AbstractRedisData {
       byte[] score = iterator.next();
       byte[] member = iterator.next();
 
+      System.out.println(
+          "zadd member:" + byteArrayStringer(member) + " score:" + byteArrayStringer(score));
+      if (options.isNX()) {
+        if (members.get(member) != null) {
+          System.out.println("nx skipping: " + member);
+          continue;
+        }
+      }
+      if (options.isXX()) {
+        if (members.get(member) == null) {
+          System.out.println("xx skipping: " + member);
+          continue;
+        } else {
+          System.out.println("xx allowing: " + member);
+        }
+      }
       switch (membersAdd(member, score, false)) {
         case ADDED:
           membersAdded++;
@@ -199,11 +250,22 @@ public class RedisSortedSet extends AbstractRedisData {
     if (deltaInfo != null) {
       storeChanges(region, key, deltaInfo);
     }
+    System.out.println("**** ZADD returning: " + membersAdded);
     return membersAdded;
   }
 
   byte[] zscore(byte[] member) {
-    return members.get(member);
+    byte[] score = members.get(member);
+    System.out.println("**** ZSCORE members: " + members + " member:" + byteArrayStringer(member) + " score:" + score);
+    Set<byte[]> keys = members.keySet();
+    for (byte[] key : keys) {
+        System.out.println("**** ZSCORE key:" + byteArrayStringer(key));
+
+      if (Arrays.equals(key, member)) {
+        System.out.println("**** ZSCORE yes member is in there...");
+      }
+    }
+    return score;
   }
 
   private AddsDeltaInfo makeAddsDeltaInfo(AddsDeltaInfo deltaInfo, byte[] member, byte[] score) {

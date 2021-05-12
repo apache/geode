@@ -35,6 +35,7 @@ import org.apache.geode.redis.internal.data.RedisKeyCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisSetCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisSortedSetCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisStringCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZSetOptions;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
@@ -277,7 +278,8 @@ public class CommandFunction extends SingleResultRedisFunction {
       }
       case ZADD: {
         List<byte[]> scoresAndMembersToAdd = (List<byte[]>) args[1];
-        return sortedSetCommands.zadd(key, scoresAndMembersToAdd);
+        System.out.println("!!!cf doing zadd, arg count:" + args.length);
+        return sortedSetCommands.zadd(key, scoresAndMembersToAdd, (ZSetOptions) args[2]);
       }
       case ZSCORE: {
         byte[] member = (byte[]) args[1];
