@@ -40,6 +40,7 @@ public abstract class AbstractBitOpIntegrationTest implements RedisIntegrationTe
   private final String hashTag = "{111}";
   private final String destKey = "destKey" + hashTag;
   private final String srcKey = "srcKey" + hashTag;
+  private final String value = "value";
   private final byte[] key = {1, '{', 111, '}'};
   private final byte[] other = {2, '{', 111, '}'};
 
@@ -62,8 +63,8 @@ public abstract class AbstractBitOpIntegrationTest implements RedisIntegrationTe
   @Test
   public void bitop_givenInvalidOperationType_returnsSyntaxError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(hashTag, Protocol.Command.BITOP, "invalidOp", "destKey" + hashTag,
-            "srcKey" + hashTag)).hasMessageContaining(ERROR_SYNTAX);
+        () -> jedis.sendCommand(hashTag, Protocol.Command.BITOP, "invalidOp", destKey,
+            srcKey)).hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
@@ -95,21 +96,21 @@ public abstract class AbstractBitOpIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void bitopNOT_givenNothingDeletesKey() {
-    jedis.set(destKey, "value");
+    jedis.set(destKey, value);
     assertThat(jedis.bitop(BitOP.NOT, destKey, srcKey)).isEqualTo(0);
     assertThat(jedis.exists(destKey)).isFalse();
   }
 
   @Test
   public void bitopNOT_givenNothingDeletesSet() {
-    jedis.sadd(destKey, "value");
+    jedis.sadd(destKey, value);
     assertThat(jedis.bitop(BitOP.NOT, destKey, srcKey)).isEqualTo(0);
     assertThat(jedis.exists(destKey)).isFalse();
   }
 
   @Test
   public void bitopNOT_givenEmptyStringDeletesKey() {
-    jedis.set(destKey, "value");
+    jedis.set(destKey, value);
     jedis.set(srcKey, "");
     assertThat(jedis.bitop(BitOP.NOT, destKey, srcKey)).isEqualTo(0);
     assertThat(jedis.exists(destKey)).isFalse();
@@ -117,7 +118,7 @@ public abstract class AbstractBitOpIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void bitopNOT_givenEmptyStringDeletesSet() {
-    jedis.sadd(destKey, "value");
+    jedis.sadd(destKey, value);
     jedis.set(srcKey, "");
     assertThat(jedis.bitop(BitOP.NOT, destKey, srcKey)).isEqualTo(0);
     assertThat(jedis.exists(destKey)).isFalse();

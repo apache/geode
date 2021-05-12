@@ -31,6 +31,7 @@ import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegrationTest {
@@ -90,7 +91,7 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
     jedis.set("nan", "abc");
 
     assertThatThrownBy(() -> jedis.incrByFloat("nan", 1))
-        .hasMessage("ERR value is not a valid float");
+        .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
@@ -98,7 +99,7 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
     jedis.sadd("set", "abc");
 
     assertThatThrownBy(() -> jedis.incrByFloat("set", 1))
-        .hasMessage("WRONGTYPE Operation against a key holding the wrong kind of value");
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -108,7 +109,7 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
     jedis.set(key, "" + number1);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, " a b c"))
-        .hasMessage("ERR value is not a valid float");
+        .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
@@ -117,28 +118,28 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
     jedis.set(key, "1.4");
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "+inf"))
-        .hasMessage("ERR increment would produce NaN or Infinity");
+        .hasMessageContaining(RedisConstants.ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "-inf"))
-        .hasMessage("ERR increment would produce NaN or Infinity");
+        .hasMessageContaining(RedisConstants.ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "inf"))
-        .hasMessage("ERR increment would produce NaN or Infinity");
+        .hasMessageContaining(RedisConstants.ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "+infinity"))
-        .hasMessage("ERR increment would produce NaN or Infinity");
+        .hasMessageContaining(RedisConstants.ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "-infinity"))
-        .hasMessage("ERR increment would produce NaN or Infinity");
+        .hasMessageContaining(RedisConstants.ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "infinity"))
-        .hasMessage("ERR increment would produce NaN or Infinity");
+        .hasMessageContaining(RedisConstants.ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "nan"))
-        .hasMessage("ERR value is not a valid float");
+        .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "infant"))
-        .hasMessage("ERR value is not a valid float");
+        .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
