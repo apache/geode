@@ -37,7 +37,6 @@ import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfoRetrievalFunction;
@@ -82,22 +81,20 @@ public class SlotAdvisor {
   }
 
   public Map<String, List<Integer>> getMemberBuckets() {
-    Map<String, List<Integer>> memberBuckets = new HashMap<>();
+    initializeBucketsIfNecessary();
 
-    for (Map.Entry<Integer, BucketAdvisor> entry : dataRegion.getRegionAdvisor()
-        .getAllBucketAdvisors().entrySet()) {
-      String memberId = entry.getValue().getPrimary().getUniqueId();
-      memberBuckets.computeIfAbsent(memberId, k -> new ArrayList<>()).add(entry.getKey());
+    Map<String, List<Integer>> memberBuckets = new HashMap<>();
+    for (int bucketId = 0; bucketId < REDIS_REGION_BUCKETS; bucketId++) {
+      String memberId =
+          dataRegion.getRegionAdvisor().getBucketAdvisor(bucketId).getPrimary().getUniqueId();
+      memberBuckets.computeIfAbsent(memberId, k -> new ArrayList<>()).add(bucketId);
     }
 
     return memberBuckets;
   }
 
   public synchronized List<MemberBucketSlot> getBucketSlots() {
-    // Initialize all buckets if necessary
-    if (!haveBucketsBeenInitialized(dataRegion)) {
-      PartitionRegionHelper.assignBucketsToPartitions(dataRegion);
-    }
+    initializeBucketsIfNecessary();
 
     for (int bucketId = 0; bucketId < REDIS_REGION_BUCKETS; bucketId++) {
       updateBucketDetails(bucketId);
@@ -126,8 +123,11 @@ public class SlotAdvisor {
     return mbs;
   }
 
-  private boolean haveBucketsBeenInitialized(PartitionedRegion region) {
-    return region.getDataStore() != null && !region.getDataStore().getAllLocalBucketIds().isEmpty();
+  private void initializeBucketsIfNecessary() {
+    if (dataRegion.getDataStore() != null &&
+        dataRegion.getDataStore().getAllLocalBucketIds().isEmpty()) {
+      PartitionRegionHelper.assignBucketsToPartitions(dataRegion);
+    }
   }
 
   @SuppressWarnings("unchecked")
