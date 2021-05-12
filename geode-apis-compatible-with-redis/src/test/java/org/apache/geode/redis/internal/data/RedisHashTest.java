@@ -276,24 +276,40 @@ public class RedisHashTest {
     assertThat(hash.getSizeInBytes()).isEqualTo(baseRedisHashOverhead);
   }
 
+  /**
+   * This test computes the average per field overhead of a RedisHash and
+   * compares it with the constant we have set.
+   */
   @Test
   public void constantValuePairOverhead_shouldEqualCalculatedOverhead() {
     RedisHash hash = new RedisHash(Collections.emptyList());
-    long totalOverhead = 0;
+
+    // Used to compute the average per field overhead
+    double totalOverhead = 0;
     final int totalFields = 1000;
+
+    // Generate pseudo-random data, but use fixed seed so the test is deterministic
     Random random = new Random(0);
+
+    // Add 1000 fields and compute the per field overhead after each add
     for (int fieldCount = 1; fieldCount < totalFields; fieldCount++) {
+
+      // Add a random field
       byte[] data = new byte[random.nextInt(30)];
       random.nextBytes(data);
       hash.hashPut(data, data);
+
+      // Compute the measured size
       int size = reflectionObjectSizer.sizeof(hash);
       final int dataSize = 2 * data.length;
+
+      // Compute per field overhead with this number of fields
       int overHeadPerField = (size - BASE_REDIS_HASH_OVERHEAD - dataSize) / fieldCount;
       totalOverhead += overHeadPerField;
     }
 
-    long averageOverhead = totalOverhead / totalFields;
-
+    // Assert that the average overhead matches the constant
+    long averageOverhead = Math.round(totalOverhead / totalFields);
     assertThat(RedisHash.HASH_MAP_VALUE_PAIR_OVERHEAD).isEqualTo(averageOverhead);
   }
 

@@ -69,7 +69,7 @@ public class RedisHash extends AbstractRedisData {
   // added. if our internal implementation changes, these values may be incorrect. the tests will
   // catch this change. an increase in overhead should be carefully considered.
   protected static final int BASE_REDIS_HASH_OVERHEAD = 336;
-  protected static final int HASH_MAP_VALUE_PAIR_OVERHEAD = 47;
+  protected static final int HASH_MAP_VALUE_PAIR_OVERHEAD = 48;
 
   private static final int defaultHscanSnapshotsExpireCheckFrequency =
       Integer.getInteger("redis.hscan-snapshot-cleanup-interval", 30000);
