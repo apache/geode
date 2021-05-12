@@ -50,6 +50,8 @@ public class DLockGrantorTest {
     dLockService = mock(DLockService.class, RETURNS_DEEP_STUBS);
     DistributionManager distributionManager = mock(DistributionManager.class);
     when(dLockService.getDistributionManager()).thenReturn(distributionManager);
+    when(dLockService.getDLockLessorDepartureHandler())
+        .thenReturn(mock(DLockLessorDepartureHandler.class));
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(distributionManager.getCancelCriterion()).thenReturn(cancelCriterion);
     grantor = DLockGrantor.createGrantor(dLockService, 1);
