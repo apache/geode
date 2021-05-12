@@ -174,14 +174,18 @@ public class DUnitLauncher {
   }
 
   public static void launchIfNeeded(boolean launchLocator) {
-    launchIfNeeded(launchLocator, RUN_VM_CLASSLOADER_ISOLATED);
+    launchIfNeeded(launchLocator, runClassloaderIsolated());
   }
 
   /**
    * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
    */
   public static void launchIfNeeded(int vmCount) {
-    launchIfNeeded(vmCount, true);
+    launchIfNeeded(vmCount, runClassloaderIsolated());
+  }
+
+  private static boolean runClassloaderIsolated() {
+    return Boolean.parseBoolean(System.getProperty("CLASSLOADER_ISOLATED", "true")) && RUN_VM_CLASSLOADER_ISOLATED;
   }
 
   public static void launchIfNeeded(int vmCount, boolean classloaderIsolated) {

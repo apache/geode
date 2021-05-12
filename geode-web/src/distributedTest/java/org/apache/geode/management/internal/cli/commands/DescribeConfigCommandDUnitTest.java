@@ -24,6 +24,9 @@ import java.util.Properties;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -34,6 +37,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -49,6 +53,16 @@ public class DescribeConfigCommandDUnitTest {
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @BeforeClass
+  public static void setup() {
+    System.setProperty("CLASSLOADER_ISOLATED", "false");
+  }
+
+  @AfterClass
+  public static void teardown() {
+    System.clearProperty("CLASSLOADER_ISOLATED");
+  }
 
   @Test
   @Parameters({"true", "false"})
