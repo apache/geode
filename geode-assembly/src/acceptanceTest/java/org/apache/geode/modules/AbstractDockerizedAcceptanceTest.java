@@ -162,7 +162,7 @@ public abstract class AbstractDockerizedAcceptanceTest {
         new ImageFromDockerfile()
             .withDockerfile(new File(
                 currentDirectory.substring(0, currentDirectory.indexOf("build"))
-                    .concat("build/docker/Dockerfile"))
+                    .concat("build/modularDocker/Dockerfile"))
                         .toPath()));
     geodeContainer.withExposedPorts(9090, 10334, 40404, 1099, 7070, 6379, 5678);
     geodeContainer.withCreateContainerCmdModifier(cmd -> {

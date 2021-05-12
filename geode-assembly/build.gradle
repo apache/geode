@@ -715,18 +715,32 @@ docker {
   copySpec.from(tasks.installDist.outputs).into('geode')
 }
 
+task makeModDir {
+  doLast {
+    mkdir("$buildDir/modularDocker")
+  }
+}
 
-task copyLaunchScript(type: Copy) {
+task copyGeodeToModular(type: Copy) {
+  dependsOn(tasks.installDist)
+  from tasks.installDist.outputs
+  into "$buildDir/modularDocker/geode"
+}
+
+task copyModularDockerFiles(type: Copy) {
   dependsOn(tasks.dockerPrepare)
-  def file = project(":geode-assembly").file("launch.sh")
-  from file
-  into "$buildDir/docker"
+  dependsOn(tasks.makeModDir)
+  dependsOn(tasks.copyGeodeToModular)
+  def launchScript = project(":geode-assembly").file("modularDocker/launch.sh")
+  def dockerFile = project(":geode-assembly").file("modularDocker/Dockerfile")
+  from launchScript, dockerFile
+  into "$buildDir/modularDocker"
 }
 
 acceptanceTest {
   if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
     dependsOn(tasks.docker)
-    dependsOn(tasks.copyLaunchScript)
+    dependsOn(tasks.copyModularDockerFiles)
   }
 }
 
