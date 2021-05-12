@@ -204,7 +204,7 @@ public class StartServerCommand extends OfflineGfshCommand {
 
     String resolvedWorkingDirectory = resolveWorkingDirectory(workingDirectory, memberName);
 
-    if (bindAddress != null && bindAddress.equals("*")) {
+    if (LocalHostUtil.isWildcardCharacter(bindAddress)) {
       bindAddress = LocalHostUtil.getWildcardIp();
     }
 

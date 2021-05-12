@@ -49,4 +49,14 @@ public class LocalHostUtilTest {
   public void isWildCardAddressReturnsFalseIfAddressIsNotWildcard() {
     assertThat(LocalHostUtil.isWildcardAddress("1.2.3.4")).isFalse();
   }
+
+  @Test
+  public void isWildcardCharacterReturnsTrueIfAddressIsWildcardCharacter() {
+    assertThat(LocalHostUtil.isWildcardCharacter("*")).isTrue();
+  }
+
+  @Test
+  public void isWildcardCharacterReturnsFalseIfAddressIsNotWildcardCharacter() {
+    assertThat(LocalHostUtil.isWildcardCharacter("1.2.3.4")).isFalse();
+  }
 }

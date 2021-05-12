@@ -243,7 +243,11 @@ public class LocalHostUtil {
   }
 
   public static boolean isWildcardAddress(String address) {
-    return "0.0.0.0".equals(address) || "::".equals(address) || "*".equals(address);
+    return "0.0.0.0".equals(address) || "::".equals(address) || isWildcardCharacter(address);
+  }
+
+  public static boolean isWildcardCharacter(String address) {
+    return "*".equals(address);
   }
 
   public static String getWildcardIp() {
