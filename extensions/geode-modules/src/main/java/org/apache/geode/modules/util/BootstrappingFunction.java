@@ -72,8 +72,9 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     }
 
     // Return status
-    logger.info("BR About to register functions");
+    logger.info("BR About to resend result");
     context.getResultSender().lastResult(Boolean.TRUE);
+    logger.info("BR Last result set");
   }
 
   protected boolean isLocator(Cache cache) {
@@ -166,6 +167,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
 
     // Get the result. Nothing is being done with it.
     try {
+      logger.info("BR Waiting for boostrapping function results");
       collector.getResult();
       logger.info("BR Result returned from bootstrap execution");
     } catch (Exception e) {
