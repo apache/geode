@@ -30,11 +30,13 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.assertj.core.data.Offset;
 import org.junit.BeforeClass;
@@ -57,9 +59,6 @@ public class RedisHashTest {
 
   @BeforeClass
   public static void beforeClass() {
-    InternalDataSerializer
-        .getDSFIDSerializer()
-        .registerDSFID(DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER, ByteArrayWrapper.class);
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DataSerializableFixedID.REDIS_HASH_ID,
         RedisHash.class);
@@ -83,7 +82,6 @@ public class RedisHashTest {
     assertThat(o2).isEqualTo(o1);
   }
 
-  /************* Equals *************/
   @Test
   public void equals_returnsFalse_givenDifferentExpirationTimes() {
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
@@ -125,9 +123,9 @@ public class RedisHashTest {
   public void hset_stores_delta_that_is_stable() throws IOException {
     Region<RedisKey, RedisData> region = Mockito.mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
-    ByteArrayWrapper k3 = createByteArrayWrapper("k3");
-    ByteArrayWrapper v3 = createByteArrayWrapper("v3");
-    ArrayList<ByteArrayWrapper> adds = new ArrayList<>();
+    byte[] k3 = Coder.stringToBytes("k3");
+    byte[] v3 = Coder.stringToBytes("v3");
+    ArrayList<byte[]> adds = new ArrayList<>();
     adds.add(k3);
     adds.add(v3);
     o1.hset(region, null, adds, false);
@@ -147,8 +145,8 @@ public class RedisHashTest {
   public void hdel_stores_delta_that_is_stable() throws IOException {
     Region<RedisKey, RedisData> region = mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
-    ByteArrayWrapper k1 = createByteArrayWrapper("k1");
-    ArrayList<ByteArrayWrapper> removes = new ArrayList<>();
+    byte[] k1 = Coder.stringToBytes("k1");
+    ArrayList<byte[]> removes = new ArrayList<>();
     removes.add(k1);
     o1.hdel(region, null, removes);
     assertThat(o1.hasDelta()).isTrue();
@@ -190,23 +188,23 @@ public class RedisHashTest {
   @Test
   public void hscanSnaphots_shouldContainSnapshot_givenHscanHasBeenCalled() {
 
-    final List<ByteArrayWrapper> FIELDS_AND_VALUES_FOR_HASH = createListOfDataElements(100);
+    final List<byte[]> FIELDS_AND_VALUES_FOR_HASH = createListOfDataElements(100);
     RedisHash subject = new RedisHash(FIELDS_AND_VALUES_FOR_HASH);
     UUID clientID = UUID.randomUUID();
 
     subject.hscan(clientID, null, 10, 0);
 
-    ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hscanSnapShotMap = subject.getHscanSnapShots();
+    ConcurrentHashMap<UUID, List<byte[]>> hscanSnapShotMap = subject.getHscanSnapShots();
 
     assertThat(hscanSnapShotMap.containsKey(clientID)).isTrue();
 
-    List<ByteArrayWrapper> keyList = hscanSnapShotMap.get(clientID);
+    List<byte[]> keyList = hscanSnapShotMap.get(clientID);
     assertThat(keyList).isNotEmpty();
 
     FIELDS_AND_VALUES_FOR_HASH.forEach((entry) -> {
-      if (entry.toString().contains("field")) {
+      if (Coder.bytesToString(entry).contains("field")) {
         assertThat(keyList).contains(entry);
-      } else if (entry.toString().contains("value")) {
+      } else if (Coder.bytesToString(entry).contains("value")) {
         assertThat(keyList).doesNotContain(entry);
       }
     });
@@ -216,23 +214,23 @@ public class RedisHashTest {
   @Test
   public void hscanSnaphots_shouldContainSnapshot_givenHscanHasBeenCalled_WithNonZeroCursor() {
 
-    final List<ByteArrayWrapper> FIELDS_AND_VALUES_FOR_HASH = createListOfDataElements(100);
+    final List<byte[]> FIELDS_AND_VALUES_FOR_HASH = createListOfDataElements(100);
     RedisHash subject = new RedisHash(FIELDS_AND_VALUES_FOR_HASH);
     UUID clientID = UUID.randomUUID();
 
     subject.hscan(clientID, null, 10, 10);
 
-    ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hscanSnapShotMap = subject.getHscanSnapShots();
+    ConcurrentHashMap<UUID, List<byte[]>> hscanSnapShotMap = subject.getHscanSnapShots();
 
     assertThat(hscanSnapShotMap.containsKey(clientID)).isTrue();
 
-    List<ByteArrayWrapper> keyList = hscanSnapShotMap.get(clientID);
+    List<byte[]> keyList = hscanSnapShotMap.get(clientID);
     assertThat(keyList).isNotEmpty();
 
     FIELDS_AND_VALUES_FOR_HASH.forEach((entry) -> {
-      if (entry.toString().contains("field")) {
+      if (Coder.bytesToString(entry).contains("field")) {
         assertThat(keyList).contains(entry);
-      } else if (entry.toString().contains("value")) {
+      } else if (Coder.bytesToString(entry).contains("value")) {
         assertThat(keyList).doesNotContain(entry);
       }
     });
@@ -245,7 +243,7 @@ public class RedisHashTest {
 
     subject.hscan(client_ID, null, 10, 0);
 
-    ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hscanSnapShotMap = subject.getHscanSnapShots();
+    ConcurrentHashMap<UUID, List<byte[]>> hscanSnapShotMap = subject.getHscanSnapShots();
     assertThat(hscanSnapShotMap).isEmpty();
   }
 
@@ -257,7 +255,7 @@ public class RedisHashTest {
     subject.hscan(client_ID, null, 1, 0);
 
     GeodeAwaitility.await().atMost(4, SECONDS).untilAsserted(() -> {
-      ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hscanSnapShotMap =
+      ConcurrentHashMap<UUID, List<byte[]>> hscanSnapShotMap =
           subject.getHscanSnapShots();
       assertThat(hscanSnapShotMap).isEmpty();
     });
@@ -271,67 +269,64 @@ public class RedisHashTest {
   // consider that increase before changing the constants.
   @Test
   public void constantBaseRedisHashOverhead_shouldEqualCalculatedOverhead() {
-    RedisHash hash = new RedisHash();
+    RedisHash hash = new RedisHash(Collections.emptyList());
     int baseRedisHashOverhead = reflectionObjectSizer.sizeof(hash);
 
     assertThat(baseRedisHashOverhead).isEqualTo(BASE_REDIS_HASH_OVERHEAD);
     assertThat(hash.getSizeInBytes()).isEqualTo(baseRedisHashOverhead);
   }
 
+  /**
+   * This test computes the average per field overhead of a RedisHash and
+   * compares it with the constant we have set.
+   */
   @Test
   public void constantValuePairOverhead_shouldEqualCalculatedOverhead() {
-    int sizeOfDataForOneFieldValuePair = 16; // initial byte[]s are 8 bytes each
+    RedisHash hash = new RedisHash(Collections.emptyList());
 
-    HashMap<ByteArrayWrapper, ByteArrayWrapper> tempHashmap = new HashMap<>();
+    // Used to compute the average per field overhead
+    double totalOverhead = 0;
+    final int totalFields = 1000;
 
-    ByteArrayWrapper field1 = new ByteArrayWrapper("a".getBytes());
-    ByteArrayWrapper value1 = new ByteArrayWrapper("b".getBytes());
-    ByteArrayWrapper field2 = new ByteArrayWrapper("c".getBytes());
-    ByteArrayWrapper value2 = new ByteArrayWrapper("d".getBytes());
+    // Generate pseudo-random data, but use fixed seed so the test is deterministic
+    Random random = new Random(0);
 
-    tempHashmap.put(field1, value1);
-    int oneEntryHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
+    // Add 1000 fields and compute the per field overhead after each add
+    for (int fieldCount = 1; fieldCount < totalFields; fieldCount++) {
 
-    tempHashmap.put(field2, value2);
-    int twoEntriesHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
+      // Add a random field
+      byte[] data = new byte[random.nextInt(30)];
+      random.nextBytes(data);
+      hash.hashPut(data, data);
 
-    int expectedValuePairOverhead = twoEntriesHashMapSize - oneEntryHashMapSize
-        - sizeOfDataForOneFieldValuePair;
+      // Compute the measured size
+      int size = reflectionObjectSizer.sizeof(hash);
+      final int dataSize = 2 * data.length;
 
-    assertThat(RedisHash.HASH_MAP_VALUE_PAIR_OVERHEAD).isEqualTo(expectedValuePairOverhead);
-  }
+      // Compute per field overhead with this number of fields
+      int overHeadPerField = (size - BASE_REDIS_HASH_OVERHEAD - dataSize) / fieldCount;
+      totalOverhead += overHeadPerField;
+    }
 
-  @Test
-  public void constantFirstPairOverhead_shouldEqual_calculatedOverhead() {
-    HashMap<ByteArrayWrapper, ByteArrayWrapper> tempHashmap = new HashMap<>();
-    int emptyHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
-
-    ByteArrayWrapper field = new ByteArrayWrapper("a".getBytes());
-    ByteArrayWrapper value = new ByteArrayWrapper("b".getBytes());
-
-    tempHashmap.put(field, value);
-    int oneEntryHashMapSize = reflectionObjectSizer.sizeof(tempHashmap);
-
-    int expectedFirstPairOverhead = oneEntryHashMapSize - emptyHashMapSize
-        - RedisHash.HASH_MAP_VALUE_PAIR_OVERHEAD;
-
-    assertThat(RedisHash.SIZE_OF_OVERHEAD_OF_FIRST_PAIR).isEqualTo(expectedFirstPairOverhead);
+    // Assert that the average overhead matches the constant
+    long averageOverhead = Math.round(totalOverhead / totalFields);
+    assertThat(RedisHash.HASH_MAP_VALUE_PAIR_OVERHEAD).isEqualTo(averageOverhead);
   }
 
   /******* constructor *******/
 
   @Test
   public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithSingleValue() {
-    ArrayList<ByteArrayWrapper> data = new ArrayList<>();
-    data.add(new ByteArrayWrapper("field".getBytes()));
-    data.add(new ByteArrayWrapper("valuethatisverylonggggggggg".getBytes()));
+    ArrayList<byte[]> data = new ArrayList<>();
+    data.add("field".getBytes());
+    data.add("valuethatisverylonggggggggg".getBytes());
 
     RedisHash redisHash = new RedisHash(data);
 
     final int expected = reflectionObjectSizer.sizeof(redisHash);
     final int actual = redisHash.getSizeInBytes();
 
-    final Offset<Integer> offset = Offset.offset((int) round(expected * 0.05));
+    final Offset<Integer> offset = Offset.offset((int) round(expected * 0.03));
 
     assertThat(actual).isCloseTo(expected, offset);
   }
@@ -344,7 +339,7 @@ public class RedisHashTest {
     final int expected = reflectionObjectSizer.sizeof(redisHash);
     final int actual = redisHash.getSizeInBytes();
 
-    final Offset<Integer> offset = Offset.offset((int) round(expected * 0.05));
+    final Offset<Integer> offset = Offset.offset((int) round(expected * 0.03));
 
     assertThat(actual).isCloseTo(expected, offset);
   }
@@ -354,16 +349,16 @@ public class RedisHashTest {
     final String baseField = "longerbase";
     final String baseValue = "base";
 
-    ArrayList<ByteArrayWrapper> elements = new ArrayList<>();
+    ArrayList<byte[]> elements = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
-      elements.add(createByteArrayWrapper(baseField + i));
-      elements.add(createByteArrayWrapper(baseValue + i));
+      elements.add(Coder.stringToBytes(baseField + i));
+      elements.add(Coder.stringToBytes(baseValue + i));
     }
     RedisHash hash = new RedisHash(elements);
 
     Integer actual = hash.getSizeInBytes();
     int expected = reflectionObjectSizer.sizeof(hash);
-    Offset<Integer> offset = offset((int) round(expected * 0.07));
+    Offset<Integer> offset = offset((int) round(expected * 0.03));
 
     assertThat(actual).isCloseTo(expected, offset);
   }
@@ -380,11 +375,11 @@ public class RedisHashTest {
     final RedisData returnData = mock(RedisData.class);
     when(region.put(Object.class, Object.class)).thenReturn(returnData);
 
-    RedisHash hash = new RedisHash();
-    List<ByteArrayWrapper> data = new ArrayList<>();
+    RedisHash hash = new RedisHash(Collections.emptyList());
+    List<byte[]> data = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
-      data.add(new ByteArrayWrapper((baseField + i).getBytes()));
-      data.add(new ByteArrayWrapper((baseValue + i).getBytes()));
+      data.add(Coder.stringToBytes((baseField + i)));
+      data.add(Coder.stringToBytes((baseValue + i)));
     }
 
     hash.hset(region, key, data, false);
@@ -429,22 +424,22 @@ public class RedisHashTest {
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
-    RedisHash hash = new RedisHash();
-    List<ByteArrayWrapper> initialData = new ArrayList<>();
-    initialData.add(new ByteArrayWrapper(field.getBytes()));
-    initialData.add(new ByteArrayWrapper(initialValue.getBytes()));
+    RedisHash hash = new RedisHash(Collections.emptyList());
+    List<byte[]> initialData = new ArrayList<>();
+    initialData.add(Coder.stringToBytes(field));
+    initialData.add(Coder.stringToBytes(initialValue));
 
     hash.hset(region, key, initialData, false);
     RedisHash expectedRedisHash = new RedisHash(new ArrayList<>(initialData));
 
-    List<ByteArrayWrapper> finalData = new ArrayList<>();
-    finalData.add(new ByteArrayWrapper(field.getBytes()));
-    finalData.add(new ByteArrayWrapper(finalValue.getBytes()));
+    List<byte[]> finalData = new ArrayList<>();
+    finalData.add(Coder.stringToBytes(field));
+    finalData.add(Coder.stringToBytes(finalValue));
 
     hash.hset(region, key, finalData, false);
 
     int expectedUpdatedRedisHashSize = expectedRedisHash.getSizeInBytes()
-        + (finalValue.getBytes().length - initialValue.getBytes().length);
+        + (Coder.stringToBytes(finalValue).length - Coder.stringToBytes(initialValue).length);
 
     assertThat(hash.getSizeInBytes()).isEqualTo(expectedUpdatedRedisHashSize);
   }
@@ -460,11 +455,11 @@ public class RedisHashTest {
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
-    RedisHash hash = new RedisHash();
-    List<ByteArrayWrapper> data = new ArrayList<>();
+    RedisHash hash = new RedisHash(Collections.emptyList());
+    List<byte[]> data = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
-      data.add(new ByteArrayWrapper((baseField + i).getBytes()));
-      data.add(new ByteArrayWrapper((baseValue + i).getBytes()));
+      data.add(Coder.stringToBytes((baseField + i)));
+      data.add(Coder.stringToBytes((baseValue + i)));
     }
 
     hash.hset(region, key, data, true);
@@ -484,11 +479,11 @@ public class RedisHashTest {
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
-    RedisHash hash = new RedisHash();
-    List<ByteArrayWrapper> data = new ArrayList<>();
+    RedisHash hash = new RedisHash(Collections.emptyList());
+    List<byte[]> data = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
-      data.add(new ByteArrayWrapper((baseField + i).getBytes()));
-      data.add(new ByteArrayWrapper((baseValue + i).getBytes()));
+      data.add(Coder.stringToBytes((baseField + i)));
+      data.add(Coder.stringToBytes((baseValue + i)));
     }
 
     hash.hset(region, key, data, true);
@@ -511,21 +506,21 @@ public class RedisHashTest {
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
-    RedisHash hash = new RedisHash();
-    List<ByteArrayWrapper> initialData = new ArrayList<>();
+    RedisHash hash = new RedisHash(Collections.emptyList());
+    List<byte[]> initialData = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
-      initialData.add(new ByteArrayWrapper((baseField + i).getBytes()));
-      initialData.add(new ByteArrayWrapper((initialBaseValue + i).getBytes()));
+      initialData.add(Coder.stringToBytes((baseField + i)));
+      initialData.add(Coder.stringToBytes((initialBaseValue + i)));
     }
 
     hash.hset(region, key, initialData, true);
 
     int expectedSize = hash.getSizeInBytes();
 
-    List<ByteArrayWrapper> finalData = new ArrayList<>();
+    List<byte[]> finalData = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
-      finalData.add(new ByteArrayWrapper((baseField + i).getBytes()));
-      finalData.add(new ByteArrayWrapper((finalBaseValue + i).getBytes()));
+      finalData.add(Coder.stringToBytes((baseField + i)));
+      finalData.add(Coder.stringToBytes((finalBaseValue + i)));
     }
 
     hash.hset(region, key, finalData, true);
@@ -543,12 +538,12 @@ public class RedisHashTest {
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
-    List<ByteArrayWrapper> data = new ArrayList<>();
-    List<ByteArrayWrapper> dataToRemove = new ArrayList<>();
-    ByteArrayWrapper field1 = new ByteArrayWrapper((baseField + 1).getBytes());
-    ByteArrayWrapper value1 = new ByteArrayWrapper((baseValue + 1).getBytes());
-    ByteArrayWrapper field2 = new ByteArrayWrapper((baseField + 2).getBytes());
-    ByteArrayWrapper value2 = new ByteArrayWrapper((baseValue + 2).getBytes());
+    List<byte[]> data = new ArrayList<>();
+    List<byte[]> dataToRemove = new ArrayList<>();
+    byte[] field1 = Coder.stringToBytes((baseField + 1));
+    byte[] value1 = Coder.stringToBytes((baseValue + 1));
+    byte[] field2 = Coder.stringToBytes((baseField + 2));
+    byte[] value2 = Coder.stringToBytes((baseValue + 2));
     data.add(field1);
     data.add(value1);
     data.add(field2);
@@ -560,7 +555,7 @@ public class RedisHashTest {
 
     redisHash.hdel(region, key, dataToRemove);
 
-    int expectedSize = initialSize - RedisHash.HASH_MAP_VALUE_PAIR_OVERHEAD - field1.length();
+    int expectedSize = initialSize - RedisHash.HASH_MAP_VALUE_PAIR_OVERHEAD - field1.length;
     Offset<Integer> offset = Offset.offset((int) round(expectedSize * 0.05));
 
     assertThat(redisHash.getSizeInBytes()).isCloseTo(expectedSize, offset);
@@ -575,13 +570,13 @@ public class RedisHashTest {
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
-    RedisHash hash = new RedisHash();
+    RedisHash hash = new RedisHash(Collections.emptyList());
     final int baseRedisHashOverhead = hash.getSizeInBytes();
 
-    List<ByteArrayWrapper> data = new ArrayList<>();
+    List<byte[]> data = new ArrayList<>();
     for (int i = 0; i < 100; i++) {
-      data.add(new ByteArrayWrapper((baseField + i).getBytes()));
-      data.add(new ByteArrayWrapper((baseValue + i).getBytes()));
+      data.add(Coder.stringToBytes((baseField + i)));
+      data.add(Coder.stringToBytes((baseValue + i)));
     }
 
     hash.hset(region, key, data, false);
@@ -589,8 +584,8 @@ public class RedisHashTest {
     assertThat(hash.getSizeInBytes()).isGreaterThan(0);
 
     for (int i = 0; i < 100; i++) {
-      List<ByteArrayWrapper> toRm = new ArrayList<>();
-      toRm.add(new ByteArrayWrapper((baseField + i).getBytes()));
+      List<byte[]> toRm = new ArrayList<>();
+      toRm.add(Coder.stringToBytes((baseField + i)));
       hash.hdel(region, key, toRm);
     }
 
@@ -600,42 +595,33 @@ public class RedisHashTest {
 
   /************* Helper Methods *************/
   private RedisHash createRedisHash(int NumberOfFields) {
-    ArrayList<ByteArrayWrapper> elements = createListOfDataElements(NumberOfFields);
+    ArrayList<byte[]> elements = createListOfDataElements(NumberOfFields);
     return new RedisHash(elements);
   }
 
-  private RedisHash createRedisHash(String k1, String v1, String k2, String v2) {
-    ArrayList<ByteArrayWrapper> elements = new ArrayList<>();
-
-    ByteArrayWrapper key1 = createByteArrayWrapper(k1);
-    ByteArrayWrapper value1 = createByteArrayWrapper(v1);
-    ByteArrayWrapper key2 = createByteArrayWrapper(k2);
-    ByteArrayWrapper value2 = createByteArrayWrapper(v2);
-
-    elements.add(key1);
-    elements.add(value1);
-
-    elements.add(key2);
-    elements.add(value2);
-
-    return new RedisHash(elements);
+  private RedisHash createRedisHash(String... keysAndValues) {
+    final List<byte[]> keysAndValuesList = Arrays
+        .stream(keysAndValues)
+        .map(Coder::stringToBytes)
+        .collect(Collectors.toList());
+    return new RedisHash(keysAndValuesList);
   }
 
-  private ArrayList<ByteArrayWrapper> createListOfDataElements(int NumberOfFields) {
-    ArrayList<ByteArrayWrapper> elements = new ArrayList<>();
+  private ArrayList<byte[]> createListOfDataElements(int NumberOfFields) {
+    ArrayList<byte[]> elements = new ArrayList<>();
     for (int i = 0; i < NumberOfFields; i++) {
-      elements.add(createByteArrayWrapper("field_" + i));
-      elements.add(createByteArrayWrapper("value_" + i));
+      elements.add(toBytes("field_" + i));
+      elements.add(toBytes("value_" + i));
     }
     return elements;
   }
 
   private RedisHash createRedisHashWithExpiration(int NumberOfFields, int hcanSnapshotExpiry) {
-    ArrayList<ByteArrayWrapper> elements = createListOfDataElements(NumberOfFields);
+    ArrayList<byte[]> elements = createListOfDataElements(NumberOfFields);
     return new RedisHash(elements, hcanSnapshotExpiry, hcanSnapshotExpiry);
   }
 
-  private ByteArrayWrapper createByteArrayWrapper(String str) {
-    return new ByteArrayWrapper(Coder.stringToBytes(str));
+  private byte[] toBytes(String str) {
+    return Coder.stringToBytes(str);
   }
 }

@@ -116,7 +116,7 @@ public class HScanExecutor extends AbstractScanExecutor {
     RedisHashCommands redisHashCommands =
         new RedisHashCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
 
-    Pair<Integer, List<Object>> scanResult =
+    Pair<Integer, List<byte[]>> scanResult =
         redisHashCommands.hscan(key, matchPattern, count, cursor, CLIENT_ID);
 
     context.setHscanCursor(scanResult.getLeft());
