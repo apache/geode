@@ -23,6 +23,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.internal.netty.Coder;
+
 public class RedisCommandArgumentsTestHelper {
   public static void assertExactNumberOfArgs(Jedis jedis, Protocol.Command command, int numArgs) {
     assertExactNumberOfArgs0(jedis::sendCommand, command, numArgs);
@@ -72,6 +74,13 @@ public class RedisCommandArgumentsTestHelper {
     assertAtMostNArgs0(jedis::sendCommand, command, maxNumArgs);
   }
 
+  public static void assertAtMostNArgsForSubCommand(Jedis jedis, Protocol.Command command,
+      byte[] firstParameter, int maxNumAdditionalArgs) {
+    assertAtMostNArgsForSubCommand0(jedis::sendCommand, command, firstParameter,
+        maxNumAdditionalArgs);
+
+  }
+
   public static void assertAtMostNArgs(JedisCluster jedis, Protocol.Command command,
       int maxNumArgs) {
     assertAtMostNArgs0((cmd, args) -> jedis.sendCommand("key".getBytes(), cmd, args), command,
@@ -85,6 +94,20 @@ public class RedisCommandArgumentsTestHelper {
       assertThatThrownBy(() -> runMe.apply(command, args))
           .hasMessageContaining("ERR wrong number of arguments for '"
               + command.toString().toLowerCase() + "' command");
+    }
+  }
+
+  private static void assertAtMostNArgsForSubCommand0(
+      BiFunction<Protocol.Command, byte[][], Object> runMe,
+      Protocol.Command command, byte[] firstParameter, int maxNumAdditionalArgs) {
+
+    for (int i = maxNumAdditionalArgs + 2; i <= 5; i++) {
+      byte[][] args = buildArgs(i);
+      args[0] = firstParameter;
+
+      assertThatThrownBy(() -> runMe.apply(command, args))
+          .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for '"
+              + Coder.bytesToString(firstParameter));
     }
   }
 

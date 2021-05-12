@@ -144,6 +144,16 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
+  public List<byte[]> findChannelNames() {
+    return subscriptions.findChannelNames();
+  }
+
+  @Override
+  public List<byte[]> findChannelNames(byte[] pattern) {
+    return subscriptions.findChannelNames(pattern);
+  }
+
+  @Override
   public List<byte[]> findSubscriptionNames(Client client, Subscription.Type type) {
     return subscriptions.findSubscriptions(client).stream()
         .filter(s -> s.getType() == (type))

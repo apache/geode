@@ -67,6 +67,7 @@ public class SupportedCommandsJUnitTest {
       "PEXPIREAT",
       "PING",
       "PSUBSCRIBE",
+      "PUBSUB",
       "PTTL",
       "PUBLISH",
       "PUNSUBSCRIBE",

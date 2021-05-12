@@ -68,6 +68,7 @@ import org.apache.geode.redis.internal.executor.key.ScanExecutor;
 import org.apache.geode.redis.internal.executor.key.TTLExecutor;
 import org.apache.geode.redis.internal.executor.key.TypeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PsubscribeExecutor;
+import org.apache.geode.redis.internal.executor.pubsub.PubSubExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PublishExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PunsubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.SubscribeExecutor;
@@ -213,6 +214,7 @@ public enum RedisCommandType {
   PSUBSCRIBE(new PsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
   UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
+  PUBSUB(new PubSubExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
 
   /************* Cluster *****************/
   CLUSTER(new ClusterExecutor(), SUPPORTED, new ClusterParameterRequirements()),
