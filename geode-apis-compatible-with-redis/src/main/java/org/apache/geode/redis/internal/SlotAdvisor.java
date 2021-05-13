@@ -20,7 +20,6 @@ import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUC
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -143,13 +142,8 @@ public class SlotAdvisor {
       return hostPorts.get(member);
     }
 
-    Set<DistributedMember> membersWithDataRegion = new HashSet<>();
-    for (PartitionMemberInfo memberInfo : getRegionMembers(dataRegion)) {
-      membersWithDataRegion.add(memberInfo.getDistributedMember());
-    }
     ResultCollector<RedisMemberInfo, List<RedisMemberInfo>> resultCollector =
-        FunctionService.onMembers(membersWithDataRegion)
-            .execute(RedisMemberInfoRetrievalFunction.ID);
+        FunctionService.onRegion(dataRegion).execute(RedisMemberInfoRetrievalFunction.ID);
 
     hostPorts.clear();
 
