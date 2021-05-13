@@ -134,7 +134,6 @@ public class SlotAdvisor {
     return null;
   }
 
-  @SuppressWarnings("unchecked")
   private Pair<String, Integer> getHostPort0(int bucketId) {
     InternalDistributedMember member = getOrCreateMember(bucketId);
 
@@ -142,6 +141,7 @@ public class SlotAdvisor {
       return hostPorts.get(member);
     }
 
+    @SuppressWarnings("unchecked")
     ResultCollector<RedisMemberInfo, List<RedisMemberInfo>> resultCollector =
         FunctionService.onRegion(dataRegion).execute(RedisMemberInfoRetrievalFunction.ID);
 
