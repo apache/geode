@@ -359,7 +359,6 @@ dependencies {
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
-    integrationTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 
     integrationTestRuntimeOnly('org.apache.derby:derby')
     integrationTestRuntimeOnly('xerces:xercesImpl')
@@ -379,7 +378,6 @@ dependencies {
     distributedTestImplementation('com.jayway.jsonpath:json-path-assert')
     distributedTestImplementation('net.openhft:compiler')
 
-    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
     distributedTestRuntimeOnly('org.apache.derby:derby')
 
 

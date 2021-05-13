@@ -31,7 +31,7 @@ import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 @Category(GfshTest.class)
-public class ConnectCommandAcceptanceTest {
+public class ConnectCommandUpgradeTest {
 
   @Rule
   public GfshRule gfsh130 = new GfshRule("1.3.0");

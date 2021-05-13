@@ -39,8 +39,7 @@ dependencies {
     integrationTestImplementation('org.mockito:mockito-core')
     integrationTestImplementation(project(':geode-junit'))
 
-    distributedTestImplementation(project(':geode-gfsh'))
-    distributedTestImplementation(project(':geode-dunit'))
-    distributedTestImplementation(project(':geode-membership'))
-    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+    upgradeTestImplementation(project(':geode-gfsh'))
+    upgradeTestImplementation(project(':geode-dunit'))
+    upgradeTestImplementation(project(':geode-membership'))
 }
