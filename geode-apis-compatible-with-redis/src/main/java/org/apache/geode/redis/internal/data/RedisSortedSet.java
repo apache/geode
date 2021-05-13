@@ -45,8 +45,7 @@ public class RedisSortedSet extends AbstractRedisData {
   private Object2ObjectOpenCustomHashMap<byte[], byte[]> members;
 
   protected static final int BASE_REDIS_SORTED_SET_OVERHEAD = 184;
-  protected static final int PER_MEMBER_OVERHEAD = 77;
-  protected static final int INTERNAL_CUSTOM_HASHMAP_STORAGE_OVERHEAD = 86;
+  protected static final int PER_PAIR_OVERHEAD = 48;
 
   private int sizeInBytes;
 
@@ -59,19 +58,19 @@ public class RedisSortedSet extends AbstractRedisData {
     ADDED, CHANGED, NOOP
   }
 
+  private int calculateSizeOfNewFieldValuePair(byte[] member, byte[] score) {
+    return PER_PAIR_OVERHEAD + member.length + score.length;
+  }
+
   RedisSortedSet(List<byte[]> members) {
     sizeInBytes += BASE_REDIS_SORTED_SET_OVERHEAD;
     this.members = new Object2ObjectOpenCustomHashMap<>(members.size(), ByteArrays.HASH_STRATEGY);
     Iterator<byte[]> iterator = members.iterator();
-    if (members.size() > 0) {
-      sizeInBytes += INTERNAL_CUSTOM_HASHMAP_STORAGE_OVERHEAD;
-    }
 
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
-      sizeInBytes += PER_MEMBER_OVERHEAD + score.length;
       byte[] member = iterator.next();
-      sizeInBytes += PER_MEMBER_OVERHEAD + member.length;
+      sizeInBytes += calculateSizeOfNewFieldValuePair(member, score);
       this.members.put(member, score);
     }
   }
@@ -160,17 +159,10 @@ public class RedisSortedSet extends AbstractRedisData {
     return REDIS_SORTED_SET_ID;
   }
 
-  private synchronized AddOrChange membersAdd(byte[] memberToAdd, byte[] scoreToAdd, boolean CH) {
-    byte[] oldScore = members.get(memberToAdd);
+  protected synchronized AddOrChange memberAdd(byte[] memberToAdd, byte[] scoreToAdd) {
     boolean added = (members.put(memberToAdd, scoreToAdd) == null);
     if (added) {
-      sizeInBytes += PER_MEMBER_OVERHEAD + memberToAdd.length;
-      if (members.size() == 1) {
-        sizeInBytes += INTERNAL_CUSTOM_HASHMAP_STORAGE_OVERHEAD;
-      }
-    }
-    if (CH && !added) {
-      return Arrays.equals(oldScore, scoreToAdd) ? AddOrChange.NOOP : AddOrChange.CHANGED;
+      sizeInBytes += calculateSizeOfNewFieldValuePair(memberToAdd, scoreToAdd);
     }
     return added ? AddOrChange.ADDED : AddOrChange.NOOP;
   }
@@ -179,16 +171,16 @@ public class RedisSortedSet extends AbstractRedisData {
     Iterator<byte[]> iterator = addsDeltaInfo.getAdds().iterator();
     while (iterator.hasNext()) {
       byte[] member = iterator.next();
-      sizeInBytes += PER_MEMBER_OVERHEAD + member.length;
+      sizeInBytes += PER_PAIR_OVERHEAD + member.length;
       byte[] score = iterator.next();
-      sizeInBytes += PER_MEMBER_OVERHEAD + score.length;
+      sizeInBytes += PER_PAIR_OVERHEAD + score.length;
       members.put(member, score);
     }
   }
 
   private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
     for (byte[] member : remsDeltaInfo.getRemoves()) {
-      sizeInBytes -= (PER_MEMBER_OVERHEAD + member.length);
+      sizeInBytes -= (PER_PAIR_OVERHEAD + member.length);
       members.remove(member);
     }
   }
@@ -222,7 +214,7 @@ public class RedisSortedSet extends AbstractRedisData {
           continue;
         }
       }
-      switch (membersAdd(member, score, false)) {
+      switch (memberAdd(member, score)) {
         case ADDED:
           membersAdded++;
           makeAddsDeltaInfo(deltaInfo, member, score);

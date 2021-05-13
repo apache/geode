@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static java.lang.Math.round;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.BASE_REDIS_SORTED_SET_OVERHEAD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -24,9 +25,13 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
+import org.assertj.core.data.Offset;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -146,16 +151,6 @@ public class RedisSortedSetTest {
     assertThat(o2).isEqualTo(o1);
   }
 
-
-  private RedisSortedSet createRedisSortedSet(String k1, String v1, String k2, String v2) {
-    List<byte[]> elements = new ArrayList<>();
-    elements.add(Coder.stringToBytes(k1));
-    elements.add(Coder.stringToBytes(v1));
-    elements.add(Coder.stringToBytes(k2));
-    elements.add(Coder.stringToBytes(v2));
-    return new RedisSortedSet(elements);
-  }
-
   /****************** Size ******************/
   @Test
   public void constantBaseRedisSortedSetOverhead_shouldEqualCalculatedOverhead() {
@@ -166,4 +161,74 @@ public class RedisSortedSetTest {
     assertThat(sortedSet.getSizeInBytes()).isEqualTo(baseRedisSortedSetOverhead);
   }
 
+  @Test
+  public void constantValuePairOverhead_shouldEqualCalculatedOverhead() {
+    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList());
+
+    // Used to compute the average per field overhead
+    double totalOverhead = 0;
+    final int totalFields = 1000;
+
+    // Generate pseudo-random data, but use fixed seed so the test is deterministic
+    Random random = new Random(0);
+
+    // Add 1000 fields and compute the per field overhead after each add
+    for (int fieldCount = 1; fieldCount < totalFields; fieldCount++) {
+      // Add a random field
+      byte[] data = new byte[random.nextInt(30)];
+      random.nextBytes(data);
+      sortedSet.memberAdd(data, data);
+
+      // Compute the measured size
+      int size = reflectionObjectSizer.sizeof(sortedSet);
+      final int dataSize = 2 * data.length;
+
+      // Compute per field overhead with this number of fields
+      int overHeadPerField = (size - BASE_REDIS_SORTED_SET_OVERHEAD - dataSize) / fieldCount;
+      totalOverhead += overHeadPerField;
+    }
+
+    // Assert that the average overhead matches the constant
+    long averageOverhead = Math.round(totalOverhead / totalFields);
+    assertThat(RedisSortedSet.PER_PAIR_OVERHEAD).isEqualTo(averageOverhead);
+  }
+
+  @Test
+  public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithSingleValue() {
+    ArrayList<byte[]> data = new ArrayList<>();
+    data.add("1.0".getBytes());
+    data.add("membernamethatisverylonggggggggg".getBytes());
+
+    RedisSortedSet sortedSet = new RedisSortedSet(data);
+
+    final int expected = reflectionObjectSizer.sizeof(sortedSet);
+    final int actual = sortedSet.getSizeInBytes();
+
+    final Offset<Integer> offset = Offset.offset((int) round(expected * 0.03));
+
+    assertThat(actual).isCloseTo(expected, offset);
+  }
+
+  @Test
+  public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithMultipleValues() {
+  RedisSortedSet sortedSet =
+      createRedisSortedSet("1.0", "memberUnoIsTheFirstMember",
+          "2.0", "memberDueIsTheSecondMember", "3.0", "memberTreIsTheThirdMember",
+          "4.0", "memberQuatroIsTheThirdMember");
+
+    final int expected = reflectionObjectSizer.sizeof(sortedSet);
+    final int actual = sortedSet.getSizeInBytes();
+
+    final Offset<Integer> offset = Offset.offset((int) round(expected * 0.03));
+
+    assertThat(actual).isCloseTo(expected, offset);
+  }
+
+  private RedisSortedSet createRedisSortedSet(String... membersAndScores) {
+    final List<byte[]> membersAndScoresList = Arrays
+        .stream(membersAndScores)
+        .map(Coder::stringToBytes)
+        .collect(Collectors.toList());
+    return new RedisSortedSet(membersAndScoresList);
+  }
 }
