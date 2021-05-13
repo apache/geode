@@ -31,7 +31,7 @@ public class MemoryStatsNativeRedisAcceptanceTest extends AbstractRedisMemorySta
 
   @Override
   public void configureMemoryAndEvictionPolicy(Jedis jedis) {
-    jedis.configSet("maxmemory", "18000000");
+    jedis.configSet("maxmemory", "10000000");
     jedis.configSet("maxmemory-policy", "allkeys-lru");
   }
 }
