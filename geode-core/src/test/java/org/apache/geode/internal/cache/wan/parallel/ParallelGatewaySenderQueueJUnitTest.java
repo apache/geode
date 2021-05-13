@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -47,6 +48,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.AbstractBucketRegionQueue;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketRegionQueue;
@@ -168,6 +170,11 @@ public class ParallelGatewaySenderQueueJUnitTest {
     RegionAdvisor ra = mock(RegionAdvisor.class);
     BucketAdvisor ba = mock(BucketAdvisor.class);
     when(userPR.getRegionAdvisor()).thenReturn(ra);
+    InternalDistributedMember internalDistributedMember = mock(InternalDistributedMember.class);
+    Set<InternalDistributedMember> expected = new HashSet<>();
+    expected.add(internalDistributedMember);
+    when(ra.getBucketOwners(1)).thenReturn(expected);
+    when(prQ.getCache().getMyId()).thenReturn(internalDistributedMember);
     when(ra.getBucketAdvisor(1)).thenReturn(ba);
     when(ba.isShadowBucketDestroyed("/__PR/_B__PARALLEL_GATEWAY_SENDER_QUEUE_1")).thenReturn(false);
 
