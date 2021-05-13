@@ -177,6 +177,23 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     });
   }
 
+  private int createLocator(VM memberVM) {
+    final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+
+    return memberVM.invoke("create locator", () -> {
+      System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
+      try {
+        // for stress-tests make sure that an older-version locator doesn't try
+        // to read state persisted by another run's newer-version locator
+        DistributedTestUtils.deleteLocatorStateFile(port);
+        return Locator.startLocatorAndDS(port, new File(""), getDistributedSystemProperties())
+            .getPort();
+      } finally {
+        System.clearProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
+      }
+    });
+  }
+
   @SuppressWarnings("deprecation")
   private void testDeprecatedMessageTypes(VM clientVM, int locatorPort) {
     clientVM.invoke("issue info request",
@@ -224,12 +241,12 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     };
 
   }
-
   /*
    * The TcpClient class changed in version FIRST_NEW_VERSION. That version (and later)
    * no longer has the old constructor TcpClient(final Properties), so we have to access
    * that constructor via reflection.
    */
+
   private TcpClient getLegacyTcpClient()
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
       InstantiationException {
@@ -249,23 +266,6 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
         TcpSocketFactory.DEFAULT);
-  }
-
-  private int createLocator(VM memberVM) {
-    final int port = AvailablePortHelper.getRandomAvailableTCPPort();
-
-    return memberVM.invoke("create locator", () -> {
-      System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
-      try {
-        // for stress-tests make sure that an older-version locator doesn't try
-        // to read state persisted by another run's newer-version locator
-        DistributedTestUtils.deleteLocatorStateFile(port);
-        return Locator.startLocatorAndDS(port, new File(""), getDistributedSystemProperties())
-            .getPort();
-      } finally {
-        System.clearProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
-      }
-    });
   }
 
   public Properties getDistributedSystemProperties() {
