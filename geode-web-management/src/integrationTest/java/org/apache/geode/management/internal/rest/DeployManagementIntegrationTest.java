@@ -40,7 +40,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.EntityInfo;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.runtime.DeploymentInfo;
 import org.apache.geode.test.compiler.JarBuilder;

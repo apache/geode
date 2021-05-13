@@ -722,10 +722,10 @@ javadoc/org/apache/geode/management/cli/UpdateAllConfigurationGroupsMarker.html
 javadoc/org/apache/geode/management/cli/package-frame.html
 javadoc/org/apache/geode/management/cli/package-summary.html
 javadoc/org/apache/geode/management/cli/package-tree.html
-javadoc/org/apache/geode/management/client/ClusterManagementServiceBuilder.html
-javadoc/org/apache/geode/management/client/package-frame.html
-javadoc/org/apache/geode/management/client/package-summary.html
-javadoc/org/apache/geode/management/client/package-tree.html
+javadoc/org/apache/geode/management/cluster/client/ClusterManagementServiceBuilder.html
+javadoc/org/apache/geode/management/cluster/client/package-frame.html
+javadoc/org/apache/geode/management/cluster/client/package-summary.html
+javadoc/org/apache/geode/management/cluster/client/package-tree.html
 javadoc/org/apache/geode/management/configuration/AbstractConfiguration.html
 javadoc/org/apache/geode/management/configuration/AutoSerializer.html
 javadoc/org/apache/geode/management/configuration/ClassName.html

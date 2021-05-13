@@ -43,6 +43,7 @@ import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementServiceTransport;
 import org.apache.geode.management.api.CommandType;
+import org.apache.geode.management.cluster.client.internal.ClientClusterManagementService;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.OperationResult;

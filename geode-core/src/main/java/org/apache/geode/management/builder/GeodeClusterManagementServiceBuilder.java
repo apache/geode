@@ -18,8 +18,8 @@ package org.apache.geode.management.builder;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.management.api.ConnectionConfig;
-import org.apache.geode.management.internal.api.BaseManagementServiceBuilder;
 import org.apache.geode.management.internal.api.GeodeConnectionConfig;
+import org.apache.geode.management.service.internal.api.BaseManagementServiceBuilder;
 
 public class GeodeClusterManagementServiceBuilder
     extends BaseManagementServiceBuilder<GeodeClusterManagementServiceBuilder> {
