@@ -136,14 +136,14 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     boolean queuedEvent = false;
     try {
       if (getSender().beforeEnqueue(gatewayQueueEvent)) {
+        if (condition != null &&
+            !((ParallelGatewaySenderQueue) this.queue).hasEventsMatching(
+                (GatewaySenderEventImpl) gatewayQueueEvent,
+                condition)) {
+          return false;
+        }
         long start = getSender().getStatistics().startTime();
         try {
-          if (condition != null &&
-              !((ParallelGatewaySenderQueue) this.queue).hasEventsMatching(
-                  (GatewaySenderEventImpl) gatewayQueueEvent,
-                  condition)) {
-            return false;
-          }
           queuedEvent = this.queue.put(gatewayQueueEvent);
         } catch (InterruptedException e) {
           e.printStackTrace();

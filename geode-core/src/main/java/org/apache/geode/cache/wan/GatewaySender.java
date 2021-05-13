@@ -172,7 +172,7 @@ public interface GatewaySender {
    * to a high value could cause that under heavy load and group-transaction-events set to true,
    * batches are held for some time before being sent.
    */
-  int GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
+  int DEFAULT_GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-retries",
           2);
   /**
@@ -444,6 +444,14 @@ public interface GatewaySender {
   boolean mustGroupTransactionEvents();
 
   /**
+   * Returns retriesToGetTransactionEventsFromQueue int property for this GatewaySender.
+   *
+   * @return retriesToGetTransactionEventsFromQueue int property for this GatewaySender
+   *
+   */
+  int getRetriesToGetTransactionEventsFromQueue();
+
+  /**
    * Returns the number of dispatcher threads working for this <code>GatewaySender</code>. Default
    * number of dispatcher threads is 5.
    *
@@ -521,5 +529,15 @@ public interface GatewaySender {
    *
    */
   void setGatewayEventFilters(List<GatewayEventFilter> filters);
+
+  /**
+   * Set the number of retries to get transaction events
+   * for this GatewaySender when GroupTransactionEvents
+   * is set.
+   *
+   * @since Geode 1.15
+   *
+   */
+  void setRetriesToGetTransactionEventsFromQueue(int retries);
 
 }

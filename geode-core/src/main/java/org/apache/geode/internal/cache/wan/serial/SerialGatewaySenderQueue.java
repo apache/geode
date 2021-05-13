@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
-import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
 import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
 
 import java.util.ArrayList;
@@ -498,9 +497,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         }
       }
       if (incompleteTransactionIdsInBatch.size() == 0 ||
-          retries++ == GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
+          retries >= sender.getRetriesToGetTransactionEventsFromQueue()) {
         break;
       }
+      retries++;
       try {
         Thread.sleep(GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       } catch (InterruptedException e) {

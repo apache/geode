@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
-import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
 import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
 
@@ -1421,9 +1420,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
       }
       if (incompleteTransactionIdsInBatch.size() == 0 ||
-          retries++ == GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
+          retries >= sender.getRetriesToGetTransactionEventsFromQueue()) {
         break;
       }
+      retries++;
       try {
         Thread.sleep(GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       } catch (InterruptedException e) {
@@ -1844,7 +1844,15 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     int bucketId = event.getBucketId();
     BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
 
-    return brq.hasEventsMatching(condition);
+    if (brq.hasEventsMatching(condition)) {
+      return true;
+    }
+    for (Object ev : peekedEvents) {
+      if (condition.test((GatewaySenderEventImpl) ev)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // TODO:REF: Name for this class should be appropriate?

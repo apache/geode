@@ -1776,6 +1776,10 @@ public class WANTestBase extends DistributedTestCase {
           numDispatcherThreadsForTheRun, GatewaySender.DEFAULT_ORDER_POLICY,
           GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE);
       gateway.setGroupTransactionEvents(groupTransactionEvents);
+      if (groupTransactionEvents) {
+        // Set a very high value to avoid flakiness in test cases
+        gateway.setRetriesToGetTransactionEventsFromQueue(50);
+      }
       gateway.create(dsName, remoteDsId);
     } finally {
       exln.remove();

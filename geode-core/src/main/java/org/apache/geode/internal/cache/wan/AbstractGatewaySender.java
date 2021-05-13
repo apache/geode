@@ -128,6 +128,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected boolean groupTransactionEvents;
 
+  protected int retriesToGetTransactionEventsFromQueue;
+
   protected volatile boolean isStopping = false;
 
   protected boolean isForInternalUse;
@@ -259,6 +261,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     this.manualStart = attrs.isManualStart();
     this.isParallel = attrs.isParallel();
     this.groupTransactionEvents = attrs.mustGroupTransactionEvents();
+    this.retriesToGetTransactionEventsFromQueue = attrs.getRetriesToGetTransactionEventsFromQueue();
     this.isForInternalUse = attrs.isForInternalUse();
     this.diskStoreName = attrs.getDiskStoreName();
     this.remoteDSId = attrs.getRemoteDSId();
@@ -568,6 +571,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return this.groupTransactionEvents;
   }
 
+  @Override
+  public int getRetriesToGetTransactionEventsFromQueue() {
+    return this.retriesToGetTransactionEventsFromQueue;
+  }
+
   public boolean isForInternalUse() {
     return this.isForInternalUse;
   }
@@ -713,7 +721,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     } else {
       this.eventFilters = Collections.unmodifiableList(filters);
     }
-  };
+  }
+
+  @Override
+  public void setRetriesToGetTransactionEventsFromQueue(int retries) {
+    this.retriesToGetTransactionEventsFromQueue = retries;
+  }
 
   public boolean beforeEnqueue(GatewayQueueEvent gatewayEvent) {
     boolean enqueue = true;
@@ -1155,6 +1168,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
                     && clonedEvent.getTransactionId()
                         .equals((x).getTransactionId());
           }
+
           if (!ev.enqueueEvent(operation, clonedEvent, substituteValue, isLastEventInTransaction,
               hasSameTransactionIdPredicate)) {
             recordDroppedEvent(event);
