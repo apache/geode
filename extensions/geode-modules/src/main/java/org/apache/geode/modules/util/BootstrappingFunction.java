@@ -14,9 +14,7 @@
  */
 package org.apache.geode.modules.util;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import java.io.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -163,7 +161,19 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     // Create and execute the function
     Cache cache = CacheFactory.getAnyInstance();
     Execution execution = FunctionService.onMember(member);
-    logger.info("BR About to execute boostrapping function in " + new Exception().getStackTrace());
+
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    new Exception().printStackTrace(pw);
+    String stackTrace = sw.toString();
+    logger.info("BR About to execute boostrapping function in " + stackTrace);
+    pw.close();
+    
+    try {
+      sw.close();
+    } catch (Exception ex) {
+
+    }
 
     ResultCollector collector = execution.execute(this);
 
