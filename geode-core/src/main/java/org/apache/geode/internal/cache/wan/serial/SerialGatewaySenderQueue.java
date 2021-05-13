@@ -800,6 +800,18 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   @VisibleForTesting
   public KeyAndEventPair peekAhead() throws CacheException {
+    // When group-transaction-events is true, peekAhead must
+    // be synchronized in order to get a consistent view
+    // of extraPeekedIds and currentKey as provided by remove()
+    if (mustGroupTransactionEvents()) {
+      synchronized (this) {
+        return peekAheadNotSynchronized();
+      }
+    }
+    return peekAheadNotSynchronized();
+  }
+
+  private KeyAndEventPair peekAheadNotSynchronized() throws CacheException {
     AsyncEvent object = null;
     Long currentKey = getCurrentKey();
     if (currentKey == null) {
