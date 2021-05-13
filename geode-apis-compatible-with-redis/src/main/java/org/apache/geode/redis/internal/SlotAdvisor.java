@@ -17,10 +17,8 @@ package org.apache.geode.redis.internal;
 
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_REGION_BUCKETS;
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
-import static org.apache.geode.redis.internal.cluster.RedisMemberInfoRetrievalFunction.RedisMemberInfo;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,8 +35,10 @@ import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfoRetrievalFunction;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
@@ -46,26 +46,17 @@ import org.apache.geode.redis.internal.data.RedisKey;
 public class SlotAdvisor {
 
   private static final Logger logger = LogService.getLogger();
-
-  /**
-   * Mapping buckets to slot information
-   */
-  private final List<MemberBucketSlot> memberBucketSlots;
+  private static final int HOSTPORT_RETRIEVAL_ATTEMPTS = 10;
+  private static final int HOSTPORT_RETRIEVAL_INTERVAL = 6_000;
 
   /**
    * Cache of member ids to member IP address and redis listening port
    */
-  private final Map<String, Pair<String, Integer>> hostPorts = new HashMap<>();
+  private final Map<DistributedMember, Pair<String, Integer>> hostPorts = new HashMap<>();
   private final PartitionedRegion dataRegion;
-  private final Region<String, Object> configRegion;
 
-  SlotAdvisor(Region<RedisKey, RedisData> dataRegion, Region<String, Object> configRegion) {
+  SlotAdvisor(Region<RedisKey, RedisData> dataRegion) {
     this.dataRegion = (PartitionedRegion) dataRegion;
-    this.configRegion = configRegion;
-    memberBucketSlots = new ArrayList<>(RegionProvider.REDIS_REGION_BUCKETS);
-    for (int i = 0; i < REDIS_REGION_BUCKETS; i++) {
-      memberBucketSlots.add(null);
-    }
   }
 
   public boolean isLocal(RedisKey key) {
@@ -74,10 +65,7 @@ public class SlotAdvisor {
   }
 
   public Pair<String, Integer> getHostAndPortForKey(RedisKey key) {
-    int bucketId = key.getBucketId();
-    MemberBucketSlot mbs = updateBucketDetails(bucketId);
-
-    return Pair.of(mbs.getPrimaryIpAddress(), mbs.getPrimaryPort());
+    return getHostPort(key.getBucketId());
   }
 
   public Map<String, List<Integer>> getMemberBuckets() {
@@ -85,42 +73,34 @@ public class SlotAdvisor {
 
     Map<String, List<Integer>> memberBuckets = new HashMap<>();
     for (int bucketId = 0; bucketId < REDIS_REGION_BUCKETS; bucketId++) {
-      String memberId =
-          dataRegion.getRegionAdvisor().getBucketAdvisor(bucketId).getPrimary().getUniqueId();
+      String memberId = getOrCreateMember(bucketId).getUniqueId();
       memberBuckets.computeIfAbsent(memberId, k -> new ArrayList<>()).add(bucketId);
     }
 
     return memberBuckets;
   }
 
+  /**
+   * This returns a list of {@link MemberBucketSlot}s where each entry corresponds to a bucket. If
+   * the details for a given bucket cannot be determined, that entry will contain {@code null}.
+   */
   public synchronized List<MemberBucketSlot> getBucketSlots() {
     initializeBucketsIfNecessary();
 
+    List<MemberBucketSlot> memberBucketSlots = new ArrayList<>(RegionProvider.REDIS_REGION_BUCKETS);
     for (int bucketId = 0; bucketId < REDIS_REGION_BUCKETS; bucketId++) {
-      updateBucketDetails(bucketId);
+      Pair<String, Integer> hostPort = getHostPort(bucketId);
+      if (hostPort != null) {
+        memberBucketSlots.add(
+            new MemberBucketSlot(bucketId, hostPort.getLeft(), hostPort.getRight()));
+      }
     }
 
-    return Collections.unmodifiableList(memberBucketSlots);
+    return memberBucketSlots;
   }
 
-  private synchronized MemberBucketSlot updateBucketDetails(int bucketId) {
-    MemberBucketSlot mbs = null;
-    try {
-      Pair<String, Integer> hostPort = getHostPort(bucketId);
-
-      mbs = memberBucketSlots.get(bucketId);
-      if (mbs == null) {
-        mbs = new MemberBucketSlot(bucketId, hostPort.getLeft(), hostPort.getRight());
-        memberBucketSlots.set(bucketId, mbs);
-      } else {
-        mbs.setPrimaryIpAddress(hostPort.getLeft());
-        mbs.setPrimaryPort(hostPort.getRight());
-      }
-    } catch (Exception ex) {
-      logger.error("Unable to update bucket detail for bucketId: {}", bucketId, ex);
-    }
-
-    return mbs;
+  private InternalDistributedMember getOrCreateMember(int bucketId) {
+    return dataRegion.getOrCreateNodeForBucketWrite(bucketId, null);
   }
 
   private void initializeBucketsIfNecessary() {
@@ -130,20 +110,43 @@ public class SlotAdvisor {
     }
   }
 
-  @SuppressWarnings("unchecked")
+  /**
+   * This method will retry for {@link #HOSTPORT_RETRIEVAL_ATTEMPTS} attempts and return null if
+   * no information could be retrieved.
+   */
   private Pair<String, Integer> getHostPort(int bucketId) {
-    String memberId =
-        dataRegion.getRegionAdvisor().getBucketAdvisor(bucketId).getPrimary().getUniqueId();
+    Pair<String, Integer> response;
 
-    if (hostPorts.containsKey(memberId)) {
-      return hostPorts.get(memberId);
+    for (int i = 0; i < HOSTPORT_RETRIEVAL_ATTEMPTS; i++) {
+      response = getHostPort0(bucketId);
+      if (response != null) {
+        return response;
+      }
+
+      try {
+        Thread.sleep(HOSTPORT_RETRIEVAL_INTERVAL);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    logger.error("Unable to retrieve host and redis port for member with bucketId: {}", bucketId);
+
+    return null;
+  }
+
+  @SuppressWarnings("unchecked")
+  private Pair<String, Integer> getHostPort0(int bucketId) {
+    InternalDistributedMember member = getOrCreateMember(bucketId);
+
+    if (hostPorts.containsKey(member)) {
+      return hostPorts.get(member);
     }
 
     Set<DistributedMember> membersWithDataRegion = new HashSet<>();
     for (PartitionMemberInfo memberInfo : getRegionMembers(dataRegion)) {
       membersWithDataRegion.add(memberInfo.getDistributedMember());
     }
-
     ResultCollector<RedisMemberInfo, List<RedisMemberInfo>> resultCollector =
         FunctionService.onMembers(membersWithDataRegion)
             .execute(RedisMemberInfoRetrievalFunction.ID);
@@ -153,16 +156,10 @@ public class SlotAdvisor {
     for (RedisMemberInfo memberInfo : resultCollector.getResult()) {
       Pair<String, Integer> hostPort =
           Pair.of(memberInfo.getHostAddress(), memberInfo.getRedisPort());
-      hostPorts.put(memberInfo.getMemberId(), hostPort);
+      hostPorts.put(memberInfo.getMember(), hostPort);
     }
 
-    if (!hostPorts.containsKey(memberId)) {
-      // There is a very tiny window where this might happen - a member was hosting a bucket and
-      // died before the fn call above could even complete.
-      throw new RuntimeException("Unable to retrieve host and redis port for member: " + memberId);
-    }
-
-    return hostPorts.get(memberId);
+    return hostPorts.get(member);
   }
 
   private Set<PartitionMemberInfo> getRegionMembers(PartitionedRegion dataRegion) {
@@ -174,8 +171,8 @@ public class SlotAdvisor {
 
   public static class MemberBucketSlot {
     private final Integer bucketId;
-    private String primaryIpAddress;
-    private Integer primaryPort;
+    private final String primaryIpAddress;
+    private final Integer primaryPort;
     private final Integer slotStart;
     private final Integer slotEnd;
 
@@ -195,16 +192,8 @@ public class SlotAdvisor {
       return primaryIpAddress;
     }
 
-    public void setPrimaryIpAddress(String primaryIpAddress) {
-      this.primaryIpAddress = primaryIpAddress;
-    }
-
     public Integer getPrimaryPort() {
       return primaryPort;
-    }
-
-    public void setPrimaryPort(Integer primaryPort) {
-      this.primaryPort = primaryPort;
     }
 
     public Integer getSlotStart() {

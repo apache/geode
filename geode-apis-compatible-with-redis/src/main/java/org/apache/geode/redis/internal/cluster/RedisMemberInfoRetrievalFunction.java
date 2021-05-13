@@ -15,11 +15,11 @@
 
 package org.apache.geode.redis.internal.cluster;
 
-import java.io.Serializable;
 import java.net.InetAddress;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.inet.LocalHostUtil;
 
@@ -52,10 +52,8 @@ public class RedisMemberInfoRetrievalFunction implements InternalFunction<Void> 
 
   @Override
   public void execute(FunctionContext<Void> context) {
-    String memberId =
-        context.getCache().getDistributedSystem().getDistributedMember().getUniqueId();
-
-    context.getResultSender().lastResult(new RedisMemberInfo(memberId, hostAddress, redisPort));
+    DistributedMember member = context.getCache().getDistributedSystem().getDistributedMember();
+    context.getResultSender().lastResult(new RedisMemberInfo(member, hostAddress, redisPort));
   }
 
   @Override
@@ -63,27 +61,8 @@ public class RedisMemberInfoRetrievalFunction implements InternalFunction<Void> 
     return ID;
   }
 
-  public static class RedisMemberInfo implements Serializable {
-    private final String memberId;
-    private final String hostAddress;
-    private final int redisPort;
-
-    public RedisMemberInfo(String memberId, String hostAddress, int redisPort) {
-      this.memberId = memberId;
-      this.hostAddress = hostAddress;
-      this.redisPort = redisPort;
-    }
-
-    public String getMemberId() {
-      return memberId;
-    }
-
-    public String getHostAddress() {
-      return hostAddress;
-    }
-
-    public int getRedisPort() {
-      return redisPort;
-    }
+  @Override
+  public boolean optimizeForWrite() {
+    return true;
   }
 }

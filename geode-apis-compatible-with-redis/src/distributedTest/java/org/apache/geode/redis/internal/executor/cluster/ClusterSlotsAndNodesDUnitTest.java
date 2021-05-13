@@ -25,11 +25,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.assertj.core.data.Offset;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.ResourceManager;
@@ -57,6 +60,8 @@ public class ClusterSlotsAndNodesDUnitTest {
 
   private static Jedis jedis1;
   private static Jedis jedis2;
+  private static JedisCluster jedisCluster;
+  private static int redisServerPort1;
 
   @BeforeClass
   public static void classSetup() {
@@ -64,11 +69,20 @@ public class ClusterSlotsAndNodesDUnitTest {
     server1 = cluster.startRedisVM(1, locator.getPort());
     cluster.startRedisVM(2, locator.getPort());
 
-    int redisServerPort1 = cluster.getRedisPort(1);
+    redisServerPort1 = cluster.getRedisPort(1);
     int redisServerPort2 = cluster.getRedisPort(2);
 
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
     jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
+
+    jedisCluster = new JedisCluster(new HostAndPort("localhost", redisServerPort1), JEDIS_TIMEOUT);
+  }
+
+  @AfterClass
+  public static void teardown() {
+    jedis1.close();
+    jedis2.close();
+    jedisCluster.close();
   }
 
   @Test
@@ -108,6 +122,7 @@ public class ClusterSlotsAndNodesDUnitTest {
 
   @Test
   public void slotsDistributionIsFairlyUniform() {
+    rebalanceAllRegions(server1);
     List<Object> slots = jedis1.clusterSlots();
     List<ClusterNode> nodes = ClusterNodes.parseClusterSlots(slots).getNodes();
 
@@ -143,6 +158,43 @@ public class ClusterSlotsAndNodesDUnitTest {
     assertThat(nodes.get(1).slots.size()).isCloseTo(REDIS_REGION_BUCKETS / 2, Offset.offset(2));
 
     info = jedis1.clusterInfo();
+    assertThat(info).contains("cluster_known_nodes:2");
+    assertThat(info).contains("cluster_size:2");
+  }
+
+  @Test
+  public void whenMultipleServersFail_bucketsAreRecreated() {
+    int ENTRIES = 1000;
+
+    cluster.startRedisVM(3, locator.getPort());
+    cluster.startRedisVM(4, locator.getPort());
+    rebalanceAllRegions(server1);
+
+    for (int i = 0; i < ENTRIES; i++) {
+      jedisCluster.set("key-" + i, "value-" + 1);
+    }
+
+    cluster.crashVM(3);
+    cluster.crashVM(4);
+
+    // Implicitly recreate missing buckets.
+    jedis1.clusterSlots();
+    rebalanceAllRegions(server1);
+
+    int keysRemaining = 0;
+    for (int i = 0; i < ENTRIES; i++) {
+      keysRemaining += jedisCluster.get("key-" + i) != null ? 1 : 0;
+    }
+
+    assertThat(keysRemaining).isLessThan(ENTRIES);
+
+    List<Object> slots = jedis1.clusterSlots();
+    List<ClusterNode> nodes = ClusterNodes.parseClusterSlots(slots).getNodes();
+
+    assertThat(nodes).as("incorrect number of nodes").hasSize(2);
+    assertThat(nodes.get(0).slots.size()).isCloseTo(REDIS_REGION_BUCKETS / 2, Offset.offset(2));
+
+    String info = jedis1.clusterInfo();
     assertThat(info).contains("cluster_known_nodes:2");
     assertThat(info).contains("cluster_size:2");
   }

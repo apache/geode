@@ -69,7 +69,7 @@ public class RegionProvider {
 
     this.hashCommands = new RedisHashCommandsFunctionInvoker(dataRegion);
 
-    slotAdvisor = new SlotAdvisor(dataRegion, configRegion);
+    slotAdvisor = new SlotAdvisor(dataRegion);
   }
 
   public Region<RedisKey, RedisData> getDataRegion() {

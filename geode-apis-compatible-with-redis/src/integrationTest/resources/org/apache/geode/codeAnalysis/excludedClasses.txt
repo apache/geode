@@ -1,1 +1,2 @@
+org/apache/geode/redis/internal/cluster/RedisMemberInfoRetrievalFunction
 org/apache/geode/redis/internal/collections/Object2ObjectOpenCustomHashMapWithCursor

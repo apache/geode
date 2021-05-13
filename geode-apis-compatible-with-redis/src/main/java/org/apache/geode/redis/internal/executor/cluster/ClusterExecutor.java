@@ -25,13 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.SlotAdvisor;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
@@ -41,8 +38,6 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ClusterExecutor extends AbstractExecutor {
-
-  private static final Logger logger = LogService.getLogger();
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
@@ -67,13 +62,16 @@ public class ClusterExecutor extends AbstractExecutor {
   private RedisResponse getSlots(ExecutionHandlerContext ctx) {
     List<Object> slots = new ArrayList<>();
 
-    for (SlotAdvisor.MemberBucketSlot memberBucketSlot : ctx.getRegionProvider().getSlotAdvisor()
+    for (SlotAdvisor.MemberBucketSlot mbs : ctx.getRegionProvider().getSlotAdvisor()
         .getBucketSlots()) {
+      if (mbs == null) {
+        continue;
+      }
+
       List<Object> entry = new ArrayList<>();
-      entry.add(memberBucketSlot.getSlotStart());
-      entry.add(memberBucketSlot.getSlotEnd());
-      entry.add(
-          Arrays.asList(memberBucketSlot.getPrimaryIpAddress(), memberBucketSlot.getPrimaryPort()));
+      entry.add(mbs.getSlotStart());
+      entry.add(mbs.getSlotEnd());
+      entry.add(Arrays.asList(mbs.getPrimaryIpAddress(), mbs.getPrimaryPort()));
 
       slots.add(entry);
     }
@@ -105,6 +103,9 @@ public class ClusterExecutor extends AbstractExecutor {
     for (Map.Entry<String, List<Integer>> member : memberBuckets.entrySet()) {
       List<Integer> buckets = member.getValue();
       SlotAdvisor.MemberBucketSlot mbs = memberBucketSlots.get(buckets.get(0));
+      if (mbs == null) {
+        continue;
+      }
 
       response.append(String.format("%s %s:%3$d@%3$d master",
           member.getKey(), mbs.getPrimaryIpAddress(), mbs.getPrimaryPort()));
@@ -114,7 +115,7 @@ public class ClusterExecutor extends AbstractExecutor {
       }
       response.append(" - 0 0 1 connected");
 
-      for (Integer bucket : member.getValue()) {
+      for (int bucket : member.getValue()) {
         response.append(" ");
         response.append(bucket * REDIS_SLOTS_PER_BUCKET);
         response.append("-");
