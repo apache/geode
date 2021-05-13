@@ -124,15 +124,6 @@ public abstract class AbstractBitPosIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void bitposWithStart_givenStartGreaterThanOrEqualToByteArrayLength() {
-    byte[] key = {1, 2, 3};
-    byte[] bytes = {1, 1, 1, 1};
-    jedis.set(key, bytes);
-    assertThat(jedis.bitpos(key, true, new BitPosParams(bytes.length))).isEqualTo(7 + 3 * 8);
-    assertThat(jedis.bitpos(key, true, new BitPosParams(bytes.length + 1))).isEqualTo(7 + 3 * 8);
-  }
-
-  @Test
   public void bitposWithStartAndEnd_givenStartAndEndEqual() {
     byte[] key = {1, 2, 3};
     byte[] bytes = {1, 1, 1, 1};
