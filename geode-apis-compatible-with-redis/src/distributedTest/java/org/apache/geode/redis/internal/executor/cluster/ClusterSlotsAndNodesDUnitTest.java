@@ -25,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.assertj.core.data.Offset;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -61,7 +62,6 @@ public class ClusterSlotsAndNodesDUnitTest {
   private static Jedis jedis1;
   private static Jedis jedis2;
   private static JedisCluster jedisCluster;
-  private static int redisServerPort1;
 
   @BeforeClass
   public static void classSetup() {
@@ -69,7 +69,7 @@ public class ClusterSlotsAndNodesDUnitTest {
     server1 = cluster.startRedisVM(1, locator.getPort());
     cluster.startRedisVM(2, locator.getPort());
 
-    redisServerPort1 = cluster.getRedisPort(1);
+    int redisServerPort1 = cluster.getRedisPort(1);
     int redisServerPort2 = cluster.getRedisPort(2);
 
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
@@ -83,6 +83,11 @@ public class ClusterSlotsAndNodesDUnitTest {
     jedis1.close();
     jedis2.close();
     jedisCluster.close();
+  }
+
+  @After
+  public void testCleanup() {
+    rebalanceAllRegions(server1);
   }
 
   @Test
@@ -122,7 +127,6 @@ public class ClusterSlotsAndNodesDUnitTest {
 
   @Test
   public void slotsDistributionIsFairlyUniform() {
-    rebalanceAllRegions(server1);
     List<Object> slots = jedis1.clusterSlots();
     List<ClusterNode> nodes = ClusterNodes.parseClusterSlots(slots).getNodes();
 
