@@ -48,75 +48,75 @@ public class ReplicateRegionFunctionTest {
   }
 
   @Test
-  public void doActionsIfBatchReplicated_DoNothingIfBatchIsIncomplete()
+  public void doPostSendBatchActions_DoNothingIfBatchIsIncomplete()
       throws InterruptedException {
-    rrf.doActionsIfBatchReplicated(startTime, 5, 1L);
+    rrf.doPostSendBatchActions(startTime, 5, 1L);
     verify(threadSleeperMock, never()).millis(anyLong());
   }
 
   @Test
-  public void doActionsIfBatchReplicated_DoNotSleepIfBatchIsCompleteAndMaxRateIsZero()
+  public void doPostSendBatchActions_DoNotSleepIfBatchIsCompleteAndMaxRateIsZero()
       throws InterruptedException {
-    rrf.doActionsIfBatchReplicated(startTime, entries, 0);
+    rrf.doPostSendBatchActions(startTime, entries, 0);
     verify(threadSleeperMock, never()).millis(anyLong());
   }
 
   @Test
-  public void doActionsIfBatchReplicated_SleepIfElapsedTimeIsZero()
+  public void doPostSendBatchActions_SleepIfElapsedTimeIsZero()
       throws InterruptedException {
     long maxRate = 100;
     long elapsedTime = 0L;
     long expectedMsToSleep = 250L;
     when(clockMock.millis()).thenReturn(startTime + elapsedTime);
-    rrf.doActionsIfBatchReplicated(startTime, entries, maxRate);
+    rrf.doPostSendBatchActions(startTime, entries, maxRate);
     verify(threadSleeperMock, times(1)).millis(expectedMsToSleep);
   }
 
   @Test
-  public void doActionsIfBatchReplicated_DoNotSleepIfMaxRateNotReached()
+  public void doPostSendBatchActions_DoNotSleepIfMaxRateNotReached()
       throws InterruptedException {
     long maxRate = 10000;
     long elapsedTime = 100L;
     when(clockMock.millis()).thenReturn(startTime + elapsedTime);
-    rrf.doActionsIfBatchReplicated(startTime, entries, maxRate);
+    rrf.doPostSendBatchActions(startTime, entries, maxRate);
     verify(threadSleeperMock, never()).millis(anyLong());
   }
 
   @Test
-  public void doActionsIfBatchReplicated_SleepIfMaxRateReached()
+  public void doPostSendBatchActions_SleepIfMaxRateReached()
       throws InterruptedException {
     long maxRate = 100;
     long elapsedTime = 100L;
     long expectedMsToSleep = 150L;
     when(clockMock.millis()).thenReturn(startTime + elapsedTime);
-    rrf.doActionsIfBatchReplicated(startTime, entries, maxRate);
+    rrf.doPostSendBatchActions(startTime, entries, maxRate);
     verify(threadSleeperMock, times(1)).millis(expectedMsToSleep);
   }
 
   @Test
-  public void doActionsIfBatchReplicated_DoNotSleepIfReplicatedEntriesIsZero()
+  public void doPostSendBatchActions_DoNotSleepIfReplicatedEntriesIsZero()
       throws InterruptedException {
     long maxRate = 100;
-    rrf.doActionsIfBatchReplicated(startTime, 0, maxRate);
+    rrf.doPostSendBatchActions(startTime, 0, maxRate);
     verify(threadSleeperMock, never()).millis(anyLong());
   }
 
   @Test
-  public void doActionsIfBatchReplicated_SleepForZeroIfReplicatedEntriesIsZeroAndElapsedTimeIsZero()
+  public void doPostSendBatchActions_SleepForZeroIfReplicatedEntriesIsZeroAndElapsedTimeIsZero()
       throws InterruptedException {
     long maxRate = 100;
     long elapsedTime = 0L;
     when(clockMock.millis()).thenReturn(startTime + elapsedTime);
-    rrf.doActionsIfBatchReplicated(startTime, 0, maxRate);
+    rrf.doPostSendBatchActions(startTime, 0, maxRate);
     verify(threadSleeperMock, times(1)).millis(0L);
   }
 
   @Test
-  public void doActionsIfBatchReplicated_ThrowInterruptedIfInterrupted() {
+  public void doPostSendBatchActions_ThrowInterruptedIfInterrupted() {
     long maxRate = 100;
     Thread.currentThread().interrupt();
     assertThatThrownBy(
-        () -> rrf.doActionsIfBatchReplicated(startTime, entries, maxRate))
+        () -> rrf.doPostSendBatchActions(startTime, entries, maxRate))
             .isInstanceOf(InterruptedException.class);
   }
 
