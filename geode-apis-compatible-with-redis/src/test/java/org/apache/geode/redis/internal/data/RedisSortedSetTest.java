@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.data.RedisSortedSet.BASE_REDIS_SORTED_SET_OVERHEAD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -37,15 +38,14 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSetTest {
+  private final ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
 
   @BeforeClass
   public static void beforeClass() {
-    InternalDataSerializer
-        .getDSFIDSerializer()
-        .registerDSFID(DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER, ByteArrayWrapper.class);
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DataSerializableFixedID.REDIS_SORTED_SET_ID,
         RedisSortedSet.class);
@@ -154,6 +154,16 @@ public class RedisSortedSetTest {
     elements.add(Coder.stringToBytes(k2));
     elements.add(Coder.stringToBytes(v2));
     return new RedisSortedSet(elements);
+  }
+
+  /****************** Size ******************/
+  @Test
+  public void constantBaseRedisSortedSetOverhead_shouldEqualCalculatedOverhead() {
+    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList());
+    int baseRedisSortedSetOverhead = reflectionObjectSizer.sizeof(sortedSet);
+
+    assertThat(baseRedisSortedSetOverhead).isEqualTo(BASE_REDIS_SORTED_SET_OVERHEAD);
+    assertThat(sortedSet.getSizeInBytes()).isEqualTo(baseRedisSortedSetOverhead);
   }
 
 }

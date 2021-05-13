@@ -42,38 +42,48 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.executor.sortedset.ZSetOptions;
 
 public class RedisSortedSet extends AbstractRedisData {
+  private Object2ObjectOpenCustomHashMap<byte[], byte[]> members;
+
+  protected static final int BASE_REDIS_SORTED_SET_OVERHEAD = 184;
+  protected static final int PER_MEMBER_OVERHEAD = 77;
+  protected static final int INTERNAL_CUSTOM_HASHMAP_STORAGE_OVERHEAD = 86;
+
+  private int sizeInBytes;
 
   @Override
   public int getSizeInBytes() {
-    return 0;
+    return sizeInBytes;
   }
 
   private enum AddOrChange {
     ADDED, CHANGED, NOOP
   }
 
-  private Object2ObjectOpenCustomHashMap<byte[], byte[]> members;
-
   RedisSortedSet(List<byte[]> members) {
+    sizeInBytes += BASE_REDIS_SORTED_SET_OVERHEAD;
     this.members = new Object2ObjectOpenCustomHashMap<>(members.size(), ByteArrays.HASH_STRATEGY);
     Iterator<byte[]> iterator = members.iterator();
+    if (members.size() > 0) {
+      sizeInBytes += INTERNAL_CUSTOM_HASHMAP_STORAGE_OVERHEAD;
+    }
+
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
+      sizeInBytes += PER_MEMBER_OVERHEAD + score.length;
       byte[] member = iterator.next();
+      sizeInBytes += PER_MEMBER_OVERHEAD + member.length;
       this.members.put(member, score);
     }
   }
 
   RedisSortedSet(List<byte[]> members, ZSetOptions options) {
-    this.members = new Object2ObjectOpenCustomHashMap<>(members.size(), ByteArrays.HASH_STRATEGY);
     if (options.isXX()) {
-      return;
-    }
-    Iterator<byte[]> iterator = members.iterator();
-    while (iterator.hasNext()) {
-      byte[] score = iterator.next();
-      byte[] member = iterator.next();
-      this.members.put(member, score);
+      sizeInBytes += BASE_REDIS_SORTED_SET_OVERHEAD;
+      this.members = new Object2ObjectOpenCustomHashMap<>(members.size(), ByteArrays.HASH_STRATEGY);
+    } else {
+      RedisSortedSet tempSet = new RedisSortedSet(members);
+      this.members = tempSet.members;
+      this.sizeInBytes = tempSet.sizeInBytes;
     }
   }
 
@@ -153,6 +163,12 @@ public class RedisSortedSet extends AbstractRedisData {
   private synchronized AddOrChange membersAdd(byte[] memberToAdd, byte[] scoreToAdd, boolean CH) {
     byte[] oldScore = members.get(memberToAdd);
     boolean added = (members.put(memberToAdd, scoreToAdd) == null);
+    if (added) {
+      sizeInBytes += PER_MEMBER_OVERHEAD + memberToAdd.length;
+      if (members.size() == 1) {
+        sizeInBytes += INTERNAL_CUSTOM_HASHMAP_STORAGE_OVERHEAD;
+      }
+    }
     if (CH && !added) {
       return Arrays.equals(oldScore, scoreToAdd) ? AddOrChange.NOOP : AddOrChange.CHANGED;
     }
@@ -163,13 +179,16 @@ public class RedisSortedSet extends AbstractRedisData {
     Iterator<byte[]> iterator = addsDeltaInfo.getAdds().iterator();
     while (iterator.hasNext()) {
       byte[] member = iterator.next();
+      sizeInBytes += PER_MEMBER_OVERHEAD + member.length;
       byte[] score = iterator.next();
+      sizeInBytes += PER_MEMBER_OVERHEAD + score.length;
       members.put(member, score);
     }
   }
 
   private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
     for (byte[] member : remsDeltaInfo.getRemoves()) {
+      sizeInBytes -= (PER_MEMBER_OVERHEAD + member.length);
       members.remove(member);
     }
   }

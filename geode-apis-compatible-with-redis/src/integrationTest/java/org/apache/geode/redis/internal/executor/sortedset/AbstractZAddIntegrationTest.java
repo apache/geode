@@ -94,7 +94,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void zaddStoresScores_givenCorrectArguments() {
-    Map<String, Double> map = makeMemberScoreMap("member_", 10, 0);
+    Map<String, Double> map = makeMemberScoreMap("member_", INITIAL_MEMBER_COUNT, 0);
 
     Set<String> keys = map.keySet();
     Long count = 0L;
@@ -111,7 +111,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void zaddStoresScores_givenMultipleMembersAndScores() {
-    Map<String, Double> map = makeMemberScoreMap("member_", 10, 0);
+    Map<String, Double> map = makeMemberScoreMap("member_", INITIAL_MEMBER_COUNT, 0);
     Set<String> keys = map.keySet();
 
     long added = jedis.zadd(SORTED_SET_KEY, map);
@@ -133,7 +133,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
 
     for (String member : initMap.keySet()) {
       Double score = initMap.get(member);
-      Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
+      assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
     }
 
     Map<String, Double> updateMap = makeMemberScoreMap("member_", 2 * INITIAL_MEMBER_COUNT, 10);
@@ -151,7 +151,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
       } else {
         score = updateMap.get(member);
       }
-      Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
+      assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
     }
   }
 
@@ -165,7 +165,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
 
     for (String member : initMap.keySet()) {
       Double score = initMap.get(member);
-      Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
+      assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
     }
 
     Map<String, Double> updateMap = makeMemberScoreMap("member_", 2 * INITIAL_MEMBER_COUNT, 10);
@@ -183,7 +183,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
       } else {
         score = null;
       }
-      Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
+      assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
     }
   }
 
