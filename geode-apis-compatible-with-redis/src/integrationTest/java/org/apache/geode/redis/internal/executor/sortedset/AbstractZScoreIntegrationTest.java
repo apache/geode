@@ -15,9 +15,6 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_GT_LT_NX;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import org.junit.After;
@@ -60,13 +57,13 @@ public abstract class AbstractZScoreIntegrationTest implements RedisPortSupplier
 
   @Test
   public void zscoreReturnsNil_givenNonexistentMember() {
-    jedis.zadd("key", 1.0,"member");
+    jedis.zadd("key", 1.0, "member");
     assertThat(jedis.zscore("fakeKey", "fakeMember")).isEqualTo(null);
   }
 
   @Test
   public void zscoreReturnsScore_givenExistingKeyAndMember() {
-    jedis.zadd("key", 1.0,"member");
+    jedis.zadd("key", 1.0, "member");
     assertThat(jedis.zscore("key", "member")).isEqualTo(1.0);
   }
 }

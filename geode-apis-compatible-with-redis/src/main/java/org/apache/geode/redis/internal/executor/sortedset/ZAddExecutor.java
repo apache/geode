@@ -89,7 +89,7 @@ public class ZAddExecutor extends SortedSetExecutor {
   }
 
   private ZSetOptions makeOptions(boolean nxFound, boolean xxFound, boolean gtFound,
-                                  boolean ltFound) {
+      boolean ltFound) {
     ZSetOptions.Exists existsOption = ZSetOptions.Exists.NONE;
     ZSetOptions.Update updateOption = ZSetOptions.Update.NONE;
 

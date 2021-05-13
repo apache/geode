@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.ParameterRequirements;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_GT_LT_NX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
 import java.util.Iterator;
 import java.util.List;

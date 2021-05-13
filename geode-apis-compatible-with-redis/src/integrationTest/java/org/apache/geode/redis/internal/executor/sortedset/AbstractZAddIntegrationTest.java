@@ -18,7 +18,6 @@ import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLea
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_GT_LT_NX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -67,8 +66,9 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
   @Test
   @Ignore("restore when we understand why there's a difference between jedis and command line")
   public void zaddErrors_givenUnevenPairsOfArguments() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "1", "member", "2"))
-        .hasMessageContaining("ERR wrong number of arguments for 'zadd' command");
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "1", "member", "2"))
+            .hasMessageContaining("ERR wrong number of arguments for 'zadd' command");
   }
 
   @Test
@@ -79,15 +79,17 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void zaddErrors_givenBothNXAndXXOptions() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "NX", "XX", "1.0", "fakeMember"))
-        .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_NX_XX);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "NX", "XX", "1.0", "fakeMember"))
+            .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_NX_XX);
   }
 
   @Test
   @Ignore("restore when we understand why there's a difference between jedis and command line")
   public void zaddErrors_givenBothGTAndLTOptions() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "LT", "GT", "1", "fakeMember"))
-        .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_GT_LT_NX);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "LT", "GT", "1", "fakeMember"))
+            .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_GT_LT_NX);
   }
 
   @Test
@@ -134,7 +136,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
       Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
     }
 
-    Map<String, Double> updateMap = makeMemberScoreMap("member_", 2*INITIAL_MEMBER_COUNT, 10);
+    Map<String, Double> updateMap = makeMemberScoreMap("member_", 2 * INITIAL_MEMBER_COUNT, 10);
 
     ZAddParams zAddParams = new ZAddParams();
     zAddParams.nx();
@@ -166,7 +168,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
       Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
     }
 
-    Map<String, Double> updateMap = makeMemberScoreMap("member_", 2*INITIAL_MEMBER_COUNT, 10);
+    Map<String, Double> updateMap = makeMemberScoreMap("member_", 2 * INITIAL_MEMBER_COUNT, 10);
 
     ZAddParams zAddParams = new ZAddParams();
     zAddParams.xx();
