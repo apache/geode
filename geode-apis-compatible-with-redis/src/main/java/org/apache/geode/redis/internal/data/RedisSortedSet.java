@@ -147,16 +147,9 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   private synchronized AddOrChange membersAdd(byte[] memberToAdd, byte[] scoreToAdd, boolean CH) {
-    System.out.println("**** ZADD mta member:" + byteArrayStringer(memberToAdd)
-        + " score: " + byteArrayStringer(scoreToAdd));
     byte[] oldScore = members.get(memberToAdd);
-    if (oldScore != null) {
-      System.out.println("**** ZADD oldscore:" + byteArrayStringer(oldScore));
-    }
     boolean added = (members.put(memberToAdd, scoreToAdd) == null);
-    System.out.println("**** ZADD got added:" + added);
     if (CH && !added) {
-      System.out.println("**** SHOULD NOT SEE THIS");
       return oldScore.equals(scoreToAdd) ? AddOrChange.NOOP : AddOrChange.CHANGED;
     }
     return added ? AddOrChange.ADDED : AddOrChange.NOOP;
@@ -194,8 +187,6 @@ public class RedisSortedSet extends AbstractRedisData {
    */
   long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
       ZSetOptions options) {
-    System.out
-        .println("|||||||||||||||||||||zadd key:" + key + " list size:" + membersToAdd.size());
     int membersAdded = 0;
     long membersChanged = 0; // TODO: really implement changed
     if (options == null) {
@@ -208,20 +199,14 @@ public class RedisSortedSet extends AbstractRedisData {
       byte[] score = iterator.next();
       byte[] member = iterator.next();
 
-      System.out.println(
-          "zadd member:" + byteArrayStringer(member) + " score:" + byteArrayStringer(score));
       if (options.isNX()) {
         if (members.get(member) != null) {
-          System.out.println("nx skipping: " + member);
           continue;
         }
       }
       if (options.isXX()) {
         if (members.get(member) == null) {
-          System.out.println("xx skipping: " + member);
           continue;
-        } else {
-          System.out.println("xx allowing: " + member);
         }
       }
       switch (membersAdd(member, score, false)) {
@@ -249,22 +234,11 @@ public class RedisSortedSet extends AbstractRedisData {
     if (deltaInfo != null) {
       storeChanges(region, key, deltaInfo);
     }
-    System.out.println("**** ZADD returning: " + membersAdded);
     return membersAdded;
   }
 
   byte[] zscore(byte[] member) {
     byte[] score = members.get(member);
-    System.out.println("**** ZSCORE members: " + members + " member:" + byteArrayStringer(member)
-        + " score:" + score);
-    Set<byte[]> keys = members.keySet();
-    for (byte[] key : keys) {
-      System.out.println("**** ZSCORE key:" + byteArrayStringer(key));
-
-      if (Arrays.equals(key, member)) {
-        System.out.println("**** ZSCORE yes member is in there...");
-      }
-    }
     return score;
   }
 

@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.ParameterRequirements;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_GT_LT_NX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
 import java.util.Iterator;
@@ -61,7 +62,6 @@ public class ZAddParameterRequirements implements ParameterRequirements {
         case "incr":
           break;
         case "nx":
-          System.out.println("YEAH WE GOT AN NX!!!!!");
           nxFound = true;
           break;
         case "xx":
@@ -79,9 +79,7 @@ public class ZAddParameterRequirements implements ParameterRequirements {
             scoreFound = true;
             break;
           } catch (NumberFormatException nfe) {
-            System.out.println("Got exception on: " + subCommandString);
-            nfe.printStackTrace();
-            throw new RedisParametersMismatchException(String.format(ERROR_SYNTAX));
+            throw new RedisParametersMismatchException(String.format(ERROR_NOT_A_VALID_FLOAT));
           }
       }
       if (scoreFound) {

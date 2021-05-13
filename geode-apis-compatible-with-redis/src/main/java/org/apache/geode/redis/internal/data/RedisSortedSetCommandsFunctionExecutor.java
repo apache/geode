@@ -32,14 +32,12 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   private RedisSortedSet getRedisSortedSet(RedisKey key, boolean updateStats) {
-    System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%rsscfe striping");
     return helper.getRedisSortedSet(key, updateStats);
   }
 
   @Override
   public long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd,
       ZSetOptions options) {
-    System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%rsscfe striping");
     return stripedExecute(key,
         () -> getRedisSortedSet(key, false)
             .zadd(getRegion(), key, scoresAndMembersToAdd, options));

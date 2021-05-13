@@ -50,7 +50,7 @@ public abstract class AbstractZScoreIntegrationTest implements RedisPortSupplier
 
   @Test
   public void zscoreErrors_givenTooFewArguments() {
-    assertAtLeastNArgs(jedis, Protocol.Command.ZSCORE, 3);
+    assertAtLeastNArgs(jedis, Protocol.Command.ZSCORE, 4);
   }
 
   @Test

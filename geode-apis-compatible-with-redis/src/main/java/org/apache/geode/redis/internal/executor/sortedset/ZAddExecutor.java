@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -42,13 +41,11 @@ public class ZAddExecutor extends SortedSetExecutor {
       ByteArrayWrapper next = commandIterator.next();
       if (count < 2) { // Skip past command, key
         count++;
-        System.out.println("****************zaddexec counting:" + count);
         continue;
       } else {
         String subCommandString = next.toString().toLowerCase();
         try {
           Double.valueOf(subCommandString);
-          System.out.println("******************zaddexec got a double");
           adding = true;
         } catch (NumberFormatException nfe) {
           switch (subCommandString) {
@@ -57,7 +54,6 @@ public class ZAddExecutor extends SortedSetExecutor {
             case "incr":
               break;
             case "nx":
-              System.out.println("YEAH WE GOT AN NX!!!!!");
               nxFound = true;
               break;
             case "xx":
@@ -75,7 +71,6 @@ public class ZAddExecutor extends SortedSetExecutor {
         }
       }
       if (adding) {
-        System.out.println("*******************zaddexec adding");
         byte[] score = next.toBytes();
         scoresAndMembersToAdd.add(score);
         if (commandIterator.hasNext()) {
@@ -87,18 +82,14 @@ public class ZAddExecutor extends SortedSetExecutor {
       }
     }
     long entriesAdded = 0;
-    try {
-      System.out.println("****************zaddexec calling zadd");
-      entriesAdded = redisSortedSetCommands.zadd(command.getKey(), scoresAndMembersToAdd,
-          makeOptions(nxFound, xxFound, gtFound, ltFound));
-    } catch (Exception e) {
-      System.out.println(e.getCause() + " : " + e.getMessage());
-    }
+    entriesAdded = redisSortedSetCommands.zadd(command.getKey(), scoresAndMembersToAdd,
+        makeOptions(nxFound, xxFound, gtFound, ltFound));
+
     return RedisResponse.integer(entriesAdded);
   }
 
   private ZSetOptions makeOptions(boolean nxFound, boolean xxFound, boolean gtFound,
-      boolean ltFound) {
+                                  boolean ltFound) {
     ZSetOptions.Exists existsOption = ZSetOptions.Exists.NONE;
     ZSetOptions.Update updateOption = ZSetOptions.Update.NONE;
 

@@ -108,9 +108,7 @@ public class CommandHelper {
   }
 
   RedisSortedSet getRedisSortedSet(RedisKey key, boolean updateStats) {
-    System.out.println("***********************Getting redisData for sorted set");
     RedisData redisData = getRedisData(key, NULL_REDIS_SORTED_SET);
-    System.out.println("Got redisData:" + redisData);
     if (updateStats) {
       if (redisData == NULL_REDIS_SORTED_SET) {
         redisStats.incKeyspaceMisses();
@@ -122,14 +120,12 @@ public class CommandHelper {
   }
 
   private RedisSortedSet checkSortedSetType(RedisData redisData) {
-    System.out.println("***********************Checking sorted set type");
     if (redisData == null) {
       return null;
     }
     if (redisData.getType() != REDIS_SORTED_SET) {
       throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
     }
-    System.out.println("***********************returning:" + redisData);
     return (RedisSortedSet) redisData;
   }
 

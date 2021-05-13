@@ -278,7 +278,6 @@ public class CommandFunction extends SingleResultRedisFunction {
       }
       case ZADD: {
         List<byte[]> scoresAndMembersToAdd = (List<byte[]>) args[1];
-        System.out.println("!!!cf doing zadd, arg count:" + args.length);
         return sortedSetCommands.zadd(key, scoresAndMembersToAdd, (ZSetOptions) args[2]);
       }
       case ZSCORE: {
