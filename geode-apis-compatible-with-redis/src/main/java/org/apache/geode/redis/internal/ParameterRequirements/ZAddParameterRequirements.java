@@ -22,9 +22,6 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;

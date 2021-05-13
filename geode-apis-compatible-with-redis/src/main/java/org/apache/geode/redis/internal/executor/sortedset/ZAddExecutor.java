@@ -15,13 +15,11 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -99,7 +97,8 @@ public class ZAddExecutor extends SortedSetExecutor {
     return RedisResponse.integer(entriesAdded);
   }
 
-  private ZSetOptions makeOptions(boolean nxFound, boolean xxFound, boolean gtFound, boolean ltFound) {
+  private ZSetOptions makeOptions(boolean nxFound, boolean xxFound, boolean gtFound,
+      boolean ltFound) {
     ZSetOptions.Exists existsOption = ZSetOptions.Exists.NONE;
     ZSetOptions.Update updateOption = ZSetOptions.Update.NONE;
 

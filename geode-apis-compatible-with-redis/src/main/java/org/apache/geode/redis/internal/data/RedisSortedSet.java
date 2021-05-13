@@ -72,9 +72,9 @@ public class RedisSortedSet extends AbstractRedisData {
       this.members.put(member, score);
     }
   }
+
   // for serialization
-  public RedisSortedSet() {
-  }
+  public RedisSortedSet() {}
 
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
@@ -94,8 +94,7 @@ public class RedisSortedSet extends AbstractRedisData {
    */
 
   @Override
-  public synchronized void toData(DataOutput out, SerializationContext context) throws
-      IOException {
+  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     InternalDataSerializer.writePrimitiveInt(members.size(), out);
     for (Map.Entry<byte[], byte[]> entry : members.entrySet()) {
@@ -188,15 +187,15 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   /**
-   * @param region       the region this instance is stored in
-   * @param key          the name of the set to add to
+   * @param region the region this instance is stored in
+   * @param key the name of the set to add to
    * @param membersToAdd members to add to this set; NOTE this list may by modified by this call
-   * @param options
    * @return the number of members actually added
    */
   long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
-            ZSetOptions options) {
-    System.out.println("|||||||||||||||||||||zadd key:" + key+ " list size:" + membersToAdd.size());
+      ZSetOptions options) {
+    System.out
+        .println("|||||||||||||||||||||zadd key:" + key + " list size:" + membersToAdd.size());
     int membersAdded = 0;
     long membersChanged = 0; // TODO: really implement changed
     if (options == null) {
@@ -256,10 +255,11 @@ public class RedisSortedSet extends AbstractRedisData {
 
   byte[] zscore(byte[] member) {
     byte[] score = members.get(member);
-    System.out.println("**** ZSCORE members: " + members + " member:" + byteArrayStringer(member) + " score:" + score);
+    System.out.println("**** ZSCORE members: " + members + " member:" + byteArrayStringer(member)
+        + " score:" + score);
     Set<byte[]> keys = members.keySet();
     for (byte[] key : keys) {
-        System.out.println("**** ZSCORE key:" + byteArrayStringer(key));
+      System.out.println("**** ZSCORE key:" + byteArrayStringer(key));
 
       if (Arrays.equals(key, member)) {
         System.out.println("**** ZSCORE yes member is in there...");

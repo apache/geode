@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.sortedset;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_GT_LT_NX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -40,6 +41,8 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
   private Jedis jedis2;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static final String SORTED_SET_KEY = "ss_key";
+  private static final int INITIAL_MEMBER_COUNT = 5;
 
   @Before
   public void setUp() {
@@ -60,6 +63,18 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
   }
 
   @Test
+  public void zaddErrors_givenUnevenPairsOfArguments() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "1", "member", "2"))
+        .hasMessageContaining("ERR wrong number of arguments for 'zadd' command");
+  }
+
+  @Test
+  public void zaddErrors_givenNonNumericScore() {
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "xlerb", "member"))
+        .hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
   public void zaddErrors_givenBothNXAndXXOptions() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "NX", "XX"))
         .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_NX_XX);
@@ -73,19 +88,16 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void zaddStoresScores_givenCorrectArguments() {
-    String key = "ss_key";
-    Map<String, Double> map = getMemberScoreMap("member_", 10, 0);
+    Map<String, Double> map = makeMemberScoreMap("member_", 10, 0);
 
     Set<String> keys = map.keySet();
     Long count = 0L;
 
     for (String member : keys) {
       Double score = map.get(member);
-      System.out.println("test adding: member:" + member + " score:" + score);
-      Long res = jedis.zadd(key, score, member);
+      Long res = jedis.zadd(SORTED_SET_KEY, score, member);
       Assertions.assertThat(res).isEqualTo(1);
-      System.out.println("test getting: member:" + member + " score:" + score);
-      Assertions.assertThat(jedis.zscore(key, member)).isEqualTo(score);
+      Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
       count += res;
     }
     Assertions.assertThat(count).isEqualTo(keys.size());
@@ -93,85 +105,83 @@ public abstract class AbstractZAddIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void zaddStoresScores_givenMultipleMembersAndScores() {
-    String otherKeyEntirely = "ss_key";
-
-    Map<String, Double> map = getMemberScoreMap("member_", 10, 0);
+    Map<String, Double> map = makeMemberScoreMap("member_", 10, 0);
     Set<String> keys = map.keySet();
 
-    long added = jedis.zadd(otherKeyEntirely, map);
-    System.out.println("**** actually added: " + added);
+    long added = jedis.zadd(SORTED_SET_KEY, map);
     assertThat(added).isEqualTo(keys.size());
 
     for (String member : keys) {
       Double score = map.get(member);
-      Assertions.assertThat(jedis.zscore(otherKeyEntirely, member)).isEqualTo(score);
+      Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
     }
   }
 
   @Test
-  public void zaddDoesNotUpdateMember_whenNXSpecified() {
-    String key = "ss_key";
+  public void zaddDoesNotUpdateMembers_whenNXSpecified() {
+    Map<String, Double> initMap = makeMemberScoreMap("member_", INITIAL_MEMBER_COUNT, 0);
 
-    Long res = jedis.zadd(key, 1.0, "mamba");
-    assertThat(res).isEqualTo(1);
+    long added = jedis.zadd(SORTED_SET_KEY, initMap);
+    assertThat(added).isEqualTo(INITIAL_MEMBER_COUNT);
+    // TODO: use ZCARD to confirm set size once command is implemented
+
+    for (String member : initMap.keySet()) {
+      Double score = initMap.get(member);
+      Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
+    }
+
+    Map<String, Double> updateMap = makeMemberScoreMap("member_", 2*INITIAL_MEMBER_COUNT, 10);
 
     ZAddParams zAddParams = new ZAddParams();
     zAddParams.nx();
-    res = jedis.zadd(key, 2.0, "mamba", zAddParams);
-    assertThat(res).isEqualTo(0);
-    assertThat(jedis.zscore(key, "mamba")).isEqualTo(1.0);
-  }
+    added = jedis.zadd(SORTED_SET_KEY, updateMap, zAddParams);
+    assertThat(added).isEqualTo(INITIAL_MEMBER_COUNT);
+    // TODO: use ZCARD to confirm set size once command is implemented
 
-  @Test
-  public void zaddDoesNotAddMember_whenXXSpecified() {
-    String key = "ss_key";
-
-    ZAddParams zAddParams = new ZAddParams();
-    zAddParams.xx();
-    Long res = jedis.zadd(key, 1.0, "mamba", zAddParams);
-    assertThat(res).isEqualTo(0);
-    assertThat(jedis.keys("*").size()).isEqualTo(0);
+    for (String member : updateMap.keySet()) {
+      Double score;
+      if (initMap.get(member) != null) {
+        score = initMap.get(member);
+      } else {
+        score = updateMap.get(member);
+      }
+      Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
+    }
   }
 
   @Test
   public void zaddDoesNotAddNewMembers_whenXXSpecified() {
-    String key = "ss_key";
-    Map<String, Double> init_map = getMemberScoreMap("member_", 5, 0);
-    Set<String> keys = init_map.keySet();
+    Map<String, Double> initMap = makeMemberScoreMap("member_", INITIAL_MEMBER_COUNT, 0);
 
-    long added = jedis.zadd(key, init_map);
-    assertThat(added).isEqualTo(5);
+    long added = jedis.zadd(SORTED_SET_KEY, initMap);
+    assertThat(added).isEqualTo(INITIAL_MEMBER_COUNT);
+    // TODO: use ZCARD to confirm set size once command is implemented
 
-    for (String member : keys) {
-      Double score = init_map.get(member);
-      Assertions.assertThat(jedis.zscore(key, member)).isEqualTo(score);
+    for (String member : initMap.keySet()) {
+      Double score = initMap.get(member);
+      Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
     }
 
-    Map<String, Double> updateMap = getMemberScoreMap("member_", 10, 10);
-    Set<String> updateKeys = updateMap.keySet();
+    Map<String, Double> updateMap = makeMemberScoreMap("member_", 2*INITIAL_MEMBER_COUNT, 10);
 
     ZAddParams zAddParams = new ZAddParams();
     zAddParams.xx();
-    added = jedis.zadd(key, updateMap, zAddParams);
+    added = jedis.zadd(SORTED_SET_KEY, updateMap, zAddParams);
     assertThat(added).isEqualTo(0);
+    // TODO: use ZCARD to confirm set size once command is implemented
 
-    for (String member : updateKeys) {
+    for (String member : updateMap.keySet()) {
       Double score;
-      if (init_map.get(member) != null) {
+      if (initMap.get(member) != null) {
         score = updateMap.get(member);
       } else {
         score = null;
       }
-      Assertions.assertThat(jedis.zscore(key, member)).isEqualTo(score);
+      Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
     }
   }
 
-  @Test
-  public void zaddUpdatesScoresCorrectly_whenGTOptionSpecified() {
-
-  }
-
-  private Map<String, Double> getMemberScoreMap(String baseName, int memberCount, int baseScore) {
+  private Map<String, Double> makeMemberScoreMap(String baseName, int memberCount, int baseScore) {
     Map<String, Double> map = new HashMap<>();
 
     for (int i = 0; i < memberCount; i++) {

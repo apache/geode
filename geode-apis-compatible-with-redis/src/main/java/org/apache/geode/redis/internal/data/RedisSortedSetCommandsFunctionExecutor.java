@@ -38,7 +38,7 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
 
   @Override
   public long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd,
-                   ZSetOptions options) {
+      ZSetOptions options) {
     System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%rsscfe striping");
     return stripedExecute(key,
         () -> getRedisSortedSet(key, false)

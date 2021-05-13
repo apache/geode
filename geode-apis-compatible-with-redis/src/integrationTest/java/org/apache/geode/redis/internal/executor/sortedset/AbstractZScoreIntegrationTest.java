@@ -49,25 +49,24 @@ public abstract class AbstractZScoreIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void zaddErrors_givenTooFewArguments() {
-    assertAtLeastNArgs(jedis, Protocol.Command.ZADD, 3);
+  public void zscoreErrors_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.ZSCORE, 3);
   }
 
   @Test
-  public void zaddErrors_givenBothNXAndXXOptions() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "NX", "XX"))
-        .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_NX_XX);
+  public void zscoreReturnsNil_givenNonexistentKey() {
+    assertThat(jedis.zscore("fakeKey", "fakeMember")).isEqualTo(null);
   }
 
   @Test
-  public void zaddErrors_givenBothGTAndLTOptions() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "GT", "LT"))
-        .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_GT_LT_NX);
+  public void zscoreReturnsNil_givenNonexistentMember() {
+    jedis.zadd("key", 1.0,"member");
+    assertThat(jedis.zscore("fakeKey", "fakeMember")).isEqualTo(null);
   }
 
   @Test
-  public void zaddDoesNotError_givenCorrectArguments() {
-    long added = jedis.zadd("ss_key", 2, "member01");
-    assertThat(added).isEqualTo(1L);
+  public void zscoreReturnsScore_givenExistingKeyAndMember() {
+    jedis.zadd("key", 1.0,"member");
+    assertThat(jedis.zscore("key", "member")).isEqualTo(1.0);
   }
 }
