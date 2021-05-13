@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -68,6 +69,8 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * the events that are to be sent to remote site. It is cleared when the queue is cleared.
    */
   private final BlockingDeque<Object> eventSeqNumDeque = new LinkedBlockingDeque<Object>();
+
+  private final List<Object> markAsDuplicate = new ArrayList<Object>();
 
   private long lastKeyRecovered;
 
@@ -203,8 +206,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public void beforeAcquiringPrimaryState() {
-    Iterator<Object> itr = eventSeqNumDeque.iterator();
-    markEventsAsDuplicate(itr);
+    markAsDuplicate.addAll(Arrays.asList(eventSeqNumDeque.toArray()));
   }
 
   @Override
@@ -217,6 +219,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     });
     this.indexes.clear();
     this.eventSeqNumDeque.clear();
+    this.markAsDuplicate.clear();
   }
 
   @Override
@@ -229,6 +232,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       }
     });
     this.eventSeqNumDeque.clear();
+    this.markAsDuplicate.clear();
     return result.get();
   }
 
@@ -244,6 +248,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     try {
       this.indexes.clear();
       this.eventSeqNumDeque.clear();
+      this.markAsDuplicate.clear();
     } finally {
       getInitializationLock().writeLock().unlock();
     }
@@ -423,8 +428,14 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       }
       key = this.eventSeqNumDeque.peekFirst();
       if (key != null) {
+        boolean setDuplicate = markAsDuplicate.remove(key);
+
         object = optimalGet(key);
-        if (object == null && !this.getPartitionedRegion().isConflationEnabled()) {
+        if (object != null) {
+          if (setDuplicate) {
+            ((GatewaySenderEventImpl) object).setPossibleDuplicate(true);
+          }
+        } else if (!this.getPartitionedRegion().isConflationEnabled()) {
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "The value against key {} in the bucket region queue with id {} is NULL for the GatewaySender {}",
