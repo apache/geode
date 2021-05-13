@@ -28,6 +28,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
@@ -113,7 +114,7 @@ public abstract class AbstractAppendIntegrationTest implements RedisIntegrationT
     int listSize = 1000;
     String key = "key";
 
-    Map<String, String> info = getInfo(jedis);
+    Map<String, String> info = getInfo();
     Long previousMemValue = Long.valueOf(info.get("used_memory"));
 
     jedis.set(key, "initial");
@@ -121,7 +122,7 @@ public abstract class AbstractAppendIntegrationTest implements RedisIntegrationT
       jedis.append(key, "morestuff");
     }
 
-    info = getInfo(jedis);
+    info = getInfo();
     Long finalMemValue = Long.valueOf(info.get("used_memory"));
 
 
@@ -154,6 +155,15 @@ public abstract class AbstractAppendIntegrationTest implements RedisIntegrationT
       strings.add(baseString + i);
     }
     return strings;
+  }
+
+  private Map<String, String> getInfo() {
+    Jedis conn = jedis.getConnectionFromSlot(0);
+    try {
+      return getInfo(conn);
+    } finally {
+      conn.close();
+    }
   }
 
   /**

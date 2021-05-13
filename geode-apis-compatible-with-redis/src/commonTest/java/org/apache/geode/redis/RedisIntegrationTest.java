@@ -17,12 +17,16 @@ package org.apache.geode.redis;
 
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
+
 public interface RedisIntegrationTest {
 
   int getPort();
 
+  int REDIS_CLIENT_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+
   default void flushAll() {
-    try (Jedis jedis = new Jedis("localhost", getPort())) {
+    try (Jedis jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT)) {
       jedis.flushAll();
     }
   }
