@@ -289,7 +289,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     allServerLocatorsInfo.clear();
   }
 
-  private static class DistributeLocatorsRunnable implements Runnable {
+  static class DistributeLocatorsRunnable implements Runnable {
     private final int memberTimeout;
     private final TcpClient tcpClient;
     private final DistributionLocatorId localLocatorId;
@@ -362,20 +362,30 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
       }
     }
 
+    public void notifyRemoteLocatorAndJoiningLocator(DistributionLocatorId remoteLocator,
+        int remoteLocatorDistributedSystemId, DistributionLocatorId joiningLocator,
+        Map<DistributionLocatorId, Set<LocatorJoinMessage>> failedMessages) {
+      if (!remoteLocator.equals(joiningLocator)) {
+        // Notify known remote locator about the advertised locator.
+        LocatorJoinMessage advertiseNewLocatorMessage = new LocatorJoinMessage(
+            joiningLocatorDistributedSystemId, joiningLocator, localLocatorId, "");
+        sendMessage(remoteLocator, advertiseNewLocatorMessage, failedMessages);
+
+        // Notify the advertised locator about remote known locator.
+        LocatorJoinMessage advertiseKnownLocatorMessage =
+            new LocatorJoinMessage(remoteLocatorDistributedSystemId, remoteLocator, localLocatorId,
+                "");
+        sendMessage(joiningLocator, advertiseKnownLocatorMessage, failedMessages);
+      }
+    }
+
     @Override
     public void run() {
       Map<DistributionLocatorId, Set<LocatorJoinMessage>> failedMessages = new HashMap<>();
       for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : remoteLocators.entrySet()) {
         for (DistributionLocatorId remoteLocator : entry.getValue()) {
-          // Notify known remote locator about the advertised locator.
-          LocatorJoinMessage advertiseNewLocatorMessage = new LocatorJoinMessage(
-              joiningLocatorDistributedSystemId, joiningLocator, localLocatorId, "");
-          sendMessage(remoteLocator, advertiseNewLocatorMessage, failedMessages);
-
-          // Notify the advertised locator about remote known locator.
-          LocatorJoinMessage advertiseKnownLocatorMessage =
-              new LocatorJoinMessage(entry.getKey(), remoteLocator, localLocatorId, "");
-          sendMessage(joiningLocator, advertiseKnownLocatorMessage, failedMessages);
+          notifyRemoteLocatorAndJoiningLocator(remoteLocator, entry.getKey(), joiningLocator,
+              failedMessages);
         }
       }
 
