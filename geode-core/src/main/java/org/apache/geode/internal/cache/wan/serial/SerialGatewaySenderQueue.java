@@ -425,18 +425,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         lastKey = pair.key;
         batch.add(object);
       } else {
-        // If time to wait is -1 (don't wait) or time interval has elapsed
-        long currentTime = System.currentTimeMillis();
-        if (isTraceEnabled) {
-          logger.trace("{}: Peek current time: {}", this, currentTime);
-        }
-        if (timeToWait == -1 || (end <= currentTime)) {
-          if (isTraceEnabled) {
-            logger.trace("{}: Peek breaking", this);
-          }
+        if (stopPeekingDueToTime(timeToWait, end, isTraceEnabled)) {
           break;
         }
-
         if (isTraceEnabled) {
           logger.trace("{}: Peek continuing", this);
         }
@@ -447,7 +438,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
           Thread.currentThread().interrupt();
           break;
         }
-        continue;
       }
     }
     if (batch.size() > 0) {
@@ -460,6 +450,21 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     return batch;
     // OFFHEAP: all returned AsyncEvent end up being removed from queue after the batch is sent
     // so no need to worry about off-heap refCount.
+  }
+
+  private boolean stopPeekingDueToTime(int timeToWait, long end, boolean isTraceEnabled) {
+    // If time to wait is -1 (don't wait) or time interval has elapsed
+    long currentTime = System.currentTimeMillis();
+    if (isTraceEnabled) {
+      logger.trace("{}: Peek current time: {}", this, currentTime);
+    }
+    if (timeToWait == -1 || (end <= currentTime)) {
+      if (isTraceEnabled) {
+        logger.trace("{}: Peek breaking", this);
+      }
+      return true;
+    }
+    return false;
   }
 
   @VisibleForTesting
@@ -859,7 +864,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       long lastKey) {
     InternalGatewayQueueEvent event;
     List<KeyAndEventPair> elementsMatching = new ArrayList<>();
-
     long currentKey = lastKey;
 
     while ((currentKey = inc(currentKey)) != getTailKey()) {
@@ -867,13 +871,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         continue;
       }
       event = (InternalGatewayQueueEvent) optimalGet(currentKey);
-      if (event == null) {
-        continue;
-      }
-
-      if (condition.test(event)) {
+      if (event != null && condition.test(event)) {
         elementsMatching.add(new KeyAndEventPair(currentKey, (GatewaySenderEventImpl) event));
-
         if (stopCondition.test(event)) {
           break;
         }
@@ -886,18 +885,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   public boolean hasEventsMatching(Predicate<InternalGatewayQueueEvent> condition) {
     InternalGatewayQueueEvent event;
     long currentKey = getHeadKey();
-    if (currentKey == getTailKey()) {
-      return false;
-    }
-    while ((currentKey = inc(currentKey)) != getTailKey()) {
+    while (currentKey != getTailKey()) {
       event = (InternalGatewayQueueEvent) optimalGet(currentKey);
 
-      if (event == null) {
-        continue;
-      }
-      if (condition.test(event)) {
+      if (event != null && condition.test(event)) {
         return true;
       }
+      currentKey = inc(currentKey);
     }
     return false;
   }

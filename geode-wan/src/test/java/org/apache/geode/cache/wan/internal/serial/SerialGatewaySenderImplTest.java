@@ -162,7 +162,7 @@ public class SerialGatewaySenderImplTest {
     long timeElapsed = finish - start;
 
     // Each call to preStop waits for 1 second but these waits execute in parallel
-    assertThat(timeElapsed).isGreaterThan(1000);
+    assertThat(timeElapsed).isGreaterThanOrEqualTo(1000);
 
     assertThat(serialGatewaySender.getEventProcessor()).isNull();
   }
@@ -172,6 +172,6 @@ public class SerialGatewaySenderImplTest {
     serialGatewaySender.stop();
     long finish = System.currentTimeMillis();
     long timeElapsed = finish - start;
-    assertThat(timeElapsed).isGreaterThan(1000);
+    assertThat(timeElapsed).isGreaterThanOrEqualTo(1000);
   }
 }
