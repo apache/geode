@@ -30,8 +30,7 @@ public class RegionProvider {
   /**
    * The name of the region that holds data stored in redis.
    */
-  public static final String REDIS_DATA_REGION = "__REDIS_DATA";
-  public static final String REDIS_CONFIG_REGION = "__REDIS_CONFIG";
+  public static final String REDIS_DATA_REGION = "REDIS_DATA";
   public static final String REDIS_REGION_BUCKETS_PARAM = "redis.region.buckets";
 
   // Ideally the bucket count should be a power of 2, but technically it is not required.
@@ -43,7 +42,6 @@ public class RegionProvider {
   public static final int REDIS_SLOTS_PER_BUCKET = REDIS_SLOTS / REDIS_REGION_BUCKETS;
 
   private final Region<RedisKey, RedisData> dataRegion;
-  private final Region<String, Object> configRegion;
   private final RedisHashCommandsFunctionInvoker hashCommands;
   private final SlotAdvisor slotAdvisor;
 
@@ -52,7 +50,6 @@ public class RegionProvider {
 
     InternalRegionFactory<RedisKey, RedisData> redisDataRegionFactory =
         cache.createInternalRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
-    redisDataRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
 
     PartitionAttributesFactory<RedisKey, RedisData> attributesFactory =
         new PartitionAttributesFactory<>();
@@ -62,22 +59,13 @@ public class RegionProvider {
 
     dataRegion = redisDataRegionFactory.create(REDIS_DATA_REGION);
 
-    InternalRegionFactory<String, Object> redisConfigRegionFactory =
-        cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
-    redisConfigRegionFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
-    configRegion = redisConfigRegionFactory.create(REDIS_CONFIG_REGION);
-
-    this.hashCommands = new RedisHashCommandsFunctionInvoker(dataRegion);
+    hashCommands = new RedisHashCommandsFunctionInvoker(dataRegion);
 
     slotAdvisor = new SlotAdvisor(dataRegion);
   }
 
   public Region<RedisKey, RedisData> getDataRegion() {
     return dataRegion;
-  }
-
-  public Region<String, Object> getConfigRegion() {
-    return configRegion;
   }
 
   public SlotAdvisor getSlotAdvisor() {
