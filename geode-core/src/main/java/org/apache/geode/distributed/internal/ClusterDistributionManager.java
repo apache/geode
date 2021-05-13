@@ -1314,13 +1314,13 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public void addMembershipListener(MembershipListener l) {
-    logger.info("BR Adding membership listener " + l.toString());
+    //logger.info("BR Adding membership listener " + l.toString());
     membershipListeners.putIfAbsent(l, Boolean.TRUE);
   }
 
   @Override
   public void removeMembershipListener(MembershipListener l) {
-    logger.info("BR Removing membership listener " + l.toString());
+    //logger.info("BR Removing membership listener " + l.toString());
     membershipListeners.remove(l);
   }
 
@@ -1334,7 +1334,7 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private void addAllMembershipListener(MembershipListener l) {
     synchronized (allMembershipListenersLock) {
-      logger.info("BR Adding all membership listener ");
+      //logger.info("BR Adding all membership listener ");
       Set<MembershipListener> newAllMembershipListeners =
           new HashSet<>(allMembershipListeners);
       newAllMembershipListeners.add(l);
@@ -1345,7 +1345,7 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public void removeAllMembershipListener(MembershipListener l) {
     synchronized (allMembershipListenersLock) {
-      logger.info("BR Removing all membership listener ");
+      //logger.info("BR Removing all membership listener ");
       Set<MembershipListener> newAllMembershipListeners =
           new HashSet<>(allMembershipListeners);
       if (!newAllMembershipListeners.remove(l)) {

@@ -163,8 +163,8 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     // Create and execute the function
     Cache cache = CacheFactory.getAnyInstance();
     Execution execution = FunctionService.onMember(member);
-    logger.info("BR About to execute boostrapping function ");
-    new Exception().printStackTrace();
+    logger.info("BR About to execute boostrapping function in " + new Exception().getStackTrace());
+
     ResultCollector collector = execution.execute(this);
 
     // Get the result. Nothing is being done with it.
