@@ -105,7 +105,8 @@ public abstract class AbstractKeysIntegrationTest implements RedisIntegrationTes
     byte[] combined = buff.array();
 
     jedis.set(combined, combined);
-    assertThat(jedis.keys("{子}*".getBytes())).containsExactlyInAnyOrder(combined);
+    assertThat(jedis.keys("{子}*".getBytes(StandardCharsets.UTF_8)))
+        .containsExactlyInAnyOrder(combined);
   }
 
   @Test
