@@ -21,6 +21,7 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SE
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -42,13 +43,17 @@ import org.apache.geode.redis.internal.executor.sortedset.ZSetOptions;
 
 public class RedisSortedSet extends AbstractRedisData {
 
+  @Override
+  public int getSizeInBytes() {
+    return 0;
+  }
+
   private enum AddOrChange {
-    ADDED, CHANGED, NOOP;
+    ADDED, CHANGED, NOOP
   }
 
   private Object2ObjectOpenCustomHashMap<byte[], byte[]> members;
 
-  @SuppressWarnings("unchecked")
   RedisSortedSet(List<byte[]> members) {
     this.members = new Object2ObjectOpenCustomHashMap<>(members.size(), ByteArrays.HASH_STRATEGY);
     Iterator<byte[]> iterator = members.iterator();
@@ -149,33 +154,24 @@ public class RedisSortedSet extends AbstractRedisData {
     byte[] oldScore = members.get(memberToAdd);
     boolean added = (members.put(memberToAdd, scoreToAdd) == null);
     if (CH && !added) {
-      return oldScore.equals(scoreToAdd) ? AddOrChange.NOOP : AddOrChange.CHANGED;
+      return Arrays.equals(oldScore, scoreToAdd) ? AddOrChange.NOOP : AddOrChange.CHANGED;
     }
     return added ? AddOrChange.ADDED : AddOrChange.NOOP;
   }
 
   private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
-    Iterator<ByteArrayWrapper> iterator = addsDeltaInfo.getAdds().iterator();
+    Iterator<byte[]> iterator = addsDeltaInfo.getAdds().iterator();
     while (iterator.hasNext()) {
-      ByteArrayWrapper member = iterator.next();
-      ByteArrayWrapper score = iterator.next();
-      members.put(member.toBytes(), score.toBytes()); // TODO: get rid of ByteArrayWrapper
+      byte[] member = iterator.next();
+      byte[] score = iterator.next();
+      members.put(member, score);
     }
   }
 
   private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
-    // TODO: get rid of ByteArrayWrapper
-    for (ByteArrayWrapper member : remsDeltaInfo.getRemoves()) {
+    for (byte[] member : remsDeltaInfo.getRemoves()) {
       members.remove(member);
     }
-  }
-
-  private String byteArrayStringer(byte[] byteArray) {
-    String retVal = "";
-    for (int i = 0; i < byteArray.length; i++) {
-      retVal += byteArray[i];
-    }
-    return retVal;
   }
 
   /**
@@ -187,7 +183,6 @@ public class RedisSortedSet extends AbstractRedisData {
   long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
       ZSetOptions options) {
     int membersAdded = 0;
-    long membersChanged = 0; // TODO: really implement changed
     if (options == null) {
       options = new ZSetOptions(ZSetOptions.Exists.NONE, ZSetOptions.Update.NONE);
     }
@@ -214,7 +209,7 @@ public class RedisSortedSet extends AbstractRedisData {
           makeAddsDeltaInfo(deltaInfo, member, score);
           break;
         case CHANGED:
-          membersChanged++;
+          // TODO: track changed
           makeAddsDeltaInfo(deltaInfo, member, score);
           break;
         default:
@@ -224,10 +219,10 @@ public class RedisSortedSet extends AbstractRedisData {
 
       if (delta) {
         if (deltaInfo == null) {
-          deltaInfo = new AddsDeltaInfo();
+          deltaInfo = new AddsDeltaInfo(new ArrayList<>());
         }
-        deltaInfo.add(new ByteArrayWrapper(member));
-        deltaInfo.add(new ByteArrayWrapper(score));
+        deltaInfo.add(member);
+        deltaInfo.add(score);
       }
     }
     if (deltaInfo != null) {
@@ -237,16 +232,15 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   byte[] zscore(byte[] member) {
-    byte[] score = members.get(member);
-    return score;
+    return members.get(member);
   }
 
   private AddsDeltaInfo makeAddsDeltaInfo(AddsDeltaInfo deltaInfo, byte[] member, byte[] score) {
     if (deltaInfo == null) {
-      deltaInfo = new AddsDeltaInfo();
+      deltaInfo = new AddsDeltaInfo(new ArrayList<>());
     }
-    deltaInfo.add(new ByteArrayWrapper(member)); // TODO: get rid of ByteArrayWrapper
-    deltaInfo.add(new ByteArrayWrapper(score));
+    deltaInfo.add(member);
+    deltaInfo.add(score);
     return deltaInfo;
   }
 
