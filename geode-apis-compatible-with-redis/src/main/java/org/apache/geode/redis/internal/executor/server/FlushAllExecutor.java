@@ -27,9 +27,8 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class FlushAllExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-    RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+    RedisKeyCommands redisKeyCommands = context.getKeyCommands();
 
     LocalDataSet local = (LocalDataSet) PartitionRegionHelper
         .getLocalPrimaryData(context.getRegionProvider().getDataRegion());

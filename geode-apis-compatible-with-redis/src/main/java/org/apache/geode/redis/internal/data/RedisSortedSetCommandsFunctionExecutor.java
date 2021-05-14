@@ -19,18 +19,19 @@ package org.apache.geode.redis.internal.data;
 
 import java.util.List;
 
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
 public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
     implements RedisSortedSetCommands {
 
-  public RedisSortedSetCommandsFunctionExecutor(CommandHelper helper) {
-    super(helper);
+  public RedisSortedSetCommandsFunctionExecutor(RegionProvider regionProvider) {
+    super(regionProvider);
   }
 
   private RedisSortedSet getRedisSortedSet(RedisKey key, boolean updateStats) {
-    return helper.getRedisSortedSet(key, updateStats);
+    return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_SORTED_SET, key, updateStats);
   }
 
   @Override

@@ -27,17 +27,18 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 
 public class RedisSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor implements
     RedisSetCommands {
 
-  public RedisSetCommandsFunctionExecutor(CommandHelper helper) {
-    super(helper);
+  public RedisSetCommandsFunctionExecutor(RegionProvider regionProvider) {
+    super(regionProvider);
   }
 
   private RedisSet getRedisSet(RedisKey key, boolean updateStats) {
-    return helper.getRedisSet(key, updateStats);
+    return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_SET, key, updateStats);
   }
 
   @Override
@@ -49,17 +50,17 @@ public class RedisSetCommandsFunctionExecutor extends RedisDataCommandsFunctionE
 
   @Override
   public int sunionstore(RedisKey destination, List<RedisKey> setKeys) {
-    return NULL_REDIS_SET.sunionstore(helper, destination, setKeys);
+    return NULL_REDIS_SET.sunionstore(getRegionProvider(), destination, setKeys);
   }
 
   @Override
   public int sinterstore(RedisKey destination, List<RedisKey> setKeys) {
-    return NULL_REDIS_SET.sinterstore(helper, destination, setKeys);
+    return NULL_REDIS_SET.sinterstore(getRegionProvider(), destination, setKeys);
   }
 
   @Override
   public int sdiffstore(RedisKey destination, List<RedisKey> setKeys) {
-    return NULL_REDIS_SET.sdiffstore(helper, destination, setKeys);
+    return NULL_REDIS_SET.sdiffstore(getRegionProvider(), destination, setKeys);
   }
 
   @Override

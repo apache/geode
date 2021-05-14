@@ -49,8 +49,7 @@ public class SetRangeExecutor extends StringExecutor {
       return RedisResponse.error(ERROR_ILLEGAL_OFFSET);
     }
 
-
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
     int result = stringCommands.setrange(key, offset, value);
 
     return RedisResponse.integer(result);

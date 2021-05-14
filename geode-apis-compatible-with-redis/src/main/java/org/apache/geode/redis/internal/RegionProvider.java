@@ -14,21 +14,46 @@
  */
 package org.apache.geode.redis.internal;
 
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_DATA;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_HASH;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_STRING;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_DATA;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_HASH;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
+
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.management.ManagementException;
+import org.apache.geode.redis.internal.data.NullRedisDataStructures;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisDataType;
+import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
+import org.apache.geode.redis.internal.data.RedisHashCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.data.RedisKeyCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.data.RedisSetCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.data.RedisSortedSetCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.data.RedisString;
+import org.apache.geode.redis.internal.data.RedisStringCommandsFunctionExecutor;
+import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
-import org.apache.geode.redis.internal.executor.hash.RedisHashCommandsFunctionInvoker;
+import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
-import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionInvoker;
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
-import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommandsFunctionInvoker;
+import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class RegionProvider {
   /**
@@ -45,14 +70,32 @@ public class RegionProvider {
 
   public static final int REDIS_SLOTS_PER_BUCKET = REDIS_SLOTS / REDIS_REGION_BUCKETS;
 
-  private final Region<RedisKey, RedisData> dataRegion;
-  private final RedisHashCommandsFunctionInvoker hashCommands;
-  private final RedisSetCommandsFunctionInvoker setCommands;
-  private final RedisSortedSetCommandsFunctionInvoker sortedSetCommands;
-  private final SlotAdvisor slotAdvisor;
+  private static final Map<RedisDataType, RedisData> nullTypes = new HashMap<>();
 
-  public RegionProvider(InternalCache cache) {
+  private final Region<RedisKey, RedisData> dataRegion;
+  private final RedisHashCommandsFunctionExecutor hashCommands;
+  private final RedisSetCommandsFunctionExecutor setCommands;
+  private final RedisStringCommandsFunctionExecutor stringCommands;
+  private final RedisSortedSetCommandsFunctionExecutor sortedSetCommands;
+  private final RedisKeyCommandsFunctionExecutor keyCommands;
+  private final SlotAdvisor slotAdvisor;
+  private final StripedExecutor stripedExecutor;
+  private final RedisStats redisStats;
+
+  static {
+    nullTypes.put(REDIS_STRING, NULL_REDIS_STRING);
+    nullTypes.put(REDIS_HASH, NULL_REDIS_HASH);
+    nullTypes.put(REDIS_SET, NULL_REDIS_SET);
+    nullTypes.put(REDIS_SORTED_SET, NULL_REDIS_SORTED_SET);
+    nullTypes.put(REDIS_DATA, NULL_REDIS_DATA);
+  }
+
+  public RegionProvider(InternalCache cache, StripedExecutor stripedExecutor,
+      RedisStats redisStats) {
     validateBucketCount(REDIS_REGION_BUCKETS);
+
+    this.stripedExecutor = stripedExecutor;
+    this.redisStats = redisStats;
 
     InternalRegionFactory<RedisKey, RedisData> redisDataRegionFactory =
         cache.createInternalRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
@@ -65,9 +108,11 @@ public class RegionProvider {
 
     dataRegion = redisDataRegionFactory.create(REDIS_DATA_REGION);
 
-    hashCommands = new RedisHashCommandsFunctionInvoker(dataRegion);
-    setCommands = new RedisSetCommandsFunctionInvoker(dataRegion);
-    sortedSetCommands = new RedisSortedSetCommandsFunctionInvoker(dataRegion);
+    stringCommands = new RedisStringCommandsFunctionExecutor(this);
+    setCommands = new RedisSetCommandsFunctionExecutor(this);
+    hashCommands = new RedisHashCommandsFunctionExecutor(this);
+    sortedSetCommands = new RedisSortedSetCommandsFunctionExecutor(this);
+    keyCommands = new RedisKeyCommandsFunctionExecutor(this);
 
     slotAdvisor = new SlotAdvisor(dataRegion);
   }
@@ -78,6 +123,122 @@ public class RegionProvider {
 
   public SlotAdvisor getSlotAdvisor() {
     return slotAdvisor;
+  }
+
+  public RedisStats getRedisStats() {
+    return redisStats;
+  }
+
+  public <T> T execute(Object key, Callable<T> callable) {
+    return stripedExecutor.execute(key, callable);
+  }
+
+  public RedisData getRedisData(RedisKey key) {
+    return getRedisData(key, NullRedisDataStructures.NULL_REDIS_DATA);
+  }
+
+  public RedisData getRedisData(RedisKey key, RedisData notFoundValue) {
+    RedisData result = getDataRegion().get(key);
+    if (result != null) {
+      if (result.hasExpired()) {
+        result.doExpiration(this, key);
+        result = null;
+      }
+    }
+    if (result == null) {
+      return notFoundValue;
+    } else {
+      return result;
+    }
+  }
+
+  public <T extends RedisData> T getTypedRedisData(RedisDataType type, RedisKey key,
+      boolean updateStats) {
+    RedisData redisData = getRedisData(type, key);
+    if (updateStats) {
+      if (redisData == getNullType(type)) {
+        redisStats.incKeyspaceMisses();
+      } else {
+        redisStats.incKeyspaceHits();
+      }
+    }
+
+    return checkType(redisData, type);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T extends RedisData> T checkType(RedisData redisData, RedisDataType type) {
+    if (redisData == null) {
+      return null;
+    }
+    if (redisData.getType() != type) {
+      throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
+    }
+    return (T) redisData;
+  }
+
+  private RedisData getRedisData(RedisDataType notFoundType, RedisKey key) {
+    RedisData result = getDataRegion().get(key);
+    if (result != null) {
+      if (result.hasExpired()) {
+        result.doExpiration(this, key);
+        result = null;
+      }
+    }
+    if (result == null) {
+      return getNullType(notFoundType);
+    } else {
+      return result;
+    }
+  }
+
+  private RedisData getNullType(RedisDataType type) {
+    return nullTypes.get(type);
+  }
+
+  private RedisString checkStringTypeIgnoringMismatch(RedisData redisData) {
+    if (redisData == null) {
+      return null;
+    }
+    if (redisData.getType() != REDIS_STRING) {
+      return NULL_REDIS_STRING;
+    }
+    return (RedisString) redisData;
+  }
+
+  public RedisString getRedisStringIgnoringType(RedisKey key, boolean updateStats) {
+    RedisData redisData = getRedisData(key, NULL_REDIS_STRING);
+    if (updateStats) {
+      if (redisData == NULL_REDIS_STRING) {
+        redisStats.incKeyspaceMisses();
+      } else {
+        redisStats.incKeyspaceHits();
+      }
+    }
+
+    return checkStringTypeIgnoringMismatch(redisData);
+  }
+
+  public RedisString setRedisString(RedisKey key, byte[] value) {
+    RedisString result;
+    RedisData redisData = getRedisData(key);
+
+    if (redisData.isNull() || redisData.getType() != REDIS_STRING) {
+      result = new RedisString(value);
+    } else {
+      result = (RedisString) redisData;
+      result.set(value);
+    }
+    getDataRegion().put(key, result);
+    return result;
+  }
+
+  public long markStartExpiration() {
+    return redisStats.startExpiration();
+  }
+
+  public void markEndExpiration(long start) {
+    redisStats.endExpiration(start);
   }
 
   /**
@@ -97,11 +258,19 @@ public class RegionProvider {
     return hashCommands;
   }
 
+  public RedisSortedSetCommands getSortedSetCommands() {
+    return sortedSetCommands;
+  }
+
+  public RedisStringCommands getStringCommands() {
+    return stringCommands;
+  }
+
   public RedisSetCommands getSetCommands() {
     return setCommands;
   }
 
-  public RedisSortedSetCommands getSortedSetCommands() {
-    return sortedSetCommands;
+  public RedisKeyCommands getKeyCommands() {
+    return keyCommands;
   }
 }

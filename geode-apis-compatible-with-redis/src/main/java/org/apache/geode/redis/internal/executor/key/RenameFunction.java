@@ -44,7 +44,7 @@ public class RenameFunction implements InternalFunction {
 
   private final transient PartitionedRegion partitionedRegion;
   private final transient CommandHelper commandHelper;
-  private final transient RedisKeyCommandsFunctionExecutor keyCommands;
+  private final transient RedisKeyCommandsFunctionExecutor keyCommands = null;
 
   public static void register(Region<RedisKey, RedisData> dataRegion,
       StripedExecutor stripedExecutor,
@@ -57,7 +57,7 @@ public class RenameFunction implements InternalFunction {
       RedisStats redisStats) {
     partitionedRegion = (PartitionedRegion) dataRegion;
     commandHelper = new CommandHelper(dataRegion, redisStats, stripedExecutor);
-    keyCommands = new RedisKeyCommandsFunctionExecutor(commandHelper);
+    // keyCommands = new RedisKeyCommandsFunctionExecutor(commandHelper);
   }
 
   @Override

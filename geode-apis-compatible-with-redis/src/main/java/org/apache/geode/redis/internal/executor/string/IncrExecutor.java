@@ -26,7 +26,7 @@ public class IncrExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     RedisKey key = command.getKey();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
 
     long value = stringCommands.incr(key);
     return RedisResponse.integer(value);

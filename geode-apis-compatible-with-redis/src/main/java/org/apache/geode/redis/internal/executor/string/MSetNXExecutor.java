@@ -33,8 +33,8 @@ public class MSetNXExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
-    RedisKeyCommands keyCommands = getRedisKeyCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
+    RedisKeyCommands keyCommands = context.getKeyCommands();
 
     // TODO: make this atomic
     for (int i = 1; i < commandElems.size(); i += 2) {

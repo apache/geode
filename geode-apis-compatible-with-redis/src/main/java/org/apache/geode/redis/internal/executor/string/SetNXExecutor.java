@@ -32,7 +32,7 @@ public class SetNXExecutor extends StringExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisKey key = command.getKey();
 
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
     SetOptions setOptions = new SetOptions(NX, 0L, false);
 
     boolean result = stringCommands.set(key, commandElems.get(VALUE_INDEX), setOptions);

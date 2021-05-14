@@ -29,8 +29,6 @@ import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfoRetrievalFunction;
-import org.apache.geode.redis.internal.data.CommandHelper;
-import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
 import org.apache.geode.redis.internal.executor.key.RenameFunction;
@@ -81,15 +79,11 @@ public class GeodeRedisServer {
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
-    regionProvider = new RegionProvider(cache);
-    CommandHelper commandHelper =
-        new CommandHelper(regionProvider.getDataRegion(), redisStats, stripedExecutor);
+    regionProvider = new RegionProvider(cache, stripedExecutor, redisStats);
 
-    CommandFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
     RenameFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
 
-    passiveExpirationManager =
-        new PassiveExpirationManager(regionProvider.getDataRegion(), redisStats);
+    passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 
     redisCommandExecutor =
         LoggingExecutors.newCachedThreadPool("GeodeRedisServer-Command-", true);
@@ -99,7 +93,7 @@ public class GeodeRedisServer {
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
-        redisCommandExecutor, member, commandHelper);
+        redisCommandExecutor, member);
 
     infoFunction.initialize(member, bindAddress, nettyRedisServer.getPort());
   }

@@ -27,7 +27,7 @@ public class SAddExecutor extends SetExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElements = command.getProcessedCommand();
 
-    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
+    RedisSetCommands redisSetCommands = context.getSetCommands();
 
     List<byte[]> membersToAdd = new ArrayList<>(commandElements.subList(2, commandElements.size()));
 

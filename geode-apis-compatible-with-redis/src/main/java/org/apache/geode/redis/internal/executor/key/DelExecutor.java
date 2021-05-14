@@ -33,7 +33,7 @@ public class DelExecutor extends AbstractExecutor {
     long numRemoved = commandElems
         .subList(1, commandElems.size())
         .stream()
-        .filter((key) -> getRedisKeyCommands(context).del(key))
+        .filter((key) -> context.getKeyCommands().del(key))
         .count();
 
     return RedisResponse.integer(numRemoved);

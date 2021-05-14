@@ -45,7 +45,7 @@ public class IncrByFloatExecutor extends StringExecutor {
       return validated.getRight();
     }
 
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
     BigDecimal result = stringCommands.incrbyfloat(key, validated.getLeft());
 
     return RedisResponse.bigDecimal(result);

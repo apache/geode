@@ -30,8 +30,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ExpireExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     int SECONDS_INDEX = 2;
 
@@ -50,9 +49,7 @@ public class ExpireExecutor extends AbstractExecutor {
 
     long timestamp = System.currentTimeMillis() + delay;
 
-    RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionInvoker(
-        context.getRegionProvider().getDataRegion());
-    int result = redisKeyCommands.pexpireat(key, timestamp);
+    int result = context.getKeyCommands().pexpireat(key, timestamp);
 
     return RedisResponse.integer(result);
   }

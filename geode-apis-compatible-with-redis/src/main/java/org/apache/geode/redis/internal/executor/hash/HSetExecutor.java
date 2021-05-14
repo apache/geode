@@ -46,7 +46,7 @@ public class HSetExecutor extends HashExecutor {
 
     RedisKey key = command.getKey();
 
-    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
+    RedisHashCommands redisHashCommands = context.getHashCommands();
 
     List<byte[]> fieldsToSet = new ArrayList<>(commandElems.subList(2, commandElems.size()));
     int fieldsAdded = redisHashCommands.hset(key, fieldsToSet, onlySetOnAbsent());

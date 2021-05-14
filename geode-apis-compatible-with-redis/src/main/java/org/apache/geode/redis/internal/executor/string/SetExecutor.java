@@ -41,7 +41,7 @@ public class SetExecutor extends StringExecutor {
     RedisKey keyToSet = command.getKey();
     List<byte[]> commandElementsBytes = command.getProcessedCommand();
     List<byte[]> optionalParameterBytes = getOptionalParameters(commandElementsBytes);
-    RedisStringCommands redisStringCommands = getRedisStringCommands(context);
+    RedisStringCommands redisStringCommands = context.getStringCommands();
     SetOptions setOptions;
 
     try {

@@ -37,7 +37,7 @@ public class SPopExecutor extends SetExecutor {
     }
 
     RedisKey key = command.getKey();
-    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
+    RedisSetCommands redisSetCommands = context.getSetCommands();
     Collection<byte[]> popped = redisSetCommands.spop(key, popCount);
 
     if (popped.isEmpty() && !isCountPassed) {

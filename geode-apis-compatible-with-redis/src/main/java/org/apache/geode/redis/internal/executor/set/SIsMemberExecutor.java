@@ -27,7 +27,7 @@ public class SIsMemberExecutor extends SetExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisKey key = command.getKey();
     byte[] member = commandElems.get(2);
-    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
+    RedisSetCommands redisSetCommands = context.getSetCommands();
 
     boolean exists = redisSetCommands.sismember(key, member);
 

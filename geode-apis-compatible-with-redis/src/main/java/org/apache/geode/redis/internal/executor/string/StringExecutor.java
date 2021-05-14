@@ -16,11 +16,7 @@ package org.apache.geode.redis.internal.executor.string;
 
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class StringExecutor extends AbstractExecutor {
 
-  protected RedisStringCommands getRedisStringCommands(ExecutionHandlerContext context) {
-    return new RedisStringCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
-  }
 }

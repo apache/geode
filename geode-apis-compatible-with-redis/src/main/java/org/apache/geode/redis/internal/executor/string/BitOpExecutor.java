@@ -53,7 +53,7 @@ public class BitOpExecutor extends StringExecutor {
       return RedisResponse.error(ERROR_BITOP_NOT);
     }
 
-    int result = getRedisStringCommands(context).bitop(operation, destKey, values);
+    int result = context.getStringCommands().bitop(operation, destKey, values);
 
     return RedisResponse.integer(result);
   }

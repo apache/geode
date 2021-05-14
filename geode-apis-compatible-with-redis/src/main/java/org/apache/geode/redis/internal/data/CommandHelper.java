@@ -74,7 +74,7 @@ public class CommandHelper {
     RedisData result = region.get(key);
     if (result != null) {
       if (result.hasExpired()) {
-        result.doExpiration(this, key);
+        result.doExpiration(null, key);
         result = null;
       }
     }

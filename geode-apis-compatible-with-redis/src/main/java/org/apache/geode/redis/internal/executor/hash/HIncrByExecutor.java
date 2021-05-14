@@ -64,7 +64,7 @@ public class HIncrByExecutor extends HashExecutor {
       return RedisResponse.error(ERROR_INCREMENT_NOT_USABLE);
     }
 
-    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
+    RedisHashCommands redisHashCommands = context.getHashCommands();
 
     long value = redisHashCommands.hincrby(key, field, increment);
     return RedisResponse.integer(value);

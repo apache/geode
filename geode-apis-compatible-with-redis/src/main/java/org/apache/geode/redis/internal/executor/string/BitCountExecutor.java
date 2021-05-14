@@ -33,7 +33,7 @@ public class BitCountExecutor extends StringExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     RedisKey key = command.getKey();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
     long result;
 
     if (commandElems.size() == 4) {

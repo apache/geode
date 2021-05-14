@@ -28,9 +28,7 @@ public class PersistExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
 
-    RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionInvoker(
-        context.getRegionProvider().getDataRegion());
-    int result = redisKeyCommands.persist(key);
+    int result = context.getKeyCommands().persist(key);
 
     return RedisResponse.integer(result);
   }

@@ -52,7 +52,7 @@ public class HMSetExecutor extends HashExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     RedisKey key = command.getKey();
-    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
+    RedisHashCommands redisHashCommands = context.getHashCommands();
     List<byte[]> fieldsToSet = new ArrayList<>(commandElems.subList(2, commandElems.size()));
     redisHashCommands.hset(key, fieldsToSet, false);
 

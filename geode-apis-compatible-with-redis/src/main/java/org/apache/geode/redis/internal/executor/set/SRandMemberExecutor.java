@@ -49,7 +49,7 @@ public class SRandMemberExecutor extends SetExecutor {
       return RedisResponse.emptyArray();
     }
 
-    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
+    RedisSetCommands redisSetCommands = context.getSetCommands();
     Collection<byte[]> results = redisSetCommands.srandmember(key, count);
 
     if (countSpecified) {

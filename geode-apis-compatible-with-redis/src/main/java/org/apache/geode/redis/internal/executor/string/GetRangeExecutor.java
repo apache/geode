@@ -45,7 +45,7 @@ public class GetRangeExecutor extends StringExecutor {
       return RedisResponse.error(ERROR_NOT_INTEGER);
     }
 
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
     RedisKey key = command.getKey();
 
     byte[] returnRange = stringCommands.getrange(key, start, end);

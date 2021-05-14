@@ -49,7 +49,7 @@ public class ExpireAtExecutor extends AbstractExecutor {
       timestamp = SECONDS.toMillis(timestamp);
     }
 
-    RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
+    RedisKeyCommands redisKeyCommands = context.getKeyCommands();
     int result = redisKeyCommands.pexpireat(wKey, timestamp);
 
     return RedisResponse.integer(result);

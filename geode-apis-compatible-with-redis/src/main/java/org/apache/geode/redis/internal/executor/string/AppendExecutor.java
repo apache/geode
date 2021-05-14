@@ -32,7 +32,7 @@ public class AppendExecutor extends StringExecutor {
     RedisKey key = command.getKey();
     byte[] bytesToAppend = commandElems.get(VALUE_INDEX);
 
-    long returnValue = getRedisStringCommands(context).append(key, bytesToAppend);
+    long returnValue = context.getStringCommands().append(key, bytesToAppend);
 
     return RedisResponse.integer(returnValue);
   }

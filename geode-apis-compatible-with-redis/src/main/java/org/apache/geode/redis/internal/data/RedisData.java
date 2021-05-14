@@ -21,6 +21,7 @@ import org.apache.geode.Delta;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.size.Sizeable;
+import org.apache.geode.redis.internal.RegionProvider;
 
 public interface RedisData extends Delta, DataSerializableFixedID, Sizeable {
 
@@ -50,9 +51,9 @@ public interface RedisData extends Delta, DataSerializableFixedID, Sizeable {
 
   long pttl(Region<RedisKey, RedisData> region, RedisKey key);
 
-  int pexpireat(CommandHelper helper, RedisKey key, long timestamp);
+  int pexpireat(RegionProvider regionProvider, RedisKey key, long timestamp);
 
-  void doExpiration(CommandHelper helper, RedisKey key);
+  void doExpiration(RegionProvider regionProvider, RedisKey key);
 
   String type();
 

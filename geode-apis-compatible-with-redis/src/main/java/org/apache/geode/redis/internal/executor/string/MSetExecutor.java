@@ -29,7 +29,7 @@ public class MSetExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
 
     // TODO: make this atomic
     for (int i = 1; i < commandElems.size(); i += 2) {
