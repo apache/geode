@@ -727,7 +727,7 @@ jobs:
               outputs:
               - name: geode-results-{{java_test_version.name}}
                 path: geode-results
-            timeout: 15m
+            timeout: 20m
             attempts: 5
           ensure:
             do:
