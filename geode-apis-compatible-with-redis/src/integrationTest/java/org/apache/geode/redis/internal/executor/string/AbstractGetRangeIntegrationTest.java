@@ -26,7 +26,8 @@ import java.util.Random;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
@@ -36,18 +37,20 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public abstract class AbstractGetRangeIntegrationTest implements RedisIntegrationTest {
 
   private Random random = new Random();
-  private Jedis jedis;
+  private JedisCluster jedis;
+  private final String key = "key";
+  private final String value = "value";
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
   }
 
@@ -59,42 +62,43 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisIntegratio
   @Test
   public void givenStartIndexIsNotAnInteger_returnsNotIntegerError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "NaN", "5"))
+        () -> jedis.sendCommand(key, Protocol.Command.GETRANGE, key, "NaN", "5"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenEndIndexIsNotAnInteger_returnsNotIntegerError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "0", "NaN"))
+        () -> jedis.sendCommand(key, Protocol.Command.GETRANGE, key, "0", "NaN"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenRangeIsBiggerThanMinOrMax_returnsNotIntegerError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "0", "9223372036854775808"))
-            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+        () -> jedis.sendCommand(key, Protocol.Command.GETRANGE, key, "0",
+            "9223372036854775808"))
+                .hasMessage("ERR " + ERROR_NOT_INTEGER);
 
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.GETRANGE, "key", "0", "-9223372036854775809"))
-            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+        () -> jedis.sendCommand(key, Protocol.Command.GETRANGE, key, "0",
+            "-9223372036854775809"))
+                .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenWrongType_returnsWrongTypeError() {
-    jedis.sadd("set", "value");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETRANGE, "set", "0", "1"))
+    jedis.sadd("set", value);
+    assertThatThrownBy(() -> jedis.sendCommand("set", Protocol.Command.GETRANGE, "set", "0", "1"))
         .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
 
-    jedis.hset("hash", "field", "value");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.GETRANGE, "hash", "0", "1"))
+    jedis.hset("hash", "field", value);
+    assertThatThrownBy(() -> jedis.sendCommand("hash", Protocol.Command.GETRANGE, "hash", "0", "1"))
         .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
   public void testGetRange_whenWholeRangeSpecified_returnsEntireValue() {
-    String key = "key";
     String valueWith19Characters = "abc123babyyouknowme";
 
     jedis.set(key, valueWith19Characters);
@@ -109,7 +113,6 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisIntegratio
 
   @Test
   public void testGetRange_whenMoreThanWholeRangeSpecified_returnsEntireValue() {
-    String key = "key";
     String valueWith19Characters = "abc123babyyouknowme";
 
     jedis.set(key, valueWith19Characters);
@@ -126,7 +129,6 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisIntegratio
 
   @Test
   public void testGetRange_whenValidSubrangeSpecified_returnsAppropriateSubstring() {
-    String key = "key";
     String valueWith19Characters = "abc123babyyouknowme";
 
     jedis.set(key, valueWith19Characters);
@@ -225,7 +227,6 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisIntegratio
 
   @Test
   public void testGetRange_rangeIsInvalid_returnsEmptyString() {
-    String key = "key";
     String valueWith19Characters = "abc123babyyouknowme";
 
     jedis.set(key, valueWith19Characters);
@@ -247,9 +248,6 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisIntegratio
 
   @Test
   public void testGetRange_rangePastEndOfValue_returnsEmptyString() {
-    String key = "key";
-    String value = "value";
-
     jedis.set(key, value);
 
     String range = jedis.getrange(key, 7, 14);
@@ -258,12 +256,11 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisIntegratio
 
   @Test
   public void testConcurrentGetrange_whileUpdating() {
-    Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis.set("key", "1");
+    jedis.set(key, "1");
 
     new ConcurrentLoopingThreads(10000,
-        (i) -> jedis.set("key", Integer.toString(random.nextInt(10000))),
-        (i) -> Integer.parseInt(jedis2.getrange("key", 0, 5)))
+        (i) -> jedis.set(key, Integer.toString(random.nextInt(10000))),
+        (i) -> Integer.parseInt(jedis.getrange(key, 0, 5)))
             .run();
   }
 

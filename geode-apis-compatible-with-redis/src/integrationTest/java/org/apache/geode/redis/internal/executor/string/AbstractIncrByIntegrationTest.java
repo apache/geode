@@ -26,7 +26,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
@@ -35,8 +36,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis1;
-  private Jedis jedis2;
+  private JedisCluster jedis1;
   private Random rand;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -45,16 +45,13 @@ public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationT
   public void setUp() {
     rand = new Random();
 
-    jedis1 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis1 = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis1.flushAll();
+    flushAll();
     jedis1.close();
-    jedis2.flushAll();
-    jedis2.close();
   }
 
   @Test
@@ -64,8 +61,9 @@ public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationT
 
   @Test
   public void testIncrBy_failsWhenPerformedOnNonIntegerValue() {
-    jedis1.sadd("key", "member");
-    assertThatThrownBy(() -> jedis1.incrBy("key", 1))
+    String key = "key";
+    jedis1.sadd(key, "member");
+    assertThatThrownBy(() -> jedis1.incrBy(key, 1))
         .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
   }
 
@@ -123,7 +121,7 @@ public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationT
         (i) -> {
           int increment = ThreadLocalRandom.current().nextInt(-50, 50);
           expectedValue.addAndGet(increment);
-          jedis2.incrBy(key, increment);
+          jedis1.incrBy(key, increment);
         }).run();
 
     assertThat(Integer.parseInt(jedis1.get(key))).isEqualTo(expectedValue.get());

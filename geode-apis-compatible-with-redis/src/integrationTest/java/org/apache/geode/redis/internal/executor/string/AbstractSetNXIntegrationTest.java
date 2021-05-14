@@ -22,7 +22,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
@@ -31,37 +32,38 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractSetNXIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
+  private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
   }
 
   @Test
   public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SETNX))
+    assertThatThrownBy(() -> jedis.sendCommand("any", Protocol.Command.SETNX))
         .hasMessageContaining("ERR wrong number of arguments for 'setnx' command");
   }
 
   @Test
   public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SETNX, "key"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SETNX, "key"))
         .hasMessageContaining("ERR wrong number of arguments for 'setnx' command");
   }
 
   @Test
   public void givenMoreThanThreeArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SETNX, "key", "value", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'setnx' command");
+    assertThatThrownBy(
+        () -> jedis.sendCommand("key", Protocol.Command.SETNX, "key", "value", "extraArg"))
+            .hasMessageContaining("ERR wrong number of arguments for 'setnx' command");
   }
 
   @Test
@@ -89,18 +91,15 @@ public abstract class AbstractSetNXIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void testSetNX_whenCalledConcurrently() {
-    Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
     AtomicLong updateCount = new AtomicLong(0);
     int iterations = 10000;
 
     new ConcurrentLoopingThreads(iterations,
         (i) -> updateCount.getAndAdd(jedis.setnx("key-" + i, "value-" + i)),
-        (i) -> updateCount.getAndAdd(jedis2.setnx("key-" + i, "value-" + i)))
+        (i) -> updateCount.getAndAdd(jedis.setnx("key-" + i, "value-" + i)))
             .runInLockstep();
 
     assertThat(iterations).isEqualTo(updateCount.get());
-
-    jedis2.close();
   }
 
 }

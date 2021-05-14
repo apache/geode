@@ -20,7 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
@@ -29,22 +30,19 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractDecrIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -79,7 +77,7 @@ public abstract class AbstractDecrIntegrationTest implements RedisIntegrationTes
     int ITERATION_COUNT = 4000;
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> jedis.decr("contestedKey"),
-        (i) -> jedis2.decr("contestedKey"))
+        (i) -> jedis.decr("contestedKey"))
             .run();
 
     assertThat(jedis.get("contestedKey")).isEqualTo(Integer.toString(-2 * ITERATION_COUNT));

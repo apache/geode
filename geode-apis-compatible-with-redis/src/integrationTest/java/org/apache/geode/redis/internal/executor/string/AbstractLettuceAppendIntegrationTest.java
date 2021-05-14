@@ -17,9 +17,9 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.cluster.RedisClusterClient;
+import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -30,14 +30,14 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public abstract class AbstractLettuceAppendIntegrationTest implements RedisIntegrationTest {
 
-  protected RedisClient client;
+  protected RedisClusterClient client;
 
   @ClassRule
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
   @Before
   public void before() {
-    client = RedisClient.create("redis://localhost:" + getPort());
+    client = RedisClusterClient.create("redis://localhost:" + getPort());
   }
 
   @After
@@ -50,8 +50,8 @@ public abstract class AbstractLettuceAppendIntegrationTest implements RedisInteg
     String test_utf16_string = "最𐐷𤭢";
     String double_utf16_string = test_utf16_string + test_utf16_string;
 
-    StatefulRedisConnection<String, String> redisConnection = client.connect();
-    RedisCommands<String, String> syncCommands = redisConnection.sync();
+    StatefulRedisClusterConnection<String, String> redisConnection = client.connect();
+    RedisClusterCommands<String, String> syncCommands = redisConnection.sync();
 
     syncCommands.set(test_utf16_string, test_utf16_string);
     syncCommands.append(test_utf16_string, test_utf16_string);

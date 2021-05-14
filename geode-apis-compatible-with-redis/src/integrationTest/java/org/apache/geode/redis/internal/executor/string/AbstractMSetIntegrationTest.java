@@ -29,7 +29,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -37,34 +38,32 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
+  private final String hashTag = "{111}";
   private static final int ITERATION_COUNT = 4000;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
   public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.MSET))
+    assertThatThrownBy(() -> jedis.sendCommand("any", Protocol.Command.MSET))
         .hasMessageContaining("ERR wrong number of arguments for 'mset' command");
   }
 
   @Test
   public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.MSET, "key"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.MSET, "key"))
         .hasMessageContaining("ERR wrong number of arguments for 'mset' command");
   }
 
@@ -72,8 +71,9 @@ public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTes
   public void givenEvenNumberOfArgumentsProvided_returnsWrongNumberOfArgumentsError() {
     // Redis returns this message in this scenario: "ERR wrong number of arguments for MSET"
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.MSET, "key1", "value1", "key2", "value2", "key3"))
-            .hasMessageContaining("ERR wrong number of arguments");
+        () -> jedis.sendCommand(hashTag, Protocol.Command.MSET, "key1" + hashTag, "value1",
+            "key2" + hashTag, "value2", "key3" + hashTag))
+                .hasMessageContaining("ERR wrong number of arguments");
   }
 
   @Test
@@ -83,7 +83,7 @@ public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTes
     String[] keys = new String[keyCount];
     String[] vals = new String[keyCount];
     for (int i = 0; i < keyCount; i++) {
-      String key = randString();
+      String key = randString() + hashTag;
       String val = randString();
       keyvals[2 * i] = key;
       keyvals[2 * i + 1] = val;
@@ -130,7 +130,7 @@ public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTes
       String[] keysAndVals2, String[] keys, String[] vals1,
       String[] vals2) {
     for (int i = 0; i < ITERATION_COUNT; i++) {
-      String key = keyBaseName + i;
+      String key = keyBaseName + i + hashTag;
       String value1 = val1BaseName + i;
       String value2 = val2BaseName + i;
       keysAndVals1[2 * i] = key;
@@ -149,7 +149,7 @@ public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTes
     CountDownLatch latch = new CountDownLatch(1);
     ExecutorService pool = Executors.newFixedThreadPool(2);
     Callable<String> callable1 = () -> jedis.mset(keysAndVals1);
-    Callable<String> callable2 = () -> jedis2.mset(keysAndVals2);
+    Callable<String> callable2 = () -> jedis.mset(keysAndVals2);
     Future<String> future1 = pool.submit(callable1);
     Future<String> future2 = pool.submit(callable2);
 

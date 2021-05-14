@@ -16,20 +16,15 @@ package org.apache.geode.redis.internal.executor.string;
 
 import org.junit.ClassRule;
 
-import org.apache.geode.redis.NativeRedisClusterTestRule;
+import org.apache.geode.NativeRedisTestRule;
 
-public class AppendNativeRedisAcceptanceTest extends AbstractAppendIntegrationTest {
-
+public class AppendMemoryNativeRedisAcceptanceTest extends AbstractAppendMemoryIntegrationTest {
   @ClassRule
-  public static NativeRedisClusterTestRule server = new NativeRedisClusterTestRule();
+  public static NativeRedisTestRule server = new NativeRedisTestRule();
 
   @Override
   public int getPort() {
-    return server.getExposedPorts().get(0);
+    return server.getPort();
   }
 
-  @Override
-  public void flushAll() {
-    server.flushAll();
-  }
 }

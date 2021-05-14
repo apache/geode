@@ -17,16 +17,20 @@ package org.apache.geode.redis.internal.executor.string;
 
 import org.junit.ClassRule;
 
-import org.apache.geode.NativeRedisTestRule;
+import org.apache.geode.redis.NativeRedisClusterTestRule;
 
 public class SetRangeNativeRedisAcceptanceTest extends AbstractSetRangeIntegrationTest {
 
   @ClassRule
-  public static NativeRedisTestRule redis = new NativeRedisTestRule();
+  public static NativeRedisClusterTestRule redis = new NativeRedisClusterTestRule();
 
   @Override
   public int getPort() {
-    return redis.getPort();
+    return redis.getExposedPorts().get(0);
   }
 
+  @Override
+  public void flushAll() {
+    redis.flushAll();
+  }
 }

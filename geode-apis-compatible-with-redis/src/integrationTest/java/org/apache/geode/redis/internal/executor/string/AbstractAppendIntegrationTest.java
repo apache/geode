@@ -20,32 +20,32 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractAppendIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
-  public void flushAll() {
-    jedis.flushAll();
+  public void tearDown() {
+    flushAll();
     jedis.close();
   }
 
@@ -81,7 +81,7 @@ public abstract class AbstractAppendIntegrationTest implements RedisIntegrationT
 
     new ConcurrentLoopingThreads(listSize,
         (i) -> jedis.append(key, values1.get(i)),
-        (i) -> jedis2.append(key, values2.get(i))).run();
+        (i) -> jedis.append(key, values2.get(i))).run();
 
     for (int i = 0; i < listSize; i++) {
       assertThat(jedis.get(key)).contains(values1.get(i));
@@ -104,26 +104,6 @@ public abstract class AbstractAppendIntegrationTest implements RedisIntegrationT
     byte[] result = jedis.get(blob);
 
     assertThat(result).isEqualTo(doubleBlob);
-  }
-
-  @Test
-  public void testAppend_actuallyIncreasesBucketSize() {
-    int listSize = 1000;
-    String key = "key";
-
-    Map<String, String> info = getInfo(jedis);
-    Long previousMemValue = Long.valueOf(info.get("used_memory"));
-
-    jedis.set(key, "initial");
-    for (int i = 0; i < listSize; i++) {
-      jedis.append(key, "morestuff");
-    }
-
-    info = getInfo(jedis);
-    Long finalMemValue = Long.valueOf(info.get("used_memory"));
-
-
-    assertThat(finalMemValue).isGreaterThan(previousMemValue);
   }
 
   @Test
@@ -152,24 +132,5 @@ public abstract class AbstractAppendIntegrationTest implements RedisIntegrationT
       strings.add(baseString + i);
     }
     return strings;
-  }
-
-  /**
-   * Convert the values returned by the INFO command into a basic param:value map.
-   */
-  static Map<String, String> getInfo(Jedis jedis) {
-    Map<String, String> results = new HashMap<>();
-    String rawInfo = jedis.info();
-
-    for (String line : rawInfo.split("\r\n")) {
-      int colonIndex = line.indexOf(":");
-      if (colonIndex > 0) {
-        String key = line.substring(0, colonIndex);
-        String value = line.substring(colonIndex + 1);
-        results.put(key, value);
-      }
-    }
-
-    return results;
   }
 }
