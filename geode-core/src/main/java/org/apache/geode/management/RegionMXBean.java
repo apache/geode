@@ -302,8 +302,8 @@ public interface RegionMXBean {
    * is set to {@link EvictionAlgorithm#LRU_MEMORY}.
    *
    * All partitioned regions can report entry size, but the value also includes
-   * redundant entries and also counts the size of all the secondary entries in 
-   * on the node.
+   * redundant entries and also counts the size of all the secondary entries in
+   * the node.
    */
   long getEntrySize();
 
