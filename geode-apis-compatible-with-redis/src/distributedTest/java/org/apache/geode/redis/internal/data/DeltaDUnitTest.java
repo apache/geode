@@ -15,6 +15,8 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -28,13 +30,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.internal.cache.BucketDump;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -45,31 +49,24 @@ public class DeltaDUnitTest {
   @ClassRule
   public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
 
-  private static final String LOCAL_HOST = "127.0.0.1";
   private static final int ITERATION_COUNT = 1000;
-  private static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  public static MemberVM server1;
   private static Jedis jedis1;
-  private static Jedis jedis2;
-
-  private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
-
-  private static Random random;
+  private static JedisCluster jedisCluster;
+  private static String KEY;
 
   @BeforeClass
   public static void classSetup() {
-    locator = clusterStartUp.startLocatorVM(0);
+    MemberVM locator = clusterStartUp.startLocatorVM(0);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
-    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
+    clusterStartUp.startRedisVM(2, locator.getPort());
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
-    int redisServerPort2 = clusterStartUp.getRedisPort(2);
+    jedis1 = new Jedis(BIND_ADDRESS, redisServerPort1, REDIS_CLIENT_TIMEOUT);
+    jedisCluster =
+        new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
 
-    jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
-    jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
-    random = new Random();
+    KEY = findKeyHostedOnServer("key", "server-1");
   }
 
   @Before
@@ -80,31 +77,24 @@ public class DeltaDUnitTest {
   @AfterClass
   public static void tearDown() {
     jedis1.disconnect();
-    jedis2.disconnect();
-
-    server1.stop();
-    server2.stop();
   }
 
   @Test
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenAppending() {
-    String key = "key";
     String baseValue = "value-";
-    jedis1.set(key, baseValue);
+    jedis1.set(KEY, baseValue);
     for (int i = 0; i < ITERATION_COUNT; i++) {
-      jedis1.append(key, String.valueOf(i));
+      jedis1.append(KEY, String.valueOf(i));
     }
     compareBuckets();
   }
 
   @Test
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenAddingToSet() {
-    String key = "key";
-
     List<String> members = makeMemberList(ITERATION_COUNT, "member-");
 
     for (String member : members) {
-      jedis1.sadd(key, member);
+      jedis1.sadd(KEY, member);
     }
 
     compareBuckets();
@@ -112,56 +102,50 @@ public class DeltaDUnitTest {
 
   @Test
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenRemovingFromSet() {
-    String key = "key";
-
     List<String> members = makeMemberList(ITERATION_COUNT, "member-");
-    jedis1.sadd(key, members.toArray(new String[] {}));
+    jedis1.sadd(KEY, members.toArray(new String[] {}));
 
     for (String member : members) {
-      jedis1.srem(key, member);
+      jedis1.srem(KEY, member);
     }
     compareBuckets();
   }
 
   @Test
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenAddingToHash() {
-    String key = "key";
-
     Map<String, String> testMap = makeHashMap(ITERATION_COUNT, "field-", "value-");
 
     for (String field : testMap.keySet()) {
-      jedis1.hset(key, field, testMap.get(field));
+      jedis1.hset(KEY, field, testMap.get(field));
     }
     compareBuckets();
   }
 
   @Test
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenUpdatingHashValues() {
-    String key = "key";
+    Random random = new Random();
 
     Map<String, String> testMap = makeHashMap(ITERATION_COUNT, "field-", "value-");
-    jedis1.hset(key, testMap);
+    jedis1.hset(KEY, testMap);
 
     for (int i = 0; i < 100; i++) {
-      Map<String, String> retrievedMap = jedis1.hgetAll(key);
+      Map<String, String> retrievedMap = jedis1.hgetAll(KEY);
       int rand = random.nextInt(retrievedMap.size());
       String fieldToUpdate = "field-" + rand;
       String valueToUpdate = retrievedMap.get(fieldToUpdate);
       retrievedMap.put(fieldToUpdate, valueToUpdate + " updated");
-      jedis1.hset(key, retrievedMap);
+      jedis1.hset(KEY, retrievedMap);
     }
     compareBuckets();
   }
 
   @Test
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenRemovingFromHash() {
-    String key = "key";
-
     Map<String, String> testMap = makeHashMap(ITERATION_COUNT, "field-", "value-");
-    jedis1.hset(key, testMap);
+    jedis1.hset(KEY, testMap);
 
     for (String field : testMap.keySet()) {
-      jedis1.hdel(key, field, testMap.get(field));
+      jedis1.hdel(KEY, field, testMap.get(field));
     }
     compareBuckets();
   }
@@ -172,13 +156,8 @@ public class DeltaDUnitTest {
 
     for (int i = 0; i < ITERATION_COUNT; i++) {
       String key = baseKey + i;
-      jedis1.set(key, "value");
-      jedis1.expire(key, 20);
-    }
-
-    for (int i = 0; i < ITERATION_COUNT; i++) {
-      String key = baseKey + i;
-      jedis1.expire(key, 80);
+      jedisCluster.set(key, "value");
+      jedisCluster.expire(key, 80L);
     }
     compareBuckets();
   }
@@ -220,5 +199,16 @@ public class DeltaDUnitTest {
       members.add(baseString + i);
     }
     return members;
+  }
+
+  private static String findKeyHostedOnServer(String prefix, String memberLike) {
+    int x = 0;
+    while (true) {
+      String key = prefix + "-" + x++;
+      RedisMemberInfo info = clusterStartUp.getMemberInfo(key);
+      if (info.getMember().getUniqueId().contains(memberLike)) {
+        return key;
+      }
+    }
   }
 }

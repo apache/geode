@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.cluster;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.Serializable;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedMember;
@@ -26,7 +27,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 
-public class RedisMemberInfo implements DataSerializableFixedID {
+public class RedisMemberInfo implements DataSerializableFixedID, Serializable {
   private DistributedMember member;
   private String hostAddress;
   private int redisPort;

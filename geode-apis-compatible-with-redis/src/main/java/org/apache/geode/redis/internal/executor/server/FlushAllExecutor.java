@@ -31,7 +31,7 @@ public class FlushAllExecutor extends AbstractExecutor {
     RedisKeyCommands redisKeyCommands = context.getKeyCommands();
 
     LocalDataSet local = (LocalDataSet) PartitionRegionHelper
-        .getLocalPrimaryData(context.getRegionProvider().getDataRegion());
+        .getLocalPrimaryData(context.getRegionProvider().getLocalDataRegion());
 
     for (Object skey : local.keySet()) {
       redisKeyCommands.del((RedisKey) skey);

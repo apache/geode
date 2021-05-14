@@ -58,7 +58,7 @@ public class PassiveExpirationManager {
     try {
       final long now = System.currentTimeMillis();
       Region<RedisKey, RedisData> localPrimaryData =
-          PartitionRegionHelper.getLocalPrimaryData(regionProvider.getDataRegion());
+          PartitionRegionHelper.getLocalPrimaryData(regionProvider.getLocalDataRegion());
       RedisKeyCommands redisKeyCommands = regionProvider.getKeyCommands();
       for (Map.Entry<RedisKey, RedisData> entry : localPrimaryData.entrySet()) {
         try {

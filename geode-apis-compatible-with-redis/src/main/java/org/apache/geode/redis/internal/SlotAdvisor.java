@@ -48,9 +48,21 @@ public class SlotAdvisor {
    */
   private final Map<DistributedMember, RedisMemberInfo> memberInfos = new HashMap<>();
   private final PartitionedRegion dataRegion;
+  private final InternalDistributedMember thisMember;
 
-  SlotAdvisor(Region<RedisKey, RedisData> dataRegion) {
+  SlotAdvisor(Region<RedisKey, RedisData> dataRegion, InternalDistributedMember thisMember) {
     this.dataRegion = (PartitionedRegion) dataRegion;
+    this.thisMember = thisMember;
+  }
+
+  public boolean isLocal(RedisKey key) {
+    // This call returns early with the member if the bucket already exists
+    DistributedMember primaryMember = dataRegion.createBucket(key.getBucketId(), 1, null);
+    return thisMember.equals(primaryMember);
+  }
+
+  public RedisMemberInfo getMemberInfo(RedisKey key) throws InterruptedException {
+    return getMemberInfo(key.getBucketId());
   }
 
   /**

@@ -28,7 +28,9 @@ import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfoRetrievalFunction;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
 import org.apache.geode.redis.internal.netty.NettyRedisServer;
@@ -149,9 +151,13 @@ public class GeodeRedisServer {
   }
 
   @VisibleForTesting
-  protected Long getDataStoreBytesInUseForDataRegion() {
+  public Long getDataStoreBytesInUseForDataRegion() {
     PartitionedRegion dataRegion = (PartitionedRegion) this.getRegionProvider().getDataRegion();
-    long dataStoreBytesInUse = dataRegion.getPrStats().getDataStoreBytesInUse();
-    return dataStoreBytesInUse;
+    return dataRegion.getPrStats().getDataStoreBytesInUse();
+  }
+
+  @VisibleForTesting
+  public RedisMemberInfo getMemberInfo(String key) throws InterruptedException {
+    return regionProvider.getSlotAdvisor().getMemberInfo(new RedisKey(key.getBytes()));
   }
 }

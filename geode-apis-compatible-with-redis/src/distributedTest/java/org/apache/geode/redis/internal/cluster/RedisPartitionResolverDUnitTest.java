@@ -15,6 +15,8 @@
 
 package org.apache.geode.redis.internal.cluster;
 
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
@@ -26,7 +28,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -34,7 +37,6 @@ import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -44,10 +46,7 @@ public class RedisPartitionResolverDUnitTest {
   @ClassRule
   public static RedisClusterStartupRule cluster = new RedisClusterStartupRule(4);
 
-  private static final String LOCAL_HOST = "127.0.0.1";
-  private static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static Jedis jedis1;
+  private static JedisCluster jedis;
 
   private static MemberVM server1;
   private static MemberVM server2;
@@ -62,7 +61,7 @@ public class RedisPartitionResolverDUnitTest {
     server3 = cluster.startRedisVM(3, locator.getPort());
 
     int redisServerPort1 = cluster.getRedisPort(1);
-    jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
   }
 
   @Before
@@ -75,7 +74,7 @@ public class RedisPartitionResolverDUnitTest {
     int numKeys = 1000;
     for (int i = 0; i < numKeys; i++) {
       String key = "key-" + i;
-      jedis1.set(key, "value-" + i);
+      jedis.set(key, "value-" + i);
     }
 
     Map<String, Integer> keyToBucketMap1 = getKeyToBucketMap(server1);
@@ -92,6 +91,16 @@ public class RedisPartitionResolverDUnitTest {
 
     assertThat(buckets1.size() + buckets2.size() + buckets3.size())
         .isEqualTo(RegionProvider.REDIS_REGION_BUCKETS);
+
+    validateBucketMapping(keyToBucketMap1);
+    validateBucketMapping(keyToBucketMap2);
+    validateBucketMapping(keyToBucketMap3);
+  }
+
+  private void validateBucketMapping(Map<String, Integer> bucketMap) {
+    for (Map.Entry<String, Integer> e : bucketMap.entrySet()) {
+      assertThat(new RedisKey(e.getKey().getBytes()).getBucketId()).isEqualTo(e.getValue());
+    }
   }
 
   private Map<String, Integer> getKeyToBucketMap(MemberVM vm) {

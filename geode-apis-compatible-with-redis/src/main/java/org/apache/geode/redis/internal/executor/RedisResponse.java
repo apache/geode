@@ -121,6 +121,10 @@ public class RedisResponse {
     return new RedisResponse((buffer) -> Coder.getErrorResponse(buffer, error));
   }
 
+  public static RedisResponse moved(String error) {
+    return new RedisResponse((buffer) -> Coder.getMovedResponse(buffer, error));
+  }
+
   public static RedisResponse oom(String error) {
     return new RedisResponse((bba) -> Coder.getOOMResponse(bba, error));
   }

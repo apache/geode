@@ -11,23 +11,19 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-package org.apache.geode.redis.internal.executor.server;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+package org.apache.geode.redis.internal.data;
 
-public class DBSizeExecutor extends AbstractExecutor {
+public class RedisDataMovedException extends RuntimeException {
 
-  @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-    int size = context.getRegionProvider().getLocalDataRegion().size();
+  private static final long serialVersionUID = 8138174496239512955L;
 
-    return RedisResponse.integer(size);
+  public RedisDataMovedException() {
+    super();
   }
 
+  public RedisDataMovedException(Integer slot, String host, Integer port) {
+    super(String.format("%d %s:%d", slot, host, port));
+  }
 }

@@ -204,22 +204,25 @@ public class Coder {
     return buffer;
   }
 
-  public static ByteBuf getErrorResponse(ByteBuf buffer, String error) {
+  private static ByteBuf getErrorResponse0(ByteBuf buffer, byte[] type, String error) {
     byte[] errorAr = stringToBytes(error);
     buffer.writeByte(ERROR_ID);
-    buffer.writeBytes(bERR);
+    buffer.writeBytes(type);
     buffer.writeBytes(errorAr);
     buffer.writeBytes(bCRLF);
     return buffer;
   }
 
+  public static ByteBuf getErrorResponse(ByteBuf buffer, String error) {
+    return getErrorResponse0(buffer, bERR, error);
+  }
+
+  public static ByteBuf getMovedResponse(ByteBuf buffer, String error) {
+    return getErrorResponse0(buffer, bMOVED, error);
+  }
+
   public static ByteBuf getOOMResponse(ByteBuf buffer, String error) {
-    byte[] errorAr = stringToBytes(error);
-    buffer.writeByte(ERROR_ID);
-    buffer.writeBytes(bOOM);
-    buffer.writeBytes(errorAr);
-    buffer.writeBytes(bCRLF);
-    return buffer;
+    return getErrorResponse0(buffer, bOOM, error);
   }
 
   public static ByteBuf getCustomErrorResponse(ByteBuf buffer, String error) {

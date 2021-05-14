@@ -60,7 +60,7 @@ public abstract class AbstractPTTLIntegrationTest implements RedisIntegrationTes
   @Test
   public void shouldReturnCorrectExpiration_givenKeyHasExpirationSet() {
     jedis.set("orange", "crush");
-    jedis.expire("orange", 20);
+    jedis.expire("orange", 20L);
 
     assertThat(jedis.pttl("orange")).isGreaterThan(1500);
   }

@@ -16,6 +16,8 @@
 package org.apache.geode.redis;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,10 +32,10 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.exceptions.JedisException;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -48,17 +50,13 @@ public class OutOfMemoryDUnitTest {
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
   private static final String expectedEx = "Member: .*? above .*? critical threshold";
-  private static final String FILLER_KEY = "fillerKey-";
-  private static final String PRESSURE_KEY = "pressureKey-";
-  private static final String LOCAL_HOST = "127.0.0.1";
-  private static final int KEY_TTL_SECONDS = 10;
+  private static final String FILLER_KEY = "{key}filler-";
+  private static final String PRESSURE_KEY = "{key}pressure-";
+  private static final long KEY_TTL_SECONDS = 10;
   private static final int MAX_ITERATION_COUNT = 4000;
   private static final int LARGE_VALUE_SIZE = 128 * 1024;
   private static final int PRESSURE_VALUE_SIZE = 4 * 1024;
-  private static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static Jedis jedis1;
-  private static Jedis jedis2;
+  private static JedisCluster jedis;
 
   private static MemberVM server1;
   private static MemberVM server2;
@@ -80,10 +78,7 @@ public class OutOfMemoryDUnitTest {
         .setCriticalHeapPercentage(5.0F));
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
-    int redisServerPort2 = clusterStartUp.getRedisPort(2);
-
-    jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
-    jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
   }
 
   @Before
@@ -93,11 +88,7 @@ public class OutOfMemoryDUnitTest {
 
   @AfterClass
   public static void tearDown() {
-    jedis1.disconnect();
-    jedis2.disconnect();
-
-    server1.stop();
-    server2.stop();
+    jedis.close();
   }
 
   @Test
@@ -109,10 +100,11 @@ public class OutOfMemoryDUnitTest {
     memoryPressureThread = new Thread(makeMemoryPressureRunnable());
     memoryPressureThread.start();
 
-    fillMemory(jedis2, false);
+    fillMemory(jedis, false);
 
-    assertThatThrownBy(() -> jedis2.set("oneMoreKey", makeLongStringValue(2 * LARGE_VALUE_SIZE)))
-        .hasMessageContaining("OOM");
+    assertThatThrownBy(
+        () -> jedis.set("{key}oneMoreKey", makeLongStringValue(2 * LARGE_VALUE_SIZE)))
+            .hasMessageContaining("OOM");
 
     memoryPressureThread.interrupt();
     memoryPressureThread.join();
@@ -126,9 +118,9 @@ public class OutOfMemoryDUnitTest {
     memoryPressureThread = new Thread(makeMemoryPressureRunnable());
     memoryPressureThread.start();
 
-    fillMemory(jedis2, false);
+    fillMemory(jedis, false);
 
-    assertThatNoException().isThrownBy(() -> jedis2.del(FILLER_KEY + 1));
+    assertThatNoException().isThrownBy(() -> jedis.del(FILLER_KEY + 1));
 
     memoryPressureThread.interrupt();
     memoryPressureThread.join();
@@ -142,10 +134,10 @@ public class OutOfMemoryDUnitTest {
     memoryPressureThread = new Thread(makeMemoryPressureRunnable());
     memoryPressureThread.start();
 
-    fillMemory(jedis2, true);
+    fillMemory(jedis, true);
 
     await().untilAsserted(() -> {
-      assertThat(jedis2.ttl(FILLER_KEY + 1)).isEqualTo(-2);
+      assertThat(jedis.ttl(FILLER_KEY + 1)).isEqualTo(-2);
     });
 
     memoryPressureThread.interrupt();
@@ -156,7 +148,7 @@ public class OutOfMemoryDUnitTest {
   // below critical levels. Difficult to do right now because of vagaries of the
   // Java garbage collector.
 
-  private void fillMemory(Jedis jedis, boolean withExpiration) {
+  private void fillMemory(JedisCluster jedis, boolean withExpiration) {
     String valueString;
     int valueSize = LARGE_VALUE_SIZE;
 
@@ -168,7 +160,7 @@ public class OutOfMemoryDUnitTest {
     }
   }
 
-  private void addMultipleKeys(Jedis jedis, String valueString, boolean withExpiration) {
+  private void addMultipleKeys(JedisCluster jedis, String valueString, boolean withExpiration) {
     // count is final because it is never reassigned
     AtomicInteger count = new AtomicInteger();
 
@@ -185,7 +177,7 @@ public class OutOfMemoryDUnitTest {
     assertThat(count.get()).isLessThan(MAX_ITERATION_COUNT);
   }
 
-  private void setRedisKeyAndValue(Jedis jedis, boolean withExpiration, String valueString,
+  private void setRedisKeyAndValue(JedisCluster jedis, boolean withExpiration, String valueString,
       int keyNumber) {
     if (withExpiration) {
       jedis.setex(FILLER_KEY + keyNumber, KEY_TTL_SECONDS, valueString);
@@ -214,7 +206,7 @@ public class OutOfMemoryDUnitTest {
             break;
           }
           try {
-            jedis1.set(PRESSURE_KEY + i, pressureValue);
+            jedis.set(PRESSURE_KEY + i, pressureValue);
           } catch (JedisException je) {
             // Ignore, keep trying to fill memory
           }
@@ -225,11 +217,7 @@ public class OutOfMemoryDUnitTest {
   }
 
   private void forceGC() {
-    server1.getVM().invoke(() -> {
-      Runtime.getRuntime().gc();
-    });
-    server2.getVM().invoke(() -> {
-      Runtime.getRuntime().gc();
-    });
+    server1.getVM().invoke(() -> Runtime.getRuntime().gc());
+    server2.getVM().invoke(() -> Runtime.getRuntime().gc());
   }
 }

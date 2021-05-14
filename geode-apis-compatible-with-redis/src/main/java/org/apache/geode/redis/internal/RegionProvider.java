@@ -27,18 +27,26 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.partition.PartitionMemberInfo;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.partition.PartitionRegionInfo;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.management.ManagementException;
+import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.data.NullRedisDataStructures;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisDataMovedException;
 import org.apache.geode.redis.internal.data.RedisDataType;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.data.RedisHashCommandsFunctionExecutor;
@@ -117,7 +125,11 @@ public class RegionProvider {
     sortedSetCommands = new RedisSortedSetCommandsFunctionExecutor(this);
     keyCommands = new RedisKeyCommandsFunctionExecutor(this);
 
-    slotAdvisor = new SlotAdvisor(dataRegion);
+    slotAdvisor = new SlotAdvisor(dataRegion, cache.getMyId());
+  }
+
+  public Region<RedisKey, RedisData> getLocalDataRegion() {
+    return PartitionRegionHelper.getLocalPrimaryData(dataRegion);
   }
 
   public Region<RedisKey, RedisData> getDataRegion() {
@@ -141,17 +153,33 @@ public class RegionProvider {
   }
 
   public RedisData getRedisData(RedisKey key, RedisData notFoundValue) {
-    RedisData result = getDataRegion().get(key);
+    RedisData result = getLocalDataRegion().get(key);
     if (result != null) {
       if (result.hasExpired()) {
         result.doExpiration(this, key);
         result = null;
+      }
+    } else {
+      if (!getSlotAdvisor().isLocal(key)) {
+        RedisMemberInfo memberInfo = getRedisMemberInfo(key);
+        Integer slot = key.getCrc16() & (REDIS_SLOTS - 1);
+        throw new RedisDataMovedException(slot, memberInfo.getHostAddress(),
+            memberInfo.getRedisPort());
       }
     }
     if (result == null) {
       return notFoundValue;
     } else {
       return result;
+    }
+  }
+
+  private RedisMemberInfo getRedisMemberInfo(RedisKey key) {
+    try {
+      return getSlotAdvisor().getMemberInfo(key);
+    } catch (InterruptedException ex) {
+      throw new RuntimeException("Unable to determine location for key: " + key + " - " +
+          ex.getMessage());
     }
   }
 
@@ -233,6 +261,16 @@ public class RegionProvider {
 
   public RedisKeyCommands getKeyCommands() {
     return keyCommands;
+  }
+
+  public Set<DistributedMember> getRegionMembers() {
+    PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
+    Set<DistributedMember> membersWithDataRegion = new HashSet<>();
+    for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
+      membersWithDataRegion.add(memberInfo.getDistributedMember());
+    }
+
+    return membersWithDataRegion;
   }
 
   /**

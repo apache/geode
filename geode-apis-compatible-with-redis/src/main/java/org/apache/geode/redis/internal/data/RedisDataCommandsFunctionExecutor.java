@@ -41,7 +41,7 @@ public abstract class RedisDataCommandsFunctionExecutor {
   }
 
   protected Region<RedisKey, RedisData> getRegion() {
-    return regionProvider.getDataRegion();
+    return regionProvider.getLocalDataRegion();
   }
 
   protected <T> T stripedExecute(Object key, Callable<T> callable) {

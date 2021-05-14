@@ -22,12 +22,18 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 
 import java.util.Properties;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.redis.ClusterNode;
 import org.apache.geode.redis.ClusterNodes;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.GeodeRedisService;
+import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -92,21 +98,21 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
   public int getRedisPort(MemberVM vm) {
     return vm.invoke(() -> {
       GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
-      return service.getPort();
+      return service.getRedisServer().getPort();
     });
   }
 
   public void setEnableUnsupported(MemberVM vm, boolean enableUnsupported) {
     vm.invoke(() -> {
       GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
-      service.setEnableUnsupported(enableUnsupported);
+      service.getRedisServer().setAllowUnsupportedCommands(enableUnsupported);
     });
   }
 
   public Long getDataStoreBytesInUseForDataRegion(MemberVM vm) {
     return vm.invoke(() -> {
       GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
-      return service.getDataStoreBytesInUseForDataRegion();
+      return service.getRedisServer().getDataStoreBytesInUseForDataRegion();
     });
   }
 
@@ -128,5 +134,24 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
         jedis.flushAll();
       }
     }
+  }
+
+  /**
+   * Given a key, return the {@link RedisMemberInfo} of the member serving that key. This call
+   * assumes that VM 1 is a Radish server.
+   */
+  public RedisMemberInfo getMemberInfo(String key) {
+    return getMember(1).invoke(() -> {
+      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
+      return service.getRedisServer().getMemberInfo(key);
+    });
+  }
+
+  public void enableDebugLogging(int vmId) {
+    getMember(vmId).invoke("Set logging level to DEBUG", () -> {
+      Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
+      Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
+      FastLogger.setDelegating(true);
+    });
   }
 }

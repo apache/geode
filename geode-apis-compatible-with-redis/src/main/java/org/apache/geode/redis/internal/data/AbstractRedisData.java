@@ -74,7 +74,7 @@ public abstract class AbstractRedisData implements RedisData {
       // already expired
       doExpiration(regionProvider, key);
     } else {
-      setExpirationTimestamp(regionProvider.getDataRegion(), key, timestamp);
+      setExpirationTimestamp(regionProvider.getLocalDataRegion(), key, timestamp);
     }
     return 1;
   }
@@ -82,7 +82,7 @@ public abstract class AbstractRedisData implements RedisData {
   @Override
   public void doExpiration(RegionProvider regionProvider, RedisKey key) {
     long start = regionProvider.getRedisStats().startExpiration();
-    regionProvider.getDataRegion().remove(key);
+    regionProvider.getLocalDataRegion().remove(key);
     regionProvider.getRedisStats().endExpiration(start);
   }
 

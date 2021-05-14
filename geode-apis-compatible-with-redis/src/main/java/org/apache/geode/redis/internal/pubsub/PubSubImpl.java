@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,18 +23,13 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.cache.partition.PartitionMemberInfo;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.data.RedisData;
-import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -63,12 +57,8 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public long publish(Region<RedisKey, RedisData> dataRegion, byte[] channel, byte[] message) {
-    PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
-    Set<DistributedMember> membersWithDataRegion = new HashSet<>();
-    for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
-      membersWithDataRegion.add(memberInfo.getDistributedMember());
-    }
+  public long publish(RegionProvider regionProvider, byte[] channel, byte[] message) {
+    Set<DistributedMember> membersWithDataRegion = regionProvider.getRegionMembers();
     @SuppressWarnings("unchecked")
     ResultCollector<String[], List<Long>> subscriberCountCollector = FunctionService
         .onMembers(membersWithDataRegion)

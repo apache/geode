@@ -74,7 +74,7 @@ public class ExpireDUnitTest {
     String key = "key";
 
     jedis.sadd(key, "value");
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     assertThat(jedis.ttl(key)).isGreaterThan(0);
   }
@@ -84,7 +84,7 @@ public class ExpireDUnitTest {
     String key = "key";
 
     jedis.sadd(key, "value");
-    jedis.expire(key, 1);
+    jedis.expire(key, 1L);
 
     GeodeAwaitility.await().until(() -> jedis.ttl(key) == -2);
   }
@@ -94,8 +94,8 @@ public class ExpireDUnitTest {
     String key = "key";
 
     jedis.sadd(key, "value");
-    jedis.expire(key, 20);
-    jedis.expire(key, 10000);
+    jedis.expire(key, 20L);
+    jedis.expire(key, 10000L);
 
     assertThat(jedis.ttl(key)).isGreaterThan(20L);
   }
@@ -105,7 +105,7 @@ public class ExpireDUnitTest {
     String key = "key";
 
     jedis.sadd(key, "value");
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
     jedis.del(key);
     jedis.sadd(key, "newValue");
 
@@ -117,7 +117,7 @@ public class ExpireDUnitTest {
     String key = "key";
 
     jedis.sadd(key, "value");
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
     jedis.persist(key);
 
     assertThat(jedis.ttl(key)).isEqualTo(-1);
@@ -128,7 +128,7 @@ public class ExpireDUnitTest {
     String key = "key";
 
     jedis.sadd(key, "value");
-    jedis.expire(key, 10000);
+    jedis.expire(key, 10000L);
     jedis.del(key);
     jedis.sadd(key, "newVal");
 
@@ -144,7 +144,7 @@ public class ExpireDUnitTest {
 
     jedis.sadd(key1, "value");
     jedis.sadd(key2, "value");
-    jedis.expire(key1, 200);
+    jedis.expire(key1, 200L);
     jedis.rename(key1, key2);
 
     assertThat(jedis.ttl(key2)).isGreaterThan(0L);

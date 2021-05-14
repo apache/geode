@@ -141,7 +141,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testGetrange() {
-    runCommandAndAssertHitsAndMisses("string", k -> jedis.getrange(k, 1l, 2l));
+    runCommandAndAssertHitsAndMisses("string", k -> jedis.getrange(k, 1L, 2L));
   }
 
   @Test
@@ -151,7 +151,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testIncrby() {
-    runCommandAndAssertNoStatUpdates("int", k -> jedis.incrBy(k, 1l));
+    runCommandAndAssertNoStatUpdates("int", k -> jedis.incrBy(k, 1L));
   }
 
   @Test
@@ -283,7 +283,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testHincrby() {
-    runCommandAndAssertNoStatUpdates("hash", (k, f) -> jedis.hincrBy(k, f, 1l));
+    runCommandAndAssertNoStatUpdates("hash", (k, f) -> jedis.hincrBy(k, f, 1L));
   }
 
   @Test
@@ -299,13 +299,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   /************* Key related commands *************/
   @Test
   public void testExpire() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expire(k, 5));
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expire(k, 5L));
   }
 
   @Test
   public void testPassiveExpiration() {
     runCommandAndAssertNoStatUpdates("hash", (k) -> {
-      jedis.expire(k, 1);
+      jedis.expire(k, 1L);
       GeodeAwaitility.await().atMost(Duration.ofMinutes(PassiveExpirationManager.INTERVAL * 2))
           .until(() -> jedis.keys("hash").isEmpty());
     });
@@ -366,12 +366,12 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testSetex() {
-    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.setex(k, 200, v));
+    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.setex(k, 200L, v));
   }
 
   @Test
   public void testSetrange() {
-    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.setrange(k, 1l, v));
+    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.setrange(k, 1L, v));
   }
 
   /************* Bit related commands *************/
@@ -425,7 +425,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testSetbit() {
-    runCommandAndAssertNoStatUpdates("int", (k, v) -> jedis.setbit(k, 0l, "1"));
+    runCommandAndAssertNoStatUpdates("int", (k, v) -> jedis.setbit(k, 0L, "1"));
   }
 
   /************* Set related commands *************/

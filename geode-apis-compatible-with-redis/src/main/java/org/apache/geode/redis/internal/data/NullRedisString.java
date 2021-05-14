@@ -180,7 +180,7 @@ public class NullRedisString extends RedisString {
     }
     RedisString redisString = new RedisString(value);
     redisString.handleSetExpiration(options);
-    regionProvider.getDataRegion().put(key, redisString);
+    regionProvider.getLocalDataRegion().put(key, redisString);
     return true;
   }
 
@@ -243,7 +243,7 @@ public class NullRedisString extends RedisString {
         break;
     }
     if (newValue.length == 0) {
-      regionProvider.getDataRegion().remove(key);
+      regionProvider.getLocalDataRegion().remove(key);
     } else {
       setRedisString(regionProvider, key, newValue);
     }
@@ -306,7 +306,7 @@ public class NullRedisString extends RedisString {
       result = (RedisString) redisData;
       result.set(value);
     }
-    regionProvider.getDataRegion().put(key, result);
+    regionProvider.getLocalDataRegion().put(key, result);
     return result;
   }
 

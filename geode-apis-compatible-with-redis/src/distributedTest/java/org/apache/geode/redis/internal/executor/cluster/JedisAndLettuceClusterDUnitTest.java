@@ -15,21 +15,21 @@
 
 package org.apache.geode.redis.internal.executor.cluster;
 
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 
-import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.cluster.RedisClusterClient;
+import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
@@ -39,9 +39,6 @@ public class JedisAndLettuceClusterDUnitTest {
   public static RedisClusterStartupRule cluster = new RedisClusterStartupRule();
 
   private static final int KEYS = 1000;
-  private static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static final String LOCAL_HOST = "127.0.0.1";
   private static int redisServerPort1;
 
   @BeforeClass
@@ -56,7 +53,8 @@ public class JedisAndLettuceClusterDUnitTest {
   @Test
   public void testJedisClusterCompatibility() {
     try (JedisCluster jedis =
-        new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort1), JEDIS_TIMEOUT)) {
+        new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1),
+            REDIS_CLIENT_TIMEOUT)) {
 
       for (int i = 0; i < KEYS; i++) {
         String key = "jedis-" + i;
@@ -69,21 +67,20 @@ public class JedisAndLettuceClusterDUnitTest {
 
   @Test
   public void testLettuceClusterCompatibility() {
-    RedisClient client = RedisClient.create(
+    RedisClusterClient clusterClient = RedisClusterClient.create(
         new RedisURI("localhost", redisServerPort1, Duration.ofSeconds(60)));
+    RedisAdvancedClusterCommands<String, String> commands =
+        clusterClient.connect().sync();
 
-    try (StatefulRedisConnection<String, String> connection = client.connect()) {
-      RedisCommands<String, String> commands = connection.sync();
-
-      for (int i = 0; i < KEYS; i++) {
-        String key = "lettuce-" + i;
-        String value = "value-" + i;
-        commands.set(key, value);
-        assertThat(commands.get(key)).isEqualTo(value);
-      }
+    for (int i = 0; i < KEYS; i++) {
+      String key = "lettuce-" + i;
+      String value = "value-" + i;
+      commands.set(key, value);
+      assertThat(commands.get(key)).isEqualTo(value);
     }
 
-    client.shutdown();
+    clusterClient.shutdown();
   }
+
 
 }

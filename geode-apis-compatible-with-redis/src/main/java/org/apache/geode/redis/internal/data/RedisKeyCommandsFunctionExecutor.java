@@ -30,8 +30,12 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
   }
 
   @Override
-  public boolean del(RedisKey key) {
-    return stripedExecute(key, () -> getRegion().remove(key) != null);
+  public synchronized boolean del(RedisKey key) {
+    return stripedExecute(key, () -> {
+      // Trigger MOVED if necessary
+      getRedisData(key);
+      return getRegion().remove(key) != null;
+    });
   }
 
   @Override
@@ -102,7 +106,8 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
 
   private boolean rename0(RedisKey lockKey, RedisKey oldKey, RedisKey newKey) {
     return stripedExecute(lockKey,
-        () -> getRedisData(oldKey).rename(getRegionProvider().getDataRegion(), oldKey, newKey));
+        () -> getRedisData(oldKey).rename(getRegionProvider().getLocalDataRegion(), oldKey,
+            newKey));
   }
 
 }
