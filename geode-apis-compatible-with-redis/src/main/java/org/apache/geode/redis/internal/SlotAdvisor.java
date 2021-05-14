@@ -148,6 +148,7 @@ public class SlotAdvisor {
       resultCollector =
           FunctionService.onRegion(dataRegion).execute(RedisMemberInfoRetrievalFunction.ID);
     } catch (FunctionException e) {
+      logger.warn("Unable to execute {}: {}", RedisMemberInfoRetrievalFunction.ID, e.getMessage());
       return null;
     }
 
