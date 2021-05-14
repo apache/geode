@@ -294,8 +294,8 @@ public interface DistributedRegionMXBean {
    * For replicated regions, provides a value only if the eviction algorithm
    * is set to {@link EvictionAlgorithm#LRU_MEMORY}.
    * The entry size in this distributed context represents the sum total of memory
-   * used for data in the region across all members, so the reported value may include
-   * redundancies.
+   * used for data in the region across all members, so the reported value will
+   * include any redundant copies.
    *
    * All partitioned regions can report entry size, but the value also includes
    * redundant entries and also counts the size of all the secondary entries in
