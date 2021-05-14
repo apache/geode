@@ -83,7 +83,7 @@ public class HSetNXDunitTest {
 
   @Before
   public void testSetup() {
-    lettuce.flushall();
+    cluster.flushAll(redisPorts[0]);
   }
 
   @AfterClass

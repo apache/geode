@@ -25,7 +25,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
@@ -42,6 +41,7 @@ public class HstrlenDUnitTest {
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static JedisCluster jedis;
+  private static int redisServerPort;
 
   @BeforeClass
   public static void classSetup() {
@@ -49,16 +49,14 @@ public class HstrlenDUnitTest {
     clusterStartUp.startRedisVM(1, locator.getPort());
     clusterStartUp.startRedisVM(2, locator.getPort());
 
-    int redisServerPort = clusterStartUp.getRedisPort(1);
+    redisServerPort = clusterStartUp.getRedisPort(1);
 
     jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
   }
 
   @Before
   public void testSetup() {
-    try (Jedis conn = jedis.getConnectionFromSlot(0)) {
-      conn.flushAll();
-    }
+    clusterStartUp.flushAll(redisServerPort);
   }
 
   @AfterClass

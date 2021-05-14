@@ -120,7 +120,7 @@ public class SessionsAndCrashesDUnitTest {
   @After
   public void teardown() {
     springContext.stop();
-    jedis.getConnectionFromSlot(0).flushAll();
+    cluster.flushAll(redisPorts[0]);
     sessionIds.clear();
   }
 

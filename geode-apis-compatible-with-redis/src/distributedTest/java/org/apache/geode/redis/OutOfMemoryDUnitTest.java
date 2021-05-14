@@ -65,6 +65,7 @@ public class OutOfMemoryDUnitTest {
   private static MemberVM server2;
 
   private static Thread memoryPressureThread;
+  private static int redisServerPort1;
 
   @BeforeClass
   public static void classSetup() {
@@ -81,7 +82,7 @@ public class OutOfMemoryDUnitTest {
     server2.getVM().invoke(() -> RedisClusterStartupRule.getCache().getResourceManager()
         .setCriticalHeapPercentage(5.0F));
 
-    int redisServerPort1 = clusterStartUp.getRedisPort(1);
+    redisServerPort1 = clusterStartUp.getRedisPort(1);
     int redisServerPort2 = clusterStartUp.getRedisPort(2);
 
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
@@ -90,7 +91,7 @@ public class OutOfMemoryDUnitTest {
 
   @Before
   public void testSetup() {
-    jedis1.flushAll();
+    clusterStartUp.flushAll(redisServerPort1);
   }
 
   @AfterClass

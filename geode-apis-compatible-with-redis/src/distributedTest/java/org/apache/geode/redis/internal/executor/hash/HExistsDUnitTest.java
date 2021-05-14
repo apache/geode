@@ -30,7 +30,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
@@ -73,9 +72,7 @@ public class HExistsDUnitTest {
 
   @Before
   public void testSetup() {
-    try (Jedis conn = jedis.getConnectionFromSlot(0)) {
-      conn.flushAll();
-    }
+    clusterStartUp.flushAll(redisServerPort);
   }
 
   @AfterClass

@@ -29,7 +29,6 @@ public class NativeRedisSessionExpirationAcceptanceTest extends SessionExpiratio
   public static void setup() {
     setupAppPorts();
     setupNativeRedis();
-    setupClient();
     startSpringApp(APP1, SHORT_SESSION_TIMEOUT, ports.get(SERVER1));
     startSpringApp(APP2, SHORT_SESSION_TIMEOUT, ports.get(SERVER1));
   }

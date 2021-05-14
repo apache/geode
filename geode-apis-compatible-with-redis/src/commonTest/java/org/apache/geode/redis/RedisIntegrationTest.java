@@ -26,8 +26,18 @@ public interface RedisIntegrationTest {
   int REDIS_CLIENT_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   default void flushAll() {
+    ClusterNodes nodes;
     try (Jedis jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT)) {
-      jedis.flushAll();
+      nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes());
+    }
+
+    for (ClusterNode node : nodes.getNodes()) {
+      if (!node.primary) {
+        continue;
+      }
+      try (Jedis jedis = new Jedis(node.ipAddress, (int) node.port, REDIS_CLIENT_TIMEOUT)) {
+        jedis.flushAll();
+      }
     }
   }
 }

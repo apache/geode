@@ -22,11 +22,19 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 
 import java.util.Properties;
 
+import redis.clients.jedis.Jedis;
+
+import org.apache.geode.redis.ClusterNode;
+import org.apache.geode.redis.ClusterNodes;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.GeodeRedisService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class RedisClusterStartupRule extends ClusterStartupRule {
+
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   private static final String BIND_ADDRESS = "127.0.0.1";
   public static final String DEFAULT_MAX_WAIT_TIME_RECONNECT = "15000";
@@ -101,5 +109,21 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
       GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
       return service.getDataStoreBytesInUseForDataRegion();
     });
+  }
+
+  public void flushAll(int redisPort) {
+    ClusterNodes nodes;
+    try (Jedis jedis = new Jedis("localhost", redisPort, REDIS_CLIENT_TIMEOUT)) {
+      nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes());
+    }
+
+    for (ClusterNode node : nodes.getNodes()) {
+      if (!node.primary) {
+        continue;
+      }
+      try (Jedis jedis = new Jedis(node.ipAddress, (int) node.port, REDIS_CLIENT_TIMEOUT)) {
+        jedis.flushAll();
+      }
+    }
   }
 }

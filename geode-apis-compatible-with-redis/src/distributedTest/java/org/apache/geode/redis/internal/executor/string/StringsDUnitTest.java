@@ -32,7 +32,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.params.SetParams;
 
@@ -79,7 +78,7 @@ public class StringsDUnitTest {
 
   @After
   public void after() {
-    flushall();
+    clusterStartUp.flushAll(redisServerPort1);
   }
 
   @AfterClass
@@ -247,13 +246,6 @@ public class StringsDUnitTest {
     }
   }
 
-
-  private void flushall() {
-    try (Jedis connection = jedisCluster.getConnectionFromSlot(0)) {
-      connection.flushAll();
-    }
-
-  }
 
   private List<String> makeStringList(int setSize, String baseString) {
     List<String> strings = new ArrayList<>();

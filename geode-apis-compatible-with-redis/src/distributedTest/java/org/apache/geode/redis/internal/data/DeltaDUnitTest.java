@@ -84,7 +84,7 @@ public class DeltaDUnitTest {
 
   @Before
   public void testSetup() {
-    jedis1.flushAll();
+    clusterStartUp.flushAll(redisServerPort1);
   }
 
   @AfterClass

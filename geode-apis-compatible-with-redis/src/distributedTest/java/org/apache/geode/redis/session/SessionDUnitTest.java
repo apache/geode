@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -76,7 +77,7 @@ public abstract class SessionDUnitTest {
   protected static final Map<Integer, Integer> ports = new HashMap<>();
   private static ConfigurableApplicationContext springApplicationContext;
 
-  private static RedisClusterClient redisClient;
+  private RedisClusterClient redisClient;
   private static StatefulRedisClusterConnection<String, String> connection;
   protected static RedisAdvancedClusterCommands<String, String> commands;
 
@@ -84,7 +85,6 @@ public abstract class SessionDUnitTest {
   public static void setup() {
     setupAppPorts();
     setupGeodeRedis();
-    setupClient();
   }
 
   protected static void setupAppPorts() {
@@ -106,7 +106,8 @@ public abstract class SessionDUnitTest {
     startSpringApp(APP2, sessionTimeout, ports.get(SERVER2), ports.get(SERVER1));
   }
 
-  protected static void setupClient() {
+  @Before
+  public void setupClient() {
     redisClient = RedisClusterClient.create("redis://localhost:" + ports.get(SERVER1));
 
     ClusterTopologyRefreshOptions refreshOptions =
@@ -125,17 +126,19 @@ public abstract class SessionDUnitTest {
 
   @AfterClass
   public static void cleanupAfterClass() {
-    try {
-      redisClient.shutdown();
-    } catch (Exception ignored) {
-    }
     stopSpringApp(APP1);
     stopSpringApp(APP2);
   }
 
   @After
   public void cleanupAfterTest() {
-    GeodeAwaitility.await().ignoreExceptions().untilAsserted(() -> commands.flushall());
+    GeodeAwaitility.await().ignoreExceptions()
+        .untilAsserted(() -> cluster.flushAll(ports.get(SERVER1)));
+
+    try {
+      redisClient.shutdown();
+    } catch (Exception ignored) {
+    }
   }
 
   protected static void startRedisServer(int server) {

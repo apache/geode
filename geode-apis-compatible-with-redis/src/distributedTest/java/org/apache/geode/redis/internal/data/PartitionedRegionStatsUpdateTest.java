@@ -47,11 +47,12 @@ public class PartitionedRegionStatsUpdateTest {
 
   private static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static final String LOCAL_HOST = "127.0.0.1";
-  public static final String STRING_KEY = "string key";
-  public static final String SET_KEY = "set key";
-  public static final String HASH_KEY = "hash key";
-  public static final String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
-  public static final String FIELD = "field";
+  private static final String STRING_KEY = "string key";
+  private static final String SET_KEY = "set key";
+  private static final String HASH_KEY = "hash key";
+  private static final String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
+  private static final String FIELD = "field";
+  private static int redisServerPort1;
 
   @BeforeClass
   public static void classSetup() {
@@ -62,7 +63,7 @@ public class PartitionedRegionStatsUpdateTest {
     int locatorPort = locator.getPort();
 
     server1 = clusterStartUpRule.startRedisVM(1, locatorPort);
-    int redisServerPort1 = clusterStartUpRule.getRedisPort(1);
+    redisServerPort1 = clusterStartUpRule.getRedisPort(1);
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
 
     server2 = clusterStartUpRule.startRedisVM(2, locatorPort);
@@ -72,7 +73,7 @@ public class PartitionedRegionStatsUpdateTest {
 
   @Before
   public void setup() {
-    jedis1.flushAll();
+    clusterStartUpRule.flushAll(redisServerPort1);
   }
 
   @Test
@@ -133,7 +134,7 @@ public class PartitionedRegionStatsUpdateTest {
 
     jedis1.set(STRING_KEY, "value");
 
-    jedis1.flushAll();
+    clusterStartUpRule.flushAll(redisServerPort1);
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
 

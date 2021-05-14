@@ -20,7 +20,7 @@ import java.net.InetAddress;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.cache.execute.AllowExecutionInLowMemory;
 import org.apache.geode.internal.inet.LocalHostUtil;
 
 /**
@@ -30,7 +30,7 @@ import org.apache.geode.internal.inet.LocalHostUtil;
  * once the redis server is running. If the function returns null it means that the function has
  * not been initialized yet and callers, (from java), should retry.
  */
-public class RedisMemberInfoRetrievalFunction implements InternalFunction<Void> {
+public class RedisMemberInfoRetrievalFunction implements AllowExecutionInLowMemory<Void> {
 
   public static final String ID = RedisMemberInfoRetrievalFunction.class.getName();
   private static final long serialVersionUID = 2207969011229079993L;

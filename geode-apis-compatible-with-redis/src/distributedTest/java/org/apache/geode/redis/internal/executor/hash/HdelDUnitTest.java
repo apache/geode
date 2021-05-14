@@ -95,7 +95,7 @@ public class HdelDUnitTest {
 
   @Before
   public void testSetup() {
-    lettuce.flushall();
+    cluster.flushAll(redisPorts[0]);
   }
 
   @AfterClass

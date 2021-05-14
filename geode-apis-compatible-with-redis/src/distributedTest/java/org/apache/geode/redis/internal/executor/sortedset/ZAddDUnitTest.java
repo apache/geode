@@ -50,6 +50,7 @@ public class ZAddDUnitTest {
   private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
+  private static int redisServerPort;
 
   @BeforeClass
   public static void classSetup() {
@@ -68,9 +69,7 @@ public class ZAddDUnitTest {
 
   @Before
   public void testSetup() {
-    try (Jedis conn = jedis.getConnectionFromSlot(0)) {
-      conn.flushAll();
-    }
+    clusterStartUp.flushAll(redisServerPort);
   }
 
   @AfterClass

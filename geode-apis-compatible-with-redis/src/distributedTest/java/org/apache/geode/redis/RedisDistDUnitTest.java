@@ -101,8 +101,7 @@ public class RedisDistDUnitTest implements Serializable {
 
   @After
   public void cleanup() {
-    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
-    jedis.flushAll();
+    cluster.flushAll(server1Port);
   }
 
   @Test

@@ -30,7 +30,6 @@ public class NativeRedisSessionAcceptanceTest extends RedisSessionDUnitTest {
   public static void setup() {
     setupAppPorts();
     setupNativeRedis();
-    setupClient();
     startSpringApp(APP1, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER1));
     startSpringApp(APP2, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER1));
   }
