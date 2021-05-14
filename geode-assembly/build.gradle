@@ -617,8 +617,14 @@ distributions {
 // Make build final task to generate all test and product resources
 build.dependsOn(installDist)
 
+def spotlessProjects = rootProject.subprojects.findAll { subproj ->
+  subproj.plugins.hasPlugin('com.diffplug.spotless')
+}
 tasks.named('srcDistTar').configure {
   classifier 'src'
+  spotlessProjects.each {spotlessProj ->
+    dependsOn {spotlessProj.tasks.named("spotlessApply")}
+  }
 }
 
 [tasks.named('distZip'),
