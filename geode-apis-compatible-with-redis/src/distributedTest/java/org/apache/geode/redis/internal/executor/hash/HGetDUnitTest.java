@@ -84,7 +84,6 @@ public class HGetDUnitTest {
     server2.stop();
   }
 
-
   @Test
   public void hgetReturnsNewValues_whenPuttingValues() {
     String key = "key";
@@ -102,6 +101,5 @@ public class HGetDUnitTest {
                 .runInLockstep();
 
     assertThat(jedis.hgetAll(key)).containsExactlyInAnyOrderEntriesOf(expectedMap);
-
   }
 }

@@ -20,7 +20,6 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +88,6 @@ public class HScanDunitTest {
     locator = redisClusterStartupRule.startLocatorVM(0, locatorProperties);
     locatorPort = locator.getPort();
     redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    System.out.println("#LRJ redisPorts: " + Arrays.toString(redisPorts));
 
     // note: due to rules around member weighting in split-brain scenarios,
     // vm1 (server1) should not be crashed or it will cause additional (unrelated) failures
@@ -133,7 +131,6 @@ public class HScanDunitTest {
     server3.stop();
   }
 
-
   @Test
   public void should_allowHscanIterationToCompleteSuccessfullyGivenServerCrashesDuringIteration()
       throws ExecutionException, InterruptedException {
@@ -149,9 +146,7 @@ public class HScanDunitTest {
 
     hScanFuture.get();
     crashingVmFuture.get();
-
   }
-
 
   private static void doHScanContinuallyAndAssertOnResults(AtomicBoolean keepCrashingVMs,
       AtomicInteger numberOfTimesServersCrashed) {

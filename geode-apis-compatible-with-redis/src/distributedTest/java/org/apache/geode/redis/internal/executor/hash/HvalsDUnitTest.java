@@ -53,7 +53,6 @@ public class HvalsDUnitTest {
     int redisServerPort = clusterStartUp.getRedisPort(1);
 
     jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
-
   }
 
   @Before
@@ -67,7 +66,6 @@ public class HvalsDUnitTest {
   public static void tearDown() {
     jedis.close();
   }
-
 
   @Test
   public void hvalsWorks_whileAlsoUpdatingHash() {
@@ -98,7 +96,5 @@ public class HvalsDUnitTest {
     long sumOfBothSequenceSums = (fieldCount / 2) * ((fieldCount - 1) + 0) +
         (iterations / 2) * ((iterations - 1) + 0);
     assertThat(finalTotal).isEqualTo(sumOfBothSequenceSums);
-
   }
-
 }

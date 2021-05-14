@@ -66,7 +66,6 @@ public class HstrlenDUnitTest {
     jedis.close();
   }
 
-
   @Test
   public void hstrlenDoesNotCorruptData_whileHashIsConcurrentlyUpdated() {
     String key = "key";
@@ -90,7 +89,6 @@ public class HstrlenDUnitTest {
     String encodedStringLength = Character.toString(value.charAt(0));
     int expectedLength = Integer.parseInt(encodedStringLength);
     assertThat(jedis.hstrlen(key, field)).isEqualTo(expectedLength);
-
   }
 
   private String makeStringOfRepeatedDigits(int newLength) {

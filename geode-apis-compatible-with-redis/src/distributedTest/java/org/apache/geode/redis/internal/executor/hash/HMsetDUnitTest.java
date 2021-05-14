@@ -101,9 +101,7 @@ public class HMsetDUnitTest {
 
     assertThat(result.keySet().toArray()).containsExactlyInAnyOrder(testMap.keySet().toArray());
     assertThat(result.values().toArray()).containsExactlyInAnyOrder(testMap.values().toArray());
-
   }
-
 
   @Test
   public void shouldDistributeDataAmongCluster_givenAddingDifferentDataToSameHashConcurrently() {
@@ -129,9 +127,7 @@ public class HMsetDUnitTest {
 
     assertThat(results.keySet().toArray()).containsExactlyInAnyOrder(wholeMap.keySet().toArray());
     assertThat(results.values().toArray()).containsExactlyInAnyOrder(wholeMap.values().toArray());
-
   }
-
 
   @Test
   public void shouldDistributeDataAmongCluster_givenAddingSameDataToSameHashConcurrently() {
@@ -151,9 +147,7 @@ public class HMsetDUnitTest {
 
     assertThat(results.keySet().toArray()).containsExactlyInAnyOrder(testMap.keySet().toArray());
     assertThat(results.values().toArray()).containsExactlyInAnyOrder(testMap.values().toArray());
-
   }
-
 
   @Test
   public void shouldDistributeDataAmongCluster_givenAddingToDifferentHashesConcurrently() {
@@ -179,9 +173,7 @@ public class HMsetDUnitTest {
     assertThat(results1.values().toArray()).containsExactlyInAnyOrder(testMap1.values().toArray());
     assertThat(results2.values().toArray()).containsExactlyInAnyOrder(testMap2.values().toArray());
     assertThat(results2.values().toArray()).containsExactlyInAnyOrder(testMap2.values().toArray());
-
   }
-
 
   @Test
   public void shouldDistributeDataAmongCluster_givenMultipleThreadsAddingSameDataToSameSetConcurrently() {
@@ -203,9 +195,7 @@ public class HMsetDUnitTest {
 
     assertThat(results.keySet().toArray()).containsExactlyInAnyOrder(testMap.keySet().toArray());
     assertThat(results.values().toArray()).containsExactlyInAnyOrder(testMap.values().toArray());
-
   }
-
 
   @Test
   public void shouldDistributeDataAmongCluster_givenMultipleThreadsAddingDifferentDataToSameSetConcurrently() {
@@ -233,7 +223,6 @@ public class HMsetDUnitTest {
 
     assertThat(results.keySet().toArray()).containsExactlyInAnyOrder(wholeMap.keySet().toArray());
     assertThat(results.values().toArray()).containsExactlyInAnyOrder(wholeMap.values().toArray());
-
   }
 
   private Consumer<Integer> makeHMSetConsumer(Map<String, String> testMap, String[] fields,

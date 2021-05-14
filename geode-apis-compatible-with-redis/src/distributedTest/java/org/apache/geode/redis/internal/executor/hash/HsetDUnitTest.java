@@ -88,7 +88,6 @@ public class HsetDUnitTest {
     server3.stop();
   }
 
-
   @Test
   public void shouldDistributeDataAmongCluster_givenMultipleClients() {
 
@@ -130,9 +129,7 @@ public class HsetDUnitTest {
 
     assertThat(results.keySet().toArray()).containsExactlyInAnyOrder(wholeMap.keySet().toArray());
     assertThat(results.values().toArray()).containsExactlyInAnyOrder(wholeMap.values().toArray());
-
   }
-
 
   @Test
   public void shouldDistributeDataAmongCluster_givenMultipleThreadsAddingSameDataToSameHashConcurrently() {
@@ -152,9 +149,7 @@ public class HsetDUnitTest {
 
     assertThat(results.keySet().toArray()).containsExactlyInAnyOrder(testMap.keySet().toArray());
     assertThat(results.values().toArray()).containsExactlyInAnyOrder(testMap.values().toArray());
-
   }
-
 
   @Test
   public void shouldDistributeDataAmongCluster_givenMultipleThreadsAddingToDifferentHashesConcurrently() {
@@ -180,9 +175,7 @@ public class HsetDUnitTest {
     assertThat(results1.values().toArray()).containsExactlyInAnyOrder(testMap1.values().toArray());
     assertThat(results2.values().toArray()).containsExactlyInAnyOrder(testMap2.values().toArray());
     assertThat(results2.values().toArray()).containsExactlyInAnyOrder(testMap2.values().toArray());
-
   }
-
 
   @Test
   public void shouldDistributeDataAmongCluster_givenMultipleThreadsAddingSameDataToSameSetConcurrently() {
@@ -205,9 +198,7 @@ public class HsetDUnitTest {
 
     assertThat(results.keySet().toArray()).containsExactlyInAnyOrder(testMap.keySet().toArray());
     assertThat(results.values().toArray()).containsExactlyInAnyOrder(testMap.values().toArray());
-
   }
-
 
   @Test
   public void shouldDistributeDataAmongCluster_givenMultipleThreadsAddingDifferentDataToSameSetConcurrently() {
@@ -235,7 +226,6 @@ public class HsetDUnitTest {
 
     assertThat(results.keySet().toArray()).containsExactlyInAnyOrder(wholeMap.keySet().toArray());
     assertThat(results.values().toArray()).containsExactlyInAnyOrder(wholeMap.values().toArray());
-
   }
 
   private Consumer<Integer> makeHSetConsumer(Map<String, String> testMap, String[] fields,
