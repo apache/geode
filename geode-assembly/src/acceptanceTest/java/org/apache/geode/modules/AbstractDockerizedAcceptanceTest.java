@@ -14,6 +14,7 @@
  */
 package org.apache.geode.modules;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -172,6 +173,14 @@ public abstract class AbstractDockerizedAcceptanceTest {
     geodeContainer.waitingFor(Wait.forHealthcheck());
     geodeContainer.withStartupTimeout(Duration.ofSeconds(120));
     return geodeContainer;
+  }
+
+  protected static File loadTestResource(String fileName) {
+    String filePath =
+        createTempFileFromResource(DeployJarAcceptanceTest.class, fileName).getAbsolutePath();
+    assertThat(filePath).isNotNull();
+
+    return new File(filePath);
   }
 
   @Parameterized.Parameters
