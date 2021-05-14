@@ -28,6 +28,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
@@ -134,6 +135,7 @@ public class SlotAdvisor {
     return null;
   }
 
+  @SuppressWarnings("unchecked")
   private Pair<String, Integer> getHostPort0(int bucketId) {
     InternalDistributedMember member = getOrCreateMember(bucketId);
 
@@ -141,9 +143,13 @@ public class SlotAdvisor {
       return hostPorts.get(member);
     }
 
-    @SuppressWarnings("unchecked")
-    ResultCollector<RedisMemberInfo, List<RedisMemberInfo>> resultCollector =
-        FunctionService.onRegion(dataRegion).execute(RedisMemberInfoRetrievalFunction.ID);
+    ResultCollector<RedisMemberInfo, List<RedisMemberInfo>> resultCollector;
+    try {
+      resultCollector =
+          FunctionService.onRegion(dataRegion).execute(RedisMemberInfoRetrievalFunction.ID);
+    } catch (FunctionException e) {
+      return null;
+    }
 
     hostPorts.clear();
 
