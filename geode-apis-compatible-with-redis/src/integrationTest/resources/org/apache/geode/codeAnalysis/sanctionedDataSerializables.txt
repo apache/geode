@@ -23,8 +23,8 @@ toData,26
 fromData,26
 
 org/apache/geode/redis/internal/data/RedisString,2
-toData,26
-fromData,30
+toData,23
+fromData,23
 
 org/apache/geode/redis/internal/executor/string/SetOptions,2
 fromData,34

@@ -171,20 +171,12 @@ public class Coder {
     return buffer;
   }
 
-  private static void writeCollectionOrString(ByteBuf buffer, Object next)
-      throws CoderException {
-    ByteBuf tmp = null;
-    try {
-      if (next instanceof Collection) {
-        Collection<?> nextItems = (Collection<?>) next;
-        getArrayResponse(buffer, nextItems);
-      } else {
-        getBulkStringResponse(buffer, next);
-      }
-    } finally {
-      if (tmp != null) {
-        tmp.release();
-      }
+  private static void writeCollectionOrString(ByteBuf buffer, Object next) throws CoderException {
+    if (next instanceof Collection) {
+      Collection<?> nextItems = (Collection<?>) next;
+      getArrayResponse(buffer, nextItems);
+    } else {
+      getBulkStringResponse(buffer, next);
     }
   }
 

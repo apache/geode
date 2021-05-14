@@ -107,7 +107,7 @@ public class CommandFunction extends SingleResultRedisFunction {
       case INTERNALPTTL:
         return keyCommands.internalPttl(key);
       case APPEND: {
-        ByteArrayWrapper valueToAdd = (ByteArrayWrapper) args[1];
+        byte[] valueToAdd = (byte[]) args[1];
         return stringCommands.append(key, valueToAdd);
       }
       case GET:
@@ -117,12 +117,12 @@ public class CommandFunction extends SingleResultRedisFunction {
       case STRLEN:
         return stringCommands.strlen(key);
       case SET: {
-        ByteArrayWrapper value = (ByteArrayWrapper) args[1];
+        byte[] value = (byte[]) args[1];
         SetOptions options = (SetOptions) args[2];
         return stringCommands.set(key, value, options);
       }
       case GETSET: {
-        ByteArrayWrapper value = (ByteArrayWrapper) args[1];
+        byte[] value = (byte[]) args[1];
         return stringCommands.getset(key, value);
       }
       case GETRANGE: {

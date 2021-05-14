@@ -18,7 +18,6 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -49,11 +48,11 @@ public class GetRangeExecutor extends StringExecutor {
     RedisStringCommands stringCommands = getRedisStringCommands(context);
     RedisKey key = command.getKey();
 
-    ByteArrayWrapper returnRange = stringCommands.getrange(key, start, end);
+    byte[] returnRange = stringCommands.getrange(key, start, end);
 
     if (returnRange == null) {
       return RedisResponse.nil();
-    } else if (returnRange.length() == 0) {
+    } else if (returnRange.length == 0) {
       return RedisResponse.emptyString();
     } else {
       return respondBulkStrings(returnRange);

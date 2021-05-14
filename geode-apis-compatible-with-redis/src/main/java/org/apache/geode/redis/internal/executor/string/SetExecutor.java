@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -33,16 +32,15 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SetExecutor extends StringExecutor {
 
+  private static final int VALUE_INDEX = 2;
   private static final String SUCCESS = "OK";
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     RedisKey keyToSet = command.getKey();
     List<byte[]> commandElementsBytes = command.getProcessedCommand();
     List<byte[]> optionalParameterBytes = getOptionalParameters(commandElementsBytes);
-    ByteArrayWrapper valueToSet = getValueToSet(commandElementsBytes);
     RedisStringCommands redisStringCommands = getRedisStringCommands(context);
     SetOptions setOptions;
 
@@ -52,15 +50,15 @@ public class SetExecutor extends StringExecutor {
       return RedisResponse.error(ex.getMessage());
     }
 
-    return doSet(keyToSet, valueToSet, redisStringCommands, setOptions);
+    return doSet(keyToSet, commandElementsBytes.get(VALUE_INDEX), redisStringCommands, setOptions);
   }
 
   private List<byte[]> getOptionalParameters(List<byte[]> commandElementsBytes) {
     return commandElementsBytes.subList(3, commandElementsBytes.size());
   }
 
-  private RedisResponse doSet(RedisKey key, ByteArrayWrapper value,
-      RedisStringCommands redisStringCommands, SetOptions setOptions) {
+  private RedisResponse doSet(RedisKey key, byte[] value, RedisStringCommands redisStringCommands,
+      SetOptions setOptions) {
 
     boolean setCompletedSuccessfully = redisStringCommands.set(key, value, setOptions);
 
@@ -69,11 +67,6 @@ public class SetExecutor extends StringExecutor {
     } else {
       return RedisResponse.nil();
     }
-  }
-
-  private ByteArrayWrapper getValueToSet(List<byte[]> commandElems) {
-    byte[] value = commandElems.get(2);
-    return new ByteArrayWrapper(value);
   }
 
   private SetOptions parseOptionalParameters(List<byte[]> optionalParameterBytes)
