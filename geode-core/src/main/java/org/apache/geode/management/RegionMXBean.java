@@ -304,6 +304,8 @@ public interface RegionMXBean {
    * All partitioned regions can report entry size, but the value also includes
    * redundant entries and also counts the size of all the secondary entries in
    * the node.
+   *
+   * @return total entry size in bytes, -1 for replicated regions without LRU_MEMORY eviction
    */
   long getEntrySize();
 
