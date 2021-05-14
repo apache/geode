@@ -89,6 +89,8 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  * created in the test will be cleaned up after the test.
  */
 public abstract class MemberStarterRule<T> extends SerializableExternalResource implements Member {
+  private final int availableJmxPort;
+  private final int availableHttpPort;
   protected int memberPort = 0;
   protected int jmxPort = -1;
   protected int httpPort = -1;
@@ -99,7 +101,6 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   protected Properties systemProperties = new Properties();
 
   protected boolean autoStart = false;
-  private final transient UniquePortSupplier portSupplier;
 
   private List<File> firstLevelChildrenFile = new ArrayList<>();
   private boolean cleanWorkingDir = true;
@@ -117,7 +118,8 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   }
 
   public MemberStarterRule(UniquePortSupplier portSupplier) {
-    this.portSupplier = portSupplier;
+    availableJmxPort = portSupplier.getAvailablePort();
+    availableHttpPort = portSupplier.getAvailablePort();
 
     // initial values
     properties.setProperty(MCAST_PORT, "0");
@@ -279,8 +281,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public T withJMXManager(boolean useProductDefaultPorts) {
     if (!useProductDefaultPorts) {
       // do no override these properties if already exists
-      properties.putIfAbsent(JMX_MANAGER_PORT,
-          portSupplier.getAvailablePort() + "");
+      properties.putIfAbsent(JMX_MANAGER_PORT, availableJmxPort + "");
       this.jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
     } else {
       // the real port numbers will be set after we started the server/locator.
@@ -294,8 +295,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public T withHttpService(boolean useDefaultPort) {
     properties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
     if (!useDefaultPort) {
-      properties.put(HTTP_SERVICE_PORT,
-          portSupplier.getAvailablePort() + "");
+      properties.put(HTTP_SERVICE_PORT, availableHttpPort + "");
       this.httpPort = Integer.parseInt(properties.getProperty(HTTP_SERVICE_PORT));
     } else {
       // indicate start http service but with default port
