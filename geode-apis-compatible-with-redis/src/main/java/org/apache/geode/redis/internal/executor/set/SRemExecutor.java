@@ -29,7 +29,7 @@ public class SRemExecutor extends SetExecutor {
 
     RedisKey key = command.getKey();
 
-    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
+    RedisSetCommands redisSetCommands = context.getSetCommands();
 
     List<byte[]> membersToRemove =
         new ArrayList<>(commandElements.subList(2, commandElements.size()));

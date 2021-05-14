@@ -67,7 +67,7 @@ public class BitPosExecutor extends StringExecutor {
       }
     }
 
-    int bitPosition = getRedisStringCommands(context).bitpos(key, bit, start, end);
+    int bitPosition = context.getStringCommands().bitpos(key, bit, start, end);
     return RedisResponse.integer(bitPosition);
   }
 

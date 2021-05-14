@@ -30,7 +30,7 @@ public class HStrLenExecutor extends HashExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
     byte[] field = commandElems.get(FIELD_INDEX);
 
-    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
+    RedisHashCommands redisHashCommands = context.getHashCommands();
     int len = redisHashCommands.hstrlen(key, field);
 
     return RedisResponse.integer(len);

@@ -23,7 +23,7 @@ public class StrlenExecutor extends StringExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
 
     RedisKey key = command.getKey();
     int length = stringCommands.strlen(key);

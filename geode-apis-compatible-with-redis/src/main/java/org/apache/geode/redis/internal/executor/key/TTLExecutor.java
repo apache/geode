@@ -30,7 +30,7 @@ public class TTLExecutor extends AbstractExecutor {
       ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
 
-    RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
+    RedisKeyCommands redisKeyCommands = context.getKeyCommands();
     long result = redisKeyCommands.pttl(key);
     if (result > 0 && !timeUnitMillis()) {
       // Round up because redis does

@@ -46,7 +46,7 @@ public class HGetAllExecutor extends HashExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
-    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
+    RedisHashCommands redisHashCommands = context.getHashCommands();
     Collection<byte[]> fieldsAndValues = redisHashCommands.hgetall(key);
 
     return RedisResponse.array(fieldsAndValues);

@@ -34,7 +34,7 @@ public class IncrByExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisKey key = command.getKey();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
 
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
     long increment;

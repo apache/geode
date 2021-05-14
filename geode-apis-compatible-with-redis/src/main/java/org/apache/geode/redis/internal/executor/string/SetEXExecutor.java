@@ -41,7 +41,7 @@ public class SetEXExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
 
     RedisKey key = command.getKey();
     byte[] value = commandElems.get(VALUE_INDEX);

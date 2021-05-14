@@ -25,7 +25,7 @@ public class SCardExecutor extends SetExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
-    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
+    RedisSetCommands redisSetCommands = context.getSetCommands();
     return RedisResponse.integer(redisSetCommands.scard(key));
   }
 }

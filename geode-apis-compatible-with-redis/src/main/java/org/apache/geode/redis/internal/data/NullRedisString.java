@@ -16,14 +16,14 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.executor.StripedExecutor;
-import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
-import org.apache.geode.redis.internal.executor.string.RedisStringCommandsFunctionInvoker;
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
@@ -154,29 +154,31 @@ public class NullRedisString extends RedisString {
    * SET is currently mostly implemented here. It does not have an implementation on
    * RedisString which is a bit odd.
    */
-  public boolean set(CommandHelper helper, RedisKey key, byte[] value, SetOptions options) {
+  public boolean set(RegionProvider regionProvider, RedisKey key, byte[] value,
+      SetOptions options) {
     if (options != null) {
       if (options.isNX()) {
-        return setnx(helper, key, value, options);
+        return setnx(regionProvider, key, value, options);
       }
 
-      if (options.isXX() && helper.getRedisData(key).isNull()) {
+      if (options.isXX() && regionProvider.getRedisData(key).isNull()) {
         return false;
       }
     }
 
-    RedisString redisString = helper.setRedisString(key, value);
+    RedisString redisString = setRedisString(regionProvider, key, value);
     redisString.handleSetExpiration(options);
     return true;
   }
 
-  private boolean setnx(CommandHelper helper, RedisKey key, byte[] value, SetOptions options) {
-    if (helper.getRedisData(key).exists()) {
+  private boolean setnx(RegionProvider regionProvider, RedisKey key, byte[] value,
+      SetOptions options) {
+    if (regionProvider.getRedisData(key).exists()) {
       return false;
     }
     RedisString redisString = new RedisString(value);
     redisString.handleSetExpiration(options);
-    helper.getRegion().put(key, redisString);
+    regionProvider.getDataRegion().put(key, redisString);
     return true;
   }
 
@@ -185,35 +187,34 @@ public class NullRedisString extends RedisString {
    * RedisString which is a bit odd. This implementation only has a couple of places
    * that care if a RedisString for "key" exists.
    */
-  public int bitop(CommandHelper helper, String operation, RedisKey key, List<RedisKey> sources) {
+  public int bitop(RegionProvider regionProvider, String operation, RedisKey key,
+      List<RedisKey> sources) {
     List<byte[]> sourceValues = new ArrayList<>();
     int selfIndex = -1;
     // Read all the source values, except for self, before locking the stripe.
-    RedisStringCommands commander =
-        new RedisStringCommandsFunctionInvoker(helper.getRegion());
     for (RedisKey sourceKey : sources) {
       if (sourceKey.equals(key)) {
         // get self later after the stripe is locked
         selfIndex = sourceValues.size();
         sourceValues.add(null);
       } else {
-        sourceValues.add(commander.get(sourceKey));
+        sourceValues.add(regionProvider.getStringCommands().get(sourceKey));
       }
     }
     int indexOfSelf = selfIndex;
-    StripedExecutor stripedExecutor = helper.getStripedExecutor();
-    return stripedExecutor.execute(key,
-        () -> doBitOp(helper, operation, key, indexOfSelf, sourceValues));
+    return regionProvider.execute(key,
+        () -> doBitOp(regionProvider, operation, key, indexOfSelf, sourceValues));
   }
 
   private enum BitOp {
     AND, OR, XOR
   }
 
-  private int doBitOp(CommandHelper helper, String operation, RedisKey key, int selfIndex,
+  private int doBitOp(RegionProvider regionProvider, String operation, RedisKey key, int selfIndex,
       List<byte[]> sourceValues) {
     if (selfIndex != -1) {
-      RedisString redisString = helper.getRedisString(key, true);
+      RedisString redisString =
+          regionProvider.getTypedRedisData(RedisDataType.REDIS_STRING, key, true);
       if (!redisString.isNull()) {
         sourceValues.set(selfIndex, redisString.getValue());
       }
@@ -240,9 +241,9 @@ public class NullRedisString extends RedisString {
         break;
     }
     if (newValue.length == 0) {
-      helper.getRegion().remove(key);
+      regionProvider.getDataRegion().remove(key);
     } else {
-      helper.setRedisString(key, newValue);
+      setRedisString(regionProvider, key, newValue);
     }
     return newValue.length;
   }
@@ -291,6 +292,20 @@ public class NullRedisString extends RedisString {
       }
     }
     return dest;
+  }
+
+  public RedisString setRedisString(RegionProvider regionProvider, RedisKey key, byte[] value) {
+    RedisString result;
+    RedisData redisData = regionProvider.getRedisData(key);
+
+    if (redisData.isNull() || redisData.getType() != REDIS_STRING) {
+      result = new RedisString(value);
+    } else {
+      result = (RedisString) redisData;
+      result.set(value);
+    }
+    regionProvider.getDataRegion().put(key, result);
+    return result;
   }
 
 }

@@ -41,7 +41,7 @@ public abstract class SetOpExecutor extends SetExecutor {
         new ArrayList<>(commandElements.subList(setsStartIndex, commandElements.size()));
     if (isStorage()) {
       RedisKey destination = command.getKey();
-      RedisSetCommands redisSetCommands = context.getRedisSetCommands();
+      RedisSetCommands redisSetCommands = context.getSetCommands();
       int storeCount;
       switch (command.getCommandType()) {
         case SUNIONSTORE:
@@ -65,7 +65,7 @@ public abstract class SetOpExecutor extends SetExecutor {
 
   private RedisResponse doActualSetOperation(ExecutionHandlerContext context,
       List<RedisKey> setKeys) {
-    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
+    RedisSetCommands redisSetCommands = context.getSetCommands();
     RedisKey firstSetKey = setKeys.remove(0);
     Set<byte[]> resultSet = new ObjectOpenCustomHashSet<>(redisSetCommands.smembers(firstSetKey),
         ByteArrays.HASH_STRATEGY);

@@ -20,6 +20,7 @@ import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
 
@@ -27,16 +28,16 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
     implements
     RedisStringCommands {
 
-  public RedisStringCommandsFunctionExecutor(CommandHelper helper) {
-    super(helper);
+  public RedisStringCommandsFunctionExecutor(RegionProvider regionProvider) {
+    super(regionProvider);
   }
 
   private RedisString getRedisString(RedisKey key, boolean updateStats) {
-    return helper.getRedisString(key, updateStats);
+    return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_STRING, key, updateStats);
   }
 
   private RedisString getRedisStringIgnoringType(RedisKey key, boolean updateStats) {
-    return helper.getRedisStringIgnoringType(key, updateStats);
+    return getRegionProvider().getRedisStringIgnoringType(key, updateStats);
   }
 
   @Override
@@ -57,7 +58,8 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
 
   @Override
   public boolean set(RedisKey key, byte[] value, SetOptions options) {
-    return stripedExecute(key, () -> NULL_REDIS_STRING.set(helper, key, value, options));
+    return stripedExecute(key,
+        () -> NULL_REDIS_STRING.set(getRegionProvider(), key, value, options));
   }
 
   @Override
@@ -89,7 +91,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
 
   @Override
   public int bitop(String operation, RedisKey key, List<RedisKey> sources) {
-    return NULL_REDIS_STRING.bitop(helper, operation, key, sources);
+    return NULL_REDIS_STRING.bitop(getRegionProvider(), operation, key, sources);
   }
 
   @Override

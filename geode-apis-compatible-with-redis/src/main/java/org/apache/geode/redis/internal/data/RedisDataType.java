@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 public enum RedisDataType {
 
+  REDIS_DATA("data"),
   REDIS_STRING("string"),
   REDIS_HASH("hash"),
   REDIS_SET("set"),

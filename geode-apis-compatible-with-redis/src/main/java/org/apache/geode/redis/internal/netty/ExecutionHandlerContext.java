@@ -50,14 +50,14 @@ import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMism
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.internal.data.CommandHelper;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
-import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
+import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
+import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
@@ -87,7 +87,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final RedisStats redisStats;
   private final EventLoopGroup subscriberGroup;
   private final DistributedMember member;
-  private final CommandHelper commandHelper;
   private BigInteger scanCursor;
   private BigInteger sscanCursor;
   private final AtomicBoolean channelInactive = new AtomicBoolean();
@@ -117,8 +116,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       EventLoopGroup subscriberGroup,
       byte[] password,
       int serverPort,
-      DistributedMember member,
-      CommandHelper commandHelper) {
+      DistributedMember member) {
     this.channel = channel;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
@@ -132,7 +130,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.isAuthenticated = password == null;
     this.serverPort = serverPort;
     this.member = member;
-    this.commandHelper = commandHelper;
     this.scanCursor = new BigInteger("0");
     this.sscanCursor = new BigInteger("0");
     redisStats.addClient();
@@ -231,7 +228,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
     if (cause instanceof FunctionException
         && !(cause instanceof FunctionInvocationTargetException)) {
-      Throwable th = CommandFunction.getInitialCause((FunctionException) cause);
+      Throwable th = getInitialCause((FunctionException) cause);
       if (th != null) {
         cause = th;
       }
@@ -270,6 +267,19 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
 
     return response;
+  }
+
+  private static Throwable getInitialCause(FunctionException ex) {
+    Throwable result = ex.getCause();
+    while (result != null && result.getCause() != null) {
+      result = result.getCause();
+    }
+    if (result == null) {
+      if (!ex.getExceptions().isEmpty()) {
+        result = ex.getExceptions().get(0);
+      }
+    }
+    return result;
   }
 
   @Override
@@ -442,11 +452,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return member.getUniqueId();
   }
 
-
-  public CommandHelper getCommandHelper() {
-    return commandHelper;
-  }
-
   /**
    * This method and {@link #eventLoopReady()} are relevant for pubsub related commands which need
    * to return responses on a different EventLoopGroup. We need to ensure that the EventLoopGroup
@@ -476,15 +481,24 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
   }
 
-  public RedisHashCommands getRedisHashCommands() {
+  public RedisHashCommands getHashCommands() {
     return regionProvider.getHashCommands();
   }
 
-  public RedisSetCommands getRedisSetCommands() {
+  public RedisSortedSetCommands getSortedSetCommands() {
+    return regionProvider.getSortedSetCommands();
+  }
+
+  public RedisKeyCommands getKeyCommands() {
+    return regionProvider.getKeyCommands();
+  }
+
+  public RedisStringCommands getStringCommands() {
+    return regionProvider.getStringCommands();
+  }
+
+  public RedisSetCommands getSetCommands() {
     return regionProvider.getSetCommands();
   }
 
-  public RedisSortedSetCommands getRedisSortedSetCommands() {
-    return regionProvider.getSortedSetCommands();
-  }
 }

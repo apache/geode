@@ -40,12 +40,12 @@ public class SMoveExecutor extends SetExecutor {
     RedisKey destination = new RedisKey(commandElems.get(2));
     byte[] member = commandElems.get(3);
 
-    String destinationType = getRedisKeyCommands(context).internalType(destination);
+    String destinationType = context.getKeyCommands().internalType(destination);
     if (!destinationType.equals(REDIS_SET.toString()) && !destinationType.equals("none")) {
       return RedisResponse.wrongType(ERROR_WRONG_TYPE);
     }
 
-    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
+    RedisSetCommands redisSetCommands = context.getSetCommands();
 
     boolean removed =
         redisSetCommands.srem(source, new ArrayList<>(Collections.singletonList(member))) == 1;

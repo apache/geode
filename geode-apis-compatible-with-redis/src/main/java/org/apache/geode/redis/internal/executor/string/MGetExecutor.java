@@ -28,7 +28,7 @@ public class MGetExecutor extends StringExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
 
     Collection<byte[]> values = new ArrayList<>();
     for (int i = 1; i < commandElems.size(); i++) {

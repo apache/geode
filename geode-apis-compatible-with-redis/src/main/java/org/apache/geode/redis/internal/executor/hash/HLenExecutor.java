@@ -39,7 +39,7 @@ public class HLenExecutor extends HashExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
-    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
+    RedisHashCommands redisHashCommands = context.getHashCommands();
     int len = redisHashCommands.hlen(key);
 
     return RedisResponse.integer(len);

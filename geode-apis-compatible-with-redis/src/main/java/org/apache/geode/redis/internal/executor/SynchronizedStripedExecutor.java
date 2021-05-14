@@ -40,8 +40,7 @@ public class SynchronizedStripedExecutor implements StripedExecutor {
   }
 
   @Override
-  public <T> T execute(Object stripeId,
-      Callable<T> callable) {
+  public <T> T execute(Object stripeId, Callable<T> callable) {
     synchronized (getSync(stripeId)) {
       try {
         return callable.call();

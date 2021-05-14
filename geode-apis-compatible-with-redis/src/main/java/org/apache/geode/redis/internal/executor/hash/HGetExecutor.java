@@ -43,7 +43,7 @@ public class HGetExecutor extends HashExecutor {
 
     byte[] field = commandElems.get(FIELD_INDEX);
     RedisKey key = command.getKey();
-    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
+    RedisHashCommands redisHashCommands = context.getHashCommands();
     byte[] value = redisHashCommands.hget(key, field);
 
     if (value != null) {

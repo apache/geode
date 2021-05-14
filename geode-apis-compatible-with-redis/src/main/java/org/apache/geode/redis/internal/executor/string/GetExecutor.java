@@ -25,7 +25,7 @@ public class GetExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     RedisKey key = command.getKey();
-    RedisStringCommands redisStringCommands = getRedisStringCommands(context);
+    RedisStringCommands redisStringCommands = context.getStringCommands();
     byte[] result = redisStringCommands.get(key);
 
     return respondBulkStrings(result);

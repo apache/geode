@@ -24,7 +24,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ZScoreExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisSortedSetCommands redisSortedSetCommands = context.getRedisSortedSetCommands();
+    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
 
     List<byte[]> commandElements = command.getProcessedCommand();
 

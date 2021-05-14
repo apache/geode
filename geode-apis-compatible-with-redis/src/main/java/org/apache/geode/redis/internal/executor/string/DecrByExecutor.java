@@ -44,7 +44,7 @@ public class DecrByExecutor extends StringExecutor {
       return RedisResponse.error(ERROR_NOT_INTEGER);
     }
 
-    long value = getRedisStringCommands(context).decrby(key, decrement);
+    long value = context.getStringCommands().decrby(key, decrement);
     return RedisResponse.integer(value);
   }
 }

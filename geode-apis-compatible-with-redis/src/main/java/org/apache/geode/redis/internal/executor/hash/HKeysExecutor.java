@@ -46,7 +46,7 @@ public class HKeysExecutor extends HashExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
-    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
+    RedisHashCommands redisHashCommands = context.getHashCommands();
     Collection<byte[]> keys = redisHashCommands.hkeys(key);
     if (keys.isEmpty()) {
       return RedisResponse.emptyArray();

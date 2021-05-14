@@ -64,7 +64,7 @@ public class HIncrByFloatExecutor extends HashExecutor {
     }
 
     RedisKey key = command.getKey();
-    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
+    RedisHashCommands redisHashCommands = context.getHashCommands();
     byte[] field = commandElems.get(FIELD_INDEX);
 
     BigDecimal value = redisHashCommands.hincrbyfloat(key, field, validated.getLeft());
