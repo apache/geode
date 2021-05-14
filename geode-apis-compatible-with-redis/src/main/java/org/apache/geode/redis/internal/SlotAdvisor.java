@@ -22,18 +22,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -143,31 +139,25 @@ public class SlotAdvisor {
       return hostPorts.get(member);
     }
 
-    ResultCollector<RedisMemberInfo, List<RedisMemberInfo>> resultCollector;
+    List<RedisMemberInfo> memberInfos;
     try {
-      resultCollector =
+      ResultCollector<RedisMemberInfo, List<RedisMemberInfo>> resultCollector =
           FunctionService.onRegion(dataRegion).execute(RedisMemberInfoRetrievalFunction.ID);
-    } catch (FunctionException e) {
+      memberInfos = resultCollector.getResult();
+    } catch (Exception e) {
       logger.warn("Unable to execute {}: {}", RedisMemberInfoRetrievalFunction.ID, e.getMessage());
       return null;
     }
 
     hostPorts.clear();
 
-    for (RedisMemberInfo memberInfo : resultCollector.getResult()) {
+    for (RedisMemberInfo memberInfo : memberInfos) {
       Pair<String, Integer> hostPort =
           Pair.of(memberInfo.getHostAddress(), memberInfo.getRedisPort());
       hostPorts.put(memberInfo.getMember(), hostPort);
     }
 
     return hostPorts.get(member);
-  }
-
-  private Set<PartitionMemberInfo> getRegionMembers(PartitionedRegion dataRegion) {
-    PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
-    assert info != null; // Mostly to appease IJ since the region is always a PR
-
-    return info.getPartitionMemberInfo();
   }
 
   public static class MemberBucketSlot {
