@@ -2264,7 +2264,7 @@ public class CliStrings {
   public static final String CREATE_GATEWAYSENDER__GETTRANSACTIONEVENTSFROMQUEUERETRIES =
       "get-transaction-events-from-queue-retries";
   public static final String CREATE_GATEWAYSENDER__GETTRANSACTIONEVENTSFROMQUEUERETRIES__HELP =
-      "Number of retries to get transaction events from queue to complete a transaction" +
+      "Number of retries to get transaction events from queue to complete a transaction " +
           "when group-transaction-events is true";
   public static final String CREATE_GATEWAYSENDER__PARALLEL = "parallel";
   public static final String CREATE_GATEWAYSENDER__PARALLEL__HELP =
