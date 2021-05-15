@@ -297,7 +297,7 @@ public interface RegionMXBean {
   long getDiskUsage();
 
   /**
-   * Returns the aggregate entry size (in bytes) of all entries. 
+   * Returns the aggregate entry size (in bytes) of all entries.
    * For replicated regions, provides a value only if the eviction algorithm
    * is set to {@link EvictionAlgorithm#LRU_MEMORY}.
    *
