@@ -260,7 +260,7 @@ The following table describes the data elements displayed on the Member View scr
 <li><em>Name</em>. Region name.</li>
 <li><em>Type</em>. For example, REPLICATE, PARTITION.</li>
 <li><em>EntryCount</em>. Number of entries in the region.</li>
-<li><em>EntrySize</em>. The aggregate entry size (in bytes) of all entries. For replicated regions this field will only provide a value if the eviction algorithm has been set to EvictionAlgorithm#LRU_ MEMORY. All partition regions will have this value. However, the value includes redundant entries and will also count the size of all the secondary entries on the node.</li>
+<li><em>EntrySize</em>. The aggregate entry size (in bytes) of all entries. For replicated regions this field provides a value only if the eviction algorithm is set to EvictionAlgorithm#LRU_ MEMORY. All partition regions can report entry size, but note that the value includes redundant entries and also counts the size of all the secondary entries on the node.</li>
 </ul></td>
 </tr>
 <tr>
@@ -270,7 +270,7 @@ The following table describes the data elements displayed on the Member View scr
 <li><em>Name</em>. Region name.</li>
 <li><em>Type</em>. For example, REPLICATE, PARTITION.</li>
 <li><em>EntryCount</em>. Number of entries in the region.</li>
-<li><em>EntrySize</em>. The aggregate entry size (in bytes) of all entries. For replicated regions this field will only provide a value if the eviction algorithm has been set to EvictionAlgorithm#LRU_ MEMORY. All partition regions will have this value. However, the value includes redundant entries and will also count the size of all the secondary entries on the node.</li>
+<li><em>EntrySize</em>. The aggregate entry size (in bytes) of all entries. For replicated regions this field provides a value only if the eviction algorithm is set to EvictionAlgorithm#LRU_ MEMORY. All partition regions can report entry size, but note that the value includes redundant entries and also counts the size of all the secondary entries on the node.</li>
 <li><em>Scope</em>. Scope configured for the region.</li>
 <li><em>Disk Store Name</em>. Name of disk stores (if any) associated with the region.</li>
 <li><em>Disk Synchronous</em>. True if writes to disk are set to synchronous and false if not. This field reflects the configured disk-synchronous region attribute.</li>
@@ -370,7 +370,7 @@ The following table describes the data elements displayed on the Region View scr
 <ul>
 <li><em>Member Name</em>. The name of the <%=vars.product_name%> member hosting the region.</li>
 <li><em>EntryCount</em>. Number of entries for the region on that member.</li>
-<li><em>EntrySize</em>. The aggregate entry size (in bytes) of all entries on that member. For replicated regions this field will only provide a value if the eviction algorithm has been set to EvictionAlgorithm#LRU_ MEMORY. All partition regions will have this value. However, the value includes redundant entries and will also count the size of all the secondary entries on the node.</li>
+<li><em>EntrySize</em>. The aggregate entry size (in bytes) of all entries. For replicated regions this field provides a value only if the eviction algorithm is set to EvictionAlgorithm#LRU_ MEMORY. All partition regions can report entry size, but note that the value includes redundant entries and also counts the size of all the secondary entries on the node.</li>
 <li><em>Accessor</em>. Indicates whether the member is an accessor member.</li>
 <li><em>Reads/Writes</em>. Summary of reads and writes served from memory and from disk stores over the last 15 minutes.</li>
 </ul></td>
