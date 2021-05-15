@@ -20,13 +20,13 @@ import java.util.Collection;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.internal.util.ListCollectingServiceLoader;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
 
 /**
@@ -40,7 +40,7 @@ import org.apache.geode.logging.internal.spi.LoggingProvider;
  */
 public class LoggingProviderLoader {
 
-  private static final Logger logger = LogManager.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * System property that may be used to override which {@code LoggingProvider} to use.

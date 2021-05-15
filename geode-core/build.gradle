@@ -354,7 +354,6 @@ dependencies {
     integrationTestImplementation(project(':geode-log4j'))
     integrationTestImplementation(project(':geode-concurrency-test'))
     integrationTestImplementation('org.apache.bcel:bcel')
-    integrationTestImplementation('org.apache.logging.log4j:log4j-core')
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
