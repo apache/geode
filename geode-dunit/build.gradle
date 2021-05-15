@@ -65,6 +65,7 @@ dependencies {
     exclude module: 'hamcrest'
   }
 
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }
 
 distributedTest {
