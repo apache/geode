@@ -42,4 +42,6 @@ dependencies {
     upgradeTestImplementation(project(':geode-gfsh'))
     upgradeTestImplementation(project(':geode-dunit'))
     upgradeTestImplementation(project(':geode-membership'))
+
+    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }
