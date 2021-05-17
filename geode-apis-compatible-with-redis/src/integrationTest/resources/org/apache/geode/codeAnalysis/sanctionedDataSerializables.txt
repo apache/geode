@@ -26,9 +26,17 @@ org/apache/geode/redis/internal/data/RedisSet,2
 toData,26
 fromData,26
 
+org/apache/geode/redis/internal/data/RedisSortedSet,2
+toData,90
+fromData,58
+
 org/apache/geode/redis/internal/data/RedisString,2
 toData,23
 fromData,23
+
+org/apache/geode/redis/internal/executor/sortedset/SortedSetOptions,2
+fromData,14
+toData,9
 
 org/apache/geode/redis/internal/executor/string/SetOptions,2
 fromData,34

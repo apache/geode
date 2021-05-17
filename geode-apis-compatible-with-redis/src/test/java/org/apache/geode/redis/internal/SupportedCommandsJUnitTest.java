@@ -82,7 +82,9 @@ public class SupportedCommandsJUnitTest {
       "SUBSCRIBE",
       "TTL",
       "TYPE",
-      "UNSUBSCRIBE"
+      "UNSUBSCRIBE",
+      "ZADD",
+      "ZSCORE"
   };
 
   private final String[] unSupportedCommands = new String[] {
