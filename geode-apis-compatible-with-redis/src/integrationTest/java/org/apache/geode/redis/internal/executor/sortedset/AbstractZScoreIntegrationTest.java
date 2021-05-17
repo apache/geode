@@ -47,7 +47,7 @@ public abstract class AbstractZScoreIntegrationTest implements RedisIntegrationT
 
   @Test
   public void zscoreErrors_givenTooFewArguments() {
-    assertAtLeastNArgs(jedis, Protocol.Command.ZSCORE, 4);
+    assertAtLeastNArgs(jedis, Protocol.Command.ZSCORE, 2);
   }
 
   @Test
