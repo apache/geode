@@ -92,7 +92,14 @@ public class ZAddParameterRequirements implements ParameterRequirements {
       }
       optionsFoundCount++;
     }
-    // Validate flag combos
+
+    validateFlagCombinations(nxFound, xxFound, gtFound, ltFound);
+
+    return optionsFoundCount;
+  }
+
+  private void validateFlagCombinations(boolean nxFound, boolean xxFound, boolean gtFound,
+      boolean ltFound) {
     if (nxFound && xxFound) {
       throw new RedisParametersMismatchException(
           String.format(ERROR_INVALID_ZADD_OPTION_NX_XX));
@@ -105,7 +112,5 @@ public class ZAddParameterRequirements implements ParameterRequirements {
       throw new RedisParametersMismatchException(
           String.format(ERROR_NOT_A_VALID_FLOAT));
     }
-
-    return optionsFoundCount;
   }
 }

@@ -97,7 +97,7 @@ public class ZaddDUnitTest {
 
     jedis.zadd(key, memberScoreMap);
 
-    for (String member: memberScoreMap.keySet()) {
+    for (String member : memberScoreMap.keySet()) {
       Double score = jedis.zscore(key, member);
       assertThat(score).isEqualTo(memberScoreMap.get(member));
     }
@@ -115,11 +115,11 @@ public class ZaddDUnitTest {
         (i) -> jedis.zadd(key, memberScoreMap1),
         (i) -> jedis.zadd(key, memberScoreMap2)).runInLockstep();
 
-    for (String member1: memberScoreMap1.keySet()) {
+    for (String member1 : memberScoreMap1.keySet()) {
       Double score = jedis.zscore(key, member1);
       assertThat(score).isEqualTo(memberScoreMap1.get(member1));
     }
-    for (String member2: memberScoreMap2.keySet()) {
+    for (String member2 : memberScoreMap2.keySet()) {
       Double score = jedis.zscore(key, member2);
       assertThat(score).isEqualTo(memberScoreMap2.get(member2));
     }
@@ -136,7 +136,7 @@ public class ZaddDUnitTest {
         (i) -> jedis.zadd(key, memberScoreMap),
         (i) -> jedis.zadd(key, memberScoreMap)).run();
 
-    for (String member: memberScoreMap.keySet()) {
+    for (String member : memberScoreMap.keySet()) {
       Double score = jedis.zscore(key, member);
       assertThat(score).isEqualTo(memberScoreMap.get(member));
     }
@@ -156,11 +156,11 @@ public class ZaddDUnitTest {
         (i) -> jedis.zadd(key1, memberScoreMap1),
         (i) -> jedis.zadd(key2, memberScoreMap2)).runInLockstep();
 
-    for (String member1: memberScoreMap1.keySet()) {
+    for (String member1 : memberScoreMap1.keySet()) {
       Double score = jedis.zscore(key1, member1);
       assertThat(score).isEqualTo(memberScoreMap1.get(member1));
     }
-    for (String member2: memberScoreMap2.keySet()) {
+    for (String member2 : memberScoreMap2.keySet()) {
       Double score = jedis.zscore(key2, member2);
       assertThat(score).isEqualTo(memberScoreMap2.get(member2));
     }
@@ -170,7 +170,7 @@ public class ZaddDUnitTest {
   private Map<String, Double> makeMemberScoreMap(int setSize, String baseString) {
     Map<String, Double> scoreMemberPairs = new HashMap<>();
     for (int i = 0; i < setSize; i++) {
-      scoreMemberPairs.put(baseString + i, Double.valueOf(i +""));
+      scoreMemberPairs.put(baseString + i, Double.valueOf(i + ""));
     }
     return scoreMemberPairs;
   }

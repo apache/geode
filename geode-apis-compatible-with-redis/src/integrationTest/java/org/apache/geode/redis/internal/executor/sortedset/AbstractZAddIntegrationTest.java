@@ -86,28 +86,28 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   public void zaddErrors_givenBothNXAndGTOptions() {
     assertThatThrownBy(
         () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "NX", "GT", "1.0", "fakeMember"))
-        .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void zaddErrors_givenBothNXAndLTOptions() {
     assertThatThrownBy(
         () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "NX", "GT", "1.0", "fakeMember"))
-        .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void zaddErrors_givenLTThenNXOptions() {
     assertThatThrownBy(
         () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "LT", "NX", "1.0", "fakeMember"))
-        .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
+            .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
   public void zaddErrors_givenGTThenNXOptions() {
     assertThatThrownBy(
         () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "GT", "NX", "1.0", "fakeMember"))
-        .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
+            .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test

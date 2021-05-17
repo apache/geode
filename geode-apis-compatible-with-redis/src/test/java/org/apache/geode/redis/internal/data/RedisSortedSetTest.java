@@ -211,10 +211,10 @@ public class RedisSortedSetTest {
 
   @Test
   public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithMultipleValues() {
-  RedisSortedSet sortedSet =
-      createRedisSortedSet("1.0", "memberUnoIsTheFirstMember",
-          "2.0", "memberDueIsTheSecondMember", "3.0", "memberTreIsTheThirdMember",
-          "4.0", "memberQuatroIsTheThirdMember");
+    RedisSortedSet sortedSet =
+        createRedisSortedSet("1.0", "memberUnoIsTheFirstMember",
+            "2.0", "memberDueIsTheSecondMember", "3.0", "memberTreIsTheThirdMember",
+            "4.0", "memberQuatroIsTheThirdMember");
 
     final int expected = reflectionObjectSizer.sizeof(sortedSet);
     final int actual = sortedSet.getSizeInBytes();

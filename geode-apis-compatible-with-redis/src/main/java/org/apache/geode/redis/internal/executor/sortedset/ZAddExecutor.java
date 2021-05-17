@@ -88,23 +88,23 @@ public class ZAddExecutor extends SortedSetExecutor {
     return RedisResponse.integer(entriesAdded);
   }
 
-  private ZSetOptions makeOptions(boolean nxFound, boolean xxFound, boolean gtFound,
+  private SortedSetOptions makeOptions(boolean nxFound, boolean xxFound, boolean gtFound,
                                   boolean ltFound) {
-    ZSetOptions.Exists existsOption = ZSetOptions.Exists.NONE;
-    ZSetOptions.Update updateOption = ZSetOptions.Update.NONE;
+    SortedSetOptions.Exists existsOption = SortedSetOptions.Exists.NONE;
+    SortedSetOptions.Update updateOption = SortedSetOptions.Update.NONE;
 
     if (nxFound) {
-      existsOption = ZSetOptions.Exists.NX;
+      existsOption = SortedSetOptions.Exists.NX;
     }
     if (xxFound) {
-      existsOption = ZSetOptions.Exists.XX;
+      existsOption = SortedSetOptions.Exists.XX;
     }
     if (gtFound) {
-      updateOption = ZSetOptions.Update.GT;
+      updateOption = SortedSetOptions.Update.GT;
     }
     if (ltFound) {
-      updateOption = ZSetOptions.Update.LT;
+      updateOption = SortedSetOptions.Update.LT;
     }
-    return new ZSetOptions(existsOption, updateOption);
+    return new SortedSetOptions(existsOption, updateOption);
   }
 }
