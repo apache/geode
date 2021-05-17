@@ -198,6 +198,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
         logger.debug("Executing Function: {} on remote member with context: {}",
             this.functionObject.getId(), context.toString());
       }
+      //throw new NullPointerException("BR NPE");
       this.functionObject.execute(context);
       if (!this.replyLastMsg && this.functionObject.hasResult()) {
         throw new FunctionException(

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
+import org.apache.geode.internal.cache.MemberFunctionStreamingMessage;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -372,6 +373,9 @@ public abstract class DistributionMessage
       DistributionMessageObserver observer = DistributionMessageObserver.getInstance();
       if (observer != null) {
         observer.beforeProcessMessage(dm, this);
+      }
+      if(this instanceof MemberFunctionStreamingMessage) {
+        logger.info("BR MemberFunctionStreamingMessage about to process");
       }
       process(dm);
       if (observer != null) {

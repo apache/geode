@@ -168,7 +168,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     String stackTrace = sw.toString();
     logger.info("BR About to execute boostrapping function in " + stackTrace);
     pw.close();
-    
+
     try {
       sw.close();
     } catch (Exception ex) {

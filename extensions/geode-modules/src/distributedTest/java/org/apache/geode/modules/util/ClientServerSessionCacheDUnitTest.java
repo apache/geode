@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpSession;
 
@@ -95,8 +96,8 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     server1.invoke(this::startCacheServer);
 
     // Session region may be created asynchronously on the second server
-    server0.invoke(() -> await().untilAsserted(this::validateServer));
-    server1.invoke(() -> await().untilAsserted(this::validateServer));
+    server0.invoke(() -> await().atMost(60000, TimeUnit.MILLISECONDS).untilAsserted(this::validateServer));
+    server1.invoke(() -> await().atMost(60000, TimeUnit.MILLISECONDS).untilAsserted(this::validateServer));
     DistributedRule.doTearDown();
   }
 
