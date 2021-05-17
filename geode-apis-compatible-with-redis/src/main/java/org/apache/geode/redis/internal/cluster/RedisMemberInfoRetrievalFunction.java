@@ -23,15 +23,28 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.inet.LocalHostUtil;
 
+/**
+ * There is a race between registering this function and redis clients being able to call
+ * {@code CLUSTER SLOTS} and receive accurate information. To help with this the function is
+ * registered before the redis server is available, but is only initialized with the host and port
+ * once the redis server is running. If the function returns null it means that the function has
+ * not been initialized yet and callers, (from java), should retry.
+ */
 public class RedisMemberInfoRetrievalFunction implements InternalFunction<Void> {
 
   public static final String ID = RedisMemberInfoRetrievalFunction.class.getName();
   private static final long serialVersionUID = 2207969011229079993L;
 
-  private final String hostAddress;
-  private final int redisPort;
+  private String hostAddress = null;
+  private Integer redisPort = null;
 
-  private RedisMemberInfoRetrievalFunction(String address, int redisPort) {
+  public static RedisMemberInfoRetrievalFunction register() {
+    RedisMemberInfoRetrievalFunction infoFunction = new RedisMemberInfoRetrievalFunction();
+    FunctionService.registerFunction(infoFunction);
+    return infoFunction;
+  }
+
+  public void initialize(String address, Integer redisPort) {
     if (address == null || address.isEmpty() || address.equals("0.0.0.0")) {
       InetAddress localhost = null;
       try {
@@ -46,12 +59,12 @@ public class RedisMemberInfoRetrievalFunction implements InternalFunction<Void> 
     this.redisPort = redisPort;
   }
 
-  public static void register(String address, int redisPort) {
-    FunctionService.registerFunction(new RedisMemberInfoRetrievalFunction(address, redisPort));
-  }
-
   @Override
   public void execute(FunctionContext<Void> context) {
+    if (hostAddress == null || redisPort == null) {
+      context.getResultSender().lastResult(null);
+    }
+
     DistributedMember member = context.getCache().getDistributedSystem().getDistributedMember();
     context.getResultSender().lastResult(new RedisMemberInfo(member, hostAddress, redisPort));
   }

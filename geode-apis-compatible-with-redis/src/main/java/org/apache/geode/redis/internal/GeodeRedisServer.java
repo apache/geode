@@ -85,6 +85,7 @@ public class GeodeRedisServer {
 
     CommandFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
     RenameFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
+    RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
     passiveExpirationManager =
         new PassiveExpirationManager(regionProvider.getDataRegion(), redisStats);
@@ -99,7 +100,7 @@ public class GeodeRedisServer {
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
         redisCommandExecutor, member, commandHelper);
 
-    RedisMemberInfoRetrievalFunction.register(bindAddress, nettyRedisServer.getPort());
+    infoFunction.initialize(bindAddress, nettyRedisServer.getPort());
   }
 
   @VisibleForTesting

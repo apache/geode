@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -42,13 +41,13 @@ import org.apache.geode.redis.internal.data.RedisKey;
 public class SlotAdvisor {
 
   private static final Logger logger = LogService.getLogger();
-  private static final int HOSTPORT_RETRIEVAL_ATTEMPTS = 10;
-  private static final int HOSTPORT_RETRIEVAL_INTERVAL = 6_000;
+  private static final int HOSTPORT_RETRIEVAL_ATTEMPTS = 20;
+  private static final int HOSTPORT_RETRIEVAL_INTERVAL = 100;
 
   /**
    * Cache of member ids to member IP address and redis listening port
    */
-  private final Map<DistributedMember, Pair<String, Integer>> hostPorts = new HashMap<>();
+  private final Map<DistributedMember, RedisMemberInfo> memberInfos = new HashMap<>();
   private final PartitionedRegion dataRegion;
 
   SlotAdvisor(Region<RedisKey, RedisData> dataRegion) {
@@ -61,12 +60,16 @@ public class SlotAdvisor {
   }
 
   public Pair<String, Integer> getHostAndPortForKey(RedisKey key) {
-    return getHostPort(key.getBucketId());
+    try {
+      RedisMemberInfo memberInfo = getMemberInfo(key.getBucketId());
+      return Pair.of(memberInfo.getHostAddress(), memberInfo.getRedisPort());
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException(ex);
+    }
   }
 
   public Map<String, List<Integer>> getMemberBuckets() {
-    initializeBucketsIfNecessary();
-
     Map<String, List<Integer>> memberBuckets = new HashMap<>();
     for (int bucketId = 0; bucketId < REDIS_REGION_BUCKETS; bucketId++) {
       String memberId = getOrCreateMember(bucketId).getUniqueId();
@@ -81,15 +84,19 @@ public class SlotAdvisor {
    * the details for a given bucket cannot be determined, that entry will contain {@code null}.
    */
   public synchronized List<MemberBucketSlot> getBucketSlots() {
-    initializeBucketsIfNecessary();
-
     List<MemberBucketSlot> memberBucketSlots = new ArrayList<>(RegionProvider.REDIS_REGION_BUCKETS);
-    for (int bucketId = 0; bucketId < REDIS_REGION_BUCKETS; bucketId++) {
-      Pair<String, Integer> hostPort = getHostPort(bucketId);
-      if (hostPort != null) {
-        memberBucketSlots.add(
-            new MemberBucketSlot(bucketId, hostPort.getLeft(), hostPort.getRight()));
+    try {
+      for (int bucketId = 0; bucketId < REDIS_REGION_BUCKETS; bucketId++) {
+        RedisMemberInfo memberInfo = getMemberInfo(bucketId);
+        if (memberInfo != null) {
+          memberBucketSlots.add(
+              new MemberBucketSlot(bucketId, memberInfo.getHostAddress(),
+                  memberInfo.getRedisPort()));
+        }
       }
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException(ex);
     }
 
     return memberBucketSlots;
@@ -99,31 +106,20 @@ public class SlotAdvisor {
     return dataRegion.getOrCreateNodeForBucketWrite(bucketId, null);
   }
 
-  private void initializeBucketsIfNecessary() {
-    if (dataRegion.getDataStore() != null &&
-        dataRegion.getDataStore().getAllLocalBucketIds().isEmpty()) {
-      PartitionRegionHelper.assignBucketsToPartitions(dataRegion);
-    }
-  }
-
   /**
    * This method will retry for {@link #HOSTPORT_RETRIEVAL_ATTEMPTS} attempts and return null if
    * no information could be retrieved.
    */
-  private Pair<String, Integer> getHostPort(int bucketId) {
-    Pair<String, Integer> response;
+  private RedisMemberInfo getMemberInfo(int bucketId) throws InterruptedException {
+    RedisMemberInfo response;
 
     for (int i = 0; i < HOSTPORT_RETRIEVAL_ATTEMPTS; i++) {
-      response = getHostPort0(bucketId);
+      response = getMemberInfo0(bucketId);
       if (response != null) {
         return response;
       }
 
-      try {
-        Thread.sleep(HOSTPORT_RETRIEVAL_INTERVAL);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
+      Thread.sleep(HOSTPORT_RETRIEVAL_INTERVAL);
     }
 
     logger.error("Unable to retrieve host and redis port for member with bucketId: {}", bucketId);
@@ -132,11 +128,11 @@ public class SlotAdvisor {
   }
 
   @SuppressWarnings("unchecked")
-  private Pair<String, Integer> getHostPort0(int bucketId) {
+  private RedisMemberInfo getMemberInfo0(int bucketId) {
     InternalDistributedMember member = getOrCreateMember(bucketId);
 
-    if (hostPorts.containsKey(member)) {
-      return hostPorts.get(member);
+    if (memberInfos.containsKey(member)) {
+      return memberInfos.get(member);
     }
 
     List<RedisMemberInfo> memberInfos;
@@ -145,19 +141,20 @@ public class SlotAdvisor {
           FunctionService.onRegion(dataRegion).execute(RedisMemberInfoRetrievalFunction.ID);
       memberInfos = resultCollector.getResult();
     } catch (Exception e) {
-      logger.warn("Unable to execute {}: {}", RedisMemberInfoRetrievalFunction.ID, e.getMessage());
+      logger.warn("Error executing function {}", RedisMemberInfoRetrievalFunction.ID, e);
       return null;
     }
 
-    hostPorts.clear();
+    this.memberInfos.clear();
 
     for (RedisMemberInfo memberInfo : memberInfos) {
-      Pair<String, Integer> hostPort =
-          Pair.of(memberInfo.getHostAddress(), memberInfo.getRedisPort());
-      hostPorts.put(memberInfo.getMember(), hostPort);
+      if (memberInfo == null) {
+        continue;
+      }
+      this.memberInfos.put(memberInfo.getMember(), memberInfo);
     }
 
-    return hostPorts.get(member);
+    return this.memberInfos.get(member);
   }
 
   public static class MemberBucketSlot {
