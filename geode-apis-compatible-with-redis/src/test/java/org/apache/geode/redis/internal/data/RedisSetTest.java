@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisSet.BASE_REDIS_SET_OVERHEAD;
-import static org.apache.geode.redis.internal.data.RedisSet.PER_MEMBER_OVERHEAD;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,9 +36,7 @@ import java.util.Set;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
-import org.assertj.core.data.Offset;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.DataSerializer;
@@ -50,10 +47,11 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
+import org.apache.geode.redis.internal.collections.SizeableObjectOpenCustomHashSet;
+import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSetTest {
-  private final ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
-  private final double percentTolerance = 0.05;
+  private final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
 
   @BeforeClass
   public static void beforeClass() {
@@ -190,49 +188,44 @@ public class RedisSetTest {
     Set<byte[]> members = new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
     RedisSet set = new RedisSet(members);
 
-    int expected = reflectionObjectSizer.sizeof(set);
+    int expected = sizer.sizeof(set);
     int actual = set.getSizeInBytes();
 
     assertThat(actual).isEqualTo(expected);
   }
 
   @Test
-  @Ignore("Sizing tests are known to be flaky/incorrect and will be fixed as part of GEODE-9279")
   public void should_calculateSize_equalToROS_withSingleMember() {
     Set<byte[]> members = new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
     members.add("value".getBytes());
     RedisSet set = new RedisSet(members);
 
-    int expected = reflectionObjectSizer.sizeof(set);
     int actual = set.getSizeInBytes();
+    int expected = sizer.sizeof(set);
 
     assertThat(actual).isEqualTo(expected);
   }
 
   @Test
-  @Ignore("Sizing tests are known to be flaky/incorrect and will be fixed as part of GEODE-9279")
-  public void should_calculateSize_closeToROS_withVaryingMemberCounts() {
+  public void should_calculateSize_equalToROS_withVaryingMemberCounts() {
     for (int i = 0; i < 1024; i += 16) {
       RedisSet set = createRedisSetOfSpecifiedSize(i);
 
-      int expected = reflectionObjectSizer.sizeof(set);
-      Long actual = (long) set.getSizeInBytes();
-      Offset<Long> offset = Offset.offset(Math.round(expected * percentTolerance));
+      int expected = sizer.sizeof(set);
+      int actual = set.getSizeInBytes();
 
-      assertThat(actual).isCloseTo(expected, offset);
+      assertThat(actual).isEqualTo(expected);
     }
   }
 
   @Test
-  @Ignore("Sizing tests are known to be flaky/incorrect and will be fixed as part of GEODE-9279")
-  public void should_calculateSize_closeToROS_withVaryingMemberSize() {
-    for (int i = 0; i < 1_600; i++) {
+  public void should_calculateSize_equalToROS_withVaryingMemberSize() {
+    for (int i = 0; i < 1024; i += 16) {
       RedisSet set = createRedisSetWithMemberOfSpecifiedSize(i * 64);
-      int expected = reflectionObjectSizer.sizeof(set);
-      Long actual = (long) set.getSizeInBytes();
-      Offset<Long> offset = Offset.offset(Math.round(expected * percentTolerance));
+      int expected = sizer.sizeof(set);
+      int actual = set.getSizeInBytes();
 
-      assertThat(actual).isCloseTo(expected, offset);
+      assertThat(actual).isEqualTo(expected);
     }
   }
 
@@ -252,10 +245,9 @@ public class RedisSetTest {
 
     set.sadd(members, region, key);
 
-    int actual = set.getSizeInBytes();
-    int expected = BASE_REDIS_SET_OVERHEAD + PER_MEMBER_OVERHEAD + valueString.length();
+    set.clearDelta(); // because the region is mocked, the delta has to be explicitly cleared
 
-    assertThat(actual).isEqualTo(expected);
+    assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
   }
 
   @Test
@@ -266,21 +258,20 @@ public class RedisSetTest {
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
     final RedisKey key = new RedisKey("key".getBytes());
     String baseString = "value";
-    int currentDataSize = 0;
 
     for (int i = 0; i < 1_000; i++) {
       List<byte[]> members = new ArrayList<>();
       String valueString = baseString + i;
-      currentDataSize += valueString.length();
       final byte[] value = valueString.getBytes();
       members.add(value);
       set.sadd(members, region, key);
 
-      long actual = set.getSizeInBytes();
-      long expected = BASE_REDIS_SET_OVERHEAD + (PER_MEMBER_OVERHEAD * (i + 1)) + currentDataSize;
-      Offset<Long> offset = Offset.offset(Math.round(expected * percentTolerance));
+      set.clearDelta(); // because the region is mocked, the delta has to be explicitly cleared
 
-      assertThat(actual).isCloseTo(expected, offset);
+      long actual = set.getSizeInBytes();
+      long expected = sizer.sizeof(set);
+
+      assertThat(actual).isEqualTo(expected);
     }
   }
 
@@ -299,69 +290,56 @@ public class RedisSetTest {
     members.add(value2);
     RedisSet set = new RedisSet(members);
 
-    int initialSize = set.getSizeInBytes();
-
     List<byte[]> membersToRemove = new ArrayList<>();
     membersToRemove.add(value1);
     set.srem(membersToRemove, region, key);
 
-    long finalSize = set.getSizeInBytes();
-    long expectedSize = initialSize - value1.length - PER_MEMBER_OVERHEAD;
-    Offset<Long> offset = Offset.offset(Math.round(expectedSize * percentTolerance));
+    set.clearDelta(); // because the region is mocked, the delta has to be explicitly cleared
 
-    assertThat(finalSize).isCloseTo(expectedSize, offset);
+    long finalSize = set.getSizeInBytes();
+    long expectedSize = sizer.sizeof(set);
+
+    assertThat(finalSize).isEqualTo(expectedSize);
   }
 
+  /******** add and remove *******/
   @Test
-  public void remove_sizeShouldReturnToBaseOverhead_whenLastMemberIsRemoved() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    final RedisData returnData = mock(RedisData.class);
-    when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
-    final RedisKey key = new RedisKey("key".getBytes());
-    final byte[] value = "value".getBytes();
+  public void testSAddsAndSRems_changeSizeToMatchROSSize() {
+    // Start with a non-empty set, add enough members to force a resize of the backing set, remove
+    // all but one member, then add members back and assert that the calculated size is correct
+    // after every operation
+    List<byte[]> initialMembers = new ArrayList<>();
+    int numOfInitialMembers = 128;
+    for (int i = 0; i < numOfInitialMembers; ++i) {
+      byte[] data = Coder.intToBytes(i);
+      initialMembers.add(data);
+    }
 
-    List<byte[]> members = new ArrayList<>();
-    members.add(value);
-    RedisSet set = new RedisSet(members);
+    RedisSet set = new RedisSet(initialMembers);
 
-    assertThat(set.getSizeInBytes()).isGreaterThan(BASE_REDIS_SET_OVERHEAD);
+    assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
 
-    set.srem(members, region, key);
+    int membersToAdd = numOfInitialMembers * 3;
+    doAddsAndAssertSize(set, membersToAdd);
 
-    int finalSize = set.getSizeInBytes();
+    doRemovesAndAssertSize(set, set.scard() - 1);
 
-    assertThat(finalSize).isEqualTo(BASE_REDIS_SET_OVERHEAD);
+    doAddsAndAssertSize(set, membersToAdd);
   }
 
   /******** constants *******/
-  // these tests contain the math that was used to derive the constants in RedisSet. If these tests
-  // start failing, it is because the overhead of RedisSet has changed. If it has decreased, good
-  // job! You can change the constants in RedisSet to reflect that. If it has increased, carefully
+  // This test contains the math that is used to derive the constant in RedisSet. If this test
+  // starts failing, it is because the overhead of RedisSet has changed. If it has decreased, good
+  // job! You can change the constant in RedisSet to reflect that. If it has increased, carefully
   // consider that increase before changing the constants.
-  // Note: the per member overhead is known to not be constant. it changes as more members are
-  // added, and/or as the members get longer
   @Test
-  public void baseOverheadConstant_shouldMatchCalculatedValue() {
-    Set<byte[]> members = new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
-    int baseRedisSetOverhead = reflectionObjectSizer.sizeof(new RedisSet(members));
+  public void baseOverheadConstant_shouldMatchReflectedSize() {
+    RedisSet set = new RedisSet(Collections.emptyList());
+    SizeableObjectOpenCustomHashSet<byte[]> backingSet =
+        new SizeableObjectOpenCustomHashSet<>(0, ByteArrays.HASH_STRATEGY);
+    int baseRedisSetOverhead = sizer.sizeof(set) - sizer.sizeof(backingSet);
 
     assertThat(baseRedisSetOverhead).isEqualTo(BASE_REDIS_SET_OVERHEAD);
-  }
-
-  @Test
-  public void perMemberOverheadConstant_shouldMatchCalculatedValue() {
-    Set<byte[]> tempHashSet = new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
-    byte[] member1 = "ab".getBytes();
-    byte[] member2 = "bc".getBytes();
-    tempHashSet.add(member1);
-    int oneEntryHashSetSize = reflectionObjectSizer.sizeof(tempHashSet);
-
-    tempHashSet.add(member2);
-    int twoEntriesHashSetSize = reflectionObjectSizer.sizeof(tempHashSet);
-
-    int perMemberOverhead = twoEntriesHashSetSize - oneEntryHashSetSize;
-
-    assertThat(perMemberOverhead).isEqualTo(PER_MEMBER_OVERHEAD);
   }
 
   /******* helper methods *******/
@@ -396,4 +374,36 @@ public class RedisSetTest {
     return sb.toString();
   }
 
+  void doAddsAndAssertSize(RedisSet set, int membersToAdd) {
+    for (int i = 0; i < membersToAdd; ++i) {
+      int initialSize = sizer.sizeof(set);
+      int initialCalculatedSize = set.getSizeInBytes();
+
+      byte[] data = Coder.intToBytes(set.scard());
+      assertThat(set.membersAdd(data)).isTrue();
+
+      int actualOverhead = sizer.sizeof(set) - initialSize;
+      int calculatedOH = set.getSizeInBytes() - initialCalculatedSize;
+
+      assertThat(calculatedOH).isEqualTo(actualOverhead);
+    }
+    assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
+  }
+
+  void doRemovesAndAssertSize(RedisSet set, int membersToRemove) {
+    int initialCapacity = set.scard();
+    for (int i = 1; i < membersToRemove; ++i) {
+      int initialSize = sizer.sizeof(set);
+      int initialCalculatedSize = set.getSizeInBytes();
+
+      byte[] data = Coder.intToBytes(initialCapacity - i);
+      assertThat(set.membersRemove(data)).isTrue();
+
+      int actualOverhead = sizer.sizeof(set) - initialSize;
+      int calculatedOH = set.getSizeInBytes() - initialCalculatedSize;
+
+      assertThat(calculatedOH).isEqualTo(actualOverhead);
+    }
+    assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
+  }
 }

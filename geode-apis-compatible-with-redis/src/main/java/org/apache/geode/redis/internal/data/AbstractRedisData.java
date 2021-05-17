@@ -24,6 +24,7 @@ import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -198,6 +199,11 @@ public abstract class AbstractRedisData implements RedisData {
         applyDelta(new AppendDeltaInfo(byteArray, sequence));
         break;
     }
+  }
+
+  @VisibleForTesting
+  protected void clearDelta() {
+    this.deltaInfo = null;
   }
 
   private <T> ArrayList<T> readArrayList(DataInput in) throws IOException {

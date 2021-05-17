@@ -34,43 +34,34 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
-import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.collections.SizeableObjectOpenCustomHashSet;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSet extends AbstractRedisData {
-  private ObjectOpenCustomHashSet<byte[]> members;
+  private SizeableObjectOpenCustomHashSet<byte[]> members;
 
-  // the following constants were calculated using reflection and math. you can find the tests for
-  // these values in RedisSetTest, which show the way these numbers were calculated. the constants
-  // have the advantage of saving us a lot of computation that would happen every time a new key was
-  // added. if our internal implementation changes, these values may be incorrect. the tests will
-  // catch this change. an increase in overhead should be carefully considered.
-  // Note: the per member overhead is known to not be constant. it changes as more members are
-  // added, and/or as the members get longer
-  protected static final int BASE_REDIS_SET_OVERHEAD = 128;
-  protected static final int PER_MEMBER_OVERHEAD = 24;
-
-  private int sizeInBytes = BASE_REDIS_SET_OVERHEAD;
+  // The following constant was calculated using reflection. you can find the test for this value in
+  // RedisSetTest, which shows the way this number was calculated. If our internal implementation
+  // changes, these values may be incorrect. An increase in overhead should be carefully considered.
+  protected static final int BASE_REDIS_SET_OVERHEAD = 32;
 
   RedisSet(Collection<byte[]> members) {
-    this.members = new ObjectOpenCustomHashSet<>(members.size(), ByteArrays.HASH_STRATEGY);
+    this.members =
+        new SizeableObjectOpenCustomHashSet<>(members.size(), ByteArrays.HASH_STRATEGY);
     for (byte[] member : members) {
       membersAdd(member);
-    }
-
-    for (byte[] value : this.members) {
-      sizeInBytes += PER_MEMBER_OVERHEAD + value.length;
     }
   }
 
@@ -220,7 +211,6 @@ public class RedisSet extends AbstractRedisData {
     for (byte[] member : members) {
       DataSerializer.writeByteArray(member, out);
     }
-    DataSerializer.writeInteger(sizeInBytes, out);
   }
 
   @Override
@@ -228,11 +218,10 @@ public class RedisSet extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     int size = DataSerializer.readPrimitiveInt(in);
-    members = new ObjectOpenCustomHashSet<>(size, ByteArrays.HASH_STRATEGY);
+    members = new SizeableObjectOpenCustomHashSet<>(size, ByteArrays.HASH_STRATEGY);
     for (int i = 0; i < size; ++i) {
       members.add(DataSerializer.readByteArray(in));
     }
-    sizeInBytes = DataSerializer.readInteger(in);
   }
 
   @Override
@@ -240,23 +229,14 @@ public class RedisSet extends AbstractRedisData {
     return REDIS_SET_ID;
   }
 
-  private synchronized boolean membersAdd(byte[] memberToAdd) {
-    boolean isAdded = members.add(memberToAdd);
-    if (isAdded) {
-      sizeInBytes += PER_MEMBER_OVERHEAD + memberToAdd.length;
-    }
-    return isAdded;
+  @VisibleForTesting
+  synchronized boolean membersAdd(byte[] memberToAdd) {
+    return members.add(memberToAdd);
   }
 
-  private boolean membersRemove(byte[] memberToRemove) {
-    boolean isRemoved = members.remove(memberToRemove);
-    if (isRemoved) {
-      sizeInBytes -= PER_MEMBER_OVERHEAD + memberToRemove.length;
-      if (members.isEmpty()) {
-        sizeInBytes = BASE_REDIS_SET_OVERHEAD;
-      }
-    }
-    return isRemoved;
+  @VisibleForTesting
+  boolean membersRemove(byte[] memberToRemove) {
+    return members.remove(memberToRemove);
   }
 
   /**
@@ -352,6 +332,6 @@ public class RedisSet extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return sizeInBytes;
+    return BASE_REDIS_SET_OVERHEAD + members.getSizeInBytes();
   }
 }

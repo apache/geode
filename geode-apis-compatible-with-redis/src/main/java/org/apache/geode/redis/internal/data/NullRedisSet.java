@@ -119,7 +119,7 @@ class NullRedisSet extends RedisSet {
 
   private Set<byte[]> computeSetOp(SetOp setOp, List<Set<byte[]>> nonDestinationSets,
       CommandHelper helper, RedisKey destination) {
-    ObjectOpenCustomHashSet<byte[]> result = null;
+    Set<byte[]> result = null;
     if (nonDestinationSets.isEmpty()) {
       return emptySet();
     }
