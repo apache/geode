@@ -31,8 +31,9 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -45,9 +46,10 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
+import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSet extends AbstractRedisData {
-  private HashSet<ByteArrayWrapper> members;
+  private ObjectOpenCustomHashSet<byte[]> members;
 
   // the following constants were calculated using reflection and math. you can find the tests for
   // these values in RedisSetTest, which show the way these numbers were calculated. the constants
@@ -56,43 +58,39 @@ public class RedisSet extends AbstractRedisData {
   // catch this change. an increase in overhead should be carefully considered.
   // Note: the per member overhead is known to not be constant. it changes as more members are
   // added, and/or as the members get longer
-  protected static final int BASE_REDIS_SET_OVERHEAD = 112;
-  protected static final int PER_MEMBER_OVERHEAD = 77;
+  protected static final int BASE_REDIS_SET_OVERHEAD = 128;
+  protected static final int PER_MEMBER_OVERHEAD = 61;
   protected static final int INTERNAL_HASH_SET_STORAGE_OVERHEAD = 86;
 
-  private int sizeInBytes;
+  private int sizeInBytes = BASE_REDIS_SET_OVERHEAD;
 
-  RedisSet(Collection<ByteArrayWrapper> members) {
-    this();
-
-    if (members instanceof HashSet) {
-      this.members = (HashSet<ByteArrayWrapper>) members;
-    } else {
-      this.members = new HashSet<>(members);
+  RedisSet(Collection<byte[]> members) {
+    this.members = new ObjectOpenCustomHashSet<>(members.size(), ByteArrays.HASH_STRATEGY);
+    for (byte[] member : members) {
+      membersAdd(member);
     }
 
     if (members.size() > 0) {
       sizeInBytes += INTERNAL_HASH_SET_STORAGE_OVERHEAD;
     }
 
-    for (ByteArrayWrapper value : this.members) {
-      sizeInBytes += PER_MEMBER_OVERHEAD + value.length();
+    for (byte[] value : this.members) {
+      sizeInBytes += PER_MEMBER_OVERHEAD + value.length;
     }
   }
 
-  // for serialization
-  public RedisSet() {
-    sizeInBytes += BASE_REDIS_SET_OVERHEAD;
-  }
+  /**
+   * For deserialization only.
+   */
+  public RedisSet() {}
 
   Pair<BigInteger, List<Object>> sscan(Pattern matchPattern, int count, BigInteger cursor) {
-
     List<Object> returnList = new ArrayList<>();
     int size = members.size();
     BigInteger beforeCursor = new BigInteger("0");
     int numElements = 0;
     int i = -1;
-    for (ByteArrayWrapper value : members) {
+    for (byte[] value : members) {
       i++;
       if (beforeCursor.compareTo(cursor) < 0) {
         beforeCursor = beforeCursor.add(new BigInteger("1"));
@@ -100,7 +98,7 @@ public class RedisSet extends AbstractRedisData {
       }
 
       if (matchPattern != null) {
-        if (matchPattern.matcher(value.toString()).matches()) {
+        if (matchPattern.matcher(Coder.bytesToString(value)).matches()) {
           returnList.add(value);
           numElements++;
         }
@@ -123,8 +121,7 @@ public class RedisSet extends AbstractRedisData {
     return scanResult;
   }
 
-  Collection<ByteArrayWrapper> spop(Region<RedisKey, RedisData> region,
-      RedisKey key, int popCount) {
+  Collection<byte[]> spop(Region<RedisKey, RedisData> region, RedisKey key, int popCount) {
     int originalSize = scard();
     if (originalSize == 0) {
       return emptyList();
@@ -135,12 +132,12 @@ public class RedisSet extends AbstractRedisData {
       return this.members;
     }
 
-    ArrayList<ByteArrayWrapper> popped = new ArrayList<>();
-    ByteArrayWrapper[] setMembers = members.toArray(new ByteArrayWrapper[originalSize]);
+    List<byte[]> popped = new ArrayList<>();
+    byte[][] setMembers = members.toArray(new byte[originalSize][]);
     Random rand = new Random();
     while (popped.size() < popCount) {
       int idx = rand.nextInt(originalSize);
-      ByteArrayWrapper memberToPop = setMembers[idx];
+      byte[] memberToPop = setMembers[idx];
       if (memberToPop != null) {
         setMembers[idx] = null;
         popped.add(memberToPop);
@@ -148,12 +145,12 @@ public class RedisSet extends AbstractRedisData {
       }
     }
     if (!popped.isEmpty()) {
-      storeChanges(region, key, new RemsDeltaInfo(unwrapByteArrayWrappers(popped)));
+      storeChanges(region, key, new RemsDeltaInfo(popped));
     }
     return popped;
   }
 
-  Collection<ByteArrayWrapper> srandmember(int count) {
+  Collection<byte[]> srandmember(int count) {
     int membersSize = members.size();
     boolean duplicatesAllowed = count < 0;
     if (duplicatesAllowed) {
@@ -166,35 +163,35 @@ public class RedisSet extends AbstractRedisData {
 
     Random rand = new Random();
 
-    ByteArrayWrapper[] entries = members.toArray(new ByteArrayWrapper[membersSize]);
+    byte[][] entries = members.toArray(new byte[membersSize][]);
 
     if (count == 1) {
-      ByteArrayWrapper randEntry = entries[rand.nextInt(entries.length)];
+      byte[] randEntry = entries[rand.nextInt(entries.length)];
       // Note using ArrayList because Collections.singleton has serialization issues.
-      ArrayList<ByteArrayWrapper> result = new ArrayList<>(1);
+      List<byte[]> result = new ArrayList<>(1);
       result.add(randEntry);
       return result;
     }
     if (duplicatesAllowed) {
-      ArrayList<ByteArrayWrapper> result = new ArrayList<>(count);
+      List<byte[]> result = new ArrayList<>(count);
       while (count > 0) {
         result.add(entries[rand.nextInt(entries.length)]);
         count--;
       }
       return result;
     } else {
-      Set<ByteArrayWrapper> result = new HashSet<>();
+      Set<byte[]> result = new HashSet<>();
       // Note that rand.nextInt can return duplicates when "count" is high
       // so we need to use a Set to collect the results.
       while (result.size() < count) {
-        ByteArrayWrapper s = entries[rand.nextInt(entries.length)];
+        byte[] s = entries[rand.nextInt(entries.length)];
         result.add(s);
       }
       return result;
     }
   }
 
-  public boolean sismember(ByteArrayWrapper member) {
+  public boolean sismember(byte[] member) {
     return members.contains(member);
   }
 
@@ -205,11 +202,13 @@ public class RedisSet extends AbstractRedisData {
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
     if (deltaInfo instanceof AddsDeltaInfo) {
-      AddsDeltaInfo addsDeltaInfo = (AddsDeltaInfo) deltaInfo;
-      membersAddAll(addsDeltaInfo);
+      for (byte[] deltaMember : ((AddsDeltaInfo) deltaInfo).getAdds()) {
+        membersAdd(deltaMember);
+      }
     } else {
-      RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
-      membersRemoveAll(remsDeltaInfo);
+      for (byte[] deltaMember : ((RemsDeltaInfo) deltaInfo).getRemoves()) {
+        membersRemove(deltaMember);
+      }
     }
   }
 
@@ -222,7 +221,10 @@ public class RedisSet extends AbstractRedisData {
   @Override
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeHashSet(members, out);
+    DataSerializer.writePrimitiveInt(members.size(), out);
+    for (byte[] member : members) {
+      DataSerializer.writeByteArray(member, out);
+    }
     DataSerializer.writeInteger(sizeInBytes, out);
   }
 
@@ -230,7 +232,11 @@ public class RedisSet extends AbstractRedisData {
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    members = DataSerializer.readHashSet(in);
+    int size = DataSerializer.readPrimitiveInt(in);
+    members = new ObjectOpenCustomHashSet<>(size, ByteArrays.HASH_STRATEGY);
+    for (int i = 0; i < size; ++i) {
+      members.add(DataSerializer.readByteArray(in));
+    }
     sizeInBytes = DataSerializer.readInteger(in);
   }
 
@@ -239,10 +245,10 @@ public class RedisSet extends AbstractRedisData {
     return REDIS_SET_ID;
   }
 
-  private synchronized boolean membersAdd(ByteArrayWrapper memberToAdd) {
+  private synchronized boolean membersAdd(byte[] memberToAdd) {
     boolean isAdded = members.add(memberToAdd);
     if (isAdded) {
-      sizeInBytes += PER_MEMBER_OVERHEAD + memberToAdd.length();
+      sizeInBytes += PER_MEMBER_OVERHEAD + memberToAdd.length;
       if (members.size() == 1) {
         sizeInBytes += INTERNAL_HASH_SET_STORAGE_OVERHEAD;
       }
@@ -250,50 +256,15 @@ public class RedisSet extends AbstractRedisData {
     return isAdded;
   }
 
-  private boolean membersRemove(ByteArrayWrapper memberToRemove) {
+  private boolean membersRemove(byte[] memberToRemove) {
     boolean isRemoved = members.remove(memberToRemove);
     if (isRemoved) {
-      sizeInBytes -= PER_MEMBER_OVERHEAD + memberToRemove.length();
+      sizeInBytes -= PER_MEMBER_OVERHEAD + memberToRemove.length;
       if (members.isEmpty()) {
         sizeInBytes = BASE_REDIS_SET_OVERHEAD;
       }
     }
     return isRemoved;
-  }
-
-  private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
-    List<ByteArrayWrapper> adds = wrapByteArrays(addsDeltaInfo.getAdds());
-    sizeInBytes += adds.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
-    members.addAll(adds);
-  }
-
-  private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
-    List<ByteArrayWrapper> removes = wrapByteArrays(remsDeltaInfo.getRemoves());
-    sizeInBytes -= removes.stream().mapToInt(a -> a.length() + PER_MEMBER_OVERHEAD).sum();
-    members.removeAll(removes);
-  }
-
-  /**
-   * Unwraps all of the byte array wrappers in a list
-   *
-   * Temporary function to continue to use ByteArrayWrappers in RedisSet after
-   * delta info classes have already switched to using plan byte[]
-   */
-  private ArrayList<byte[]> unwrapByteArrayWrappers(ArrayList<ByteArrayWrapper> list) {
-    return list.stream()
-        .map(ByteArrayWrapper::toBytes)
-        .collect(Collectors.toCollection(ArrayList::new));
-  }
-
-  /**
-   * Wraps all of the byte[] values in byte array wrappers in a list
-   *
-   * Temporary function to continue to use ByteArrayWrappers in RedisSet after
-   * delta info classes have already switched to using plan byte[]
-   */
-  private List<ByteArrayWrapper> wrapByteArrays(List<byte[]> list) {
-    return list.stream().map(ByteArrayWrapper::new).collect(
-        Collectors.toList());
   }
 
   /**
@@ -303,14 +274,11 @@ public class RedisSet extends AbstractRedisData {
    * @param key the name of the set to add to
    * @return the number of members actually added
    */
-  long sadd(ArrayList<ByteArrayWrapper> membersToAdd, Region<RedisKey, RedisData> region,
-      RedisKey key) {
-
+  long sadd(List<byte[]> membersToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
-      final ArrayList<byte[]> rStream = unwrapByteArrayWrappers(membersToAdd);
-      storeChanges(region, key, new AddsDeltaInfo(rStream));
+      storeChanges(region, key, new AddsDeltaInfo(membersToAdd));
     }
     return membersAdded;
   }
@@ -322,13 +290,11 @@ public class RedisSet extends AbstractRedisData {
    * @param key the name of the set to remove from
    * @return the number of members actually removed
    */
-  long srem(ArrayList<ByteArrayWrapper> membersToRemove, Region<RedisKey, RedisData> region,
-      RedisKey key) {
-
+  long srem(List<byte[]> membersToRemove, Region<RedisKey, RedisData> region, RedisKey key) {
     membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
-      storeChanges(region, key, new RemsDeltaInfo(unwrapByteArrayWrappers(membersToRemove)));
+      storeChanges(region, key, new RemsDeltaInfo(membersToRemove));
     }
     return membersRemoved;
   }
@@ -340,8 +306,8 @@ public class RedisSet extends AbstractRedisData {
    * @return a set containing all the members in this set
    */
   @VisibleForTesting
-  Set<ByteArrayWrapper> smembers() {
-    return new HashSet<>(members);
+  public Set<byte[]> smembers() {
+    return new ObjectOpenCustomHashSet<>(members, ByteArrays.HASH_STRATEGY);
   }
 
   @Override
@@ -366,7 +332,16 @@ public class RedisSet extends AbstractRedisData {
       return false;
     }
     RedisSet redisSet = (RedisSet) o;
-    return Objects.equals(members, redisSet.members);
+
+    if (redisSet.members.size() != members.size()) {
+      return false;
+    }
+    for (byte[] member : members) {
+      if (!redisSet.members.contains(member)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override

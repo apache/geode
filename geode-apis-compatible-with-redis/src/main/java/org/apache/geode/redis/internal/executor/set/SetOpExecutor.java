@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -27,8 +26,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public abstract class SetOpExecutor extends SetExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     int setsStartIndex = 1;
 
     if (isStorage()) {
@@ -36,11 +34,11 @@ public abstract class SetOpExecutor extends SetExecutor {
     }
 
     List<RedisKey> commandElements = command.getProcessedCommandWrapperKeys();
-    ArrayList<RedisKey> setKeys =
+    List<RedisKey> setKeys =
         new ArrayList<>(commandElements.subList(setsStartIndex, commandElements.size()));
     if (isStorage()) {
       RedisKey destination = command.getKey();
-      RedisSetCommands redisSetCommands = createRedisSetCommands(context);
+      RedisSetCommands redisSetCommands = context.getRedisSetCommands();
       int storeCount;
       switch (command.getCommandType()) {
         case SUNIONSTORE:
@@ -63,13 +61,13 @@ public abstract class SetOpExecutor extends SetExecutor {
   }
 
   private RedisResponse doActualSetOperation(ExecutionHandlerContext context,
-      ArrayList<RedisKey> setKeys) {
-    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
+      List<RedisKey> setKeys) {
+    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
     RedisKey firstSetKey = setKeys.remove(0);
-    Set<ByteArrayWrapper> resultSet = redisSetCommands.smembers(firstSetKey);
+    Set<byte[]> resultSet = redisSetCommands.smembers(firstSetKey);
 
     for (RedisKey key : setKeys) {
-      Set<ByteArrayWrapper> nextSet = redisSetCommands.smembers(key);
+      Set<byte[]> nextSet = redisSetCommands.smembers(key);
       if (doSetOp(resultSet, nextSet)) {
         break;
       }
@@ -85,8 +83,7 @@ public abstract class SetOpExecutor extends SetExecutor {
   /**
    * @return true if no further calls of doSetOp are needed
    */
-  protected abstract boolean doSetOp(Set<ByteArrayWrapper> resultSet,
-      Set<ByteArrayWrapper> nextSet);
+  protected abstract boolean doSetOp(Set<byte[]> resultSet, Set<byte[]> nextSet);
 
   protected abstract boolean isStorage();
 
