@@ -22,17 +22,17 @@ benchmarks:
   flavors:
   - title: '_base'
     flag: ''
-    options: ''
+    options: '--tests=org.apache.geode.benchmark.tests.*'
     max_in_flight: 5
     timeout: 24h
   - title: '_with_ssl'
     flag: '-PwithSsl -PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64'
-    options: '--tests=*GetBenchmark --tests=*PutBenchmark'
+    options: '--tests=org.apache.geode.benchmark.tests.*GetBenchmark --tests=org.apache.geode.benchmark.tests.*PutBenchmark'
     max_in_flight: 2
     timeout: 8h
   - title: '_with_security_manager'
     flag: '-PwithSecurityManager'
-    options: '--tests=Partitioned*'
+    options: '--tests=org.apache.geode.benchmark.tests.Partitioned*'
     max_in_flight: 3
     timeout: 12h
 
