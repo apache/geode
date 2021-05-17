@@ -122,8 +122,9 @@ public class Object2ObjectOpenCustomHashMapWithCursor<K, V>
       // those as well. This may even wrap around to the front of the hashtable.
       int position = cursor;
       while (key[position & mask] != null) {
-        if (elementAtHashesTo(position, cursor & mask)) {
-          consumer.consume(privateData, key[position & mask], value[position & mask]);
+        K currentKey = key[position & mask];
+        if (keyHashesTo(currentKey, position, cursor & mask)) {
+          consumer.consume(privateData, currentKey, value[position & mask]);
           count--;
         }
         position++;
@@ -163,20 +164,23 @@ public class Object2ObjectOpenCustomHashMapWithCursor<K, V>
   }
 
   /**
-   * Check to see if the element at position hashes to the expected hash.
+   * Check to see if given key hashes to the expected hash.
+   *
+   * @param currentKey The key to key
+   * @param currentPosition The position of the key in the key[] array
+   * @parma expectedHash - the expected hash of the key.
    */
-  private boolean elementAtHashesTo(int position, int expectedHash) {
+  private boolean keyHashesTo(K currentKey, int currentPosition, int expectedHash) {
     // There is a small optimization here. If the previous element
     // is null, we know that the element at position does hash to the expected
     // hash because it is not here as a result of a collision at some previous position.
 
-    K previousEntry = key[(position - 1) & mask];
-    return previousEntry == null
-        || (hash(key[position & mask]) & mask) == expectedHash;
+    K previousKey = key[(currentPosition - 1) & mask];
+    return previousKey == null || hash(currentKey) == expectedHash;
   }
 
   private int hash(K key) {
-    return mix(strategy.hashCode(key));
+    return mix(strategy.hashCode(key)) & mask;
   }
 
   public interface EntryConsumer<K, V, D> {
