@@ -710,37 +710,37 @@ task dumpInstalledJars(dependsOn: installDist) {
 }
 
 docker {
-  dependsOn(tasks.installDist)
+//  dependsOn(tasks.installDist)
   name geodeDockerImageName
-  copySpec.from(tasks.installDist.outputs).into('geode')
+//  copySpec.from(tasks.installDist.outputs).into('geode')
 }
 
 task makeModDir {
   doLast {
-    mkdir("$buildDir/modularDocker")
+//    mkdir("$buildDir/modularDocker")
   }
 }
 
 task copyGeodeToModular(type: Copy) {
-  dependsOn(tasks.installDist)
-  from tasks.installDist.outputs
-  into "$buildDir/modularDocker/geode"
+//  dependsOn(tasks.installDist)
+//  from tasks.installDist.outputs
+//  into "$buildDir/modularDocker/geode"
 }
 
 task copyModularDockerFiles(type: Copy) {
-  dependsOn(tasks.dockerPrepare)
-  dependsOn(tasks.makeModDir)
-  dependsOn(tasks.copyGeodeToModular)
-  def launchScript = project(":geode-assembly").file("modularDocker/launch.sh")
-  def dockerFile = project(":geode-assembly").file("modularDocker/Dockerfile")
-  from launchScript, dockerFile
-  into "$buildDir/modularDocker"
+//  dependsOn(tasks.dockerPrepare)
+//  dependsOn(tasks.makeModDir)
+//  dependsOn(tasks.copyGeodeToModular)
+//  def launchScript = project(":geode-assembly").file("modularDocker/launch.sh")
+//  def dockerFile = project(":geode-assembly").file("modularDocker/Dockerfile")
+//  from launchScript, dockerFile
+//  into "$buildDir/modularDocker"
 }
 
 acceptanceTest {
   if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
-    dependsOn(tasks.docker)
-    dependsOn(tasks.copyModularDockerFiles)
+//    dependsOn(tasks.docker)
+//    dependsOn(tasks.copyModularDockerFiles)
   }
 }
 

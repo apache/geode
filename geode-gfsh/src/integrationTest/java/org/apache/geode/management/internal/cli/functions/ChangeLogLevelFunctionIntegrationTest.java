@@ -83,7 +83,7 @@ public class ChangeLogLevelFunctionIntegrationTest {
     setupInternalLogWriter();
 
     geodeLogger = LogService.getLogger();
-    applicationLogger = LogManager.getLogger(APPLICATION_LOGGER_NAME);
+    applicationLogger = LogService.getLogger(APPLICATION_LOGGER_NAME);
 
     logConfig = system.getLogConfig();
     assertThat(logConfig.getLogLevel()).isEqualTo(INFO.intLevel());

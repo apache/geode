@@ -46,9 +46,14 @@ def thirdPartyDepsNotToGenerate = { String targetConfigurationPrefix ->
   rootProject.subprojects.each { project ->
     depsNotToGenerate.addAll(getDependentProjectsForConfiguration(project, configurations)
         .stream()
-        .filter { it.ext.has('embed') }.map { it.name }.collect())
+        .filter { it.ext.has('embed') || it.ext.has('embed.children')}.map { it.name }.collect())
   }
+
   depsNotToGenerate
+}
+
+def findChildrenOf = { Dependency dependency ->
+  dependencies
 }
 
 private static getTargetConfigurations(configurations, String targetConfigurationPrefix) {

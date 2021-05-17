@@ -59,8 +59,13 @@ public class RedisAcceptanceTest extends AbstractDockerizedAcceptanceTest {
   @Test
   public void testRedisCommands() {
     RedisCommands<String, String> redisCommands = connection.sync();
-    Long pushedValuesCount = redisCommands.sadd("testList", "value1", "value2");
-    assertThat(pushedValuesCount).isEqualTo(2);
+    try {
+
+      Long pushedValuesCount = redisCommands.sadd("testList", "value1", "value2");
+      assertThat(pushedValuesCount).isEqualTo(2);
+    } catch (Throwable t) {
+      t.printStackTrace();
+    }
 
     Set<String> members = redisCommands.smembers("testList");
     assertThat(members).contains("value1", "value2");

@@ -178,7 +178,7 @@ public abstract class SessionDUnitTest {
     cluster.startRedisVM(server, cluster.getMember(LOCATOR).getPort());
 
     cluster.getVM(server).invoke("Set logging level to DEBUG", () -> {
-      Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
+      Logger logger = LogService.getLogger("org.apache.geode.redis.internal");
       Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
       FastLogger.setDelegating(true);
     });
