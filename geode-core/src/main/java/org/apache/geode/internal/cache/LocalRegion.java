@@ -5111,7 +5111,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   public boolean basicBridgeCreate(final Object key, final byte[] value, boolean isObject,
       Object callbackArg, final ClientProxyMembershipID client, boolean fromClient,
-      EntryEventImpl clientEvent, boolean throwEntryExists)
+      EntryEventImpl clientEvent, boolean throwEntryExists, boolean generateCallbacks)
       throws TimeoutException, EntryExistsException, CacheWriterException {
     EventID eventId = clientEvent.getEventId();
     Object theCallbackArg = callbackArg;
@@ -5122,7 +5122,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     final EntryEventImpl event =
         entryEventFactory.create(this, Operation.CREATE, key, value,
             theCallbackArg, false, client.getDistributedMember(),
-            true, eventId);
+            generateCallbacks, eventId);
 
     try {
       event.setContext(client);
@@ -5180,7 +5180,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   public boolean basicBridgePut(Object key, Object value, byte[] deltaBytes, boolean isObject,
       Object callbackArg, ClientProxyMembershipID memberId, boolean fromClient,
-      EntryEventImpl clientEvent) throws TimeoutException, CacheWriterException {
+      EntryEventImpl clientEvent, boolean generateCallbacks)
+      throws TimeoutException, CacheWriterException {
 
     EventID eventID = clientEvent.getEventId();
     Object theCallbackArg = callbackArg;
@@ -5189,7 +5190,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     @Released
     final EntryEventImpl event = entryEventFactory.create(this, Operation.UPDATE, key,
         null, theCallbackArg, false,
-        memberId.getDistributedMember(), true, eventID);
+        memberId.getDistributedMember(), generateCallbacks, eventID);
 
     try {
       event.setContext(memberId);

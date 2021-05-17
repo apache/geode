@@ -30,11 +30,9 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.pooling.PooledConnection;
@@ -53,7 +51,6 @@ import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.BatchException70;
-import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -289,7 +286,8 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
       return null;
     }
     try {
-      return new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE, event, null, true);
+      return new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE_WITH_GENERATE_CALLBACKS,
+          event, null, true);
     } catch (IOException e) {
       e.printStackTrace();
       return null;
@@ -395,18 +393,6 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
       event.setVersionTag(((EntrySnapshot) entry).getVersionTag());
     }
     event.setNewEventId(cache.getInternalDistributedSystem());
-    GatewaySenderEventCallbackArgument geCallbackArg = new GatewaySenderEventCallbackArgument(null,
-        cache.getInternalDistributedSystem().getDistributionManager().getDistributedSystemId(),
-        getRemoteDsIds(cache, region));
-    event.setCallbackArgument(geCallbackArg);
     return event;
-  }
-
-  private List<Integer> getRemoteDsIds(Cache cache, Region region) {
-    Set<String> senderIds = ((RegionAttributes<?, ?>) region.getAttributes()).getGatewaySenderIds();
-    return senderIds.stream()
-        .map(cache::getGatewaySender)
-        .map(sender -> sender.getRemoteDSId())
-        .collect(Collectors.toList());
   }
 }

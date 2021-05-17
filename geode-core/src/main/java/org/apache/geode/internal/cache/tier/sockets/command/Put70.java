@@ -356,7 +356,7 @@ public class Put70 extends BaseCommand {
         // isObject
         // the true after null doesn't matter and is not used.
         result = region.basicBridgeCreate(key, null, true, callbackArg,
-            serverConnection.getProxyID(), true, clientEvent, false);
+            serverConnection.getProxyID(), true, clientEvent, false, true);
         if (clientMessage.isRetry() && clientEvent.isConcurrencyConflict()
             && clientEvent.getVersionTag() != null) {
           result = true;
@@ -376,10 +376,10 @@ public class Put70 extends BaseCommand {
         // bug 43068 - use create() if in a transaction and op is CREATE
         if (txMgr.getTXState() != null && operation.isCreate()) {
           result = region.basicBridgeCreate(key, (byte[]) value, isObject, callbackArg,
-              serverConnection.getProxyID(), true, clientEvent, true);
+              serverConnection.getProxyID(), true, clientEvent, true, true);
         } else {
           result = region.basicBridgePut(key, value, delta, isObject, callbackArg,
-              serverConnection.getProxyID(), true, clientEvent);
+              serverConnection.getProxyID(), true, clientEvent, true);
         }
         if (clientMessage.isRetry() && clientEvent.isConcurrencyConflict()
             && clientEvent.getVersionTag() != null) {
