@@ -508,6 +508,9 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       }
       writeTimeStamp(nanosTimeStamp);
       for (ResourceInstance ri : resourceInstances) {
+        if (!ri.getStatValuesNotified()) {
+          ri.setStatValuesNotified(true);
+        }
         writeSample(ri);
       }
       writeResourceInst(ILLEGAL_RESOURCE_INST_ID);
