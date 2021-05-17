@@ -39,6 +39,8 @@ import org.apache.geode.cache.query.internal.index.IndexData;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.query.internal.index.IndexUtils;
+import org.apache.geode.cache.query.internal.index.MemoryIndexStore;
+import org.apache.geode.cache.query.internal.index.MemoryIndexStore.CachedEntryWrapper;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
@@ -187,6 +189,9 @@ public class QueryUtils {
       try {
         for (Iterator itr = small.iterator(); itr.hasNext();) {
           Object element = itr.next();
+          if (element instanceof MemoryIndexStore.CachedEntryWrapper) {
+            element = ((CachedEntryWrapper) element).getKey();
+          }
           int count = large.occurrences(element);
           if (small.occurrences(element) > count) {
             // bag intersection: only retain smaller number of dups
@@ -202,6 +207,9 @@ public class QueryUtils {
       try {
         for (Iterator itr = large.iterator(); itr.hasNext();) {
           Object element = itr.next();
+          if (element instanceof MemoryIndexStore.CachedEntryWrapper) {
+            element = ((CachedEntryWrapper) element).getKey();
+          }
           int count = small.occurrences(element);
           if (large.occurrences(element) > count) {
             // bag intersection: only retain smaller number of dups
