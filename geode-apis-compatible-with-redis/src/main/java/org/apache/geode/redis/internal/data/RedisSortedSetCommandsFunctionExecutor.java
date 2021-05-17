@@ -20,7 +20,7 @@ package org.apache.geode.redis.internal.data;
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
-import org.apache.geode.redis.internal.executor.sortedset.ZSetOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetOptions;
 
 public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
     implements
@@ -37,7 +37,7 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
 
   @Override
   public long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd,
-      ZSetOptions options) {
+      SortedSetOptions options) {
     return stripedExecute(key,
         () -> getRedisSortedSet(key, false)
             .zadd(getRegion(), key, scoresAndMembersToAdd, options));

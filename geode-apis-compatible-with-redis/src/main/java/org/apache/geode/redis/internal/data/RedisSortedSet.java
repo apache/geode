@@ -39,7 +39,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
-import org.apache.geode.redis.internal.executor.sortedset.ZSetOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetOptions;
 
 public class RedisSortedSet extends AbstractRedisData {
   private Object2ObjectOpenCustomHashMap<byte[], byte[]> members;
@@ -75,7 +75,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
-  RedisSortedSet(List<byte[]> members, ZSetOptions options) {
+  RedisSortedSet(List<byte[]> members, SortedSetOptions options) {
     if (options.isXX()) {
       sizeInBytes += BASE_REDIS_SORTED_SET_OVERHEAD;
       this.members = new Object2ObjectOpenCustomHashMap<>(members.size(), ByteArrays.HASH_STRATEGY);
@@ -178,6 +178,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
+
   private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
     for (byte[] member : remsDeltaInfo.getRemoves()) {
       sizeInBytes -= (PER_PAIR_OVERHEAD + member.length);
@@ -192,10 +193,10 @@ public class RedisSortedSet extends AbstractRedisData {
    * @return the number of members actually added
    */
   long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
-      ZSetOptions options) {
+      SortedSetOptions options) {
     int membersAdded = 0;
     if (options == null) {
-      options = new ZSetOptions(ZSetOptions.Exists.NONE, ZSetOptions.Update.NONE);
+      options = new SortedSetOptions(SortedSetOptions.Exists.NONE, SortedSetOptions.Update.NONE);
     }
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
@@ -238,6 +239,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
     if (deltaInfo != null) {
       storeChanges(region, key, deltaInfo);
+      deltaInfo = null;
     }
     return membersAdded;
   }

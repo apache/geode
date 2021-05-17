@@ -29,17 +29,17 @@ import org.apache.geode.internal.serialization.SerializationContext;
 /**
  * Class representing different options that can be used with Redis string SET command.
  */
-public class ZSetOptions implements DataSerializableFixedID {
+public class SortedSetOptions implements DataSerializableFixedID {
 
   private Exists exists;
   private Update update;
 
-  public ZSetOptions(Exists exists, Update update) {
+  public SortedSetOptions(Exists exists, Update update) {
     this.exists = exists;
     this.update = update;
   }
 
-  public ZSetOptions() {}
+  public SortedSetOptions() {}
 
   public boolean isNX() {
     return exists.equals(Exists.NX);
@@ -74,7 +74,7 @@ public class ZSetOptions implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    exists = DataSerializer.readEnum(ZSetOptions.Exists.class, in);
+    exists = DataSerializer.readEnum(SortedSetOptions.Exists.class, in);
   }
 
   @Override

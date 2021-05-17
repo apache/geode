@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.executor.sortedset.ZSetOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetOptions;
 
 class NullRedisSortedSet extends RedisSortedSet {
 
@@ -36,7 +36,7 @@ class NullRedisSortedSet extends RedisSortedSet {
 
   @Override
   long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
-      ZSetOptions options) {
+      SortedSetOptions options) {
     if (options.isXX()) {
       return 0;
     }

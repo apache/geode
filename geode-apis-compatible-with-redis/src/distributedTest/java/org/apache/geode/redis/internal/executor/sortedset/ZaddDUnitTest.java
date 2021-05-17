@@ -113,15 +113,15 @@ public class ZaddDUnitTest {
 
     new ConcurrentLoopingThreads(SET_SIZE,
         (i) -> jedis.zadd(key, memberScoreMap1),
-        (i) -> jedis.zadd(key, memberScoreMap1)).runInLockstep();
+        (i) -> jedis.zadd(key, memberScoreMap2)).runInLockstep();
 
-    for (String member: memberScoreMap1.keySet()) {
-      Double score = jedis.zscore(key, member);
-      assertThat(score).isEqualTo(memberScoreMap1.get(member));
+    for (String member1: memberScoreMap1.keySet()) {
+      Double score = jedis.zscore(key, member1);
+      assertThat(score).isEqualTo(memberScoreMap1.get(member1));
     }
-    for (String member: memberScoreMap2.keySet()) {
-      Double score = jedis.zscore(key, member);
-      assertThat(score).isEqualTo(memberScoreMap2.get(member));
+    for (String member2: memberScoreMap2.keySet()) {
+      Double score = jedis.zscore(key, member2);
+      assertThat(score).isEqualTo(memberScoreMap2.get(member2));
     }
   }
 
