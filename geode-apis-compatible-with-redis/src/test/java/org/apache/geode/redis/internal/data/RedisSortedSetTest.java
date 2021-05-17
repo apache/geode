@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 import org.assertj.core.data.Offset;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -210,6 +211,7 @@ public class RedisSortedSetTest {
   }
 
   @Test
+  @Ignore("Redo when we have a defined Sizable strategy")
   public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithMultipleValues() {
     RedisSortedSet sortedSet =
         createRedisSortedSet("1.0", "memberUnoIsTheFirstMember",
