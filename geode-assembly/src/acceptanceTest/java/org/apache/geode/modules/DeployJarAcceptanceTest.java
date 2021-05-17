@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
@@ -184,8 +185,10 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + functionJar.getCanonicalPath())
         .execute(gfshRule);
 
-    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list functions").execute(gfshRule)
-        .getOutputText()).contains("ExampleFunction");
+    GeodeAwaitility
+        .await().pollInterval(Duration.ofSeconds(1)).until(() -> GfshScript
+            .of(getLocatorGFSHConnectionString(), "list functions")
+            .execute(gfshRule).getOutputText().contains("ExampleFunction"));
 
     assertThat(
         GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=ExampleFunction")
@@ -200,8 +203,10 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + functionJar.getCanonicalPath())
         .execute(gfshRule);
 
-    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list functions").execute(gfshRule)
-        .getOutputText()).contains("ExampleFunction");
+    GeodeAwaitility
+        .await().pollInterval(Duration.ofSeconds(1)).until(() -> GfshScript
+            .of(getLocatorGFSHConnectionString(), "list functions")
+            .execute(gfshRule).getOutputText().contains("ExampleFunction"));
 
     assertThat(
         GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=ExampleFunction")
@@ -235,6 +240,11 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     System.out.println(GfshScript
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + outputJar.getAbsolutePath())
         .execute(gfshRule));
+
+    GeodeAwaitility
+        .await().pollInterval(Duration.ofSeconds(1)).until(() -> GfshScript
+            .of(getLocatorGFSHConnectionString(), "list functions")
+            .execute(gfshRule).getOutputText().contains("PojoFunction"));
 
     System.out.println(
         GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=PojoFunction")
@@ -296,6 +306,11 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + pojoFunctionJar.getAbsolutePath())
         .execute(gfshRule));
 
+    GeodeAwaitility
+        .await().pollInterval(Duration.ofSeconds(1)).until(() -> GfshScript
+            .of(getLocatorGFSHConnectionString(), "list functions")
+            .execute(gfshRule).getOutputText().contains("PojoFunction"));
+
     assertThat(
         GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=PojoFunction")
             .execute(gfshRule).getOutputText()).contains("SUCCESS");
@@ -311,6 +326,11 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     System.out.println(GfshScript
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + pojoFunctionJar.getAbsolutePath())
         .execute(gfshRule));
+
+    GeodeAwaitility
+        .await().pollInterval(Duration.ofSeconds(1)).until(() -> GfshScript
+            .of(getLocatorGFSHConnectionString(), "list functions")
+            .execute(gfshRule).getOutputText().contains("PojoFunction"));
 
     assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=PojoFunction")
         .expectExitCode(1)
@@ -332,6 +352,11 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
         .execute(gfshRule).getOutputText());
 
     if (isModular()) {
+      GeodeAwaitility
+          .await().pollInterval(Duration.ofSeconds(1)).until(() -> GfshScript
+              .of(getLocatorGFSHConnectionString(), "list functions")
+              .execute(gfshRule).getOutputText().contains("SpringFunction"));
+
       assertThat(GfshScript
           .of(getLocatorGFSHConnectionString(), "execute function --id=" + "SpringFunction")
           .execute(gfshRule).getOutputText()).contains("Salutations, Earth");
@@ -381,12 +406,19 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
     GfshScript.of(getLocatorGFSHConnectionString(),
         "deploy --jar=" + functionVersion1Jar.getAbsolutePath()).execute(gfshRule);
+
+    GeodeAwaitility
+        .await().pollInterval(Duration.ofSeconds(1)).until(() -> GfshScript
+            .of(getLocatorGFSHConnectionString(), "list functions")
+            .execute(gfshRule).getOutputText().contains("VersionedFunction"));
+
     assertThat(
         GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=VersionedFunction")
             .execute(gfshRule).getOutputText()).contains("Version1");
 
     GfshScript.of(getLocatorGFSHConnectionString(),
         "deploy --jar=" + functionVersion2Jar.getAbsolutePath()).execute(gfshRule);
+
     assertThat(
         GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=VersionedFunction")
             .execute(gfshRule).getOutputText()).contains("Version2");
@@ -413,6 +445,12 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     GfshScript
         .of(getLocatorGFSHConnectionString(), "deploy --jar=" + pojoFunctionJar.getAbsolutePath())
         .execute(gfshRule);
+
+    GeodeAwaitility
+        .await().pollInterval(Duration.ofSeconds(1)).until(() -> GfshScript
+            .of(getLocatorGFSHConnectionString(), "list functions")
+            .execute(gfshRule).getOutputText().contains("PojoFunction"));
+
     GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=PojoFunction")
         .execute(gfshRule);
     assertThat(GfshScript.of(getLocatorGFSHConnectionString(),
