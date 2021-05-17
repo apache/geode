@@ -15,9 +15,9 @@
 
 package org.apache.geode.redis.internal.ParameterRequirements;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_GT_LT_NX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +38,7 @@ public class ZAddParameterRequirements implements ParameterRequirements {
     int optionsFoundCount = confirmKnownSubcommands(command);
 
     if ((numberOfArguments - optionsFoundCount - 2) % 2 != 0) {
-      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
+      throw new RedisParametersMismatchException(ERROR_SYNTAX);
     }
   }
 
@@ -68,9 +68,15 @@ public class ZAddParameterRequirements implements ParameterRequirements {
           break;
         case "gt":
           gtFound = true;
+          if (nxFound) {
+            throw new RedisParametersMismatchException(String.format(ERROR_SYNTAX));
+          }
           break;
         case "lt":
           ltFound = true;
+          if (nxFound) {
+            throw new RedisParametersMismatchException(String.format(ERROR_SYNTAX));
+          }
           break;
         default:
           try {
@@ -93,11 +99,11 @@ public class ZAddParameterRequirements implements ParameterRequirements {
     }
     if (gtFound && ltFound) {
       throw new RedisParametersMismatchException(
-          String.format(ERROR_INVALID_ZADD_OPTION_GT_LT_NX));
+          String.format(ERROR_NOT_A_VALID_FLOAT));
     }
     if ((gtFound || ltFound) && nxFound) {
       throw new RedisParametersMismatchException(
-          String.format(ERROR_INVALID_ZADD_OPTION_GT_LT_NX));
+          String.format(ERROR_NOT_A_VALID_FLOAT));
     }
 
     return optionsFoundCount;
