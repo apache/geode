@@ -333,7 +333,7 @@ public enum RedisCommandType {
   }
 
   public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext executionHandlerContext) {
+      ExecutionHandlerContext executionHandlerContext) throws Exception {
 
     parameterRequirements.checkParameters(command, executionHandlerContext);
 

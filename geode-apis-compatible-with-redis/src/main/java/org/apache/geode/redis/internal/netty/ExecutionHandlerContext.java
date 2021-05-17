@@ -285,7 +285,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
   }
 
-  private void executeCommand(Command command) {
+  private void executeCommand(Command command) throws Exception {
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Redis command: {} - {}", command,
@@ -336,7 +336,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return allowUnsupportedSupplier.get();
   }
 
-  private RedisResponse handleUnAuthenticatedCommand(Command command) {
+  private RedisResponse handleUnAuthenticatedCommand(Command command) throws Exception {
     RedisResponse response;
     if (command.isOfType(RedisCommandType.AUTH)) {
       response = command.execute(this);

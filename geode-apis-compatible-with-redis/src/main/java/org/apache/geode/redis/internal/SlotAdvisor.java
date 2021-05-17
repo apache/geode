@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Region;
@@ -54,21 +53,6 @@ public class SlotAdvisor {
     this.dataRegion = (PartitionedRegion) dataRegion;
   }
 
-  public boolean isLocal(RedisKey key) {
-    return dataRegion.getRegionAdvisor().getBucket(key.getBucketId()).getBucketAdvisor()
-        .isPrimary();
-  }
-
-  public Pair<String, Integer> getHostAndPortForKey(RedisKey key) {
-    try {
-      RedisMemberInfo memberInfo = getMemberInfo(key.getBucketId());
-      return Pair.of(memberInfo.getHostAddress(), memberInfo.getRedisPort());
-    } catch (InterruptedException ex) {
-      Thread.currentThread().interrupt();
-      throw new RuntimeException(ex);
-    }
-  }
-
   public Map<String, List<Integer>> getMemberBuckets() {
     Map<String, List<Integer>> memberBuckets = new HashMap<>();
     for (int bucketId = 0; bucketId < REDIS_REGION_BUCKETS; bucketId++) {
@@ -83,20 +67,15 @@ public class SlotAdvisor {
    * This returns a list of {@link MemberBucketSlot}s where each entry corresponds to a bucket. If
    * the details for a given bucket cannot be determined, that entry will contain {@code null}.
    */
-  public synchronized List<MemberBucketSlot> getBucketSlots() {
+  public synchronized List<MemberBucketSlot> getBucketSlots() throws InterruptedException {
     List<MemberBucketSlot> memberBucketSlots = new ArrayList<>(RegionProvider.REDIS_REGION_BUCKETS);
-    try {
-      for (int bucketId = 0; bucketId < REDIS_REGION_BUCKETS; bucketId++) {
-        RedisMemberInfo memberInfo = getMemberInfo(bucketId);
-        if (memberInfo != null) {
-          memberBucketSlots.add(
-              new MemberBucketSlot(bucketId, memberInfo.getHostAddress(),
-                  memberInfo.getRedisPort()));
-        }
+    for (int bucketId = 0; bucketId < REDIS_REGION_BUCKETS; bucketId++) {
+      RedisMemberInfo memberInfo = getMemberInfo(bucketId);
+      if (memberInfo != null) {
+        memberBucketSlots.add(
+            new MemberBucketSlot(bucketId, memberInfo.getHostAddress(),
+                memberInfo.getRedisPort()));
       }
-    } catch (InterruptedException ex) {
-      Thread.currentThread().interrupt();
-      throw new RuntimeException(ex);
     }
 
     return memberBucketSlots;
@@ -136,14 +115,9 @@ public class SlotAdvisor {
     }
 
     List<RedisMemberInfo> memberInfos;
-    try {
-      ResultCollector<RedisMemberInfo, List<RedisMemberInfo>> resultCollector =
-          FunctionService.onRegion(dataRegion).execute(RedisMemberInfoRetrievalFunction.ID);
-      memberInfos = resultCollector.getResult();
-    } catch (Exception e) {
-      logger.warn("Error executing function {}", RedisMemberInfoRetrievalFunction.ID, e);
-      return null;
-    }
+    ResultCollector<RedisMemberInfo, List<RedisMemberInfo>> resultCollector =
+        FunctionService.onRegion(dataRegion).execute(RedisMemberInfoRetrievalFunction.ID);
+    memberInfos = resultCollector.getResult();
 
     this.memberInfos.clear();
 
@@ -158,13 +132,13 @@ public class SlotAdvisor {
   }
 
   public static class MemberBucketSlot {
-    private final Integer bucketId;
+    private final int bucketId;
     private final String primaryIpAddress;
-    private final Integer primaryPort;
-    private final Integer slotStart;
-    private final Integer slotEnd;
+    private final int primaryPort;
+    private final int slotStart;
+    private final int slotEnd;
 
-    public MemberBucketSlot(Integer bucketId, String primaryIpAddress, Integer primaryPort) {
+    public MemberBucketSlot(int bucketId, String primaryIpAddress, int primaryPort) {
       this.bucketId = bucketId;
       this.primaryIpAddress = primaryIpAddress;
       this.primaryPort = primaryPort;
@@ -172,7 +146,7 @@ public class SlotAdvisor {
       this.slotEnd = ((bucketId + 1) * REDIS_SLOTS_PER_BUCKET) - 1;
     }
 
-    public Integer getBucketId() {
+    public int getBucketId() {
       return bucketId;
     }
 
@@ -180,15 +154,15 @@ public class SlotAdvisor {
       return primaryIpAddress;
     }
 
-    public Integer getPrimaryPort() {
+    public int getPrimaryPort() {
       return primaryPort;
     }
 
-    public Integer getSlotStart() {
+    public int getSlotStart() {
       return slotStart;
     }
 
-    public Integer getSlotEnd() {
+    public int getSlotEnd() {
       return slotEnd;
     }
 

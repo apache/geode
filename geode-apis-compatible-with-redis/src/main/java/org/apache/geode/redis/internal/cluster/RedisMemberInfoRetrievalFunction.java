@@ -35,8 +35,7 @@ public class RedisMemberInfoRetrievalFunction implements InternalFunction<Void> 
   public static final String ID = RedisMemberInfoRetrievalFunction.class.getName();
   private static final long serialVersionUID = 2207969011229079993L;
 
-  private String hostAddress = null;
-  private Integer redisPort = null;
+  private RedisMemberInfo myself = null;
 
   public static RedisMemberInfoRetrievalFunction register() {
     RedisMemberInfoRetrievalFunction infoFunction = new RedisMemberInfoRetrievalFunction();
@@ -44,7 +43,8 @@ public class RedisMemberInfoRetrievalFunction implements InternalFunction<Void> 
     return infoFunction;
   }
 
-  public void initialize(String address, Integer redisPort) {
+  public void initialize(DistributedMember member, String address, int redisPort) {
+    String hostAddress;
     if (address == null || address.isEmpty() || address.equals("0.0.0.0")) {
       InetAddress localhost = null;
       try {
@@ -56,17 +56,12 @@ public class RedisMemberInfoRetrievalFunction implements InternalFunction<Void> 
       hostAddress = address;
     }
 
-    this.redisPort = redisPort;
+    myself = new RedisMemberInfo(member, hostAddress, redisPort);
   }
 
   @Override
   public void execute(FunctionContext<Void> context) {
-    if (hostAddress == null || redisPort == null) {
-      context.getResultSender().lastResult(null);
-    }
-
-    DistributedMember member = context.getCache().getDistributedSystem().getDistributedMember();
-    context.getResultSender().lastResult(new RedisMemberInfo(member, hostAddress, redisPort));
+    context.getResultSender().lastResult(myself);
   }
 
   @Override

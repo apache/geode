@@ -183,7 +183,7 @@ public class Command {
     return builder.toString();
   }
 
-  public RedisResponse execute(ExecutionHandlerContext executionHandlerContext) {
+  public RedisResponse execute(ExecutionHandlerContext executionHandlerContext) throws Exception {
     RedisCommandType type = getCommandType();
     return type.executeCommand(this, executionHandlerContext);
   }

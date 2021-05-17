@@ -40,7 +40,8 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ClusterExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context)
+      throws Exception {
 
     List<byte[]> args = command.getProcessedCommand();
     String subCommand = new String(args.get(1));
@@ -59,7 +60,7 @@ public class ClusterExecutor extends AbstractExecutor {
     }
   }
 
-  private RedisResponse getSlots(ExecutionHandlerContext ctx) {
+  private RedisResponse getSlots(ExecutionHandlerContext ctx) throws InterruptedException {
     List<Object> slots = new ArrayList<>();
 
     for (SlotAdvisor.MemberBucketSlot mbs : ctx.getRegionProvider().getSlotAdvisor()
@@ -92,7 +93,7 @@ public class ClusterExecutor extends AbstractExecutor {
    * primary as redis does. The cluster port is provided only for consistency with the format of the
    * output.
    */
-  private RedisResponse getNodes(ExecutionHandlerContext ctx) {
+  private RedisResponse getNodes(ExecutionHandlerContext ctx) throws InterruptedException {
     String memberId = ctx.getMemberName();
     Map<String, List<Integer>> memberBuckets =
         ctx.getRegionProvider().getSlotAdvisor().getMemberBuckets();
