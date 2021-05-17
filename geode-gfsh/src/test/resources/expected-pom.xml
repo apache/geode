@@ -62,11 +62,6 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-wan</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.springframework.shell</groupId>
       <artifactId>spring-shell</artifactId>
       <scope>compile</scope>

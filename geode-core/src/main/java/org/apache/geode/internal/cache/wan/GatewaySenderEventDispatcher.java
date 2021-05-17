@@ -16,6 +16,10 @@ package org.apache.geode.internal.cache.wan;
 
 import java.util.List;
 
+import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ExecutablePool;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
+
 /**
  * @since GemFire 7.0
  *
@@ -31,4 +35,8 @@ public interface GatewaySenderEventDispatcher {
   void stop();
 
   void shutDownAckReaderConnection();
+
+  void sendBatch(List<GatewayQueueEvent> events, Connection connection, ExecutablePool senderPool,
+      int batchId)
+      throws BatchException70;
 }

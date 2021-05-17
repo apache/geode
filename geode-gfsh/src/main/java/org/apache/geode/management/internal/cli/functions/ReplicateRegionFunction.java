@@ -37,9 +37,8 @@ import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.pooling.PooledConnection;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.cache.wan.internal.GatewaySenderEventRemoteDispatcher;
-import org.apache.geode.cache.wan.internal.client.locator.GatewaySenderBatchOp;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DefaultEntryEventFactory;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -51,6 +50,7 @@ import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.BatchException70;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -219,20 +219,24 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
       final long startTime = clock.millis();
       final InternalCache cache = (InternalCache) context.getCache();
       Iterator<?> iter = entries.iterator();
+      GatewaySenderEventDispatcher dispatcher =
+          ((AbstractGatewaySender) sender).getEventProcessor().getDispatcher();
       while (iter.hasNext()) {
-        List<GatewaySenderEventImpl> batch =
+        List<GatewayQueueEvent> batch =
             createBatch((InternalRegion) region, sender, batchSize, cache, iter);
         try {
-          sendBatch(connection, senderPool, batchId++,
-              replicatedEntries, maxRate, startTime, batch);
+          dispatcher.sendBatch(batch, connection, senderPool, batchId++);
           replicatedEntries += batch.size();
-        } catch (InterruptedException e) {
-          return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-              "Operation canceled after having replicated " + replicatedEntries + " entries");
         } catch (BatchException70 e) {
           return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
               "Error (" + e.getMessage() + ") in operation after having replicated "
                   + replicatedEntries + " entries");
+        }
+        try {
+          doPostSendBatchActions(startTime, replicatedEntries, maxRate);
+        } catch (InterruptedException e) {
+          return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+              "Operation canceled after having replicated " + replicatedEntries + " entries");
         }
       }
     } finally {
@@ -246,12 +250,12 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
         "Entries replicated: " + replicatedEntries);
   }
 
-  private List<GatewaySenderEventImpl> createBatch(InternalRegion region, GatewaySender sender,
+  private List<GatewayQueueEvent> createBatch(InternalRegion region, GatewaySender sender,
       int batchSize, InternalCache cache, Iterator<?> iter) {
     int batchIndex = 0;
-    List<GatewaySenderEventImpl> batch = new ArrayList<>();
+    List<GatewayQueueEvent> batch = new ArrayList<>();
     while (iter.hasNext() && batchIndex < batchSize) {
-      GatewaySenderEventImpl event = createGatewaySenderEvent(cache, region,
+      GatewayQueueEvent event = createGatewaySenderEvent(cache, region,
           sender, (Region.Entry) iter.next());
       if (event != null) {
         batch.add(event);
@@ -274,7 +278,7 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
     return entries;
   }
 
-  private GatewaySenderEventImpl createGatewaySenderEvent(InternalCache cache,
+  private GatewayQueueEvent createGatewaySenderEvent(InternalCache cache,
       InternalRegion region, GatewaySender sender, Region.Entry entry) {
     final EntryEventImpl event;
     if (region instanceof PartitionedRegion) {
@@ -292,22 +296,6 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
       e.printStackTrace();
       return null;
     }
-  }
-
-  private void sendBatch(Connection connection, PoolImpl senderPool, int batchId,
-      int replicatedEntries, long maxRate, long startTime,
-      List<GatewaySenderEventImpl> batch) throws InterruptedException, BatchException70 {
-    GatewaySenderBatchOp.executeOn(connection, senderPool, batch, batchId, false, false);
-    GatewaySenderEventRemoteDispatcher.GatewayAck ack =
-        (GatewaySenderEventRemoteDispatcher.GatewayAck) GatewaySenderBatchOp.executeOn(connection,
-            senderPool);
-    if (ack == null) {
-      throw new BatchException70("Unknown error sending batch", null, 0, batchId);
-    }
-    if (ack.getBatchException() != null) {
-      throw ack.getBatchException();
-    }
-    doPostSendBatchActions(startTime, replicatedEntries + batch.size(), maxRate);
   }
 
   final CliFunctionResult cancelReplicateRegion(FunctionContext<String[]> context, Region region,
