@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.session;
 
+import static java.util.Collections.singletonMap;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,6 +43,7 @@ import redis.clients.jedis.Jedis;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -107,7 +109,10 @@ public class SessionsAndCrashesDUnitTest {
         "" + redisPorts[1],
         "" + redisPorts[2]};
 
-    springContext = SpringApplication.run(RedisSpringTestApplication.class, args);
+    int appServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    SpringApplication app = new SpringApplication(RedisSpringTestApplication.class);
+    app.setDefaultProperties(singletonMap("server.port", String.valueOf(appServerPort)));
+    springContext = app.run(args);
     sessionRepository = springContext.getBean(SessionRepository.class);
     assertThat(sessionRepository).isNotNull();
   }
