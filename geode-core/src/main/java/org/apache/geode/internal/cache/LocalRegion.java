@@ -3328,7 +3328,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @param eventID event identifier for the GC operation
    * @param clientRouting routing info (if null a routing is computed)
    */
-  public void expireTombstones(Map<VersionSource, Long> regionGCVersions, EventID eventID,
+  public void expireTombstones(Map<VersionSource<?>, Long> regionGCVersions, EventID eventID,
       FilterInfo clientRouting) {
     if (!getConcurrencyChecksEnabled()) {
       return;
@@ -3364,7 +3364,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @param eventID the ID of the event
    * @param routing routing info (routing is computed if this is null)
    */
-  void notifyClientsOfTombstoneGC(Map<VersionSource, Long> regionGCVersions,
+  void notifyClientsOfTombstoneGC(Map<VersionSource<?>, Long> regionGCVersions,
       Set<Object> keysRemoved, EventID eventID, FilterInfo routing) {
     if (CacheClientNotifier.singletonHasClientProxies()) {
       // Only route the event to clients interested in the partitioned region.
