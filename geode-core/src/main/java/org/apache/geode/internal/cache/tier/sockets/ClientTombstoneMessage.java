@@ -76,11 +76,7 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
    */
   @Override
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
-    if (KnownVersion.GFE_70.compareTo(proxy.getVersion()) <= 0) {
-      return getGFE70Message(proxy.getVersion());
-    } else {
-      return null;
-    }
+    return getGFE70Message(proxy.getVersion());
   }
 
   protected Message getGFE70Message(KnownVersion clientVersion) {

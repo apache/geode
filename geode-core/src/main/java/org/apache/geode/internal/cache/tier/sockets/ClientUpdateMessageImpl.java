@@ -352,7 +352,6 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
     KnownVersion clientVersion = proxy.getVersion();
     byte[] serializedValue = null;
-    Message message;
     boolean conflation;
     conflation = (proxy.clientConflation == Handshake.CONFLATION_ON)
         || (proxy.clientConflation == Handshake.CONFLATION_DEFAULT && shouldBeConflated());
@@ -371,14 +370,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         _value = serializedValue = CacheServerHelper.serialize(latestValue);
       }
     }
-    if (clientVersion.isNotOlderThan(KnownVersion.GFE_70)) {
-      message = getGFE70Message(proxy, serializedValue, conflation, clientVersion);
-    } else {
-      throw new IOException(
-          "Unsupported client version for server-to-client message creation: " + clientVersion);
-    }
 
-    return message;
+    return getGFE70Message(proxy, serializedValue, conflation, clientVersion);
   }
 
   private Message getGFE70Message(CacheClientProxy proxy, byte[] p_latestValue,

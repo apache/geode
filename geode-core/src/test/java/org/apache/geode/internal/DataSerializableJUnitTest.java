@@ -1166,13 +1166,13 @@ public class DataSerializableJUnitTest implements Serializable {
     VersionedDataSerializableImpl ds = new VersionedDataSerializableImpl(getRandom());
 
     VersionedDataOutputStream v =
-        new VersionedDataOutputStream(this.baos, KnownVersion.GFE_70);
+        new VersionedDataOutputStream(this.baos, KnownVersion.GEODE_1_11_0);
     DataSerializer.writeObject(ds, v);
     v.flush();
 
     ByteBuffer bb = ByteBuffer.wrap(this.baos.toByteArray());
     ByteBufferInputStream bbis = new ByteBufferInputStream(bb);
-    VersionedDataInputStream vin = new VersionedDataInputStream(bbis, KnownVersion.GFE_70);
+    VersionedDataInputStream vin = new VersionedDataInputStream(bbis, KnownVersion.GEODE_1_11_0);
     VersionedDataSerializableImpl ds2 =
         (VersionedDataSerializableImpl) DataSerializer.readObject(vin);
 
@@ -3057,7 +3057,7 @@ public class DataSerializableJUnitTest implements Serializable {
 
     @Override
     public KnownVersion[] getSerializationVersions() {
-      return new KnownVersion[] {KnownVersion.GFE_71};
+      return new KnownVersion[] {KnownVersion.GEODE_1_12_0};
     }
 
     transient boolean preMethodInvoked;
@@ -3068,12 +3068,12 @@ public class DataSerializableJUnitTest implements Serializable {
       super(random);
     }
 
-    public void toDataPre_GFE_7_1_0_0(DataOutput out) throws IOException {
+    public void toDataPre_GEODE_1_12_0_0(DataOutput out) throws IOException {
       this.preMethodInvoked = true;
       toData(out);
     }
 
-    public void fromDataPre_GFE_7_1_0_0(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromDataPre_GEODE_1_12_0_0(DataInput in) throws IOException, ClassNotFoundException {
       this.preMethodInvoked = true;
       fromData(in);
     }
