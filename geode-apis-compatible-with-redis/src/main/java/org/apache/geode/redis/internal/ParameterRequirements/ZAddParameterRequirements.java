@@ -19,10 +19,12 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -46,15 +48,15 @@ public class ZAddParameterRequirements implements ParameterRequirements {
     int optionsFoundCount = 0;
     boolean nxFound = false, xxFound = false, gtFound = false, ltFound = false;
 
-    List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
-    Iterator<ByteArrayWrapper> commandIterator = commandElements.iterator();
+    List<byte[]> commandElements = command.getProcessedCommand();
+    Iterator<byte[]> commandIterator = commandElements.iterator();
     commandIterator.next(); // Skip past command
     commandIterator.next(); // and key
 
     boolean scoreFound = false;
     while (commandIterator.hasNext()) {
-      ByteArrayWrapper subcommand = commandIterator.next();
-      String subCommandString = subcommand.toString().toLowerCase();
+      byte[] subcommand = commandIterator.next();
+      String subCommandString = Coder.bytesToString(subcommand).toLowerCase();
       switch (subCommandString) {
         case "ch":
           break;
