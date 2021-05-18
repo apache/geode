@@ -27,7 +27,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -277,24 +276,6 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
     return keys;
   }
 
-  private void checkDataAvailable(Set<String> keys) {
-    await()
-        .untilAsserted(() -> assertEquals(keys.size(), isPutAvail(keys)));
-  }
-
-  private int isPutAvail(Set<String> keys) {
-    Region<String, String> region =
-        ClusterStartupRule.clientCacheRule.getCache().getRegion("test1");
-    Map<String, String> data = region.getAll(keys);
-    int size = 0;
-    for (String dat : data.values()) {
-      if (dat != null) {
-        size++;
-      }
-    }
-    return size;
-  }
-
   public static void checkQueueSize(String senderId, int numQueueEntries) {
     await()
         .untilAsserted(() -> testQueueSize(senderId, numQueueEntries));
@@ -318,14 +299,9 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
 
   public class CqListenerTestReceivedEvents implements CqListener {
     private int numEvents = 0;
-    private int numErrors = 0;
 
     public int getNumEvents() {
       return numEvents;
-    }
-
-    public int getNumErrors() {
-      return numErrors;
     }
 
     @Override
@@ -334,9 +310,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
     }
 
     @Override
-    public void onError(CqEvent aCqEvent) {
-      numErrors++;
-    }
+    public void onError(CqEvent aCqEvent) {}
 
     @Override
     public void close() {}
