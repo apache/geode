@@ -596,4 +596,20 @@ public class GfshParserAutoCompletionIntegrationTest {
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "region");
   }
 
+  @Test
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForReplicateRegionWithSpace() {
+    String buffer = "replicate region ";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--region");
+  }
+
+  @Test
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForReplicateRegionWithDash() {
+    String buffer = "replicate region --";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "region");
+  }
+
 }
