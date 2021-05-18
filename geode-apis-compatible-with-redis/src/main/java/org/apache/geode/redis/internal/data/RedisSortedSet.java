@@ -116,6 +116,7 @@ public class RedisSortedSet extends AbstractRedisData {
       InternalDataSerializer.writeByteArray(key, out);
       InternalDataSerializer.writeByteArray(value, out);
     }
+    InternalDataSerializer.writePrimitiveInt(sizeInBytes, out);
   }
 
   @Override
@@ -128,6 +129,7 @@ public class RedisSortedSet extends AbstractRedisData {
       members.put(InternalDataSerializer.readByteArray(in),
           InternalDataSerializer.readByteArray(in));
     }
+    sizeInBytes = InternalDataSerializer.readPrimitiveInt(in);
   }
 
   @Override
