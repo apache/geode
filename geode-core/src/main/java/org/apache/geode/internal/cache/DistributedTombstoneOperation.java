@@ -45,7 +45,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
   }
 
   // private long regionVersion;
-  private final Map<VersionSource, Long> regionGCVersions;
+  private final Map<VersionSource<?>, Long> regionGCVersions;
 
   private TOperation op;
 
@@ -111,7 +111,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
   /**
    * returns the region versions sent to other members for tombstone collection
    */
-  public Map<VersionSource, Long> getRegionGCVersions() {
+  public Map<VersionSource<?>, Long> getRegionGCVersions() {
     return this.regionGCVersions;
   }
 
@@ -124,7 +124,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
   public static class TombstoneMessage extends CacheOperationMessage
       implements SerializationVersions {
     // protected long regionVersion;
-    protected Map<VersionSource, Long> regionGCVersions;
+    protected Map<VersionSource<?>, Long> regionGCVersions;
     protected TOperation op;
     protected EventID eventID;
 
@@ -190,7 +190,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
       this.op = TOperation.values()[in.readByte()];
       // this.regionVersion = in.readLong();
       int count = in.readInt();
-      this.regionGCVersions = new HashMap<VersionSource, Long>(count);
+      this.regionGCVersions = new HashMap<>(count);
       boolean persistent = in.readBoolean();
       for (int i = 0; i < count; i++) {
         VersionSource mbr;
@@ -222,7 +222,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
         }
       }
       out.writeBoolean(persistent);
-      for (Map.Entry<VersionSource, Long> entry : this.regionGCVersions.entrySet()) {
+      for (Map.Entry<VersionSource<?>, Long> entry : this.regionGCVersions.entrySet()) {
         VersionSource member = entry.getKey();
         if (member instanceof DiskStoreID) {
           if (!persistent) {

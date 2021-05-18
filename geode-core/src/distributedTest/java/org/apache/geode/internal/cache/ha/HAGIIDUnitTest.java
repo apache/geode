@@ -246,7 +246,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
     regionEvent.setLocalFilterInfo(clientRouting);
 
-    Map<VersionSource, Long> map = Collections.emptyMap();
+    Map<VersionSource<?>, Long> map = Collections.emptyMap();
     ClientTombstoneMessage message =
         ClientTombstoneMessage.gc(r, map, new EventID(r.getCache().getDistributedSystem()));
     CacheClientNotifier.notifyClients(regionEvent, message);
