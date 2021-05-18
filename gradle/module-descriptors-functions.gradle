@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 import groovy.xml.MarkupBuilder
-import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
-import org.gradle.kotlin.dsl.resolver.ResolvedDependencies
 import org.gradle.util.CollectionUtils
 
 import java.nio.file.Files
@@ -39,30 +37,17 @@ ext.testProjectsToInclude = ['geode-dunit', 'geode-junit', 'geode-web-management
                              'geode-web', 'geode-modules', 'geode-modules-tomcat7',
                              'geode-modules-tomcat8', 'geode-modules-tomcat9', 'geode-modules-test',
                              'geode-modules-session', 'geode-modules-session-internal',
-                             'geode-lucene-test', 'geode-assembly']
+                             'geode-lucene-test','geode-assembly']
 
 def thirdPartyDepsNotToGenerate = { String targetConfigurationPrefix ->
   def depsNotToGenerate = []
   def configurations = getTargetConfigurations(['api', 'implementation',
                                                 'runtimeOnly', 'jbossModular'], targetConfigurationPrefix)
   rootProject.subprojects.each { project ->
-
-    def dependencies = getDependentProjectsForConfiguration(project, configurations)
-    depsNotToGenerate.addAll(dependencies
+    depsNotToGenerate.addAll(getDependentProjectsForConfiguration(project, configurations)
         .stream()
-        .filter { it.ext.has('embed') }
-        .map { it.name }.collect())
-    dependencies
-        .stream()
-        .filter { it.ext.has('embed.children') }
-        .map { it.ext.get('embed.children') }
-        .forEach { children ->
-          children.each { child ->
-            depsNotToGenerate.add(child)
-          }
-        }
+        .filter { it.ext.has('embed') }.map { it.name }.collect())
   }
-
   depsNotToGenerate
 }
 
@@ -88,15 +73,12 @@ ext.generateModuleXmlForProject = { File jar, Project projectToUse, String targe
   // dependencies.
   def runtimeList = generateDependentProjects(projectToUse, targetConfigurationPrefix)
 
-  //Maybe we will need this map... don't know... let's keep this logic just in case ;)
-//  def dependenciesWithDirectChildrenMap = getDependenciesWithDirectChildren(projectToUse, getTargetConfigurations(['implementation', 'runtimeOnly', 'jbossModular', 'api'], targetConfigurationPrefix))
-
   def depsToNotGenerate = thirdPartyDepsNotToGenerate(targetConfigurationPrefix)
 
   def geodeAssemblyProj = project(":geode-assembly")
   def configurationTargetPath = targetConfigurationPrefix.size() == 0 ? '/' : "/${targetConfigurationPrefix}ing/"
   def moduleDescriptorsRoot = "${geodeAssemblyProj.buildDir}${configurationTargetPath}moduleDescriptors"
-  def namesAndVersion = generateModuleNamesAndVersionsMap(allProjectDeps, runtimeList, depsToNotGenerate, moduleDescriptorsRoot, targetConfigurationPrefix)
+  def namesAndVersion = generateModuleNamesAndVersionsMap(runtimeList, depsToNotGenerate, moduleDescriptorsRoot, targetConfigurationPrefix)
 
   def moduleVersion = version
   allProjectDeps = CollectionUtils.sort(allProjectDeps, new Comparator<Object>() {
@@ -119,22 +101,16 @@ private shouldGenerateModuleXML(moduleName, targetConfigurationPrefix) {
   return !projectsToExclude.contains(moduleName) || (targetConfigurationPrefix.size() > 0 && testProjectsToInclude.contains(moduleName))
 }
 
-private Map<String, String[]> generateModuleNamesAndVersionsMap(allProjectDeps, runtimeList, depsToNotGenerate, moduleDescriptorsRoot, targetConfigurationPrefix) {
+private Map<String, String[]> generateModuleNamesAndVersionsMap(runtimeList, depsToNotGenerate, moduleDescriptorsRoot, targetConfigurationPrefix) {
   Map<String, String[]> namesAndVersion = new HashMap<>()
-  runtimeList.each { ResolvedArtifact resolvedArtifact ->
-    def moduleVersionIdentifier = resolvedArtifact.getModuleVersion().id
+  runtimeList.each { ResolvedArtifact dependency ->
+    def moduleVersionIdentifier = dependency.getModuleVersion().id
     def artifactName = moduleVersionIdentifier.name
     def artifactVersion = moduleVersionIdentifier.version
-    def resource = resolvedArtifact.file.name
+    def resource = dependency.file.name
     namesAndVersion.put(artifactName, [artifactVersion, resource])
-  }
-  runtimeList.each { ResolvedArtifact resolvedArtifact ->
-    def moduleVersionIdentifier = resolvedArtifact.getModuleVersion().id
-    def artifactName = moduleVersionIdentifier.name
-    def artifactVersion = moduleVersionIdentifier.version
-    def resource = resolvedArtifact.file.name
     if (!depsToNotGenerate.contains(artifactName) && !artifactName.contains('geode-') && artifactName != 'jboss-modules') {
-      writeThirdPartyModuleXml(allProjectDeps, namesAndVersion, artifactName, resource, artifactVersion, moduleDescriptorsRoot)
+      writeThirdPartyModuleXml(artifactName, resource, artifactVersion, moduleDescriptorsRoot)
     }
   }
   namesAndVersion
@@ -152,27 +128,8 @@ static def generateDependentProjects(Project projectToUse, String targetConfigur
   return runtimeList
 }
 
-def static getDependenciesWithDirectChildren(Project projectToUse, List<String> configuration) {
-  def depsWithChildren = new HashMap<String, List<ResolvedDependency>>();
-  configuration.each { configName ->
-    projectToUse.configurations.stream()
-        .filter { it.canBeResolved }
-        .forEach {
-          def childDependencies = depsWithChildren[it.name]
-          if (childDependencies == null) {
-            childDependencies = []
-          }
-          childDependencies.addAll(it.getResolvedConfiguration().getFirstLevelModuleDependencies())
-          depsWithChildren[it.name] = childDependencies
-          createDepsWithChildrenMap(depsWithChildren, childDependencies)
-        }
-  }
-  return depsWithChildren
-}
-
 def static getDependentProjectsForConfiguration(Project projectToUse, List<String> configuration) {
   def allProjectDeps = []
-
   configuration.each { configName ->
     projectToUse.configurations.each {
       if (it.name.toLowerCase() == configName.toLowerCase()) {
@@ -181,18 +138,6 @@ def static getDependentProjectsForConfiguration(Project projectToUse, List<Strin
     }
   }
   return allProjectDeps
-}
-
-def static createDepsWithChildrenMap(Map<String, List<ResolvedDependency>> depsWithChildren, List<ResolvedDependency> childDependencies) {
-  childDependencies.each { childDep ->
-    def children = depsWithChildren[childDep.name]
-    if (children == null) {
-      children = []
-      children.addAll(childDep.getChildren())
-      depsWithChildren[childDep.name] = children
-      createDepsWithChildrenMap(depsWithChildren, children)
-    }
-  }
 }
 
 def writeModuleXml(Project projectToUse, moduleJar, moduleVersion, moduleXMLRootPath,
@@ -235,9 +180,8 @@ def writeModuleXml(Project projectToUse, moduleJar, moduleVersion, moduleXMLRoot
   }
 }
 
-def writeThirdPartyModuleXml(List<Dependency> allProjectDeps, namesAndVersion, String moduleName, moduleJar, moduleVersion, moduleXMLRootPath) {
+def writeThirdPartyModuleXml(String moduleName, moduleJar, moduleVersion, moduleXMLRootPath) {
   def moduleNamePath = moduleName.replace('.', File.separator)
-  println("ModuleNamePath $moduleNamePath")
   def modulePath = "$moduleXMLRootPath/thirdParty/$moduleNamePath/$moduleVersion"
   mkdir(modulePath)
   def moduleFile = file("$modulePath/module.xml")
@@ -246,22 +190,16 @@ def writeThirdPartyModuleXml(List<Dependency> allProjectDeps, namesAndVersion, S
       // Create MarkupBuilder with 4 space indent
       def xml = new MarkupBuilder(new IndentPrinter(writer, "    ", true))
 
-      def optionalDependency = allProjectDeps
-          .stream()
-          .filter { it.name.equals(moduleName) }
-          .findFirst()
-
-      println("Optional Dependency: "+optionalDependency.isPresent())
-
       xml.doubleQuotes = true
       xml.mkp.xmlDeclaration(version: '1.0', encoding: 'utf-8')
       xml.'module'('xmlns': 'urn:jboss:module:1.9', 'name': "$moduleName:$moduleVersion") {
         xml.'resources' {
           if (moduleJar != null) {
-            addResourceRootsForThirdParty(optionalDependency, namesAndVersion, moduleJar, moduleNamePath, xml)
+            addResourceRootsForThirdParty(moduleJar, moduleNamePath, xml)
           }
         }
         xml.'dependencies' {
+//          xml.'module'(['name': "java.se"])
           xml.'module'(['name': "thirdParty", 'services': 'export', 'export': 'true'])
         }
       }
@@ -307,8 +245,9 @@ private def addResourceRoots(Project project, moduleJar, moduleNamePath, xmlBuil
       if (moduleJar.endsWith('.war')) {
         fileLocation = 'tools/Extensions'
         xmlBuilder.'resource-root'(['path': absolutePathPrefix + "$fileLocation/$moduleJar"])
-      } else {
-        if (targetConfigurationPrefix.size() == 0) {
+      }
+      else{
+        if(targetConfigurationPrefix.size() == 0){
           xmlBuilder.'resource-root'(['path': absolutePathPrefix + "$fileLocation/$moduleJar"])
         }
       }
@@ -325,26 +264,12 @@ private def addResourceRoots(Project project, moduleJar, moduleNamePath, xmlBuil
   }
 }
 
-private addResourceRootsForThirdParty(java.util.Optional<Dependency> optionalDependency, namesAndVersion, moduleJar, moduleNamePath, xmlBuilder) {
+private def addResourceRootsForThirdParty(moduleJar, moduleNamePath, xmlBuilder) {
   def absolutePathPrefix = "../../../"
   for (int i = 0; i < moduleNamePath.split(File.separator).length; i++) {
     absolutePathPrefix = absolutePathPrefix.concat("../")
   }
   xmlBuilder.'resource-root'(['path': absolutePathPrefix + "lib/$moduleJar"])
-  if (optionalDependency.isPresent()) {
-    if (optionalDependency.get().name.startsWith("fastutil")) {
-      println("Dependency name: ${optionalDependency.get()}")
-    }
-    if (optionalDependency.get().ext.has('embed.children')) {
-      println("has ext: ${optionalDependency.get().ext.get('embed.children')}")
-
-      def embeddedChildren = optionalDependency.get().ext.get('embed.children')
-      embeddedChildren.stream().forEach{ child ->
-        println("Child:  "+child)
-        xmlBuilder.'resource-root'(['path': absolutePathPrefix + "lib/" + namesAndVersion[child][1]])
-      }
-    }
-  }
 }
 
 private void addResourceRootsForConfiguration(Project projectToUse, String targetConfigurationPrefix, xmlBuilder) {
