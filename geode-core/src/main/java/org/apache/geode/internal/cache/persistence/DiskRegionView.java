@@ -40,7 +40,7 @@ public interface DiskRegionView extends PersistentMemberView, RegionEntryContext
 
   void setClearOplogEntryId(long v);
 
-  RegionVersionVector getClearRVV();
+  RegionVersionVector<DiskStoreID> getClearRVV();
 
   void setClearRVV(RegionVersionVector clearRVV);
 
