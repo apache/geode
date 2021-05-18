@@ -19,11 +19,9 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
