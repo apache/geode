@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -268,6 +269,7 @@ public class LocatorMembershipListenerTest {
     locatorMembershipListener.locatorJoined(2, joiningLocator, locator1Site1);
     joinLocatorsDistributorThread();
     verifyMessagesSentBothWays(locator1Site1, 2, joiningLocator, 3, locator3Site3);
+    verify(tcpClient, times(2)).requestToServer(any(), any(), eq(TIMEOUT), eq(false));
   }
 
   @Test
@@ -296,6 +298,7 @@ public class LocatorMembershipListenerTest {
     verifyMessagesSentBothWays(locator1Site1, 1, joiningLocator, 3, locator1Site3);
     verifyMessagesSentBothWays(locator1Site1, 1, joiningLocator, 3, locator2Site3);
     verifyMessagesSentBothWays(locator1Site1, 1, joiningLocator, 3, locator3Site3);
+    verify(tcpClient, times(12)).requestToServer(any(), any(), eq(TIMEOUT), eq(false));
   }
 
   @Test
@@ -425,6 +428,8 @@ public class LocatorMembershipListenerTest {
         joiningLocator.getHost(),
         new LocatorJoinMessage(3, locator1Site3, locator1Site1, ""),
         TIMEOUT, false);
+    verify(tcpClient, times(7 + LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS + 1)).requestToServer(any(),
+        any(), eq(TIMEOUT), eq(false));
   }
 
   private static class HandlerCallable implements Callable<Object> {
