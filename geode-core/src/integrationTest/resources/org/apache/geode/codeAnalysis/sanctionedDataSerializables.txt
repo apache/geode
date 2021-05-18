@@ -1955,8 +1955,8 @@ fromData,17
 toData,17
 
 org/apache/geode/management/internal/configuration/domain/Configuration,2
-fromData,111
-toData,62
+fromData,112
+toData,79
 
 org/apache/geode/management/internal/configuration/domain/ConfigurationChangeResult,2
 fromData,31
