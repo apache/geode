@@ -54,84 +54,91 @@ public class ReplicateRegionFunctionDUnitTest extends WANTestBase {
 
   public void testReplicateRegionFunction(boolean isPartitionedRegion,
       boolean isParallelGatewaySender) {
-    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
-    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
+    Integer melPort = vm2.invoke(() -> WANTestBase.createFirstLocatorWithDSId(3));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, melPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstRemoteLocator(1, nyPort));
 
-    createCacheInVMs(nyPort, vm2, vm3);
-    vm4.invoke(() -> WANTestBase.createServer(lnPort));
+    vm3.invoke(() -> WANTestBase.createServer(nyPort));
+    vm4.invoke(() -> WANTestBase.createServer(melPort));
     vm5.invoke(() -> WANTestBase.createServer(lnPort));
     vm6.invoke(() -> WANTestBase.createServer(lnPort));
+    vm7.invoke(() -> WANTestBase.createServer(lnPort));
 
-
-    vm4.invoke(() -> FunctionService.registerFunction(new ReplicateRegionFunction()));
     vm5.invoke(() -> FunctionService.registerFunction(new ReplicateRegionFunction()));
     vm6.invoke(() -> FunctionService.registerFunction(new ReplicateRegionFunction()));
+    vm7.invoke(() -> FunctionService.registerFunction(new ReplicateRegionFunction()));
 
     String regionName;
     if (isPartitionedRegion) {
       regionName = getTestMethodName() + "_PR";
-      vm4.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ny", 1, 100,
-          isOffHeap()));
       vm5.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ny", 1, 100,
           isOffHeap()));
       vm6.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ny", 1, 100,
           isOffHeap()));
-      vm2.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ln", 1, 100,
+      vm7.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ny", 1, 100,
           isOffHeap()));
-      vm3.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "ln", 1, 100,
+      vm3.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "mel", 1, 100,
+          isOffHeap()));
+      vm4.invoke(() -> WANTestBase.createPartitionedRegion(regionName, null, 1, 100,
           isOffHeap()));
     } else {
       regionName = getTestMethodName() + "_RR";
-      vm4.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ny",
-          Scope.GLOBAL, DataPolicy.REPLICATE,
-          isOffHeap()));
       vm5.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ny",
           Scope.GLOBAL, DataPolicy.REPLICATE,
           isOffHeap()));
       vm6.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ny",
           Scope.GLOBAL, DataPolicy.REPLICATE,
           isOffHeap()));
-      vm2.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ln",
+      vm7.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ny",
           Scope.GLOBAL, DataPolicy.REPLICATE,
           isOffHeap()));
-      vm3.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ln",
+      vm3.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "mel",
+          Scope.GLOBAL, DataPolicy.REPLICATE,
+          isOffHeap()));
+      vm4.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null,
           Scope.GLOBAL, DataPolicy.REPLICATE,
           isOffHeap()));
     }
 
-    vm7.invoke(() -> WANTestBase.createClientWithLocator(lnPort, "localhost",
+    vm8.invoke(() -> WANTestBase.createClientWithLocator(lnPort, "localhost",
         regionName, ClientRegionShortcut.PROXY));
 
-    vm7.invoke(() -> WANTestBase.doClientPutsFrom(regionName, 0, 100));
+    vm8.invoke(() -> WANTestBase.doClientPutsFrom(regionName, 0, 100));
 
-    vm4.invoke(() -> WANTestBase.validateRegionSize(regionName, 100));
     vm5.invoke(() -> WANTestBase.validateRegionSize(regionName, 100));
     vm6.invoke(() -> WANTestBase.validateRegionSize(regionName, 100));
+    vm7.invoke(() -> WANTestBase.validateRegionSize(regionName, 100));
 
     // Check that entries are not replicated
-    vm2.invoke(() -> WANTestBase.validateRegionSize(regionName, 0));
     vm3.invoke(() -> WANTestBase.validateRegionSize(regionName, 0));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(regionName, 0));
 
-    // Create sender and receiver
-    createReceiverInVMs(vm2, vm3);
-    vm4.invoke(() -> WANTestBase.createSender("ny", 1, isParallelGatewaySender, 100, 10, false,
+    // Create senders and receivers
+    // ln (vm4, vm5, vm6) replicates to ny (vm3). ny (vm3) replicates to mel (vm4)
+    createReceiverInVMs(vm3);
+    createReceiverInVMs(vm4);
+    vm5.invoke(() -> WANTestBase.createSender("ny", 2, isParallelGatewaySender, 100, 10, false,
         false, null, true));
-    vm5.invoke(() -> WANTestBase.createSender("ny", 1, isParallelGatewaySender, 100, 10, false,
+    vm6.invoke(() -> WANTestBase.createSender("ny", 2, isParallelGatewaySender, 100, 10, false,
         false, null, true));
-    vm6.invoke(() -> WANTestBase.createSender("ny", 1, isParallelGatewaySender, 100, 10, false,
+    vm7.invoke(() -> WANTestBase.createSender("ny", 2, isParallelGatewaySender, 100, 10, false,
         false, null, true));
-    startSenderInVMsAsync("ny", vm4, vm5, vm6);
+    startSenderInVMsAsync("ny", vm5, vm6, vm7);
+    vm3.invoke(() -> WANTestBase.createSender("mel", 3, isParallelGatewaySender, 100, 10, false,
+        false, null, true));
+    startSenderInVMsAsync("mel", vm3);
 
     // Check that entries are not replicated
-    vm2.invoke(() -> WANTestBase.validateRegionSize(regionName, 0));
     vm3.invoke(() -> WANTestBase.validateRegionSize(regionName, 0));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(regionName, 0));
 
     // Execute replicate region function
-    vm7.invoke(() -> executeReplicateFunction(regionName, "ny", false, 50, 50));
+    vm8.invoke(() -> executeReplicateFunction(regionName, "ny", false, 50, 50));
 
-    // Check that entries are replicated
-    vm2.invoke(() -> WANTestBase.validateRegionSize(regionName, 100));
+    // Check that entries are replicated in ny
     vm3.invoke(() -> WANTestBase.validateRegionSize(regionName, 100));
+    // Check that entries are not replicated in mel
+    vm4.invoke(() -> WANTestBase.validateRegionSize(regionName, 0));
   }
 
   private void executeReplicateFunction(String region, String senderId, boolean isCancel,
