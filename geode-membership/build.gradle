@@ -31,7 +31,9 @@ dependencies {
 
     implementation('org.jgroups:jgroups')
     implementation('org.apache.commons:commons-lang3')
-    implementation('it.unimi.dsi:fastutil')
+    implementation('it.unimi.dsi:fastutil'){
+        ext.set('embed.children', ['fastutil-core', 'fastutil-extra'])
+    }
     implementation('com.github.stephenc.findbugs:findbugs-annotations')
     //Commons validator is used to validate inet addresses in membership
     implementation('commons-validator:commons-validator')

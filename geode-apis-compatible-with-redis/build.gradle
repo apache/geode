@@ -36,7 +36,9 @@ dependencies {
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
   implementation(project(':geode-membership'))
-  implementation('it.unimi.dsi:fastutil')
+  implementation('it.unimi.dsi:fastutil') {
+    ext.set('embed.children',['fastutil-extra','fastutil-core'])
+  }
   implementation('com.github.davidmoten:geo')
   implementation('io.netty:netty-all')
   implementation('commons-codec:commons-codec')

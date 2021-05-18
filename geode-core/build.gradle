@@ -249,7 +249,10 @@ dependencies {
 
 
     //FastUtil contains optimized collections that are used in multiple places in core
-    implementation('it.unimi.dsi:fastutil')
+    implementation('it.unimi.dsi:fastutil'){
+        ext.set('embed.children', ['fastutil-core', 'fastutil-extra'])
+    }
+
 
     //Mail API is used by the deprecated admin API
     implementation('javax.mail:javax.mail-api') {
