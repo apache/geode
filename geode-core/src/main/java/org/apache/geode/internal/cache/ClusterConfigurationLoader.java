@@ -91,6 +91,7 @@ public class ClusterConfigurationLoader {
     logger.info("deploying jars received from cluster configuration");
     List<String> jarFileNames =
         response.getJarNames().values().stream()
+            .filter(Objects::nonNull)
             .flatMap(Set::stream)
             .collect(Collectors.toList());
 
