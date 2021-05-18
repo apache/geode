@@ -156,11 +156,7 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
 
       assertThat(sessionNotes).containsExactly("noteFromClient2");
     } finally {
-      if (ports.get(SERVER2) == null) {
-        startSpringApp(APP2, SERVER1, DEFAULT_SESSION_TIMEOUT);
-      } else {
-        startSpringApp(APP2, SERVER1, SERVER2, DEFAULT_SESSION_TIMEOUT);
-      }
+      startSpringApp(APP2, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER2));
     }
   }
 }

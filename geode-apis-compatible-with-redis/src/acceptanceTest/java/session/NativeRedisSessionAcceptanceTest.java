@@ -18,13 +18,13 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.NativeRedisTestRule;
+import org.apache.geode.redis.NativeRedisClusterTestRule;
 import org.apache.geode.redis.session.RedisSessionDUnitTest;
 
 public class NativeRedisSessionAcceptanceTest extends RedisSessionDUnitTest {
 
   @ClassRule
-  public static NativeRedisTestRule redis = new NativeRedisTestRule();
+  public static NativeRedisClusterTestRule redis = new NativeRedisClusterTestRule();
 
   @BeforeClass
   public static void setup() {
@@ -36,21 +36,22 @@ public class NativeRedisSessionAcceptanceTest extends RedisSessionDUnitTest {
   }
 
   protected static void setupNativeRedis() {
-    ports.put(SERVER1, redis.getPort());
+    ports.put(SERVER1, redis.getExposedPorts().get(0));
+    ports.put(SERVER2, redis.getExposedPorts().get(0));
   }
 
   @Test
   public void should_getSessionFromServer1_whenServer2GoesDown() {
-    // Only using one server for Native Redis
+    // Cannot crash docker-based redis cluster instance (yet).
   }
 
   @Test
   public void should_getSessionFromServer_whenServerGoesDownAndIsRestarted() {
-    // Only using one server for Native Redis
+    // Cannot crash docker-based redis cluster instance (yet).
   }
 
   @Test
   public void should_getSession_whenServer2GoesDown_andAppFailsOverToServer1() {
-    // Only using one server for Native Redis
+    // Cannot crash docker-based redis cluster instance (yet).
   }
 }

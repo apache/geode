@@ -15,10 +15,18 @@
 
 package org.apache.geode.redis.session.springRedisTestApplication.config;
 
-import io.lettuce.core.resource.ClientResources;
+import java.time.Duration;
+import java.util.Arrays;
+
+import io.lettuce.core.cluster.ClusterClientOptions;
+import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisClusterConfiguration;
+import org.springframework.data.redis.connection.RedisConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.session.data.redis.config.ConfigureRedisAction;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -30,14 +38,24 @@ public class WebMvcConfig implements WebMvcConfigurer {
     return ConfigureRedisAction.NO_OP;
   }
 
-  @Bean(destroyMethod = "shutdown")
-  ClientResources clientResources(ApplicationArguments applicationArguments) {
+  @Bean
+  public LettuceConnectionFactory connectionFactory(ApplicationArguments applicationArguments) {
+    RedisClusterConfiguration redisConfiguration =
+        new RedisClusterConfiguration(Arrays.asList(applicationArguments.getSourceArgs()));
+    return new LettuceConnectionFactory(redisConfiguration, lettuceClientConfiguration());
+  }
 
-    DUnitSocketAddressResolver dUnitSocketAddressResolver =
-        new DUnitSocketAddressResolver(applicationArguments.getSourceArgs());
+  public LettuceClientConfiguration lettuceClientConfiguration() {
+    ClusterTopologyRefreshOptions refreshOptions =
+        ClusterTopologyRefreshOptions.builder()
+            .enableAllAdaptiveRefreshTriggers()
+            .enablePeriodicRefresh(Duration.ofSeconds(5))
+            .build();
 
-    return ClientResources.builder()
-        .socketAddressResolver(dUnitSocketAddressResolver).build();
+    return LettuceClientConfiguration.builder()
+        .clientOptions(ClusterClientOptions.builder()
+            .topologyRefreshOptions(refreshOptions).build())
+        .build();
   }
 
 }
