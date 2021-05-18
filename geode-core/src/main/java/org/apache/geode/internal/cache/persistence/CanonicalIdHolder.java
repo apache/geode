@@ -14,11 +14,10 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import static java.lang.Math.max;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class manages in memory copy of the canonical ids held in the disk init file. It's used by
@@ -29,17 +28,15 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  */
 public class CanonicalIdHolder {
-  private static final Logger logger = LogService.getLogger();
-
   /**
    * Map of integer representation to canonicalized member ids.
    */
-  private Int2ObjectOpenHashMap idToObject = new Int2ObjectOpenHashMap();
+  private final Int2ObjectOpenHashMap<Object> idToObject = new Int2ObjectOpenHashMap<>();
 
   /**
    * Map of canonicalized member ids to integer representation.
    */
-  private Object2IntOpenHashMap objectToID = new Object2IntOpenHashMap();
+  private final Object2IntOpenHashMap<Object> objectToID = new Object2IntOpenHashMap<>();
 
   private int highestID = 0;
 
@@ -52,7 +49,7 @@ public class CanonicalIdHolder {
     objectToID.put(object, id);
 
     // increase the next canonical id the recovered id is higher than it.
-    highestID = highestID < id ? id : highestID;
+    highestID = max(highestID, id);
   }
 
   /**
@@ -87,7 +84,7 @@ public class CanonicalIdHolder {
    *
    * @return a map of id to object for all objects held by this canonical id holder.
    */
-  public Int2ObjectOpenHashMap getAllMappings() {
+  public Int2ObjectOpenHashMap<Object> getAllMappings() {
     return idToObject;
   }
 
