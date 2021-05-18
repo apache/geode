@@ -307,7 +307,7 @@ public class RedisSet extends AbstractRedisData {
    */
   @VisibleForTesting
   public Set<byte[]> smembers() {
-    return new ObjectOpenCustomHashSet<>(members, ByteArrays.HASH_STRATEGY);
+    return new HashSet<>(members);
   }
 
   @Override

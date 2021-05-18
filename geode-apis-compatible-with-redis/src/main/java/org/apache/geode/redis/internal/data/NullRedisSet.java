@@ -79,7 +79,7 @@ class NullRedisSet extends RedisSet {
   @VisibleForTesting
   public Set<byte[]> smembers() {
     // some callers want to be able to modify the set returned
-    return new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
+    return new HashSet<>();
   }
 
   private enum SetOp {
