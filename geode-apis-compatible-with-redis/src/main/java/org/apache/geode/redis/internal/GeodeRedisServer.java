@@ -28,7 +28,8 @@ import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.cluster.BucketInfoRetrievalFunction;
+import org.apache.geode.redis.internal.cluster.RedisMemberInfoRetrievalFunction;
+import org.apache.geode.redis.internal.data.CommandHelper;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
@@ -78,7 +79,11 @@ public class GeodeRedisServer {
     pubSub = new PubSubImpl(new Subscriptions());
     redisStats = createStats(cache);
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
+    RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
+
     regionProvider = new RegionProvider(cache);
+    CommandHelper commandHelper =
+        new CommandHelper(regionProvider.getDataRegion(), redisStats, stripedExecutor);
 
     CommandFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
     RenameFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
@@ -94,9 +99,9 @@ public class GeodeRedisServer {
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
-        redisCommandExecutor, member);
+        redisCommandExecutor, member, commandHelper);
 
-    BucketInfoRetrievalFunction.register(bindAddress, nettyRedisServer.getPort());
+    infoFunction.initialize(member, bindAddress, nettyRedisServer.getPort());
   }
 
   @VisibleForTesting

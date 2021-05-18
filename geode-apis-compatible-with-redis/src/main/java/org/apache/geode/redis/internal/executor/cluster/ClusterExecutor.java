@@ -16,32 +16,20 @@
 package org.apache.geode.redis.internal.executor.cluster;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_CLUSTER_SUBCOMMAND;
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_REGION_BUCKETS;
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
-import static org.apache.geode.redis.internal.cluster.BucketInfoRetrievalFunction.MemberBuckets;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.cluster.BucketInfoRetrievalFunction;
+import org.apache.geode.redis.internal.SlotAdvisor;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
@@ -51,10 +39,9 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ClusterExecutor extends AbstractExecutor {
 
-  private static final Logger logger = LogService.getLogger();
-
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context)
+      throws Exception {
 
     List<byte[]> args = command.getProcessedCommand();
     String subCommand = new String(args.get(1));
@@ -73,66 +60,24 @@ public class ClusterExecutor extends AbstractExecutor {
     }
   }
 
-  private RedisResponse getSlots(ExecutionHandlerContext ctx) {
-    List<MemberBuckets> memberBuckets = getMemberBuckets(ctx);
-
-    Map<Integer, String> primaryBucketToMemberMap = new HashMap<>();
-    Map<String, Pair<String, Integer>> memberToHostPortMap = new TreeMap<>();
-    int retrievedBucketCount = 0;
-
-    for (MemberBuckets m : memberBuckets) {
-      memberToHostPortMap.put(m.getMemberId(), Pair.of(m.getHostAddress(), m.getPort()));
-      for (Integer id : m.getPrimaryBucketIds()) {
-        primaryBucketToMemberMap.put(id, m.getMemberId());
-        retrievedBucketCount++;
-      }
-    }
-
-    if (retrievedBucketCount != REDIS_REGION_BUCKETS) {
-      logger.warn("Bucket count mismatch {} != {}", retrievedBucketCount, REDIS_REGION_BUCKETS);
-    }
-
-    int index = 0;
+  private RedisResponse getSlots(ExecutionHandlerContext ctx) throws InterruptedException {
     List<Object> slots = new ArrayList<>();
 
-    for (int i = 0; i < REDIS_REGION_BUCKETS; i++) {
-      String member = primaryBucketToMemberMap.get(i);
-      if (member == null) {
+    for (SlotAdvisor.MemberBucketSlot mbs : ctx.getRegionProvider().getSlotAdvisor()
+        .getBucketSlots()) {
+      if (mbs == null) {
         continue;
       }
 
-      Pair<String, Integer> primaryHostAndPort = memberToHostPortMap.get(member);
-
       List<Object> entry = new ArrayList<>();
-      entry.add(index * REDIS_SLOTS_PER_BUCKET);
-      entry.add(((index + 1) * REDIS_SLOTS_PER_BUCKET) - 1);
-      entry.add(Arrays.asList(primaryHostAndPort.getLeft(), primaryHostAndPort.getRight()));
+      entry.add(mbs.getSlotStart());
+      entry.add(mbs.getSlotEnd());
+      entry.add(Arrays.asList(mbs.getPrimaryIpAddress(), mbs.getPrimaryPort()));
 
       slots.add(entry);
-      index++;
     }
 
     return RedisResponse.array(slots);
-  }
-
-  @SuppressWarnings("unchecked")
-  private List<MemberBuckets> getMemberBuckets(
-      ExecutionHandlerContext ctx) {
-    Region<RedisKey, RedisData> dataRegion = ctx.getRegionProvider().getDataRegion();
-
-    if (BucketInfoRetrievalFunction.getLocalPrimaryBucketIds(dataRegion).isEmpty()) {
-      PartitionRegionHelper.assignBucketsToPartitions(dataRegion);
-    }
-
-    Set<DistributedMember> membersWithDataRegion = new HashSet<>();
-    for (PartitionMemberInfo memberInfo : getRegionMembers(ctx)) {
-      membersWithDataRegion.add(memberInfo.getDistributedMember());
-    }
-
-    ResultCollector<MemberBuckets, List<MemberBuckets>> resultCollector =
-        FunctionService.onMembers(membersWithDataRegion).execute(BucketInfoRetrievalFunction.ID);
-
-    return resultCollector.getResult();
   }
 
   /**
@@ -145,28 +90,37 @@ public class ClusterExecutor extends AbstractExecutor {
    * </pre>
    *
    * Note that there are no 'slave' entries since Geode does not host all secondary data apart from
-   * primary as redis does. The cluster port is provided only for consistency with the format
-   * of the output.
+   * primary as redis does. The cluster port is provided only for consistency with the format of the
+   * output.
    */
-  private RedisResponse getNodes(ExecutionHandlerContext ctx) {
-    List<MemberBuckets> memberBuckets = getMemberBuckets(ctx);
+  private RedisResponse getNodes(ExecutionHandlerContext ctx) throws InterruptedException {
     String memberId = ctx.getMemberName();
+    Map<String, List<Integer>> memberBuckets =
+        ctx.getRegionProvider().getSlotAdvisor().getMemberBuckets();
+    List<SlotAdvisor.MemberBucketSlot> memberBucketSlots =
+        ctx.getRegionProvider().getSlotAdvisor().getBucketSlots();
 
     StringBuilder response = new StringBuilder();
-    for (MemberBuckets m : memberBuckets) {
-      response.append(String.format("%s %s:%d@%d master",
-          m.getMemberId(), m.getHostAddress(), m.getPort(), m.getPort()));
+    for (Map.Entry<String, List<Integer>> member : memberBuckets.entrySet()) {
+      List<Integer> buckets = member.getValue();
+      SlotAdvisor.MemberBucketSlot mbs = memberBucketSlots.get(buckets.get(0));
+      if (mbs == null) {
+        continue;
+      }
 
-      if (m.getMemberId().equals(memberId)) {
+      response.append(String.format("%s %s:%3$d@%3$d master",
+          member.getKey(), mbs.getPrimaryIpAddress(), mbs.getPrimaryPort()));
+
+      if (member.getKey().equals(memberId)) {
         response.append(",myself");
       }
       response.append(" - 0 0 1 connected");
 
-      for (Integer index : m.getPrimaryBucketIds()) {
+      for (int bucket : member.getValue()) {
         response.append(" ");
-        response.append(index * REDIS_SLOTS_PER_BUCKET);
+        response.append(bucket * REDIS_SLOTS_PER_BUCKET);
         response.append("-");
-        response.append(((index + 1) * REDIS_SLOTS_PER_BUCKET) - 1);
+        response.append(((bucket + 1) * REDIS_SLOTS_PER_BUCKET) - 1);
       }
 
       response.append("\n");
@@ -174,7 +128,6 @@ public class ClusterExecutor extends AbstractExecutor {
 
     return RedisResponse.bulkString(response.toString());
   }
-
 
   private RedisResponse getInfo(ExecutionHandlerContext ctx) {
     int memberCount = getRegionMembers(ctx).size();

@@ -15,9 +15,6 @@
 
 package org.apache.geode.redis.internal.executor.cluster;
 
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
-
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.redis.internal.data.RedisData;
@@ -27,8 +24,7 @@ public class RedisPartitionResolver implements PartitionResolver<RedisKey, Redis
 
   @Override
   public Object getRoutingObject(EntryOperation<RedisKey, RedisData> opDetails) {
-    // & (REDIS_SLOTS - 1) is equivalent to % REDIS_SLOTS but supposedly faster
-    return opDetails.getKey().getCrc16() & (REDIS_SLOTS - 1) / REDIS_SLOTS_PER_BUCKET;
+    return opDetails.getKey().getBucketId();
   }
 
   @Override

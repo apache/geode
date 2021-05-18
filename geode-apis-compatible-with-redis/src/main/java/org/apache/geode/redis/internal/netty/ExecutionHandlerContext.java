@@ -50,6 +50,7 @@ import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMism
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.data.CommandHelper;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -84,6 +85,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final RedisStats redisStats;
   private final EventLoopGroup subscriberGroup;
   private final DistributedMember member;
+  private final CommandHelper commandHelper;
   private BigInteger scanCursor;
   private BigInteger sscanCursor;
   private final AtomicBoolean channelInactive = new AtomicBoolean();
@@ -113,7 +115,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       EventLoopGroup subscriberGroup,
       byte[] password,
       int serverPort,
-      DistributedMember member) {
+      DistributedMember member,
+      CommandHelper commandHelper) {
     this.channel = channel;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
@@ -127,6 +130,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.isAuthenticated = password == null;
     this.serverPort = serverPort;
     this.member = member;
+    this.commandHelper = commandHelper;
     this.scanCursor = new BigInteger("0");
     this.sscanCursor = new BigInteger("0");
     redisStats.addClient();
@@ -281,7 +285,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
   }
 
-  private void executeCommand(Command command) {
+  private void executeCommand(Command command) throws Exception {
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Redis command: {} - {}", command,
@@ -332,7 +336,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return allowUnsupportedSupplier.get();
   }
 
-  private RedisResponse handleUnAuthenticatedCommand(Command command) {
+  private RedisResponse handleUnAuthenticatedCommand(Command command) throws Exception {
     RedisResponse response;
     if (command.isOfType(RedisCommandType.AUTH)) {
       response = command.execute(this);
@@ -436,6 +440,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return member.getUniqueId();
   }
 
+
+  public CommandHelper getCommandHelper() {
+    return commandHelper;
+  }
+
   /**
    * This method and {@link #eventLoopReady()} are relevant for pubsub related commands which need
    * to return responses on a different EventLoopGroup. We need to ensure that the EventLoopGroup
@@ -468,4 +477,5 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public RedisHashCommands getRedisHashCommands() {
     return regionProvider.getHashCommands();
   }
+
 }

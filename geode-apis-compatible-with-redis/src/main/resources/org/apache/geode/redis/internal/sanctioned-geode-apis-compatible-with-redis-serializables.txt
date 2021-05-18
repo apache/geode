@@ -1,8 +1,6 @@
 org/apache/geode/redis/internal/ParameterRequirements/RedisParametersMismatchException,true,-643700717871858072
 org/apache/geode/redis/internal/RedisCommandSupportLevel,false
 org/apache/geode/redis/internal/RedisCommandType,false,deferredParameterRequirements:org/apache/geode/redis/internal/ParameterRequirements/ParameterRequirements,executor:org/apache/geode/redis/internal/executor/Executor,parameterRequirements:org/apache/geode/redis/internal/ParameterRequirements/ParameterRequirements,supportLevel:org/apache/geode/redis/internal/RedisCommandSupportLevel
-org/apache/geode/redis/internal/cluster/BucketInfoRetrievalFunction,false,hostAddress:java/lang/String,redisPort:int
-org/apache/geode/redis/internal/cluster/BucketInfoRetrievalFunction$MemberBuckets,false,hostAddress:java/lang/String,memberId:java/lang/String,port:int,primaryBucketIds:java/util/Set
 org/apache/geode/redis/internal/data/NullRedisSet$SetOp,false
 org/apache/geode/redis/internal/data/NullRedisString$BitOp,false
 org/apache/geode/redis/internal/data/RedisDataType,false,toStringValue:java/lang/String

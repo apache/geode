@@ -13,84 +13,67 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.data;
-
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
+package org.apache.geode.redis.internal.cluster;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.redis.internal.executor.cluster.CRC16;
-import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
 
-public class RedisKey extends ByteArrayWrapper implements DataSerializableFixedID {
+public class RedisMemberInfo implements DataSerializableFixedID {
+  private DistributedMember member;
+  private String hostAddress;
+  private int redisPort;
 
-  private int crc16;
+  // For serialization
+  public RedisMemberInfo() {}
 
-  public RedisKey() {}
-
-  public RedisKey(byte[] value) {
-    super(value);
-
-    int startHashtag = Integer.MAX_VALUE;
-    int endHashtag = 0;
-
-    for (int i = 0; i < value.length; i++) {
-      if (value[i] == '{' && startHashtag == Integer.MAX_VALUE) {
-        startHashtag = i;
-      } else if (value[i] == '}') {
-        endHashtag = i;
-        break;
-      }
-    }
-
-    if (endHashtag - startHashtag <= 1) {
-      startHashtag = -1;
-      endHashtag = value.length;
-    }
-
-    crc16 = CRC16.calculate(value, startHashtag + 1, endHashtag);
+  public RedisMemberInfo(DistributedMember member, String hostAddress, int redisPort) {
+    this.member = member;
+    this.hostAddress = hostAddress;
+    this.redisPort = redisPort;
   }
 
-  public int getBucketId() {
-    // & (REDIS_SLOTS - 1) is equivalent to % REDIS_SLOTS but supposedly faster
-    return getCrc16() & (REDIS_SLOTS - 1) / REDIS_SLOTS_PER_BUCKET;
+  public DistributedMember getMember() {
+    return member;
+  }
+
+  public String getHostAddress() {
+    return hostAddress;
+  }
+
+  public int getRedisPort() {
+    return redisPort;
   }
 
   @Override
   public int getDSFID() {
-    return DataSerializableFixedID.REDIS_KEY;
+    return REDIS_MEMBER_INFO_ID;
   }
 
   @Override
   public void toData(DataOutput out, SerializationContext context) throws IOException {
-    out.writeShort(crc16);
-    super.toData(out, context);
+    DataSerializer.writeObject(member, out);
+    DataSerializer.writeString(hostAddress, out);
+    out.writeInt(redisPort);
   }
 
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    // Need to convert a signed short to unsigned
-    crc16 = in.readShort() & 0xffff;
-    super.fromData(in, context);
+    member = DataSerializer.readObject(in);
+    hostAddress = DataSerializer.readString(in);
+    redisPort = DataSerializer.readPrimitiveInt(in);
   }
 
   @Override
   public KnownVersion[] getSerializationVersions() {
     return null;
-  }
-
-  /**
-   * Used by the {@link RedisPartitionResolver} to map slots to buckets
-   */
-  public int getCrc16() {
-    return crc16;
   }
 }
