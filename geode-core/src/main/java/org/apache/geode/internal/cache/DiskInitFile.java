@@ -672,17 +672,9 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   public void cmdOfflineAndEqualMemberId(long drId, PersistentMemberID pmid) {
     DiskRegionView dr = getDiskRegionById(drId);
     if (dr != null) {
-      if (this.parent.upgradeVersionOnly
-          && KnownVersion.GFE_70.compareTo(currentRecoveredGFVersion()) > 0) {
-        dr.addOnlineMember(pmid);
-        if (dr.rmOfflineMember(pmid)) {
-          this.ifLiveRecordCount--;
-        }
-      } else {
-        dr.addOfflineAndEqualMember(pmid);
-        if (dr.rmOnlineMember(pmid) || dr.rmOfflineMember(pmid)) {
-          this.ifLiveRecordCount--;
-        }
+      dr.addOfflineAndEqualMember(pmid);
+      if (dr.rmOnlineMember(pmid) || dr.rmOfflineMember(pmid)) {
+        this.ifLiveRecordCount--;
       }
       this.ifLiveRecordCount++;
       this.ifTotalRecordCount++;

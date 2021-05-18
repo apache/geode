@@ -1509,28 +1509,23 @@ public class TXCommitMessage extends PooledDistributionMessage
         }
         out.writeBoolean(largeModCount);
 
-        final boolean sendVersionTags =
-            this.msg.clientVersion == null
-                || KnownVersion.GFE_70.compareTo(this.msg.clientVersion) <= 0;
-        if (sendVersionTags) {
-          VersionSource member = this.memberId;
-          if (member == null) {
-            if (this.internalRegion == null) {
-              Assert.assertTrue(this.msg.txState == null);
-            } else {
-              member = this.internalRegion.getVersionMember();
-            }
+        VersionSource member = this.memberId;
+        if (member == null) {
+          if (this.internalRegion == null) {
+            Assert.assertTrue(this.msg.txState == null);
+          } else {
+            member = this.internalRegion.getVersionMember();
           }
-          DataSerializer.writeObject(member, out);
         }
+        DataSerializer.writeObject(member, out);
         for (int i = 0; i < size; i++) {
           DataSerializer.writeObject(this.opKeys.get(i), out);
           if (this.msg.txState != null) {
             /* we are still on tx node and have the entry state */
             ((TXEntryState) this.opEntries.get(i)).toFarSideData(out, context, largeModCount,
-                sendVersionTags, useShadowKey);
+                true, useShadowKey);
           } else {
-            ((FarSideEntryOp) this.opEntries.get(i)).toData(out, largeModCount, sendVersionTags,
+            ((FarSideEntryOp) this.opEntries.get(i)).toData(out, largeModCount, true,
                 useShadowKey);
           }
         }

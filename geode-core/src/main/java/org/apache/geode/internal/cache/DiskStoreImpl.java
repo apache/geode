@@ -1976,17 +1976,6 @@ public class DiskStoreImpl implements DiskStore {
                 + String.format("This disk store is already at version %s.",
                     getRecoveredGFVersionName()));
           }
-        } else {
-          if (KnownVersion.GFE_70.compareTo(getRecoveredGFVersion()) > 0) {
-            // TODO: In each new version, need to modify the highest version
-            // that needs converstion.
-            if (getCache() != null) {
-              getCache().close();
-            }
-            throw new IllegalStateException("Recovered version = " + getRecoveredGFVersion() + ": "
-                + String.format("This disk store is still at version %s.",
-                    getRecoveredGFVersionName()));
-          }
         }
       }
 
@@ -3654,8 +3643,7 @@ public class DiskStoreImpl implements DiskStore {
   public final boolean upgradeVersionOnly;
 
   boolean isUpgradeVersionOnly() {
-    return this.upgradeVersionOnly
-        && KnownVersion.GFE_70.compareTo(this.getRecoveredGFVersion()) > 0;
+    return this.upgradeVersionOnly;
   }
 
   private final boolean offlineCompacting;

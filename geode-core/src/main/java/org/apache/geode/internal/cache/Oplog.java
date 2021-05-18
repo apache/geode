@@ -2369,27 +2369,19 @@ public class Oplog implements CompactableOplog, Flushable {
   }
 
   private VersionTag readVersionsFromOplog(DataInput dis) throws IOException {
-    if (KnownVersion.GFE_70.compareTo(currentRecoveredGFVersion()) <= 0) {
-      // this version format is for gemfire 7.0
-      // if we have different version format in 7.1, it will be handled in
-      // "else if"
-      int entryVersion = (int) InternalDataSerializer.readSignedVL(dis);
-      long regionVersion = InternalDataSerializer.readUnsignedVL(dis);
-      int memberId = (int) InternalDataSerializer.readUnsignedVL(dis);
-      Object member = getParent().getDiskInitFile().getCanonicalObject(memberId);
-      long timestamp = InternalDataSerializer.readUnsignedVL(dis);
-      int dsId = (int) InternalDataSerializer.readSignedVL(dis);
-      VersionTag vt = VersionTag.create((VersionSource) member);
-      vt.setEntryVersion(entryVersion);
-      vt.setRegionVersion(regionVersion);
-      vt.setMemberID((VersionSource) member);
-      vt.setVersionTimeStamp(timestamp);
-      vt.setDistributedSystemId(dsId);
-      return vt;
-    } else {
-      // pre-7.0
-      return null;
-    }
+    int entryVersion = (int) InternalDataSerializer.readSignedVL(dis);
+    long regionVersion = InternalDataSerializer.readUnsignedVL(dis);
+    int memberId = (int) InternalDataSerializer.readUnsignedVL(dis);
+    Object member = getParent().getDiskInitFile().getCanonicalObject(memberId);
+    long timestamp = InternalDataSerializer.readUnsignedVL(dis);
+    int dsId = (int) InternalDataSerializer.readSignedVL(dis);
+    VersionTag vt = VersionTag.create((VersionSource) member);
+    vt.setEntryVersion(entryVersion);
+    vt.setRegionVersion(regionVersion);
+    vt.setMemberID((VersionSource) member);
+    vt.setVersionTimeStamp(timestamp);
+    vt.setDistributedSystemId(dsId);
+    return vt;
   }
 
   private synchronized VersionTag createDummyTag(DiskRecoveryStore drs) {

@@ -63,13 +63,6 @@ public class KnownVersion extends AbstractVersion {
   public static final KnownVersion TOKEN =
       new KnownVersion("", "TOKEN", (byte) -1, (byte) 0, (byte) 0, (byte) 0, TOKEN_ORDINAL, true);
 
-  private static final short GFE_70_ORDINAL = 19;
-
-  @Immutable
-  @Deprecated
-  public static final KnownVersion GFE_70 =
-      new KnownVersion("GFE", "7.0", (byte) 7, (byte) 0, (byte) 0, (byte) 0, GFE_70_ORDINAL, true);
-
   private static final short GFE_701_ORDINAL = 20;
 
   @Immutable

@@ -672,21 +672,11 @@ public class CacheClientNotifier {
     Set<ClientProxyMembershipID> filterClients =
         getFilterClientIDs(event, regionProfile, filterInfo, clientMessage);
 
-    Conflatable conflatable;
-
+    final Conflatable conflatable;
     if (clientMessage instanceof ClientTombstoneMessage) {
       // HAEventWrapper deserialization can't handle subclasses of ClientUpdateMessageImpl, so don't
       // wrap them
       conflatable = clientMessage;
-      // Remove clients older than 70 from the filterClients if the message is
-      // ClientTombstoneMessage
-      Object[] objects = filterClients.toArray();
-      for (Object id : objects) {
-        CacheClientProxy ccp = getClientProxy((ClientProxyMembershipID) id, true);
-        if (ccp != null && ccp.getVersion().isOlderThan(KnownVersion.GFE_70)) {
-          filterClients.remove(id);
-        }
-      }
     } else {
       HAEventWrapper wrapper = new HAEventWrapper(clientMessage);
       wrapper.incrementPutInProgressCounter("notify clients");
