@@ -17,6 +17,7 @@ package org.apache.geode.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -94,18 +95,18 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Before
   public void setUp() {
-    this.baos = new ByteArrayOutputStream();
+    baos = new ByteArrayOutputStream();
   }
 
   public void tearDown() {
-    this.baos = null;
+    baos = null;
   }
 
   /**
    * Returns a <code>DataOutput</code> to write to
    */
   private DataOutputStream getDataOutput() {
-    return new DataOutputStream(this.baos);
+    return new DataOutputStream(baos);
   }
 
   /**
@@ -114,13 +115,12 @@ public class DataSerializableJUnitTest implements Serializable {
   private DataInput getDataInput() {
     // changed this to use ByteBufferInputStream to give us better
     // test coverage of this class.
-    ByteBuffer bb = ByteBuffer.wrap(this.baos.toByteArray());
-    ByteBufferInputStream bbis = new ByteBufferInputStream(bb);
-    return bbis;
+    ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
+    return new ByteBufferInputStream(bb);
   }
 
   private DataInputStream getDataInputStream() {
-    ByteBuffer bb = ByteBuffer.wrap(this.baos.toByteArray());
+    ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
     ByteBufferInputStream bbis = new ByteBufferInputStream(bb);
     return new DataInputStream(bbis);
   }
@@ -129,8 +129,8 @@ public class DataSerializableJUnitTest implements Serializable {
    * Returns a random number generator
    */
   private Random getRandom() {
-    long seed = Long.getLong("SEED", System.currentTimeMillis()).longValue();
-    System.out.println("SEED for " + this.testName.getMethodName() + ": " + seed);
+    long seed = Long.getLong("SEED", System.currentTimeMillis());
+    System.out.println("SEED for " + testName.getMethodName() + ": " + seed);
     return new Random(seed);
   }
 
@@ -139,14 +139,14 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testClass() throws Exception {
-    Class c = this.getClass();
+    Class<? extends DataSerializableJUnitTest> c = getClass();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeClass(c, out);
     out.flush();
 
     DataInput in = getDataInput();
-    Class c2 = DataSerializer.readClass(in);
+    Class<?> c2 = DataSerializer.readClass(in);
     assertEquals(c, c2);
   }
 
@@ -155,14 +155,14 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testClassObject() throws Exception {
-    Class c = this.getClass();
+    Class<? extends DataSerializableJUnitTest> c = getClass();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeObject(c, out);
     out.flush();
 
     DataInput in = getDataInput();
-    Class c2 = (Class) DataSerializer.readObject(in);
+    Class<?> c2 = DataSerializer.readObject(in);
     assertEquals(c, c2);
   }
 
@@ -175,7 +175,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    BigInteger o2 = (BigInteger) DataSerializer.readObject(in);
+    BigInteger o2 = DataSerializer.readObject(in);
     assertEquals(o, o2);
   }
 
@@ -188,7 +188,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    BigDecimal o2 = (BigDecimal) DataSerializer.readObject(in);
+    BigDecimal o2 = DataSerializer.readObject(in);
     assertEquals(o, o2);
   }
 
@@ -201,7 +201,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    UUID o2 = (UUID) DataSerializer.readObject(in);
+    UUID o2 = DataSerializer.readObject(in);
     assertEquals(o, o2);
   }
 
@@ -214,7 +214,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    Timestamp o2 = (Timestamp) DataSerializer.readObject(in);
+    Timestamp o2 = DataSerializer.readObject(in);
     assertEquals(o, o2);
   }
 
@@ -246,7 +246,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    Date date2 = (Date) DataSerializer.readObject(in);
+    Date date2 = DataSerializer.readObject(in);
     assertEquals(date, date2);
   }
 
@@ -278,7 +278,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    File file2 = (File) DataSerializer.readObject(in);
+    File file2 = DataSerializer.readObject(in);
     assertEquals(file, file2);
   }
 
@@ -310,7 +310,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    InetAddress address2 = (InetAddress) DataSerializer.readObject(in);
+    InetAddress address2 = DataSerializer.readObject(in);
     assertEquals(address, address2);
   }
 
@@ -345,7 +345,7 @@ public class DataSerializableJUnitTest implements Serializable {
     DataInput in = getDataInput();
     String value2 = DataSerializer.readString(in);
     assertEquals(value, value2);
-    value2 = (String) DataSerializer.readObject(in);
+    value2 = DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
 
@@ -361,13 +361,13 @@ public class DataSerializableJUnitTest implements Serializable {
     DataInput in = getDataInput();
     String value2 = DataSerializer.readString(in);
     assertEquals(value, value2);
-    value2 = (String) DataSerializer.readObject(in);
+    value2 = DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
 
   @Test
   public void testBigString() throws Exception {
-    StringBuffer sb = new StringBuffer(100000);
+    StringBuilder sb = new StringBuilder(100000);
     for (int i = 0; i < 100000; i++) {
       sb.append("a");
     }
@@ -381,7 +381,7 @@ public class DataSerializableJUnitTest implements Serializable {
     DataInput in = getDataInput();
     String value2 = DataSerializer.readString(in);
     assertEquals(value, value2);
-    value2 = (String) DataSerializer.readObject(in);
+    value2 = DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
 
@@ -390,9 +390,9 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testBigUtfString() throws Exception {
-    StringBuffer sb = new StringBuffer(100000);
+    StringBuilder sb = new StringBuilder(100000);
     for (int i = 0; i < 100000; i++) {
-      if ((i % 1) == 0) {
+      if ((i % 2) == 0) {
         sb.append(Character.MAX_VALUE);
       } else {
         sb.append(Character.MIN_VALUE);
@@ -408,7 +408,7 @@ public class DataSerializableJUnitTest implements Serializable {
     DataInput in = getDataInput();
     String value2 = DataSerializer.readString(in);
     assertEquals(value, value2);
-    value2 = (String) DataSerializer.readObject(in);
+    value2 = DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
 
@@ -449,7 +449,7 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testBoolean() throws Exception {
-    Boolean value = new Boolean(getRandom().nextInt() % 2 == 0);
+    Boolean value = getRandom().nextInt() % 2 == 0;
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeBoolean(value, out);
@@ -466,14 +466,14 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testBooleanObject() throws Exception {
 
-    Boolean value = new Boolean(getRandom().nextInt() % 2 == 0);
+    Boolean value = getRandom().nextInt() % 2 == 0;
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeObject(value, out);
     out.flush();
 
     DataInput in = getDataInput();
-    Boolean value2 = (Boolean) DataSerializer.readObject(in);
+    Boolean value2 = DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
 
@@ -503,40 +503,39 @@ public class DataSerializableJUnitTest implements Serializable {
     public WOABA() {}
 
     public void validate() throws Exception {
-      ByteArrayInputStream bais = new ByteArrayInputStream(this.deserialized);
+      ByteArrayInputStream bais = new ByteArrayInputStream(deserialized);
       DataInputStream dis = new DataInputStream(bais);
       Object v = DataSerializer.readObject(dis);
       if (!(v instanceof WOABA2)) {
         fail("expected instance of WOABA2 but found " + v.getClass());
       }
-      this.f = (WOABA2) v;
+      f = (WOABA2) v;
     }
 
     @Override
     public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeObjectAsByteArray(this.f, out);
+      DataSerializer.writeObjectAsByteArray(f, out);
     }
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      this.deserialized = DataSerializer.readByteArray(in);
+      deserialized = DataSerializer.readByteArray(in);
     }
   }
 
   private static class WOABA2 implements DataSerializable {
-    private byte[] deserialized;
-    private String f = "foobar";
 
     public WOABA2() {}
 
     @Override
     public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeObjectAsByteArray(this.f, out);
+      String f = "foobar";
+      DataSerializer.writeObjectAsByteArray(f, out);
     }
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      this.deserialized = DataSerializer.readByteArray(in);
+      DataSerializer.readByteArray(in);
     }
   }
 
@@ -545,8 +544,7 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testCharacter() throws Exception {
-    char c = (char) ('A' + getRandom().nextInt('Z' - 'A'));
-    Character value = new Character(c);
+    Character value = (char) ('A' + getRandom().nextInt('Z' - 'A'));
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeCharacter(value, out);
@@ -562,15 +560,14 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testCharacterObject() throws Exception {
-    char c = (char) ('A' + getRandom().nextInt('Z' - 'A'));
-    Character value = new Character(c);
+    Character value = (char) ('A' + getRandom().nextInt('Z' - 'A'));
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeObject(value, out);
     out.flush();
 
     DataInput in = getDataInput();
-    Character value2 = (Character) DataSerializer.readObject(in);
+    Character value2 = DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
 
@@ -579,7 +576,7 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testByte() throws Exception {
-    Byte value = new Byte((byte) getRandom().nextInt());
+    Byte value = (byte) getRandom().nextInt();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeByte(value, out);
@@ -595,14 +592,14 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testByteObject() throws Exception {
-    Byte value = new Byte((byte) getRandom().nextInt());
+    Byte value = (byte) getRandom().nextInt();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeObject(value, out);
     out.flush();
 
     DataInput in = getDataInput();
-    Byte value2 = (Byte) DataSerializer.readObject(in);
+    Byte value2 = DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
 
@@ -611,7 +608,7 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testShort() throws IOException {
-    Short value = new Short((short) getRandom().nextInt());
+    Short value = (short) getRandom().nextInt();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeShort(value, out);
@@ -628,14 +625,14 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testShortObject() throws IOException, ClassNotFoundException {
 
-    Short value = new Short((short) getRandom().nextInt());
+    Short value = (short) getRandom().nextInt();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeObject(value, out);
     out.flush();
 
     DataInput in = getDataInput();
-    Short value2 = (Short) DataSerializer.readObject(in);
+    Short value2 = DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
 
@@ -644,7 +641,7 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testInteger() throws Exception {
-    Integer value = new Integer(getRandom().nextInt());
+    Integer value = getRandom().nextInt();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeInteger(value, out);
@@ -660,14 +657,14 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testIntegerObject() throws Exception {
-    Integer value = new Integer(getRandom().nextInt());
+    Integer value = getRandom().nextInt();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeObject(value, out);
     out.flush();
 
     DataInput in = getDataInput();
-    Integer value2 = (Integer) DataSerializer.readObject(in);
+    Integer value2 = DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
 
@@ -676,7 +673,7 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testLong() throws Exception {
-    Long value = new Long(getRandom().nextLong());
+    Long value = getRandom().nextLong();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeLong(value, out);
@@ -692,14 +689,14 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testLongObject() throws Exception {
-    Long value = new Long(getRandom().nextLong());
+    Long value = getRandom().nextLong();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeObject(value, out);
     out.flush();
 
     DataInput in = getDataInput();
-    Long value2 = (Long) DataSerializer.readObject(in);
+    Long value2 = DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
 
@@ -708,7 +705,7 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testFloat() throws Exception {
-    Float value = new Float(getRandom().nextFloat());
+    Float value = getRandom().nextFloat();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeFloat(value, out);
@@ -724,14 +721,14 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testFloatObject() throws Exception {
-    Float value = new Float(getRandom().nextFloat());
+    Float value = getRandom().nextFloat();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeObject(value, out);
     out.flush();
 
     DataInput in = getDataInput();
-    Float value2 = (Float) DataSerializer.readObject(in);
+    Float value2 = DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
 
@@ -740,7 +737,7 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testDouble() throws Exception {
-    Double value = new Double(getRandom().nextDouble());
+    Double value = getRandom().nextDouble();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeDouble(value, out);
@@ -756,14 +753,14 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testDoubleObject() throws Exception {
-    Double value = new Double(getRandom().nextDouble());
+    Double value = getRandom().nextDouble();
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeObject(value, out);
     out.flush();
 
     DataInput in = getDataInput();
-    Double value2 = (Double) DataSerializer.readObject(in);
+    Double value2 = DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
 
@@ -802,7 +799,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    byte[] array2 = (byte[]) DataSerializer.readObject(in);
+    byte[] array2 = DataSerializer.readObject(in);
 
     assertEquals(array.length, array2.length);
     for (int i = 0; i < array.length; i++) {
@@ -842,7 +839,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    short[] array2 = (short[]) DataSerializer.readObject(in);
+    short[] array2 = DataSerializer.readObject(in);
 
     assertEquals(array.length, array2.length);
     for (int i = 0; i < array.length; i++) {
@@ -912,7 +909,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    String[] array2 = (String[]) DataSerializer.readObject(in);
+    String[] array2 = DataSerializer.readObject(in);
 
     assertEquals(array.length, array2.length);
     for (int i = 0; i < array.length; i++) {
@@ -952,7 +949,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    int[] array2 = (int[]) DataSerializer.readObject(in);
+    int[] array2 = DataSerializer.readObject(in);
 
     assertEquals(array.length, array2.length);
     for (int i = 0; i < array.length; i++) {
@@ -992,7 +989,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    long[] array2 = (long[]) DataSerializer.readObject(in);
+    long[] array2 = DataSerializer.readObject(in);
 
     assertEquals(array.length, array2.length);
     for (int i = 0; i < array.length; i++) {
@@ -1032,7 +1029,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    float[] array2 = (float[]) DataSerializer.readObject(in);
+    float[] array2 = DataSerializer.readObject(in);
 
     assertEquals(array.length, array2.length);
     for (int i = 0; i < array.length; i++) {
@@ -1072,7 +1069,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    double[] array2 = (double[]) DataSerializer.readObject(in);
+    double[] array2 = DataSerializer.readObject(in);
 
     assertEquals(array.length, array2.length);
     for (int i = 0; i < array.length; i++) {
@@ -1116,7 +1113,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    SerializableImpl[] array2 = (SerializableImpl[]) DataSerializer.readObject(in);
+    SerializableImpl[] array2 = DataSerializer.readObject(in);
 
     assertEquals(array.length, array2.length);
     for (int i = 0; i < array.length; i++) {
@@ -1166,15 +1163,15 @@ public class DataSerializableJUnitTest implements Serializable {
     VersionedDataSerializableImpl ds = new VersionedDataSerializableImpl(getRandom());
 
     VersionedDataOutputStream v =
-        new VersionedDataOutputStream(this.baos, KnownVersion.GEODE_1_11_0);
+        new VersionedDataOutputStream(baos, KnownVersion.GEODE_1_11_0);
     DataSerializer.writeObject(ds, v);
     v.flush();
 
-    ByteBuffer bb = ByteBuffer.wrap(this.baos.toByteArray());
+    ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
     ByteBufferInputStream bbis = new ByteBufferInputStream(bb);
     VersionedDataInputStream vin = new VersionedDataInputStream(bbis, KnownVersion.GEODE_1_11_0);
     VersionedDataSerializableImpl ds2 =
-        (VersionedDataSerializableImpl) DataSerializer.readObject(vin);
+        DataSerializer.readObject(vin);
 
     assertEquals(ds, ds2);
     assertTrue(ds.preMethodInvoked());
@@ -1194,7 +1191,7 @@ public class DataSerializableJUnitTest implements Serializable {
 
     Object o2 = DataSerializer.readObject(getDataInput());
 
-    assertEquals(new Integer(42), o2);
+    assertEquals(42, o2);
   }
 
   /**
@@ -1211,9 +1208,9 @@ public class DataSerializableJUnitTest implements Serializable {
   private void tryArrayList(int size) throws IOException, ClassNotFoundException {
     setUp();
     final Random random = getRandom();
-    final ArrayList list = size == -1 ? null : new ArrayList(size);
+    final ArrayList<Long> list = size == -1 ? null : new ArrayList<>(size);
     for (int i = 0; i < size; i++) {
-      list.add(new Long(random.nextLong()));
+      list.add(random.nextLong());
     }
 
     DataOutputStream out = getDataOutput();
@@ -1221,7 +1218,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    ArrayList list2 = DataSerializer.readArrayList(in);
+    ArrayList<Long> list2 = DataSerializer.readArrayList(in);
     assertEquals(list, list2);
     tearDown();
   }
@@ -1232,10 +1229,10 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testArrayListObject() throws Exception {
     Random random = getRandom();
-    ArrayList list = new ArrayList();
+    ArrayList<Long> list = new ArrayList<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      list.add(new Long(random.nextLong()));
+      list.add(random.nextLong());
     }
 
     DataOutputStream out = getDataOutput();
@@ -1243,7 +1240,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    ArrayList list2 = (ArrayList) DataSerializer.readObject(in);
+    ArrayList<Long> list2 = DataSerializer.readObject(in);
     assertEquals(list, list2);
   }
 
@@ -1253,10 +1250,10 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testHashSet() throws Exception {
     Random random = getRandom();
-    HashSet set = new HashSet();
+    HashSet<Long> set = new HashSet<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      set.add(new Long(random.nextLong()));
+      set.add(random.nextLong());
     }
 
     DataOutputStream out = getDataOutput();
@@ -1264,7 +1261,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    HashSet set2 = DataSerializer.readHashSet(in);
+    HashSet<Long> set2 = DataSerializer.readHashSet(in);
     assertEquals(set, set2);
   }
 
@@ -1274,10 +1271,10 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testHashSetObject() throws Exception {
     Random random = getRandom();
-    HashSet set = new HashSet();
+    HashSet<Long> set = new HashSet<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      set.add(new Long(random.nextLong()));
+      set.add(random.nextLong());
     }
 
     DataOutputStream out = getDataOutput();
@@ -1285,7 +1282,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    HashSet set2 = (HashSet) DataSerializer.readObject(in);
+    HashSet<Long> set2 = DataSerializer.readObject(in);
     assertEquals(set, set2);
   }
 
@@ -1295,22 +1292,22 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testTreeSet() throws Exception {
     Random random = getRandom();
-    TreeSet set = new TreeSet();
+    TreeSet<Long> set = new TreeSet<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      set.add(new Long(random.nextLong()));
+      set.add(random.nextLong());
     }
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeTreeSet(null, out);
-    DataSerializer.writeTreeSet(new TreeSet(), out);
+    DataSerializer.writeTreeSet(new TreeSet<>(), out);
     DataSerializer.writeTreeSet(set, out);
     out.flush();
 
     DataInput in = getDataInput();
-    assertEquals(null, DataSerializer.readTreeSet(in));
-    assertEquals(new TreeSet(), DataSerializer.readTreeSet(in));
-    TreeSet set2 = DataSerializer.readTreeSet(in);
+    assertNull(DataSerializer.readTreeSet(in));
+    assertEquals(new TreeSet<>(), DataSerializer.readTreeSet(in));
+    TreeSet<Long> set2 = DataSerializer.readTreeSet(in);
     assertEquals(set, set2);
   }
 
@@ -1321,21 +1318,21 @@ public class DataSerializableJUnitTest implements Serializable {
   public void testTreeSetWithComparator() throws Exception {
     Random random = getRandom();
     int size = random.nextInt(50);
-    TreeSet set = new TreeSet(new MyComparator(size));
+    TreeSet<Long> set = new TreeSet<>(new MyComparator(size));
     for (int i = 0; i < size; i++) {
-      set.add(new Long(random.nextLong()));
+      set.add(random.nextLong());
     }
 
     DataOutputStream out = getDataOutput();
-    DataSerializer.writeTreeSet(new TreeSet(new MyComparator(0)), out);
+    DataSerializer.writeTreeSet(new TreeSet<>(new MyComparator(0)), out);
     DataSerializer.writeTreeSet(set, out);
     out.flush();
 
     DataInput in = getDataInput();
-    TreeSet emptySet = DataSerializer.readTreeSet(in);
-    assertEquals(new TreeSet(new MyComparator(0)), emptySet);
+    TreeSet<Long> emptySet = DataSerializer.readTreeSet(in);
+    assertEquals(new TreeSet<>(new MyComparator(0)), emptySet);
     assertEquals(new MyComparator(0), emptySet.comparator());
-    TreeSet set2 = DataSerializer.readTreeSet(in);
+    TreeSet<Long> set2 = DataSerializer.readTreeSet(in);
     assertEquals(set, set2);
     assertEquals(set.comparator(), set2.comparator());
   }
@@ -1346,10 +1343,10 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testTreeSetObject() throws Exception {
     Random random = getRandom();
-    TreeSet set = new TreeSet();
+    TreeSet<Long> set = new TreeSet<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      set.add(new Long(random.nextLong()));
+      set.add(random.nextLong());
     }
 
     DataOutputStream out = getDataOutput();
@@ -1357,7 +1354,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    TreeSet set2 = (TreeSet) DataSerializer.readObject(in);
+    TreeSet<Long> set2 = DataSerializer.readObject(in);
     assertEquals(set, set2);
   }
 
@@ -1367,11 +1364,11 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testHashMap() throws Exception {
     Random random = getRandom();
-    HashMap map = new HashMap();
+    HashMap<Long, String> map = new HashMap<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      Object key = new Long(random.nextLong());
-      Object value = String.valueOf(random.nextLong());
+      Long key = random.nextLong();
+      String value = String.valueOf(random.nextLong());
       map.put(key, value);
     }
 
@@ -1380,7 +1377,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    HashMap map2 = DataSerializer.readHashMap(in);
+    HashMap<Long, String> map2 = DataSerializer.readHashMap(in);
     assertEquals(map, map2);
   }
 
@@ -1390,11 +1387,11 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testHashMapObject() throws Exception {
     Random random = getRandom();
-    HashMap map = new HashMap();
+    HashMap<Long, String> map = new HashMap<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      Object key = new Long(random.nextLong());
-      Object value = String.valueOf(random.nextLong());
+      Long key = random.nextLong();
+      String value = String.valueOf(random.nextLong());
       map.put(key, value);
     }
 
@@ -1403,7 +1400,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    HashMap map2 = (HashMap) DataSerializer.readObject(in);
+    HashMap<Long, String> map2 = DataSerializer.readObject(in);
     assertEquals(map, map2);
   }
 
@@ -1413,24 +1410,24 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testTreeMap() throws Exception {
     Random random = getRandom();
-    TreeMap map = new TreeMap();
+    TreeMap<Long, String> map = new TreeMap<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      Object key = new Long(random.nextLong());
-      Object value = String.valueOf(random.nextLong());
+      Long key = random.nextLong();
+      String value = String.valueOf(random.nextLong());
       map.put(key, value);
     }
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeTreeMap(null, out);
-    DataSerializer.writeTreeMap(new TreeMap(), out);
+    DataSerializer.writeTreeMap(new TreeMap<Long, String>(), out);
     DataSerializer.writeTreeMap(map, out);
     out.flush();
 
     DataInput in = getDataInput();
-    assertEquals(null, DataSerializer.readTreeMap(in));
-    assertEquals(new TreeMap(), DataSerializer.readTreeMap(in));
-    TreeMap map2 = DataSerializer.readTreeMap(in);
+    assertNull(DataSerializer.readTreeMap(in));
+    assertEquals(new TreeMap<Long, String>(), DataSerializer.readTreeMap(in));
+    TreeMap<Long, String> map2 = DataSerializer.readTreeMap(in);
     assertEquals(map, map2);
   }
 
@@ -1441,28 +1438,28 @@ public class DataSerializableJUnitTest implements Serializable {
   public void testTreeMapWithComparator() throws Exception {
     Random random = getRandom();
     int size = random.nextInt(50);
-    TreeMap map = new TreeMap(new MyComparator(size));
+    TreeMap<Long, String> map = new TreeMap<>(new MyComparator(size));
     for (int i = 0; i < size; i++) {
-      Object key = new Long(random.nextLong());
-      Object value = String.valueOf(random.nextLong());
+      Long key = random.nextLong();
+      String value = String.valueOf(random.nextLong());
       map.put(key, value);
     }
 
     DataOutputStream out = getDataOutput();
-    DataSerializer.writeTreeMap(new TreeMap(new MyComparator(0)), out);
+    DataSerializer.writeTreeMap(new TreeMap<Long, String>(new MyComparator(0)), out);
     DataSerializer.writeTreeMap(map, out);
     out.flush();
 
     DataInput in = getDataInput();
-    TreeMap emptyMap = DataSerializer.readTreeMap(in);
-    assertEquals(new TreeMap(new MyComparator(0)), emptyMap);
+    TreeMap<Long, String> emptyMap = DataSerializer.readTreeMap(in);
+    assertEquals(new TreeMap<Long, String>(new MyComparator(0)), emptyMap);
     assertEquals(new MyComparator(0), emptyMap.comparator());
-    TreeMap map2 = DataSerializer.readTreeMap(in);
+    TreeMap<Long, String> map2 = DataSerializer.readTreeMap(in);
     assertEquals(map, map2);
     assertEquals(map.comparator(), map2.comparator());
   }
 
-  private static class MyComparator implements Comparator, java.io.Serializable {
+  private static class MyComparator implements Comparator<Long>, java.io.Serializable {
     private final int id;
 
     public MyComparator(int id) {
@@ -1470,14 +1467,14 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
     @Override
-    public int compare(Object o1, Object o2) {
+    public int compare(Long o1, Long o2) {
       return 0; // noop
     }
 
     public boolean equals(Object obj) {
       if (obj instanceof MyComparator) {
         MyComparator other = (MyComparator) obj;
-        return this.id == other.id;
+        return id == other.id;
       }
       return false;
     }
@@ -1489,11 +1486,11 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testTreeMapObject() throws Exception {
     Random random = getRandom();
-    TreeMap map = new TreeMap();
+    TreeMap<Long, String> map = new TreeMap<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      Object key = new Long(random.nextLong());
-      Object value = String.valueOf(random.nextLong());
+      Long key = random.nextLong();
+      String value = String.valueOf(random.nextLong());
       map.put(key, value);
     }
 
@@ -1502,7 +1499,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    TreeMap map2 = (TreeMap) DataSerializer.readObject(in);
+    TreeMap<Long, String> map2 = DataSerializer.readObject(in);
     assertEquals(map, map2);
   }
 
@@ -1512,10 +1509,10 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testLinkedHashSet() throws Exception {
     Random random = getRandom();
-    LinkedHashSet set = new LinkedHashSet();
+    LinkedHashSet<Long> set = new LinkedHashSet<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      set.add(new Long(random.nextLong()));
+      set.add(random.nextLong());
     }
 
     DataOutputStream out = getDataOutput();
@@ -1523,7 +1520,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    LinkedHashSet set2 = DataSerializer.readLinkedHashSet(in);
+    LinkedHashSet<Long> set2 = DataSerializer.readLinkedHashSet(in);
     assertEquals(set, set2);
   }
 
@@ -1533,10 +1530,10 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testLinkedHashSetObject() throws Exception {
     Random random = getRandom();
-    LinkedHashSet set = new LinkedHashSet();
+    LinkedHashSet<Long> set = new LinkedHashSet<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      set.add(new Long(random.nextLong()));
+      set.add(random.nextLong());
     }
 
     DataOutputStream out = getDataOutput();
@@ -1544,7 +1541,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    LinkedHashSet set2 = (LinkedHashSet) DataSerializer.readObject(in);
+    LinkedHashSet<Long> set2 = DataSerializer.readObject(in);
     assertEquals(set, set2);
   }
 
@@ -1554,11 +1551,11 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testHashtable() throws Exception {
     Random random = getRandom();
-    Hashtable map = new Hashtable();
+    Hashtable<Long, String> map = new Hashtable<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      Object key = new Long(random.nextLong());
-      Object value = String.valueOf(random.nextLong());
+      Long key = random.nextLong();
+      String value = String.valueOf(random.nextLong());
       map.put(key, value);
     }
 
@@ -1567,7 +1564,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    Hashtable map2 = DataSerializer.readHashtable(in);
+    Hashtable<Long, String> map2 = DataSerializer.readHashtable(in);
     assertEquals(map, map2);
   }
 
@@ -1577,11 +1574,11 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testHashtableObject() throws Exception {
     Random random = getRandom();
-    Hashtable map = new Hashtable();
+    Hashtable<Long, String> map = new Hashtable<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      Object key = new Long(random.nextLong());
-      Object value = String.valueOf(random.nextLong());
+      Long key = random.nextLong();
+      String value = String.valueOf(random.nextLong());
       map.put(key, value);
     }
 
@@ -1590,7 +1587,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    Hashtable map2 = (Hashtable) DataSerializer.readObject(in);
+    Hashtable<Long, String> map2 = DataSerializer.readObject(in);
     assertEquals(map, map2);
   }
 
@@ -1600,11 +1597,11 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testLinkedHashMap() throws Exception {
     Random random = getRandom();
-    LinkedHashMap map = new LinkedHashMap();
+    LinkedHashMap<Long, String> map = new LinkedHashMap<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      Object key = new Long(random.nextLong());
-      Object value = String.valueOf(random.nextLong());
+      Long key = random.nextLong();
+      String value = String.valueOf(random.nextLong());
       map.put(key, value);
     }
 
@@ -1613,7 +1610,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    LinkedHashMap map2 = DataSerializer.readLinkedHashMap(in);
+    LinkedHashMap<Long, String> map2 = DataSerializer.readLinkedHashMap(in);
     assertEquals(map, map2);
   }
 
@@ -1623,11 +1620,11 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testLinkedHashMapObject() throws Exception {
     Random random = getRandom();
-    LinkedHashMap map = new LinkedHashMap();
+    LinkedHashMap<Long, String> map = new LinkedHashMap<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      Object key = new Long(random.nextLong());
-      Object value = String.valueOf(random.nextLong());
+      Long key = random.nextLong();
+      String value = String.valueOf(random.nextLong());
       map.put(key, value);
     }
 
@@ -1636,7 +1633,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    LinkedHashMap map2 = (LinkedHashMap) DataSerializer.readObject(in);
+    LinkedHashMap<Long, String> map2 = DataSerializer.readObject(in);
     assertEquals(map, map2);
   }
 
@@ -1647,11 +1644,11 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testIdentityHashMap() throws Exception {
     Random random = getRandom();
-    IdentityHashMap map = new IdentityHashMap();
+    IdentityHashMap<Long, String> map = new IdentityHashMap<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      Object key = new Long(random.nextLong());
-      Object value = String.valueOf(random.nextLong());
+      Long key = random.nextLong();
+      String value = String.valueOf(random.nextLong());
       map.put(key, value);
     }
 
@@ -1660,8 +1657,8 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    IdentityHashMap map2 = DataSerializer.readIdentityHashMap(in);
-    assertEquals(new HashMap(map), new HashMap(map2));
+    IdentityHashMap<Long, String> map2 = DataSerializer.readIdentityHashMap(in);
+    assertEquals(new HashMap<>(map), new HashMap<>(map2));
   }
 
   /**
@@ -1670,11 +1667,11 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testIdentityHashMapObject() throws Exception {
     Random random = getRandom();
-    IdentityHashMap map = new IdentityHashMap();
+    IdentityHashMap<Long, String> map = new IdentityHashMap<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      Object key = new Long(random.nextLong());
-      Object value = String.valueOf(random.nextLong());
+      Long key = random.nextLong();
+      String value = String.valueOf(random.nextLong());
       map.put(key, value);
     }
 
@@ -1683,8 +1680,8 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    IdentityHashMap map2 = (IdentityHashMap) DataSerializer.readObject(in);
-    assertEquals(new HashMap(map), new HashMap(map2));
+    IdentityHashMap<Long, String> map2 = DataSerializer.readObject(in);
+    assertEquals(new HashMap<>(map), new HashMap<>(map2));
   }
 
   /**
@@ -1693,10 +1690,10 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testVector() throws Exception {
     Random random = getRandom();
-    Vector list = new Vector();
+    Vector<Long> list = new Vector<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      list.add(new Long(random.nextLong()));
+      list.add(random.nextLong());
     }
 
     DataOutputStream out = getDataOutput();
@@ -1704,7 +1701,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    Vector list2 = DataSerializer.readVector(in);
+    Vector<Long> list2 = DataSerializer.readVector(in);
     assertEquals(list, list2);
   }
 
@@ -1714,10 +1711,10 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testVectorObject() throws Exception {
     Random random = getRandom();
-    Vector list = new Vector();
+    Vector<Long> list = new Vector<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      list.add(new Long(random.nextLong()));
+      list.add(random.nextLong());
     }
 
     DataOutputStream out = getDataOutput();
@@ -1725,7 +1722,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    Vector list2 = (Vector) DataSerializer.readObject(in);
+    Vector<Long> list2 = DataSerializer.readObject(in);
     assertEquals(list, list2);
   }
 
@@ -1735,10 +1732,10 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testStack() throws Exception {
     Random random = getRandom();
-    Stack list = new Stack();
+    Stack<Long> list = new Stack<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      list.add(new Long(random.nextLong()));
+      list.add(random.nextLong());
     }
 
     DataOutputStream out = getDataOutput();
@@ -1746,7 +1743,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    Stack list2 = DataSerializer.readStack(in);
+    Stack<Long> list2 = DataSerializer.readStack(in);
     assertEquals(list, list2);
   }
 
@@ -1756,10 +1753,10 @@ public class DataSerializableJUnitTest implements Serializable {
   @Test
   public void testStackObject() throws Exception {
     Random random = getRandom();
-    Stack list = new Stack();
+    Stack<Long> list = new Stack<>();
     int size = random.nextInt(50);
     for (int i = 0; i < size; i++) {
-      list.add(new Long(random.nextLong()));
+      list.add(random.nextLong());
     }
 
     DataOutputStream out = getDataOutput();
@@ -1767,7 +1764,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    Stack list2 = (Stack) DataSerializer.readObject(in);
+    Stack<Long> list2 = DataSerializer.readObject(in);
     assertEquals(list, list2);
   }
 
@@ -1798,14 +1795,14 @@ public class DataSerializableJUnitTest implements Serializable {
     p1.setProperty("aKey2", "aValue2");
     DataSerializer.writeProperties(p1, out);
     Properties p2 = new Properties();
-    p2.put("aKey1", new Integer(1));
-    p2.put("aKey2", new Integer(2));
+    p2.put("aKey1", 1);
+    p2.put("aKey2", 2);
     DataSerializer.writeProperties(p2, out);
     out.flush();
 
     DataInput in = getDataInput();
     assertEquals(new Properties(), DataSerializer.readProperties(in));
-    assertEquals(null, DataSerializer.readProperties(in));
+    assertNull(DataSerializer.readProperties(in));
     assertEquals(p1, DataSerializer.readProperties(in));
     assertEquals(p2, DataSerializer.readProperties(in));
   }
@@ -1831,8 +1828,8 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
     @Override
-    public Class[] getSupportedClasses() {
-      return new Class[] {this.getClass()};
+    public Class<?>[] getSupportedClasses() {
+      return new Class[] {getClass()};
     }
   }
 
@@ -1872,7 +1869,7 @@ public class DataSerializableJUnitTest implements Serializable {
     Random random = new Random();
 
     byte id = (byte) 100;
-    Class c = NonDataSerializable.NonDSSerializer.class;
+    Class<?> c = NonDataSerializable.NonDSSerializer.class;
     DataSerializer.register(c);
 
     Object o = new NonDataSerializable(random);
@@ -1902,7 +1899,7 @@ public class DataSerializableJUnitTest implements Serializable {
     Random random = new Random();
 
     final byte id = (byte) 100;
-    final Class c = NonDataSerializable.NonDSSerializer.class;
+    final Class<?> c = NonDataSerializable.NonDSSerializer.class;
     DataSerializer.register(c);
 
     Object o = new NonDataSerializable(random);
@@ -1957,7 +1954,7 @@ public class DataSerializableJUnitTest implements Serializable {
     Random random = new Random();
 
     final byte id = (byte) 100;
-    final Class c = DataSerializableImpl.class;
+    final Class<DataSerializableImpl> c = DataSerializableImpl.class;
     final Instantiator inst = new Instantiator(c, id) {
       @Override
       public DataSerializable newInstance() {
@@ -2016,7 +2013,7 @@ public class DataSerializableJUnitTest implements Serializable {
   public void testCustomSerializer() throws Exception {
     Random random = new Random();
 
-    Class c = NonDataSerializable.NonDSSerializer.class;
+    Class<?> c = NonDataSerializable.NonDSSerializer.class;
     byte id = (byte) 100;
     DataSerializer.register(c);
 
@@ -2186,7 +2183,7 @@ public class DataSerializableJUnitTest implements Serializable {
   }
 
   private static class Class_testInstantiator extends DataSerializerImpl {
-    public static Class supClass;
+    public static Class<?> supClass;
 
     @Override
     public int getId() {
@@ -2194,7 +2191,7 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
     @Override
-    public Class[] getSupportedClasses() {
+    public Class<?>[] getSupportedClasses() {
       return new Class[] {supClass};
     }
 
@@ -2231,7 +2228,7 @@ public class DataSerializableJUnitTest implements Serializable {
         DataSerializer.writeObject(o, getDataOutput());
         Object o2 = DataSerializer.readObject(getDataInput());
         assertTrue(wasInvoked[0]);
-        assertTrue(o == o2);
+        assertSame(o, o2);
       } finally {
         InternalDataSerializer.unregister(id);
       }
@@ -2345,8 +2342,8 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
     @Override
-    public Class[] getSupportedClasses() {
-      return new Class[] {this.getClass()};
+    public Class<?>[] getSupportedClasses() {
+      return new Class[] {getClass()};
     }
 
     @Override
@@ -2370,7 +2367,7 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
     @Override
-    public Class[] getSupportedClasses() {
+    public Class<?>[] getSupportedClasses() {
       wasInvoked = true;
       return super.getSupportedClasses();
     }
@@ -2399,7 +2396,7 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
     @Override
-    public Class[] getSupportedClasses() {
+    public Class<?>[] getSupportedClasses() {
       wasInvoked = true;
       return super.getSupportedClasses();
     }
@@ -2429,7 +2426,7 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
     @Override
-    public Class[] getSupportedClasses() {
+    public Class<?>[] getSupportedClasses() {
       wasInvoked = true;
       return super.getSupportedClasses();
     }
@@ -2516,7 +2513,7 @@ public class DataSerializableJUnitTest implements Serializable {
     setUp();
 
     DataSerializer.writeObject(top, getDataOutput());
-    top2 = (Link) DataSerializer.readObject(getDataInput());
+    top2 = DataSerializer.readObject(getDataInput());
 
     assertNotSame(top2.next.next, top2.next2.next);
   }
@@ -2559,7 +2556,7 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
 
-    Class c = DataSerializableImpl.class;
+    Class<DataSerializableImpl> c = DataSerializableImpl.class;
     id = (byte) 100;
     final Instantiator inst0 = new Instantiator(c, id) {
       @Override
@@ -2604,7 +2601,7 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
     @Override
-    public Class[] getSupportedClasses() {
+    public Class<?>[] getSupportedClasses() {
       return new Class[] {DS42.class};
     }
   }
@@ -2651,7 +2648,7 @@ public class DataSerializableJUnitTest implements Serializable {
     tryToSupport(Object[].class);
   }
 
-  private void tryToSupport(final Class c) {
+  private void tryToSupport(final Class<?> c) {
     illegalClass = c;
     try {
       DataSerializer.register(IllegalDS.class);
@@ -2659,15 +2656,15 @@ public class DataSerializableJUnitTest implements Serializable {
     } catch (IllegalArgumentException expected) {
       if (c.isArray()) {
         assertTrue(expected.getMessage(),
-            expected.getMessage().indexOf("an array class which is not allowed") != -1);
+            expected.getMessage().contains("an array class which is not allowed"));
       } else {
         assertTrue(expected.getMessage(),
-            expected.getMessage().indexOf("has built-in support for class " + c.getName()) != -1);
+            expected.getMessage().contains("has built-in support for class " + c.getName()));
       }
     }
   }
 
-  protected static Class illegalClass = null;
+  protected static Class<?> illegalClass = null;
 
   private static class IllegalDS extends DataSerializerImpl {
     public IllegalDS() {}
@@ -2678,7 +2675,7 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
     @Override
-    public Class[] getSupportedClasses() {
+    public Class<?>[] getSupportedClasses() {
       return new Class[] {illegalClass};
     }
   }
@@ -2693,8 +2690,8 @@ public class DataSerializableJUnitTest implements Serializable {
     DataSerializer.writeObject(o, out);
     out.flush();
     DataInput in = getDataInput();
-    assertSame(o.getClass(), DataSerializer.<Object>readObject(in).getClass());
-    this.baos = new ByteArrayOutputStream();
+    assertSame(o.getClass(), DataSerializer.readObject(in).getClass());
+    baos = new ByteArrayOutputStream();
   }
 
   /**
@@ -2711,41 +2708,41 @@ public class DataSerializableJUnitTest implements Serializable {
     checkClass(new File(""));
     checkClass(new File("") {});
 
-    checkClass(new ArrayList());
-    checkClass(new ArrayList() {});
+    checkClass(new ArrayList<>());
+    checkClass(new ArrayList<Object>() {});
 
-    checkClass(new LinkedList());
-    checkClass(new LinkedList() {});
+    checkClass(new LinkedList<>());
+    checkClass(new LinkedList<Object>() {});
 
-    checkClass(new HashSet());
-    checkClass(new HashSet() {});
+    checkClass(new HashSet<>());
+    checkClass(new HashSet<Object>() {});
 
-    checkClass(new HashMap());
-    checkClass(new HashMap() {});
+    checkClass(new HashMap<>());
+    checkClass(new HashMap<Object, Object>() {});
 
     checkClass(new Properties());
     checkClass(new Properties() {});
 
-    checkClass(new Hashtable());
-    checkClass(new Hashtable() {});
+    checkClass(new Hashtable<>());
+    checkClass(new Hashtable<Object, Object>() {});
 
-    checkClass(new Vector());
-    checkClass(new Vector() {});
+    checkClass(new Vector<>());
+    checkClass(new Vector<Object>() {});
 
-    checkClass(new IdentityHashMap());
-    checkClass(new IdentityHashMap() {});
+    checkClass(new IdentityHashMap<>());
+    checkClass(new IdentityHashMap<Object, Object>() {});
 
-    checkClass(new LinkedHashSet());
-    checkClass(new LinkedHashSet() {});
+    checkClass(new LinkedHashSet<>());
+    checkClass(new LinkedHashSet<Object>() {});
 
-    checkClass(new Stack());
-    checkClass(new Stack() {});
+    checkClass(new Stack<>());
+    checkClass(new Stack<Object>() {});
 
-    checkClass(new TreeMap());
-    checkClass(new TreeMap() {});
+    checkClass(new TreeMap<>());
+    checkClass(new TreeMap<Object, Object>() {});
 
-    checkClass(new TreeSet());
-    checkClass(new TreeSet() {});
+    checkClass(new TreeSet<>());
+    checkClass(new TreeSet<Object>() {});
   }
 
   /**
@@ -2867,36 +2864,36 @@ public class DataSerializableJUnitTest implements Serializable {
      * Creates a new <code>SerializableImpl</code> whose contents is randomly generated.
      */
     SerializableImpl(Random random) {
-      this.byteField = (byte) random.nextInt();
-      this.shortField = (short) random.nextInt();
-      this.intField = random.nextInt();
-      this.longField = random.nextLong();
-      this.floatField = random.nextFloat();
-      this.doubleField = random.nextDouble();
-      this.charField = (char) ('A' + random.nextInt('Z' - 'A'));
-      this.booleanField = random.nextInt() % 2 == 0;
+      byteField = (byte) random.nextInt();
+      shortField = (short) random.nextInt();
+      intField = random.nextInt();
+      longField = random.nextLong();
+      floatField = random.nextFloat();
+      doubleField = random.nextDouble();
+      charField = (char) ('A' + random.nextInt('Z' - 'A'));
+      booleanField = random.nextInt() % 2 == 0;
 
-      this.byteFieldPrim = (byte) random.nextInt();
-      this.shortFieldPrim = (short) random.nextInt();
-      this.intFieldPrim = random.nextInt();
-      this.longFieldPrim = random.nextLong();
-      this.floatFieldPrim = random.nextFloat();
-      this.doubleFieldPrim = random.nextDouble();
-      this.charFieldPrim = (char) ('A' + random.nextInt('Z' - 'A'));
-      this.booleanFieldPrim = random.nextInt() % 2 == 0;
+      byteFieldPrim = (byte) random.nextInt();
+      shortFieldPrim = (short) random.nextInt();
+      intFieldPrim = random.nextInt();
+      longFieldPrim = random.nextLong();
+      floatFieldPrim = random.nextFloat();
+      doubleFieldPrim = random.nextDouble();
+      charFieldPrim = (char) ('A' + random.nextInt('Z' - 'A'));
+      booleanFieldPrim = random.nextInt() % 2 == 0;
 
-      this.unsignedByteField = random.nextInt(256);
-      this.unsignedShortField = random.nextInt(65536);
+      unsignedByteField = random.nextInt(256);
+      unsignedShortField = random.nextInt(65536);
 
       int length = random.nextInt(100);
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       for (int i = 0; i < length; i++) {
         char c = (char) ('A' + random.nextInt('Z' - 'A'));
         sb.append(c);
       }
-      this.stringField = sb.toString();
+      stringField = sb.toString();
 
-      this.objectField = new SerializableImpl();
+      objectField = new SerializableImpl();
     }
 
     /**
@@ -2916,61 +2913,59 @@ public class DataSerializableJUnitTest implements Serializable {
       }
 
       SerializableImpl other = (SerializableImpl) o;
-      return this.byteField == other.byteField && this.shortField == other.shortField
-          && this.intField == other.intField && this.longField == other.longField
-          && this.floatField == other.floatField && this.doubleField == other.doubleField
-          && this.charField == other.charField && this.booleanField == other.booleanField
-          && this.byteFieldPrim == other.byteFieldPrim
-          && this.shortFieldPrim == other.shortFieldPrim && this.intFieldPrim == other.intFieldPrim
-          && this.longFieldPrim == other.longFieldPrim
-          && this.floatFieldPrim == other.floatFieldPrim
-          && this.doubleFieldPrim == other.doubleFieldPrim
-          && this.charFieldPrim == other.charFieldPrim
-          && this.booleanFieldPrim == other.booleanFieldPrim
-          && this.unsignedByteField == other.unsignedByteField
-          && this.unsignedShortField == other.unsignedShortField
-          && (this.stringField == null || this.stringField.equals(other.stringField))
-          && (this.objectField == null || this.objectField.equals(other.objectField)) && true;
+      return byteField == other.byteField && shortField == other.shortField
+          && intField == other.intField && longField == other.longField
+          && floatField == other.floatField && doubleField == other.doubleField
+          && charField == other.charField && booleanField == other.booleanField
+          && byteFieldPrim == other.byteFieldPrim
+          && shortFieldPrim == other.shortFieldPrim && intFieldPrim == other.intFieldPrim
+          && longFieldPrim == other.longFieldPrim
+          && floatFieldPrim == other.floatFieldPrim
+          && doubleFieldPrim == other.doubleFieldPrim
+          && charFieldPrim == other.charFieldPrim
+          && booleanFieldPrim == other.booleanFieldPrim
+          && unsignedByteField == other.unsignedByteField
+          && unsignedShortField == other.unsignedShortField
+          && (stringField == null || stringField.equals(other.stringField))
+          && (objectField == null || objectField.equals(other.objectField));
     }
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
-      sb.append(this.getClass().getName());
-      sb.append(" byte: ");
-      sb.append(this.byteField);
-      sb.append(", short: ");
-      sb.append(this.shortField);
-      sb.append(", int: ");
-      sb.append(this.intField);
-      sb.append(", long: ");
-      sb.append(this.longField);
-      sb.append(", float: ");
-      sb.append(this.floatField);
-      sb.append(", double: ");
-      sb.append(this.doubleField);
-      sb.append(" bytePrim: ");
-      sb.append(this.byteFieldPrim);
-      sb.append(", shortPrim: ");
-      sb.append(this.shortFieldPrim);
-      sb.append(", intPrim: ");
-      sb.append(this.intFieldPrim);
-      sb.append(", longPrim: ");
-      sb.append(this.longFieldPrim);
-      sb.append(", floatPrim: ");
-      sb.append(this.floatFieldPrim);
-      sb.append(", doublePrim: ");
-      sb.append(this.doubleFieldPrim);
-      sb.append(", unsignedByte: ");
-      sb.append(this.unsignedByteField);
-      sb.append(", unsignedShort: ");
-      sb.append(this.unsignedShortField);
-      sb.append(", string: \"");
-      sb.append(this.stringField);
-      sb.append("\", object: ");
-      sb.append(this.objectField);
 
-      return sb.toString();
+      return getClass().getName()
+          + " byte: "
+          + byteField
+          + ", short: "
+          + shortField
+          + ", int: "
+          + intField
+          + ", long: "
+          + longField
+          + ", float: "
+          + floatField
+          + ", double: "
+          + doubleField
+          + " bytePrim: "
+          + byteFieldPrim
+          + ", shortPrim: "
+          + shortFieldPrim
+          + ", intPrim: "
+          + intFieldPrim
+          + ", longPrim: "
+          + longFieldPrim
+          + ", floatPrim: "
+          + floatFieldPrim
+          + ", doublePrim: "
+          + doubleFieldPrim
+          + ", unsignedByte: "
+          + unsignedByteField
+          + ", unsignedShort: "
+          + unsignedShortField
+          + ", string: \""
+          + stringField
+          + "\", object: "
+          + objectField;
     }
   }
 
@@ -2997,57 +2992,57 @@ public class DataSerializableJUnitTest implements Serializable {
 
     @Override
     public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeByte(new Byte(this.byteField), out);
-      DataSerializer.writeShort(new Short(this.shortField), out);
-      DataSerializer.writeInteger(new Integer(this.intField), out);
-      DataSerializer.writeLong(new Long(this.longField), out);
-      DataSerializer.writeFloat(new Float(this.floatField), out);
-      DataSerializer.writeDouble(new Double(this.doubleField), out);
-      DataSerializer.writeCharacter(new Character(this.charField), out);
-      DataSerializer.writeBoolean(new Boolean(this.booleanField), out);
+      DataSerializer.writeByte(byteField, out);
+      DataSerializer.writeShort(shortField, out);
+      DataSerializer.writeInteger(intField, out);
+      DataSerializer.writeLong(longField, out);
+      DataSerializer.writeFloat(floatField, out);
+      DataSerializer.writeDouble(doubleField, out);
+      DataSerializer.writeCharacter(charField, out);
+      DataSerializer.writeBoolean(booleanField, out);
 
-      DataSerializer.writePrimitiveByte(this.byteFieldPrim, out);
-      DataSerializer.writePrimitiveShort(this.shortFieldPrim, out);
-      DataSerializer.writePrimitiveInt(this.intFieldPrim, out);
-      DataSerializer.writePrimitiveLong(this.longFieldPrim, out);
-      DataSerializer.writePrimitiveFloat(this.floatFieldPrim, out);
-      DataSerializer.writePrimitiveDouble(this.doubleFieldPrim, out);
-      DataSerializer.writePrimitiveChar(this.charFieldPrim, out);
-      DataSerializer.writePrimitiveBoolean(this.booleanFieldPrim, out);
+      DataSerializer.writePrimitiveByte(byteFieldPrim, out);
+      DataSerializer.writePrimitiveShort(shortFieldPrim, out);
+      DataSerializer.writePrimitiveInt(intFieldPrim, out);
+      DataSerializer.writePrimitiveLong(longFieldPrim, out);
+      DataSerializer.writePrimitiveFloat(floatFieldPrim, out);
+      DataSerializer.writePrimitiveDouble(doubleFieldPrim, out);
+      DataSerializer.writePrimitiveChar(charFieldPrim, out);
+      DataSerializer.writePrimitiveBoolean(booleanFieldPrim, out);
 
-      DataSerializer.writeUnsignedByte(this.unsignedByteField, out);
-      DataSerializer.writeUnsignedShort(this.unsignedShortField, out);
+      DataSerializer.writeUnsignedByte(unsignedByteField, out);
+      DataSerializer.writeUnsignedShort(unsignedShortField, out);
 
-      DataSerializer.writeString(this.stringField, out);
-      DataSerializer.writeObject(this.objectField, out);
+      DataSerializer.writeString(stringField, out);
+      DataSerializer.writeObject(objectField, out);
     }
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
-      this.byteField = DataSerializer.readByte(in).byteValue();
-      this.shortField = DataSerializer.readShort(in).shortValue();
-      this.intField = DataSerializer.readInteger(in).intValue();
-      this.longField = DataSerializer.readLong(in).longValue();
-      this.floatField = DataSerializer.readFloat(in).floatValue();
-      this.doubleField = DataSerializer.readDouble(in).doubleValue();
-      this.charField = DataSerializer.readCharacter(in).charValue();
-      this.booleanField = DataSerializer.readBoolean(in).booleanValue();
+      byteField = DataSerializer.readByte(in);
+      shortField = DataSerializer.readShort(in);
+      intField = DataSerializer.readInteger(in);
+      longField = DataSerializer.readLong(in);
+      floatField = DataSerializer.readFloat(in);
+      doubleField = DataSerializer.readDouble(in);
+      charField = DataSerializer.readCharacter(in);
+      booleanField = DataSerializer.readBoolean(in);
 
-      this.byteFieldPrim = DataSerializer.readPrimitiveByte(in);
-      this.shortFieldPrim = DataSerializer.readPrimitiveShort(in);
-      this.intFieldPrim = DataSerializer.readPrimitiveInt(in);
-      this.longFieldPrim = DataSerializer.readPrimitiveLong(in);
-      this.floatFieldPrim = DataSerializer.readPrimitiveFloat(in);
-      this.doubleFieldPrim = DataSerializer.readPrimitiveDouble(in);
-      this.charFieldPrim = DataSerializer.readPrimitiveChar(in);
-      this.booleanFieldPrim = DataSerializer.readPrimitiveBoolean(in);
+      byteFieldPrim = DataSerializer.readPrimitiveByte(in);
+      shortFieldPrim = DataSerializer.readPrimitiveShort(in);
+      intFieldPrim = DataSerializer.readPrimitiveInt(in);
+      longFieldPrim = DataSerializer.readPrimitiveLong(in);
+      floatFieldPrim = DataSerializer.readPrimitiveFloat(in);
+      doubleFieldPrim = DataSerializer.readPrimitiveDouble(in);
+      charFieldPrim = DataSerializer.readPrimitiveChar(in);
+      booleanFieldPrim = DataSerializer.readPrimitiveBoolean(in);
 
-      this.unsignedByteField = DataSerializer.readUnsignedByte(in);
-      this.unsignedShortField = DataSerializer.readUnsignedShort(in);
+      unsignedByteField = DataSerializer.readUnsignedByte(in);
+      unsignedShortField = DataSerializer.readUnsignedShort(in);
 
-      this.stringField = DataSerializer.readString(in);
-      this.objectField = DataSerializer.readObject(in);
+      stringField = DataSerializer.readString(in);
+      objectField = DataSerializer.readObject(in);
     }
 
   }
@@ -3062,24 +3057,28 @@ public class DataSerializableJUnitTest implements Serializable {
 
     transient boolean preMethodInvoked;
 
+    @SuppressWarnings("unused") // for deserialization
     public VersionedDataSerializableImpl() {}
 
     public VersionedDataSerializableImpl(Random random) {
       super(random);
     }
 
+    @SuppressWarnings("unused") // for serialization
     public void toDataPre_GEODE_1_12_0_0(DataOutput out) throws IOException {
-      this.preMethodInvoked = true;
+      preMethodInvoked = true;
       toData(out);
     }
 
-    public void fromDataPre_GEODE_1_12_0_0(DataInput in) throws IOException, ClassNotFoundException {
-      this.preMethodInvoked = true;
+    @SuppressWarnings("unused") // for deserialization
+    public void fromDataPre_GEODE_1_12_0_0(DataInput in)
+        throws IOException, ClassNotFoundException {
+      preMethodInvoked = true;
       fromData(in);
     }
 
     public boolean preMethodInvoked() {
-      return this.preMethodInvoked;
+      return preMethodInvoked;
     }
   }
 
@@ -3124,7 +3123,7 @@ public class DataSerializableJUnitTest implements Serializable {
 
     @Override
     public Object replace() throws IOException {
-      return new Integer(42);
+      return 42;
     }
   }
 
@@ -3144,12 +3143,12 @@ public class DataSerializableJUnitTest implements Serializable {
     protected Object objectValue;
 
     public NonDataSerializable(Random random) {
-      this.intValue = random.nextInt();
-      this.doubleValue = random.nextDouble();
-      this.stringValue = "STRING" + random.nextInt();
-      this.dsValue = new DataSerializableImpl(random);
-      this.objectValue = new Integer(random.nextInt());
-      this.serValue = new SerializableImpl(random);
+      intValue = random.nextInt();
+      doubleValue = random.nextDouble();
+      stringValue = "STRING" + random.nextInt();
+      dsValue = new DataSerializableImpl(random);
+      objectValue = random.nextInt();
+      serValue = new SerializableImpl(random);
     }
 
     protected NonDataSerializable() {}
@@ -3160,14 +3159,14 @@ public class DataSerializableJUnitTest implements Serializable {
       }
 
       NonDataSerializable other = (NonDataSerializable) o;
-      return other.intValue == this.intValue && other.doubleValue == this.doubleValue
-          && (other.stringValue != null && this.stringValue != null)
-          && other.stringValue.equals(this.stringValue)
-          && (other.dsValue != null && this.dsValue != null) && other.dsValue.equals(this.dsValue)
-          && (other.serValue != null && this.serValue != null)
-          && other.serValue.equals(this.serValue)
-          && (other.objectValue != null && this.objectValue != null)
-          && other.objectValue.equals(this.objectValue);
+      return other.intValue == intValue && other.doubleValue == doubleValue
+          && (other.stringValue != null && stringValue != null)
+          && other.stringValue.equals(stringValue)
+          && (other.dsValue != null && dsValue != null) && other.dsValue.equals(dsValue)
+          && (other.serValue != null && serValue != null)
+          && other.serValue.equals(serValue)
+          && (other.objectValue != null && objectValue != null)
+          && other.objectValue.equals(objectValue);
     }
 
     /**
@@ -3185,7 +3184,7 @@ public class DataSerializableJUnitTest implements Serializable {
       }
 
       @Override
-      public Class[] getSupportedClasses() {
+      public Class<?>[] getSupportedClasses() {
         return new Class[] {NonDataSerializable.class};
       }
 
@@ -3219,8 +3218,8 @@ public class DataSerializableJUnitTest implements Serializable {
         nds.intValue = in.readInt();
         nds.doubleValue = in.readDouble();
         nds.stringValue = in.readUTF();
-        nds.dsValue = (DataSerializable) readObject(in);
-        nds.serValue = (Serializable) readObject(in);
+        nds.dsValue = readObject(in);
+        nds.serValue = readObject(in);
         nds.objectValue = readObject(in);
 
         return nds;
@@ -3235,21 +3234,15 @@ public class DataSerializableJUnitTest implements Serializable {
 
     public int intValue;
 
-    public static final byte CLASS_ID = (byte) 42;
-
     public IntWrapper(Random random) {
-      this.intValue = random.nextInt();
-    }
-
-    protected IntWrapper(int intValue) {
-      this.intValue = intValue;
+      intValue = random.nextInt();
     }
 
     @Override
     public boolean equals(Object o) {
       if (o instanceof IntWrapper) {
         IntWrapper other = (IntWrapper) o;
-        return other.intValue == this.intValue;
+        return other.intValue == intValue;
 
       } else {
         return false;
@@ -3268,22 +3261,22 @@ public class DataSerializableJUnitTest implements Serializable {
 
     @Override
     public void toData(DataOutput out) throws IOException {
-      out.writeInt(this.intValue);
+      out.writeInt(intValue);
     }
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
-      this.intValue = in.readInt();
+      intValue = in.readInt();
     }
   }
 
   private static class SerializableIntWrapper implements Serializable {
 
-    private int data;
+    private final int data;
 
     public SerializableIntWrapper(int intValue) {
-      this.data = intValue;
+      data = intValue;
     }
 
     @Override
@@ -3306,10 +3299,7 @@ public class DataSerializableJUnitTest implements Serializable {
         return false;
       }
       SerializableIntWrapper other = (SerializableIntWrapper) obj;
-      if (data != other.data) {
-        return false;
-      }
-      return true;
+      return data == other.data;
     }
   }
 
@@ -3326,20 +3316,21 @@ public class DataSerializableJUnitTest implements Serializable {
       this.id = id;
     }
 
+    @SuppressWarnings("unused") // for deserialization
     public Link() {}
 
     @Override
     public void toData(DataOutput out) throws IOException {
-      out.writeInt(this.id);
-      DataSerializer.writeObject(this.next, out);
-      DataSerializer.writeObject(this.next2, out);
+      out.writeInt(id);
+      DataSerializer.writeObject(next, out);
+      DataSerializer.writeObject(next2, out);
     }
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      this.id = in.readInt();
-      this.next = (Link) DataSerializer.readObject(in);
-      this.next2 = (Link) DataSerializer.readObject(in);
+      id = in.readInt();
+      next = DataSerializer.readObject(in);
+      next2 = DataSerializer.readObject(in);
     }
   }
 
@@ -3361,22 +3352,20 @@ public class DataSerializableJUnitTest implements Serializable {
      */
     public boolean wasInvoked() {
       checkForError();
-      boolean value = this.invoked;
-      this.invoked = false;
+      boolean value = invoked;
+      invoked = false;
       return value;
     }
 
     private void checkForError() {
-      if (this.callbackError != null) {
-        AssertionError error = new AssertionError("Exception occurred in callback");
-        error.initCause(this.callbackError);
-        throw error;
+      if (callbackError != null) {
+        throw new AssertionError("Exception occurred in callback", callbackError);
       }
     }
 
     @Override
     public void newDataSerializer(DataSerializer ds) {
-      this.invoked = true;
+      invoked = true;
       try {
         newDataSerializer2(ds);
 
@@ -3384,7 +3373,7 @@ public class DataSerializableJUnitTest implements Serializable {
         SystemFailure.initiateFailure(e);
         throw e;
       } catch (Throwable t) {
-        this.callbackError = t;
+        callbackError = t;
       }
     }
 
@@ -3395,7 +3384,7 @@ public class DataSerializableJUnitTest implements Serializable {
 
     @Override
     public void newInstantiator(Instantiator instantiator) {
-      this.invoked = true;
+      invoked = true;
       try {
         newInstantiator2(instantiator);
 
@@ -3403,7 +3392,7 @@ public class DataSerializableJUnitTest implements Serializable {
         SystemFailure.initiateFailure(e);
         throw e;
       } catch (Throwable t) {
-        this.callbackError = t;
+        callbackError = t;
       }
     }
 
@@ -3434,7 +3423,7 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    byte[][] array2 = (byte[][]) DataSerializer.readObject(in);
+    byte[][] array2 = DataSerializer.readObject(in);
 
     assertEquals(array.length, array2.length);
     for (int i = 0; i < array.length; i++) {
@@ -3503,7 +3492,7 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testStringEncodingLengthCrossesBoundry() throws Exception {
-    StringBuffer sb = new StringBuffer(0xFFFF);
+    StringBuilder sb = new StringBuilder(0xFFFF);
     for (int i = 0; i < 0xFFFF; i++) {
       if (i == 0) {
         sb.append(Character.MAX_VALUE);
@@ -3521,7 +3510,7 @@ public class DataSerializableJUnitTest implements Serializable {
     DataInput in = getDataInput();
     String value2 = DataSerializer.readString(in);
     assertEquals(value, value2);
-    value2 = (String) DataSerializer.readObject(in);
+    value2 = DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
 
@@ -3546,22 +3535,25 @@ public class DataSerializableJUnitTest implements Serializable {
     try {
       DataSerializer.writeEnum(null, out);
       fail("Expected exception not thrown");
-    } catch (NullPointerException ex) {
+    } catch (NullPointerException ignored) {
     }
     out.flush();
 
     DataInput in = getDataInput();
+    @SuppressWarnings("rawtypes") // for testing
     Class c = null;
     try {
+      // noinspection unchecked
       DataSerializer.readEnum(c, in);
       fail("Expected exception not thrown");
-    } catch (NullPointerException ex) {
+    } catch (NullPointerException ignored) {
     }
     c = Foo.class;
     try {
+      // noinspection unchecked
       DataSerializer.readEnum(c, in);
       fail("Expected exception not thrown");
-    } catch (IllegalArgumentException ex) {
+    } catch (IllegalArgumentException ignored) {
     }
     DAY_OF_WEEK e2 = DataSerializer.readEnum(DAY_OF_WEEK.class, in);
     MONTH m2 = DataSerializer.readEnum(MONTH.class, in);
@@ -3579,8 +3571,8 @@ public class DataSerializableJUnitTest implements Serializable {
     out.flush();
 
     DataInput in = getDataInput();
-    DAY_OF_WEEK e2 = (DAY_OF_WEEK) DataSerializer.readObject(in);
-    MONTH m2 = (MONTH) DataSerializer.readObject(in);
+    DAY_OF_WEEK e2 = DataSerializer.readObject(in);
+    MONTH m2 = DataSerializer.readObject(in);
     assertEquals(e, e2);
     assertEquals(m, m2);
     // Make sure there's nothing left in the stream
@@ -3604,88 +3596,88 @@ public class DataSerializableJUnitTest implements Serializable {
 
   private static class OddDataInput implements DataInput {
 
-    private ByteBufferInputStream bbis;
+    private final ByteBufferInputStream bbis;
 
     public OddDataInput(ByteBuffer bb) {
-      this.bbis = new ByteBufferInputStream(bb);
+      bbis = new ByteBufferInputStream(bb);
     }
 
     @Override
-    public void readFully(byte[] b) throws IOException {
-      this.bbis.readFully(b);
+    public void readFully(byte[] b) {
+      bbis.readFully(b);
     }
 
     @Override
-    public void readFully(byte[] b, int off, int len) throws IOException {
-      this.bbis.readFully(b, off, len);
+    public void readFully(byte[] b, int off, int len) {
+      bbis.readFully(b, off, len);
     }
 
     @Override
-    public int skipBytes(int n) throws IOException {
-      return this.bbis.skipBytes(n);
+    public int skipBytes(int n) {
+      return bbis.skipBytes(n);
     }
 
     @Override
-    public boolean readBoolean() throws IOException {
-      return this.bbis.readBoolean();
+    public boolean readBoolean() {
+      return bbis.readBoolean();
     }
 
     @Override
-    public byte readByte() throws IOException {
-      return this.bbis.readByte();
+    public byte readByte() {
+      return bbis.readByte();
     }
 
     @Override
-    public int readUnsignedByte() throws IOException {
-      return this.bbis.readUnsignedByte();
+    public int readUnsignedByte() {
+      return bbis.readUnsignedByte();
     }
 
     @Override
-    public short readShort() throws IOException {
-      return this.bbis.readShort();
+    public short readShort() {
+      return bbis.readShort();
     }
 
     @Override
-    public int readUnsignedShort() throws IOException {
-      return this.bbis.readUnsignedShort();
+    public int readUnsignedShort() {
+      return bbis.readUnsignedShort();
     }
 
     @Override
-    public char readChar() throws IOException {
-      return this.bbis.readChar();
+    public char readChar() {
+      return bbis.readChar();
     }
 
     @Override
     public int readInt() throws IOException {
-      return this.bbis.readInt();
+      return bbis.readInt();
     }
 
     @Override
-    public long readLong() throws IOException {
-      return this.bbis.readLong();
+    public long readLong() {
+      return bbis.readLong();
     }
 
     @Override
-    public float readFloat() throws IOException {
-      return this.bbis.readFloat();
+    public float readFloat() {
+      return bbis.readFloat();
     }
 
     @Override
-    public double readDouble() throws IOException {
-      return this.bbis.readDouble();
+    public double readDouble() {
+      return bbis.readDouble();
     }
 
     @Override
-    public String readLine() throws IOException {
-      return this.bbis.readLine();
+    public String readLine() {
+      return bbis.readLine();
     }
 
     @Override
     public String readUTF() throws IOException {
-      return this.bbis.readUTF();
+      return bbis.readUTF();
     }
   }
 
-  private class Foo {
+  private static class Foo {
   }
 }
