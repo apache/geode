@@ -30,9 +30,10 @@ CODEWATCHERS                                                      @onichols-pivo
 #-----------------------------------------------------------------
 # Documentation
 #-----------------------------------------------------------------
-geode-book/**                                                     @davebarnes97
-geode-docs/**                                                     @davebarnes97
-geode-book/config.yml                                             @onichols-pivotal
+dev-tools/docker/docs/**                                          @alb3rtobr
+geode-book/**                                                     @davebarnes97 @alb3rtobr
+geode-docs/**                                                     @davebarnes97 @alb3rtobr
+geode-book/config.yml                                             @onichols-pivotal @alb3rtobr
 geode-book/redirects.rb                                           @onichols-pivotal
 LICENSE                                                           @metatype
 NOTICE                                                            @metatype
@@ -59,10 +60,10 @@ geode-core/**/org/apache/geode/internal/cache/tier/**             @albertogpz
 #-----------------------------------------------------------------
 # WAN messaging and queues
 #-----------------------------------------------------------------
-geode-wan/**                                                      @albertogpz
-geode-core/**/org/apache/geode/cache/asyncqueue/**                @albertogpz
-geode-core/**/org/apache/geode/cache/wan/**                       @albertogpz
-geode-core/**/org/apache/geode/internal/cache/wan/**              @albertogpz
+geode-wan/**                                                      @albertogpz @alb3rtobr
+geode-core/**/org/apache/geode/cache/asyncqueue/**                @albertogpz @alb3rtobr
+geode-core/**/org/apache/geode/cache/wan/**                       @albertogpz @alb3rtobr
+geode-core/**/org/apache/geode/internal/cache/wan/**              @albertogpz @alb3rtobr
 
 
 #-----------------------------------------------------------------
@@ -77,3 +78,8 @@ geode-core/**/org/apache/geode/metrics/**                         @mkevo
 #-----------------------------------------------------------------
 geode-cq/**                                                       @mkevo
 geode-core/**/org/apache/geode/cache/query/**                     @mkevo
+
+#-----------------------------------------------------------------
+# Misc
+#-----------------------------------------------------------------
+geode-core/src/main/java/org/apache/geode/internal/cache/properties.md    @alb3rtobr
