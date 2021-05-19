@@ -70,10 +70,6 @@ public class FunctionToFileTracker {
       Collection<String> functionClasses = findFunctionsInThisJar(jarFile);
       String filePath = jarFile.getAbsolutePath();
       Collection<Function<?>> functions = new LinkedList<>();
-      // TODO: Remove this exception
-      if (functionClasses.isEmpty()) {
-        throw new RuntimeException("No functions found in " + jarFile.getAbsolutePath());
-      }
       for (String functionClass : functionClasses) {
         logger.debug("Attempting to load class: {}, from JAR file: {}", functionClass,
             filePath);
@@ -196,6 +192,10 @@ public class FunctionToFileTracker {
             registerableFunctions.add(function);
           }
         }
+      } else {
+        throw new RuntimeException("Function class:" + clazz.getName() + " Assignable: "
+            + Function.class.isAssignableFrom(clazz) + " Abstract: "
+            + Modifier.isAbstract(clazz.getModifiers()));
       }
     } catch (Exception ex) {
       logger.error("Attempting to register function from class: {}", clazz, ex);
@@ -209,20 +209,20 @@ public class FunctionToFileTracker {
     try {
       final Constructor<Function<?>> constructor = clazz.getConstructor();
       return constructor.newInstance();
-    } catch (NoSuchMethodException nsmex) {
+    } catch (NoSuchMethodException noSuchMethodException) {
       if (errorOnNoSuchMethod) {
         logger.error("Zero-arg constructor is required, but not found for class: {}",
-            clazz.getName(), nsmex);
+            clazz.getName(), noSuchMethodException);
       } else {
         logger.debug(
             "Not registering function because it doesn't have a zero-arg constructor: {}",
             clazz.getName());
       }
+      throw new RuntimeException(noSuchMethodException);
     } catch (Exception ex) {
       logger.error("Error when attempting constructor for function for class: {}", clazz.getName(),
           ex);
+      throw new RuntimeException(ex);
     }
-
-    return null;
   }
 }
