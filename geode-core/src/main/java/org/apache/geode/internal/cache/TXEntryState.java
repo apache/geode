@@ -1639,7 +1639,7 @@ public class TXEntryState implements Releasable {
     }
   }
 
-  void buildMessage(InternalRegion r, Object key, TXCommitMessage msg, Set otherRecipients) {
+  void buildMessage(InternalRegion r, Object key, TXCommitMessage msg) {
     if (!isDirty()) {
       // all we do was read so just return
       return;
@@ -1675,7 +1675,7 @@ public class TXEntryState implements Releasable {
       case OP_PUT:
       case OP_LLOAD_PUT:
       case OP_NLOAD_PUT:
-        msg.addOp(r, key, this, otherRecipients);
+        msg.addOp(r, key, this);
         break;
 
       default:
@@ -1684,8 +1684,7 @@ public class TXEntryState implements Releasable {
   }
 
 
-  void buildCompleteMessage(InternalRegion r, Object key, TXCommitMessage msg,
-      Set otherRecipients) {
+  void buildCompleteMessage(InternalRegion r, Object key, TXCommitMessage msg) {
     if (!isDirty()) {
       // all we do was read so just return
       return;
@@ -1721,7 +1720,7 @@ public class TXEntryState implements Releasable {
       case OP_PUT:
       case OP_LLOAD_PUT:
       case OP_NLOAD_PUT:
-        msg.addOp(r, key, this, otherRecipients);
+        msg.addOp(r, key, this);
         break;
 
       default:

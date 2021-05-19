@@ -28,7 +28,7 @@ public class CommitReplyException extends ReplyException {
   private static final long serialVersionUID = -7711083075296622596L;
 
   /** Exceptions generated when attempting to process a commit operation */
-  private final Set exceptions;
+  private final Set<Exception> exceptions;
 
   /**
    * Constructs a <code>CommitReplyException</code> with a message.
@@ -37,7 +37,7 @@ public class CommitReplyException extends ReplyException {
    */
   public CommitReplyException(String s) {
     super(s);
-    this.exceptions = Collections.EMPTY_SET;
+    exceptions = Collections.emptySet();
   }
 
   /**
@@ -47,7 +47,7 @@ public class CommitReplyException extends ReplyException {
    * @param s the String message
    * @param exceptions set of exceptions generated when attempting to process a commit operation
    */
-  public CommitReplyException(String s, Set exceptions) {
+  public CommitReplyException(String s, Set<Exception> exceptions) {
     super(s);
     this.exceptions = exceptions;
   }
@@ -57,12 +57,12 @@ public class CommitReplyException extends ReplyException {
    *
    * @return set of exceptions generated when attempting to process a commit operation
    */
-  public Set getExceptions() {
-    return this.exceptions;
+  public Set<Exception> getExceptions() {
+    return exceptions;
   }
 
   @Override
   public String toString() {
-    return super.toString() + " with exceptions: " + this.exceptions;
+    return super.toString() + " with exceptions: " + exceptions;
   }
 }

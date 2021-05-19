@@ -31,22 +31,15 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 public class ReliableReplyProcessor21 extends ReplyProcessor21 {
 
   /** The members that departed before replying */
-  private Set departedMembers;
+  private Set<InternalDistributedMember> departedMembers;
 
-  public ReliableReplyProcessor21(InternalDistributedSystem system,
-      InternalDistributedMember member) {
-    super(system, member);
-  }
-
-  public ReliableReplyProcessor21(DistributionManager dm, InternalDistributedMember member) {
-    super(dm, member);
-  }
-
-  public ReliableReplyProcessor21(DistributionManager dm, Collection initMembers) {
+  public ReliableReplyProcessor21(DistributionManager dm,
+      Collection<InternalDistributedMember> initMembers) {
     super(dm, initMembers);
   }
 
-  public ReliableReplyProcessor21(InternalDistributedSystem system, Collection initMembers) {
+  public ReliableReplyProcessor21(InternalDistributedSystem system,
+      Collection<InternalDistributedMember> initMembers) {
     super(system, initMembers);
   }
 
@@ -64,10 +57,10 @@ public class ReliableReplyProcessor21 extends ReplyProcessor21 {
       final InternalDistributedMember id, final boolean crashed) {
     if (removeMember(id, true)) {
       synchronized (this) {
-        if (this.departedMembers == null) {
-          this.departedMembers = new HashSet();
+        if (departedMembers == null) {
+          departedMembers = new HashSet<>();
         }
-        this.departedMembers.add(id);
+        departedMembers.add(id);
       }
     }
     checkIfDone();
@@ -76,12 +69,12 @@ public class ReliableReplyProcessor21 extends ReplyProcessor21 {
   /**
    * Returns the recipients that have departed prior to processing a reply from them.
    */
-  public Set getDepartedMembers() {
+  public Set<InternalDistributedMember> getDepartedMembers() {
     synchronized (this) {
-      if (this.departedMembers == null) {
-        return Collections.EMPTY_SET;
+      if (departedMembers == null) {
+        return Collections.emptySet();
       } else {
-        return this.departedMembers;
+        return departedMembers;
       }
     }
   }
@@ -102,11 +95,10 @@ public class ReliableReplyProcessor21 extends ReplyProcessor21 {
    * @see #waitForReliableDelivery()
    * @param msecs the number of milliseconds to wait for replies
    */
-  public void waitForReliableDelivery(long msecs)
-      throws ReplyException, InterruptedException, ReliableReplyException {
+  public void waitForReliableDelivery(long msecs) throws ReplyException, InterruptedException {
     super.waitForReplies(msecs);
     synchronized (this) {
-      if (this.departedMembers != null) {
+      if (departedMembers != null) {
         throw new ReliableReplyException(
             String.format("Failed to deliver message to members: %s",
                 departedMembers));
