@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +39,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -59,8 +59,7 @@ public class RedisSet extends AbstractRedisData {
   // Note: the per member overhead is known to not be constant. it changes as more members are
   // added, and/or as the members get longer
   protected static final int BASE_REDIS_SET_OVERHEAD = 128;
-  protected static final int PER_MEMBER_OVERHEAD = 61;
-  protected static final int INTERNAL_HASH_SET_STORAGE_OVERHEAD = 86;
+  protected static final int PER_MEMBER_OVERHEAD = 24;
 
   private int sizeInBytes = BASE_REDIS_SET_OVERHEAD;
 
@@ -68,10 +67,6 @@ public class RedisSet extends AbstractRedisData {
     this.members = new ObjectOpenCustomHashSet<>(members.size(), ByteArrays.HASH_STRATEGY);
     for (byte[] member : members) {
       membersAdd(member);
-    }
-
-    if (members.size() > 0) {
-      sizeInBytes += INTERNAL_HASH_SET_STORAGE_OVERHEAD;
     }
 
     for (byte[] value : this.members) {
@@ -249,9 +244,6 @@ public class RedisSet extends AbstractRedisData {
     boolean isAdded = members.add(memberToAdd);
     if (isAdded) {
       sizeInBytes += PER_MEMBER_OVERHEAD + memberToAdd.length;
-      if (members.size() == 1) {
-        sizeInBytes += INTERNAL_HASH_SET_STORAGE_OVERHEAD;
-      }
     }
     return isAdded;
   }
@@ -305,9 +297,8 @@ public class RedisSet extends AbstractRedisData {
    *
    * @return a set containing all the members in this set
    */
-  @VisibleForTesting
   public Set<byte[]> smembers() {
-    return new HashSet<>(members);
+    return Collections.unmodifiableSet(members);
   }
 
   @Override

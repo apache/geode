@@ -18,6 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
+
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -64,10 +67,12 @@ public abstract class SetOpExecutor extends SetExecutor {
       List<RedisKey> setKeys) {
     RedisSetCommands redisSetCommands = context.getRedisSetCommands();
     RedisKey firstSetKey = setKeys.remove(0);
-    Set<byte[]> resultSet = redisSetCommands.smembers(firstSetKey);
+    Set<byte[]> resultSet = new ObjectOpenCustomHashSet<>(
+        redisSetCommands.internalsmembers(firstSetKey), ByteArrays.HASH_STRATEGY);
 
     for (RedisKey key : setKeys) {
-      Set<byte[]> nextSet = redisSetCommands.smembers(key);
+      Set<byte[]> nextSet = new ObjectOpenCustomHashSet<>(redisSetCommands.internalsmembers(key),
+          ByteArrays.HASH_STRATEGY);
       if (doSetOp(resultSet, nextSet)) {
         break;
       }

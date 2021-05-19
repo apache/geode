@@ -20,6 +20,7 @@ import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_
 
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -69,12 +70,12 @@ public class RedisSetCommandsFunctionExecutor extends RedisDataCommandsFunctionE
 
   @Override
   public Set<byte[]> smembers(RedisKey key) {
-    return stripedExecute(key, () -> getRedisSet(key, true).smembers());
+    return stripedExecute(key, () -> new HashSet<>(getRedisSet(key, true).smembers()));
   }
 
   @Override
   public Set<byte[]> internalsmembers(RedisKey key) {
-    return stripedExecute(key, () -> getRedisSet(key, false).smembers());
+    return stripedExecute(key, () -> new HashSet<>(getRedisSet(key, false).smembers()));
   }
 
   @Override

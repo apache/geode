@@ -272,6 +272,7 @@ public class RedisDistDUnitTest implements Serializable {
             jedis.smembers(sKey);
             jedis.sdiff(sKey, "afd");
             jedis.sunionstore("dst", sKey, "afds");
+            jedis.sinterstore("dst", sKey, "afds");
           }
         }
       }

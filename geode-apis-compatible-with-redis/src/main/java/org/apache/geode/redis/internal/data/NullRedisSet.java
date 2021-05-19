@@ -21,6 +21,7 @@ import static java.util.Collections.emptySet;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +29,6 @@ import java.util.Set;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionInvoker;
@@ -76,10 +76,9 @@ class NullRedisSet extends RedisSet {
   }
 
   @Override
-  @VisibleForTesting
   public Set<byte[]> smembers() {
     // some callers want to be able to modify the set returned
-    return new HashSet<>();
+    return Collections.emptySet();
   }
 
   private enum SetOp {
@@ -136,20 +135,11 @@ class NullRedisSet extends RedisSet {
             result.addAll(set);
             break;
           case INTERSECTION:
-            List<byte[]> membersToRemove = new ArrayList<>();
-            for (byte[] member : result) {
-              if (!set.contains(member)) {
-                membersToRemove.add(member);
-              }
-            }
-            for (byte[] memberToRemove : membersToRemove) {
-              result.remove(memberToRemove);
-            }
+            set = new ObjectOpenCustomHashSet<>(set, ByteArrays.HASH_STRATEGY);
+            result.retainAll(set);
             break;
           case DIFF:
-            for (byte[] member : set) {
-              result.remove(member);
-            }
+            result.removeAll(set);
             break;
         }
       }

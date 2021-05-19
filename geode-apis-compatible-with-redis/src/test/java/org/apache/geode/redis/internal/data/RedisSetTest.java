@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisSet.BASE_REDIS_SET_OVERHEAD;
-import static org.apache.geode.redis.internal.data.RedisSet.INTERNAL_HASH_SET_STORAGE_OVERHEAD;
 import static org.apache.geode.redis.internal.data.RedisSet.PER_MEMBER_OVERHEAD;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,11 +31,12 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import org.assertj.core.data.Offset;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -187,7 +187,7 @@ public class RedisSetTest {
   /******* constructor *******/
   @Test
   public void should_calculateSize_equalToROS_withNoMembers() {
-    Set<byte[]> members = new HashSet<>();
+    Set<byte[]> members = new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
     RedisSet set = new RedisSet(members);
 
     int expected = reflectionObjectSizer.sizeof(set);
@@ -199,7 +199,7 @@ public class RedisSetTest {
   @Test
   @Ignore("Sizing tests are known to be flaky/incorrect and will be fixed as part of GEODE-9279")
   public void should_calculateSize_equalToROS_withSingleMember() {
-    Set<byte[]> members = new HashSet<>();
+    Set<byte[]> members = new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
     members.add("value".getBytes());
     RedisSet set = new RedisSet(members);
 
@@ -253,8 +253,7 @@ public class RedisSetTest {
     set.sadd(members, region, key);
 
     int actual = set.getSizeInBytes();
-    int expected = BASE_REDIS_SET_OVERHEAD + INTERNAL_HASH_SET_STORAGE_OVERHEAD
-        + PER_MEMBER_OVERHEAD + valueString.length();
+    int expected = BASE_REDIS_SET_OVERHEAD + PER_MEMBER_OVERHEAD + valueString.length();
 
     assertThat(actual).isEqualTo(expected);
   }
@@ -278,8 +277,7 @@ public class RedisSetTest {
       set.sadd(members, region, key);
 
       long actual = set.getSizeInBytes();
-      long expected = BASE_REDIS_SET_OVERHEAD + INTERNAL_HASH_SET_STORAGE_OVERHEAD
-          + (PER_MEMBER_OVERHEAD * (i + 1)) + currentDataSize;
+      long expected = BASE_REDIS_SET_OVERHEAD + (PER_MEMBER_OVERHEAD * (i + 1)) + currentDataSize;
       Offset<Long> offset = Offset.offset(Math.round(expected * percentTolerance));
 
       assertThat(actual).isCloseTo(expected, offset);
@@ -344,7 +342,7 @@ public class RedisSetTest {
   // added, and/or as the members get longer
   @Test
   public void baseOverheadConstant_shouldMatchCalculatedValue() {
-    Set<byte[]> members = new HashSet<>();
+    Set<byte[]> members = new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
     int baseRedisSetOverhead = reflectionObjectSizer.sizeof(new RedisSet(members));
 
     assertThat(baseRedisSetOverhead).isEqualTo(BASE_REDIS_SET_OVERHEAD);
@@ -352,7 +350,7 @@ public class RedisSetTest {
 
   @Test
   public void perMemberOverheadConstant_shouldMatchCalculatedValue() {
-    Set<byte[]> tempHashSet = new HashSet<>();
+    Set<byte[]> tempHashSet = new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
     byte[] member1 = "ab".getBytes();
     byte[] member2 = "bc".getBytes();
     tempHashSet.add(member1);
@@ -361,28 +359,9 @@ public class RedisSetTest {
     tempHashSet.add(member2);
     int twoEntriesHashSetSize = reflectionObjectSizer.sizeof(tempHashSet);
 
-    int perMemberOverhead = twoEntriesHashSetSize - oneEntryHashSetSize + 5;
+    int perMemberOverhead = twoEntriesHashSetSize - oneEntryHashSetSize;
 
     assertThat(perMemberOverhead).isEqualTo(PER_MEMBER_OVERHEAD);
-  }
-
-  @Test
-  public void internalHashsetStorageOverheadConstant_shouldMatchCalculatedValue() {
-    Set<byte[]> tempHashSet = new HashSet<>();
-    int baseHashSetSize = reflectionObjectSizer.sizeof(tempHashSet);
-
-    byte[] baw1 = "a".getBytes();
-    byte[] baw2 = "b".getBytes();
-
-    tempHashSet.add(baw1);
-    tempHashSet.add(baw2);
-
-    int twoEntryHashSetSize = reflectionObjectSizer.sizeof(tempHashSet);
-
-    int internalHashsetStorageOverhead =
-        twoEntryHashSetSize - (2 * PER_MEMBER_OVERHEAD) - baseHashSetSize;
-
-    assertThat(internalHashsetStorageOverhead).isEqualTo(INTERNAL_HASH_SET_STORAGE_OVERHEAD);
   }
 
   /******* helper methods *******/
