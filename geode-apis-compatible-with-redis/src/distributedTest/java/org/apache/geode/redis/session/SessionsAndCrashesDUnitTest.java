@@ -35,7 +35,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.data.redis.RedisSystemException;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import redis.clients.jedis.HostAndPort;

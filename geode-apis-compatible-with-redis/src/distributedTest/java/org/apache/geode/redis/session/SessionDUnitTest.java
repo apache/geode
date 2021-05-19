@@ -19,7 +19,6 @@ package org.apache.geode.redis.session;
 import java.net.HttpCookie;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
