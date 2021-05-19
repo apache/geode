@@ -165,15 +165,23 @@ public abstract class SessionDUnitTest {
 
   protected String createNewSessionWithNote(int sessionApp, String note) {
     HttpEntity<String> request = new HttpEntity<>(note);
-    String sessionCookie = "";
-    HttpHeaders resultHeaders = new RestTemplate()
-        .postForEntity(
-            "http://localhost:" + ports.get(sessionApp)
-                + "/addSessionNote",
-            request,
-            String.class)
-        .getHeaders();
-    sessionCookie = resultHeaders.getFirst("Set-Cookie");
+    String sessionCookie = null;
+    do {
+      try {
+        HttpHeaders resultHeaders = new RestTemplate()
+            .postForEntity(
+                "http://localhost:" + ports.get(sessionApp)
+                    + "/addSessionNote",
+                request,
+                String.class)
+            .getHeaders();
+        sessionCookie = resultHeaders.getFirst("Set-Cookie");
+      } catch (HttpServerErrorException e) {
+        if (!e.getMessage().contains("Server Error")) {
+          throw e;
+        }
+      }
+    } while (sessionCookie == null);
 
     return sessionCookie;
   }
