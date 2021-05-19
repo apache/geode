@@ -35,6 +35,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.params.ZAddParams;
 
 import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTest {
@@ -53,6 +54,15 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   public void tearDown() {
     flushAll();
     jedis.close();
+  }
+
+  @Test
+  public void zaddErrors_givenWrongKeyType() {
+    final String STRING_KEY = "stringKey";
+    jedis.set(STRING_KEY, "value");
+    assertThatThrownBy(
+        () -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZADD, STRING_KEY, "1", "member"))
+            .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -93,7 +103,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   @Test
   public void zaddErrors_givenBothNXAndLTOptions() {
     assertThatThrownBy(
-        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "GT", "1.0",
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "LT", "1.0",
             "fakeMember"))
                 .hasMessageContaining(ERROR_SYNTAX);
   }

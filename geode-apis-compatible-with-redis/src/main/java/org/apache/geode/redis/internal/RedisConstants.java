@@ -58,6 +58,4 @@ public class RedisConstants {
       "Unknown subcommand or wrong number of arguments for '%s'. Try CLUSTER HELP.";
   public static final String ERROR_INVALID_ZADD_OPTION_NX_XX =
       "XX and NX options at the same time are not compatible";
-  public static final String ERROR_INVALID_ZADD_OPTION_GT_LT_NX =
-      "GT, LT, and/or NX options at the same time are not compatible";
 }

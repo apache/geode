@@ -195,7 +195,8 @@ public enum RedisCommandType {
 
   /************ Sorted Sets **************/
 
-  ZADD(new ZAddExecutor(), SUPPORTED, new ZAddParameterRequirements()),
+  ZADD(new ZAddExecutor(), SUPPORTED, new ZAddParameterRequirements()
+      .and(new MinimumParameterRequirements(4))),
   ZSCORE(new ZScoreExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
 
   /************* Server *****************/

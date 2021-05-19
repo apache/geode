@@ -31,18 +31,14 @@ public class ZAddParameterRequirements implements ParameterRequirements {
   public void checkParameters(Command command, ExecutionHandlerContext context) {
     int numberOfArguments = command.getProcessedCommand().size();
 
-    if (numberOfArguments < 4) {
-      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
-    }
-
-    int optionsFoundCount = confirmKnownSubcommands(command);
+    int optionsFoundCount = confirmKnownOptions(command);
 
     if ((numberOfArguments - optionsFoundCount - 2) % 2 != 0) {
       throw new RedisParametersMismatchException(ERROR_SYNTAX);
     }
   }
 
-  private int confirmKnownSubcommands(Command command) {
+  private int confirmKnownOptions(Command command) {
     int optionsFoundCount = 0;
     boolean nxFound = false, xxFound = false, gtFound = false, ltFound = false;
 
@@ -69,13 +65,13 @@ public class ZAddParameterRequirements implements ParameterRequirements {
         case "gt":
           gtFound = true;
           if (nxFound) {
-            throw new RedisParametersMismatchException(String.format(ERROR_SYNTAX));
+            throw new RedisParametersMismatchException(ERROR_SYNTAX);
           }
           break;
         case "lt":
           ltFound = true;
           if (nxFound) {
-            throw new RedisParametersMismatchException(String.format(ERROR_SYNTAX));
+            throw new RedisParametersMismatchException(ERROR_SYNTAX);
           }
           break;
         default:
@@ -84,7 +80,7 @@ public class ZAddParameterRequirements implements ParameterRequirements {
             scoreFound = true;
             break;
           } catch (NumberFormatException nfe) {
-            throw new RedisParametersMismatchException(String.format(ERROR_NOT_A_VALID_FLOAT));
+            throw new RedisParametersMismatchException(ERROR_NOT_A_VALID_FLOAT);
           }
       }
       if (scoreFound) {
@@ -102,15 +98,15 @@ public class ZAddParameterRequirements implements ParameterRequirements {
       boolean ltFound) {
     if (nxFound && xxFound) {
       throw new RedisParametersMismatchException(
-          String.format(ERROR_INVALID_ZADD_OPTION_NX_XX));
+          ERROR_INVALID_ZADD_OPTION_NX_XX);
     }
     if (gtFound && ltFound) {
       throw new RedisParametersMismatchException(
-          String.format(ERROR_NOT_A_VALID_FLOAT));
+          ERROR_NOT_A_VALID_FLOAT);
     }
     if ((gtFound || ltFound) && nxFound) {
       throw new RedisParametersMismatchException(
-          String.format(ERROR_NOT_A_VALID_FLOAT));
+          ERROR_NOT_A_VALID_FLOAT);
     }
   }
 }

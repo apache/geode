@@ -56,7 +56,7 @@ public abstract class AbstractZScoreIntegrationTest implements RedisIntegrationT
   @Test
   public void zscoreReturnsNil_givenNonexistentMember() {
     jedis.zadd("key", 1.0, "member");
-    assertThat(jedis.zscore("fakeKey", "fakeMember")).isEqualTo(null);
+    assertThat(jedis.zscore("key", "fakeMember")).isEqualTo(null);
   }
 
   @Test

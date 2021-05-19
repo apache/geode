@@ -47,7 +47,7 @@ public class RedisSortedSet extends AbstractRedisData {
   protected static final int BASE_REDIS_SORTED_SET_OVERHEAD = 184;
   protected static final int PER_PAIR_OVERHEAD = 48;
 
-  private int sizeInBytes;
+  private int sizeInBytes = BASE_REDIS_SORTED_SET_OVERHEAD;
 
   @Override
   public int getSizeInBytes() {
@@ -63,26 +63,20 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   RedisSortedSet(List<byte[]> members) {
-    sizeInBytes += BASE_REDIS_SORTED_SET_OVERHEAD;
-    this.members = new Object2ObjectOpenCustomHashMap<>(members.size(), ByteArrays.HASH_STRATEGY);
-    Iterator<byte[]> iterator = members.iterator();
-
-    while (iterator.hasNext()) {
-      byte[] score = iterator.next();
-      byte[] member = iterator.next();
-      sizeInBytes += calculateSizeOfNewFieldValuePair(member, score);
-      this.members.put(member, score);
-    }
+    this(members, new SortedSetOptions(SortedSetOptions.Exists.NONE, SortedSetOptions.Update.NONE));
   }
 
   RedisSortedSet(List<byte[]> members, SortedSetOptions options) {
-    if (options.isXX()) {
-      sizeInBytes += BASE_REDIS_SORTED_SET_OVERHEAD;
-      this.members = new Object2ObjectOpenCustomHashMap<>(members.size(), ByteArrays.HASH_STRATEGY);
-    } else {
-      RedisSortedSet tempSet = new RedisSortedSet(members);
-      this.members = tempSet.members;
-      this.sizeInBytes = tempSet.sizeInBytes;
+    this.members = new Object2ObjectOpenCustomHashMap<>(members.size(), ByteArrays.HASH_STRATEGY);
+    if (!options.isXX()) {
+      Iterator<byte[]> iterator = members.iterator();
+
+      while (iterator.hasNext()) {
+        byte[] score = iterator.next();
+        byte[] member = iterator.next();
+        sizeInBytes += calculateSizeOfNewFieldValuePair(member, score);
+        this.members.put(member, score);
+      }
     }
   }
 
@@ -111,10 +105,10 @@ public class RedisSortedSet extends AbstractRedisData {
     super.toData(out, context);
     InternalDataSerializer.writePrimitiveInt(members.size(), out);
     for (Map.Entry<byte[], byte[]> entry : members.entrySet()) {
-      byte[] key = entry.getKey();
-      byte[] value = entry.getValue();
-      InternalDataSerializer.writeByteArray(key, out);
-      InternalDataSerializer.writeByteArray(value, out);
+      byte[] member = entry.getKey();
+      byte[] score = entry.getValue();
+      InternalDataSerializer.writeByteArray(member, out);
+      InternalDataSerializer.writeByteArray(score, out);
     }
     InternalDataSerializer.writePrimitiveInt(sizeInBytes, out);
   }
@@ -173,9 +167,8 @@ public class RedisSortedSet extends AbstractRedisData {
     Iterator<byte[]> iterator = addsDeltaInfo.getAdds().iterator();
     while (iterator.hasNext()) {
       byte[] member = iterator.next();
-      sizeInBytes += PER_PAIR_OVERHEAD + member.length;
       byte[] score = iterator.next();
-      sizeInBytes += PER_PAIR_OVERHEAD + score.length;
+      sizeInBytes += calculateSizeOfNewFieldValuePair(member, score);
       members.put(member, score);
     }
   }
@@ -276,7 +269,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
   @Override
   public String toString() {
-    return "RedisSet{" + super.toString() + ", " + "members=" + members + '}';
+    return "RedisSortedSet{" + super.toString() + ", " + "size=" + members.size() + '}';
   }
 
   @Override
