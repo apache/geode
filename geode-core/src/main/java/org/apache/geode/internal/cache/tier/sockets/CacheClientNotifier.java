@@ -326,7 +326,7 @@ public class CacheClientNotifier {
               statistics.incDurableReconnectionCount();
               cacheClientProxy.getProxyID()
                   .updateDurableTimeout(clientProxyMembershipID.getDurableTimeout());
-              cacheClientProxy.reinitialize(socket, clientProxyMembershipID, getCache(),
+              cacheClientProxy.reinitialize(socket, clientProxyMembershipID,
                   isPrimary, clientConflation,
                   clientVersion);
               cacheClientProxy.setMarkerEnqueued(true);
