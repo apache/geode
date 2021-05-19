@@ -18,7 +18,6 @@ package org.apache.geode.internal.cache.wan;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
 import org.apache.geode.DataSerializer;
@@ -54,8 +53,6 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.size.Sizeable;
 
 /**
@@ -793,10 +790,6 @@ public class GatewaySenderEventImpl
     this.action = in.readInt();
     this.numberOfParts = in.readInt();
     // this._id = in.readUTF();
-    if (version < 0x11 && (in instanceof InputStream)
-        && StaticSerialization.getVersionForDataStream(in) == KnownVersion.CURRENT) {
-      in = new VersionedDataInputStream((InputStream) in, KnownVersion.GFE_701);
-    }
     this.id = (EventID) context.getDeserializer().readObject(in);
     // TODO:Asif ; Check if this violates Barry's logic of not assiging VM
     // specific Token.FROM_GATEWAY
