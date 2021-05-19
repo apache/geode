@@ -125,7 +125,10 @@ public abstract class SessionDUnitTest {
 
   @AfterClass
   public static void cleanupAfterClass() {
-    redisClient.shutdown();
+    try {
+      redisClient.shutdown();
+    } catch (Exception ignored) {
+    }
     stopSpringApp(APP1);
     stopSpringApp(APP2);
   }
