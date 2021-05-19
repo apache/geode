@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -25,10 +24,10 @@ public class ZScoreExecutor extends SortedSetExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisSortedSetCommands redisSortedSetCommands = createRedisSortedSetCommands(context);
-    List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
+    List<byte[]> commandElements = command.getProcessedCommand();
 
     byte[] score =
-        redisSortedSetCommands.zscore(command.getKey(), commandElements.get(2).toBytes());
+        redisSortedSetCommands.zscore(command.getKey(), commandElements.get(2));
 
     if (score == null) {
       return RedisResponse.nil();
