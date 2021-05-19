@@ -50,6 +50,7 @@ import org.springframework.web.client.RestTemplate;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -131,7 +132,7 @@ public abstract class SessionDUnitTest {
 
   @After
   public void cleanupAfterTest() {
-    commands.flushall();
+    GeodeAwaitility.await().ignoreExceptions().untilAsserted(() -> commands.flushall());
   }
 
   protected static void startRedisServer(int server) {
