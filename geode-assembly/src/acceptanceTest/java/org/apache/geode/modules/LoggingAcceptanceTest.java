@@ -20,11 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Duration;
 
 import org.junit.Test;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
@@ -50,12 +48,6 @@ public class LoggingAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
     GfshScript.of(getLocatorGFSHConnectionString(),
         "deploy --jar=" + functionJar.getCanonicalPath()).execute(gfshRule);
-
-    GeodeAwaitility
-        .await().pollInterval(Duration.ofSeconds(1)).until(() -> GfshScript
-            .of(getLocatorGFSHConnectionString(), "list functions")
-            .execute(gfshRule).getOutputText().contains("DebugLoggingFunction"));
-
     assertThat(GfshScript
         .of(getLocatorGFSHConnectionString(),
             "execute function --id=DebugLoggingFunction --member=server1")

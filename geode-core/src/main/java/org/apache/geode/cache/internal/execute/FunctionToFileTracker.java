@@ -70,6 +70,10 @@ public class FunctionToFileTracker {
       Collection<String> functionClasses = findFunctionsInThisJar(jarFile);
       String filePath = jarFile.getAbsolutePath();
       Collection<Function<?>> functions = new LinkedList<>();
+      // TODO: Remove this exception
+      if (functionClasses.isEmpty()) {
+        throw new RuntimeException("No functions found in " + jarFile.getAbsolutePath());
+      }
       for (String functionClass : functionClasses) {
         logger.debug("Attempting to load class: {}, from JAR file: {}", functionClass,
             filePath);
