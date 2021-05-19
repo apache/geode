@@ -139,6 +139,7 @@ class NullRedisSet extends RedisSet {
             result.retainAll(set);
             break;
           case DIFF:
+            set = new ObjectOpenCustomHashSet<>(set, ByteArrays.HASH_STRATEGY);
             result.removeAll(set);
             break;
         }
