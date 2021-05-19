@@ -38,7 +38,6 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -281,11 +280,7 @@ public class GetAll70 extends BaseCommand {
         }
       }
 
-      // Send the last chunk even if the list is of zero size.
-      if (KnownVersion.GFE_701.compareTo(servConn.getClientVersion()) <= 0) {
-        // 7.0.1 and later clients do not expect the keys in the response
-        values.setKeys(null);
-      }
+      values.setKeys(null);
       sendGetAllResponseChunk(region, values, true, servConn);
       servConn.setAsTrue(RESPONDED);
     } finally {

@@ -21,7 +21,6 @@ import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1165,19 +1164,7 @@ public class CacheClientProxy implements ClientSession {
   }
 
   private void enqueueInterestRegistrationMessage(ClientInterestMessageImpl message) {
-    // Enqueue the interest registration message for the client.
-    // If the client is not 7.0.1 or greater and the key of interest is a list,
-    // then create an individual message for each entry in the list since the
-    // client doesn't support a ClientInterestMessageImpl containing a list.
-    if (KnownVersion.GFE_701.compareTo(this.clientVersion) > 0
-        && message.getKeyOfInterest() instanceof List) {
-      for (Iterator i = ((List) message.getKeyOfInterest()).iterator(); i.hasNext();) {
-        this._messageDispatcher.enqueueMessage(
-            new ClientInterestMessageImpl(getCache().getDistributedSystem(), message, i.next()));
-      }
-    } else {
-      this._messageDispatcher.enqueueMessage(message);
-    }
+    this._messageDispatcher.enqueueMessage(message);
   }
 
   @Override

@@ -14,25 +14,17 @@
  */
 package org.apache.geode.cache.wan.internal.parallel;
 
-import java.io.IOException;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.internal.Connection;
-import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.internal.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
-import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
-import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySenderEventProcessor {
@@ -78,47 +70,6 @@ public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySe
     if (this.sender.getRemoteDSId() != GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID) {
       this.dispatcher = new GatewaySenderEventRemoteDispatcher(this);
     }
-  }
-
-  /**
-   * Returns if corresponding receiver WAN site of this GatewaySender has GemfireVersion > 7.0.1
-   *
-   * @return true if remote site Gemfire Version is >= 7.0.1
-   */
-  private boolean shouldSendVersionEvents(GatewaySenderEventDispatcher disp)
-      throws GatewaySenderException {
-    try {
-      GatewaySenderEventRemoteDispatcher remoteDispatcher =
-          (GatewaySenderEventRemoteDispatcher) disp;
-      // This will create a new connection if no batch has been sent till
-      // now.
-      Connection conn = remoteDispatcher.getConnection(false);
-      if (conn != null) {
-        short remoteSiteVersion = conn.getWanSiteVersion();
-        if (KnownVersion.GFE_701.compareTo(Versioning.getVersion(remoteSiteVersion)) <= 0) {
-          return true;
-        }
-      }
-    } catch (GatewaySenderException e) {
-      Throwable cause = e.getCause();
-      if (cause instanceof IOException || e instanceof GatewaySenderConfigurationException
-          || cause instanceof ConnectionDestroyedException) {
-        try {
-          int sleepInterval = GatewaySender.CONNECTION_RETRY_INTERVAL;
-          if (logger.isDebugEnabled()) {
-            logger.debug("Sleeping for {} milliseconds", sleepInterval);
-          }
-          Thread.sleep(sleepInterval);
-        } catch (InterruptedException ie) {
-          // log the exception
-          if (logger.isDebugEnabled()) {
-            logger.debug(ie.getMessage(), ie);
-          }
-        }
-      }
-      throw e;
-    }
-    return false;
   }
 
 }
