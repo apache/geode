@@ -29,7 +29,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.params.ZAddParams;
 
@@ -37,8 +38,7 @@ import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTest {
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static final String SORTED_SET_KEY = "ss_key";
@@ -46,15 +46,13 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -65,56 +63,63 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   @Test
   public void zaddErrors_givenUnevenPairsOfArguments() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "1", "member", "2"))
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "1", "member", "2"))
             .hasMessageContaining("ERR syntax error");
   }
 
   @Test
   public void zaddErrors_givenNonNumericScore() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "xlerb", "member"))
-        .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
+    assertThatThrownBy(
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "xlerb", "member"))
+            .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
   public void zaddErrors_givenBothNXAndXXOptions() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "NX", "XX", "1.0", "fakeMember"))
-            .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_NX_XX);
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "XX", "1.0",
+            "fakeMember"))
+                .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_NX_XX);
   }
 
   @Test
   public void zaddErrors_givenBothNXAndGTOptions() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "NX", "GT", "1.0", "fakeMember"))
-            .hasMessageContaining(ERROR_SYNTAX);
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "GT", "1.0",
+            "fakeMember"))
+                .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void zaddErrors_givenBothNXAndLTOptions() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "NX", "GT", "1.0", "fakeMember"))
-            .hasMessageContaining(ERROR_SYNTAX);
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "GT", "1.0",
+            "fakeMember"))
+                .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void zaddErrors_givenLTThenNXOptions() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "LT", "NX", "1.0", "fakeMember"))
-            .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "LT", "NX", "1.0",
+            "fakeMember"))
+                .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
   public void zaddErrors_givenGTThenNXOptions() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "GT", "NX", "1.0", "fakeMember"))
-            .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "GT", "NX", "1.0",
+            "fakeMember"))
+                .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
   public void zaddErrors_givenBothGTAndLTOptions() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.ZADD, "fakeKey", "LT", "GT", "1", "fakeMember"))
-            .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "LT", "GT", "1",
+            "fakeMember"))
+                .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
@@ -243,6 +248,6 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     zAddParams.xx();
     Long res = jedis.zadd(key, 1.0, "mamba", zAddParams);
     assertThat(res).isEqualTo(0);
-    assertThat(jedis.keys("*").size()).isEqualTo(0);
+    assertThat(jedis.zscore(key, "mamba")).isEqualTo(null);
   }
 }

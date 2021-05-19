@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -29,21 +29,21 @@ public class ZAddExecutor extends SortedSetExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisSortedSetCommands redisSortedSetCommands = createRedisSortedSetCommands(context);
 
-    List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
+    List<byte[]> commandElements = command.getProcessedCommand();
 
     List<byte[]> scoresAndMembersToAdd = new ArrayList<>();
-    Iterator<ByteArrayWrapper> commandIterator = commandElements.iterator();
+    Iterator<byte[]> commandIterator = commandElements.iterator();
     boolean adding = false;
     boolean nxFound = false, xxFound = false, gtFound = false, ltFound = false;
     int count = 0;
 
     while (commandIterator.hasNext()) {
-      ByteArrayWrapper next = commandIterator.next();
+      byte[] next = commandIterator.next();
       if (count < 2) { // Skip past command, key
         count++;
         continue;
       } else {
-        String subCommandString = next.toString().toLowerCase();
+        String subCommandString = Coder.bytesToString(next).toLowerCase();
         try {
           Double.valueOf(subCommandString);
           adding = true;
@@ -71,11 +71,11 @@ public class ZAddExecutor extends SortedSetExecutor {
         }
       }
       if (adding) {
-        byte[] score = next.toBytes();
+        byte[] score = next;
         scoresAndMembersToAdd.add(score);
         if (commandIterator.hasNext()) {
-          ByteArrayWrapper member = commandIterator.next();
-          scoresAndMembersToAdd.add(member.toBytes());
+          byte[] member = commandIterator.next();
+          scoresAndMembersToAdd.add(member);
         } else {
           // TODO: throw exception - should never happen
         }
