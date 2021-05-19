@@ -67,12 +67,12 @@ public abstract class SetOpExecutor extends SetExecutor {
       List<RedisKey> setKeys) {
     RedisSetCommands redisSetCommands = context.getRedisSetCommands();
     RedisKey firstSetKey = setKeys.remove(0);
-    Set<byte[]> resultSet = new ObjectOpenCustomHashSet<>(
-        redisSetCommands.internalsmembers(firstSetKey), ByteArrays.HASH_STRATEGY);
+    Set<byte[]> resultSet = new ObjectOpenCustomHashSet<>(redisSetCommands.smembers(firstSetKey),
+        ByteArrays.HASH_STRATEGY);
 
     for (RedisKey key : setKeys) {
-      Set<byte[]> nextSet = new ObjectOpenCustomHashSet<>(redisSetCommands.internalsmembers(key),
-          ByteArrays.HASH_STRATEGY);
+      Set<byte[]> nextSet =
+          new ObjectOpenCustomHashSet<>(redisSetCommands.smembers(key), ByteArrays.HASH_STRATEGY);
       if (doSetOp(resultSet, nextSet)) {
         break;
       }
