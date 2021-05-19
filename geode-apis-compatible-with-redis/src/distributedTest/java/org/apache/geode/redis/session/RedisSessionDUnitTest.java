@@ -17,7 +17,8 @@ package org.apache.geode.redis.session;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -56,13 +57,11 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   @Test
   public void createSessionsConcurrently() throws ExecutionException, InterruptedException {
     AtomicBoolean running = new AtomicBoolean(true);
-    CountDownLatch latch = new CountDownLatch(1);
+    CyclicBarrier barrier = new CyclicBarrier(3);
 
-    Future<Void> future1 = executor.submit(() -> sessionCreator(1, 100, running, latch));
-    Future<Void> future2 = executor.submit(() -> sessionCreator(2, 100, running, latch));
-    Future<Void> future3 = executor.submit(() -> sessionCreator(3, 100, running, latch));
-
-    latch.countDown();
+    Future<Void> future1 = executor.submit(() -> sessionCreator(1, 100, running, barrier));
+    Future<Void> future2 = executor.submit(() -> sessionCreator(2, 100, running, barrier));
+    Future<Void> future3 = executor.submit(() -> sessionCreator(3, 100, running, barrier));
 
     future1.get();
     future2.get();
@@ -70,10 +69,9 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   }
 
   private void sessionCreator(int index, int iterations, AtomicBoolean running,
-      CountDownLatch latch)
-      throws InterruptedException {
+      CyclicBarrier barrier) throws BrokenBarrierException, InterruptedException {
     int iterationCount = 0;
-    latch.await();
+    barrier.await();
     while (iterationCount < iterations && running.get()) {
       String noteName = String.format("note-%d-%d", index, iterationCount);
       try {

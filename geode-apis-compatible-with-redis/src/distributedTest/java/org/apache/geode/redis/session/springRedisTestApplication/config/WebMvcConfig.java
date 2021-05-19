@@ -44,7 +44,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     return new LettuceConnectionFactory(redisConfiguration, lettuceClientConfiguration());
   }
 
-  public LettuceClientConfiguration lettuceClientConfiguration() {
+  private LettuceClientConfiguration lettuceClientConfiguration() {
     ClusterTopologyRefreshOptions refreshOptions =
         ClusterTopologyRefreshOptions.builder()
             .enableAllAdaptiveRefreshTriggers()
@@ -53,7 +53,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     return LettuceClientConfiguration.builder()
         .clientOptions(ClusterClientOptions.builder()
-            .topologyRefreshOptions(refreshOptions).build())
+            .topologyRefreshOptions(refreshOptions)
+            .build())
         .build();
   }
 
