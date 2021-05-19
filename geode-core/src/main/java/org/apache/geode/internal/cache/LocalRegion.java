@@ -2700,7 +2700,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       getEventTracker().stop();
 
       if (diskRegion != null) {
-        diskRegion.prepareForClose(this);
+        diskRegion.prepareForClose();
       }
 
       isDestroyed = true;
