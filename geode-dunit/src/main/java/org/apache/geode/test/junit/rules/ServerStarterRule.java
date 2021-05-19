@@ -14,12 +14,12 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +57,7 @@ import org.apache.geode.pdx.PdxSerializer;
  * use {@code ClusterStartupRule}.
  */
 public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> implements Server {
+  private final int availableLocatorPort;
   private transient InternalCache cache;
   private transient List<CacheServer> servers = new ArrayList<>();
   private int embeddedLocatorPort = -1;
@@ -67,6 +68,13 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
   private boolean pdxReadSerializedUserSet = false;
   // By default we start one server per jvm
   private int serverCount = 1;
+
+  public ServerStarterRule() {
+    String workerID = System.getProperty("org.gradle.test.worker");
+    Path wd = Paths.get(".").toAbsolutePath();
+    String className = getClass().getSimpleName();
+    availableLocatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+  }
 
   private Map<String, RegionShortcut> regions = new HashMap<>();
 
@@ -146,7 +154,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
   }
 
   public ServerStarterRule withEmbeddedLocator() {
-    embeddedLocatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    embeddedLocatorPort = availableLocatorPort;
     properties.setProperty("start-locator", "localhost[" + embeddedLocatorPort + "]");
     return this;
   }
@@ -156,14 +164,8 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
   }
 
   public ServerStarterRule withRestService(boolean useDefaultPort) {
+    withHttpService(useDefaultPort);
     properties.setProperty(START_DEV_REST_API, "true");
-    properties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
-    if (!useDefaultPort) {
-      httpPort = AvailablePortHelper.getRandomAvailableTCPPort();
-      properties.setProperty(HTTP_SERVICE_PORT, httpPort + "");
-    } else {
-      httpPort = 0;
-    }
     return this;
   }
 
@@ -186,6 +188,9 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
   }
 
   public void startServer() {
+    if (servers == null) {
+      servers = new ArrayList<>();
+    }
     CacheFactory cf = new CacheFactory(this.properties);
     if (pdxPersistentUserSet) {
       cf.setPdxPersistent(pdxPersistent);
