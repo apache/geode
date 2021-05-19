@@ -18,6 +18,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -42,7 +43,7 @@ public class JarBuilderTest {
   private File outputJar;
 
   @Before
-  public void setup() {
+  public void setup() throws IOException {
     jarBuilder = new JarBuilder();
     outputJar = new File(temporaryFolder.getRoot(), "output.jar");
   }

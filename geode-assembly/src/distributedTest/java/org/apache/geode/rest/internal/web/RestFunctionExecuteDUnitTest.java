@@ -45,7 +45,7 @@ public class RestFunctionExecuteDUnitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static final JarBuilder jarBuilder = new JarBuilder();
+  private static JarBuilder jarBuilder;
 
   private static MemberVM locator;
   private static MemberVM server1;
@@ -55,6 +55,7 @@ public class RestFunctionExecuteDUnitTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
+    jarBuilder = new JarBuilder();
     // prepare the jar to deploy
     File jarsToDeploy = new File(gfsh.getWorkingDir(), "function.jar");
     jarBuilder.buildJar(jarsToDeploy, loadClassToFile());

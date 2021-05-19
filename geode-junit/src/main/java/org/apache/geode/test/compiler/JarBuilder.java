@@ -59,7 +59,11 @@ import java.util.jar.JarOutputStream;
  * </pre>
  **/
 public class JarBuilder {
-  private final JavaCompiler javaCompiler = new JavaCompiler();
+  private final JavaCompiler javaCompiler;
+
+  public JarBuilder() throws IOException {
+    javaCompiler = new JavaCompiler();
+  }
 
   /**
    * Adds the given jarFile to the classpath that will be used for compilation by the buildJar
