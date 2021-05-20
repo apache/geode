@@ -17,6 +17,7 @@ package org.apache.geode.redis.session;
 
 
 import java.net.HttpCookie;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -24,11 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.lettuce.core.ClientOptions;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.resource.ClientResources;
+import io.lettuce.core.cluster.ClusterClientOptions;
+import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
+import io.lettuce.core.cluster.RedisClusterClient;
+import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,7 +50,7 @@ import org.springframework.web.client.RestTemplate;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
-import org.apache.geode.redis.session.springRedisTestApplication.config.DUnitSocketAddressResolver;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -75,9 +76,9 @@ public abstract class SessionDUnitTest {
   protected static final Map<Integer, Integer> ports = new HashMap<>();
   private static ConfigurableApplicationContext springApplicationContext;
 
-  private static RedisClient redisClient;
-  private static StatefulRedisConnection<String, String> connection;
-  protected static RedisCommands<String, String> commands;
+  private static RedisClusterClient redisClient;
+  private static StatefulRedisClusterConnection<String, String> connection;
+  protected static RedisAdvancedClusterCommands<String, String> commands;
 
   @BeforeClass
   public static void setup() {
@@ -106,13 +107,16 @@ public abstract class SessionDUnitTest {
   }
 
   protected static void setupClient() {
-    DUnitSocketAddressResolver dnsResolver =
-        new DUnitSocketAddressResolver(new String[] {"" + ports.get(SERVER1)});
-    ClientResources resources = ClientResources.builder()
-        .socketAddressResolver(dnsResolver)
-        .build();
-    redisClient = RedisClient.create(resources, "redis://localhost");
-    redisClient.setOptions(ClientOptions.builder()
+    redisClient = RedisClusterClient.create("redis://localhost:" + ports.get(SERVER1));
+
+    ClusterTopologyRefreshOptions refreshOptions =
+        ClusterTopologyRefreshOptions.builder()
+            .enableAllAdaptiveRefreshTriggers()
+            .enablePeriodicRefresh(Duration.ofSeconds(5))
+            .build();
+
+    redisClient.setOptions(ClusterClientOptions.builder()
+        .topologyRefreshOptions(refreshOptions)
         .autoReconnect(true)
         .build());
     connection = redisClient.connect();
@@ -121,14 +125,17 @@ public abstract class SessionDUnitTest {
 
   @AfterClass
   public static void cleanupAfterClass() {
-    connection.close();
+    try {
+      redisClient.shutdown();
+    } catch (Exception ignored) {
+    }
     stopSpringApp(APP1);
     stopSpringApp(APP2);
   }
 
   @After
   public void cleanupAfterTest() {
-    commands.flushall();
+    GeodeAwaitility.await().ignoreExceptions().untilAsserted(() -> commands.flushall());
   }
 
   protected static void startRedisServer(int server) {
@@ -146,15 +153,13 @@ public abstract class SessionDUnitTest {
     VM host = cluster.getVM(sessionApp);
     host.invoke("Start a Spring app", () -> {
       System.setProperty("server.port", "" + httpPort);
-      System.setProperty("spring.redis.port", "" + serverPorts[0]);
       System.setProperty("server.servlet.session.timeout", "" + sessionTimeout + "s");
-      String[] args = new String[serverPorts.length];
 
+      String[] args = new String[serverPorts.length];
       for (int i = 0; i < serverPorts.length; i++) {
-        args[i] = "" + serverPorts[i];
+        args[i] = "localhost:" + serverPorts[i];
       }
-      springApplicationContext = SpringApplication.run(
-          RedisSpringTestApplication.class, args);
+      springApplicationContext = SpringApplication.run(RedisSpringTestApplication.class, args);
     });
   }
 
@@ -164,15 +169,23 @@ public abstract class SessionDUnitTest {
 
   protected String createNewSessionWithNote(int sessionApp, String note) {
     HttpEntity<String> request = new HttpEntity<>(note);
-    String sessionCookie = "";
-    HttpHeaders resultHeaders = new RestTemplate()
-        .postForEntity(
-            "http://localhost:" + ports.get(sessionApp)
-                + "/addSessionNote",
-            request,
-            String.class)
-        .getHeaders();
-    sessionCookie = resultHeaders.getFirst("Set-Cookie");
+    String sessionCookie = null;
+    do {
+      try {
+        HttpHeaders resultHeaders = new RestTemplate()
+            .postForEntity(
+                "http://localhost:" + ports.get(sessionApp)
+                    + "/addSessionNote",
+                request,
+                String.class)
+            .getHeaders();
+        sessionCookie = resultHeaders.getFirst("Set-Cookie");
+      } catch (HttpServerErrorException e) {
+        if (!e.getMessage().contains("Server Error")) {
+          throw e;
+        }
+      }
+    } while (sessionCookie == null);
 
     return sessionCookie;
   }
@@ -194,9 +207,7 @@ public abstract class SessionDUnitTest {
             .getBody();
         sesssionObtained = true;
       } catch (HttpServerErrorException e) {
-        if (e.getMessage().contains("Internal Server Error")) {
-          // retry
-        } else {
+        if (!e.getMessage().contains("Server Error")) {
           throw e;
         }
       }

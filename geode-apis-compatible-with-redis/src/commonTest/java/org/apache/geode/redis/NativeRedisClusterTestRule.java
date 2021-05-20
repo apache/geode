@@ -37,6 +37,7 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.proxy.HostPort;
 import org.apache.geode.redis.internal.proxy.RedisProxy;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 public class NativeRedisClusterTestRule extends ExternalResource implements Serializable {
@@ -55,6 +56,7 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
         // Docker compose does not work on windows in CI. Ignore this test on windows
         // Using a RuleChain to make sure we ignore the test before the rule comes into play
         .outerRule(new IgnoreOnWindowsRule());
+    IgnoredException.addIgnoredException("RedisProxy");
   }
 
   public List<Integer> getExposedPorts() {
