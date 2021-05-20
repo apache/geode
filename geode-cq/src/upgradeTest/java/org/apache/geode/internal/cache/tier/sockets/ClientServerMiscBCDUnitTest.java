@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -190,7 +191,8 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
 
     int server2Port = initServerCache2();
 
-    int server3Port = server3.invoke(() -> createServerCache(true, getMaxThreads(), false));
+    int server3Port = getRandomAvailableTCPPort();
+    server3.invoke(() -> createServerCache(true, getMaxThreads(), false, server3Port));
 
     System.out.println("old server is vm 2 and new server is vm 3");
     System.out
