@@ -21,6 +21,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
     api(platform(project(':boms:geode-all-bom')))
+    compileOnly(platform(project(':boms:geode-all-bom')))
 
     // Geode-common has annotations and other pieces used by geode-logging
     api(project(':geode-common'))
@@ -38,6 +39,8 @@ dependencies {
     implementation('commons-validator:commons-validator')
     //Jgroups is a core component of our membership system.
     implementation('org.jgroups:jgroups')
+
+    compileOnly('org.jetbrains:annotations')
 
 
     testImplementation(project(':geode-junit'))

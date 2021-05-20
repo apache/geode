@@ -302,7 +302,8 @@ public class InternalDistributedMember
 
   @Override
   public int compareTo(
-      MemberIdentifier memberIdentifier, boolean compareMemberData, boolean compareViewIds) {
+      @NotNull MemberIdentifier memberIdentifier, boolean compareMemberData,
+      boolean compareViewIds) {
     return this.memberIdentifier.compareTo(memberIdentifier, compareMemberData, compareViewIds);
   }
 
