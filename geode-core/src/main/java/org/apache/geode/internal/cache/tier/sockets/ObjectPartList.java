@@ -22,9 +22,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.Releasable;
@@ -32,7 +31,6 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Encapsulates list containing objects, serialized objects, raw byte arrays, or exceptions. It can
@@ -42,8 +40,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * @since GemFire 5.7
  */
 public class ObjectPartList implements DataSerializableFixedID, Releasable {
-  private static final Logger logger = LogService.getLogger();
-
   protected static final byte BYTES = 0;
 
   protected static final byte OBJECT = 1;
@@ -56,33 +52,33 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
 
   protected boolean hasKeys;
 
-  protected List keys;
+  protected List<Object> keys;
 
-  protected List objects;
+  protected List<Object> objects;
 
   public void addPart(Object key, Object value, byte objectType, VersionTag versionTag) {
-    int size = this.objects.size();
-    int maxSize = this.objectTypeArray.length;
+    int size = objects.size();
+    int maxSize = objectTypeArray.length;
     if (size >= maxSize) {
       throw new IndexOutOfBoundsException("Cannot add object part beyond " + maxSize + " elements");
     }
-    if (this.hasKeys) {
+    if (hasKeys) {
       if (key == null) {
         throw new IllegalArgumentException("Cannot add null key");
       }
-      this.keys.add(key);
+      keys.add(key);
     }
-    this.objectTypeArray[size] = objectType;
-    this.objects.add(value);
+    objectTypeArray[size] = objectType;
+    objects.add(value);
   }
 
   // public methods
 
   public ObjectPartList() {
-    this.objectTypeArray = null;
-    this.hasKeys = false;
-    this.keys = null;
-    this.objects = new ArrayList();
+    objectTypeArray = null;
+    hasKeys = false;
+    keys = null;
+    objects = new ArrayList<>();
   }
 
   public ObjectPartList(int maxSize, boolean hasKeys) {
@@ -90,14 +86,14 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
       throw new IllegalArgumentException(
           "Invalid size " + maxSize + " to ObjectPartList constructor");
     }
-    this.objectTypeArray = new byte[maxSize];
+    objectTypeArray = new byte[maxSize];
     this.hasKeys = hasKeys;
     if (hasKeys) {
-      this.keys = new ArrayList();
+      keys = new ArrayList<>();
     } else {
-      this.keys = null;
+      keys = null;
     }
-    this.objects = new ArrayList();
+    objects = new ArrayList<>();
   }
 
   public void addObjectPart(Object key, Object value, boolean isObject, VersionTag versionTag) {
@@ -116,54 +112,55 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
 
 
   public void addAll(ObjectPartList other) {
-    if (this.hasKeys) {
+    if (hasKeys) {
       if (other.keys != null) {
-        if (this.keys == null) {
-          this.keys = new ArrayList(other.keys);
+        if (keys == null) {
+          keys = new ArrayList<>(other.keys);
         } else {
-          this.keys.addAll(other.keys);
+          keys.addAll(other.keys);
         }
       }
     } else if (other.hasKeys) {
-      this.hasKeys = true;
-      this.keys = new ArrayList(other.keys);
+      hasKeys = true;
+      keys = new ArrayList<>(other.keys);
     }
-    this.objects.addAll(other.objects);
+    objects.addAll(other.objects);
   }
 
   public List<Object> getKeys() {
-    if (this.keys == null) {
+    if (keys == null) {
       return Collections.emptyList();
     } else {
-      return Collections.unmodifiableList(this.keys);
+      return Collections.unmodifiableList(keys);
     }
   }
 
   /** unprotected access to the keys collection, which may be null */
-  public List getKeysForTest() {
-    return this.keys;
+  @VisibleForTesting
+  List<Object> getKeysForTest() {
+    return keys;
   }
 
-  public List getObjects() {
-    if (this.objects == null) {
+  public List<Object> getObjects() {
+    if (objects == null) {
       return Collections.emptyList();
     } else {
-      return Collections.unmodifiableList(this.objects);
+      return Collections.unmodifiableList(objects);
     }
   }
 
   /** unprotected access to the objects collection, which may be null */
-  public List getObjectsForTest() {
-    return this.objects;
+  public List<Object> getObjectsForTest() {
+    return objects;
   }
 
   public int size() {
     // some lists have only keys and some have only objects, so we need to choose
     // the correct collection to query
-    if (this.hasKeys) {
-      return this.keys.size();
+    if (hasKeys) {
+      return keys.size();
     } else {
-      return this.objects.size();
+      return objects.size();
     }
   }
 
@@ -171,31 +168,31 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
     if (maxSize <= 0) {
       throw new IllegalArgumentException("Invalid size " + maxSize + " to ObjectPartList.reinit");
     }
-    this.objectTypeArray = new byte[maxSize];
-    this.objects.clear();
-    this.keys.clear();
+    objectTypeArray = new byte[maxSize];
+    objects.clear();
+    keys.clear();
   }
 
   public void clear() {
     release();
-    this.objects.clear();
-    if (this.keys != null) {
-      this.keys.clear();
+    objects.clear();
+    if (keys != null) {
+      keys.clear();
     }
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    out.writeBoolean(this.hasKeys);
-    if (this.objectTypeArray != null) {
-      int numObjects = this.objects.size();
+    out.writeBoolean(hasKeys);
+    if (objectTypeArray != null) {
+      int numObjects = objects.size();
       out.writeInt(numObjects);
       for (int index = 0; index < numObjects; ++index) {
-        Object value = this.objects.get(index);
-        byte objectType = this.objectTypeArray[index];
-        if (this.hasKeys) {
-          context.getSerializer().writeObject(this.keys.get(index), out);
+        Object value = objects.get(index);
+        byte objectType = objectTypeArray[index];
+        if (hasKeys) {
+          context.getSerializer().writeObject(keys.get(index), out);
         }
         out.writeBoolean(objectType == EXCEPTION);
         if (objectType == OBJECT && value instanceof byte[]) {
@@ -217,16 +214,16 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.hasKeys = in.readBoolean();
-    if (this.hasKeys) {
-      this.keys = new ArrayList();
+    hasKeys = in.readBoolean();
+    if (hasKeys) {
+      keys = new ArrayList<>();
     }
     int numObjects = in.readInt();
     if (numObjects > 0) {
       for (int index = 0; index < numObjects; ++index) {
-        if (this.hasKeys) {
+        if (hasKeys) {
           Object key = context.getDeserializer().readObject(in);
-          this.keys.add(key);
+          keys.add(key);
         }
         boolean isException = in.readBoolean();
         Object value;
@@ -238,7 +235,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
         } else {
           value = context.getDeserializer().readObject(in);
         }
-        this.objects.add(value);
+        objects.add(value);
       }
     }
   }
@@ -255,7 +252,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
 
   @Override
   public void release() {
-    for (Object v : this.objects) {
+    for (Object v : objects) {
       OffHeapHelper.release(v);
     }
   }
