@@ -93,7 +93,7 @@ public class RegisterInterest61 extends BaseCommand {
     }
     // region data policy
     byte[] regionDataPolicyPartBytes;
-    boolean serializeValues = false;
+    final boolean serializeValues;
     try {
       Part regionDataPolicyPart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
       regionDataPolicyPartBytes = (byte[]) regionDataPolicyPart.getObject();
@@ -228,8 +228,8 @@ public class RegisterInterest61 extends BaseCommand {
 
       // Send chunk response
       try {
-        if (region.getDistributionManager() instanceof LonerDistributionManager
-            && region instanceof PartitionedRegion) {
+        if (region instanceof PartitionedRegion
+            && region.getDistributionManager() instanceof LonerDistributionManager) {
           throw new IllegalStateException(
               "Should not register interest for a partitioned region when mcast-port is 0 and no locator is present");
         }
