@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#FROM bellsoft/liberica-openjdk-debian:11
-FROM bellsoft/liberica-openjdk-alpine:8
+FROM bellsoft/liberica-openjdk-alpine:11
+#FROM bellsoft/liberica-openjdk-alpine:8
 
 # runtime dependencies
 RUN apk add --no-cache \
