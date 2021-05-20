@@ -16,6 +16,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,8 +47,9 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
   public void testInvalidateOnInvalidEntryInServerReachesClient() throws Exception {
     VM server = VM.getVM(0);
     String regionPath = SEPARATOR + REGION_NAME2;
+    int serverPort = getRandomAvailableTCPPort();
     PORT1 = server.invoke(() -> {
-      int port = createServerCache(true, -1, false);
+      int port = createServerCache(true, -1, false, serverPort);
       getCache().getRegion(regionPath).put(server_k1, "VALUE1");
       getCache().getRegion(regionPath).invalidate(server_k1);
       return port;
