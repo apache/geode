@@ -179,14 +179,9 @@ public class GatewayReceiverCommand extends BaseCommand {
           }
           boolean possibleDuplicate = possibleDuplicatePartBytes[0] == 0x01;
 
-          // Make sure instance variables are null before each iteration
-          String regionName = null;
-          Object key = null;
-          Object callbackArg = null;
-
           // Retrieve the region name from the message parts
           Part regionNamePart = clientMessage.getPart(partNumber + 2);
-          regionName = regionNamePart.getCachedString();
+          String regionName = regionNamePart.getCachedString();
           if (regionName.equals(PeerTypeRegistration.REGION_FULL_PATH)) {
             indexWithoutPDXEvent--;
             isPdxEvent = true;
@@ -213,6 +208,7 @@ public class GatewayReceiverCommand extends BaseCommand {
 
           // Retrieve the key from the message parts
           Part keyPart = clientMessage.getPart(partNumber + 4);
+          Object key;
           try {
             key = keyPart.getStringOrObject();
           } catch (Exception e) {
@@ -228,6 +224,7 @@ public class GatewayReceiverCommand extends BaseCommand {
           long versionTimeStamp;
           Part callbackArgExistsPart;
           LocalRegion region;
+          Object callbackArg = null;
           switch (actionType) {
             case 0: // Create
               try {
@@ -303,8 +300,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                   handleMessageRetry(region, clientEvent);
                   byte[] value = valuePart.getSerializedForm();
                   boolean isObject = valuePart.isObject();
-                  // [sumedh] This should be done on client while sending
-                  // since that is the WAN gateway
+                  // This should be done on client while sending since that is the WAN gateway
                   AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
                   if (authzRequest != null) {
                     PutOperationContext putContext =
@@ -313,7 +309,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                     isObject = putContext.isObject();
                   }
                   // Attempt to create the entry
-                  boolean result = false;
+                  boolean result;
                   if (isPdxEvent) {
                     result = addPdxType(crHelper, key, value);
                   } else {
@@ -420,7 +416,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                     value = putContext.getSerializedValue();
                     isObject = putContext.isObject();
                   }
-                  boolean result = false;
+                  final boolean result;
                   if (isPdxEvent) {
                     result = addPdxType(crHelper, key, value);
                   } else {
@@ -685,11 +681,11 @@ public class GatewayReceiverCommand extends BaseCommand {
     }
     if (fatalException != null) {
       serverConnection.incrementLatestBatchIdReplied(batchId);
-      writeFatalException(clientMessage, fatalException, serverConnection, batchId);
+      writeFatalException(clientMessage, fatalException, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
     } else if (!exceptions.isEmpty()) {
       serverConnection.incrementLatestBatchIdReplied(batchId);
-      writeBatchException(clientMessage, exceptions, serverConnection, batchId);
+      writeBatchException(clientMessage, exceptions, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
     } else {
       // Increment the batch id unless the received batch id is -1 (a failover
@@ -770,18 +766,15 @@ public class GatewayReceiverCommand extends BaseCommand {
   }
 
   private static void writeBatchException(Message origMsg, List<BatchException70> exceptions,
-      ServerConnection servConn, int batchId) throws IOException {
+      ServerConnection servConn) throws IOException {
     Message errorMsg = servConn.getErrorResponseMessage();
     errorMsg.setMessageType(MessageType.EXCEPTION);
     errorMsg.setNumberOfParts(2);
     errorMsg.setTransactionId(origMsg.getTransactionId());
-
     errorMsg.addObjPart(exceptions);
-    // errorMsg.addStringPart(be.toString());
     errorMsg.send(servConn);
-    for (Exception e : exceptions) {
-      ((GatewayReceiverStats) servConn.getCacheServerStats()).incExceptionsOccurred();
-    }
+    ((GatewayReceiverStats) servConn.getCacheServerStats())
+        .incExceptionsOccurred(exceptions.size());
     for (Exception be : exceptions) {
       if (logger.isWarnEnabled()) {
         logger.warn(servConn.getName() + ": Wrote batch exception: ",
@@ -791,13 +784,12 @@ public class GatewayReceiverCommand extends BaseCommand {
   }
 
   private static void writeFatalException(Message origMsg, Throwable exception,
-      ServerConnection servConn, int batchId) throws IOException {
+      ServerConnection servConn) throws IOException {
     Message errorMsg = servConn.getErrorResponseMessage();
     errorMsg.setMessageType(MessageType.EXCEPTION);
     errorMsg.setNumberOfParts(2);
     errorMsg.setTransactionId(origMsg.getTransactionId());
     errorMsg.addObjPart(exception);
-    // errorMsg.addStringPart(be.toString());
     errorMsg.send(servConn);
     logger.warn(servConn.getName() + ": Wrote batch exception: ",
         exception);
