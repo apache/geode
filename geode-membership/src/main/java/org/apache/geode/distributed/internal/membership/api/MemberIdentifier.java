@@ -23,6 +23,7 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.function.Function;
 
+import org.jetbrains.annotations.NotNull;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -189,7 +190,7 @@ public interface MemberIdentifier extends DataSerializableFixedID {
 
   void setUniqueTag(String tag);
 
-  int compareTo(MemberIdentifier memberIdentifier, boolean compareMemberData,
+  int compareTo(@NotNull MemberIdentifier memberIdentifier, boolean compareMemberData,
       boolean compareViewIds);
 
   String getUniqueTag();
