@@ -39,7 +39,7 @@ public class RemoteConcurrentParallelGatewaySenderEventProcessor
   }
 
   @Override
-  protected void createProcessors(int dispatcherThreads, Set<Region> targetRs,
+  protected void createProcessors(int dispatcherThreads, Set<Region<?, ?>> targetRs,
       boolean cleanQueues) {
     processors = new RemoteParallelGatewaySenderEventProcessor[sender.getDispatcherThreads()];
     if (logger.isDebugEnabled()) {
@@ -53,10 +53,10 @@ public class RemoteConcurrentParallelGatewaySenderEventProcessor
 
   @Override
   protected void rebalance() {
-    GatewaySenderStats statistics = this.sender.getStatistics();
+    GatewaySenderStats statistics = sender.getStatistics();
     long startTime = statistics.startLoadBalance();
     try {
-      for (ParallelGatewaySenderEventProcessor parallelProcessor : this.processors) {
+      for (ParallelGatewaySenderEventProcessor parallelProcessor : processors) {
         GatewaySenderEventRemoteDispatcher remoteDispatcher =
             (GatewaySenderEventRemoteDispatcher) parallelProcessor.getDispatcher();
         if (remoteDispatcher.isConnectedToRemote()) {
