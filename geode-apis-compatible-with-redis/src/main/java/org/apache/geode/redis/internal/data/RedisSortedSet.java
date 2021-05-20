@@ -186,9 +186,6 @@ public class RedisSortedSet extends AbstractRedisData {
   long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
       SortedSetOptions options) {
     int membersAdded = 0;
-    if (options == null) {
-      options = new SortedSetOptions(SortedSetOptions.Exists.NONE, SortedSetOptions.Update.NONE);
-    }
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
     while (iterator.hasNext()) {
@@ -196,15 +193,11 @@ public class RedisSortedSet extends AbstractRedisData {
       byte[] score = iterator.next();
       byte[] member = iterator.next();
 
-      if (options.isNX()) {
-        if (members.get(member) != null) {
-          continue;
-        }
+      if (options.isNX() && members.containsKey(member)) {
+        continue;
       }
-      if (options.isXX()) {
-        if (members.get(member) == null) {
-          continue;
-        }
+      if (options.isXX() && !members.containsKey(member)) {
+        continue;
       }
       switch (memberAdd(member, score)) {
         case ADDED:

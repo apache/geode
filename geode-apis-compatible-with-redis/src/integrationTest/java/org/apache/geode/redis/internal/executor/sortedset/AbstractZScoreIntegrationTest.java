@@ -14,7 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import org.junit.After;
@@ -44,8 +44,8 @@ public abstract class AbstractZScoreIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void zscoreErrors_givenTooFewArguments() {
-    assertAtLeastNArgs(jedis, Protocol.Command.ZSCORE, 2);
+  public void zscoreErrors_givenWrongNumberOfArguments() {
+    assertExactNumberOfArgs(jedis, Protocol.Command.ZSCORE, 2);
   }
 
   @Test
