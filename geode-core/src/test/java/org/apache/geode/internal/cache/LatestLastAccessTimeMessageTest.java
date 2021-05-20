@@ -20,11 +20,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Set;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -32,27 +30,46 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 
 public class LatestLastAccessTimeMessageTest {
-  private InternalDistributedRegion region;
-  private ClusterDistributionManager dm;
-  private LatestLastAccessTimeMessage<String> lastAccessTimeMessage;
-  private InternalCache cache;
+  private final ClusterDistributionManager dm = mock(ClusterDistributionManager.class);
+  private final InternalCache cache = mock(InternalCache.class);
+  private final InternalDistributedRegion region = mock(InternalDistributedRegion.class);
+  private final RegionEntry regionEntry = mock(RegionEntry.class);
+  private final long LAST_ACCESSED = 47;
 
-  @Before
-  public void setUp() throws UnknownHostException {
+  private LatestLastAccessTimeMessage<String> lastAccessTimeMessage;
+
+  private void setupMessage() {
     final LatestLastAccessTimeReplyProcessor replyProcessor =
         mock(LatestLastAccessTimeReplyProcessor.class);
-    region = mock(InternalDistributedRegion.class);
-    Set<InternalDistributedMember> recipients =
+    final Set<InternalDistributedMember> recipients =
         Collections.singleton(mock(InternalDistributedMember.class));
     lastAccessTimeMessage =
         spy(new LatestLastAccessTimeMessage<>(replyProcessor, recipients, region, "foo"));
     lastAccessTimeMessage.setSender(mock(InternalDistributedMember.class));
-    dm = mock(ClusterDistributionManager.class);
-    cache = mock(InternalCache.class);
+  }
+
+  private void setupRegion(boolean hasRegion, boolean hasEntry) {
+    when(dm.getCache()).thenReturn(cache);
+    if (hasRegion) {
+      when(cache.getRegion(any())).thenReturn(region);
+    } else {
+      when(cache.getRegion(any())).thenReturn(null);
+    }
+    if (hasEntry) {
+      when(region.getRegionEntry(any())).thenReturn(regionEntry);
+      try {
+        when(regionEntry.getLastAccessed()).thenReturn(LAST_ACCESSED);
+      } catch (InternalStatisticsDisabledException e) {
+        throw new RuntimeException("should never happen when mocking", e);
+      }
+    } else {
+      when(region.getRegionEntry(any())).thenReturn(null);
+    }
   }
 
   @Test
-  public void processWithNullCacheRepliesZero() throws Exception {
+  public void processWithNullCacheRepliesZero() {
+    setupMessage();
     when(dm.getCache()).thenReturn(null);
 
     lastAccessTimeMessage.process(dm);
@@ -61,9 +78,9 @@ public class LatestLastAccessTimeMessageTest {
   }
 
   @Test
-  public void processWithNullRegionRepliesZero() throws Exception {
-    when(dm.getCache()).thenReturn(cache);
-    when(cache.getRegion(any())).thenReturn(null);
+  public void processWithNullRegionRepliesZero() {
+    setupMessage();
+    setupRegion(false, false);
 
     lastAccessTimeMessage.process(dm);
 
@@ -71,10 +88,9 @@ public class LatestLastAccessTimeMessageTest {
   }
 
   @Test
-  public void processWithNullEntryRepliesZero() throws Exception {
-    when(dm.getCache()).thenReturn(cache);
-    when(cache.getRegion(any())).thenReturn(region);
-    when(region.getRegionEntry(any())).thenReturn(null);
+  public void processWithNullEntryRepliesZero() {
+    setupMessage();
+    setupRegion(true, false);
 
     lastAccessTimeMessage.process(dm);
 
@@ -83,10 +99,8 @@ public class LatestLastAccessTimeMessageTest {
 
   @Test
   public void processWithEntryStatsDisabledRepliesZero() throws Exception {
-    when(dm.getCache()).thenReturn(cache);
-    when(cache.getRegion(any())).thenReturn(region);
-    RegionEntry regionEntry = mock(RegionEntry.class);
-    when(region.getRegionEntry(any())).thenReturn(regionEntry);
+    setupMessage();
+    setupRegion(true, true);
     when(regionEntry.getLastAccessed()).thenThrow(new InternalStatisticsDisabledException());
 
     lastAccessTimeMessage.process(dm);
@@ -95,16 +109,23 @@ public class LatestLastAccessTimeMessageTest {
   }
 
   @Test
-  public void processWithRegionEntryRepliesWithLastAccessed() throws Exception {
-    when(dm.getCache()).thenReturn(cache);
-    when(cache.getRegion(any())).thenReturn(region);
-    RegionEntry regionEntry = mock(RegionEntry.class);
-    when(region.getRegionEntry(any())).thenReturn(regionEntry);
-    final long LAST_ACCESSED = 47;
-    when(regionEntry.getLastAccessed()).thenReturn(LAST_ACCESSED);
+  public void processWithRegionEntryRepliesWithLastAccessed() {
+    setupMessage();
+    setupRegion(true, true);
 
     lastAccessTimeMessage.process(dm);
 
     verify(lastAccessTimeMessage).sendReply(dm, LAST_ACCESSED);
+  }
+
+  @Test
+  public void processWithRemovedRegionEntryRepliesZero() {
+    setupMessage();
+    setupRegion(true, true);
+    when(regionEntry.isInvalidOrRemoved()).thenReturn(true);
+
+    lastAccessTimeMessage.process(dm);
+
+    verify(lastAccessTimeMessage).sendReply(dm, 0);
   }
 }
