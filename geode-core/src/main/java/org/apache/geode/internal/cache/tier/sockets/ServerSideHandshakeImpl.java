@@ -190,6 +190,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
   }
 
   @Override
+  @Deprecated
   public Encryptor getEncryptor() {
     return encryptor;
   }

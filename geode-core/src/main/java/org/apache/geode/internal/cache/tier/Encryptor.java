@@ -19,8 +19,11 @@ package org.apache.geode.internal.cache.tier;
  *
  * @deprecated this feature should be removed in Geode 2.0
  */
+@Deprecated
 public interface Encryptor {
+  @Deprecated
   byte[] encryptBytes(byte[] bytes) throws Exception;
 
+  @Deprecated
   byte[] decryptBytes(byte[] bytes) throws Exception;
 }
