@@ -45,15 +45,15 @@ public abstract class AbstractDockerizedAcceptanceTest {
   private static final String LOCATOR_START_COMMAND =
       "start locator --name=locator1 --port=10334 --J=-Dgemfire.enable-network-partition-detection=false";
   private static final String SERVER1_START_COMMAND =
-      "start server --name=server1 --locators=localhost[10334] --compatible-with-redis-port=6379 --memcached-port=5678 "
-          + "--server-port=40404 --http-service-port=9090 --start-rest-api ";
+      "start server --name=server1 --locators=localhost[10334] --server-port=40404 --http-service-port=9090 --start-rest-api ";
   private static final String SERVER2_START_COMMAND =
-      "start server --name=server2 --locators=localhost[10334] --compatible-with-redis-port=6378 --memcached-port=5677 "
-          + "--server-port=40405 --http-service-port=9091 --start-rest-api ";
+      "start server --name=server2 --locators=localhost[10334] --server-port=40405 --http-service-port=9091 --start-rest-api ";
   private static final String GFSH_PATH = "/geode/bin/gfsh";
 
   private static final String NONMODULAR_LAUNCH_COMMAND = "";
   private static final String MODULAR_LAUNCH_COMMAND = "--experimental";
+
+  private static final String EMPTY_STRING = "";
 
   private static GenericContainer<?> geodeContainer = setupDockerContainer();
 
@@ -153,8 +153,18 @@ public abstract class AbstractDockerizedAcceptanceTest {
     runGfshCommandInContainer(LOCATOR_START_COMMAND);
     runGfshCommandInContainer("connect", "configure pdx --read-serialized=true");
 
-    runGfshCommandInContainer(SERVER1_START_COMMAND + launchCommand);
-    runGfshCommandInContainer(SERVER2_START_COMMAND + launchCommand);
+    runGfshCommandInContainer(
+        SERVER1_START_COMMAND + " " + getServer1SpecificGfshCommands() + " " + launchCommand);
+    runGfshCommandInContainer(
+        SERVER2_START_COMMAND + " " + getServer2SpecificGfshCommands() + " " + launchCommand);
+  }
+
+  protected String getServer1SpecificGfshCommands() {
+    return EMPTY_STRING;
+  }
+
+  protected String getServer2SpecificGfshCommands() {
+    return EMPTY_STRING;
   }
 
   private static GenericContainer<?> setupDockerContainer() {
@@ -166,10 +176,7 @@ public abstract class AbstractDockerizedAcceptanceTest {
                     .concat("build/modularDocker/Dockerfile"))
                         .toPath()));
     geodeContainer.withExposedPorts(9090, 10334, 40404, 1099, 7070, 6379, 5678);
-    geodeContainer.withCreateContainerCmdModifier(cmd -> {
-      long availableProcessors = Runtime.getRuntime().availableProcessors();
-      cmd.getHostConfig().withCpuCount(availableProcessors);
-    });
+    geodeContainer.withReuse(true);
     geodeContainer.waitingFor(Wait.forHealthcheck());
     geodeContainer.withStartupTimeout(Duration.ofSeconds(120));
     return geodeContainer;

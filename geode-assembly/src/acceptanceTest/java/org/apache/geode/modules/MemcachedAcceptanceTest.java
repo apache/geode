@@ -34,6 +34,16 @@ public class MemcachedAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     launch(launchCommand);
   }
 
+  @Override
+  protected String getServer1SpecificGfshCommands() {
+    return "--memcached-port=5678";
+  }
+
+  @Override
+  protected String getServer2SpecificGfshCommands() {
+    return "--memcached-port=5679";
+  }
+
   @Test
   public void testMemcached() throws IOException, ExecutionException, InterruptedException {
     MemcachedClient client = new MemcachedClient(

@@ -39,6 +39,16 @@ public class RedisAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     launch(launchCommand);
   }
 
+  @Override
+  protected String getServer1SpecificGfshCommands() {
+    return "--compatible-with-redis-port=6378";
+  }
+
+  @Override
+  protected String getServer2SpecificGfshCommands() {
+    return "--compatible-with-redis-port=6379";
+  }
+
   @Before
   public void setup() {
     redisClient = RedisClient.create(RedisURI.Builder.redis(host, redisPort).build());

@@ -66,15 +66,25 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
   }
 
-  // @Override
-  // public String getLocatorGFSHConnectionString() {
-  // return "connect";
-  // }
-
   @After
   public void teardown() {
+    String list_regions = GfshScript.of(getLocatorGFSHConnectionString(), "list regions")
+        .execute(gfshRule).getOutputText();
+    System.err.println("list_regions = " + list_regions);
+    if (!list_regions.contains("No Regions Found")) {
+      GfshScript.of(getLocatorGFSHConnectionString(), "destroy region --name=/ExampleRegion")
+          .execute(gfshRule);
+    }
+
+    if (!GfshScript.of(getLocatorGFSHConnectionString(), "list disk-stores")
+        .execute(gfshRule).getOutputText().contains("No Disk Stores Found")) {
+      GfshScript.of(getLocatorGFSHConnectionString(), "destroy disk-store --name=ExampleDiskStore")
+          .execute(gfshRule);
+    }
+
     System.out.println(GfshScript.of(getLocatorGFSHConnectionString(), "undeploy")
         .execute(gfshRule).getOutputText());
+
   }
 
   @Test
