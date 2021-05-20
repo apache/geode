@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -90,7 +92,7 @@ public class RegisterInterestList66 extends BaseCommand {
     }
     // region data policy
     byte[] regionDataPolicyPartBytes;
-    boolean serializeValues = false;
+    final boolean serializeValues;
     try {
       Part regionDataPolicyPart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
       regionDataPolicyPartBytes = (byte[]) regionDataPolicyPart.getObject();
@@ -105,7 +107,7 @@ public class RegisterInterestList66 extends BaseCommand {
     partNumber = 3;
     Part list = clientMessage.getPart(partNumber);
     try {
-      keys = (List<Object>) list.getObject();
+      keys = uncheckedCast(list.getObject());
       numberOfKeys = keys.size();
     } catch (Exception e) {
       writeChunkedException(clientMessage, e, serverConnection);
@@ -133,14 +135,14 @@ public class RegisterInterestList66 extends BaseCommand {
 
     // Process the register interest request
     if (keys.isEmpty() || regionName == null) {
-      String errMessage = null;
+      final String errMessage;
       if (keys.isEmpty() && regionName == null) {
         errMessage =
             "The input list of keys is empty and the input region name is null for the register interest request.";
       } else if (keys.isEmpty()) {
         errMessage =
             "The input list of keys for the register interest request is empty.";
-      } else if (regionName == null) {
+      } else {
         errMessage =
             "The input region name for the register interest request is null.";
       }
@@ -163,7 +165,7 @@ public class RegisterInterestList66 extends BaseCommand {
         if (!DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
           RegisterInterestOperationContext registerContext =
               authorizeRequest.registerInterestListAuthorize(regionName, keys, policy);
-          keys = (List<Object>) registerContext.getKey();
+          keys = uncheckedCast(registerContext.getKey());
         }
       }
       // Register interest
