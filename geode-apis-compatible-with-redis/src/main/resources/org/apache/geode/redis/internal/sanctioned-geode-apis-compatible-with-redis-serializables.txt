@@ -5,7 +5,6 @@ org/apache/geode/redis/internal/data/NullRedisSet$SetOp,false
 org/apache/geode/redis/internal/data/NullRedisString$BitOp,false
 org/apache/geode/redis/internal/data/RedisDataType,false,toStringValue:java/lang/String
 org/apache/geode/redis/internal/data/RedisDataTypeMismatchException,true,-2451663685348513870
-org/apache/geode/redis/internal/data/RedisSortedSet$AddOrChange,false
 org/apache/geode/redis/internal/delta/DeltaType,false
 org/apache/geode/redis/internal/executor/CommandFunction,true,-1302506316316454732
 org/apache/geode/redis/internal/executor/SingleResultRedisFunction,true,3239452234149879302
