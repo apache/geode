@@ -342,7 +342,7 @@ public class RedisSet extends AbstractRedisData {
 
   @Override
   public String toString() {
-    return "RedisSet{" + super.toString() + ", " + "members=" + members + '}';
+    return "RedisSet{" + super.toString() + ", " + "size=" + members.size() + '}';
   }
 
   @Override
