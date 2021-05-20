@@ -167,12 +167,7 @@ public interface MemberIdentifier extends DataSerializableFixedID {
 
   void toDataPre_GFE_9_0_0_0(DataOutput out, SerializationContext context) throws IOException;
 
-  void toDataPre_GFE_7_1_0_0(DataOutput out, SerializationContext context) throws IOException;
-
   void fromDataPre_GFE_9_0_0_0(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException;
-
-  void fromDataPre_GFE_7_1_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException;
 
   void _readEssentialData(DataInput in, Function<InetAddress, String> hostnameResolver)

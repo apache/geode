@@ -49,8 +49,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       Boolean.getBoolean("optimized-cq-serialization");
 
   @Immutable
-  private static final KnownVersion[] serializationVersions =
-      new KnownVersion[] {KnownVersion.GFE_71};
+  private static final KnownVersion[] serializationVersions = new KnownVersion[0];
 
   /** Set to true if any peer members has any filters. */
   private boolean memberWithFilterInfoExists = false;
@@ -251,36 +250,6 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
   @Override
   public KnownVersion[] getSerializationVersions() {
     return serializationVersions;
-  }
-
-  public void fromDataPre_GFE_7_1_0_0(DataInput in) throws IOException, ClassNotFoundException {
-    DistributedMember myID = null;
-    InternalCache cache = GemFireCacheImpl.getInstance();
-    if (cache != null) {
-      myID = cache.getMyId();
-    }
-    int size = in.readInt();
-    for (int i = 0; i < size; i++) {
-      InternalDistributedMember member = new InternalDistributedMember();
-      InternalDataSerializer.invokeFromData(member, in);
-      FilterInfo fInfo = new FilterInfo();
-      InternalDataSerializer.invokeFromData(fInfo, in);
-      // we only need to retain the recipient's entry
-      if (myID == null || myID.equals(member)) {
-        this.serverFilterInfo.put(member, fInfo);
-      }
-    }
-  }
-
-  public void toDataPre_GFE_7_1_0_0(DataOutput out) throws IOException {
-    int size = this.serverFilterInfo.size();
-    out.writeInt(size);
-    for (Map.Entry<InternalDistributedMember, FilterInfo> e : this.serverFilterInfo.entrySet()) {
-      InternalDistributedMember member = e.getKey();
-      InternalDataSerializer.invokeToData(member, out);
-      FilterInfo fInfo = e.getValue();
-      InternalDataSerializer.invokeToData(fInfo, out);
-    }
   }
 
   @Override
