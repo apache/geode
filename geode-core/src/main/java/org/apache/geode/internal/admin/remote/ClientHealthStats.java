@@ -96,7 +96,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
   /** The versions in which this message was modified */
   @Immutable
   private static final KnownVersion[] dsfidVersions =
-      new KnownVersion[] {KnownVersion.GFE_80, KnownVersion.GEODE_1_9_0};
+      new KnownVersion[] {KnownVersion.GEODE_1_9_0};
 
   public ClientHealthStats() {}
 
@@ -238,7 +238,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     DataSerializer.writeHashMap((poolStats), out);
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput out, SerializationContext context)
+  public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)
       throws IOException {
     DataSerializer.writePrimitiveInt((int) numOfGets, out);
     DataSerializer.writePrimitiveInt((int) numOfPuts, out);
@@ -248,11 +248,6 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     DataSerializer.writePrimitiveInt(cpus, out);
     DataSerializer.writePrimitiveLong(processCpuTime, out);
     DataSerializer.writeDate(updateTime, out);
-  }
-
-  public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)
-      throws IOException {
-    toDataPre_GFE_8_0_0_0(out, context);
     DataSerializer.writeHashMap((poolStats), out);
   }
 
@@ -270,7 +265,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     this.poolStats = DataSerializer.readHashMap(in);
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
+  public void fromDataPre_GEODE_1_9_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     this.numOfGets = DataSerializer.readPrimitiveInt(in);
     this.numOfPuts = DataSerializer.readPrimitiveInt(in);
@@ -280,11 +275,6 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     this.cpus = DataSerializer.readPrimitiveInt(in);
     this.processCpuTime = DataSerializer.readPrimitiveLong(in);
     this.updateTime = DataSerializer.readDate(in);
-  }
-
-  public void fromDataPre_GEODE_1_9_0_0(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    fromDataPre_GFE_8_0_0_0(in, context);
     this.poolStats = DataSerializer.readHashMap(in);
   }
 

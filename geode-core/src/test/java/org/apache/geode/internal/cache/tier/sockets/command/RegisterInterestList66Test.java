@@ -130,7 +130,7 @@ public class RegisterInterestList66Test {
     when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
     when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
     when(this.serverConnection.getChunkedResponseMessage()).thenReturn(this.chunkedResponseMessage);
-    when(this.serverConnection.getClientVersion()).thenReturn(KnownVersion.GFE_80);
+    when(this.serverConnection.getClientVersion()).thenReturn(KnownVersion.GFE_8009);
     when(this.serverConnection.getAcceptor()).thenReturn(mock(AcceptorImpl.class));
   }
 
