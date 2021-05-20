@@ -32,6 +32,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
@@ -2720,6 +2721,7 @@ public class DLockService extends DistributedLockService {
    *
    * @see org.apache.geode.distributed.DistributedLockService#create(String, DistributedSystem)
    */
+  @NotNull
   public static DistributedLockService create(String serviceName, InternalDistributedSystem ds,
       boolean distributed, boolean destroyOnDisconnect, boolean automateFreeResources)
       throws IllegalArgumentException, IllegalStateException {
