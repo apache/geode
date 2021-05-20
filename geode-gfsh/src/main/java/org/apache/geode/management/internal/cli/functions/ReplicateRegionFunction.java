@@ -57,11 +57,12 @@ import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.management.internal.i18n.CliStrings;
 
 /**
  * Class for WAN replicating the contents of a region
  * It must be executed in all members of the Geode cluster that host the region
- * to be replicated. (called with onServers() or withMembers passing the list
+ * to be replicated. (called with onServers() or withMembers() passing the list
  * of all members hosting the region).
  * It also offers the possibility to cancel an ongoing execution of this function.
  * The replication itself is executed in a new thread with a known name
@@ -74,7 +75,8 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
  * 2: isCancel (Boolean): If true, it indicates that an ongoing execution of this
  * function for the given region and senderId must be stopped. Otherwise,
  * it indicates that the region must be replicated.
- * 3: maxRate (Long) maximum replication rate in entries per second.
+ * 3: maxRate (Long) maximum replication rate in entries per second. In the case of
+ * parallel gateway senders, the maxRate is per server hosting the region.
  * 4: batchSize (Integer): the size of the batches. Region entries are replicated in batches of the
  * passed size. After each batch is sent, the function checks if the command
  * must be canceled and also sleeps for some time if necessary to adjust the
@@ -134,41 +136,53 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
     int batchSize = (Integer) args[4];
 
     final InternalCache cache = (InternalCache) context.getCache();
-    final Region region = cache.getRegion(regionName);
+
     if (isCancel) {
-      return cancelReplicateRegion(context, region, senderId);
+      return cancelReplicateRegion(context, regionName, senderId);
+    }
+
+    final Region region = cache.getRegion(regionName);
+    if (region == null) {
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+          CliStrings.format(CliStrings.REPLICATE_REGION__MSG__REGION__NOT__FOUND, regionName));
     }
 
     GatewaySender sender = cache.getGatewaySender(senderId);
+    if (sender == null) {
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+          CliStrings.format(CliStrings.REPLICATE_REGION__MSG__SENDER__NOT__FOUND, senderId));
+    }
+
     if (!sender.isRunning()) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-          "Sender not running");
+          CliStrings.format(CliStrings.REPLICATE_REGION__MSG__SENDER__NOT__RUNNING, senderId));
     }
 
     if (!sender.isParallel() && !((InternalGatewaySender) sender).isPrimary()) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
-          "Sender is serial and not primary. 0 entries replicated.");
+          CliStrings.REPLICATE_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY);
     }
 
     try {
-      return executeReplicateFunctionInNewThread(context, region, sender, maxRate, batchSize);
+      return executeReplicateFunctionInNewThread(context, region, regionName, sender, maxRate,
+          batchSize);
     } catch (InterruptedException e) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-          "Execution canceled.");
+          CliStrings.REPLICATE_REGION__MSG__EXECUTION__CANCELED);
     } catch (ExecutionException e) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-          "Execution failed: " + e.getMessage());
+          CliStrings.format(CliStrings.REPLICATE_REGION__MSG__EXECUTION__FAILED, e.getMessage()));
     }
   }
 
   private CliFunctionResult executeReplicateFunctionInNewThread(FunctionContext<String[]> context,
-      Region region, GatewaySender sender, long maxRate, int batchSize)
+      Region region, String regionName, GatewaySender sender, long maxRate, int batchSize)
       throws InterruptedException, ExecutionException {
     Callable<CliFunctionResult> callable =
         new ReplicateRegionCallable(context, region, sender, maxRate, batchSize);
     FutureTask<CliFunctionResult> futureTask = new FutureTask<>(callable);
     ExecutorService executor = LoggingExecutors
-        .newSingleThreadExecutor(getReplicateRegionFunctionThreadName(region.getName(),
+        .newSingleThreadExecutor(getReplicateRegionFunctionThreadName(regionName,
             sender.getId()), true);
     executor.execute(futureTask);
     return futureTask.get();
@@ -199,28 +213,28 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
 
   private CliFunctionResult replicateRegion(FunctionContext<String[]> context, Region region,
       GatewaySender sender, long maxRate, int batchSize) {
-    final Set<?> entries = getEntries(region, sender);
-    int replicatedEntries = 0;
     Connection connection = null;
     PoolImpl senderPool = null;
-    int batchId = 0;
+    int replicatedEntries = 0;
     try {
       senderPool = ((AbstractGatewaySender) sender).getProxy();
       if (senderPool == null) {
         return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-            "No connection pool available towards receiver");
+            CliStrings.REPLICATE_REGION__MSG__NO__CONNECTION__POOL);
       }
       connection = senderPool.acquireConnection();
       if (connection == null) {
         return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-            "No connection available towards receiver");
+            CliStrings.REPLICATE_REGION__MSG__NO__CONNECTION);
       }
-
       final long startTime = clock.millis();
+      int batchId = 0;
       final InternalCache cache = (InternalCache) context.getCache();
-      Iterator<?> iter = entries.iterator();
       GatewaySenderEventDispatcher dispatcher =
           ((AbstractGatewaySender) sender).getEventProcessor().getDispatcher();
+
+      final Set<?> entries = getEntries(region, sender);
+      Iterator<?> iter = entries.iterator();
       while (iter.hasNext()) {
         List<GatewayQueueEvent> batch =
             createBatch((InternalRegion) region, sender, batchSize, cache, iter);
@@ -229,14 +243,16 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
           replicatedEntries += batch.size();
         } catch (BatchException70 e) {
           return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-              "Error (" + e.getMessage() + ") in operation after having replicated "
-                  + replicatedEntries + " entries");
+              CliStrings.format(CliStrings.REPLICATE_REGION__MSG__ERROR__AFTER__HAVING__REPLICATED,
+                  replicatedEntries));
         }
         try {
           doPostSendBatchActions(startTime, replicatedEntries, maxRate);
         } catch (InterruptedException e) {
-          return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-              "Operation canceled after having replicated " + replicatedEntries + " entries");
+          return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+              CliStrings.format(
+                  CliStrings.REPLICATE_REGION__MSG__CANCELED__AFTER__HAVING__REPLICATED,
+                  replicatedEntries));
         }
       }
     } finally {
@@ -247,7 +263,8 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
     }
 
     return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
-        "Entries replicated: " + replicatedEntries);
+        CliStrings.format(CliStrings.REPLICATE_REGION__MSG__REPLICATED__ENTRIES,
+            replicatedEntries));
   }
 
   private List<GatewayQueueEvent> createBatch(InternalRegion region, GatewaySender sender,
@@ -255,8 +272,8 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
     int batchIndex = 0;
     List<GatewayQueueEvent> batch = new ArrayList<>();
     while (iter.hasNext() && batchIndex < batchSize) {
-      GatewayQueueEvent event = createGatewaySenderEvent(cache, region,
-          sender, (Region.Entry) iter.next());
+      GatewayQueueEvent event =
+          createGatewaySenderEvent(cache, region, sender, (Region.Entry) iter.next());
       if (event != null) {
         batch.add(event);
         batchIndex++;
@@ -266,16 +283,12 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
   }
 
   private Set<?> getEntries(Region region, GatewaySender sender) {
-    final Set<?> entries;
     if (region instanceof PartitionedRegion && sender.isParallel()) {
-      entries =
-          ((PartitionedRegion) region).getDataStore().getAllLocalBucketRegions()
-              .stream()
-              .flatMap(br -> ((Set<?>) br.entrySet()).stream()).collect(Collectors.toSet());
-    } else {
-      entries = region.entrySet();
+      return ((PartitionedRegion) region).getDataStore().getAllLocalBucketRegions()
+          .stream()
+          .flatMap(br -> ((Set<?>) br.entrySet()).stream()).collect(Collectors.toSet());
     }
-    return entries;
+    return region.entrySet();
   }
 
   private GatewayQueueEvent createGatewaySenderEvent(InternalCache cache,
@@ -298,23 +311,19 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
     }
   }
 
-  final CliFunctionResult cancelReplicateRegion(FunctionContext<String[]> context, Region region,
-      String senderId) {
-    String threadBaseName = getReplicateRegionFunctionThreadName(region.getName(), senderId);
-    long threadId = 0;
+  final CliFunctionResult cancelReplicateRegion(FunctionContext<String[]> context,
+      String regionName, String senderId) {
+    String threadBaseName = getReplicateRegionFunctionThreadName(regionName, senderId);
     for (Thread t : Thread.getAllStackTraces().keySet()) {
       if (t.getName().startsWith(threadBaseName)) {
         t.interrupt();
-        threadId = t.getId();
-        break;
+        return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+            CliStrings.REPLICATE_REGION__MSG__EXECUTION__CANCELED);
       }
     }
-    if (threadId == 0) {
-      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-          "No running command to be canceled for region " + region + " and sender: " + senderId);
-    }
-    return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
-        "Canceled command");
+    return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+        CliStrings.format(CliStrings.REPLICATE_REGION__MSG__NO__RUNNING__COMMAND,
+            regionName, senderId));
   }
 
   public static String getReplicateRegionFunctionThreadName(String regionName, String senderId) {
@@ -343,7 +352,8 @@ public class ReplicateRegionFunction extends CliFunction<String[]> implements De
     if (elapsedMs == 0 || replicatedEntries * 1000L / elapsedMs > maxRate) {
       final long targetElapsedMs = (replicatedEntries * 1000L) / maxRate;
       final long sleepMs = targetElapsedMs - elapsedMs;
-      logger.info("Sleeping for {} ms", sleepMs);
+      logger.info("{}: Sleeping for {} ms to accommodate to requested maxRate",
+          this.getClass().getName(), sleepMs);
       threadSleeper.millis(sleepMs);
     }
   }

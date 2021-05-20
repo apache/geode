@@ -1444,6 +1444,26 @@ public class CliStrings {
   public static final String REPLICATE_REGION__CANCEL = "cancel";
   public static final String REPLICATE_REGION__CANCEL__HELP =
       "cancel an ongoing replication command";
+  public static final String REPLICATE_REGION__MSG__REGION__NOT__FOUND = "Region {0} not found";
+  public static final String REPLICATE_REGION__MSG__SENDER__NOT__FOUND = "Sender {0} not found";
+  public static final String REPLICATE_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY =
+      "Sender is serial and not primary. 0 entries replicated.";
+  public static final String REPLICATE_REGION__MSG__SENDER__NOT__RUNNING = "Sender not running";
+  public static final String REPLICATE_REGION__MSG__EXECUTION__CANCELED = "Execution canceled";
+  public static final String REPLICATE_REGION__MSG__EXECUTION__FAILED =
+      "Execution failed. Error: {0}";
+  public static final String REPLICATE_REGION__MSG__ENTRIES__REPLICATED = "Entries replicated: {0}";
+  public static final String REPLICATE_REGION__MSG__NO__CONNECTION__POOL =
+      "No connection pool available towards receiver";
+  public static final String REPLICATE_REGION__MSG__NO__CONNECTION =
+      "No connection available towards receiver";
+  public static final String REPLICATE_REGION__MSG__ERROR__AFTER__HAVING__REPLICATED =
+      "Error ({0}) in operation after having replicated {1} entries";
+  public static final String REPLICATE_REGION__MSG__CANCELED__AFTER__HAVING__REPLICATED =
+      "Operation canceled after having replicated {0} entries";
+  public static final String REPLICATE_REGION__MSG__REPLICATED__ENTRIES = "Entries replicated: {0}";
+  public static final String REPLICATE_REGION__MSG__NO__RUNNING__COMMAND =
+      "No running command to be canceled for region {0} and sender: {1}";
 
   /* export logs command */
   public static final String EXPORT_LOGS = "export logs";
