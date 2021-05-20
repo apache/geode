@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.executor.sortedset;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -90,46 +89,6 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "XX", "1.0",
             "fakeMember"))
                 .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_NX_XX);
-  }
-
-  @Test
-  public void zaddErrors_givenBothNXAndGTOptions() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "GT", "1.0",
-            "fakeMember"))
-                .hasMessageContaining(ERROR_SYNTAX);
-  }
-
-  @Test
-  public void zaddErrors_givenBothNXAndLTOptions() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "LT", "1.0",
-            "fakeMember"))
-                .hasMessageContaining(ERROR_SYNTAX);
-  }
-
-  @Test
-  public void zaddErrors_givenLTThenNXOptions() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "LT", "NX", "1.0",
-            "fakeMember"))
-                .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
-  }
-
-  @Test
-  public void zaddErrors_givenGTThenNXOptions() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "GT", "NX", "1.0",
-            "fakeMember"))
-                .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
-  }
-
-  @Test
-  public void zaddErrors_givenBothGTAndLTOptions() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "LT", "GT", "1",
-            "fakeMember"))
-                .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
@@ -227,15 +186,6 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     }
   }
 
-  private Map<String, Double> makeMemberScoreMap(String baseName, int memberCount, int baseScore) {
-    Map<String, Double> map = new HashMap<>();
-
-    for (int i = 0; i < memberCount; i++) {
-      map.put(baseName + i, Double.valueOf((i + baseScore) + ""));
-    }
-    return map;
-  }
-
   @Test
   public void zaddDoesNotUpdateMember_whenNXSpecified() {
     String key = "ss_key";
@@ -260,5 +210,14 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     assertThat(res).isEqualTo(0);
     assertThat(jedis.zscore(key, "mamba")).isEqualTo(null);
     assertThat(jedis.exists(key)).isFalse();
+  }
+
+  private Map<String, Double> makeMemberScoreMap(String baseName, int memberCount, int baseScore) {
+    Map<String, Double> map = new HashMap<>();
+
+    for (int i = 0; i < memberCount; i++) {
+      map.put(baseName + i, Double.valueOf((i + baseScore) + ""));
+    }
+    return map;
   }
 }

@@ -32,11 +32,9 @@ import org.apache.geode.internal.serialization.SerializationContext;
 public class SortedSetOptions implements DataSerializableFixedID {
 
   private Exists exists;
-  private Update update;
 
-  public SortedSetOptions(Exists exists, Update update) {
+  public SortedSetOptions(Exists exists) {
     this.exists = exists;
-    this.update = update;
   }
 
   public SortedSetOptions() {}
@@ -47,14 +45,6 @@ public class SortedSetOptions implements DataSerializableFixedID {
 
   public boolean isXX() {
     return exists.equals(Exists.XX);
-  }
-
-  public boolean isLT() {
-    return update.equals(Update.LT);
-  }
-
-  public boolean isGT() {
-    return update.equals(Update.GT);
   }
 
   public Exists getExists() {
@@ -94,19 +84,5 @@ public class SortedSetOptions implements DataSerializableFixedID {
      * Only set if key already exists
      */
     XX;
-  }
-
-  public enum Update {
-    NONE,
-
-    /**
-     * Only set if less than existing score
-     */
-    LT,
-
-    /**
-     * Only set if greater than existing score
-     */
-    GT;
   }
 }

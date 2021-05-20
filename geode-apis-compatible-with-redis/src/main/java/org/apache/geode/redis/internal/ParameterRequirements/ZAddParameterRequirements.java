@@ -40,7 +40,7 @@ public class ZAddParameterRequirements implements ParameterRequirements {
 
   private int confirmKnownOptions(Command command) {
     int optionsFoundCount = 0;
-    boolean nxFound = false, xxFound = false, gtFound = false, ltFound = false;
+    boolean nxFound = false, xxFound = false;
 
     List<byte[]> commandElements = command.getProcessedCommand();
     Iterator<byte[]> commandIterator = commandElements.iterator();
@@ -62,18 +62,6 @@ public class ZAddParameterRequirements implements ParameterRequirements {
         case "xx":
           xxFound = true;
           break;
-        case "gt":
-          gtFound = true;
-          if (nxFound) {
-            throw new RedisParametersMismatchException(ERROR_SYNTAX);
-          }
-          break;
-        case "lt":
-          ltFound = true;
-          if (nxFound) {
-            throw new RedisParametersMismatchException(ERROR_SYNTAX);
-          }
-          break;
         default:
           try {
             Double.valueOf(subCommandString);
@@ -89,24 +77,15 @@ public class ZAddParameterRequirements implements ParameterRequirements {
       optionsFoundCount++;
     }
 
-    validateFlagCombinations(nxFound, xxFound, gtFound, ltFound);
+    validateFlagCombinations(nxFound, xxFound);
 
     return optionsFoundCount;
   }
 
-  private void validateFlagCombinations(boolean nxFound, boolean xxFound, boolean gtFound,
-      boolean ltFound) {
+  private void validateFlagCombinations(boolean nxFound, boolean xxFound) {
     if (nxFound && xxFound) {
       throw new RedisParametersMismatchException(
           ERROR_INVALID_ZADD_OPTION_NX_XX);
-    }
-    if (gtFound && ltFound) {
-      throw new RedisParametersMismatchException(
-          ERROR_NOT_A_VALID_FLOAT);
-    }
-    if ((gtFound || ltFound) && nxFound) {
-      throw new RedisParametersMismatchException(
-          ERROR_NOT_A_VALID_FLOAT);
     }
   }
 }

@@ -34,7 +34,7 @@ public class ZAddExecutor extends SortedSetExecutor {
     List<byte[]> scoresAndMembersToAdd = new ArrayList<>();
     Iterator<byte[]> commandIterator = commandElements.iterator();
     boolean adding = false;
-    boolean nxFound = false, xxFound = false, gtFound = false, ltFound = false;
+    boolean nxFound = false, xxFound = false;
     int count = 0;
 
     while (commandIterator.hasNext()) {
@@ -59,12 +59,6 @@ public class ZAddExecutor extends SortedSetExecutor {
             case "xx":
               xxFound = true;
               break;
-            case "gt":
-              gtFound = true;
-              break;
-            case "lt":
-              ltFound = true;
-              break;
             default:
               // TODO: Should never happen?
           }
@@ -83,13 +77,11 @@ public class ZAddExecutor extends SortedSetExecutor {
     }
     return RedisResponse
         .integer(redisSortedSetCommands.zadd(command.getKey(), scoresAndMembersToAdd,
-            makeOptions(nxFound, xxFound, gtFound, ltFound)));
+            makeOptions(nxFound, xxFound)));
   }
 
-  private SortedSetOptions makeOptions(boolean nxFound, boolean xxFound, boolean gtFound,
-      boolean ltFound) {
+  private SortedSetOptions makeOptions(boolean nxFound, boolean xxFound) {
     SortedSetOptions.Exists existsOption = SortedSetOptions.Exists.NONE;
-    SortedSetOptions.Update updateOption = SortedSetOptions.Update.NONE;
 
     if (nxFound) {
       existsOption = SortedSetOptions.Exists.NX;
@@ -97,12 +89,6 @@ public class ZAddExecutor extends SortedSetExecutor {
     if (xxFound) {
       existsOption = SortedSetOptions.Exists.XX;
     }
-    if (gtFound) {
-      updateOption = SortedSetOptions.Update.GT;
-    }
-    if (ltFound) {
-      updateOption = SortedSetOptions.Update.LT;
-    }
-    return new SortedSetOptions(existsOption, updateOption);
+    return new SortedSetOptions(existsOption);
   }
 }
