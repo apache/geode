@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.NotNull;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.InternalGemFireError;
@@ -256,8 +257,6 @@ public class InternalDistributedMember
    */
   @Override
   public DurableClientAttributes getDurableClientAttributes() {
-    assert !this.isPartial();
-
     if (durableClientAttributes == null) {
       String durableId = memberIdentifier.getDurableId();
 
@@ -272,10 +271,8 @@ public class InternalDistributedMember
     return durableClientAttributes;
   }
 
-  /**
-   * Returns an unmodifiable Set of this member's Roles.
-   */
   @Override
+  @Deprecated
   public Set<Role> getRoles() {
 
     if (getGroups() == null) {
@@ -285,7 +282,7 @@ public class InternalDistributedMember
   }
 
   @Override
-  public int compareTo(DistributedMember o) {
+  public int compareTo(@NotNull DistributedMember o) {
     return compareTo(o, false, true);
   }
 
@@ -625,8 +622,4 @@ public class InternalDistributedMember
     return memberIdentifier.getUUID();
   }
 
-  @FunctionalInterface
-  public interface HostnameResolver {
-    InetAddress getInetAddress(ServerLocation location) throws UnknownHostException;
-  }
 }
