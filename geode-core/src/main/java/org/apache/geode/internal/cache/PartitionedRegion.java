@@ -247,7 +247,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.RegionLogger;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.TransformUtils;
@@ -4713,10 +4712,6 @@ public class PartitionedRegion extends LocalRegion
         oneBucketKeys.clear();
         oneBucketKeys.put(e.getKey(), e.getValue());
         try {
-          if (entry.getKey().getVersion().isOlderThan(KnownVersion.GFE_80)) {
-            failures.putAll(nodeToBuckets.get(entry.getKey()));
-            continue;
-          }
           fber =
               FetchBulkEntriesMessage.send(entry.getKey(), this, oneBucketKeys, null, null, true);
 
@@ -4765,10 +4760,6 @@ public class PartitionedRegion extends LocalRegion
         bucketId.clear();
         bucketId.add(bucket);
         try {
-          if (entry.getKey().getVersion().isOlderThan(KnownVersion.GFE_80)) {
-            failures.addAll(nodeToBuckets.get(entry.getKey()));
-            continue;
-          }
           fber = FetchBulkEntriesMessage.send(entry.getKey(), this, null, bucketId, regex, true);
 
           BucketDump[] bds = fber.waitForEntries();

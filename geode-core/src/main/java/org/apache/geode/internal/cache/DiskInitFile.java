@@ -541,16 +541,11 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       String compressorClassName, boolean offHeap) {
     DiskRegionView dr = getDiskRegionById(drId);
     if (dr != null) {
-      // We need to add the IS_WITH_VERSIONING to persistent regions
-      // during the upgrade. Previously, all regions had versioning enabled
-      // but now only regions that have this flag will have versioning enabled.
-      //
       // We don't want gateway queues to turn on versioning. Unfortunately, the only
       // way to indentify that a region is a gateway queue is by the region
       // name.
-      if (KnownVersion.GFE_80.compareTo(currentRecoveredGFVersion()) > 0
-          && !dr.getName().contains("_SERIAL_GATEWAY_SENDER_QUEUE")
-          && !dr.getName().contains("_PARALLEL__GATEWAY__SENDER__QUEUE")) {
+      if (!(dr.getName().contains("_SERIAL_GATEWAY_SENDER_QUEUE")
+          || dr.getName().contains("_PARALLEL__GATEWAY__SENDER__QUEUE"))) {
         flags.add(DiskRegionFlag.IS_WITH_VERSIONING);
       }
       dr.setConfig(lruAlgorithm, lruAction, lruLimit, concurrencyLevel, initialCapacity, loadFactor,

@@ -87,7 +87,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   /** The versions in which this message was modified */
   @Immutable
-  private static final KnownVersion[] dsfidVersions = new KnownVersion[] {KnownVersion.GFE_80};
+  private static final KnownVersion[] dsfidVersions = new KnownVersion[0];
 
 
   private static final ThreadLocal threadIDLocal = new ThreadLocal() {
@@ -370,13 +370,6 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     dop.writeByte(this.breadcrumbCounter);
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput dop, SerializationContext context)
-      throws IOException {
-    DataSerializer.writeByteArray(this.membershipID, dop);
-    DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(this.threadID, this.sequenceID),
-        dop);
-  }
-
   @Override
   public void fromData(DataInput di,
       DeserializationContext context) throws IOException, ClassNotFoundException {
@@ -386,14 +379,6 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     this.sequenceID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
     this.bucketID = di.readInt();
     this.breadcrumbCounter = di.readByte();
-  }
-
-  public void fromDataPre_GFE_8_0_0_0(DataInput di, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    this.membershipID = DataSerializer.readByteArray(di);
-    ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(di));
-    this.threadID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
-    this.sequenceID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
   }
 
   @Override
