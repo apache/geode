@@ -30,7 +30,9 @@ public class GemFireIOException extends GemFireException {
    * Creates a new <code>GemFireIOException</code>.
    */
   public GemFireIOException(String message, Throwable cause) {
-    super(message, cause);
+    super(message
+        + ((cause != null && cause.getMessage() != null) ? " ( " + cause.getMessage() + " )" : ""),
+        cause);
   }
 
   public GemFireIOException(String message) {

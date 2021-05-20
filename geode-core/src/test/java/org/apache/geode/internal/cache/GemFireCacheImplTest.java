@@ -173,7 +173,7 @@ public class GemFireCacheImplTest {
 
     assertThat(thrown)
         .isInstanceOf(SerializationException.class)
-        .hasMessage("Serialization failed")
+        .hasMessage("Serialization failed ( java.lang.Object )")
         .hasCauseInstanceOf(NotSerializableException.class);
   }
 
