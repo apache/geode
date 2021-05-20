@@ -33,7 +33,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -57,13 +56,13 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
 
   private final long lastModifiedTime;
 
-  public AbstractUpdateOperation(CacheEvent event, long lastModifiedTime) {
+  public AbstractUpdateOperation(CacheEvent<?, ?> event, long lastModifiedTime) {
     super(event);
     this.lastModifiedTime = lastModifiedTime;
   }
 
   @Override
-  protected Set getRecipients() {
+  protected Set<InternalDistributedMember> getRecipients() {
     CacheDistributionAdvisor advisor = getRegion().getCacheDistributionAdvisor();
     return advisor.adviseUpdate(getEvent());
   }
@@ -72,11 +71,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
   protected void initMessage(CacheOperationMessage msg, DirectReplyProcessor pr) {
     super.initMessage(msg, pr);
     AbstractUpdateMessage m = (AbstractUpdateMessage) msg;
-    DistributedRegion region = getRegion();
-    DistributionManager mgr = region.getDistributionManager();
-    // [bruce] We might have to stop using cacheTimeMillis because it causes a skew between
-    // lastModified and the version tag's timestamp
-    m.lastModified = this.lastModifiedTime;
+    m.lastModified = lastModifiedTime;
   }
 
   private static final boolean ALWAYS_REPLICATE_UPDATES =
@@ -85,19 +80,12 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
   /** @return whether we should do a local create for a remote one */
   private static boolean shouldDoRemoteCreate(LocalRegion rgn, EntryEventImpl ev) {
     DataPolicy dp = rgn.getAttributes().getDataPolicy();
-    if (!rgn.isAllEvents() || (dp.withReplication() && rgn.isInitialized()
-        && ev.getOperation().isUpdate() && !rgn.getConcurrencyChecksEnabled()
-        // misordered CREATE and
-        // UPDATE messages can
-        // cause inconsistencies
-        && !ALWAYS_REPLICATE_UPDATES)) {
-      // we are not accepting all events
-      // or we are a replicate and initialized and it was an update
-      // (we exclude that latter to avoid resurrecting a key deleted in a replicate
-      return false;
-    } else {
-      return true;
-    }
+    // we are not accepting all events or we are a replicate and initialized and it was an update
+    // (we exclude that latter to avoid resurrecting a key deleted in a replicate
+    // misordered CREATE and UPDATE messages can cause inconsistencies
+    return rgn.isAllEvents() && (!dp.withReplication() || !rgn.isInitialized()
+        || !ev.getOperation().isUpdate() || rgn.getConcurrencyChecksEnabled()
+        || ALWAYS_REPLICATE_UPDATES);
   }
 
   private static boolean checkIfToUpdateAfterCreateFailed(LocalRegion rgn, EntryEventImpl ev) {
@@ -200,7 +188,6 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
               if (logger.isTraceEnabled()) {
                 logger.trace("Processing put key {} in region {}", ev.getKey(), rgn.getFullPath());
               }
-              updated = true;
             } else {
               // key not here, blocked by DESTROYED token or ConcurrentCacheModificationException
               // thrown during second update attempt
@@ -211,7 +198,6 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
                     rgn.basicUpdate(ev, false, false, lastMod, true, invokeCallbacks, false);
                 if (thirdBasicUpdateSuccess) {
                   rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
-                  updated = true;
                 }
               } else {
                 if (rgn.getVersionVector() != null && ev.getVersionTag() != null) {
@@ -264,25 +250,20 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
     protected long lastModified;
 
     @Override
-    protected boolean operateOnRegion(CacheEvent event, ClusterDistributionManager dm)
+    protected boolean operateOnRegion(CacheEvent<?, ?> event, ClusterDistributionManager dm)
         throws EntryNotFoundException {
       EntryEventImpl ev = (EntryEventImpl) event;
       DistributedRegion rgn = (DistributedRegion) ev.getRegion();
-      DistributionManager mgr = dm;
-      boolean sendReply = true; // by default tell caller to send ack
 
-      // if (!rgn.hasSeenEvent((InternalCacheEvent)event)) {
       if (!rgn.isCacheContentProxy()) {
         basicOperateOnRegion(ev, rgn);
-      }
-      // }
-      else {
+      } else {
         if (logger.isDebugEnabled()) {
           logger.debug("UpdateMessage: this cache has already seen this event {}", event);
         }
       }
 
-      return sendReply;
+      return true; // tell caller to send ack
     }
 
     // @todo darrel: make this method static?
@@ -297,15 +278,15 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
         logger.debug("Processing  {}", this);
       }
       try {
-        long time = this.lastModified;
+        long time = lastModified;
         if (ev.getVersionTag() != null) {
           checkVersionTag(rgn, ev.getVersionTag());
           time = ev.getVersionTag().getVersionTimeStamp();
         }
-        this.appliedOperation = doPutOrCreate(rgn, ev, time);
+        appliedOperation = doPutOrCreate(rgn, ev, time);
       } catch (ConcurrentCacheModificationException e) {
         dispatchElidedEvent(rgn, ev);
-        this.appliedOperation = false;
+        appliedOperation = false;
       }
     }
 
@@ -313,25 +294,25 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
       buff.append("; lastModified=");
-      buff.append(this.lastModified);
+      buff.append(lastModified);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.lastModified = in.readLong();
+      lastModified = in.readLong();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeLong(this.lastModified);
+      out.writeLong(lastModified);
     }
 
     protected void checkVersionTag(DistributedRegion rgn, VersionTag tag) {
-      RegionAttributes attr = rgn.getAttributes();
+      RegionAttributes<?, ?> attr = rgn.getAttributes();
       if (attr.getConcurrencyChecksEnabled() && attr.getDataPolicy().withPersistence()
           && attr.getScope() != Scope.GLOBAL
           && (tag.getMemberID() == null || test_InvalidVersion)) {
