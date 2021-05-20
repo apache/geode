@@ -54,10 +54,6 @@ public class RedisSortedSet extends AbstractRedisData {
     return sizeInBytes;
   }
 
-  private enum AddOrChange {
-    ADDED, CHANGED, NOOP
-  }
-
   private int calculateSizeOfFieldValuePair(byte[] member, byte[] score) {
     return PER_PAIR_OVERHEAD + member.length + score.length;
   }
@@ -149,14 +145,14 @@ public class RedisSortedSet extends AbstractRedisData {
     return REDIS_SORTED_SET_ID;
   }
 
-  protected synchronized AddOrChange memberAdd(byte[] memberToAdd, byte[] scoreToAdd) {
-    boolean added = (members.put(memberToAdd, scoreToAdd) == null);
-    if (added) {
+  protected synchronized byte[] memberAdd(byte[] memberToAdd, byte[] scoreToAdd) {
+    byte[] oldScore = members.put(memberToAdd, scoreToAdd);
+    if (oldScore == null) {
       sizeInBytes += calculateSizeOfFieldValuePair(memberToAdd, scoreToAdd);
     } else {
-      // TODO: calculate size for 'changed'
+      sizeInBytes += scoreToAdd.length - oldScore.length;
     }
-    return added ? AddOrChange.ADDED : AddOrChange.NOOP;
+    return oldScore;
   }
 
   private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
@@ -188,6 +184,7 @@ public class RedisSortedSet extends AbstractRedisData {
     int membersAdded = 0;
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
+
     while (iterator.hasNext()) {
       boolean delta = true;
       byte[] score = iterator.next();
@@ -199,46 +196,23 @@ public class RedisSortedSet extends AbstractRedisData {
       if (options.isXX() && !members.containsKey(member)) {
         continue;
       }
-      switch (memberAdd(member, score)) {
-        case ADDED:
-          membersAdded++;
-          makeAddsDeltaInfo(deltaInfo, member, score);
-          break;
-        case CHANGED:
-          // TODO: track changed
-          makeAddsDeltaInfo(deltaInfo, member, score);
-          break;
-        default:
-          delta = false;
-          // do nothing
+      boolean isNewMember = (memberAdd(member, score) == null);
+      if (isNewMember) {
+        membersAdded++;
       }
 
-      if (delta) {
-        if (deltaInfo == null) {
-          deltaInfo = new AddsDeltaInfo(new ArrayList<>());
-        }
-        deltaInfo.add(member);
-        deltaInfo.add(score);
+      if (deltaInfo == null) {
+        deltaInfo = new AddsDeltaInfo(new ArrayList<>());
       }
+      deltaInfo.add(member);
+      deltaInfo.add(score);
     }
-    if (deltaInfo != null) {
-      storeChanges(region, key, deltaInfo);
-      deltaInfo = null;
-    }
+    storeChanges(region, key, deltaInfo);
     return membersAdded;
   }
 
   byte[] zscore(byte[] member) {
     return members.get(member);
-  }
-
-  private AddsDeltaInfo makeAddsDeltaInfo(AddsDeltaInfo deltaInfo, byte[] member, byte[] score) {
-    if (deltaInfo == null) {
-      deltaInfo = new AddsDeltaInfo(new ArrayList<>());
-    }
-    deltaInfo.add(member);
-    deltaInfo.add(score);
-    return deltaInfo;
   }
 
   @Override

@@ -45,6 +45,7 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSetTest {
@@ -120,7 +121,7 @@ public class RedisSortedSetTest {
     adds.add("k3".getBytes());
     adds.add("v3".getBytes());
 
-    o1.zadd(region, null, adds, null);
+    o1.zadd(region, null, adds, new SortedSetOptions(SortedSetOptions.Exists.NONE));
     assertThat(o1.hasDelta()).isTrue();
 
     HeapDataOutputStream out = new HeapDataOutputStream(100);
