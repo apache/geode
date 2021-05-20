@@ -27,11 +27,6 @@ public class GatewayReceiverStats extends CacheServerStats {
 
   private static final String typeName = "GatewayReceiverStatistics";
 
-  // ////////////////// Statistic "Id" Fields ////////////////////
-
-  // /** Name of the events queued statistic */
-  // private static final String FAILOVER_BATCHES_RECEIVED = "failoverBatchesReceived";
-
   /**
    * Name of the events not queued because conflated statistic
    */
@@ -89,22 +84,18 @@ public class GatewayReceiverStats extends CacheServerStats {
   /**
    * Id of the events not queued because conflated statistic
    */
-  private int duplicateBatchesReceivedId;
+  private final int duplicateBatchesReceivedId;
 
   /**
    * Id of the event queue time statistic
    */
-  private int outoforderBatchesReceivedId;
+  private final int outoforderBatchesReceivedId;
 
   /**
    * Id of the event queue size statistic
    */
-  private int earlyAcksId;
+  private final int earlyAcksId;
 
-  /**
-   * Id of the events distributed statistic
-   */
-  private int eventsReceivedId;
   private final Counter eventsReceivedCounter;
   private static final String EVENTS_RECEIVED_COUNTER_NAME =
       "geode.gateway.receiver.events";
@@ -115,59 +106,59 @@ public class GatewayReceiverStats extends CacheServerStats {
   /**
    * Id of the events exceeding alert threshold statistic
    */
-  private int createRequestId;
+  private final int createRequestId;
 
   /**
    * Id of the batch distribution time statistic
    */
-  private int updateRequestId;
+  private final int updateRequestId;
 
   /**
    * Id of the batches distributed statistic
    */
-  private int destroyRequestId;
+  private final int destroyRequestId;
 
   /**
    * Id of the batches redistributed statistic
    */
-  private int unknowsOperationsReceivedId;
+  private final int unknowsOperationsReceivedId;
 
   /**
    * Id of the unprocessed events added by primary statistic
    */
-  private int exceptionsOccurredId;
+  private final int exceptionsOccurredId;
 
   /**
    * Id of the events retried statistic
    */
-  private int eventsRetriedId;
+  private final int eventsRetriedId;
 
   // ///////////////////// Constructors ///////////////////////
 
   public static GatewayReceiverStats createGatewayReceiverStats(StatisticsFactory f,
       String ownerName, MeterRegistry meterRegistry) {
     StatisticDescriptor[] descriptors = new StatisticDescriptor[] {
-        f.createIntCounter(DUPLICATE_BATCHES_RECEIVED,
+        f.createLongCounter(DUPLICATE_BATCHES_RECEIVED,
             "number of batches which have already been seen by this GatewayReceiver",
             "nanoseconds"),
-        f.createIntCounter(OUT_OF_ORDER_BATCHES_RECEIVED,
+        f.createLongCounter(OUT_OF_ORDER_BATCHES_RECEIVED,
             "number of batches which are out of order on this GatewayReceiver", "operations"),
-        f.createIntCounter(EARLY_ACKS, "number of early acknowledgements sent to gatewaySenders",
+        f.createLongCounter(EARLY_ACKS, "number of early acknowledgements sent to gatewaySenders",
             "operations"),
         f.createLongCounter(EVENTS_RECEIVED,
             EVENTS_RECEIVED_COUNTER_DESCRIPTION,
             EVENTS_RECEIVED_COUNTER_UNITS),
-        f.createIntCounter(CREAT_REQUESTS,
+        f.createLongCounter(CREAT_REQUESTS,
             "total number of create operations received by this GatewayReceiver", "operations"),
-        f.createIntCounter(UPDATE_REQUESTS,
+        f.createLongCounter(UPDATE_REQUESTS,
             "total number of update operations received by this GatewayReceiver", "operations"),
-        f.createIntCounter(DESTROY_REQUESTS,
+        f.createLongCounter(DESTROY_REQUESTS,
             "total number of destroy operations received by this GatewayReceiver", "operations"),
-        f.createIntCounter(UNKNOWN_OPERATIONS_RECEIVED,
+        f.createLongCounter(UNKNOWN_OPERATIONS_RECEIVED,
             "total number of unknown operations received by this GatewayReceiver", "operations"),
-        f.createIntCounter(EXCEPTIONS_OCCURRED,
+        f.createLongCounter(EXCEPTIONS_OCCURRED,
             "number of exceptions occurred while porcessing the batches", "operations"),
-        f.createIntCounter(EVENTS_RETRIED,
+        f.createLongCounter(EVENTS_RETRIED,
             "total number events retried by this GatewayReceiver due to exceptions", "operations")};
     return new GatewayReceiverStats(f, ownerName, typeName, descriptors, meterRegistry);
 
@@ -177,11 +168,10 @@ public class GatewayReceiverStats extends CacheServerStats {
       StatisticDescriptor[] descriptiors, MeterRegistry meterRegistry) {
     super(f, ownerName, typeName, descriptiors);
     // Initialize id fields
-    // failoverBatchesReceivedId = statType.nameToId(FAILOVER_BATCHES_RECEIVED);
     duplicateBatchesReceivedId = statType.nameToId(DUPLICATE_BATCHES_RECEIVED);
     outoforderBatchesReceivedId = statType.nameToId(OUT_OF_ORDER_BATCHES_RECEIVED);
     earlyAcksId = statType.nameToId(EARLY_ACKS);
-    eventsReceivedId = statType.nameToId(EVENTS_RECEIVED);
+    final int eventsReceivedId = statType.nameToId(EVENTS_RECEIVED);
     createRequestId = statType.nameToId(CREAT_REQUESTS);
     updateRequestId = statType.nameToId(UPDATE_REQUESTS);
     destroyRequestId = statType.nameToId(DESTROY_REQUESTS);
@@ -197,50 +187,37 @@ public class GatewayReceiverStats extends CacheServerStats {
         .register(meterRegistry);
   }
 
-  // /////////////////// Instance Methods /////////////////////
-
-  // /**
-  // * Increments the number of failover batches received by 1.
-  // */
-  // public void incFailoverBatchesReceived() {
-  // this.stats.incInt(failoverBatchesReceivedId, 1);
-  // }
-  //
-  // public int getFailoverBatchesReceived() {
-  // return this.stats.getInt(failoverBatchesReceivedId);
-  // }
-
   /**
    * Increments the number of duplicate batches received by 1.
    */
   public void incDuplicateBatchesReceived() {
-    this.stats.incInt(duplicateBatchesReceivedId, 1);
+    stats.incLong(duplicateBatchesReceivedId, 1);
   }
 
-  public int getDuplicateBatchesReceived() {
-    return this.stats.getInt(duplicateBatchesReceivedId);
+  public long getDuplicateBatchesReceived() {
+    return stats.getLong(duplicateBatchesReceivedId);
   }
 
   /**
    * Increments the number of out of order batches received by 1.
    */
   public void incOutoforderBatchesReceived() {
-    this.stats.incInt(outoforderBatchesReceivedId, 1);
+    stats.incLong(outoforderBatchesReceivedId, 1);
   }
 
-  public int getOutoforderBatchesReceived() {
-    return this.stats.getInt(outoforderBatchesReceivedId);
+  public long getOutoforderBatchesReceived() {
+    return stats.getLong(outoforderBatchesReceivedId);
   }
 
   /**
    * Increments the number of early acks by 1.
    */
   public void incEarlyAcks() {
-    this.stats.incInt(earlyAcksId, 1);
+    stats.incLong(earlyAcksId, 1);
   }
 
-  public int getEarlyAcks() {
-    return this.stats.getInt(earlyAcksId);
+  public long getEarlyAcks() {
+    return stats.getLong(earlyAcksId);
   }
 
   /**
@@ -250,74 +227,71 @@ public class GatewayReceiverStats extends CacheServerStats {
     eventsReceivedCounter.increment(delta);
   }
 
-  public int getEventsReceived() {
-    return (int) eventsReceivedCounter.count();
+  public long getEventsReceived() {
+    return (long) eventsReceivedCounter.count();
   }
 
   /**
    * Increments the number of create requests by 1.
    */
   public void incCreateRequest() {
-    this.stats.incInt(createRequestId, 1);
+    stats.incLong(createRequestId, 1);
   }
 
-  public int getCreateRequest() {
-    return this.stats.getInt(createRequestId);
+  public long getCreateRequest() {
+    return stats.getLong(createRequestId);
   }
 
   /**
    * Increments the number of update requests by 1.
    */
   public void incUpdateRequest() {
-    this.stats.incInt(updateRequestId, 1);
+    stats.incLong(updateRequestId, 1);
   }
 
-  public int getUpdateRequest() {
-    return this.stats.getInt(updateRequestId);
+  public long getUpdateRequest() {
+    return stats.getLong(updateRequestId);
   }
 
   /**
    * Increments the number of destroy request received by 1.
    */
   public void incDestroyRequest() {
-    this.stats.incInt(destroyRequestId, 1);
+    stats.incLong(destroyRequestId, 1);
   }
 
-  public int getDestroyRequest() {
-    return this.stats.getInt(destroyRequestId);
+  public long getDestroyRequest() {
+    return stats.getLong(destroyRequestId);
   }
 
   /**
    * Increments the number of unknown operations received by 1.
    */
   public void incUnknowsOperationsReceived() {
-    this.stats.incInt(unknowsOperationsReceivedId, 1);
+    stats.incLong(unknowsOperationsReceivedId, 1);
   }
 
-  public int getUnknowsOperationsReceived() {
-    return this.stats.getInt(unknowsOperationsReceivedId);
+  public long getUnknowsOperationsReceived() {
+    return stats.getLong(unknowsOperationsReceivedId);
   }
 
-  /**
-   * Increments the number of exceptions occurred by 1.
-   */
-  public void incExceptionsOccurred() {
-    this.stats.incInt(exceptionsOccurredId, 1);
+  public void incExceptionsOccurred(int delta) {
+    stats.incLong(exceptionsOccurredId, delta);
   }
 
-  public int getExceptionsOccurred() {
-    return this.stats.getInt(exceptionsOccurredId);
+  public long getExceptionsOccurred() {
+    return stats.getLong(exceptionsOccurredId);
   }
 
   /**
    * Increments the number of events received by 1.
    */
   public void incEventsRetried() {
-    this.stats.incInt(eventsRetriedId, 1);
+    stats.incLong(eventsRetriedId, 1);
   }
 
-  public int getEventsRetried() {
-    return this.stats.getInt(eventsRetriedId);
+  public long getEventsRetried() {
+    return stats.getLong(eventsRetriedId);
   }
 
   /**
