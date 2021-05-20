@@ -298,23 +298,11 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
   }
 
   @Immutable
-  private static final KnownVersion[] serializationVersions =
-      new KnownVersion[] {KnownVersion.GFE_80};
+  private static final KnownVersion[] serializationVersions = new KnownVersion[0];
 
   @Override
   public KnownVersion[] getSerializationVersions() {
     return serializationVersions;
-  }
-
-  public void toDataPre_GFE_8_0_0_0(DataOutput out, SerializationContext context)
-      throws IOException {
-    getCanonicalIDs();
-    toData(out, context);
-  }
-
-  public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    fromData(in, context);
   }
 
   /*
@@ -761,22 +749,6 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
         DeserializationContext context) throws IOException, ClassNotFoundException {
       throw new IOException("this fromData method should never be invoked");
     }
-
-    public void toDataPre_GFE_8_0_0_0(DataOutput out, SerializationContext context)
-        throws IOException {
-      if (this.index == 0) {
-        this.list.getCanonicalIDs();
-      }
-      toData(out, context);
-    }
-
-    // when deserialized a VersionedObjectList is created, not a Chunker, so this method isn't
-    // needed
-    // public void fromDataPre_GFE_8_0_0_0(DataInput in, SerializationContext context) throws
-    // IOException, ClassNotFoundException
-    // {
-    // fromData(in);
-    // }
 
     @Override
     public KnownVersion[] getSerializationVersions() {

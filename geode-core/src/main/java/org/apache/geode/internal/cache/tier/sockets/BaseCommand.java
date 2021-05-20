@@ -80,7 +80,6 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.sequencelog.EntryLogger;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -857,7 +856,7 @@ public abstract class BaseCommand implements Command {
       sendRegisterInterestResponseChunk(region, riKey, new ArrayList<>(), true, servConn);
       return;
     }
-    if (policy.isKeysValues() && servConn.getClientVersion().isNotOlderThan(KnownVersion.GFE_80)) {
+    if (policy.isKeysValues()) {
       handleKeysValuesPolicy(region, riKey, interestType, serializeValues, servConn);
       return;
     }
@@ -974,8 +973,7 @@ public abstract class BaseCommand implements Command {
    */
   private static boolean sendTombstonesInRIResults(ServerConnection servConn,
       InterestResultPolicy policy) {
-    return policy == InterestResultPolicy.KEYS_VALUES
-        && servConn.getClientVersion().isNotOlderThan(KnownVersion.GFE_80);
+    return policy == InterestResultPolicy.KEYS_VALUES;
   }
 
   /**

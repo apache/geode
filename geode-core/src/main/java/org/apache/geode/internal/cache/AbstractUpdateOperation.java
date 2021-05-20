@@ -22,7 +22,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.InvalidVersionException;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheEvent;
@@ -39,7 +38,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -342,11 +340,8 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
           logger.debug("Version tag is missing the memberID: {}", tag);
         }
 
-        String msg =
-            String.format("memberID cannot be null for persistent regions: %s", tag);
-        RuntimeException ex = (sender.getVersion().isOlderThan(KnownVersion.GFE_80))
-            ? new InternalGemFireException(msg) : new InvalidVersionException(msg);
-        throw ex;
+        throw new InvalidVersionException(
+            String.format("memberID cannot be null for persistent regions: %s", tag));
       }
     }
 

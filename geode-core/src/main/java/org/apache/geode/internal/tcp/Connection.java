@@ -2893,14 +2893,11 @@ public class Connection implements Runnable {
           Versioning.getVersion(VersioningIO.readOrdinal(dis)),
           null);
       int dominoNumber = 0;
-      if (remoteVersion == null
-          || remoteVersion.isNotOlderThan(KnownVersion.GFE_80)) {
-        dominoNumber = dis.readInt();
-        if (sharedResource) {
-          dominoNumber = 0;
-        }
-        dominoCount.set(dominoNumber);
+      dominoNumber = dis.readInt();
+      if (sharedResource) {
+        dominoNumber = 0;
       }
+      dominoCount.set(dominoNumber);
       if (!sharedResource) {
         if (tipDomino()) {
           logger.info("thread owned receiver forcing itself to send on thread owned sockets");

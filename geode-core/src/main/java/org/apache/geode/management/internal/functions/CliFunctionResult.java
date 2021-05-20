@@ -35,6 +35,8 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {
 
+  public static final KnownVersion[] KNOWN_VERSIONS = new KnownVersion[0];
+
   static {
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(CLI_FUNCTION_RESULT,
         CliFunctionResult.class);
@@ -236,13 +238,6 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     DataSerializer.writeByteArray(this.byteData, out);
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput out, SerializationContext context)
-      throws IOException {
-    DataSerializer.writeString(this.memberIdOrName, out);
-    DataSerializer.writeObjectArray(this.serializables, out);
-    context.getSerializer().writeObject(this.resultObject, out);
-  }
-
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
@@ -258,13 +253,6 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
     this.resultObject = context.getDeserializer().readObject(in);
     this.byteData = DataSerializer.readByteArray(in);
-  }
-
-  public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    this.memberIdOrName = DataSerializer.readString(in);
-    this.resultObject = context.getDeserializer().readObject(in);
-    this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
   }
 
   public boolean isSuccessful() {
@@ -358,6 +346,6 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   @Override
   public KnownVersion[] getSerializationVersions() {
-    return new KnownVersion[] {KnownVersion.GFE_80};
+    return KNOWN_VERSIONS;
   }
 }

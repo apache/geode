@@ -642,74 +642,9 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       }
     }
 
-    public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
-        throws IOException, ClassNotFoundException {
-      super.fromData(in, context);
-      this.Id = DataSerializer.readString(in);
-      this.startTime = in.readLong();
-      this.remoteDSId = in.readInt();
-      this.isRunning = in.readBoolean();
-      this.isPrimary = in.readBoolean();
-      this.isParallel = in.readBoolean();
-      this.isBatchConflationEnabled = in.readBoolean();
-      this.isPersistenceEnabled = in.readBoolean();
-      this.alertThreshold = in.readInt();
-      this.manualStart = in.readBoolean();
-      this.eventFiltersClassNames = DataSerializer.readArrayList(in);
-      this.transFiltersClassNames = DataSerializer.readArrayList(in);
-      this.senderEventListenerClassNames = DataSerializer.readArrayList(in);
-      this.isDiskSynchronous = in.readBoolean();
-      this.dispatcherThreads = in.readInt();
-      this.orderPolicy = DataSerializer.readObject(in);
-      boolean serverLocationFound = DataSerializer.readPrimitiveBoolean(in);
-      if (serverLocationFound) {
-        this.serverLocation = new ServerLocation();
-        InternalDataSerializer.invokeFromData(this.serverLocation, in);
-      }
-    }
-
-    public void toDataPre_GFE_8_0_0_0(DataOutput out, SerializationContext context)
-        throws IOException {
-      super.toData(out, context);
-      DataSerializer.writeString(Id, out);
-      out.writeLong(startTime);
-      out.writeInt(remoteDSId);
-      out.writeBoolean(isRunning);
-      out.writeBoolean(isPrimary);
-      out.writeBoolean(isParallel);
-      out.writeBoolean(isBatchConflationEnabled);
-      out.writeBoolean(isPersistenceEnabled);
-      out.writeInt(alertThreshold);
-      out.writeBoolean(manualStart);
-      DataSerializer.writeArrayList(eventFiltersClassNames, out);
-      DataSerializer.writeArrayList(transFiltersClassNames, out);
-      DataSerializer.writeArrayList(senderEventListenerClassNames, out);
-      out.writeBoolean(isDiskSynchronous);
-      // out.writeInt(dispatcherThreads);
-      if (isParallel) {
-        out.writeInt(1);// it was 1 on previous version of gemfire
-      } else if (orderPolicy == null) {
-        out.writeInt(1);// it was 1 on previous version of gemfire
-      } else {
-        out.writeInt(dispatcherThreads);
-      }
-
-      if (isParallel) {
-        DataSerializer.writeObject(null, out);
-      } else {
-        DataSerializer.writeObject(orderPolicy, out);
-      }
-
-      boolean serverLocationFound = (this.serverLocation != null);
-      DataSerializer.writePrimitiveBoolean(serverLocationFound, out);
-      if (serverLocationFound) {
-        InternalDataSerializer.invokeToData(serverLocation, out);
-      }
-    }
-
     @Immutable
     private static final KnownVersion[] serializationVersions =
-        new KnownVersion[] {KnownVersion.GFE_80, KnownVersion.GEODE_1_14_0};
+        new KnownVersion[] {KnownVersion.GEODE_1_14_0};
 
     @Override
     public KnownVersion[] getSerializationVersions() {

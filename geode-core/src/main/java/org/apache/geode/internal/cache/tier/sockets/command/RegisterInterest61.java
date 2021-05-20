@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.vmotion.VMotionObserver;
 import org.apache.geode.internal.cache.vmotion.VMotionObserverHolder;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
@@ -98,10 +97,8 @@ public class RegisterInterest61 extends BaseCommand {
     try {
       Part regionDataPolicyPart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
       regionDataPolicyPartBytes = (byte[]) regionDataPolicyPart.getObject();
-      if (serverConnection.getClientVersion().isNotOlderThan(KnownVersion.GFE_80)) {
-        // The second byte here is serializeValues
-        serializeValues = regionDataPolicyPartBytes[1] == (byte) 0x01;
-      }
+      // The second byte here is serializeValues
+      serializeValues = regionDataPolicyPartBytes[1] == (byte) 0x01;
     } catch (Exception e) {
       writeChunkedException(clientMessage, e, serverConnection);
       serverConnection.setAsTrue(RESPONDED);

@@ -245,11 +245,9 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
                   + " matches this sites distributed system id " + localDistributedSystemId);
         }
       }
+
       // Read the PDX registry size from the remote size
-      if (communicationMode.isWAN()
-          && KnownVersion.GFE_80
-              .compareTo(Versioning.getVersion(conn.getWanSiteVersion())) <= 0
-          && currentClientVersion.isNotOlderThan(KnownVersion.GFE_80)) {
+      if (communicationMode.isWAN()) {
         int remotePdxSize = dis.readInt();
         serverQStatus.setPdxSize(remotePdxSize);
       }
