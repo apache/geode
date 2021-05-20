@@ -194,14 +194,6 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + functionJar.getCanonicalPath())
         .execute(gfshRule);
 
-    try {
-      geodeContainer.copyFileFromContainer("/server1/server1.log", "server1.log");
-      geodeContainer.copyFileFromContainer("/server2/server2.log", "server2.log");
-      geodeContainer.copyFileFromContainer("/locator1/locator1.log", "locator1.log");
-    } catch (Throwable t) {
-      t.printStackTrace();
-    }
-
     assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list functions").execute(gfshRule)
         .getOutputText()).contains("ExampleFunction");
 
