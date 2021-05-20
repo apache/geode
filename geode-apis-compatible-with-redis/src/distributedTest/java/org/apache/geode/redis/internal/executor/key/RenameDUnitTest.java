@@ -39,7 +39,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
@@ -128,15 +127,15 @@ public class RenameDUnitTest {
   private Set<String> getKeysOnSameRandomStripe(int numKeysNeeded) {
     Random random = new Random();
     String key1 = "{rename}keyz" + random.nextInt();
-    RedisKey key1ByteArrayWrapper = new RedisKey(key1.getBytes());
+    RedisKey key1RedisKey = new RedisKey(key1.getBytes());
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     Set<String> keys = new HashSet<>();
     keys.add(key1);
 
     do {
       String key2 = "{rename}key" + random.nextInt();
-      if (stripedExecutor.compareStripes(key1ByteArrayWrapper,
-          new ByteArrayWrapper(key2.getBytes())) == 0) {
+      if (stripedExecutor.compareStripes(key1RedisKey,
+          new RedisKey(key2.getBytes())) == 0) {
         keys.add(key2);
       }
     } while (keys.size() < numKeysNeeded);

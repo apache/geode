@@ -36,7 +36,7 @@ public abstract class SetOpExecutor extends SetExecutor {
       setsStartIndex++;
     }
 
-    List<RedisKey> commandElements = command.getProcessedCommandWrapperKeys();
+    List<RedisKey> commandElements = command.getProcessedCommandKeys();
     List<RedisKey> setKeys =
         new ArrayList<>(commandElements.subList(setsStartIndex, commandElements.size()));
     if (isStorage()) {

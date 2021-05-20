@@ -19,9 +19,9 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.statistics.RedisStats;
@@ -36,8 +36,7 @@ public class InfoExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     String result;
-    List<ByteArrayWrapper> commands =
-        command.getProcessedCommandWrappers();
+    List<byte[]> commands = command.getProcessedCommand();
 
     if (containsSectionParameter(commands)) {
       result = getSpecifiedSection(context, commands);
@@ -47,14 +46,14 @@ public class InfoExecutor extends AbstractExecutor {
     return RedisResponse.bulkString(result);
   }
 
-  private boolean containsSectionParameter(List<ByteArrayWrapper> commands) {
+  private boolean containsSectionParameter(List<byte[]> commands) {
     return commands.size() == 2;
   }
 
   private String getSpecifiedSection(ExecutionHandlerContext context,
-      List<ByteArrayWrapper> commands) {
+      List<byte[]> commands) {
     String result;
-    String section = commands.get(1).toString().toLowerCase();
+    String section = Coder.bytesToString(commands.get(1)).toLowerCase();
     switch (section) {
       case "server":
         result = getServerSection(context);

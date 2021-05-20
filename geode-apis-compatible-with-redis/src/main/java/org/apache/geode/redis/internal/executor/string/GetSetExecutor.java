@@ -34,8 +34,8 @@ public class GetSetExecutor extends StringExecutor {
     byte[] newCharValue = commandElems.get(VALUE_INDEX);
 
     RedisStringCommands stringCommands = getRedisStringCommands(context);
-    byte[] oldValueWrapper = stringCommands.getset(key, newCharValue);
+    byte[] oldValue = stringCommands.getset(key, newCharValue);
 
-    return respondBulkStrings(oldValueWrapper);
+    return respondBulkStrings(oldValue);
   }
 }

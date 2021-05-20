@@ -21,23 +21,26 @@ import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUC
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.executor.cluster.CRC16;
 import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
+import org.apache.geode.redis.internal.netty.Coder;
 
-public class RedisKey extends ByteArrayWrapper implements DataSerializableFixedID {
+public class RedisKey implements DataSerializableFixedID, Comparable<RedisKey> {
 
   private int crc16;
+  private byte[] value;
 
   public RedisKey() {}
 
   public RedisKey(byte[] value) {
-    super(value);
-
+    this.value = value;
     int startHashtag = Integer.MAX_VALUE;
     int endHashtag = 0;
 
@@ -63,6 +66,78 @@ public class RedisKey extends ByteArrayWrapper implements DataSerializableFixedI
     return getCrc16() & (REDIS_SLOTS - 1) / REDIS_SLOTS_PER_BUCKET;
   }
 
+  /**
+   * This is a byte to byte comparator, it is not lexicographical but purely compares byte by byte
+   * values
+   */
+  @Override
+  public int compareTo(RedisKey other) {
+    return arrayCmp(value, other.value);
+  }
+
+  /**
+   * Private helper method to compare two byte arrays, A.compareTo(B). The comparison is basically
+   * numerical, for each byte index, the byte representing the greater value will be the greater
+   *
+   * @param A byte[]
+   * @param B byte[]
+   * @return 1 if A > B, -1 if B > A, 0 if A == B
+   */
+  private int arrayCmp(byte[] A, byte[] B) {
+    if (A == B) {
+      return 0;
+    }
+    if (A == null) {
+      return -1;
+    } else if (B == null) {
+      return 1;
+    }
+
+    int len = Math.min(A.length, B.length);
+
+    for (int i = 0; i < len; i++) {
+      byte a = A[i];
+      byte b = B[i];
+      int diff = a - b;
+      if (diff > 0) {
+        return 1;
+      } else if (diff < 0) {
+        return -1;
+      }
+    }
+
+    if (A.length > B.length) {
+      return 1;
+    } else if (B.length > A.length) {
+      return -1;
+    }
+
+    return 0;
+  }
+
+  /**
+   * Hash code for byte[] wrapped by this object
+   */
+  @Override
+  public int hashCode() {
+    return Arrays.hashCode(value);
+  }
+
+  /**
+   * This equals is not symmetric and therefore not transitive, because a String with the same
+   * underlying bytes is considered equal. Clearly calling {@link String#equals(Object)} would not
+   * yield the same result
+   */
+  @Override
+  public boolean equals(Object other) {
+    if (other instanceof RedisKey) {
+      return Arrays.equals(value, ((RedisKey) other).value);
+    } else if (other instanceof String) {
+      return Arrays.equals(value, Coder.stringToBytes((String) other));
+    }
+    return false;
+  }
+
   @Override
   public int getDSFID() {
     return DataSerializableFixedID.REDIS_KEY;
@@ -71,20 +146,29 @@ public class RedisKey extends ByteArrayWrapper implements DataSerializableFixedI
   @Override
   public void toData(DataOutput out, SerializationContext context) throws IOException {
     out.writeShort(crc16);
-    super.toData(out, context);
+    DataSerializer.writeByteArray(value, out);
   }
 
   @Override
   public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
+      throws IOException {
     // Need to convert a signed short to unsigned
     crc16 = in.readShort() & 0xffff;
-    super.fromData(in, context);
+    value = DataSerializer.readByteArray(in);
   }
 
   @Override
   public KnownVersion[] getSerializationVersions() {
     return null;
+  }
+
+  @Override
+  public String toString() {
+    return Coder.bytesToString(value);
+  }
+
+  public byte[] toBytes() {
+    return this.value;
   }
 
   /**

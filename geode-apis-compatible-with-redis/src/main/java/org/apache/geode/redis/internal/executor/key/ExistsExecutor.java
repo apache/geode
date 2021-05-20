@@ -28,7 +28,7 @@ public class ExistsExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    List<RedisKey> commandElems = command.getProcessedCommandWrapperKeys();
+    List<RedisKey> commandElems = command.getProcessedCommandKeys();
     RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
 
     long existsCount = commandElems
