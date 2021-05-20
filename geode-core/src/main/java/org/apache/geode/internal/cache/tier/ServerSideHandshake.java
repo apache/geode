@@ -42,6 +42,7 @@ public interface ServerSideHandshake {
 
   void setClientReadTimeout(int clientReadTimeout);
 
+  @Deprecated
   Encryptor getEncryptor();
 
   void handshakeWithClient(OutputStream out, InputStream in, byte endpointType, int queueSize,
