@@ -22,11 +22,14 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -68,6 +71,15 @@ public class FunctionToFileTracker {
     List<Function<?>> registeredFunctions = new LinkedList<>();
     try {
       Collection<String> functionClasses = findFunctionsInThisJar(jarFile);
+      if (functionClasses.isEmpty()) {
+        StringBuilder entriesString = new StringBuilder();
+        Enumeration<JarEntry> entries = new JarFile(jarFile).entries();
+        while (entries.hasMoreElements()) {
+          entriesString.append(entries.nextElement().getName());
+        }
+        throw new RuntimeException(
+            "No functions found in: " + jarFile.getName() + " entries: " + entriesString);
+      }
       String filePath = jarFile.getAbsolutePath();
       Collection<Function<?>> functions = new LinkedList<>();
       for (String functionClass : functionClasses) {
@@ -90,6 +102,8 @@ public class FunctionToFileTracker {
         deploymentToFunctionsMap.remove(deploymentName);
     if (!registeredFunctions.isEmpty()) {
       deploymentToFunctionsMap.put(deploymentName, registeredFunctions);
+    } else {
+      throw new RuntimeException("registeredFunctions is empty");
     }
     unregisterUndeployedFunctions(previouslyRegisteredFunctions, registeredFunctions);
   }

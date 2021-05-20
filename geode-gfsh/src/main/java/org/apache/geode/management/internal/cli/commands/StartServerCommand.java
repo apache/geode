@@ -480,7 +480,7 @@ public class StartServerCommand extends OfflineGfshCommand {
   }
 
   Process getProcess(String workingDir, String[] serverCommandLine) throws IOException {
-    return new ProcessBuilder(serverCommandLine)
+    return new ProcessBuilder(serverCommandLine).inheritIO()
         .directory(new File(workingDir)).start();
   }
 
