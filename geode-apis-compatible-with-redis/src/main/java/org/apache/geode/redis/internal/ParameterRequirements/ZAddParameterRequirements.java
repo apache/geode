@@ -29,25 +29,17 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ZAddParameterRequirements implements ParameterRequirements {
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext context) {
-    int numberOfArguments = command.getProcessedCommand().size();
-
-    int optionsFoundCount = confirmKnownOptions(command);
-
-    if ((numberOfArguments - optionsFoundCount - 2) % 2 != 0) {
-      throw new RedisParametersMismatchException(ERROR_SYNTAX);
-    }
-  }
-
-  private int confirmKnownOptions(Command command) {
     int optionsFoundCount = 0;
     boolean nxFound = false, xxFound = false;
+    boolean scoreFound = false;
+    String exceptionMessage = null;
+    int numberOfArguments = command.getProcessedCommand().size();
 
     List<byte[]> commandElements = command.getProcessedCommand();
     Iterator<byte[]> commandIterator = commandElements.iterator();
-    commandIterator.next(); // Skip past command
+    commandIterator.next(); // Skip over command
     commandIterator.next(); // and key
 
-    boolean scoreFound = false;
     while (commandIterator.hasNext()) {
       byte[] subcommand = commandIterator.next();
       String subCommandString = Coder.bytesToString(subcommand).toLowerCase();
@@ -68,24 +60,24 @@ public class ZAddParameterRequirements implements ParameterRequirements {
             scoreFound = true;
             break;
           } catch (NumberFormatException nfe) {
-            throw new RedisParametersMismatchException(ERROR_NOT_A_VALID_FLOAT);
+            exceptionMessage = ERROR_NOT_A_VALID_FLOAT;
           }
       }
-      if (scoreFound) {
+      if (scoreFound || exceptionMessage != null) {
         break;
       }
       optionsFoundCount++;
     }
 
-    validateFlagCombinations(nxFound, xxFound);
+    if ((numberOfArguments - optionsFoundCount - 2) % 2 != 0) {
+      exceptionMessage = ERROR_SYNTAX;
+    } else if (nxFound && xxFound) {
+      exceptionMessage = ERROR_INVALID_ZADD_OPTION_NX_XX;
+    }
 
-    return optionsFoundCount;
-  }
-
-  private void validateFlagCombinations(boolean nxFound, boolean xxFound) {
-    if (nxFound && xxFound) {
-      throw new RedisParametersMismatchException(
-          ERROR_INVALID_ZADD_OPTION_NX_XX);
+    if (exceptionMessage != null) {
+      throw new RedisParametersMismatchException(exceptionMessage);
     }
   }
+
 }

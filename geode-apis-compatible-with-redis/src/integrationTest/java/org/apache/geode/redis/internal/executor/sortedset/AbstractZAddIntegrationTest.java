@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.sortedset;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -89,6 +90,21 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "XX", "1.0",
             "fakeMember"))
                 .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_NX_XX);
+  }
+
+  @Test
+  public void zadd_prioritizesErrors_inTheCorrectOrder() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "XX", "xlerb",
+            "member", "2"))
+                .hasMessageContaining(ERROR_SYNTAX);
+    assertThatThrownBy(
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "XX", "xlerb",
+            "member"))
+                .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_NX_XX);
+    assertThatThrownBy(
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "xlerb", "member"))
+            .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
