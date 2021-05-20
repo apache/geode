@@ -470,12 +470,6 @@ public class InternalDistributedMember
     memberIdentifier.toDataPre_GFE_9_0_0_0(out, context);
   }
 
-  public void toDataPre_GFE_7_1_0_0(DataOutput out,
-      SerializationContext context)
-      throws IOException {
-    memberIdentifier.toDataPre_GFE_7_1_0_0(out, context);
-  }
-
   @Override
   public void fromData(DataInput in,
       DeserializationContext context)
@@ -489,14 +483,6 @@ public class InternalDistributedMember
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
     memberIdentifier.fromDataPre_GFE_9_0_0_0(in, context);
-    durableClientAttributes = null;
-  }
-
-  @Override
-  public void fromDataPre_GFE_7_1_0_0(DataInput in,
-      DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    memberIdentifier.fromDataPre_GFE_7_1_0_0(in, context);
     durableClientAttributes = null;
   }
 

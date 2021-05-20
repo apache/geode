@@ -56,10 +56,9 @@ import org.apache.geode.internal.serialization.VersioningIO;
 public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableFixedID {
   /** The versions in which this message was modified */
   @Immutable
-  private static final KnownVersion[] dsfidVersions = new KnownVersion[] {
-      KnownVersion.GFE_71, KnownVersion.GFE_90};
-  private MemberData memberData; // the underlying member object
+  private static final KnownVersion[] dsfidVersions = new KnownVersion[] {KnownVersion.GFE_90};
 
+  private MemberData memberData; // the underlying member object
 
   public MemberIdentifierImpl() {}
 
@@ -705,55 +704,6 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     VersioningIO.writeOrdinal(out, version, true);
   }
 
-  public void toDataPre_GFE_7_1_0_0(DataOutput out, SerializationContext context)
-      throws IOException {
-    assert memberData.getVmKind() > 0;
-    // disabled to allow post-connect setting of the port for loner systems
-    // Assert.assertTrue(getPort() > 0);
-    // if (this.getPort() == 0) {
-    // InternalDistributedSystem.getLogger().warning(String.format("%s",
-    // "Serializing ID with zero port", new Exception("Stack trace")));
-    // }
-
-    // NOTE: If you change the serialized format of this class
-    // then bump Connection.HANDSHAKE_VERSION since an
-    // instance of this class is sent during Connection handshake.
-    StaticSerialization.writeInetAddress(getInetAddress(), out);
-    out.writeInt(getMembershipPort());
-
-    StaticSerialization.writeString(memberData.getHostName(), out);
-
-    int flags = 0;
-    if (memberData.isNetworkPartitionDetectionEnabled()) {
-      flags |= NPD_ENABLED_BIT;
-    }
-    if (memberData.isPreferredForCoordinator()) {
-      flags |= COORD_ENABLED_BIT;
-    }
-    if (this.isPartial()) {
-      flags |= PARTIAL_ID_BIT;
-    }
-    out.writeByte((byte) (flags & 0xff));
-
-    out.writeInt(memberData.getDirectChannelPort());
-    out.writeInt(memberData.getProcessId());
-    out.writeByte(memberData.getVmKind());
-    StaticSerialization.writeStringArray(memberData.getGroups(), out);
-
-    StaticSerialization.writeString(memberData.getName(), out);
-    int vmKind = memberData.getVmKind();
-    if (vmKind == MemberIdentifier.LONER_DM_TYPE) {
-      StaticSerialization.writeString(memberData.getUniqueTag(), out);
-    } else { // added in 6.5 for unique identifiers in P2P
-      StaticSerialization.writeString(String.valueOf(memberData.getVmViewId()), out);
-    }
-    String durableId = memberData.getDurableId();
-    StaticSerialization.writeString(durableId == null ? "" : durableId, out);
-    StaticSerialization.writeInteger(
-        Integer.valueOf(durableId == null ? 300 : memberData.getDurableTimeout()),
-        out);
-  }
-
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
@@ -823,61 +773,6 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     assert memberData.getVmKind() > 0;
     // Assert.assertTrue(getPort() > 0);
   }
-
-  public void fromDataPre_GFE_7_1_0_0(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    InetAddress inetAddr = StaticSerialization.readInetAddress(in);
-    int port = in.readInt();
-
-    String hostName = StaticSerialization.readString(in);
-
-    int flags = in.readUnsignedByte();
-    boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
-    boolean elCoord = (flags & COORD_ENABLED_BIT) != 0;
-    boolean isPartial = (flags & PARTIAL_ID_BIT) != 0;
-
-    int dcPort = in.readInt();
-    int vmPid = in.readInt();
-    int vmKind = in.readUnsignedByte();
-    String[] groups = StaticSerialization.readStringArray(in);
-    int vmViewId = -1;
-
-    String name = StaticSerialization.readString(in);
-    String uniqueTag = null;
-    if (vmKind == MemberIdentifier.LONER_DM_TYPE) {
-      uniqueTag = StaticSerialization.readString(in);
-    } else {
-      String str = StaticSerialization.readString(in);
-      if (str != null) { // backward compatibility from earlier than 6.5
-        vmViewId = Integer.parseInt(str);
-      }
-    }
-
-    String durableId = StaticSerialization.readString(in);
-    int durableTimeout = in.readInt();
-
-    short version = readVersion(flags, in);
-
-    memberData = MemberDataBuilder.newBuilder(inetAddr, hostName)
-        .setMembershipPort(port)
-        .setDirectChannelPort(dcPort)
-        .setName(name)
-        .setNetworkPartitionDetectionEnabled(sbEnabled)
-        .setPreferredForCoordinator(elCoord)
-        .setVersionOrdinal(version)
-        .setVmPid(vmPid)
-        .setVmKind(vmKind)
-        .setVmViewId(vmViewId)
-        .setGroups(groups)
-        .setDurableId(durableId)
-        .setDurableTimeout(durableTimeout)
-        .setIsPartial(isPartial)
-        .setUniqueTag(uniqueTag)
-        .build();
-
-    assert memberData.getVmKind() > 0;
-  }
-
 
   public void _readEssentialData(DataInput in, Function<InetAddress, String> hostnameResolver)
       throws IOException, ClassNotFoundException {
