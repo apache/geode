@@ -30,28 +30,23 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySenderEventProcessor {
   private static final Logger logger = LogService.getLogger();
 
-  protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadsMonitoring tMonitoring, boolean cleanQueues) {
-    super(sender, tMonitoring, cleanQueues);
-  }
-
   /**
    * use in concurrent scenario where queue is to be shared among all the processors.
    */
   protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      Set<Region> userRegions, int id, int nDispatcher, ThreadsMonitoring tMonitoring,
+      Set<Region<?, ?>> userRegions, int id, int nDispatcher, ThreadsMonitoring tMonitoring,
       boolean cleanQueues) {
-    super(sender, userRegions, id, nDispatcher, tMonitoring, cleanQueues);
+    super(sender, id, nDispatcher, tMonitoring, cleanQueues);
   }
 
   @Override
   protected void rebalance() {
-    GatewaySenderStats statistics = this.sender.getStatistics();
+    GatewaySenderStats statistics = sender.getStatistics();
     long startTime = statistics.startLoadBalance();
     try {
-      if (this.dispatcher.isRemoteDispatcher()) {
+      if (dispatcher.isRemoteDispatcher()) {
         GatewaySenderEventRemoteDispatcher remoteDispatcher =
-            (GatewaySenderEventRemoteDispatcher) this.dispatcher;
+            (GatewaySenderEventRemoteDispatcher) dispatcher;
         if (remoteDispatcher.isConnectedToRemote()) {
           remoteDispatcher.stopAckReaderThread();
           remoteDispatcher.destroyConnection();
@@ -67,8 +62,8 @@ public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySe
     if (logger.isDebugEnabled()) {
       logger.debug(" Creating the GatewayEventRemoteDispatcher");
     }
-    if (this.sender.getRemoteDSId() != GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID) {
-      this.dispatcher = new GatewaySenderEventRemoteDispatcher(this);
+    if (sender.getRemoteDSId() != GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID) {
+      dispatcher = new GatewaySenderEventRemoteDispatcher(this);
     }
   }
 
