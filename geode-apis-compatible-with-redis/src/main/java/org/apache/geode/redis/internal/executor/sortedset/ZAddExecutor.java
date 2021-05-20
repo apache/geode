@@ -81,11 +81,9 @@ public class ZAddExecutor extends SortedSetExecutor {
         }
       }
     }
-    long entriesAdded = 0;
-    entriesAdded = redisSortedSetCommands.zadd(command.getKey(), scoresAndMembersToAdd,
-        makeOptions(nxFound, xxFound, gtFound, ltFound));
-
-    return RedisResponse.integer(entriesAdded);
+    return RedisResponse
+        .integer(redisSortedSetCommands.zadd(command.getKey(), scoresAndMembersToAdd,
+            makeOptions(nxFound, xxFound, gtFound, ltFound)));
   }
 
   private SortedSetOptions makeOptions(boolean nxFound, boolean xxFound, boolean gtFound,

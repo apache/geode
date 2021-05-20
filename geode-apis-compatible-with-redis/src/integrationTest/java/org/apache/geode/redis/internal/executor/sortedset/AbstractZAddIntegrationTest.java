@@ -259,5 +259,6 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     Long res = jedis.zadd(key, 1.0, "mamba", zAddParams);
     assertThat(res).isEqualTo(0);
     assertThat(jedis.zscore(key, "mamba")).isEqualTo(null);
+    assertThat(jedis.exists(key)).isFalse();
   }
 }
