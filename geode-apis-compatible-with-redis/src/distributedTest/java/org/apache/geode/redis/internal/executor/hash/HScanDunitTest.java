@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -83,7 +84,7 @@ public class HScanDunitTest {
   public static void classSetup() {
     int locatorPort;
     locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
+    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
 
     locator = redisClusterStartupRule.startLocatorVM(0, locatorProperties);
     locatorPort = locator.getPort();

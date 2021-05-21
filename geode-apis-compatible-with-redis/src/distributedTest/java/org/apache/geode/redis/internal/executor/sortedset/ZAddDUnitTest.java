@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
@@ -36,7 +37,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
-public class ZaddDUnitTest {
+public class ZAddDUnitTest {
 
   @ClassRule
   public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
@@ -46,28 +47,21 @@ public class ZaddDUnitTest {
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static JedisCluster jedis;
-
-  private static Properties locatorProperties;
-
-  private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
 
-  private static int redisServerPort;
-
-
   @BeforeClass
   public static void classSetup() {
-    locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
+    Properties locatorProperties = new Properties();
+    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
 
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    MemberVM locator = clusterStartUp.startLocatorVM(0, locatorProperties);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
     server3 = clusterStartUp.startRedisVM(3, locator.getPort());
 
-    redisServerPort = clusterStartUp.getRedisPort(1);
+    int redisServerPort = clusterStartUp.getRedisPort(1);
 
     jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
   }

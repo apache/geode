@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -64,7 +65,7 @@ public class StringsDUnitTest {
   @BeforeClass
   public static void classSetup() {
     locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
+    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
 
     locator = clusterStartUp.startLocatorVM(0, locatorProperties);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
