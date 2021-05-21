@@ -17,6 +17,9 @@
 
 # This file follows the same format as CODEOWNERS, but adds you as
 # an optional reviewer rather than a required code owner reviewer.
+# Draft PRs are ignored until ~15 minutes after Ready For Review.
+# CODEWATCHERS is a bot; the bot owner will appear as the requestor.
+# You must be a Geode committer to use CODEWATCHERS.
 
 
 #-----------------------------------------------------------------
@@ -41,10 +44,8 @@ NOTICE                                                            @metatype
 #-----------------------------------------------------------------
 # Jar Deployment
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/classloader/**                     @kohlmu-pivotal
-geode-core/**/org/apache/geode/deployment/**                      @kohlmu-pivotal
-geode-core/**/org/apache/geode/internal/classloader/**            @kohlmu-pivotal
-geode-core/**/org/apache/geode/internal/deployment/**             @kohlmu-pivotal
+geode-core/**/org/apache/geode/**/classloader/**                  @kohlmu-pivotal
+geode-core/**/org/apache/geode/**/deployment/**                   @kohlmu-pivotal
 geode-deployment/**                                               @kohlmu-pivotal
 geode-core/**/org/apache/geode/cache/internal/execute/*           @kohlmu-pivotal
 
@@ -82,4 +83,4 @@ geode-core/**/org/apache/geode/cache/query/**                     @mkevo
 #-----------------------------------------------------------------
 # Misc
 #-----------------------------------------------------------------
-geode-core/src/main/java/org/apache/geode/internal/cache/properties.md    @alb3rtobr
+geode-core/**/org/apache/geode/internal/cache/properties.md       @alb3rtobr
