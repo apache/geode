@@ -16,72 +16,19 @@
 
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import org.apache.geode.redis.internal.executor.BaseSetOptions;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Class representing different options that can be used with Redis Sorted Set ZADD command.
  */
-public class SortedSetOptions implements DataSerializableFixedID {
-
-  private Exists exists;
-
-  public SortedSetOptions(Exists exists) {
-    this.exists = exists;
-  }
-
-  public SortedSetOptions() {}
-
-  public boolean isNX() {
-    return exists.equals(Exists.NX);
-  }
-
-  public boolean isXX() {
-    return exists.equals(Exists.XX);
-  }
-
-  public Exists getExists() {
-    return exists;
+public class SortedSetOptions extends BaseSetOptions {
+  public SortedSetOptions(Exists existsOption) {
+    super(existsOption);
   }
 
   @Override
   public int getDSFID() {
     return REDIS_SORTED_SET_OPTIONS_ID;
-  }
-
-  @Override
-  public void toData(DataOutput out, SerializationContext context) throws IOException {
-    DataSerializer.writeEnum(exists, out);
-  }
-
-  @Override
-  public void fromData(DataInput in, DeserializationContext context) throws IOException {
-    exists = DataSerializer.readEnum(SortedSetOptions.Exists.class, in);
-  }
-
-  @Override
-  public KnownVersion[] getSerializationVersions() {
-    return null;
-  }
-
-  public enum Exists {
-    NONE,
-
-    /**
-     * Only set if key does not exist
-     */
-    NX,
-
-    /**
-     * Only set if key already exists
-     */
-    XX
   }
 }

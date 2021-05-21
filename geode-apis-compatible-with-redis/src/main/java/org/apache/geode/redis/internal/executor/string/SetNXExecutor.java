@@ -14,7 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NX;
+import static org.apache.geode.redis.internal.executor.BaseSetOptions.Exists.NX;
 
 import java.util.List;
 
