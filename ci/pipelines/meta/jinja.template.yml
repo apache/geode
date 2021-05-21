@@ -274,7 +274,7 @@ jobs:
   public: ((public-pipelines))
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: meta-mini-dockerfile
       trigger: true
   - put: meta-mini-image
