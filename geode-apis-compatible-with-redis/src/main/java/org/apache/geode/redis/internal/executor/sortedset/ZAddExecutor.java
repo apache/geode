@@ -65,8 +65,7 @@ public class ZAddExecutor extends SortedSetExecutor {
         }
       }
       if (adding) {
-        byte[] score = next;
-        scoresAndMembersToAdd.add(score);
+        scoresAndMembersToAdd.add(next);
         if (commandIterator.hasNext()) {
           byte[] member = commandIterator.next();
           scoresAndMembersToAdd.add(member);

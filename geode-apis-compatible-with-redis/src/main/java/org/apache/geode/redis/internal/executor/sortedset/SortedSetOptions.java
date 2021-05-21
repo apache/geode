@@ -27,7 +27,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
- * Class representing different options that can be used with Redis string SET command.
+ * Class representing different options that can be used with Redis Sorted Set ZADD command.
  */
 public class SortedSetOptions implements DataSerializableFixedID {
 
@@ -62,8 +62,7 @@ public class SortedSetOptions implements DataSerializableFixedID {
   }
 
   @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in, DeserializationContext context) throws IOException {
     exists = DataSerializer.readEnum(SortedSetOptions.Exists.class, in);
   }
 
@@ -83,6 +82,6 @@ public class SortedSetOptions implements DataSerializableFixedID {
     /**
      * Only set if key already exists
      */
-    XX;
+    XX
   }
 }

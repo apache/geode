@@ -23,11 +23,9 @@ import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetOptions;
 
 public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
-    implements
-    RedisSortedSetCommands {
+    implements RedisSortedSetCommands {
 
-  public RedisSortedSetCommandsFunctionExecutor(
-      CommandHelper helper) {
+  public RedisSortedSetCommandsFunctionExecutor(CommandHelper helper) {
     super(helper);
   }
 
@@ -36,11 +34,9 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
-  public long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd,
-      SortedSetOptions options) {
+  public long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd, SortedSetOptions options) {
     return stripedExecute(key,
-        () -> getRedisSortedSet(key, false)
-            .zadd(getRegion(), key, scoresAndMembersToAdd, options));
+        () -> getRedisSortedSet(key, false).zadd(getRegion(), key, scoresAndMembersToAdd, options));
   }
 
   @Override
