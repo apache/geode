@@ -78,7 +78,7 @@ public class GatewaySenderAttributes {
   private boolean groupTransactionEvents = GatewaySender.DEFAULT_MUST_GROUP_TRANSACTION_EVENTS;
 
   private int retriesToGetTransactionEventsFromQueue =
-      GatewaySender.DEFAULT_GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
+      GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
 
   private boolean isForInternalUse = GatewaySender.DEFAULT_IS_FOR_INTERNAL_USE;
 

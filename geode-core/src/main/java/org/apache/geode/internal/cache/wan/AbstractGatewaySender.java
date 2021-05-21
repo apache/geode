@@ -1168,7 +1168,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
                     && clonedEvent.getTransactionId()
                         .equals((x).getTransactionId());
           }
-
           if (!ev.enqueueEvent(operation, clonedEvent, substituteValue, isLastEventInTransaction,
               hasSameTransactionIdPredicate)) {
             recordDroppedEvent(event);

@@ -1847,12 +1847,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     if (brq.hasEventsMatching(condition)) {
       return true;
     }
-    for (Object ev : peekedEvents) {
-      if (condition.test((GatewaySenderEventImpl) ev)) {
-        return true;
-      }
-    }
-    return false;
+    return peekedEvents.stream().anyMatch(condition);
   }
 
   // TODO:REF: Name for this class should be appropriate?

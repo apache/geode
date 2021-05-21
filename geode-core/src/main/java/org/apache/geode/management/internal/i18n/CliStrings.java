@@ -2261,11 +2261,6 @@ public class CliStrings {
           + "Only allowed on serial gateway senders with 1 dispatcher thread or on parallel ones.\n"
           + "Note that in order to work for a transaction, the regions to which the transaction \n"
           + "events belong must be replicated by the same set of senders with this flag enabled.";
-  public static final String CREATE_GATEWAYSENDER__GETTRANSACTIONEVENTSFROMQUEUERETRIES =
-      "get-transaction-events-from-queue-retries";
-  public static final String CREATE_GATEWAYSENDER__GETTRANSACTIONEVENTSFROMQUEUERETRIES__HELP =
-      "Number of retries to get transaction events from queue to complete a transaction " +
-          "when group-transaction-events is true";
   public static final String CREATE_GATEWAYSENDER__PARALLEL = "parallel";
   public static final String CREATE_GATEWAYSENDER__PARALLEL__HELP =
       "Whether this is Parallel GatewaySender.";

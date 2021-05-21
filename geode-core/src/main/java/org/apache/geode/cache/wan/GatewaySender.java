@@ -172,7 +172,7 @@ public interface GatewaySender {
    * to a high value could cause that under heavy load and group-transaction-events set to true,
    * batches are held for some time before being sent.
    */
-  int DEFAULT_GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
+  int GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-retries",
           2);
   /**

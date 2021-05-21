@@ -435,9 +435,6 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   protected static final String REMOTE_DISTRIBUTED_SYSTEM_ID = "remote-distributed-system-id";
   /** The name of the <code>group-transaction-events</code> attribute */
   protected static final String GROUP_TRANSACTION_EVENTS = "group-transaction-events";
-  /** The name of the <code>get-transaction-events-from-queue-retries</code> attribute */
-  protected static final String GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
-      "get-transaction-events-from-queue-retries";
   /** The name of the <code>enforce-threads-connect-same-receiver</code> attribute */
   protected static final String ENFORCE_THREADS_CONNECT_SAME_RECEIVER =
       "enforce-threads-connect-same-receiver";

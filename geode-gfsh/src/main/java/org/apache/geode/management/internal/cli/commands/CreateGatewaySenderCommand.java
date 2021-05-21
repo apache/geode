@@ -81,9 +81,6 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           unspecifiedDefaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS__HELP) boolean groupTransactionEvents,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GETTRANSACTIONEVENTSFROMQUEUERETRIES,
-          help = CliStrings.CREATE_GATEWAYSENDER__GETTRANSACTIONEVENTSFROMQUEUERETRIES__HELP) Integer retriesToGetTransactionEventsFromQueue,
-
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__PARALLEL,
           specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
@@ -154,7 +151,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
             batchTimeInterval, enablePersistence, diskStoreName, diskSynchronous, maxQueueMemory,
             alertThreshold, dispatcherThreads, orderPolicy == null ? null : orderPolicy.name(),
             gatewayEventFilters, gatewayTransportFilter, groupTransactionEvents,
-            enforceThreadsConnectSameReceiver, retriesToGetTransactionEventsFromQueue);
+            enforceThreadsConnectSameReceiver);
 
     GatewaySenderFunctionArgs gatewaySenderFunctionArgs =
         new GatewaySenderFunctionArgs(configuration);
@@ -239,8 +236,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       String[] gatewayEventFilters,
       String[] gatewayTransportFilters,
       Boolean groupTransactionEvents,
-      Boolean enforceThreadsConnectSameReceiver,
-      Integer retriesToGetTransactionEventsFromQueue) {
+      Boolean enforceThreadsConnectSameReceiver) {
     CacheConfig.GatewaySender sender = new CacheConfig.GatewaySender();
     sender.setId(id);
     sender.setRemoteDistributedSystemId(int2string(remoteDSId));
@@ -266,8 +262,6 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       sender.getGatewayTransportFilters().addAll(stringsToDeclarableTypes(gatewayTransportFilters));
     }
     sender.setEnforceThreadsConnectSameReceiver(enforceThreadsConnectSameReceiver);
-    sender.setRetriesToGetTransactionEventsFromQueue(
-        int2string(retriesToGetTransactionEventsFromQueue));
     return sender;
   }
 

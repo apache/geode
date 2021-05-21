@@ -162,7 +162,6 @@ import org.apache.geode.lang.Identifiable;
  *                 &lt;attribute name="dispatcher-threads" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="order-policy" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="group-transaction-events" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="get-transaction-events-from-queue-retries" type="{http://www.w3.org/2001/XMLSchema}string" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -2603,7 +2602,6 @@ public class CacheConfig {
    *       &lt;attribute name="dispatcher-threads" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="order-policy" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="group-transaction-events" type="{http://www.w3.org/2001/XMLSchema}boolean" />
-   *       &lt;attribute name="get-transaction-events-from-queue-retries" type="{http://www.w3.org/2001/XMLSchema}string" />
    *     &lt;/restriction>
    *   &lt;/complexContent>
    * &lt;/complexType>
@@ -2658,8 +2656,6 @@ public class CacheConfig {
     protected String orderPolicy;
     @XmlAttribute(name = "group-transaction-events")
     protected Boolean groupTransactionEvents;
-    @XmlAttribute(name = "get-transaction-events-from-queue-retries")
-    protected String retriesToGetTransactionEventsFromQueue;
     @XmlAttribute(name = "enforce-threads-connect-same-receiver")
     protected Boolean enforceThreadsConnectSameReceiver;
 
@@ -2797,16 +2793,9 @@ public class CacheConfig {
       return groupTransactionEvents;
     }
 
+
     public void setGroupTransactionEvents(Boolean value) {
       this.groupTransactionEvents = value;
-    }
-
-    public String getRetriesToGetTransactionEventsFromQueue() {
-      return retriesToGetTransactionEventsFromQueue;
-    }
-
-    public void setRetriesToGetTransactionEventsFromQueue(String value) {
-      this.retriesToGetTransactionEventsFromQueue = value;
     }
 
     /**
