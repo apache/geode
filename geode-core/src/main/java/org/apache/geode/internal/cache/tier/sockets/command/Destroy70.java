@@ -251,8 +251,8 @@ public class Destroy70 extends BaseCommand {
 
     // Destroy the entry
     final ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
-    final long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    final long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    final long threadId = EventID.readEventIdPartsFromOptimizedByteArray(eventIdPartsBuffer);
+    final long sequenceId = EventID.readEventIdPartsFromOptimizedByteArray(eventIdPartsBuffer);
     final EventID eventId =
         new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId);
     final EventIDHolder clientEvent = new EventIDHolder(eventId);

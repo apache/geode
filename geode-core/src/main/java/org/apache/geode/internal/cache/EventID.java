@@ -68,7 +68,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   private byte[] membershipID;
 
   /**
-   * Unqiuely identifies the thread producing the event
+   * Uniquely identifies the thread producing the event
    */
   private long threadID;
 
@@ -82,7 +82,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   private byte breadcrumbCounter = 0x0;
 
   public void incBreadcrumbCounter() {
-    this.breadcrumbCounter++;
+    breadcrumbCounter++;
   }
 
   /** The versions in which this message was modified */
@@ -90,12 +90,8 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   private static final KnownVersion[] dsfidVersions = new KnownVersion[0];
 
 
-  private static final ThreadLocal threadIDLocal = new ThreadLocal() {
-    @Override
-    protected Object initialValue() {
-      return new ThreadAndSequenceIDWrapper();
-    }
-  };
+  private static final ThreadLocal<ThreadAndSequenceIDWrapper> threadIDLocal =
+      ThreadLocal.withInitial(ThreadAndSequenceIDWrapper::new);
 
   private transient int hashCode = 0;
 
@@ -135,17 +131,16 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * stored in a ClientProxyMembershipID as those are heavyweight identifiers and they will cause
    * serialization and comparison problems when used in EventIDs
    */
-  private EventID(final byte[] membershipId) {
-    // Assert.assertTrue(membershipId.length <= Short.MAX_VALUE);
-    this.membershipID = membershipId;
-    // TODO:Asif : If the DS is closed & restarted can we continue with the
+  private EventID(final byte[] membershipID) {
+    this.membershipID = membershipID;
+    // If the DS is closed & restarted can we continue with the
     // existing Thread ID & Sequenec ID. Should not be an issue.
     // But we should not cache membershipID as for the same thread it can
-    // differ.Hence it should be passed as parameter in the constructor
-    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper) threadIDLocal.get();
-    this.threadID = wrapper.threadID;
-    this.sequenceID = wrapper.getAndIncrementSequenceID();
-    this.bucketID = -1;
+    // differ. Hence it should be passed as parameter in the constructor
+    ThreadAndSequenceIDWrapper wrapper = threadIDLocal.get();
+    threadID = wrapper.threadID;
+    sequenceID = wrapper.getAndIncrementSequenceID();
+    bucketID = -1;
   }
 
   /**
@@ -166,7 +161,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   }
 
   /**
-   * Convert a ClientProxyMembershipID distribted member ID array into one usable by EventIDs
+   * Convert a ClientProxyMembershipID distributed member ID array into one usable by EventIDs
    *
    * @param client the client's ID
    * @return a byte array that may be used in EventID formation
@@ -189,7 +184,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * @since GemFire 5.7
    */
   public static long getThreadId() {
-    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper) threadIDLocal.get();
+    ThreadAndSequenceIDWrapper wrapper = threadIDLocal.get();
     return wrapper.threadID;
   }
 
@@ -200,7 +195,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * @since GemFire 5.7
    */
   public static long getSequenceId() {
-    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper) threadIDLocal.get();
+    ThreadAndSequenceIDWrapper wrapper = threadIDLocal.get();
     return wrapper.sequenceID;
   }
 
@@ -210,12 +205,12 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * @since GemFire 5.7
    */
   public static long reserveSequenceId() {
-    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper) threadIDLocal.get();
+    ThreadAndSequenceIDWrapper wrapper = threadIDLocal.get();
     return wrapper.getAndIncrementSequenceID();
   }
 
   public void reserveSequenceId(int count) {
-    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper) threadIDLocal.get();
+    ThreadAndSequenceIDWrapper wrapper = threadIDLocal.get();
     wrapper.reserveSequenceID(count);
   }
 
@@ -224,10 +219,10 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    */
   public EventID(EventID eventId, int offset) {
     assert (eventId != null);
-    this.membershipID = eventId.getMembershipID();
-    this.threadID = eventId.getThreadID();
-    this.sequenceID = eventId.getSequenceID() + offset;
-    this.bucketID = -1;
+    membershipID = eventId.getMembershipID();
+    threadID = eventId.getThreadID();
+    sequenceID = eventId.getSequenceID() + offset;
+    bucketID = -1;
   }
 
   /**
@@ -241,20 +236,21 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * @param seqId - sequence id for this entry
    */
   public EventID(byte[] memId, long threadId, long seqId) {
-    this.membershipID = memId;
-    this.threadID = threadId;
-    this.sequenceID = seqId;
-    this.bucketID = -1;
+    membershipID = memId;
+    threadID = threadId;
+    sequenceID = seqId;
+    bucketID = -1;
   }
 
   public EventID(byte[] memId, long threadId, long seqId, int bucketId) {
-    this.membershipID = memId;
-    this.threadID = threadId;
-    this.sequenceID = seqId;
-    this.bucketID = bucketId;
+    membershipID = memId;
+    threadID = threadId;
+    sequenceID = seqId;
+    bucketID = bucketId;
   }
 
   /** support for migrating across threads for Hydra */
+  @SuppressWarnings("unused") // for Hydra
   public static Object getThreadLocalDataForHydra() {
     Object result = threadIDLocal.get();
     threadIDLocal.set(null);
@@ -262,12 +258,13 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   }
 
   /** support for migrating across threads for Hydra */
+  @SuppressWarnings("unused") // for Hydra
   public static void setThreadLocalDataForHydra(Object wrapper) {
     if (!(wrapper instanceof ThreadAndSequenceIDWrapper)) {
       throw new IllegalArgumentException(
           "Expected a ThreadAndSequenceIdWrapper but received " + wrapper);
     }
-    threadIDLocal.set(wrapper);
+    threadIDLocal.set((ThreadAndSequenceIDWrapper) wrapper);
   }
 
   /**
@@ -277,7 +274,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   public EventID() {}
 
   public long getThreadID() {
-    return this.threadID;
+    return threadID;
   }
 
   public void setThreadID(long threadID) {
@@ -285,17 +282,16 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   }
 
   public byte[] getMembershipID() {
-    return this.membershipID;
+    return membershipID;
   }
 
   public int getBucketID() {
-    return this.bucketID;
+    return bucketID;
   }
 
   /**
    * starting in v6.5 this method returns a somewhat crippled Identifier. It is missing any durable
-   * attributes and roles information but contains all other info about the member. This fixes bug
-   * #39361.
+   * attributes and roles information but contains all other info about the member.
    *
    * @return the member that initiated this event
    */
@@ -312,7 +308,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   public InternalDistributedMember getDistributedMember(KnownVersion targetVersion) {
     KnownVersion disVersion = null;
     if (targetVersion.isOlderThan(KnownVersion.GEODE_1_1_0)) {
-      // GEODE-3153: clients expect to receive UUID bytes, which are only
+      // clients expect to receive UUID bytes, which are only
       // read if the stream's version is 1.0.0-incubating
       disVersion = KnownVersion.GFE_90;
     }
@@ -328,7 +324,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   }
 
   public long getSequenceID() {
-    return this.sequenceID;
+    return sequenceID;
   }
 
   /**
@@ -362,40 +358,40 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
       member.writeEssentialData(hdos);
       DataSerializer.writeByteArray(hdos.toByteArray(), dop);
     } else {
-      DataSerializer.writeByteArray(this.membershipID, dop);
+      DataSerializer.writeByteArray(membershipID, dop);
     }
-    DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(this.threadID, this.sequenceID),
+    DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(threadID, sequenceID),
         dop);
-    dop.writeInt(this.bucketID);
-    dop.writeByte(this.breadcrumbCounter);
+    dop.writeInt(bucketID);
+    dop.writeByte(breadcrumbCounter);
   }
 
   @Override
   public void fromData(DataInput di,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.membershipID = DataSerializer.readByteArray(di);
+    membershipID = DataSerializer.readByteArray(di);
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(di));
-    this.threadID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
-    this.sequenceID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
-    this.bucketID = di.readInt();
-    this.breadcrumbCounter = di.readByte();
+    threadID = readEventIdPartsFromOptimizedByteArray(eventIdParts);
+    sequenceID = readEventIdPartsFromOptimizedByteArray(eventIdParts);
+    bucketID = di.readInt();
+    breadcrumbCounter = di.readByte();
   }
 
   @Override
   public void writeExternal(ObjectOutput out) throws IOException {
-    DataSerializer.writeByteArray(this.membershipID, out);
-    DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(this.threadID, this.sequenceID),
+    DataSerializer.writeByteArray(membershipID, out);
+    DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(threadID, sequenceID),
         out);
-    out.writeInt(this.bucketID);
+    out.writeInt(bucketID);
   }
 
   @Override
-  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    this.membershipID = DataSerializer.readByteArray(in);
+  public void readExternal(ObjectInput in) throws IOException {
+    membershipID = DataSerializer.readByteArray(in);
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(in));
-    this.threadID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
-    this.sequenceID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
-    this.bucketID = in.readInt();
+    threadID = readEventIdPartsFromOptimizedByteArray(eventIdParts);
+    sequenceID = readEventIdPartsFromOptimizedByteArray(eventIdParts);
+    bucketID = in.readInt();
   }
 
   @Override
@@ -419,11 +415,11 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     return equalMembershipIds(membershipID, other.membershipID);
   }
 
-  /** GEODE_3072 - 1.0.0 client IDs contain a UUID and member-weight byte that are all zero */
-  static final int NULL_90_MEMBER_DATA_LENGTH = 17;
+  /** 1.0.0 client IDs contain a UUID and member-weight byte that are all zero */
+  private static final int NULL_90_MEMBER_DATA_LENGTH = 17;
 
   /** minimum length of an ID array */
-  static final int MINIMIM_ID_LENGTH = 19;
+  private static final int MINIMUM_ID_LENGTH = 19;
 
   /**
    * check to see if membership ID byte arrays are equal
@@ -448,7 +444,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   }
 
   /**
-   * GEODE-3072 - v1.0.0 memberIDs in EventIDs may have trailing bytes that should be ignored
+   * v1.0.0 memberIDs in EventIDs may have trailing bytes that should be ignored
    */
   private static boolean nullUUIDCheck(byte[] memberID, int position) {
     if (position < 0) {
@@ -469,7 +465,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * form the hashcode for the memberID byte array
    */
   public static int hashCodeMemberId(byte[] memberID) {
-    if (memberID.length < (NULL_90_MEMBER_DATA_LENGTH + MINIMIM_ID_LENGTH)
+    if (memberID.length < (NULL_90_MEMBER_DATA_LENGTH + MINIMUM_ID_LENGTH)
         || !nullUUIDCheck(memberID, memberID.length - NULL_90_MEMBER_DATA_LENGTH)) {
       return Arrays.hashCode(memberID);
     }
@@ -518,7 +514,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
 
   public String cheapToString() {
-    final StringBuffer buf = new StringBuffer();
+    final StringBuilder buf = new StringBuilder();
     buf.append(getShortClassName());
     if (LOG_ID_BYTES) {
       buf.append("[membershipID=");
@@ -536,15 +532,15 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     buf.append("threadID=");
     buf.append(ThreadIdentifier.toDisplayString(threadID));
     buf.append(";sequenceID=");
-    buf.append(this.sequenceID);
+    buf.append(sequenceID);
 
     if (Breadcrumbs.ENABLED) {
-      buf.append(";bcrumb=").append(this.breadcrumbCounter);
+      buf.append(";bcrumb=").append(breadcrumbCounter);
     }
 
-    if (this.bucketID >= 0) {
+    if (bucketID >= 0) {
       buf.append(";bucketId=");
-      buf.append(this.bucketID);
+      buf.append(bucketID);
     }
     buf.append("]");
     return buf.toString();
@@ -583,7 +579,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * @return - the number of byte taken by this value
    */
   public static int getByteSizeForValue(long id) {
-    int length = 0;
+    final int length;
 
     // compare threadId to find its range
     if (id <= Byte.MAX_VALUE) {
@@ -600,7 +596,8 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   }
 
   /**
-   * Gets the optmized byte-array representation of an eventId which can be sent across the network.
+   * Gets the optimized byte-array representation of an eventId which can be sent across the
+   * network.
    * For client to server messages, the membership id part of event-id is not need to be sent with
    * each event. Also, the threadId and sequenceId need not be sent as long if their value is small.
    * This function returns the optimal byte-array for the eventId.
@@ -629,17 +626,15 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   /**
    * Reads the optimized byte-array representation of an eventId and returns the long value of
-   * threadId or sequenceId ( the first invocation of this method on bytebuffer returns the threadId
+   * threadId or sequenceId. The first invocation of this method on bytebuffer returns the threadId
    * and the second returns the sequenceId.
    *
    * @param buffer - the byte-buffer wrapping the optimized byte-array for the eventId
    * @return - long value of threadId or sequenceId
    */
-  public static long readEventIdPartsFromOptmizedByteArray(ByteBuffer buffer) {
+  public static long readEventIdPartsFromOptimizedByteArray(ByteBuffer buffer) {
     byte byteType = buffer.get();
-    long id = fillerArray.get(byteType).read(buffer);
-
-    return id;
+    return fillerArray.get(byteType).read(buffer);
   }
 
   /**
@@ -674,7 +669,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     private static final byte EVENTID_BYTE = 0;
 
     /**
-     * Writes the given 'id' to the given buffer as 'byte' preceeded by a token indicating that it
+     * Writes the given 'id' to the given buffer as 'byte' preceded by a token indicating that it
      * is written as 'byte' type.
      *
      * @param buffer - the buffer in which id is to be written
@@ -695,8 +690,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
      */
     @Override
     public long read(ByteBuffer buffer) {
-      long value = buffer.get();
-      return value;
+      return buffer.get();
     }
 
   }
@@ -708,7 +702,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     private static final byte EVENTID_SHORT = 1;
 
     /**
-     * Writes the given 'id' to the given buffer as 'short' preceeded by a token indicating that it
+     * Writes the given 'id' to the given buffer as 'short' preceded by a token indicating that it
      * is written as 'short' type.
      *
      * @param buffer - the buffer in which id is to be written
@@ -729,8 +723,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
      */
     @Override
     public long read(ByteBuffer buffer) {
-      long value = buffer.getShort();
-      return value;
+      return buffer.getShort();
     }
   }
 
@@ -741,7 +734,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     private static final byte EVENTID_INT = 2;
 
     /**
-     * Writes the given 'id' to the given buffer as 'int' preceeded by a token indicating that it is
+     * Writes the given 'id' to the given buffer as 'int' preceded by a token indicating that it is
      * written as 'int' type.
      *
      * @param buffer - the buffer in which id is to be written
@@ -762,8 +755,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
      */
     @Override
     public long read(ByteBuffer buffer) {
-      long value = buffer.getInt();
-      return value;
+      return buffer.getInt();
     }
   }
 
@@ -774,7 +766,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     private static final byte EVENTID_LONG = 3;
 
     /**
-     * Writes the given 'id' to the given buffer as 'long' preceeded by a token indicating that it
+     * Writes the given 'id' to the given buffer as 'long' preceded by a token indicating that it
      * is written as 'long' type.
      *
      * @param buffer - the buffer in which id is to be written
@@ -795,8 +787,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
      */
     @Override
     public long read(ByteBuffer buffer) {
-      long value = buffer.getLong();
-      return value;
+      return buffer.getLong();
     }
   }
 
@@ -813,11 +804,11 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     }
 
     long getAndIncrementSequenceID() {
-      return this.sequenceID++;
+      return sequenceID++;
     }
 
     void reserveSequenceID(int size) {
-      this.sequenceID += size;
+      sequenceID += size;
     }
   }
 

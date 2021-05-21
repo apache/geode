@@ -105,8 +105,8 @@ public class ClearRegion extends BaseCommand {
     }
 
     ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
-    long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    long threadId = EventID.readEventIdPartsFromOptimizedByteArray(eventIdPartsBuffer);
+    long sequenceId = EventID.readEventIdPartsFromOptimizedByteArray(eventIdPartsBuffer);
     EventID eventId =
         new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId);
 

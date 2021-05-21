@@ -62,8 +62,8 @@ public class RegisterDataSerializers extends BaseCommand {
     // retrieve eventID from the last Part
     ByteBuffer eventIdPartsBuffer =
         ByteBuffer.wrap(clientMessage.getPart(noOfParts - 1).getSerializedForm());
-    long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    long threadId = EventID.readEventIdPartsFromOptimizedByteArray(eventIdPartsBuffer);
+    long sequenceId = EventID.readEventIdPartsFromOptimizedByteArray(eventIdPartsBuffer);
     EventID eventId =
         new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId);
 
