@@ -14,9 +14,10 @@
  */
 package org.apache.geode.internal.tcp;
 
+import static java.util.Collections.singletonList;
+
 import java.io.IOException;
 import java.io.NotSerializableException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
@@ -43,30 +44,27 @@ class DirectReplySender implements ReplySender {
   @Immutable
   private static final DMStats DUMMY_STATS = new DummyDMStats();
 
-  private final Connection conn;
+  private final Connection connection;
   private boolean sentReply = false;
 
   public DirectReplySender(Connection connection) {
-    this.conn = connection;
+    this.connection = connection;
   }
 
   @Override
   public Set<InternalDistributedMember> putOutgoing(DistributionMessage msg) {
-    Assert.assertTrue(!this.sentReply, "Trying to reply twice to a message");
+    Assert.assertTrue(!sentReply, "Trying to reply twice to a message");
     // Using an ArrayList, rather than Collections.singletonList here, because the MsgStreamer
     // mutates the list when it has exceptions.
 
-    // fix for bug #42199 - cancellation check
-    this.conn.getConduit().getDM().getCancelCriterion().checkCancelInProgress(null);
+    connection.getConduit().getDM().getCancelCriterion().checkCancelInProgress(null);
 
     if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
       logger.trace(LogMarker.DM_VERBOSE, "Sending a direct reply {} to {}", msg,
-          conn.getRemoteAddress());
+          connection.getRemoteAddress());
     }
-    ArrayList<Connection> conns = new ArrayList<Connection>(1);
-    conns.add(conn);
-    MsgStreamer ms = (MsgStreamer) MsgStreamer.create(conns, msg, false, DUMMY_STATS,
-        conn.getBufferPool());
+    MsgStreamer ms = (MsgStreamer) MsgStreamer.create(singletonList(connection), msg, false,
+        DUMMY_STATS, connection.getBufferPool());
     try {
       ms.writeMessage();
       ConnectExceptions ce = ms.getConnectExceptions();
