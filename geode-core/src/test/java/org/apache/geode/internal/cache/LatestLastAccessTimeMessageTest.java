@@ -20,32 +20,39 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Set;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
-import org.apache.geode.internal.inet.LocalHostUtil;
 
 public class LatestLastAccessTimeMessageTest {
+  private InternalDistributedRegion region;
+  private ClusterDistributionManager dm;
+  private LatestLastAccessTimeMessage<String> lastAccessTimeMessage;
+  private InternalCache cache;
+
+  @Before
+  public void setUp() throws UnknownHostException {
+    final LatestLastAccessTimeReplyProcessor replyProcessor =
+        mock(LatestLastAccessTimeReplyProcessor.class);
+    region = mock(InternalDistributedRegion.class);
+    Set<InternalDistributedMember> recipients =
+        Collections.singleton(mock(InternalDistributedMember.class));
+    lastAccessTimeMessage =
+        spy(new LatestLastAccessTimeMessage<>(replyProcessor, recipients, region, "foo"));
+    lastAccessTimeMessage.setSender(mock(InternalDistributedMember.class));
+    dm = mock(ClusterDistributionManager.class);
+    cache = mock(InternalCache.class);
+  }
 
   @Test
   public void processWithNullCacheRepliesZero() throws Exception {
-    final LatestLastAccessTimeReplyProcessor replyProcessor =
-        mock(LatestLastAccessTimeReplyProcessor.class);
-    final InternalDistributedRegion region = mock(InternalDistributedRegion.class);
-    Set<InternalDistributedMember> recipients = Collections.singleton(new InternalDistributedMember(
-        LocalHostUtil.getLocalHost(), 1234));
-    final LatestLastAccessTimeMessage<String> realLastAccessTimeMessage =
-        new LatestLastAccessTimeMessage<>(replyProcessor, recipients, region, "foo");
-    final LatestLastAccessTimeMessage<String> lastAccessTimeMessage =
-        spy(realLastAccessTimeMessage);
-    lastAccessTimeMessage.setSender(new InternalDistributedMember(
-        LocalHostUtil.getLocalHost(), 12345));
-    final ClusterDistributionManager dm = mock(ClusterDistributionManager.class);
     when(dm.getCache()).thenReturn(null);
 
     lastAccessTimeMessage.process(dm);
@@ -55,19 +62,6 @@ public class LatestLastAccessTimeMessageTest {
 
   @Test
   public void processWithNullRegionRepliesZero() throws Exception {
-    final LatestLastAccessTimeReplyProcessor replyProcessor =
-        mock(LatestLastAccessTimeReplyProcessor.class);
-    final InternalDistributedRegion region = mock(InternalDistributedRegion.class);
-    Set<InternalDistributedMember> recipients = Collections.singleton(new InternalDistributedMember(
-        LocalHostUtil.getLocalHost(), 1234));
-    final LatestLastAccessTimeMessage<String> realLastAccessTimeMessage =
-        new LatestLastAccessTimeMessage<>(replyProcessor, recipients, region, "foo");
-    final LatestLastAccessTimeMessage<String> lastAccessTimeMessage =
-        spy(realLastAccessTimeMessage);
-    lastAccessTimeMessage.setSender(new InternalDistributedMember(
-        LocalHostUtil.getLocalHost(), 12345));
-    final ClusterDistributionManager dm = mock(ClusterDistributionManager.class);
-    final InternalCache cache = mock(InternalCache.class);
     when(dm.getCache()).thenReturn(cache);
     when(cache.getRegion(any())).thenReturn(null);
 
@@ -78,19 +72,6 @@ public class LatestLastAccessTimeMessageTest {
 
   @Test
   public void processWithNullEntryRepliesZero() throws Exception {
-    final LatestLastAccessTimeReplyProcessor replyProcessor =
-        mock(LatestLastAccessTimeReplyProcessor.class);
-    final InternalDistributedRegion region = mock(InternalDistributedRegion.class);
-    Set<InternalDistributedMember> recipients = Collections.singleton(new InternalDistributedMember(
-        LocalHostUtil.getLocalHost(), 1234));
-    final LatestLastAccessTimeMessage<String> realLastAccessTimeMessage =
-        new LatestLastAccessTimeMessage<>(replyProcessor, recipients, region, "foo");
-    final LatestLastAccessTimeMessage<String> lastAccessTimeMessage =
-        spy(realLastAccessTimeMessage);
-    lastAccessTimeMessage.setSender(new InternalDistributedMember(
-        LocalHostUtil.getLocalHost(), 12345));
-    final ClusterDistributionManager dm = mock(ClusterDistributionManager.class);
-    final InternalCache cache = mock(InternalCache.class);
     when(dm.getCache()).thenReturn(cache);
     when(cache.getRegion(any())).thenReturn(region);
     when(region.getRegionEntry(any())).thenReturn(null);
@@ -102,19 +83,6 @@ public class LatestLastAccessTimeMessageTest {
 
   @Test
   public void processWithEntryStatsDisabledRepliesZero() throws Exception {
-    final LatestLastAccessTimeReplyProcessor replyProcessor =
-        mock(LatestLastAccessTimeReplyProcessor.class);
-    final InternalDistributedRegion region = mock(InternalDistributedRegion.class);
-    Set<InternalDistributedMember> recipients = Collections.singleton(new InternalDistributedMember(
-        LocalHostUtil.getLocalHost(), 1234));
-    final LatestLastAccessTimeMessage<String> realLastAccessTimeMessage =
-        new LatestLastAccessTimeMessage<>(replyProcessor, recipients, region, "foo");
-    final LatestLastAccessTimeMessage<String> lastAccessTimeMessage =
-        spy(realLastAccessTimeMessage);
-    lastAccessTimeMessage.setSender(new InternalDistributedMember(
-        LocalHostUtil.getLocalHost(), 12345));
-    final ClusterDistributionManager dm = mock(ClusterDistributionManager.class);
-    final InternalCache cache = mock(InternalCache.class);
     when(dm.getCache()).thenReturn(cache);
     when(cache.getRegion(any())).thenReturn(region);
     RegionEntry regionEntry = mock(RegionEntry.class);
@@ -128,19 +96,6 @@ public class LatestLastAccessTimeMessageTest {
 
   @Test
   public void processWithRegionEntryRepliesWithLastAccessed() throws Exception {
-    final LatestLastAccessTimeReplyProcessor replyProcessor =
-        mock(LatestLastAccessTimeReplyProcessor.class);
-    final InternalDistributedRegion region = mock(InternalDistributedRegion.class);
-    Set<InternalDistributedMember> recipients = Collections.singleton(new InternalDistributedMember(
-        LocalHostUtil.getLocalHost(), 1234));
-    final LatestLastAccessTimeMessage<String> realLastAccessTimeMessage =
-        new LatestLastAccessTimeMessage<>(replyProcessor, recipients, region, "foo");
-    final LatestLastAccessTimeMessage<String> lastAccessTimeMessage =
-        spy(realLastAccessTimeMessage);
-    lastAccessTimeMessage.setSender(new InternalDistributedMember(
-        LocalHostUtil.getLocalHost(), 12345));
-    final ClusterDistributionManager dm = mock(ClusterDistributionManager.class);
-    final InternalCache cache = mock(InternalCache.class);
     when(dm.getCache()).thenReturn(cache);
     when(cache.getRegion(any())).thenReturn(region);
     RegionEntry regionEntry = mock(RegionEntry.class);
