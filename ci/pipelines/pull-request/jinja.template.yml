@@ -23,8 +23,8 @@ groups:
   jobs:
   - {{ build_test.name }}
 {%- for test in tests %}
-  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" or test.name == "StressNew" or test.name == "Distributed" %}
-  - {{test.name}}Test{{java_test_version.name}}
+  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("jdk8") or test.name == "unit" or test.name == "stress-new" or test.name == "distributed" %}
+  - {{test.name}}-test-{{java_test_version.name}}
   {%- endfor %}
 {%- endfor %}
 resources:
@@ -115,7 +115,7 @@ jobs:
   public: true
   plan:
   - do:
-    - aggregate:
+    - in_parallel:
       - get: alpine-tools-image
       - get: geode
         trigger: true
@@ -126,7 +126,7 @@ jobs:
       - get: geode-ci
         attempts: 2
       - get: {{ build_test.PLATFORM }}-builder-image-family
-    - aggregate:
+    - in_parallel:
       - do:
         - put: pull-request-job-pending
           resource: geode-status
@@ -234,7 +234,7 @@ jobs:
         timeout: 15m
         attempts: 5
       ensure:
-        aggregate:
+        in_parallel:
         - task: archive_results
           image: alpine-tools-image
           config:
@@ -275,12 +275,12 @@ jobs:
 
 
 {% for test in tests %}
-  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" or test.name == "StressNew" or test.name == "Distributed" %}
-- name: {{test.name}}Test{{java_test_version.name}}
+  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("jdk8") or test.name == "unit" or test.name == "stress-new" or test.name == "distributed" %}
+- name: {{test.name}}-test-{{java_test_version.name}}
   public: true
   plan:
   - do:
-    - aggregate:
+    - in_parallel:
       - get: alpine-tools-image
 {%- if test.PLATFORM=="linux" %}
       - get: geode
@@ -296,12 +296,12 @@ jobs:
       - get: geode-ci
         attempts: 2
       - get: {{ test.PLATFORM }}-builder-image-family
-    - aggregate:
+    - in_parallel:
       - do:
         - put: pull-request-job-pending
           resource: geode-status
           params:
-            context: {{test.name}}Test{{java_test_version.name}}
+            context: {{test.name}}-test-{{java_test_version.name}}
             path: geode
             status: pending
           get_params: {skip_download: true}
@@ -379,7 +379,7 @@ jobs:
           SERVICE_ACCOUNT: ((concourse-gcp-account))
           GRADLE_GLOBAL_ARGS: ((gradle-global-args))
         run:
-          {%- if test.name=="StressNew" %}
+          {%- if test.name=="stress-new" %}
           path: geode-ci/ci/scripts/repeat-new-tests.sh
           {%- else %}
           path: geode-ci/ci/scripts/execute_tests.sh
@@ -394,7 +394,7 @@ jobs:
       - put: pull-request-job-failure
         resource: geode-status
         params:
-          context: {{test.name}}Test{{java_test_version.name}}
+          context: {{test.name}}-test-{{java_test_version.name}}
           path: geode
           status: failure
         get_params: {skip_download: true}
@@ -418,7 +418,7 @@ jobs:
         timeout: 15m
         attempts: 5
       ensure:
-        aggregate:
+        in_parallel:
         - task: archive-results-{{java_test_version.name}}
           image: alpine-tools-image
           config:
@@ -452,7 +452,7 @@ jobs:
       - put: pull-request-job-success
         resource: geode-status
         params:
-          context: {{test.name}}Test{{java_test_version.name}}
+          context: {{test.name}}-test-{{java_test_version.name}}
           path: geode
           status: success
         get_params: {skip_download: true}
