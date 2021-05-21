@@ -18,8 +18,8 @@ package org.apache.geode.redis.internal.data;
 
 import static java.lang.Math.round;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.BASE_REDIS_SORTED_SET_OVERHEAD;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import java.io.DataOutput;
 import java.io.IOException;
@@ -111,13 +111,12 @@ public class RedisSortedSetTest {
     assertThat(o2).isEqualTo(o1);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void zadd_stores_delta_that_is_stable() throws IOException {
-    Region<RedisKey, RedisData> region = Mockito.mock(Region.class);
+    Region<RedisKey, RedisData> region = uncheckedCast(Mockito.mock(Region.class));
     RedisSortedSet o1 = createRedisSortedSet("k1", "v1", "k2", "v2");
 
-    ArrayList<byte[]> adds = new ArrayList<>();
+    List<byte[]> adds = new ArrayList<>();
     adds.add("k3".getBytes());
     adds.add("v3".getBytes());
 
@@ -136,10 +135,9 @@ public class RedisSortedSetTest {
     assertThat(o2).isEqualTo(o1);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
-    Region<RedisKey, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = uncheckedCast(Mockito.mock(Region.class));
     RedisSortedSet o1 = createRedisSortedSet("k1", "v1", "k2", "v2");
     o1.setExpirationTimestamp(region, null, 999);
     assertThat(o1.hasDelta()).isTrue();
@@ -196,8 +194,9 @@ public class RedisSortedSetTest {
   }
 
   @Test
+  @Ignore("Redo when we have a defined Sizable strategy")
   public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithSingleValue() {
-    ArrayList<byte[]> data = new ArrayList<>();
+    List<byte[]> data = new ArrayList<>();
     data.add("1.0".getBytes());
     data.add("membernamethatisverylonggggggggg".getBytes());
 

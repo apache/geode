@@ -59,15 +59,19 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   RedisSortedSet(List<byte[]> members) {
-    this.members = new Object2ObjectOpenCustomHashMap<>(members.size(), ByteArrays.HASH_STRATEGY);
+    this.members =
+        new Object2ObjectOpenCustomHashMap<>(members.size() / 2, ByteArrays.HASH_STRATEGY);
     Iterator<byte[]> iterator = members.iterator();
 
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
       byte[] member = iterator.next();
-      sizeInBytes += calculateSizeOfFieldValuePair(member, score);
-      this.members.put(member, score);
+      memberAdd(member, score);
     }
+  }
+
+  protected int getSortedSetSize() {
+    return members.size();
   }
 
   // for serialization
@@ -160,8 +164,7 @@ public class RedisSortedSet extends AbstractRedisData {
     while (iterator.hasNext()) {
       byte[] member = iterator.next();
       byte[] score = iterator.next();
-      sizeInBytes += calculateSizeOfFieldValuePair(member, score);
-      members.put(member, score);
+      memberAdd(member, score);
     }
   }
 
@@ -182,11 +185,11 @@ public class RedisSortedSet extends AbstractRedisData {
   long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
       SortedSetOptions options) {
     int membersAdded = 0;
+    int initialSize = getSortedSetSize();
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
 
     while (iterator.hasNext()) {
-      boolean delta = true;
       byte[] score = iterator.next();
       byte[] member = iterator.next();
 
@@ -208,7 +211,7 @@ public class RedisSortedSet extends AbstractRedisData {
       deltaInfo.add(score);
     }
     storeChanges(region, key, deltaInfo);
-    return membersAdded;
+    return getSortedSetSize() - initialSize;
   }
 
   byte[] zscore(byte[] member) {

@@ -40,8 +40,9 @@ class NullRedisSortedSet extends RedisSortedSet {
     if (options.isXX()) {
       return 0;
     }
-    region.create(key, new RedisSortedSet(membersToAdd));
-    return membersToAdd.size() / 2;
+    RedisSortedSet sortedSet = new RedisSortedSet(membersToAdd);
+    region.create(key, sortedSet);
+    return sortedSet.getSortedSetSize();
   }
 
   @Override
