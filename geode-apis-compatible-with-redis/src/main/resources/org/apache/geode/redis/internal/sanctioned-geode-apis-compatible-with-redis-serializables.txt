@@ -10,7 +10,6 @@ org/apache/geode/redis/internal/executor/CommandFunction,true,-13025063163164547
 org/apache/geode/redis/internal/executor/SingleResultRedisFunction,true,3239452234149879302
 org/apache/geode/redis/internal/executor/key/RenameFunction,true,7047473969356686453
 org/apache/geode/redis/internal/executor/sortedset/SortedSetOptions$Exists,false
-org/apache/geode/redis/internal/executor/sortedset/SortedSetOptions$Update,false
 org/apache/geode/redis/internal/executor/string/SetOptions$Exists,false
 org/apache/geode/redis/internal/netty/CoderException,true,4707944288714910949
 org/apache/geode/redis/internal/netty/RedisCommandParserException,true,4707944288714910949
