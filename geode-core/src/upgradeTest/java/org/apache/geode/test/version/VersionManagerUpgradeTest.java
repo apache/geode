@@ -23,7 +23,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 
 @Category(BackwardCompatibilityTest.class)
-public class VersionManagerIntegrationTest {
+public class VersionManagerUpgradeTest {
 
   @Test
   public void exceptionIsNotThrownInInitialization() {

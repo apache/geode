@@ -59,7 +59,6 @@ dependencies {
 
   testImplementation('pl.pragmatists:JUnitParams')
 
-  testRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
 test {
