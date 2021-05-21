@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.AbstractDiskRegion;
@@ -171,7 +170,6 @@ public interface DiskEntry extends RegionEntry {
      * @param entry the entry used to identify the value to fetch
      * @param dr the persistent storage from which to fetch the value
      * @return either null, byte array, or CacheDeserializable
-     * @since GemFire 57_hotfix
      */
     public static Object getSerializedValueOnDisk(DiskEntry entry, DiskRegion dr) {
       DiskId did = entry.getDiskId();
@@ -253,8 +251,7 @@ public interface DiskEntry extends RegionEntry {
     }
 
     static boolean isOverflowedToDisk(DiskEntry de, DiskRegion dr,
-        DistributedRegion.DiskPosition dp, RegionEntryContext context) {
-      Object v = null;
+        DistributedRegion.DiskPosition dp) {
       DiskId did;
       synchronized (de) {
         did = de.getDiskId();
@@ -274,7 +271,7 @@ public interface DiskEntry extends RegionEntry {
                 did = de.getDiskId();
               }
               assert did != null;
-              return isOverflowedToDisk(de, dr, dp, context);
+              return isOverflowedToDisk(de, dr, dp);
             } else {
               dp.setPosition(did.getOplogId(), did.getOffsetInOplog());
               return true;
@@ -296,11 +293,11 @@ public interface DiskEntry extends RegionEntry {
      * @since GemFire 3.2.1
      */
     static boolean fillInValue(DiskEntry de, InitialImageOperation.Entry entry, DiskRegion dr,
-        DistributionManager mgr, ByteArrayDataInput in, RegionEntryContext context,
+        RegionEntryContext context,
         KnownVersion version) {
       @Retained
       @Released
-      Object v = null;
+      Object value;
       DiskId did;
       synchronized (de) {
         did = de.getDiskId();
@@ -314,31 +311,30 @@ public interface DiskEntry extends RegionEntry {
       }
       try {
         synchronized (syncObj) {
-          entry.setLastModified(mgr, de.getLastModified());
+          entry.setLastModified(de.getLastModified());
 
           ReferenceCountHelper.setReferenceCountOwner(entry);
 
           // OFFHEAP copied to heap entry;
           // TODO: allow entry to refer to offheap since it will be copied to network.
-          v = de.getValueRetain(context, true);
+          value = de.getValueRetain(context, true);
 
           ReferenceCountHelper.setReferenceCountOwner(null);
-          if (v == null) {
+          if (value == null) {
             if (did == null) {
-              // fix for bug 41449
               synchronized (de) {
                 did = de.getDiskId();
               }
               assert did != null;
               // do recursive call to get readLock on did
-              return fillInValue(de, entry, dr, mgr, in, context, version);
+              return fillInValue(de, entry, dr, context, version);
             }
             if (logger.isDebugEnabled()) {
               logger.debug(
                   "DiskEntry.Helper.fillInValue, key={}; getting value from disk, disk id={}",
                   entry.getKey(), did);
             }
-            BytesAndBits bb = null;
+            final BytesAndBits bb;
             try {
               bb = dr.getBytesAndBits(did, false);
             } catch (DiskAccessException ignore) {
@@ -362,11 +358,10 @@ public interface DiskEntry extends RegionEntry {
           dr.releaseReadLock();
         }
       }
-      if (Token.isRemovedFromDisk(v)) {
-        // fix for bug 31757
+      if (Token.isRemovedFromDisk(value)) {
         return false;
-      } else if (v instanceof CachedDeserializable) {
-        CachedDeserializable cd = (CachedDeserializable) v;
+      } else if (value instanceof CachedDeserializable) {
+        CachedDeserializable cd = (CachedDeserializable) value;
         try {
           if (!cd.isSerialized()) {
             entry.setSerialized(false);
@@ -377,7 +372,7 @@ public interface DiskEntry extends RegionEntry {
 
             Object tmp = cd.getValue();
             if (tmp instanceof byte[]) {
-              entry.setValue((byte[]) tmp);
+              entry.setValue(tmp);
               entry.setSerialized(true);
             } else {
               try {
@@ -397,22 +392,21 @@ public interface DiskEntry extends RegionEntry {
           // If v == entry.value then v is assumed to be an OffHeapByteSource
           // and release() will be called on v after the bytes have been read from
           // off-heap.
-          if (v != entry.getValue()) {
-            OffHeapHelper.releaseWithNoTracking(v);
+          if (value != entry.getValue()) {
+            OffHeapHelper.releaseWithNoTracking(value);
           }
         }
-      } else if (v instanceof byte[]) {
-        entry.setValue(v);
+      } else if (value instanceof byte[]) {
+        entry.setValue(value);
         entry.setSerialized(false);
-      } else if (v == Token.INVALID) {
+      } else if (value == Token.INVALID) {
         entry.setInvalid();
-      } else if (v == Token.LOCAL_INVALID) {
-        // fix for bug 31107
+      } else if (value == Token.LOCAL_INVALID) {
         entry.setLocalInvalid();
-      } else if (v == Token.TOMBSTONE) {
+      } else if (value == Token.TOMBSTONE) {
         entry.setTombstone();
       } else {
-        Object preparedValue = v;
+        Object preparedValue = value;
         if (preparedValue != null) {
           preparedValue = AbstractRegionEntry.prepareValueForGII(preparedValue);
           if (preparedValue == null) {
@@ -427,10 +421,7 @@ public interface DiskEntry extends RegionEntry {
             entry.setValue(hdos);
             entry.setSerialized(true);
           } catch (IOException e) {
-            RuntimeException e2 = new IllegalArgumentException(
-                "An IOException was thrown while serializing.");
-            e2.initCause(e);
-            throw e2;
+            throw new IllegalArgumentException("An IOException was thrown while serializing.", e);
           }
         }
       }
@@ -518,12 +509,12 @@ public interface DiskEntry extends RegionEntry {
 
       @Override
       public boolean isSerialized() {
-        return this.isSerializedObject;
+        return isSerializedObject;
       }
 
       @Override
       public int getLength() {
-        return (this.bytes != null) ? this.bytes.length : 0;
+        return (bytes != null) ? bytes.length : 0;
       }
 
       private boolean isInvalidToken() {
@@ -549,9 +540,9 @@ public interface DiskEntry extends RegionEntry {
           } else if (isLocalInvalidToken()) {
             userBits = EntryBits.setLocalInvalid(userBits, true);
           } else {
-            if (this.bytes == null) {
+            if (bytes == null) {
               throw new IllegalStateException("userBits==1 and value is null");
-            } else if (this.bytes.length == 0) {
+            } else if (bytes.length == 0) {
               throw new IllegalStateException("userBits==1 and value is zero length");
             }
             userBits = EntryBits.setSerialized(userBits, true);
@@ -571,7 +562,7 @@ public interface DiskEntry extends RegionEntry {
             needsFlush = true;
             bytesThisTime = bb.remaining();
           }
-          bb.put(this.bytes, offset, bytesThisTime);
+          bb.put(bytes, offset, bytesThisTime);
           offset += bytesThisTime;
           if (needsFlush) {
             flushable.flush();
@@ -581,13 +572,13 @@ public interface DiskEntry extends RegionEntry {
 
       @Override
       public String getBytesAsString() {
-        if (this.bytes == null) {
+        if (bytes == null) {
           return "null";
         }
         StringBuilder sb = new StringBuilder();
         int len = getLength();
         for (int i = 0; i < len; i++) {
-          sb.append(this.bytes[i]).append(", ");
+          sb.append(bytes[i]).append(", ");
         }
         return sb.toString();
       }
@@ -614,7 +605,7 @@ public interface DiskEntry extends RegionEntry {
 
       @Override
       public int getLength() {
-        return this.length;
+        return length;
       }
 
       @Override
@@ -636,17 +627,17 @@ public interface DiskEntry extends RegionEntry {
       public OffHeapValueWrapper(StoredObject so) {
         assert so.hasRefCount();
         assert !so.isCompressed();
-        this.offHeapData = so;
+        offHeapData = so;
       }
 
       @Override
       public boolean isSerialized() {
-        return this.offHeapData.isSerialized();
+        return offHeapData.isSerialized();
       }
 
       @Override
       public int getLength() {
-        return this.offHeapData.getDataSize();
+        return offHeapData.getDataSize();
       }
 
       @Override
@@ -665,7 +656,7 @@ public interface DiskEntry extends RegionEntry {
           return;
         }
         if (maxOffset > bb.capacity()) {
-          ByteBuffer chunkbb = this.offHeapData.createDirectByteBuffer();
+          ByteBuffer chunkbb = offHeapData.createDirectByteBuffer();
           if (chunkbb != null) {
             flushable.flush(bb, chunkbb);
             return;
@@ -676,7 +667,7 @@ public interface DiskEntry extends RegionEntry {
           int bytesRemaining = maxOffset;
           int availableSpace = bb.remaining();
           long addrToWrite = bbAddress + bb.position();
-          long addrToRead = this.offHeapData.getAddressForReadingData(0, maxOffset);
+          long addrToRead = offHeapData.getAddressForReadingData(0, maxOffset);
           if (bytesRemaining > availableSpace) {
             do {
               AddressableMemoryManager.copyMemory(addrToRead, addrToWrite, availableSpace);
@@ -691,7 +682,7 @@ public interface DiskEntry extends RegionEntry {
           AddressableMemoryManager.copyMemory(addrToRead, addrToWrite, bytesRemaining);
           bb.position(bb.position() + bytesRemaining);
         } else {
-          long addr = this.offHeapData.getAddressForReadingData(0, maxOffset);
+          long addr = offHeapData.getAddressForReadingData(0, maxOffset);
           final long endAddr = addr + maxOffset;
           while (addr != endAddr) {
             bb.put(AddressableMemoryManager.readByte(addr));
@@ -705,7 +696,7 @@ public interface DiskEntry extends RegionEntry {
 
       @Override
       public String getBytesAsString() {
-        return this.offHeapData.getStringForm();
+        return offHeapData.getStringForm();
       }
     }
 
@@ -716,11 +707,7 @@ public interface DiskEntry extends RegionEntry {
      */
     public static boolean wrapOffHeapReference(Object o) {
       if (o instanceof StoredObject) {
-        StoredObject so = (StoredObject) o;
-        if (so.hasRefCount()) {
-          //
-          return true;
-        }
+        return ((StoredObject) o).hasRefCount();
       }
       return false;
     }
@@ -787,12 +774,9 @@ public interface DiskEntry extends RegionEntry {
         // Since NIO is used if the chunk of memory is large we can write it
         // to the file using the off-heap memory with no extra copying.
         // So we give preference to getRawNewValue over getCachedSerializedNewValue
-        Object rawValue = null;
-        {
-          rawValue = event.getRawNewValue();
-          if (wrapOffHeapReference(rawValue)) {
-            return new OffHeapValueWrapper((StoredObject) rawValue);
-          }
+        final Object rawValue = event.getRawNewValue();
+        if (wrapOffHeapReference(rawValue)) {
+          return new OffHeapValueWrapper((StoredObject) rawValue);
         }
         if (event.getCachedSerializedNewValue() != null) {
           return new ByteArrayValueWrapper(true, event.getCachedSerializedNewValue());
@@ -802,7 +786,7 @@ public interface DiskEntry extends RegionEntry {
         }
       }
       @Retained
-      Object value = entry.getValueRetain(region, true);
+      final Object value = entry.getValueRetain(region, true);
       try {
         return createValueWrapper(value, event);
       } finally {
@@ -851,7 +835,6 @@ public interface DiskEntry extends RegionEntry {
       boolean basicUpdateCalled = false;
       try {
 
-        AsyncDiskEntry asyncDiskEntry = null;
         DiskRegion dr = region.getDiskRegion();
         DiskId did = entry.getDiskId();
         Object syncObj = did;
@@ -861,6 +844,8 @@ public interface DiskEntry extends RegionEntry {
         if (syncObj == did) {
           dr.acquireReadLock();
         }
+
+        final AsyncDiskEntry asyncDiskEntry;
         try {
           synchronized (syncObj) {
             basicUpdateCalled = true;
@@ -897,7 +882,7 @@ public interface DiskEntry extends RegionEntry {
       oldValue = entry.getValueAsToken();
       if (Token.isRemovedFromDisk(newValue)) {
         if (dr.isBackup()) {
-          dr.testIsRecoveredAndClear(did); // fixes bug 41409
+          dr.testIsRecoveredAndClear(did);
         }
         boolean caughtCacheClosed = false;
         try {
@@ -908,9 +893,8 @@ public interface DiskEntry extends RegionEntry {
           caughtCacheClosed = true;
           throw e;
         } finally {
-          if (caughtCacheClosed) {
-            // 47616: not to set the value to be removedFromDisk since it failed to persist
-          } else {
+          // do not to set the value to be removedFromDisk since it failed to persist
+          if (!caughtCacheClosed) {
             // Ensure that the value is rightly set despite clear so
             // that it can be distributed correctly
             entry.setValueWithContext(region, newValue); // OFFHEAP newValue was already
@@ -924,9 +908,6 @@ public interface DiskEntry extends RegionEntry {
         try {
           // The new value in the entry needs to be set after the disk writing
           // has succeeded.
-
-          // entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
-
           if (did != null && did.isPendingAsync()) {
             // if the entry was not yet written to disk, we didn't update
             // the bytes on disk.
@@ -936,7 +917,7 @@ public interface DiskEntry extends RegionEntry {
           }
 
           if (dr.isBackup()) {
-            dr.testIsRecoveredAndClear(did); // fixes bug 41409
+            dr.testIsRecoveredAndClear(did);
             if (doSynchronousWrite(region, dr)) {
               if (AbstractRegionEntry.isCompressible(dr, newValue)) {
                 // In case of compression the value is being set first
@@ -985,7 +966,6 @@ public interface DiskEntry extends RegionEntry {
             // The disk remove that this section used to do caused bug 30961
             // @todo this seems wrong. How does leaving it on disk fix the bug?
             did.markForWriting();
-            // did.setValueSerializedSize(0);
           } else {
             newValueStoredInEntry = true;
             entry.setValueWithContext(region, newValue);
@@ -1101,7 +1081,7 @@ public interface DiskEntry extends RegionEntry {
                   did.setPendingAsync(false);
                 }
               }
-              lruEntryFaultIn((EvictableEntry) entry, (DiskRecoveryStore) region);
+              lruEntryFaultIn((EvictableEntry) entry, region);
               lruFaultedIn = true;
             }
           }
@@ -1111,10 +1091,10 @@ public interface DiskEntry extends RegionEntry {
             v = entry.getValueRetain(region, true);
 
             if (v == null) {
-              v = readValueFromDisk(entry, (DiskRecoveryStore) region);
+              v = readValueFromDisk(entry, region);
               if (entry instanceof EvictableEntry) {
                 if (v != null && !Token.isInvalid(v)) {
-                  lruEntryFaultIn((EvictableEntry) entry, (DiskRecoveryStore) region);
+                  lruEntryFaultIn((EvictableEntry) entry, region);
 
                   lruFaultedIn = true;
                 }
@@ -1135,7 +1115,7 @@ public interface DiskEntry extends RegionEntry {
         entry.setRecentlyUsed(region);
       }
       if (lruFaultedIn) {
-        lruUpdateCallback((DiskRecoveryStore) region);
+        lruUpdateCallback(region);
       }
       return v; // OFFHEAP: the value ends up being returned by RegionEntry.getValue
     }
@@ -1200,7 +1180,7 @@ public interface DiskEntry extends RegionEntry {
           } else if (EntryBits.isSerialized(bb.getBits())) {
             value = readSerializedValue(bb.getBytes(), bb.getVersion(), in, false, cache);
           } else {
-            value = readRawValue(bb.getBytes(), bb.getVersion(), in);
+            value = readRawValue(bb.getBytes());
           }
         }
       }
@@ -1228,9 +1208,9 @@ public interface DiskEntry extends RegionEntry {
     }
 
     private static void lruEntryFaultIn(EvictableEntry entry, DiskRecoveryStore recoveryStore) {
-      RegionMap rm = (RegionMap) recoveryStore.getRegionMap();
+      RegionMap rm = recoveryStore.getRegionMap();
       try {
-        rm.lruEntryFaultIn((EvictableEntry) entry);
+        rm.lruEntryFaultIn(entry);
       } catch (DiskAccessException dae) {
         recoveryStore.handleDiskAccessException(dae);
         throw dae;
@@ -1273,8 +1253,6 @@ public interface DiskEntry extends RegionEntry {
     @Unretained
     private static Object setValueOnFaultIn(Object value, DiskId did, DiskEntry entry,
         DiskRegionView dr, DiskRecoveryStore region) {
-      // dr.getOwner().getCache().getLogger().info("DEBUG: faulting in entry with key " +
-      // entry.getKey());
       int bytesOnDisk = getValueLength(did);
       // Retained by the prepareValueForCache call for the region entry.
       // NOTE that we return this value unretained because the retain is owned by the region entry
@@ -1283,10 +1261,7 @@ public interface DiskEntry extends RegionEntry {
       Object preparedValue = entry.prepareValueForCache((RegionEntryContext) region, value, false);
       region.updateSizeOnFaultIn(entry.getKey(), region.calculateValueSize(preparedValue),
           bytesOnDisk);
-      // did.setValueSerializedSize(0);
-      // I think the following assertion is true but need to run
-      // a regression with it. Reenable this post 6.5
-      // Assert.assertTrue(entry._getValue() == null);
+
       entry.setValueWithContext((RegionEntryContext) region, preparedValue);
       if (!Token.isInvalidOrRemoved(value)) {
         updateStats(dr, region, 1/* InVM */, -1/* OnDisk */, -bytesOnDisk);
@@ -1300,15 +1275,14 @@ public interface DiskEntry extends RegionEntry {
         // deserialize checking for product version change
         return EntryEventImpl.deserialize(valueBytes, version, in);
       } else {
-        // TODO: upgrades: is there a case where GemFire values are internal
+        // TODO: upgrades: is there a case where Geode values are internal
         // ones that need to be upgraded transparently; probably messages
         // being persisted (gateway events?)
         return CachedDeserializableFactory.create(valueBytes, cache);
       }
     }
 
-    public static Object readRawValue(byte[] valueBytes, KnownVersion version,
-        ByteArrayDataInput in) {
+    public static Object readRawValue(byte[] valueBytes) {
       return valueBytes;
     }
 
@@ -1352,11 +1326,11 @@ public interface DiskEntry extends RegionEntry {
       // Get diskID . If it is null, it implies it is overflow only mode.
       DiskId did = entry.getDiskId();
       if (did == null) {
-        ((EvictableEntry) entry).setDelayedDiskId((DiskRecoveryStore) region);
+        ((EvictableEntry) entry).setDelayedDiskId(region);
         did = entry.getDiskId();
       }
 
-      int change = 0;
+      final int change;
       boolean scheduledAsyncHere = false;
       dr.acquireReadLock();
       try {
@@ -1438,8 +1412,6 @@ public interface DiskEntry extends RegionEntry {
 
     /**
      * Flush an entry that was previously scheduled to be written to disk.
-     *
-     * @since GemFire prPersistSprint1
      */
     public static void doAsyncFlush(DiskEntry entry, InternalRegion region, VersionTag tag) {
       writeEntryToDisk(entry, region, tag, false);
@@ -1556,7 +1528,7 @@ public interface DiskEntry extends RegionEntry {
       if (did == null) {
         syncObj = entry;
       }
-      AsyncDiskEntry asyncDiskEntry = null;
+      final AsyncDiskEntry asyncDiskEntry;
       if (syncObj == did) {
         dr.acquireReadLock();
       }
@@ -1705,7 +1677,7 @@ public interface DiskEntry extends RegionEntry {
 
     public RecoveredEntry(long keyId, long oplogId, long offsetInOplog, byte userBits,
         int valueLength, Object value, boolean valueRecovered) {
-      this.recoveredKeyId = keyId;
+      recoveredKeyId = keyId;
       this.value = value;
       this.oplogId = oplogId;
       this.offsetInOplog = offsetInOplog;
@@ -1718,7 +1690,7 @@ public interface DiskEntry extends RegionEntry {
      * Returns the disk id of the entry being recovered
      */
     public long getRecoveredKeyId() {
-      return this.recoveredKeyId;
+      return recoveredKeyId;
     }
 
     /**
@@ -1726,7 +1698,7 @@ public interface DiskEntry extends RegionEntry {
      * not been faulted in and this method will return null.
      */
     public Object getValue() {
-      return this.value;
+      return value;
     }
 
     /**
@@ -1735,11 +1707,11 @@ public interface DiskEntry extends RegionEntry {
      *         is false . In other cases the exact value is not needed
      */
     public byte getUserBits() {
-      return this.userBits;
+      return userBits;
     }
 
     public int getValueLength() {
-      return this.valueLength;
+      return valueLength;
     }
 
     public long getOffsetInOplog() {
@@ -1747,19 +1719,19 @@ public interface DiskEntry extends RegionEntry {
     }
 
     public long getOplogId() {
-      return this.oplogId;
+      return oplogId;
     }
 
     public void setOplogId(long v) {
-      this.oplogId = v;
+      oplogId = v;
     }
 
     public boolean getValueRecovered() {
-      return this.valueRecovered;
+      return valueRecovered;
     }
 
     public VersionTag getVersionTag() {
-      return this.tag;
+      return tag;
     }
 
     public void setVersionTag(VersionTag tag) {

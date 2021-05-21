@@ -891,7 +891,7 @@ public class DiskStoreImpl implements DiskStore {
     } else if (EntryBits.isTombstone(bb.getBits())) {
       value = Token.TOMBSTONE;
     } else {
-      value = readRawValue(bytes, bb.getVersion(), null);
+      value = readRawValue(bytes);
     }
     return value;
   }
@@ -913,7 +913,7 @@ public class DiskStoreImpl implements DiskStore {
     } else if (EntryBits.isTombstone(bb.getBits())) {
       value = Token.TOMBSTONE;
     } else {
-      value = readRawValue(bytes, bb.getVersion(), null);
+      value = readRawValue(bytes);
     }
     return value;
   }

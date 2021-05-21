@@ -21,122 +21,59 @@ import org.apache.geode.cache.RegionEvent;
 /**
  * This class provides 'do-nothing' implementations of all of the methods of interface
  * CacheObserver. See the documentation for class CacheObserverHolder for details. Also the callback
- * is issed only if the boolean ISSUE_CALLBACKS_TO_CACHE_OBSERVER present in
+ * is issued only if the boolean ISSUE_CALLBACKS_TO_CACHE_OBSERVER present in
  * org.apache.geode.internal.cache.LocalRegion is made true
  *
  */
 public class CacheObserverAdapter implements CacheObserver {
 
-  /**
-   * Called just after the region is cleared & before Listener callback is issued. The call to this
-   * method is synchronous
-   *
-   * @param event RegionEvent object
-   */
   @Override
-  public void afterRegionClear(RegionEvent event) {}
+  public void afterRegionClear(RegionEvent<?, ?> event) {}
 
   @Override
-  public void beforeDiskClear() {
-    // TODO Auto-generated method stub
-  }
+  public void beforeDiskClear() {}
 
   @Override
-  public void goingToFlush() {
-    // TODO Auto-generated method stub
-  }
-
-  public void beforeWritingBytes() {}
+  public void goingToFlush() {}
 
   @Override
   public void afterWritingBytes() {}
 
   @Override
-  public void beforeGoingToCompact() {
-    // TODO Auto-generated method stub
-  }
+  public void beforeGoingToCompact() {}
 
   @Override
-  public void afterHavingCompacted() {
-    // TODO Auto-generated method stub
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.CacheObserver#afterConflation(java.nio.ByteBuffer,
-   * java.nio.ByteBuffer)
-   */
-  @Override
-  public void afterConflation(ByteBuffer origBB, ByteBuffer conflatedBB) {
-    // TODO Auto-generated method stub
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.CacheObserver#afterSettingOplogOffSet()
-   */
-  @Override
-  public void afterSettingOplogOffSet(long offset) {
-    // TODO Auto-generated method stub
-  }
+  public void afterHavingCompacted() {}
 
   @Override
-  public void beforeSwitchingOplog() {
-    // TODO Auto-generated method stub
-  }
+  public void afterConflation(ByteBuffer origBB, ByteBuffer conflatedBB) {}
 
   @Override
-  public void afterSwitchingOplog() {
-    // TODO Auto-generated method stub
-  }
+  public void afterSettingOplogOffSet(long offset) {}
 
   @Override
-  public void afterKrfCreated() {
-
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.CacheObserver#beforeStoppingCompacter()
-   */
-  @Override
-  public void beforeStoppingCompactor() {
-    // TODO Auto-generated method stub
-
-  }
+  public void beforeSwitchingOplog() {}
 
   @Override
-  public void afterStoppingCompactor() {
+  public void afterSwitchingOplog() {}
 
-  }
+  @Override
+  public void afterKrfCreated() {}
+
+  @Override
+  public void beforeStoppingCompactor() {}
+
+  @Override
+  public void afterStoppingCompactor() {}
 
   @Override
   public void afterSignallingCompactor() {}
 
   @Override
-  public void afterMarkingGIICompleted() {
-    // TODO Auto-generated method stub
-
-  }
+  public void afterMarkingGIICompleted() {}
 
   @Override
-  public void afterMarkingGIIStarted() {
-    // TODO Auto-generated method stub
-
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.CacheObserver#afterSwitchingWriteAndFlushMaps()
-   */
-  @Override
-  public void afterSwitchingWriteAndFlushMaps() {
-
-  }
+  public void afterMarkingGIIStarted() {}
 
   @Override
   public void afterSettingDiskRef() {}
