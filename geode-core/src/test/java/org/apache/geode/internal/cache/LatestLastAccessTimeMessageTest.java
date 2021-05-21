@@ -14,30 +14,97 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Set;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.InternalStatisticsDisabledException;
 
 public class LatestLastAccessTimeMessageTest {
+  private InternalDistributedRegion region;
+  private ClusterDistributionManager dm;
+  private LatestLastAccessTimeMessage<String> lastAccessTimeMessage;
+  private InternalCache cache;
 
-  @Test
-  public void processMessageShouldLookForNullCache() throws Exception {
-    final DistributionManager distributionManager = mock(DistributionManager.class);
+  @Before
+  public void setUp() throws UnknownHostException {
     final LatestLastAccessTimeReplyProcessor replyProcessor =
         mock(LatestLastAccessTimeReplyProcessor.class);
-    final InternalDistributedRegion region = mock(InternalDistributedRegion.class);
-    Set<InternalDistributedMember> recipients = Collections.singleton(new InternalDistributedMember(
-        LocalHostUtil.getLocalHost(), 1234));
-    final LatestLastAccessTimeMessage<String> lastAccessTimeMessage =
-        new LatestLastAccessTimeMessage<>(replyProcessor, recipients, region, "foo");
-    lastAccessTimeMessage.process(mock(ClusterDistributionManager.class));
+    region = mock(InternalDistributedRegion.class);
+    Set<InternalDistributedMember> recipients =
+        Collections.singleton(mock(InternalDistributedMember.class));
+    lastAccessTimeMessage =
+        spy(new LatestLastAccessTimeMessage<>(replyProcessor, recipients, region, "foo"));
+    lastAccessTimeMessage.setSender(mock(InternalDistributedMember.class));
+    dm = mock(ClusterDistributionManager.class);
+    cache = mock(InternalCache.class);
+  }
+
+  @Test
+  public void processWithNullCacheRepliesZero() throws Exception {
+    when(dm.getCache()).thenReturn(null);
+
+    lastAccessTimeMessage.process(dm);
+
+    verify(lastAccessTimeMessage).sendReply(dm, 0);
+  }
+
+  @Test
+  public void processWithNullRegionRepliesZero() throws Exception {
+    when(dm.getCache()).thenReturn(cache);
+    when(cache.getRegion(any())).thenReturn(null);
+
+    lastAccessTimeMessage.process(dm);
+
+    verify(lastAccessTimeMessage).sendReply(dm, 0);
+  }
+
+  @Test
+  public void processWithNullEntryRepliesZero() throws Exception {
+    when(dm.getCache()).thenReturn(cache);
+    when(cache.getRegion(any())).thenReturn(region);
+    when(region.getRegionEntry(any())).thenReturn(null);
+
+    lastAccessTimeMessage.process(dm);
+
+    verify(lastAccessTimeMessage).sendReply(dm, 0);
+  }
+
+  @Test
+  public void processWithEntryStatsDisabledRepliesZero() throws Exception {
+    when(dm.getCache()).thenReturn(cache);
+    when(cache.getRegion(any())).thenReturn(region);
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(region.getRegionEntry(any())).thenReturn(regionEntry);
+    when(regionEntry.getLastAccessed()).thenThrow(new InternalStatisticsDisabledException());
+
+    lastAccessTimeMessage.process(dm);
+
+    verify(lastAccessTimeMessage).sendReply(dm, 0);
+  }
+
+  @Test
+  public void processWithRegionEntryRepliesWithLastAccessed() throws Exception {
+    when(dm.getCache()).thenReturn(cache);
+    when(cache.getRegion(any())).thenReturn(region);
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(region.getRegionEntry(any())).thenReturn(regionEntry);
+    final long LAST_ACCESSED = 47;
+    when(regionEntry.getLastAccessed()).thenReturn(LAST_ACCESSED);
+
+    lastAccessTimeMessage.process(dm);
+
+    verify(lastAccessTimeMessage).sendReply(dm, LAST_ACCESSED);
   }
 }
