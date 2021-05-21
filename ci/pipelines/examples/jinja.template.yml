@@ -95,7 +95,7 @@ resources:
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
   source: {}
-- name: 24h
+- name: daily
   type: time
   source: {interval: 24h}
 - name: alpine-tools-image
@@ -127,7 +127,7 @@ jobs:
       trigger: true
     - get: geode-examples
       trigger: true
-    - get: 24h
+    - get: daily
       trigger: true
     - put: concourse-metadata-resource
   {{ init_retry()|indent(2) }}
