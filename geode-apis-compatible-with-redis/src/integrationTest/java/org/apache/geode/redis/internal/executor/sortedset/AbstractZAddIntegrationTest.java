@@ -109,7 +109,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void zaddStoresScores_givenCorrectArguments() {
-    Map<String, Double> map = makeMemberScoreMap("member_", INITIAL_MEMBER_COUNT, 0);
+    Map<String, Double> map = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
 
     Set<String> keys = map.keySet();
     Long count = 0L;
@@ -126,7 +126,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void zaddStoresScores_givenMultipleMembersAndScores() {
-    Map<String, Double> map = makeMemberScoreMap("member_", INITIAL_MEMBER_COUNT, 0);
+    Map<String, Double> map = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
     Set<String> keys = map.keySet();
 
     long added = jedis.zadd(SORTED_SET_KEY, map);
@@ -159,7 +159,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void zaddDoesNotUpdateMembers_whenNXSpecified() {
-    Map<String, Double> initMap = makeMemberScoreMap("member_", INITIAL_MEMBER_COUNT, 0);
+    Map<String, Double> initMap = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
 
     long added = jedis.zadd(SORTED_SET_KEY, initMap);
     assertThat(added).isEqualTo(INITIAL_MEMBER_COUNT);
@@ -170,7 +170,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
       assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
     }
 
-    Map<String, Double> updateMap = makeMemberScoreMap("member_", 2 * INITIAL_MEMBER_COUNT, 10);
+    Map<String, Double> updateMap = makeMemberScoreMap(2 * INITIAL_MEMBER_COUNT, 10);
 
     ZAddParams zAddParams = new ZAddParams();
     zAddParams.nx();
@@ -191,7 +191,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void zaddDoesNotAddNewMembers_whenXXSpecified() {
-    Map<String, Double> initMap = makeMemberScoreMap("member_", INITIAL_MEMBER_COUNT, 0);
+    Map<String, Double> initMap = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
 
     long added = jedis.zadd(SORTED_SET_KEY, initMap);
     assertThat(added).isEqualTo(INITIAL_MEMBER_COUNT);
@@ -202,7 +202,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
       assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
     }
 
-    Map<String, Double> updateMap = makeMemberScoreMap("member_", 2 * INITIAL_MEMBER_COUNT, 10);
+    Map<String, Double> updateMap = makeMemberScoreMap(2 * INITIAL_MEMBER_COUNT, 10);
 
     ZAddParams zAddParams = new ZAddParams();
     zAddParams.xx();
@@ -223,35 +223,31 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void zaddDoesNotUpdateMember_whenNXSpecified() {
-    String key = "ss_key";
-
-    Long res = jedis.zadd(key, 1.0, "mamba");
+    Long res = jedis.zadd(SORTED_SET_KEY, 1.0, "mamba");
     assertThat(res).isEqualTo(1);
 
     ZAddParams zAddParams = new ZAddParams();
     zAddParams.nx();
-    res = jedis.zadd(key, 2.0, "mamba", zAddParams);
+    res = jedis.zadd(SORTED_SET_KEY, 2.0, "mamba", zAddParams);
     assertThat(res).isEqualTo(0);
-    assertThat(jedis.zscore(key, "mamba")).isEqualTo(1.0);
+    assertThat(jedis.zscore(SORTED_SET_KEY, "mamba")).isEqualTo(1.0);
   }
 
   @Test
   public void zaddDoesNotAddMember_whenXXSpecified() {
-    String key = "ss_key";
-
     ZAddParams zAddParams = new ZAddParams();
     zAddParams.xx();
-    Long res = jedis.zadd(key, 1.0, "mamba", zAddParams);
+    Long res = jedis.zadd(SORTED_SET_KEY, 1.0, "mamba", zAddParams);
     assertThat(res).isEqualTo(0);
-    assertThat(jedis.zscore(key, "mamba")).isEqualTo(null);
-    assertThat(jedis.exists(key)).isFalse();
+    assertThat(jedis.zscore(SORTED_SET_KEY, "mamba")).isEqualTo(null);
+    assertThat(jedis.exists(SORTED_SET_KEY)).isFalse();
   }
 
-  private Map<String, Double> makeMemberScoreMap(String baseName, int memberCount, int baseScore) {
+  private Map<String, Double> makeMemberScoreMap(int memberCount, int baseScore) {
     Map<String, Double> map = new HashMap<>();
 
     for (int i = 0; i < memberCount; i++) {
-      map.put(baseName + i, Double.valueOf((i + baseScore) + ""));
+      map.put("member_" + i, Double.valueOf((i + baseScore) + ""));
     }
     return map;
   }
