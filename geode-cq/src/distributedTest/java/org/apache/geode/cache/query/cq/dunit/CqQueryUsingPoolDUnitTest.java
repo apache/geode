@@ -2626,7 +2626,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
           }
 
           while (true) {
-            if (InitialImageOperation.slowImageSleeps > 0) {
+            if (InitialImageOperation.slowImageSleeps.get() > 0) {
               // Create events while GII for HARegion is in progress.
               LocalRegion region1 = (LocalRegion) getRootRegion().getSubregion(regions[0]);
               for (int i = 90; i <= 120; i++) {

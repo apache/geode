@@ -53,10 +53,10 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
 
   protected static boolean wasGIIInProgressDuringClear = false;
 
-  static volatile Region region;
+  static volatile Region<String, String> region;
 
-  public static boolean checkImageStateFlag() throws Exception {
-    Region rgn = new MapClearGIIDUnitTest().getCache().getRegion(SEPARATOR + "map");
+  public static boolean checkImageStateFlag() {
+    Region<?, ?> rgn = new MapClearGIIDUnitTest().getCache().getRegion(SEPARATOR + "map");
     if (rgn == null) {
       fail("Map region not yet created");
     }
@@ -77,12 +77,12 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
     return true;
   }
 
-  public static void createRegionInVm0() throws Exception {
-    AttributesFactory factory = new AttributesFactory();
+  public static void createRegionInVm0() {
+    AttributesFactory<String, String> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.setConcurrencyChecksEnabled(true);
-    RegionAttributes attr = factory.create();
+    RegionAttributes<String, String> attr = factory.create();
 
     region = new MapClearGIIDUnitTest().getCache().createRegion("map", attr);
 
@@ -114,7 +114,7 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
 
   // test methods
   @Test
-  public void testClearImageStateFlag() throws Throwable {
+  public void testClearImageStateFlag() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -124,7 +124,7 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         InitialImageOperation.slowImageProcessing = 10;
-        InitialImageOperation.slowImageSleeps = 0;
+        slowImageSleeps.set(0);
         Properties mprops = new Properties();
         // mprops.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "7777");
 
@@ -144,11 +144,11 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
         getSystem(mprops);
         // ds = DistributedSystem.connect(null);
         getCache();
-        AttributesFactory factory = new AttributesFactory();
+        AttributesFactory<String, String> factory = new AttributesFactory<>();
         factory.setScope(Scope.DISTRIBUTED_ACK);
         factory.setDataPolicy(DataPolicy.REPLICATE);
         factory.setConcurrencyChecksEnabled(true);
-        RegionAttributes attr = factory.create();
+        RegionAttributes<String, String> attr = factory.create();
         region = createRootRegion("map", attr);
         // region = region.createSubregion("map",attr);
         for (int i = 0; i < 10000; ++i) {
@@ -158,7 +158,7 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
     });
     LogWriterUtils.getLogWriter().info("Cache created in VM1 successfully");
     try {
-      AsyncInvocation asyncGII = vm0.invokeAsync(() -> MapClearGIIDUnitTest.createRegionInVm0());
+      AsyncInvocation<Object> asyncGII = vm0.invokeAsync(MapClearGIIDUnitTest::createRegionInVm0);
       // wait until vm0's gii has done 20 slow image sleeps (10ms*20 = 200ms)
       // before starting the clear
       vm0.invoke(new CacheSerializableRunnable("wait for sleeps") {
@@ -167,7 +167,7 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
           WaitCriterion ev = new WaitCriterion() {
             @Override
             public boolean done() {
-              return slowImageSleeps >= 20;
+              return slowImageSleeps.get() >= 20;
             }
 
             @Override
@@ -179,14 +179,14 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
         }
       });
       // now that the gii has received some entries do the clear
-      vm1.invoke(() -> MapClearGIIDUnitTest.clearRegionInVm1());
+      vm1.invoke(MapClearGIIDUnitTest::clearRegionInVm1);
       // wait for GII to complete
       ThreadUtils.join(asyncGII, 30 * 1000);
       if (asyncGII.exceptionOccurred()) {
         Throwable t = asyncGII.getException();
         Assert.fail("createRegionInVM0 failed", t);
       }
-      assertTrue(vm0.invoke(() -> MapClearGIIDUnitTest.checkImageStateFlag()));
+      assertTrue(vm0.invoke(MapClearGIIDUnitTest::checkImageStateFlag));
 
       if (asyncGII.exceptionOccurred()) {
         Assert.fail("asyncGII failed", asyncGII.getException());
@@ -200,7 +200,7 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
         @Override
         public void run() {
           InitialImageOperation.slowImageProcessing = 0;
-          InitialImageOperation.slowImageSleeps = 0;
+          slowImageSleeps.set(0);
         }
       });
 
@@ -210,12 +210,12 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
   public static class CacheObserverImpl extends CacheObserverAdapter {
 
     @Override
-    public void afterRegionClear(RegionEvent event) {
+    public void afterRegionClear(RegionEvent<?, ?> event) {
       LogWriterUtils.getLogWriter().info("**********Received clear event in VM0 . ");
-      Region rgn = event.getRegion();
+      Region<?, ?> rgn = event.getRegion();
       wasGIIInProgressDuringClear = ((LocalRegion) rgn).getImageState().wasRegionClearedDuringGII();
       InitialImageOperation.slowImageProcessing = 0;
-      InitialImageOperation.slowImageSleeps = 0;
+      slowImageSleeps.set(0);
       LogWriterUtils.getLogWriter()
           .info("wasGIIInProgressDuringClear when clear event was received= "
               + wasGIIInProgressDuringClear);
