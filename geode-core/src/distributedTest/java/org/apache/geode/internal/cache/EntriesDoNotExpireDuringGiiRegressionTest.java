@@ -116,7 +116,7 @@ public class EntriesDoNotExpireDuringGiiRegressionTest implements Serializable {
 
     assertThat(region.values()).hasSize(0);
     assertThat(region.keySet()).hasSize(ENTRY_COUNT);
-    assertThat(expirationCount.get()).isGreaterThan(ENTRY_COUNT);
+    assertThat(expirationCount.get()).isGreaterThanOrEqualTo(ENTRY_COUNT);
   }
 
   private void doRegionOps() {
@@ -169,6 +169,8 @@ public class EntriesDoNotExpireDuringGiiRegressionTest implements Serializable {
           afterRegionCreateInvoked.get(), is(true));
       errorCollector.checkThat("Region should have been initialized",
           ((LocalRegion) event.getRegion()).isInitialized(), is(true));
+      errorCollector.checkThat("all invalidates should be from expiration",
+          event.getOperation().isExpiration(), is(true));
 
       expirationCount.incrementAndGet();
 
