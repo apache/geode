@@ -43,9 +43,6 @@ import org.apache.geode.internal.serialization.StaticSerialization;
  */
 public class FilterRoutingInfo implements VersionedDataSerializable {
 
-  private static final boolean OLD_MEMBERS_OPTIMIZED =
-      Boolean.getBoolean("optimized-cq-serialization");
-
   @Immutable
   private static final KnownVersion[] serializationVersions = new KnownVersion[0];
 
@@ -263,9 +260,6 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
      */
     private transient byte[] myData;
 
-    /** version of creator of myData, needed for deserialization */
-    private transient KnownVersion myDataVersion;
-
     /** Clients that are interested in the event and want values */
     private Set<Long> interestedClients;
 
@@ -385,7 +379,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
      * routing, so there is no need to deserialize the routings for other members
      */
     private void deserialize() {
-      try (ByteArrayDataInput dis = new ByteArrayDataInput(myData, myDataVersion)) {
+      try (ByteArrayDataInput dis = new ByteArrayDataInput(myData)) {
         boolean hasCQs = dis.readBoolean();
         if (hasCQs) {
           int numEntries = InternalDataSerializer.readArrayLength(dis);
