@@ -83,8 +83,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
     try {
       byte[] bytes = clientMessage.getPart(0).getSerializedForm();
       functionState = bytes[0];
-      if (bytes.length >= 5
-          && serverConnection.getClientVersion().ordinal() >= KnownVersion.GFE_8009.ordinal()) {
+      if (bytes.length >= 5) {
         functionTimeout = Part.decodeInt(bytes, 1);
       }
       if (functionState != 1) {
