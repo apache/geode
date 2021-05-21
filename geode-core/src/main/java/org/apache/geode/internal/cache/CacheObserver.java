@@ -20,7 +20,7 @@ import org.apache.geode.cache.RegionEvent;
 
 /**
  * This interface is used by testing/debugging code to be notified of query events. See the
- * documentation for class CacheObserverHolder for details. Also the callback is issed only if the
+ * documentation for class CacheObserverHolder for details. Also the callback is issued only if the
  * boolean ISSUE_CALLBACKS_TO_CACHE_OBSERVER present in org.apache.geode.internal.cache.LocalRegion
  * is made true
  *
@@ -31,16 +31,16 @@ public interface CacheObserver {
    * Called just after the region's Map is cleared & before Listener callback is issued. The call to
    * this method is synchronous
    */
-  void afterRegionClear(RegionEvent event);
+  void afterRegionClear(RegionEvent<?, ?> event);
 
   /**
-   * Called just beforeclearing the DiskRegion.
+   * Called just before clearing the DiskRegion.
    *
    */
   void beforeDiskClear();
 
   /**
-   * callback to test flushing efficieny. This callback is issued just before the flushing of the
+   * callback to test flushing efficiently. This callback is issued just before the flushing of the
    * buffer that is before writing data to the Oplog, but after setting the logical offsets in the
    * DiskIds contained in the PendingWrite Buffer
    *
@@ -48,8 +48,8 @@ public interface CacheObserver {
   void goingToFlush();
 
   /**
-   * called immediately after bytes are written to the disk Region. In case of asynch mode, it gets
-   * called immedaitely after the asynch writer has written it to disk & just before releasing the
+   * called immediately after bytes are written to the disk Region. In case of async mode, it gets
+   * called immediately after the async writer has written it to disk & just before releasing the
    * ByteBuffer to the pool.
    *
    */
@@ -69,7 +69,7 @@ public interface CacheObserver {
 
   /**
    * Callback just after calculating the conflated byte buffer. This function can get called only in
-   * the asynch mode where conflation can happen
+   * the async mode where conflation can happen
    *
    * @param origBB Original ByteBuffer object for the operation without considering conflation
    * @param conflatedBB Resultant ByteBuffer object after conflation
@@ -78,13 +78,13 @@ public interface CacheObserver {
 
   /**
    * Callback just after setting oplog offset . The Oplog Offset will be set to non negative number
-   * in case it is a synch mode operation as the offset for synch mode is available in the context
-   * of thread performing the operation & to -1 for an asynch mode of operation as in case of asynch
-   * mode of operation the actual offset is determined only when asynch writer performs the write
+   * in case it is a sync mode operation as the offset for sync mode is available in the context
+   * of thread performing the operation & to -1 for an async mode of operation as in case of async
+   * mode of operation the actual offset is determined only when async writer performs the write
    * operation.
    *
-   * @param offset A non negative number for synch mode of operation indicating the start position
-   *        in the Oplog for the operation & -1 for asynch mode of operation
+   * @param offset A non negative number for sync mode of operation indicating the start position
+   *        in the Oplog for the operation & -1 for async mode of operation
    *
    */
   void afterSettingOplogOffSet(long offset);
@@ -114,7 +114,7 @@ public interface CacheObserver {
 
   /**
    * Callback given immediately before any thread invokes ComplexDiskRegion.OplogCompactor's
-   * stopCompactor method. This method normally gets invoked by clear/destory/close methods of the
+   * stopCompactor method. This method normally gets invoked by clear/destroy/close methods of the
    * region.
    *
    */
@@ -122,7 +122,7 @@ public interface CacheObserver {
 
   /**
    * Callback given immediately after any thread invokes ComplexDiskRegion.OplogCompactor's
-   * stopCompactor method. This method normally gets invoked by clear/destory/close methods of the
+   * stopCompactor method. This method normally gets invoked by clear/destroy/close methods of the
    * region.
    *
    */
@@ -144,12 +144,6 @@ public interface CacheObserver {
    * Called when GII ends
    */
   void afterMarkingGIICompleted();
-
-  /**
-   * Called after the Oplog.WriterThread (asynch writer thread) swaps the pendingFlushMap and
-   * pendingWriteMap for flushing.
-   */
-  void afterSwitchingWriteAndFlushMaps();
 
   /**
    * Invoked just before setting the LBHTree reference in the thread local.
