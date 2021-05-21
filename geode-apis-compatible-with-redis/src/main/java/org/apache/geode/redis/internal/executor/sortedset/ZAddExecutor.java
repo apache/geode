@@ -27,7 +27,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ZAddExecutor extends SortedSetExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisSortedSetCommands redisSortedSetCommands = createRedisSortedSetCommands(context);
+    RedisSortedSetCommands redisSortedSetCommands = context.getRedisSortedSetCommands();
 
     List<byte[]> commandElements = command.getProcessedCommand();
 

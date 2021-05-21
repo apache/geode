@@ -16,12 +16,8 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class SortedSetExecutor extends AbstractExecutor {
 
-  RedisSortedSetCommands createRedisSortedSetCommands(ExecutionHandlerContext context) {
-    return new RedisSortedSetCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
-  }
 
 }
