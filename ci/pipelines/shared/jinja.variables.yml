@@ -20,17 +20,17 @@ benchmarks:
   baseline_version: '1.12.0'
   benchmark_branch: ((geode-build-branch))
   flavors:
-  - title: '_base'
+  - title: 'base'
     flag: ''
     options: ''
     max_in_flight: 4
     timeout: 24h
-  - title: '_with_ssl'
+  - title: 'with-ssl'
     flag: '-PwithSsl -PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64'
     options: '--tests=*GetBenchmark --tests=*PutBenchmark'
     max_in_flight: 1
     timeout: 3h
-  - title: '_with_security_manager'
+  - title: 'with-security-manager'
     flag: '-PwithSecurityManager'
     options: '--tests=Partitioned*'
     max_in_flight: 2
@@ -48,7 +48,7 @@ build_test:
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
   RAM: '16'
-  name: Build
+  name: build
 
 examples_test:
   ARTIFACT_SLUG: examples
@@ -59,16 +59,16 @@ examples_test:
   GRADLE_TASK: runAll
   PARALLEL_DUNIT: 'false'
   RAM: '16'
-  name: TestExamples
+  name: test-examples
 
 java_build_version:
-  name: OpenJDK8
+  name: openjdk8
   version: 8
 
 java_test_versions:
-- name: OpenJDK8
+- name: openjdk8
   version: 8
-- name: OpenJDK11
+- name: openjdk11
   version: 11
 
 metadata:
@@ -78,7 +78,7 @@ publish_artifacts:
   CPUS: '8'
   EXECUTE_TEST_TIMEOUT: 10m
   RAM: '16'
-  name: PublishArtifacts
+  name: publish-artifacts
 
 repository:
   project: geode
@@ -96,7 +96,7 @@ tests:
   PARALLEL_GRADLE: 'true'
   PLATFORM: linux
   RAM: '16'
-  name: Unit
+  name: unit
 - ARTIFACT_SLUG: acceptancetestfiles
   CALL_STACK_TIMEOUT: '4500'
   CPUS: '8'
@@ -108,7 +108,7 @@ tests:
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
   RAM: '12'
-  name: Acceptance
+  name: acceptance
 - ARTIFACT_SLUG: distributedtestfiles
   CALL_STACK_TIMEOUT: '9900'
   CPUS: '96'
@@ -119,7 +119,7 @@ tests:
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
   RAM: '250'
-  name: Distributed
+  name: distributed
 - ARTIFACT_SLUG: integrationtestfiles
   CALL_STACK_TIMEOUT: '1500'
   CPUS: '96'
@@ -130,7 +130,7 @@ tests:
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
   RAM: '90'
-  name: Integration
+  name: integration
 - ARTIFACT_SLUG: upgradetestfiles
   CALL_STACK_TIMEOUT: '4800'
   CPUS: '96'
@@ -141,7 +141,7 @@ tests:
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
   RAM: '210'
-  name: Upgrade
+  name: upgrade
 - ARTIFACT_SLUG: stressnewtestfiles
   CALL_STACK_TIMEOUT: '20700'
   CPUS: '96'
@@ -152,7 +152,7 @@ tests:
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
   RAM: '280'
-  name: StressNew
+  name: stress-new
 - ARTIFACT_SLUG: windows-acceptancetestfiles
   CPUS: '16'
   DUNIT_PARALLEL_FORKS: '0'
@@ -163,7 +163,7 @@ tests:
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
   RAM: '64'
-  name: WindowsAcceptance
+  name: windows-acceptance
 - ARTIFACT_SLUG: windows-gfshdistributedtest
   CPUS: '16'
   DUNIT_PARALLEL_FORKS: '0'
@@ -175,7 +175,7 @@ tests:
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
   RAM: '64'
-  name: WindowsGfshDistributed
+  name: windows-gfsh-distributed
 - ARTIFACT_SLUG: windows-integrationtestfiles
   CPUS: '16'
   DUNIT_PARALLEL_FORKS: '0'
@@ -187,7 +187,7 @@ tests:
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
   RAM: '64'
-  name: WindowsIntegration
+  name: windows-integration
 - ARTIFACT_SLUG: windows-coreintegrationtestfiles
   CPUS: '16'
   DUNIT_PARALLEL_FORKS: '0'
@@ -198,7 +198,7 @@ tests:
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
   RAM: '64'
-  name: WindowsCoreIntegration
+  name: windows-core-integration
 - ARTIFACT_SLUG: windows-unittestfiles
   CPUS: '16'
   DUNIT_PARALLEL_FORKS: '0'
@@ -208,7 +208,7 @@ tests:
   PARALLEL_DUNIT: 'false'
   PLATFORM: windows
   RAM: '64'
-  name: WindowsUnit
+  name: windows-unit
 - ARTIFACT_SLUG: apicheck
   CALL_STACK_TIMEOUT: '20700'
   CPUS: '4'
@@ -221,4 +221,4 @@ tests:
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
   RAM: '16'
-  name: ApiCheck
+  name: api-check

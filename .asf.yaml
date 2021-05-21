@@ -37,11 +37,11 @@ github:
         strict: false
         # contexts are the names of checks that must pass
         contexts:
-          - concourse-ci/ApiCheckTestOpenJDK11
-          - concourse-ci/Build
-          - concourse-ci/StressNewTestOpenJDK11
-          - concourse-ci/UnitTestOpenJDK11
-          - concourse-ci/UnitTestOpenJDK8
+          - concourse-ci/api-check-test-openjdk11
+          - concourse-ci/build
+          - concourse-ci/stress-new-test-openjdk11
+          - concourse-ci/unit-test-openjdk11
+          - concourse-ci/unit-test-openjdk8
 
       required_pull_request_reviews:
         dismiss_stale_reviews: false
