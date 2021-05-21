@@ -289,6 +289,8 @@ Apache Geode bundles the following files under the MIT License:
   - Timeago v1.3.0 (http://timeago.yarp.com), Copyright (c) 2008-2015 Ryan
     McGeary
   - zTree v3.5.02 (http://zTree.me/), Copyright (c) 2010 Hunter.z
+  - OrderStatisticTree (https://github.com/coderodde/OrderStatisticTree)
+    Copyright (c) 2021 Rodion Efremov
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
