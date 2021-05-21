@@ -121,7 +121,7 @@ public class RegisterInterest61Test {
     when(serverConnection.getAuthzRequest()).thenReturn(authzRequest);
     when(serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
     when(serverConnection.getChunkedResponseMessage()).thenReturn(chunkedResponseMessage);
-    when(serverConnection.getClientVersion()).thenReturn(KnownVersion.GFE_8009);
+    when(serverConnection.getClientVersion()).thenReturn(KnownVersion.GFE_81);
     when(serverConnection.getAcceptor()).thenReturn(mock(AcceptorImpl.class));
   }
 

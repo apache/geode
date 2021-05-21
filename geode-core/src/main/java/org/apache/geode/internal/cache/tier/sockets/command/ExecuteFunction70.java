@@ -68,7 +68,6 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 
 public class ExecuteFunction70 extends BaseCommand {
@@ -117,8 +116,7 @@ public class ExecuteFunction70 extends BaseCommand {
     try {
       byte[] bytes = clientMessage.getPart(0).getSerializedForm();
       functionState = bytes[0];
-      if (bytes.length >= 5
-          && serverConnection.getClientVersion().ordinal() >= KnownVersion.GFE_8009.ordinal()) {
+      if (bytes.length >= 5) {
         functionTimeout = Part.decodeInt(bytes, 1);
       }
 
