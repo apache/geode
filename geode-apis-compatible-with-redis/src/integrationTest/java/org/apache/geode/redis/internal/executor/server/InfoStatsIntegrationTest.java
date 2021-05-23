@@ -35,7 +35,5 @@ public class InfoStatsIntegrationTest extends AbstractRedisInfoStatsIntegrationT
   }
 
   @Override
-  public void configureMaxMemory(Jedis jedis) {
-    return;
-  }
+  public void configureMaxMemory(Jedis jedis) {}
 }

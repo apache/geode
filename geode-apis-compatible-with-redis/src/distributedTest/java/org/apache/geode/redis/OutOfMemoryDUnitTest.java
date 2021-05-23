@@ -19,7 +19,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -146,9 +146,7 @@ public class OutOfMemoryDUnitTest {
 
     fillMemory(jedis2, true);
 
-    await().untilAsserted(() -> {
-      assertThat(jedis2.ttl(FILLER_KEY + 1)).isEqualTo(-2);
-    });
+    await().untilAsserted(() -> assertThat(jedis2.ttl(FILLER_KEY + 1)).isEqualTo(-2));
 
     memoryPressureThread.interrupt();
     memoryPressureThread.join();
@@ -205,7 +203,7 @@ public class OutOfMemoryDUnitTest {
   private static Runnable makeMemoryPressureRunnable() {
     return new Runnable() {
       boolean running = true;
-      String pressureValue = makeLongStringValue(PRESSURE_VALUE_SIZE);
+      final String pressureValue = makeLongStringValue(PRESSURE_VALUE_SIZE);
 
       @Override
       public void run() {
@@ -227,11 +225,7 @@ public class OutOfMemoryDUnitTest {
   }
 
   private void forceGC() {
-    server1.getVM().invoke(() -> {
-      Runtime.getRuntime().gc();
-    });
-    server2.getVM().invoke(() -> {
-      Runtime.getRuntime().gc();
-    });
+    server1.getVM().invoke(() -> Runtime.getRuntime().gc());
+    server2.getVM().invoke(() -> Runtime.getRuntime().gc());
   }
 }

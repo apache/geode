@@ -13,15 +13,24 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
+package org.apache.geode.redis.internal.executor.hash;
 
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.junit.ClassRule;
 
-public interface ParameterRequirements {
-  void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext);
+import org.apache.geode.redis.NativeRedisClusterTestRule;
 
-  default ParameterRequirements and(ParameterRequirements moreRequirements) {
-    return new MultipleParameterRequirements(this, moreRequirements);
+public class HincrByFloatNativeRedisAcceptanceTest extends AbstractHincrByFloatIntegrationTest {
+
+  @ClassRule
+  public static NativeRedisClusterTestRule redis = new NativeRedisClusterTestRule();
+
+  @Override
+  public int getPort() {
+    return redis.getExposedPorts().get(0);
+  }
+
+  @Override
+  public void flushAll() {
+    redis.flushAll();
   }
 }

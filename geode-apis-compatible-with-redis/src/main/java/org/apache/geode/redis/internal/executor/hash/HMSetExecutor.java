@@ -44,8 +44,6 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  */
 public class HMSetExecutor extends HashExecutor {
 
-  private static final String SUCCESS = "OK";
-
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {

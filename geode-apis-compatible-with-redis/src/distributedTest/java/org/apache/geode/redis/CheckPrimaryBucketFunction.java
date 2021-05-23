@@ -16,10 +16,10 @@
 
 package org.apache.geode.redis;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
@@ -33,14 +33,16 @@ import org.apache.geode.internal.cache.PrimaryBucketLockException;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-@SuppressWarnings("unchecked")
-public class CheckPrimaryBucketFunction implements Function {
+public class CheckPrimaryBucketFunction implements Function<Boolean> {
   public static final String ID = CheckPrimaryBucketFunction.class.getName();
+  private static final long serialVersionUID = 7219876727106127192L;
+
   private final CountDownLatch signalFunctionHasStarted = new CountDownLatch(1);
   private final CountDownLatch signalPrimaryHasMoved = new CountDownLatch(1);
-  private static final Logger logger = LogService.getLogger();
 
   public void waitForFunctionToStart() {
     try {
@@ -55,12 +57,12 @@ public class CheckPrimaryBucketFunction implements Function {
   }
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<Boolean> context) {
     RegionFunctionContextImpl regionFunctionContext = (RegionFunctionContextImpl) context;
     String key = (String) regionFunctionContext.getFilter().iterator().next();
-    boolean releaseLatchEarly = (boolean) context.getArguments();
+    boolean releaseLatchEarly = context.getArguments();
 
-    ResultSender result = context.getResultSender();
+    ResultSender<Boolean> result = context.getResultSender();
     DistributedMember member = context.getCache().getDistributedSystem().getDistributedMember();
 
     if (!isMemberPrimary(regionFunctionContext, key, member)) {
@@ -69,8 +71,8 @@ public class CheckPrimaryBucketFunction implements Function {
       return;
     }
 
-    Region<?, ?> localRegion =
-        regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet());
+    Region<RedisKey, RedisData> localRegion =
+        uncheckedCast(regionFunctionContext.getLocalDataSet(regionFunctionContext.getDataSet()));
 
     if (releaseLatchEarly) {
       signalFunctionHasStarted.countDown();

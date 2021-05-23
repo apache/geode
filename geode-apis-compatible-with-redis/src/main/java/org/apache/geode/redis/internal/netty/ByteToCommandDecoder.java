@@ -125,7 +125,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
         commandElems.add(newBulkString);
       } else {
         throw new RedisCommandParserException(
-            "expected: \'$\', got \'" + (char) currentChar + "\'");
+            "expected: '$', got '" + (char) currentChar + "'");
       }
     }
     return commandElems;
@@ -173,14 +173,14 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
   private int parseCurrentNumber(ByteBuf buffer) {
     int number = 0;
     int readerIndex = buffer.readerIndex();
-    byte b = 0;
+    byte b;
     while (true) {
       if (!buffer.isReadable()) {
         return Integer.MIN_VALUE;
       }
       b = buffer.readByte();
       if (Character.isDigit(b)) {
-        number = number * 10 + (int) (b - '0');
+        number = number * 10 + (b - '0');
         readerIndex++;
       } else {
         buffer.readerIndex(readerIndex);
@@ -203,12 +203,12 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
     byte b = buffer.readByte();
     if (b != rID) {
       throw new RedisCommandParserException(
-          "expected \'" + (char) rID + "\', got \'" + (char) b + "\'");
+          "expected '" + (char) rID + "', got '" + (char) b + "'");
     }
     b = buffer.readByte();
     if (b != nID) {
       throw new RedisCommandParserException(
-          "expected: \'" + (char) nID + "\', got \'" + (char) b + "\'");
+          "expected: '" + (char) nID + "', got '" + (char) b + "'");
     }
     return true;
   }

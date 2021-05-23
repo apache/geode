@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.executor;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * A class for POSIX glob pattern with brace expansions.
@@ -155,9 +154,5 @@ public class GlobPattern {
   @Override
   public int hashCode() {
     return Objects.hash(compiled, hasWildcard);
-  }
-
-  private static void error(String message, String pattern, int pos) {
-    throw new PatternSyntaxException(message, pattern, pos);
   }
 }

@@ -48,9 +48,6 @@ public class InfoDUnitTest {
   private static Jedis jedis1;
   private static Jedis jedis2;
 
-  private static Properties locatorProperties;
-
-  private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
 
@@ -59,10 +56,10 @@ public class InfoDUnitTest {
 
   @BeforeClass
   public static void classSetup() {
-    locatorProperties = new Properties();
+    Properties locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    MemberVM locator = clusterStartUp.startLocatorVM(0, locatorProperties);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
 
@@ -103,7 +100,7 @@ public class InfoDUnitTest {
           Map<String, String> info1 = getInfo(jedis1);
           assertThat(Integer.valueOf(info1.get(REDIS_TCP_PORT))).isEqualTo(redisServerPort1);
 
-          int commandsProcessed1 = Integer.valueOf(info1.get(COMMANDS_PROCESSED));
+          int commandsProcessed1 = Integer.parseInt(info1.get(COMMANDS_PROCESSED));
           assertThat(commandsProcessed1).isGreaterThanOrEqualTo(previousCommandsProcessed1.get());
           previousCommandsProcessed1.set(commandsProcessed1);
         },
@@ -111,7 +108,7 @@ public class InfoDUnitTest {
           Map<String, String> info2 = getInfo(jedis2);
           assertThat(Integer.valueOf(info2.get(REDIS_TCP_PORT))).isEqualTo(redisServerPort2);
 
-          int commandsProcessed2 = Integer.valueOf(info2.get(COMMANDS_PROCESSED));
+          int commandsProcessed2 = Integer.parseInt(info2.get(COMMANDS_PROCESSED));
           assertThat(commandsProcessed2).isGreaterThanOrEqualTo(previousCommandsProcessed2.get());
           previousCommandsProcessed2.set(commandsProcessed2);
         }).run();

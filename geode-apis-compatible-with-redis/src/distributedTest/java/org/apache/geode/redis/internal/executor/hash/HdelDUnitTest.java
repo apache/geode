@@ -114,7 +114,7 @@ public class HdelDUnitTest {
     String key = "HSET";
 
     Map<String, String> setUpData =
-        makeHashMap(HASH_SIZE, "field", "value");
+        makeHashMap();
 
     lettuce.hset(key, setUpData);
 
@@ -140,7 +140,7 @@ public class HdelDUnitTest {
     String key = "HSET";
 
     Map<String, String> setUpData =
-        makeHashMap(HASH_SIZE, "field", "value");
+        makeHashMap();
 
     lettuce.hset(key, setUpData);
 
@@ -171,11 +171,10 @@ public class HdelDUnitTest {
     }
   }
 
-  private Map<String, String> makeHashMap(int hashSize, String baseFieldName,
-      String baseValueName) {
+  private Map<String, String> makeHashMap() {
     Map<String, String> map = new HashMap<>();
-    for (int i = 0; i < hashSize; i++) {
-      map.put(baseFieldName + i, baseValueName + i);
+    for (int i = 0; i < HASH_SIZE; i++) {
+      map.put("field" + i, "value" + i);
     }
     return map;
   }

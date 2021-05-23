@@ -22,8 +22,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -42,16 +40,6 @@ public class SubscriptionsIntegrationTest {
 
   @ClassRule
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
-
-  private Callable<Void> functionSpinner(Consumer<Void> consumer) {
-    return () -> {
-      for (int i = 0; i < ITERATIONS; i++) {
-        consumer.accept(null);
-        Thread.yield();
-      }
-      return null;
-    };
-  }
 
   @Test
   public void add_doesNotThrowException_whenListIsConcurrentlyModified() {

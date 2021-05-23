@@ -29,6 +29,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class RedisClusterStartupRule extends ClusterStartupRule {
 
   private static final String BIND_ADDRESS = "127.0.0.1";
+  private static final long serialVersionUID = 6843759113654342325L;
 
   public RedisClusterStartupRule() {
     super();

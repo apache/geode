@@ -36,7 +36,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractGetRangeIntegrationTest implements RedisIntegrationTest {
 
-  private Random random = new Random();
+  private final Random random = new Random();
   private JedisCluster jedis;
   private final String key = "key";
   private final String value = "value";
@@ -260,7 +260,7 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisIntegratio
 
     new ConcurrentLoopingThreads(10000,
         (i) -> jedis.set(key, Integer.toString(random.nextInt(10000))),
-        (i) -> Integer.parseInt(jedis.getrange(key, 0, 5)))
+        (i) -> jedis.getrange(key, 0, 5))
             .run();
   }
 

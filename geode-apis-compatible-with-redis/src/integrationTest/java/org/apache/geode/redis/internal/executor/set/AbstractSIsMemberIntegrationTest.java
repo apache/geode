@@ -84,7 +84,7 @@ public abstract class AbstractSIsMemberIntegrationTest implements RedisIntegrati
       String elem = generator.generate(uniqueElement);
       strings.add(elem);
     }
-    return strings.toArray(new String[strings.size()]);
+    return strings.toArray(new String[0]);
   }
 
 }

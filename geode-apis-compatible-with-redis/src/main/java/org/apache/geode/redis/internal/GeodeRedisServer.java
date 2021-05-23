@@ -120,6 +120,7 @@ public class GeodeRedisServer {
             statisticsClock));
   }
 
+  @SuppressWarnings("unused")
   @VisibleForTesting
   public RedisStats getStats() {
     return redisStats;
@@ -127,11 +128,11 @@ public class GeodeRedisServer {
 
   @VisibleForTesting
   public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {
-    this.unsupportedCommandsEnabled = allowUnsupportedCommands;
+    unsupportedCommandsEnabled = allowUnsupportedCommands;
   }
 
   public boolean allowUnsupportedCommands() {
-    return this.unsupportedCommandsEnabled;
+    return unsupportedCommandsEnabled;
   }
 
   public RegionProvider getRegionProvider() {
@@ -160,7 +161,6 @@ public class GeodeRedisServer {
   @VisibleForTesting
   protected Long getDataStoreBytesInUseForDataRegion() {
     PartitionedRegion dataRegion = (PartitionedRegion) this.getRegionProvider().getDataRegion();
-    long dataStoreBytesInUse = dataRegion.getPrStats().getDataStoreBytesInUse();
-    return dataStoreBytesInUse;
+    return dataRegion.getPrStats().getDataStoreBytesInUse();
   }
 }

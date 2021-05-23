@@ -18,9 +18,7 @@ package org.apache.geode.redis.session;
 
 import java.net.HttpCookie;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +75,6 @@ public abstract class SessionDUnitTest {
   private static ConfigurableApplicationContext springApplicationContext;
 
   private static RedisClusterClient redisClient;
-  private static StatefulRedisClusterConnection<String, String> connection;
   protected static RedisAdvancedClusterCommands<String, String> commands;
 
   @BeforeClass
@@ -119,7 +116,7 @@ public abstract class SessionDUnitTest {
         .topologyRefreshOptions(refreshOptions)
         .autoReconnect(true)
         .build());
-    connection = redisClient.connect();
+    StatefulRedisClusterConnection<String, String> connection = redisClient.connect();
     commands = connection.sync();
   }
 
@@ -194,7 +191,7 @@ public abstract class SessionDUnitTest {
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionCookie);
     HttpEntity<String> request = new HttpEntity<>("", requestHeaders);
-    boolean sesssionObtained = false;
+    boolean sessionObtained = false;
     String[] responseBody = new String[0];
     do {
       try {
@@ -205,28 +202,26 @@ public abstract class SessionDUnitTest {
                 request,
                 String[].class)
             .getBody();
-        sesssionObtained = true;
+        sessionObtained = true;
       } catch (HttpServerErrorException e) {
         if (!e.getMessage().contains("Server Error")) {
           throw e;
         }
       }
-    } while (!sesssionObtained);
+    } while (!sessionObtained);
     return responseBody;
   }
 
   void addNoteToSession(int sessionApp, String sessionCookie, String note) {
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionCookie);
-    List<String> notes = new ArrayList<>();
-    Collections.addAll(notes, getSessionNotes(sessionApp, sessionCookie));
+    getSessionNotes(sessionApp, sessionCookie);
     HttpEntity<String> request = new HttpEntity<>(note, requestHeaders);
     new RestTemplate()
         .postForEntity(
             "http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
             request,
-            String.class)
-        .getHeaders();
+            String.class);
   }
 
   protected String getSessionId(String sessionCookie) {

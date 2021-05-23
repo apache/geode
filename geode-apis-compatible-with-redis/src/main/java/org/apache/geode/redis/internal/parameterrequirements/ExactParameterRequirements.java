@@ -13,13 +13,13 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
+package org.apache.geode.redis.internal.parameterrequirements;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ExactParameterRequirements implements ParameterRequirements {
-  private int number;
+  private final int number;
 
   public ExactParameterRequirements(int number) {
     this.number = number;

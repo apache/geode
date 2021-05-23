@@ -54,7 +54,6 @@ public class EnsurePrimaryStaysPutDUnitTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
-  private MemberVM locator;
   private MemberVM server1;
   private MemberVM server2;
 
@@ -64,7 +63,7 @@ public class EnsurePrimaryStaysPutDUnitTest {
 
   @Before
   public void setup() throws Exception {
-    locator = cluster.startLocatorVM(0);
+    MemberVM locator = cluster.startLocatorVM(0);
     int locatorPort = locator.getPort();
     server1 = cluster.startServerVM(1, cf -> cf.withConnectionToLocator(locatorPort));
     server2 = cluster.startServerVM(2, cf -> cf.withConnectionToLocator(locatorPort));

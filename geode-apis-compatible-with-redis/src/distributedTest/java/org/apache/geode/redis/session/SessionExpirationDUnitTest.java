@@ -126,8 +126,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
         .postForEntity(
             "http://localhost:" + ports.get(sessionApp) + "/setMaxInactiveInterval",
             request,
-            Integer.class)
-        .getHeaders();
+            Integer.class);
   }
 
   private void compareMaxInactiveIntervals() {
@@ -167,9 +166,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
     try {
       inputStream = new ObjectInputStream(byteStream);
       return (int) inputStream.readObject();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    } catch (ClassNotFoundException e) {
+    } catch (IOException | ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
   }

@@ -72,7 +72,6 @@ public class SetExecutor extends StringExecutor {
   private SetOptions parseOptionalParameters(List<byte[]> optionalParameterBytes)
       throws IllegalArgumentException {
 
-    boolean keepTTL = false;
     SetOptions.Exists existsOption = SetOptions.Exists.NONE;
     long millisecondsUntilExpiration = 0L;
 
@@ -81,12 +80,9 @@ public class SetExecutor extends StringExecutor {
             .map(item -> Coder.bytesToString(item).toUpperCase())
             .collect(Collectors.toList());
 
-    throwExceptionIfIncompatableParameterOptions(optionalParametersStrings);
+    throwExceptionIfIncompatibleParameterOptions(optionalParametersStrings);
     throwErrorIfNumberInWrongPosition(optionalParametersStrings);
     throwExceptionIfUnknownParameter(optionalParametersStrings);
-
-    // uncomment below when this functionality is reimplemented see GEODE-8263
-    // keepTTL = optionalParametersStrings.contains("KEEPTTL");
 
     if (optionalParametersStrings.contains("PX")) {
       millisecondsUntilExpiration =
@@ -103,7 +99,7 @@ public class SetExecutor extends StringExecutor {
       existsOption = SetOptions.Exists.XX;
     }
 
-    return new SetOptions(existsOption, millisecondsUntilExpiration, keepTTL);
+    return new SetOptions(existsOption, millisecondsUntilExpiration, false);
   }
 
   private long handleExpiration(List<String> optionalParametersStrings, String expirationType) {
@@ -139,12 +135,12 @@ public class SetExecutor extends StringExecutor {
   }
 
   private void throwExceptionIfUnknownParameter(List<String> optionalParameters) {
-    List<String> validOptionalParamaters = Arrays.asList("EX", "PX", "NX", "XX");
+    List<String> validOptionalParameters = Arrays.asList("EX", "PX", "NX", "XX");
 
     List<String> parametersInQuestion =
         optionalParameters
             .stream()
-            .filter(parameter -> (!validOptionalParamaters.contains(parameter)))
+            .filter(parameter -> (!validOptionalParameters.contains(parameter)))
             .collect(Collectors.toList());
 
     parametersInQuestion.forEach(parameter -> {
@@ -167,8 +163,8 @@ public class SetExecutor extends StringExecutor {
   }
 
   private boolean previousOptionIsValidAndExpectsANumber(String previousParameter) {
-    List<String> validParamaters = Arrays.asList("EX", "PX");
-    return validParamaters.contains(previousParameter);
+    List<String> validParameters = Arrays.asList("EX", "PX");
+    return validParameters.contains(previousParameter);
   }
 
   private void throwErrorIfNumberInWrongPosition(List<String> optionalParameters) {
@@ -195,7 +191,7 @@ public class SetExecutor extends StringExecutor {
     }
   }
 
-  private void throwExceptionIfIncompatableParameterOptions(List<String> passedParametersStrings) {
+  private void throwExceptionIfIncompatibleParameterOptions(List<String> passedParametersStrings) {
 
     if (passedParametersStrings.contains("PX")
         && passedParametersStrings.contains("EX")) {

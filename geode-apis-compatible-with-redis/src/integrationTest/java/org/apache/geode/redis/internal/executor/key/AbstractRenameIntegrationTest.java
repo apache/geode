@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.key;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -193,34 +195,43 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
       throws ExecutionException, InterruptedException {
     CyclicBarrier startCyclicBarrier = new CyclicBarrier(2);
     ExecutorService pool = Executors.newFixedThreadPool(2);
+    AtomicInteger numThrows = new AtomicInteger(0);
+
+    String oldKey = "{user1}oldKey";
+    String newkey = "{user1}newKey";
+    String value = "foo";
 
     for (int i = 0; i < 100; i++) {
-      jedis.set("{user1}oldKey", "foo");
+      jedis.set(oldKey, value);
 
       Runnable renameOldKeyToNewKey = () -> {
         cyclicBarrierAwait(startCyclicBarrier);
-
-        jedis.rename("{user1}oldKey", "{user1}newKey");
+        jedis.rename(oldKey, newkey);
       };
 
       Runnable deleteOldKey = () -> {
         cyclicBarrierAwait(startCyclicBarrier);
-        jedis.del("{user1}oldKey");
+        jedis.del(oldKey);
       };
 
-      Future<?> future1 = pool.submit(renameOldKeyToNewKey);
-      Future<?> future2 = pool.submit(deleteOldKey);
+      Future<?> renameFuture = pool.submit(renameOldKeyToNewKey);
+      Future<?> deleteFuture = pool.submit(deleteOldKey);
 
-      try {
-        future1.get();
-        assertThat(jedis.get("{user1}newKey")).isEqualTo("foo");
-      } catch (Exception e) {
-        assertThat(e).hasMessageContaining("no such key");
-      }
-      future2.get();
+      // The timing might not have been right for the rename to fail, so assert that either it threw
+      // the expected exception or that the rename succeeded
+      assertThat(renameFuture).satisfiesAnyOf(
+          future -> {
+            assertThatThrownBy(future::get).hasMessageContaining("no such key");
+            // Keep track of how many times the exception is hit
+            numThrows.incrementAndGet();
+          },
+          future -> assertThat(jedis.get(newkey)).isEqualTo(value));
+      deleteFuture.get();
 
-      assertThat(jedis.get("{user1}oldKey")).isNull();
+      assertThat(jedis.get(oldKey)).isNull();
     }
+    // Confirm that we did actually hit the expected exception at least once
+    assertThat(numThrows.get()).isGreaterThan(0);
   }
 
   @Test
@@ -236,14 +247,14 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
   }
 
   private List<String> getKeysOnDifferentStripes() {
-    String key1 = "{user1}keyz" + new Random().nextInt();
+    String key1 = "{user1}key1" + new Random().nextInt();
 
     RedisKey key1ByteArrayWrapper = new RedisKey(key1.getBytes());
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     int iterator = 0;
     String key2;
     do {
-      key2 = "{user1}key" + iterator;
+      key2 = "{user1}key2" + iterator;
       iterator++;
     } while (stripedExecutor.compareStripes(key1ByteArrayWrapper,
         new ByteArrayWrapper(key2.getBytes())) == 0);
@@ -253,14 +264,14 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
 
   private Set<String> getKeysOnSameRandomStripe(int numKeysNeeded) {
     Random random = new Random();
-    String key1 = "{user1}keyz" + random.nextInt();
+    String key1 = "{user1}key1" + random.nextInt();
     RedisKey key1ByteArrayWrapper = new RedisKey(key1.getBytes());
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     Set<String> keys = new HashSet<>();
     keys.add(key1);
 
     do {
-      String key2 = "{user1}key" + random.nextInt();
+      String key2 = "{user1}key2" + random.nextInt();
       if (stripedExecutor.compareStripes(key1ByteArrayWrapper,
           new ByteArrayWrapper(key2.getBytes())) == 0) {
         keys.add(key2);
@@ -318,13 +329,18 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
 
     String key1;
     RedisKey key1ByteArrayWrapper;
+    Random random = new Random();
+    boolean added = false;
     do {
-      key1 = "{user1}keyz" + new Random().nextInt();
+      key1 = "{user1}key1" + random.nextInt();
       key1ByteArrayWrapper = new RedisKey(key1.getBytes());
-    } while (stripedExecutor.compareStripes(key1ByteArrayWrapper, toAvoid) == 0 && keys.add(key1));
+      if (stripedExecutor.compareStripes(key1ByteArrayWrapper, toAvoid) == 0) {
+        added = keys.add(key1);
+      }
+    } while (!added);
 
     do {
-      String key2 = "{user1}key" + new Random().nextInt();
+      String key2 = "{user1}key2" + random.nextInt();
 
       if (stripedExecutor.compareStripes(key1ByteArrayWrapper,
           new ByteArrayWrapper(key2.getBytes())) == 0) {
@@ -367,16 +383,15 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
   private Long addStringsToKeys(Set<String> strings, String key, int numOfStrings,
       JedisCluster client) {
     generateStrings(numOfStrings, strings);
-    String[] stringArray = strings.toArray(new String[strings.size()]);
+    String[] stringArray = strings.toArray(new String[0]);
     return client.sadd(key, stringArray);
   }
 
-  private Set<String> generateStrings(int elements, Set<String> strings) {
+  private void generateStrings(int elements, Set<String> strings) {
     for (int i = 0; i < elements; i++) {
       String elem = String.valueOf(i);
       strings.add(elem);
     }
-    return strings;
   }
 
 }

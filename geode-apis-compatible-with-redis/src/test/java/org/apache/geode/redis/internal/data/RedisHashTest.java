@@ -178,7 +178,7 @@ public class RedisHashTest {
 
   /************* HSCAN *************/
   @Test
-  public void hscanReturnsCorrectNumberOfElements() throws IOException, ClassNotFoundException {
+  public void hscanReturnsCorrectNumberOfElements() {
     RedisHash hash = createRedisHash("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4");
     ImmutablePair<Integer, List<byte[]>> result =
         hash.hscan(null, 2, 0);
@@ -191,7 +191,7 @@ public class RedisHashTest {
   }
 
   @Test
-  public void hscanOnlyReturnsElementsMatchingPattern() throws IOException, ClassNotFoundException {
+  public void hscanOnlyReturnsElementsMatchingPattern() {
     RedisHash hash = createRedisHash("ak1", "v1", "k2", "v2", "ak3", "v3", "k4", "v4");
     ImmutablePair<Integer, List<byte[]>> result =
         hash.hscan(Pattern.compile("a.*"), 3, 0);
@@ -303,16 +303,15 @@ public class RedisHashTest {
   }
 
   /******* put *******/
-  @SuppressWarnings("unchecked")
   @Test
   public void hsetShould_calculateSize_equalToSizeCalculatedInConstructor_forMultipleEntries() {
     final RedisKey key = new RedisKey("key".getBytes());
     final String baseField = "field";
     final String baseValue = "value";
 
-    final Region region = mock(Region.class);
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     final RedisData returnData = mock(RedisData.class);
-    when(region.put(Object.class, Object.class)).thenReturn(returnData);
+    when(region.put(any(), any())).thenReturn(returnData);
 
     RedisHash hash = new RedisHash(Collections.emptyList());
     List<byte[]> data = new ArrayList<>();
@@ -543,18 +542,5 @@ public class RedisHashTest {
         .map(Coder::stringToBytes)
         .collect(Collectors.toList());
     return new RedisHash(keysAndValuesList);
-  }
-
-  private ArrayList<byte[]> createListOfDataElements(int NumberOfFields) {
-    ArrayList<byte[]> elements = new ArrayList<>();
-    for (int i = 0; i < NumberOfFields; i++) {
-      elements.add(toBytes("field_" + i));
-      elements.add(toBytes("value_" + i));
-    }
-    return elements;
-  }
-
-  private byte[] toBytes(String str) {
-    return Coder.stringToBytes(str);
   }
 }

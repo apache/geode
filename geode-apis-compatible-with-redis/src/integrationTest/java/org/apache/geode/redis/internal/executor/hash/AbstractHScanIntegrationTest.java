@@ -274,7 +274,6 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hmset("colors", entryMap);
     List<Object> result;
 
-    List<byte[]> allEntries = new ArrayList<>();
     String cursor = "0";
 
     do {
@@ -284,7 +283,6 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
           "COUNT", "2",
           "COUNT", "1");
 
-      allEntries.addAll((List<byte[]>) result.get(1));
       cursor = new String((byte[]) result.get(0));
     } while (!Arrays.equals((byte[]) result.get(0), "0".getBytes()));
 
@@ -302,12 +300,10 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     ScanParams scanParams = new ScanParams();
     scanParams.count(1);
     ScanResult<Map.Entry<byte[], byte[]>> result;
-    List<Map.Entry<byte[], byte[]>> allEntries = new ArrayList<>();
     String cursor = "0";
 
     do {
       result = jedis.hscan("colors".getBytes(), cursor.getBytes(), scanParams);
-      allEntries.addAll(result.getResult());
       cursor = result.getCursor();
     } while (!result.isCompleteIteration());
 

@@ -165,6 +165,6 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
     for (int i = 0; i < elements; i++) {
       strings.add(prefix + i);
     }
-    return strings.toArray(new String[strings.size()]);
+    return strings.toArray(new String[0]);
   }
 }

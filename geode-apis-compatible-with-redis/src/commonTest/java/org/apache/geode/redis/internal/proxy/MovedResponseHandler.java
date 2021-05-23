@@ -33,7 +33,7 @@ public class MovedResponseHandler extends ChannelInboundHandlerAdapter {
   }
 
   @Override
-  public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+  public void channelRead(ChannelHandlerContext ctx, Object msg) {
     if (msg instanceof ErrorRedisMessage) {
       String content = ((ErrorRedisMessage) msg).content();
       if (content.startsWith("MOVED")) {

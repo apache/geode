@@ -64,7 +64,6 @@ public class SessionsAndCrashesDUnitTest {
   private static final int NUM_SESSIONS = 100;
   private static final List<String> sessionIds = new ArrayList<>(NUM_SESSIONS);
   private static MemberVM locator;
-  private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
   private static int[] redisPorts;
@@ -80,7 +79,7 @@ public class SessionsAndCrashesDUnitTest {
 
     locator = cluster.startLocatorVM(0, locatorProperties);
 
-    server1 = startRedisVM(1, 0);
+    MemberVM server1 = startRedisVM(1, 0);
     server2 = startRedisVM(2, 0);
     server3 = startRedisVM(3, 0);
 

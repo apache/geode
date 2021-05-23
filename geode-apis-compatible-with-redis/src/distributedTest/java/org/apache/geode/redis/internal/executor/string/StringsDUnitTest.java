@@ -51,27 +51,22 @@ public class StringsDUnitTest {
   private static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static JedisCluster jedisCluster;
 
-  private static Properties locatorProperties;
-
-  private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
 
-  private static int redisServerPort1;
-
 
   @BeforeClass
   public static void classSetup() {
-    locatorProperties = new Properties();
+    Properties locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    MemberVM locator = clusterStartUp.startLocatorVM(0, locatorProperties);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
     server3 = clusterStartUp.startRedisVM(3, locator.getPort());
 
-    redisServerPort1 = clusterStartUp.getRedisPort(1);
+    int redisServerPort1 = clusterStartUp.getRedisPort(1);
 
     jedisCluster = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort1), JEDIS_TIMEOUT);
   }
@@ -92,8 +87,8 @@ public class StringsDUnitTest {
 
   @Test
   public void get_shouldAllowClientToLocateDataForGivenKey() {
-    List<String> keys = makeStringList(LIST_SIZE, "key1-");
-    List<String> values = makeStringList(LIST_SIZE, "values1-");
+    List<String> keys = makeStringList("key1-");
+    List<String> values = makeStringList("values1-");
 
     new ConcurrentLoopingThreads(LIST_SIZE,
         (i) -> jedisCluster.set(keys.get(i), values.get(i))).run();
@@ -105,8 +100,8 @@ public class StringsDUnitTest {
   @Test
   public void setnx_shouldOnlySucceedOnceForAParticularKey_givenMultipleClientsSettingSameKey() {
 
-    List<String> keys = makeStringList(LIST_SIZE, "key1-");
-    List<String> values = makeStringList(LIST_SIZE, "values1-");
+    List<String> keys = makeStringList("key1-");
+    List<String> values = makeStringList("values1-");
     AtomicInteger successes1 = new AtomicInteger(0);
     AtomicInteger successes2 = new AtomicInteger(0);
 
@@ -130,8 +125,8 @@ public class StringsDUnitTest {
 
   @Test
   public void setxx_shouldAlwaysSucceed_givenMultipleClientsSettingSameKeyThatAlreadyExists() {
-    List<String> keys = makeStringList(LIST_SIZE, "key1-");
-    List<String> values = makeStringList(LIST_SIZE, "values1-");
+    List<String> keys = makeStringList("key1-");
+    List<String> values = makeStringList("values1-");
 
     AtomicLong successes1 = new AtomicLong(0);
     AtomicLong successes2 = new AtomicLong(0);
@@ -149,10 +144,10 @@ public class StringsDUnitTest {
 
   @Test
   public void set_shouldAllowMultipleClientsToSetValuesOnDifferentKeysConcurrently() {
-    List<String> keys1 = makeStringList(LIST_SIZE, "key1-");
-    List<String> values1 = makeStringList(LIST_SIZE, "values1-");
-    List<String> keys2 = makeStringList(LIST_SIZE, "key2-");
-    List<String> values2 = makeStringList(LIST_SIZE, "values2-");
+    List<String> keys1 = makeStringList("key1-");
+    List<String> values1 = makeStringList("values1-");
+    List<String> keys2 = makeStringList("key2-");
+    List<String> values2 = makeStringList("values2-");
 
     new ConcurrentLoopingThreads(LIST_SIZE,
         (i) -> jedisCluster.set(keys1.get(i), values1.get(i)),
@@ -166,8 +161,8 @@ public class StringsDUnitTest {
 
   @Test
   public void set_shouldAllowMultipleClientsToSetValuesOnTheSameKeysConcurrently() {
-    List<String> keys = makeStringList(LIST_SIZE, "key1-");
-    List<String> values = makeStringList(LIST_SIZE, "values1-");
+    List<String> keys = makeStringList("key1-");
+    List<String> values = makeStringList("values1-");
 
     new ConcurrentLoopingThreads(LIST_SIZE,
         (i) -> jedisCluster.set(keys.get(i), values.get(i)),
@@ -180,9 +175,9 @@ public class StringsDUnitTest {
 
   @Test
   public void append_shouldAllowMultipleClientsToAppendDifferentValueToSameKeyConcurrently() {
-    List<String> keys = makeStringList(LIST_SIZE, "key1-");
-    List<String> values1 = makeStringList(LIST_SIZE, "values1-");
-    List<String> values2 = makeStringList(LIST_SIZE, "values2-");
+    List<String> keys = makeStringList("key1-");
+    List<String> values1 = makeStringList("values1-");
+    List<String> values2 = makeStringList("values2-");
 
     new ConcurrentLoopingThreads(LIST_SIZE,
         (i) -> jedisCluster.append(keys.get(i), values1.get(i)),
@@ -254,9 +249,9 @@ public class StringsDUnitTest {
 
   }
 
-  private List<String> makeStringList(int setSize, String baseString) {
+  private List<String> makeStringList(String baseString) {
     List<String> strings = new ArrayList<>();
-    for (int i = 0; i < setSize; i++) {
+    for (int i = 0; i < LIST_SIZE; i++) {
       strings.add(baseString + i);
     }
     return strings;

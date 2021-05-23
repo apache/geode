@@ -54,7 +54,7 @@ public class RenameDUnitTest {
   static final String LOCAL_HOST = "127.0.0.1";
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  ExecutorService pool = Executors.newCachedThreadPool();
+  final ExecutorService pool = Executors.newCachedThreadPool();
 
   static JedisCluster jedisCluster;
   static Properties locatorProperties;
@@ -126,14 +126,14 @@ public class RenameDUnitTest {
 
   private Set<String> getKeysOnSameRandomStripe(int numKeysNeeded) {
     Random random = new Random();
-    String key1 = "{rename}keyz" + random.nextInt();
+    String key1 = "{rename}key1" + random.nextInt();
     RedisKey key1ByteArrayWrapper = new RedisKey(key1.getBytes());
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     Set<String> keys = new HashSet<>();
     keys.add(key1);
 
     do {
-      String key2 = "{rename}key" + random.nextInt();
+      String key2 = "{rename}key2" + random.nextInt();
       if (stripedExecutor.compareStripes(key1ByteArrayWrapper,
           new ByteArrayWrapper(key2.getBytes())) == 0) {
         keys.add(key2);

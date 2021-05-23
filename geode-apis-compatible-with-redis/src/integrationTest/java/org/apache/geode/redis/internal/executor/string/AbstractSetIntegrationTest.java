@@ -272,7 +272,7 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
 
     Long result = jedis.ttl(key);
 
-    assertThat(result).isGreaterThan(15l);
+    assertThat(result).isGreaterThan(15L);
   }
 
   @Test
@@ -298,7 +298,7 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
 
     Long result = jedis.ttl(key);
 
-    assertThat(result).isGreaterThan(15l);
+    assertThat(result).isGreaterThan(15L);
   }
 
   @Test

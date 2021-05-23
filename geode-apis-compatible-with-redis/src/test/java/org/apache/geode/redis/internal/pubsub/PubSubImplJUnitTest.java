@@ -22,16 +22,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.DefaultChannelPromise;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.channel.ChannelFuture;
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
-
 
 public class PubSubImplJUnitTest {
 
@@ -40,7 +35,9 @@ public class PubSubImplJUnitTest {
     Subscriptions subscriptions = new Subscriptions();
     ExecutionHandlerContext mockContext = mock(ExecutionHandlerContext.class);
 
-    FailingChannelFuture mockFuture = new FailingChannelFuture();
+    ChannelFuture mockFuture = mock(ChannelFuture.class);
+    when(mockFuture.syncUninterruptibly()).thenReturn(mockFuture);
+    when(mockFuture.cause()).thenReturn(new Exception());
     when(mockContext.writeToChannel(any())).thenReturn(mockFuture);
 
     Client deadClient = mock(Client.class);
@@ -59,40 +56,5 @@ public class PubSubImplJUnitTest {
 
     assertThat(numberOfSubscriptions).isEqualTo(0);
     assertThat(subscriptions.findSubscriptions(deadClient)).isEmpty();
-  }
-
-  @SuppressWarnings("unchecked")
-  static class FailingChannelFuture extends DefaultChannelPromise {
-    private GenericFutureListener listener;
-
-    FailingChannelFuture() {
-      super(mock(Channel.class));
-    }
-
-    @Override
-    public ChannelPromise addListener(
-        GenericFutureListener<? extends Future<? super Void>> listener) {
-      this.listener = listener;
-      fail();
-      return null;
-    }
-
-    @Override
-    public ChannelPromise syncUninterruptibly() {
-      return this;
-    }
-
-    @Override
-    public Throwable cause() {
-      return new RuntimeException("aeotunhasoen");
-    }
-
-    public void fail() {
-      try {
-        this.listener.operationComplete(this);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
   }
 }

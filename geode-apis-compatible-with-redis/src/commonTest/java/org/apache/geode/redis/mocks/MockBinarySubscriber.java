@@ -22,8 +22,8 @@ import java.util.List;
 import redis.clients.jedis.BinaryJedisPubSub;
 
 public class MockBinarySubscriber extends BinaryJedisPubSub {
-  private List<byte[]> receivedMessages = new ArrayList<>();
-  private List<byte[]> receivedPMessages = new ArrayList<>();
+  private final List<byte[]> receivedMessages = new ArrayList<>();
+  private final List<byte[]> receivedPMessages = new ArrayList<>();
 
   public List<byte[]> getReceivedMessages() {
     return receivedMessages;

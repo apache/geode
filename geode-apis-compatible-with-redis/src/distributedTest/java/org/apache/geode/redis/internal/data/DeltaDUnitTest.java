@@ -41,7 +41,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
-@SuppressWarnings("unchecked")
 public class DeltaDUnitTest {
 
   @ClassRule
@@ -54,27 +53,22 @@ public class DeltaDUnitTest {
   private static Jedis jedis1;
   private static Jedis jedis2;
 
-  private static Properties locatorProperties;
-
-  private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
 
-  private static int redisServerPort1;
-  private static int redisServerPort2;
   private static Random random;
 
   @BeforeClass
   public static void classSetup() {
-    locatorProperties = new Properties();
+    Properties locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    MemberVM locator = clusterStartUp.startLocatorVM(0, locatorProperties);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
 
-    redisServerPort1 = clusterStartUp.getRedisPort(1);
-    redisServerPort2 = clusterStartUp.getRedisPort(2);
+    int redisServerPort1 = clusterStartUp.getRedisPort(1);
+    int redisServerPort2 = clusterStartUp.getRedisPort(2);
 
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
     jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
@@ -110,7 +104,7 @@ public class DeltaDUnitTest {
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenAddingToSet() {
     String key = "key";
 
-    List<String> members = makeMemberList(ITERATION_COUNT, "member-");
+    List<String> members = makeMemberList();
 
     for (String member : members) {
       jedis1.sadd(key, member);
@@ -123,7 +117,7 @@ public class DeltaDUnitTest {
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenRemovingFromSet() {
     String key = "key";
 
-    List<String> members = makeMemberList(ITERATION_COUNT, "member-");
+    List<String> members = makeMemberList();
     jedis1.sadd(key, members.toArray(new String[] {}));
 
     for (String member : members) {
@@ -136,7 +130,7 @@ public class DeltaDUnitTest {
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenAddingToHash() {
     String key = "key";
 
-    Map<String, String> testMap = makeHashMap(ITERATION_COUNT, "field-", "value-");
+    Map<String, String> testMap = makeHashMap();
 
     for (String field : testMap.keySet()) {
       jedis1.hset(key, field, testMap.get(field));
@@ -148,7 +142,7 @@ public class DeltaDUnitTest {
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenUpdatingHashValues() {
     String key = "key";
 
-    Map<String, String> testMap = makeHashMap(ITERATION_COUNT, "field-", "value-");
+    Map<String, String> testMap = makeHashMap();
     jedis1.hset(key, testMap);
 
     for (int i = 0; i < 100; i++) {
@@ -166,7 +160,7 @@ public class DeltaDUnitTest {
   public void shouldCorrectlyPropagateDeltaToSecondaryServer_whenRemovingFromHash() {
     String key = "key";
 
-    Map<String, String> testMap = makeHashMap(ITERATION_COUNT, "field-", "value-");
+    Map<String, String> testMap = makeHashMap();
     jedis1.hset(key, testMap);
 
     for (String field : testMap.keySet()) {
@@ -214,19 +208,18 @@ public class DeltaDUnitTest {
     });
   }
 
-  private Map<String, String> makeHashMap(int hashSize, String baseFieldName,
-      String baseValueName) {
+  private Map<String, String> makeHashMap() {
     Map<String, String> map = new HashMap<>();
-    for (int i = 0; i < hashSize; i++) {
-      map.put(baseFieldName + i, baseValueName + i);
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      map.put("field-" + i, "value-" + i);
     }
     return map;
   }
 
-  private List<String> makeMemberList(int setSize, String baseString) {
+  private List<String> makeMemberList() {
     List<String> members = new ArrayList<>();
-    for (int i = 0; i < setSize; i++) {
-      members.add(baseString + i);
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      members.add("member-" + i);
     }
     return members;
   }

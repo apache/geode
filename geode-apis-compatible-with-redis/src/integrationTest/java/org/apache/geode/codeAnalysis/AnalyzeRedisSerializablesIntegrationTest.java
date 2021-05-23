@@ -25,7 +25,7 @@ public class AnalyzeRedisSerializablesIntegrationTest extends AnalyzeSerializabl
   }
 
   @Override
-  protected Class getModuleClass() {
+  protected Class<GeodeRedisService> getModuleClass() {
     return GeodeRedisService.class;
   }
 }

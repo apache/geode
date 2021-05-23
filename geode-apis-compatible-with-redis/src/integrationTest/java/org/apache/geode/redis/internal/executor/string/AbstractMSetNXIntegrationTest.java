@@ -70,7 +70,7 @@ public abstract class AbstractMSetNXIntegrationTest implements RedisIntegrationT
 
   @Test
   public void testMSetNX() {
-    Set<String> keysAndVals = new HashSet<String>();
+    Set<String> keysAndVals = new HashSet<>();
     for (int i = 0; i < 2 * 5; i++) {
       keysAndVals.add(randString() + hashTag);
     }

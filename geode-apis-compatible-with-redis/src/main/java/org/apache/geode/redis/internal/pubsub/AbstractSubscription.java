@@ -19,15 +19,12 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.concurrent.CountDownLatch;
 
 import io.netty.channel.ChannelFuture;
-import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class AbstractSubscription implements Subscription {
-  private static final Logger logger = LogService.getLogger();
   private final Client client;
   private final ExecutionHandlerContext context;
 
@@ -68,6 +65,7 @@ public abstract class AbstractSubscription implements Subscription {
       readyForPublish.await();
     } catch (InterruptedException e) {
       // we must be shutting down or registration failed
+      // noinspection ResultOfMethodCallIgnored
       Thread.interrupted();
       running = false;
     }

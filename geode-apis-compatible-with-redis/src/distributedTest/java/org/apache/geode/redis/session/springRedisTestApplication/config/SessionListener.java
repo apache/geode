@@ -27,8 +27,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 @Configuration
 public class SessionListener implements HttpSessionListener {
-  public static AtomicLong sessionCount = new AtomicLong(0);
-  public static HashSet<String> sessionIds = new HashSet<>();
+  public static final AtomicLong sessionCount = new AtomicLong(0);
+  public static final HashSet<String> sessionIds = new HashSet<>();
 
   private static final Logger logger = LogService.getLogger();
 

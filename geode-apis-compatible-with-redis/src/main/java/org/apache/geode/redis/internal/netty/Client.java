@@ -24,7 +24,7 @@ import io.netty.util.concurrent.GenericFutureListener;
 
 
 public class Client {
-  private Channel channel;
+  private final Channel channel;
 
   public Client(Channel remoteAddress) {
     this.channel = remoteAddress;

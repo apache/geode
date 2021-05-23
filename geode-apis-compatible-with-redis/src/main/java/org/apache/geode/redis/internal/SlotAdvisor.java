@@ -146,6 +146,7 @@ public class SlotAdvisor {
       this.slotEnd = ((bucketId + 1) * REDIS_SLOTS_PER_BUCKET) - 1;
     }
 
+    @SuppressWarnings("unused")
     public int getBucketId() {
       return bucketId;
     }

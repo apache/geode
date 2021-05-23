@@ -45,18 +45,16 @@ public class HSetNXDunitTest {
   @ClassRule
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
-  private static final int HASH_SIZE = 50000;
   private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
-  private static int[] redisPorts;
   private static RedisAdvancedClusterCommands<String, String> lettuce;
   private static StatefulRedisClusterConnection<String, String> connection;
   private static ClientResources resources;
 
   @BeforeClass
   public static void classSetup() {
-    redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    int[] redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
 
     String redisPort1 = "" + redisPorts[0];
     String redisPort2 = "" + redisPorts[1];

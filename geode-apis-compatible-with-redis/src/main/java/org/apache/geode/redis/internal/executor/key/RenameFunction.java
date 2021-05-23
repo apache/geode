@@ -16,11 +16,14 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -36,8 +39,7 @@ import org.apache.geode.redis.internal.executor.SingleResultCollector;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
-@SuppressWarnings("unchecked")
-public class RenameFunction implements InternalFunction {
+public class RenameFunction implements InternalFunction<RedisKey> {
 
   public static final String ID = "REDIS_RENAME_FUNCTION";
   private static final long serialVersionUID = 7047473969356686453L;
@@ -61,7 +63,7 @@ public class RenameFunction implements InternalFunction {
   }
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<RedisKey> context) {
     RenameContext renameContext = new RenameContext(context);
 
     if (renameContext.getKeysFixedOnPrimary().size() < 2) {
@@ -98,7 +100,7 @@ public class RenameFunction implements InternalFunction {
     return commandHelper.getStripedExecutor();
   }
 
-  private int compare(Object object1, Object object2, RenameContext context) {
+  private int compare(RedisKey object1, RedisKey object2, RenameContext context) {
     int result = getStripedExecutor().compareStripes(object1, object2);
     if (result == 0) {
       DistributedMember distributedMember1 =
@@ -165,7 +167,7 @@ public class RenameFunction implements InternalFunction {
       return false;
     }
 
-    Region region = context.getDataRegion();
+    Region<RedisKey, RedisData> region = context.getDataRegion();
 
     DistributedMember primaryMemberForCurrentKey =
         PartitionRegionHelper
@@ -179,11 +181,11 @@ public class RenameFunction implements InternalFunction {
 
   private boolean getLockForNextKey(RenameContext context) {
 
-    SingleResultCollector<Object> rc = new SingleResultCollector<>();
+    SingleResultCollector<Boolean> rc = new SingleResultCollector<>();
 
-    FunctionService
-        .onRegion(context.getDataRegion())
-        .withFilter(Collections.singleton(context.getKeysToOperateOn().get(0)))
+    Execution<Object[], Boolean, Boolean> execution =
+        uncheckedCast(FunctionService.onRegion(context.getDataRegion()));
+    execution.withFilter(Collections.singleton(context.getKeysToOperateOn().get(0)))
         .setArguments(
             new Object[] {context.getOldKey(),
                 context.getNewKey(),
@@ -194,7 +196,7 @@ public class RenameFunction implements InternalFunction {
         .execute(RenameFunction.ID)
         .getResult();
 
-    return (boolean) rc.getResult();
+    return rc.getResult();
   }
 
   @Override
@@ -217,7 +219,7 @@ public class RenameFunction implements InternalFunction {
 
     private final RegionFunctionContextImpl context;
 
-    public RenameContext(FunctionContext context) {
+    public RenameContext(FunctionContext<RedisKey> context) {
       this.context = (RegionFunctionContextImpl) context;
     }
 
@@ -230,15 +232,15 @@ public class RenameFunction implements InternalFunction {
     }
 
     private List<RedisKey> getKeysToOperateOn() {
-      return (List<RedisKey>) ((Object[]) context.getArguments())[2];
+      return uncheckedCast(((Object[]) context.getArguments())[2]);
     }
 
     private List<RedisKey> getKeysFixedOnPrimary() {
-      return (List<RedisKey>) ((Object[]) context.getArguments())[3];
+      return uncheckedCast(((Object[]) context.getArguments())[3]);
     }
 
     private List<RedisKey> getLockedKeys() {
-      return (List<RedisKey>) ((Object[]) context.getArguments())[4];
+      return uncheckedCast(((Object[]) context.getArguments())[4]);
     }
 
 
@@ -246,7 +248,7 @@ public class RenameFunction implements InternalFunction {
       return (RedisKey) context.getFilter().iterator().next();
     }
 
-    private Region getDataRegion() {
+    private Region<RedisKey, RedisData> getDataRegion() {
       return context.getDataSet();
     }
   }

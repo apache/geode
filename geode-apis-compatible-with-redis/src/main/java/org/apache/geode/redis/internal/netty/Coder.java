@@ -87,7 +87,7 @@ public class Coder {
   public static final byte[] wrongType = stringToBytes("WRONGTYPE ");
 
   /**
-   * The charset being used by this coder, {@value #CHARSET}.
+   * The charset being used by this coder.
    */
   public static final String CHARSET = "UTF-8";
 

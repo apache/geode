@@ -22,7 +22,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
 /**
- * An extention of {@link Object2ObjectOpenCustomHashMap} that supports
+ * An extension of {@link Object2ObjectOpenCustomHashMap} that supports
  * a method of iteration where each scan operation returns an integer cursor
  * that allows future scan operations to start from that same point.
  *
@@ -31,7 +31,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
  */
 public class Object2ObjectOpenCustomHashMapWithCursor<K, V>
     extends Object2ObjectOpenCustomHashMap<K, V> {
-
+  private static final long serialVersionUID = 4951523038911935017L;
 
   public Object2ObjectOpenCustomHashMapWithCursor(int expected, float f,
       Strategy<? super K> strategy) {
@@ -168,7 +168,7 @@ public class Object2ObjectOpenCustomHashMapWithCursor<K, V>
    *
    * @param currentKey The key to key
    * @param currentPosition The position of the key in the key[] array
-   * @parma expectedHash - the expected hash of the key.
+   * @param expectedHash - the expected hash of the key.
    */
   private boolean keyHashesTo(K currentKey, int currentPosition, int expectedHash) {
     // There is a small optimization here. If the previous element

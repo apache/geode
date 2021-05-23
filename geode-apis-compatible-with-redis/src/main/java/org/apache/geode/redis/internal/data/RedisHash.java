@@ -119,24 +119,24 @@ public class RedisHash extends AbstractRedisData {
 
 
   synchronized byte[] hashPut(byte[] field, byte[] value) {
-    byte[] oldvalue = hash.put(field, value);
+    byte[] oldValue = hash.put(field, value);
 
-    if (oldvalue == null) {
+    if (oldValue == null) {
       sizeInBytes += calculateSizeOfNewFieldValuePair(field, value);
     } else {
-      sizeInBytes += value.length - oldvalue.length;
+      sizeInBytes += value.length - oldValue.length;
     }
 
-    return oldvalue;
+    return oldValue;
   }
 
   private synchronized byte[] hashPutIfAbsent(byte[] field, byte[] value) {
-    byte[] oldvalue = hash.putIfAbsent(field, value);
+    byte[] oldValue = hash.putIfAbsent(field, value);
 
-    if (oldvalue == null) {
+    if (oldValue == null) {
       sizeInBytes += calculateSizeOfNewFieldValuePair(field, value);
     }
-    return oldvalue;
+    return oldValue;
   }
 
   private int calculateSizeOfNewFieldValuePair(byte[] field, byte[] value) {
@@ -303,11 +303,7 @@ public class RedisHash extends AbstractRedisData {
     byte[] oldValue = hash.get(field);
     if (oldValue == null) {
       byte[] newValue = Coder.longToBytes(increment);
-      hashPut(field, newValue);
-      AddsDeltaInfo deltaInfo = new AddsDeltaInfo(2);
-      deltaInfo.add(field);
-      deltaInfo.add(newValue);
-      storeChanges(region, key, deltaInfo);
+      updateHashAndRegion(region, key, field, newValue);
       return increment;
     }
 
@@ -325,11 +321,7 @@ public class RedisHash extends AbstractRedisData {
     value += increment;
 
     byte[] modifiedValue = Coder.longToBytes(value);
-    hashPut(field, modifiedValue);
-    AddsDeltaInfo deltaInfo = new AddsDeltaInfo(2);
-    deltaInfo.add(field);
-    deltaInfo.add(modifiedValue);
-    storeChanges(region, key, deltaInfo);
+    updateHashAndRegion(region, key, field, modifiedValue);
     return value;
   }
 
@@ -338,11 +330,7 @@ public class RedisHash extends AbstractRedisData {
     byte[] oldValue = hash.get(field);
     if (oldValue == null) {
       byte[] newValue = Coder.bigDecimalToBytes(increment);
-      hashPut(field, newValue);
-      AddsDeltaInfo deltaInfo = new AddsDeltaInfo(2);
-      deltaInfo.add(field);
-      deltaInfo.add(newValue);
-      storeChanges(region, key, deltaInfo);
+      updateHashAndRegion(region, key, field, newValue);
       return increment.stripTrailingZeros();
     }
 
@@ -361,12 +349,17 @@ public class RedisHash extends AbstractRedisData {
     value = value.add(increment);
 
     byte[] modifiedValue = Coder.bigDecimalToBytes(value);
+    updateHashAndRegion(region, key, field, modifiedValue);
+    return value.stripTrailingZeros();
+  }
+
+  void updateHashAndRegion(Region<RedisKey, RedisData> region, RedisKey key, byte[] field,
+      byte[] modifiedValue) {
     hashPut(field, modifiedValue);
     AddsDeltaInfo deltaInfo = new AddsDeltaInfo(2);
     deltaInfo.add(field);
     deltaInfo.add(modifiedValue);
     storeChanges(region, key, deltaInfo);
-    return value.stripTrailingZeros();
   }
 
   @Override

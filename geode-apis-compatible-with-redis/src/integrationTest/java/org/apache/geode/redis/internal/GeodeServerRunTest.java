@@ -32,6 +32,7 @@ public class GeodeServerRunTest {
   @Ignore("This is a no-op test to conveniently run redis api for geode server for local development/testing purposes")
   public void runGeodeServer() throws InterruptedException {
     LogService.getLogger().warn("Server running on port: " + server.getPort());
+    // noinspection InfiniteLoopStatement
     while (true) {
       Thread.sleep(1000);
     }

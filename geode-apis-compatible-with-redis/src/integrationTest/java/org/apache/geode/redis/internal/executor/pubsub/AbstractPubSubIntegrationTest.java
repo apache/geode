@@ -94,13 +94,11 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
 
   @Test
   public void testOneSubscriberOneChannel() {
-    List<String> expectedMessages = Arrays.asList("hello");
+    List<String> expectedMessages = Collections.singletonList("hello");
 
     MockSubscriber mockSubscriber = new MockSubscriber();
 
-    Runnable runnable = () -> {
-      subscriber.subscribe(mockSubscriber, "salutations");
-    };
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -120,9 +118,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   public void punsubscribe_givenSubscribe_doesNotReduceSubscriptions() {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
-    Runnable runnable = () -> {
-      subscriber.subscribe(mockSubscriber, "salutations");
-    };
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -146,9 +142,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   public void unsubscribe_givenPsubscribe_doesNotReduceSubscriptions() {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
-    Runnable runnable = () -> {
-      subscriber.psubscribe(mockSubscriber, "salutations");
-    };
+    Runnable runnable = () -> subscriber.psubscribe(mockSubscriber, "salutations");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -171,9 +165,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   @Test
   public void unsubscribe_onNonExistentSubscription_doesNotReduceSubscriptions() {
     MockSubscriber mockSubscriber = new MockSubscriber();
-    Runnable runnable = () -> {
-      subscriber.subscribe(mockSubscriber, "salutations");
-    };
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -259,9 +251,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   @Test
   public void punsubscribe_onNonExistentSubscription_doesNotReduceSubscriptions() {
     MockSubscriber mockSubscriber = new MockSubscriber();
-    Runnable runnable = () -> {
-      subscriber.psubscribe(mockSubscriber, "salutations");
-    };
+    Runnable runnable = () -> subscriber.psubscribe(mockSubscriber, "salutations");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -289,9 +279,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
 
     MockBinarySubscriber mockSubscriber = new MockBinarySubscriber();
 
-    Runnable runnable = () -> {
-      subscriber.subscribe(mockSubscriber, "salutations".getBytes());
-    };
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations".getBytes());
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -316,9 +304,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
 
     MockBinarySubscriber mockSubscriber = new MockBinarySubscriber();
 
-    Runnable runnable = () -> {
-      subscriber.subscribe(mockSubscriber, binaryBlob);
-    };
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, binaryBlob);
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -567,9 +553,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
 
     MockSubscriber mockSubscriber = new MockSubscriber();
 
-    Runnable runnable = () -> {
-      deadSubscriber.subscribe(mockSubscriber, "salutations");
-    };
+    Runnable runnable = () -> deadSubscriber.subscribe(mockSubscriber, "salutations");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -588,9 +572,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   public void testPatternSubscribe() {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
-    Runnable runnable = () -> {
-      subscriber.psubscribe(mockSubscriber, "sal*s");
-    };
+    Runnable runnable = () -> subscriber.psubscribe(mockSubscriber, "sal*s");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -617,9 +599,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   public void testSubscribeToSamePattern() {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
-    Runnable runnable = () -> {
-      subscriber.psubscribe(mockSubscriber, "sal*s");
-    };
+    Runnable runnable = () -> subscriber.psubscribe(mockSubscriber, "sal*s");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -650,9 +630,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   public void testPatternAndRegularSubscribe() {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
-    Runnable runnable = () -> {
-      subscriber.subscribe(mockSubscriber, "salutations");
-    };
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -686,9 +664,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   public void testPatternWithoutAGlob() {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
-    Runnable runnable = () -> {
-      subscriber.subscribe(mockSubscriber, "salutations");
-    };
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -765,14 +741,11 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   int doPublishing(int index, int minimumIterations, AtomicBoolean running) {
     int iterationCount = 0;
     int publishedMessages = 0;
-    Jedis client = getConnection();
-    try {
+    try (Jedis client = getConnection()) {
       while (iterationCount < minimumIterations || running.get()) {
         publishedMessages += client.publish("my-channel", "boo-" + index + "-" + iterationCount);
         iterationCount++;
       }
-    } finally {
-      client.close();
     }
 
     return publishedMessages;

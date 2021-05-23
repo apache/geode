@@ -75,7 +75,7 @@ public class QuitIntegrationTest {
     pipeline.sendCommand(Protocol.Command.QUIT, new String[] {});
     pipeline.sendCommand(Protocol.Command.SET, key, value);
 
-    assertThatThrownBy(() -> pipeline.sync()).isInstanceOf(JedisConnectionException.class);
+    assertThatThrownBy(pipeline::sync).isInstanceOf(JedisConnectionException.class);
 
     jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
     assertThat(jedis.get(key)).isNull();

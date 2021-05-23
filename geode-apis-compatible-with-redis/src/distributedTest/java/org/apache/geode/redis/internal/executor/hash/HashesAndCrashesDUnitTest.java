@@ -68,10 +68,7 @@ public class HashesAndCrashesDUnitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static Properties locatorProperties;
-
   private static MemberVM locator;
-  private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
 
@@ -86,7 +83,7 @@ public class HashesAndCrashesDUnitTest {
 
   @BeforeClass
   public static void classSetup() throws Exception {
-    locatorProperties = new Properties();
+    Properties locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
     locator = clusterStartUp.startLocatorVM(0, locatorProperties);
@@ -96,7 +93,7 @@ public class HashesAndCrashesDUnitTest {
     redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
 
     String redisPort1 = redisPorts[0] + "";
-    server1 = clusterStartUp.startServerVM(1,
+    MemberVM server1 = clusterStartUp.startServerVM(1,
         x -> x.withProperty(REDIS_PORT, redisPort1)
             .withProperty(REDIS_ENABLED, "true")
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
@@ -275,7 +272,7 @@ public class HashesAndCrashesDUnitTest {
       String member = "member-" + index + "-" + iterationCount;
       try {
         commands.sadd(key, member);
-        iterationCount += 1;
+        iterationCount++;
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
         if (!ex.getMessage().contains("Connection reset by peer")) {
@@ -293,7 +290,7 @@ public class HashesAndCrashesDUnitTest {
     }
     assertThat(missingMembers).isEmpty();
 
-    logger.info("--->>> SADD test ran {} iterations, retrying {} times", iterationCount);
+    logger.info("--->>> SADD test ran {} iterations", iterationCount);
   }
 
   private void setPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {

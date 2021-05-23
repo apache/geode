@@ -84,7 +84,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
     jedis = new Jedis("localhost", getPort(), TIMEOUT);
     numInfoCalled.set(0);
 
-    long preSetupCommandsProcessed = Long.valueOf(getInfo(jedis).get(COMMANDS_PROCESSED));
+    long preSetupCommandsProcessed = Long.parseLong(getInfo(jedis).get(COMMANDS_PROCESSED));
 
     jedis.set(EXISTING_STRING_KEY, "A_Value");
     jedis.hset(EXISTING_HASH_KEY, "Field1", "Value1");
@@ -96,11 +96,11 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
     // info
     await().atMost(Duration.ofSeconds(2))
         .untilAsserted(() -> assertThat(
-            Long.valueOf(getInfo(jedis).get(COMMANDS_PROCESSED)) - numInfoCalled.get() + 1)
+            Long.parseLong(getInfo(jedis).get(COMMANDS_PROCESSED)) - numInfoCalled.get() + 1)
                 .isEqualTo(preSetupCommandsProcessed + 4));
 
-    preTestConnectionsReceived = Long.valueOf(getInfo(jedis).get(TOTAL_CONNECTIONS_RECEIVED));
-    preTestConnectedClients = Long.valueOf(getInfo(jedis).get(CONNECTED_CLIENTS));
+    preTestConnectionsReceived = Long.parseLong(getInfo(jedis).get(TOTAL_CONNECTIONS_RECEIVED));
+    preTestConnectedClients = Long.parseLong(getInfo(jedis).get(CONNECTED_CLIENTS));
     numInfoCalled.set(0);
   }
 
@@ -154,7 +154,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
 
   @Test
   public void commandsProcessed_shouldIncrement_givenSuccessfulCommand() {
-    long initialCommandsProcessed = Long.valueOf(getInfo(jedis).get(COMMANDS_PROCESSED));
+    long initialCommandsProcessed = Long.parseLong(getInfo(jedis).get(COMMANDS_PROCESSED));
     jedis.ttl("key");
 
     validateCommandsProcessed(jedis, initialCommandsProcessed, 1);
@@ -171,7 +171,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
       jedis.set("key", "value");
       numberOfCommandsExecuted.getAndIncrement();
       actualCommandsProcessedOverLastSecond.set(
-          Double.valueOf(getInfo(jedis).get(OPS_PERFORMED_OVER_LAST_SECOND)));
+          Double.parseDouble(getInfo(jedis).get(OPS_PERFORMED_OVER_LAST_SECOND)));
 
       return true;
     });
@@ -190,7 +190,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
 
   @Test
   public void networkBytesRead_shouldIncrementBySizeOfCommandSent() {
-    long initialNetworkBytesRead = Long.valueOf(getInfo(jedis).get(TOTAL_NETWORK_BYTES_READ));
+    long initialNetworkBytesRead = Long.parseLong(getInfo(jedis).get(TOTAL_NETWORK_BYTES_READ));
     String infoCommandString = "*3\r\n$3\r\ninfo\r\n";
     String respCommandString = "*3\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n";
 
@@ -217,8 +217,8 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
       return true;
     });
 
-    double expectedBytesReceived = totalBytesSent.get() / NUMBER_SECONDS_TO_RUN;
-    double expected_kbs = expectedBytesReceived / 1000;
+    int expectedBytesReceived = totalBytesSent.get() / NUMBER_SECONDS_TO_RUN;
+    double expected_kbs = expectedBytesReceived / 1000f;
 
     assertThat(actual_kbs.get()).isCloseTo(expected_kbs, Offset.offset(REASONABLE_SOUNDING_OFFSET));
 
@@ -273,15 +273,15 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
   @Test
   public void uptimeInSeconds_shouldReturnTimeSinceStartInSeconds() {
     long serverUptimeAtStartOfTestInNanos = getCurrentTime();
-    long statsUpTimeAtStartOfTest = Long.valueOf(getInfo(jedis).get(UPTIME_IN_SECONDS));
+    long statsUpTimeAtStartOfTest = Long.parseLong(getInfo(jedis).get(UPTIME_IN_SECONDS));
 
     await().during(Duration.ofSeconds(3)).until(() -> true);
 
     long expectedNanos = getCurrentTime() - serverUptimeAtStartOfTestInNanos;
     long expectedSeconds = TimeUnit.NANOSECONDS.toSeconds(expectedNanos);
 
-    assertThat(Long.valueOf(getInfo(jedis).get(UPTIME_IN_SECONDS)) - statsUpTimeAtStartOfTest)
-        .isCloseTo(expectedSeconds, Offset.offset(1l));
+    assertThat(Long.parseLong(getInfo(jedis).get(UPTIME_IN_SECONDS)) - statsUpTimeAtStartOfTest)
+        .isCloseTo(expectedSeconds, Offset.offset(1L));
   }
 
   // ------------------- Helper Methods ----------------------------- //
@@ -290,7 +290,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
   }
 
   public long getCurrentTime() {
-    return this.statisticsClock.getTime();
+    return statisticsClock.getTime();
   }
 
   private double getTenPercentOf(Double value) {
@@ -327,7 +327,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
   private void validateCommandsProcessed(Jedis jedis, long initialCommandsProcessed, int diff) {
     await().atMost(Duration.ofSeconds(2)).untilAsserted(
         () -> assertThat(
-            Long.valueOf(getInfo(jedis).get(COMMANDS_PROCESSED)) - numInfoCalled.get() + 1)
+            Long.parseLong(getInfo(jedis).get(COMMANDS_PROCESSED)) - numInfoCalled.get() + 1)
                 .isEqualTo(initialCommandsProcessed + diff));
   }
 

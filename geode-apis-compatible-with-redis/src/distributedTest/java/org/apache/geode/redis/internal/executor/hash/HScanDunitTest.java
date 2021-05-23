@@ -64,9 +64,6 @@ public class HScanDunitTest {
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
   private static RedisAdvancedClusterCommands<String, String> commands;
-  private RedisClusterClient redisClient;
-  private StatefulRedisClusterConnection<String, String> connection;
-  private static Properties locatorProperties;
 
   private static MemberVM locator;
   private static MemberVM server1;
@@ -82,7 +79,7 @@ public class HScanDunitTest {
   @BeforeClass
   public static void classSetup() {
     int locatorPort;
-    locatorProperties = new Properties();
+    Properties locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
     locator = redisClusterStartupRule.startLocatorVM(0, locatorProperties);
@@ -112,12 +109,12 @@ public class HScanDunitTest {
         .socketAddressResolver(dnsResolver)
         .build();
 
-    redisClient = RedisClusterClient.create(resources, "redis://localhost");
+    RedisClusterClient redisClient = RedisClusterClient.create(resources, "redis://localhost");
     redisClient.setOptions(ClusterClientOptions.builder()
         .autoReconnect(true)
         .build());
 
-    connection = redisClient.connect();
+    StatefulRedisClusterConnection<String, String> connection = redisClient.connect();
     commands = connection.sync();
     commands.hset(HASH_KEY, INITIAL_DATA_SET);
   }

@@ -30,6 +30,7 @@ import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 public class NativeRedisTestRule extends ExternalResource implements Serializable {
 
   private static final Logger logger = LogService.getLogger();
+  private static final long serialVersionUID = -6123244174237117309L;
 
   private GenericContainer<?> redisContainer;
   private final RuleChain delegate;

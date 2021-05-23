@@ -98,7 +98,7 @@ public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationT
   @Test
   public void testIncrBy_IncrementingMaxValueThrowsError() {
     String key = "key";
-    Long increment = Long.MAX_VALUE / 2;
+    long increment = Long.MAX_VALUE / 2;
 
     jedis1.set(key, String.valueOf(Long.MAX_VALUE));
     assertThatThrownBy(() -> jedis1.incrBy(key, increment))

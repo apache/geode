@@ -13,12 +13,23 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
+package org.apache.geode.redis.internal.parameterrequirements;
 
-public class RedisParametersMismatchException extends RuntimeException {
-  private static final long serialVersionUID = -643700717871858072L;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-  public RedisParametersMismatchException(String message) {
-    super(message);
+public class MinimumParameterRequirements implements ParameterRequirements {
+  private final int minimum;
+
+  public MinimumParameterRequirements(int minimum) {
+    this.minimum = minimum;
   }
+
+  @Override
+  public void checkParameters(Command command, ExecutionHandlerContext context) {
+    if (command.getProcessedCommand().size() < minimum) {
+      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
+    }
+  }
+
 }

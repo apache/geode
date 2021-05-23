@@ -13,15 +13,15 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
+package org.apache.geode.redis.internal.parameterrequirements;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class UnspecifiedParameterRequirements implements ParameterRequirements {
-  @Override
-  public void checkParameters(Command command,
-      ExecutionHandlerContext executionHandlerContext) {
-    return;
+public interface ParameterRequirements {
+  void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext);
+
+  default ParameterRequirements and(ParameterRequirements moreRequirements) {
+    return new MultipleParameterRequirements(this, moreRequirements);
   }
 }

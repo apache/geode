@@ -174,8 +174,8 @@ public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTes
   private int doABunchOfSAdds(String key, String[] strings, JedisCluster jedis) {
     int successes = 0;
 
-    for (int i = 0; i < strings.length; i++) {
-      Long reply = jedis.sadd(key, strings[i]);
+    for (String string : strings) {
+      Long reply = jedis.sadd(key, string);
       if (reply == 1L) {
         successes++;
         Thread.yield();
@@ -269,6 +269,6 @@ public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTes
       String elem = generator.generate(uniqueElement);
       strings.add(elem);
     }
-    return strings.toArray(new String[strings.size()]);
+    return strings.toArray(new String[0]);
   }
 }

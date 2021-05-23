@@ -28,10 +28,11 @@ import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 public class GeodeRedisServerRule extends SerializableExternalResource {
+  private static final long serialVersionUID = 6758030784457997600L;
+
   private GemFireCache cache;
   private GeodeRedisServer server;
-  private CacheFactory cacheFactory;
-  private Boolean enableUnsupportedCommands = true;
+  private final CacheFactory cacheFactory;
 
   public GeodeRedisServerRule() {
     cacheFactory = new CacheFactory();
@@ -48,7 +49,7 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
   protected void before() {
     cache = cacheFactory.create();
     server = new GeodeRedisServer("localhost", 0, (InternalCache) cache);
-    server.setAllowUnsupportedCommands(enableUnsupportedCommands);
+    server.setAllowUnsupportedCommands(true);
   }
 
   public GeodeRedisServerRule withProperty(String property, String value) {

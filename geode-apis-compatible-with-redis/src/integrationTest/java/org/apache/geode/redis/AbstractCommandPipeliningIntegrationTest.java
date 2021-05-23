@@ -17,7 +17,7 @@ package org.apache.geode.redis;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -55,13 +55,11 @@ public abstract class AbstractCommandPipeliningIntegrationTest implements RedisI
 
   @Test
   public void whenPipelining_commandResponsesAreNotCorrupted() {
-    List<String> expectedMessages = Arrays.asList("hello");
+    List<String> expectedMessages = Collections.singletonList("hello");
 
     MockSubscriber mockSubscriber = new MockSubscriber();
 
-    Runnable runnable = () -> {
-      subscriber.subscribe(mockSubscriber, "salutations");
-    };
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -75,7 +73,7 @@ public abstract class AbstractCommandPipeliningIntegrationTest implements RedisI
     pipe.publish("salutations", "hello");
     pipe.smembers("foo");
 
-    List<Object> responses = pipe.syncAndReturnAll();
+    pipe.syncAndReturnAll();
 
     mockSubscriber.unsubscribe("salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);

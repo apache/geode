@@ -19,7 +19,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 import io.lettuce.core.RedisURI;
-import io.lettuce.core.resource.DnsResolver;
 import io.lettuce.core.resource.SocketAddressResolver;
 import org.apache.logging.log4j.Logger;
 
@@ -27,17 +26,12 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class DUnitSocketAddressResolver extends SocketAddressResolver {
 
-  private static Logger logger = LogService.getLogger();
-  private String[] redisPorts;
+  private static final Logger logger = LogService.getLogger();
+  private final String[] redisPorts;
   int indexOfLastRedisPortReturned;
 
   public DUnitSocketAddressResolver(String[] ports) {
-    super(new DnsResolver() {
-      @Override
-      public InetAddress[] resolve(String s) {
-        return new InetAddress[0];
-      }
-    });
+    super(s -> new InetAddress[0]);
 
     this.redisPorts = ports;
     this.indexOfLastRedisPortReturned = 0;

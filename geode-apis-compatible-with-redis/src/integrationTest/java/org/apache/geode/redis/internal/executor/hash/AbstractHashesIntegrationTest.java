@@ -53,7 +53,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
 
   private Random rand;
   private JedisCluster jedis;
-  private static int ITERATION_COUNT = 4000;
+  private static final int ITERATION_COUNT = 4000;
 
   @Before
   public void setUp() {
@@ -133,7 +133,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
     }
 
     Set<String> keys = hash.keySet();
-    Long count = 1L;
+    long count = 1L;
 
     for (String field : keys) {
       Long res = jedis.hset(key, field, hash.get(field));
@@ -293,7 +293,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
   @Test
   public void testHkeys_returnsAllValuesForGivenField() {
     String key = "key";
-    Map<String, String> hash = new HashMap<String, String>();
+    Map<String, String> hash = new HashMap<>();
     for (int i = 0; i < 10; i++) {
       hash.put("field_" + i, "member_" + i);
     }
@@ -419,7 +419,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
     String field = Double.valueOf(rand.nextInt(50)).toString() + ".field";
     String value = Double.valueOf(rand.nextInt(50)).toString() + ".value";
 
-    ScanResult<Entry<String, String>> results = null;
+    ScanResult<Entry<String, String>> results;
 
     assertThatThrownBy(
         () -> jedis.hscan(key, "this cursor is non-numeric and so completely invalid"))
@@ -762,7 +762,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
   public void testConcurrentHSet_differentKeyPerClient() {
     String key1 = "HSET1";
     String key2 = "HSET2";
-    Map<String, String> expectedMap = new HashMap<String, String>();
+    Map<String, String> expectedMap = new HashMap<>();
     for (int i = 0; i < ITERATION_COUNT; i++) {
       expectedMap.put("field" + i, "value" + i);
     }

@@ -63,15 +63,15 @@ public class UnsupportedCommandsIntegrationTest {
   public void shouldReturnUnknownCommandMessage_givenCallToUnsupportedCommand_whenEnableUnSupportedCommandsFlagNotSet() {
     server.setEnableUnsupportedCommands(false);
 
-    final String KEY = "key";
-    final String NEW_VALUE = "changed value";
-    final String EXPECTED_ERROR_MSG =
-        String.format(ERROR_UNKNOWN_COMMAND, "GETSET", "`" + KEY + "`", NEW_VALUE);
-    jedis.set(KEY, "value");
+    final String key = "key";
+    final String newValue = "changed value";
+    final String expectedErrorMsg =
+        String.format(ERROR_UNKNOWN_COMMAND, "GETSET", "`" + key + "`, `" + newValue + "`");
+    jedis.set(key, "value");
 
     assertThatThrownBy(
-        () -> jedis.getSet(KEY, NEW_VALUE))
-            .hasMessageContaining(EXPECTED_ERROR_MSG);
+        () -> jedis.getSet(key, newValue))
+            .hasMessageContaining(expectedErrorMsg);
   }
 
   @Test

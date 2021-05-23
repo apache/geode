@@ -13,31 +13,32 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
+package org.apache.geode.redis.internal.parameterrequirements;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class OddParameterRequirements implements ParameterRequirements {
+public class EvenParameterRequirements implements ParameterRequirements {
+
   private final String errorMessage;
 
-  public OddParameterRequirements() {
-    this(null);
+  public EvenParameterRequirements() {
+    this.errorMessage = null;
   }
 
-  public OddParameterRequirements(String errorMessage) {
+  public EvenParameterRequirements(String errorMessage) {
     this.errorMessage = errorMessage;
   }
 
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
-    if (!isOdd(command.getProcessedCommand().size())) {
+    if (!isEven(command.getProcessedCommand().size())) {
       throw new RedisParametersMismatchException(getErrorMessage(command));
     }
   }
 
-  private boolean isOdd(int n) {
-    return n % 2 == 1;
+  private boolean isEven(int n) {
+    return n % 2 == 0;
   }
 
   private String getErrorMessage(Command command) {

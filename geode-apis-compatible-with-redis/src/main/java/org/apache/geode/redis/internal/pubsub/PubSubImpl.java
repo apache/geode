@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -66,16 +69,18 @@ public class PubSubImpl implements PubSub {
   public long publish(Region<RedisKey, RedisData> dataRegion, byte[] channel, byte[] message) {
     PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
     Set<DistributedMember> membersWithDataRegion = new HashSet<>();
-    for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
-      membersWithDataRegion.add(memberInfo.getDistributedMember());
+    if (info != null) {
+      for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
+        membersWithDataRegion.add(memberInfo.getDistributedMember());
+      }
     }
-    @SuppressWarnings("unchecked")
-    ResultCollector<String[], List<Long>> subscriberCountCollector = FunctionService
-        .onMembers(membersWithDataRegion)
+    Execution<Object[], String[], List<Long>> execution =
+        uncheckedCast(FunctionService.onMembers(membersWithDataRegion));
+    ResultCollector<String[], List<Long>> subscriberCountCollector = execution
         .setArguments(new Object[] {channel, message})
         .execute(REDIS_PUB_SUB_FUNCTION_ID);
 
-    List<Long> subscriberCounts = null;
+    List<Long> subscriberCounts;
 
     try {
       subscriberCounts = subscriberCountCollector.getResult();
@@ -100,6 +105,8 @@ public class PubSubImpl implements PubSub {
 
   private void registerPublishFunction() {
     FunctionService.registerFunction(new InternalFunction<Object[]>() {
+      private static final long serialVersionUID = 2378081604977600940L;
+
       @Override
       public String getId() {
         return REDIS_PUB_SUB_FUNCTION_ID;

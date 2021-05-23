@@ -120,17 +120,17 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
       ArrayRedisMessage rMessage = (ArrayRedisMessage) msg;
       String command = getArg(rMessage, 0);
 
-      switch (command.toLowerCase()) {
-        case "cluster":
+      if (command != null) {
+        if ("cluster".equals(command.toLowerCase())) {
           String sub = getArg(rMessage, 1);
           if ("slots".equals(sub)) {
             outboundHandler.addResponseProcessor(slotsResponseProcessor);
           } else if ("nodes".equals(sub)) {
             outboundHandler.addResponseProcessor(nodesResponseProcessor);
           }
-          break;
-        default:
+        } else {
           outboundHandler.addResponseProcessor(NoopRedisResponseProcessor.INSTANCE);
+        }
       }
 
       outboundChannel.writeAndFlush(msg)

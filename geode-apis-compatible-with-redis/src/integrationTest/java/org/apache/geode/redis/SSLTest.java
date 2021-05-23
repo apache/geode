@@ -74,7 +74,7 @@ public class SSLTest {
 
     Jedis localhost = new Jedis("localhost", 11211, false);
 
-    assertThatThrownBy(() -> localhost.ping());
+    assertThatThrownBy(localhost::ping);
   }
 
 }

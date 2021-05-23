@@ -39,7 +39,6 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
 public class PassiveExpirationManager {
   private static final Logger logger = LogService.getLogger();
 
-  private final Region<RedisKey, RedisData> dataRegion;
   private final ScheduledExecutorService expirationExecutor;
   private final RedisStats redisStats;
 
@@ -47,7 +46,6 @@ public class PassiveExpirationManager {
   public static final int INTERVAL = 3;
 
   public PassiveExpirationManager(Region<RedisKey, RedisData> dataRegion, RedisStats redisStats) {
-    this.dataRegion = dataRegion;
     this.redisStats = redisStats;
     expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
     expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(dataRegion), INTERVAL,

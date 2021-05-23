@@ -27,7 +27,7 @@ import org.apache.geode.redis.internal.netty.Client;
 public interface Subscription {
   enum Type {
     CHANNEL,
-    PATTERN;
+    PATTERN
   }
 
   Type getType();

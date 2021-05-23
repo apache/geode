@@ -25,8 +25,6 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class PingExecutor extends AbstractExecutor {
 
-  private final String PING_RESPONSE = "PONG";
-
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
@@ -34,12 +32,13 @@ public class PingExecutor extends AbstractExecutor {
 
     context.eventLoopReady();
 
+    String pingResponse = "PONG";
     if (context.getPubSub().findSubscriptionNames(context.getClient()).isEmpty()) {
       byte[] result;
       if (commandElems.size() > 1) {
         result = commandElems.get(1);
       } else {
-        result = PING_RESPONSE.getBytes();
+        result = pingResponse.getBytes();
       }
       redisResponse = RedisResponse.string(result);
     } else {
@@ -51,7 +50,7 @@ public class PingExecutor extends AbstractExecutor {
         result = "".getBytes();
       }
       redisResponse =
-          RedisResponse.array(Arrays.asList(PING_RESPONSE.toLowerCase().getBytes(), result));
+          RedisResponse.array(Arrays.asList(pingResponse.toLowerCase().getBytes(), result));
     }
 
     return redisResponse;

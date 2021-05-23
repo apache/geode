@@ -114,7 +114,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
   public void should_setExpiration_givenKeyTo_BitMapValue() {
 
     String key = "key";
-    Long offset = 1L;
+    long offset = 1L;
     String value = "0";
 
     jedis.setbit(key, offset, value);

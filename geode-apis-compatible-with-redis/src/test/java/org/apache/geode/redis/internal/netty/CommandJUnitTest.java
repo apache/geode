@@ -40,15 +40,16 @@ public class CommandJUnitTest {
   @Test
   public void testCommand() {
     List<byte[]> list1 = null;
+    // noinspection ConstantConditions
     assertThatThrownBy(() -> new Command(list1))
         .hasMessageContaining("List of command elements cannot be empty");
 
-    List<byte[]> list2 = new ArrayList<byte[]>();
+    List<byte[]> list2 = new ArrayList<>();
 
     assertThatThrownBy(() -> new Command(list2))
         .hasMessageContaining("List of command elements cannot be empty");
 
-    List<byte[]> list3 = new ArrayList<byte[]>();
+    List<byte[]> list3 = new ArrayList<>();
     list3.add("Garbage".getBytes(StandardCharsets.UTF_8));
 
     Command cmd = new Command(list3);

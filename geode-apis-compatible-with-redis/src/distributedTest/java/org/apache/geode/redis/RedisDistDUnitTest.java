@@ -42,10 +42,11 @@ import org.apache.geode.test.junit.categories.RedisTest;
 @Category({RedisTest.class})
 public class RedisDistDUnitTest implements Serializable {
 
+  private static final long serialVersionUID = 5901533946117791444L;
   @ClassRule
   public static RedisClusterStartupRule cluster = new RedisClusterStartupRule(5);
 
-  private static String LOCALHOST = "localhost";
+  private static final String LOCALHOST = "localhost";
 
   public static final String KEY = "key";
   private static VM client1;
@@ -58,7 +59,8 @@ public class RedisDistDUnitTest implements Serializable {
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   private abstract static class ClientTestBase extends SerializableRunnable {
-    int port;
+    private static final long serialVersionUID = -2199654130661264927L;
+    final int port;
 
     protected ClientTestBase(int port) {
       this.port = port;
@@ -79,8 +81,9 @@ public class RedisDistDUnitTest implements Serializable {
     client2 = cluster.getVM(4);
   }
 
-  class ConcurrentSADDOperation extends ClientTestBase {
+  static class ConcurrentSADDOperation extends ClientTestBase {
 
+    private static final long serialVersionUID = 6295080449810250424L;
     private final Collection<String> strings;
     private final String key;
 
@@ -148,6 +151,8 @@ public class RedisDistDUnitTest implements Serializable {
     final String key = KEY + "string";
 
     class ConcCreateDestroy extends ClientTestBase {
+      private static final long serialVersionUID = -6739581048160731936L;
+
       protected ConcCreateDestroy(int port) {
         super(port);
       }
@@ -252,6 +257,8 @@ public class RedisDistDUnitTest implements Serializable {
     final String sKey = KEY + "set";
 
     class ConcOps extends ClientTestBase {
+
+      private static final long serialVersionUID = 8982072479133006288L;
 
       protected ConcOps(int port) {
         super(port);

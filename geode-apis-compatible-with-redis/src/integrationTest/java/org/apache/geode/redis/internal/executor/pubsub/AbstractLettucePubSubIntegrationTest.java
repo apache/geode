@@ -65,7 +65,7 @@ public abstract class AbstractLettucePubSubIntegrationTest implements RedisInteg
   public void multiSubscribeSameClient() {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     StatefulRedisPubSubConnection<String, String> publisher = client.connectPubSub();
-    List<Map> messages = Collections.synchronizedList(new ArrayList<>());
+    List<Map<String, String>> messages = Collections.synchronizedList(new ArrayList<>());
     AtomicLong subscriptionCount = new AtomicLong(0);
 
     RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
@@ -109,7 +109,7 @@ public abstract class AbstractLettucePubSubIntegrationTest implements RedisInteg
   public void multiPsubscribeSameClient() {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
     StatefulRedisPubSubConnection<String, String> publisher = client.connectPubSub();
-    List<Map> messages = Collections.synchronizedList(new ArrayList<>());
+    List<Map<String, String>> messages = Collections.synchronizedList(new ArrayList<>());
     AtomicLong psubscriptionCount = new AtomicLong(0);
 
     RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
@@ -196,7 +196,7 @@ public abstract class AbstractLettucePubSubIntegrationTest implements RedisInteg
   @Test
   public void multiUnsubscribe() throws InterruptedException {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
-    List<Map> counts = Collections.synchronizedList(new ArrayList<>());
+    List<Map<String, Long>> counts = Collections.synchronizedList(new ArrayList<>());
     CountDownLatch subscriberLatch = new CountDownLatch(2);
 
     RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
@@ -234,7 +234,7 @@ public abstract class AbstractLettucePubSubIntegrationTest implements RedisInteg
   @Test
   public void multiPunsubscribe() throws InterruptedException {
     StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();
-    List<Map> counts = Collections.synchronizedList(new ArrayList<>());
+    List<Map<String, Long>> counts = Collections.synchronizedList(new ArrayList<>());
     CountDownLatch psubscriberLatch = new CountDownLatch(2);
     RedisPubSubListener<String, String> listener = new RedisPubSubAdapter<String, String>() {
       @Override

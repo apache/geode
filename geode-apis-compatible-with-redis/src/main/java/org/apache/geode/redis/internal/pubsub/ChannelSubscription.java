@@ -26,7 +26,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  * This class represents a single channel subscription as created by the SUBSCRIBE command
  */
 class ChannelSubscription extends AbstractSubscription {
-  private byte[] channel;
+  private final byte[] channel;
 
   public ChannelSubscription(Client client, byte[] channel, ExecutionHandlerContext context,
       Subscriptions subscriptions) {

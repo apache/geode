@@ -13,22 +13,12 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
+package org.apache.geode.redis.internal.parameterrequirements;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+public class RedisParametersMismatchException extends RuntimeException {
+  private static final long serialVersionUID = -643700717871858072L;
 
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
-
-public class SpopParameterRequirements implements ParameterRequirements {
-  @Override
-  public void checkParameters(Command command, ExecutionHandlerContext context) {
-    if (command.getProcessedCommand().size() == 3) {
-      try {
-        Integer.parseInt(new String(command.getProcessedCommand().get(2)));
-      } catch (NumberFormatException nex) {
-        throw new RedisParametersMismatchException(ERROR_NOT_INTEGER);
-      }
-    }
+  public RedisParametersMismatchException(String message) {
+    super(message);
   }
 }

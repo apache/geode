@@ -61,14 +61,11 @@ public class CrashAndNoRepeatDUnitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static Properties locatorProperties;
-
   private static MemberVM locator;
-  private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
 
-  private static int[] redisPorts = new int[3];
+  private static final int[] redisPorts = new int[3];
   private static final String LOCAL_HOST = "127.0.0.1";
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -79,13 +76,13 @@ public class CrashAndNoRepeatDUnitTest {
   @BeforeClass
   public static void classSetup() throws Exception {
     String log_level = "info";
-    locatorProperties = new Properties();
+    Properties locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
     locator = clusterStartUp.startLocatorVM(0, locatorProperties);
     int locatorPort = locator.getPort();
 
-    server1 = clusterStartUp.startServerVM(1,
+    MemberVM server1 = clusterStartUp.startServerVM(1,
         x -> x.withProperty(REDIS_PORT, "0")
             .withProperty(REDIS_ENABLED, "true")
             .withProperty(LOG_LEVEL, log_level)
@@ -284,6 +281,7 @@ public class CrashAndNoRepeatDUnitTest {
             try {
               Thread.sleep(1000);
             } catch (InterruptedException e) {
+              // noinspection ResultOfMethodCallIgnored
               Thread.interrupted();
             }
           }

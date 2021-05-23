@@ -34,8 +34,7 @@ public interface StripedExecutor {
    * @param stripeId defines the "stripe"
    * @param callable the unit of work to do sequentially. May be called after run returns.
    */
-  public <T> T execute(Object stripeId,
-      Callable<T> callable);
+  <T> T execute(Object stripeId, Callable<T> callable);
 
   int compareStripes(Object object1, Object object2);
 }

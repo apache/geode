@@ -74,11 +74,10 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_BIND_ADDRESS, "localhost"));
 
-    server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache().getService(GeodeRedisService.class))
-          .as("GeodeRedisService should not exist")
-          .isNull();
-    });
+    server
+        .invoke(() -> assertThat(ClusterStartupRule.getCache().getService(GeodeRedisService.class))
+            .as("GeodeRedisService should not exist")
+            .isNull());
   }
 
   @Test

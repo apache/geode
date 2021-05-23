@@ -56,7 +56,7 @@ public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIn
 
   @Test
   public void maxMemory_shouldBeASensibleValue() {
-    long maxMemory = Long.valueOf(getInfo(jedis).get(MAX_MEMORY));
+    long maxMemory = Long.parseLong(getInfo(jedis).get(MAX_MEMORY));
     assertThat(maxMemory).isGreaterThan(0L);
   }
 
@@ -69,7 +69,7 @@ public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIn
 
   @Test
   public void usedMemory_shouldIncrease_givenAdditionalValuesAdded() {
-    Map<String, String> addedData = makeHashMap(100_000, "field", "value");
+    Map<String, String> addedData = makeHashMap(100_000);
 
     long initialUsedMemory = Long.parseLong(getInfo(jedis).get(USED_MEMORY));
 
@@ -101,11 +101,10 @@ public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIn
     return results;
   }
 
-  private Map<String, String> makeHashMap(int hashSize, String baseFieldName,
-      String baseValueName) {
+  private Map<String, String> makeHashMap(int hashSize) {
     Map<String, String> map = new HashMap<>();
     for (int i = 0; i < hashSize; i++) {
-      map.put(baseFieldName + i, baseValueName + i);
+      map.put("field" + i, "value" + i);
     }
     return map;
   }

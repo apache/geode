@@ -51,23 +51,19 @@ public class HKeysDUnitTest {
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static JedisCluster jedis;
 
-  private static Properties locatorProperties;
-
   private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
 
-  private static int redisServerPort;
-
   @BeforeClass
   public static void classSetup() {
-    locatorProperties = new Properties();
+    Properties locatorProperties = new Properties();
 
     locator = clusterStartUp.startLocatorVM(0, locatorProperties);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
 
-    redisServerPort = clusterStartUp.getRedisPort(1);
+    int redisServerPort = clusterStartUp.getRedisPort(1);
 
     jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
   }
@@ -92,8 +88,8 @@ public class HKeysDUnitTest {
   public void testConcurrentHKeys_whileAddingValues() {
     String key = "key";
 
-    Map<String, String> testMap = makeHashMap(HASH_SIZE, "field-", "value-");
-    Set<String> expectedFields = makeSet(HASH_SIZE, "field-");
+    Map<String, String> testMap = makeHashMap(HASH_SIZE);
+    Set<String> expectedFields = makeSet();
     BlockingQueue<String> queue = new LinkedBlockingQueue<>();
 
     jedis.hset(key, testMap);
@@ -119,7 +115,7 @@ public class HKeysDUnitTest {
   @Test
   public void testConcurrentHKeys_whileDeletingValues() {
     String key = "key";
-    Map<String, String> testMap = makeHashMap(NUM_ITERATIONS, "field-", "value-");
+    Map<String, String> testMap = makeHashMap(NUM_ITERATIONS);
 
     jedis.hset(key, testMap);
 
@@ -133,7 +129,7 @@ public class HKeysDUnitTest {
   @Test
   public void testConcurrentHKeys_whileUpdatingValues() {
     String key = "key";
-    Map<String, String> testMap = makeHashMap(NUM_ITERATIONS, "field-", "value-");
+    Map<String, String> testMap = makeHashMap(NUM_ITERATIONS);
 
     jedis.hset(key, testMap);
 
@@ -151,19 +147,18 @@ public class HKeysDUnitTest {
     }
   }
 
-  private Map<String, String> makeHashMap(int hashSize, String baseFieldName,
-      String baseValueName) {
+  private Map<String, String> makeHashMap(int hashSize) {
     Map<String, String> map = new HashMap<>();
     for (int i = 0; i < hashSize; i++) {
-      map.put(baseFieldName + i, baseValueName + i);
+      map.put("field-" + i, "value-" + i);
     }
     return map;
   }
 
-  private Set<String> makeSet(int hashSize, String baseFieldName) {
+  private Set<String> makeSet() {
     Set<String> set = new HashSet<>(HASH_SIZE);
-    for (int i = 0; i < hashSize; i++) {
-      set.add(baseFieldName + i);
+    for (int i = 0; i < HASH_SIZE; i++) {
+      set.add("field-" + i);
     }
     return set;
   }

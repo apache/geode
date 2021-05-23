@@ -11,29 +11,26 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-package org.apache.geode.redis.internal.executor.server;
 
-import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
+package org.apache.geode.redis.internal.parameterrequirements;
+
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_CLUSTER_SUBCOMMAND;
+
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class FlushAllExecutor extends AbstractExecutor {
-
+public class ClusterParameterRequirements implements ParameterRequirements {
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-    RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
+  public void checkParameters(Command command, ExecutionHandlerContext context) {
+    int numberOfArguments = command.getProcessedCommand().size();
 
-    for (RedisKey key : context.getRegionProvider().getDataRegion().keySet()) {
-      redisKeyCommands.del(key);
+    if (numberOfArguments < 2) {
+      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
+    } else if (numberOfArguments > 2) {
+      throw new RedisParametersMismatchException(
+          String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, command.getStringKey()));
     }
-
-    return RedisResponse.string("OK");
   }
 
 }

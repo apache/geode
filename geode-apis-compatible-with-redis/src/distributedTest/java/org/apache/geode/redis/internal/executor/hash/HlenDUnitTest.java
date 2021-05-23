@@ -54,14 +54,13 @@ public class HlenDUnitTest {
   private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
-  private static int[] redisPorts;
   private static RedisAdvancedClusterCommands<String, String> lettuce;
   private static StatefulRedisClusterConnection<String, String> connection;
   private static ClientResources resources;
 
   @BeforeClass
   public static void classSetup() {
-    redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    int[] redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
 
     String redisPort1 = String.valueOf(redisPorts[0]);
     String redisPort2 = String.valueOf(redisPorts[1]);

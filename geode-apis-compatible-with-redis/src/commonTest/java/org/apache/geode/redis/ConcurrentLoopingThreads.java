@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class ConcurrentLoopingThreads {
   private final int iterationCount;
   private final Consumer<Integer>[] functions;
-  private ExecutorService executorService = Executors.newCachedThreadPool();
+  private final ExecutorService executorService = Executors.newCachedThreadPool();
   private List<Future<?>> loopingFutures;
 
   @SafeVarargs
@@ -54,7 +54,7 @@ public class ConcurrentLoopingThreads {
     loopingFutures = Arrays
         .stream(functions)
         .map(r -> new LoopingThread(r, iterationCount, latch, lockstep))
-        .map(t -> executorService.submit(t))
+        .map(executorService::submit)
         .collect(Collectors.toList());
 
     return this;

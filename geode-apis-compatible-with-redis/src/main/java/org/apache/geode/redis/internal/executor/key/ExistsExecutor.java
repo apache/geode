@@ -34,7 +34,7 @@ public class ExistsExecutor extends AbstractExecutor {
     long existsCount = commandElems
         .subList(1, commandElems.size())
         .stream()
-        .filter(key -> redisKeyCommands.exists(key))
+        .filter(redisKeyCommands::exists)
         .count();
 
     return RedisResponse.integer(existsCount);

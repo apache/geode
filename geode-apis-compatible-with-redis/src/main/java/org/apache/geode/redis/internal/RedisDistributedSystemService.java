@@ -30,7 +30,7 @@ public class RedisDistributedSystemService implements DistributedSystemService {
   }
 
   @Override
-  public Class getInterface() {
+  public Class<?> getInterface() {
     return getClass();
   }
 

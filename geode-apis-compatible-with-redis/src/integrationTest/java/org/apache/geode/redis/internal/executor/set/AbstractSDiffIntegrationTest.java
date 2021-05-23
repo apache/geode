@@ -122,7 +122,7 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
     Long copySetSize = jedis.sdiffstore("{user1}copySet", "{user1}set2");
     Set<String> copyResultSet = jedis.smembers("{user1}copySet");
     assertThat(copySetSize).isEqualTo(secondSet.length);
-    assertThat(copyResultSet.toArray()).containsExactlyInAnyOrder((Object[]) secondSet);
+    assertThat(copyResultSet).containsExactlyInAnyOrder(secondSet);
   }
 
   @Test

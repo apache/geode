@@ -85,7 +85,7 @@ public abstract class AbstractDecrByIntegrationTest implements RedisIntegrationT
 
     String getResult = jedis.get("key");
 
-    assertThat(decrByresult).isEqualTo(Long.valueOf(getResult)).isEqualTo(50l);
+    assertThat(decrByresult).isEqualTo(Long.valueOf(getResult)).isEqualTo(50L);
   }
 
 

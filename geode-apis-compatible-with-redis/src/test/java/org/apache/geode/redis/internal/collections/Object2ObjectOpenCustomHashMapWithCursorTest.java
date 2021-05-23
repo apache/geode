@@ -35,7 +35,7 @@ public class Object2ObjectOpenCustomHashMapWithCursorTest {
     }
   };
 
-  private static Hash.Strategy<Integer> COLLIDING_HASH = new Hash.Strategy<Integer>() {
+  private static final Hash.Strategy<Integer> COLLIDING_HASH = new Hash.Strategy<Integer>() {
     @Override
     public int hashCode(Integer o) {
       return o % 5;

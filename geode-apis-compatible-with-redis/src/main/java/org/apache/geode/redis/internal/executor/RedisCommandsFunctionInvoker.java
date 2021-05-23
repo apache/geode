@@ -16,9 +16,12 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.Collections;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.PrimaryBucketLockException;
@@ -32,15 +35,12 @@ public abstract class RedisCommandsFunctionInvoker {
     this.region = region;
   }
 
-  @SuppressWarnings("unchecked")
-  protected <T> T invoke(String functionId,
-      Object filter,
-      Object... arguments) {
+  protected <T> T invoke(String functionId, Object filter, Object... arguments) {
     do {
       SingleResultCollector<T> resultsCollector = new SingleResultCollector<>();
       try {
-        FunctionService
-            .onRegion(region)
+        Execution<Object[], T, T> execution = uncheckedCast(FunctionService.onRegion(region));
+        execution
             .withFilter(Collections.singleton(filter))
             .setArguments(arguments)
             .withCollector(resultsCollector)
@@ -49,7 +49,6 @@ public abstract class RedisCommandsFunctionInvoker {
         return resultsCollector.getResult();
       } catch (PrimaryBucketLockException ex) {
         // try again
-        continue;
       } catch (FunctionException ex) {
         if (ex.getMessage()
             .equals("Function named " + functionId + " is not registered to FunctionService")) {

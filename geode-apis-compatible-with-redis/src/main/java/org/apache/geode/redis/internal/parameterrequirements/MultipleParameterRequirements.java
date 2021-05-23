@@ -13,24 +13,24 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
-
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_CLUSTER_SUBCOMMAND;
+package org.apache.geode.redis.internal.parameterrequirements;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ClusterParameterRequirements implements ParameterRequirements {
-  @Override
-  public void checkParameters(Command command, ExecutionHandlerContext context) {
-    int numberOfArguments = command.getProcessedCommand().size();
+public class MultipleParameterRequirements implements ParameterRequirements {
+  private final ParameterRequirements parameterRequirements;
+  private final ParameterRequirements moreRequirements;
 
-    if (numberOfArguments < 2) {
-      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
-    } else if (numberOfArguments > 2) {
-      throw new RedisParametersMismatchException(
-          String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, command.getStringKey()));
-    }
+  public MultipleParameterRequirements(
+      ParameterRequirements parameterRequirements, ParameterRequirements moreRequirements) {
+    this.parameterRequirements = parameterRequirements;
+    this.moreRequirements = moreRequirements;
   }
 
+  @Override
+  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
+    this.moreRequirements.checkParameters(command, executionHandlerContext);
+    this.parameterRequirements.checkParameters(command, executionHandlerContext);
+  }
 }

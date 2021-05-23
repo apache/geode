@@ -48,26 +48,21 @@ public class HMsetDUnitTest {
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static JedisCluster jedis;
 
-  private static Properties locatorProperties;
-
-  private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
 
-  private static int redisServerPort;
-
   @BeforeClass
   public static void classSetup() {
-    locatorProperties = new Properties();
+    Properties locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    MemberVM locator = clusterStartUp.startLocatorVM(0, locatorProperties);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
     server3 = clusterStartUp.startRedisVM(3, locator.getPort());
 
-    redisServerPort = clusterStartUp.getRedisPort(1);
+    int redisServerPort = clusterStartUp.getRedisPort(1);
 
     jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
   }
@@ -93,7 +88,7 @@ public class HMsetDUnitTest {
   public void shouldDistributeDataAmongCluster() {
     String key = "key";
 
-    Map<String, String> testMap = makeHashMap(HASH_SIZE, "field-", "value-");
+    Map<String, String> testMap = makeHashMap("field-", "value-");
 
     jedis.hmset(key, testMap);
 
@@ -108,8 +103,8 @@ public class HMsetDUnitTest {
 
     String key = "key";
 
-    Map<String, String> testMap1 = makeHashMap(HASH_SIZE, "field1-", "value1-");
-    Map<String, String> testMap2 = makeHashMap(HASH_SIZE, "field2-", "value2-");
+    Map<String, String> testMap1 = makeHashMap("field1-", "value1-");
+    Map<String, String> testMap2 = makeHashMap("field2-", "value2-");
 
     Map<String, String> wholeMap = new HashMap<>();
     wholeMap.putAll(testMap1);
@@ -134,7 +129,7 @@ public class HMsetDUnitTest {
 
     String key = "key";
 
-    Map<String, String> testMap = makeHashMap(HASH_SIZE, "field-", "value-");
+    Map<String, String> testMap = makeHashMap("field-", "value-");
 
     String[] testMapFields = testMap.keySet().toArray(new String[] {});
 
@@ -155,8 +150,8 @@ public class HMsetDUnitTest {
     String key1 = "key1";
     String key2 = "key2";
 
-    Map<String, String> testMap1 = makeHashMap(HASH_SIZE, "field1-", "value1-");
-    Map<String, String> testMap2 = makeHashMap(HASH_SIZE, "field2-", "value2-");
+    Map<String, String> testMap1 = makeHashMap("field1-", "value1-");
+    Map<String, String> testMap2 = makeHashMap("field2-", "value2-");
 
     String[] testMap1Fields = testMap1.keySet().toArray(new String[] {});
     String[] testMap2Fields = testMap2.keySet().toArray(new String[] {});
@@ -180,7 +175,7 @@ public class HMsetDUnitTest {
 
     String key = "key";
 
-    Map<String, String> testMap = makeHashMap(HASH_SIZE, "field1-", "value1-");
+    Map<String, String> testMap = makeHashMap("field1-", "value1-");
 
     String[] testMapFields = testMap.keySet().toArray(new String[] {});
 
@@ -202,8 +197,8 @@ public class HMsetDUnitTest {
 
     String key = "key1";
 
-    Map<String, String> testMap1 = makeHashMap(HASH_SIZE, "field1-", "value1-");
-    Map<String, String> testMap2 = makeHashMap(HASH_SIZE, "field2-", "value2-");
+    Map<String, String> testMap1 = makeHashMap("field1-", "value1-");
+    Map<String, String> testMap2 = makeHashMap("field2-", "value2-");
 
     Map<String, String> wholeMap = new HashMap<>();
     wholeMap.putAll(testMap1);
@@ -227,20 +222,17 @@ public class HMsetDUnitTest {
 
   private Consumer<Integer> makeHMSetConsumer(Map<String, String> testMap, String[] fields,
       String hashKey, JedisCluster jedis) {
-    Consumer<Integer> consumer = (i) -> {
+    return (i) -> {
       String field = fields[i];
       Map<String, String> mapToAdd = new HashMap<>();
       mapToAdd.put(field, testMap.get(field));
       jedis.hmset(hashKey, mapToAdd);
     };
-
-    return consumer;
   }
 
-  private Map<String, String> makeHashMap(int hashSize, String baseFieldName,
-      String baseValueName) {
+  private Map<String, String> makeHashMap(String baseFieldName, String baseValueName) {
     Map<String, String> map = new HashMap<>();
-    for (int i = 0; i < hashSize; i++) {
+    for (int i = 0; i < HASH_SIZE; i++) {
       map.put(baseFieldName + i, baseValueName + i);
     }
     return map;

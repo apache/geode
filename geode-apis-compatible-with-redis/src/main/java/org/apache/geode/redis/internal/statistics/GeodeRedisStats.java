@@ -68,7 +68,7 @@ public class GeodeRedisStats {
     fillListWithCommandDescriptors(statisticsTypeFactory, descriptorList);
 
     StatisticDescriptor[] descriptorArray =
-        descriptorList.toArray(new StatisticDescriptor[descriptorList.size()]);
+        descriptorList.toArray(new StatisticDescriptor[0]);
 
     type = statisticsTypeFactory
         .createType("statsForServerCompatibleWithRedis",

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.github.dockerjava.api.model.ContainerNetwork;
 import org.apache.logging.log4j.Logger;
@@ -31,6 +32,7 @@ import org.junit.rules.ExternalResource;
 import org.junit.rules.RuleChain;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 import redis.clients.jedis.Jedis;
 
@@ -45,6 +47,7 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
   private static final Logger logger = LogService.getLogger();
   private static final String REDIS_COMPOSE_YML = "/redis-cluster-compose.yml";
   private static final int NODE_COUNT = 6;
+  private static final long serialVersionUID = -6196732246694049359L;
 
   private DockerComposeContainer<?> redisCluster;
   private final RuleChain delegate;
@@ -100,20 +103,23 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
         List<RedisProxy> proxies = new ArrayList<>();
 
         for (int i = 0; i < NODE_COUNT; i++) {
-          Map<String, ContainerNetwork> networks =
-              redisCluster.getContainerByServiceName("redis-node-" + i + "_1").get()
-                  .getContainerInfo().getNetworkSettings().getNetworks();
-          ContainerNetwork network = networks.values().iterator().next();
-          String containerIp = network.getIpAddress();
-          int socatPort = redisCluster.getServicePort("redis-node-" + i, REDIS_PORT);
+          Optional<ContainerState> optionalContainerState =
+              redisCluster.getContainerByServiceName("redis-node-" + i + "_1");
+          if (optionalContainerState.isPresent()) {
+            Map<String, ContainerNetwork> networks =
+                optionalContainerState.get().getContainerInfo().getNetworkSettings().getNetworks();
+            ContainerNetwork network = networks.values().iterator().next();
+            String containerIp = network.getIpAddress();
+            int socatPort = redisCluster.getServicePort("redis-node-" + i, REDIS_PORT);
 
-          RedisProxy proxy = new RedisProxy(socatPort);
-          Integer exposedPort = proxy.getExposedPort();
-          exposedPorts.add(exposedPort);
-          translationMappings.put(new HostPort(containerIp, REDIS_PORT),
-              new HostPort("127.0.0.1", exposedPort));
+            RedisProxy proxy = new RedisProxy(socatPort);
+            Integer exposedPort = proxy.getExposedPort();
+            exposedPorts.add(exposedPort);
+            translationMappings.put(new HostPort(containerIp, REDIS_PORT),
+                new HostPort("127.0.0.1", exposedPort));
 
-          proxies.add(proxy);
+            proxies.add(proxy);
+          }
         }
 
         proxies.forEach(p -> p.configure(translationMappings));

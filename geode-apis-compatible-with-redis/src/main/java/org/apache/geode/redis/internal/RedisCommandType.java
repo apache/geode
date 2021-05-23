@@ -20,16 +20,6 @@ import static org.apache.geode.redis.internal.RedisCommandSupportLevel.SUPPORTED
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.UNSUPPORTED;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
-import org.apache.geode.redis.internal.ParameterRequirements.ClusterParameterRequirements;
-import org.apache.geode.redis.internal.ParameterRequirements.EvenParameterRequirements;
-import org.apache.geode.redis.internal.ParameterRequirements.ExactParameterRequirements;
-import org.apache.geode.redis.internal.ParameterRequirements.MaximumParameterRequirements;
-import org.apache.geode.redis.internal.ParameterRequirements.MinimumParameterRequirements;
-import org.apache.geode.redis.internal.ParameterRequirements.OddParameterRequirements;
-import org.apache.geode.redis.internal.ParameterRequirements.ParameterRequirements;
-import org.apache.geode.redis.internal.ParameterRequirements.SlowlogParameterRequirements;
-import org.apache.geode.redis.internal.ParameterRequirements.SpopParameterRequirements;
-import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParameterRequirements;
 import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
@@ -118,6 +108,16 @@ import org.apache.geode.redis.internal.executor.string.SetRangeExecutor;
 import org.apache.geode.redis.internal.executor.string.StrlenExecutor;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.parameterrequirements.ClusterParameterRequirements;
+import org.apache.geode.redis.internal.parameterrequirements.EvenParameterRequirements;
+import org.apache.geode.redis.internal.parameterrequirements.ExactParameterRequirements;
+import org.apache.geode.redis.internal.parameterrequirements.MaximumParameterRequirements;
+import org.apache.geode.redis.internal.parameterrequirements.MinimumParameterRequirements;
+import org.apache.geode.redis.internal.parameterrequirements.OddParameterRequirements;
+import org.apache.geode.redis.internal.parameterrequirements.ParameterRequirements;
+import org.apache.geode.redis.internal.parameterrequirements.SlowlogParameterRequirements;
+import org.apache.geode.redis.internal.parameterrequirements.SpopParameterRequirements;
+import org.apache.geode.redis.internal.parameterrequirements.UnspecifiedParameterRequirements;
 
 /**
  * The redis command type used by the server. Each command is directly from the redis protocol.

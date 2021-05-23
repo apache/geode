@@ -48,27 +48,22 @@ public class SaddDUnitTest {
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static JedisCluster jedis;
 
-  private static Properties locatorProperties;
-
-  private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
 
-  private static int redisServerPort;
-
 
   @BeforeClass
   public static void classSetup() {
-    locatorProperties = new Properties();
+    Properties locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    MemberVM locator = clusterStartUp.startLocatorVM(0, locatorProperties);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
     server3 = clusterStartUp.startRedisVM(3, locator.getPort());
 
-    redisServerPort = clusterStartUp.getRedisPort(1);
+    int redisServerPort = clusterStartUp.getRedisPort(1);
 
     jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
   }
@@ -94,7 +89,7 @@ public class SaddDUnitTest {
   public void shouldDistributeDataAmongCluster() {
     String key = "key";
 
-    List<String> members = makeMemberList(SET_SIZE, "member1-");
+    List<String> members = makeMemberList("member1-");
 
     jedis.sadd(key, members.toArray(new String[] {}));
 
@@ -108,8 +103,8 @@ public class SaddDUnitTest {
   public void shouldDistributeDataAmongCluster_givenConcurrentlyAddingDifferentDataToSameSet() {
     String key = "key";
 
-    List<String> members1 = makeMemberList(SET_SIZE, "member1-");
-    List<String> members2 = makeMemberList(SET_SIZE, "member2-");
+    List<String> members1 = makeMemberList("member1-");
+    List<String> members2 = makeMemberList("member2-");
 
     List<String> allMembers = new ArrayList<>();
     allMembers.addAll(members1);
@@ -130,7 +125,7 @@ public class SaddDUnitTest {
 
     String key = "key";
 
-    List<String> members = makeMemberList(SET_SIZE, "member-");
+    List<String> members = makeMemberList("member-");
 
     new ConcurrentLoopingThreads(SET_SIZE,
         (i) -> jedis.sadd(key, members.get(i)),
@@ -148,8 +143,8 @@ public class SaddDUnitTest {
     String key1 = "key1";
     String key2 = "key2";
 
-    List<String> members1 = makeMemberList(SET_SIZE, "member1-");
-    List<String> members2 = makeMemberList(SET_SIZE, "member2-");
+    List<String> members1 = makeMemberList("member1-");
+    List<String> members2 = makeMemberList("member2-");
 
     new ConcurrentLoopingThreads(SET_SIZE,
         (i) -> jedis.sadd(key1, members1.get(i)),
@@ -164,9 +159,9 @@ public class SaddDUnitTest {
   }
 
 
-  private List<String> makeMemberList(int setSize, String baseString) {
+  private List<String> makeMemberList(String baseString) {
     List<String> members = new ArrayList<>();
-    for (int i = 0; i < setSize; i++) {
+    for (int i = 0; i < SET_SIZE; i++) {
       members.add(baseString + i);
     }
     return members;

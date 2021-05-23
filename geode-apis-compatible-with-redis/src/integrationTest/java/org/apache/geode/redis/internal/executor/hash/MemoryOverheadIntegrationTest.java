@@ -36,7 +36,7 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class MemoryOverheadIntegrationTest extends AbstractMemoryOverheadIntegrationTest {
-  protected static ObjectGraphSizer.ObjectFilter filter = new SkipBrokenClassesFilter();
+  protected static final ObjectGraphSizer.ObjectFilter filter = new SkipBrokenClassesFilter();
 
   @Rule
   public GeodeRedisServerRule server = new GeodeRedisServerRule()
