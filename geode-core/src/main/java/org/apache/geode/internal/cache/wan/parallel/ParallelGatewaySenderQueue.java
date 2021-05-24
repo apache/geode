@@ -778,13 +778,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
                     key, value);
               }
               // does not put onto the queue
-            } else if (!prQ.getColocatedWithRegion().getRegionAdvisor().getBucketOwners(bucketId)
-                .contains(prQ.getCache().getMyId())) {
-              if (isDebugEnabled) {
-                logger.debug(
-                    "ParallelGatewaySenderOrderedQueue not putting key {} : Value : {} as bucket is not hosted locally.",
-                    key, value);
-              }
             } else {
               /*
                * This is to prevent data loss, in the scenario when bucket is not available in the
