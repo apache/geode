@@ -25,8 +25,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
@@ -36,7 +34,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class QueryWithIndexesDUnitTest {
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule(5);
+  public ClusterStartupRule cluster = new ClusterStartupRule(2);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -45,7 +43,7 @@ public class QueryWithIndexesDUnitTest {
 
   @Before
   public void setUpServers() throws Exception {
-    locator = cluster.startLocatorVM(0, l -> l.withoutClusterConfigurationService());
+    locator = cluster.startLocatorVM(0);
     server = cluster.startServerVM(1, locator.getPort());
 
     gfsh.connectAndVerify(locator);
@@ -66,23 +64,18 @@ public class QueryWithIndexesDUnitTest {
       populateRegion(0, 500);
     });
 
-    locator.invoke(() -> {
-      String query = "query --query=\"<trace> select value from" +
-          SEPARATOR + "exampleRegion.entrySet where value.ID >= 0 AND value.ID < 500 " +
-          "AND (value.status = 'active' or value.status = 'inactive')\"";
+    String query = "query --query=\"<trace> select value from" +
+        SEPARATOR + "exampleRegion.entrySet where value.ID >= 0 AND value.ID < 500 " +
+        "AND (value.status = 'active' or value.status = 'inactive')\"";
 
-      ManagementService service =
-          ManagementService.getExistingManagementService(ClusterStartupRule.getCache());
-      MemberMXBean member = service.getMemberMXBean();
-      String cmdResult = member.processCommand(query);
-
-      assertThat(cmdResult).contains("\"Rows\":\"100\"");
-      assertThat(cmdResult).contains("indexesUsed(2)");
-    });
+    String cmdResult = String.valueOf(gfsh.executeAndAssertThat(query).getResultModel());
+    assertThat(cmdResult).contains("\"Rows\":\"100\"");
+    assertThat(cmdResult).contains("indexesUsed(2)");
   }
 
   private static void populateRegion(int startingId, int endingId) {
-    Region exampleRegion = ClusterStartupRule.getCache().getRegion("exampleRegion");
+    Region<String, Portfolio> exampleRegion =
+        ClusterStartupRule.getCache().getRegion("exampleRegion");
     for (int i = startingId; i < endingId; i++) {
       exampleRegion.put("" + i, new Portfolio(i));
     }
