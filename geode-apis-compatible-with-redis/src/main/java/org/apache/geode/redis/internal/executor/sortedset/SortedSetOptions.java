@@ -27,6 +27,8 @@ public class SortedSetOptions extends BaseSetOptions {
     super(existsOption);
   }
 
+  public SortedSetOptions() {}
+
   @Override
   public int getDSFID() {
     return REDIS_SORTED_SET_OPTIONS_ID;
