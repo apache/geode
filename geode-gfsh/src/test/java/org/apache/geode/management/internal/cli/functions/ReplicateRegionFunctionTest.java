@@ -15,18 +15,43 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.client.internal.pooling.PooledConnection;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.BatchException70;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class ReplicateRegionFunctionTest {
 
@@ -35,12 +60,31 @@ public class ReplicateRegionFunctionTest {
   private final int entries = 25;
   private Clock clockMock;
   private ReplicateRegionFunction.ThreadSleeper threadSleeperMock;
+  private InternalCache internalCacheMock;
+  private GatewaySender gatewaySenderMock;
+  private PoolImpl poolMock;
+  private Connection connectionMock;
+  private GatewaySenderEventDispatcher dispatcherMock;
+
+  @SuppressWarnings("unchecked")
+  private FunctionContext<Object[]> contextMock = mock(FunctionContext.class);
+
+  @SuppressWarnings("unchecked")
+  private Region<Object, Object> regionMock = mock(InternalRegion.class);
+
+  @SuppressWarnings("unchecked")
+  private Region.Entry<String, String> entryMock = mock(Region.Entry.class);
 
   @Before
   public void setUp() throws InterruptedException {
     clockMock = mock(Clock.class);
     threadSleeperMock = mock(ReplicateRegionFunction.ThreadSleeper.class);
     doNothing().when(threadSleeperMock).millis(anyLong());
+    internalCacheMock = mock(InternalCache.class);
+    gatewaySenderMock = mock(AbstractGatewaySender.class, RETURNS_DEEP_STUBS);
+    poolMock = mock(PoolImpl.class);
+    connectionMock = mock(PooledConnection.class);
+    dispatcherMock = mock(GatewaySenderEventDispatcher.class);
     rrf = new ReplicateRegionFunction();
     rrf.setClock(clockMock);
     rrf.setThreadSleeper(threadSleeperMock);
@@ -120,4 +164,100 @@ public class ReplicateRegionFunctionTest {
             .isInstanceOf(InterruptedException.class);
   }
 
+  @Test
+  public void executeFunction_verifyOutputWhenRegionNotFound() {
+    Object[] options = new Object[] {"myRegion", "mySender", false, 1L, 10};
+    when(internalCacheMock.getRegion(any())).thenReturn(null);
+    when(contextMock.getArguments()).thenReturn(options);
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+    CliFunctionResult result = rrf.executeFunction(contextMock);
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
+    assertThat(result.getStatusMessage()).isEqualTo("Region myRegion not found");
+  }
+
+  @Test
+  public void executeFunction_verifyOutputWhenSenderNotFound() {
+    Object[] options = new Object[] {"myRegion", "mySender", false, 1L, 10};
+    when(internalCacheMock.getRegion(any())).thenReturn(regionMock);
+    when(internalCacheMock.getGatewaySender(any())).thenReturn(null);
+    when(contextMock.getArguments()).thenReturn(options);
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+    CliFunctionResult result = rrf.executeFunction(contextMock);
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
+    assertThat(result.getStatusMessage()).isEqualTo("Sender mySender not found");
+  }
+
+  @Test
+  public void executeFunction_verifyOutputWhenSenderIsNotRunning() {
+    Object[] options = new Object[] {"myRegion", "mySender", false, 1L, 10};
+    when(gatewaySenderMock.isRunning()).thenReturn(false);
+    when(internalCacheMock.getRegion(any())).thenReturn(regionMock);
+    when(internalCacheMock.getGatewaySender(any())).thenReturn(gatewaySenderMock);
+    when(contextMock.getArguments()).thenReturn(options);
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+    CliFunctionResult result = rrf.executeFunction(contextMock);
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
+    assertThat(result.getStatusMessage()).isEqualTo("Sender mySender is not running");
+  }
+
+  @Test
+  public void executeFunction_verifyOutputWhenSenderIsSerialAndSenderIsNotPrimary() {
+    Object[] options = new Object[] {"myRegion", "mySender", false, 1L, 10};
+    when(gatewaySenderMock.isRunning()).thenReturn(true);
+    when(gatewaySenderMock.isParallel()).thenReturn(false);
+    when(((InternalGatewaySender) gatewaySenderMock).isPrimary()).thenReturn(false);
+    when(internalCacheMock.getRegion(any())).thenReturn(regionMock);
+    when(internalCacheMock.getGatewaySender(any())).thenReturn(gatewaySenderMock);
+    when(contextMock.getArguments()).thenReturn(options);
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+    CliFunctionResult result = rrf.executeFunction(contextMock);
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
+    assertThat(result.getStatusMessage())
+        .isEqualTo("Sender mySender is serial and not primary. 0 entries replicated.");
+  }
+
+  @Test
+  public void replicateRegion_verifyOutputWhenNoPoolAvailable() {
+    when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(null);
+    CliFunctionResult result =
+        rrf.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
+    assertThat(result.getStatusMessage())
+        .isEqualTo("No connection pool available towards receiver");
+  }
+
+  @Test
+  public void replicateRegion_verifyOutputWhenNoConnectionAvailable() {
+    when(poolMock.acquireConnection()).thenReturn(null);
+    when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
+    CliFunctionResult result =
+        rrf.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
+    assertThat(result.getStatusMessage()).isEqualTo("No connection available towards receiver");
+  }
+
+  @Test
+  public void replicateRegion_verifyOutputWhenExceptionWhileSendingBatch() throws BatchException70 {
+
+    ReplicateRegionFunction rrfSpy = spy(rrf);
+    BatchException70 exceptionWhenSendingBatch =
+        new BatchException70("My batch exception", new Exception(), 0, 0);
+    when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
+    when(poolMock.acquireConnection()).thenReturn(connectionMock);
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
+        .thenReturn(dispatcherMock);
+    Set<Region.Entry<String, String>> entries = new HashSet<Region.Entry<String, String>>();
+    entries.add(entryMock);
+    doReturn(entries).when(regionMock).entrySet();
+    doReturn(new ArrayList<>()).when(rrfSpy).createBatch(any(), any(), anyInt(), any(), any());
+    doThrow(exceptionWhenSendingBatch).when(dispatcherMock).sendBatch(anyList(), any(), any(),
+        anyInt());
+
+    CliFunctionResult result =
+        rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
+    assertThat(result.getStatusMessage())
+        .isEqualTo("Error (My batch exception) in operation after having replicated 0 entries");
+  }
 }

@@ -240,7 +240,8 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
           .containsExactlyInAnyOrder(msg1, msg1, msg2);
     } else {
       String msg1 = CliStrings.format(CliStrings.REPLICATE_REGION__MSG__REPLICATED__ENTRIES, 100);
-      String msg2 = CliStrings.REPLICATE_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY;
+      String msg2 = CliStrings
+          .format(CliStrings.REPLICATE_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY, senderIdInA);
       replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
           .containsExactlyInAnyOrder(msg1, msg2, msg2);
     }
@@ -460,7 +461,8 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
       String msg1 =
           CliStrings.format(CliStrings.REPLICATE_REGION__MSG__CANCELED__AFTER__HAVING__REPLICATED,
               replicateRegionBatchSize);
-      String msg2 = CliStrings.REPLICATE_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY;
+      String msg2 = CliStrings
+          .format(CliStrings.REPLICATE_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY, senderIdInA);
       replicateCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
           .containsExactlyInAnyOrder(msg1, msg2, msg2);
     }
