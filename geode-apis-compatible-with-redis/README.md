@@ -4,7 +4,7 @@ Note: This feature is experimental and is subject to change in future releases o
 
 1. [Introduction](#introduction)  
 2. [How To Try It](#how-to-try-it)  
-    i. [Starting a Geode Server with APIs Compatible with Redis Enabled](#starting-a-server)  
+    i. [Starting a Geode Server Compatible with Redis Enabled](#starting-a-server)  
     ii. [Adding an Additional Geode Server Compatible with Redis](#adding-a-server)  
     iii. [Shutting Down](#shutting-down)  
 3. [Redis Commands](#redis-commands)
@@ -60,7 +60,7 @@ If the server is functioning properly, you should see a response of `PONG`.
 
 [Return to top](#top)
 
-### <a name="adding-a-server"></a>Optional - Adding an additional Geode server with APIs Enabled
+### <a name="adding-a-server"></a>Optional - Adding an Additional Geode Server Compatible with Redis
 If you’re interested in testing Geode scalability, in gfsh run the `start server` command again BUT 
 make sure you change the `--name=` and `--redis-port=` parameters. 
 
