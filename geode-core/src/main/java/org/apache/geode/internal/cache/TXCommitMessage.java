@@ -127,6 +127,8 @@ public class TXCommitMessage extends PooledDistributionMessage
    */
   private transient boolean hasReliableRegions = false;
 
+  public transient Set<InternalDistributedMember> notificationOnlyMembers;
+
   /**
    * Set of all caching exceptions produced while processing this tx
    */
@@ -391,9 +393,16 @@ public class TXCommitMessage extends PooledDistributionMessage
                 setRecipientsSendData(Collections.singleton(indivRecip.next()), processor, rcl);
               }
             } else {
-              // Run in normal mode sending to multiple recipients in
-              // one shot
-              setRecipientsSendData(recipients, processor, rcl);
+              if (this.notificationOnlyMembers.isEmpty()) {
+                // Run in normal mode sending to multiple recipients in one shot
+                setRecipientsSendData(recipients, processor, rcl);
+              } else {
+                recipients.removeAll(this.notificationOnlyMembers);
+                setRecipientsSendData(recipients, processor, rcl);
+
+                this.txState.setTailKeyOnEntries(-1L);
+                setRecipientsSendData(notificationOnlyMembers, processor, rcl);
+              }
             }
           }
         }

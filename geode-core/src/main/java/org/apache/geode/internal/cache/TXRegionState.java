@@ -322,11 +322,13 @@ public class TXRegionState {
         msg.startRegion(r, entryMods.size());
         Iterator it = this.entryMods.entrySet().iterator();
         Set<InternalDistributedMember> newMemberSet = new HashSet<InternalDistributedMember>();
+        Set<InternalDistributedMember> secondaryMemberSet = new HashSet<>();
 
         if (r.getScope().isDistributed()) {
           DistributedRegion dr = (DistributedRegion) r;
           msg.addViewVersion(dr, dr.getDistributionAdvisor().startOperation());
           newMemberSet.addAll(dr.getCacheDistributionAdvisor().adviseTX());
+          secondaryMemberSet.addAll(newMemberSet);
         }
 
         while (it.hasNext()) {
@@ -339,11 +341,13 @@ public class TXRegionState {
           }
           if (txes.getAdjunctRecipients() != null) {
             newMemberSet.addAll(txes.getAdjunctRecipients());
+            msg.notificationOnlyMembers = txes.getAdjunctRecipients();
           }
-
         }
 
-
+        if (!msg.notificationOnlyMembers.isEmpty()) {
+          msg.notificationOnlyMembers.removeAll(secondaryMemberSet);
+        }
 
         if (!newMemberSet.equals(this.otherMembers)) {
           // r.getCache().getLogger().info("DEBUG: participants list has changed! bug 32999.");
