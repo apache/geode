@@ -274,7 +274,9 @@ public class SampleCollector {
     }
 
     for (ResourceInstance ri : updatedResources) {
-      ri.setPreviousStatValues(ri.getLatestStatValues());
+      if (ri.getStatValuesNotified()) {
+        ri.setPreviousStatValues(ri.getLatestStatValues());
+      }
     }
   }
 

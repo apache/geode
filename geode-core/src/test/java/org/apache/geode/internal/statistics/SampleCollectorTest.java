@@ -210,7 +210,7 @@ public class SampleCollectorTest {
     ResourceInstance resourceInstance = allocatedResourceInstanceInfo.getResourceInstance();
     assertNotNull(resourceInstance);
     assertEquals(0, resourceInstance.getId());
-    assertEquals(0, resourceInstance.getUpdatedStats().length);
+    assertEquals(1, resourceInstance.getUpdatedStats().length);
     assertEquals(1, resourceInstance.getLatestStatValues().length); // TODO: is this correct?
     Statistics statistics = resourceInstance.getStatistics();
     assertNotNull(statistics);

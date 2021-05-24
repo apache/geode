@@ -98,6 +98,7 @@ public class ValueMonitor extends StatisticsMonitor {
         if (this.statistics.contains(resource.getStatistics())) {
           ResourceType resourceType = resource.getResourceType();
           StatisticDescriptor[] sds = resourceType.getStatisticDescriptors();
+          resource.setStatValuesNotified(true);
           int[] updatedStats = resource.getUpdatedStats();
           for (int i = 0; i < updatedStats.length; i++) {
             int idx = updatedStats[i];
