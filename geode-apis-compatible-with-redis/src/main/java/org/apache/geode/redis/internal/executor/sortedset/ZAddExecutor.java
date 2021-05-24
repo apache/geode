@@ -25,53 +25,64 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ZAddExecutor extends SortedSetExecutor {
+  private boolean nxFound, xxFound;
+
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+    nxFound = false;
+    xxFound = false;
     RedisSortedSetCommands redisSortedSetCommands = context.getRedisSortedSetCommands();
-
     List<byte[]> commandElements = command.getProcessedCommand();
-
-    List<byte[]> scoresAndMembersToAdd = new ArrayList<>();
     Iterator<byte[]> commandIterator = commandElements.iterator();
-    boolean adding = false;
-    boolean nxFound = false, xxFound = false;
-    int count = 0;
 
-    while (commandIterator.hasNext()) {
-      byte[] next = commandIterator.next();
-      if (count < 2) { // Skip past command, key
-        count++;
-        continue;
-      } else {
-        String subCommandString = Coder.bytesToString(next).toLowerCase();
-        try {
-          Double.valueOf(subCommandString);
-          adding = true;
-        } catch (NumberFormatException nfe) {
-          switch (subCommandString) {
-            case "ch":
-              break;
-            case "incr":
-              break;
-            case "nx":
-              nxFound = true;
-              break;
-            case "xx":
-              xxFound = true;
-              break;
-            default:
-          }
-        }
-      }
-      if (adding) {
-        scoresAndMembersToAdd.add(next);
-        byte[] member = commandIterator.next();
-        scoresAndMembersToAdd.add(member);
-      }
-    }
+    SkipCommandAndKey(commandIterator);
+
+    byte[] firstScore = FindZAddOptions(commandIterator);
+
+    List<byte[]> scoresAndMembersToAdd = GetScoresAndMembers(firstScore, commandIterator);
+
     return RedisResponse
         .integer(redisSortedSetCommands.zadd(command.getKey(), scoresAndMembersToAdd,
             makeOptions(nxFound, xxFound)));
+  }
+
+  private void SkipCommandAndKey(Iterator<byte[]> commandIterator) {
+    commandIterator.next();
+    commandIterator.next();
+  }
+
+  private byte[] FindZAddOptions(Iterator<byte[]> commandIterator) {
+    boolean scoreFound = false;
+    byte[] next = "".getBytes();
+
+    while (commandIterator.hasNext() && !scoreFound) {
+      next = commandIterator.next();
+      String subCommandString = Coder.bytesToString(next).toLowerCase();
+      switch (subCommandString) {
+        case "ch":
+          break;
+        case "incr":
+          break;
+        case "nx":
+          nxFound = true;
+          break;
+        case "xx":
+          xxFound = true;
+          break;
+        default:
+          scoreFound = true;
+      }
+    }
+    return next;
+  }
+
+  private List<byte[]> GetScoresAndMembers(byte[] firstScore, Iterator<byte[]> commandIterator) {
+    List<byte[]> scoresAndMembersToAdd = new ArrayList<>();
+    scoresAndMembersToAdd.add(firstScore);
+    while (commandIterator.hasNext()) {
+      scoresAndMembersToAdd.add(commandIterator.next());
+    }
+    return scoresAndMembersToAdd;
   }
 
   private ZAddOptions makeOptions(boolean nxFound, boolean xxFound) {
