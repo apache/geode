@@ -4,7 +4,7 @@ Note: This feature is experimental and is subject to change in future releases o
 
 1. [Introduction](#introduction)  
 2. [How To Try It](#how-to-try-it)  
-    i. [Starting a Geode Server Compatible with Redis Enabled](#starting-a-server)  
+    i. [Starting a Geode Server Compatible with Redis](#starting-a-server)  
     ii. [Adding an Additional Geode Server Compatible with Redis](#adding-a-server)  
     iii. [Shutting Down](#shutting-down)  
 3. [Redis Commands](#redis-commands)
