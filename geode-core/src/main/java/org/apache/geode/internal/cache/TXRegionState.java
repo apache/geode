@@ -341,12 +341,12 @@ public class TXRegionState {
           }
           if (txes.getAdjunctRecipients() != null) {
             newMemberSet.addAll(txes.getAdjunctRecipients());
-            msg.notificationOnlyMembers = txes.getAdjunctRecipients();
+            msg.setNotificationOnlyMembers(txes.getAdjunctRecipients());
           }
         }
 
-        if (!msg.notificationOnlyMembers.isEmpty()) {
-          msg.notificationOnlyMembers.removeAll(secondaryMemberSet);
+        if (!msg.getNotificationOnlyMembers().isEmpty()) {
+          msg.getNotificationOnlyMembers().removeAll(secondaryMemberSet);
         }
 
         if (!newMemberSet.equals(this.otherMembers)) {
