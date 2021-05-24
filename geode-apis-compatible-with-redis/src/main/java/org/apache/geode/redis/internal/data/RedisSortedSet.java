@@ -184,10 +184,10 @@ public class RedisSortedSet extends AbstractRedisData {
    */
   long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
       ZAddOptions options) {
-    int membersAdded = 0;
-    int initialSize = getSortedSetSize();
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
+
+    int initialSize = getSortedSetSize();
 
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
@@ -199,10 +199,7 @@ public class RedisSortedSet extends AbstractRedisData {
       if (options.isXX() && !members.containsKey(member)) {
         continue;
       }
-      boolean isNewMember = (memberAdd(member, score) == null);
-      if (isNewMember) {
-        membersAdded++;
-      }
+      memberAdd(member, score);
 
       if (deltaInfo == null) {
         deltaInfo = new AddsDeltaInfo(new ArrayList<>());
@@ -210,6 +207,7 @@ public class RedisSortedSet extends AbstractRedisData {
       deltaInfo.add(member);
       deltaInfo.add(score);
     }
+
     storeChanges(region, key, deltaInfo);
     return getSortedSetSize() - initialSize;
   }
