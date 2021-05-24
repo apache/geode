@@ -90,7 +90,7 @@ public class ZAddExecutor extends SortedSetExecutor {
     if ((command.getProcessedCommand().size() - executorState.optionsFoundCount - 2) % 2 != 0) {
       executorState.exceptionMessage = ERROR_SYNTAX;
     } else if (executorState.nxFound && executorState.xxFound) {
-      zAddExecutorState.exceptionMessage = ERROR_INVALID_ZADD_OPTION_NX_XX;
+      executorState.exceptionMessage = ERROR_INVALID_ZADD_OPTION_NX_XX;
     }
     return next;
   }
