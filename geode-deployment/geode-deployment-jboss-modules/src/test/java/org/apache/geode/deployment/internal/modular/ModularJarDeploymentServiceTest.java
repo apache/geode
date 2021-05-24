@@ -43,13 +43,12 @@ public class ModularJarDeploymentServiceTest {
   private static File myJar1;
   private static File myJar2;
 
-  private static final JarBuilder jarBuilder = new JarBuilder();
-
   @ClassRule
   public static TemporaryFolder stagingTempDir = new TemporaryFolder();
 
   @BeforeClass
   public static void setup() throws IOException {
+    JarBuilder jarBuilder = new JarBuilder();
     myJar1 = new File(stagingTempDir.newFolder(), "myJar1.jar");
     myJar2 = new File(stagingTempDir.newFolder(), "myJar2.jar");
     jarBuilder.buildJarFromClassNames(myJar1, "Class1");

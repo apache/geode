@@ -35,7 +35,6 @@ import org.apache.geode.test.compiler.JarBuilder;
 
 public class GeodeJBossDeploymentServiceTest {
 
-  private static final JarBuilder jarBuilder = new JarBuilder();
   @ClassRule
   public static TemporaryFolder stagingTempDir = new TemporaryFolder();
   private static GeodeJBossDeploymentService geodeJBossDeploymentService;
@@ -43,6 +42,7 @@ public class GeodeJBossDeploymentServiceTest {
 
   @BeforeClass
   public static void setup() throws IOException {
+    JarBuilder jarBuilder = new JarBuilder();
     GeodeModuleLoader geodeModuleLoader = mock(GeodeModuleLoader.class);
     geodeJBossDeploymentService = new GeodeJBossDeploymentService(geodeModuleLoader);
     myJar = new File(stagingTempDir.newFolder(), "myJar.jar");

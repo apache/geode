@@ -32,7 +32,7 @@ import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
-  private static final JarBuilder jarBuilder = new JarBuilder();
+  private static JarBuilder jarBuilder;
   private static File myJarV1;
   private static File myJarV2;
   private static File anotherJarFile;
@@ -46,6 +46,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
   @BeforeClass
   public static void setup() throws IOException {
+    jarBuilder = new JarBuilder();
     File stagingDir = stagingTempDir.newFolder("staging");
     myJarV1 = new File(stagingDir, "myJar-1.0.jar");
     myJarV2 = new File(stagingDir, "myJar-2.0.jar");
