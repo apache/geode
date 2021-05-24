@@ -127,7 +127,10 @@ public class TXCommitMessage extends PooledDistributionMessage
    */
   private transient boolean hasReliableRegions = false;
 
-  public transient Set<InternalDistributedMember> notificationOnlyMembers;
+  /**
+   * Member that requires notification only message.
+   */
+  private transient Set<InternalDistributedMember> notificationOnlyMembers = Collections.emptySet();
 
   /**
    * Set of all caching exceptions produced while processing this tx
@@ -196,6 +199,14 @@ public class TXCommitMessage extends PooledDistributionMessage
   protected EventID getEventId(int eventOffset) {
     return new EventID(this.farsideBaseMembershipId, this.farsideBaseThreadId,
         this.farsideBaseSequenceId + eventOffset);
+  }
+
+  public void setNotificationOnlyMembers(Set<InternalDistributedMember> members) {
+    this.notificationOnlyMembers = members;
+  }
+
+  public Set<InternalDistributedMember> getNotificationOnlyMembers() {
+    return this.notificationOnlyMembers;
   }
 
   /**
