@@ -30,7 +30,6 @@ import org.apache.geode.redis.internal.ParameterRequirements.ParameterRequiremen
 import org.apache.geode.redis.internal.ParameterRequirements.SlowlogParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.SpopParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParameterRequirements;
-import org.apache.geode.redis.internal.ParameterRequirements.ZAddParameterRequirements;
 import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
@@ -195,8 +194,7 @@ public enum RedisCommandType {
 
   /************ Sorted Sets **************/
 
-  ZADD(new ZAddExecutor(), SUPPORTED, new ZAddParameterRequirements()
-      .and(new MinimumParameterRequirements(4))),
+  ZADD(new ZAddExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
   ZSCORE(new ZScoreExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
 
   /************* Server *****************/
