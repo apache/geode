@@ -833,7 +833,7 @@ public class MemoryIndexStore implements IndexStore {
     }
   }
 
-  class CachedEntryWrapper {
+  public class CachedEntryWrapper {
 
     private Object key, value;
 
