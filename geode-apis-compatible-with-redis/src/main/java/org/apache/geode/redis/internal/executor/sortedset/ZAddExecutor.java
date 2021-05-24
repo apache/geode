@@ -38,14 +38,14 @@ public class ZAddExecutor extends SortedSetExecutor {
     List<byte[]> commandElements = command.getProcessedCommand();
     Iterator<byte[]> commandIterator = commandElements.iterator();
 
-    SkipCommandAndKey(commandIterator);
+    skipCommandAndKey(commandIterator);
 
-    byte[] firstScore = FindAndValidateZAddOptions(command, commandIterator, zAddExecutorState);
+    byte[] firstScore = findAndValidateZAddOptions(command, commandIterator, zAddExecutorState);
     if (zAddExecutorState.exceptionMessage != null) {
       return RedisResponse.error(zAddExecutorState.exceptionMessage);
     }
 
-    List<byte[]> scoresAndMembersToAdd = GetScoresAndMembers(firstScore, commandIterator,
+    List<byte[]> scoresAndMembersToAdd = getScoresAndMembers(firstScore, commandIterator,
         zAddExecutorState);
     if (zAddExecutorState.exceptionMessage != null) {
       return RedisResponse.error(zAddExecutorState.exceptionMessage);
@@ -56,13 +56,13 @@ public class ZAddExecutor extends SortedSetExecutor {
             makeOptions(zAddExecutorState)));
   }
 
-  private void SkipCommandAndKey(Iterator<byte[]> commandIterator) {
+  private void skipCommandAndKey(Iterator<byte[]> commandIterator) {
     commandIterator.next();
     commandIterator.next();
   }
 
-  private byte[] FindAndValidateZAddOptions(Command command, Iterator<byte[]> commandIterator,
-      ZAddExecutorState executorState) {
+  private byte[] findAndValidateZAddOptions(Command command, Iterator<byte[]> commandIterator,
+                                            ZAddExecutorState executorState) {
     boolean scoreFound = false;
     byte[] next = new byte[0];
 
@@ -95,8 +95,8 @@ public class ZAddExecutor extends SortedSetExecutor {
     return next;
   }
 
-  private List<byte[]> GetScoresAndMembers(byte[] firstScore, Iterator<byte[]> commandIterator,
-      ZAddExecutorState executorState) {
+  private List<byte[]> getScoresAndMembers(byte[] firstScore, Iterator<byte[]> commandIterator,
+                                           ZAddExecutorState executorState) {
     List<byte[]> scoresAndMembersToAdd = new ArrayList<>();
 
     // Already validated there's at least one pair
