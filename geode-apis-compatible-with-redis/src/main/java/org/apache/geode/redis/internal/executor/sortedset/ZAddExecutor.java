@@ -75,8 +75,8 @@ public class ZAddExecutor extends SortedSetExecutor {
           executorState.optionsFoundCount++;
           break;
         case "xx":
-          executorState.optionsFoundCount++;
           executorState.xxFound = true;
+          executorState.optionsFoundCount++;
           break;
         default:
           try {
