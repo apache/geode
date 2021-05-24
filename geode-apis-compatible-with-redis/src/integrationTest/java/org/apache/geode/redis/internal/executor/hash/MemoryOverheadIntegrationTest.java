@@ -56,7 +56,7 @@ public class MemoryOverheadIntegrationTest extends AbstractMemoryOverheadIntegra
     result.put(Measurement.STRING, 185);
     result.put(Measurement.SET, 270);
     result.put(Measurement.SET_ENTRY, 25);
-    result.put(Measurement.HASH, 338);
+    result.put(Measurement.HASH, 347);
     result.put(Measurement.HASH_ENTRY, 50);
 
     return result;

@@ -1,4 +1,3 @@
 org/apache/geode/redis/internal/cluster/RedisMemberInfoRetrievalFunction
-org/apache/geode/redis/internal/collections/Object2ObjectOpenCustomHashMapWithCursor
-org/apache/geode/redis/internal/collections/SizeableObjectOpenCustomHashSet
-org/apache/geode/redis/internal/collections/IndexibleTreeSet
+org/apache/geode/redis/internal/collections/SizeableObject2ObjectOpenCustomHashMapWithCursor
+org/apache/geode/redis/internal/collections/SizeableObjectOpenCustomHashSetorg/apache/geode/redis/internal/collections/IndexibleTreeSet

@@ -30,6 +30,9 @@ import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
  *
  */
 public class ReflectionSingleObjectSizer implements SingleObjectSizer {
+  @Immutable
+  private static final ReflectionSingleObjectSizer INSTANCE = new ReflectionSingleObjectSizer();
+
   public static final int REFERENCE_SIZE = JvmSizeUtils.getReferenceSize();
   public static final int OBJECT_SIZE = JvmSizeUtils.getObjectHeaderSize();
 
@@ -39,8 +42,7 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
     Unsafe tmp = null;
     try {
       tmp = new Unsafe();
-    } catch (RuntimeException ignore) {
-    } catch (Error ignore) {
+    } catch (RuntimeException | Error ignore) {
     }
     unsafe = tmp;
   }
@@ -83,7 +85,7 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
     }
   }
 
-  public static long sizeof(Class clazz) {
+  public static long sizeof(Class<?> clazz) {
     return sizeof(clazz, true);
   }
 
@@ -91,7 +93,7 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
    * Since unsafe.fieldOffset(Field) will give us the offset to the first byte of that field all we
    * need to do is find which of the non-static declared fields has the greatest offset.
    */
-  public static long sizeof(Class clazz, boolean roundResult) {
+  public static long sizeof(Class<?> clazz, boolean roundResult) {
     Assert.assertTrue(!clazz.isArray());
     long size;
     if (unsafe != null) {
@@ -179,5 +181,8 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
     }
   }
 
+  public static ReflectionSingleObjectSizer getInstance() {
+    return INSTANCE;
+  }
 
 }

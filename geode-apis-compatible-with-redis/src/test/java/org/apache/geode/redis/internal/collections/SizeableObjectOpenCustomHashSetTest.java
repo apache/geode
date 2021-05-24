@@ -14,80 +14,31 @@
  */
 package org.apache.geode.redis.internal.collections;
 
-import static java.util.Comparator.comparingLong;
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.groupingBy;
 import static org.apache.geode.redis.internal.collections.SizeableObjectOpenCustomHashSet.BACKING_ARRAY_LENGTH_COEFFICIENT;
 import static org.apache.geode.redis.internal.collections.SizeableObjectOpenCustomHashSet.BACKING_ARRAY_OVERHEAD_CONSTANT;
-import static org.apache.geode.redis.internal.collections.SizeableObjectOpenCustomHashSet.MEMBER_OVERHEAD_CONSTANT;
-import static org.apache.geode.redis.internal.collections.SizeableObjectOpenCustomHashSet.getElementSize;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.function.Function;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 
 import org.apache.geode.internal.size.ReflectionObjectSizer;
+import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 
 public class SizeableObjectOpenCustomHashSetTest {
   private final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
-
-  // This test can be used to derive the formula for calculating per member overhead for varying
-  // byte[] lengths. If it fails, examine the output and determine if the constant or the formula
-  // needs to be adjusted. If all the assertions fail with a constant difference between the
-  // expected and actual, adjust the constant. If only some fail, or they fail with inconsistent
-  // differences, adjust the formula
-  @Test
-  public void memberOverheadCalculationTest() {
-    SoftAssertions softly = new SoftAssertions();
-    for (int length = 1; length < 100; ++length) {
-      SizeableObjectOpenCustomHashSet<byte[]> set =
-          new SizeableObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
-      int initialSize = sizer.sizeof(set);
-      int updatedSize;
-      List<Integer> sizeDifferences = new ArrayList<>();
-      for (int i = 0; i < Byte.MAX_VALUE; ++i) {
-        // Add multiple members of array length 'size' to the set and measure the change in memory
-        // overhead associated with the set for each addition
-        byte[] bytes = new byte[length];
-        bytes[0] = (byte) i;
-        set.add(bytes);
-        updatedSize = sizer.sizeof(set);
-        sizeDifferences.add(updatedSize - initialSize);
-        initialSize = updatedSize;
-      }
-
-      // Collect size differences into a map of {size difference, number of times seen}
-      Map<Integer, Long> sizeChangeFrequency = sizeDifferences.stream()
-          .collect(groupingBy(Function.identity(), counting()));
-
-      // Find the most frequently occurring overhead value. Some overhead values will include
-      // additional overhead associated with resizing the backing set, but the most frequently
-      // occurring value will not
-      int perMemberOverhead = Collections
-          .max(sizeChangeFrequency.entrySet(), comparingLong(Map.Entry::getValue)).getKey();
-      softly.assertThat(perMemberOverhead)
-          .as("Expecting per member overhead to = "
-              + "base member overhead + (array length rounded up to multiple of 8) = "
-              + MEMBER_OVERHEAD_CONSTANT + " + (" + length + " rounded up to multiple of 8)")
-          .isEqualTo(MEMBER_OVERHEAD_CONSTANT + ((length + 7) / 8) * 8);
-    }
-    softly.assertAll();
-  }
+  private final ReflectionSingleObjectSizer elementSizer =
+      ReflectionSingleObjectSizer.getInstance();
 
   // This test can be used to derive the formula for calculating overhead associated with resizing
-  // the backing array of the set. If it fails, first ensure that memberOverheadCalculationTest() is
-  // passing, as this test depends on the formula derived from that test being correct. If that test
-  // is passing, examine the output of this test and determine if the constant or the formula needs
-  // to be adjusted. If all the assertions fail with a constant difference between the expected and
-  // actual, adjust the constant. If they fail with inconsistent differences, adjust the formula
+  // the backing array of the set. If it fails examine the output of this test and determine if the
+  // constant or the formula needs to be adjusted. If all the assertions fail with a constant
+  // difference between the expected and actual, adjust the constant. If they fail with inconsistent
+  // differences, adjust the formula
   @Test
   public void backingArrayOverheadCalculationTest() {
     SizeableObjectOpenCustomHashSet<byte[]> set =
@@ -99,13 +50,15 @@ public class SizeableObjectOpenCustomHashSetTest {
 
       // Calculate the overhead associated only with the backing array
       backingArrayOverhead = sizer.sizeof(set) - set.getMemberOverhead();
+      int expected = BACKING_ARRAY_OVERHEAD_CONSTANT
+          + BACKING_ARRAY_LENGTH_COEFFICIENT * set.getBackingArrayLength();
       softly.assertThat(backingArrayOverhead)
           .as("Expecting backing array overhead to = "
               + "backing array constant + (backing array length coefficient * backing array length)"
               + " = " + BACKING_ARRAY_OVERHEAD_CONSTANT + " + (" + BACKING_ARRAY_LENGTH_COEFFICIENT
-              + " * " + set.getBackingArrayLength() + ")")
-          .isEqualTo(BACKING_ARRAY_OVERHEAD_CONSTANT
-              + BACKING_ARRAY_LENGTH_COEFFICIENT * set.getBackingArrayLength());
+              + " * " + set.getBackingArrayLength() + ") but was off by "
+              + (expected - backingArrayOverhead))
+          .isEqualTo(expected);
     }
     softly.assertAll();
   }
@@ -127,7 +80,7 @@ public class SizeableObjectOpenCustomHashSetTest {
     for (byte[] bytes : members) {
       boolean added = set.add(bytes);
       if (added) {
-        int expectedOverhead = getElementSize(bytes);
+        long expectedOverhead = elementSizer.sizeof(bytes);
         assertThat(expectedOverhead).isEqualTo(set.getMemberOverhead() - initialSize);
         initialSize = set.getMemberOverhead();
       } else {
@@ -155,7 +108,7 @@ public class SizeableObjectOpenCustomHashSetTest {
     for (byte[] bytes : members) {
       boolean removed = set.remove(bytes);
       if (removed) {
-        int expectedOverhead = getElementSize(bytes);
+        long expectedOverhead = elementSizer.sizeof(bytes);
         assertThat(expectedOverhead).isEqualTo(initialSize - set.getMemberOverhead());
         initialSize = set.getMemberOverhead();
       } else {
@@ -184,27 +137,6 @@ public class SizeableObjectOpenCustomHashSetTest {
       assertThat(set.calculateBackingArrayOverhead())
           .as("load factor = " + loadFactor + ", initial size = " + initialSize)
           .isEqualTo(sizer.sizeof(set));
-    }
-  }
-
-  @Test
-  public void getElementSizeForPrimitiveArrays() {
-    for (int i = 0; i < 100; ++i) {
-      byte[] bytes = new byte[i];
-      short[] shorts = new short[i];
-      int[] ints = new int[i];
-      long[] longs = new long[i];
-      float[] floats = new float[i];
-      double[] doubles = new double[i];
-      char[] chars = new char[i];
-
-      assertThat(getElementSize(bytes)).as("byte[" + i + "]").isEqualTo(sizer.sizeof(bytes));
-      assertThat(getElementSize(shorts)).as("short[" + i + "]").isEqualTo(sizer.sizeof(shorts));
-      assertThat(getElementSize(ints)).as("int[" + i + "]").isEqualTo(sizer.sizeof(ints));
-      assertThat(getElementSize(longs)).as("long[" + i + "]").isEqualTo(sizer.sizeof(longs));
-      assertThat(getElementSize(floats)).as("float[" + i + "]").isEqualTo(sizer.sizeof(floats));
-      assertThat(getElementSize(doubles)).as("double[" + i + "]").isEqualTo(sizer.sizeof(doubles));
-      assertThat(getElementSize(chars)).as("char[" + i + "]").isEqualTo(sizer.sizeof(chars));
     }
   }
 

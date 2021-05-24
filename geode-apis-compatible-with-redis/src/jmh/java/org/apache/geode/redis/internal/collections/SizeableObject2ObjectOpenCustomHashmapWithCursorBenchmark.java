@@ -25,7 +25,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
 
-public class Object2ObjectOpenCustomHashmapWithCursorBenchmark {
+public class SizeableObject2ObjectOpenCustomHashmapWithCursorBenchmark {
 
   @State(Scope.Benchmark)
   public static class BenchmarkState {
@@ -33,14 +33,15 @@ public class Object2ObjectOpenCustomHashmapWithCursorBenchmark {
     private int numEntries;
     @Param({"32"})
     private int keySize;
-    private Object2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> map;
+    private SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> map;
     private int cursor;
     private Iterator<byte[]> iterator;
 
     @Setup
     public void createMap() {
       Random random = new Random(0);
-      map = new Object2ObjectOpenCustomHashMapWithCursor<>(numEntries, ByteArrays.HASH_STRATEGY);
+      map = new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(numEntries,
+          ByteArrays.HASH_STRATEGY);
       for (int i = 0; i < numEntries; i++) {
         byte[] key = new byte[keySize];
         random.nextBytes(key);

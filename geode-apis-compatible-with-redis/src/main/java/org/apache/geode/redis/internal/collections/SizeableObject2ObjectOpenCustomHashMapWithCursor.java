@@ -21,6 +21,10 @@ import java.util.Map;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
+import org.apache.geode.internal.size.Sizeable;
+
 /**
  * An extention of {@link Object2ObjectOpenCustomHashMap} that supports
  * a method of iteration where each scan operation returns an integer cursor
@@ -29,52 +33,58 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
  * The scan method provides the same guarantees as Redis's HSCAN, and in fact
  * uses the same algorithm.
  */
-public class Object2ObjectOpenCustomHashMapWithCursor<K, V>
-    extends Object2ObjectOpenCustomHashMap<K, V> {
+public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
+    extends Object2ObjectOpenCustomHashMap<K, V> implements Sizeable {
 
+  private static final long serialVersionUID = 9079713776660851891L;
+  public static final int BACKING_ARRAY_OVERHEAD_CONSTANT = 136;
+  public static final int BACKING_ARRAY_LENGTH_COEFFICIENT = 4;
+  private static final ReflectionSingleObjectSizer elementSizer =
+      ReflectionSingleObjectSizer.getInstance();
 
-  public Object2ObjectOpenCustomHashMapWithCursor(int expected, float f,
+  private int keysOverhead;
+  private int valuesOverhead;
+
+  public SizeableObject2ObjectOpenCustomHashMapWithCursor(int expected, float f,
       Strategy<? super K> strategy) {
     super(expected, f, strategy);
   }
 
-  public Object2ObjectOpenCustomHashMapWithCursor(int expected,
+  public SizeableObject2ObjectOpenCustomHashMapWithCursor(int expected,
       Strategy<? super K> strategy) {
     super(expected, strategy);
   }
 
-  public Object2ObjectOpenCustomHashMapWithCursor(Strategy<? super K> strategy) {
+  public SizeableObject2ObjectOpenCustomHashMapWithCursor(Strategy<? super K> strategy) {
     super(strategy);
   }
 
-  public Object2ObjectOpenCustomHashMapWithCursor(Map<? extends K, ? extends V> m, float f,
+  public SizeableObject2ObjectOpenCustomHashMapWithCursor(Map<? extends K, ? extends V> m, float f,
       Strategy<? super K> strategy) {
     super(m, f, strategy);
   }
 
-  public Object2ObjectOpenCustomHashMapWithCursor(Map<? extends K, ? extends V> m,
+  public SizeableObject2ObjectOpenCustomHashMapWithCursor(Map<? extends K, ? extends V> m,
       Strategy<? super K> strategy) {
     super(m, strategy);
   }
 
-  public Object2ObjectOpenCustomHashMapWithCursor(
-      Object2ObjectMap<K, V> m,
-      float f,
+  public SizeableObject2ObjectOpenCustomHashMapWithCursor(Object2ObjectMap<K, V> m, float f,
       Strategy<? super K> strategy) {
     super(m, f, strategy);
   }
 
-  public Object2ObjectOpenCustomHashMapWithCursor(Object2ObjectMap<K, V> m,
+  public SizeableObject2ObjectOpenCustomHashMapWithCursor(Object2ObjectMap<K, V> m,
       Strategy<? super K> strategy) {
     super(m, strategy);
   }
 
-  public Object2ObjectOpenCustomHashMapWithCursor(K[] k, V[] v, float f,
+  public SizeableObject2ObjectOpenCustomHashMapWithCursor(K[] k, V[] v, float f,
       Strategy<? super K> strategy) {
     super(k, v, f, strategy);
   }
 
-  public Object2ObjectOpenCustomHashMapWithCursor(K[] k, V[] v,
+  public SizeableObject2ObjectOpenCustomHashMapWithCursor(K[] k, V[] v,
       Strategy<? super K> strategy) {
     super(k, v, strategy);
   }
@@ -168,7 +178,7 @@ public class Object2ObjectOpenCustomHashMapWithCursor<K, V>
    *
    * @param currentKey The key to key
    * @param currentPosition The position of the key in the key[] array
-   * @parma expectedHash - the expected hash of the key.
+   * @param expectedHash - the expected hash of the key.
    */
   private boolean keyHashesTo(K currentKey, int currentPosition, int expectedHash) {
     // There is a small optimization here. If the previous element
@@ -181,6 +191,57 @@ public class Object2ObjectOpenCustomHashMapWithCursor<K, V>
 
   private int hash(K key) {
     return mix(strategy.hashCode(key)) & mask;
+  }
+
+  @Override
+  public V put(K k, V v) {
+    V oldValue = super.put(k, v);
+    if (oldValue == null) {
+      // A create
+      keysOverhead += elementSizer.sizeof(k);
+      valuesOverhead += elementSizer.sizeof(v);
+    } else {
+      // An update
+      valuesOverhead += elementSizer.sizeof(v) - elementSizer.sizeof(oldValue);
+    }
+    return oldValue;
+  }
+
+  @Override
+  public V remove(Object k) {
+    V oldValue = super.remove(k);
+    if (oldValue != null) {
+      keysOverhead -= elementSizer.sizeof(k);
+      valuesOverhead -= elementSizer.sizeof(oldValue);
+    }
+    return oldValue;
+  }
+
+  @Override
+  public int getSizeInBytes() {
+    return keysOverhead + valuesOverhead + calculateBackingArraysOverhead();
+  }
+
+  @VisibleForTesting
+  int calculateBackingArraysOverhead() {
+    // This formula determined experimentally using tests.
+    return BACKING_ARRAY_OVERHEAD_CONSTANT
+        + BACKING_ARRAY_LENGTH_COEFFICIENT * (key.length + value.length);
+  }
+
+  @VisibleForTesting
+  int getKeysOverhead() {
+    return keysOverhead;
+  }
+
+  @VisibleForTesting
+  int getValuesOverhead() {
+    return valuesOverhead;
+  }
+
+  @VisibleForTesting
+  int getTotalBackingArrayLength() {
+    return key.length + value.length;
   }
 
   public interface EntryConsumer<K, V, D> {

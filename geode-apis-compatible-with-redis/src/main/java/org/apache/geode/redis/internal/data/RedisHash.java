@@ -43,25 +43,19 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.redis.internal.collections.Object2ObjectOpenCustomHashMapWithCursor;
+import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHash extends AbstractRedisData {
-  // the following constants were calculated using reflection and math. you can find the tests for
-  // these values in RedisHashTest, which show the way these numbers were calculated. the constants
-  // have the advantage of saving us a lot of computation that would happen every time a new key was
-  // added. if our internal implementation changes, these values may be incorrect. the tests will
-  // catch this change. an increase in overhead should be carefully considered.
-  protected static final int BASE_REDIS_HASH_OVERHEAD = 184;
-  protected static final int HASH_MAP_VALUE_PAIR_OVERHEAD = 48;
+  // The following constant was calculated using reflection. you can find the test for this value in
+  // RedisHashTest, which shows the way this number was calculated. If our internal implementation
+  // changes, these values may be incorrect. An increase in overhead should be carefully considered.
+  protected static final int BASE_REDIS_HASH_OVERHEAD = 32;
 
-  private Object2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> hash;
-
-  private int sizeInBytes = BASE_REDIS_HASH_OVERHEAD;
-
+  private SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> hash;
 
   @VisibleForTesting
   public RedisHash(List<byte[]> fieldsToSet) {
@@ -71,7 +65,7 @@ public class RedisHash extends AbstractRedisData {
           "fieldsToSet should have an even number of elements but was size " + numKeysAndValues);
     }
 
-    hash = new Object2ObjectOpenCustomHashMapWithCursor<>(numKeysAndValues / 2,
+    hash = new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(numKeysAndValues / 2,
         ByteArrays.HASH_STRATEGY);
     Iterator<byte[]> iterator = fieldsToSet.iterator();
     while (iterator.hasNext()) {
@@ -99,7 +93,6 @@ public class RedisHash extends AbstractRedisData {
       DataSerializer.writeByteArray(key, out);
       DataSerializer.writeByteArray(value, out);
     }
-    DataSerializer.writeInteger(sizeInBytes, out);
   }
 
   @Override
@@ -107,11 +100,10 @@ public class RedisHash extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     int size = DataSerializer.readInteger(in);
-    hash = new Object2ObjectOpenCustomHashMapWithCursor<>(size, ByteArrays.HASH_STRATEGY);
+    hash = new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(size, ByteArrays.HASH_STRATEGY);
     for (int i = 0; i < size; i++) {
       hash.put(DataSerializer.readByteArray(in), DataSerializer.readByteArray(in));
     }
-    sizeInBytes = DataSerializer.readInteger(in);
   }
 
   @Override
@@ -119,45 +111,17 @@ public class RedisHash extends AbstractRedisData {
     return REDIS_HASH_ID;
   }
 
-
   synchronized byte[] hashPut(byte[] field, byte[] value) {
-    byte[] oldvalue = hash.put(field, value);
-
-    if (oldvalue == null) {
-      sizeInBytes += calculateSizeOfNewFieldValuePair(field, value);
-    } else {
-      sizeInBytes += value.length - oldvalue.length;
-    }
-
-    return oldvalue;
+    return hash.put(field, value);
   }
 
   private synchronized byte[] hashPutIfAbsent(byte[] field, byte[] value) {
-    byte[] oldvalue = hash.putIfAbsent(field, value);
-
-    if (oldvalue == null) {
-      sizeInBytes += calculateSizeOfNewFieldValuePair(field, value);
-    }
-    return oldvalue;
-  }
-
-  private int calculateSizeOfNewFieldValuePair(byte[] field, byte[] value) {
-    return HASH_MAP_VALUE_PAIR_OVERHEAD + field.length + value.length;
+    return hash.putIfAbsent(field, value);
   }
 
   private synchronized byte[] hashRemove(byte[] field) {
-    byte[] oldValue = hash.remove(field);
-    if (oldValue != null) {
-      sizeInBytes -= calculateSizeOfNewFieldValuePair(field, oldValue);
-    }
-
-    if (hash.isEmpty()) {
-      sizeInBytes = BASE_REDIS_HASH_OVERHEAD;
-    }
-
-    return oldValue;
+    return hash.remove(field);
   }
-
 
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
@@ -422,6 +386,6 @@ public class RedisHash extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return sizeInBytes;
+    return BASE_REDIS_HASH_OVERHEAD + hash.getSizeInBytes();
   }
 }
