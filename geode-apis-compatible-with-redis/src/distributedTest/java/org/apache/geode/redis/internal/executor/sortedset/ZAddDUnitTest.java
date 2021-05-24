@@ -87,7 +87,7 @@ public class ZAddDUnitTest {
   public void shouldDistributeDataAmongCluster() {
     String key = "key";
 
-    Map<String, Double> memberScoreMap = makeMemberScoreMap(SET_SIZE, "member1-");
+    Map<String, Double> memberScoreMap = makeMemberScoreMap("member1-");
 
     jedis.zadd(key, memberScoreMap);
 
@@ -102,8 +102,8 @@ public class ZAddDUnitTest {
   public void shouldDistributeDataAmongCluster_givenConcurrentlyAddingDifferentDataToSameSet() {
     String key = "key";
 
-    Map<String, Double> memberScoreMap1 = makeMemberScoreMap(SET_SIZE, "member1-");
-    Map<String, Double> memberScoreMap2 = makeMemberScoreMap(SET_SIZE, "member2-");
+    Map<String, Double> memberScoreMap1 = makeMemberScoreMap("member1-");
+    Map<String, Double> memberScoreMap2 = makeMemberScoreMap("member2-");
 
     new ConcurrentLoopingThreads(SET_SIZE,
         (i) -> jedis.zadd(key, memberScoreMap1),
@@ -124,7 +124,7 @@ public class ZAddDUnitTest {
   public void shouldDistributeDataAmongCluster_givenConcurrentlyAddingSameDataToSameSet() {
     String key = "key";
 
-    Map<String, Double> memberScoreMap = makeMemberScoreMap(SET_SIZE, "member1-");
+    Map<String, Double> memberScoreMap = makeMemberScoreMap("member1-");
 
     new ConcurrentLoopingThreads(SET_SIZE,
         (i) -> jedis.zadd(key, memberScoreMap),
@@ -143,8 +143,8 @@ public class ZAddDUnitTest {
     String key1 = "key1";
     String key2 = "key2";
 
-    Map<String, Double> memberScoreMap1 = makeMemberScoreMap(SET_SIZE, "member1-");
-    Map<String, Double> memberScoreMap2 = makeMemberScoreMap(SET_SIZE, "member2-");
+    Map<String, Double> memberScoreMap1 = makeMemberScoreMap("member1-");
+    Map<String, Double> memberScoreMap2 = makeMemberScoreMap("member2-");
 
     new ConcurrentLoopingThreads(SET_SIZE,
         (i) -> jedis.zadd(key1, memberScoreMap1),
@@ -161,9 +161,9 @@ public class ZAddDUnitTest {
 
   }
 
-  private Map<String, Double> makeMemberScoreMap(int setSize, String baseString) {
+  private Map<String, Double> makeMemberScoreMap(String baseString) {
     Map<String, Double> scoreMemberPairs = new HashMap<>();
-    for (int i = 0; i < setSize; i++) {
+    for (int i = 0; i < SET_SIZE; i++) {
       scoreMemberPairs.put(baseString + i, Double.valueOf(i + ""));
     }
     return scoreMemberPairs;

@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -117,11 +116,11 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     for (String member : keys) {
       Double score = map.get(member);
       Long res = jedis.zadd(SORTED_SET_KEY, score, member);
-      Assertions.assertThat(res).isEqualTo(1);
-      Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
+      assertThat(res).isEqualTo(1);
+      assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
       count += res;
     }
-    Assertions.assertThat(count).isEqualTo(keys.size());
+    assertThat(count).isEqualTo(keys.size());
   }
 
   @Test
@@ -134,7 +133,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
 
     for (String member : keys) {
       Double score = map.get(member);
-      Assertions.assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
+      assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
     }
   }
 
@@ -219,28 +218,6 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
       }
       assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(score);
     }
-  }
-
-  @Test
-  public void zaddDoesNotUpdateMember_whenNXSpecified() {
-    Long res = jedis.zadd(SORTED_SET_KEY, 1.0, "mamba");
-    assertThat(res).isEqualTo(1);
-
-    ZAddParams zAddParams = new ZAddParams();
-    zAddParams.nx();
-    res = jedis.zadd(SORTED_SET_KEY, 2.0, "mamba", zAddParams);
-    assertThat(res).isEqualTo(0);
-    assertThat(jedis.zscore(SORTED_SET_KEY, "mamba")).isEqualTo(1.0);
-  }
-
-  @Test
-  public void zaddDoesNotAddMember_whenXXSpecified() {
-    ZAddParams zAddParams = new ZAddParams();
-    zAddParams.xx();
-    Long res = jedis.zadd(SORTED_SET_KEY, 1.0, "mamba", zAddParams);
-    assertThat(res).isEqualTo(0);
-    assertThat(jedis.zscore(SORTED_SET_KEY, "mamba")).isEqualTo(null);
-    assertThat(jedis.exists(SORTED_SET_KEY)).isFalse();
   }
 
   private Map<String, Double> makeMemberScoreMap(int memberCount, int baseScore) {

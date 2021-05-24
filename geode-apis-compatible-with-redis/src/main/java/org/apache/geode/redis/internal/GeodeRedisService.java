@@ -36,7 +36,7 @@ import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.data.RedisSet;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 import org.apache.geode.redis.internal.data.RedisString;
-import org.apache.geode.redis.internal.executor.sortedset.SortedSetOptions;
+import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
 
 public class GeodeRedisService implements CacheService, ResourceEventsListener {
@@ -87,7 +87,7 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
         RedisSortedSet.class);
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DataSerializableFixedID.REDIS_SORTED_SET_OPTIONS_ID,
-        SortedSetOptions.class);
+        ZAddOptions.class);
   }
 
   @Override

@@ -39,7 +39,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
-import org.apache.geode.redis.internal.executor.sortedset.SortedSetOptions;
+import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
 public class RedisSortedSet extends AbstractRedisData {
   private Object2ObjectOpenCustomHashMap<byte[], byte[]> members;
@@ -183,7 +183,7 @@ public class RedisSortedSet extends AbstractRedisData {
    * @return the number of members actually added
    */
   long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
-      SortedSetOptions options) {
+      ZAddOptions options) {
     int membersAdded = 0;
     int initialSize = getSortedSetSize();
     AddsDeltaInfo deltaInfo = null;

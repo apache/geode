@@ -22,12 +22,12 @@ import org.apache.geode.redis.internal.executor.BaseSetOptions;
 /**
  * Class representing different options that can be used with Redis Sorted Set ZADD command.
  */
-public class SortedSetOptions extends BaseSetOptions {
-  public SortedSetOptions(Exists existsOption) {
+public class ZAddOptions extends BaseSetOptions {
+  public ZAddOptions(Exists existsOption) {
     super(existsOption);
   }
 
-  public SortedSetOptions() {}
+  public ZAddOptions() {}
 
   @Override
   public int getDSFID() {

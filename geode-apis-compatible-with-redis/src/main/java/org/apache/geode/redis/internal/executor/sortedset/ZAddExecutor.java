@@ -60,18 +60,13 @@ public class ZAddExecutor extends SortedSetExecutor {
               xxFound = true;
               break;
             default:
-              // TODO: Should never happen?
           }
         }
       }
       if (adding) {
         scoresAndMembersToAdd.add(next);
-        if (commandIterator.hasNext()) {
-          byte[] member = commandIterator.next();
-          scoresAndMembersToAdd.add(member);
-        } else {
-          // TODO: throw exception - should never happen
-        }
+        byte[] member = commandIterator.next();
+        scoresAndMembersToAdd.add(member);
       }
     }
     return RedisResponse
@@ -79,15 +74,15 @@ public class ZAddExecutor extends SortedSetExecutor {
             makeOptions(nxFound, xxFound)));
   }
 
-  private SortedSetOptions makeOptions(boolean nxFound, boolean xxFound) {
-    SortedSetOptions.Exists existsOption = SortedSetOptions.Exists.NONE;
+  private ZAddOptions makeOptions(boolean nxFound, boolean xxFound) {
+    ZAddOptions.Exists existsOption = ZAddOptions.Exists.NONE;
 
     if (nxFound) {
-      existsOption = SortedSetOptions.Exists.NX;
+      existsOption = ZAddOptions.Exists.NX;
     }
     if (xxFound) {
-      existsOption = SortedSetOptions.Exists.XX;
+      existsOption = ZAddOptions.Exists.XX;
     }
-    return new SortedSetOptions(existsOption);
+    return new ZAddOptions(existsOption);
   }
 }
