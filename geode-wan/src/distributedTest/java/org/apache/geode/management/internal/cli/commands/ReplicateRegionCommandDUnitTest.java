@@ -478,7 +478,7 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
           100, 10, false,
           false, null, true));
     }
-    startSenderInVMsAsync(senderIdInA, (VM[]) serversInA.toArray());
+    startSenderInVMsAsync(senderIdInA, serversInA.toArray(new VM[serversInA.size()]));
   }
 
   private void createReceivers(VM serverInB, VM serverInC) {
