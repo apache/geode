@@ -14,10 +14,10 @@
  */
 package org.apache.geode.cache.wan.internal;
 
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getAddress;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePortInRange;
-import static org.apache.geode.internal.AvailablePort.isPortAvailable;
+import static org.apache.geode.internal.membership.utils.AvailablePort.SOCKET;
+import static org.apache.geode.internal.membership.utils.AvailablePort.getAddress;
+import static org.apache.geode.internal.membership.utils.AvailablePort.getRandomAvailablePortInRange;
+import static org.apache.geode.internal.membership.utils.AvailablePort.isPortAvailable;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
