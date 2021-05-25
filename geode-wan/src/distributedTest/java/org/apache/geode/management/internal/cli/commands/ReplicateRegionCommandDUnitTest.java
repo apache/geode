@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.management.internal.i18n.CliStrings.REPLICATE_REGION;
@@ -26,24 +27,31 @@ import static org.apache.geode.management.internal.i18n.CliStrings.REPLICATE_REG
 import static org.apache.geode.management.internal.i18n.CliStrings.REPLICATE_REGION__REGION;
 import static org.apache.geode.management.internal.i18n.CliStrings.REPLICATE_REGION__SENDERID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.FutureTask;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.WanTest;
@@ -158,6 +166,60 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
     testSuccessfulReplicateRegionCommandInvocation(true, true);
   }
 
+  @Test
+  public void testSuccessfulReplicateRegionCommandInvocationWhileRunningOpsOnRegion_WithReplicatedRegionAndSerialGatewaySender()
+      throws Exception {
+    testSuccessfulReplicateRegionCommandInvocationWhileRunningOpsOnRegion(false, false);
+  }
+
+  @Test
+  public void testSuccessfulReplicateRegionCommandInvocationWhileRunningOpsOnRegion_WithPartitionedRegionAndSerialGatewaySender()
+      throws Exception {
+    testSuccessfulReplicateRegionCommandInvocationWhileRunningOpsOnRegion(true, false);
+  }
+
+  @Test
+  public void testSuccessfulReplicateRegionCommandInvocationWhileRunningOpsOnRegion_WithPartitionedRegionAndParallelGatewaySender()
+      throws Exception {
+    testSuccessfulReplicateRegionCommandInvocationWhileRunningOpsOnRegion(true, true);
+  }
+
+  @Test
+  public void testSuccessfulCancelReplicateRegionCommandInvocation_WithReplicatedRegionAndSerialGatewaySender()
+      throws Exception {
+    testSuccessfulCancelReplicateRegionCommandInvocation(false, false);
+  }
+
+  @Test
+  public void testSuccessfulCancelReplicateRegionCommandInvocation_WithPartitionedRegionAndSerialGatewaySender()
+      throws Exception {
+    testSuccessfulCancelReplicateRegionCommandInvocation(true, false);
+  }
+
+  @Test
+  public void testSuccessfulCancelReplicateRegionCommandInvocation_WithPartitionedRegionAndParallelGatewaySender()
+      throws Exception {
+    testSuccessfulCancelReplicateRegionCommandInvocation(true, true);
+  }
+
+  @Test
+  public void testUnsuccessfulCancelReplicateRegionCommandInvocation_WithReplicatedRegionAndSerialGatewaySender()
+      throws Exception {
+    testUnsuccessfulCancelReplicateRegionCommandInvocation(false, false);
+  }
+
+  @Test
+  public void testUnsuccessfulCancelReplicateRegionCommandInvocation_WithPartitionedRegionAndSerialGatewaySender()
+      throws Exception {
+    testUnsuccessfulCancelReplicateRegionCommandInvocation(true, false);
+  }
+
+  @Test
+  public void testUnsuccessfulCancelReplicateRegionCommandInvocation_WithPartitionedRegionAndParallelGatewaySender()
+      throws Exception {
+    testUnsuccessfulCancelReplicateRegionCommandInvocation(true, true);
+  }
+
   /**
    * Scenario with 3 WAN sites: "A", "B" and "C".
    * Initially, no replication is configured between sites.
@@ -194,7 +256,10 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
     int entries = 100;
     String regionName = getRegionName(isPartitionedRegion);
     // Put entries
-    client.invoke(() -> WANTestBase.doClientPutsFrom(regionName, 0, entries));
+    client.invoke(() -> WANTestBase.doClientPutsFrom(regionName, 0, entries + 1));
+    // remove an entry to make sure that replication works well even when removes.
+    client.invoke(() -> removeEntry(regionName, entries));
+
 
     // Check that entries are put in the region
     for (VM member : serversInA) {
@@ -249,6 +314,9 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
     // Check that entries are replicated in "B"
     serverInB.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
 
+    // Check that the region's data is the same in sites "A" and "B"
+    checkEqualRegionData(regionName, serversInA.get(0), serverInB);
+
     // Check that replicateRegionBatchSize is correctly used by the command
     int receivedBatches = serverInB.invoke(() -> WANTestBase.getReceiverStats().get(2));
     if (isPartitionedRegion && isParallelGatewaySender) {
@@ -261,42 +329,100 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
     serverInC.invoke(() -> WANTestBase.validateRegionSize(regionName, 0));
   }
 
-  @Test
-  public void testSuccessfulCancelReplicateRegionCommandInvocation_WithReplicatedRegionAndSerialGatewaySender()
-      throws Exception {
-    testSuccessfulCancelReplicateRegionCommandInvocation(false, false);
+  /**
+   * Scenario with 2 WAN sites: "A" and "B".
+   * Initially, no replication is configured between sites.
+   * Several entries are put in WAN site "A".
+   *
+   * The following gateway senders are created and started:
+   * - In "A" site: to replicate region entries to "B" site. Sender called "B".
+   * (Replication is as follows: A -> B)
+   *
+   * The "replicate region" command is run from "A" site passing sender "B".
+   * Simultaneously, random operations for entries with the same
+   * keys as the one previously put are run.
+   *
+   * When the replicate command finishes and the puts finish it
+   * must be verified that the entries in the region in site "A"
+   * are the same as the ones in region in site "B"..
+   */
+  public void testSuccessfulReplicateRegionCommandInvocationWhileRunningOpsOnRegion(
+      boolean isPartitionedRegion,
+      boolean isParallelGatewaySender) throws Exception {
+    List<VM> serversInA = Arrays.asList(vm5, vm6, vm7);
+    VM serverInB = vm3;
+    VM serverInC = vm4;
+    VM client = vm8;
+    String senderIdInA = "B";
+    String senderIdInB = "C";
+
+    Integer senderLocatorPort = create3WanSitesAndClient(isPartitionedRegion, vm0,
+        vm1, vm2, serversInA, serverInB, serverInC, client,
+        senderIdInA, senderIdInB);
+
+    int replicateRegionBatchSize = 20;
+    int entries = 1000;
+    Set<Long> keySet = LongStream.range(0L, entries).boxed().collect(Collectors.toSet());
+    String regionName = getRegionName(isPartitionedRegion);
+    // Put entries
+    client.invoke(() -> WANTestBase.doClientPutsFrom(regionName, 0, entries));
+
+
+    // Check that entries are put in the region
+    for (VM member : serversInA) {
+      member.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
+    }
+
+    // Create senders and receivers with replication as follows: "A" -> "B" -> "C"
+    createSenders(isParallelGatewaySender, serversInA, serverInB,
+        senderIdInA, senderIdInB);
+    createReceivers(serverInB, serverInC);
+
+    // Execute replicate region command
+    GfshCommandRule gfsh = new GfshCommandRule();
+    gfsh.connectAndVerify(senderLocatorPort, GfshCommandRule.PortType.locator);
+    String command = new CommandStringBuilder(REPLICATE_REGION)
+        .addOption(REPLICATE_REGION__REGION, regionName)
+        .addOption(REPLICATE_REGION__SENDERID, senderIdInA)
+        .addOption(REPLICATE_REGION__BATCHSIZE, String.valueOf(replicateRegionBatchSize))
+        .getCommandString();
+
+    // While the command is running, send some random operations over the same keys
+    AsyncInvocation<Object> asyncOps1 =
+        client.invokeAsync(() -> sendRandomOpsFromClient(regionName, keySet, 10));
+    AsyncInvocation<Object> asyncOps2 =
+        client.invokeAsync(() -> sendRandomOpsFromClient(regionName, keySet, 10));
+    AsyncInvocation<Object> asyncOps3 =
+        client.invokeAsync(() -> sendRandomOpsFromClient(regionName, keySet, 10));
+
+    // Check command status and output
+    CommandResultAssert replicateRegionCommand =
+        gfsh.executeAndAssertThat(command).statusIsSuccess();
+    replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+        .hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+        .containsExactly("OK", "OK", "OK");
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .hasSize(3);
+
+    // Wait for random operations to finish
+    asyncOps1.await();
+    asyncOps2.await();
+    asyncOps3.await();
+
+    // Wait for entries to be replicated (replication queues empty)
+    for (VM server : serversInA) {
+      server.invoke(() -> getSenderStats(senderIdInA, 0));
+    }
+
+    // Check that the region's data is the same in sites "A" and "B"
+    checkEqualRegionData(regionName, serversInA.get(0), serverInB);
   }
 
-  @Test
-  public void testSuccessfulCancelReplicateRegionCommandInvocation_WithPartitionedRegionAndSerialGatewaySender()
-      throws Exception {
-    testSuccessfulCancelReplicateRegionCommandInvocation(true, false);
-  }
-
-  @Test
-  public void testSuccessfulCancelReplicateRegionCommandInvocation_WithPartitionedRegionAndParallelGatewaySender()
-      throws Exception {
-    testSuccessfulCancelReplicateRegionCommandInvocation(true, true);
-  }
-
-  @Test
-  public void testUnsuccessfulCancelReplicateRegionCommandInvocation_WithReplicatedRegionAndSerialGatewaySender()
-      throws Exception {
-    testUnsuccessfulCancelReplicateRegionCommandInvocation(false, false);
-  }
-
-  @Test
-  public void testUnsuccessfulCancelReplicateRegionCommandInvocation_WithPartitionedRegionAndSerialGatewaySender()
-      throws Exception {
-    testUnsuccessfulCancelReplicateRegionCommandInvocation(true, false);
-  }
-
-  @Test
-  public void testUnsuccessfulCancelReplicateRegionCommandInvocation_WithPartitionedRegionAndParallelGatewaySender()
-      throws Exception {
-    testUnsuccessfulCancelReplicateRegionCommandInvocation(true, true);
-  }
-
+  /**
+   * Cancel is executed when no replicate region command is running.
+   */
   public void testUnsuccessfulCancelReplicateRegionCommandInvocation(boolean isPartitionedRegion,
       boolean isParallelGatewaySender) throws Exception {
     List<VM> serversInA = Arrays.asList(vm5, vm6, vm7);
@@ -407,8 +533,8 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
     LoggingExecutors.newSingleThreadExecutor(getTestMethodName(), true)
         .submit(replicateCommandFuture);
 
-    // Sleep a bit to make sure the replication has started.
-    Thread.sleep(5000);
+    // Wait a bit to let the replicate command start
+    Thread.sleep(10000);
 
     // Cancel replicate region command
     GfshCommandRule gfsh = new GfshCommandRule();
@@ -478,7 +604,7 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
           100, 10, false,
           false, null, true));
     }
-    startSenderInVMsAsync(senderIdInA, serversInA.toArray(new VM[serversInA.size()]));
+    startSenderInVMsAsync(senderIdInA, serversInA.toArray(new VM[0]));
   }
 
   private void createReceivers(VM serverInB, VM serverInC) {
@@ -517,26 +643,25 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
       for (VM server : serversInA) {
         server
             .invoke(() -> WANTestBase.createPartitionedRegion(regionName, senderIdInA, 1, 100,
-                isOffHeap()));
+                isOffHeap(), RegionShortcut.PARTITION, true));
       }
       serverInB.invoke(
           () -> WANTestBase.createPartitionedRegion(regionName, senderIdInB, 0, 100,
-              isOffHeap()));
+              isOffHeap(), RegionShortcut.PARTITION, true));
       serverInC.invoke(() -> WANTestBase.createPartitionedRegion(regionName, null, 0, 100,
-          isOffHeap()));
+          isOffHeap(), RegionShortcut.PARTITION, true));
     } else {
       for (VM server : serversInA) {
         server.invoke(() -> WANTestBase.createReplicatedRegion(regionName, senderIdInA,
             Scope.GLOBAL, DataPolicy.REPLICATE,
-            isOffHeap()));
+            isOffHeap(), true));
       }
       serverInB
           .invoke(() -> WANTestBase.createReplicatedRegion(regionName, senderIdInB,
               Scope.GLOBAL, DataPolicy.REPLICATE,
-              isOffHeap()));
+              isOffHeap(), true));
       serverInC.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null,
-          Scope.GLOBAL, DataPolicy.REPLICATE,
-          isOffHeap()));
+          Scope.GLOBAL, DataPolicy.REPLICATE, isOffHeap(), true));
     }
 
     // Create client
@@ -548,5 +673,29 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
 
   private String getRegionName(boolean isPartitionedRegion) {
     return getTestMethodName() + (isPartitionedRegion ? "_PR" : "RR");
+  }
+
+  public static void removeEntry(String regionName, long key) {
+    Region r = ClientCacheFactory.getAnyInstance().getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
+    r.remove(key);
+  }
+
+  public void sendRandomOpsFromClient(String regionName, Set<Long> keySet, int iterations) {
+    Region r = ClientCacheFactory.getAnyInstance().getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
+    int min = 0;
+    int max = 1000;
+    for (int i = 0; i < iterations; i++) {
+      for (Long key : keySet) {
+        long longKey = key.longValue();
+        int value = (int) (Math.random() * (max - min + 1) + min);
+        if (value < 50) {
+          r.remove(longKey);
+        } else {
+          r.put(longKey, value);
+        }
+      }
+    }
   }
 }

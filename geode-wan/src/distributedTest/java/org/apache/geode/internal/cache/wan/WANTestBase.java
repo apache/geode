@@ -549,6 +549,12 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void createReplicatedRegion(String regionName, String senderIds, Scope scope,
       DataPolicy policy, Boolean offHeap) {
+    createReplicatedRegion(regionName, senderIds, scope, policy, offHeap, false);
+  }
+
+
+  public static void createReplicatedRegion(String regionName, String senderIds, Scope scope,
+      DataPolicy policy, Boolean offHeap, boolean statisticsEnabled) {
     RegionFactory fact = cache.createRegionFactory();
     if (senderIds != null) {
       StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
@@ -561,6 +567,7 @@ public class WANTestBase extends DistributedTestCase {
     fact.setDataPolicy(policy);
     fact.setScope(scope);
     fact.setOffHeap(offHeap);
+    fact.setStatisticsEnabled(statisticsEnabled);
     Region r = fact.create(regionName);
     assertNotNull(r);
   }
@@ -602,6 +609,13 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void createPartitionedRegion(String regionName, String senderIds,
       Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap, RegionShortcut shortcut) {
+    createPartitionedRegion(regionName, senderIds, redundantCopies, totalNumBuckets, offHeap,
+        shortcut, false);
+  }
+
+  public static void createPartitionedRegion(String regionName, String senderIds,
+      Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap, RegionShortcut shortcut,
+      boolean statisticsEnabled) {
     IgnoredException exp =
         IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
@@ -621,6 +635,7 @@ public class WANTestBase extends DistributedTestCase {
       pfact.setRecoveryDelay(0);
       fact.setPartitionAttributes(pfact.create());
       fact.setOffHeap(offHeap);
+      fact.setStatisticsEnabled(statisticsEnabled);
       Region r = fact.create(regionName);
       assertNotNull(r);
     } finally {
@@ -2378,7 +2393,6 @@ public class WANTestBase extends DistributedTestCase {
     }
   }
 
-
   public static void doDestroys(String regionName, int keyNum) {
     Region r = cache.getRegion(SEPARATOR + regionName);
     assertNotNull(r);
@@ -2951,6 +2965,40 @@ public class WANTestBase extends DistributedTestCase {
       exp.remove();
       exp1.remove();
     }
+  }
+
+  public ArrayList getKeys(String regionName) {
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
+    return new ArrayList(r.keySet());
+
+  }
+
+  public void checkEqualRegionData(String regionName, VM vm1, VM vm2) {
+    assertThat(vm1.invoke(() -> getRegionSize(regionName)))
+        .isEqualTo(vm2.invoke(() -> getRegionSize(regionName)));
+    for (Object key : vm1.invoke(() -> getKeys(regionName))) {
+      assertThat(vm1.invoke(() -> getValueForEntry((long) key, regionName)))
+          .isEqualTo(vm2.invoke(() -> getValueForEntry((long) key, regionName)));
+      assertThat(vm1.invoke(() -> getTimestampForEntry((long) key, regionName)))
+          .isEqualTo(vm2.invoke(() -> getTimestampForEntry((long) key, regionName)));
+    }
+  }
+
+  public static Object getValueForEntry(long key, String regionName) {
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
+    return r.get(key);
+  }
+
+  public static long getTimestampForEntry(long key, String regionName) {
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
+    if (r.getEntry(key) == null) {
+      return 0;
+    }
+    assertNotNull(r.getEntry(key).getStatistics());
+    return r.getEntry(key).getStatistics().getLastModifiedTime();
   }
 
   public static void validateAsyncEventListener(String asyncQueueId, final int expectedSize) {

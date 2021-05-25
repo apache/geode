@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.Connection;
@@ -371,6 +372,9 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
       InternalRegion region,
       Region.Entry entry) {
     EntryEventImpl event = createEvent(cache, region, entry);
+    if (event == null) {
+      return null;
+    }
     BucketRegion bucketRegion = ((PartitionedRegion) event.getRegion()).getDataStore()
         .getLocalBucketById(event.getKeyInfo().getBucketId());
     if (bucketRegion != null && !bucketRegion.getBucketAdvisor().isPrimary()
@@ -385,10 +389,15 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
 
   private EntryEventImpl createEvent(InternalCache cache, InternalRegion region,
       Region.Entry entry) {
-    EntryEventImpl event = new DefaultEntryEventFactory().create(region, Operation.UPDATE,
-        entry.getKey(),
-        entry.getValue(), null, false,
-        (cache).getInternalDistributedSystem().getDistributedMember(), false);
+    EntryEventImpl event;
+    try {
+      event = new DefaultEntryEventFactory().create(region, Operation.UPDATE,
+          entry.getKey(),
+          entry.getValue(), null, false,
+          (cache).getInternalDistributedSystem().getDistributedMember(), false);
+    } catch (EntryDestroyedException e) {
+      return null;
+    }
     if (entry instanceof NonTXEntry) {
       event.setVersionTag(((NonTXEntry) entry).getRegionEntry().getVersionStamp().asVersionTag());
     } else {
