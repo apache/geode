@@ -40,6 +40,10 @@ rat {
     '.buildinfo',
     '**/release-features.rendered', // just for jenkins
 
+    // Go
+    '**/go.mod',
+    '**/go.sum',
+
     // Geode examples
     'geode-examples/.idea/**',
     'geode-examples/gradlew*/**',
@@ -56,7 +60,7 @@ rat {
     '**/*.iml',
     '**/*.ipr',
     '**/*.iws',
-    '.idea/**',
+    '**/.idea/**',
     '**/tags',
     '**/out/**',
 
