@@ -332,6 +332,12 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
+        <groupId>net.minidev</groupId>
+        <artifactId>json-smart</artifactId>
+        <version>2.4.1</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
         <groupId>net.openhft</groupId>
         <artifactId>compiler</artifactId>
         <version>2.3.5</version>
