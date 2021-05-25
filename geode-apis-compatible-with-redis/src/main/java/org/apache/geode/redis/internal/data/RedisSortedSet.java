@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 
@@ -73,7 +75,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
-  int getSortedSetSize() {
+  protected int getSortedSetSize() {
     return members.size();
   }
 
@@ -224,6 +226,50 @@ public class RedisSortedSet extends AbstractRedisData {
 
   byte[] zscore(byte[] member) {
     return members.get(member);
+  }
+
+  byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
+      byte[] member) {
+    byte[] score = members.get(member);
+    double incr;
+
+    String stringIncr = Coder.bytesToString(increment).toLowerCase();
+    switch (stringIncr) {
+      case "inf":
+      case "+inf":
+      case "infinity":
+      case "+infinity":
+        incr = POSITIVE_INFINITY;
+        break;
+      case "-inf":
+      case "-infinity":
+        incr = NEGATIVE_INFINITY;
+        break;
+      default:
+        try {
+          incr = Double.parseDouble(stringIncr);
+        } catch (NumberFormatException nfe) {
+          return ERROR_NOT_A_VALID_FLOAT.getBytes();
+        }
+        break;
+    }
+
+    if (score == null) {
+      byte[] retIncr = Coder.doubleToBytes(incr);
+      memberAdd(member, retIncr);
+      return retIncr;
+    }
+
+    byte[] newScore = Coder.doubleToBytes(Coder.bytesToDouble(score) + incr);
+    memberAdd(member, newScore);
+
+    AddsDeltaInfo deltaInfo = new AddsDeltaInfo(new ArrayList<>());
+    deltaInfo.add(member);
+    deltaInfo.add(newScore);
+
+    storeChanges(region, key, deltaInfo);
+
+    return newScore;
   }
 
   long zrem(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToRemove) {

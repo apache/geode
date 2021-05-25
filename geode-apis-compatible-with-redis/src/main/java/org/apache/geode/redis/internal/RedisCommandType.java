@@ -95,6 +95,7 @@ import org.apache.geode.redis.internal.executor.set.SUnionExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionStoreExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZCardExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZIncrByExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZRemExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZScoreExecutor;
 import org.apache.geode.redis.internal.executor.string.AppendExecutor;
@@ -198,6 +199,7 @@ public enum RedisCommandType {
 
   ZADD(new ZAddExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
   ZCARD(new ZCardExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  ZINCRBY(new ZIncrByExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   ZREM(new ZRemExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
   ZSCORE(new ZScoreExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
 

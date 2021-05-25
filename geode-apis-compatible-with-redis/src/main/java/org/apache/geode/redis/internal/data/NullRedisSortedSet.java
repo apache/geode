@@ -49,4 +49,17 @@ class NullRedisSortedSet extends RedisSortedSet {
   byte[] zscore(byte[] member) {
     return null;
   }
+
+  @Override
+  byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
+      byte[] member) {
+    List<byte[]> valuesToAdd = new ArrayList<>();
+    valuesToAdd.add(increment);
+    valuesToAdd.add(member);
+
+    RedisSortedSet sortedSet = new RedisSortedSet(valuesToAdd);
+    region.create(key, sortedSet);
+
+    return increment;
+  }
 }

@@ -84,6 +84,7 @@ public class SupportedCommandsJUnitTest {
       "TYPE",
       "UNSUBSCRIBE",
       "ZADD",
+      "ZINCRBY",
       "ZCARD",
       "ZREM",
       "ZSCORE"
