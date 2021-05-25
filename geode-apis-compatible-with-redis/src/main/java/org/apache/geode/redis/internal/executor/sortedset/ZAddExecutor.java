@@ -30,7 +30,7 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ZAddExecutor extends AbstractExecutor {
-  private ZAddExecutorState zAddExecutorState = new ZAddExecutorState();
+  private final ZAddExecutorState zAddExecutorState = new ZAddExecutorState();
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
@@ -134,7 +134,7 @@ public class ZAddExecutor extends AbstractExecutor {
     return new ZAddOptions(existsOption);
   }
 
-  class ZAddExecutorState {
+  static class ZAddExecutorState {
     public int optionsFoundCount = 0;
     public boolean nxFound = false, xxFound = false;
     public String exceptionMessage = null;
