@@ -17,7 +17,6 @@
 package org.apache.geode.redis.internal.data;
 
 
-
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
@@ -44,10 +43,16 @@ class NullRedisSortedSet extends RedisSortedSet {
   long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
       ZAddOptions options) {
     if (options.isXX()) {
-      return 0;
+      return 0L;
+    }
+
+    for (int i = 0; i < membersToAdd.size(); i += 2) {
+      byte[] incr = processIncrement(Coder.bytesToString(membersToAdd.get(i)));
+      membersToAdd.set(i, incr);
     }
     RedisSortedSet sortedSet = new RedisSortedSet(membersToAdd);
     region.create(key, sortedSet);
+
     return sortedSet.getSortedSetSize();
   }
 

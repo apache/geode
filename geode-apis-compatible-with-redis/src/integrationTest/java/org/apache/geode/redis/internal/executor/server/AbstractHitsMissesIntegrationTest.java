@@ -323,6 +323,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   /************* Sorted Set related commands *************/
   @Test
+  public void testZAdd() {
+    Map<String, Double> toAdd = new HashMap<>();
+    toAdd.put("member", 1.0);
+    runCommandAndAssertNoStatUpdates("key", (String k) -> jedis.zadd(k, toAdd));
+  }
+
+  @Test
   public void testZIncrBy() {
     runCommandAndAssertNoStatUpdates("key", (k, m) -> jedis.zincrby(k, 100.0, m));
   }

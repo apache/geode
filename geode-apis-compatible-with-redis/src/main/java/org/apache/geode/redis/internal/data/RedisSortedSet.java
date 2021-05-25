@@ -70,7 +70,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
-      validateScoreIsDouble(score);
+      processIncrement(score);
       byte[] member = iterator.next();
       memberAdd(member, score);
     }
@@ -193,8 +193,8 @@ public class RedisSortedSet extends AbstractRedisData {
     int initialSize = getSortedSetSize();
     int changesCount = 0;
     while (iterator.hasNext()) {
-      byte[] score = iterator.next();
-      validateScoreIsDouble(score);
+      byte[] score =
+          Coder.doubleToBytes(processIncrement(iterator.next()));
       byte[] member = iterator.next();
       if (options.isNX() && members.containsKey(member)) {
         continue;
@@ -218,14 +218,6 @@ public class RedisSortedSet extends AbstractRedisData {
     return getSortedSetSize() - initialSize + changesCount;
   }
 
-  private void validateScoreIsDouble(byte[] score) {
-    try {
-      Double.valueOf(Coder.bytesToString(score));
-    } catch (NumberFormatException e) {
-      throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
-    }
-  }
-
   byte[] zscore(byte[] member) {
     return members.get(member);
   }
@@ -233,7 +225,7 @@ public class RedisSortedSet extends AbstractRedisData {
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
     byte[] byteScore = members.get(member);
-    double incr = processIncrement(Coder.bytesToString(increment).toLowerCase());
+    double incr = processIncrement(increment);
 
     if (byteScore != null) {
       incr += Coder.bytesToDouble(byteScore);
@@ -313,27 +305,28 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
-  private double processIncrement(String stringIncr) {
-    double incr;
-    switch (stringIncr) {
+  private double processIncrement(byte[] value) {
+    String stringValue = Coder.bytesToString(value).toLowerCase();
+    double processedDouble;
+    switch (stringValue) {
       case "inf":
       case "+inf":
       case "infinity":
       case "+infinity":
-        incr = POSITIVE_INFINITY;
+        processedDouble = POSITIVE_INFINITY;
         break;
       case "-inf":
       case "-infinity":
-        incr = NEGATIVE_INFINITY;
+        processedDouble = NEGATIVE_INFINITY;
         break;
       default:
         try {
-          incr = Double.parseDouble(stringIncr);
+          processedDouble = Double.parseDouble(stringValue);
         } catch (NumberFormatException nfe) {
           throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
         }
         break;
     }
-    return incr;
+    return processedDouble;
   }
 }

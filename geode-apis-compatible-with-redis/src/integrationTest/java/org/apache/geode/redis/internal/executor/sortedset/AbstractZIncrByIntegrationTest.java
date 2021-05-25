@@ -168,7 +168,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
 
   @Test
   public void scoreOfPositiveInfinityShouldRemainInfinite_whenIncrementingOrDecrementing() {
-    jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER);
+    jedis.zadd(KEY, POSITIVE_INFINITY, MEMBER);
 
     jedis.zincrby(KEY, 100.0, MEMBER);
     assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(POSITIVE_INFINITY);
@@ -179,7 +179,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
 
   @Test
   public void scoreOfNegativeInfinityShouldRemainInfinite_whenIncrementingOrDecrementing() {
-    jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER);
+    jedis.zadd(KEY, NEGATIVE_INFINITY, MEMBER);
 
     jedis.zincrby(KEY, 100.0, MEMBER);
     assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(NEGATIVE_INFINITY);
@@ -190,7 +190,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
 
   @Test
   public void incrementingScoreOfInfinityByNegativeInfinity_throwsNaNError() {
-    jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER);
+    jedis.zadd(KEY, POSITIVE_INFINITY, MEMBER);
 
     assertThatThrownBy(() -> jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER))
         .hasMessageContaining(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
@@ -198,7 +198,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
 
   @Test
   public void incrementingScoreOfNegativeInfinityByPositiveInfinity_throwsNaNError() {
-    jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER);
+    jedis.zadd(KEY, NEGATIVE_INFINITY, MEMBER);
 
     assertThatThrownBy(() -> jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER))
         .hasMessageContaining(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
@@ -206,14 +206,14 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
 
   @Test
   public void incrementingScoreOfNegativeInfinityByNegativeInfinity_IsAllowed() {
-    jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER);
+    jedis.zadd(KEY, NEGATIVE_INFINITY, MEMBER);
 
     assertThat(jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER)).isEqualTo(NEGATIVE_INFINITY);
   }
 
   @Test
   public void incrementingScoreOfPositiveInfinityByPositiveiveInfinity_IsAllowed() {
-    jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER);
+    jedis.zadd(KEY, POSITIVE_INFINITY, MEMBER);
 
     assertThat(jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER)).isEqualTo(POSITIVE_INFINITY);
   }
