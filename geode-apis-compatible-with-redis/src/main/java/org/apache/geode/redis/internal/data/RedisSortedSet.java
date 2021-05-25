@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 
 import java.io.DataInput;
@@ -40,6 +41,7 @@ import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
+import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSet extends AbstractRedisData {
   private Object2ObjectOpenCustomHashMap<byte[], byte[]> members;
@@ -65,6 +67,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
+      validateScoreIsDouble(score);
       byte[] member = iterator.next();
       memberAdd(member, score);
     }
@@ -191,6 +194,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
+      validateScoreIsDouble(score);
       byte[] member = iterator.next();
 
       if (options.isNX() && members.containsKey(member)) {
@@ -210,6 +214,14 @@ public class RedisSortedSet extends AbstractRedisData {
 
     storeChanges(region, key, deltaInfo);
     return getSortedSetSize() - initialSize;
+  }
+
+  private void validateScoreIsDouble(byte[] score) {
+    try {
+      Double.valueOf(Coder.bytesToString(score));
+    } catch (NumberFormatException e) {
+      throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
+    }
   }
 
   byte[] zscore(byte[] member) {

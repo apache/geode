@@ -19,7 +19,6 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -41,19 +40,14 @@ public class ZAddExecutor extends AbstractExecutor {
 
     skipCommandAndKey(commandIterator);
 
-    byte[] firstScore = findAndValidateZAddOptions(command, commandIterator, zAddExecutorState);
-    if (zAddExecutorState.exceptionMessage != null) {
-      return RedisResponse.error(zAddExecutorState.exceptionMessage);
-    }
-
-    List<byte[]> scoresAndMembersToAdd = getScoresAndMembers(firstScore, commandIterator,
-        zAddExecutorState);
+    int optionsFoundCount = findAndValidateZAddOptions(command, commandIterator, zAddExecutorState);
     if (zAddExecutorState.exceptionMessage != null) {
       return RedisResponse.error(zAddExecutorState.exceptionMessage);
     }
 
     return RedisResponse
-        .integer(redisSortedSetCommands.zadd(command.getKey(), scoresAndMembersToAdd,
+        .integer(redisSortedSetCommands.zadd(command.getKey(),
+            commandElements.subList(optionsFoundCount + 2, commandElements.size()),
             makeOptions(zAddExecutorState)));
   }
 
@@ -62,22 +56,21 @@ public class ZAddExecutor extends AbstractExecutor {
     commandIterator.next();
   }
 
-  private byte[] findAndValidateZAddOptions(Command command, Iterator<byte[]> commandIterator,
+  private int findAndValidateZAddOptions(Command command, Iterator<byte[]> commandIterator,
       ZAddExecutorState executorState) {
     boolean scoreFound = false;
-    byte[] next = new byte[0];
+    int optionsFoundCount = 0;
 
     while (commandIterator.hasNext() && !scoreFound) {
-      next = commandIterator.next();
-      String subCommandString = Coder.bytesToString(next).toLowerCase();
+      String subCommandString = Coder.bytesToString(commandIterator.next()).toLowerCase();
       switch (subCommandString) {
         case "nx":
           executorState.nxFound = true;
-          executorState.optionsFoundCount++;
+          optionsFoundCount++;
           break;
         case "xx":
           executorState.xxFound = true;
-          executorState.optionsFoundCount++;
+          optionsFoundCount++;
           break;
         default:
           try {
@@ -88,38 +81,12 @@ public class ZAddExecutor extends AbstractExecutor {
           scoreFound = true;
       }
     }
-    if ((command.getProcessedCommand().size() - executorState.optionsFoundCount - 2) % 2 != 0) {
+    if ((command.getProcessedCommand().size() - optionsFoundCount - 2) % 2 != 0) {
       executorState.exceptionMessage = ERROR_SYNTAX;
     } else if (executorState.nxFound && executorState.xxFound) {
       executorState.exceptionMessage = ERROR_INVALID_ZADD_OPTION_NX_XX;
     }
-    return next;
-  }
-
-  private List<byte[]> getScoresAndMembers(byte[] firstScore, Iterator<byte[]> commandIterator,
-      ZAddExecutorState executorState) {
-    List<byte[]> scoresAndMembersToAdd = new ArrayList<>();
-
-    // Already validated there's at least one pair
-    scoresAndMembersToAdd.add(firstScore);
-    scoresAndMembersToAdd.add(commandIterator.next());
-
-    // Any more?
-    while (commandIterator.hasNext()) {
-      byte[] score = commandIterator.next();
-      try {
-        Double.valueOf(Coder.bytesToString(score));
-      } catch (NumberFormatException nfe) {
-        executorState.exceptionMessage = ERROR_NOT_A_VALID_FLOAT;
-        return null;
-      }
-      scoresAndMembersToAdd.add(score);
-
-      // We already validated even number of remaining params
-      byte[] member = commandIterator.next();
-      scoresAndMembersToAdd.add(member);
-    }
-    return scoresAndMembersToAdd;
+    return optionsFoundCount;
   }
 
   private ZAddOptions makeOptions(ZAddExecutorState executorState) {
@@ -135,12 +102,10 @@ public class ZAddExecutor extends AbstractExecutor {
   }
 
   static class ZAddExecutorState {
-    public int optionsFoundCount = 0;
     public boolean nxFound = false, xxFound = false;
     public String exceptionMessage = null;
 
     public void initialize() {
-      optionsFoundCount = 0;
       nxFound = false;
       xxFound = false;
       exceptionMessage = null;
