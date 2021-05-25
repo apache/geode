@@ -19,6 +19,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -47,7 +48,7 @@ public class ZAddExecutor extends AbstractExecutor {
 
     return RedisResponse
         .integer(redisSortedSetCommands.zadd(command.getKey(),
-            commandElements.subList(optionsFoundCount + 2, commandElements.size()),
+            new ArrayList<>(commandElements.subList(optionsFoundCount + 2, commandElements.size())),
             makeOptions(zAddExecutorState)));
   }
 
