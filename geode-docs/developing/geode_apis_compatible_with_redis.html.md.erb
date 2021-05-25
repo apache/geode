@@ -27,7 +27,7 @@ optional password authentication.
 
 <img src="../images_svg/geode_apis_compatible_with_redis.svg" class="image" />
 
-## <a id="using-the-api" class="no-quick-link"></a>Using the <%=vars.product_name%> API compatible with Redis
+## <a id="using-the-api" class="no-quick-link"></a>Using the <%=vars.product_name%> APIs Compatible with Redis
 
 The <%=vars.product_name%> cluster must have at least one server that is set up to handle the incoming Redis commands.
 
@@ -45,16 +45,12 @@ start server \
 If any of the options `compatible-with-redis-bind-address`, `compatible-with-redis-password`, or `compatible-with-redis-port`
 are included, a <%=vars.product_name%> server with APIs compatible with Redis will be started.
 
-Replace `<serverName>` with the name of your server.
-
-Replace `<locatorPort>` with your locator port.
-
-Replace `<compatibleWithRedisPort>` with the port that the <%=vars.product_name%> server
- listens on for Redis commands. The typical port used with a cluster compatible with Redis is 6379.
-
-Replace `<compatibleWithRedisBindAddress>` with the address of the server host.
-
-Replace `<compatibleWithWithRedisPassword>` with the password clients use to authenticate.
+- Replace `<serverName>` with the name of your server.
+- Replace `<locatorPort>` with your locator port.
+- Replace `<compatibleWithRedisPort>` with the port that the <%=vars.product_name%> server
+  listens on for Redis commands. The typical port used with a cluster compatible with Redis is 6379.
+- Replace `<compatibleWithRedisBindAddress>` with the address of the server host.
+- Replace `<compatibleWithWithRedisPassword>` with the password clients use to authenticate.
 
 To confirm the server is listening, run:
 
@@ -137,73 +133,43 @@ These commands are supported for Redis 5.
 
 **[2]** INFO is implemented for the sections and fields listed below:
 
- - clients
-
-    - connected_clients
-
-    - blocked_clients (always returns 0)
-
- - cluster
-
-    - cluster_enables (always returns 0)
-
- - keyspace
-
-    - returns stats for db: 0
-
- - memory
-
-    - maxmemory
-
-    - used_memory
-
-    - mem_fragmentation_ratio (always reports 1.00)
-
- - persistence
-
-    - loading (always returns 0)
-
-    - rdb_changes_since_last_save (always returns 0)
-
-    - rdb_last_save_time (always returns 0)
-
- - replication
-
-    - role
-
-    - connected_slaves (always returns 0)
-
  - server
-
    - redis_version
-
-   - redis_mode
-
+   - redis_mode (always returns "standalone")
    - tcp_port
-
    - uptime_in_seconds
-
    - uptime_in_days
-
+ - clients
+    - connected_clients
+    - blocked_clients (always returns 0)
+ - memory
+    - maxmemory
+    - used_memory
+    - mem_fragmentation_ratio (always reports 1.00)
+ - persistence
+    - loading (always returns 0)
+    - rdb_changes_since_last_save (always returns 0)
+    - rdb_last_save_time (always returns 0)
  - stats
-
     - total_commands_processed
-
     - instantaneous_ops_per_sec
-
     - total_net_input_bytes
-
     - instantaneous_input_kbps
-
     - total_connections_received
-
     - keyspace_hits
-
     - keyspace_misses
-
     - evicted_keys (always returns 0)
-
     - rejected_connections (always returns 0)
+ - keyspace
+    - returns stats for db: 0
+      - keys (returns num keys)
+      - expires (always returns 0)
+      - avg_ttl (always returns 0)
+ - replication
+    - role (always returns "master")
+    - connected_slaves (always returns 0)
+ - cluster
+    - cluster_enabled (always returns 0)
 
 **[3]**  SLOWLOG is implemented as a NoOp.
 
@@ -217,8 +183,8 @@ These commands are supported for Redis 5.
 
 Keys are expired in two ways, actively and passively:
 
--   With active expiration, expiration is evaluated whenever a key is accessed. If the key is due to expire, it is deleted. Active expiration is accurate to the millisecond.
--   With passive expiration, keys are evaluated every second. If they are due to expire, they are deleted.  Passive expiration is accurate to the second.
+-   With active expiration, expiration is evaluated whenever a key is accessed. If the key is due to expire, it is deleted.
+-   With passive expiration, keys are evaluated every 3 minutes. If they are due to expire, they are deleted.
 
 ## <a id="high-availability-model" class="no-quick-link"></a>High Availability Model
 
