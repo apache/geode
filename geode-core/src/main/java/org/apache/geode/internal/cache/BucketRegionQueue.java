@@ -679,4 +679,27 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         && !this.eventSeqNumDeque.isEmpty() && getBucketAdvisor().isPrimary();
   }
 
+  List<Object> getQueueList() {
+    getInitializationLock().readLock().lock();
+    try {
+      if (this.getPartitionedRegion().isDestroyed()) {
+        throw new BucketRegionQueueUnavailableException();
+      }
+      List<Object> elementsInQueue = new ArrayList<>();
+      Iterator<Object> it = this.eventSeqNumDeque.iterator();
+      while (it.hasNext()) {
+        Object key = it.next();
+        Object event = optimalGet(key);
+
+        if (!(event instanceof InternalGatewayQueueEvent)) {
+          continue;
+        }
+        elementsInQueue.add(event);
+      }
+      return elementsInQueue;
+    } finally {
+      getInitializationLock().readLock().unlock();
+    }
+  }
+
 }
