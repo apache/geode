@@ -67,7 +67,7 @@ public class RedisSortedSetTest {
 
   @Test
   public void confirmSerializationIsStable() throws IOException, ClassNotFoundException {
-    RedisSortedSet sortedSet1 = createRedisSortedSet("k1", "v1", "k2", "v2");
+    RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     sortedSet1.setExpirationTimestampNoDelta(1000);
 
     HeapDataOutputStream out = new HeapDataOutputStream(100);
@@ -80,28 +80,28 @@ public class RedisSortedSetTest {
 
   @Test
   public void equals_returnsFalse_givenDifferentExpirationTimes() {
-    RedisSortedSet sortedSet1 = createRedisSortedSet("k1", "v1", "k2", "v2");
+    RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     sortedSet1.setExpirationTimestampNoDelta(1000);
 
-    RedisSortedSet sortedSet2 = createRedisSortedSet("k1", "v1", "k2", "v2");
+    RedisSortedSet sortedSet2 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     sortedSet2.setExpirationTimestampNoDelta(999);
     assertThat(sortedSet1).isNotEqualTo(sortedSet2);
   }
 
   @Test
   public void equals_returnsFalse_givenDifferentValueBytes() {
-    RedisSortedSet sortedSet1 = createRedisSortedSet("k1", "v1", "k2", "v2");
+    RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     sortedSet1.setExpirationTimestampNoDelta(1000);
-    RedisSortedSet sortedSet2 = createRedisSortedSet("k1", "v1", "k2", "v3");
+    RedisSortedSet sortedSet2 = createRedisSortedSet("3.14159", "v1", "2.71828", "v3");
     sortedSet2.setExpirationTimestampNoDelta(1000);
     assertThat(sortedSet1).isNotEqualTo(sortedSet2);
   }
 
   @Test
   public void equals_returnsTrue_givenEqualValueBytesAndExpiration() {
-    RedisSortedSet sortedSet1 = createRedisSortedSet("k1", "v1", "k2", "v2");
+    RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     sortedSet1.setExpirationTimestampNoDelta(1000);
-    RedisSortedSet sortedSet2 = createRedisSortedSet("k1", "v1", "k2", "v2");
+    RedisSortedSet sortedSet2 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     sortedSet2.setExpirationTimestampNoDelta(1000);
     assertThat(sortedSet1).isEqualTo(sortedSet2);
   }
@@ -117,10 +117,10 @@ public class RedisSortedSetTest {
   @Test
   public void zadd_stores_delta_that_is_stable() throws IOException {
     Region<RedisKey, RedisData> region = uncheckedCast(Mockito.mock(Region.class));
-    RedisSortedSet sortedSet1 = createRedisSortedSet("k1", "v1", "k2", "v2");
+    RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
 
     List<byte[]> adds = new ArrayList<>();
-    adds.add("k3".getBytes());
+    adds.add("1.61803".getBytes());
     adds.add("v3".getBytes());
 
     sortedSet1.zadd(region, null, adds, new ZAddOptions(ZAddOptions.Exists.NONE));
@@ -131,7 +131,7 @@ public class RedisSortedSetTest {
     assertThat(sortedSet1.hasDelta()).isFalse();
 
     ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-    RedisSortedSet sortedSet2 = createRedisSortedSet("k1", "v1", "k2", "v2");
+    RedisSortedSet sortedSet2 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     assertThat(sortedSet2).isNotEqualTo(sortedSet1);
 
     sortedSet2.fromDelta(in);
@@ -141,7 +141,7 @@ public class RedisSortedSetTest {
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
     Region<RedisKey, RedisData> region = uncheckedCast(Mockito.mock(Region.class));
-    RedisSortedSet sortedSet1 = createRedisSortedSet("k1", "v1", "k2", "v2");
+    RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     sortedSet1.setExpirationTimestamp(region, null, 999);
     assertThat(sortedSet1.hasDelta()).isTrue();
 
@@ -150,7 +150,7 @@ public class RedisSortedSetTest {
     assertThat(sortedSet1.hasDelta()).isFalse();
 
     ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-    RedisSortedSet sortedSet2 = createRedisSortedSet("k1", "v1", "k2", "v2");
+    RedisSortedSet sortedSet2 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     assertThat(sortedSet2).isNotEqualTo(sortedSet1);
 
     sortedSet2.fromDelta(in);
