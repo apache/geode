@@ -23,12 +23,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZAddExecutor extends SortedSetExecutor {
+public class ZAddExecutor extends AbstractExecutor {
   private ZAddExecutorState zAddExecutorState = new ZAddExecutorState();
 
   @Override
