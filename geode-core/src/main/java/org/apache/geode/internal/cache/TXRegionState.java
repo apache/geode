@@ -322,13 +322,11 @@ public class TXRegionState {
         msg.startRegion(r, entryMods.size());
         Iterator it = this.entryMods.entrySet().iterator();
         Set<InternalDistributedMember> newMemberSet = new HashSet<InternalDistributedMember>();
-        Set<InternalDistributedMember> secondaryMemberSet = new HashSet<>();
 
         if (r.getScope().isDistributed()) {
           DistributedRegion dr = (DistributedRegion) r;
           msg.addViewVersion(dr, dr.getDistributionAdvisor().startOperation());
           newMemberSet.addAll(dr.getCacheDistributionAdvisor().adviseTX());
-          secondaryMemberSet.addAll(newMemberSet);
         }
 
         while (it.hasNext()) {
@@ -337,16 +335,14 @@ public class TXRegionState {
           TXEntryState txes = (TXEntryState) me.getValue();
           txes.buildMessage(r, eKey, msg, this.otherMembers);
           if (txes.getFilterRoutingInfo() != null) {
+            msg.setNotificationOnlyMembers(txes.getAdjunctRecipients());
+            // exclude members that actually host targeted bucket from notification only list
+            msg.getNotificationOnlyMembers().removeAll(newMemberSet);
             newMemberSet.addAll(txes.getFilterRoutingInfo().getMembers());
           }
           if (txes.getAdjunctRecipients() != null) {
             newMemberSet.addAll(txes.getAdjunctRecipients());
-            msg.setNotificationOnlyMembers(txes.getAdjunctRecipients());
           }
-        }
-
-        if (!msg.getNotificationOnlyMembers().isEmpty()) {
-          msg.getNotificationOnlyMembers().removeAll(secondaryMemberSet);
         }
 
         if (!newMemberSet.equals(this.otherMembers)) {
