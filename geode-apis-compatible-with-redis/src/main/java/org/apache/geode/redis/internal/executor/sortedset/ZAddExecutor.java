@@ -62,7 +62,7 @@ public class ZAddExecutor extends SortedSetExecutor {
   }
 
   private byte[] findAndValidateZAddOptions(Command command, Iterator<byte[]> commandIterator,
-                                            ZAddExecutorState executorState) {
+      ZAddExecutorState executorState) {
     boolean scoreFound = false;
     byte[] next = new byte[0];
 
@@ -96,7 +96,7 @@ public class ZAddExecutor extends SortedSetExecutor {
   }
 
   private List<byte[]> getScoresAndMembers(byte[] firstScore, Iterator<byte[]> commandIterator,
-                                           ZAddExecutorState executorState) {
+      ZAddExecutorState executorState) {
     List<byte[]> scoresAndMembersToAdd = new ArrayList<>();
 
     // Already validated there's at least one pair

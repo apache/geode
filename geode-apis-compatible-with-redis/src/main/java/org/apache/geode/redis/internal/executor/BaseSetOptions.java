@@ -29,7 +29,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 /**
  * Class representing different options that can be used with Redis Sorted Set ZADD command.
  */
-public class BaseSetOptions implements DataSerializableFixedID {
+public abstract class BaseSetOptions implements DataSerializableFixedID {
 
   private Exists exists;
 
@@ -49,11 +49,6 @@ public class BaseSetOptions implements DataSerializableFixedID {
 
   public Exists getExists() {
     return exists;
-  }
-
-  @Override
-  public int getDSFID() {
-    return ILLEGAL;
   }
 
   @Override
