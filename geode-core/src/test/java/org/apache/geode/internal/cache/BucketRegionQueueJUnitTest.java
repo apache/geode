@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -191,6 +192,61 @@ public class BucketRegionQueueJUnitTest {
     assertEquals(objects, Arrays.asList(new Object[] {event2, event4}));
   }
 
+  @Test
+  public void testPeekedElementsArePossibleDuplicate()
+      throws Exception {
+    ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+
+    LocalRegion lr = mock(LocalRegion.class);
+    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getCache()).thenReturn(this.cache);
+
+    // Configure conflation
+    when(this.sender.isBatchConflationEnabled()).thenReturn(true);
+    when(sender.getStatistics()).thenReturn(mock(GatewaySenderStats.class));
+
+    this.bucketRegionQueue
+        .cleanUpDestroyedTokensAndMarkGIIComplete(InitialImageOperation.GIIStatus.NO_GII);
+
+    // Create a batch of conflatable events with duplicate update events
+    Object lastUpdateValue = "Object_13968_5";
+    long lastUpdateSequenceId = 104;
+    GatewaySenderEventImpl event1 = createGatewaySenderEvent(lr, Operation.CREATE,
+        "Object_13964", "Object_13964_1", 1, 100);
+    GatewaySenderEventImpl event2 = createGatewaySenderEvent(lr, Operation.CREATE,
+        "Object_13965", "Object_13965_2", 1, 101);
+    GatewaySenderEventImpl event3 = createGatewaySenderEvent(lr, Operation.CREATE,
+        "Object_13966", "Object_13966_3", 1, 102);
+    GatewaySenderEventImpl event4 = createGatewaySenderEvent(lr, Operation.CREATE,
+        "Object_13967", "Object_13967_4", 1, 103);
+    GatewaySenderEventImpl event5 = createGatewaySenderEvent(lr, Operation.CREATE,
+        "Object_13968", lastUpdateValue, 1, lastUpdateSequenceId);
+
+    this.bucketRegionQueue.addToQueue(1L, event1);
+    this.bucketRegionQueue.addToQueue(2L, event2);
+    this.bucketRegionQueue.addToQueue(3L, event3);
+    this.bucketRegionQueue.addToQueue(4L, event4);
+    this.bucketRegionQueue.addToQueue(5L, event5);
+
+    this.bucketRegionQueue.beforeAcquiringPrimaryState();
+
+    List<Object> objects = this.bucketRegionQueue.getHelperQueueList();
+
+    assertThat(objects.size()).isEqualTo(5);
+
+    for (Object o : objects) {
+      assertThat(((GatewaySenderEventImpl) o).getPossibleDuplicate()).isFalse();
+    }
+
+    Object peekObj = this.bucketRegionQueue.peek();
+
+    while (peekObj != null) {
+      assertThat(((GatewaySenderEventImpl) peekObj).getPossibleDuplicate()).isTrue();
+      peekObj = this.bucketRegionQueue.peek();
+    }
+
+  }
+
   GatewaySenderEventImpl createMockGatewaySenderEvent(Object key, TransactionId tId,
       boolean isLastEventInTx) {
     GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
@@ -199,4 +255,31 @@ public class BucketRegionQueueJUnitTest {
     when(event.getKey()).thenReturn(key);
     return event;
   }
+
+  private GatewaySenderEventImpl createGatewaySenderEvent(LocalRegion lr, Operation operation,
+      Object key, Object value, long threadId, long sequenceId)
+      throws Exception {
+    when(lr.getKeyInfo(key, value, null)).thenReturn(new KeyInfo(key, null, null));
+    when(lr.getTXId()).thenReturn(null);
+
+    EntryEventImpl eei = EntryEventImpl.create(lr, operation, key, value, null, false, null);
+    eei.setEventId(new EventID(new byte[16], threadId, sequenceId));
+
+    return new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true, false);
+  }
+
+  private EnumListenerEvent getEnumListenerEvent(Operation operation) {
+    EnumListenerEvent ele = null;
+    if (operation.isCreate()) {
+      ele = EnumListenerEvent.AFTER_CREATE;
+    } else if (operation.isUpdate()) {
+      ele = EnumListenerEvent.AFTER_UPDATE;
+    } else if (operation.isDestroy()) {
+      ele = EnumListenerEvent.AFTER_DESTROY;
+    }
+    return ele;
+  }
+
+
+
 }
