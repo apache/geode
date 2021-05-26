@@ -23,7 +23,7 @@ import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 
-public abstract class SingleResultRedisFunction implements AllowExecutionInLowMemory {
+public abstract class SingleResultRedisFunction implements AllowExecutionInLowMemory<Object[]> {
 
   private static final long serialVersionUID = 3239452234149879302L;
   private final transient PartitionedRegion partitionedRegion;
