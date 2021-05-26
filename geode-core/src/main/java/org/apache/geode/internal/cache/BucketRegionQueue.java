@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -30,9 +29,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionAttributes;
@@ -206,7 +207,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public void beforeAcquiringPrimaryState() {
-    markAsDuplicate.addAll(Arrays.asList(eventSeqNumDeque.toArray()));
+    markAsDuplicate.addAll(eventSeqNumDeque);
   }
 
   @Override
@@ -433,6 +434,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         object = optimalGet(key);
         if (object != null) {
           if (setDuplicate) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("BucketRegionQueue: mark event {} as possible duplicate due to" +
+                  " change of primary bucket.", object);
+            }
             ((GatewaySenderEventImpl) object).setPossibleDuplicate(true);
           }
         } else if (!this.getPartitionedRegion().isConflationEnabled()) {
@@ -679,24 +684,18 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         && !this.eventSeqNumDeque.isEmpty() && getBucketAdvisor().isPrimary();
   }
 
-  List<Object> getQueueList() {
+  @VisibleForTesting
+  List<Object> getHelperQueueList() {
     getInitializationLock().readLock().lock();
     try {
       if (this.getPartitionedRegion().isDestroyed()) {
         throw new BucketRegionQueueUnavailableException();
       }
-      List<Object> elementsInQueue = new ArrayList<>();
-      Iterator<Object> it = this.eventSeqNumDeque.iterator();
-      while (it.hasNext()) {
-        Object key = it.next();
-        Object event = optimalGet(key);
+      return eventSeqNumDeque.stream()
+          .map(this::optimalGet)
+          .filter(o -> o instanceof InternalGatewayQueueEvent)
+          .collect(Collectors.toList());
 
-        if (!(event instanceof InternalGatewayQueueEvent)) {
-          continue;
-        }
-        elementsInQueue.add(event);
-      }
-      return elementsInQueue;
     } finally {
       getInitializationLock().readLock().unlock();
     }

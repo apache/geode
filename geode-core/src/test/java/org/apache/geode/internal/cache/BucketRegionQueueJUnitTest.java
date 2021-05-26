@@ -230,7 +230,7 @@ public class BucketRegionQueueJUnitTest {
 
     this.bucketRegionQueue.beforeAcquiringPrimaryState();
 
-    List<Object> objects = this.bucketRegionQueue.getQueueList();
+    List<Object> objects = this.bucketRegionQueue.getHelperQueueList();
 
     assertThat(objects.size()).isEqualTo(5);
 
@@ -247,7 +247,6 @@ public class BucketRegionQueueJUnitTest {
 
   }
 
-
   GatewaySenderEventImpl createMockGatewaySenderEvent(Object key, TransactionId tId,
       boolean isLastEventInTx) {
     GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
@@ -263,13 +262,10 @@ public class BucketRegionQueueJUnitTest {
     when(lr.getKeyInfo(key, value, null)).thenReturn(new KeyInfo(key, null, null));
     when(lr.getTXId()).thenReturn(null);
 
-
-
     EntryEventImpl eei = EntryEventImpl.create(lr, operation, key, value, null, false, null);
     eei.setEventId(new EventID(new byte[16], threadId, sequenceId));
-    GatewaySenderEventImpl gsei =
-        new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true, false);
-    return gsei;
+
+    return new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true, false);
   }
 
   private EnumListenerEvent getEnumListenerEvent(Operation operation) {
