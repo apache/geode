@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.assertj.core.data.Offset;
 import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -63,24 +63,28 @@ public class ClusterSlotsAndNodesDUnitTest {
   private static Jedis jedis1;
   private static Jedis jedis2;
   private static JedisCluster jedisCluster;
+  private static int redisServerPort1;
+  private static int redisServerPort2;
 
   @BeforeClass
   public static void classSetup() {
     locator = cluster.startLocatorVM(0);
     server1 = cluster.startRedisVM(1, locator.getPort());
     server2 = cluster.startRedisVM(2, locator.getPort());
+  }
 
-    int redisServerPort1 = cluster.getRedisPort(1);
-    int redisServerPort2 = cluster.getRedisPort(2);
-
+  @Before
+  public void setup() {
+    redisServerPort1 = cluster.getRedisPort(1);
+    redisServerPort2 = cluster.getRedisPort(2);
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
     jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
 
     jedisCluster = new JedisCluster(new HostAndPort("localhost", redisServerPort1), JEDIS_TIMEOUT);
   }
 
-  @AfterClass
-  public static void teardown() {
+  @After
+  public void cleanup() {
     jedis1.close();
     jedis2.close();
     jedisCluster.close();
