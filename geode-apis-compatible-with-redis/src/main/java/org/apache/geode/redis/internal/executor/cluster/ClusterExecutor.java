@@ -131,14 +131,14 @@ public class ClusterExecutor extends AbstractExecutor {
 
   private Map<String, List<Integer>> getMemberBuckets(
       List<SlotAdvisor.MemberBucketSlot> bucketSlots) {
-    Map<String, List<Integer>> result = new HashMap<>();
+    Map<String, List<Integer>> memberBuckets = new HashMap<>();
 
     for (SlotAdvisor.MemberBucketSlot mbs : bucketSlots) {
-      result.computeIfAbsent(mbs.getMember().getUniqueId(), k -> new ArrayList<>())
+      memberBuckets.computeIfAbsent(mbs.getMember().getUniqueId(), k -> new ArrayList<>())
           .add(mbs.getBucketId());
     }
 
-    return result;
+    return memberBuckets;
   }
 
   private RedisResponse getInfo(ExecutionHandlerContext ctx) {

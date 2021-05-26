@@ -125,7 +125,7 @@ public class SlotAdvisor {
 
   public static class MemberBucketSlot {
     private final int bucketId;
-    private DistributedMember member;
+    private final DistributedMember member;
     private final String primaryIpAddress;
     private final int primaryPort;
     private final int slotStart;
