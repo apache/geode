@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.assertj.core.data.Offset;
 import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -58,28 +58,33 @@ public class ClusterSlotsAndNodesDUnitTest {
   private static final String LOCAL_HOST = "127.0.0.1";
   private static MemberVM locator;
   private static MemberVM server1;
+  private static MemberVM server2;
 
   private static Jedis jedis1;
   private static Jedis jedis2;
   private static JedisCluster jedisCluster;
+  private static int redisServerPort1;
+  private static int redisServerPort2;
 
   @BeforeClass
   public static void classSetup() {
     locator = cluster.startLocatorVM(0);
     server1 = cluster.startRedisVM(1, locator.getPort());
-    cluster.startRedisVM(2, locator.getPort());
+    server2 = cluster.startRedisVM(2, locator.getPort());
+  }
 
-    int redisServerPort1 = cluster.getRedisPort(1);
-    int redisServerPort2 = cluster.getRedisPort(2);
-
+  @Before
+  public void setup() {
+    redisServerPort1 = cluster.getRedisPort(1);
+    redisServerPort2 = cluster.getRedisPort(2);
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
     jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
 
     jedisCluster = new JedisCluster(new HostAndPort("localhost", redisServerPort1), JEDIS_TIMEOUT);
   }
 
-  @AfterClass
-  public static void teardown() {
+  @After
+  public void cleanup() {
     jedis1.close();
     jedis2.close();
     jedisCluster.close();
@@ -231,6 +236,42 @@ public class ClusterSlotsAndNodesDUnitTest {
                 slot.getRight().intValue() + 1));
 
         assertThat(missingSlots.stream().toArray()).isEmpty();
+        iterations++;
+      }
+
+      return iterations;
+    });
+
+    int iterations = getSlotsFuture.get();
+    done.set(true);
+    startupShutdownFuture.get();
+
+    assertThat(iterations).isGreaterThan(0);
+  }
+
+  @Test
+  public void hostAndPortInfoIsUnique_whenPrimariesAreMoving() throws Exception {
+    AtomicBoolean done = new AtomicBoolean();
+    CompletableFuture<Void> startupShutdownFuture = executor.runAsync(() -> {
+      while (!done.get()) {
+        server2.stop();
+        server2 = cluster.startRedisVM(2, locator.getPort());
+        rebalanceAllRegions(server1);
+      }
+    });
+
+    long endTime = System.currentTimeMillis() + 60_000;
+    CompletableFuture<Integer> getSlotsFuture = executor.supplyAsync(() -> {
+      int iterations = 0;
+
+      while (System.currentTimeMillis() < endTime) {
+        List<ClusterNode> nodes = ClusterNodes.parseClusterNodes(jedis1.clusterNodes()).getNodes();
+
+        if (nodes.size() != 2) {
+          continue;
+        }
+
+        assertThat(nodes.get(0).port).isNotEqualTo(nodes.get(1).port);
         iterations++;
       }
 
