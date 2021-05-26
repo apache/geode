@@ -29,9 +29,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionAttributes;
@@ -68,6 +70,8 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * the events that are to be sent to remote site. It is cleared when the queue is cleared.
    */
   private final BlockingDeque<Object> eventSeqNumDeque = new LinkedBlockingDeque<Object>();
+
+  private final List<Object> markAsDuplicate = new ArrayList<Object>();
 
   private long lastKeyRecovered;
 
@@ -203,8 +207,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public void beforeAcquiringPrimaryState() {
-    Iterator<Object> itr = eventSeqNumDeque.iterator();
-    markEventsAsDuplicate(itr);
+    markAsDuplicate.addAll(eventSeqNumDeque);
   }
 
   @Override
@@ -217,6 +220,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     });
     this.indexes.clear();
     this.eventSeqNumDeque.clear();
+    this.markAsDuplicate.clear();
   }
 
   @Override
@@ -229,6 +233,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       }
     });
     this.eventSeqNumDeque.clear();
+    this.markAsDuplicate.clear();
     return result.get();
   }
 
@@ -244,6 +249,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     try {
       this.indexes.clear();
       this.eventSeqNumDeque.clear();
+      this.markAsDuplicate.clear();
     } finally {
       getInitializationLock().writeLock().unlock();
     }
@@ -423,8 +429,18 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       }
       key = this.eventSeqNumDeque.peekFirst();
       if (key != null) {
+        boolean setDuplicate = markAsDuplicate.remove(key);
+
         object = optimalGet(key);
-        if (object == null && !this.getPartitionedRegion().isConflationEnabled()) {
+        if (object != null) {
+          if (setDuplicate) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("BucketRegionQueue: mark event {} as possible duplicate due to" +
+                  " change of primary bucket.", object);
+            }
+            ((GatewaySenderEventImpl) object).setPossibleDuplicate(true);
+          }
+        } else if (!this.getPartitionedRegion().isConflationEnabled()) {
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "The value against key {} in the bucket region queue with id {} is NULL for the GatewaySender {}",
@@ -666,6 +682,23 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   public boolean isReadyForPeek() {
     return !this.getPartitionedRegion().isDestroyed() && !this.isEmpty()
         && !this.eventSeqNumDeque.isEmpty() && getBucketAdvisor().isPrimary();
+  }
+
+  @VisibleForTesting
+  List<Object> getHelperQueueList() {
+    getInitializationLock().readLock().lock();
+    try {
+      if (this.getPartitionedRegion().isDestroyed()) {
+        throw new BucketRegionQueueUnavailableException();
+      }
+      return eventSeqNumDeque.stream()
+          .map(this::optimalGet)
+          .filter(o -> o instanceof InternalGatewayQueueEvent)
+          .collect(Collectors.toList());
+
+    } finally {
+      getInitializationLock().readLock().unlock();
+    }
   }
 
 }
