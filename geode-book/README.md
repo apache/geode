@@ -16,11 +16,16 @@ Apache Geode provides the full source for the Apache Geode User Guide in markdow
 
 Bookbinder is a Ruby gem (available at [rubygems.org](https://rubygems.org/gems/bookbindery/) ) that binds a unified documentation web application from markdown, html, and/or DITA source material. The source material for Bookbinder must be stored either in local directories or in GitHub repositories. Bookbinder runs [Middleman](http://middlemanapp.com/) to produce a Rackup app that can be deployed locally or as a web application.
 
-## Automatic build
+## Preview the User Guide
 
-Documentation can be built and previewed using the utility scripts at [dev-tools/docker/docs](https://github.com/apache/geode/tree/develop/dev-tools/docker/docs). These scripts use Docker, removing the requirement of installing Ruby and Bookbinder. They are based on the instructions described in the [Manual build](#manual-build) chapter.
+Documentation can be built and previewed using the utility script at `{geode-project-dir}/dev-tools/docker/docs`. This script use Docker, removing the requirement of installing Ruby and Bookbinder.
+```bash
+$ cd {geode-project-dir}/dev-tools/docker/docs
+$ ./preview-user-guide.sh
+```
+In a browser, navigate to `http://localhost:9292` to view the user guide.
 
-## Manual build
+## Build the User Guide
 
 ### Prerequisites
 
