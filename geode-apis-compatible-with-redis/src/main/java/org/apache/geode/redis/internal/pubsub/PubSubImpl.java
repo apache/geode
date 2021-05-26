@@ -69,10 +69,8 @@ public class PubSubImpl implements PubSub {
   public long publish(Region<RedisKey, RedisData> dataRegion, byte[] channel, byte[] message) {
     PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
     Set<DistributedMember> membersWithDataRegion = new HashSet<>();
-    if (info != null) {
-      for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
-        membersWithDataRegion.add(memberInfo.getDistributedMember());
-      }
+    for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
+      membersWithDataRegion.add(memberInfo.getDistributedMember());
     }
     Execution<Object[], String[], List<Long>> execution =
         uncheckedCast(FunctionService.onMembers(membersWithDataRegion));

@@ -52,7 +52,6 @@ public class SaddDUnitTest {
   private static MemberVM server2;
   private static MemberVM server3;
 
-
   @BeforeClass
   public static void classSetup() {
     Properties locatorProperties = new Properties();
@@ -63,9 +62,8 @@ public class SaddDUnitTest {
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
     server3 = clusterStartUp.startRedisVM(3, locator.getPort());
 
-    int redisServerPort = clusterStartUp.getRedisPort(1);
-
-    jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, clusterStartUp.getRedisPort(1)),
+        JEDIS_TIMEOUT);
   }
 
   @Before
