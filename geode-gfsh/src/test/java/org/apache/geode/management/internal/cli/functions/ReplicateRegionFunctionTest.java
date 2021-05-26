@@ -40,10 +40,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.cache.client.internal.pooling.PooledConnection;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -67,13 +70,13 @@ public class ReplicateRegionFunctionTest {
   private GatewaySenderEventDispatcher dispatcherMock;
 
   @SuppressWarnings("unchecked")
-  private FunctionContext<Object[]> contextMock = mock(FunctionContext.class);
+  private final FunctionContext<Object[]> contextMock = mock(FunctionContext.class);
 
   @SuppressWarnings("unchecked")
-  private Region<Object, Object> regionMock = mock(InternalRegion.class);
+  private final Region<Object, Object> regionMock = mock(InternalRegion.class);
 
   @SuppressWarnings("unchecked")
-  private Region.Entry<String, String> entryMock = mock(Region.Entry.class);
+  private final Region.Entry<String, String> entryMock = mock(Region.Entry.class);
 
   @Before
   public void setUp() throws InterruptedException {
@@ -92,67 +95,22 @@ public class ReplicateRegionFunctionTest {
   }
 
   @Test
-  public void doPostSendBatchActions_DoNothingIfBatchIsIncomplete()
+  public void doPostSendBatchActions_DoNotSleepIfGetTimeToSleepIsZero()
       throws InterruptedException {
-    rrf.doPostSendBatchActions(startTime, 5, 1L);
+    ReplicateRegionFunction rrfSpy = spy(rrf);
+    doReturn(0L).when(rrfSpy).getTimeToSleep(anyLong(), anyInt(), anyLong());
+    rrfSpy.doPostSendBatchActions(startTime, entries, 1L);
     verify(threadSleeperMock, never()).millis(anyLong());
   }
 
   @Test
-  public void doPostSendBatchActions_DoNotSleepIfBatchIsCompleteAndMaxRateIsZero()
+  public void doPostSendBatchActions_SleepIfGetTimeToSleepIsNotZero()
       throws InterruptedException {
-    rrf.doPostSendBatchActions(startTime, entries, 0);
-    verify(threadSleeperMock, never()).millis(anyLong());
-  }
-
-  @Test
-  public void doPostSendBatchActions_SleepIfElapsedTimeIsZero()
-      throws InterruptedException {
-    long maxRate = 100;
-    long elapsedTime = 0L;
-    long expectedMsToSleep = 250L;
-    when(clockMock.millis()).thenReturn(startTime + elapsedTime);
-    rrf.doPostSendBatchActions(startTime, entries, maxRate);
+    long expectedMsToSleep = 1100L;
+    ReplicateRegionFunction rrfSpy = spy(rrf);
+    doReturn(expectedMsToSleep).when(rrfSpy).getTimeToSleep(anyLong(), anyInt(), anyLong());
+    rrfSpy.doPostSendBatchActions(startTime, entries, 1L);
     verify(threadSleeperMock, times(1)).millis(expectedMsToSleep);
-  }
-
-  @Test
-  public void doPostSendBatchActions_DoNotSleepIfMaxRateNotReached()
-      throws InterruptedException {
-    long maxRate = 10000;
-    long elapsedTime = 100L;
-    when(clockMock.millis()).thenReturn(startTime + elapsedTime);
-    rrf.doPostSendBatchActions(startTime, entries, maxRate);
-    verify(threadSleeperMock, never()).millis(anyLong());
-  }
-
-  @Test
-  public void doPostSendBatchActions_SleepIfMaxRateReached()
-      throws InterruptedException {
-    long maxRate = 100;
-    long elapsedTime = 100L;
-    long expectedMsToSleep = 150L;
-    when(clockMock.millis()).thenReturn(startTime + elapsedTime);
-    rrf.doPostSendBatchActions(startTime, entries, maxRate);
-    verify(threadSleeperMock, times(1)).millis(expectedMsToSleep);
-  }
-
-  @Test
-  public void doPostSendBatchActions_DoNotSleepIfReplicatedEntriesIsZero()
-      throws InterruptedException {
-    long maxRate = 100;
-    rrf.doPostSendBatchActions(startTime, 0, maxRate);
-    verify(threadSleeperMock, never()).millis(anyLong());
-  }
-
-  @Test
-  public void doPostSendBatchActions_SleepForZeroIfReplicatedEntriesIsZeroAndElapsedTimeIsZero()
-      throws InterruptedException {
-    long maxRate = 100;
-    long elapsedTime = 0L;
-    when(clockMock.millis()).thenReturn(startTime + elapsedTime);
-    rrf.doPostSendBatchActions(startTime, 0, maxRate);
-    verify(threadSleeperMock, times(1)).millis(0L);
   }
 
   @Test
@@ -237,7 +195,139 @@ public class ReplicateRegionFunctionTest {
   }
 
   @Test
-  public void replicateRegion_verifyOutputWhenExceptionWhileSendingBatch() throws BatchException70 {
+  public void replicateRegion_verifySuccessfulReplication() throws BatchException70 {
+
+    ReplicateRegionFunction rrfSpy = spy(rrf);
+    when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
+    when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
+        .thenReturn(dispatcherMock);
+    Set<Region.Entry<String, String>> entries = new HashSet<>();
+    entries.add(entryMock);
+    doReturn(entries).when(regionMock).entrySet();
+    doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
+        any(), any());
+    doNothing().when(dispatcherMock).sendBatch(anyList(), any(), any(), anyInt());
+
+    CliFunctionResult result =
+        rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
+    assertThat(result.getStatusMessage())
+        .isEqualTo("Entries replicated: 1");
+  }
+
+
+  @Test
+  public void replicateRegion_verifySuccessWithRetryWhenConnectionDestroyed()
+      throws BatchException70 {
+
+    ReplicateRegionFunction rrfSpy = spy(rrf);
+    ConnectionDestroyedException exceptionWhenSendingBatch =
+        new ConnectionDestroyedException("My connection exception", new Exception());
+    when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
+    when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
+        .thenReturn(dispatcherMock);
+    Set<Region.Entry<String, String>> entries = new HashSet<>();
+    entries.add(entryMock);
+    doReturn(entries).when(regionMock).entrySet();
+    doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
+        any(), any());
+    doThrow(exceptionWhenSendingBatch).doNothing().when(dispatcherMock).sendBatch(anyList(), any(),
+        any(),
+        anyInt());
+
+    CliFunctionResult result =
+        rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
+    assertThat(result.getStatusMessage())
+        .isEqualTo("Entries replicated: 1");
+  }
+
+  @Test
+  public void replicateRegion_verifyErrorWhenConnectionDestroyedTwice() throws BatchException70 {
+    ReplicateRegionFunction rrfSpy = spy(rrf);
+    ConnectionDestroyedException exceptionWhenSendingBatch =
+        new ConnectionDestroyedException("My connection exception", new Exception());
+    when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
+    when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
+        .thenReturn(dispatcherMock);
+    Set<Region.Entry<String, String>> entries = new HashSet<>();
+    entries.add(entryMock);
+    doReturn(entries).when(regionMock).entrySet();
+    doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
+        any(), any());
+    doThrow(exceptionWhenSendingBatch).when(dispatcherMock).sendBatch(anyList(), any(), any(),
+        anyInt());
+
+    CliFunctionResult result =
+        rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
+    assertThat(result.getStatusMessage())
+        .isEqualTo("Error (Connection error) in operation after having replicated 0 entries");
+  }
+
+  @Test
+  public void replicateRegion_verifySuccessWithRetryWhenServerConnectivityException()
+      throws BatchException70 {
+
+    ReplicateRegionFunction rrfSpy = spy(rrf);
+    ServerConnectivityException exceptionWhenSendingBatch =
+        new ServerConnectivityException("My connection exception", new Exception());
+    when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
+    when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
+        .thenReturn(dispatcherMock);
+    Set<Region.Entry<String, String>> entries = new HashSet<>();
+    entries.add(entryMock);
+    doReturn(entries).when(regionMock).entrySet();
+    doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
+        any(), any());
+    doThrow(exceptionWhenSendingBatch).doNothing().when(dispatcherMock).sendBatch(anyList(), any(),
+        any(),
+        anyInt());
+
+    CliFunctionResult result =
+        rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
+    assertThat(result.getStatusMessage())
+        .isEqualTo("Entries replicated: 1");
+  }
+
+  @Test
+  public void replicateRegion_verifyErrorWhenServerConnectivityExceptionTwice()
+      throws BatchException70 {
+    ReplicateRegionFunction rrfSpy = spy(rrf);
+    ServerConnectivityException exceptionWhenSendingBatch =
+        new ServerConnectivityException("My connection exception", new Exception());
+    when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
+    when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
+        .thenReturn(dispatcherMock);
+    Set<Region.Entry<String, String>> entries = new HashSet<>();
+    entries.add(entryMock);
+    doReturn(entries).when(regionMock).entrySet();
+    doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
+        any(), any());
+    doThrow(exceptionWhenSendingBatch).when(dispatcherMock).sendBatch(anyList(), any(), any(),
+        anyInt());
+
+    CliFunctionResult result =
+        rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
+    assertThat(result.getStatusMessage())
+        .isEqualTo("Error (Connection error) in operation after having replicated 0 entries");
+  }
+
+  @Test
+  public void replicateRegion_verifyErrorWhenBatchExceptionWhileSendingBatch()
+      throws BatchException70 {
 
     ReplicateRegionFunction rrfSpy = spy(rrf);
     BatchException70 exceptionWhenSendingBatch =
@@ -247,17 +337,86 @@ public class ReplicateRegionFunctionTest {
     when(contextMock.getCache()).thenReturn(internalCacheMock);
     when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
         .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<Region.Entry<String, String>>();
+    Set<Region.Entry<String, String>> entries = new HashSet<>();
     entries.add(entryMock);
-    doReturn(entries).when(regionMock).entrySet();
     doReturn(new ArrayList<>()).when(rrfSpy).createBatch(any(), any(), anyInt(), any(), any());
     doThrow(exceptionWhenSendingBatch).when(dispatcherMock).sendBatch(anyList(), any(), any(),
         anyInt());
+    doReturn(entries).when(rrfSpy).getEntries(regionMock, gatewaySenderMock);
 
     CliFunctionResult result =
         rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage())
         .isEqualTo("Error (My batch exception) in operation after having replicated 0 entries");
+  }
+
+  @Test
+  public void replicateRegion_verifyExceptionThrownWhenExceptionWhileSendingBatch()
+      throws BatchException70 {
+
+    ReplicateRegionFunction rrfSpy = spy(rrf);
+    RuntimeException exceptionWhenSendingBatch =
+        new RuntimeException("Exception when sending batch");
+    when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
+    when(poolMock.acquireConnection()).thenReturn(connectionMock);
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
+        .thenReturn(dispatcherMock);
+    Set<Region.Entry<String, String>> entries = new HashSet<>();
+    entries.add(entryMock);
+    doReturn(new ArrayList<>()).when(rrfSpy).createBatch(any(), any(), anyInt(), any(), any());
+    doThrow(exceptionWhenSendingBatch).when(dispatcherMock).sendBatch(anyList(), any(), any(),
+        anyInt());
+    doReturn(entries).when(rrfSpy).getEntries(regionMock, gatewaySenderMock);
+
+    assertThatThrownBy(
+        () -> rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10))
+            .isInstanceOf(RuntimeException.class);
+  }
+
+  @Test
+  public void getTimeToSleep_ReturnZeroWhenMaxRateIsZero() {
+    assertThat(rrf.getTimeToSleep(startTime, 1, 0)).isEqualTo(0);
+  }
+
+  @Test
+  public void getTimeToSleep_ReturnZeroWhenReplicatedEntriesIsZero() {
+    assertThat(rrf.getTimeToSleep(startTime, 0, 1)).isEqualTo(0);
+  }
+
+  @Test
+  public void getTimeToSleep_ReturnZeroWhenBelowMaxRate() {
+    long elapsedTime = 2000L;
+    when(clockMock.millis()).thenReturn(startTime + elapsedTime);
+    assertThat(rrf.getTimeToSleep(startTime, 1, 1)).isEqualTo(0);
+  }
+
+  @Test
+  public void getTimeToSleep_ReturnZeroWhenOnMaxRate() {
+    long elapsedTime = 1000L;
+    when(clockMock.millis()).thenReturn(startTime + elapsedTime);
+    assertThat(rrf.getTimeToSleep(startTime, 1, 1)).isEqualTo(0);
+  }
+
+  @Test
+  public void getTimeToSleep_ReturnZeroWhenAboveMaxRate_value1() {
+    long elapsedTime = 1000L;
+    when(clockMock.millis()).thenReturn(startTime + elapsedTime);
+    assertThat(rrf.getTimeToSleep(startTime, 2, 1)).isEqualTo(1000);
+  }
+
+  @Test
+  public void getTimeToSleep_ReturnZeroWhenAboveMaxRate_value2() {
+    long elapsedTime = 1000L;
+    when(clockMock.millis()).thenReturn(startTime + elapsedTime);
+    assertThat(rrf.getTimeToSleep(startTime, 4, 1)).isEqualTo(3000);
+  }
+
+  @Test
+  public void getTimeToSleep_ReturnZeroWhenAboveMaxRate_value3() {
+    long elapsedTime = 2000L;
+    when(clockMock.millis()).thenReturn(startTime + elapsedTime);
+    assertThat(rrf.getTimeToSleep(startTime, 4, 1)).isEqualTo(2000);
   }
 }

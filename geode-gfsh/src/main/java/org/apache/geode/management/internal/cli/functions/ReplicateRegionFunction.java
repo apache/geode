@@ -15,7 +15,10 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,8 +37,10 @@ import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.cache.client.internal.pooling.PooledConnection;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
@@ -88,6 +93,8 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
   private static final long serialVersionUID = 1L;
 
   public static final String ID = ReplicateRegionFunction.class.getName();
+
+  private static final int MAX_BATCH_SEND_RETRIES = 1;
 
   private Clock clock = Clock.systemDefaultZone();
   private ThreadSleeper threadSleeper = new ThreadSleeper();
@@ -172,6 +179,10 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           CliStrings.REPLICATE_REGION__MSG__EXECUTION__CANCELED);
     } catch (ExecutionException e) {
+      Writer buffer = new StringWriter();
+      PrintWriter pw = new PrintWriter(buffer);
+      e.printStackTrace(pw);
+      logger.error("Exception when running replicate command: {}", buffer.toString());
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           CliStrings.format(CliStrings.REPLICATE_REGION__MSG__EXECUTION__FAILED, e.getMessage()));
     }
@@ -220,7 +231,6 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
     PoolImpl senderPool = null;
     int replicatedEntries = 0;
 
-
     try {
       senderPool = ((AbstractGatewaySender) sender).getProxy();
       if (senderPool == null) {
@@ -238,18 +248,43 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
       GatewaySenderEventDispatcher dispatcher =
           ((AbstractGatewaySender) sender).getEventProcessor().getDispatcher();
 
-      final Set<?> entries = getEntries(region, sender);
-      Iterator<?> iter = entries.iterator();
-      while (iter.hasNext()) {
+      Iterator<?> entriesIter = getEntries(region, sender).iterator();
+      while (entriesIter.hasNext()) {
         List<GatewayQueueEvent> batch =
-            createBatch((InternalRegion) region, sender, batchSize, cache, iter);
-        try {
-          dispatcher.sendBatch(batch, connection, senderPool, batchId++);
-          replicatedEntries += batch.size();
-        } catch (BatchException70 e) {
-          return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-              CliStrings.format(CliStrings.REPLICATE_REGION__MSG__ERROR__AFTER__HAVING__REPLICATED,
-                  e.getMessage(), replicatedEntries));
+            createBatch((InternalRegion) region, sender, batchSize, cache, entriesIter);
+        int retries = 0;
+        while (true) {
+          try {
+            dispatcher.sendBatch(batch, connection, senderPool, batchId++);
+            replicatedEntries += batch.size();
+            break;
+          } catch (BatchException70 e) {
+            return new CliFunctionResult(context.getMemberName(),
+                CliFunctionResult.StatusState.ERROR,
+                CliStrings.format(
+                    CliStrings.REPLICATE_REGION__MSG__ERROR__AFTER__HAVING__REPLICATED,
+                    e.getMessage(), replicatedEntries));
+          } catch (ConnectionDestroyedException | ServerConnectivityException e) {
+            ((PooledConnection) connection).setShouldDestroy();
+            senderPool.returnConnection(connection);
+            connection = null;
+            if (retries++ >= MAX_BATCH_SEND_RETRIES) {
+              return new CliFunctionResult(context.getMemberName(),
+                  CliFunctionResult.StatusState.ERROR,
+                  CliStrings.format(
+                      CliStrings.REPLICATE_REGION__MSG__ERROR__AFTER__HAVING__REPLICATED,
+                      "Connection error", replicatedEntries));
+            }
+            logger.error("Exception {} in sendBatch. Retrying", e.getClass().getName());
+            connection = senderPool.acquireConnection();
+            if (connection == null) {
+              return new CliFunctionResult(context.getMemberName(),
+                  CliFunctionResult.StatusState.ERROR,
+                  CliStrings.format(
+                      CliStrings.REPLICATE_REGION__MSG__ERROR__AFTER__HAVING__REPLICATED,
+                      "Connection error", replicatedEntries));
+            }
+          }
         }
         try {
           doPostSendBatchActions(startTime, replicatedEntries, maxRate);
@@ -296,7 +331,8 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
     return region.entrySet();
   }
 
-  private GatewayQueueEvent createGatewaySenderEvent(InternalCache cache,
+  @VisibleForTesting
+  GatewayQueueEvent createGatewaySenderEvent(InternalCache cache,
       InternalRegion region, GatewaySender sender, Region.Entry entry) {
     final EntryEventImpl event;
     if (region instanceof PartitionedRegion) {
@@ -318,13 +354,17 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
 
   final CliFunctionResult cancelReplicateRegion(FunctionContext<Object[]> context,
       String regionName, String senderId) {
+    boolean found = false;
     String threadBaseName = getReplicateRegionFunctionThreadName(regionName, senderId);
     for (Thread t : Thread.getAllStackTraces().keySet()) {
       if (t.getName().startsWith(threadBaseName)) {
+        found = true;
         t.interrupt();
-        return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
-            CliStrings.REPLICATE_REGION__MSG__EXECUTION__CANCELED);
       }
+    }
+    if (found) {
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+          CliStrings.REPLICATE_REGION__MSG__EXECUTION__CANCELED);
     }
     return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
         CliStrings.format(CliStrings.REPLICATE_REGION__MSG__NO__RUNNING__COMMAND,
@@ -349,18 +389,25 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
-    if (maxRate == 0) {
-      return;
-    }
-    final long currTime = clock.millis();
-    final long elapsedMs = currTime - startTime;
-    if (elapsedMs == 0 || replicatedEntries * 1000L / elapsedMs > maxRate) {
-      final long targetElapsedMs = (replicatedEntries * 1000L) / maxRate;
-      final long sleepMs = targetElapsedMs - elapsedMs;
+    long sleepMs = getTimeToSleep(startTime, replicatedEntries, maxRate);
+    if (sleepMs > 0) {
       logger.info("{}: Sleeping for {} ms to accommodate to requested maxRate",
           this.getClass().getName(), sleepMs);
       threadSleeper.millis(sleepMs);
     }
+  }
+
+  @VisibleForTesting
+  long getTimeToSleep(long startTime, int replicatedEntries, long maxRate) {
+    if (maxRate == 0) {
+      return 0;
+    }
+    final long elapsedMs = clock.millis() - startTime;
+    if (elapsedMs != 0 && (replicatedEntries * 1000.0) / (double) elapsedMs <= maxRate) {
+      return 0;
+    }
+    final long targetElapsedMs = (replicatedEntries * 1000L) / maxRate;
+    return targetElapsedMs - elapsedMs;
   }
 
   private EntryEventImpl createEventForReplicatedRegion(InternalCache cache, InternalRegion region,
