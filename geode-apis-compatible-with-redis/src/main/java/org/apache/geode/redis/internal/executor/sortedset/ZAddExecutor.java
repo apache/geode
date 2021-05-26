@@ -103,8 +103,9 @@ public class ZAddExecutor extends AbstractExecutor {
   }
 
   static class ZAddExecutorState {
-    public boolean nxFound = false, xxFound = false;
-    public String exceptionMessage = null;
+    public boolean nxFound;
+    public boolean xxFound;
+    public String exceptionMessage;
 
     public void initialize() {
       nxFound = false;
