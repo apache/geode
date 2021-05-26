@@ -838,24 +838,23 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                 if (result) {
                   if (oldIsTombstone) {
                     owner.unscheduleTombstone(oldRe);
-                    if (newValue != Token.TOMBSTONE) {
-                      lruEntryCreate(oldRe);
-                    } else {
-                      lruEntryUpdate(oldRe);
-                    }
                   }
                   if (newValue == Token.TOMBSTONE) {
                     if (!oldIsDestroyedOrRemoved) {
                       owner.updateSizeOnRemove(key, oldSize);
                     }
                     owner.scheduleTombstone(oldRe, entryVersion);
-                    lruEntryDestroy(oldRe);
+                    if (!oldIsTombstone) {
+                      lruEntryDestroy(oldRe);
+                    }
                   } else {
                     int newSize = owner.calculateRegionEntryValueSize(oldRe);
                     if (!oldIsTombstone) {
                       owner.updateSizeOnPut(key, oldSize, newSize);
+                      lruEntryUpdate(oldRe);
                     } else {
                       owner.updateSizeOnCreate(key, newSize);
+                      lruEntryCreate(oldRe);
                     }
                     EntryLogger.logInitialImagePut(_getOwnerObject(), key, newValue);
                   }
@@ -943,10 +942,12 @@ public abstract class AbstractRegionMap extends BaseRegionMap
       done = false;
       cleared = true;
     } finally {
-      if (done && !deferLRUCallback) {
-        lruUpdateCallback();
-      } else if (!cleared) {
-        resetThreadLocals();
+      if (!deferLRUCallback) {
+        if (done) {
+          lruUpdateCallback();
+        } else if (!cleared) {
+          resetThreadLocals();
+        }
       }
     }
 

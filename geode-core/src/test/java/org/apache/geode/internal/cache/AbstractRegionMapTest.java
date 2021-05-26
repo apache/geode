@@ -29,6 +29,7 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -1532,6 +1533,34 @@ public class AbstractRegionMapTest {
     verify(arm._getOwner()).lockWhenRegionIsInitializing();
     assertThat(arm._getOwner().lockWhenRegionIsInitializing()).isTrue();
     verify(arm._getOwner()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void initialImagePut_lruEntryCreateInvoked() throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.isTombstone()).thenReturn(true);
+    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
+    TestableAbstractRegionMap armSpy = spy(arm);
+    armSpy.initialImagePut(KEY, 0, "value", true, true, null, null, false);
+    verify(armSpy).lruEntryCreate(entry);
+  }
+
+  @Test
+  public void initialImagePut_lruEntryUpdateInvoked() throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.isTombstone()).thenReturn(false);
+    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
+    TestableAbstractRegionMap armSpy = spy(arm);
+    armSpy.initialImagePut(KEY, 0, "value", true, true, null, null, false);
+    verify(armSpy).lruEntryUpdate(entry);
   }
 
   private static class TxNoRegionEntryTestableAbstractRegionMap
