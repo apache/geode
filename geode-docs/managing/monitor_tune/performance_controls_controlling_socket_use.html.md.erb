@@ -26,11 +26,21 @@ The conserve-sockets setting indicates whether application threads share sockets
 You configure conserve-sockets for the member as a whole in `gemfire.properties`. Additionally, you can change the sockets conservation policy for the individual thread through the API.
 
 By default, conserve-sockets is set to false: each application thread uses a dedicated thread to send to each of its peers and a dedicated thread to receive from each peer.
-This default setting optimizes system performance, but does incur some overhead in terms of system resources.
+This default setting optimizes system performance, but does incur significant overhead in terms of sockets, socket buffers, and related system resources.
 
-Leaving socket conservation in its default disabled state alleviates socket contention between threads and optimizes distributed ACK operations. For distributed regions, the put operation, and destroy and invalidate for regions and entries, all perform optimally with conserve-sockets set to false. For partitioned regions, setting conserve-sockets to false enhances general throughput.
+Keeping conserve-sockets set to false:
 
-Enabling socket conservation reduces demands on system resources, but slows system performance and increases risk of distributed deadlocks.
+- alleviates socket contention between threads
+- optimizes distributed ACK operations
+- for distributed regions, optimizes the put operation
+- for distributed regions, optimizes destroy and invalidate operations for regions and entries
+- for partitioned regions, enhances general throughput
+
+Setting conserve-sockets set to true:
+
+- reduces demands on system resources
+- slows system performance
+- increases risk of distributed deadlocks
 
 **Note:**
 When you have transactions operating on EMPTY, NORMAL or PARTITION regions, make sure that `conserve-sockets` is set to false to avoid distributed deadlocks.
