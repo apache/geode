@@ -29,10 +29,12 @@ public class Atomics {
       long cur = atom.get();
 
       if (update > cur) {
-        if (atom.compareAndSet(cur, update))
+        if (atom.compareAndSet(cur, update)) {
           return true;
-      } else
+        }
+      } else {
         return false;
+      }
     }
   }
 }

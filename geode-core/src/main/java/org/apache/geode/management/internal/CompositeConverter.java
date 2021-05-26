@@ -58,10 +58,12 @@ public class CompositeConverter extends OpenTypeConverter {
   @Override
   Object toNonNullOpenValue(Object value) throws OpenDataException {
     CompositeType ct = (CompositeType) getOpenType();
-    if (value instanceof CompositeDataView)
+    if (value instanceof CompositeDataView) {
       return ((CompositeDataView) value).toCompositeData(ct);
-    if (value == null)
+    }
+    if (value == null) {
       return null;
+    }
 
     Object[] values = new Object[getters.length];
     for (int i = 0; i < getters.length; i++) {
@@ -81,8 +83,9 @@ public class CompositeConverter extends OpenTypeConverter {
    * exception.
    */
   private synchronized void makeCompositeBuilder() throws InvalidObjectException {
-    if (compositeBuilder != null)
+    if (compositeBuilder != null) {
       return;
+    }
 
     Class targetClass = (Class<?>) getTargetType();
 
@@ -104,22 +107,26 @@ public class CompositeConverter extends OpenTypeConverter {
           break find;
         }
         Throwable cause = builder.possibleCause();
-        if (cause != null)
+        if (cause != null) {
           possibleCause = cause;
+        }
         if (whyNot.length() > 0) {
-          if (whyNots.length() > 0)
+          if (whyNots.length() > 0) {
             whyNots.append("; ");
+          }
           whyNots.append(whyNot);
-          if (i == 0)
+          if (i == 0) {
             break;
+          }
         }
       }
     }
     if (foundBuilder == null) {
       String msg = "Do not know how to make a " + targetClass.getName() + " from a CompositeData: "
           + whyNots;
-      if (possibleCause != null)
+      if (possibleCause != null) {
         msg += ". Remaining exceptions show a POSSIBLE cause.";
+      }
       throw invalidObjectException(msg, possibleCause);
     }
     compositeBuilder = foundBuilder;

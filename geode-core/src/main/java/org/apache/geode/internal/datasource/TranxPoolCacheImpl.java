@@ -55,10 +55,11 @@ public class TranxPoolCacheImpl extends AbstractPoolCache {
       ((PooledConnection) connectionObject).close();
       connectionObject = null;
     } catch (Exception ex) {
-      if (logger.isTraceEnabled())
+      if (logger.isTraceEnabled()) {
         logger.trace(
             "AbstractPoolcache::destroyPooledConnection:Exception in closing the connection.Ignoring it. The exeption is {}",
             ex.getMessage(), ex);
+      }
     }
   }
 

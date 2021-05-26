@@ -207,8 +207,9 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
       throws IOException, ClassNotFoundException {
     final LocalRegion local = getLocalRegion(region);
 
-    if (getLogger().infoEnabled())
+    if (getLogger().infoEnabled()) {
       getLogger().info(String.format("Importing region %s", region.getName()));
+    }
     if (snapshot.isDirectory()) {
       File[] snapshots =
           snapshot.listFiles((File f) -> f.getName().endsWith(SNAPSHOT_FILE_EXTENSION));
@@ -354,8 +355,9 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     SnapshotWriter writer =
         GFSnapshot.create(snapshot, region.getFullPath(), (InternalCache) region.getCache());
     try {
-      if (getLogger().infoEnabled())
+      if (getLogger().infoEnabled()) {
         getLogger().info(String.format("Exporting region %s", region.getName()));
+      }
 
       SnapshotWriterSink sink = new SnapshotWriterSink(writer);
       count = exp.export(region, sink, options);

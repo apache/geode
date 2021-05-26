@@ -67,9 +67,10 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
   public GemFireConnPooledDataSource(ConnectionPoolDataSource connPoolDS,
       ConfiguredDataSourceProperties configs) throws SQLException {
     super(configs);
-    if ((connPoolDS == null) || (configs == null))
+    if ((connPoolDS == null) || (configs == null)) {
       throw new SQLException(
           "GemFireConnPooledDataSource::ConnectionPoolDataSource class object is null or ConfiguredDataSourceProperties object is null");
+    }
     try {
       provider = new GemFireConnectionPoolManager(connPoolDS, configs, this);
     } catch (Exception ex) {
@@ -186,9 +187,9 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
       throw e;
     }
     boolean val = validateConnection(conn);
-    if (val)
+    if (val) {
       return conn;
-    else {
+    } else {
       provider.returnAndExpireConnection(poolC);
       throw new SQLException(
           "GemFireConnPooledDataSource::getConnFromConnPool:java.sql.Connection obtained is invalid");

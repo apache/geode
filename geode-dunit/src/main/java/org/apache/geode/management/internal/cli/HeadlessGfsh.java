@@ -122,8 +122,9 @@ public class HeadlessGfsh implements ResultHandler {
 
   public CommandResult getResult() throws InterruptedException {
     // Don't wait for when some command calls gfsh.stop();
-    if (shell.stopCalledThroughAPI)
+    if (shell.stopCalledThroughAPI) {
       return null;
+    }
     try {
       Object result = queue.poll(timeout, TimeUnit.SECONDS);
       queue.clear();

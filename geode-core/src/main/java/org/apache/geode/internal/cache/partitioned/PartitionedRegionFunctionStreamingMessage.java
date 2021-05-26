@@ -130,8 +130,9 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
     if (this.replyLastMsg) {
       return false;
     }
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     int msgNum = this.replyMsgNum;
     this.replyLastMsg = lastResult;
 

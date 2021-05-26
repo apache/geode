@@ -84,8 +84,9 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
     // Refresh Interval
     AdminDistributedSystemJmxImpl sysJmx =
         (AdminDistributedSystemJmxImpl) this.member.getDistributedSystem();
-    if (sysJmx.getRefreshInterval() > 0)
+    if (sysJmx.getRefreshInterval() > 0) {
       this.refreshInterval = sysJmx.getRefreshInterval();
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -111,8 +112,9 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
     boolean isRegistered = MBeanUtils.isRefreshNotificationRegistered(this,
         RefreshNotificationType.STATISTIC_RESOURCE_STATISTICS);
 
-    if (isRegistered && (getRefreshInterval() == refreshInterval))
+    if (isRegistered && (getRefreshInterval() == refreshInterval)) {
       return;
+    }
 
     try {
       MBeanUtils.registerRefreshNotification(this, // NotificationListener

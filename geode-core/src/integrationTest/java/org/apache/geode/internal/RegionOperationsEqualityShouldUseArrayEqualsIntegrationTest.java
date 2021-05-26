@@ -48,14 +48,16 @@ public class RegionOperationsEqualityShouldUseArrayEqualsIntegrationTest {
     {
       byte[] bytesValue = new byte[] {1, 2, 3, 4};
       r.put("bytesValue", bytesValue.clone());
-      if (r.replace("bytesValue", "", ""))
+      if (r.replace("bytesValue", "", "")) {
         fail("expected replace to fail");
+      }
       if (!r.replace("bytesValue", bytesValue, "")) {
         fail("expected replace to happen");
       }
       r.put("bytesValue", bytesValue.clone());
-      if (r.remove("bytesValue", ""))
+      if (r.remove("bytesValue", "")) {
         fail("expected remove to fail");
+      }
       if (!r.remove("bytesValue", bytesValue)) {
         fail("expected remove to happen");
       }
@@ -63,14 +65,16 @@ public class RegionOperationsEqualityShouldUseArrayEqualsIntegrationTest {
     {
       boolean[] booleanValue = new boolean[] {true, false, true, false};
       r.put("booleanValue", booleanValue.clone());
-      if (r.replace("booleanValue", "", ""))
+      if (r.replace("booleanValue", "", "")) {
         fail("expected replace to fail");
+      }
       if (!r.replace("booleanValue", booleanValue, "")) {
         fail("expected replace to happen");
       }
       r.put("booleanValue", booleanValue.clone());
-      if (r.remove("booleanValue", ""))
+      if (r.remove("booleanValue", "")) {
         fail("expected remove to fail");
+      }
       if (!r.remove("booleanValue", booleanValue)) {
         fail("expected remove to happen");
       }
@@ -78,14 +82,16 @@ public class RegionOperationsEqualityShouldUseArrayEqualsIntegrationTest {
     {
       short[] shortValue = new short[] {1, 2, 3, 4};
       r.put("shortValue", shortValue.clone());
-      if (r.replace("shortValue", "", ""))
+      if (r.replace("shortValue", "", "")) {
         fail("expected replace to fail");
+      }
       if (!r.replace("shortValue", shortValue, "")) {
         fail("expected replace to happen");
       }
       r.put("shortValue", shortValue.clone());
-      if (r.remove("shortValue", ""))
+      if (r.remove("shortValue", "")) {
         fail("expected remove to fail");
+      }
       if (!r.remove("shortValue", shortValue)) {
         fail("expected remove to happen");
       }
@@ -93,14 +99,16 @@ public class RegionOperationsEqualityShouldUseArrayEqualsIntegrationTest {
     {
       char[] charValue = new char[] {1, 2, 3, 4};
       r.put("charValue", charValue.clone());
-      if (r.replace("charValue", "", ""))
+      if (r.replace("charValue", "", "")) {
         fail("expected replace to fail");
+      }
       if (!r.replace("charValue", charValue, "")) {
         fail("expected replace to happen");
       }
       r.put("charValue", charValue.clone());
-      if (r.remove("charValue", ""))
+      if (r.remove("charValue", "")) {
         fail("expected remove to fail");
+      }
       if (!r.remove("charValue", charValue)) {
         fail("expected remove to happen");
       }
@@ -108,14 +116,16 @@ public class RegionOperationsEqualityShouldUseArrayEqualsIntegrationTest {
     {
       int[] intValue = new int[] {1, 2, 3, 4};
       r.put("intValue", intValue.clone());
-      if (r.replace("intValue", "", ""))
+      if (r.replace("intValue", "", "")) {
         fail("expected replace to fail");
+      }
       if (!r.replace("intValue", intValue, "")) {
         fail("expected replace to happen");
       }
       r.put("intValue", intValue.clone());
-      if (r.remove("intValue", ""))
+      if (r.remove("intValue", "")) {
         fail("expected remove to fail");
+      }
       if (!r.remove("intValue", intValue)) {
         fail("expected remove to happen");
       }
@@ -123,14 +133,16 @@ public class RegionOperationsEqualityShouldUseArrayEqualsIntegrationTest {
     {
       long[] longValue = new long[] {1, 2, 3, 4};
       r.put("longValue", longValue.clone());
-      if (r.replace("longValue", "", ""))
+      if (r.replace("longValue", "", "")) {
         fail("expected replace to fail");
+      }
       if (!r.replace("longValue", longValue, "")) {
         fail("expected replace to happen");
       }
       r.put("longValue", longValue.clone());
-      if (r.remove("longValue", ""))
+      if (r.remove("longValue", "")) {
         fail("expected remove to fail");
+      }
       if (!r.remove("longValue", longValue)) {
         fail("expected remove to happen");
       }
@@ -138,14 +150,16 @@ public class RegionOperationsEqualityShouldUseArrayEqualsIntegrationTest {
     {
       float[] floatValue = new float[] {1, 2, 3, 4};
       r.put("floatValue", floatValue.clone());
-      if (r.replace("floatValue", "", ""))
+      if (r.replace("floatValue", "", "")) {
         fail("expected replace to fail");
+      }
       if (!r.replace("floatValue", floatValue, "")) {
         fail("expected replace to happen");
       }
       r.put("floatValue", floatValue.clone());
-      if (r.remove("floatValue", ""))
+      if (r.remove("floatValue", "")) {
         fail("expected remove to fail");
+      }
       if (!r.remove("floatValue", floatValue)) {
         fail("expected remove to happen");
       }
@@ -153,14 +167,16 @@ public class RegionOperationsEqualityShouldUseArrayEqualsIntegrationTest {
     {
       double[] doubleValue = new double[] {1, 2, 3, 4};
       r.put("doubleValue", doubleValue.clone());
-      if (r.replace("doubleValue", "", ""))
+      if (r.replace("doubleValue", "", "")) {
         fail("expected replace to fail");
+      }
       if (!r.replace("doubleValue", doubleValue, "")) {
         fail("expected replace to happen");
       }
       r.put("doubleValue", doubleValue.clone());
-      if (r.remove("doubleValue", ""))
+      if (r.remove("doubleValue", "")) {
         fail("expected remove to fail");
+      }
       if (!r.remove("doubleValue", doubleValue)) {
         fail("expected remove to happen");
       }
@@ -171,14 +187,16 @@ public class RegionOperationsEqualityShouldUseArrayEqualsIntegrationTest {
       r.put("oaValue", oaValue);
       Object[] deepCloneOaValue = new Object[] {new byte[] {1, 2, 3, 4}, new short[] {1, 2, 3, 4},
           new int[] {1, 2, 3, 4}, "hello sweet world!"};
-      if (r.replace("oaValue", "", ""))
+      if (r.replace("oaValue", "", "")) {
         fail("expected replace to fail");
+      }
       if (!r.replace("oaValue", deepCloneOaValue, "")) {
         fail("expected replace to happen");
       }
       r.put("oaValue", oaValue);
-      if (r.remove("oaValue", ""))
+      if (r.remove("oaValue", "")) {
         fail("expected remove to fail");
+      }
       if (!r.remove("oaValue", deepCloneOaValue)) {
         fail("expected remove to happen");
       }

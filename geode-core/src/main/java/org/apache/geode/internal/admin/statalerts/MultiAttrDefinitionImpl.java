@@ -82,8 +82,9 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
       if (statisticInfo[i] != null) {
         Statistics[] temp = factory.findStatisticsByTextId(statisticInfo[i].getStatisticsTextId());
 
-        if (temp == null || temp.length == 0)
+        if (temp == null || temp.length == 0) {
           return false;
+        }
 
         StatisticDescriptor[] temp1 = temp[0].getType().getStatistics();
         for (int j = 0; j < temp1.length; j++) {
@@ -147,9 +148,10 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
 
   @Override
   public void setStatisticInfo(StatisticInfo[] info) {
-    if (info == null || info.length == 0)
+    if (info == null || info.length == 0) {
       throw new IllegalArgumentException(
           "setStatisticInfo method requires non-zero length array of StatisticInfo objects.");
+    }
 
     statisticInfo = info;
   }

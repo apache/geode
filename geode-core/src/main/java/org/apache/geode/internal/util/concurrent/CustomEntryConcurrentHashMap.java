@@ -1041,8 +1041,9 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
           } else {
             for (int i = 0; i < tab.length; i++) {
               HashEntry<K, V> he = tab[i];
-              if (he == null)
+              if (he == null) {
                 continue;
+              }
               tab[i] = null;
               clearedEntries.add(he);
             }

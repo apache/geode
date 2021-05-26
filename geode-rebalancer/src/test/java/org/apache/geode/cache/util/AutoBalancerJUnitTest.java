@@ -94,8 +94,9 @@ public class AutoBalancerJUnitTest {
     when(mockRebalanceFactory.start()).thenReturn(mockRebalanceOperation);
     when(mockRebalanceFactory.simulate()).thenReturn(mockRebalanceOperation);
     when(mockRebalanceOperation.getResults()).thenReturn(mockRebalanceResults);
-    if (simulate)
+    if (simulate) {
       when(mockRebalanceResults.getTotalBucketTransferBytes()).thenReturn(12345L);
+    }
 
     return new GeodeCacheFacade(mockCache);
   }

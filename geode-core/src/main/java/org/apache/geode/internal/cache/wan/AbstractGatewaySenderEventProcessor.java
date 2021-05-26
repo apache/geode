@@ -962,9 +962,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       }
     }
     this.batchIdToPDXEventsMap.clear();
-    if (this.queue instanceof SerialGatewaySenderQueue)
+    if (this.queue instanceof SerialGatewaySenderQueue) {
       ((SerialGatewaySenderQueue) this.queue).resetLastPeeked();
-    else if (this.queue instanceof ParallelGatewaySenderQueue) {
+    } else if (this.queue instanceof ParallelGatewaySenderQueue) {
       ((ParallelGatewaySenderQueue) this.queue).resetLastPeeked();
     } else {
       // we will never come here

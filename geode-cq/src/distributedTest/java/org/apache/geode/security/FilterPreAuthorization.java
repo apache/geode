@@ -110,9 +110,10 @@ public class FilterPreAuthorization implements AccessControl {
         return false;
       }
       createContext.setSerializedValue(hos.toByteArray(), true);
-      if (this.logger.fineEnabled())
+      if (this.logger.fineEnabled()) {
         this.logger.fine("FilterPreAuthorization: added authorization " + "info for key: "
             + createContext.getKey());
+      }
     } else if (opCode.isPutAll()) {
       PutAllOperationContext createContext = (PutAllOperationContext) context;
       Map map = createContext.getMap();
@@ -132,9 +133,10 @@ public class FilterPreAuthorization implements AccessControl {
         }
         ObjectWithAuthz authzObj = new ObjectWithAuthz(value, authCode);
         mapEntry.setValue(authzObj);
-        if (this.logger.fineEnabled())
+        if (this.logger.fineEnabled()) {
           this.logger.fine(
               "FilterPreAuthorization: putAll: added authorization " + "info for key: " + currkey);
+        }
       }
       // Now each of the map's values have become ObjectWithAuthz
     }

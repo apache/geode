@@ -192,19 +192,24 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     while (itert1.hasNext()) {
       Struct stc2 = (Struct) itert2.next();
       Struct stc1 = (Struct) itert1.next();
-      if (stc2.get(strg2[0]) != stc1.get(strg1[0]))
+      if (stc2.get(strg2[0]) != stc1.get(strg1[0])) {
         fail(
             "FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
-      if (stc2.get(strg2[1]) != stc1.get(strg1[1]))
+      }
+      if (stc2.get(strg2[1]) != stc1.get(strg1[1])) {
         fail("FAILED: In both the cases Positions are different");
+      }
       if (!StringUtils.equals(((Position) stc2.get(strg2[1])).secId,
-          ((Position) stc1.get(strg1[1])).secId))
+          ((Position) stc1.get(strg1[1])).secId)) {
         fail("FAILED: In both the cases Positions secIds are different");
+      }
       if (((Portfolio) stc2.get(strg2[0])).isActive() != ((Portfolio) stc1.get(strg1[0]))
-          .isActive())
+          .isActive()) {
         fail("FAILED: Status of the Portfolios found are different");
-      if (((Portfolio) stc2.get(strg2[0])).getID() != ((Portfolio) stc1.get(strg1[0])).getID())
+      }
+      if (((Portfolio) stc2.get(strg2[0])).getID() != ((Portfolio) stc1.get(strg1[0])).getID()) {
         fail("FAILED: IDs of the Portfolios found are different");
+      }
     }
     CacheUtils.compareResultsOfWithAndWithoutIndex(sr, this);
   }
@@ -310,19 +315,24 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     while (itert1.hasNext()) {
       Struct stc2 = (Struct) itert2.next();
       Struct stc1 = (Struct) itert1.next();
-      if (stc2.get(strg2[0]) != stc1.get(strg1[0]))
+      if (stc2.get(strg2[0]) != stc1.get(strg1[0])) {
         fail(
             "FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
-      if (stc2.get(strg2[1]) != stc1.get(strg1[1]))
+      }
+      if (stc2.get(strg2[1]) != stc1.get(strg1[1])) {
         fail("FAILED: In both the cases Positions are different");
+      }
       if (!StringUtils.equals(((Position) stc2.get(strg2[1])).secId,
-          ((Position) stc1.get(strg1[1])).secId))
+          ((Position) stc1.get(strg1[1])).secId)) {
         fail("FAILED: In both the cases Positions secIds are different");
+      }
       if (((Portfolio) stc2.get(strg2[0])).isActive() != ((Portfolio) stc1.get(strg1[0]))
-          .isActive())
+          .isActive()) {
         fail("FAILED: Status of the Portfolios found are different");
-      if (((Portfolio) stc2.get(strg2[0])).getID() != ((Portfolio) stc1.get(strg1[0])).getID())
+      }
+      if (((Portfolio) stc2.get(strg2[0])).getID() != ((Portfolio) stc1.get(strg1[0])).getID()) {
         fail("FAILED: IDs of the Portfolios found are different");
+      }
     }
     CacheUtils.compareResultsOfWithAndWithoutIndex(sr, this);
   }
@@ -589,17 +599,20 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
       Object pos2 = itert2.next();
       Object pos1 = itert1.next();
       Object posFromRegion = region.get(((Portfolio) pos1).getPk());
-      if (!pos1.equals(pos2))
+      if (!pos1.equals(pos2)) {
         fail(
             "FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
+      }
       if (checkReferentialIntegrity) {
         assertTrue(pos2 == pos1);
         assertTrue(pos2 == posFromRegion);
       }
-      if (((Portfolio) pos2).isActive() != ((Portfolio) pos1).isActive())
+      if (((Portfolio) pos2).isActive() != ((Portfolio) pos1).isActive()) {
         fail("FAILED: Status of the Portfolios found are different");
-      if (((Portfolio) pos2).getID() != ((Portfolio) pos1).getID())
+      }
+      if (((Portfolio) pos2).getID() != ((Portfolio) pos1).getID()) {
         fail("FAILED: IDs of the Portfolios found are different");
+      }
     }
     CacheUtils.compareResultsOfWithAndWithoutIndex(sr, this);
 
@@ -750,9 +763,10 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
       Object pos2 = itert2.next();
       Object pos1 = itert1.next();
       Object posFromRegion = region.get(((Portfolio) pos1).getPk());
-      if (!pos1.equals(pos2))
+      if (!pos1.equals(pos2)) {
         fail(
             "FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
+      }
       if (checkReferentialIntegrity) {
         assertTrue(pos2 == pos1);
         assertTrue(pos2 == posFromRegion);
@@ -769,10 +783,12 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
        * if(((Position)stc2.get(strg2[1])).secId != ((Position)stc1.get(strg1[1])).secId)
        * fail("FAILED: In both the cases Positions secIds are different");
        */
-      if (((Portfolio) pos2).isActive() != ((Portfolio) pos1).isActive())
+      if (((Portfolio) pos2).isActive() != ((Portfolio) pos1).isActive()) {
         fail("FAILED: Status of the Portfolios found are different");
-      if (((Portfolio) pos2).getID() != ((Portfolio) pos1).getID())
+      }
+      if (((Portfolio) pos2).getID() != ((Portfolio) pos1).getID()) {
         fail("FAILED: IDs of the Portfolios found are different");
+      }
     }
     CacheUtils.compareResultsOfWithAndWithoutIndex(sr, this);
 
@@ -977,17 +993,20 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
       Object pos2 = itert2.next();
       Object pos1 = itert1.next();
       Object posFromRegion = region.get(((Portfolio) pos1).getPk());
-      if (!pos1.equals(pos2))
+      if (!pos1.equals(pos2)) {
         fail(
             "FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
+      }
       if (checkReferentialIntegrity) {
         assertTrue(pos2 == pos1);
         assertTrue(pos2 == posFromRegion);
       }
-      if (((Portfolio) pos2).isActive() != ((Portfolio) pos1).isActive())
+      if (((Portfolio) pos2).isActive() != ((Portfolio) pos1).isActive()) {
         fail("FAILED: Status of the Portfolios found are different");
-      if (((Portfolio) pos2).getID() != ((Portfolio) pos1).getID())
+      }
+      if (((Portfolio) pos2).getID() != ((Portfolio) pos1).getID()) {
         fail("FAILED: IDs of the Portfolios found are different");
+      }
     }
     CacheUtils.compareResultsOfWithAndWithoutIndex(sr, this);
 
@@ -1190,17 +1209,20 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
       Object pos2 = itert2.next();
       Object pos1 = itert1.next();
       Object posFromRegion = region.get(((Portfolio) pos1).getPk());
-      if (!pos1.equals(pos2))
+      if (!pos1.equals(pos2)) {
         fail(
             "FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
+      }
       if (checkReferentialIntegrity) {
         assertTrue(pos2 == pos1);
         assertTrue(pos2 == posFromRegion);
       }
-      if (((Portfolio) pos2).isActive() != ((Portfolio) pos1).isActive())
+      if (((Portfolio) pos2).isActive() != ((Portfolio) pos1).isActive()) {
         fail("FAILED: Status of the Portfolios found are different");
-      if (((Portfolio) pos2).getID() != ((Portfolio) pos1).getID())
+      }
+      if (((Portfolio) pos2).getID() != ((Portfolio) pos1).getID()) {
         fail("FAILED: IDs of the Portfolios found are different");
+      }
     }
     CacheUtils.compareResultsOfWithAndWithoutIndex(sr, this);
 

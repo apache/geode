@@ -389,14 +389,18 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
   protected short computeCompressedShort() {
     short flags = 0;
-    if (this.processorId != 0)
+    if (this.processorId != 0) {
       flags |= HAS_PROCESSOR_ID;
-    if (this.processorType != 0)
+    }
+    if (this.processorType != 0) {
       flags |= HAS_PROCESSOR_TYPE;
-    if (this.getTXUniqId() != TXManagerImpl.NOTX)
+    }
+    if (this.getTXUniqId() != TXManagerImpl.NOTX) {
       flags |= HAS_TX_ID;
-    if (this.getTXMemberId() != null)
+    }
+    if (this.getTXMemberId() != null) {
       flags |= HAS_TX_MEMBERID;
+    }
     return flags;
   }
 

@@ -123,8 +123,9 @@ public class CacheServerHelper {
 
     while (count < utflen) {
       c = (int) bytearr[count] & 0xff;
-      if (c > 127)
+      if (c > 127) {
         break;
+      }
       count++;
       chararr[chararr_count++] = (char) c;
     }
@@ -154,8 +155,9 @@ public class CacheServerHelper {
                 new UTFDataFormatException("malformed input: partial character at end"));
           }
           char2 = (int) bytearr[count - 1];
-          if ((char2 & 0xC0) != 0x80)
+          if ((char2 & 0xC0) != 0x80) {
             throw new RuntimeException("malformed input around byte " + count);
+          }
           chararr[chararr_count++] = (char) (((c & 0x1F) << 6) | (char2 & 0x3F));
           break;
         case 14:

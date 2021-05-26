@@ -146,8 +146,9 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
   @Override
   public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id,
       boolean crashed) {
-    if (!crashed)
+    if (!crashed) {
       return;
+    }
     synchronized (this) {
       int kind = id.getVmKind();
       switch (kind) {

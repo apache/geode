@@ -85,8 +85,9 @@ class Utils {
   static List toTokens(String s) {
     StringTokenizer tokenizer = new StringTokenizer(s, " ");
     List l = new ArrayList();
-    while (tokenizer.hasMoreTokens())
+    while (tokenizer.hasMoreTokens()) {
       l.add(tokenizer.nextToken());
+    }
     return l;
   }
 

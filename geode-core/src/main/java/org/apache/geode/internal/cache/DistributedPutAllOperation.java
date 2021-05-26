@@ -426,8 +426,9 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       }
       out.writeByte(this.op.ordinal);
       byte bits = this.flags;
-      if (this.filterRouting != null)
+      if (this.filterRouting != null) {
         bits |= FILTER_ROUTING;
+      }
       if (this.versionTag != null) {
         bits |= VERSION_TAG;
         if (this.versionTag instanceof DiskVersionTag) {
@@ -1285,10 +1286,12 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     @Override
     protected short computeCompressedShort(short s) {
       s = super.computeCompressedShort(s);
-      if (this.context != null)
+      if (this.context != null) {
         s |= HAS_BRIDGE_CONTEXT;
-      if (this.skipCallbacks)
+      }
+      if (this.skipCallbacks) {
         s |= SKIP_CALLBACKS;
+      }
       return s;
     }
 

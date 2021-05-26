@@ -580,8 +580,9 @@ public class LocatorLoadSnapshot {
         break;
       }
     }
-    if (currentLH == null)
+    if (currentLH == null) {
       return null;
+    }
     final float currentLoad = currentLH.getLoad();
     for (Map.Entry<ServerLocationAndMemberId, LoadHolder> loadEntry : groupServers.entrySet()) {
       ServerLocation location = loadEntry.getKey().getServerLocation();

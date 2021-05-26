@@ -244,8 +244,9 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
           }
         }
         cache.getLogger().fine("wait over...waitFlag=" + waitFlag);
-        if (waitFlag)
+        if (waitFlag) {
           fail("test failed");
+        }
       }
     });
   }

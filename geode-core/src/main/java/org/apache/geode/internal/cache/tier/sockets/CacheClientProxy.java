@@ -356,8 +356,9 @@ public class CacheClientProxy implements ClientSession {
   }
 
   private void initializeClientAuths() {
-    if (AcceptorImpl.isPostAuthzCallbackPresent())
+    if (AcceptorImpl.isPostAuthzCallbackPresent()) {
       this.clientUserAuths = ServerConnection.getClientUserAuths(this.proxyID);
+    }
   }
 
   private void reinitializeClientAuths() {
@@ -373,8 +374,9 @@ public class CacheClientProxy implements ClientSession {
   public void setPostAuthzCallback(AccessControl authzCallback) {
     // TODO:hitesh synchronization
     synchronized (this.clientUserAuthsLock) {
-      if (this.postAuthzCallback != null)
+      if (this.postAuthzCallback != null) {
         this.postAuthzCallback.close();
+      }
       this.postAuthzCallback = authzCallback;
     }
   }
@@ -392,8 +394,9 @@ public class CacheClientProxy implements ClientSession {
   public void setCQVsUserAuth(String cqName, long uniqueId, boolean isDurable) {
     if (postAuthzCallback == null) // only for multiuser
     {
-      if (this.clientUserAuths != null)
+      if (this.clientUserAuths != null) {
         this.clientUserAuths.setUserAuthAttributesForCq(cqName, uniqueId, isDurable);
+      }
     }
   }
 
@@ -1607,8 +1610,9 @@ public class CacheClientProxy implements ClientSession {
       this._statistics.incMessagesFailedQueued();
     }
 
-    if (state != null)
+    if (state != null) {
       state.clear();
+    }
   }
 
   protected void sendMessageDirectly(ClientMessage message) {

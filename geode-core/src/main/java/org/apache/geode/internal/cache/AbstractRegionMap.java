@@ -1072,8 +1072,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                   txEntryState.setVersionTag(callbackEvent.getVersionTag());
                 }
               } finally {
-                if (!callbackEventAddedToPending)
+                if (!callbackEventAddedToPending) {
                   releaseEvent(callbackEvent);
+                }
               }
             }
           }
@@ -1145,8 +1146,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                           false /* Clear Conflicting with the operation */, wasDestroyedOrRemoved);
                       lruEntryDestroy(oldRe);
                     } finally {
-                      if (!callbackEventAddedToPending)
+                      if (!callbackEventAddedToPending) {
                         releaseEvent(callbackEvent);
+                      }
                     }
                   } catch (RegionClearedException rce) {
                     owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,
@@ -1203,8 +1205,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                 // Note no need for LRU work since the entry is destroyed
                 // and will be removed when gii completes
               } finally {
-                if (!callbackEventAddedToPending)
+                if (!callbackEventAddedToPending) {
                   releaseEvent(callbackEvent);
+                }
               }
             }
             if (owner.getConcurrencyChecksEnabled() && txEntryState != null) {
@@ -1238,8 +1241,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
           pendingCallbacks.add(callbackEvent);
           callbackEventAddedToPending = true;
         } finally {
-          if (!callbackEventAddedToPending)
+          if (!callbackEventAddedToPending) {
             releaseEvent(callbackEvent);
+          }
         }
       }
     } catch (DiskAccessException dae) {
@@ -1852,8 +1856,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                       txEntryState.setVersionTag(callbackEvent.getVersionTag());
                     }
                   } finally {
-                    if (!callbackEventInPending)
+                    if (!callbackEventInPending) {
                       releaseEvent(callbackEvent);
+                    }
                   }
                 }
               }
@@ -1895,8 +1900,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                   txEntryState.setVersionTag(callbackEvent.getVersionTag());
                 }
               } finally {
-                if (!callbackEventInPending)
+                if (!callbackEventInPending) {
                   releaseEvent(callbackEvent);
+                }
               }
             }
           } finally {
@@ -1957,8 +1963,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                   txEntryState.setVersionTag(callbackEvent.getVersionTag());
                 }
               } finally {
-                if (!callbackEventInPending)
+                if (!callbackEventInPending) {
                   releaseEvent(callbackEvent);
+                }
               }
               return;
             }
@@ -1980,8 +1987,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
             pendingCallbacks.add(callbackEvent);
             callbackEventInPending = true;
           } finally {
-            if (!callbackEventInPending)
+            if (!callbackEventInPending) {
               releaseEvent(callbackEvent);
+            }
           }
         }
       }
@@ -2235,8 +2243,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
   public void releaseCacheModificationLock(InternalRegion owner, EntryEventImpl event) {
     boolean lockedByBulkOp = event.isBulkOpInProgress() && owner.getDataPolicy().withReplication();
 
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.beforeRelease(owner, event);
+    }
 
     if (!event.isOriginRemote() && !lockedByBulkOp && !owner.hasServerProxy()) {
       RegionVersionVector vector = owner.getVersionVector();
@@ -2245,37 +2254,42 @@ public abstract class AbstractRegionMap extends BaseRegionMap
       }
     }
 
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.afterRelease(owner, event);
+    }
 
   }
 
   @Override
   public void lockRegionForAtomicTX(InternalRegion r) {
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.beforeLock(r, null);
+    }
 
     RegionVersionVector vector = r.getVersionVector();
     if (vector != null) {
       vector.lockForCacheModification();
     }
 
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.afterLock(r, null);
+    }
   }
 
   @Override
   public void unlockRegionForAtomicTX(InternalRegion r) {
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.beforeRelease(r, null);
+    }
 
     RegionVersionVector vector = r.getVersionVector();
     if (vector != null) {
       vector.releaseCacheModificationLock();
     }
 
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.afterRelease(r, null);
+    }
   }
 
   /**

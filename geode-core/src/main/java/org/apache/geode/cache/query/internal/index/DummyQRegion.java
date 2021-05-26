@@ -51,12 +51,14 @@ public class DummyQRegion extends QRegion {
   public DummyQRegion(Region region) {
     super(region, false);
     Class constraint = region.getAttributes().getValueConstraint();
-    if (constraint != null)
+    if (constraint != null) {
       valueType = TypeUtils.getObjectType(constraint);
+    }
 
     constraint = region.getAttributes().getKeyConstraint();
-    if (constraint != null)
+    if (constraint != null) {
       keyType = TypeUtils.getObjectType(constraint);
+    }
     values = new ResultsBag(((HasCachePerfStats) region.getCache()).getCachePerfStats());
     values.setElementType(valueType);
     keys = new ResultsSet();

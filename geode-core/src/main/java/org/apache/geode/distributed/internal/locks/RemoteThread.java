@@ -42,18 +42,23 @@ public class RemoteThread {
 
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof RemoteThread))
+    }
+    if (!(other instanceof RemoteThread)) {
       return false;
+    }
     final RemoteThread that = (RemoteThread) other;
 
-    if (this.member != that.member && !(this.member != null && this.member.equals(that.member)))
+    if (this.member != that.member && !(this.member != null && this.member.equals(that.member))) {
       return false;
-    if (this.threadId != that.threadId)
+    }
+    if (this.threadId != that.threadId) {
       return false;
+    }
 
     return true;
   }

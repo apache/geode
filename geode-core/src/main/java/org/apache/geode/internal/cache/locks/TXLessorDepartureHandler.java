@@ -52,8 +52,9 @@ public class TXLessorDepartureHandler implements DLockLessorDepartureHandler {
   public void handleDepartureOf(InternalDistributedMember owner, DLockGrantor grantor) {
     // get DTLS
     TXLockService dtls = TXLockService.getDTLS();
-    if (dtls == null)
+    if (dtls == null) {
       return;
+    }
     try {
       if (!dtls.isLockGrantor()) {
         logger.debug("This member is not lock grantor; exiting TXLessorDepartureHandler");

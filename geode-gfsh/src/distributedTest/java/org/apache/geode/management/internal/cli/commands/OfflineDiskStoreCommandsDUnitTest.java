@@ -193,8 +193,9 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
     ThreadMXBean bean = ManagementFactory.getThreadMXBean();
     ThreadInfo[] infos = bean.dumpAllThreads(true, true);
     for (ThreadInfo info : infos) {
-      if (info.toString().contains(threadName))
+      if (info.toString().contains(threadName)) {
         writer.append(info.toString());
+      }
     }
 
     writer.close();
@@ -202,8 +203,9 @@ public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
     try (BufferedReader br = new BufferedReader(new FileReader(tempFile))) {
       String line;
       while ((line = br.readLine()) != null) {
-        if (line.contains(threadName))
+        if (line.contains(threadName)) {
           counter++;
+        }
       }
     }
     assertThat(counter).isEqualTo(0);

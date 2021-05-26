@@ -2039,10 +2039,12 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port1);
-        if (port2 != 0)
+        if (port2 != 0) {
           ccf.addPoolServer("localhost", port2);
-        if (port3 != 0)
+        }
+        if (port3 != 0) {
           ccf.addPoolServer("localhost", port3);
+        }
         ccf.setPoolSubscriptionEnabled(false);
         ccf.set(LOG_LEVEL, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
@@ -2243,8 +2245,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         int i = 0;
         while (it.hasNext()) {
           EntryEvent ev = (EntryEvent) it.next();
-          if (i == 0)
+          if (i == 0) {
             assertNull(ev.getNewValue());
+          }
           if (i > 1) {
             assertEquals(new CustId(i), ev.getKey());
             assertEquals(new Customer("name" + i, "address" + i), ev.getNewValue());
@@ -2269,8 +2272,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         int i = 0;
         while (it.hasNext()) {
           EntryEvent ev = (EntryEvent) it.next();
-          if (i == 0)
+          if (i == 0) {
             assertNull(ev.getNewValue());
+          }
           if (i > 1) {
             assertEquals(new CustId(i), ev.getKey());
             assertEquals(new Customer("name" + i, "address" + i), ev.getNewValue());
@@ -3717,8 +3721,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port1);
-        if (port2 != 0)
+        if (port2 != 0) {
           ccf.addPoolServer("localhost", port2);
+        }
         ccf.setPoolSubscriptionEnabled(false);
         ccf.set(LOG_LEVEL, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);

@@ -141,8 +141,9 @@ public class Transport<ID extends MemberIdentifier> extends UDP {
 
     // drop message from self; it has already been looped back up
     // (https://issues.jboss.org/browse/JGRP-1765)
-    if (local_physical_addr != null && local_physical_addr.equals(sender))
+    if (local_physical_addr != null && local_physical_addr.equals(sender)) {
       return;
+    }
 
     if (length - offset == 4 && data[offset] == 'p' && data[offset + 1] == 'i'
         && data[offset + 2] == 'n' && data[offset + 3] == 'g') {

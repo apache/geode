@@ -168,10 +168,12 @@ public class ClientHealthMonitor {
    */
   public static synchronized void shutdownInstance() {
     refCount--;
-    if (instance == null)
+    if (instance == null) {
       return;
-    if (refCount > 0)
+    }
+    if (refCount > 0) {
       return;
+    }
     instance.shutdown();
 
     boolean interrupted = false; // Don't clear, let join fail if already interrupted

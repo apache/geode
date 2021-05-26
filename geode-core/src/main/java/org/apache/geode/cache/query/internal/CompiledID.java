@@ -47,8 +47,9 @@ public class CompiledID extends AbstractCompiledValue {
   public List getPathOnIterator(RuntimeIterator itr, ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException {
     CompiledValue val = context.resolve(getId());
-    if (val == itr)
+    if (val == itr) {
       return new ArrayList(); // empty path
+    }
     if (val.getType() == PATH && ((CompiledPath) val).getReceiver() == itr) {
       List list = new ArrayList();
       list.add(_id);

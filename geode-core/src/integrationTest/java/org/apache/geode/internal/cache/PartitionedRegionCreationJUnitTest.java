@@ -146,8 +146,9 @@ public class PartitionedRegionCreationJUnitTest {
     }
 
     // test for redundancy < 0
-    if (pr != null && !pr.isDestroyed())
+    if (pr != null && !pr.isDestroyed()) {
       pr.destroyRegion();
+    }
     redundancy = -5;
     try {
       pr = (PartitionedRegion) PartitionedRegionTestHelper.createPartitionedRegion(regionname,
@@ -278,14 +279,16 @@ public class PartitionedRegionCreationJUnitTest {
 
     Region root = (PartitionedRegionTestHelper
         .getExistingRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME));
-    if (root == null)
+    if (root == null) {
       fail("testpartionedRegionInitialization() - the "
           + PartitionedRegionHelper.PR_ROOT_REGION_NAME + " do not exists");
+    }
     RegionAttributes regionAttribs = root.getAttributes();
     Scope scope = regionAttribs.getScope();
-    if (!scope.isDistributedAck())
+    if (!scope.isDistributedAck()) {
       fail("testpartionedRegionInitialization() - the "
           + PartitionedRegionHelper.PR_ROOT_REGION_NAME + " scope is not distributed_ack");
+    }
     assertEquals(DataPolicy.REPLICATE, regionAttribs.getDataPolicy());
 
   }
@@ -307,9 +310,10 @@ public class PartitionedRegionCreationJUnitTest {
       Region region = (Region) itr.next();
       String name = ((PartitionedRegion) region).getRegionIdentifier();
       PartitionRegionConfig prConfig = (PartitionRegionConfig) root.get(name);
-      if (prConfig == null)
+      if (prConfig == null) {
         fail("testpartionedRegionRegistration() - PartionedRegion - " + name
             + " configs do not exists in  region - " + root.getName());
+      }
     }
 
   }
@@ -319,8 +323,9 @@ public class PartitionedRegionCreationJUnitTest {
    *
    */
   private void createMultiplePartitionedRegions() {
-    if (PRCreateDone)
+    if (PRCreateDone) {
       return;
+    }
     int numthread = 0;
     long giveupTime = System.currentTimeMillis() + GeodeAwaitility.getTimeout().toMillis();
     while (numthread < TOTAL_THREADS && giveupTime > System.currentTimeMillis()) {
@@ -344,15 +349,18 @@ public class PartitionedRegionCreationJUnitTest {
    */
   private void verifyCreateResults() {
     GeodeAwaitility.await().untilAsserted(() -> {
-      if (TOTAL_RETURNS != TOTAL_THREADS)
+      if (TOTAL_RETURNS != TOTAL_THREADS) {
         fail("Failed -- Total thread returned is not same as number of threads created");
+      }
 
-      if (TOTAL_PR_CREATED != (TOTAL_THREADS / 2))
+      if (TOTAL_PR_CREATED != (TOTAL_THREADS / 2)) {
         fail("Failed -- Total Partioned Region created is not correct.  Total created = "
             + TOTAL_PR_CREATED + " but expected " + (TOTAL_THREADS / 2));
+      }
 
-      if (TOTAL_PR_CREATION_FAIL != (TOTAL_THREADS / 2))
+      if (TOTAL_PR_CREATION_FAIL != (TOTAL_THREADS / 2)) {
         fail("Failed -- Total Partioned Region creation failures is not correct");
+      }
     });
   }
 

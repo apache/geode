@@ -4380,8 +4380,9 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             TXEntryState es = rs.readEntry(key);
             assertEquals("txkey", key);
             assertNotNull(es.getValue(key, r, false));
-            if (key.equals("txkey"))
+            if (key.equals("txkey")) {
               assertTrue(es.isDirty());
+            }
           }
         }
         return null;

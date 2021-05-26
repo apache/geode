@@ -99,7 +99,9 @@ public class LoopRunner implements Runner {
 
     @Override
     public void execute() throws ExecutionException, InterruptedException {
-      while (callablesStarting.get() > 0);
+      while (callablesStarting.get() > 0) {
+        ;
+      }
 
       start.countDown();
       for (Future future : futures) {

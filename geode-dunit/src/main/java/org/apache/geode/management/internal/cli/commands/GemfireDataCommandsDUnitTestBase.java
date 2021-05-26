@@ -257,21 +257,25 @@ public class GemfireDataCommandsDUnitTestBase {
     String canonicalName = klass.getCanonicalName();
     String getCommand = "get --key=" + key + " --key-class=" + canonicalName
         + " --value-class=" + canonicalName;
-    if (addRegionPath)
+    if (addRegionPath) {
       getCommand += " --region=" + DATA_REGION_NAME_PATH;
+    }
 
     String locateEntryCommand = "locate entry --key=" + key + " --key-class="
         + canonicalName + " --value-class=" + canonicalName;
-    if (addRegionPath)
+    if (addRegionPath) {
       locateEntryCommand += " --region=" + DATA_REGION_NAME_PATH;
+    }
 
     String removeCommand = "remove --key=" + key + " --key-class=" + canonicalName;
-    if (addRegionPath)
+    if (addRegionPath) {
       removeCommand += " --region=" + DATA_REGION_NAME_PATH;
+    }
     String putCommand = "put --key=" + key + " --key-class=" + canonicalName
         + " --value=" + value + " --value-class=" + canonicalName;
-    if (addRegionPath)
+    if (addRegionPath) {
       putCommand += " --region=" + DATA_REGION_NAME_PATH;
+    }
 
     if (expResult) {
       // Do put from shell check gemfire get do gemfire remove

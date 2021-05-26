@@ -2891,13 +2891,15 @@ public class WANTestBase extends DistributedTestCase {
     assertNotNull(r);
 
     List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
-    for (long i = 0; i < 5; i++)
+    for (long i = 0; i < 5; i++) {
       tasks.add(new PutTask(r, ai, numPuts));
+    }
 
     try {
       List<Future<Object>> l = execService.invokeAll(tasks);
-      for (Future<Object> f : l)
+      for (Future<Object> f : l) {
         f.get();
+      }
     } catch (InterruptedException e1) { // TODO: eats exception
       e1.printStackTrace();
     } catch (ExecutionException e) { // TODO: eats exceptions
@@ -3443,8 +3445,9 @@ public class WANTestBase extends DistributedTestCase {
     ConcurrentParallelGatewaySenderEventProcessor cProc =
         (ConcurrentParallelGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
             .getEventProcessor();
-    if (cProc == null)
+    if (cProc == null) {
       return 0;
+    }
 
     int totalDispatched = 0;
     for (ParallelGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
@@ -3784,8 +3787,9 @@ public class WANTestBase extends DistributedTestCase {
       if (this == obj) {
         return true;
       }
-      if (!(obj instanceof MyGatewayEventFilter))
+      if (!(obj instanceof MyGatewayEventFilter)) {
         return false;
+      }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
       return this.Id.equals(filter.Id);
     }
@@ -3832,8 +3836,9 @@ public class WANTestBase extends DistributedTestCase {
       if (this == obj) {
         return true;
       }
-      if (!(obj instanceof MyGatewayEventFilter))
+      if (!(obj instanceof MyGatewayEventFilter)) {
         return false;
+      }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
       return this.Id.equals(filter.Id);
     }
@@ -3884,8 +3889,9 @@ public class WANTestBase extends DistributedTestCase {
       if (this == obj) {
         return true;
       }
-      if (!(obj instanceof MyGatewayEventFilter))
+      if (!(obj instanceof MyGatewayEventFilter)) {
         return false;
+      }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
       return this.Id.equals(filter.Id);
     }

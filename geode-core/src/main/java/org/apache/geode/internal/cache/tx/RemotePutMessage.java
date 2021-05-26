@@ -513,12 +513,15 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     DataSerializer.writeObject(getKey(), out);
 
     int extraFlags = this.deserializationPolicy;
-    if (this.bridgeContext != null)
+    if (this.bridgeContext != null) {
       extraFlags |= HAS_BRIDGE_CONTEXT;
-    if (this.originalSender != null)
+    }
+    if (this.originalSender != null) {
       extraFlags |= HAS_ORIGINAL_SENDER;
-    if (this.versionTag != null)
+    }
+    if (this.versionTag != null) {
       extraFlags |= HAS_VERSION_TAG;
+    }
     out.writeByte(extraFlags);
 
     DataSerializer.writeObject(getCallbackArg(), out);
@@ -554,22 +557,30 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   @Override
   protected short computeCompressedShort() {
     short s = super.computeCompressedShort();
-    if (this.ifNew)
+    if (this.ifNew) {
       s |= IF_NEW;
-    if (this.ifOld)
+    }
+    if (this.ifOld) {
       s |= IF_OLD;
-    if (this.requireOldValue)
+    }
+    if (this.requireOldValue) {
       s |= REQUIRED_OLD_VAL;
-    if (this.hasOldValue)
+    }
+    if (this.hasOldValue) {
       s |= HAS_OLD_VAL;
-    if (this.event.getDeltaBytes() != null)
+    }
+    if (this.event.getDeltaBytes() != null) {
       s |= HAS_DELTA_BYTES;
-    if (this.expectedOldValue != null)
+    }
+    if (this.expectedOldValue != null) {
       s |= HAS_EXPECTED_OLD_VAL;
-    if (this.useOriginRemote)
+    }
+    if (this.useOriginRemote) {
       s |= USE_ORIGIN_REMOTE;
-    if (this.possibleDuplicate)
+    }
+    if (this.possibleDuplicate) {
       s |= POS_DUP;
+    }
     return s;
   }
 
@@ -882,12 +893,15 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
         SerializationContext context) throws IOException {
       super.toData(out, context);
       byte flags = 0;
-      if (this.result)
+      if (this.result) {
         flags |= FLAG_RESULT;
-      if (this.versionTag != null)
+      }
+      if (this.versionTag != null) {
         flags |= FLAG_HASVERSION;
-      if (this.versionTag instanceof DiskVersionTag)
+      }
+      if (this.versionTag instanceof DiskVersionTag) {
         flags |= FLAG_PERSISTENT;
+      }
       out.writeByte(flags);
       out.writeByte(this.op.ordinal);
       oldValueToData(out, getOldValue(), this.oldValueIsSerialized);

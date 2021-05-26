@@ -151,8 +151,9 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
     Cache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       Region region = cache.getRegion(regionName);
-      if (region != null)
+      if (region != null) {
         region.destroyRegion();
+      }
     }
   }
 

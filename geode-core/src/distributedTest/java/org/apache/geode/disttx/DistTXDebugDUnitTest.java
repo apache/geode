@@ -954,11 +954,13 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o)
+      if (this == o) {
         return true;
+      }
 
-      if (!(o instanceof DummyKeyBasedRoutingResolver))
+      if (!(o instanceof DummyKeyBasedRoutingResolver)) {
         return false;
+      }
 
       DummyKeyBasedRoutingResolver otherDummyID = (DummyKeyBasedRoutingResolver) o;
       return (otherDummyID.dummyID.equals(dummyID));

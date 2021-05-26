@@ -372,8 +372,9 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
-    if (this.filterInfo != null)
+    if (this.filterInfo != null) {
       s |= HAS_FILTER_INFO;
+    }
     return s;
   }
 

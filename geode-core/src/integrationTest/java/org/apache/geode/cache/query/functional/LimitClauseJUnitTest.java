@@ -80,8 +80,9 @@ public class LimitClauseJUnitTest {
   public void tearDown() throws Exception {
     CacheUtils.closeCache();
     IndexManager indexManager = ((LocalRegion) region).getIndexManager();
-    if (indexManager != null)
+    if (indexManager != null) {
       indexManager.destroy();
+    }
   }
 
 
@@ -992,8 +993,9 @@ public class LimitClauseJUnitTest {
       Region region = CacheUtils.createRegion("portfolios1", Portfolio.class);
       for (int i = 1; i < 100; i++) {
         Portfolio p = new Portfolio(i);
-        if (i < 50)
+        if (i < 50) {
           p.status = "active";
+        }
         region.put(Integer.toString(i), p);
       }
 
@@ -1025,8 +1027,9 @@ public class LimitClauseJUnitTest {
       Region region = CacheUtils.createRegion("portfolios1", Portfolio.class);
       for (int i = 1; i < 100; i++) {
         Portfolio p = new Portfolio(i);
-        if (i < 50)
+        if (i < 50) {
           p.status = "active";
+        }
         region.put(Integer.toString(i), p);
       }
 
@@ -1065,8 +1068,9 @@ public class LimitClauseJUnitTest {
       Region region = CacheUtils.createRegion("portfolios1", Portfolio.class);
       for (int i = 1; i < 100; i++) {
         Portfolio p = new Portfolio(i);
-        if (i < 50)
+        if (i < 50) {
           p.status = "active";
+        }
         region.put(Integer.toString(i), p);
       }
 
@@ -1105,8 +1109,9 @@ public class LimitClauseJUnitTest {
       Region region = CacheUtils.createRegion("portfolios1", Portfolio.class);
       for (int i = 1; i < 100; i++) {
         Portfolio p = new Portfolio(i);
-        if (i < 50)
+        if (i < 50) {
           p.status = "active";
+        }
         region.put(Integer.toString(i), p);
       }
 
@@ -1143,8 +1148,9 @@ public class LimitClauseJUnitTest {
       Region region = CacheUtils.createRegion("portfolios1", Portfolio.class);
       for (int i = 1; i < 100; i++) {
         Portfolio p = new Portfolio(i);
-        if (i < 50)
+        if (i < 50) {
           p.status = "active";
+        }
         region.put(Integer.toString(i), p);
       }
 
@@ -1183,8 +1189,9 @@ public class LimitClauseJUnitTest {
       Region region = CacheUtils.createRegion("portfolios1", Portfolio.class);
       for (int i = 1; i < 10; i++) {
         Portfolio p = new Portfolio(i);
-        if (i == 2)
+        if (i == 2) {
           p = new Portfolio(1);
+        }
         region.put(Integer.toString(i), p);
       }
 

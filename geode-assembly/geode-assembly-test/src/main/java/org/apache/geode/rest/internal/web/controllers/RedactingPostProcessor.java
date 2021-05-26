@@ -40,19 +40,22 @@ public class RedactingPostProcessor implements PostProcessor {
   @Override
   public Object processRegionValue(Object principal, String regionName, Object id,
       Object customer) {
-    if (customer == null)
+    if (customer == null) {
       return null;
+    }
     if (customer instanceof Customer) {
       String username = getUsername(principal);
       // Unable to retrieve the role at this point, so for this demo we'll just work with the
       // username
-      if (username.equals("super-user"))
+      if (username.equals("super-user")) {
         return customer;
+      }
       Customer cust = (Customer) customer;
       return new Customer(cust.getCustomerId(), cust.getFirstName(), cust.getLastName(),
           "*********");
-    } else
+    } else {
       return customer;
+    }
   }
 
   private String getUsername(final Object principal) {

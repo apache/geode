@@ -506,8 +506,9 @@ public class TXRegionState {
   }
 
   void cleanup(InternalRegion r) {
-    if (this.cleanedUp)
+    if (this.cleanedUp) {
       return;
+    }
     this.cleanedUp = true;
     Iterator it = this.entryMods.values().iterator();
     while (it.hasNext()) {

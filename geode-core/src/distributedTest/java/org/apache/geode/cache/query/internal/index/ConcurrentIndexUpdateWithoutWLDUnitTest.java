@@ -126,8 +126,9 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTe
     Cache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       Region region = cache.getRegion(regionName);
-      if (region != null)
+      if (region != null) {
         region.destroyRegion();
+      }
     }
   }
 

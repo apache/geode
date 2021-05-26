@@ -486,8 +486,9 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   @Override
   public PersistentMemberID getMyInitializingID() {
     DiskInitFile dif = this.ds.getDiskInitFile();
-    if (dif == null)
+    if (dif == null) {
       return this.myInitializingId;
+    }
     synchronized (dif) {
       return this.myInitializingId;
     }
@@ -496,8 +497,9 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   @Override
   public PersistentMemberID getMyPersistentID() {
     DiskInitFile dif = this.ds.getDiskInitFile();
-    if (dif == null)
+    if (dif == null) {
       return this.myInitializedId;
+    }
     synchronized (dif) {
       return this.myInitializedId;
     }
@@ -506,8 +508,9 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   @Override
   public Set<PersistentMemberID> getOnlineMembers() {
     DiskInitFile dif = this.ds.getDiskInitFile();
-    if (dif == null)
+    if (dif == null) {
       return this.onlineMembers.getSnapshot();
+    }
     synchronized (dif) {
       return this.onlineMembers.getSnapshot();
     }
@@ -516,8 +519,9 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   @Override
   public Set<PersistentMemberID> getOfflineMembers() {
     DiskInitFile dif = this.ds.getDiskInitFile();
-    if (dif == null)
+    if (dif == null) {
       return this.offlineMembers.getSnapshot();
+    }
     synchronized (dif) {
       return this.offlineMembers.getSnapshot();
     }
@@ -526,8 +530,9 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   @Override
   public Set<PersistentMemberID> getOfflineAndEqualMembers() {
     DiskInitFile dif = this.ds.getDiskInitFile();
-    if (dif == null)
+    if (dif == null) {
       return this.equalMembers.getSnapshot();
+    }
     synchronized (dif) {
       return this.equalMembers.getSnapshot();
     }

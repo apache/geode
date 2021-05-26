@@ -296,8 +296,9 @@ public class ExecuteRegionFunctionSingleHopOp {
                       (InternalFunctionInvocationTargetException) ex.getCause();
                   failedNodes.addAll(ifite.getFailedNodeSet());
                 }
-                if (!ex.getMessage().equals("Buckets are null"))
+                if (!ex.getMessage().equals("Buckets are null")) {
                   exception = ex;
+                }
               } else if (result instanceof BucketMovedException) {
                 FunctionInvocationTargetException fite =
                     new InternalFunctionInvocationTargetException(
