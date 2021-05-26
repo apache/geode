@@ -58,6 +58,7 @@ public class ClusterSlotsAndNodesDUnitTest {
   private static final String LOCAL_HOST = "127.0.0.1";
   private static MemberVM locator;
   private static MemberVM server1;
+  private static MemberVM server2;
 
   private static Jedis jedis1;
   private static Jedis jedis2;
@@ -67,7 +68,7 @@ public class ClusterSlotsAndNodesDUnitTest {
   public static void classSetup() {
     locator = cluster.startLocatorVM(0);
     server1 = cluster.startRedisVM(1, locator.getPort());
-    cluster.startRedisVM(2, locator.getPort());
+    server2 = cluster.startRedisVM(2, locator.getPort());
 
     int redisServerPort1 = cluster.getRedisPort(1);
     int redisServerPort2 = cluster.getRedisPort(2);
@@ -231,6 +232,42 @@ public class ClusterSlotsAndNodesDUnitTest {
                 slot.getRight().intValue() + 1));
 
         assertThat(missingSlots.stream().toArray()).isEmpty();
+        iterations++;
+      }
+
+      return iterations;
+    });
+
+    int iterations = getSlotsFuture.get();
+    done.set(true);
+    startupShutdownFuture.get();
+
+    assertThat(iterations).isGreaterThan(0);
+  }
+
+  @Test
+  public void hostAndPortInfoIsUnique_whenPrimariesAreMoving() throws Exception {
+    AtomicBoolean done = new AtomicBoolean();
+    CompletableFuture<Void> startupShutdownFuture = executor.runAsync(() -> {
+      while (!done.get()) {
+        server2.stop();
+        server2 = cluster.startRedisVM(2, locator.getPort());
+        rebalanceAllRegions(server1);
+      }
+    });
+
+    long endTime = System.currentTimeMillis() + 60_000;
+    CompletableFuture<Integer> getSlotsFuture = executor.supplyAsync(() -> {
+      int iterations = 0;
+
+      while (System.currentTimeMillis() < endTime) {
+        List<ClusterNode> nodes = ClusterNodes.parseClusterNodes(jedis1.clusterNodes()).getNodes();
+
+        if (nodes.size() != 2) {
+          continue;
+        }
+
+        assertThat(nodes.get(0).port).isNotEqualTo(nodes.get(1).port);
         iterations++;
       }
 

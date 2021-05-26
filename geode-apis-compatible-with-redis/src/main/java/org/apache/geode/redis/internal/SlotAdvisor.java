@@ -53,16 +53,6 @@ public class SlotAdvisor {
     this.dataRegion = (PartitionedRegion) dataRegion;
   }
 
-  public Map<String, List<Integer>> getMemberBuckets() {
-    Map<String, List<Integer>> memberBuckets = new HashMap<>();
-    for (int bucketId = 0; bucketId < REDIS_REGION_BUCKETS; bucketId++) {
-      String memberId = getOrCreateMember(bucketId).getUniqueId();
-      memberBuckets.computeIfAbsent(memberId, k -> new ArrayList<>()).add(bucketId);
-    }
-
-    return memberBuckets;
-  }
-
   /**
    * This returns a list of {@link MemberBucketSlot}s where each entry corresponds to a bucket. If
    * the details for a given bucket cannot be determined, that entry will contain {@code null}.
@@ -73,8 +63,10 @@ public class SlotAdvisor {
       RedisMemberInfo memberInfo = getMemberInfo(bucketId);
       if (memberInfo != null) {
         memberBucketSlots.add(
-            new MemberBucketSlot(bucketId, memberInfo.getHostAddress(),
+            new MemberBucketSlot(bucketId, memberInfo.getMember(), memberInfo.getHostAddress(),
                 memberInfo.getRedisPort()));
+      } else {
+        memberBucketSlots.add(null);
       }
     }
 
@@ -133,13 +125,16 @@ public class SlotAdvisor {
 
   public static class MemberBucketSlot {
     private final int bucketId;
+    private DistributedMember member;
     private final String primaryIpAddress;
     private final int primaryPort;
     private final int slotStart;
     private final int slotEnd;
 
-    public MemberBucketSlot(int bucketId, String primaryIpAddress, int primaryPort) {
+    public MemberBucketSlot(int bucketId, DistributedMember member, String primaryIpAddress,
+        int primaryPort) {
       this.bucketId = bucketId;
+      this.member = member;
       this.primaryIpAddress = primaryIpAddress;
       this.primaryPort = primaryPort;
       this.slotStart = bucketId * REDIS_SLOTS_PER_BUCKET;
@@ -148,6 +143,10 @@ public class SlotAdvisor {
 
     public int getBucketId() {
       return bucketId;
+    }
+
+    public DistributedMember getMember() {
+      return member;
     }
 
     public String getPrimaryIpAddress() {

@@ -21,6 +21,7 @@ import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUC
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,10 +96,9 @@ public class ClusterExecutor extends AbstractExecutor {
    */
   private RedisResponse getNodes(ExecutionHandlerContext ctx) throws InterruptedException {
     String memberId = ctx.getMemberName();
-    Map<String, List<Integer>> memberBuckets =
-        ctx.getRegionProvider().getSlotAdvisor().getMemberBuckets();
     List<SlotAdvisor.MemberBucketSlot> memberBucketSlots =
         ctx.getRegionProvider().getSlotAdvisor().getBucketSlots();
+    Map<String, List<Integer>> memberBuckets = getMemberBuckets(memberBucketSlots);
 
     StringBuilder response = new StringBuilder();
     for (Map.Entry<String, List<Integer>> member : memberBuckets.entrySet()) {
@@ -127,6 +127,18 @@ public class ClusterExecutor extends AbstractExecutor {
     }
 
     return RedisResponse.bulkString(response.toString());
+  }
+
+  private Map<String, List<Integer>> getMemberBuckets(
+      List<SlotAdvisor.MemberBucketSlot> bucketSlots) {
+    Map<String, List<Integer>> result = new HashMap<>();
+
+    for (SlotAdvisor.MemberBucketSlot mbs : bucketSlots) {
+      result.computeIfAbsent(mbs.getMember().getUniqueId(), k -> new ArrayList<>())
+          .add(mbs.getBucketId());
+    }
+
+    return result;
   }
 
   private RedisResponse getInfo(ExecutionHandlerContext ctx) {
