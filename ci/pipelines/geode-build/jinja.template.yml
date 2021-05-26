@@ -486,7 +486,7 @@ jobs:
       version: every
     - put: concourse-metadata-resource
   - do:
-    - task: run_benchmarks{{ run_var.title }}
+    - task: run-benchmarks{{ run_var.title }}
       image: alpine-tools-image
       config:
         platform: linux

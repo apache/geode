@@ -20,17 +20,17 @@ benchmarks:
   baseline_version: '1.13.2'
   benchmark_branch: ((geode-build-branch))
   flavors:
-  - title: '_base'
+  - title: '-base'
     flag: ''
     options: '--tests=org.apache.geode.benchmark.tests.*'
     max_in_flight: 5
     timeout: 24h
-  - title: '_with_ssl'
+  - title: '-with-ssl'
     flag: '-PwithSsl -PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64'
     options: '--tests=org.apache.geode.benchmark.tests.*GetBenchmark --tests=org.apache.geode.benchmark.tests.*PutBenchmark'
     max_in_flight: 2
     timeout: 8h
-  - title: '_with_security_manager'
+  - title: '-with-security-manager'
     flag: '-PwithSecurityManager'
     options: '--tests=org.apache.geode.benchmark.tests.Partitioned*'
     max_in_flight: 3
