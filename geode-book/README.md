@@ -14,7 +14,7 @@ This document contains instructions for building and viewing the Apache Geode Us
 
 Apache Geode provides the full source for the Apache Geode User Guide in markdown format (see `{geode-project-dir}/geode-docs/CONTRIBUTE.md`). For every Apache Geode release the user guide is built and published to http://geode.apache.org/docs/. Users can build the markdown into an HTML user guide using [Bookbinder](https://github.com/pivotal-cf/bookbinder) and the instructions below.
 
-Bookbinder is a Ruby gem that binds  a unified documentation web application from markdown, html, and/or DITA source material. The source material for bookbinder must be stored either in local directories or in GitHub repositories. Bookbinder runs [Middleman](http://middlemanapp.com/) to produce a Rackup app that can be deployed locally or as a web application.
+Bookbinder is a Ruby gem (available at [rubygems.org](https://rubygems.org/gems/bookbindery/) ) that binds a unified documentation web application from markdown, html, and/or DITA source material. The source material for Bookbinder must be stored either in local directories or in GitHub repositories. Bookbinder runs [Middleman](http://middlemanapp.com/) to produce a Rackup app that can be deployed locally or as a web application.
 
 ## Automatic build
 
@@ -24,12 +24,8 @@ Documentation can be built and previewed using the utility scripts at [dev-tools
 
 ### Prerequisites
 
-Bookbinder requires Ruby version 2.0.0-p195 or higher.
+Bookbinder requires Ruby version 2.3.3 or higher.
 
-Follow the instructions below to install Bookbinder:
-
-1. Add gem "bookbindery" to your Gemfile.
-2. Run `bundle install` to install the dependencies specified in your Gemfile.
 
 ### Bookbinder Usage
 
@@ -47,6 +43,7 @@ For Geode, a preconfigured **book** is provided in the directory `{geode-project
 
    Note: You will not have to run `bundle install` on subsequent builds.
 
+
 2. To build the documentation locally using the installed `config.yml` file, enter:
 
     ```
@@ -55,24 +52,11 @@ For Geode, a preconfigured **book** is provided in the directory `{geode-project
 
    Bookbinder converts the markdown source into HTML, which it puts in the `final_app` directory.
 
-3. Navigate to `{geode-project-dir}/geode-book/final_app/` and enter:
+
+3. To start a local website of the Apache Geode User Guide, navigate to `{geode-project-dir}/geode-book/final_app/` and enter:
 
     ```
-    $ bundle install
-    ```
-
-   Note: You will not have to run `bundle install` on subsequent builds. If you see errors during this step regarding the inability to install libv8, try running the command:
-    ```
-    $ gem install libv8 -v '3.16.14.15' --  --with-system-v8
-    ```
-   This can help you avoid errors with the default GCC compiler provided by Xcode on MacOS. This will only help circumvent the use of GCC to install libv8, so if you're on
-   an operating system where you do not have access to a system install of libv8 this may not be possible or necessary.
-
-
-4. To start a local website of the Apache Geode User Guide, enter:
-
-    ```
-    $ rackup
+    $ bundle exec rackup
     ```
 
    You can now view the local documentation at <http://localhost:9292>.
@@ -86,9 +70,9 @@ To copy the User Guide to the website repo:
 1. Create the destination directory by navigating to the geode-site repo. Check out the *master* branch and create a destination directory for the User Guide. The naming convention is:
 
     ```
-{geode-site}/website/content/docs/guide/XY
+    {geode-site}/website/content/docs/guide/XY
     ```
-where `XY` is the product version of your documentation (e.g., `{geode-site}/website/content/docs/guide/12` if you are publishing the documentation for Apache Geode 1.2).
+where `XY` is the product version of your documentation (e.g., `{geode-site}/website/content/docs/guide/113` if you are publishing the documentation for Apache Geode 1.13).
 
 2. Navigate to the User Guide you have built in the Geode repository: `{geode-project-dir}/geode-book/final_app/public/docs/guide/XY`.
 
@@ -105,11 +89,11 @@ where `XY` is the product version of your documentation (e.g., `{geode-site}/web
     $ mkdir -p {geode-site}/website/content/docs/guide/XY
     ```
 
-  c. Navigate to the target directory and un-tar the userguide archive:
+  c. Navigate to the target directory and un-tar the user guide archive:
 
     ```
     $ cd {geode-site}/website/content/docs/guide/XY
     $ tar xvf ~/Desktop/new-guide-content.tar
     ```
 
-4. Follow the instructions in the README.md file on the *master* branch of the geode-site repo (`{geode-site}/README.md`) to build, review, and publish the Apache Geode website. You can also view the geode-site README.md file on [github: https://github.com/apache/geode-site](https://github.com/apache/geode-site).
+4. Follow the instructions in the `README.md` file on the *master* branch of the geode-site repo (`{geode-site}/README.md`) to build, review, and publish the Apache Geode website. You can also view the geode-site `README.md` file on [github: https://github.com/apache/geode-site](https://github.com/apache/geode-site).
