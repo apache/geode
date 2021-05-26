@@ -18,6 +18,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -55,7 +56,7 @@ public class PartitionedRegionStatsUpdateTest {
   @BeforeClass
   public static void classSetup() {
     Properties locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
+    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
 
     MemberVM locator = clusterStartUpRule.startLocatorVM(0, locatorProperties);
     int locatorPort = locator.getPort();

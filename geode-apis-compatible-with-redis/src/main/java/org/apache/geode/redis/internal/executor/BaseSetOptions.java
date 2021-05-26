@@ -14,57 +14,69 @@
  *
  */
 
-package org.apache.geode.redis.internal.executor.string;
+package org.apache.geode.redis.internal.executor;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.redis.internal.executor.BaseSetOptions;
 
 /**
- * Class representing different options that can be used with Redis string SET command.
+ * Class representing different options that can be used with Redis Sorted Set ZADD command.
  */
-public class SetOptions extends BaseSetOptions {
+public abstract class BaseSetOptions implements DataSerializableFixedID {
 
-  private long expirationMillis;
-  private boolean keepTTL;
+  private Exists exists;
 
-  public SetOptions(Exists exists, long expiration, boolean keepTTL) {
-    super(exists);
-    this.expirationMillis = expiration;
-    this.keepTTL = keepTTL;
+  public BaseSetOptions(Exists exists) {
+    this.exists = exists;
   }
 
-  public SetOptions() {}
+  public BaseSetOptions() {}
 
-  public long getExpiration() {
-    return expirationMillis;
+  public boolean isNX() {
+    return exists.equals(Exists.NX);
   }
 
-  public boolean isKeepTTL() {
-    return keepTTL;
+  public boolean isXX() {
+    return exists.equals(Exists.XX);
   }
 
-  @Override
-  public int getDSFID() {
-    return REDIS_SET_OPTIONS_ID;
+  public Exists getExists() {
+    return exists;
   }
 
   @Override
   public void toData(DataOutput out, SerializationContext context) throws IOException {
-    super.toData(out, context);
-    out.writeLong(expirationMillis);
-    out.writeBoolean(keepTTL);
+    DataSerializer.writeEnum(exists, out);
   }
 
   @Override
   public void fromData(DataInput in, DeserializationContext context) throws IOException {
-    super.fromData(in, context);
-    expirationMillis = in.readLong();
-    keepTTL = in.readBoolean();
+    exists = DataSerializer.readEnum(BaseSetOptions.Exists.class, in);
   }
 
+  @Override
+  public KnownVersion[] getSerializationVersions() {
+    return null;
+  }
+
+  public enum Exists {
+    NONE,
+
+    /**
+     * Only set if key does not exist
+     */
+    NX,
+
+    /**
+     * Only set if key already exists
+     */
+    XX
+  }
 }

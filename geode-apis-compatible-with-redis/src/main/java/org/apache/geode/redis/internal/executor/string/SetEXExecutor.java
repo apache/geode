@@ -15,7 +15,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
+import static org.apache.geode.redis.internal.executor.BaseSetOptions.Exists.NONE;
 
 import java.util.List;
 

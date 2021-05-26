@@ -12,31 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.string;
-
-import static org.apache.geode.redis.internal.executor.BaseSetOptions.Exists.NX;
+package org.apache.geode.redis.internal.executor.sortedset;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SetNXExecutor extends StringExecutor {
-
-  private static final int VALUE_INDEX = 2;
-
+public class ZScoreExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-    RedisKey key = command.getKey();
+    RedisSortedSetCommands redisSortedSetCommands = context.getRedisSortedSetCommands();
 
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
-    SetOptions setOptions = new SetOptions(NX, 0L, false);
+    List<byte[]> commandElements = command.getProcessedCommand();
 
-    boolean result = stringCommands.set(key, commandElems.get(VALUE_INDEX), setOptions);
+    byte[] score =
+        redisSortedSetCommands.zscore(command.getKey(), commandElements.get(2));
 
-    return RedisResponse.integer(result);
+    if (score == null) {
+      return RedisResponse.nil();
+    }
+    return RedisResponse.bulkString(new String(score));
   }
 }

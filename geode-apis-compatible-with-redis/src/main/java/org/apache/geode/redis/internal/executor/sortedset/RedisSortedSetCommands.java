@@ -11,27 +11,18 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-package org.apache.geode.redis.internal.data;
 
+package org.apache.geode.redis.internal.executor.sortedset;
 
-public enum RedisDataType {
+import java.util.List;
 
-  REDIS_STRING("string"),
-  REDIS_HASH("hash"),
-  REDIS_SET("set"),
-  REDIS_SORTED_SET("sortedset"),
-  REDIS_PUBSUB("pubsub");
+import org.apache.geode.redis.internal.data.RedisKey;
 
-  private final String toStringValue;
+public interface RedisSortedSetCommands {
 
-  RedisDataType(String toString) {
-    toStringValue = toString;
-  }
+  long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd,
+      ZAddOptions options);
 
-  @Override
-  public String toString() {
-    return toStringValue;
-  }
+  byte[] zscore(RedisKey key, byte[] member);
 }

@@ -11,27 +11,26 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-package org.apache.geode.redis.internal.data;
+package org.apache.geode.redis.internal.executor.sortedset;
 
+import org.junit.ClassRule;
 
-public enum RedisDataType {
+import org.apache.geode.redis.NativeRedisClusterTestRule;
 
-  REDIS_STRING("string"),
-  REDIS_HASH("hash"),
-  REDIS_SET("set"),
-  REDIS_SORTED_SET("sortedset"),
-  REDIS_PUBSUB("pubsub");
+public class ZAddNativeRedisAcceptanceTest extends AbstractZAddIntegrationTest {
 
-  private final String toStringValue;
+  @ClassRule
+  public static NativeRedisClusterTestRule server = new NativeRedisClusterTestRule();
 
-  RedisDataType(String toString) {
-    toStringValue = toString;
+  @Override
+  public int getPort() {
+    return server.getExposedPorts().get(0);
   }
 
   @Override
-  public String toString() {
-    return toStringValue;
+  public void flushAll() {
+    server.flushAll();
   }
+
 }

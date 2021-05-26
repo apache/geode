@@ -13,16 +13,15 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.executor.set;
+package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -38,7 +37,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
-public class SaddDUnitTest {
+public class ZAddDUnitTest {
 
   @ClassRule
   public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
@@ -48,28 +47,21 @@ public class SaddDUnitTest {
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static JedisCluster jedis;
-
-  private static Properties locatorProperties;
-
-  private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
 
-  private static int redisServerPort;
-
-
   @BeforeClass
   public static void classSetup() {
-    locatorProperties = new Properties();
+    Properties locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
 
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    MemberVM locator = clusterStartUp.startLocatorVM(0, locatorProperties);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
     server3 = clusterStartUp.startRedisVM(3, locator.getPort());
 
-    redisServerPort = clusterStartUp.getRedisPort(1);
+    int redisServerPort = clusterStartUp.getRedisPort(1);
 
     jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
   }
@@ -95,13 +87,14 @@ public class SaddDUnitTest {
   public void shouldDistributeDataAmongCluster() {
     String key = "key";
 
-    List<String> members = makeMemberList(SET_SIZE, "member1-");
+    Map<String, Double> memberScoreMap = makeMemberScoreMap("member1-");
 
-    jedis.sadd(key, members.toArray(new String[] {}));
+    jedis.zadd(key, memberScoreMap);
 
-    Set<String> result = jedis.smembers(key);
-
-    assertThat(result.toArray()).containsExactlyInAnyOrder(members.toArray());
+    for (String member : memberScoreMap.keySet()) {
+      Double score = jedis.zscore(key, member);
+      assertThat(score).isEqualTo(memberScoreMap.get(member));
+    }
   }
 
 
@@ -109,37 +102,38 @@ public class SaddDUnitTest {
   public void shouldDistributeDataAmongCluster_givenConcurrentlyAddingDifferentDataToSameSet() {
     String key = "key";
 
-    List<String> members1 = makeMemberList(SET_SIZE, "member1-");
-    List<String> members2 = makeMemberList(SET_SIZE, "member2-");
-
-    List<String> allMembers = new ArrayList<>();
-    allMembers.addAll(members1);
-    allMembers.addAll(members2);
+    Map<String, Double> memberScoreMap1 = makeMemberScoreMap("member1-");
+    Map<String, Double> memberScoreMap2 = makeMemberScoreMap("member2-");
 
     new ConcurrentLoopingThreads(SET_SIZE,
-        (i) -> jedis.sadd(key, members1.get(i)),
-        (i) -> jedis.sadd(key, members2.get(i))).runInLockstep();
+        (i) -> jedis.zadd(key, memberScoreMap1),
+        (i) -> jedis.zadd(key, memberScoreMap2)).runInLockstep();
 
-    Set<String> results = jedis.smembers(key);
-
-    assertThat(results.toArray()).containsExactlyInAnyOrder(allMembers.toArray());
+    for (String member1 : memberScoreMap1.keySet()) {
+      Double score = jedis.zscore(key, member1);
+      assertThat(score).isEqualTo(memberScoreMap1.get(member1));
+    }
+    for (String member2 : memberScoreMap2.keySet()) {
+      Double score = jedis.zscore(key, member2);
+      assertThat(score).isEqualTo(memberScoreMap2.get(member2));
+    }
   }
 
 
   @Test
   public void shouldDistributeDataAmongCluster_givenConcurrentlyAddingSameDataToSameSet() {
-
     String key = "key";
 
-    List<String> members = makeMemberList(SET_SIZE, "member-");
+    Map<String, Double> memberScoreMap = makeMemberScoreMap("member1-");
 
     new ConcurrentLoopingThreads(SET_SIZE,
-        (i) -> jedis.sadd(key, members.get(i)),
-        (i) -> jedis.sadd(key, members.get(i))).run();
+        (i) -> jedis.zadd(key, memberScoreMap),
+        (i) -> jedis.zadd(key, memberScoreMap)).run();
 
-    Set<String> results = jedis.smembers(key);
-
-    assertThat(results.toArray()).containsExactlyInAnyOrder(members.toArray());
+    for (String member : memberScoreMap.keySet()) {
+      Double score = jedis.zscore(key, member);
+      assertThat(score).isEqualTo(memberScoreMap.get(member));
+    }
   }
 
 
@@ -149,28 +143,30 @@ public class SaddDUnitTest {
     String key1 = "key1";
     String key2 = "key2";
 
-    List<String> members1 = makeMemberList(SET_SIZE, "member1-");
-    List<String> members2 = makeMemberList(SET_SIZE, "member2-");
+    Map<String, Double> memberScoreMap1 = makeMemberScoreMap("member1-");
+    Map<String, Double> memberScoreMap2 = makeMemberScoreMap("member2-");
 
     new ConcurrentLoopingThreads(SET_SIZE,
-        (i) -> jedis.sadd(key1, members1.get(i)),
-        (i) -> jedis.sadd(key2, members2.get(i))).runInLockstep();
+        (i) -> jedis.zadd(key1, memberScoreMap1),
+        (i) -> jedis.zadd(key2, memberScoreMap2)).runInLockstep();
 
-    Set<String> results1 = jedis.smembers(key1);
-    Set<String> results2 = jedis.smembers(key2);
-
-    assertThat(results1.toArray()).containsExactlyInAnyOrder(members1.toArray());
-    assertThat(results2.toArray()).containsExactlyInAnyOrder(members2.toArray());
+    for (String member1 : memberScoreMap1.keySet()) {
+      Double score = jedis.zscore(key1, member1);
+      assertThat(score).isEqualTo(memberScoreMap1.get(member1));
+    }
+    for (String member2 : memberScoreMap2.keySet()) {
+      Double score = jedis.zscore(key2, member2);
+      assertThat(score).isEqualTo(memberScoreMap2.get(member2));
+    }
 
   }
 
-
-  private List<String> makeMemberList(int setSize, String baseString) {
-    List<String> members = new ArrayList<>();
-    for (int i = 0; i < setSize; i++) {
-      members.add(baseString + i);
+  private Map<String, Double> makeMemberScoreMap(String baseString) {
+    Map<String, Double> scoreMemberPairs = new HashMap<>();
+    for (int i = 0; i < SET_SIZE; i++) {
+      scoreMemberPairs.put(baseString + i, Double.valueOf(i + ""));
     }
-    return members;
+    return scoreMemberPairs;
   }
 
 }

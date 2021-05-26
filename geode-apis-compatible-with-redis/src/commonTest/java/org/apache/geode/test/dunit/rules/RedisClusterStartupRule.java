@@ -29,6 +29,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class RedisClusterStartupRule extends ClusterStartupRule {
 
   private static final String BIND_ADDRESS = "127.0.0.1";
+  public static final String DEFAULT_MAX_WAIT_TIME_RECONNECT = "15000";
 
   public RedisClusterStartupRule() {
     super();

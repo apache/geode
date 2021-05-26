@@ -13,25 +13,24 @@
  * the License.
  *
  */
-package org.apache.geode.redis.internal.data;
+
+package org.apache.geode.redis.internal.executor.sortedset;
+
+import org.apache.geode.redis.internal.executor.BaseSetOptions;
 
 
-public enum RedisDataType {
-
-  REDIS_STRING("string"),
-  REDIS_HASH("hash"),
-  REDIS_SET("set"),
-  REDIS_SORTED_SET("sortedset"),
-  REDIS_PUBSUB("pubsub");
-
-  private final String toStringValue;
-
-  RedisDataType(String toString) {
-    toStringValue = toString;
+/**
+ * Class representing different options that can be used with Redis Sorted Set ZADD command.
+ */
+public class ZAddOptions extends BaseSetOptions {
+  public ZAddOptions(Exists existsOption) {
+    super(existsOption);
   }
 
+  public ZAddOptions() {}
+
   @Override
-  public String toString() {
-    return toStringValue;
+  public int getDSFID() {
+    return REDIS_SORTED_SET_OPTIONS_ID;
   }
 }

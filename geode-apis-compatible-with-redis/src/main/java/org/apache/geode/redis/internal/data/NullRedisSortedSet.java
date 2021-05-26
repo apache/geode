@@ -13,25 +13,40 @@
  * the License.
  *
  */
+
 package org.apache.geode.redis.internal.data;
 
 
-public enum RedisDataType {
+import java.util.ArrayList;
+import java.util.List;
 
-  REDIS_STRING("string"),
-  REDIS_HASH("hash"),
-  REDIS_SET("set"),
-  REDIS_SORTED_SET("sortedset"),
-  REDIS_PUBSUB("pubsub");
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
-  private final String toStringValue;
+class NullRedisSortedSet extends RedisSortedSet {
 
-  RedisDataType(String toString) {
-    toStringValue = toString;
+  NullRedisSortedSet() {
+    super(new ArrayList<>());
   }
 
   @Override
-  public String toString() {
-    return toStringValue;
+  public boolean isNull() {
+    return true;
+  }
+
+  @Override
+  long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
+      ZAddOptions options) {
+    if (options.isXX()) {
+      return 0;
+    }
+    RedisSortedSet sortedSet = new RedisSortedSet(membersToAdd);
+    region.create(key, sortedSet);
+    return sortedSet.getSortedSetSize();
+  }
+
+  @Override
+  byte[] zscore(byte[] member) {
+    return null;
   }
 }
