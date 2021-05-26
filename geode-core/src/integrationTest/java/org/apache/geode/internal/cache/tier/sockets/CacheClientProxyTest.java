@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,12 +29,20 @@ import static org.mockito.Mockito.when;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.cache.EnumListenerEvent;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.ha.HAContainerMap;
+import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -92,5 +101,55 @@ public class CacheClientProxyTest {
     for (int i = 0; i < 1000; i++) {
       closeSocketShouldBeAtomic();
     }
+  }
+
+  @Test
+  public void checkQueueingStats() {
+    final CacheServerStats stats = mock(CacheServerStats.class);
+    doNothing().when(stats).incCurrentQueueConnections();
+
+    final InternalCache cache = serverRule.getCache();
+
+    final CacheClientNotifier ccn = mock(CacheClientNotifier.class);
+    final SocketCloser sc = mock(SocketCloser.class);
+    when(ccn.getCache()).thenReturn(cache);
+    when(ccn.getAcceptorStats()).thenReturn(stats);
+    when(ccn.getSocketCloser()).thenReturn(sc);
+    final HAContainerWrapper haContainer = new HAContainerMap(new ConcurrentHashMap<>());
+    when(ccn.getHaContainer()).thenReturn(haContainer);
+
+    final Socket socket = mock(Socket.class);
+    final InetAddress address = mock(InetAddress.class);
+    when(socket.getInetAddress()).thenReturn(address);
+    when(address.getHostAddress()).thenReturn("localhost");
+    doNothing().when(sc).asyncClose(any(), eq("localhost"), any(Runnable.class));
+
+    final ClientProxyMembershipID proxyID = mock(ClientProxyMembershipID.class);
+    final DistributedMember member = cache.getDistributedSystem().getDistributedMember();
+    when(proxyID.getDistributedMember()).thenReturn(member);
+    final String regionName = "region/test";
+    when(proxyID.getHARegionName()).thenReturn(regionName);
+
+    CacheClientProxy proxy = new CacheClientProxy(ccn, socket, proxyID, true,
+        Handshake.CONFLATION_DEFAULT, KnownVersion.CURRENT, 1L, true,
+        null, null, mock(StatisticsClock.class));
+
+    Region dataRegion = createDataRegion();
+    proxy.initializeMessageDispatcher();
+    ClientUpdateMessage clientUpdateMessageImpl1 = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE,
+            (LocalRegion) dataRegion, "key", "value".getBytes(), (byte) 0x01, null,
+            new ClientProxyMembershipID(), new EventID(cache.getDistributedSystem()));
+    ClientUpdateMessage clientUpdateMessageImpl2 = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE,
+            (LocalRegion) dataRegion, "key1", "value1".getBytes(), (byte) 0x01, null,
+            new ClientProxyMembershipID(), new EventID(cache.getDistributedSystem()));
+    proxy._messageDispatcher.enqueueMessage(clientUpdateMessageImpl1);
+    proxy._messageDispatcher.enqueueMessage(clientUpdateMessageImpl2);
+
+    assertThat(proxy.getStatistics().getMessageQueueSize()).isEqualTo(2);
+
+  }
+
+  private Region createDataRegion() {
+    return serverRule.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("data");
   }
 }
