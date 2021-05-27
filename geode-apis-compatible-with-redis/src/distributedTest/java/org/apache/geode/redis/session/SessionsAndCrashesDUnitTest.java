@@ -134,7 +134,7 @@ public class SessionsAndCrashesDUnitTest {
     Future<Integer> future1 = executor.submit(() -> sessionUpdater(1, running, phase));
     Future<Integer> future2 = executor.submit(() -> sessionUpdater(2, running, phase));
 
-    GeodeAwaitility.await().during(1, TimeUnit.SECONDS).until(() -> true);
+    GeodeAwaitility.await().during(10, TimeUnit.SECONDS).until(() -> true);
 
     phase.set("CRASH 1 SERVER2");
     cluster.crashVM(2);
