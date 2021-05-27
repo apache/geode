@@ -231,45 +231,24 @@ public class RedisSortedSet extends AbstractRedisData {
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
     byte[] score = members.get(member);
-    double incr;
+    byte[] incr = processIncrement(Coder.bytesToString(increment).toLowerCase());
 
-    String stringIncr = Coder.bytesToString(increment).toLowerCase();
-    switch (stringIncr) {
-      case "inf":
-      case "+inf":
-      case "infinity":
-      case "+infinity":
-        incr = POSITIVE_INFINITY;
-        break;
-      case "-inf":
-      case "-infinity":
-        incr = NEGATIVE_INFINITY;
-        break;
-      default:
-        try {
-          incr = Double.parseDouble(stringIncr);
-        } catch (NumberFormatException nfe) {
-          return ERROR_NOT_A_VALID_FLOAT.getBytes();
-        }
-        break;
+    if (Arrays.equals(incr, ERROR_NOT_A_VALID_FLOAT.getBytes())) {
+      return incr;
     }
 
-    if (score == null) {
-      byte[] retIncr = Coder.doubleToBytes(incr);
-      memberAdd(member, retIncr);
-      return retIncr;
+    if (score != null) {
+      incr = Coder.doubleToBytes(Coder.bytesToDouble(score) + Coder.bytesToDouble(incr));
     }
-
-    byte[] newScore = Coder.doubleToBytes(Coder.bytesToDouble(score) + incr);
-    memberAdd(member, newScore);
+    memberAdd(member, incr);
 
     AddsDeltaInfo deltaInfo = new AddsDeltaInfo(new ArrayList<>());
     deltaInfo.add(member);
-    deltaInfo.add(newScore);
+    deltaInfo.add(incr);
 
     storeChanges(region, key, deltaInfo);
 
-    return newScore;
+    return incr;
   }
 
   long zrem(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToRemove) {
@@ -328,5 +307,29 @@ public class RedisSortedSet extends AbstractRedisData {
   @Override
   public KnownVersion[] getSerializationVersions() {
     return null;
+  }
+
+  protected byte[] processIncrement(String stringIncr) {
+    double incr;
+    switch (stringIncr) {
+      case "inf":
+      case "+inf":
+      case "infinity":
+      case "+infinity":
+        incr = POSITIVE_INFINITY;
+        break;
+      case "-inf":
+      case "-infinity":
+        incr = NEGATIVE_INFINITY;
+        break;
+      default:
+        try {
+          incr = Double.parseDouble(stringIncr);
+        } catch (NumberFormatException nfe) {
+          return ERROR_NOT_A_VALID_FLOAT.getBytes();
+        }
+        break;
+    }
+    return Coder.doubleToBytes(incr);
   }
 }

@@ -139,6 +139,37 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     assertThat(jedis.zscore(STRING_KEY, STRING_MEMBER)).isEqualTo(NEGATIVE_INFINITY);
   }
 
+  @Test
+  public void nullRedisSetShouldCreateNonExistentMember_withIncrementOfPositiveInfinity() {
+    final double increment = POSITIVE_INFINITY;
+    jedis.zadd(KEY, 0.0, "something".getBytes()); // init the key but not the member
+
+    jedis.zincrby(KEY, increment, MEMBER);
+    assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(increment);
+  }
+
+  @Test
+  public void nullRedisSetShouldCreateNonExistentMember_withIncrementOfNegativeInfinity() {
+    final double increment = NEGATIVE_INFINITY;
+    jedis.zadd(KEY, 0.0, "something".getBytes()); // init the key but not the member
+    jedis.zincrby(KEY, increment, MEMBER);
+    assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(increment);
+  }
+
+  @Test
+  public void shouldCreateNonExistentKeyWithInfiniteScore_whenIncrementIsPositiveInfinity() {
+    final double increment = POSITIVE_INFINITY;
+    jedis.zincrby(KEY, increment, MEMBER);
+    assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(increment);
+  }
+
+  @Test
+  public void shouldCreateNonExistentKeyWithInfiniteScore_whenIncrementIsNegativeInfinity() {
+    final double increment = NEGATIVE_INFINITY;
+    jedis.zincrby(KEY, increment, MEMBER);
+    assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(increment);
+  }
+
   @Ignore("blocked by GEODE-9317")
   @Test
   public void scoreOfPositiveInfinityShouldRemainInfinite_whenIncrementingOrDecrementing() {

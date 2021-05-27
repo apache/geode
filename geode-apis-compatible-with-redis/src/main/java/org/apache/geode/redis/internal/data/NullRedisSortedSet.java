@@ -17,11 +17,15 @@
 package org.apache.geode.redis.internal.data;
 
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
+import org.apache.geode.redis.internal.netty.Coder;
 
 class NullRedisSortedSet extends RedisSortedSet {
 
@@ -53,13 +57,19 @@ class NullRedisSortedSet extends RedisSortedSet {
   @Override
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
+    byte[] incr = processIncrement(Coder.bytesToString(increment));
+
+    if (Arrays.equals(incr, ERROR_NOT_A_VALID_FLOAT.getBytes())) {
+      return incr;
+    }
+
     List<byte[]> valuesToAdd = new ArrayList<>();
-    valuesToAdd.add(increment);
+    valuesToAdd.add(incr);
     valuesToAdd.add(member);
 
     RedisSortedSet sortedSet = new RedisSortedSet(valuesToAdd);
     region.create(key, sortedSet);
 
-    return increment;
+    return incr;
   }
 }
