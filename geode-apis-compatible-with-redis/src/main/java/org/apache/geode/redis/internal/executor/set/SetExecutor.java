@@ -16,12 +16,7 @@ package org.apache.geode.redis.internal.executor.set;
 
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class SetExecutor extends AbstractExecutor {
-
-  RedisSetCommands createRedisSetCommands(ExecutionHandlerContext context) {
-    return new RedisSetCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
-  }
 
 }

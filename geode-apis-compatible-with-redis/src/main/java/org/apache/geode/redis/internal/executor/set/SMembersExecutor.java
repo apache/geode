@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.set;
 
 import java.util.Set;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -25,11 +24,10 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class SMembersExecutor extends SetExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
-    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
-    Set<ByteArrayWrapper> members = redisSetCommands.smembers(key);
+    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
+    Set<byte[]> members = redisSetCommands.smembers(key);
 
     return RedisResponse.array(members);
   }
