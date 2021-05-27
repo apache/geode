@@ -39,7 +39,11 @@ type Execution struct {
 	Status    string
 }
 
-// Duration returns the execution's EndTime minus its StartTime.
+// Duration returns the duration of the test execution. If the execution has no recorded end event (as indicated by the
+// "zero" end time), report its duration as 0.
 func (e Execution) Duration() time.Duration {
+	if e.EndTime.IsZero() {
+		return 0
+	}
 	return e.EndTime.Sub(e.StartTime)
 }
