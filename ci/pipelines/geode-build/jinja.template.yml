@@ -486,7 +486,7 @@ jobs:
       version: every
     - put: concourse-metadata-resource
   - do:
-    - task: run-benchmarks{{ run_var.title }}
+    - task: run-benchmarks-{{ run_var.title }}
       image: alpine-tools-image
       config:
         platform: linux
@@ -500,7 +500,7 @@ jobs:
           BASELINE_BRANCH: {{benchmarks.baseline_branch}}
           BASELINE_VERSION: {{benchmarks.baseline_version}}
           FLAGS: {{ run_var.flag }}
-          TAG_POSTFIX: {{ run_var.title }}
+          TAG_POSTFIX: -{{ run_var.title }}
           TEST_OPTIONS: {{ run_var.options }}
           PURPOSE: ((pipeline-prefix))geode-benchmarks
         run:
@@ -528,7 +528,7 @@ jobs:
               BASELINE_BRANCH: {{benchmarks.baseline_branch}}
               BASELINE_VERSION: {{benchmarks.baseline_version}}
               FLAGS: {{ run_var.flag }}
-              TAG_POSTFIX: {{ run_var.title }}
+              TAG_POSTFIX: -{{ run_var.title }}
               TEST_OPTIONS: {{ run_var.options }}
             run:
               path: geode-ci/ci/scripts/cleanup_benchmarks.sh
