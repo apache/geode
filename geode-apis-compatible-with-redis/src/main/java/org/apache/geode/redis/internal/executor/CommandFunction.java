@@ -282,6 +282,9 @@ public class CommandFunction extends SingleResultRedisFunction {
         byte[] member = (byte[]) args[1];
         return sortedSetCommands.zscore(key, member);
       }
+      case ZCARD: {
+        return sortedSetCommands.zcard(key);
+      }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }

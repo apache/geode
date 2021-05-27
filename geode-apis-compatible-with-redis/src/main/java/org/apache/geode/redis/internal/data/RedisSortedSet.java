@@ -228,6 +228,10 @@ public class RedisSortedSet extends AbstractRedisData {
     return members.get(member);
   }
 
+  long zcard() {
+    return members.size();
+  }
+
   @Override
   public RedisDataType getType() {
     return REDIS_SORTED_SET;
