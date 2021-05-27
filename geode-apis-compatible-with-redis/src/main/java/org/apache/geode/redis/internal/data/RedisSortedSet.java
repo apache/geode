@@ -40,6 +40,8 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.collections.OrderStatisticsSet;
+import org.apache.geode.redis.internal.collections.OrderStatisticsTree;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
@@ -49,6 +51,7 @@ import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSet extends AbstractRedisData {
   private Object2ObjectOpenCustomHashMap<byte[], byte[]> members;
+  private OrderStatisticsSet<OrderedSetEntry> scoreSet;
 
   protected static final int BASE_REDIS_SORTED_SET_OVERHEAD = 184;
   protected static final int PER_PAIR_OVERHEAD = 48;
@@ -67,6 +70,8 @@ public class RedisSortedSet extends AbstractRedisData {
   RedisSortedSet(List<byte[]> members) {
     this.members =
         new Object2ObjectOpenCustomHashMap<>(members.size() / 2, ByteArrays.HASH_STRATEGY);
+    scoreSet = new OrderStatisticsTree<>();
+
     Iterator<byte[]> iterator = members.iterator();
 
     while (iterator.hasNext()) {
@@ -120,9 +125,12 @@ public class RedisSortedSet extends AbstractRedisData {
     super.fromData(in, context);
     int size = InternalDataSerializer.readPrimitiveInt(in);
     members = new Object2ObjectOpenCustomHashMap<>(size, ByteArrays.HASH_STRATEGY);
+    scoreSet = new OrderStatisticsTree<>();
     for (int i = 0; i < size; i++) {
-      members.put(InternalDataSerializer.readByteArray(in),
-          InternalDataSerializer.readByteArray(in));
+      byte[] member = InternalDataSerializer.readByteArray(in);
+      byte[] score = InternalDataSerializer.readByteArray(in);
+      members.put(member, score);
+      scoreSet.add(new OrderedSetEntry(member, score));
     }
     sizeInBytes = InternalDataSerializer.readPrimitiveInt(in);
   }
@@ -158,6 +166,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
   protected synchronized byte[] memberAdd(byte[] memberToAdd, byte[] scoreToAdd) {
     byte[] oldScore = members.put(memberToAdd, scoreToAdd);
+    scoreSet.add(new OrderedSetEntry(memberToAdd, scoreToAdd));
     if (oldScore == null) {
       sizeInBytes += calculateSizeOfFieldValuePair(memberToAdd, scoreToAdd);
     } else {
@@ -346,5 +355,42 @@ public class RedisSortedSet extends AbstractRedisData {
         break;
     }
     return processedDouble;
+  }
+
+  static class OrderedSetEntry implements Comparable {
+    public byte[] member;
+    public Double score;
+
+    @Override
+    public int compareTo(Object o) {
+      int comparison = score.compareTo(((OrderedSetEntry) o).score);
+      if (comparison == 0) {
+        byte[] other = ((OrderedSetEntry) o).member;
+        // Scores equal, try lexical ordering
+        int last = Math.min(member.length, other.length);
+        for (int i = 0; i < last; i++) {
+          byte thisByte = member[i];
+          byte otherByte = other[i];
+          int localComp = thisByte - otherByte;
+          if (localComp != 0) {
+            return localComp;
+          }
+        }
+        // shorter array whose items are all equal to the first items of a longer array is
+        // considered 'less than'
+        if (member.length < other.length) {
+          return -1; // member < other
+        } else if (member.length > other.length) {
+          return 1; // other < member
+        }
+        return 0;
+      }
+      return comparison;
+    }
+
+    OrderedSetEntry(byte[] member, byte[] score) {
+      this.member = member;
+      this.score = Double.valueOf(Coder.bytesToString(score));
+    }
   }
 }

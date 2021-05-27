@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * This class implements an order statistic tree which is based on AVL-trees.
@@ -773,5 +774,32 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
     }
 
     return leftTreeSize + 1 + rightTreeSize;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    // self check
+    if (this == o)
+      return true;
+    // null check
+    if (o == null)
+      return false;
+    // type check and cast
+    if (!(o instanceof OrderStatisticsSet)) {
+      return false;
+    }
+    TreeSet<T> treeSet = (TreeSet<T>) o;
+    // field comparison
+    Iterator<T> treeSetIterator = treeSet.iterator();
+    Iterator<T> thisIterator = this.iterator();
+    while (treeSetIterator.hasNext()) {
+      if (!thisIterator.hasNext()) {
+        return false;
+      }
+      if (!Objects.equals(treeSetIterator.next(), thisIterator.next())) {
+        return false;
+      }
+    }
+    return true;
   }
 }

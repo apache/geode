@@ -165,6 +165,20 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
+  public void zaddAcceptsMembers_withEqualScores() {
+    Long addCount = (Long) jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY,
+        "1", "member3", "1", "member2", "1", "member1", "1", "zed", "1", "alpha", "1", "");
+    assertThat(addCount).isEqualTo(6);
+    // TODO: use ZCARD to confirm set size once command is implemented
+    assertThat(jedis.zscore(SORTED_SET_KEY, "")).isEqualTo(1.0);
+    assertThat(jedis.zscore(SORTED_SET_KEY, "alpha")).isEqualTo(1.0);
+    assertThat(jedis.zscore(SORTED_SET_KEY, "member1")).isEqualTo(1.0);
+    assertThat(jedis.zscore(SORTED_SET_KEY, "member2")).isEqualTo(1.0);
+    assertThat(jedis.zscore(SORTED_SET_KEY, "member3")).isEqualTo(1.0);
+    assertThat(jedis.zscore(SORTED_SET_KEY, "zed")).isEqualTo(1.0);
+  }
+
+  @Test
   public void zaddCountsOnlyNewMembers_givenMultipleCopiesOfTheSameMember_toAnExistingSet() {
     Long addCount = jedis.zadd(SORTED_SET_KEY, 1.0, "otherMember");
     assertThat(addCount).isEqualTo(1);

@@ -28,7 +28,7 @@ import org.junit.Assume;
 import org.junit.runner.RunWith;
 
 /**
- * These tests compare the OrderedStatisticsTree with a a TreeSet that has
+ * These tests compare the OrderedStatisticsTree with a TreeSet that has
  * undergone the same operations and ensures that the results match.
  */
 @RunWith(JUnitQuickcheck.class)
@@ -41,7 +41,6 @@ public class OrderedStatisticTreeQuickCheckTest {
     expected.addAll(insertData);
     list.addAll(insertData);
     assertThat(expected.equals(list)).isTrue();
-    // TODO - OST doesn't implement equals
     assertThat(list.equals(expected)).isTrue();
   }
 
