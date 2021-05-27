@@ -62,7 +62,7 @@ public class ZAddDUnitTest {
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
     server3 = clusterStartUp.startRedisVM(3, locator.getPort());
 
-    int redisServerPort = clusterStartUp.getRedisPort(1);
+    redisServerPort = clusterStartUp.getRedisPort(1);
 
     jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
   }
