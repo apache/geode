@@ -30,3 +30,17 @@ dependencies {
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
 }
+
+jar {
+  manifest {
+    attributes(
+            'Premain-Class': 'org.apache.geode.benchmark.jmh.profilers.ObjectSizeAgent'
+    )
+  }
+}
+
+test {
+  systemProperty 'some.prop', 'value'
+  jvmArgs += ['-javaagent:' + jar.outputs.files.singleFile]
+  dependsOn jar
+}
