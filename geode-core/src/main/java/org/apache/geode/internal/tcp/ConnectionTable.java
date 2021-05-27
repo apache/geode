@@ -19,8 +19,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -89,12 +87,6 @@ public class ConnectionTable {
    * synchronized because of static cleanup.
    */
   static final ThreadLocal<Map> threadOrderedConnMap = new ThreadLocal<>();
-
-  /**
-   * List of thread-owned ordered connection maps, for cleanup. Accesses to the maps in this list
-   * need to be synchronized on their instance.
-   */
-  private final List threadConnMaps;
 
   /**
    * Timer to kill idle threads. Guarded by this.
@@ -203,7 +195,6 @@ public class ConnectionTable {
     owner = conduit;
     idleConnTimer = owner.idleConnectionTimeout != 0
         ? new SystemTimer(conduit.getDM().getSystem()) : null;
-    threadConnMaps = new ArrayList();
     threadConnectionMap = new ConcurrentHashMap();
     p2pReaderThreadPool = createThreadPoolForIO(conduit.getDM().getSystem().isShareSockets());
     socketCloser = new SocketCloser();
@@ -443,32 +434,18 @@ public class ConnectionTable {
     if (m == null) {
       // First time for this thread. Create thread local
       m = new HashMap();
-      synchronized (threadConnMaps) {
-        if (closed) {
-          owner.getCancelCriterion().checkCancelInProgress(null);
-          throw new DistributedSystemDisconnectedException("Connection table is closed");
-        }
-        // check for stale references and remove them.
-        for (Iterator it = threadConnMaps.iterator(); it.hasNext();) {
-          Reference r = (Reference) it.next();
-          if (r.get() == null) {
-            it.remove();
-          }
-        }
-        threadConnMaps.add(new WeakReference(m));
+      if (closed) {
+        owner.getCancelCriterion().checkCancelInProgress(null);
+        throw new DistributedSystemDisconnectedException("Connection table is closed");
       }
       threadOrderedConnMap.set(m);
     } else {
-      // Consult thread local.
-      synchronized (m) {
-        result = (Connection) m.get(id);
-      }
-      if (result != null && result.timedOut) {
-        result = null;
+      // No need to sync map since it is only referenced by ThreadLocal.
+      result = (Connection) m.get(id);
+      if (result != null && !result.timedOut) {
+        return result;
       }
     }
-    if (result != null)
-      return result;
 
     // OK, we have to create a new connection.
     result = Connection.createSender(owner.getMembership(), this, true, id, false, startTime,
@@ -502,9 +479,8 @@ public class ConnectionTable {
     }
 
     // Finally, add the connection to our thread local map.
-    synchronized (m) {
-      m.put(id, result);
-    }
+    // No need to sync map since it is only referenced by ThreadLocal.
+    m.put(id, result);
 
     scheduleIdleTimeout(result);
     return result;
@@ -669,22 +645,6 @@ public class ConnectionTable {
         this.threadConnectionMap.clear();
       }
     }
-    if (threadConnMaps != null) {
-      synchronized (threadConnMaps) {
-        for (Object threadConnMap : threadConnMaps) {
-          Reference reference = (Reference) threadConnMap;
-          Map map = (Map) reference.get();
-          if (map != null) {
-            synchronized (map) {
-              for (Object o : map.values()) {
-                closeCon("Connection table being destroyed", o);
-              }
-            }
-          }
-        }
-        threadConnMaps.clear();
-      }
-    }
     Executor localExec = p2pReaderThreadPool;
     if (localExec != null) {
       if (localExec instanceof ExecutorService) {
@@ -695,9 +655,8 @@ public class ConnectionTable {
 
     Map map = threadOrderedConnMap.get();
     if (map != null) {
-      synchronized (map) {
-        map.clear();
-      }
+      // No need to synchronize map since it is only referenced by ThreadLocal.
+      map.clear();
     }
     socketCloser.close();
   }
@@ -896,11 +855,9 @@ public class ConnectionTable {
     removeFromThreadConMap(threadConnectionMap, stub, c);
     Map m = threadOrderedConnMap.get();
     if (m != null) {
-      // Static cleanup thread might intervene, so we MUST synchronize
-      synchronized (m) {
-        if (m.get(stub) == c) {
-          m.remove(stub);
-        }
+      // No need to synchronize map since it is only referenced by ThreadLocal.
+      if (m.get(stub) == c) {
+        m.remove(stub);
       }
     }
   }
@@ -953,17 +910,15 @@ public class ConnectionTable {
   void removeAndCloseThreadOwnedSockets() {
     Map m = threadOrderedConnMap.get();
     if (m != null) {
-      // Static cleanup may intervene; we MUST synchronize.
-      synchronized (m) {
-        Iterator it = m.entrySet().iterator();
-        while (it.hasNext()) {
-          Map.Entry me = (Map.Entry) it.next();
-          DistributedMember stub = (DistributedMember) me.getKey();
-          Connection c = (Connection) me.getValue();
-          removeFromThreadConMap(threadConnectionMap, stub, c);
-          it.remove();
-          closeCon("thread finalization", c);
-        }
+      // No need to synchronize map since it is only referenced by ThreadLocal.
+      Iterator it = m.entrySet().iterator();
+      while (it.hasNext()) {
+        Map.Entry me = (Map.Entry) it.next();
+        DistributedMember stub = (DistributedMember) me.getKey();
+        Connection c = (Connection) me.getValue();
+        removeFromThreadConMap(threadConnectionMap, stub, c);
+        it.remove();
+        closeCon("thread finalization", c);
       }
     }
   }
