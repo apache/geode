@@ -276,6 +276,28 @@ public class RedisSortedSetTest {
     assertThat(sortedSet.getSizeInBytes()).isEqualTo(originalSize - removedSize);
   }
 
+  @Test
+  @Ignore("Redo when we have a defined Sizable strategy")
+  public void should_calculateSize_closeToROSSize_ofIndividualInstanceAfterZRem() {
+    String member1 = "memberUnoIsTheFirstMember";
+    RedisSortedSet sortedSet =
+        createRedisSortedSet("1.0", member1,
+            "2.0", "memberDueIsTheSecondMember", "3.0", "memberTreIsTheThirdMember",
+            "4.0", "memberQuatroIsTheThirdMember");
+
+    int expected = reflectionObjectSizer.sizeof(sortedSet);
+    int actual = sortedSet.getSizeInBytes();
+
+    Offset<Integer> offset = Offset.offset((int) round(expected * 0.03));
+    assertThat(actual).isCloseTo(expected, offset);
+
+    sortedSet.memberRemove(Coder.stringToBytes(member1));
+    expected = reflectionObjectSizer.sizeof(sortedSet);
+    actual = sortedSet.getSizeInBytes();
+    offset = Offset.offset((int) round(expected * 0.03));
+    assertThat(actual).isCloseTo(expected, offset);
+  }
+
   private RedisSortedSet createRedisSortedSet(String... membersAndScores) {
     final List<byte[]> membersAndScoresList = Arrays
         .stream(membersAndScores)

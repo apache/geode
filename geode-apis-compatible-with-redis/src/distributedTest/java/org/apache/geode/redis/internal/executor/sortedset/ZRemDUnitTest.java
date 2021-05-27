@@ -19,7 +19,9 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -58,11 +60,8 @@ public class ZRemDUnitTest implements Serializable {
   public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
 
   private transient JedisCluster jedis;
-  private MemberVM locator;
-  private MemberVM server1;
-  private MemberVM server2;
-  private MemberVM server3;
-  private String sortedSetKey = "key";
+  private List<MemberVM> servers;
+  private final String sortedSetKey = "key";
   private final String baseName = "member1-";
   private final int setSize = 1000;
 
@@ -75,10 +74,14 @@ public class ZRemDUnitTest implements Serializable {
     Properties locatorProperties = new Properties();
     locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
 
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
-    server1 = clusterStartUp.startRedisVM(1, locator.getPort());
-    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
-    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
+    MemberVM locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    MemberVM server1 = clusterStartUp.startRedisVM(1, locator.getPort());
+    MemberVM server2 = clusterStartUp.startRedisVM(2, locator.getPort());
+    MemberVM server3 = clusterStartUp.startRedisVM(3, locator.getPort());
+    servers = new ArrayList<>();
+    servers.add(server1);
+    servers.add(server2);
+    servers.add(server3);
 
     int redisServerPort = clusterStartUp.getRedisPort(1);
 
@@ -88,42 +91,37 @@ public class ZRemDUnitTest implements Serializable {
   @After
   public void tearDown() {
     jedis.close();
-
-    locator.stop();
-    server1.stop();
-    server2.stop();
-    server3.stop();
   }
 
   @Test
   public void zRemCanRemoveMembersFromSortedSet() {
     Map<String, Double> memberScoreMap = makeMemberScoreMap(setSize);
     jedis.zadd(sortedSetKey, memberScoreMap);
-    verifyDataExist(memberScoreMap);
+    verifyDataExists(memberScoreMap);
 
     long removed = jedis.zrem(sortedSetKey, memberScoreMap.keySet().toArray(new String[] {}));
     assertThat(removed).isEqualTo(setSize);
 
-    verifyDataNotExist(memberScoreMap);
+    verifyDataDoesNotExist(memberScoreMap);
     assertThat(jedis.exists(sortedSetKey)).isFalse();
   }
 
   @Test
-  public void zRemCanRemovesMembersConcurrentlyFromSortedSet() {
+  public void zRemCanRemoveMembersConcurrentlyFromSortedSet() {
     Map<String, Double> memberScoreMap = makeMemberScoreMap(setSize);
     jedis.zadd(sortedSetKey, memberScoreMap);
-    verifyDataExist(memberScoreMap);
+    verifyDataExists(memberScoreMap);
 
     AtomicInteger totalRemoved = new AtomicInteger();
     new ConcurrentLoopingThreads(2,
-        (i) -> doZRem(memberScoreMap, totalRemoved),
-        (i) -> doZRem1(totalRemoved)).run();
+        (i) -> doZRemOnAllKeysInMap(memberScoreMap, totalRemoved),
+        (i) -> doZRemOnAllMembers(totalRemoved)).run();
 
     assertThat(totalRemoved.get()).isEqualTo(setSize);
     assertThat(jedis.exists(sortedSetKey)).isFalse();
   }
 
-  private void doZRem(Map<String, Double> map, AtomicInteger total) {
+  private void doZRemOnAllKeysInMap(Map<String, Double> map, AtomicInteger total) {
     Set<String> keys = map.keySet();
     for (String key : keys) {
       long count = jedis.zrem(sortedSetKey, key);
@@ -131,7 +129,7 @@ public class ZRemDUnitTest implements Serializable {
     }
   }
 
-  private void doZRem1(AtomicInteger total) {
+  private void doZRemOnAllMembers(AtomicInteger total) {
     for (int i = 0; i < setSize; i++) {
       long count = jedis.zrem(sortedSetKey, baseName + i);
       total.addAndGet((int) count);
@@ -142,13 +140,13 @@ public class ZRemDUnitTest implements Serializable {
   public void zRemRemovesMembersFromSortedSetAfterPrimaryShutsDown() {
     Map<String, Double> memberScoreMap = makeMemberScoreMap(setSize);
     jedis.zadd(sortedSetKey, memberScoreMap);
-    verifyDataExist(memberScoreMap);
+    verifyDataExists(memberScoreMap);
 
     stopNodeWithPrimaryBucketOfTheKey(false);
 
     doZRemWithRetries(memberScoreMap);
 
-    verifyDataNotExist(memberScoreMap);
+    verifyDataDoesNotExist(memberScoreMap);
     assertThat(jedis.exists(sortedSetKey)).isFalse();
   }
 
@@ -186,7 +184,7 @@ public class ZRemDUnitTest implements Serializable {
     Map<String, Double> memberScoreMap = makeMemberScoreMap(mapSize);
 
     jedis.zadd(sortedSetKey, memberScoreMap);
-    verifyDataExist(memberScoreMap);
+    verifyDataExists(memberScoreMap);
 
     int number = 10;
     String memberNotRemoved = baseName + number;
@@ -198,18 +196,18 @@ public class ZRemDUnitTest implements Serializable {
     future1.get();
     future2.get();
 
-    GeodeAwaitility.await().until(() -> verifyDataNotExist(memberScoreMap));
+    GeodeAwaitility.await().until(() -> verifyDataDoesNotExist(memberScoreMap));
     assertThat(jedis.exists(sortedSetKey)).isTrue();
   }
 
-  private void verifyDataExist(Map<String, Double> memberScoreMap) {
+  private void verifyDataExists(Map<String, Double> memberScoreMap) {
     for (String member : memberScoreMap.keySet()) {
       Double score = jedis.zscore(sortedSetKey, member);
       assertThat(score).isEqualTo(memberScoreMap.get(member));
     }
   }
 
-  private boolean verifyDataNotExist(Map<String, Double> memberScoreMap) {
+  private boolean verifyDataDoesNotExist(Map<String, Double> memberScoreMap) {
     try {
       for (String member : memberScoreMap.keySet()) {
         Double score = jedis.zscore(sortedSetKey, member);
@@ -222,15 +220,14 @@ public class ZRemDUnitTest implements Serializable {
   }
 
   private void stopNodeWithPrimaryBucketOfTheKey(boolean isCrash) {
-    int numOfServers = 4;
     boolean isPrimary;
-    for (int i = 1; i <= numOfServers; i++) {
-      isPrimary = clusterStartUp.getMember(i).invoke(this::isPrimaryForKey);
+    for (MemberVM server : servers) {
+      isPrimary = server.invoke(this::isPrimaryForKey);
       if (isPrimary) {
         if (isCrash) {
-          clusterStartUp.crashVM(i);
+          server.getVM().bounceForcibly();
         } else {
-          clusterStartUp.getMember(i).stop();
+          server.stop();
         }
         return;
       }

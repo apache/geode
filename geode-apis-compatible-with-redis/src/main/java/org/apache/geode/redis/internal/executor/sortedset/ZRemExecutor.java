@@ -31,7 +31,7 @@ public class ZRemExecutor extends AbstractExecutor {
 
     List<byte[]> commandElements = command.getProcessedCommand();
     RedisKey key = command.getKey();
-    ArrayList<byte[]> membersToRemove =
+    List<byte[]> membersToRemove =
         new ArrayList<>(commandElements.subList(2, commandElements.size()));
 
     long membersRemoved = redisSortedSetCommands.zrem(key, membersToRemove);

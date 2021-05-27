@@ -53,6 +53,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     jedis.sadd("set", "cotton");
     jedis.hset("hash", "green", "eggs");
     jedis.mset("mapKey1", "fox", "mapKey2", "box");
+    jedis.zadd("sortedSet", 1.0, "member");
   }
 
   @After
@@ -459,6 +460,23 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   public void testHsetnx() {
     runCommandAndAssertNoStatUpdates("hash", (k, f, v) -> jedis.hsetnx(k, f, v));
   }
+
+  // ------------ SortedSet related commands -----------
+  @Test
+  public void testZadd() {
+    runCommandAndAssertNoStatUpdates("sortedSet", (k, v) -> jedis.zadd(k, 1.0, v));
+  }
+
+  @Test
+  public void testZscore() {
+    runCommandAndAssertHitsAndMisses("sortedSet", (k, v) -> jedis.zscore(k, v));
+  }
+
+  @Test
+  public void testZrem() {
+    runCommandAndAssertNoStatUpdates("sortedSet", (k, v) -> jedis.zrem(k, v));
+  }
+
 
   // ------------ Helper Methods -----------
 

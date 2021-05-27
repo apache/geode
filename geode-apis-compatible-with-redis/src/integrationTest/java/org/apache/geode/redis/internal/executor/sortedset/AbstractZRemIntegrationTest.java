@@ -33,14 +33,11 @@ import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractZRemIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
   private final String baseName = "member_";
 
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static final String SORTED_SET_KEY = "ss_key";
   private static final int INITIAL_MEMBER_COUNT = 5;
 
@@ -61,11 +58,6 @@ public abstract class AbstractZRemIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zRemThrowsIfGivenOnlyKey() {
-    assertThatThrownBy(() -> jedis.zrem("key")).hasMessageContaining("wrong number of arguments");
-  }
-
-  @Test
   public void zRemThrowsErrorIfKeyIsNotASortedSet() {
     String key = "key";
     String member = "member1";
@@ -78,7 +70,7 @@ public abstract class AbstractZRemIntegrationTest implements RedisIntegrationTes
   @Test
   public void zRemDoesNotRemoveNonExistingMember() {
     Map<String, Double> map = makeMemberScoreMap(INITIAL_MEMBER_COUNT);
-    addToSortedSet(map);
+    jedis.zadd(SORTED_SET_KEY, map);
 
     String nonExistingMember = "nonExisting";
     long result = jedis.zrem(SORTED_SET_KEY, nonExistingMember);
@@ -90,7 +82,7 @@ public abstract class AbstractZRemIntegrationTest implements RedisIntegrationTes
   public void zRemCanRemoveAMemberInASortedSet() {
     Map<String, Double> map = makeMemberScoreMap(INITIAL_MEMBER_COUNT);
     Set<String> keys = map.keySet();
-    addToSortedSet(map);
+    jedis.zadd(SORTED_SET_KEY, map);
 
     String memberToRemove = baseName + 1;
     Long removed = jedis.zrem(SORTED_SET_KEY, memberToRemove);
@@ -108,10 +100,10 @@ public abstract class AbstractZRemIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zRemRemovesKeyIfRemoveAllMembersInASortedSet() {
+  public void zRemRemovesKeyIfAllMembersInASortedSetAreRemoved() {
     Map<String, Double> map = makeMemberScoreMap(INITIAL_MEMBER_COUNT);
     Set<String> keys = map.keySet();
-    addToSortedSet(map);
+    jedis.zadd(SORTED_SET_KEY, map);
 
     String[] membersToRemove = new String[keys.size()];
     Long removed = jedis.zrem(SORTED_SET_KEY, keys.toArray(membersToRemove));
@@ -125,21 +117,21 @@ public abstract class AbstractZRemIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zRemCanRemovesMembersConcurrentlyInASortedSet() {
+  public void zRemCanRemoveMembersConcurrentlyInASortedSet() {
     int membersCount = 1000;
     Map<String, Double> map = makeMemberScoreMap(membersCount);
-    addToSortedSet(map);
+    jedis.zadd(SORTED_SET_KEY, map);
 
     AtomicInteger totalRemoved = new AtomicInteger();
     new ConcurrentLoopingThreads(2,
-        (i) -> doZRem(map, totalRemoved),
-        (i) -> doZRem1(membersCount, totalRemoved)).run();
+        (i) -> doZRemOnAllKeysInMap(map, totalRemoved),
+        (i) -> doZRemOnDifferentMembers(membersCount, totalRemoved)).run();
 
     assertThat(totalRemoved.get()).isEqualTo(membersCount);
     assertThat(jedis.exists(SORTED_SET_KEY)).isFalse();
   }
 
-  private void doZRem(Map<String, Double> map, AtomicInteger total) {
+  private void doZRemOnAllKeysInMap(Map<String, Double> map, AtomicInteger total) {
     Set<String> keys = map.keySet();
     for (String key : keys) {
       long count = jedis.zrem(SORTED_SET_KEY, key);
@@ -147,31 +139,18 @@ public abstract class AbstractZRemIntegrationTest implements RedisIntegrationTes
     }
   }
 
-  private void doZRem1(int memberCounts, AtomicInteger total) {
-    for (int i = 0; i < memberCounts; i++) {
+  private void doZRemOnDifferentMembers(int numToRemove, AtomicInteger total) {
+    for (int i = 0; i < numToRemove; i++) {
       long count = jedis.zrem(SORTED_SET_KEY, baseName + i);
       total.addAndGet((int) count);
     }
   }
 
-  private void addToSortedSet(Map<String, Double> map) {
-    Set<String> keys = map.keySet();
-    Long count = 0L;
-
-    for (String member : keys) {
-      Double score = map.get(member);
-      Long res = jedis.zadd(SORTED_SET_KEY, score, member);
-      count += res;
-    }
-    assertThat(count).isEqualTo(keys.size());
-  }
-
   private Map<String, Double> makeMemberScoreMap(int membersCount) {
-    int baseScore = 0;
     Map<String, Double> map = new HashMap<>();
 
     for (int i = 0; i < membersCount; i++) {
-      map.put(baseName + i, (double) (i + baseScore));
+      map.put(baseName + i, (double) (i));
     }
     return map;
   }

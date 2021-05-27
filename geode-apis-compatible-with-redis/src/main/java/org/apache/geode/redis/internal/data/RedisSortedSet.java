@@ -87,9 +87,7 @@ public class RedisSortedSet extends AbstractRedisData {
       membersAddAll(addsDeltaInfo);
     } else {
       RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
-      for (byte[] member : remsDeltaInfo.getRemoves()) {
-        memberRemove(member);
-      }
+      membersRemoveAll(remsDeltaInfo);
     }
   }
 
@@ -170,6 +168,12 @@ public class RedisSortedSet extends AbstractRedisData {
       byte[] member = iterator.next();
       byte[] score = iterator.next();
       memberAdd(member, score);
+    }
+  }
+
+  private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
+    for (byte[] member : remsDeltaInfo.getRemoves()) {
+      memberRemove(member);
     }
   }
 
