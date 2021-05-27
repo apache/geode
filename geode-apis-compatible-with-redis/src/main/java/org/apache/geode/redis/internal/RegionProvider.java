@@ -25,10 +25,10 @@ import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommandsFunctionInvoker;
-import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
-import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommandsFunctionInvoker;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionInvoker;
+import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
+import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommandsFunctionInvoker;
 
 public class RegionProvider {
   /**

@@ -17,6 +17,7 @@ package org.apache.geode;
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_BUFFER_SIZE;
@@ -30,6 +31,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.internal.OperationExecutors.SERIAL_EXECUTOR;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.SERIAL_ACKED_MESSAGE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
@@ -81,7 +83,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -355,20 +356,20 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   }
 
   private int createLocator(VM memberVM, boolean usingOldVersion) {
+    int port = usingOldVersion ? getRandomAvailableTCPPort() : 0;
     return memberVM.invoke("create locator", () -> {
       // if you need to debug SSL communications use this property:
       // System.setProperty("javax.net.debug", "all");
       System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
-      Properties dsProperties = getDistributedSystemProperties();
       try {
-        int port = 0;
         // for stress-tests make sure that an older-version locator doesn't try
         // to read state persisted by another run's newer-version locator
         if (usingOldVersion) {
-          port = AvailablePortHelper.getRandomAvailableTCPPort();
           DistributedTestUtils.deleteLocatorStateFile(port);
         }
-        return Locator.startLocatorAndDS(port, new File(""), getDistributedSystemProperties())
+        Properties dsProperties = getDistributedSystemProperties();
+        dsProperties.setProperty(HTTP_SERVICE_PORT, "0");
+        return Locator.startLocatorAndDS(port, new File(""), dsProperties)
             .getPort();
       } finally {
         System.clearProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
