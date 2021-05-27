@@ -37,6 +37,8 @@ import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.AllConnectionsInUseException;
+import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -238,10 +240,6 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
             CliStrings.REPLICATE_REGION__MSG__NO__CONNECTION__POOL);
       }
       connection = senderPool.acquireConnection();
-      if (connection == null) {
-        return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-            CliStrings.REPLICATE_REGION__MSG__NO__CONNECTION);
-      }
       final long startTime = clock.millis();
       int batchId = 0;
       final InternalCache cache = (InternalCache) context.getCache();
@@ -276,13 +274,14 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
                       "Connection error", replicatedEntries));
             }
             logger.error("Exception {} in sendBatch. Retrying", e.getClass().getName());
-            connection = senderPool.acquireConnection();
-            if (connection == null) {
+            try {
+              connection = senderPool.acquireConnection();
+            } catch (NoAvailableServersException | AllConnectionsInUseException e1) {
               return new CliFunctionResult(context.getMemberName(),
                   CliFunctionResult.StatusState.ERROR,
                   CliStrings.format(
-                      CliStrings.REPLICATE_REGION__MSG__ERROR__AFTER__HAVING__REPLICATED,
-                      "Connection error", replicatedEntries));
+                      CliStrings.REPLICATE_REGION__MSG__NO__CONNECTION,
+                      replicatedEntries));
             }
           }
         }
