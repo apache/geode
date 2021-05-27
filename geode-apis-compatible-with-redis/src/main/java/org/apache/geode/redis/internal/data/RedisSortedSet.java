@@ -274,6 +274,14 @@ public class RedisSortedSet extends AbstractRedisData {
     return byteIncr;
   }
 
+  int zrank(byte[] member) {
+    byte[] score = members.get(member);
+    if (score == null) {
+      return -1;
+    }
+    return scoreSet.indexOf(new OrderedSetEntry(member, score));
+  }
+
   long zrem(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToRemove) {
     int membersRemoved = 0;
     RemsDeltaInfo deltaInfo = null;
