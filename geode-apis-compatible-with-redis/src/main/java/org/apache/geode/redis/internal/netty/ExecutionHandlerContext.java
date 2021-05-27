@@ -56,8 +56,8 @@ import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
-import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
+import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
