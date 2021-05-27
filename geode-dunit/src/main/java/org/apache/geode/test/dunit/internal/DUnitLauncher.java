@@ -370,7 +370,7 @@ public class DUnitLauncher {
     }
 
     File dunitSuspect = new File(getDunitSuspectsDir(),
-        String.format("%s-%s.log", SUSPECT_FILENAME_PREFIX, suffix));
+        getSuspectFileName(suffix));
     dunitSuspect.deleteOnExit();
 
     return dunitSuspect;
@@ -383,19 +383,19 @@ public class DUnitLauncher {
     return workspaceDir;
   }
 
-  public static void closeAndCheckForSuspects() {
-    if (!isLaunched()) {
-      return;
-    }
+  public static void closeAndCheckForSuspects(int vmIndex) {
+    String suffix = "vm" + vmIndex;
+    String fileName = getSuspectFileName(suffix);
+    File[] suspectFiles = getDunitSuspectsDir()
+        .listFiles((dir, name) -> name.startsWith(fileName));
+    closeAndCheckForSuspects(Arrays.asList(suspectFiles));
+  }
 
-    List<File> suspectFiles = getDunitSuspectFiles();
+  private static String getSuspectFileName(String suffix) {
+    return String.format("%s-%s.log", SUSPECT_FILENAME_PREFIX, suffix);
+  }
 
-    if (suspectFiles.isEmpty()) {
-      throw new IllegalStateException("No dunit suspect log files found in '"
-          + getDunitSuspectsDir().getAbsolutePath()
-          + "' - perhaps a rule that is cleaning up before suspect processing has already run.");
-    }
-
+  public static void closeAndCheckForSuspects(List<File> suspectFiles) {
     StringBuilder suspectStringCollector = new StringBuilder();
     for (File suspect : suspectFiles) {
       checkSuspectFile(suspect, suspectStringCollector);
@@ -410,6 +410,19 @@ public class DUnitLauncher {
           + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
           + suspectStringCollector);
     }
+  }
+
+  public static void closeAndCheckForSuspects() {
+    if (!isLaunched()) {
+      return;
+    }
+    List<File> suspectFiles = getDunitSuspectFiles();
+    if (suspectFiles.isEmpty()) {
+      throw new IllegalStateException("No dunit suspect log files found in '"
+          + getDunitSuspectsDir().getAbsolutePath()
+          + "' - perhaps a rule that is cleaning up before suspect processing has already run.");
+    }
+    closeAndCheckForSuspects(suspectFiles);
   }
 
   private static void checkSuspectFile(File suspectFile, StringBuilder suspectStringCollector) {

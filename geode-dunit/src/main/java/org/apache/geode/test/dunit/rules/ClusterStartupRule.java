@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
+import static org.apache.geode.test.dunit.internal.DUnitLauncher.closeAndCheckForSuspects;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -182,7 +183,7 @@ public class ClusterStartupRule implements SerializableTestRule {
     // any background thread can fill the dunit_suspect.log
     // after its been truncated if we do it before closing cache
     IgnoredException.removeAllExpectedExceptions();
-    DUnitLauncher.closeAndCheckForSuspects();
+    closeAndCheckForSuspects();
   }
 
 
@@ -351,6 +352,7 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   public void stop(int index, boolean cleanWorkingDir) {
+    closeAndCheckForSuspects(index);
     occupiedVMs.get(index).stop(cleanWorkingDir);
   }
 
