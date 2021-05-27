@@ -43,4 +43,10 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   public byte[] zscore(RedisKey key, byte[] member) {
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zscore(member));
   }
+
+  @Override
+  public long zrem(RedisKey key, List<byte[]> membersToRemove) {
+    return stripedExecute(key,
+        () -> getRedisSortedSet(key, false).zrem(getRegion(), key, membersToRemove));
+  }
 }

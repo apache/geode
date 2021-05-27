@@ -284,6 +284,10 @@ public class CommandFunction extends SingleResultRedisFunction {
         byte[] member = (byte[]) args[1];
         return sortedSetCommands.zscore(key, member);
       }
+      case ZREM: {
+        List<byte[]> membersToRemove = (List<byte[]>) args[1];
+        return sortedSetCommands.zrem(key, membersToRemove);
+      }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
     }
