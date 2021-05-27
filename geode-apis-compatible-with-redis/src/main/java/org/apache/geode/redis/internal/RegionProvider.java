@@ -27,6 +27,8 @@ import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommandsFunctionInvoker;
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommandsFunctionInvoker;
+import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
+import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionInvoker;
 
 public class RegionProvider {
   /**
@@ -45,6 +47,7 @@ public class RegionProvider {
 
   private final Region<RedisKey, RedisData> dataRegion;
   private final RedisHashCommandsFunctionInvoker hashCommands;
+  private final RedisSetCommandsFunctionInvoker setCommands;
   private final RedisSortedSetCommandsFunctionInvoker sortedSetCommands;
   private final SlotAdvisor slotAdvisor;
 
@@ -63,6 +66,7 @@ public class RegionProvider {
     dataRegion = redisDataRegionFactory.create(REDIS_DATA_REGION);
 
     hashCommands = new RedisHashCommandsFunctionInvoker(dataRegion);
+    setCommands = new RedisSetCommandsFunctionInvoker(dataRegion);
     sortedSetCommands = new RedisSortedSetCommandsFunctionInvoker(dataRegion);
 
     slotAdvisor = new SlotAdvisor(dataRegion);
@@ -91,6 +95,10 @@ public class RegionProvider {
 
   public RedisHashCommands getHashCommands() {
     return hashCommands;
+  }
+
+  public RedisSetCommands getSetCommands() {
+    return setCommands;
   }
 
   public RedisSortedSetCommands getSortedSetCommands() {

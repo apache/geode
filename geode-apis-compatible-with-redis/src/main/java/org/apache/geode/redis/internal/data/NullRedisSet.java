@@ -21,10 +21,14 @@ import static java.util.Collections.emptySet;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.annotations.VisibleForTesting;
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionInvoker;
@@ -41,18 +45,17 @@ class NullRedisSet extends RedisSet {
   }
 
   @Override
-  Collection<ByteArrayWrapper> spop(Region<RedisKey, RedisData> region,
-      RedisKey key, int popCount) {
+  Collection<byte[]> spop(Region<RedisKey, RedisData> region, RedisKey key, int popCount) {
     return emptyList();
   }
 
   @Override
-  Collection<ByteArrayWrapper> srandmember(int count) {
+  Collection<byte[]> srandmember(int count) {
     return emptyList();
   }
 
   @Override
-  public boolean sismember(ByteArrayWrapper member) {
+  public boolean sismember(byte[] member) {
     return false;
   }
 
@@ -62,57 +65,49 @@ class NullRedisSet extends RedisSet {
   }
 
   @Override
-  long sadd(ArrayList<ByteArrayWrapper> membersToAdd, Region<RedisKey, RedisData> region,
-      RedisKey key) {
+  long sadd(List<byte[]> membersToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
     region.create(key, new RedisSet(membersToAdd));
     return membersToAdd.size();
   }
 
   @Override
-  long srem(ArrayList<ByteArrayWrapper> membersToRemove, Region<RedisKey, RedisData> region,
-      RedisKey key) {
+  long srem(List<byte[]> membersToRemove, Region<RedisKey, RedisData> region, RedisKey key) {
     return 0;
   }
 
   @Override
-  @VisibleForTesting
-  Set<ByteArrayWrapper> smembers() {
+  public Set<byte[]> smembers() {
     // some callers want to be able to modify the set returned
-    return new HashSet<>();
+    return Collections.emptySet();
   }
 
   private enum SetOp {
     UNION, INTERSECTION, DIFF
   }
 
-  public int sunionstore(CommandHelper helper, RedisKey destination,
-      ArrayList<RedisKey> setKeys) {
+  public int sunionstore(CommandHelper helper, RedisKey destination, List<RedisKey> setKeys) {
     return doSetOp(SetOp.UNION, helper, destination, setKeys);
   }
 
-  public int sinterstore(CommandHelper helper, RedisKey destination,
-      ArrayList<RedisKey> setKeys) {
+  public int sinterstore(CommandHelper helper, RedisKey destination, List<RedisKey> setKeys) {
     return doSetOp(SetOp.INTERSECTION, helper, destination, setKeys);
   }
 
-  public int sdiffstore(CommandHelper helper, RedisKey destination,
-      ArrayList<RedisKey> setKeys) {
+  public int sdiffstore(CommandHelper helper, RedisKey destination, List<RedisKey> setKeys) {
     return doSetOp(SetOp.DIFF, helper, destination, setKeys);
   }
 
-  private int doSetOp(SetOp setOp, CommandHelper helper,
-      RedisKey destination, ArrayList<RedisKey> setKeys) {
-    ArrayList<Set<ByteArrayWrapper>> nonDestinationSets =
-        fetchSets(helper.getRegion(), setKeys, destination);
+  private int doSetOp(SetOp setOp, CommandHelper helper, RedisKey destination,
+      List<RedisKey> setKeys) {
+    List<Set<byte[]>> nonDestinationSets = fetchSets(helper.getRegion(), setKeys, destination);
     return helper.getStripedExecutor()
         .execute(destination,
             () -> doSetOpWhileLocked(setOp, helper, destination, nonDestinationSets));
   }
 
-  private int doSetOpWhileLocked(SetOp setOp, CommandHelper helper,
-      RedisKey destination,
-      ArrayList<Set<ByteArrayWrapper>> nonDestinationSets) {
-    Set<ByteArrayWrapper> result = computeSetOp(setOp, nonDestinationSets, helper, destination);
+  private int doSetOpWhileLocked(SetOp setOp, CommandHelper helper, RedisKey destination,
+      List<Set<byte[]>> nonDestinationSets) {
+    Set<byte[]> result = computeSetOp(setOp, nonDestinationSets, helper, destination);
     if (result.isEmpty()) {
       helper.getRegion().remove(destination);
       return 0;
@@ -122,29 +117,29 @@ class NullRedisSet extends RedisSet {
     }
   }
 
-  private Set<ByteArrayWrapper> computeSetOp(SetOp setOp,
-      ArrayList<Set<ByteArrayWrapper>> nonDestinationSets,
-      CommandHelper helper,
-      RedisKey destination) {
-    Set<ByteArrayWrapper> result = null;
+  private Set<byte[]> computeSetOp(SetOp setOp, List<Set<byte[]>> nonDestinationSets,
+      CommandHelper helper, RedisKey destination) {
+    ObjectOpenCustomHashSet<byte[]> result = null;
     if (nonDestinationSets.isEmpty()) {
       return emptySet();
     }
-    for (Set<ByteArrayWrapper> set : nonDestinationSets) {
+    for (Set<byte[]> set : nonDestinationSets) {
       if (set == null) {
         set = helper.getRedisSet(destination, false).smembers();
       }
       if (result == null) {
-        result = set;
+        result = new ObjectOpenCustomHashSet<>(set, ByteArrays.HASH_STRATEGY);
       } else {
         switch (setOp) {
           case UNION:
             result.addAll(set);
             break;
           case INTERSECTION:
+            set = new ObjectOpenCustomHashSet<>(set, ByteArrays.HASH_STRATEGY);
             result.retainAll(set);
             break;
           case DIFF:
+            set = new ObjectOpenCustomHashSet<>(set, ByteArrays.HASH_STRATEGY);
             result.removeAll(set);
             break;
         }
@@ -159,11 +154,9 @@ class NullRedisSet extends RedisSet {
    * the corresponding key is the destination.
    * This is all done outside the striped executor to prevent a deadlock.
    */
-  private ArrayList<Set<ByteArrayWrapper>> fetchSets(
-      Region<RedisKey, RedisData> region,
-      ArrayList<RedisKey> setKeys,
+  private List<Set<byte[]>> fetchSets(Region<RedisKey, RedisData> region, List<RedisKey> setKeys,
       RedisKey destination) {
-    ArrayList<Set<ByteArrayWrapper>> result = new ArrayList<>(setKeys.size());
+    List<Set<byte[]>> result = new ArrayList<>(setKeys.size());
     RedisSetCommands redisSetCommands = new RedisSetCommandsFunctionInvoker(region);
     for (RedisKey key : setKeys) {
       if (key.equals(destination)) {
