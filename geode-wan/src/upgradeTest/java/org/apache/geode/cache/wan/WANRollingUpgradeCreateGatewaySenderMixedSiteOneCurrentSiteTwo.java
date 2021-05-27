@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.wan;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
@@ -93,9 +94,9 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
     // Roll mixed site locator to current with jmx manager
     site1Locator.invoke(() -> stopLocator());
     VM site1RolledLocator = host.getVM(VersionManager.CURRENT_VERSION, site1Locator.getId());
-    int jmxManagerPort =
-        site1RolledLocator.invoke(() -> startLocatorWithJmxManager(site1LocatorPort,
-            site1DistributedSystemId, site1Locators, site2Locators));
+    int jmxManagerPort = getRandomAvailableTCPPort();
+    site1RolledLocator.invoke(startLocatorWithJmxManager(site1LocatorPort,
+        site1DistributedSystemId, site1Locators, site2Locators, jmxManagerPort));
 
     // Roll one mixed site server to current
     site1Server2.invoke(() -> closeCache());
