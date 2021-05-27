@@ -29,6 +29,12 @@ facets {
   }
 }
 
+configurations{
+  distributedTest {
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+  }
+}
+
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-serialization'))
@@ -96,12 +102,6 @@ dependencies {
   distributedTestImplementation('org.springframework.boot:spring-boot-starter')
   distributedTestImplementation('org.springframework.boot:spring-boot-starter-data-redis')
   distributedTestImplementation('org.springframework.session:spring-session-data-redis')
-}
-
-configurations{
-  all {
-    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-  }
 }
 
 acceptanceTest {
