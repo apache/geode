@@ -1,0 +1,195 @@
+---
+title:  copy region
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Copy the region data in one WAN site onto the same region in another WAN site using a gateway sender.
+
+This command requires that a gateway sender is configured and running on the source WAN site and a gateway
+receiver is configured and running on the remote WAN site.
+The command also requires that the remote WAN site has the region onto which the data will be copied already created.
+Callbacks (cache listeners, replication to other WAN sites) will not be executed in the remote WAN site for the entries copied.
+
+This command copies region entries from one WAN site to another by putting them in batches of configurable
+size that are sent to the remote site by the selected gateway sender.
+
+The command allows to specify a maximum copy rate in order not to stress excesively the sending or receiving WAN sites.
+This rate is configured in entries per second. In the case of using a parallel gateway sender the maximum rate
+configured will be per server hosting a replica of the region.
+
+The main uses of this command are:
+
+-   Recovery of a WAN site after a disaster in which the failed site needs to be put into service again with
+    the data from another WAN site.
+
+-   Adding a new WAN site to a Geode system in which the data in the new WAN site needs to be initially loaded from
+    an existing WAN site.
+
+This command also allows to cancel the execution of a currently running instance of this command by using
+the --cancel option.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+copy region --region=value --sender-id=value [--max-rate=value] [--batch-size=value] [--cancel(=value)?]
+```
+
+<a id="copy_region_command_params"></a>
+
+
+<table>
+<colgroup>
+<col width="20%" />
+<col width="60%" />
+<col width="20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+<th>Default Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="keyword parmname">\-\-region</span></td>
+<td><em>Required</em>. The region for which the data is to be copied.</td>
+<td>-</td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-sender-id</span></td>
+<td><em>Required</em>. The gateway sender to be used to copy the region entries.</td>
+<td>-</td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-max-rate</span></td>
+<td>The maximum copy rate in entries per second. If the sender is parallel, the maximum rate is per server hosting buckets for the regionto be copied.</td>
+<td>0 (unlimited) </td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-batch-size</span></td>
+<td>The size of the batches to be used to copy the region entries.</td>
+<td>1000</td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-cancel</span></td>
+<td>If specified, it will be used to cancel a running copy command for the passed sender and region.</td>
+<td>false</td>
+</tr>
+</table>
+
+<span class="tablecap">Table 1. Copy Region Parameters</span>
+
+
+**Example Commands:**
+
+``` pre
+copy region --region=myRegion--sender-id=mySender --max-rate=1000 --batch-size=100
+```
+
+``` pre
+copy region --region=/overload --sender-id=sender1 --cancel
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>copy region --region=/overload --sender-id=myParallelSender --max-rate=100 --batch-size=100
+        Member     | Status | Message
+    -------------- | ------ | -----------------------
+    server-sender  | OK     | Entries replicated: 333
+    server-sender3 | OK     | Entries replicated: 334
+    server-sender2 | OK     | Entries replicated: 333
+
+```
+
+``` pre
+gfsh>copy region --region=/overload --sender-id=mySerialSender --max-rate=100 --batch-size=100
+        Member     | Status | Message
+    -------------- | ------ | ----------------------------------------------------------------------
+    server-sender2 | OK     | Sender mySerialSender is serial and not primary. 0 entries replicated.
+    server-sender3 | OK     | Sender mySerialSender is serial and not primary. 0 entries replicated.
+    server-sender  | OK     | Entries replicated: 1000
+```
+
+
+``` pre
+gfsh>copy region --region=/overload --sender-id=sender1 --cancel
+        Member     | Status | Message
+    -------------- | ------ | ------------------
+    server-sender2 | OK     | Execution canceled
+    server-sender  | OK     | Execution canceled
+    server-sender3 | OK     | Execution canceled
+```
+
+``` pre
+gfsh>copy region --region=myRegion --sender-id=myParallelSender --max-rate=100 --batch-size=10
+        Member     | Status | Message
+    -------------- | ------ | ------------------------------------------------------
+    server-sender2 | OK     | Operation canceled after having replicated 10 entries
+    server-sender  | OK     | Operation canceled after having replicated 10 entries
+    server-sender3 | OK     | Operation canceled after having replicated 10 entries
+```
+
+``` pre
+gfsh>copy region --region=myRegion --sender-id=myParallelSender --max-rate=100 --batch-size=10
+        Member     | Status | Message
+    -------------- | ------ | ----------------------------------------------------------------------
+    server-sender2 | OK     | Sender mySerialSender is serial and not primary. 0 entries replicated.
+    server-sender3 | OK     | Sender mySerialSender is serial and not primary. 0 entries replicated.
+    server-sender  | OK     | Operation canceled after having replicated 4 entries
+```
+
+**Error Messages:**
+
+Example of `copy region` with an invalid region:
+
+``` pre
+gfsh> copy region --region=/regionX --sender-id=sender1
+        Member     | Status | Message
+    -------------- | ------ | -------------------------
+    server-sender  | ERROR  | Region /regionX not found
+    server-sender2 | ERROR  | Region /regionX not found
+    server-sender3 | ERROR  | Region /regionX not found
+```
+
+Example of `copy region` with an stopped gateway sender:
+
+``` pre
+gfsh> copy region --region=/region1 --sender-id=sender1
+        Member     | Status | Message
+    -------------- | ------ | -----------------------------
+    server-sender  | ERROR  | Sender sender1 is not running
+    server-sender2 | ERROR  | Sender sender1 is not running
+    server-sender3 | ERROR  | Sender sender1 is not running
+```
+
+Example of cancel of `copy region` when no command is running:
+
+``` pre
+gfsh> copy region --region=/region1 --sender-id=sender1 --cancel
+        Member     | Status | Message
+    -------------- | ------ | ------------------------------------------------------------------------------------
+    server-sender2 | ERROR  | No running command to be canceled for region /region1 and sender: sender1
+    server-sender  | ERROR  | No running command to be canceled for region /region1 and sender: sender1
+    server-sender3 | ERROR  | No running command to be canceled for region /region1 and sender: sender1
+
+```
