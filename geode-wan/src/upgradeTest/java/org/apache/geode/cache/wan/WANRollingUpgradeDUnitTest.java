@@ -27,7 +27,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATO
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -216,7 +216,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     // Verify remote site received events
     int remoteServer1EventsReceived = remoteServer1.invoke(() -> getEventsReceived(regionName));
     int remoteServer2EventsReceived = remoteServer2.invoke(() -> getEventsReceived(regionName));
-    assertEquals(numPuts, remoteServer1EventsReceived + remoteServer2EventsReceived);
+    assertThat(remoteServer1EventsReceived + remoteServer2EventsReceived).isEqualTo(numPuts);
 
     // Clear events received in both sites
     localServer1.invoke(() -> clearEventsReceived(regionName));
@@ -230,7 +230,9 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     // Verify the secondary events still exist
     int localServer1QueueSize = localServer1.invoke(() -> getQueueRegionSize(senderId, false));
     int localServer2QueueSize = localServer2.invoke(() -> getQueueRegionSize(senderId, false));
-    assertEquals(numPuts, localServer1QueueSize + localServer2QueueSize);
+    // The actual number of events in the queues can be greater than the number of puts in the case
+    // of a client timeout / failover
+    assertThat(localServer1QueueSize + localServer2QueueSize).isGreaterThanOrEqualTo(numPuts);
 
     // Stop one sender
     localServer1.invoke(() -> closeCache());
@@ -242,7 +244,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     // all members, so there should be 0 events received on the remote site.
     int remoteServer1EventsReceived = remoteServer1.invoke(() -> getEventsReceived(regionName));
     int remoteServer2EventsReceived = remoteServer2.invoke(() -> getEventsReceived(regionName));
-    assertEquals(0, remoteServer1EventsReceived + remoteServer2EventsReceived);
+    assertThat(remoteServer1EventsReceived + remoteServer2EventsReceived).isEqualTo(0);
   }
 
   String getCreateGatewaySenderCommand(String id, int remoteDsId) {
