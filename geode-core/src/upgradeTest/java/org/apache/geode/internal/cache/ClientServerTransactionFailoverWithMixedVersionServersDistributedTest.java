@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
@@ -185,6 +186,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     config.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     config.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
     config.setProperty(USE_CLUSTER_CONFIGURATION, "false");
+    config.setProperty(HTTP_SERVICE_PORT, "0");
     return config;
   }
 
