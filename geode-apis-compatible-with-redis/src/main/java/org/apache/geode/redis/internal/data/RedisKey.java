@@ -123,17 +123,13 @@ public class RedisKey implements DataSerializableFixedID, Comparable<RedisKey> {
     return Arrays.hashCode(value);
   }
 
-  /**
-   * This equals is not symmetric and therefore not transitive, because a String with the same
-   * underlying bytes is considered equal. Clearly calling {@link String#equals(Object)} would not
-   * yield the same result
-   */
   @Override
   public boolean equals(Object other) {
+    if (other == this) {
+      return true;
+    }
     if (other instanceof RedisKey) {
       return Arrays.equals(value, ((RedisKey) other).value);
-    } else if (other instanceof String) {
-      return Arrays.equals(value, Coder.stringToBytes((String) other));
     }
     return false;
   }
