@@ -36,6 +36,9 @@ resources:
     branch: ((geode-build-branch))
     paths:
     - ci/pipelines/images/*
+    - ci/pipelines/shared/*
+    - ci/pipelines/render.py
+    - ci/pipelines/meta/meta.properties
 - name: geode-reaper-pipeline
   type: git
   source:
