@@ -22,8 +22,6 @@ import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.val
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderState;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -32,7 +30,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 
 import org.junit.Rule;
@@ -65,7 +62,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Serializable {
 
   @Rule
-  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(10);
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(7);
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -78,10 +75,14 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
   private MemberVM server3Site2;
 
   private ClientVM clientSite2;
-  private ClientVM clientSite3SubscriptionQueue;
+  private ClientVM clientSite2DurableSubscription;
 
   public static boolean IS_TEMP_QUEUE_USED = false;
   public static boolean IS_HOOK_TRIGGERED = false;
+
+  private static final String DISTRIBUTED_SYSTEM_ID_SITE1 = "1";
+  private static final String DISTRIBUTED_SYSTEM_ID_SITE2 = "2";
+  private static final String REGION_NAME = "test1";
 
   /**
    * Issue reproduces when following conditions are fulfilled:
@@ -103,7 +104,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
   public void testSubscriptionQueueWan() throws Exception {
     configureSites("113");
     startDurableClient();
-    createDurableCQs("SELECT * FROM /test1");
+    createDurableCQs("SELECT * FROM " + Region.SEPARATOR + REGION_NAME);
 
     verifyGatewaySenderState(true, false);
 
@@ -152,7 +153,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
     allMembers.remove(serverToStop);
 
     startDurableClient();
-    createDurableCQs("SELECT * FROM /test1");
+    createDurableCQs("SELECT * FROM " + Region.SEPARATOR + REGION_NAME);
 
     // configure hook on running members
     for (MemberVM member : allMembers) {
@@ -170,8 +171,8 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
       // If hook has been triggered on member, then check if member temporarily queued
       // events while getting initial image from primary server
       if (member.invoke(ParallelGatewaySenderAndCQDurableClientDUnitTest::isHookTriggered)) {
-        assertTrue(
-            member.invoke(ParallelGatewaySenderAndCQDurableClientDUnitTest::isTempQueueUsed));
+        assertThat(member.invoke(ParallelGatewaySenderAndCQDurableClientDUnitTest::isTempQueueUsed))
+            .isTrue();
       }
     }
 
@@ -188,7 +189,8 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
    */
   void configureHooksOnRunningMember(MemberVM server, int bucketId) {
     server.invoke(() -> InitialImageOperation.setGIITestHook(new InitialImageOperation.GIITestHook(
-        InitialImageOperation.GIITestHookType.AfterSentRequestImage, "_B__test1_" + bucketId) {
+        InitialImageOperation.GIITestHookType.BeforeRequestRVV,
+        "_B__" + REGION_NAME + "_" + bucketId) {
       private static final long serialVersionUID = -3790198435185240444L;
 
       @Override
@@ -229,13 +231,13 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
   private void startDurableClient()
       throws Exception {
     int locatorPort = locatorSite2.getPort();
-    clientSite3SubscriptionQueue = clusterStartupRule.startClientVM(7, ccf -> ccf
+    clientSite2DurableSubscription = clusterStartupRule.startClientVM(7, ccf -> ccf
         .withPoolSubscription(true).withLocatorConnection(locatorPort).withCacheSetup(c -> c
             .set("durable-client-id", DURABLE_CLIENT_ID)));
   }
 
   private void createDurableCQs(String... queries) {
-    clientSite3SubscriptionQueue.invoke(() -> {
+    clientSite2DurableSubscription.invoke(() -> {
       assertThat(ClusterStartupRule.getClientCache()).isNotNull();
       QueryService queryService = ClusterStartupRule.getClientCache().getQueryService();
       CqAttributesFactory cqAttributesFactory = new CqAttributesFactory();
@@ -253,8 +255,8 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
 
   private Set<Integer> getPrimaryBucketList() {
     PartitionedRegion region = (PartitionedRegion) Objects
-        .requireNonNull(ClusterStartupRule.getCache()).getRegion("test1");
-    return new TreeSet<>(region.getDataStore().getAllLocalPrimaryBucketIds());
+        .requireNonNull(ClusterStartupRule.getCache()).getRegion(REGION_NAME);
+    return new HashSet<>(region.getDataStore().getAllLocalPrimaryBucketIds());
   }
 
   /**
@@ -262,7 +264,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
    */
   private void checkCqEvents(int expectedNumberOfEvents) {
     // Check if number of events is correct
-    clientSite3SubscriptionQueue.invoke(() -> await().untilAsserted(() -> assertThat(
+    clientSite2DurableSubscription.invoke(() -> await().untilAsserted(() -> assertThat(
         ParallelGatewaySenderAndCQDurableClientDUnitTest.cqListener.getNumEvents())
             .isEqualTo(expectedNumberOfEvents)));
   }
@@ -274,8 +276,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
   public static void validateBucketToTempQueueMap(String senderId, boolean shouldBeEmpty) {
     final int finalSize = sizeOfBucketToTempQueueMap(senderId);
     if (shouldBeEmpty) {
-      assertEquals("Expected elements in TempQueueMap: " + 0
-          + " but actual size: " + finalSize, 0, finalSize);
+      assertThat(finalSize).isEqualTo(0);
     } else {
       assertThat(finalSize).isNotEqualTo(0);
     }
@@ -285,9 +286,9 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
     GatewaySender sender = getGatewaySender(senderId);
     int size = 0;
     Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
-    for (Object queue : queues) {
+    for (RegionQueue queue : queues) {
       PartitionedRegion region =
-          (PartitionedRegion) ((ConcurrentParallelGatewaySenderQueue) queue).getRegion();
+          (PartitionedRegion) queue.getRegion();
       int buckets = region.getTotalNumberOfBuckets();
       for (int bucket = 0; bucket < buckets; bucket++) {
         BlockingQueue<GatewaySenderEventImpl> newQueue =
@@ -317,19 +318,17 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
       throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, DISTRIBUTED_SYSTEM_ID_SITE1);
     MemberVM locatorSite1 = clusterStartupRule.startLocatorVM(1, props);
 
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, DISTRIBUTED_SYSTEM_ID_SITE2);
     props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
     locatorSite2 = clusterStartupRule.startLocatorVM(2, props);
 
     // start servers for site #2
-    Properties serverProps = new Properties();
-    serverProps.setProperty("log-level", "debug");
-    server1Site2 = clusterStartupRule.startServerVM(3, serverProps, locatorSite2.getPort());
-    server2Site2 = clusterStartupRule.startServerVM(4, serverProps, locatorSite2.getPort());
-    server3Site2 = clusterStartupRule.startServerVM(5, serverProps, locatorSite2.getPort());
+    server1Site2 = clusterStartupRule.startServerVM(3, locatorSite2.getPort());
+    server2Site2 = clusterStartupRule.startServerVM(4, locatorSite2.getPort());
+    server3Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort());
 
     // create parallel gateway-sender on site #2
     connectGfshToSite(locatorSite2);
@@ -353,7 +352,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
 
     // create partition region on site #2
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
-    csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
+    csb.addOption(CliStrings.CREATE_REGION__REGION, REGION_NAME);
     csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION");
     csb.addOption(CliStrings.CREATE_REGION__GATEWAYSENDERID, "ln");
     csb.addOption(CliStrings.CREATE_REGION__REDUNDANTCOPIES, "1");
@@ -364,7 +363,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
     clientSite2 =
         clusterStartupRule.startClientVM(6, c -> c.withLocatorConnection(locatorSite2.getPort()));
     clientSite2.invoke(() -> {
-      ClusterStartupRule.clientCacheRule.createProxyRegion("test1");
+      ClusterStartupRule.clientCacheRule.createProxyRegion(REGION_NAME);
     });
   }
 
@@ -389,7 +388,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
 
   Set<String> doPutsInRangeTransaction(int start, int stop) {
     Region<String, String> region =
-        ClusterStartupRule.clientCacheRule.getCache().getRegion("test1");
+        ClusterStartupRule.clientCacheRule.getCache().getRegion(REGION_NAME);
     Set<String> keys = new HashSet<>();
 
     CacheTransactionManager transactionManager =
@@ -405,7 +404,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
 
   Set<String> doPutsInRange(int start, int stop) {
     Region<String, String> region =
-        ClusterStartupRule.clientCacheRule.getCache().getRegion("test1");
+        ClusterStartupRule.clientCacheRule.getCache().getRegion(REGION_NAME);
     Set<String> keys = new HashSet<>();
 
     for (int i = start; i < stop; i++) {
@@ -417,7 +416,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
 
   void doPutsInServer() {
     Region<String, String> region =
-        Objects.requireNonNull(ClusterStartupRule.getCache()).getRegion("/test1");
+        Objects.requireNonNull(ClusterStartupRule.getCache()).getRegion(REGION_NAME);
 
     CacheTransactionManager transactionManager =
         ClusterStartupRule.getCache().getCacheTransactionManager();
@@ -437,7 +436,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
     assertThat(ClusterStartupRule.getCache()).isNotNull();
     InternalCache internalCache = ClusterStartupRule.getCache();
     GatewaySender sender = internalCache.getGatewaySender(senderId);
-    assertTrue(sender.isParallel());
+    assertThat(sender.isParallel()).isTrue();
     int totalSize = 0;
     Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
     if (queues != null) {
@@ -446,7 +445,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
         totalSize += prQ.size();
       }
     }
-    assertEquals(numQueueEntries, totalSize);
+    assertThat(numQueueEntries).isEqualTo(totalSize);
   }
 
   public static class CqListenerTestReceivedEvents implements CqListener {
