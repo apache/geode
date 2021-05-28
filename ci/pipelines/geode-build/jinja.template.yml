@@ -544,7 +544,7 @@ jobs:
   - in_parallel:
     - get: geode-ci
       passed: &publish-passed-inputs
-      - Build
+      - build
     - get: alpine-tools-image
     - get: geode
       passed: *publish-passed-inputs
