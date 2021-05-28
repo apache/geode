@@ -237,7 +237,7 @@ jobs:
   public: ((public-pipelines))
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: openjdk8-docker-image
       trigger: true
     - get: build-concourse-dockerfile
@@ -286,7 +286,7 @@ jobs:
   public: ((public-pipelines))
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: test-container-docker-image
       passed: [build-test-container-docker-image]
       trigger: true
@@ -324,7 +324,7 @@ jobs:
   public: ((public-pipelines))
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: google-windows-geode-builder
       trigger: true
     - get: alpine-tools-docker-image
@@ -359,7 +359,7 @@ jobs:
   public: ((public-pipelines))
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: alpine-docker-image
       trigger: true
     - get: alpine-tools-dockerfile
@@ -373,7 +373,7 @@ jobs:
   public: ((public-pipelines))
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: ubuntu-docker-image
       trigger: true
     - get: test-container-dockerfile
@@ -387,7 +387,7 @@ jobs:
   public: ((public-pipelines))
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: alpine-docker-image
       trigger: true
     - get: concourse-metadata-resource-dockerfile
@@ -401,7 +401,7 @@ jobs:
   public: ((public-pipelines))
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: alpine-docker-image
       trigger: true
     - get: metric-tools-dockerfile
@@ -415,7 +415,7 @@ jobs:
   public: ((public-pipelines))
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: alpine-docker-image
       trigger: true
     - get: gce-instances-resource-dockerfile

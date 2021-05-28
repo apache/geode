@@ -91,9 +91,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -127,9 +127,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -165,9 +165,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -202,9 +202,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode-examples
-            trigger: true
+      - in_parallel:
+        - get: geode-examples
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -231,9 +231,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode-examples
-            trigger: true
+      - in_parallel:
+        - get: geode-examples
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -271,9 +271,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode-native
-            trigger: true
+      - in_parallel:
+        - get: geode-native
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -316,10 +316,10 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode-native
-            trigger: true
-          - get: geode
+      - in_parallel:
+        - get: geode-native
+          trigger: true
+        - get: geode
       - task: validate
         timeout: 1h
         config:
@@ -366,11 +366,11 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
-          - get: upthewaterspout-tests
-          - get: geode-examples
+      - in_parallel:
+        - get: geode
+          trigger: true
+        - get: upthewaterspout-tests
+        - get: geode-examples
       - task: validate
         timeout: 1h
         config:
@@ -444,9 +444,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -537,9 +537,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -587,11 +587,10 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
-      - aggregate:
-          - get: geode-develop
+      - in_parallel:
+        - get: geode
+          trigger: true
+        - get: geode-develop
       - task: validate
         timeout: 1h
         config:
