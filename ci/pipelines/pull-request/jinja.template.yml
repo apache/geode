@@ -24,7 +24,7 @@ groups:
   - {{ build_test.name }}
 {%- for test in tests if test.PLATFORM=="linux" %}
   {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("jdk8") or test.name == "unit" %}
-  - {{test.name}}Test{{java_test_version.name}}
+  - {{test.name}}-test-{{java_test_version.name}}
   {%- endfor %}
 {%- endfor %}
 resources:
@@ -251,7 +251,7 @@ jobs:
 
 {% for test in tests if test.PLATFORM=="linux"%}
   {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("jdk8") or test.name == "unit" %}
-- name: {{test.name}}Test{{java_test_version.name}}
+- name: {{test.name}}-test-{{java_test_version.name}}
   public: true
   plan:
   - do:

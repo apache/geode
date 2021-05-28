@@ -29,7 +29,6 @@ benchmarks:
     options: '--tests=*GetBenchmark --tests=*PutBenchmark'
     max_in_flight: 1
   - title: 'with-security-manager'
->>>>>>> f03a577f21... GEODE-9298: remove concourse deprecation warnings
     flag: '-PwithSecurityManager'
     options: '--tests=Partitioned*'
     max_in_flight: 2
