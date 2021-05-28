@@ -25,6 +25,7 @@ import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -57,6 +58,9 @@ public class RedisSortedSet extends AbstractRedisData {
   protected static final int PER_PAIR_OVERHEAD = 48;
 
   private int sizeInBytes = BASE_REDIS_SORTED_SET_OVERHEAD;
+  private static final byte[] INFINITY_BYTE_ARRAY = "inf".getBytes(StandardCharsets.UTF_8);
+  private static final byte[] POSITIVE_INFINITY_BYTE_ARRAY = "+inf".getBytes(StandardCharsets.UTF_8);
+  private static final  byte[] NEGATIVE_INFINITY_BYTE_ARRAY = "-inf".getBytes(StandardCharsets.UTF_8);
 
   @Override
   public int getSizeInBytes() {
@@ -231,6 +235,14 @@ public class RedisSortedSet extends AbstractRedisData {
     return getSortedSetSize() - initialSize + changesCount;
   }
 
+  private void validateScoreIsDouble(byte[] score) {
+    if (!Arrays.equals(score, POSITIVE_INFINITY_BYTE_ARRAY)
+    && !Arrays.equals(score, NEGATIVE_INFINITY_BYTE_ARRAY)
+      && !Coder.bytesToString(score).matches("^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$")) {
+      throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
+    }
+  }
+
   private byte[] zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
       List<byte[]> membersToAdd, ZAddOptions options) {
     // for zadd incr option, only one incrementing element pair is allowed to get here.
@@ -398,7 +410,19 @@ public class RedisSortedSet extends AbstractRedisData {
 
     OrderedSetEntry(byte[] member, byte[] score) {
       this.member = member;
-      this.score = Double.valueOf(Coder.bytesToString(score));
+      this.score = makeDoubleWhileHandlingInfinity(score);
+    }
+
+    private Double makeDoubleWhileHandlingInfinity(byte[] score) {
+      if (Arrays.equals(score, INFINITY_BYTE_ARRAY)
+      || Arrays.equals(score, POSITIVE_INFINITY_BYTE_ARRAY)) {
+        return Double.POSITIVE_INFINITY;
+      }
+      if (Arrays.equals(score, NEGATIVE_INFINITY_BYTE_ARRAY)) {
+        return Double.NEGATIVE_INFINITY;
+      }
+
+      return Double.valueOf(Coder.bytesToString(score));
     }
   }
 }
