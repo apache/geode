@@ -44,7 +44,7 @@ public class ZIncrByExecutor extends AbstractExecutor {
     } else if (Arrays.equals(retVal, ERROR_NAN_OR_INFINITY.getBytes())) {
       return RedisResponse.error(ERROR_NAN_OR_INFINITY);
     }
-    return RedisResponse.floatDouble(retVal);
+    return RedisResponse.string(retVal);
   }
 
   private void skipCommandAndKey(Iterator<byte[]> commandIterator) {

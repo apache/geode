@@ -231,7 +231,8 @@ public class RedisSortedSet extends AbstractRedisData {
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
     byte[] score = members.get(member);
-    byte[] incr = processIncrement(Coder.bytesToString(increment).toLowerCase());
+    byte[] incr = Coder.doubleToBytes(
+        processIncrement(Coder.bytesToString(increment).toLowerCase()));
 
     if (Arrays.equals(incr, ERROR_NOT_A_VALID_FLOAT.getBytes())) {
       return incr;
@@ -309,7 +310,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
-  protected byte[] processIncrement(String stringIncr) {
+  protected double processIncrement(String stringIncr) {
     double incr;
     switch (stringIncr) {
       case "inf":
@@ -326,10 +327,10 @@ public class RedisSortedSet extends AbstractRedisData {
         try {
           incr = Double.parseDouble(stringIncr);
         } catch (NumberFormatException nfe) {
-          return ERROR_NOT_A_VALID_FLOAT.getBytes();
+          throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
         }
         break;
     }
-    return Coder.doubleToBytes(incr);
+    return incr;
   }
 }
