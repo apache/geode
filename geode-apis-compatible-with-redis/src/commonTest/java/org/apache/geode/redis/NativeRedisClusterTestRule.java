@@ -32,6 +32,7 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -81,6 +82,8 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
         // This assumes docker-compose is installed locally. Removing this line will automatically
         // pull a container containing docker-compose, but it will run slower (at least on MacOS).
         redisCluster.withLocalCompose(true);
+        redisCluster.waitingFor("redis-cluster-init_1",
+            Wait.forLogMessage(".*Ready to accept connections.*", 1));
 
         redisCluster.start();
 
