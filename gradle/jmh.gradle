@@ -42,6 +42,7 @@ jmh {
   timeOnIteration = project.hasProperty('jmh.timeOnIteration') ? project.property('jmh.timeOnIteration') as Integer : null
   fork = project.hasProperty('jmh.fork') ? project.property('jmh.fork') as Integer : null
   jvm = project.hasProperty('jmh.jvm') ? project.property('jmh.jvm') as String : null
+  jvmArgs += project.hasProperty('jmh.jvmArgs') ? project.property('jmh.jvmArgs').tokenize() : []
 }
 
 jmhJar {
