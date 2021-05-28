@@ -623,7 +623,7 @@ def spotlessProjects = rootProject.subprojects.findAll { subproj ->
 tasks.named('srcDistTar').configure {
   classifier 'src'
   spotlessProjects.each {spotlessProj ->
-    dependsOn {spotlessProj.tasks.named("spotlessApply")}
+    dependsOn {spotlessProj.tasks.named("spotlessCheck")}
   }
 }
 
