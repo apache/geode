@@ -16,6 +16,7 @@ package org.apache.geode.internal.tcp;
 
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -23,8 +24,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.DataInput;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -51,6 +54,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @Category(MembershipTest.class)
 public class ConnectionTest {
 
+  @SuppressWarnings("ConstantConditions")
   @Test
   public void canBeMocked() throws Exception {
     Connection mockConnection = mock(Connection.class);
@@ -119,9 +123,8 @@ public class ConnectionTest {
     int normalTimeout = connection.getP2PConnectTimeout(distributionConfig);
     assertThat(normalTimeout).isEqualTo(600);
 
-    AlertingAction.execute(() -> {
-      assertThat(connection.getP2PConnectTimeout(distributionConfig)).isEqualTo(100);
-    });
+    AlertingAction.execute(
+        () -> assertThat(connection.getP2PConnectTimeout(distributionConfig)).isEqualTo(100));
   }
 
   private Connection createSpiedConnection() throws IOException {
@@ -175,4 +178,75 @@ public class ConnectionTest {
     connection.notifyHandshakeWaiter(false);
     verify(connection, times(1)).clearSSLInputBuffer();
   }
+
+  @Test
+  public void checkHandshakeInitialByteAccepts0() throws IOException {
+    final DataInput dataInput = mock(DataInput.class);
+    when(dataInput.readByte()).thenReturn((byte) 0);
+
+    Connection.checkHandshakeInitialByte(dataInput);
+
+    verify(dataInput).readByte();
+    verifyNoMoreInteractions(dataInput);
+  }
+
+  @Test
+  public void checkHandshakeInitialByteThrowsNot0() throws IOException {
+    final DataInput dataInput = mock(DataInput.class);
+    when(dataInput.readByte()).thenReturn((byte) 1);
+
+    assertThatThrownBy(() -> Connection.checkHandshakeInitialByte(dataInput))
+        .isInstanceOf(IllegalStateException.class);
+
+    verify(dataInput).readByte();
+    verifyNoMoreInteractions(dataInput);
+  }
+
+  @Test
+  public void checkHandshakeVersionAcceptsCurrentVersion() throws IOException {
+    final DataInput dataInput = mock(DataInput.class);
+    when(dataInput.readByte()).thenReturn(Connection.HANDSHAKE_VERSION);
+
+    Connection.checkHandshakeVersion(dataInput);
+
+    verify(dataInput).readByte();
+    verifyNoMoreInteractions(dataInput);
+  }
+
+  @Test
+  public void checkHandshakeVersionThrowsWhenNotCurrentVersion() throws IOException {
+    final DataInput dataInput = mock(DataInput.class);
+    when(dataInput.readByte()).thenReturn((byte) 1);
+
+    assertThatThrownBy(() -> Connection.checkHandshakeVersion(dataInput))
+        .isInstanceOf(IllegalStateException.class);
+
+    verify(dataInput).readByte();
+    verifyNoMoreInteractions(dataInput);
+  }
+
+  @Test
+  public void readDominoNumberSharedResourceTrueReturns0() throws IOException {
+    final DataInput dataInput = mock(DataInput.class);
+    when(dataInput.readInt()).thenReturn(1);
+
+    final int dominoNumber = Connection.readDominoNumber(dataInput, true);
+    assertThat(dominoNumber).isEqualTo(0);
+
+    verify(dataInput).readInt();
+    verifyNoMoreInteractions(dataInput);
+  }
+
+  @Test
+  public void readDominoNumberSharedResourceFalseReturnsValue() throws IOException {
+    final DataInput dataInput = mock(DataInput.class);
+    when(dataInput.readInt()).thenReturn(1);
+
+    final int dominoNumber = Connection.readDominoNumber(dataInput, false);
+    assertThat(dominoNumber).isEqualTo(1);
+
+    verify(dataInput).readInt();
+    verifyNoMoreInteractions(dataInput);
+  }
+
 }

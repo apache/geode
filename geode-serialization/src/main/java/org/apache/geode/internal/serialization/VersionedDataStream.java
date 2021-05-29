@@ -18,6 +18,8 @@ package org.apache.geode.internal.serialization;
 import java.io.DataInput;
 import java.io.DataOutput;
 
+import org.jetbrains.annotations.Nullable;
+
 
 /**
  * An extension to {@link DataOutput}, {@link DataInput} used internally in product to indicate that
@@ -40,5 +42,6 @@ public interface VersionedDataStream {
    * peer's responsibility to adjust the serialization/deserialization according to
    * this peer.
    */
+  @Nullable
   KnownVersion getVersion();
 }
