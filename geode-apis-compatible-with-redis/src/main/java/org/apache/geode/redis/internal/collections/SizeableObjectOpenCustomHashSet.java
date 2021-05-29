@@ -26,8 +26,11 @@ import org.apache.geode.internal.size.Sizeable;
 public class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<K>
     implements Sizeable {
   private static final long serialVersionUID = 9174920505089089517L;
+  public static final int MEMBER_OVERHEAD_CONSTANT = 16;
+  public static final int BACKING_ARRAY_OVERHEAD_CONSTANT = 92;
+  public static final int BACKING_ARRAY_LENGTH_COEFFICIENT = 4;
 
-  int memberOverhead;
+  private int memberOverhead;
 
   public SizeableObjectOpenCustomHashSet(int expected, float f, Strategy<? super K> strategy) {
     super(expected, f, strategy);
@@ -111,38 +114,49 @@ public class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<
   }
 
   @VisibleForTesting
-  int calculateBackingArrayOverhead() {
-    // This formula determined experimentally using tests
-    return 92 + (4 * key.length);
+  int getMemberOverhead() {
+    return memberOverhead;
   }
 
+  @VisibleForTesting
+  int getBackingArrayLength() {
+    return key.length;
+  }
+
+  @VisibleForTesting
+  int calculateBackingArrayOverhead() {
+    // This formula determined experimentally using tests
+    return BACKING_ARRAY_OVERHEAD_CONSTANT + (BACKING_ARRAY_LENGTH_COEFFICIENT * key.length);
+  }
   // To calculate the overhead associated with adding a new element, a fixed value related to the
   // array header bytes, size and type information is added, then the total size in bytes of the
+
   // array is calculated based on the type (a byte is 1 byte, a short is 2 bytes, int is 4 bytes
   // etc.) and then rounded up to the nearest multiple of 8, as arrays are padded to a multiple of 8
+
   @VisibleForTesting
   static int getElementSize(Object o) {
     if (o instanceof byte[]) {
-      return 16 + roundToMultipleOfEight(((byte[]) o).length);
+      return MEMBER_OVERHEAD_CONSTANT + roundToMultipleOfEight(((byte[]) o).length);
     }
     if (o instanceof short[]) {
-      return 16 + roundToMultipleOfEight(((short[]) o).length * 2);
+      return MEMBER_OVERHEAD_CONSTANT + roundToMultipleOfEight(((short[]) o).length * 2);
     }
     if (o instanceof char[]) {
-      return 16 + roundToMultipleOfEight(((char[]) o).length * 2);
+      return MEMBER_OVERHEAD_CONSTANT + roundToMultipleOfEight(((char[]) o).length * 2);
     }
     if (o instanceof int[]) {
-      return 16 + roundToMultipleOfEight(((int[]) o).length * 4);
+      return MEMBER_OVERHEAD_CONSTANT + roundToMultipleOfEight(((int[]) o).length * 4);
     }
     if (o instanceof float[]) {
-      return 16 + roundToMultipleOfEight(((float[]) o).length * 4);
+      return MEMBER_OVERHEAD_CONSTANT + roundToMultipleOfEight(((float[]) o).length * 4);
     }
     // long and double are always a multiple of 8, so no need to attempt to round them
     if (o instanceof long[]) {
-      return 16 + ((long[]) o).length * 8;
+      return MEMBER_OVERHEAD_CONSTANT + ((long[]) o).length * 8;
     }
     if (o instanceof double[]) {
-      return 16 + ((double[]) o).length * 8;
+      return MEMBER_OVERHEAD_CONSTANT + ((double[]) o).length * 8;
     }
     // If we get here, we can't figure out the size without using more expensive operations, so just
     // give up
