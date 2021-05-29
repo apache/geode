@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.tcp;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -44,50 +46,57 @@ import org.apache.geode.util.internal.GeodeGlossary;
 /**
  * <p>
  * MsgStreamer supports streaming a message to a tcp Connection in chunks. This allows us to send a
- * message without needing to perserialize it completely in memory thus saving buffer memory.
+ * message without needing to pre-serialize it completely in memory thus saving buffer memory.
  *
  * @since GemFire 5.0.2
  *
  */
-
 public class MsgStreamer extends OutputStream
     implements ObjToByteArraySerializer, BaseMsgStreamer, ByteBufferWriter {
 
   /**
    * List of connections to send this msg to.
    */
-  private final List<Connection> cons;
+  private final @NotNull List<Connection> connections;
 
   private final BufferPool bufferPool;
 
   /**
    * Any exceptions that happen during sends
    */
-  private ConnectExceptions ce;
+  private @Nullable ConnectExceptions connectExceptions;
+
   /**
    * The byte buffer we used for preparing a chunk of the message. Currently this buffer is obtained
    * from the connection.
    */
   private final ByteBuffer buffer;
+
   private int flushedBytes = 0;
-  // the message this streamer is to send
+
+  /**
+   * the message this streamer is to send
+   */
   private final DistributionMessage msg;
+
   /**
    * True if this message went out as a normal one (it fit it one chunk) False if this message
    * needed to be chunked.
    */
   private boolean normalMsg = false;
+
   /**
    * Set to true when we have started serializing a message. If this is true and doneWritingMsg is
    * false and we think we have finished writing the msg then we have a problem.
    */
   private boolean startedSerializingMsg = false;
+
   /**
    * Set to true after last byte of message has been written to this stream.
    */
   private boolean doneWritingMsg = false;
-  private final DMStats stats;
 
+  private final DMStats stats;
   private short msgId;
   private long serStartTime;
   private final boolean directReply;
@@ -102,22 +111,14 @@ public class MsgStreamer extends OutputStream
     bufferPool.releaseSenderBuffer(buffer);
   }
 
-  /**
-   * Returns an exception the describes which cons the message was not sent to. Call this after
-   * {@link #writeMessage}.
-   */
   @Override
-  public ConnectExceptions getConnectExceptions() {
-    return ce;
+  public @Nullable ConnectExceptions getConnectExceptions() {
+    return connectExceptions;
   }
 
-  /**
-   * Returns a list of the Connections that the message was sent to. Call this after
-   * {@link #writeMessage}.
-   */
   @Override
-  public List<?> getSentConnections() {
-    return cons;
+  public @NotNull List<@NotNull Connection> getSentConnections() {
+    return connections;
   }
 
   /**
@@ -126,11 +127,12 @@ public class MsgStreamer extends OutputStream
    * Note: This is no longer supposed to be called directly rather the {@link #create} method should
    * now be used.
    */
-  MsgStreamer(List<Connection> cons, DistributionMessage msg, boolean directReply, DMStats stats,
+  MsgStreamer(@NotNull List<Connection> connections, DistributionMessage msg, boolean directReply,
+      DMStats stats,
       int sendBufferSize, BufferPool bufferPool) {
     this.stats = stats;
     this.msg = msg;
-    this.cons = cons;
+    this.connections = connections;
     int bufferSize = Math.min(sendBufferSize, Connection.MAX_MSG_SIZE);
     buffer = bufferPool.acquireDirectSenderBuffer(bufferSize);
     buffer.clear();
@@ -149,38 +151,40 @@ public class MsgStreamer extends OutputStream
   public static BaseMsgStreamer create(List<Connection> cons, final DistributionMessage msg,
       final boolean directReply, final DMStats stats, BufferPool bufferPool) {
     final Connection firstCon = cons.get(0);
+
     // split into different versions if required
-    KnownVersion version;
     final int numCons = cons.size();
     if (numCons > 1) {
       Object2ObjectOpenHashMap<KnownVersion, List<Connection>> versionToConnMap = null;
       int numVersioned = 0;
-      for (Connection con : cons) {
-        version = con.getRemoteVersion();
-        if (version != null && KnownVersion.CURRENT_ORDINAL > version.ordinal()) {
+      for (final Connection connection : cons) {
+        final KnownVersion version = connection.getRemoteVersion();
+        if (version != null
+            && KnownVersion.CURRENT_ORDINAL > version.ordinal()) {
           if (versionToConnMap == null) {
             versionToConnMap = new Object2ObjectOpenHashMap<>();
           }
-          versionToConnMap.computeIfAbsent(version, k -> new ArrayList<>(numCons)).add(con);
+          versionToConnMap.computeIfAbsent(version, k -> new ArrayList<>(numCons)).add(connection);
           numVersioned++;
         }
       }
+
       if (versionToConnMap == null) {
         return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
             bufferPool);
       } else {
         // if there is a versioned stream created, then split remaining
         // connections to unversioned stream
-        final ArrayList<MsgStreamer> streamers = new ArrayList<>(versionToConnMap.size() + 1);
+        final List<MsgStreamer> streamers = new ArrayList<>(versionToConnMap.size() + 1);
         final int sendBufferSize = firstCon.getSendBufferSize();
         if (numCons > numVersioned) {
           // allocating list of numCons size so that as the result of
-          // getSentConnections it may not need to be reallocted later
+          // getSentConnections it may not need to be reallocated later
           final List<Connection> currentVersionConnections = new ArrayList<>(numCons);
-          for (Connection con : cons) {
-            version = con.getRemoteVersion();
+          for (Connection connection : cons) {
+            final KnownVersion version = connection.getRemoteVersion();
             if (version == null || version.ordinal() >= KnownVersion.CURRENT_ORDINAL) {
-              currentVersionConnections.add(con);
+              currentVersionConnections.add(connection);
             }
           }
           streamers.add(
@@ -190,34 +194,29 @@ public class MsgStreamer extends OutputStream
         for (ObjectIterator<Object2ObjectMap.Entry<KnownVersion, List<Connection>>> itr =
             versionToConnMap.object2ObjectEntrySet().fastIterator(); itr.hasNext();) {
           Object2ObjectMap.Entry<KnownVersion, List<Connection>> entry = itr.next();
-          KnownVersion ver = entry.getKey();
-          List<Connection> l = entry.getValue();
-          streamers.add(new VersionedMsgStreamer(l, msg, directReply, stats,
-              bufferPool, sendBufferSize, ver));
+          streamers.add(new VersionedMsgStreamer(entry.getValue(), msg, directReply, stats,
+              bufferPool, sendBufferSize, entry.getKey()));
         }
         return new MsgStreamerList(streamers);
       }
-    } else if ((version = firstCon.getRemoteVersion()) == null) {
-      return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
-          bufferPool);
     } else {
-      // create a single VersionedMsgStreamer
-      return new VersionedMsgStreamer(cons, msg, directReply, stats, bufferPool,
-          firstCon.getSendBufferSize(),
-          version);
+      final KnownVersion version = firstCon.getRemoteVersion();
+      if (null == version) {
+        return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
+            bufferPool);
+      } else {
+        return new VersionedMsgStreamer(cons, msg, directReply, stats, bufferPool,
+            firstCon.getSendBufferSize(), version);
+      }
     }
   }
 
-  /**
-   * set connections to be "in use" and schedule alert tasks
-   *
-   */
   @Override
   public void reserveConnections(long startTime, long ackTimeout, long ackSDTimeout) {
-    for (final Connection con : cons) {
-      con.setInUse(true, startTime, ackTimeout, ackSDTimeout, cons);
+    for (final Connection connection : connections) {
+      connection.setInUse(true, startTime, ackTimeout, ackSDTimeout, connections);
       if (ackTimeout > 0) {
-        con.scheduleAckTimeouts();
+        connection.scheduleAckTimeouts();
       }
     }
   }
@@ -226,13 +225,8 @@ public class MsgStreamer extends OutputStream
     serStartTime = stats.startMsgSerialization();
   }
 
-  /**
-   * @throws IOException if serialization failure
-   */
   @Override
   public int writeMessage() throws IOException {
-    // if (logger.isTraceEnabled()) logger.trace(this.msg);
-
     try {
       startedSerializingMsg = true;
       InternalDataSerializer.writeDSFID(msg, this);
@@ -248,11 +242,8 @@ public class MsgStreamer extends OutputStream
     }
   }
 
-  /** write the low-order 8 bits of the given int */
   @Override
   public void write(int b) {
-    // if (logger.isTraceEnabled()) logger.trace(" byte={}", b);
-
     ensureCapacity(1);
     if (overflowBuf != null) {
       overflowBuf.write(b);
@@ -313,26 +304,26 @@ public class MsgStreamer extends OutputStream
       conflationMsg = msg;
     }
     stats.endMsgSerialization(serStartTime);
-    for (Iterator<Connection> it = cons.iterator(); it.hasNext();) {
-      Connection con = it.next();
+    for (final Iterator<Connection> it = connections.iterator(); it.hasNext();) {
+      final Connection connection = it.next();
       try {
-        con.sendPreserialized(buffer,
+        connection.sendPreserialized(buffer,
             lastFlushForMessage && msg.containsRegionContentChange(), conflationMsg);
       } catch (IOException ex) {
         it.remove();
-        if (ce == null) {
-          ce = new ConnectExceptions();
+        if (connectExceptions == null) {
+          connectExceptions = new ConnectExceptions();
         }
-        ce.addFailure(con.getRemoteAddress(), ex);
-        con.closeForReconnect(
+        connectExceptions.addFailure(connection.getRemoteAddress(), ex);
+        connection.closeForReconnect(
             String.format("closing due to %s", "IOException"));
       } catch (ConnectionException ex) {
         it.remove();
-        if (ce == null) {
-          ce = new ConnectExceptions();
+        if (connectExceptions == null) {
+          connectExceptions = new ConnectExceptions();
         }
-        ce.addFailure(con.getRemoteAddress(), ex);
-        con.closeForReconnect(
+        connectExceptions.addFailure(connection.getRemoteAddress(), ex);
+        connection.closeForReconnect(
             String.format("closing due to %s", "ConnectionException"));
       }
       buffer.rewind();
@@ -351,11 +342,11 @@ public class MsgStreamer extends OutputStream
   public void close() throws IOException {
     try {
       if (startedSerializingMsg && !doneWritingMsg) {
-        // if we wrote any bytes on the cnxs then we need to close them
+        // if we wrote any bytes on the connections then we need to close them
         // since they have been corrupted by a partial serialization.
         if (flushedBytes > 0) {
-          for (Connection con : cons) {
-            con.closeForReconnect("Message serialization could not complete");
+          for (final Connection connection : connections) {
+            connection.closeForReconnect("Message serialization could not complete");
           }
         }
       }
@@ -513,7 +504,7 @@ public class MsgStreamer extends OutputStream
   }
 
   /**
-   * Writes a <code>char</code> value, wich is comprised of two bytes, to the output stream. The
+   * Writes a <code>char</code> value, which is comprised of two bytes, to the output stream. The
    * byte values to be written, in the order shown, are:
    * <p>
    *
@@ -666,7 +657,7 @@ public class MsgStreamer extends OutputStream
    * @param str the string of bytes to be written.
    */
   @Override
-  public void writeBytes(@NotNull String str) {
+  public void writeBytes(final @NotNull String str) {
     // if (logger.isTraceEnabled()) logger.trace(" bytes={}", str);
 
     if (overflowBuf != null) {
@@ -692,7 +683,7 @@ public class MsgStreamer extends OutputStream
    * @param s the string value to be written.
    */
   @Override
-  public void writeChars(@NotNull String s) {
+  public void writeChars(final @NotNull String s) {
     // if (logger.isTraceEnabled()) logger.trace(" chars={}", s);
 
     if (overflowBuf != null) {
@@ -919,21 +910,19 @@ public class MsgStreamer extends OutputStream
       return;
     }
     if (isOverflowMode()) {
-      // we must have recursed which is now allowed to fix bug 38194
+      // we must have recursed
       int remainingSpace = buffer.capacity() - buffer.position();
       if (remainingSpace < 5) {
-        // we don't even have room to write the length field so just create
-        // the overflowBuf
+        // we don't even have room to write the length field so just create the overflowBuf
         overflowBuf = new HeapDataOutputStream(
             buffer.capacity() - Connection.MSG_HEADER_BYTES, KnownVersion.CURRENT);
         overflowBuf.writeAsSerializedByteArray(v);
         return;
       }
     } else {
-      ensureCapacity(5 + 1024); /*
-                                 * need 5 bytes for length plus enough room for an 'average' small
-                                 * object. I pulled 1024 as the average out of thin air.
-                                 */
+      // need 5 bytes for length plus enough room for an 'average' small object. I pulled 1024 as
+      // the average out of thin air.
+      ensureCapacity(5 + 1024);
     }
     int lengthPos = buffer.position();
     buffer.position(lengthPos + 5);
