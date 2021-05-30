@@ -219,17 +219,22 @@ public abstract class SessionDUnitTest {
   }
 
   void addNoteToSession(int sessionApp, String sessionCookie, String note) {
+    try {
+      addNoteToSession0(sessionApp, sessionCookie, note);
+    } catch (Exception exception) {
+      addNoteToSession0(sessionApp, sessionCookie, note);
+    }
+  }
+
+  private void addNoteToSession0(int sessionApp, String sessionCookie, String note) {
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionCookie);
     List<String> notes = new ArrayList<>();
     Collections.addAll(notes, getSessionNotes(sessionApp, sessionCookie));
     HttpEntity<String> request = new HttpEntity<>(note, requestHeaders);
-    new RestTemplate()
-        .postForEntity(
-            "http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
-            request,
-            String.class)
-        .getHeaders();
+    new RestTemplate().postForEntity(
+        "http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
+        request, String.class);
   }
 
   protected String getSessionId(String sessionCookie) {
