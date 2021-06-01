@@ -477,6 +477,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     runCommandAndAssertNoStatUpdates("sortedSet", (k, v) -> jedis.zrem(k, v));
   }
 
+  @Test
+  public void testZcard() {
+    runCommandAndAssertHitsAndMisses("sortedSet", k -> jedis.zcard(k));
+  }
+
 
   // ------------ Helper Methods -----------
 
