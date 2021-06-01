@@ -434,10 +434,6 @@ public class ConnectionTable {
     if (m == null) {
       // First time for this thread. Create thread local
       m = new HashMap();
-      if (closed) {
-        owner.getCancelCriterion().checkCancelInProgress(null);
-        throw new DistributedSystemDisconnectedException("Connection table is closed");
-      }
       threadOrderedConnMap.set(m);
     } else {
       // No need to sync map since it is only referenced by ThreadLocal.
