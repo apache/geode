@@ -130,28 +130,27 @@ public class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<
     // This formula determined experimentally using tests
     return BACKING_ARRAY_OVERHEAD_CONSTANT + (BACKING_ARRAY_LENGTH_COEFFICIENT * key.length);
   }
+
   // To calculate the overhead associated with adding a new element, a fixed value related to the
   // array header bytes, size and type information is added, then the total size in bytes of the
-
   // array is calculated based on the type (a byte is 1 byte, a short is 2 bytes, int is 4 bytes
   // etc.) and then rounded up to the nearest multiple of 8, as arrays are padded to a multiple of 8
-
   @VisibleForTesting
   static int getElementSize(Object o) {
     if (o instanceof byte[]) {
       return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((byte[]) o).length));
     }
     if (o instanceof short[]) {
-      return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((short[]) o).length * 2));
+      return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((short[]) o).length * 2L));
     }
     if (o instanceof char[]) {
-      return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((char[]) o).length * 2));
+      return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((char[]) o).length * 2L));
     }
     if (o instanceof int[]) {
-      return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((int[]) o).length * 4));
+      return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((int[]) o).length * 4L));
     }
     if (o instanceof float[]) {
-      return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((float[]) o).length * 4));
+      return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((float[]) o).length * 4L));
     }
     // long and double are always a multiple of 8, so no need to attempt to round them
     if (o instanceof long[]) {
