@@ -51,7 +51,7 @@ public class RenameDUnitTest {
   private static final String LOCAL_HOST = "127.0.0.1";
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private ExecutorService pool = Executors.newCachedThreadPool();
+  private final ExecutorService pool = Executors.newCachedThreadPool();
 
   private static JedisCluster jedisCluster;
   private static MemberVM locator;

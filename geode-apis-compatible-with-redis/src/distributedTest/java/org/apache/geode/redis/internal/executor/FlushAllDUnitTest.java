@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -66,13 +67,16 @@ public class FlushAllDUnitTest {
     jedis2.close();
   }
 
-  @Test
-  public void flushAllOnlyDeletesOnOneMember() {
+  @Before
+  public void setup() {
     int ENTRIES = 1000;
     for (int i = 0; i < ENTRIES; i++) {
       jedisCluster.set("key-" + i, "value-" + i);
     }
+  }
 
+  @Test
+  public void flushAllOnlyDeletesOnOneMember() {
     jedis1.flushAll();
 
     int keysRemaining = keyCount();
@@ -85,6 +89,13 @@ public class FlushAllDUnitTest {
     keysRemaining = keyCount();
 
     assertThat(keysRemaining).isEqualTo(0);
+  }
+
+  @Test
+  public void redisClusterStartupRule_flushAll_works() {
+    cluster.flushAll();
+
+    assertThat(keyCount()).isEqualTo(0);
   }
 
   private int keyCount() {
