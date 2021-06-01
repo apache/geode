@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 
 import static org.apache.geode.redis.internal.RedisCommandType.ZADD;
+import static org.apache.geode.redis.internal.RedisCommandType.ZCARD;
 import static org.apache.geode.redis.internal.RedisCommandType.ZREM;
 import static org.apache.geode.redis.internal.RedisCommandType.ZSCORE;
 
@@ -54,4 +55,10 @@ public class RedisSortedSetCommandsFunctionInvoker extends RedisCommandsFunction
   public long zrem(RedisKey key, List<byte[]> membersToRemove) {
     return invokeCommandFunction(key, ZREM, membersToRemove);
   }
+
+  @Override
+  public long zcard(RedisKey key) {
+    return invokeCommandFunction(key, ZCARD);
+  }
+
 }

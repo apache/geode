@@ -27,4 +27,6 @@ public interface RedisSortedSetCommands {
   byte[] zscore(RedisKey key, byte[] member);
 
   long zrem(RedisKey key, List<byte[]> membersToRemove);
+
+  long zcard(RedisKey key);
 }

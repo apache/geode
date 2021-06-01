@@ -12,20 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.set;
+package org.apache.geode.redis.internal.executor.sortedset;
 
+import org.junit.ClassRule;
 
-import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class SCardExecutor extends SetExecutor {
+public class ZCardIntegrationTest extends AbstractZCardIntegrationTest {
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisKey key = command.getKey();
-    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
-    return RedisResponse.integer(redisSetCommands.scard(key));
+  public int getPort() {
+    return server.getPort();
   }
+
 }

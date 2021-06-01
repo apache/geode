@@ -66,7 +66,7 @@ resources:
 jobs:
 - name: stop-instance
   plan:
-  - aggregate:
+  - in_parallel:
     - get: google-cloud-sdk-image
     - get: stoppable-instance
       version: every
@@ -86,7 +86,7 @@ jobs:
 
 - name: delete-instance
   plan:
-  - aggregate:
+  - in_parallel:
     - get: google-cloud-sdk-image
     - get: deletable-instance
       version: every
@@ -106,7 +106,7 @@ jobs:
 
 - name: reap-benchmark-instances
   plan:
-  - aggregate:
+  - in_parallel:
     - get: alpine-tools-image
     - get: four-times-a-day
       trigger: true

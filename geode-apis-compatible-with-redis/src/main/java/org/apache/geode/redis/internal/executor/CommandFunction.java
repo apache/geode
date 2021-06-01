@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.executor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -26,7 +25,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.redis.internal.RedisCommandType;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.CommandHelper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisHashCommandsFunctionExecutor;
@@ -184,11 +182,11 @@ public class CommandFunction extends SingleResultRedisFunction {
         return stringCommands.decrby(key, decrement);
       }
       case SADD: {
-        ArrayList<ByteArrayWrapper> membersToAdd = (ArrayList<ByteArrayWrapper>) args[1];
+        List<byte[]> membersToAdd = (List<byte[]>) args[1];
         return setCommands.sadd(key, membersToAdd);
       }
       case SREM: {
-        ArrayList<ByteArrayWrapper> membersToRemove = (ArrayList<ByteArrayWrapper>) args[1];
+        List<byte[]> membersToRemove = (List<byte[]>) args[1];
         return setCommands.srem(key, membersToRemove);
       }
       case SMEMBERS:
@@ -198,7 +196,7 @@ public class CommandFunction extends SingleResultRedisFunction {
       case SCARD:
         return setCommands.scard(key);
       case SISMEMBER: {
-        ByteArrayWrapper member = (ByteArrayWrapper) args[1];
+        byte[] member = (byte[]) args[1];
         return setCommands.sismember(key, member);
       }
       case SRANDMEMBER: {
@@ -216,15 +214,15 @@ public class CommandFunction extends SingleResultRedisFunction {
         return setCommands.sscan(key, matchPattern, count, cursor);
       }
       case SUNIONSTORE: {
-        ArrayList<RedisKey> setKeys = (ArrayList<RedisKey>) args[1];
+        List<RedisKey> setKeys = (List<RedisKey>) args[1];
         return setCommands.sunionstore(key, setKeys);
       }
       case SINTERSTORE: {
-        ArrayList<RedisKey> setKeys = (ArrayList<RedisKey>) args[1];
+        List<RedisKey> setKeys = (List<RedisKey>) args[1];
         return setCommands.sinterstore(key, setKeys);
       }
       case SDIFFSTORE: {
-        ArrayList<RedisKey> setKeys = (ArrayList<RedisKey>) args[1];
+        List<RedisKey> setKeys = (List<RedisKey>) args[1];
         return setCommands.sdiffstore(key, setKeys);
       }
       case HSET: {
@@ -284,9 +282,14 @@ public class CommandFunction extends SingleResultRedisFunction {
         byte[] member = (byte[]) args[1];
         return sortedSetCommands.zscore(key, member);
       }
+
       case ZREM: {
         List<byte[]> membersToRemove = (List<byte[]>) args[1];
         return sortedSetCommands.zrem(key, membersToRemove);
+      }
+      case ZCARD: {
+        return sortedSetCommands.zcard(key);
+
       }
       default:
         throw new UnsupportedOperationException(ID + " does not yet support " + command);
