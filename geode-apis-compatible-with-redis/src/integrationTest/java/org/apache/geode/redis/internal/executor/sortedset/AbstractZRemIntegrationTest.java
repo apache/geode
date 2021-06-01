@@ -123,27 +123,22 @@ public abstract class AbstractZRemIntegrationTest implements RedisIntegrationTes
     jedis.zadd(SORTED_SET_KEY, map);
 
     AtomicInteger totalRemoved = new AtomicInteger();
-    new ConcurrentLoopingThreads(2,
-        (i) -> doZRemOnAllKeysInMap(map, totalRemoved),
-        (i) -> doZRemOnDifferentMembers(membersCount, totalRemoved)).run();
+    new ConcurrentLoopingThreads(membersCount,
+        (i) -> doZRemOnMembers(i, totalRemoved),
+        (i) -> doZRemOnMembersInDifferentOrder(i, membersCount, totalRemoved)).run();
 
     assertThat(totalRemoved.get()).isEqualTo(membersCount);
     assertThat(jedis.exists(SORTED_SET_KEY)).isFalse();
   }
 
-  private void doZRemOnAllKeysInMap(Map<String, Double> map, AtomicInteger total) {
-    Set<String> keys = map.keySet();
-    for (String key : keys) {
-      long count = jedis.zrem(SORTED_SET_KEY, key);
-      total.addAndGet((int) count);
-    }
+  private void doZRemOnMembers(int i, AtomicInteger total) {
+    long count = jedis.zrem(SORTED_SET_KEY, baseName + i);
+    total.addAndGet((int) count);
   }
 
-  private void doZRemOnDifferentMembers(int numToRemove, AtomicInteger total) {
-    for (int i = 0; i < numToRemove; i++) {
-      long count = jedis.zrem(SORTED_SET_KEY, baseName + i);
-      total.addAndGet((int) count);
-    }
+  private void doZRemOnMembersInDifferentOrder(int i, int numToRemove, AtomicInteger total) {
+    long count = jedis.zrem(SORTED_SET_KEY, baseName + (numToRemove - i - 1));
+    total.addAndGet((int) count);
   }
 
   private Map<String, Double> makeMemberScoreMap(int membersCount) {

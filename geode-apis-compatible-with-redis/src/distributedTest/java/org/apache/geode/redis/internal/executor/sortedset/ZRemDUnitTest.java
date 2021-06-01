@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -113,27 +112,22 @@ public class ZRemDUnitTest implements Serializable {
     verifyDataExists(memberScoreMap);
 
     AtomicInteger totalRemoved = new AtomicInteger();
-    new ConcurrentLoopingThreads(2,
-        (i) -> doZRemOnAllKeysInMap(memberScoreMap, totalRemoved),
-        (i) -> doZRemOnAllMembers(totalRemoved)).run();
+    new ConcurrentLoopingThreads(setSize,
+        (i) -> doZRemOnMembers(i, totalRemoved),
+        (i) -> doZRemOnMembersInDifferentOrder(i, totalRemoved)).run();
 
     assertThat(totalRemoved.get()).isEqualTo(setSize);
     assertThat(jedis.exists(sortedSetKey)).isFalse();
   }
 
-  private void doZRemOnAllKeysInMap(Map<String, Double> map, AtomicInteger total) {
-    Set<String> keys = map.keySet();
-    for (String key : keys) {
-      long count = jedis.zrem(sortedSetKey, key);
-      total.addAndGet((int) count);
-    }
+  private void doZRemOnMembers(int i, AtomicInteger total) {
+    long count = jedis.zrem(sortedSetKey, baseName + i);
+    total.addAndGet((int) count);
   }
 
-  private void doZRemOnAllMembers(AtomicInteger total) {
-    for (int i = 0; i < setSize; i++) {
-      long count = jedis.zrem(sortedSetKey, baseName + i);
-      total.addAndGet((int) count);
-    }
+  private void doZRemOnMembersInDifferentOrder(int i, AtomicInteger total) {
+    long count = jedis.zrem(sortedSetKey, baseName + (setSize - i - 1));
+    total.addAndGet((int) count);
   }
 
   @Test
