@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 
 import java.util.Arrays;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.AfterClass;
@@ -65,7 +64,6 @@ public class OutOfMemoryDUnitTest {
   private static MemberVM server2;
 
   private static Thread memoryPressureThread;
-  private static int redisServerPort1;
 
   @BeforeClass
   public static void classSetup() {
@@ -73,16 +71,15 @@ public class OutOfMemoryDUnitTest {
 
     MemberVM locator = clusterStartUp.startLocatorVM(0);
 
-    Properties serverProperties = new Properties();
-    server1 = clusterStartUp.startRedisVM(1, serverProperties, locator.getPort());
-    server2 = clusterStartUp.startRedisVM(2, serverProperties, locator.getPort());
+    server1 = clusterStartUp.startRedisVM(1, locator.getPort());
+    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
 
     server1.getVM().invoke(() -> RedisClusterStartupRule.getCache().getResourceManager()
         .setCriticalHeapPercentage(5.0F));
     server2.getVM().invoke(() -> RedisClusterStartupRule.getCache().getResourceManager()
         .setCriticalHeapPercentage(5.0F));
 
-    redisServerPort1 = clusterStartUp.getRedisPort(1);
+    int redisServerPort1 = clusterStartUp.getRedisPort(1);
     int redisServerPort2 = clusterStartUp.getRedisPort(2);
 
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
@@ -91,7 +88,7 @@ public class OutOfMemoryDUnitTest {
 
   @Before
   public void testSetup() {
-    clusterStartUp.flushAll(redisServerPort1);
+    clusterStartUp.flushAll();
   }
 
   @AfterClass

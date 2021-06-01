@@ -14,13 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
@@ -57,29 +54,23 @@ public class RenameDUnitTest {
   private ExecutorService pool = Executors.newCachedThreadPool();
 
   private static JedisCluster jedisCluster;
-  private static Properties locatorProperties;
   private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
-  private static int redisServerPort1;
 
   @BeforeClass
   public static void setup() {
-    locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
-
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    locator = clusterStartUp.startLocatorVM(0);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
 
-    redisServerPort1 = clusterStartUp.getRedisPort(1);
-
+    int redisServerPort1 = clusterStartUp.getRedisPort(1);
     jedisCluster = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort1), JEDIS_TIMEOUT);
   }
 
   @Before
   public void testSetup() {
-    clusterStartUp.flushAll(redisServerPort1);
+    clusterStartUp.flushAll();
   }
 
   @AfterClass

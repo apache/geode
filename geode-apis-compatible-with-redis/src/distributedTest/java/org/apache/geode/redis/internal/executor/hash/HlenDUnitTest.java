@@ -93,7 +93,7 @@ public class HlenDUnitTest {
 
   @Before
   public void testSetup() {
-    cluster.flushAll(redisPorts[0]);
+    cluster.flushAll();
   }
 
   @AfterClass

@@ -41,7 +41,6 @@ public class HstrlenDUnitTest {
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static JedisCluster jedis;
-  private static int redisServerPort;
 
   @BeforeClass
   public static void classSetup() {
@@ -49,14 +48,13 @@ public class HstrlenDUnitTest {
     clusterStartUp.startRedisVM(1, locator.getPort());
     clusterStartUp.startRedisVM(2, locator.getPort());
 
-    redisServerPort = clusterStartUp.getRedisPort(1);
-
+    int redisServerPort = clusterStartUp.getRedisPort(1);
     jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
   }
 
   @Before
   public void testSetup() {
-    clusterStartUp.flushAll(redisServerPort);
+    clusterStartUp.flushAll();
   }
 
   @AfterClass

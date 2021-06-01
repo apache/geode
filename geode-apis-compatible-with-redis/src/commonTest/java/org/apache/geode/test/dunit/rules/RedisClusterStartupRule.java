@@ -111,7 +111,11 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
     });
   }
 
-  public void flushAll(int redisPort) {
+  public void flushAll() {
+    flushAll(getRedisPort(1));
+  }
+
+  private void flushAll(int redisPort) {
     ClusterNodes nodes;
     try (Jedis jedis = new Jedis("localhost", redisPort, REDIS_CLIENT_TIMEOUT)) {
       nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes());

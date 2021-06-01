@@ -17,11 +17,7 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -52,18 +48,14 @@ public class PartitionedRegionStatsUpdateTest {
   private static final String HASH_KEY = "hash key";
   private static final String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
   private static final String FIELD = "field";
-  private static int redisServerPort1;
 
   @BeforeClass
   public static void classSetup() {
-    Properties locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
-
-    MemberVM locator = clusterStartUpRule.startLocatorVM(0, locatorProperties);
+    MemberVM locator = clusterStartUpRule.startLocatorVM(0);
     int locatorPort = locator.getPort();
 
     server1 = clusterStartUpRule.startRedisVM(1, locatorPort);
-    redisServerPort1 = clusterStartUpRule.getRedisPort(1);
+    int redisServerPort1 = clusterStartUpRule.getRedisPort(1);
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
 
     server2 = clusterStartUpRule.startRedisVM(2, locatorPort);
@@ -73,7 +65,7 @@ public class PartitionedRegionStatsUpdateTest {
 
   @Before
   public void setup() {
-    clusterStartUpRule.flushAll(redisServerPort1);
+    clusterStartUpRule.flushAll();
   }
 
   @Test
@@ -134,7 +126,7 @@ public class PartitionedRegionStatsUpdateTest {
 
     jedis1.set(STRING_KEY, "value");
 
-    clusterStartUpRule.flushAll(redisServerPort1);
+    clusterStartUpRule.flushAll();
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
 

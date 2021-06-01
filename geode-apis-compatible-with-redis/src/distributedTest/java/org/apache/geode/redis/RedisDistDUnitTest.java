@@ -101,7 +101,7 @@ public class RedisDistDUnitTest implements Serializable {
 
   @After
   public void cleanup() {
-    cluster.flushAll(server1Port);
+    cluster.flushAll();
   }
 
   @Test

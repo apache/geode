@@ -16,13 +16,11 @@
 package org.apache.geode.redis.session;
 
 import static java.util.Collections.singletonMap;
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -75,10 +73,7 @@ public class SessionsAndCrashesDUnitTest {
 
   @BeforeClass
   public static void classSetup() {
-    Properties locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
-
-    locator = cluster.startLocatorVM(0, locatorProperties);
+    locator = cluster.startLocatorVM(0);
 
     server1 = startRedisVM(1, 0);
     server2 = startRedisVM(2, 0);
@@ -120,7 +115,7 @@ public class SessionsAndCrashesDUnitTest {
   @After
   public void teardown() {
     springContext.stop();
-    cluster.flushAll(redisPorts[0]);
+    cluster.flushAll();
     sessionIds.clear();
   }
 

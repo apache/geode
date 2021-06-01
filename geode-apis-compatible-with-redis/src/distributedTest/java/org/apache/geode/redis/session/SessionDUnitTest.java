@@ -133,7 +133,7 @@ public abstract class SessionDUnitTest {
   @After
   public void cleanupAfterTest() {
     GeodeAwaitility.await().ignoreExceptions()
-        .untilAsserted(() -> cluster.flushAll(ports.get(SERVER1)));
+        .untilAsserted(() -> cluster.flushAll());
 
     try {
       redisClient.shutdown();
