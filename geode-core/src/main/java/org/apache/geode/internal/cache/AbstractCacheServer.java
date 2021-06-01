@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
@@ -43,6 +44,11 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   public static final String TEST_OVERRIDE_DEFAULT_PORT_PROPERTY =
       GeodeGlossary.GEMFIRE_PREFIX + "test.CacheServer.OVERRIDE_DEFAULT_PORT";
+
+  /** System property to override maximumTimeBetweenPings millis in tests */
+  @VisibleForTesting
+  public static final String MAXIMUM_TIME_BETWEEN_PINGS_PROPERTY =
+      GeodeGlossary.GEMFIRE_PREFIX + "test.CacheServer.MAXIMUM_TIME_BETWEEN_PINGS";
 
   /** The cache that is served by this cache server */
   protected final InternalCache cache;
@@ -136,7 +142,8 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
     this.maxThreads = CacheServer.DEFAULT_MAX_THREADS;
     this.socketBufferSize = CacheServer.DEFAULT_SOCKET_BUFFER_SIZE;
     this.tcpNoDelay = CacheServer.DEFAULT_TCP_NO_DELAY;
-    this.maximumTimeBetweenPings = CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS;
+    this.maximumTimeBetweenPings = Integer.getInteger(MAXIMUM_TIME_BETWEEN_PINGS_PROPERTY,
+        CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS);
     this.maximumMessageCount = CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT;
     this.messageTimeToLive = CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
     this.groups = CacheServer.DEFAULT_GROUPS;
