@@ -197,9 +197,9 @@ public enum RedisCommandType {
   /************ Sorted Sets **************/
 
   ZADD(new ZAddExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
-  ZSCORE(new ZScoreExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  ZREM(new ZRemExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
   ZCARD(new ZCardExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  ZREM(new ZRemExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
+  ZSCORE(new ZScoreExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
 
   /************* Server *****************/
   SLOWLOG(new SlowlogExecutor(), SUPPORTED, new SlowlogParameterRequirements()),
