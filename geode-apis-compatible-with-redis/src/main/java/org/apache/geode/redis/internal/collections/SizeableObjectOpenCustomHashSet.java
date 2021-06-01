@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.collections;
 
+import static org.apache.geode.internal.size.ReflectionSingleObjectSizer.roundUpSize;
+
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -137,19 +139,19 @@ public class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<
   @VisibleForTesting
   static int getElementSize(Object o) {
     if (o instanceof byte[]) {
-      return MEMBER_OVERHEAD_CONSTANT + roundToMultipleOfEight(((byte[]) o).length);
+      return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((byte[]) o).length));
     }
     if (o instanceof short[]) {
-      return MEMBER_OVERHEAD_CONSTANT + roundToMultipleOfEight(((short[]) o).length * 2);
+      return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((short[]) o).length * 2));
     }
     if (o instanceof char[]) {
-      return MEMBER_OVERHEAD_CONSTANT + roundToMultipleOfEight(((char[]) o).length * 2);
+      return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((char[]) o).length * 2));
     }
     if (o instanceof int[]) {
-      return MEMBER_OVERHEAD_CONSTANT + roundToMultipleOfEight(((int[]) o).length * 4);
+      return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((int[]) o).length * 4));
     }
     if (o instanceof float[]) {
-      return MEMBER_OVERHEAD_CONSTANT + roundToMultipleOfEight(((float[]) o).length * 4);
+      return (int) (MEMBER_OVERHEAD_CONSTANT + roundUpSize(((float[]) o).length * 4));
     }
     // long and double are always a multiple of 8, so no need to attempt to round them
     if (o instanceof long[]) {
@@ -161,9 +163,5 @@ public class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<
     // If we get here, we can't figure out the size without using more expensive operations, so just
     // give up
     return 0;
-  }
-
-  private static int roundToMultipleOfEight(int arraySize) {
-    return ((arraySize + 7) / 8) * 8;
   }
 }
