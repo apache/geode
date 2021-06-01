@@ -16,11 +16,17 @@ Apache Geode provides the full source for the Apache Geode User Guide in markdow
 
 Bookbinder is a Ruby gem (available at [rubygems.org](https://rubygems.org/gems/bookbindery/) ) that binds a unified documentation web application from markdown, html, and/or DITA source material. The source material for Bookbinder must be stored either in local directories or in GitHub repositories. Bookbinder runs [Middleman](http://middlemanapp.com/) to produce a Rackup app that can be deployed locally or as a web application.
 
-## Automatic build
+## Preview the User Guide
 
-Documentation can be built and previewed using the utility scripts at [dev-tools/docker/docs](https://github.com/apache/geode/tree/develop/dev-tools/docker/docs). These scripts use Docker, removing the requirement of installing Ruby and Bookbinder. They are based on the instructions described in the [Manual build](#manual-build) chapter.
+Documentation can be built and previewed using the utility script at `{geode-project-dir}/dev-tools/docker/docs`. This script uses a Docker image that provides the tools to build and view the guide, including Ruby, Bookbinder, and Rackup.
 
-## Manual build
+```bash
+$ cd {geode-project-dir}/dev-tools/docker/docs
+$ ./preview-user-guide.sh
+```
+In a browser, navigate to `http://localhost:9292` to view the user guide.
+
+## Build the User Guide
 
 ### Prerequisites
 
@@ -38,6 +44,7 @@ For Geode, a preconfigured **book** is provided in the directory `{geode-project
 1. The GemFile in the `geode-book` directory already defines the `gem "bookbindery"` dependency. Make sure you are in the `{geode-project-dir}/geode-book` directory and enter:
 
     ```
+    $ cd {geode-project-dir}/geode-book
     $ bundle install
     ```
 
@@ -53,9 +60,10 @@ For Geode, a preconfigured **book** is provided in the directory `{geode-project
    Bookbinder converts the markdown source into HTML, which it puts in the `final_app` directory.
 
 
-3. To start a local website of the Apache Geode User Guide, navigate to `{geode-project-dir}/geode-book/final_app/` and enter:
+3. To start a local website of the Apache Geode User Guide, you have to execute Rackup from the `final_app` directory:
 
     ```
+    $ cd {geode-project-dir}/geode-book/final_app
     $ bundle exec rackup
     ```
 
@@ -65,35 +73,4 @@ For Geode, a preconfigured **book** is provided in the directory `{geode-project
 
 Once you have reviewed your local build of the User Guide, you can publish it by copying it to the Apache Geode website. The target directory should contain a Geode version number.
 
-To copy the User Guide to the website repo:
-
-1. Create the destination directory by navigating to the geode-site repo. Check out the *master* branch and create a destination directory for the User Guide. The naming convention is:
-
-    ```
-    {geode-site}/website/content/docs/guide/XY
-    ```
-where `XY` is the product version of your documentation (e.g., `{geode-site}/website/content/docs/guide/113` if you are publishing the documentation for Apache Geode 1.13).
-
-2. Navigate to the User Guide you have built in the Geode repository: `{geode-project-dir}/geode-book/final_app/public/docs/guide/XY`.
-
-3. Use `tar` to copy the directory in order to preserve links and other filesystem niceties.
-
-  a. Create the tarfile in your Desktop for easy access on the retrieval side.
-
-    ```
-    $ tar cvf ~/Desktop/new-guide-content.tar .
-    ```
-  b. Create the destination directory in the `geode-site` repo:
-
-    ```
-    $ mkdir -p {geode-site}/website/content/docs/guide/XY
-    ```
-
-  c. Navigate to the target directory and un-tar the user guide archive:
-
-    ```
-    $ cd {geode-site}/website/content/docs/guide/XY
-    $ tar xvf ~/Desktop/new-guide-content.tar
-    ```
-
-4. Follow the instructions in the `README.md` file on the *master* branch of the geode-site repo (`{geode-site}/README.md`) to build, review, and publish the Apache Geode website. You can also view the geode-site `README.md` file on [github: https://github.com/apache/geode-site](https://github.com/apache/geode-site).
+To copy the User Guide to the website repo, follow the instructions in the `README.md` file on the *master* branch of the geode-site repo ([github: https://github.com/apache/geode-site](https://github.com/apache/geode-site)) under the topic **Add a new user guide**.
