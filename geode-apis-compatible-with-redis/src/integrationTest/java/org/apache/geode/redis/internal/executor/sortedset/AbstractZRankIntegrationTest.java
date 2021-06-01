@@ -19,8 +19,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -90,14 +88,14 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     // get the ranks of the members
     Iterator<String> membersIterator = map.keySet().iterator();
     String[] members = new String[10];
-    while(membersIterator.hasNext()) {
+    while (membersIterator.hasNext()) {
       String memberName = membersIterator.next();
       long rank = jedis.zrank("key", memberName);
       members[(int) rank] = memberName;
     }
 
     Double previousScore = Double.NEGATIVE_INFINITY;
-    for (int i=0; i<ENTRY_COUNT; i++) {
+    for (int i = 0; i < ENTRY_COUNT; i++) {
       Double score = jedis.zscore("key", members[i]);
       assertThat(score).isGreaterThanOrEqualTo(previousScore);
       previousScore = score;
@@ -113,7 +111,7 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     Iterator<String> membersIterator = map.keySet().iterator();
     Map<Long, byte[]> rankMap = new HashMap<>();
     List<byte[]> memberList = new ArrayList<>();
-    while(membersIterator.hasNext()) {
+    while (membersIterator.hasNext()) {
       String memberName = membersIterator.next();
       long rank = jedis.zrank("key", memberName);
       rankMap.put(rank, memberName.getBytes(StandardCharsets.UTF_8));
@@ -123,8 +121,55 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     memberList.sort(new byteArrayComparator());
 
     for (int i = 0; i < 10; i++) {
-      assertThat(rankMap.get((long)i)).isEqualTo(memberList.get(i));
+      assertThat(rankMap.get((long) i)).isEqualTo(memberList.get(i));
     }
+  }
+
+  @Test
+  public void zrankSorts_byBothScoreAndLexical() {
+    Map<String, Double> memberScoreMap = makeMemberScoreMap_withVariedScores_andADuplicate();
+    Map<Long, String> rankMap = makeRankToMemberMap_withExpectedRankings();
+
+    jedis.zadd("key", memberScoreMap);
+
+    for (long i = 0; i < rankMap.size(); i++) {
+      assertThat(i).isEqualTo(jedis.zrank("key", rankMap.get(i)));
+    }
+  }
+
+  private Map<String, Double> makeMemberScoreMap_withVariedScores_andADuplicate() {
+    Map<String, Double> map = new HashMap<>();
+
+    map.put("equal-a", 1.0);
+    map.put("equal-b", 1.0);
+    map.put("changed", 0.0);
+    map.put("posInfy", Double.POSITIVE_INFINITY);
+    map.put("negInfy", Double.NEGATIVE_INFINITY);
+    map.put("minus", -1000.5);
+    map.put("maxy", Double.MAX_VALUE);
+    map.put("minnie", Double.MIN_VALUE);
+    map.put("zed", 0.0);
+    map.put("zero", 0.0);
+    map.put("changed", 100.0);
+
+    return map;
+  }
+
+  private Map<Long, String> makeRankToMemberMap_withExpectedRankings() {
+    Map<Long, String> map = new HashMap<>();
+
+    map.put(0L, "negInfy");
+    map.put(1L, "minus");
+    map.put(2L, "zed");
+    map.put(3L, "zero");
+    map.put(4L, "minnie");
+    map.put(5L, "equal-a");
+    map.put(6L, "equal-b");
+    map.put(7L, "changed");
+    map.put(8L, "maxy");
+    map.put(9L, "posInfy");
+
+    return map;
   }
 
   private static class byteArrayComparator implements Comparator<byte[]> {

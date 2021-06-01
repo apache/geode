@@ -390,27 +390,31 @@ public class RedisSortedSet extends AbstractRedisData {
     public int compareTo(Object o) {
       int comparison = score.compareTo(((OrderedSetEntry) o).score);
       if (comparison == 0) {
-        // Scores equal, try lexical ordering
-        byte[] otherMember = ((OrderedSetEntry) o).member;
-        int shortestLength = Math.min(member.length, otherMember.length);
-        for (int i = 0; i < shortestLength; i++) {
-          int thisByte = Byte.toUnsignedInt(member[i]);
-          int otherByte = Byte.toUnsignedInt(otherMember[i]);
-          int localComp = thisByte - otherByte;
-          if (localComp != 0) {
-            return localComp;
-          }
-        }
-        // shorter array whose items are all equal to the first items of a longer array is
-        // considered 'less than'
-        if (member.length < otherMember.length) {
-          return -1; // member < other
-        } else if (member.length > otherMember.length) {
-          return 1; // other < member
-        }
-        return 0; // totally equal - should never happen...
+        return javaImplementationOfAnsiCMemCmp((OrderedSetEntry) o);
       }
       return comparison;
+    }
+
+    private int javaImplementationOfAnsiCMemCmp(OrderedSetEntry o) {
+      // Scores equal, try lexical ordering
+      byte[] otherMember = o.member;
+      int shortestLength = Math.min(member.length, otherMember.length);
+      for (int i = 0; i < shortestLength; i++) {
+        int thisByte = Byte.toUnsignedInt(member[i]);
+        int otherByte = Byte.toUnsignedInt(otherMember[i]);
+        int localComp = thisByte - otherByte;
+        if (localComp != 0) {
+          return localComp;
+        }
+      }
+      // shorter array whose items are all equal to the first items of a longer array is
+      // considered 'less than'
+      if (member.length < otherMember.length) {
+        return -1; // member < other
+      } else if (member.length > otherMember.length) {
+        return 1; // other < member
+      }
+      return 0; // totally equal - should never happen...
     }
 
     OrderedSetEntry(byte[] member, byte[] score) {
