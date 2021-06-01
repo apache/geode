@@ -105,7 +105,7 @@ public class IndexRepositoryFactory {
     }
 
     if (userRegion.getCache() != null
-        && userRegion.getCache().hasMemberOlderThan(KnownVersion.CURRENT)) {
+        && userRegion.getCache().hasMemberOlderThan(KnownVersion.GEODE_1_15_0)) {
       return null;
     }
 
