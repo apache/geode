@@ -12,21 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.List;
+import org.junit.ClassRule;
 
-import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.NativeRedisClusterTestRule;
 
-public interface RedisSortedSetCommands {
+public class ZCardNativeRedisAcceptanceTest extends AbstractZCardIntegrationTest {
 
-  long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd,
-      ZAddOptions options);
+  @ClassRule
+  public static NativeRedisClusterTestRule server = new NativeRedisClusterTestRule();
 
-  byte[] zscore(RedisKey key, byte[] member);
+  @Override
+  public int getPort() {
+    return server.getExposedPorts().get(0);
+  }
 
-  long zrem(RedisKey key, List<byte[]> membersToRemove);
+  @Override
+  public void flushAll() {
+    server.flushAll();
+  }
 
-  long zcard(RedisKey key);
 }
