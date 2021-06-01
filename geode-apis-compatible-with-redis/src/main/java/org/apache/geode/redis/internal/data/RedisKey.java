@@ -32,7 +32,7 @@ import org.apache.geode.redis.internal.executor.cluster.CRC16;
 import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
 import org.apache.geode.redis.internal.netty.Coder;
 
-public class RedisKey implements DataSerializableFixedID, Comparable<RedisKey> {
+public class RedisKey implements DataSerializableFixedID {
 
   private int crc16;
   private byte[] value;
@@ -64,55 +64,6 @@ public class RedisKey implements DataSerializableFixedID, Comparable<RedisKey> {
   public int getBucketId() {
     // & (REDIS_SLOTS - 1) is equivalent to % REDIS_SLOTS but supposedly faster
     return getCrc16() & (REDIS_SLOTS - 1) / REDIS_SLOTS_PER_BUCKET;
-  }
-
-  /**
-   * This is a byte to byte comparator, it is not lexicographical but purely compares byte by byte
-   * values
-   */
-  @Override
-  public int compareTo(RedisKey other) {
-    return arrayCmp(value, other.value);
-  }
-
-  /**
-   * Private helper method to compare two byte arrays, A.compareTo(B). The comparison is basically
-   * numerical, for each byte index, the byte representing the greater value will be the greater
-   *
-   * @param A byte[]
-   * @param B byte[]
-   * @return 1 if A > B, -1 if B > A, 0 if A == B
-   */
-  private int arrayCmp(byte[] A, byte[] B) {
-    if (A == B) {
-      return 0;
-    }
-    if (A == null) {
-      return -1;
-    } else if (B == null) {
-      return 1;
-    }
-
-    int len = Math.min(A.length, B.length);
-
-    for (int i = 0; i < len; i++) {
-      byte a = A[i];
-      byte b = B[i];
-      int diff = a - b;
-      if (diff > 0) {
-        return 1;
-      } else if (diff < 0) {
-        return -1;
-      }
-    }
-
-    if (A.length > B.length) {
-      return 1;
-    } else if (B.length > A.length) {
-      return -1;
-    }
-
-    return 0;
   }
 
   /**
