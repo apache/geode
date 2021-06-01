@@ -45,6 +45,7 @@ public class RedisConstants {
   public static final String ERROR_NOT_INTEGER = "value is not an integer or out of range";
   public static final String ERROR_OVERFLOW = "increment or decrement would overflow";
   public static final String ERROR_NAN_OR_INFINITY = "increment would produce NaN or Infinity";
+  public static final String ERROR_OPERATION_PRODUCED_NAN = "resulting score is not a number (NaN)";
   public static final String ERROR_NO_SUCH_KEY = "no such key";
   public static final String ERROR_SYNTAX = "syntax error";
   public static final String ERROR_INVALID_EXPIRE_TIME = "invalid expire time in set";

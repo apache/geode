@@ -194,6 +194,24 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(NEGATIVE_INFINITY);
   }
 
+  @Ignore("blocked by GEODE-9317")
+  @Test
+  public void incrementingScoreOfInfinityByNegativeInfinity_throwsNaNError() {
+    jedis.zadd(KEY, POSITIVE_INFINITY, MEMBER);
+
+    assertThatThrownBy(() -> jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER))
+        .hasMessageContaining(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
+  }
+
+  @Ignore("blocked by GEODE-9317")
+  @Test
+  public void incrementingScoreOfNegativeInfinityByPositiveInfinity_throwsNaNError() {
+    jedis.zadd(KEY, NEGATIVE_INFINITY, MEMBER);
+
+    assertThatThrownBy(() -> jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER))
+        .hasMessageContaining(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
+  }
+
   /************* key or member does not exist *************/
   @Test
   public void shouldCreateNewKey_whenIncrementedKeyDoesNotExist() {

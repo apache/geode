@@ -15,10 +15,7 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NAN_OR_INFINITY;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -39,11 +36,6 @@ public class ZIncrByExecutor extends AbstractExecutor {
     byte[] member = commandIterator.next();
 
     byte[] retVal = redisSortedSetCommands.zincrby(command.getKey(), increment, member);
-    if (Arrays.equals(retVal, ERROR_NOT_A_VALID_FLOAT.getBytes())) {
-      return RedisResponse.error(ERROR_NOT_A_VALID_FLOAT);
-    } else if (Arrays.equals(retVal, ERROR_NAN_OR_INFINITY.getBytes())) {
-      return RedisResponse.error(ERROR_NAN_OR_INFINITY);
-    }
     return RedisResponse.string(retVal);
   }
 

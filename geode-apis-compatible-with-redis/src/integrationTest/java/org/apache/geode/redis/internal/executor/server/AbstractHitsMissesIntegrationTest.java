@@ -199,8 +199,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   /************* Sorted Set related commands *************/
   @Test
   public void testZIncrBy() {
-    runCommandAndAssertNoStatUpdates("key", 100.0,
-        (String k, Double i, String m) -> jedis.zincrby(k, i, m));
+    runCommandAndAssertNoStatUpdates("key", (k, m) -> jedis.zincrby(k, 100.0, m));
   }
 
   /**********************************************
@@ -613,19 +612,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     String currentMisses = info.get(MISSES);
 
     command.accept(key, key, "42");
-    info = getInfo(jedis);
-
-    assertThat(info.get(HITS)).isEqualTo(currentHits);
-    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
-  }
-
-  private void runCommandAndAssertNoStatUpdates(String key, Double increment,
-      TriConsumer<String, Double, String> command) {
-    Map<String, String> info = getInfo(jedis);
-    String currentHits = info.get(HITS);
-    String currentMisses = info.get(MISSES);
-
-    command.accept(key, increment, "42");
     info = getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(currentHits);
