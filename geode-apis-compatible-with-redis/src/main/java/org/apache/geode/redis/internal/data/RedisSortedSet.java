@@ -234,10 +234,6 @@ public class RedisSortedSet extends AbstractRedisData {
     byte[] incr = Coder.doubleToBytes(
         processIncrement(Coder.bytesToString(increment).toLowerCase()));
 
-    if (Arrays.equals(incr, ERROR_NOT_A_VALID_FLOAT.getBytes())) {
-      return incr;
-    }
-
     if (score != null) {
       incr = Coder.doubleToBytes(Coder.bytesToDouble(score) + Coder.bytesToDouble(incr));
     }
