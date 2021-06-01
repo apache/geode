@@ -25,7 +25,6 @@ import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -58,9 +57,6 @@ public class RedisSortedSet extends AbstractRedisData {
   protected static final int PER_PAIR_OVERHEAD = 48;
 
   private int sizeInBytes = BASE_REDIS_SORTED_SET_OVERHEAD;
-  private static final byte[] INFINITY_BYTE_ARRAY = "inf".getBytes(StandardCharsets.UTF_8);
-  private static final byte[] POSITIVE_INFINITY_BYTE_ARRAY = "+inf".getBytes(StandardCharsets.UTF_8);
-  private static final  byte[] NEGATIVE_INFINITY_BYTE_ARRAY = "-inf".getBytes(StandardCharsets.UTF_8);
 
   @Override
   public int getSizeInBytes() {
@@ -236,10 +232,19 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   private void validateScoreIsDouble(byte[] score) {
-    if (!Arrays.equals(score, POSITIVE_INFINITY_BYTE_ARRAY)
-    && !Arrays.equals(score, NEGATIVE_INFINITY_BYTE_ARRAY)
-      && !Coder.bytesToString(score).matches("^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$")) {
-      throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
+    String scoreString = Coder.bytesToString(score).toLowerCase();
+    switch (scoreString) {
+      case "inf":
+      case "infinity":
+      case "+inf":
+      case "+infinity":
+      case "-inf":
+      case "-infinity":
+        return;
+      default:
+        if (!Coder.bytesToString(score).matches("^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$")) {
+          throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
+        }
     }
   }
 
@@ -385,12 +390,12 @@ public class RedisSortedSet extends AbstractRedisData {
     public int compareTo(Object o) {
       int comparison = score.compareTo(((OrderedSetEntry) o).score);
       if (comparison == 0) {
-        byte[] other = ((OrderedSetEntry) o).member;
         // Scores equal, try lexical ordering
-        int last = Math.min(member.length, other.length);
-        for (int i = 0; i < last; i++) {
-          byte thisByte = member[i];
-          byte otherByte = other[i];
+        byte[] otherMember = ((OrderedSetEntry) o).member;
+        int shortestLength = Math.min(member.length, otherMember.length);
+        for (int i = 0; i < shortestLength; i++) {
+          int thisByte = Byte.toUnsignedInt(member[i]);
+          int otherByte = Byte.toUnsignedInt(otherMember[i]);
           int localComp = thisByte - otherByte;
           if (localComp != 0) {
             return localComp;
@@ -398,12 +403,12 @@ public class RedisSortedSet extends AbstractRedisData {
         }
         // shorter array whose items are all equal to the first items of a longer array is
         // considered 'less than'
-        if (member.length < other.length) {
+        if (member.length < otherMember.length) {
           return -1; // member < other
-        } else if (member.length > other.length) {
+        } else if (member.length > otherMember.length) {
           return 1; // other < member
         }
-        return 0;
+        return 0; // totally equal - should never happen...
       }
       return comparison;
     }
@@ -414,15 +419,19 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     private Double makeDoubleWhileHandlingInfinity(byte[] score) {
-      if (Arrays.equals(score, INFINITY_BYTE_ARRAY)
-      || Arrays.equals(score, POSITIVE_INFINITY_BYTE_ARRAY)) {
-        return Double.POSITIVE_INFINITY;
+      String scoreString = Coder.bytesToString(score).toLowerCase();
+      switch (scoreString) {
+        case "inf":
+        case "infinity":
+        case "+inf":
+        case "+infinity":
+          return Double.POSITIVE_INFINITY;
+        case "-inf":
+        case "-infinity":
+          return Double.NEGATIVE_INFINITY;
+        default:
+          return Coder.bytesToDouble(score);
       }
-      if (Arrays.equals(score, NEGATIVE_INFINITY_BYTE_ARRAY)) {
-        return Double.NEGATIVE_INFINITY;
-      }
-
-      return Double.valueOf(Coder.bytesToString(score));
     }
   }
 }

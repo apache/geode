@@ -17,9 +17,15 @@ package org.apache.geode.redis.internal.executor.sortedset;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -96,6 +102,70 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
       assertThat(score).isGreaterThanOrEqualTo(previousScore);
       previousScore = score;
     }
+  }
+
+  @Test
+  public void zrankReturnsRankByLex_givenMembersWithSameScore() {
+    Map<String, Double> map = makeMemberScoreMap_sameScores();
+    jedis.zadd("key", map);
+
+    // get the ranks of the members
+    Iterator<String> membersIterator = map.keySet().iterator();
+    Map<Long, byte[]> rankMap = new HashMap<>();
+    List<byte[]> memberList = new ArrayList<>();
+    while(membersIterator.hasNext()) {
+      String memberName = membersIterator.next();
+      long rank = jedis.zrank("key", memberName);
+      rankMap.put(rank, memberName.getBytes(StandardCharsets.UTF_8));
+      memberList.add(memberName.getBytes(StandardCharsets.UTF_8));
+    }
+
+    memberList.sort(new byteArrayComparator());
+
+    for (int i = 0; i < 10; i++) {
+      assertThat(rankMap.get((long)i)).isEqualTo(memberList.get(i));
+    }
+  }
+
+  private static class byteArrayComparator implements Comparator<byte[]> {
+    @Override
+    public int compare(byte[] o1, byte[] o2) {
+      int last = Math.min(o1.length, o2.length);
+      for (int i = 0; i < last; i++) {
+        int localComp = Byte.toUnsignedInt(o1[i]) - Byte.toUnsignedInt(o2[i]);
+        if (localComp != 0) {
+          return localComp;
+        }
+      }
+      // shorter array whose items are all equal to the first items of a longer array is
+      // considered 'less than'
+      if (o1.length < o2.length) {
+        return -1; // o1 < o2
+      } else if (o1.length > o2.length) {
+        return 1; // o2 < o1
+      }
+      return 0; // totally equal - should never happen...
+    }
+  }
+
+  private Map<String, Double> makeMemberScoreMap_sameScores() {
+    Map<String, Double> map = new HashMap<>();
+
+    // Use set so all values are unique.
+    byte[] memberNameArray = new byte[6];
+    Set<String> memberSet = new HashSet<>();
+    while (memberSet.size() < ENTRY_COUNT) {
+      random.nextBytes(memberNameArray);
+      String memberName = Coder.bytesToString(memberNameArray);
+      memberSet.add(memberName);
+    }
+
+    Iterator<String> memberIterator = memberSet.iterator();
+    while (memberIterator.hasNext()) {
+      map.put(memberIterator.next(), 1.0);
+    }
+
+    return map;
   }
 
   private Map<String, Double> makeMemberScoreMap_differentScores() {
