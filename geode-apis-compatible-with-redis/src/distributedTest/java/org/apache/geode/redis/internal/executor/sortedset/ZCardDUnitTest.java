@@ -14,13 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
 
 import org.junit.Before;
@@ -49,10 +46,8 @@ public class ZCardDUnitTest {
 
   @BeforeClass
   public static void classSetup() {
-    Properties locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
 
-    MemberVM locator = clusterStartup.startLocatorVM(0, locatorProperties);
+    MemberVM locator = clusterStartup.startLocatorVM(0);
     int locatorPort = locator.getPort();
 
     clusterStartup.startRedisVM(1, locatorPort);

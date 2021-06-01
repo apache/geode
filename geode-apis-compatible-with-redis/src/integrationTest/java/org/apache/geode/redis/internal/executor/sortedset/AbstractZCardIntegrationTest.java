@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +29,7 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.redis.internal.RedisConstants;
 
 public abstract class AbstractZCardIntegrationTest implements RedisIntegrationTest {
 
@@ -58,11 +60,20 @@ public abstract class AbstractZCardIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void zcardReturnsCorrectSetSize() {
-    String key = "key";
+    final String key = "key";
     Map<String, Double> updateMap = makeMemberScoreMap("member");
     jedis.zadd(key, updateMap);
 
     assertThat(jedis.zcard(key)).isEqualTo(SET_SIZE);
+  }
+
+  @Test
+  public void zcardErrors_givenWrongKeyType() {
+    final String key = "key";
+    jedis.set(key, "value");
+    assertThatThrownBy(
+        () -> jedis.sendCommand(key, Protocol.Command.ZCARD, key))
+            .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   private Map<String, Double> makeMemberScoreMap(String baseString) {
