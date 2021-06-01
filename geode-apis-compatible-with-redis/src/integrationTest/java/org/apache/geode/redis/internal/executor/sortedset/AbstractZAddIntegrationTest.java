@@ -146,27 +146,26 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     Long addCount = (Long) jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY,
         "1", "member", "2", "member", "3", "member");
     assertThat(addCount).isEqualTo(1);
-    // TODO: use ZCARD to confirm set size once command is implemented
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(1);
     assertThat(jedis.zscore(SORTED_SET_KEY, "member")).isEqualTo(3.0);
   }
 
   @Test
   public void zaddCountsOnlyNewMembers_givenMultipleCopiesOfTheSameMember_toAnExistingSet() {
-    jedis.zadd(SORTED_SET_KEY, 1.0, "otherMember");
-    Long addCount = (Long) jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY,
-        "1", "member", "2", "member", "3", "member");
+    Long addCount = (Long) jedis.zadd(SORTED_SET_KEY, 1.0, "otherMember");
     assertThat(addCount).isEqualTo(1);
-    // TODO: use ZCARD to confirm set size once command is implemented
+    jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY,
+        "1", "member", "2", "member", "3", "member");
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(2);
     assertThat(jedis.zscore(SORTED_SET_KEY, "member")).isEqualTo(3.0);
   }
 
   @Test
   public void zaddDoesNotUpdateMembers_whenNXSpecified() {
     Map<String, Double> initMap = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
-
-    long added = jedis.zadd(SORTED_SET_KEY, initMap);
-    assertThat(added).isEqualTo(INITIAL_MEMBER_COUNT);
-    // TODO: use ZCARD to confirm set size once command is implemented
+    Long addCount = (Long) jedis.zadd(SORTED_SET_KEY, initMap);
+    assertThat(addCount).isEqualTo(INITIAL_MEMBER_COUNT);
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(INITIAL_MEMBER_COUNT);
 
     for (String member : initMap.keySet()) {
       Double score = initMap.get(member);
@@ -177,9 +176,9 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
 
     ZAddParams zAddParams = new ZAddParams();
     zAddParams.nx();
-    added = jedis.zadd(SORTED_SET_KEY, updateMap, zAddParams);
-    assertThat(added).isEqualTo(INITIAL_MEMBER_COUNT);
-    // TODO: use ZCARD to confirm set size once command is implemented
+    addCount = jedis.zadd(SORTED_SET_KEY, updateMap, zAddParams);
+    assertThat(addCount).isEqualTo(INITIAL_MEMBER_COUNT);
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(2 * INITIAL_MEMBER_COUNT);
 
     for (String member : updateMap.keySet()) {
       Double score;
@@ -196,9 +195,9 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   public void zaddDoesNotAddNewMembers_whenXXSpecified() {
     Map<String, Double> initMap = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
 
-    long added = jedis.zadd(SORTED_SET_KEY, initMap);
-    assertThat(added).isEqualTo(INITIAL_MEMBER_COUNT);
-    // TODO: use ZCARD to confirm set size once command is implemented
+    Long addCount = (Long) jedis.zadd(SORTED_SET_KEY, initMap);
+    assertThat(addCount).isEqualTo(INITIAL_MEMBER_COUNT);
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(INITIAL_MEMBER_COUNT);
 
     for (String member : initMap.keySet()) {
       Double score = initMap.get(member);
@@ -206,12 +205,11 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     }
 
     Map<String, Double> updateMap = makeMemberScoreMap(2 * INITIAL_MEMBER_COUNT, 10);
-
     ZAddParams zAddParams = new ZAddParams();
     zAddParams.xx();
-    added = jedis.zadd(SORTED_SET_KEY, updateMap, zAddParams);
-    assertThat(added).isEqualTo(0);
-    // TODO: use ZCARD to confirm set size once command is implemented
+    addCount = jedis.zadd(SORTED_SET_KEY, updateMap, zAddParams);
+    assertThat(addCount).isEqualTo(0);
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(INITIAL_MEMBER_COUNT);
 
     for (String member : updateMap.keySet()) {
       Double score;
