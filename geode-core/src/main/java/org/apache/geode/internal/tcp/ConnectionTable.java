@@ -83,8 +83,7 @@ public class ConnectionTable {
   private final Map orderedConnectionMap = new ConcurrentHashMap();
 
   /**
-   * ordered connections local to this thread. Note that accesses to the resulting map must be
-   * synchronized because of static cleanup.
+   * ordered connections local to this thread.
    */
   static final ThreadLocal<Map> threadOrderedConnMap = new ThreadLocal<>();
 
