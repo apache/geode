@@ -45,7 +45,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.internal.AvailablePortHelper;
@@ -171,51 +170,40 @@ public abstract class SessionDUnitTest {
   }
 
   protected String createNewSessionWithNote(int sessionApp, String note) {
-    HttpEntity<String> request = new HttpEntity<>(note);
-    String sessionCookie = null;
-    do {
-      try {
-        HttpHeaders resultHeaders = new RestTemplate()
-            .postForEntity(
-                "http://localhost:" + ports.get(sessionApp)
-                    + "/addSessionNote",
-                request,
-                String.class)
-            .getHeaders();
-        sessionCookie = resultHeaders.getFirst("Set-Cookie");
-      } catch (HttpServerErrorException e) {
-        if (!e.getMessage().contains("Server Error")) {
-          throw e;
-        }
-      }
-    } while (sessionCookie == null);
+    try {
+      return createNewSessionWithNote0(sessionApp, note);
+    } catch (Exception ex) {
+      return createNewSessionWithNote0(sessionApp, note);
+    }
+  }
 
-    return sessionCookie;
+  private String createNewSessionWithNote0(int sessionApp, String note) {
+    HttpEntity<String> request = new HttpEntity<>(note);
+    HttpHeaders resultHeaders = new RestTemplate()
+        .postForEntity("http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
+            request, String.class)
+        .getHeaders();
+
+    return resultHeaders.getFirst("Set-Cookie");
   }
 
   protected String[] getSessionNotes(int sessionApp, String sessionCookie) {
+    try {
+      return getSessionNotes0(sessionApp, sessionCookie);
+    } catch (Exception exception) {
+      return getSessionNotes0(sessionApp, sessionCookie);
+    }
+  }
+
+  private String[] getSessionNotes0(int sessionApp, String sessionCookie) {
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionCookie);
     HttpEntity<String> request = new HttpEntity<>("", requestHeaders);
-    boolean sesssionObtained = false;
-    String[] responseBody = new String[0];
-    do {
-      try {
-        responseBody = new RestTemplate()
-            .exchange(
-                "http://localhost:" + ports.get(sessionApp) + "/getSessionNotes",
-                HttpMethod.GET,
-                request,
-                String[].class)
-            .getBody();
-        sesssionObtained = true;
-      } catch (HttpServerErrorException e) {
-        if (!e.getMessage().contains("Server Error")) {
-          throw e;
-        }
-      }
-    } while (!sesssionObtained);
-    return responseBody;
+
+    return new RestTemplate()
+        .exchange("http://localhost:" + ports.get(sessionApp) + "/getSessionNotes",
+            HttpMethod.GET, request, String[].class)
+        .getBody();
   }
 
   void addNoteToSession(int sessionApp, String sessionCookie, String note) {
