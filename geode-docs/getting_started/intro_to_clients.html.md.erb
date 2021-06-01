@@ -1,0 +1,353 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<% set_title("Introduction to", product_name, "Clients") %>
+
+This section provides basic starting points for a variety of <%=vars.product_name %> clients, along
+with very rudimentary connect, put, get, and then a reference to more in-depth docs and examples on
+how to use the client.
+
+## Installing Apache Geode
+
+You can download Apache Geode from the website, run a Docker image, or install with homebrew on OSX.
+
+## Start an Apache Geode Cluster
+
+With a path that contains the bin directory of the installation, start a locator and server.
+
+```
+$ gfsh 
+gfsh> start locator
+gfsh> start server
+```
+
+Create a region
+
+```
+gfsh> create region --name=helloWorld --type=PARTITION 
+```
+
+Shutting Down Apache Geode
+
+```
+gfsh> shutdown --include-locators=true
+```
+
+## Apache Geode Java Client
+
+**Maven Dependencies**
+
+Declare the following dependency and replace $VERSION, with the version of Geode that you have installed.
+
+```
+<dependencies>
+     <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-core</artifactId>
+        <version>$VERSION</version>
+    </dependency>
+</dependencies>
+```
+
+**Gradle Dependencies**
+
+``
+dependencies {
+  compile "org.apache.geode:geode-core:$VERSION"
+}
+``
+
+Connect to Geode from your application
+ 
+```
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+
+public class HelloWorld {
+
+ public static void main(String[] args) {
+  ClientCache cache = new ClientCacheFactory().addPoolLocator("127.0.0.1", 10334).create();
+
+   System.out.println(cache.getDefaultPool().getLocators());
+   
+cache.close();
+ }
+}
+```
+
+The information printed out should match the host and port of your Geode instance locators and should resemble
+
+```
+[/127.0.0.1:10334]
+```
+
+### Simple Put and Get with Geode Java client
+ 
+```
+public static void main(String[] args) {
+ClientCache cache = new ClientCacheFactory().addPoolLocator("127.0.0.1", 10334).create();
+
+ Region<String, String>
+     helloWorldRegion =
+     cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY).create("helloWorld");
+
+ helloWorldRegion.put("1", "HelloWorldValue");
+ String value1 = helloWorldRegion.get("1");
+ System.out.println(value1);
+
+ cache.close();
+}
+```
+
+Build and run the application.  This puts the key ‘1’ with a value of ‘HelloWorldValue’ into the
+‘helloWorld’ region, then retrieves and prints the value of key ‘1’.
+
+### Additional Resources
+
+- [Apache Geode Examples GitHub Repo](https://github.com/apache/geode-examples)
+- [Apache Geode Documentation](https://geode.apache.org/docs/)
+- [Apache Geode Javadocs](https://geode.apache.org/releases/latest/javadoc/index.html)
+
+## Spring Boot Client For Apache Geode
+
+Spring Boot for Apache Geode provides a powerful abstraction that simplifies the developer
+experience when using Spring Boot and Apache Geode.  The best way to get started with Spring Boot
+for Apache Geode, is by creating a project on start.spring.io.
+
+Add the ‘Spring for Apache Geode’ dependency and then select either ‘Generate’, which creates a zip
+file to import into your IDE or ‘Explore’, which opens a build file based on your Project selection
+(Maven or Gradle)
+
+**Maven Dependencies**
+
+Your Maven pom.xml file should include something similar to 
+
+```
+<properties>
+   ...
+   <spring-geode.version>1.4.3</spring-geode.version>
+ </properties>
+ <dependencies>
+   <dependency>
+     <groupId>org.springframework.geode</groupId>
+     <artifactId>spring-geode-starter</artifactId>
+ </dependency>
+…
+</dependencies>
+
+ <dependencyManagement>
+   <dependencies>
+     <dependency>
+       <groupId>org.springframework.geode</groupId>
+       <artifactId>spring-geode-bom</artifactId>
+       <version>${spring-geode.version}</version>
+       <type>pom</type>
+       <scope>import</scope>
+     </dependency>
+   </dependencies>
+ </dependencyManagement>
+```
+
+**Gradle Dependencies**
+
+Your Gradle gradle.build file should include something similar to 
+
+```
+ext {
+ set('springGeodeVersion', "1.4.3")
+}
+
+dependencies {
+ implementation 'org.springframework.geode:spring-geode-starter'
+ testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+dependencyManagement {
+ imports {
+   mavenBom "org.springframework.geode:spring-geode-bom:${springGeodeVersion}"
+ }
+}
+```
+
+- Connect to Geode from your application
+- Open your web browser to start.spring.io.
+
+- Click ‘Add Dependencies’. Search for the ‘Spring for Apache Geode’ dependency and add it to your project. Select ‘Generate’, which creates a zip file. Import this file into your IDE. 
+
+- With your Geode cluster running, build and run the application (without making any other changes).
+
+- In the console output, you should see something similar to (starting with Spring Boot for Apache Geode v1.4.2+)
+
+```
+2021-03-19 11:27:14.532  INFO 8730 --- [          main] o.s.g.c.a.ClusterAwareConfiguration      : Successfully connected to localhost[40404]
+2021-03-19 11:27:14.537  INFO 8730 --- [           main] o.s.g.c.a.ClusterAwareConfiguration      : Successfully connected to localhost[10334]
+2021-03-19 11:27:14.538  INFO 8730 --- [           main] o.s.g.c.a.ClusterAwareConfiguration      : Cluster was found; Auto-configuration made [2] successful connection(s)
+2021-03-19 11:27:14.538  INFO 8730 --- [           main] o.s.g.c.a.ClusterAwareConfiguration      : Spring Boot application is running in a client/server topology using a standalone Apache Geode-based cluster
+```
+
+This confirms that without adding any additional code, the application was able to connect to our Geode Cluster.
+
+### Building an Application with Spring Boot for Apache Geode.
+
+Spring Boot for Apache Geode is very powerful and robust.  We recommend looking at the Spring Boot for Apache Geode documentation and examples for your next steps in working with this dependency.
+
+### Additional Resources
+
+- [Spring Boot for Apache Geode Reference Guide](https://docs.spring.io/spring-boot-data-geode-build/1.4.x/reference/html5/)
+
+## Apache Geode Native Clients 
+
+To begin using the Apache Geode Native Clients, you must first build the Apache Geode Native Client libraries from the source code. 
+You can download the Apache Geode Native Source code here
+`https://geode.apache.org/releases`, then follow the [BUILDING.md](https://github.com/apache/geode-native/blob/develop/BUILDING.md) instructions to compile the libraries.
+
+
+## Apache Geode Native .NET Client
+
+**Put, Get and Remove with Apache Geode Native .NET Client (C#)**
+
+```
+using System;
+using Apache.Geode.Client;
+
+namespace Apache.Geode.Examples.PutGetRemove
+{
+  class Program
+  {
+    static void Main(string[] args)
+    {
+      var cache = new CacheFactory()
+          .Set("log-level", "none")
+          .Create();
+
+      cache.GetPoolManager()
+          .CreateFactory()
+          .AddLocator("localhost", 10334)
+          .Create("pool");
+
+      var regionFactory = cache.CreateRegionFactory(RegionShortcut.PROXY)
+          .SetPoolName("pool");
+      var region = regionFactory.Create<string, string>("example_userinfo");
+
+      Console.WriteLine("Storing id and username in the region");
+
+      const string rtimmonsKey = "rtimmons";
+      const string rtimmonsValue = "Robert Timmons";
+      const string scharlesKey = "scharles";
+      const string scharlesValue = "Sylvia Charles";
+
+      region.Put(rtimmonsKey, rtimmonsValue);
+      region.Put(scharlesKey, scharlesValue);
+
+      Console.WriteLine("Getting the user info from the region");
+      var user1 = region.Get(rtimmonsKey, null);
+      var user2 = region.Get(scharlesKey, null);
+
+      Console.WriteLine(rtimmonsKey + " = " + user1);
+      Console.WriteLine(scharlesKey + " = " + user2);
+
+      Console.WriteLine("Removing " + rtimmonsKey + " info from the region");
+
+      if (region.Remove(rtimmonsKey))
+      {
+        Console.WriteLine("Info for " + rtimmonsKey + " has been deleted");
+      }
+      else
+      {
+        Console.WriteLine("Info for " + rtimmonsKey + " has not been deleted");
+      }
+
+      cache.Close();
+    }
+  }
+}
+```
+
+### Additional Resources
+
+- [Apache Geode Native Client Examples GitHub Repo](https://github.com/apache/geode-native/tree/develop/examples)
+- [Apache Geode Native .NET Client Documentation](https://geode.apache.org/docs/)
+- [Apache Geode Native Client .NET API Reference](https://geode.apache.org/releases/latest/dotnetdocs/hierarchy.html)
+
+
+## Apache Geode Native C++ Client
+
+**Put, Get, and Remove with Apache Geode Native C++ Client**
+
+```
+#include <iostream>
+
+#include <geode/CacheFactory.hpp>
+#include <geode/PoolManager.hpp>
+#include <geode/RegionFactory.hpp>
+#include <geode/RegionShortcut.hpp>
+
+using namespace apache::geode::client;
+
+int main(int argc, char** argv) {
+  auto cache = CacheFactory()
+      .set("log-level", "none")
+      .create();
+
+  cache.getPoolManager()
+      .createFactory()
+      .addLocator("localhost", 10334)
+      .create("pool");
+  
+  auto regionFactory = cache.createRegionFactory(RegionShortcut::PROXY);
+  auto region = regionFactory.setPoolName("pool").create("example_userinfo");
+
+  std::cout << "Storing id and username in the region" << std::endl;
+  region->put("rtimmons", "Robert Timmons");
+  region->put("scharles", "Sylvia Charles");
+
+  std::cout << "Getting the user info from the region" << std::endl;
+  auto user1 = region->get("rtimmons");
+  auto user2 = region->get("scharles");
+  std::cout << "  rtimmons = "
+            << std::dynamic_pointer_cast<CacheableString>(user1)->value()
+            << std::endl;
+  std::cout << "  scharles = "
+            << std::dynamic_pointer_cast<CacheableString>(user2)->value()
+            << std::endl;
+
+  std::cout << "Removing rtimmons info from the region" << std::endl;
+  region->remove("rtimmons");
+
+  if (region->existsValue("rtimmons")) {
+    std::cout << "rtimmons's info not deleted" << std::endl;
+  } else {
+    std::cout << "rtimmons's info successfully deleted" << std::endl;
+  }
+
+  cache.close();
+}
+```
+
+### Additional Resources
+
+- [Apache Geode Native Client Examples GitHub Repo](https://github.com/apache/geode-native/tree/develop/examples)
+- [Apache Geode Native C++ Client Documentation](https://geode.apache.org/docs/)
+- [Apache Geode Native Client C++ API Reference](https://geode.apache.org/releases/latest/cppdocs/hierarchy.html)
+
+## Geode APIs Compatible with Redis
+
+The <%=vars.product_name%> APIs compatible with Redis allow <%=vars.product_name%> to function as a drop-in replacement for a
+highly-available Redis data store, letting Redis applications take advantage of
+<%=vars.product_name%>’s scaling capabilities without changing their client code.
+
+Note: This feature is experimental and is subject to change in future releases of Apache Geode.
+See [Geode APIs compatible with Redis](../developing/geode_apis_compatible_with_redis.html) for current information regarding these APIs.
