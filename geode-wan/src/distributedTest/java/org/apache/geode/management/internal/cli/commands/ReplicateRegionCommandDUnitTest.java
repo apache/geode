@@ -29,6 +29,7 @@ import static org.apache.geode.management.internal.i18n.CliStrings.REPLICATE_REG
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -37,6 +38,7 @@ import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import org.assertj.core.api.Condition;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -46,12 +48,15 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.WanTest;
@@ -62,6 +67,10 @@ import org.apache.geode.test.junit.rules.LocatorLauncherStartupRule;
 public class ReplicateRegionCommandDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
+
+  private enum Gateway {
+    SENDER, RECEIVER
+  }
 
   public ReplicateRegionCommandDUnitTest() {
     super();
@@ -93,14 +102,8 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
         .getCommandString();
 
     // Check command status and output
-    CommandResultAssert replicateRegionCommand = gfsh.executeAndAssertThat(command).statusIsError();
-    replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
-    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
-        .hasSize(3);
-    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
-        .containsExactly("ERROR", "ERROR", "ERROR");
-    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-        .hasSize(3);
+    CommandResultAssert replicateRegionCommand =
+        executeCommandAndVerifyStatusIsError(gfsh, command);
     String message =
         CliStrings.format(CliStrings.REPLICATE_REGION__MSG__REGION__NOT__FOUND,
             Region.SEPARATOR + regionName);
@@ -134,14 +137,8 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
         .getCommandString();
 
     // Check command status and output
-    CommandResultAssert replicateRegionCommand = gfsh.executeAndAssertThat(command).statusIsError();
-    replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
-    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
-        .hasSize(3);
-    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
-        .containsExactly("ERROR", "ERROR", "ERROR");
-    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-        .hasSize(3);
+    CommandResultAssert replicateRegionCommand =
+        executeCommandAndVerifyStatusIsError(gfsh, command);
     String message =
         CliStrings.format(CliStrings.REPLICATE_REGION__MSG__SENDER__NOT__FOUND, senderIdInA);
     replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
@@ -220,6 +217,421 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
     testUnsuccessfulCancelReplicateRegionCommandInvocation(true, true);
   }
 
+  @Test
+  public void testUnsuccessfulExecutionWithPartitionedRegionDueToParallelSenderWentDown()
+      throws Exception {
+    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
+    try {
+      testSenderOrReceiverGoesDownDuringExecution(true, true, Gateway.SENDER, false);
+    } finally {
+      removeIgnoredExceptions(ignoredExceptions);
+    }
+  }
+
+  @Test
+  public void testUnsuccessfulExecutionWithPartitionedRegionDueToSerialPrimarySenderWentDown()
+      throws Exception {
+    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
+    try {
+      testSenderOrReceiverGoesDownDuringExecution(false, true, Gateway.SENDER, true);
+    } finally {
+      removeIgnoredExceptions(ignoredExceptions);
+    }
+  }
+
+  @Test
+  public void testSuccessfulExecutionWithPartitionedRegionDueToSerialSecondarySenderWentDown()
+      throws Exception {
+    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
+    try {
+      testSenderOrReceiverGoesDownDuringExecution(false, true, Gateway.SENDER, false);
+    } finally {
+      removeIgnoredExceptions(ignoredExceptions);
+    }
+  }
+
+  @Test
+  public void testUnsuccessfulExecutionWithReplicatedRegionDueToSerialPrimarySenderWentDown()
+      throws Exception {
+    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
+    try {
+      testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.SENDER, true);
+    } finally {
+      removeIgnoredExceptions(ignoredExceptions);
+    }
+  }
+
+  @Test
+  public void testSuccessfulExecutionWithReplicatedRegionDueToSerialSecondarySenderWentDown()
+      throws Exception {
+    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
+    try {
+      testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.SENDER, false);
+    } finally {
+      removeIgnoredExceptions(ignoredExceptions);
+    }
+  }
+
+  @Test
+  public void testSuccessfulExecutionWithPartitionedRegionAndParallelSenderDueToReceiverWentDown()
+      throws Exception {
+    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
+    try {
+      testSenderOrReceiverGoesDownDuringExecution(true, true, Gateway.RECEIVER, false);
+    } finally {
+      removeIgnoredExceptions(ignoredExceptions);
+    }
+  }
+
+  @Test
+  public void testSuccessfulExecutionWithPartitionedRegionAndSerialSenderDueToReceiverConnectedToPrimarySenderWentDown()
+      throws Exception {
+    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
+    try {
+      testSenderOrReceiverGoesDownDuringExecution(false, true, Gateway.RECEIVER, true);
+    } finally {
+      removeIgnoredExceptions(ignoredExceptions);
+    }
+  }
+
+  @Test
+  public void testSuccessfulExecutionWithPartitionedRegionAndSerialSenderDueToReceiverNotConnectedToPrimarySenderWentDown()
+      throws Exception {
+    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
+    try {
+      testSenderOrReceiverGoesDownDuringExecution(false, true, Gateway.RECEIVER, false);
+    } finally {
+      removeIgnoredExceptions(ignoredExceptions);
+    }
+  }
+
+  @Test
+  public void testSuccessfulExecutionWithReplicatedRegionAndSerialSenderDueToReceiverConnectedToPrimarySenderWentDown()
+      throws Exception {
+    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
+    try {
+      testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.RECEIVER, true);
+    } finally {
+      removeIgnoredExceptions(ignoredExceptions);
+    }
+  }
+
+  @Test
+  public void testSuccessfulExecutionWithReplicatedRegionAndSerialSenderDueToReceiverNotConnectedToPrimarySenderWentDown()
+      throws Exception {
+    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
+    try {
+      testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.RECEIVER, false);
+    } finally {
+      removeIgnoredExceptions(ignoredExceptions);
+    }
+  }
+
+  private List<IgnoredException> addIgnoredExceptions() {
+    List<IgnoredException> ignoredExceptionsList = new ArrayList<>();
+    ignoredExceptionsList.add(IgnoredException.addIgnoredException(
+        "Exception when running replicate command: java.util.concurrent.ExecutionException: org.apache.geode.distributed.PoolCancelledException"));
+    ignoredExceptionsList.add(IgnoredException.addIgnoredException(
+        "Exception org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException in sendBatch. Retrying"));
+    ignoredExceptionsList.add(IgnoredException.addIgnoredException(
+        "Exception org.apache.geode.cache.client.ServerConnectivityException in sendBatch. Retrying"));
+    ignoredExceptionsList
+        .add(IgnoredException.addIgnoredException("DistributedSystemDisconnectedException"));
+    return ignoredExceptionsList;
+  }
+
+  private void removeIgnoredExceptions(List<IgnoredException> ignoredExceptionList) {
+    for (IgnoredException ie : ignoredExceptionList) {
+      ie.remove();
+    }
+  }
+
+  private int create2WanSitesAndClient(VM locatorInA, List<VM> serversInA, String senderIdInA,
+      VM locatorInB, List<VM> serversInB, VM client, boolean usePartitionedRegion,
+      String regionName) {
+    // Create locators
+    Integer locatorBPort = locatorInB.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
+    Integer locatorAPort = locatorInA.invoke(() -> {
+      Properties props = getDistributedSystemProperties();
+      props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
+      props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorBPort + "]");
+      LocatorLauncherStartupRule launcherStartupRule =
+          new LocatorLauncherStartupRule().withProperties(props);
+      launcherStartupRule.start();
+      return launcherStartupRule.getLauncher().getPort();
+    });
+
+    // Create servers and regions
+    createServersAndRegions(locatorBPort, serversInB, usePartitionedRegion, regionName, null);
+    createServersAndRegions(locatorAPort, serversInA, usePartitionedRegion, regionName,
+        senderIdInA);
+
+    // Create client
+    client.invoke(() -> WANTestBase.createClientWithLocator(locatorAPort, "localhost",
+        regionName, ClientRegionShortcut.PROXY));
+
+    return locatorAPort;
+  }
+
+  /**
+   * This test creates two sites A & B, each one containing 3 servers.
+   * A region is created in both sites, and populated in site A.
+   * After that replication is configured from site A to site B.
+   * ReplicateRegionFunction is called, and while it is running, a sender in site A
+   * or a receiver in site B are killed.
+   */
+  public void testSenderOrReceiverGoesDownDuringExecution(boolean useParallel,
+      boolean usePartitionedRegion, Gateway gwToBeStopped, boolean stopPrimarySender)
+      throws Exception {
+
+    final int replicateRegionBatchSize = 10;
+    final int entries;
+    if (!useParallel && !usePartitionedRegion && stopPrimarySender) {
+      entries = 25000;
+    } else {
+      entries = 10000;
+    }
+
+    final String regionName = getRegionName(usePartitionedRegion);
+
+    // Site A
+    VM locatorInA = vm0;
+    VM server1InA = vm1;
+    VM server2InA = vm2;
+    VM server3InA = vm3;
+    List<VM> serversInA = Arrays.asList(server1InA, server2InA, server3InA);
+    final String senderIdInA = "B";
+
+    // Site B
+    VM locatorInB = vm4;
+    VM server1InB = vm5;
+    VM server2InB = vm6;
+    VM server3InB = vm7;
+    List<VM> serversInB = Arrays.asList(server1InB, server2InB, server3InB);
+    VM client = vm8;
+
+    int locatorAPort = create2WanSitesAndClient(locatorInA, serversInA, senderIdInA, locatorInB,
+        serversInB, client, usePartitionedRegion, regionName);
+
+
+    // Put entries & verify result
+    client.invoke(() -> WANTestBase.doClientPutsFrom(regionName, 0, entries));
+    for (VM member : serversInA) {
+      member.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
+    }
+
+    // Create senders and receivers with replication as follows: "A" -> "B"
+    if (useParallel) {
+      createReceiverInVMs(server1InB, server2InB, server3InB);
+      createSenders(useParallel, serversInA, null, senderIdInA, null);
+    } else {
+      // Senders will connect to receiver in server1InB
+      server1InB.invoke(WANTestBase::createReceiver);
+      createSenders(useParallel, serversInA, null, senderIdInA, null);
+      createReceiverInVMs(server2InB, server3InB);
+    }
+
+    FutureTask<CommandResultAssert> replicateCommandFuture =
+        new FutureTask<>(() -> {
+          String command = new CommandStringBuilder(REPLICATE_REGION)
+              .addOption(REPLICATE_REGION__REGION, regionName)
+              .addOption(REPLICATE_REGION__SENDERID, senderIdInA)
+              .addOption(REPLICATE_REGION__BATCHSIZE, String.valueOf(replicateRegionBatchSize))
+              .addOption(REPLICATE_REGION__MAXRATE, "500")
+              .getCommandString();
+          GfshCommandRule gfsh = new GfshCommandRule();
+          try {
+            gfsh.connectAndVerify(locatorAPort, GfshCommandRule.PortType.locator);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+          return gfsh.executeAndAssertThat(command);
+        });
+    LoggingExecutors.newSingleThreadExecutor(getTestMethodName(), true)
+        .submit(replicateCommandFuture);
+
+    Thread.sleep(5000);
+    if (gwToBeStopped == Gateway.SENDER) {
+
+      // Stop sender
+      // If parallel: stop any server
+      // If serial: stop primary or secondary
+      if (useParallel) {
+        server2InA.invoke(() -> WANTestBase.killSender((senderIdInA)));
+      } else {
+        for (VM server : serversInA) {
+          boolean senderWasStopped = server.invoke(() -> {
+            GatewaySender sender = cache.getGatewaySender(senderIdInA);
+            if (((InternalGatewaySender) sender).isPrimary() == stopPrimarySender) {
+              WANTestBase.killSender();
+              return true;
+            }
+            return false;
+          });
+          if (senderWasStopped) {
+            break;
+          }
+        }
+      }
+
+      CommandResultAssert result = replicateCommandFuture.get();
+      System.out.println(
+          "Command result after stopping sender: \n" + result.getCommandResult().asString());
+      // Verify result
+      if (useParallel) {
+        verifyResultOfStoppingParallelSender(result);
+      } else {
+        if (stopPrimarySender) {
+          verifyResultOfStoppingPrimarySerialSender(result);
+        } else {
+          verifyResultStoppingSecondarySerialSender(result);
+        }
+      }
+
+    } else if (gwToBeStopped == Gateway.RECEIVER) {
+
+      // Stop receiver
+      // if parallel sender: stop any receiver
+      // if serial sender: stop receiver connected to primary or secondary
+      if (useParallel) {
+        server2InB.invoke(() -> cache.close());
+      } else {
+        // Region type has no influence on which server should be stopped
+        if (stopPrimarySender) {
+          // Stop the first server which had an available receiver
+          server1InB.invoke(() -> cache.close());
+        } else {
+          server3InB.invoke(() -> cache.close());
+        }
+      }
+
+      CommandResultAssert result = replicateCommandFuture.get();
+      System.out.println(
+          "Command result after stopping receiver: \n" + result.getCommandResult().asString());
+      // Verify result
+      if (useParallel) {
+        verifyResultOfStoppingReceiverWhenUsingParallelSender(result);
+      } else {
+        verifyResultOfStoppingReceiverWhenUsingSerialSender(result);
+        server2InB.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
+      }
+
+    } // END stop RECEIVER
+  }
+
+
+  public void verifyResultOfStoppingReceiverWhenUsingSerialSender(
+      CommandResultAssert _replicateRegionCommand) {
+    CommandResultAssert replicateRegionCommand = _replicateRegionCommand.statusIsSuccess();
+    replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+        .hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+        .containsExactlyInAnyOrder("OK", "OK", "OK");
+
+    Condition<String> haveEntriesReplicated =
+        new Condition<>(s -> s.startsWith("Entries replicated: "), "entries replicated");
+    Condition<String> senderNotPrimary = new Condition<>(
+        s -> s.equals("Sender B is serial and not primary. 0 entries replicated."),
+        "sender not primary");
+
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .asList().haveExactly(1, haveEntriesReplicated).haveExactly(2, senderNotPrimary);
+  }
+
+  public void verifyResultOfStoppingReceiverWhenUsingParallelSender(
+      CommandResultAssert _replicateRegionCommand) {
+    CommandResultAssert replicateRegionCommand = _replicateRegionCommand.statusIsSuccess();
+    replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+        .hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+        .containsExactlyInAnyOrder("OK", "OK", "OK");
+
+    Condition<String> haveEntriesReplicated =
+        new Condition<>(s -> s.startsWith("Entries replicated: "), "entries replicated");
+
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .asList().haveExactly(3, haveEntriesReplicated);
+  }
+
+  public void verifyResultOfStoppingParallelSender(CommandResultAssert _replicateRegionCommand) {
+    CommandResultAssert replicateRegionCommand = _replicateRegionCommand.statusIsError();
+    replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+        .hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+        .containsExactlyInAnyOrder("OK", "OK", "ERROR");
+
+    Condition<String> startsWithError = new Condition<>(
+        s -> (s.startsWith("Execution failed. Error:")
+            || s.startsWith("Error (Unknown error sending batch)")),
+        "execution error");
+    Condition<String> haveEntriesReplicated =
+        new Condition<>(s -> s.startsWith("Entries replicated:"), "entries replicated");
+
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .asList().haveExactly(1, startsWithError).haveExactly(2, haveEntriesReplicated);
+
+  }
+
+  public void verifyResultOfStoppingPrimarySerialSender(
+      CommandResultAssert _replicateRegionCommand) {
+    _replicateRegionCommand.statusIsError();
+    _replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
+    _replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+        .hasSize(3);
+    _replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .hasSize(3);
+    _replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+        .containsExactlyInAnyOrder("OK", "OK", "ERROR");
+
+    Condition<String> startsWithError = new Condition<>(
+        s -> (s.startsWith("Execution failed. Error:")
+            || s.startsWith("Error (Unknown error sending batch)")),
+        "execution error");
+
+    Condition<String> noConnectionAvailable = new Condition<>(
+        s -> s.startsWith("No connection available towards receiver after having replicated"),
+        "no connection available");
+
+    Condition<String> senderNotPrimary = new Condition<>(
+        s -> s.equals("Sender B is serial and not primary. 0 entries replicated."),
+        "sender not primary");
+
+    _replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .asList().haveAtMost(1, startsWithError).haveAtMost(1, noConnectionAvailable)
+        .haveExactly(2, senderNotPrimary);
+
+  }
+
+  public void verifyResultStoppingSecondarySerialSender(
+      CommandResultAssert _replicateRegionCommand) {
+    CommandResultAssert replicateRegionCommand = _replicateRegionCommand.statusIsSuccess();
+    replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+        .hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+        .containsExactlyInAnyOrder("OK", "OK", "OK");
+
+    Condition<String> haveEntriesReplicated =
+        new Condition<>(s -> s.startsWith("Entries replicated:"), "entries replicated");
+    Condition<String> senderNotPrimary = new Condition<>(
+        s -> s.equals("Sender B is serial and not primary. 0 entries replicated."),
+        "sender not primary");
+
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .asList().haveExactly(1, haveEntriesReplicated).haveExactly(2, senderNotPrimary);
+  }
+
   /**
    * Scenario with 3 WAN sites: "A", "B" and "C".
    * Initially, no replication is configured between sites.
@@ -289,15 +701,7 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
         .getCommandString();
 
     // Check command status and output
-    CommandResultAssert replicateRegionCommand =
-        gfsh.executeAndAssertThat(command).statusIsSuccess();
-    replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
-    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
-        .hasSize(3);
-    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
-        .containsExactly("OK", "OK", "OK");
-    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-        .hasSize(3);
+    CommandResultAssert replicateRegionCommand = executeCommandAndVerifyStatusIsOk(gfsh, command);
     if (isPartitionedRegion && isParallelGatewaySender) {
       String msg1 = CliStrings.format(CliStrings.REPLICATE_REGION__MSG__REPLICATED__ENTRIES, 33);
       String msg2 = CliStrings.format(CliStrings.REPLICATE_REGION__MSG__REPLICATED__ENTRIES, 34);
@@ -396,15 +800,7 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
         client.invokeAsync(() -> sendRandomOpsFromClient(regionName, keySet, 10));
 
     // Check command status and output
-    CommandResultAssert replicateRegionCommand =
-        gfsh.executeAndAssertThat(command).statusIsSuccess();
-    replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
-    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
-        .hasSize(3);
-    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
-        .containsExactly("OK", "OK", "OK");
-    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-        .hasSize(3);
+    executeCommandAndVerifyStatusIsOk(gfsh, command);
 
     // Wait for random operations to finish
     asyncOps1.await();
@@ -452,16 +848,7 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
         .addOption(REPLICATE_REGION__CANCEL)
         .getCommandString();
     CommandResultAssert cancelCommandResult =
-        gfsh.executeAndAssertThat(cancelCommand).statusIsError();
-
-    // Check cancel command output
-    cancelCommandResult.hasTableSection().hasColumns().hasSize(3);
-    cancelCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
-        .hasSize(3);
-    cancelCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-        .hasSize(3);
-    cancelCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
-        .containsExactly("ERROR", "ERROR", "ERROR");
+        executeCommandAndVerifyStatusIsError(gfsh, cancelCommand);
     String msg1 = CliStrings.format(REPLICATE_REGION__MSG__NO__RUNNING__COMMAND,
         Region.SEPARATOR + regionName, senderIdInA);
     cancelCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
@@ -545,7 +932,7 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
         .addOption(REPLICATE_REGION__CANCEL)
         .getCommandString();
     CommandResultAssert cancelCommandResult =
-        gfsh.executeAndAssertThat(cancelCommand).statusIsSuccess();
+        gfsh.executeAndAssertThat(cancelCommand);
 
     // Check cancel command output
     cancelCommandResult.hasTableSection().hasColumns().hasSize(3);
@@ -554,6 +941,7 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
     cancelCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
         .hasSize(3);
     if (isPartitionedRegion && isParallelGatewaySender) {
+      cancelCommandResult.statusIsSuccess();
       cancelCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
           .containsExactly("OK", "OK", "OK");
       cancelCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
@@ -561,6 +949,7 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
               REPLICATE_REGION__MSG__EXECUTION__CANCELED,
               REPLICATE_REGION__MSG__EXECUTION__CANCELED);
     } else {
+      cancelCommandResult.statusIsError();
       cancelCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
           .containsExactlyInAnyOrder("OK", "ERROR", "ERROR");
       String msg1 = CliStrings.format(REPLICATE_REGION__MSG__NO__RUNNING__COMMAND,
@@ -596,9 +985,11 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
 
   private void createSenders(boolean isParallelGatewaySender, List<VM> serversInA,
       VM serverInB, String senderIdInA, String senderIdInB) {
-    serverInB.invoke(() -> WANTestBase.createSender(senderIdInB, 3,
-        isParallelGatewaySender, 100, 10, false,
-        false, null, false));
+    if (serverInB != null && senderIdInB != null) {
+      serverInB.invoke(() -> WANTestBase.createSender(senderIdInB, 3,
+          isParallelGatewaySender, 100, 10, false,
+          false, null, false));
+    }
     for (VM server : serversInA) {
       server.invoke(() -> WANTestBase.createSender(senderIdInA, 2, isParallelGatewaySender,
           100, 10, false,
@@ -697,5 +1088,51 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
         }
       }
     }
+  }
+
+  public CommandResultAssert executeCommandAndVerifyStatusIsOk(GfshCommandRule gfsh,
+      String command) {
+    CommandResultAssert replicateRegionCommand =
+        gfsh.executeAndAssertThat(command).statusIsSuccess();
+    replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+        .hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+        .containsExactly("OK", "OK", "OK");
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .hasSize(3);
+    return replicateRegionCommand;
+  }
+
+  public CommandResultAssert executeCommandAndVerifyStatusIsError(GfshCommandRule gfsh,
+      String command) {
+    CommandResultAssert replicateRegionCommand = gfsh.executeAndAssertThat(command).statusIsError();
+    replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+        .hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+        .containsExactly("ERROR", "ERROR", "ERROR");
+    return replicateRegionCommand;
+  }
+
+  public void createServersAndRegions(int locatorPort, List<VM> servers,
+      boolean usePartitionedRegion, String regionName, String senderId) {
+
+    for (VM server : servers) {
+      server.invoke(() -> WANTestBase.createServer(locatorPort));
+      if (usePartitionedRegion) {
+        server
+            .invoke(() -> WANTestBase.createPartitionedRegion(regionName, senderId, 1, 100,
+                isOffHeap(), RegionShortcut.PARTITION, true));
+      } else {
+        server.invoke(() -> WANTestBase.createReplicatedRegion(regionName, senderId,
+            Scope.GLOBAL, DataPolicy.REPLICATE,
+            isOffHeap(), true));
+      }
+    }
+
+
   }
 }
