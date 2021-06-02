@@ -45,6 +45,12 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
+  public long zrem(RedisKey key, List<byte[]> membersToRemove) {
+    return stripedExecute(key,
+        () -> getRedisSortedSet(key, false).zrem(getRegion(), key, membersToRemove));
+  }
+
+  @Override
   public long zcard(RedisKey key) {
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zcard());
   }
