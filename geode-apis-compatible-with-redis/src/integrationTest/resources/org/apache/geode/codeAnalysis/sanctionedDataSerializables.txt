@@ -24,7 +24,7 @@ fromData,54
 
 org/apache/geode/redis/internal/data/RedisSortedSet,2
 toData,98
-fromData,66
+fromData,106
 
 org/apache/geode/redis/internal/data/RedisString,2
 toData,23
