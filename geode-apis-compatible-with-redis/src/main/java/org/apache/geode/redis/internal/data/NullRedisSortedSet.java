@@ -18,6 +18,10 @@ package org.apache.geode.redis.internal.data;
 
 
 
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.POSITIVE_INFINITY;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +59,7 @@ class NullRedisSortedSet extends RedisSortedSet {
   @Override
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
-    byte[] incr = Coder.doubleToBytes(processIncrement(Coder.bytesToString(increment)));
+    byte[] incr = processIncrement(Coder.bytesToString(increment));
 
     List<byte[]> valuesToAdd = new ArrayList<>();
     valuesToAdd.add(incr);
@@ -65,5 +69,28 @@ class NullRedisSortedSet extends RedisSortedSet {
     region.create(key, sortedSet);
 
     return incr;
+  }
+
+  private byte[] processIncrement(String stringIncr) {
+    switch (stringIncr) {
+      case "inf":
+      case "+inf":
+      case "infinity":
+      case "+infinity":
+        stringIncr = Coder.doubleToString(POSITIVE_INFINITY);
+        break;
+      case "-inf":
+      case "-infinity":
+        stringIncr = Coder.doubleToString(NEGATIVE_INFINITY);
+        break;
+      default:
+        try {
+          Double.parseDouble(stringIncr);
+        } catch (NumberFormatException nfe) {
+          throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
+        }
+        break;
+    }
+    return Coder.stringToBytes(stringIncr);
   }
 }

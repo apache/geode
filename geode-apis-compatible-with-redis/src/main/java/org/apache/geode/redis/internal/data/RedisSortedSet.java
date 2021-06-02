@@ -312,7 +312,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
-  protected double processIncrement(String stringIncr) {
+  private double processIncrement(String stringIncr) {
     double incr;
     switch (stringIncr) {
       case "inf":
