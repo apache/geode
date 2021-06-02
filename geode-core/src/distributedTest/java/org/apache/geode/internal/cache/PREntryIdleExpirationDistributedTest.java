@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.ExpirationAction.DESTROY;
-import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_HEAP_LRU;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -94,11 +94,22 @@ public class PREntryIdleExpirationDistributedTest implements Serializable {
     }
   }
 
+  private void waitForExpirationInEachMember() {
+    VM[] vms = new VM[] {member1, member2, member3};
+    for (VM vm : vms) {
+      vm.invoke(() -> {
+        Region<String, String> region = cacheRule.getCache().getRegion(regionName);
+        await().until(() -> !region.containsKey(KEY));
+      });
+    }
+  }
+
   @Test
   public void readsInOtherMemberShouldPreventExpiration() throws Exception {
     AsyncInvocation<?> memberReading = member3.invokeAsync(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
       region.put(KEY, VALUE);
+      ExpiryTask.permitExpiration();
       while (KEEP_READING.get()) {
         region.get(KEY);
         Thread.sleep(10);
@@ -108,6 +119,7 @@ public class PREntryIdleExpirationDistributedTest implements Serializable {
     member2.invoke(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
       await().until(() -> region.containsKey(KEY));
+      ExpiryTask.permitExpiration();
       assertThat(region.containsKey(KEY)).isTrue();
     });
 
@@ -127,10 +139,12 @@ public class PREntryIdleExpirationDistributedTest implements Serializable {
     member3.invoke(() -> KEEP_READING.set(false));
 
     memberReading.await();
+    waitForExpirationInEachMember();
   }
 
   private void createRegion() {
-    RegionFactory<String, String> factory = cacheRule.getCache().createRegionFactory(PARTITION);
+    RegionFactory<String, String> factory =
+        cacheRule.getCache().createRegionFactory(PARTITION_HEAP_LRU);
     factory.setPartitionAttributes(
         new PartitionAttributesFactory<String, String>().setRedundantCopies(2).create());
     factory.setEntryIdleTimeout(new ExpirationAttributes(1, DESTROY));
