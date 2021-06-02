@@ -190,7 +190,6 @@ public class RedisSortedSet extends AbstractRedisData {
       ZAddOptions options) {
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
-
     int initialSize = getSortedSetSize();
     int changesCount = 0;
     while (iterator.hasNext()) {
@@ -203,10 +202,10 @@ public class RedisSortedSet extends AbstractRedisData {
       if (options.isXX() && !members.containsKey(member)) {
         continue;
       }
-      if (options.isCH() && members.containsKey(member)) {
-        changesCount = getChangesCount(changesCount, score, member);
+      byte[] oldScore = memberAdd(member, score);
+      if (options.isCH() && oldScore != null) {
+        changesCount = getChangesCount(changesCount, oldScore, score);
       }
-      memberAdd(member, score);
 
       if (deltaInfo == null) {
         deltaInfo = new AddsDeltaInfo(new ArrayList<>());
@@ -219,8 +218,8 @@ public class RedisSortedSet extends AbstractRedisData {
     return getSortedSetSize() - initialSize + changesCount;
   }
 
-  private int getChangesCount(int changesCount, byte[] score, byte[] member) {
-    boolean sameScore = Arrays.equals(members.getOrDefault(member, null), score);
+  private int getChangesCount(int changesCount, byte[] oldScore, byte[] newScore) {
+    boolean sameScore = Arrays.equals(oldScore, newScore);
     if (!sameScore) {
       changesCount++;
     }
