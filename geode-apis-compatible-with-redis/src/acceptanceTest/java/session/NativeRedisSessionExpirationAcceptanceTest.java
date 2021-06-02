@@ -31,6 +31,12 @@ public class NativeRedisSessionExpirationAcceptanceTest extends SessionExpiratio
     setupNativeRedis();
     startSpringApp(APP1, SHORT_SESSION_TIMEOUT, ports.get(SERVER1));
     startSpringApp(APP2, SHORT_SESSION_TIMEOUT, ports.get(SERVER1));
+    setupRetry();
+  }
+
+  @Override
+  protected void flushAll() {
+    redis.flushAll();
   }
 
   protected static void setupNativeRedis() {

@@ -32,11 +32,17 @@ public class NativeRedisSessionAcceptanceTest extends RedisSessionDUnitTest {
     setupNativeRedis();
     startSpringApp(APP1, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER1));
     startSpringApp(APP2, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER1));
+    setupRetry();
   }
 
   protected static void setupNativeRedis() {
     ports.put(SERVER1, redis.getExposedPorts().get(0));
     ports.put(SERVER2, redis.getExposedPorts().get(0));
+  }
+
+  @Override
+  protected void flushAll() {
+    redis.flushAll();
   }
 
   @Test
