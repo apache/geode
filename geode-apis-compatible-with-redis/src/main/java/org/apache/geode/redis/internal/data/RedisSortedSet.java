@@ -39,6 +39,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -230,22 +231,27 @@ public class RedisSortedSet extends AbstractRedisData {
 
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
-    byte[] score = members.get(member);
-    byte[] incr = Coder.doubleToBytes(
-        processIncrement(Coder.bytesToString(increment).toLowerCase()));
+    byte[] byteScore = members.get(member);
+    double incr = processIncrement(Coder.bytesToString(increment).toLowerCase());
 
-    if (score != null) {
-      incr = Coder.doubleToBytes(Coder.bytesToDouble(score) + Coder.bytesToDouble(incr));
+    if (byteScore != null) {
+      double score = Coder.bytesToDouble(byteScore);
+      if (Double.isInfinite(score) && Double.isInfinite(incr)) {
+        throw new NumberFormatException(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
+      }
+      incr = score + incr;
     }
-    memberAdd(member, incr);
+
+    byte[] byteIncr = Coder.doubleToBytes(incr);
+    memberAdd(member, byteIncr);
 
     AddsDeltaInfo deltaInfo = new AddsDeltaInfo(new ArrayList<>());
     deltaInfo.add(member);
-    deltaInfo.add(incr);
+    deltaInfo.add(byteIncr);
 
     storeChanges(region, key, deltaInfo);
 
-    return incr;
+    return byteIncr;
   }
 
   long zrem(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToRemove) {

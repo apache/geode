@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
@@ -29,18 +28,11 @@ public class ZIncrByExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisSortedSetCommands redisSortedSetCommands = context.getRedisSortedSetCommands();
     List<byte[]> commandElements = command.getProcessedCommand();
-    Iterator<byte[]> commandIterator = commandElements.iterator();
 
-    skipCommandAndKey(commandIterator);
-    byte[] increment = commandIterator.next();
-    byte[] member = commandIterator.next();
+    byte[] increment = commandElements.get(2);
+    byte[] member = commandElements.get(3);
 
     byte[] retVal = redisSortedSetCommands.zincrby(command.getKey(), increment, member);
     return RedisResponse.string(retVal);
-  }
-
-  private void skipCommandAndKey(Iterator<byte[]> commandIterator) {
-    commandIterator.next();
-    commandIterator.next();
   }
 }

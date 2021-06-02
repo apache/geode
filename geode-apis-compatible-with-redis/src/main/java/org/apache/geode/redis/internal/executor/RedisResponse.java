@@ -71,11 +71,6 @@ public class RedisResponse {
     return new RedisResponse((buffer) -> Coder.getSimpleStringResponse(buffer, byteArray));
   }
 
-  public static RedisResponse string(double doubleValue) {
-    return new RedisResponse(
-        (buffer) -> Coder.getSimpleStringResponse(buffer, Coder.doubleToBytes(doubleValue)));
-  }
-
   public static RedisResponse bulkString(Object value) {
     return new RedisResponse((buffer) -> {
       try {
