@@ -165,7 +165,7 @@ public class RedisSortedSetTest {
 
   /****************** Size ******************/
   @Test
-  @Ignore("Waiting on fix RedisSortedSet Sizable fix")
+  @Ignore("Waiting on GEODE-9304")
   public void constantBaseRedisSortedSetOverhead_shouldEqualCalculatedOverhead() {
     RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList());
     int baseRedisSortedSetOverhead = reflectionObjectSizer.sizeof(sortedSet);
@@ -175,7 +175,7 @@ public class RedisSortedSetTest {
   }
 
   @Test
-  @Ignore("Waiting on fix RedisSortedSet Sizable fix")
+  @Ignore("Waiting on GEODE-9304")
   public void constantValuePairOverhead_shouldEqualCalculatedOverhead() {
     RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList());
 
@@ -209,7 +209,7 @@ public class RedisSortedSetTest {
   }
 
   @Test
-  @Ignore("Redo when we have a defined Sizable strategy")
+  @Ignore("Waiting on GEODE-9304")
   public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithSingleValue() {
     List<byte[]> data = new ArrayList<>();
     data.add(stringToBytes("1.0"));
@@ -226,7 +226,7 @@ public class RedisSortedSetTest {
   }
 
   @Test
-  @Ignore("Redo when we have a defined Sizable strategy")
+  @Ignore("Waiting on GEODE-9304")
   public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithMultipleValues() {
     RedisSortedSet sortedSet =
         createRedisSortedSet("1.0", "memberUnoIsTheFirstMember",

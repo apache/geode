@@ -70,7 +70,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddErrors_givenWrongKeyType() {
+  public void shouldError_givenWrongKeyType() {
     final String STRING_KEY = "stringKey";
     jedis.set(STRING_KEY, "value");
     assertThatThrownBy(
@@ -79,19 +79,19 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddErrors_givenTooFewArguments() {
+  public void shouldError_givenTooFewArguments() {
     assertAtLeastNArgs(jedis, Protocol.Command.ZADD, 3);
   }
 
   @Test
-  public void zaddErrors_givenUnevenPairsOfArguments() {
+  public void shouldError_givenUnevenPairsOfArguments() {
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "1", member, "2"))
             .hasMessageContaining("ERR syntax error");
   }
 
   @Test
-  public void zaddErrors_givenNonNumericScore() {
+  public void shouldError_givenNonNumericScore() {
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "xlerb", member))
             .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
@@ -102,7 +102,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddErrors_givenBothNXAndXXOptions() {
+  public void shouldError_givenBothNXAndXXOptions() {
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "XX", "1.0",
             "fakeMember"))
@@ -110,7 +110,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zadd_prioritizesErrors_inTheCorrectOrder() {
+  public void shouldPrioritizeErrors_inTheCorrectOrder() {
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "XX", "xlerb",
             member, "2"))
@@ -125,7 +125,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddStoresScores_givenCorrectArguments() {
+  public void shouldStoreScores_givenCorrectArguments() {
     Map<String, Double> map = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
 
     Set<String> keys = map.keySet();
@@ -142,7 +142,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddStoresScores_givenMultipleMembersAndScores() {
+  public void shouldStoreScores_givenMultipleMembersAndScores() {
     Map<String, Double> map = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
     Set<String> keys = map.keySet();
 
@@ -156,7 +156,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddCountsOnlyNewMembers_givenMultipleCopiesOfTheSameMember() {
+  public void shouldCountOnlyNewMembers_givenMultipleCopiesOfTheSameMember() {
     Long addCount = (Long) jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY,
         "1", member, "2", member, "3", member);
     assertThat(addCount).isEqualTo(1);
@@ -165,7 +165,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddAcceptsMembers_withEqualScores() {
+  public void shouldAcceptMembers_withEqualScores() {
     Long addCount = (Long) jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY,
         "1", "member3", "1", "member2", "1", "member1", "1", "zed", "1", "alpha", "1", "");
     assertThat(addCount).isEqualTo(6);
@@ -179,7 +179,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddCountsOnlyNewMembers_givenMultipleCopiesOfTheSameMember_toAnExistingSet() {
+  public void shouldCountOnlyNewMembers_givenMultipleCopiesOfTheSameMember_toAnExistingSet() {
     Long addCount = jedis.zadd(SORTED_SET_KEY, 1.0, "otherMember");
     assertThat(addCount).isEqualTo(1);
     jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY,
@@ -189,7 +189,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddDoesNotCountExistingMembersWithoutChanges_whenCHSpecified() {
+  public void shouldNotCountExistingMembersWithoutChanges_whenCHSpecified() {
     Map<String, Double> initMap = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
     jedis.zadd(SORTED_SET_KEY, initMap);
 
@@ -201,7 +201,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddCountsExistingMemberChanges_whenCHSpecified() {
+  public void shouldCountExistingMemberChanges_whenCHSpecified() {
     Map<String, Double> initMap = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
     jedis.zadd(SORTED_SET_KEY, initMap);
 
@@ -219,7 +219,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddCountsNewMembers_whenCHSpecified() {
+  public void shouldCountsNewMembers_whenCHSpecified() {
     Map<String, Double> initMap = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
     jedis.zadd(SORTED_SET_KEY, initMap);
 
@@ -236,7 +236,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddDoesNotUpdateMembers_whenNXSpecified() {
+  public void shouldNotUpdateMembers_whenNXSpecified() {
     Map<String, Double> initMap = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
     Long addCount = jedis.zadd(SORTED_SET_KEY, initMap);
     assertThat(addCount).isEqualTo(INITIAL_MEMBER_COUNT);
@@ -267,7 +267,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddDoesNotAddNewMembers_whenXXSpecified() {
+  public void shouldNotAddNewMembers_whenXXSpecified() {
     Map<String, Double> initMap = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
 
     Long addCount = jedis.zadd(SORTED_SET_KEY, initMap);

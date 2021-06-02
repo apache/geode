@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
@@ -59,29 +58,29 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void zrankErrors_givenWrongNumberOfArguments() {
+  public void shouldError_givenWrongNumberOfArguments() {
     assertExactNumberOfArgs(jedis, Protocol.Command.ZSCORE, 2);
   }
 
   @Test
-  public void zrankReturnsNil_givenNonexistentKey() {
+  public void shouldReturnNil_givenNonexistentKey() {
     assertThat(jedis.zrank("fakeKey", "fakeMember")).isEqualTo(null);
   }
 
   @Test
-  public void zrankReturnsNil_givenNonexistentMember() {
+  public void shouldReturnNil_givenNonexistentMember() {
     jedis.zadd("key", 1.0, "member");
     assertThat(jedis.zrank("key", "fakeMember")).isEqualTo(null);
   }
 
   @Test
-  public void zrankReturnsRank_givenExistingKeyAndMember() {
+  public void shouldReturnRank_givenExistingKeyAndMember() {
     jedis.zadd("key", 1.0, "member");
     assertThat(jedis.zrank("key", "member")).isEqualTo(0);
   }
 
   @Test
-  public void zrankReturnsRankByScore_givenUniqueScoresAndMembers() {
+  public void shouldReturnRankByScore_givenUniqueScoresAndMembers() {
     Map<String, Double> map = makeMemberScoreMap_differentScores();
     jedis.zadd("key", map);
 
@@ -103,7 +102,7 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void zrankReturnsRankByLex_givenMembersWithSameScore() {
+  public void shouldReturnRankByLex_givenMembersWithSameScore() {
     Map<String, Double> map = makeMemberScoreMap_sameScores();
     jedis.zadd("key", map);
 
@@ -126,7 +125,7 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void zrankSorts_byBothScoreAndLexical() {
+  public void shouldSort_byBothScoreAndLexical() {
     Map<String, Double> memberScoreMap = makeMemberScoreMap_withVariedScores_andADuplicate();
     Map<Long, String> rankMap = makeRankToMemberMap_withExpectedRankings();
 
@@ -241,11 +240,4 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
 
     return map;
   }
-
-  public static <V, K> Map<V, K> invert(Map<K, V> map) {
-    return map.entrySet()
-        .stream()
-        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
-  }
-
 }

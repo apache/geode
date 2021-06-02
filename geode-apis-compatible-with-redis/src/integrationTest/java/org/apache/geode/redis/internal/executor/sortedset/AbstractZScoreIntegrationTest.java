@@ -44,23 +44,23 @@ public abstract class AbstractZScoreIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void zscoreErrors_givenWrongNumberOfArguments() {
+  public void shouldError_givenWrongNumberOfArguments() {
     assertExactNumberOfArgs(jedis, Protocol.Command.ZSCORE, 2);
   }
 
   @Test
-  public void zscoreReturnsNil_givenNonexistentKey() {
+  public void shouldReturnNil_givenNonexistentKey() {
     assertThat(jedis.zscore("fakeKey", "fakeMember")).isEqualTo(null);
   }
 
   @Test
-  public void zscoreReturnsNil_givenNonexistentMember() {
+  public void shouldReturnNil_givenNonexistentMember() {
     jedis.zadd("key", 1.0, "member");
     assertThat(jedis.zscore("key", "fakeMember")).isEqualTo(null);
   }
 
   @Test
-  public void zscoreReturnsScore_givenExistingKeyAndMember() {
+  public void shouldReturnScore_givenExistingKeyAndMember() {
     jedis.zadd("key", 1.0, "member");
     assertThat(jedis.zscore("key", "member")).isEqualTo(1.0);
   }
