@@ -197,14 +197,14 @@ public class RedisSortedSet extends AbstractRedisData {
       byte[] score = iterator.next();
       validateScoreIsDouble(score);
       byte[] member = iterator.next();
-      if (options.isCH() && members.containsKey(member)) {
-        changesCount = getChangesCount(changesCount, score, member);
-      }
       if (options.isNX() && members.containsKey(member)) {
         continue;
       }
       if (options.isXX() && !members.containsKey(member)) {
         continue;
+      }
+      if (options.isCH() && members.containsKey(member)) {
+        changesCount = getChangesCount(changesCount, score, member);
       }
       memberAdd(member, score);
 
