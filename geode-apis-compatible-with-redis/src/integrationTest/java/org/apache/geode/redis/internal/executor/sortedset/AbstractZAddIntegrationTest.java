@@ -169,7 +169,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
 
     ZAddParams zAddParam = new ZAddParams();
     zAddParam.ch();
-    addCount = jedis.zadd(SORTED_SET_KEY, initMap);
+    addCount = jedis.zadd(SORTED_SET_KEY, initMap, zAddParam);
     assertThat(addCount).isEqualTo(0);
     assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(2 * INITIAL_MEMBER_COUNT);
   }
