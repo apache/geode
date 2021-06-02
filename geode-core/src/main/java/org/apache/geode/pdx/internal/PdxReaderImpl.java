@@ -958,8 +958,9 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
       return readPdxString(ft);
     } else {
       PdxString pdxString = getPdxStringFromObjectField(ft);
-      if (pdxString != null)
+      if (pdxString != null) {
         return pdxString;
+      }
     }
     return readField(field);
   }

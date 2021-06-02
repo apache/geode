@@ -126,15 +126,19 @@ public class SystemMemberType implements java.io.Serializable {
    */
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof SystemMemberType))
+    }
+    if (!(other instanceof SystemMemberType)) {
       return false;
+    }
     final SystemMemberType that = (SystemMemberType) other;
-    if (this.ordinal != that.ordinal)
+    if (this.ordinal != that.ordinal) {
       return false;
+    }
     return true;
   }
 

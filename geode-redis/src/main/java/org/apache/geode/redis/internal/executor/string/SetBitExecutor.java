@@ -76,17 +76,19 @@ public class SetBitExecutor extends StringExecutor {
 
     if (wrapper == null) {
       byte[] bytes = new byte[byteIndex + 1];
-      if (value == 1)
+      if (value == 1) {
         bytes[byteIndex] = (byte) (0x80 >> offset);
+      }
       r.put(key, new ByteArrayWrapper(bytes));
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
     } else {
 
       byte[] bytes = wrapper.toBytes();
-      if (byteIndex < bytes.length)
+      if (byteIndex < bytes.length) {
         returnBit = (bytes[byteIndex] & (0x80 >> offset)) >> (7 - offset);
-      else
+      } else {
         returnBit = 0;
+      }
 
       if (byteIndex < bytes.length) {
         bytes[byteIndex] = value == 1 ? (byte) (bytes[byteIndex] | (0x80 >> offset))

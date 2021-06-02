@@ -439,8 +439,9 @@ public class DirectChannel {
         if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
           logger.trace(LogMarker.DM_VERBOSE, "Not a member: {}", destination);
         }
-        if (ce == null)
+        if (ce == null) {
           ce = new ConnectExceptions();
+        }
         ce.addFailure(destination, new ShunnedMemberException(
             String.format("Member is being shunned: %s", destination)));
       } else {
@@ -459,8 +460,9 @@ public class DirectChannel {
             directMessage.registerProcessor();
           }
         } catch (IOException ex) {
-          if (ce == null)
+          if (ce == null) {
             ce = new ConnectExceptions();
+          }
           ce.addFailure(destination, ex);
         }
       }
@@ -724,8 +726,9 @@ public class DirectChannel {
    */
   public void waitForChannelState(DistributedMember member, Map channelState)
       throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     TCPConduit tc = this.conduit;
     if (tc != null) {
       tc.waitForThreadOwnedOrderedConnectionState(member, channelState);

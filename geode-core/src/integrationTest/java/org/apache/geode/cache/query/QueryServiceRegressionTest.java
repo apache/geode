@@ -134,14 +134,17 @@ public class QueryServiceRegressionTest {
       CacheUtils.getLogger().fine("Executing:" + queryStr);
       try {
         r = q.execute();
-        if (i == 1)
+        if (i == 1) {
           fail("should have thrown an AmbiguousNameException");
+        }
       } catch (AmbiguousNameException e) {
-        if (i != 1)
+        if (i != 1) {
           throw e; // if it's 1 then pass
+        }
       }
-      if (r != null)
+      if (r != null) {
         CacheUtils.getLogger().fine(Utils.printResult(r));
+      }
     }
   }
 

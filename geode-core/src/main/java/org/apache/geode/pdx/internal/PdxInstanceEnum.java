@@ -152,23 +152,30 @@ public class PdxInstanceEnum implements InternalPdxInstance, ComparableEnum {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (!(obj instanceof ComparableEnum))
+    }
+    if (!(obj instanceof ComparableEnum)) {
       return false;
+    }
     ComparableEnum other = (ComparableEnum) obj;
     if (className == null) {
-      if (other.getClassName() != null)
+      if (other.getClassName() != null) {
         return false;
-    } else if (!className.equals(other.getClassName()))
+      }
+    } else if (!className.equals(other.getClassName())) {
       return false;
+    }
     if (enumName == null) {
-      if (other.getName() != null)
+      if (other.getName() != null) {
         return false;
-    } else if (!enumName.equals(other.getName()))
+      }
+    } else if (!enumName.equals(other.getName())) {
       return false;
+    }
     return true;
   }
 

@@ -140,8 +140,9 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
       String exception =
           "Cannot set a negative Time Out for transactions";
       LogWriter writer = TransactionUtils.getLogWriter();
-      if (writer.fineEnabled())
+      if (writer.fineEnabled()) {
         writer.fine(exception);
+      }
       throw new SystemException(exception);
     } else if (timeOut == 0) {
       timeOut = TransactionManagerImpl.DEFAULT_TRANSACTION_TIMEOUT;

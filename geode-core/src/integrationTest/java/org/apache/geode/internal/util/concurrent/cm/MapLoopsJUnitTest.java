@@ -63,23 +63,29 @@ public class MapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
       } catch (ClassNotFoundException e) {
         throw new RuntimeException("Class " + args[0] + " not found.");
       }
-    } else
+    } else {
       mapClass = MAP_CLASS;
+    }
 
-    if (args.length > 1)
+    if (args.length > 1) {
       maxThreads = Integer.parseInt(args[1]);
+    }
 
-    if (args.length > 2)
+    if (args.length > 2) {
       nkeys = Integer.parseInt(args[2]);
+    }
 
-    if (args.length > 3)
+    if (args.length > 3) {
       pinsert = Integer.parseInt(args[3]);
+    }
 
-    if (args.length > 4)
+    if (args.length > 4) {
       premove = Integer.parseInt(args[4]);
+    }
 
-    if (args.length > 5)
+    if (args.length > 5) {
       nops = Integer.parseInt(args[5]);
+    }
 
     // normalize probabilities wrt random number generator
     removesPerMaxRandom = (int) (((double) premove / 100.0 * 0x7FFFFFFFL));
@@ -98,16 +104,17 @@ public class MapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
     for (int i = 1; i <= maxThreads;) {
       Thread.sleep(100);
       test(i, nkeys, mapClass);
-      if (warmups > 0)
+      if (warmups > 0) {
         --warmups;
-      else if (i == k) {
+      } else if (i == k) {
         k = i << 1;
         i = i + (i >>> 1);
       } else if (i == 1 && k == 2) {
         i = k;
         warmups = 1;
-      } else
+      } else {
         i = k;
+      }
     }
     pool.shutdown();
   }
@@ -115,8 +122,9 @@ public class MapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
   static Integer[] makeKeys(int n) {
     LoopHelpers.SimpleRandom rng = new LoopHelpers.SimpleRandom();
     Integer[] key = new Integer[n];
-    for (int i = 0; i < key.length; ++i)
+    for (int i = 0; i < key.length; ++i) {
       key[i] = new Integer(rng.next());
+    }
     return key;
   }
 
@@ -140,8 +148,9 @@ public class MapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
     shuffleKeys(key);
     LoopHelpers.BarrierTimer timer = new LoopHelpers.BarrierTimer();
     CyclicBarrier barrier = new CyclicBarrier(i + 1, timer);
-    for (int t = 0; t < i; ++t)
+    for (int t = 0; t < i; ++t) {
       pool.execute(new Runner(t, map, key, barrier));
+    }
     barrier.await();
     barrier.await();
     long time = timer.getTime();
@@ -173,17 +182,20 @@ public class MapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
       // random-walk around key positions, bunching accesses
       int r = rng.next();
       position += (r & 7) - 3;
-      while (position >= key.length)
+      while (position >= key.length) {
         position -= key.length;
-      while (position < 0)
+      }
+      while (position < 0) {
         position += key.length;
+      }
 
       Integer k = key[position];
       Integer x = (Integer) map.get(k);
 
       if (x != null) {
-        if (x.intValue() != k.intValue())
+        if (x.intValue() != k.intValue()) {
           throw new Error("bad mapping: " + x + " to " + k);
+        }
 
         if (r < removesPerMaxRandom) {
           if (map.remove(k) != null) {
@@ -208,8 +220,9 @@ public class MapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
       try {
         barrier.await();
         int ops = nops;
-        while (ops > 0)
+        while (ops > 0) {
           ops -= step();
+        }
         barrier.await();
       } catch (Exception ex) {
         ex.printStackTrace();

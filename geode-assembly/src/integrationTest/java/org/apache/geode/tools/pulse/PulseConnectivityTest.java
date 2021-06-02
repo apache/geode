@@ -67,8 +67,9 @@ public class PulseConnectivityTest {
   @Before
   public void setUp() throws Exception {
     Properties locatorProperties = new Properties();
-    if (!"localhost".equals(jmxBindAddress))
+    if (!"localhost".equals(jmxBindAddress)) {
       locatorProperties.setProperty(JMX_MANAGER_BIND_ADDRESS, jmxBindAddress);
+    }
     locator.withProperties(locatorProperties).startLocator();
   }
 

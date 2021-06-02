@@ -46,8 +46,9 @@ public class GemFireAuthenticationProvider implements AuthenticationProvider {
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
     if (authentication instanceof GemFireAuthentication) {
       GemFireAuthentication gemAuth = (GemFireAuthentication) authentication;
-      if (gemAuth.isAuthenticated())
+      if (gemAuth.isAuthenticated()) {
         return gemAuth;
+      }
     }
 
     String name = authentication.getName();

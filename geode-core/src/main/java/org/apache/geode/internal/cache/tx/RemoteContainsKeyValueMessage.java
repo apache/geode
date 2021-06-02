@@ -156,8 +156,9 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
   @Override
   protected short computeCompressedShort() {
     short flags = super.computeCompressedShort();
-    if (this.valueCheck)
+    if (this.valueCheck) {
       flags |= VALUE_CHECK;
+    }
     return flags;
   }
 

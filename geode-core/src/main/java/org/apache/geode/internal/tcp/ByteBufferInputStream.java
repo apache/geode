@@ -352,8 +352,9 @@ public class ByteBufferInputStream extends InputStream
     @Override
     public void sendTo(DataOutput out) throws IOException {
       int len = remaining();
-      if (len == 0)
+      if (len == 0) {
         return;
+      }
       if (out instanceof ByteBufferWriter) {
         ((ByteBufferWriter) out).write(this.bb);
         return;

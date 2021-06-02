@@ -134,15 +134,17 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
   /* public no-arg constructor required for Deserializable */
   public PortfolioPdx() {
     this.numInstance++;
-    if (DEBUG)
+    if (DEBUG) {
       Thread.dumpStack();
+    }
     // GemFireCacheImpl.getInstance().getLogger().fine(new Exception("DEBUG"));
   }
 
   public PortfolioPdx(int i) {
     aDay = (Day) (dayList.get((i % dayList.size())));
-    if (DEBUG)
+    if (DEBUG) {
       Thread.dumpStack();
+    }
     this.numInstance++;
     ID = i;
     if (i % 2 == 0) {

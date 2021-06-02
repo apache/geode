@@ -62,8 +62,9 @@ public class HMGetExecutor extends HashExecutor {
     /*
      * This is done to preserve order in the output
      */
-    for (ByteArrayWrapper field : fields)
+    for (ByteArrayWrapper field : fields) {
       values.add(results.get(field));
+    }
 
     respondBulkStrings(command, context, values);
   }

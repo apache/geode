@@ -95,8 +95,9 @@ public abstract class TestCacheWriter<K, V> extends TestCacheCallback implements
   public void beforeRegionDestroy(RegionEvent<K, V> event) throws CacheWriterException {
 
     // check argument to see if this is during tearDown
-    if ("teardown".equals(event.getCallbackArgument()))
+    if ("teardown".equals(event.getCallbackArgument())) {
       return;
+    }
 
     this.invoked = true;
     beforeRegionDestroy2(event);

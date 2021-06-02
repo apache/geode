@@ -138,36 +138,47 @@ public class JoinResponseMessage<ID extends MemberIdentifier> extends AbstractGM
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     JoinResponseMessage<ID> other = (JoinResponseMessage<ID>) obj;
     if (currentView == null) {
-      if (other.currentView != null)
+      if (other.currentView != null) {
         return false;
-    } else if (!currentView.equals(other.currentView))
+      }
+    } else if (!currentView.equals(other.currentView)) {
       return false;
+    }
     if (memberID == null) {
-      if (other.memberID != null)
+      if (other.memberID != null) {
         return false;
-    } else if (!memberID.equals(other.memberID))
+      }
+    } else if (!memberID.equals(other.memberID)) {
       return false;
-    if (!Arrays.equals(messengerData, other.messengerData))
+    }
+    if (!Arrays.equals(messengerData, other.messengerData)) {
       return false;
+    }
     if (rejectionMessage == null) {
-      if (other.rejectionMessage != null)
+      if (other.rejectionMessage != null) {
         return false;
-    } else if (!rejectionMessage.equals(other.rejectionMessage))
+      }
+    } else if (!rejectionMessage.equals(other.rejectionMessage)) {
       return false;
+    }
     // as we are not sending as part of JoinResposne
     /*
      * if (requestId != other.requestId) return false;
      */
-    if (!Arrays.equals(secretPk, other.secretPk))
+    if (!Arrays.equals(secretPk, other.secretPk)) {
       return false;
+    }
     return true;
   }
 

@@ -322,8 +322,9 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
       @Override
       public boolean done() {
         if (!"VAL-1-1".equals(region1.get(key1)) || !"VAL-1-1".equals(region2.get(key2))
-            || !"VAL-1-1".equals(region3.get(key3)))
+            || !"VAL-1-1".equals(region3.get(key3))) {
           return false;
+        }
         return true;
       }
 
@@ -410,8 +411,9 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        if (!"VAL-2-2".equals(region1.get(key1)) || !"VAL-2-2".equals(region3.get(key3)))
+        if (!"VAL-2-2".equals(region1.get(key1)) || !"VAL-2-2".equals(region3.get(key3))) {
           return false;
+        }
         return true;
       }
 
@@ -449,8 +451,9 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
       @Override
       public boolean done() {
         if (!"VAL-2-3".equals(region1.get(key1)) || !"VAL-2-2".equals(region2.get(key2))
-            || !"VAL-2-3".equals(region3.get(key3)))
+            || !"VAL-2-3".equals(region3.get(key3))) {
           return false;
+        }
         return true;
       }
 

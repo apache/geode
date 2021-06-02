@@ -133,8 +133,9 @@ public class SetsJUnitTest {
     for (int j = 0; j < numSets; j++) {
       keys[j] = generator.generate('x');
       Set<String> newSet = new HashSet<String>();
-      for (int i = 0; i < elements; i++)
+      for (int i = 0; i < elements; i++) {
         newSet.add(generator.generate('x'));
+      }
       sets.add(newSet);
     }
 
@@ -145,8 +146,9 @@ public class SetsJUnitTest {
     }
 
     Set<String> result = sets.get(0);
-    for (int i = 1; i < numSets; i++)
+    for (int i = 1; i < numSets; i++) {
       result.removeAll(sets.get(i));
+    }
 
     assertEquals(result, jedis.sdiff(keys));
 
@@ -168,8 +170,9 @@ public class SetsJUnitTest {
     for (int j = 0; j < numSets; j++) {
       keys[j] = generator.generate('x');
       Set<String> newSet = new HashSet<String>();
-      for (int i = 0; i < elements; i++)
+      for (int i = 0; i < elements; i++) {
         newSet.add(generator.generate('x'));
+      }
       sets.add(newSet);
     }
 
@@ -180,8 +183,9 @@ public class SetsJUnitTest {
     }
 
     Set<String> result = sets.get(0);
-    for (int i = 1; i < numSets; i++)
+    for (int i = 1; i < numSets; i++) {
       result.addAll(sets.get(i));
+    }
 
     assertEquals(result, jedis.sunion(keys));
 
@@ -203,8 +207,9 @@ public class SetsJUnitTest {
     for (int j = 0; j < numSets; j++) {
       keys[j] = generator.generate('x');
       Set<String> newSet = new HashSet<String>();
-      for (int i = 0; i < elements; i++)
+      for (int i = 0; i < elements; i++) {
         newSet.add(generator.generate('x'));
+      }
       sets.add(newSet);
     }
 
@@ -215,8 +220,9 @@ public class SetsJUnitTest {
     }
 
     Set<String> result = sets.get(0);
-    for (int i = 1; i < numSets; i++)
+    for (int i = 1; i < numSets; i++) {
       result.retainAll(sets.get(i));
+    }
 
     assertEquals(result, jedis.sinter(keys));
 

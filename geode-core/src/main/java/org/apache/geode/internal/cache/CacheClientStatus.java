@@ -73,8 +73,9 @@ public class CacheClientStatus implements Serializable {
   }
 
   public String getHostAddress() {
-    if (_id != null && _id.getDistributedMember() != null)
+    if (_id != null && _id.getDistributedMember() != null) {
       return _id.getDistributedMember().getHost();
+    }
     return null;
   }
 

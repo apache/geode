@@ -94,16 +94,20 @@ public class InternalRole implements Role {
    */
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof InternalRole))
+    }
+    if (!(other instanceof InternalRole)) {
       return false;
+    }
     final InternalRole that = (InternalRole) other;
 
-    if (!StringUtils.equals(this.name, that.name))
+    if (!StringUtils.equals(this.name, that.name)) {
       return false;
+    }
 
     return true;
   }

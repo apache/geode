@@ -60,21 +60,24 @@ public class ExpireExecutor extends AbstractExecutor implements Extendable {
     }
 
     // If time unit given is not in millis convert to millis
-    if (!timeUnitMillis())
+    if (!timeUnitMillis()) {
       delay = delay * millisInSecond;
+    }
 
     boolean expirationSet = false;
 
-    if (rC.hasExpiration(wKey))
+    if (rC.hasExpiration(wKey)) {
       expirationSet = rC.modifyExpiration(wKey, delay);
-    else
+    } else {
       expirationSet = rC.setExpiration(wKey, delay);
+    }
 
 
-    if (expirationSet)
+    if (expirationSet) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), SET));
-    else
+    } else {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_SET));
+    }
   }
 
   /*

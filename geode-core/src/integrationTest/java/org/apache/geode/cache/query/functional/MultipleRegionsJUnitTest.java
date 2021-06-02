@@ -79,8 +79,9 @@ public class MultipleRegionsJUnitTest {
     for (int i = 0; i < queries.length; i++) {
       Query query = qs.newQuery(queries[i]);
       Object result = query.execute();
-      if (((Collection) result).size() != SizeArray[i])
+      if (((Collection) result).size() != SizeArray[i]) {
         fail("Size of Result is not as Expected");
+      }
     }
   }
 }

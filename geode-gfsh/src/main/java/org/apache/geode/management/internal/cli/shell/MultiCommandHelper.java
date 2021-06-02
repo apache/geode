@@ -42,8 +42,9 @@ public class MultiCommandHelper {
       StringBuilder sb = new StringBuilder();
       for (int k = 0; k < list.size(); k++) {
         sb.append(list.get(k));
-        if (k < list.size() - 1)
+        if (k < list.size() - 1) {
           sb.append(";");
+        }
       }
       finalList.add(sb.toString());
     }
@@ -51,9 +52,9 @@ public class MultiCommandHelper {
   }
 
   private static void updateList(Map<Integer, List<String>> listMap, String a, int splitCount) {
-    if (listMap.containsKey(splitCount))
+    if (listMap.containsKey(splitCount)) {
       listMap.get(splitCount).add(a);
-    else {
+    } else {
       List<String> list = new ArrayList<String>();
       list.add(a);
       listMap.put(splitCount, list);

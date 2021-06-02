@@ -43,10 +43,11 @@ public class AvailablePortHelper {
   AvailablePortHelper() {
     Random rand;
     boolean fast = Boolean.getBoolean("AvailablePort.fastRandom");
-    if (fast)
+    if (fast) {
       rand = new Random();
-    else
+    } else {
       rand = new java.security.SecureRandom();
+    }
     currentMembershipPort = new AtomicInteger(
         rand.nextInt(DEFAULT_MEMBERSHIP_PORT_RANGE[1] - DEFAULT_MEMBERSHIP_PORT_RANGE[0])
             + DEFAULT_MEMBERSHIP_PORT_RANGE[0]);

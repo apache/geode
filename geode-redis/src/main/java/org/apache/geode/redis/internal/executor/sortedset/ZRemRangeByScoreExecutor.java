@@ -101,15 +101,18 @@ public class ZRemRangeByScoreExecutor extends SortedSetExecutor {
     if (removeList != null) {
       for (Object entry : removeList) {
         ByteArrayWrapper remove = null;
-        if (entry instanceof Entry)
+        if (entry instanceof Entry) {
           remove = (ByteArrayWrapper) ((Entry<?, ?>) entry).getKey();
-        else if (entry instanceof Struct)
+        } else if (entry instanceof Struct) {
           remove = (ByteArrayWrapper) ((Struct) entry).getFieldValues()[0];
+        }
         Object oldVal = keyRegion.remove(remove);
-        if (oldVal != null)
+        if (oldVal != null) {
           numRemoved++;
-        if (keyRegion.isEmpty())
+        }
+        if (keyRegion.isEmpty()) {
           context.getRegionProvider().removeKey(key);
+        }
       }
     }
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
@@ -118,8 +121,9 @@ public class ZRemRangeByScoreExecutor extends SortedSetExecutor {
   private Collection<?> getKeys(ExecutionHandlerContext context, ByteArrayWrapper key,
       Region<ByteArrayWrapper, DoubleWrapper> keyRegion, double start, double stop,
       boolean startInclusive, boolean stopInclusive) throws Exception {
-    if (start == Double.POSITIVE_INFINITY || stop == Double.NEGATIVE_INFINITY || (start > stop))
+    if (start == Double.POSITIVE_INFINITY || stop == Double.NEGATIVE_INFINITY || (start > stop)) {
       return null;
+    }
 
     Query query;
     Object[] params;

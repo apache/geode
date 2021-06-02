@@ -81,8 +81,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(CACHE_XML_FILE, path);
 
     ds = (new TransactionTimeOutDUnitTest()).getSystem(props);
-    if (cache == null || cache.isClosed())
+    if (cache == null || cache.isClosed()) {
       cache = CacheFactory.create(ds);
+    }
   }
 
   private void closeCache() {
@@ -90,8 +91,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       if (cache != null && !cache.isClosed()) {
         cache.close();
       }
-      if (ds != null && ds.isConnected())
+      if (ds != null && ds.isConnected()) {
         ds.disconnect();
+      }
     } catch (Exception e) {
       fail("Exception in closing cache and disconnecting ds due to ", e);
     }
@@ -191,8 +193,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       } catch (Exception e) {
         exceptionOccurred = true;
       }
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail("Exception did not occur although was supposed to occur");
+      }
     } catch (Exception e) {
       fail("failed in naming lookup: ", e);
     }
@@ -302,8 +305,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       utx.commit();
       sql = "select * from newTable1 where id = 1";
       ResultSet rs = sm.executeQuery(sql);
-      if (!rs.next())
+      if (!rs.next()) {
         fail("Transaction not committed");
+      }
       sql = "drop table newTable1";
       sm.execute(sql);
       sm.close();
@@ -332,8 +336,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       sm.execute(sql);
       sql = "select * from newTable2 where id = 1";
       ResultSet rs = sm.executeQuery(sql);
-      if (!rs.next())
+      if (!rs.next()) {
         fail("Database not updated");
+      }
       sm.close();
       conn.close();
       assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
@@ -385,8 +390,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       sm.execute(sql);
       sql = "select * from newTable3 where id = 1";
       ResultSet rs = sm.executeQuery(sql);
-      if (!rs.next())
+      if (!rs.next()) {
         fail("Transaction not committed");
+      }
       sql = "drop table newTable3";
       sm.execute(sql);
       sm.close();

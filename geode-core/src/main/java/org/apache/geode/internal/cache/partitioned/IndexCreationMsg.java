@@ -216,8 +216,9 @@ public class IndexCreationMsg extends PartitionMessage {
                 interrupted = true;
                 dm.getCancelCriterion().checkCancelInProgress(e);
               } finally {
-                if (interrupted)
+                if (interrupted) {
                   Thread.currentThread().interrupt();
+                }
               }
 
               pr = PartitionedRegion.getPRFromId(this.regionId);
@@ -257,8 +258,9 @@ public class IndexCreationMsg extends PartitionMessage {
               interrupted = true;
               dm.getCancelCriterion().checkCancelInProgress(e);
             } finally {
-              if (interrupted)
+              if (interrupted) {
                 Thread.currentThread().interrupt();
+              }
             }
             pr = PartitionedRegion.getPRFromId(this.regionId);
             wait = false;

@@ -180,8 +180,9 @@ public class ClassPathLoader {
     }
 
     Class<?> clazz = forName(name, isTraceEnabled);
-    if (clazz != null)
+    if (clazz != null) {
       return clazz;
+    }
 
     throw new ClassNotFoundException(name);
   }
@@ -391,8 +392,9 @@ public class ClassPathLoader {
   public static ClassPathLoader getLatest() {
     if (latest == null) {
       synchronized (ClassPathLoader.class) {
-        if (latest == null)
+        if (latest == null) {
           setLatestToDefault();
+        }
       }
     }
 

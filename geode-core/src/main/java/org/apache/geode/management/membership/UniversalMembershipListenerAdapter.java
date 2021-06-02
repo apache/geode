@@ -265,16 +265,20 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
 
     @Override
     public boolean equals(Object other) {
-      if (other == this)
+      if (other == this) {
         return true;
-      if (other == null)
+      }
+      if (other == null) {
         return false;
-      if (!(other instanceof AdaptedMembershipEvent))
+      }
+      if (!(other instanceof AdaptedMembershipEvent)) {
         return false;
+      }
       final AdaptedMembershipEvent that = (AdaptedMembershipEvent) other;
 
-      if (this.event != that.event && !(this.event != null && this.event.equals(that.event)))
+      if (this.event != that.event && !(this.event != null && this.event.equals(that.event))) {
         return false;
+      }
 
       return true;
     }

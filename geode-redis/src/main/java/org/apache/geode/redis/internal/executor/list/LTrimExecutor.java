@@ -97,8 +97,9 @@ public class LTrimExecutor extends ListExecutor {
     }
 
     for (Object keyElement : keyRegion.keySet()) {
-      if (!keepList.contains(keyElement) && keyElement instanceof Integer)
+      if (!keepList.contains(keyElement) && keyElement instanceof Integer) {
         keyRegion.remove(keyElement);
+      }
     }
 
     // Reset indexes in meta data region

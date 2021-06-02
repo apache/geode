@@ -83,13 +83,15 @@ class EnabledManagedEntityController implements ManagedEntityController {
    * Returns <code>true</code> if the <code>output</code> string contains a known error message.
    */
   private boolean outputIsError(String output) {
-    if (output == null)
+    if (output == null) {
       return false;
+    }
     boolean error = false;
     for (int i = 0; i < ERROR_OUTPUTS.length; i++) {
       error = output.indexOf(ERROR_OUTPUTS[i]) > -1;
-      if (error)
+      if (error) {
         return error;
+      }
     }
     return error;
   }
@@ -257,8 +259,9 @@ class EnabledManagedEntityController implements ManagedEntityController {
   @Override
   public String buildSSLArguments(DistributedSystemConfig config) {
     Properties sslProps = buildSSLProperties(config, true);
-    if (sslProps == null)
+    if (sslProps == null) {
       return null;
+    }
 
     StringBuffer sb = new StringBuffer();
     for (Iterator iter = sslProps.keySet().iterator(); iter.hasNext();) {
@@ -278,12 +281,14 @@ class EnabledManagedEntityController implements ManagedEntityController {
    *        prepended so the argument will become -Dgemfire.xxxx
    */
   private Properties buildSSLProperties(DistributedSystemConfig config, boolean forCommandLine) {
-    if (!config.isSSLEnabled())
+    if (!config.isSSLEnabled()) {
       return null;
+    }
 
     String prefix = "";
-    if (forCommandLine)
+    if (forCommandLine) {
       prefix = GeodeGlossary.GEMFIRE_PREFIX;
+    }
 
     Properties sslProps = (Properties) config.getSSLProperties().clone();
     // add ssl-enabled, etc...

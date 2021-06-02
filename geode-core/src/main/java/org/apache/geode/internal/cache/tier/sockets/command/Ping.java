@@ -48,8 +48,9 @@ public class Ping extends BaseCommand {
           (DistributionStats.getStatTime() - start));
     }
     ClientHealthMonitor chm = ClientHealthMonitor.getInstance();
-    if (chm != null)
+    if (chm != null) {
       chm.receivedPing(serverConnection.getProxyID());
+    }
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
 
     writeReply(clientMessage, serverConnection);

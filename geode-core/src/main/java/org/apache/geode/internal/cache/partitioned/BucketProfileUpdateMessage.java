@@ -88,14 +88,17 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
       // bucket initialization -- mthomas 5/17/2007
       pr.getRegionAdvisor().putBucketProfile(this.bucketId, this.profile);
     } catch (PRLocallyDestroyedException fre) {
-      if (logger.isDebugEnabled())
+      if (logger.isDebugEnabled()) {
         logger.debug("<region locally destroyed> ///{}", this);
+      }
     } catch (RegionDestroyedException e) {
-      if (logger.isDebugEnabled())
+      if (logger.isDebugEnabled()) {
         logger.debug("<region destroyed> ///{}", this);
+      }
     } catch (CancelException e) {
-      if (logger.isDebugEnabled())
+      if (logger.isDebugEnabled()) {
         logger.debug("<cache closed> ///{}", this);
+      }
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned

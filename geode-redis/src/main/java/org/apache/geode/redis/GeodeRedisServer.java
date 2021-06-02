@@ -289,8 +289,9 @@ public class GeodeRedisServer {
     String prop = System.getProperty(NUM_THREADS_SYS_PROP_NAME);
     int numCores = Runtime.getRuntime().availableProcessors();
     int def = 4 * numCores;
-    if (prop == null || prop.isEmpty())
+    if (prop == null || prop.isEmpty()) {
       return def;
+    }
     int threads;
     try {
       threads = Integer.parseInt(prop);
@@ -401,8 +402,9 @@ public class GeodeRedisServer {
         cache = GemFireCacheImpl.getInstance();
         if (cache == null) {
           CacheFactory cacheFactory = new CacheFactory();
-          if (logLevel != null)
+          if (logLevel != null) {
             cacheFactory.set(LOG_LEVEL, logLevel);
+          }
           cache = cacheFactory.create();
         }
       }
@@ -467,8 +469,9 @@ public class GeodeRedisServer {
           this.regionCache
               .createRemoteRegionReferenceLocally(Coder.stringToByteArrayWrapper(regionName), type);
         } catch (Exception e) {
-          if (logger.errorEnabled())
+          if (logger.errorEnabled()) {
             logger.error(e);
+          }
         }
       }
     }
@@ -523,8 +526,9 @@ public class GeodeRedisServer {
         .childHandler(new ChannelInitializer<SocketChannel>() {
           @Override
           public void initChannel(SocketChannel ch) throws Exception {
-            if (logger.fineEnabled())
+            if (logger.fineEnabled()) {
               logger.fine("GeodeRedisServer-Connection established with " + ch.remoteAddress());
+            }
             ChannelPipeline p = ch.pipeline();
             p.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
             p.addLast(ExecutionHandlerContext.class.getSimpleName(),
@@ -541,10 +545,11 @@ public class GeodeRedisServer {
     if (this.logger.infoEnabled()) {
       String logMessage = "GeodeRedisServer started {" + getBindAddress() + ":" + serverPort
           + "}, Selector threads: " + this.numSelectorThreads;
-      if (this.singleThreadPerConnection)
+      if (this.singleThreadPerConnection) {
         logMessage += ", One worker thread per connection";
-      else
+      } else {
         logMessage += ", Worker threads: " + this.numWorkerThreads;
+      }
       this.logger.info(logMessage);
     }
     this.serverChannel = f.channel();
@@ -619,8 +624,9 @@ public class GeodeRedisServer {
    */
   public synchronized void shutdown() {
     if (!shutdown) {
-      if (logger.infoEnabled())
+      if (logger.infoEnabled()) {
         logger.info("GeodeRedisServer shutting down");
+      }
       ChannelFuture closeFuture = this.serverChannel.closeFuture();
       Future<?> c = workerGroup.shutdownGracefully();
       Future<?> c2 = bossGroup.shutdownGracefully();
@@ -628,10 +634,12 @@ public class GeodeRedisServer {
       c.syncUninterruptibly();
       c2.syncUninterruptibly();
       this.regionCache.close();
-      if (mainThread != null)
+      if (mainThread != null) {
         mainThread.interrupt();
-      for (ScheduledFuture<?> f : this.expirationFutures.values())
+      }
+      for (ScheduledFuture<?> f : this.expirationFutures.values()) {
         f.cancel(true);
+      }
       this.expirationFutures.clear();
       this.expirationExecutor.shutdownNow();
       closeFuture.syncUninterruptibly();
@@ -654,12 +662,13 @@ public class GeodeRedisServer {
     String bindAddress = null;
     String logLevel = null;
     for (String arg : args) {
-      if (arg.startsWith("-port"))
+      if (arg.startsWith("-port")) {
         port = getPort(arg);
-      else if (arg.startsWith("-bind-address"))
+      } else if (arg.startsWith("-bind-address")) {
         bindAddress = getBindAddress(arg);
-      else if (arg.startsWith("-log-level"))
+      } else if (arg.startsWith("-log-level")) {
         logLevel = getLogLevel(arg);
+      }
     }
     mainThread = Thread.currentThread();
     GeodeRedisServer server = new GeodeRedisServer(bindAddress, port, logLevel);

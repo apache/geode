@@ -56,11 +56,13 @@ public class Customer implements DataSerializable {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
+    if (this == o) {
       return true;
+    }
 
-    if (!(o instanceof Customer))
+    if (!(o instanceof Customer)) {
       return false;
+    }
 
     Customer cust = (Customer) o;
     return (cust.name.equals(name) && cust.address.equals(address));

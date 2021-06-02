@@ -44,9 +44,9 @@ public class ExecExecutor extends TransactionExecutor {
 
     boolean hasError = hasError(context.getTransactionQueue());
 
-    if (hasError)
+    if (hasError) {
       txm.rollback();
-    else {
+    } else {
       try {
         txm.commit();
       } catch (CommitConflictException e) {
@@ -79,8 +79,9 @@ public class ExecExecutor extends TransactionExecutor {
 
   private boolean hasError(Queue<Command> queue) {
     for (Command c : queue) {
-      if (c.hasError())
+      if (c.hasError()) {
         return true;
+      }
     }
     return false;
   }

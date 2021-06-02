@@ -125,19 +125,23 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     Object r = _operands[0].evaluate(context); // UNDEFINED, null, or a Boolean
     // if it's true, and op is or then return true immediately
     // if it's false and the op is and then return false immediately
-    if (r instanceof Boolean)
-      if (((Boolean) r).booleanValue() && _operator == LITERAL_or)
+    if (r instanceof Boolean) {
+      if (((Boolean) r).booleanValue() && _operator == LITERAL_or) {
         return r;
-      else if (!((Boolean) r).booleanValue() && _operator == LITERAL_and)
+      } else if (!((Boolean) r).booleanValue() && _operator == LITERAL_and) {
         return r;
-    if (r == null || r == QueryService.UNDEFINED)
+      }
+    }
+    if (r == null || r == QueryService.UNDEFINED) {
       r = QueryService.UNDEFINED; // keep going to see if we hit a
+    }
     // short-circuiting truth value
-    else if (!(r instanceof Boolean))
+    else if (!(r instanceof Boolean)) {
       throw new TypeMismatchException(
           String.format(
               "LITERAL_and/LITERAL_or operands must be of type boolean, not type ' %s '",
               r.getClass().getName()));
+    }
     for (int i = 1; i < _operands.length; i++) {
       Object ri = null;
       try {
@@ -146,25 +150,30 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
         continue;
       }
       // Boolean
-      if (ri instanceof Boolean)
-        if (((Boolean) ri).booleanValue() && _operator == LITERAL_or)
+      if (ri instanceof Boolean) {
+        if (((Boolean) ri).booleanValue() && _operator == LITERAL_or) {
           return ri;
-        else if (!((Boolean) ri).booleanValue() && _operator == LITERAL_and)
+        } else if (!((Boolean) ri).booleanValue() && _operator == LITERAL_and) {
           return ri;
+        }
+      }
       if (ri == null || ri == QueryService.UNDEFINED || r == QueryService.UNDEFINED) {
         r = QueryService.UNDEFINED;
         continue; // keep going to see if we hit a short-circuiting truth value
-      } else if (!(ri instanceof Boolean))
+      } else if (!(ri instanceof Boolean)) {
         throw new TypeMismatchException(
             String.format(
                 "LITERAL_and/LITERAL_or operands must be of type boolean, not type ' %s '",
                 ri.getClass().getName()));
+      }
       // now do the actual and/or
-      if (_operator == LITERAL_and)
+      if (_operator == LITERAL_and) {
         r = Boolean.valueOf(((Boolean) r).booleanValue() && ((Boolean) ri).booleanValue());
-      else
-        // LITERAL_or
+      } else
+      // LITERAL_or
+      {
         r = Boolean.valueOf(((Boolean) r).booleanValue() || ((Boolean) ri).booleanValue());
+      }
     }
     return r;
   }
@@ -225,8 +234,10 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
       }
     }
     if (newOperands.iterateOperand != null)
-      // call private method here to evaluate
+    // call private method here to evaluate
+    {
       result = auxIterateEvaluate(newOperands.iterateOperand, context, result);
+    }
     return result;
   }
 
@@ -337,11 +348,14 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     // function can be empty ( obtained using auxFilterEvaluate ,meaning no need
     // to do iterations below ) but it can never be null. As null itself
     // signifies that the junction cannot be evaluated as a filter.
-    if (intermediateResults == null)
+    if (intermediateResults == null) {
       throw new RuntimeException(
           "intermediateResults can not be null");
+    }
     if (intermediateResults.isEmpty()) // short circuit
+    {
       return intermediateResults;
+    }
     List currentIters = context.getCurrentIterators();
     RuntimeIterator rIters[] = new RuntimeIterator[currentIters.size()];
     currentIters.toArray(rIters);
@@ -375,12 +389,14 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
           observer.afterIterationEvaluation(result);
         }
         if (result instanceof Boolean) {
-          if (((Boolean) result).booleanValue())
+          if (((Boolean) result).booleanValue()) {
             resultSet.add(tuple);
-        } else if (result != null && result != QueryService.UNDEFINED)
+          }
+        } else if (result != null && result != QueryService.UNDEFINED) {
           throw new TypeMismatchException(
               String.format("AND/OR operands must be of type boolean, not type ' %s '",
                   result.getClass().getName()));
+        }
       }
     } finally {
       observer.endIteration(resultSet);
@@ -396,10 +412,11 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
   public void negate() {
     _operator = inverseOperator(_operator);
     for (int i = 0; i < _operands.length; i++) {
-      if (_operands[i] instanceof Negatable)
+      if (_operands[i] instanceof Negatable) {
         ((Negatable) _operands[i]).negate();
-      else
+      } else {
         _operands[i] = new CompiledNegation(_operands[i]);
+      }
     }
   }
 
@@ -587,8 +604,9 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
       result.isSingleFilter = true;
     } else {
       CompiledValue[] newOperands = new CompiledValue[indexCount];
-      for (int i = 0; i < indexCount; i++)
+      for (int i = 0; i < indexCount; i++) {
         newOperands[i] = (CompiledValue) evalOperands.get(i);
+      }
       filterOperands = new CompiledJunction(newOperands, _operator);
     }
     // get iterating operands
@@ -599,12 +617,13 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     int numIterating = evalOperands.size() - indexCount;
     Support.Assert(_operator == LITERAL_and || numIterating == 0);
     if (numIterating > 0) {
-      if (numIterating == 1)
+      if (numIterating == 1) {
         iterateOperands = (CompiledValue) evalOperands.get(indexCount);
-      else {
+      } else {
         CompiledValue[] newOperands = new CompiledValue[numIterating];
-        for (int i = 0; i < numIterating; i++)
+        for (int i = 0; i < numIterating; i++) {
           newOperands[i] = (CompiledValue) evalOperands.get(i + indexCount);
+        }
         iterateOperands = new CompiledJunction(newOperands, _operator);
       }
     }

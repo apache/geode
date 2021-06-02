@@ -54,11 +54,13 @@ public class IndexOperatorJUnitTest {
   public void testWithString() throws Exception {
     String str = "xyz";
     Character c = (Character) runQuery(str, 0);
-    if (c.charValue() != 'x')
+    if (c.charValue() != 'x') {
       fail();
+    }
     Character d = (Character) runQuery(str, 2);
-    if (d.charValue() != 'z')
+    if (d.charValue() != 'z') {
       fail();
+    }
   }
 
   @Test
@@ -67,18 +69,21 @@ public class IndexOperatorJUnitTest {
     int index = 1;
     String stringArray[] = {"a", "b"};
     result = runQuery(stringArray, index);
-    if (result == null || !stringArray[index].equals(result))
+    if (result == null || !stringArray[index].equals(result)) {
       fail("failed for String array");
+    }
 
     int intArray[] = {1, 2};
     result = runQuery(intArray, index);
-    if (result == null || intArray[index] != ((Integer) result).intValue())
+    if (result == null || intArray[index] != ((Integer) result).intValue()) {
       fail("failed for int array");
+    }
 
     Object objectArray[] = {"a", "b"};
     result = runQuery(objectArray, index);
-    if (result == null || !objectArray[index].equals(result))
+    if (result == null || !objectArray[index].equals(result)) {
       fail("failed for String array");
+    }
 
   }
 
@@ -90,8 +95,9 @@ public class IndexOperatorJUnitTest {
     Object result = null;
     int index = 1;
     result = runQuery(list, index);
-    if (result == null || !list.get(index).equals(result))
+    if (result == null || !list.get(index).equals(result)) {
       fail("failed for List");
+    }
   }
 
   @Test
@@ -103,8 +109,9 @@ public class IndexOperatorJUnitTest {
     Object result = null;
     Object index = "1";
     result = runQuery(map, index);
-    if (result == null || !map.get(index).equals(result))
+    if (result == null || !map.get(index).equals(result)) {
       fail("failed for Map");
+    }
   }
 
   @Test
@@ -117,8 +124,9 @@ public class IndexOperatorJUnitTest {
     Object result = null;
     Object index = "2";
     result = runQuery(region, index);
-    if (result == null || !region.get(index).equals(result))
+    if (result == null || !region.get(index).equals(result)) {
       fail("failed for Region");
+    }
   }
 
   @Test
@@ -127,8 +135,9 @@ public class IndexOperatorJUnitTest {
     Query q = CacheUtils.getQueryService().newQuery("$1[0][0]");
     Object params[] = {array, new Integer(0)};
     Character result = (Character) q.execute(params);
-    if (result == null || result.charValue() != 'a')
+    if (result == null || result.charValue() != 'a') {
       fail();
+    }
   }
 
   @Test
@@ -145,8 +154,9 @@ public class IndexOperatorJUnitTest {
     map.put("0", new Integer(11));
     map.put("1", new Integer(12));
     Object result = runQuery(map, null);
-    if (result != null)
+    if (result != null) {
       fail();
+    }
   }
 
   @Test
@@ -171,8 +181,9 @@ public class IndexOperatorJUnitTest {
     map.put("0", new Integer(11));
     map.put("1", new Integer(12));
     Object result = runQuery(map, QueryService.UNDEFINED);
-    if (result != null)
+    if (result != null) {
       fail();
+    }
   }
 
   @Test

@@ -216,18 +216,23 @@ public class PutOperationContextJUnitTest {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       PdxValue other = (PdxValue) obj;
       if (v == null) {
-        if (other.v != null)
+        if (other.v != null) {
           return false;
-      } else if (!v.equals(other.v))
+        }
+      } else if (!v.equals(other.v)) {
         return false;
+      }
       return true;
     }
 

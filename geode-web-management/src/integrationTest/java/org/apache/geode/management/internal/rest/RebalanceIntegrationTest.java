@@ -104,8 +104,9 @@ public class RebalanceIntegrationTest {
                 Matchers.containsString("Operation finished successfully.")));
         return;
       } catch (Throwable t) {
-        if (!t.getMessage().contains("Operation in progress"))
+        if (!t.getMessage().contains("Operation in progress")) {
           throw t;
+        }
       }
     }
   }

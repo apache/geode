@@ -78,25 +78,33 @@ public class LocatorAddress {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     LocatorAddress other = (LocatorAddress) obj;
-    if (isIpString != other.isIpString)
+    if (isIpString != other.isIpString) {
       return false;
+    }
     if (socketInetAddress == null) {
-      if (other.socketInetAddress != null)
+      if (other.socketInetAddress != null) {
         return false;
-    } else if (!socketInetAddress.equals(other.socketInetAddress))
+      }
+    } else if (!socketInetAddress.equals(other.socketInetAddress)) {
       return false;
+    }
     if (hostname == null) {
-      if (other.hostname != null)
+      if (other.hostname != null) {
         return false;
-    } else if (!hostname.equals(other.hostname))
+      }
+    } else if (!hostname.equals(other.hostname)) {
       return false;
+    }
     return true;
   }
 

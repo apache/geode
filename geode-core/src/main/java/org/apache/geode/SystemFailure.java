@@ -747,8 +747,9 @@ public final class SystemFailure {
    *
    */
   private static void throwFailure() throws Error {
-    if (failure != null)
+    if (failure != null) {
       throw failure;
+    }
   }
 
   /**

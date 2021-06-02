@@ -100,10 +100,11 @@ public class ZCountExecutor extends SortedSetExecutor {
       ExecutionHandlerContext context, double start, double stop, boolean startInclusive,
       boolean stopInclusive) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
-    if (start == Double.NEGATIVE_INFINITY && stop == Double.POSITIVE_INFINITY)
+    if (start == Double.NEGATIVE_INFINITY && stop == Double.POSITIVE_INFINITY) {
       return keyRegion.size();
-    else if (start == Double.POSITIVE_INFINITY || stop == Double.NEGATIVE_INFINITY)
+    } else if (start == Double.POSITIVE_INFINITY || stop == Double.NEGATIVE_INFINITY) {
       return 0;
+    }
 
     Query query;
     Object[] params;

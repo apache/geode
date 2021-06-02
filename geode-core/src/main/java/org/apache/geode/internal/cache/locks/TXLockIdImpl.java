@@ -88,20 +88,24 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
 
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof TXLockIdImpl))
+    }
+    if (!(other instanceof TXLockIdImpl)) {
       return false;
+    }
     final TXLockIdImpl that = (TXLockIdImpl) other;
 
     if (this.memberId != that.memberId
         && !(this.memberId != null && this.memberId.equals(that.memberId))) {
       return false;
     }
-    if (this.id != that.id)
+    if (this.id != that.id) {
       return false;
+    }
 
     return true;
   }

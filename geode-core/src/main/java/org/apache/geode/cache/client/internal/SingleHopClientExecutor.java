@@ -378,11 +378,12 @@ public class SingleHopClientExecutor {
 
   // Find out what exception to throw?
   private static RuntimeException executionThrowable(Throwable t) {
-    if (t instanceof RuntimeException)
+    if (t instanceof RuntimeException) {
       return (RuntimeException) t;
-    else if (t instanceof Error)
+    } else if (t instanceof Error) {
       throw (Error) t;
-    else
+    } else {
       throw new IllegalStateException("Don't know", t);
+    }
   }
 }

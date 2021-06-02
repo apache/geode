@@ -143,8 +143,9 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
   @Override
   public boolean waitToStart(long timeout) throws InterruptedException {
 
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
 
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() - start < timeout) {
@@ -166,8 +167,9 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
   @Override
   public boolean waitToStop(long timeout) throws InterruptedException {
 
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
 
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() - start < timeout) {

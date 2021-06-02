@@ -28,8 +28,9 @@ public class DelExecutor extends AbstractExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    if (context.hasTransaction())
+    if (context.hasTransaction()) {
       throw new UnsupportedOperationInTransactionException();
+    }
 
     List<byte[]> commandElems = command.getProcessedCommand();
     if (commandElems.size() < 2) {
@@ -43,8 +44,9 @@ public class DelExecutor extends AbstractExecutor {
       byte[] byteKey = commandElems.get(i);
       ByteArrayWrapper key = new ByteArrayWrapper(byteKey);
       RedisDataType type = context.getKeyRegistrar().getType(key);
-      if (removeEntry(key, type, context))
+      if (removeEntry(key, type, context)) {
         numRemoved++;
+      }
     }
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));

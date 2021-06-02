@@ -873,122 +873,168 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
 
     TestObjectForJSONFormatter other = (TestObjectForJSONFormatter) obj;
 
     // primitive type
-    if (p_bool != other.p_bool)
+    if (p_bool != other.p_bool) {
       return false;
-    if (p_byte != other.p_byte)
+    }
+    if (p_byte != other.p_byte) {
       return false;
-    if (p_short != other.p_short)
+    }
+    if (p_short != other.p_short) {
       return false;
-    if (p_int != other.p_int)
+    }
+    if (p_int != other.p_int) {
       return false;
-    if (p_long != other.p_long)
+    }
+    if (p_long != other.p_long) {
       return false;
-    if (p_float != other.p_float)
+    }
+    if (p_float != other.p_float) {
       return false;
-    if (p_double != other.p_double)
+    }
+    if (p_double != other.p_double) {
       return false;
+    }
 
     // wrapper type
-    if (w_bool.booleanValue() != other.w_bool.booleanValue())
+    if (w_bool.booleanValue() != other.w_bool.booleanValue()) {
       return false;
-    if (w_byte.byteValue() != other.w_byte.byteValue())
+    }
+    if (w_byte.byteValue() != other.w_byte.byteValue()) {
       return false;
-    if (w_short.shortValue() != other.w_short.shortValue())
+    }
+    if (w_short.shortValue() != other.w_short.shortValue()) {
       return false;
-    if (w_int.intValue() != other.w_int.intValue())
+    }
+    if (w_int.intValue() != other.w_int.intValue()) {
       return false;
-    if (w_long.longValue() != other.w_long.longValue())
+    }
+    if (w_long.longValue() != other.w_long.longValue()) {
       return false;
-    if (w_float.floatValue() != other.w_float.floatValue())
+    }
+    if (w_float.floatValue() != other.w_float.floatValue()) {
       return false;
-    if (w_double.doubleValue() != other.w_double.doubleValue())
+    }
+    if (w_double.doubleValue() != other.w_double.doubleValue()) {
       return false;
-    if (!w_string.equals(other.w_string))
+    }
+    if (!w_string.equals(other.w_string)) {
       return false;
-    if (w_bigInt.longValue() != other.w_bigInt.longValue())
+    }
+    if (w_bigInt.longValue() != other.w_bigInt.longValue()) {
       return false;
-    if (w_bigDec.longValue() != other.w_bigDec.longValue())
+    }
+    if (w_bigDec.longValue() != other.w_bigDec.longValue()) {
       return false;
+    }
 
     // Primitive arrays
-    if (!Arrays.equals(p_boolArray, other.p_boolArray))
+    if (!Arrays.equals(p_boolArray, other.p_boolArray)) {
       return false;
-    if (!Arrays.equals(p_byteArray, other.p_byteArray))
+    }
+    if (!Arrays.equals(p_byteArray, other.p_byteArray)) {
       return false;
-    if (!Arrays.equals(p_shortArray, other.p_shortArray))
+    }
+    if (!Arrays.equals(p_shortArray, other.p_shortArray)) {
       return false;
-    if (!Arrays.equals(p_intArray, other.p_intArray))
+    }
+    if (!Arrays.equals(p_intArray, other.p_intArray)) {
       return false;
-    if (!Arrays.equals(p_longArray, other.p_longArray))
+    }
+    if (!Arrays.equals(p_longArray, other.p_longArray)) {
       return false;
-    if (!Arrays.equals(p_floatArray, other.p_floatArray))
+    }
+    if (!Arrays.equals(p_floatArray, other.p_floatArray)) {
       return false;
-    if (!Arrays.equals(p_doubleArray, other.p_doubleArray))
+    }
+    if (!Arrays.equals(p_doubleArray, other.p_doubleArray)) {
       return false;
+    }
 
     // wrapper Arrays
-    if (!Arrays.equals(w_boolArray, other.w_boolArray))
+    if (!Arrays.equals(w_boolArray, other.w_boolArray)) {
       return false;
-    if (!Arrays.equals(w_byteArray, other.w_byteArray))
+    }
+    if (!Arrays.equals(w_byteArray, other.w_byteArray)) {
       return false;
-    if (!Arrays.equals(w_shortArray, other.w_shortArray))
+    }
+    if (!Arrays.equals(w_shortArray, other.w_shortArray)) {
       return false;
-    if (!Arrays.equals(w_intArray, other.w_intArray))
+    }
+    if (!Arrays.equals(w_intArray, other.w_intArray)) {
       return false;
-    if (!Arrays.equals(w_longArray, other.w_longArray))
+    }
+    if (!Arrays.equals(w_longArray, other.w_longArray)) {
       return false;
-    if (!Arrays.equals(w_floatArray, other.w_floatArray))
+    }
+    if (!Arrays.equals(w_floatArray, other.w_floatArray)) {
       return false;
-    if (!Arrays.equals(w_doubleArray, other.w_doubleArray))
+    }
+    if (!Arrays.equals(w_doubleArray, other.w_doubleArray)) {
       return false;
-    if (!Arrays.equals(w_strArray, other.w_strArray))
+    }
+    if (!Arrays.equals(w_strArray, other.w_strArray)) {
       return false;
-    if (!Arrays.equals(w_bigIntArray, other.w_bigIntArray))
+    }
+    if (!Arrays.equals(w_bigIntArray, other.w_bigIntArray)) {
       return false;
-    if (!Arrays.equals(w_bigDecArray, other.w_bigDecArray))
+    }
+    if (!Arrays.equals(w_bigDecArray, other.w_bigDecArray)) {
       return false;
+    }
 
     // comparing Collections based on content, order not considered
     if (!(c_list.size() == other.c_list.size() && c_list.containsAll(other.c_list)
-        && other.c_list.containsAll(c_list)))
+        && other.c_list.containsAll(c_list))) {
       return false;
+    }
     if (!(c_set.size() == other.c_set.size() && c_set.containsAll(other.c_set)
-        && other.c_set.containsAll(c_set)))
+        && other.c_set.containsAll(c_set))) {
       return false;
+    }
     if (!(c_queue.size() == other.c_queue.size() && c_queue.containsAll(other.c_queue)
-        && other.c_queue.containsAll(c_queue)))
+        && other.c_queue.containsAll(c_queue))) {
       return false;
+    }
     if (!(c_deque.size() == other.c_deque.size() && c_deque.containsAll(other.c_deque)
-        && other.c_deque.containsAll(c_deque)))
+        && other.c_deque.containsAll(c_deque))) {
       return false;
+    }
 
     // map comparision.
-    if (!(compareMaps(m_empByCity, other.m_empByCity)))
+    if (!(compareMaps(m_empByCity, other.m_empByCity))) {
       return false;
+    }
 
     // Enum validation
-    if (!(day.equals(other.day)))
+    if (!(day.equals(other.day))) {
       return false;
+    }
 
     return true;
   }
 
   boolean compareMaps(Map m1, Map m2) {
-    if (m1.size() != m2.size())
+    if (m1.size() != m2.size()) {
       return false;
-    for (Object key : m1.keySet())
-      if (!m1.get(key).equals(m2.get(key)))
+    }
+    for (Object key : m1.keySet()) {
+      if (!m1.get(key).equals(m2.get(key))) {
         return false;
+      }
+    }
     return true;
   }
 

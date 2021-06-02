@@ -380,8 +380,9 @@ public class QueryUtils {
 
         }
       } else {
-        if (select)
+        if (select) {
           returnSet.add(((RuntimeIterator) itr.next()).evaluate(context));
+        }
       }
     } else if (level < results.length) {
       SelectResults individualResultSet = results[level];
@@ -423,8 +424,9 @@ public class QueryUtils {
   public static boolean applyCondition(CompiledValue operand, ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
-    if (operand == null)
+    if (operand == null) {
       return true;
+    }
     Object result = operand.evaluate(context);
     if (result instanceof Boolean) {
       return (Boolean) result;
@@ -537,8 +539,9 @@ public class QueryUtils {
       Object[] fieldValues = struct.getFieldValues();
       int size = fieldValues.length;
       Object[] checkFields = null;
-      if (icdeh.cutDownNeeded)
+      if (icdeh.cutDownNeeded) {
         checkFields = new Object[icdeh.checkSize];
+      }
       // Object values[] = new Object[numItersInResultSet];
       int j = 0;
       RuntimeIterator rItr = null;
@@ -709,8 +712,9 @@ public class QueryUtils {
           }
         }
       } else {
-        if (select)
+        if (select) {
           resultSet.add(((RuntimeIterator) itr.next()).evaluate(context));
+        }
       }
     } else {
       RuntimeIterator currentLevel = (RuntimeIterator) expansionItrs.next();
@@ -849,8 +853,9 @@ public class QueryUtils {
     Iterator iter = set.iterator();
     while (iter.hasNext()) {
       RuntimeIterator rIter = (RuntimeIterator) iter.next();
-      if (rIter.getScopeID() != context.currentScope().getScopeID()/* context.getScopeCount() */)
+      if (rIter.getScopeID() != context.currentScope().getScopeID()/* context.getScopeCount() */) {
         iter.remove();
+      }
     }
     return set;
   }
@@ -922,8 +927,9 @@ public class QueryUtils {
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     Set set = new HashSet();
     context.computeUltimateDependencies(cv, set);
-    if (set.size() != 1)
+    if (set.size() != 1) {
       return null;
+    }
     RuntimeIterator rIter = (RuntimeIterator) set.iterator().next();
     String regionPath = null;
     // An Index is not available if the ultimate independent RuntimeIterator is
@@ -1262,8 +1268,9 @@ public class QueryUtils {
                   expansionListIterator, finalList, context, iterOperands, icdeh,
                   0);
             }
-            if (icdeh[0].cutDownNeeded)
+            if (icdeh[0].cutDownNeeded) {
               icdeh[0].checkSet.clear();
+            }
           }
         } finally {
           observer.afterMergeJoinOfDoubleIndexResults(returnSet);
@@ -1503,8 +1510,9 @@ public class QueryUtils {
           mergeAndExpandCutDownRelationshipIndexResults(values, returnSet, mappings,
               expansionListIterator, totalFinalList, context, iterOperands, icdeh,
               0 /* Level */);
-          if (icdeh[0].cutDownNeeded)
+          if (icdeh[0].cutDownNeeded) {
             icdeh[0].checkSet.clear();
+          }
         }
       } finally {
         observer.afterMergeJoinOfDoubleIndexResults(returnSet);

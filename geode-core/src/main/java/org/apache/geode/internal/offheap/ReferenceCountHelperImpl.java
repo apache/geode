@@ -132,8 +132,9 @@ class ReferenceCountHelperImpl {
    * Returns true if currently tracking reference counts.
    */
   public boolean isRefCountTracking() {
-    if (!trackReferenceCounts())
+    if (!trackReferenceCounts()) {
       return false;
+    }
     return !(getReferenceCountOwner() == SKIP_REF_COUNT_TRACKING);
   }
 
@@ -148,8 +149,9 @@ class ReferenceCountHelperImpl {
    * Returns a list of any reference count tracking information for the given Chunk address.
    */
   public List<RefCountChangeInfo> getRefCountInfo(long address) {
-    if (!trackReferenceCounts())
+    if (!trackReferenceCounts()) {
       return null;
+    }
     List<RefCountChangeInfo> result = stacktraces.get(address);
 
     getReferenceCountInfoTestHook(stacktraces, address);
@@ -172,8 +174,9 @@ class ReferenceCountHelperImpl {
    * locking.
    */
   public List<RefCountChangeInfo> peekRefCountInfo(long address) {
-    if (!trackReferenceCounts())
+    if (!trackReferenceCounts()) {
       return null;
+    }
     return stacktraces.get(address);
   }
 
@@ -181,8 +184,9 @@ class ReferenceCountHelperImpl {
    * Used internally to report that a reference count has changed.
    */
   void refCountChanged(Long address, boolean decRefCount, int rc) {
-    if (!trackReferenceCounts())
+    if (!trackReferenceCounts()) {
       return;
+    }
     final Object owner = refCountOwner.get();
     if (owner == SKIP_REF_COUNT_TRACKING) {
       return;
@@ -259,8 +263,9 @@ class ReferenceCountHelperImpl {
    * given address.
    */
   void freeRefCountInfo(Long address) {
-    if (!trackReferenceCounts())
+    if (!trackReferenceCounts()) {
       return;
+    }
     List<RefCountChangeInfo> freedInfo = stacktraces.remove(address);
     if (freedInfo == LOCKED) {
       MemoryAllocatorImpl.debugLog("freed after orphan detected for @" + Long.toHexString(address),
@@ -278,8 +283,9 @@ class ReferenceCountHelperImpl {
    * Returns the thread local owner
    */
   Object getReferenceCountOwner() {
-    if (!trackReferenceCounts())
+    if (!trackReferenceCounts()) {
       return null;
+    }
     return refCountOwner.get();
   }
 
@@ -287,8 +293,9 @@ class ReferenceCountHelperImpl {
    * Returns the thread local count of the number of times ref count has been updated
    */
   AtomicInteger getReenterCount() {
-    if (!trackReferenceCounts())
+    if (!trackReferenceCounts()) {
       return null;
+    }
     return refCountReenterCount.get();
   }
 
@@ -297,8 +304,9 @@ class ReferenceCountHelperImpl {
    * previous free(s) when an extra one ends up being done and fails.
    */
   public List<RefCountChangeInfo> getFreeRefCountInfo(long address) {
-    if (!trackReferenceCounts() || !trackFreedReferenceCounts())
+    if (!trackReferenceCounts() || !trackFreedReferenceCounts()) {
       return null;
+    }
     return freedStacktraces.get(address);
   }
 

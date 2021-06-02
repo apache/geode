@@ -475,15 +475,17 @@ public class Gfsh extends JLineShell {
   }
 
   public String readPassword(String textToPrompt) {
-    if (isHeadlessMode && isQuietMode())
+    if (isHeadlessMode && isQuietMode()) {
       return null;
+    }
 
     return readWithMask(textToPrompt, '*');
   }
 
   public String readText(String textToPrompt) {
-    if (isHeadlessMode && isQuietMode())
+    if (isHeadlessMode && isQuietMode()) {
       return null;
+    }
 
     return interact(textToPrompt);
 
@@ -740,8 +742,9 @@ public class Gfsh extends JLineShell {
       CommandResult commandResult = (CommandResult) result;
       resultTypeTL.set(commandResult.getType().equals("info"));
       return flag && !commandResult.getType().equals("info");
-    } else
+    } else {
       return false;
+    }
   }
 
   private boolean isUnix() {

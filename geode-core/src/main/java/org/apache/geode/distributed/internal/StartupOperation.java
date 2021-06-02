@@ -50,8 +50,9 @@ public class StartupOperation {
       String redundancyZone,
       boolean enforceUniqueZone)
       throws InterruptedException, ReplyException, java.net.UnknownHostException, IOException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     StartupMessageReplyProcessor proc = new StartupMessageReplyProcessor(dm, recipients);
     boolean isSharedConfigurationEnabled = false;
     if (InternalLocator.hasLocator()) {

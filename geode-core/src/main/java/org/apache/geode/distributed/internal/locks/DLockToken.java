@@ -242,8 +242,9 @@ public class DLockToken {
    * @return the current time in absolute milliseconds
    */
   long getCurrentTime() {
-    if (this.dm == null)
+    if (this.dm == null) {
       return -1;
+    }
     return DLockService.getLockTimeStamp(this.dm);
   }
 
@@ -399,8 +400,9 @@ public class DLockToken {
   synchronized boolean releaseLock(int leaseIdToRelease, RemoteThread remoteThread,
       boolean decRecursion) {
 
-    if (leaseIdToRelease == -1)
+    if (leaseIdToRelease == -1) {
       return false;
+    }
     if (this.destroyed) {
       return true;
     }

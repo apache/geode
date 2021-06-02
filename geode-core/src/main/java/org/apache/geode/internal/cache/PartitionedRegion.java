@@ -673,8 +673,9 @@ public class PartitionedRegion extends LocalRegion
             "null value not allowed for prIdToPR Map");
       }
       Assert.assertTrue(key instanceof Integer);
-      if (sendIdentityRequestMessage)
+      if (sendIdentityRequestMessage) {
         IdentityRequestMessage.setLatestId((Integer) key);
+      }
       if ((super.get(key) == DESTROYED) && (value instanceof PartitionedRegion)) {
         throw new PartitionedRegionException(
             String.format("Can NOT reuse old Partitioned Region Id= %s",
@@ -5405,8 +5406,9 @@ public class PartitionedRegion extends LocalRegion
         return true;
       } else {
         for (String s : groups) {
-          if (localServerGroups.contains(s))
+          if (localServerGroups.contains(s)) {
             return true;
+          }
         }
       }
     }
@@ -6908,14 +6910,16 @@ public class PartitionedRegion extends LocalRegion
       }
 
       BucketLock other = (BucketLock) obj;
-      if (!this.lockName.equals(other.lockName))
+      if (!this.lockName.equals(other.lockName)) {
         return false;
+      }
 
       DLockService ls1 = lockService;
       DLockService ls2 = other.lockService;
       if (ls1 == null || ls2 == null) {
-        if (ls1 != ls2)
+        if (ls1 != ls2) {
           return false;
+        }
       }
       return ls1.equals(ls2);
     }
@@ -7200,8 +7204,9 @@ public class PartitionedRegion extends LocalRegion
                                        // check for other pause senders instead
                                        // of creating list of shadowPR
           AbstractGatewaySenderEventProcessor ep = sender.getEventProcessor();
-          if (ep == null)
+          if (ep == null) {
             continue;
+          }
           ConcurrentParallelGatewaySenderQueue parallelQueue =
               (ConcurrentParallelGatewaySenderQueue) ep.getQueue();
           PartitionedRegion parallelQueueRegion = parallelQueue.getRegion(this.getFullPath());
@@ -9334,7 +9339,9 @@ public class PartitionedRegion extends LocalRegion
       }
     }
     if (!bucketSortedOnce.get()) {
-      while (bucketSortedOnce.get() == false);
+      while (bucketSortedOnce.get() == false) {
+        ;
+      }
     }
     List<BucketRegion> bucketList = new ArrayList<>(this.sortedBuckets);
     return bucketList;
@@ -9747,8 +9754,9 @@ public class PartitionedRegion extends LocalRegion
    * @since GemFire 6.1.2.9
    */
   public BucketRegion getBucketRegion(Object key) {
-    if (this.dataStore == null)
+    if (this.dataStore == null) {
       return null;
+    }
     Integer bucketId = PartitionedRegionHelper.getHashKey(this, null, key, null, null);
     return this.dataStore.getLocalBucketById(bucketId);
   }
@@ -9968,8 +9976,9 @@ public class PartitionedRegion extends LocalRegion
     assert this.isShadowPR();
     PartitionedRegion userPR = ColocationHelper.getLeaderRegion(this);
     boolean isAccessor = (userPR.getLocalMaxMemory() == 0);
-    if (isAccessor)
+    if (isAccessor) {
       return; // return from here if accessor node
+    }
 
     // Before going ahead, make sure all the buckets of shadowPR are
     // loaded

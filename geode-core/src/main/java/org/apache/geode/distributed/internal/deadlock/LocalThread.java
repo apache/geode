@@ -99,20 +99,26 @@ public class LocalThread implements Serializable, ThreadReference {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (!(obj instanceof LocalThread))
+    }
+    if (!(obj instanceof LocalThread)) {
       return false;
+    }
     LocalThread other = (LocalThread) obj;
-    if (threadId != other.threadId)
+    if (threadId != other.threadId) {
       return false;
+    }
     if (locality == null) {
-      if (other.locality != null)
+      if (other.locality != null) {
         return false;
-    } else if (!locality.equals(other.locality))
+      }
+    } else if (!locality.equals(other.locality)) {
       return false;
+    }
     return true;
   }
 

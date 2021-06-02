@@ -53,10 +53,11 @@ public class SIsMemberExecutor extends SetExecutor {
       return;
     }
 
-    if (keyRegion.containsKey(member))
+    if (keyRegion.containsKey(member)) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
-    else
+    } else {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
+    }
   }
 
 }

@@ -66,8 +66,9 @@ public class RLJBarJUnitTest extends JSR166TestCase { // TODO: reformat
         System.out.println("Quiesce " + quiesce + " msecs");
       }
     }
-    for (int k = 0; k < ITERS; ++k)
+    for (int k = 0; k < ITERS; ++k) {
       oneRun();
+    }
   }
 
   public static void oneRun() {
@@ -85,8 +86,9 @@ public class RLJBarJUnitTest extends JSR166TestCase { // TODO: reformat
       try {
         End.lock();
         try {
-          while (nDead != nThreads)
+          while (nDead != nThreads) {
             EndCondition.await();
+          }
         } finally {
           End.unlock();
         }
@@ -130,8 +132,9 @@ class Producer extends Thread {
     final ReentrantLock bar = RLJBarJUnitTest.bar;
     final ReentrantLock end = RLJBarJUnitTest.End;
     final Condition endCondition = RLJBarJUnitTest.EndCondition;
-    if (RLJBarJUnitTest.OneKey)
+    if (RLJBarJUnitTest.OneKey) {
       key = new Integer(0); // per-thread v. per iteration
+    }
 
     // The barrier has a number of interesting effects:
     // 1. It enforces full LWP provisioning on T1.
@@ -169,8 +172,9 @@ class Producer extends Thread {
     // Main execution time ... the code being timed ...
     // HashTable.get() is highly contended (serial).
     for (int loop = 1; loop < 100000; loop++) {
-      if (!RLJBarJUnitTest.OneKey)
+      if (!RLJBarJUnitTest.OneKey) {
         key = new Integer(0);
+      }
       buddiesOnline.get(key);
     }
 

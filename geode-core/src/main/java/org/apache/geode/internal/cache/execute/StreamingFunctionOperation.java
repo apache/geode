@@ -88,8 +88,9 @@ public abstract class StreamingFunctionOperation {
 
   public ResultCollector getFunctionResultFrom(Set recipients, Function function,
       AbstractExecution execution) {
-    if (recipients.isEmpty())
+    if (recipients.isEmpty()) {
       return rc;
+    }
 
     FunctionStreamingResultCollector processor =
         new FunctionStreamingResultCollector(this, this.sys, recipients, rc, function, execution);

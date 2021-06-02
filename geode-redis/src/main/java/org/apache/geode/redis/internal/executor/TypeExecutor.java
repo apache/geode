@@ -36,10 +36,11 @@ public class TypeExecutor extends AbstractExecutor {
     ByteArrayWrapper key = command.getKey();
 
     RedisDataType type = context.getKeyRegistrar().getType(key);
-    if (type == null)
+    if (type == null) {
       respondBulkStrings(command, context, "none");
-    else
+    } else {
       respondBulkStrings(command, context, type.toString());
+    }
   }
 
 }

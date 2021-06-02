@@ -2365,12 +2365,15 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (!(obj instanceof ServerBucketProfile))
+      }
+      if (!(obj instanceof ServerBucketProfile)) {
         return false;
+      }
       final ServerBucketProfile other = (ServerBucketProfile) obj;
       if (other.bucketId != bucketId) {
         return false;
@@ -2672,8 +2675,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       // @todo: instead of having a semaphore and queue on RegionAdvisor
       // we should have an executor which limits its max threads to
       // VOLUNTEERING_THREAD_COUNT.
-      if (Thread.interrupted())
+      if (Thread.interrupted()) {
         throw new InterruptedException();
+      }
       Queue<Runnable> volunteeringQueue = getVolunteeringQueue();
       synchronized (volunteeringQueue) {
         // add the volunteering task

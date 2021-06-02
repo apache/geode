@@ -66,13 +66,15 @@ public class ThreadsMonitoringProcess extends TimerTask {
       }
     }
     if (!isStuck) {
-      if (this.resourceManagerStats != null)
+      if (this.resourceManagerStats != null) {
         this.resourceManagerStats.setNumThreadStuck(0);
+      }
       logger.trace("There are no stuck threads in the system");
       return false;
     } else {
-      if (this.resourceManagerStats != null)
+      if (this.resourceManagerStats != null) {
         this.resourceManagerStats.setNumThreadStuck(numOfStuck);
+      }
       if (numOfStuck != 1) {
         logger.warn("There are {} stuck threads in this node", numOfStuck);
       } else {
@@ -86,8 +88,10 @@ public class ThreadsMonitoringProcess extends TimerTask {
   public void run() {
     if (this.resourceManagerStats == null) {
       try {
-        if (this.internalDistributedSystem == null || !this.internalDistributedSystem.isConnected())
+        if (this.internalDistributedSystem == null
+            || !this.internalDistributedSystem.isConnected()) {
           return;
+        }
         DistributionManager distributionManager =
             this.internalDistributedSystem.getDistributionManager();
         InternalCache cache = distributionManager.getExistingCache();
@@ -95,8 +99,9 @@ public class ThreadsMonitoringProcess extends TimerTask {
       } catch (CacheClosedException e1) {
         logger.trace("No cache exists yet - process will run on next iteration");
       }
-    } else
+    } else {
       mapValidation();
+    }
   }
 
   public ResourceManagerStats getResourceManagerStats() {

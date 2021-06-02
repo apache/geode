@@ -155,8 +155,9 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     });
 
     ThreadUtils.join(async, 30 * 1000);
-    if (async.exceptionOccurred())
+    if (async.exceptionOccurred()) {
       throw async.getException();
+    }
 
   }// end of testRemoveGlobalSingleVM
 
@@ -241,8 +242,9 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     });
 
     ThreadUtils.join(async, 30 * 1000);
-    if (async.exceptionOccurred())
+    if (async.exceptionOccurred()) {
       throw async.getException();
+    }
 
   }// end of testRemoveGlobalMultiVM
 

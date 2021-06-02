@@ -131,8 +131,9 @@ public class SizeMessage extends PartitionMessage {
   @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
-    if (this.estimate)
+    if (this.estimate) {
       s |= ESTIMATE;
+    }
     return s;
   }
 

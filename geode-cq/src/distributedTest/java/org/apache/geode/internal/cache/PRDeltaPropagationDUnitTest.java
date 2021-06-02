@@ -812,8 +812,9 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
       am.addCacheListener(new CacheListenerAdapter() {
         @Override
         public void afterCreate(EntryEvent event) {
-          if (event.getNewValue() == null)
+          if (event.getNewValue() == null) {
             isFailed = true;
+          }
 
           if (event.getKey().equals(LAST_KEY)) {
             lastKeyReceived = true;
@@ -822,8 +823,9 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
         @Override
         public void afterUpdate(EntryEvent event) {
-          if (event.getNewValue() == null)
+          if (event.getNewValue() == null) {
             isFailed = true;
+          }
         }
       });
     }

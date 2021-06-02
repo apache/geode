@@ -79,8 +79,9 @@ public class SimpleSecurityManager implements SecurityManager {
     String[] principals = principal.toString().toLowerCase().split(",");
     for (String role : principals) {
       String permissionString = permission.toString().replace(":", "").toLowerCase();
-      if (permissionString.startsWith(role))
+      if (permissionString.startsWith(role)) {
         return true;
+      }
     }
     return false;
   }

@@ -102,10 +102,11 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
       // are also filterEvaluatable.
       planInfo = new PlanInfo();
       Object result = evaluate(context);
-      if (!(result instanceof Boolean))
+      if (!(result instanceof Boolean)) {
         throw new TypeMismatchException(
             String.format("boolean value expected, not type ' %s '",
                 result.getClass().getName()));
+      }
       boolean b = ((Boolean) result).booleanValue();
       planInfo.evalAsFilter = !b;
       return planInfo;
@@ -225,13 +226,15 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
     // then this method as well as protGetPlanInfo must be overridden
     Support.Assert(!isDependentOnCurrentScope(context));
     Object result = evaluate(context);
-    if (result == null || result == QueryService.UNDEFINED)
+    if (result == null || result == QueryService.UNDEFINED) {
       return new ResultsBag(intermediateResults.getCollectionType().getElementType(), 0,
           context.getCachePerfStats());
-    if (!(result instanceof Boolean))
+    }
+    if (!(result instanceof Boolean)) {
       throw new TypeMismatchException(
           String.format("boolean value expected, not type ' %s '",
               result.getClass().getName()));
+    }
     boolean b = ((Boolean) result).booleanValue();
     // Asif : Boolean true, means the cartesian of all the RuntimeIterators
     // indicated by null value. A false means an empty ResultSet

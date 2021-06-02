@@ -81,8 +81,9 @@ public class OperationHistoryManager {
   private static boolean isExpired(long expirationDate, OperationInstance<?, ?> operationInstance) {
     CompletableFuture<Date> futureOperationEnded = operationInstance.getFutureOperationEnded();
 
-    if (!futureOperationEnded.isDone())
+    if (!futureOperationEnded.isDone()) {
       return false; // always keep while still in-progress
+    }
 
     final long endTime;
     try {

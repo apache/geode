@@ -136,20 +136,26 @@ public class MessageDependencyMonitor implements DependencyMonitor {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (!(obj instanceof MessageKey))
+      }
+      if (!(obj instanceof MessageKey)) {
         return false;
+      }
       MessageKey other = (MessageKey) obj;
       if (myId == null) {
-        if (other.myId != null)
+        if (other.myId != null) {
           return false;
-      } else if (!myId.equals(other.myId))
+        }
+      } else if (!myId.equals(other.myId)) {
         return false;
-      if (processorId != other.processorId)
+      }
+      if (processorId != other.processorId) {
         return false;
+      }
       return true;
     }
 

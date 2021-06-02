@@ -499,8 +499,9 @@ public class LocatorLoadSnapshot {
   private LoadHolder isCurrentServerMostLoaded(ServerLocation currentServer,
       Map<ServerLocation, LoadHolder> groupServers) {
     final LoadHolder currentLH = groupServers.get(currentServer);
-    if (currentLH == null)
+    if (currentLH == null) {
       return null;
+    }
     final float currentLoad = currentLH.getLoad();
     for (Map.Entry<ServerLocation, LoadHolder> loadEntry : groupServers.entrySet()) {
       ServerLocation location = loadEntry.getKey();

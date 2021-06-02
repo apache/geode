@@ -403,8 +403,9 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
           .info("Executing function :  TestFunction4-7.execute " + prContext);
       if (prContext.getArguments() instanceof Boolean) {
         /* return prContext.getArguments(); */
-        if (hasResult())
+        if (hasResult()) {
           prContext.getResultSender().lastResult(prContext.getArguments());
+        }
       } else if (prContext.getArguments() instanceof String) {
         String key = (String) prContext.getArguments();
         /* return (Serializable)PartitionRegionHelper.getLocalDataForContext(prContext).get(key); */
@@ -419,23 +420,27 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
             vals.add(val);
           }
         }
-        if (hasResult())
+        if (hasResult()) {
           prContext.getResultSender().lastResult(vals);
+        }
       } else if (prContext.getArguments() instanceof HashMap) {
         HashMap putData = (HashMap) prContext.getArguments();
         for (Object o : putData.entrySet()) {
           Map.Entry me = (Map.Entry) o;
           prContext.getDataSet().put(me.getKey(), me.getValue());
         }
-        if (hasResult())
+        if (hasResult()) {
           prContext.getResultSender().lastResult(Boolean.TRUE);
+        }
       } else {
-        if (hasResult())
+        if (hasResult()) {
           prContext.getResultSender().lastResult(Boolean.FALSE);
+        }
       }
     } else {
-      if (hasResult())
+      if (hasResult()) {
         context.getResultSender().lastResult(Boolean.FALSE);
+      }
     }
 
   }
@@ -558,10 +563,11 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
             val = rfContext.getDataSet().get(i.next());
           }
 
-          if (i.hasNext())
+          if (i.hasNext()) {
             rfContext.getResultSender().sendResult(val);
-          else
+          } else {
             rfContext.getResultSender().lastResult(val);
+          }
 
           if (val != null) {
             vals.add(val);
@@ -1023,8 +1029,9 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
+    }
     if (!(obj instanceof TestFunction)) {
       return false;
     }

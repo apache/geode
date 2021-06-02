@@ -322,8 +322,9 @@ public class TableBuilder {
     }
 
     private int getMaxColLength(final int colNum) {
-      if (colNum >= this.columns.size())
+      if (colNum >= this.columns.size()) {
         return 0;
+      }
 
       return this.columns.get(colNum).getLength();
     }
@@ -413,14 +414,16 @@ public class TableBuilder {
       if (this.stringValue.length() > colWidth) {
         StringBuilder stringBuffer = new StringBuilder();
         int endIndex = colWidth - 2;
-        if (endIndex < 0)
+        if (endIndex < 0) {
           return "";
+        }
         return stringBuffer.append(stringValue.substring(0, endIndex)).append("..").toString();
       }
 
       int numSpaces = colWidth - this.stringValue.length();
-      if (trimIt)
+      if (trimIt) {
         numSpaces = 0;
+      }
 
       StringBuilder stringBuffer = new StringBuilder();
 

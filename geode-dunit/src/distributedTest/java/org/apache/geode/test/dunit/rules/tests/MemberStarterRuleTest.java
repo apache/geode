@@ -28,8 +28,9 @@ public class MemberStarterRuleTest {
 
   @After
   public void after() {
-    if (locator != null)
+    if (locator != null) {
       locator.after();
+    }
   }
 
   @Test

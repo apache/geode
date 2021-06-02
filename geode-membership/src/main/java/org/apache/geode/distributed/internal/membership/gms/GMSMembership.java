@@ -1064,8 +1064,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   public void startEventProcessing() {
     // Only allow one thread to perform the work
     synchronized (startupMutex) {
-      if (logger.isDebugEnabled())
+      if (logger.isDebugEnabled()) {
         logger.debug("Membership: draining startup events.");
+      }
       // Remove the backqueue of messages, but allow
       // additional messages to be added.
       for (;;) {
@@ -1102,8 +1103,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
               t);
         }
       } // for
-      if (logger.isDebugEnabled())
+      if (logger.isDebugEnabled()) {
         logger.debug("Membership: finished processing startup events.");
+      }
     } // startupMutex
   }
 
@@ -1111,10 +1113,12 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   @Override
   public void waitForEventProcessing() throws InterruptedException {
     // First check outside of a synchronized block. Cheaper and sufficient.
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
-    if (processingEvents)
+    }
+    if (processingEvents) {
       return;
+    }
     if (logger.isDebugEnabled()) {
       logger.debug("Membership: waiting until the system is ready for events");
     }

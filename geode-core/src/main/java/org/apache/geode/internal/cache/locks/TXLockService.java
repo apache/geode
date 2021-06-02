@@ -141,8 +141,9 @@ public abstract class TXLockService {
     synchronized (TXLockService.class) {
       if (!isDestroyed()) {
         basicDestroy();
-        if (this == DTLS)
+        if (this == DTLS) {
           DTLS = null;
+        }
       }
     }
   }

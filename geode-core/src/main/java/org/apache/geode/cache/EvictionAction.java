@@ -109,10 +109,12 @@ public final class EvictionAction extends EnumSyntax implements Serializable {
    *         returned.
    */
   public static EvictionAction parseAction(String s) {
-    if (s == null)
+    if (s == null) {
       return NONE;
-    if (s.length() < 1)
+    }
+    if (s.length() < 1) {
       return NONE;
+    }
     for (int i = 0; i < stringTable.length; ++i) {
       if (s.equals(stringTable[i])) {
         return enumValueTable[i];

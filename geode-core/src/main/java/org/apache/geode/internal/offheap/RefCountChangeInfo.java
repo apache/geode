@@ -81,12 +81,14 @@ public class RefCountChangeInfo extends Throwable {
   }
 
   public boolean isSameCaller(RefCountChangeInfo other) {
-    if (!getMessage().equals(other.getMessage()))
+    if (!getMessage().equals(other.getMessage())) {
       return false;
+    }
     Object trace = getStackTraceString();
     Object traceOther = other.getStackTraceString();
-    if (trace.hashCode() != traceOther.hashCode())
+    if (trace.hashCode() != traceOther.hashCode()) {
       return false;
+    }
     if (trace.equals(traceOther)) {
       return true;
     } else {

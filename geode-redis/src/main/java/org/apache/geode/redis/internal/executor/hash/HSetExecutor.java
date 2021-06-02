@@ -54,15 +54,17 @@ public class HSetExecutor extends HashExecutor implements Extendable {
 
     Object oldValue;
 
-    if (onlySetOnAbsent())
+    if (onlySetOnAbsent()) {
       oldValue = keyRegion.putIfAbsent(field, new ByteArrayWrapper(value));
-    else
+    } else {
       oldValue = keyRegion.put(field, new ByteArrayWrapper(value));
+    }
 
-    if (oldValue == null)
+    if (oldValue == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NEW_FIELD));
-    else
+    } else {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTING_FIELD));
+    }
 
   }
 

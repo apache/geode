@@ -66,8 +66,9 @@ public abstract class GemFireCheckedException extends Exception {
    * cause is nonexistent or unknown.
    */
   public Throwable getRootCause() {
-    if (this.getCause() == null)
+    if (this.getCause() == null) {
       return null;
+    }
     Throwable root = this.getCause();
     while (root != null) {
       if (root.getCause() == null) {

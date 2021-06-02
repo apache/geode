@@ -102,8 +102,9 @@ public class QueryUtilsJUnitTest {
     finalList.add(indexToItrMappping[0]);
     finalList.add(expand);
     ResultsSet indexResult = new ResultsSet(new ObjectTypeImpl(Portfolio.class));
-    for (int i = 0; i < po.length; ++i)
+    for (int i = 0; i < po.length; ++i) {
       indexResult.add(po[i]);
+    }
     List expandList = new LinkedList();
     expandList.add(expand);
     List dataList = new ArrayList();
@@ -164,8 +165,9 @@ public class QueryUtilsJUnitTest {
     finalList.add(indexToItrMappping[0]);
 
     ResultsSet indexResult = new ResultsSet(new ObjectTypeImpl(Portfolio.class));
-    for (int i = 0; i < po.length; ++i)
+    for (int i = 0; i < po.length; ++i) {
       indexResult.add(po[i]);
+    }
     List expandList = new LinkedList();
     expandList.add(expand[0]);
     expandList.add(expand[1]);

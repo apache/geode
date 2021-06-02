@@ -82,8 +82,9 @@ public class LRemExecutor extends ListExecutor {
     for (Struct entry : removeList) {
       Integer removeKey = (Integer) entry.getFieldValues()[0];
       Object oldVal = keyRegion.remove(removeKey);
-      if (oldVal != null)
+      if (oldVal != null) {
         numRemoved++;
+      }
     }
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
   }

@@ -53,8 +53,9 @@ public class SRemExecutor extends SetExecutor {
     for (int i = 2; i < commandElems.size(); i++) {
       Object oldVal;
       oldVal = keyRegion.remove(new ByteArrayWrapper(commandElems.get(i)));
-      if (oldVal != null)
+      if (oldVal != null) {
         numRemoved++;
+      }
     }
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));

@@ -1377,8 +1377,9 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       throw new IllegalStateException(
           "Cannot set lock grantor when scope is not global");
     }
-    if (isCurrentlyLockGrantor())
+    if (isCurrentlyLockGrantor()) {
       return; // nothing to do... already lock grantor
+    }
     isLockGrantor = true;
   }
 
@@ -1706,10 +1707,11 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     if (result.isEmpty()) {
       return null;
     }
-    if (result.size() > 1)
+    if (result.size() > 1) {
       throw new FunctionDomainException(
           String.format("selectValue expects results of size 1, but found results of size %s",
               result.size()));
+    }
     return result.iterator().next();
   }
 

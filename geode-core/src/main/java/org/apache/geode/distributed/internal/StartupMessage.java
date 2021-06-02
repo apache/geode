@@ -302,10 +302,12 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
     if (myMcastAddr != null) {
       myMcastHostAddr = myMcastAddr.getHostAddress();
     }
-    if (StringUtils.equals(myMcastHostAddr, otherMcastHostAddr))
+    if (StringUtils.equals(myMcastHostAddr, otherMcastHostAddr)) {
       return true;
-    if (myMcastHostAddr == null)
+    }
+    if (myMcastHostAddr == null) {
       return false;
+    }
     return myMcastHostAddr.equals(otherMcastHostAddr);
   }
 

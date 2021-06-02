@@ -1849,14 +1849,16 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     if (timeout <= 0) {
       removeTransactionsSentFromDepartedProxy(proxyServer);
     } else {
-      if (departedProxyServers != null)
+      if (departedProxyServers != null) {
         departedProxyServers.add(proxyServer);
+      }
       SystemTimerTask task = new SystemTimerTask() {
         @Override
         public void run2() {
           removeTransactionsSentFromDepartedProxy(proxyServer);
-          if (departedProxyServers != null)
+          if (departedProxyServers != null) {
             departedProxyServers.remove(proxyServer);
+          }
         }
       };
       try {
@@ -1867,8 +1869,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         }
         // task not able to be scheduled due to cache is closing,
         // do not set it in the test hook.
-        if (departedProxyServers != null)
+        if (departedProxyServers != null) {
           departedProxyServers.remove(proxyServer);
+        }
       }
     }
   }

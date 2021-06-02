@@ -122,8 +122,9 @@ public class LuceneIndexMemoryOverheadTest extends LuceneIntegrationTest {
     }
 
     waitForFlush(flush);
-    if (service != null)
+    if (service != null) {
       service.forceBatchExpirationForTests((int) service.getScheduledTombstoneCount());
+    }
 
     return ObjectGraphSizer.size(cache, filter, false);
   }

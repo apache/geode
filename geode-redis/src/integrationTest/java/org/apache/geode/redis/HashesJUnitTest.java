@@ -144,8 +144,9 @@ public class HashesJUnitTest {
     String field = randString();
 
     Long incr = (long) rand.nextInt(50);
-    if (incr == 0)
+    if (incr == 0) {
       incr++;
+    }
 
     long response1 = jedis.hincrBy(key, field, incr);
     assertTrue(response1 == incr);

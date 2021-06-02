@@ -161,13 +161,14 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     TypeRegistry.init();
 
     // delete the first-level children files that are created in the tests
-    if (cleanWorkingDir)
+    if (cleanWorkingDir) {
       Arrays.stream(getWorkingDir().listFiles())
           // do not delete the pre-existing files
           .filter(f -> !firstLevelChildrenFile.contains(f))
           // do not delete the dunit folder that might have been created by dunit launcher
           .filter(f -> !(f.isDirectory() && f.getName().equals("dunit")))
           .forEach(FileUtils::deleteQuietly);
+    }
   }
 
   public T withPort(int memberPort) {

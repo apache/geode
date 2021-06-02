@@ -123,8 +123,9 @@ public class Repository {
    */
   public Cluster getCluster() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth == null)
+    if (auth == null) {
       return null;
+    }
     return getCluster(auth.getName(), null);
   }
 

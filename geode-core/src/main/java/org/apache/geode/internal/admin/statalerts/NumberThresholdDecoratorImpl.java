@@ -83,10 +83,11 @@ public class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
    */
   @Override
   public boolean evaluate(Number[] params) {
-    if (this.evalForGtThan)
+    if (this.evalForGtThan) {
       return super.evaluate(params) && isGreaterThan(getValue(params)[0], threshold);
-    else
+    } else {
       return super.evaluate(params) && isLessThan(getValue(params)[0], threshold);
+    }
   }
 
   @Override

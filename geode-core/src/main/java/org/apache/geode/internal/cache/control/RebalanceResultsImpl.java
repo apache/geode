@@ -56,8 +56,9 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
     totalBucketTransfersCompleted += details.totalBucketTransfersCompleted;
     totalPrimaryTransferTime += details.totalPrimaryTransferTime;
     totalPrimaryTransfersCompleted += details.totalPrimaryTransfersCompleted;
-    if (details.totalTime > totalTime)
+    if (details.totalTime > totalTime) {
       totalTime = details.totalTime;
+    }
   }
 
   @Override

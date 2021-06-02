@@ -165,8 +165,9 @@ public class StatAlertsManager {
   private synchronized void rescheduleTimer() {
     // cancel the old timer. Although cancelled, old task might execute one last
     // time
-    if (timer != null)
+    if (timer != null) {
       timer.cancel();
+    }
 
     // Get the swarm. Currently rather UGLY.
     InternalDistributedSystem system = dm.getSystem();
@@ -352,8 +353,9 @@ public class StatAlertsManager {
         // For the DS without agent, alert manager should not create
         // any alert notifications
         Set adminMemberSet = dm.getAdminMemberSet();
-        if (adminMemberSet == null || adminMemberSet.isEmpty())
+        if (adminMemberSet == null || adminMemberSet.isEmpty()) {
           return;
+        }
 
         if (isDebugEnabled) {
           logger.debug("EvaluateAlertDefnsTask: starting");

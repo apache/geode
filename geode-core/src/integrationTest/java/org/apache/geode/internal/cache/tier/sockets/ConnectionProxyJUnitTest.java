@@ -107,8 +107,9 @@ public class ConnectionProxyJUnitTest {
     system.getLogWriter().info(removeExpectedREM);
 
     this.system.disconnect();
-    if (proxy != null)
+    if (proxy != null) {
       proxy.destroy();
+    }
   }
 
   /**

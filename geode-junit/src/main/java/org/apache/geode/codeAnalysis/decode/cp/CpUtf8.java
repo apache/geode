@@ -34,8 +34,9 @@ public class CpUtf8 extends Cp {
   }
 
   public String stringValue() {
-    if (stringValue == null)
+    if (stringValue == null) {
       stringValue = value.toString();
+    }
     return stringValue;
   }
 
@@ -44,8 +45,9 @@ public class CpUtf8 extends Cp {
    * string
    */
   public int argCount() {
-    if (classes == null)
+    if (classes == null) {
       decodeClassName(0);
+    }
     return classes.size() - 1;
   }
 
@@ -58,13 +60,15 @@ public class CpUtf8 extends Cp {
     if (classes == null) {
       classes = new Vector();
       idx = 0;
-      while (idx >= 0)
+      while (idx >= 0) {
         idx = decodeNextClassName(idx);
+      }
     }
-    if (argNo == 0)
+    if (argNo == 0) {
       return (String) classes.elementAt(classes.size() - 1);
-    else
+    } else {
       return (String) classes.elementAt(argNo - 1);
+    }
   }
 
   private int decodeNextClassName(int startIdx) {
@@ -74,11 +78,13 @@ public class CpUtf8 extends Cp {
 
     idx = startIdx;
     len = value.length();
-    if (idx >= len)
+    if (idx >= len) {
       return -1;
+    }
 
-    while (value.charAt(idx) == ')' || value.charAt(idx) == '(')
+    while (value.charAt(idx) == ')' || value.charAt(idx) == '(') {
       idx++;
+    }
 
     arraySpec = new StringBuffer();
 

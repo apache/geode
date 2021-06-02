@@ -28,27 +28,31 @@ public class Support {
 
 
   public static void assertArg(boolean b, String message) {
-    if (!ASSERTIONS_ENABLED)
+    if (!ASSERTIONS_ENABLED) {
       return;
+    }
     Assert(b, message, ARG);
   }
 
   public static void assertState(boolean b, String message) {
-    if (!ASSERTIONS_ENABLED)
+    if (!ASSERTIONS_ENABLED) {
       return;
+    }
     Assert(b, message, STATE);
   }
 
 
   public static void Assert(boolean b) {
-    if (!ASSERTIONS_ENABLED)
+    if (!ASSERTIONS_ENABLED) {
       return;
+    }
     Assert(b, "", OTHER);
   }
 
   public static void Assert(boolean b, String message) {
-    if (!ASSERTIONS_ENABLED)
+    if (!ASSERTIONS_ENABLED) {
       return;
+    }
     Assert(b, message, OTHER);
   }
 
@@ -61,8 +65,9 @@ public class Support {
   }
 
   private static void Assert(boolean b, String message, int type) {
-    if (!b)
+    if (!b) {
       assertionFailed(message, type);
+    }
   }
 
   private static void assertionFailed(String message, int type) {

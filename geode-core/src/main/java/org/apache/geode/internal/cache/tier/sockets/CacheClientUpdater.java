@@ -725,8 +725,9 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
           this.isOpCompleted = true;
         } finally {
-          if (newEvent != null)
+          if (newEvent != null) {
             newEvent.release();
+          }
         }
 
         if (isDebugEnabled) {

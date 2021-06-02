@@ -511,10 +511,12 @@ public class DiskRegion extends AbstractDiskRegion {
   }
 
   public boolean testIsRecoveredAndClear(DiskId id) {
-    if (!isReadyForRecovery())
+    if (!isReadyForRecovery()) {
       return false;
-    if (id == null)
+    }
+    if (id == null) {
       return false;
+    }
     synchronized (id) {
       byte bits = id.getUserBits();
       if (EntryBits.isRecoveredFromDisk(bits)) {
