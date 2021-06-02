@@ -20,6 +20,11 @@ import static java.lang.Math.round;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.BASE_REDIS_SORTED_SET_OVERHEAD;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import java.io.DataOutput;
 import java.io.IOException;
@@ -35,7 +40,6 @@ import org.assertj.core.data.Offset;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
@@ -45,6 +49,7 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
+import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
@@ -116,7 +121,7 @@ public class RedisSortedSetTest {
 
   @Test
   public void zadd_stores_delta_that_is_stable() throws IOException {
-    Region<RedisKey, RedisData> region = uncheckedCast(Mockito.mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
 
     List<byte[]> adds = new ArrayList<>();
@@ -140,7 +145,7 @@ public class RedisSortedSetTest {
 
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
-    Region<RedisKey, RedisData> region = uncheckedCast(Mockito.mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     sortedSet1.setExpirationTimestamp(region, null, 999);
     assertThat(sortedSet1.hasDelta()).isTrue();
@@ -229,6 +234,67 @@ public class RedisSortedSetTest {
 
     final Offset<Integer> offset = Offset.offset((int) round(expected * 0.03));
 
+    assertThat(actual).isCloseTo(expected, offset);
+  }
+
+  private final String member1 = "member1";
+  private final String member2 = "member2";
+  private final String score1 = "5.55555";
+  private final String score2 = "209030.31";
+
+  @Test
+  public void zremCanRemoveMembersToBeRemoved() {
+    String member3 = "member3";
+    String score3 = "998955255.66361191";
+    RedisSortedSet sortedSet =
+        spy(createRedisSortedSet(score1, member1, score2, member2, score3, member3));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    RedisKey key = new RedisKey();
+    ArrayList<byte[]> membersToRemove = new ArrayList<>();
+    membersToRemove.add(Coder.stringToBytes("nonExisting"));
+    membersToRemove.add(Coder.stringToBytes(member1));
+    membersToRemove.add(Coder.stringToBytes(member3));
+
+    long removed = sortedSet.zrem(region, key, membersToRemove);
+
+    assertThat(removed).isEqualTo(2);
+    verify(sortedSet).storeChanges(eq(region), eq(key), any(RemsDeltaInfo.class));
+  }
+
+  @Test
+  public void memberRemoveCanRemoveMemberInSortedSet() {
+    RedisSortedSet sortedSet = createRedisSortedSet(score1, member1, score2, member2);
+    RedisSortedSet sortedSet2 = createRedisSortedSet(score2, member2);
+    int originalSize = sortedSet.getSizeInBytes();
+
+    byte[] returnValue = sortedSet.memberRemove(Coder.stringToBytes(member1));
+    int removedSize =
+        sortedSet.calculateSizeOfFieldValuePair(Coder.stringToBytes(member1), returnValue);
+
+    assertThat(sortedSet).isEqualTo(sortedSet2);
+    assertThat(returnValue).isEqualTo(Coder.stringToBytes(score1));
+    assertThat(sortedSet.getSizeInBytes()).isEqualTo(originalSize - removedSize);
+  }
+
+  @Test
+  @Ignore("Redo when we have a defined Sizable strategy")
+  public void should_calculateSize_closeToROSSize_ofIndividualInstanceAfterZRem() {
+    String member1 = "memberUnoIsTheFirstMember";
+    RedisSortedSet sortedSet =
+        createRedisSortedSet("1.0", member1,
+            "2.0", "memberDueIsTheSecondMember", "3.0", "memberTreIsTheThirdMember",
+            "4.0", "memberQuatroIsTheThirdMember");
+
+    int expected = reflectionObjectSizer.sizeof(sortedSet);
+    int actual = sortedSet.getSizeInBytes();
+
+    Offset<Integer> offset = Offset.offset((int) round(expected * 0.03));
+    assertThat(actual).isCloseTo(expected, offset);
+
+    sortedSet.memberRemove(Coder.stringToBytes(member1));
+    expected = reflectionObjectSizer.sizeof(sortedSet);
+    actual = sortedSet.getSizeInBytes();
+    offset = Offset.offset((int) round(expected * 0.03));
     assertThat(actual).isCloseTo(expected, offset);
   }
 

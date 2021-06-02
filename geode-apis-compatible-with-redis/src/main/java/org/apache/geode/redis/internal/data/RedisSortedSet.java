@@ -56,7 +56,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return sizeInBytes;
   }
 
-  private int calculateSizeOfFieldValuePair(byte[] member, byte[] score) {
+  int calculateSizeOfFieldValuePair(byte[] member, byte[] score) {
     return PER_PAIR_OVERHEAD + member.length + score.length;
   }
 
@@ -73,7 +73,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
-  protected int getSortedSetSize() {
+  int getSortedSetSize() {
     return members.size();
   }
 
@@ -171,11 +171,9 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
-
   private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
     for (byte[] member : remsDeltaInfo.getRemoves()) {
-      sizeInBytes -= calculateSizeOfFieldValuePair(member, members.get(member));
-      members.remove(member);
+      memberRemove(member);
     }
   }
 
@@ -226,6 +224,35 @@ public class RedisSortedSet extends AbstractRedisData {
 
   byte[] zscore(byte[] member) {
     return members.get(member);
+  }
+
+  long zrem(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToRemove) {
+    int membersRemoved = 0;
+    RemsDeltaInfo deltaInfo = null;
+    for (byte[] memberToRemove : membersToRemove) {
+      if (memberRemove(memberToRemove) != null) {
+        if (deltaInfo == null) {
+          deltaInfo = new RemsDeltaInfo();
+        }
+        deltaInfo.add(memberToRemove);
+        membersRemoved++;
+      }
+    }
+    storeChanges(region, key, deltaInfo);
+    return membersRemoved;
+  }
+
+  synchronized byte[] memberRemove(byte[] member) {
+    byte[] oldValue = members.remove(member);
+    if (oldValue != null) {
+      sizeInBytes -= calculateSizeOfFieldValuePair(member, oldValue);
+    }
+
+    if (members.isEmpty()) {
+      sizeInBytes = BASE_REDIS_SORTED_SET_OVERHEAD;
+    }
+
+    return oldValue;
   }
 
   long zcard() {

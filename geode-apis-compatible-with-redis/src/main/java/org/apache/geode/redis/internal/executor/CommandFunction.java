@@ -282,6 +282,11 @@ public class CommandFunction extends SingleResultRedisFunction {
         byte[] member = (byte[]) args[1];
         return sortedSetCommands.zscore(key, member);
       }
+
+      case ZREM: {
+        List<byte[]> membersToRemove = (List<byte[]>) args[1];
+        return sortedSetCommands.zrem(key, membersToRemove);
+      }
       case ZCARD: {
         return sortedSetCommands.zcard(key);
       }

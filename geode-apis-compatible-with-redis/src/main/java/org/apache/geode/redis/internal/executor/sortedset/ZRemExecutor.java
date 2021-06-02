@@ -12,21 +12,29 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public interface RedisSortedSetCommands {
+public class ZRemExecutor extends AbstractExecutor {
 
-  long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd,
-      ZAddOptions options);
+  @Override
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+    RedisSortedSetCommands redisSortedSetCommands = context.getRedisSortedSetCommands();;
 
-  byte[] zscore(RedisKey key, byte[] member);
+    List<byte[]> commandElements = command.getProcessedCommand();
+    RedisKey key = command.getKey();
+    List<byte[]> membersToRemove =
+        new ArrayList<>(commandElements.subList(2, commandElements.size()));
 
-  long zrem(RedisKey key, List<byte[]> membersToRemove);
-
-  long zcard(RedisKey key);
+    long membersRemoved = redisSortedSetCommands.zrem(key, membersToRemove);
+    return RedisResponse.integer(membersRemoved);
+  }
 }
