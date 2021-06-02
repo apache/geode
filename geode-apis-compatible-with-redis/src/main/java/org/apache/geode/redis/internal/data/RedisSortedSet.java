@@ -400,9 +400,7 @@ public class RedisSortedSet extends AbstractRedisData {
       byte[] otherMember = o.member;
       int shortestLength = Math.min(member.length, otherMember.length);
       for (int i = 0; i < shortestLength; i++) {
-        int thisByte = Byte.toUnsignedInt(member[i]);
-        int otherByte = Byte.toUnsignedInt(otherMember[i]);
-        int localComp = thisByte - otherByte;
+        int localComp = Byte.toUnsignedInt(member[i]) - Byte.toUnsignedInt(otherMember[i]);
         if (localComp != 0) {
           return localComp;
         }
@@ -414,7 +412,8 @@ public class RedisSortedSet extends AbstractRedisData {
       } else if (member.length > otherMember.length) {
         return 1; // other < member
       }
-      return 0; // totally equal - should never happen...
+      return 0; // totally equal - should never happen, because you can't have two members
+      // with same name...
     }
 
     OrderedSetEntry(byte[] member, byte[] score) {
