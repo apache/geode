@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
@@ -61,20 +62,39 @@ public class LatestLastAccessTimeMessage<K> extends PooledDistributionMessage
 
   @Override
   protected void process(ClusterDistributionManager dm) {
-    long latestLastAccessTime = 0L;
-    InternalDistributedRegion region =
-        (InternalDistributedRegion) dm.getCache().getRegion(this.regionName);
-    if (region != null) {
-      RegionEntry entry = region.getRegionEntry(this.key);
-      if (entry != null) {
+    final InternalCache cache = dm.getCache();
+    if (cache == null) {
+      sendReply(dm, 0);
+      return;
+    }
+    final InternalDistributedRegion region =
+        (InternalDistributedRegion) cache.getRegion(this.regionName);
+    if (region == null) {
+      sendReply(dm, 0);
+      return;
+    }
+    final RegionEntry entry = region.getRegionEntry(this.key);
+    if (entry == null) {
+      sendReply(dm, 0);
+      return;
+    }
+    long lastAccessed = 0L;
+    // noinspection SynchronizationOnLocalVariableOrMethodParameter
+    synchronized (entry) {
+      if (!entry.isInvalidOrRemoved()) {
         try {
-          latestLastAccessTime = entry.getLastAccessed();
+          lastAccessed = entry.getLastAccessed();
         } catch (InternalStatisticsDisabledException ignored) {
           // last access time is not available
         }
       }
     }
-    ReplyMessage.send(getSender(), this.processorId, latestLastAccessTime, dm);
+    sendReply(dm, lastAccessed);
+  }
+
+  @VisibleForTesting
+  void sendReply(ClusterDistributionManager dm, long lastAccessTime) {
+    ReplyMessage.send(getSender(), this.processorId, lastAccessTime, dm);
   }
 
   @Override
