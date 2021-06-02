@@ -299,6 +299,7 @@
         <groupId>net.minidev</groupId>
         <artifactId>json-smart</artifactId>
         <version>2.3.1</version>
+        <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>net.openhft</groupId>
