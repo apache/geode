@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.google.common.util.concurrent.AtomicDouble;
+import org.assertj.core.data.Offset;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -278,7 +279,8 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
           jedis.zincrby(STRING_KEY, increment, STRING_MEMBER);
         }).run();
 
-    assertThat(jedis.zscore(STRING_KEY, STRING_MEMBER)).isEqualTo(expectedValue.get());
+    Offset<Double> offset = Offset.offset(0.00000001);
+    assertThat(jedis.zscore(STRING_KEY, STRING_MEMBER)).isCloseTo(expectedValue.get(), offset);
   }
 
   /************* helper methods *************/
