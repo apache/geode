@@ -100,12 +100,14 @@ public class TestSecurityManager implements SecurityManager {
 
   @Override
   public boolean authorize(final Object principal, final ResourcePermission context) {
-    if (principal == null)
+    if (principal == null) {
       return false;
+    }
 
     User user = this.userNameToUser.get(principal.toString());
-    if (user == null)
+    if (user == null) {
       return false; // this user is not authorized to do anything
+    }
 
     // check if the user has this permission defined in the context
     for (Role role : this.userNameToUser.get(user.name).roles) {

@@ -167,8 +167,9 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
         return indexInfo;
       }
     }
-    if (!IndexUtils.indexesEnabled)
+    if (!IndexUtils.indexesEnabled) {
       return null;
+    }
     // get the path and index key to try
     PathAndKey pAndK = getPathAndKey(context);
     IndexInfo newIndexInfo[] = null;
@@ -213,8 +214,9 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     PlanInfo result = new PlanInfo();
     IndexInfo[] indexInfo = getIndexInfo(context);
-    if (indexInfo == null)
+    if (indexInfo == null) {
       return result;
+    }
     for (int i = 0; i < indexInfo.length; ++i) {
       result.indexes.add(indexInfo[i]._index);
     }
@@ -343,8 +345,9 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
 
     boolean isLeftDependent = context.isDependentOnCurrentScope(this.elm);
     boolean isRightDependent = context.isDependentOnCurrentScope(this.colln);
-    if (!isLeftDependent || isRightDependent)
+    if (!isLeftDependent || isRightDependent) {
       return null;
+    }
     CompiledValue indexKey;
     CompiledValue path;
     path = this.elm;

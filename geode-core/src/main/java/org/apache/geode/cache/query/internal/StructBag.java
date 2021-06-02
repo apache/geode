@@ -61,8 +61,9 @@ public class StructBag extends ResultsBag implements StructFields {
 
     @Override
     public boolean equals(Object o1, Object o2) {
-      if (o1 == null)
+      if (o1 == null) {
         return o2 == null;
+      }
       if (!(o1 instanceof Object[]) || !(o2 instanceof Object[])) {
         return o1.equals(o2);
       }
@@ -88,8 +89,9 @@ public class StructBag extends ResultsBag implements StructFields {
       int h = 0;
       for (int i = 0; i < oa.length; i++) {
         Object obj = oa[i];
-        if (obj != null)
+        if (obj != null) {
           h += obj.hashCode();
+        }
       }
       return h;
     }
@@ -97,8 +99,9 @@ public class StructBag extends ResultsBag implements StructFields {
     @Override
     public boolean equals(Object o1, Object o2) {
       // throws ClassCastException if not Object[]
-      if (o1 == null)
+      if (o1 == null) {
         return o2 == null;
+      }
       if (!(o1 instanceof Object[]) || !(o2 instanceof Object[])) {
         return o1.equals(o2);
       }

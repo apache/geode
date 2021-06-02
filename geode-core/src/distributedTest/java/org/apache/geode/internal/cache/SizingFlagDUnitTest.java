@@ -977,18 +977,23 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (!(obj instanceof TestKey))
+      }
+      if (!(obj instanceof TestKey)) {
         return false;
+      }
       TestKey other = (TestKey) obj;
       if (value == null) {
-        if (other.value != null)
+        if (other.value != null) {
           return false;
-      } else if (!value.equals(other.value))
+        }
+      } else if (!value.equals(other.value)) {
         return false;
+      }
       return true;
     }
 
@@ -1036,17 +1041,22 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (!(obj instanceof TestObject))
+      }
+      if (!(obj instanceof TestObject)) {
         return false;
+      }
       TestObject other = (TestObject) obj;
-      if (sizeForSerialization != other.sizeForSerialization)
+      if (sizeForSerialization != other.sizeForSerialization) {
         return false;
-      if (sizeForSizer != other.sizeForSizer)
+      }
+      if (sizeForSizer != other.sizeForSizer) {
         return false;
+      }
       return true;
     }
 

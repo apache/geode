@@ -320,10 +320,12 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
         return -1;
       }
     }
-    if (udpPort < his.udpPort)
+    if (udpPort < his.udpPort) {
       return -1;
-    if (his.udpPort < udpPort)
+    }
+    if (his.udpPort < udpPort) {
       return 1;
+    }
     int result = 0;
 
     // bug #41983, address of kill-9'd member is reused
@@ -549,10 +551,12 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
     VersioningIO.writeOrdinal(out, getVersionOrdinal(), true);
 
     int flags = 0;
-    if (networkPartitionDetectionEnabled)
+    if (networkPartitionDetectionEnabled) {
       flags |= NPD_ENABLED_BIT;
-    if (preferredForCoordinator)
+    }
+    if (preferredForCoordinator) {
       flags |= COORD_ENABLED_BIT;
+    }
     out.writeShort(flags);
 
     StaticSerialization.writeInetAddress(inetAddr, out);

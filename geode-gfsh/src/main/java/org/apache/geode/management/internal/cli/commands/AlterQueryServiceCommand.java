@@ -72,8 +72,9 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
     ResultModel result;
     Set<String> parametersSet = new HashSet<>();
     QueryConfigService queryConfigService = getQueryConfigService();
-    if (authorizerParameters != null)
+    if (authorizerParameters != null) {
       parametersSet.addAll(Arrays.asList(authorizerParameters));
+    }
     populateMethodAuthorizer(methodAuthorizerName, parametersSet, queryConfigService);
 
     Set<DistributedMember> targetMembers = findMembers(null, null);

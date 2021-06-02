@@ -62,33 +62,38 @@ public class GetDeliveredOrders implements Function {
       result = (SelectResults) query.execute();
       int resultSize = result.size();
 
-      if (result instanceof Collection<?>)
+      if (result instanceof Collection<?>) {
         for (Object item : result) {
           vals.add(item);
         }
+      }
     } catch (FunctionDomainException e) {
-      if (c != null)
+      if (c != null) {
         c.getLogger()
             .info("Caught FunctionDomainException while executing function GetDeliveredOrders: "
                 + e.getMessage());
+      }
 
     } catch (TypeMismatchException e) {
-      if (c != null)
+      if (c != null) {
         c.getLogger()
             .info("Caught TypeMismatchException while executing function GetDeliveredOrders: "
                 + e.getMessage());
+      }
 
     } catch (NameResolutionException e) {
-      if (c != null)
+      if (c != null) {
         c.getLogger()
             .info("Caught NameResolutionException while executing function GetDeliveredOrders: "
                 + e.getMessage());
+      }
 
     } catch (QueryInvocationTargetException e) {
-      if (c != null)
+      if (c != null) {
         c.getLogger().info(
             "Caught QueryInvocationTargetException while executing function GetDeliveredOrders: "
                 + e.getMessage());
+      }
 
     }
 

@@ -50,8 +50,9 @@ public class Utils {
         sb.append((cnt++) + " type = " + value.getClass().getName()).append("\n");
         sb.append("  " + value + "\n");
       }
-    } else
+    } else {
       sb.append(r);
+    }
     return sb.toString();
   }
 

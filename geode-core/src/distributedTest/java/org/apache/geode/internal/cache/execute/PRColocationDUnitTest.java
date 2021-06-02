@@ -2038,8 +2038,9 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
             break;
           }
         }
-        if (isSecondary)
+        if (isSecondary) {
           secondaryBucketListForCustomer.add(me.getKey());
+        }
       }
       Iterator primaryBucketIterator = primaryBucketListForCustomer.iterator();
       while (primaryBucketIterator.hasNext()) {
@@ -2080,8 +2081,9 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
             break;
           }
         }
-        if (isSecondary)
+        if (isSecondary) {
           secondaryBucketListForOrder.add(me.getKey());
+        }
       }
       Iterator primaryBucketIterator = primaryBucketListForOrder.iterator();
       while (primaryBucketIterator.hasNext()) {
@@ -2123,8 +2125,9 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
             break;
           }
         }
-        if (isSecondary)
+        if (isSecondary) {
           secondaryBucketListForShipment.add(me.getKey());
+        }
       }
       Iterator primaryBucketIterator = primaryBucketListForShipment.iterator();
       while (primaryBucketIterator.hasNext()) {
@@ -2367,10 +2370,11 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(partitionedregion);
     boolean exceptionThrown = false;
     try {
-      if (destroy)
+      if (destroy) {
         partitionedregion.destroyRegion();
-      else
+      } else {
         partitionedregion.close();
+      }
     } catch (IllegalStateException e) {
       exceptionThrown = true;
     }
@@ -2653,11 +2657,13 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o)
+      if (this == o) {
         return true;
+      }
 
-      if (!(o instanceof DummyKeyBasedRoutingResolver))
+      if (!(o instanceof DummyKeyBasedRoutingResolver)) {
         return false;
+      }
 
       DummyKeyBasedRoutingResolver otherDummyID = (DummyKeyBasedRoutingResolver) o;
       return (otherDummyID.dummyID.equals(dummyID));

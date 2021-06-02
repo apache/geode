@@ -126,8 +126,9 @@ public class ClientPartitionAdvisor {
           this.bucketServerLocationsMap.get(bucketList.get(random.nextInt(size)));
       if (locations != null) {
         List<BucketServerLocation66> serverList = new ArrayList<BucketServerLocation66>(locations);
-        if (serverList.size() == 0)
+        if (serverList.size() == 0) {
           return null;
+        }
         return serverList.get(0);
       }
     }

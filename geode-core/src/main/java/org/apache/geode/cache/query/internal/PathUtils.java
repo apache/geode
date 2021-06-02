@@ -115,10 +115,11 @@ public class PathUtils {
       Member member = new AttributeDescriptor(context.getCache().getPdxRegistry(), pathArray[i - 1])
           .getReadMember(currentType.resolveClass());
 
-      if (member instanceof Field)
+      if (member instanceof Field) {
         types[i] = TypeUtils.getObjectType(((Field) member).getType());
-      else if (member instanceof Method)
+      } else if (member instanceof Method) {
         types[i] = TypeUtils.getObjectType(((Method) member).getReturnType());
+      }
     }
     return types;
   }
@@ -240,8 +241,9 @@ public class PathUtils {
           break;
       }
 
-      if (toContinue)
+      if (toContinue) {
         exprType = expr.getType();
+      }
     }
     return retList;
   }

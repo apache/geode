@@ -59,8 +59,9 @@ public class Position implements Serializable, DataSerializable, Comparable {
   }
 
   public boolean equals(Object o) {
-    if (!(o instanceof Position))
+    if (!(o instanceof Position)) {
       return false;
+    }
     return this.secId.equals(((Position) o).secId);
   }
 
@@ -162,10 +163,11 @@ public class Position implements Serializable, DataSerializable, Comparable {
     if (o == this) {
       return 0;
     } else {
-      if (this.pid == ((Position) o).pid)
+      if (this.pid == ((Position) o).pid) {
         return 0;
-      else
+      } else {
         return this.pid < ((Position) o).pid ? -1 : 1;
+      }
     }
 
   }

@@ -257,8 +257,9 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
       @Override
       public boolean done() {
         Entry re = r1.getEntry(k1);
-        if (re == null)
+        if (re == null) {
           return false;
+        }
         Object val = re.getValue();
         return client_k1.equals(val);
       }
@@ -274,8 +275,9 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
       @Override
       public boolean done() {
         Entry re = r1.getEntry(k2);
-        if (re == null)
+        if (re == null) {
           return false;
+        }
         Object val = re.getValue();
         return client_k2.equals(val);
       }

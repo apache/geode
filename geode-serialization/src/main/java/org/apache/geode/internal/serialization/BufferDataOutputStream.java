@@ -127,8 +127,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
 
 
   public static void flushStream(OutputStream out, ByteBuffer outBuf) throws IOException {
-    if (outBuf.position() == 0)
+    if (outBuf.position() == 0) {
       return;
+    }
     assert outBuf.hasArray();
     outBuf.flip();
     out.write(outBuf.array(), outBuf.arrayOffset(), outBuf.remaining());
@@ -179,8 +180,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
   /** write the low-order 8 bits of the given int */
   @Override
   public void write(int b) {
-    if (ignoreWrites)
+    if (ignoreWrites) {
       return;
+    }
     checkIfWritable();
     ensureCapacity(1);
     buffer.put((byte) (b & 0xff));
@@ -227,10 +229,12 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
   /** override OutputStream's write() */
   @Override
   public void write(byte[] source, int offset, int len) {
-    if (len == 0)
+    if (len == 0) {
       return;
-    if (ignoreWrites)
+    }
+    if (ignoreWrites) {
       return;
+    }
     checkIfWritable();
     if (doNotCopy && len > MIN_TO_COPY) {
       moveBufferToChunks();
@@ -461,8 +465,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
   }
 
   protected void flushBuffer(SocketChannel sc, ByteBuffer out) throws IOException {
-    if (out.position() == 0)
+    if (out.position() == 0) {
       return;
+    }
     out.flip();
     while (out.remaining() > 0) {
       sc.write(out);
@@ -523,8 +528,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * @param v the <code>short</code> value to be written.
    */
   public void writeShort(int v) {
-    if (ignoreWrites)
+    if (ignoreWrites) {
       return;
+    }
     checkIfWritable();
     ensureCapacity(2);
     buffer.putShort((short) (v & 0xffff));
@@ -549,8 +555,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * @param v the <code>char</code> value to be written.
    */
   public void writeChar(int v) {
-    if (ignoreWrites)
+    if (ignoreWrites) {
       return;
+    }
     checkIfWritable();
     ensureCapacity(2);
     buffer.putChar((char) v);
@@ -576,8 +583,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * @param v the <code>int</code> value to be written.
    */
   public void writeInt(int v) {
-    if (ignoreWrites)
+    if (ignoreWrites) {
       return;
+    }
     checkIfWritable();
     ensureCapacity(4);
     buffer.putInt(v);
@@ -607,8 +615,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * @param v the <code>long</code> value to be written.
    */
   public void writeLong(long v) {
-    if (ignoreWrites)
+    if (ignoreWrites) {
       return;
+    }
     checkIfWritable();
     ensureCapacity(8);
     buffer.putLong(v);
@@ -621,8 +630,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * @return the LongUpdater that allows the long to be updated
    */
   public LongUpdater reserveLong() {
-    if (ignoreWrites)
+    if (ignoreWrites) {
       return null;
+    }
     checkIfWritable();
     ensureCapacity(8);
     LongUpdater result = new LongUpdater(buffer);
@@ -641,8 +651,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * @param v the <code>float</code> value to be written.
    */
   public void writeFloat(float v) {
-    if (ignoreWrites)
+    if (ignoreWrites) {
       return;
+    }
     checkIfWritable();
     ensureCapacity(4);
     buffer.putFloat(v);
@@ -659,8 +670,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * @param v the <code>double</code> value to be written.
    */
   public void writeDouble(double v) {
-    if (ignoreWrites)
+    if (ignoreWrites) {
       return;
+    }
     checkIfWritable();
     ensureCapacity(8);
     buffer.putDouble(v);
@@ -681,8 +693,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    */
   @SuppressWarnings("deprecation")
   public void writeBytes(String str) {
-    if (ignoreWrites)
+    if (ignoreWrites) {
       return;
+    }
     checkIfWritable();
     int strlen = str.length();
     if (strlen > 0) {
@@ -715,8 +728,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * @param s the string value to be written.
    */
   public void writeChars(String s) {
-    if (ignoreWrites)
+    if (ignoreWrites) {
       return;
+    }
     checkIfWritable();
     int len = s.length();
     if (len > 0) {
@@ -778,8 +792,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * @param str the string value to be written.
    */
   public void writeUTF(String str) throws UTFDataFormatException {
-    if (ignoreWrites)
+    if (ignoreWrites) {
       return;
+    }
     checkIfWritable();
     if (ASCII_STRINGS) {
       writeAsciiUTF(str, true);
@@ -869,8 +884,9 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * strings longer than 65k to be encoded.
    */
   public void writeUTFNoLength(String str) {
-    if (ignoreWrites)
+    if (ignoreWrites) {
       return;
+    }
     checkIfWritable();
     try {
       if (ASCII_STRINGS) {
@@ -891,12 +907,14 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * the contents of the buffer between the position and the limit are copied to the output stream.
    */
   public void write(ByteBuffer bb) {
-    if (ignoreWrites)
+    if (ignoreWrites) {
       return;
+    }
     checkIfWritable();
     int remaining = bb.remaining();
-    if (remaining == 0)
+    if (remaining == 0) {
       return;
+    }
     if (doNotCopy && remaining > MIN_TO_COPY) {
       moveBufferToChunks();
       addToChunks(bb);

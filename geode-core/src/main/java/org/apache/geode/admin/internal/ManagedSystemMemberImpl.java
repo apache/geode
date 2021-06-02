@@ -161,8 +161,9 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
   @Override
   public boolean waitToStart(long timeout) throws InterruptedException {
 
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
 
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() - start < timeout) {
@@ -187,8 +188,9 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
   @Override
   public boolean waitToStop(long timeout) throws InterruptedException {
 
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() - start < timeout) {
       synchronized (this.stateChange) {

@@ -645,8 +645,9 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       synchronized (runningStateLock) {
         while (!this.ackReaderThreadRunning) {
           try {
-            if (shutdown)
+            if (shutdown) {
               break;
+            }
             this.runningStateLock.wait();
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

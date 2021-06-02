@@ -24,14 +24,18 @@ public class Address {
 
 
   public Address() {
-    if (Employee.rand.nextFloat() < .5)
+    if (Employee.rand.nextFloat() < .5) {
       street = "20575 NW von Neumann Dr";
-    if (Employee.rand.nextFloat() < 0.5)
+    }
+    if (Employee.rand.nextFloat() < 0.5) {
       city = "Beaverton";
-    if (Employee.rand.nextFloat() < 0.5)
+    }
+    if (Employee.rand.nextFloat() < 0.5) {
       state = "OR";
-    if (Employee.rand.nextFloat() < 0.5)
+    }
+    if (Employee.rand.nextFloat() < 0.5) {
       postalCode = "97006";
+    }
   }
 
 

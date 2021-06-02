@@ -111,8 +111,9 @@ class AdminReplyProcessor extends ReplyProcessor21 {
   protected boolean handleInterruption(InterruptedException ie, long msecsRemaining)
       throws InterruptedException, ReplyException {
 
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     if (this.isCancelled) {
       return true;
 

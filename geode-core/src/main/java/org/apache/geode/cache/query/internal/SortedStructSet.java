@@ -329,8 +329,9 @@ public class SortedStructSet extends TreeSet
       Object o = i.next();
       buf.append(o == this ? "(this Collection)" : String.valueOf(o));
       hasNext = i.hasNext();
-      if (hasNext)
+      if (hasNext) {
         buf.append(",\n ");
+      }
     }
     buf.append("]");
     return buf.toString();

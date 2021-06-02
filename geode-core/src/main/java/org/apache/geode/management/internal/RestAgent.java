@@ -117,16 +117,19 @@ public class RestAgent {
 
   public static String getBindAddressForHttpService(DistributionConfig config) {
     String bindAddress = config.getHttpServiceBindAddress();
-    if (StringUtils.isNotBlank(bindAddress))
+    if (StringUtils.isNotBlank(bindAddress)) {
       return bindAddress;
+    }
 
     bindAddress = config.getServerBindAddress();
-    if (StringUtils.isNotBlank(bindAddress))
+    if (StringUtils.isNotBlank(bindAddress)) {
       return bindAddress;
+    }
 
     bindAddress = config.getBindAddress();
-    if (StringUtils.isNotBlank(bindAddress))
+    if (StringUtils.isNotBlank(bindAddress)) {
       return bindAddress;
+    }
 
     try {
       bindAddress = LocalHostUtil.getLocalHost().getHostAddress();

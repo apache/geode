@@ -345,17 +345,17 @@ public class EntryValueNodeImpl implements EntryValueNode, Externalizable/* , Da
   }
 
   public static String constructKeyDisplay(Object toDisplay) {
-    if (toDisplay == null)
+    if (toDisplay == null) {
       return "null";
-    else if (toDisplay instanceof String)
+    } else if (toDisplay instanceof String) {
       return (String) toDisplay;
-    else if (toDisplay instanceof Number)
+    } else if (toDisplay instanceof Number) {
       return toDisplay.toString();
-    else if (toDisplay instanceof Character)
+    } else if (toDisplay instanceof Character) {
       return toDisplay.toString();
-    else if (toDisplay instanceof Boolean)
+    } else if (toDisplay instanceof Boolean) {
       return toDisplay.toString();
-    else {
+    } else {
       String className = toDisplay.getClass().getName();
       className = className.substring(className.lastIndexOf(".") + 1);
       char c = className.charAt(0);

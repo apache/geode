@@ -232,8 +232,9 @@ public class CompiledOperation extends AbstractCompiledValue {
   private Object eval0(Object receiver, Class resolutionType, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException {
-    if (receiver == null || receiver == QueryService.UNDEFINED)
+    if (receiver == null || receiver == QueryService.UNDEFINED) {
       return QueryService.UNDEFINED;
+    }
 
     List args = new ArrayList();
     List argTypes = new ArrayList();
@@ -243,13 +244,15 @@ public class CompiledOperation extends AbstractCompiledValue {
       Object o = arg.evaluate(context);
 
       // undefined arg produces undefines method result
-      if (o == QueryService.UNDEFINED)
+      if (o == QueryService.UNDEFINED) {
         return QueryService.UNDEFINED;
+      }
 
       args.add(o);
       // pass in null for the type if the runtime value is null
-      if (o == null)
+      if (o == null) {
         argTypes.add(null);
+      }
       // commented out because we currently always use the runtime type for args
       // else if (arg.getType() == Identifier)
       // {
@@ -259,8 +262,9 @@ public class CompiledOperation extends AbstractCompiledValue {
       // else
       // argTypes.add(o.getClass());
       // }
-      else
+      else {
         argTypes.add(o.getClass()); // otherwise use the runtime type
+      }
     }
 
     // see if in cache

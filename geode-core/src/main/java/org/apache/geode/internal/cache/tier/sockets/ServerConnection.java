@@ -1848,9 +1848,10 @@ public abstract class ServerConnection implements Runnable {
     AuthorizeRequest authzRequest = null;
 
     if (authzFactoryName != null && !authzFactoryName.isEmpty()) {
-      if (securityLogWriter.fineEnabled())
+      if (securityLogWriter.fineEnabled()) {
         securityLogWriter.fine(
             getName() + ": Setting pre-process authorization callback to: " + authzFactoryName);
+      }
       if (principal == null) {
         if (securityLogWriter.warningEnabled()) {
           securityLogWriter.warning(
@@ -1863,9 +1864,10 @@ public abstract class ServerConnection implements Runnable {
     }
     AuthorizeRequestPP postAuthzRequest = null;
     if (postAuthzFactoryName != null && !postAuthzFactoryName.isEmpty()) {
-      if (securityLogWriter.fineEnabled())
+      if (securityLogWriter.fineEnabled()) {
         securityLogWriter.fine(getName() + ": Setting post-process authorization callback to: "
             + postAuthzFactoryName);
+      }
       if (principal == null) {
         if (securityLogWriter.warningEnabled()) {
           securityLogWriter.warning(

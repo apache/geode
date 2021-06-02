@@ -90,8 +90,9 @@ public class ProjectionAttributeJUnitTest {
       String qStr = queries[i];
       Query q = qs.newQuery(qStr);
       SelectResults r = (SelectResults) q.execute();
-      if (i < 4 && r.getCollectionType().getElementType().isStructType())
+      if (i < 4 && r.getCollectionType().getElementType().isStructType()) {
         fail(q.getQueryString());
+      }
 
       if (i > 3) {
         assertTrue(r.getCollectionType().getElementType().isStructType());
@@ -102,15 +103,17 @@ public class ProjectionAttributeJUnitTest {
     String qStr = "select distinct * from " + SEPARATOR + "pos p ";
     Query q = qs.newQuery(qStr);
     Object r = q.execute();
-    if (r instanceof StructSet)
+    if (r instanceof StructSet) {
       fail(q.getQueryString());
+    }
   }
 
   private void checkNames(SelectResults results, String query) {
     int i1 = query.indexOf(" distinct ");
     int i2 = query.indexOf(" from ");
-    if (i1 < 0 || i2 < 0)
+    if (i1 < 0 || i2 < 0) {
       fail(query);
+    }
     String projStr = query.substring(i1 + " distinct ".length(), i2);
     // CacheUtils.log("projStr = "+projStr);
     QCompiler compiler = new QCompiler();
@@ -121,18 +124,22 @@ public class ProjectionAttributeJUnitTest {
       String name = names[i];
       Object arr[] = (Object[]) projAttrs.get(i);
       String nameToMatch = "";
-      if (arr[0] != null)
+      if (arr[0] != null) {
         nameToMatch = (String) arr[0];
-      else {
-        if (arr[1] instanceof CompiledID)
+      } else {
+        if (arr[1] instanceof CompiledID) {
           nameToMatch = ((CompiledID) arr[1]).getId();
-        if (arr[1] instanceof CompiledPath)
+        }
+        if (arr[1] instanceof CompiledPath) {
           nameToMatch = ((CompiledPath) arr[1]).getTailID();
-        if (arr[1] instanceof CompiledLiteral)
+        }
+        if (arr[1] instanceof CompiledLiteral) {
           nameToMatch = (((CompiledLiteral) arr[1])._obj).toString();
+        }
       }
-      if (!nameToMatch.equals(name))
+      if (!nameToMatch.equals(name)) {
         fail(query);
+      }
     }
   }
 

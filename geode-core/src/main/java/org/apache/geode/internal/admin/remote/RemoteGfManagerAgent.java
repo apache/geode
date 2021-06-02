@@ -649,8 +649,9 @@ public class RemoteGfManagerAgent implements GfManagerAgent {
         Map<InternalDistributedMember, Future<RemoteApplicationVM>> newMembersMap =
             new HashMap<>(oldMembersMap);
         newMembersMap.put(id, future);
-        if (abortCurrentJoin)
+        if (abortCurrentJoin) {
           return null;
+        }
         membersMap = newMembersMap;
       }
     }

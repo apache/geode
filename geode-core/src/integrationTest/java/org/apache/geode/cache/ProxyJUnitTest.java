@@ -1126,6 +1126,8 @@ public class ProxyJUnitTest {
    */
   private void waitForSystemTimeChange() {
     long start = System.currentTimeMillis();
-    while (System.currentTimeMillis() == start);
+    while (System.currentTimeMillis() == start) {
+      ;
+    }
   }
 }

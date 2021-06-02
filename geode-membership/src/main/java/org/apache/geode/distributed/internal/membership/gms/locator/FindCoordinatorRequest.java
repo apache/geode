@@ -154,28 +154,36 @@ public class FindCoordinatorRequest<ID extends MemberIdentifier> extends Abstrac
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     FindCoordinatorRequest<ID> other = (FindCoordinatorRequest<ID>) obj;
-    if (lastViewId != other.lastViewId)
+    if (lastViewId != other.lastViewId) {
       return false;
+    }
     if (!dhalgo.equals(other.dhalgo)) {
       return false;
     }
     if (memberID == null) {
-      if (other.memberID != null)
+      if (other.memberID != null) {
         return false;
-    } else if (!memberID.equals(other.memberID))
+      }
+    } else if (!memberID.equals(other.memberID)) {
       return false;
+    }
     if (rejectedCoordinators == null) {
-      if (other.rejectedCoordinators != null)
+      if (other.rejectedCoordinators != null) {
         return false;
-    } else if (!rejectedCoordinators.equals(other.rejectedCoordinators))
+      }
+    } else if (!rejectedCoordinators.equals(other.rejectedCoordinators)) {
       return false;
+    }
     return true;
   }
 }

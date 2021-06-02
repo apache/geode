@@ -224,8 +224,9 @@ public class MemberInformation extends RuntimeInfo
   }
 
   public void addCacheServerInfo(CacheServerInfo cacheServerInfo) {
-    if (cacheServerInfo == null)
+    if (cacheServerInfo == null) {
       return;
+    }
     cacheServerList.add(cacheServerInfo);
   }
 

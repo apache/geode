@@ -208,8 +208,9 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
   }
 
   public void process(final DistributionManager dm, ReplyProcessor21 processor) {
-    if (processor == null)
+    if (processor == null) {
       return;
+    }
     processor.process(ReplyMessage.this);
   }
 

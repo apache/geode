@@ -244,8 +244,9 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
       replyMsg.leaseExpireTime = 0;
 
       try {
-        if (svc == null || svc.isDestroyed())
+        if (svc == null || svc.isDestroyed()) {
           return;
+        }
 
         if (waitForGrantor) {
           try {

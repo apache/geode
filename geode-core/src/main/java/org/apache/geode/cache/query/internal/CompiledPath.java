@@ -69,8 +69,9 @@ public class CompiledPath extends AbstractCompiledValue {
   @Override
   public List getPathOnIterator(RuntimeIterator itr, ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException {
-    if (!isDependentOnIterator(itr, context))
+    if (!isDependentOnIterator(itr, context)) {
       return null;
+    }
 
     List list = new ArrayList();
     list.add(getTailID());
@@ -85,8 +86,9 @@ public class CompiledPath extends AbstractCompiledValue {
 
     if (type == Identifier) {
       List path = v.getPathOnIterator(itr, context);
-      if (path == null)
+      if (path == null) {
         return null;
+      }
       list.addAll(0, path);
       return list;
     }

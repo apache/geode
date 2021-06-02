@@ -195,19 +195,24 @@ public class IumMultConditionJUnitTest {
     while (itert1.hasNext()) {
       Struct stc2 = (Struct) itert2.next();
       Struct stc1 = (Struct) itert1.next();
-      if (stc2.get(strg2[0]) != stc1.get(strg1[0]))
+      if (stc2.get(strg2[0]) != stc1.get(strg1[0])) {
         fail(
             "FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
-      if (stc2.get(strg2[1]) != stc1.get(strg1[1]))
+      }
+      if (stc2.get(strg2[1]) != stc1.get(strg1[1])) {
         fail("FAILED: In both the cases Positions are different");
+      }
       if (!StringUtils.equals(((Position) stc2.get(strg2[1])).secId,
-          ((Position) stc1.get(strg1[1])).secId))
+          ((Position) stc1.get(strg1[1])).secId)) {
         fail("FAILED: In both the cases Positions secIds are different");
+      }
       if (((Portfolio) stc2.get(strg2[0])).isActive() != ((Portfolio) stc1.get(strg1[0]))
-          .isActive())
+          .isActive()) {
         fail("FAILED: Status of the Portfolios found are different");
-      if (((Portfolio) stc2.get(strg2[0])).getID() != ((Portfolio) stc1.get(strg1[0])).getID())
+      }
+      if (((Portfolio) stc2.get(strg2[0])).getID() != ((Portfolio) stc1.get(strg1[0])).getID()) {
         fail("FAILED: IDs of the Portfolios found are different");
+      }
     }
     CacheUtils.compareResultsOfWithAndWithoutIndex(sr, this);
   }

@@ -43,8 +43,9 @@ public class Student {
       rollnum = ++counter;
     }
     int rem = rollnum % names.length;
-    if (rem == 0)
+    if (rem == 0) {
       rem = 4;
+    }
     for (int j = 0; j < rem; ++j) {
       subjects.add(this.new Subject(names[j]));
       teachers.add(new Teacher(teacher_names[j]));

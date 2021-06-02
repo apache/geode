@@ -53,8 +53,9 @@ public class PositionNoDS implements Serializable, Comparable {
   }
 
   public boolean equals(Object o) {
-    if (!(o instanceof PositionNoDS))
+    if (!(o instanceof PositionNoDS)) {
       return false;
+    }
     return this.secId.equals(((PositionNoDS) o).secId);
   }
 
@@ -115,10 +116,11 @@ public class PositionNoDS implements Serializable, Comparable {
     if (o == this) {
       return 0;
     } else {
-      if (this.pid == ((PositionNoDS) o).pid)
+      if (this.pid == ((PositionNoDS) o).pid) {
         return 0;
-      else
+      } else {
         return this.pid < ((PositionNoDS) o).pid ? -1 : 1;
+      }
     }
 
   }

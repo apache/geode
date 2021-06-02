@@ -373,8 +373,9 @@ public class PRBasicQueryDUnitTest extends CacheTestCase {
       public void run2() {
         Cache cache = getCache();
         Region region = cache.getRegion(name);
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 100; i++) {
           region.put(i, new Portfolio(i));
+        }
       }
     });
 

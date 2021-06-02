@@ -66,11 +66,13 @@ public class CustomerIDPartitionResolver<K, V> implements PartitionResolver<K, V
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
+    if (this == o) {
       return true;
+    }
 
-    if (!(o instanceof CustomerIDPartitionResolver))
+    if (!(o instanceof CustomerIDPartitionResolver)) {
       return false;
+    }
 
     CustomerIDPartitionResolver otherCustomerIDPartitionResolver = (CustomerIDPartitionResolver) o;
     return otherCustomerIDPartitionResolver.id.equals(this.id);

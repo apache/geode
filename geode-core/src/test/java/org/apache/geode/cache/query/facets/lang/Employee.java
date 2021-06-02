@@ -38,15 +38,17 @@ public class Employee {
     d = 0.1;
     salary = (int) (rand.nextFloat() * 200000);
     name = genName();
-    if (rand.nextFloat() < 0.2)
+    if (rand.nextFloat() < 0.2) {
       hireDate = null;
-    else
+    } else {
       hireDate = new Date(Math.abs(rand.nextLong()));
+    }
 
-    if (rand.nextFloat() < 0.2)
+    if (rand.nextFloat() < 0.2) {
       fieldAddress = null;
-    else
+    } else {
       fieldAddress = new Address();
+    }
 
     collect = new HashSet();
   }

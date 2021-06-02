@@ -94,8 +94,9 @@ public class PageableLuceneQueryResultsImpl<K, V> implements PageableLuceneQuery
       results = new ArrayList<LuceneResultStruct<K, V>>(values.size());
       for (EntryScore<K> score : scores) {
         V value = values.get(score.getKey());
-        if (value != null)
+        if (value != null) {
           results.add(new LuceneResultStructImpl(score.getKey(), value, score.getScore()));
+        }
       }
     } catch (FunctionException functionException) {
       if (functionException.getCause() instanceof RuntimeException) {

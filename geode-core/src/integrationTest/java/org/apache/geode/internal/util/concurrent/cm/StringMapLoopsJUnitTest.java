@@ -63,23 +63,29 @@ public class StringMapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
       } catch (ClassNotFoundException e) {
         throw new RuntimeException("Class " + args[0] + " not found.");
       }
-    } else
+    } else {
       mapClass = MAP_CLASS;
+    }
 
-    if (args.length > 1)
+    if (args.length > 1) {
       maxThreads = Integer.parseInt(args[1]);
+    }
 
-    if (args.length > 2)
+    if (args.length > 2) {
       nkeys = Integer.parseInt(args[2]);
+    }
 
-    if (args.length > 3)
+    if (args.length > 3) {
       pinsert = Integer.parseInt(args[3]);
+    }
 
-    if (args.length > 4)
+    if (args.length > 4) {
       premove = Integer.parseInt(args[4]);
+    }
 
-    if (args.length > 5)
+    if (args.length > 5) {
       nops = Integer.parseInt(args[5]);
+    }
 
     // normalize probabilities wrt random number generator
     removesPerMaxRandom = (int) (((double) premove / 100.0 * 0x7FFFFFFFL));
@@ -101,16 +107,17 @@ public class StringMapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
       Thread.sleep(100);
       test(i, nkeys, key, mapClass);
       shuffleKeys(key);
-      if (warmups > 0)
+      if (warmups > 0) {
         --warmups;
-      else if (i == k) {
+      } else if (i == k) {
         k = i << 1;
         i = i + (i >>> 1);
       } else if (i == 1 && k == 2) {
         i = k;
         warmups = 1;
-      } else
+      } else {
         i = k;
+      }
     }
     pool.shutdown();
   }
@@ -155,8 +162,9 @@ public class StringMapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
     // map.put(key[j], key[j]);
     LoopHelpers.BarrierTimer timer = new LoopHelpers.BarrierTimer();
     CyclicBarrier barrier = new CyclicBarrier(i + 1, timer);
-    for (int t = 0; t < i; ++t)
+    for (int t = 0; t < i; ++t) {
       pool.execute(new Runner(t, map, key, barrier));
+    }
     barrier.await();
     barrier.await();
     long time = timer.getTime();
@@ -188,10 +196,12 @@ public class StringMapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
       // random-walk around key positions, bunching accesses
       int r = rng.next();
       position += (r & 7) - 3;
-      while (position >= key.length)
+      while (position >= key.length) {
         position -= key.length;
-      while (position < 0)
+      }
+      while (position < 0) {
         position += key.length;
+      }
 
       String k = key[position];
       String x = (String) map.get(k);
@@ -218,8 +228,9 @@ public class StringMapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
       try {
         barrier.await();
         int ops = nops;
-        while (ops > 0)
+        while (ops > 0) {
           ops -= step();
+        }
         barrier.await();
       } catch (Exception ex) {
         ex.printStackTrace();

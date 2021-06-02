@@ -104,12 +104,15 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     future1.join(60 * 1000);
     future2.join(60 * 1000);
     future3.join(60 * 1000);
-    if (future1.exceptionOccurred())
+    if (future1.exceptionOccurred()) {
       throw future1.getException();
-    if (future2.exceptionOccurred())
+    }
+    if (future2.exceptionOccurred()) {
       throw future2.getException();
-    if (future3.exceptionOccurred())
+    }
+    if (future3.exceptionOccurred()) {
       throw future3.getException();
+    }
 
     SerializableRunnable checkAssignment = new SerializableRunnable("check assignment") {
       @Override
@@ -223,12 +226,15 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     future1.join();
     future2.join();
     future3.join();
-    if (future1.exceptionOccurred())
+    if (future1.exceptionOccurred()) {
       throw future1.getException();
-    if (future2.exceptionOccurred())
+    }
+    if (future2.exceptionOccurred()) {
       throw future2.getException();
-    if (future3.exceptionOccurred())
+    }
+    if (future3.exceptionOccurred()) {
       throw future3.getException();
+    }
 
     SerializableRunnable checkAssignment = new SerializableRunnable("check assignment") {
       @Override

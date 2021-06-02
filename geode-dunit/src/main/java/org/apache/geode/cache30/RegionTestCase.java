@@ -1113,16 +1113,18 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     try {
       region.localDestroy(key);
-      if (isMirrored)
+      if (isMirrored) {
         fail("Should have thrown an IllegalStateException");
+      }
       fail("Should have thrown an EntryNotFoundException");
     } catch (EntryNotFoundException ex) {
       // pass...
     } catch (IllegalStateException ex) {
-      if (!isMirrored)
+      if (!isMirrored) {
         throw ex;
-      else
+      } else {
         return; // abort test
+      }
     }
 
     region.put(key, value);
@@ -1594,13 +1596,15 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     boolean isMirrorKeysValues = getRegionAttributes().getMirrorType().isKeysValues();
     try {
       region.localInvalidate(key);
-      if (isMirrorKeysValues)
+      if (isMirrorKeysValues) {
         fail("Should have thrown an IllegalStateException");
+      }
     } catch (IllegalStateException e) {
-      if (!isMirrorKeysValues)
+      if (!isMirrorKeysValues) {
         throw e;
-      else
+      } else {
         return; // abort test
+      }
     }
     assertNull(entry.getValue());
     assertNull(region.get(key));
@@ -1621,13 +1625,15 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     boolean isKV = getRegionAttributes().getMirrorType().isKeysValues();
     try {
       region.localInvalidateRegion();
-      if (isKV)
+      if (isKV) {
         fail("Should have thrown an IllegalStateException");
+      }
     } catch (IllegalStateException e) {
-      if (!isKV)
+      if (!isKV) {
         throw e;
-      else
+      } else {
         return; // abort test
+      }
     }
 
     Region.Entry entry;
@@ -1850,11 +1856,13 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT);
     tilt += maxWaitTime;
     for (;;) {
-      if (fetchEntryValue(entry) == null)
+      if (fetchEntryValue(entry) == null) {
         break;
+      }
       if (System.currentTimeMillis() > tilt) {
-        if (fetchEntryValue(entry) == null)
+        if (fetchEntryValue(entry) == null) {
           break;
+        }
         fail("Entry failed to invalidate");
       }
       Wait.pause(pauseMs);
@@ -1900,8 +1908,9 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     // better not be null...
     for (;;) {
       long now = System.currentTimeMillis();
-      if (now >= tilt)
+      if (now >= tilt) {
         break;
+      }
       if (!isEntryDestroyed(entry)) {
         Wait.pause(pauseMs);
         continue;
@@ -1923,8 +1932,9 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     tilt += maxWaitTime;
     for (;;) {
-      if (isEntryDestroyed(entry))
+      if (isEntryDestroyed(entry)) {
         break;
+      }
       Assert.assertTrue(System.currentTimeMillis() <= tilt, "Entry failed to destroy");
       Wait.pause(pauseMs);
     }
@@ -1945,8 +1955,9 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     for (;;) {
       long now = System.currentTimeMillis();
-      if (now >= tilt)
+      if (now >= tilt) {
         break;
+      }
       if (!region.isDestroyed()) {
         Wait.pause(10);
         continue;
@@ -1967,8 +1978,9 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT);
     tilt += maxWaitTime;
     for (;;) {
-      if (region.isDestroyed())
+      if (region.isDestroyed()) {
         break;
+      }
       Assert.assertTrue(System.currentTimeMillis() <= tilt, "Region failed to destroy");
       Wait.pause(10);
     }
@@ -2400,8 +2412,9 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testRegionTtlInvalidate() throws CacheException {
 
-    if (getRegionAttributes().getPartitionAttributes() != null)
+    if (getRegionAttributes().getPartitionAttributes() != null) {
       return;
+    }
 
     VM vm0 = VM.getVM(0);
     final String name = this.getUniqueName();
@@ -2452,8 +2465,9 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testRegionTtlDestroy() throws CacheException {
 
-    if (getRegionAttributes().getPartitionAttributes() != null)
+    if (getRegionAttributes().getPartitionAttributes() != null) {
       return;
+    }
 
     final String name = this.getUniqueName();
     final int timeout = 22; // ms
@@ -2956,8 +2970,9 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     try {
       region = createRegion(name, factory);
     } finally {
-      if (region.getAttributes().getPartitionAttributes() == null)
+      if (region.getAttributes().getPartitionAttributes() == null) {
         System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+      }
     }
 
     // Random values should not expire
@@ -2976,8 +2991,9 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       assertNotNull(entry.getValue());
     } finally {
       ExpiryTask.permitExpiration();
-      if (region.getAttributes().getPartitionAttributes() != null)
+      if (region.getAttributes().getPartitionAttributes() != null) {
         System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+      }
     }
     waitForInvalidate(entry, tilt);
 
@@ -3527,8 +3543,9 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testRegionIdleDestroy() throws CacheException {
 
-    if (getRegionAttributes().getPartitionAttributes() != null)
+    if (getRegionAttributes().getPartitionAttributes() != null) {
       return;
+    }
 
     final String name = this.getUniqueName();
     final int timeout = 22; // ms

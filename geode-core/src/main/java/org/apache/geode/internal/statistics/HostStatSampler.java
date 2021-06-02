@@ -220,14 +220,17 @@ public abstract class HostStatSampler
           final long nanosTimeStamp = timer.getLastResetTime();
           final long nanosElapsedSleeping = nanosTimeStamp - nanosBeforeSleep;
           checkElapsedSleepTime(nanosElapsedSleeping);
-          if (stopRequested())
+          if (stopRequested()) {
             break;
+          }
           sampleSpecialStats(false);
-          if (stopRequested())
+          if (stopRequested()) {
             break;
+          }
           checkListeners();
-          if (stopRequested())
+          if (stopRequested()) {
             break;
+          }
 
           this.sampleCollector.sample(nanosTimeStamp);
 
@@ -547,16 +550,18 @@ public abstract class HostStatSampler
   private void sampleSpecialStats(boolean prepareOnly) {
     List<Statistics> statsList = getStatisticsManager().getStatsList();
     for (Statistics s : statsList) {
-      if (stopRequested())
+      if (stopRequested()) {
         return;
+      }
       if (s instanceof StatisticsImpl) {
         ((StatisticsImpl) s).prepareForSample();
       }
     }
 
     if (!prepareOnly && this.vmStats != null) {
-      if (stopRequested())
+      if (stopRequested()) {
         return;
+      }
       this.vmStats.refresh();
     }
     sampleProcessStats(prepareOnly);

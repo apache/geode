@@ -258,8 +258,9 @@ public class InternalClientMembership {
    */
   public static Map getStatusForAllClientsIgnoreSubscriptionStatus() {
     Map result = new HashMap();
-    if (ClientHealthMonitor.getInstance() != null)
+    if (ClientHealthMonitor.getInstance() != null) {
       result = ClientHealthMonitor.getInstance().getStatusForAllClients();
+    }
 
     return result;
   }
@@ -282,8 +283,9 @@ public class InternalClientMembership {
     }
 
     // Fill in the missing info, if HealthMonitor started
-    if (ClientHealthMonitor.getInstance() != null)
+    if (ClientHealthMonitor.getInstance() != null) {
       ClientHealthMonitor.getInstance().fillInClientInfo(allClients);
+    }
 
     return allClients;
   }

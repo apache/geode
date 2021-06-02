@@ -91,8 +91,9 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     }
 
     // process msg and reply from this VM...
-    if (msg.getSender() == null)
+    if (msg.getSender() == null) {
       msg.setSender(dm.getId());
+    }
     msg.scheduleMessage(dm);
 
     // keep waiting even if interrupted

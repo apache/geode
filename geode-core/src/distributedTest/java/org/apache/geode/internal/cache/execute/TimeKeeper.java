@@ -35,7 +35,8 @@ class TimeKeeper {
       return -1;
     } else if (endTime == startTime) {
       return 1;
-    } else
+    } else {
       return endTime - startTime;
+    }
   }
 }

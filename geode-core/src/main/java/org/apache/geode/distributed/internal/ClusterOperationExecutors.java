@@ -586,12 +586,14 @@ public class ClusterOperationExecutors implements OperationExecutors {
         culprits.append(" thread pool;");
       }
 
-      if (!stillAlive)
+      if (!stillAlive) {
         return;
+      }
 
       long now = System.currentTimeMillis();
-      if (now >= endTime)
+      if (now >= endTime) {
         break;
+      }
 
       try {
         Thread.sleep(STOP_PAUSE_TIME);
@@ -846,10 +848,11 @@ public class ClusterOperationExecutors implements OperationExecutors {
 
         // If not used mark this as unused.
         if (!isUsed) {
-          if (logger.isInfoEnabled(LogMarker.DM_MARKER))
+          if (logger.isInfoEnabled(LogMarker.DM_MARKER)) {
             logger.info(LogMarker.DM_MARKER,
                 "Marking the SerialQueuedExecutor with id : {} used by the member {} to be unused.",
                 new Object[] {queueId, member});
+          }
 
           threadMarkedForUse.add(queueId);
         }

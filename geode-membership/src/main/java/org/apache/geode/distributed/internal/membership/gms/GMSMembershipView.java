@@ -525,8 +525,9 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
     sb.append("View[").append(creator).append('|').append(viewId).append("] members: [");
     boolean first = true;
     for (ID mbr : this.members) {
-      if (!first)
+      if (!first) {
         sb.append(", ");
+      }
       sb.append(mbr);
       if (mbr == lead) {
         sb.append("{lead}");
@@ -537,8 +538,9 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
       sb.append("]  shutdown: [");
       first = true;
       for (ID mbr : this.shutdownMembers) {
-        if (!first)
+        if (!first) {
           sb.append(", ");
+        }
         sb.append(mbr);
         first = false;
       }
@@ -547,8 +549,9 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
       sb.append("]  crashed: [");
       first = true;
       for (ID mbr : this.crashedMembers) {
-        if (!first)
+        if (!first) {
           sb.append(", ");
+        }
         sb.append(mbr);
         first = false;
       }

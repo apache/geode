@@ -68,8 +68,9 @@ public class LogicalOperatorsJUnitTest {
         Object result = query.execute(params);
         // CacheUtils.log("LogicalTest "+validOperands[i]+" AND "+validOperands[j]+" = "+result+"
         // "+checkResult("AND", result, validOperands[i], validOperands[j]));
-        if (!checkResult("AND", result, validOperands[i], validOperands[j]))
+        if (!checkResult("AND", result, validOperands[i], validOperands[j])) {
           fail(validOperands[i] + " AND " + validOperands[j] + " returns " + result);
+        }
       }
     }
     for (int i = 0; i < validOperands.length; i++) {
@@ -99,8 +100,9 @@ public class LogicalOperatorsJUnitTest {
         Object result = query.execute(params);
         // CacheUtils.log("LogicalTest "+validOperands[i]+" OR "+validOperands[j]+" = "+result+"
         // "+checkResult("OR", result, validOperands[i], validOperands[j]));
-        if (!checkResult("OR", result, validOperands[i], validOperands[j]))
+        if (!checkResult("OR", result, validOperands[i], validOperands[j])) {
           fail(validOperands[i] + " OR " + validOperands[j] + " returns " + result);
+        }
       }
     }
 
@@ -127,8 +129,9 @@ public class LogicalOperatorsJUnitTest {
       Object result = query.execute(validOperands);
       // CacheUtils.log("LogicalTest "+"NOT "+validOperands[i]+" = "+result+" "+checkResult("NOT",
       // result, validOperands[i], null));
-      if (!checkResult("NOT", result, validOperands[i], null))
+      if (!checkResult("NOT", result, validOperands[i], null)) {
         fail("NOT " + validOperands[i] + " returns " + result);
+      }
     }
 
     for (int j = 0; j < invalidOperands.length; j++) {
@@ -150,44 +153,54 @@ public class LogicalOperatorsJUnitTest {
         operand1 = operand2;
         operand2 = temp;
       }
-      if (operand1 == null)
+      if (operand1 == null) {
         return result.equals(QueryService.UNDEFINED);
+      }
 
       if (operator.equalsIgnoreCase("AND")) {
 
-        if (operand1.equals(Boolean.FALSE))
+        if (operand1.equals(Boolean.FALSE)) {
           return result.equals(Boolean.FALSE);
+        }
 
-        if (operand2 != null && operand2.equals(Boolean.FALSE))
+        if (operand2 != null && operand2.equals(Boolean.FALSE)) {
           return result.equals(Boolean.FALSE);
+        }
 
-        if (operand1 == QueryService.UNDEFINED || operand2 == QueryService.UNDEFINED)
+        if (operand1 == QueryService.UNDEFINED || operand2 == QueryService.UNDEFINED) {
           return result.equals(QueryService.UNDEFINED);
+        }
 
-        if (operand2 == null)
+        if (operand2 == null) {
           return result.equals(QueryService.UNDEFINED);
+        }
 
         return result.equals(Boolean.TRUE);
 
       } else if (operator.equalsIgnoreCase("OR")) {
 
-        if (operand1.equals(Boolean.TRUE))
+        if (operand1.equals(Boolean.TRUE)) {
           return result.equals(Boolean.TRUE);
+        }
 
-        if (operand2 != null && operand2.equals(Boolean.TRUE))
+        if (operand2 != null && operand2.equals(Boolean.TRUE)) {
           return result.equals(Boolean.TRUE);
+        }
 
-        if (operand1 == QueryService.UNDEFINED || operand2 == QueryService.UNDEFINED)
+        if (operand1 == QueryService.UNDEFINED || operand2 == QueryService.UNDEFINED) {
           return result == QueryService.UNDEFINED;
+        }
 
-        if (/* operand1 == null || not possible */ operand2 == null)
+        if (/* operand1 == null || not possible */ operand2 == null) {
           return result == QueryService.UNDEFINED;
+        }
 
         return result.equals(Boolean.FALSE);
 
       } else if (operator.equalsIgnoreCase("NOT")) {
-        if (operand1 instanceof Boolean)
+        if (operand1 instanceof Boolean) {
           return ((Boolean) result).booleanValue() != ((Boolean) operand1).booleanValue();
+        }
         return result == QueryService.UNDEFINED;
       }
     } catch (Exception e) {

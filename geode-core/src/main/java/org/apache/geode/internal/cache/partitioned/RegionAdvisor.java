@@ -542,8 +542,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     @Override
     protected int getIntInfo() {
       int s = super.getIntInfo();
-      if (requiresNotification)
+      if (requiresNotification) {
         s |= REQUIRES_NOTIFICATION_MASK;
+      }
       return s;
     }
 
@@ -647,8 +648,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       String regionName = getPartitionedRegion().getFullPath();
       do {
         Region pr = getPartitionedRegion().getCache().getRegion(regionName);
-        if (pr == null || pr.isDestroyed())
+        if (pr == null || pr.isDestroyed()) {
           break;
+        }
         Set members = adviseNotAtShutDownAllStatus(status);
         memberNum = members.size();
         if (memberNum > 0) {
@@ -1575,8 +1577,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     public BucketProfileAndId(Profile bp, int id) {
       this.id = id;
       this.bp = (BucketProfile) bp;
-      if (bp instanceof ServerBucketProfile)
+      if (bp instanceof ServerBucketProfile) {
         isServerBucketProfile = true;
+      }
     }
 
     public BucketProfileAndId() {}
@@ -1593,10 +1596,11 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       id = in.readInt();
       isServerBucketProfile = in.readBoolean();
-      if (isServerBucketProfile)
+      if (isServerBucketProfile) {
         bp = new ServerBucketProfile();
-      else
+      } else {
         bp = new BucketProfile();
+      }
 
       InternalDataSerializer.invokeFromData(bp, in);
     }

@@ -64,10 +64,12 @@ public class CompiledNegation extends AbstractCompiledValue {
   }
 
   private Object negateObject(Object obj) throws TypeMismatchException {
-    if (obj instanceof Boolean)
+    if (obj instanceof Boolean) {
       return Boolean.valueOf(!((Boolean) obj).booleanValue());
-    if (obj == null || obj == QueryService.UNDEFINED)
+    }
+    if (obj == null || obj == QueryService.UNDEFINED) {
       return QueryService.UNDEFINED;
+    }
     throw new TypeMismatchException(
         String.format("%s cannot be negated", obj.getClass()));
   }

@@ -866,16 +866,19 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
               if (hasCriticalOwners) {
                 keyFoundOnSickMember = true;
                 try {
-                  if (useTx)
+                  if (useTx) {
                     getCache().getCacheTransactionManager().begin();
+                  }
                   pr.getCache().getLogger().fine("SWAP:putting in tx:" + useTx);
                   pr.put(key, "value");
-                  if (useTx)
+                  if (useTx) {
                     getCache().getCacheTransactionManager().commit();
+                  }
                 } catch (LowMemoryException ex) {
                   caughtException = true;
-                  if (useTx)
+                  if (useTx) {
                     getCache().getCacheTransactionManager().rollback();
+                  }
                 }
               } else {
                 // puts on healthy member should continue
@@ -1557,8 +1560,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
             @Override
             public boolean done() {
-              if (!ohm.getState().isCritical())
+              if (!ohm.getState().isCritical()) {
                 return false;
+              }
               // Only done once the bucket has been marked sick
               try {
                 pr.getRegionAdvisor().checkIfBucketSick(bucketId, bigKey);

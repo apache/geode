@@ -208,8 +208,9 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     obj2 = vm1.invoke(DistAckMapMethodsDUnitTest.class, "removeMethod", objArr);
     LogWriterUtils.getLogWriter().fine("111111111" + obj1);
     LogWriterUtils.getLogWriter().fine("2222222222" + obj2);
-    if (obj1 == null)
+    if (obj1 == null) {
       fail("region1.getMethod returned null");
+    }
     if (!(obj1.equals(obj2))) {
       fail("region.remove failed with distributed ack scope");
     }
