@@ -15,6 +15,9 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import static org.apache.geode.redis.internal.executor.pubsub.PubSubDUnitTest.JEDIS_TIMEOUT;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.AfterClass;
@@ -26,7 +29,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
@@ -35,9 +37,6 @@ public class FlushAllDUnitTest {
   @ClassRule
   public static RedisClusterStartupRule cluster = new RedisClusterStartupRule();
 
-  private static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static final String LOCAL_HOST = "127.0.0.1";
   private static final int ENTRIES = 1000;
 
   private static MemberVM locator;
@@ -56,9 +55,10 @@ public class FlushAllDUnitTest {
     int redisServerPort1 = cluster.getRedisPort(1);
     int redisServerPort2 = cluster.getRedisPort(2);
 
-    jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
-    jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
-    jedisCluster = new JedisCluster(new HostAndPort("localhost", redisServerPort1), JEDIS_TIMEOUT);
+    jedis1 = new Jedis(BIND_ADDRESS, redisServerPort1, REDIS_CLIENT_TIMEOUT);
+    jedis2 = new Jedis(BIND_ADDRESS, redisServerPort2, REDIS_CLIENT_TIMEOUT);
+    jedisCluster = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1),
+        REDIS_CLIENT_TIMEOUT);
   }
 
   @AfterClass
