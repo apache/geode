@@ -200,11 +200,7 @@ public class RedisSortedSet extends AbstractRedisData {
       validateScoreIsDouble(score);
       byte[] member = iterator.next();
       if (options.isCH() && members.containsKey(member)) {
-        String oldScore = Coder.bytesToString(members.getOrDefault(member, null));
-        String newScore = Coder.bytesToString(score);
-        if(!newScore.equals(oldScore)) {
-          changesCount++;
-        }
+        changesCount = getChangesCount(changesCount, score, member);
       }
       if (options.isNX() && members.containsKey(member)) {
         continue;
@@ -223,6 +219,14 @@ public class RedisSortedSet extends AbstractRedisData {
 
     storeChanges(region, key, deltaInfo);
     return getSortedSetSize() - initialSize + changesCount;
+  }
+
+  private int getChangesCount(int changesCount, byte[] score, byte[] member) {
+    boolean sameScore = Arrays.equals(members.getOrDefault(member, null), score);
+    if(!sameScore) {
+      changesCount++;
+    }
+    return changesCount;
   }
 
   private void validateScoreIsDouble(byte[] score) {

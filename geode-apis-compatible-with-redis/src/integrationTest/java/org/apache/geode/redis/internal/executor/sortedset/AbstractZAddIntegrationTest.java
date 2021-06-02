@@ -161,6 +161,40 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
+  public void zaddCountsNewMemberAndExistingMemberChanges_whenCHSpecified() {
+    Map<String, Double> initMap = makeMemberScoreMap(2 * INITIAL_MEMBER_COUNT, 0);
+    Long addCount = (Long) jedis.zadd(SORTED_SET_KEY, initMap);
+    assertThat(addCount).isEqualTo(2 * INITIAL_MEMBER_COUNT);
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(2 * INITIAL_MEMBER_COUNT);
+
+    ZAddParams zAddParam = new ZAddParams();
+    zAddParam.ch();
+
+    addCount = (Long) jedis.zadd(SORTED_SET_KEY, initMap, zAddParam);
+    assertThat(addCount).isEqualTo(0);
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(2 * INITIAL_MEMBER_COUNT);
+
+    Map<String, Double> updateMap = new HashMap<>();
+    for(String member : initMap.keySet()) {
+      Double score = initMap.get(member);
+      score++;
+      updateMap.put(member, score);
+    }
+    addCount = jedis.zadd(SORTED_SET_KEY, updateMap, zAddParam);
+    assertThat(addCount).isEqualTo(2 * INITIAL_MEMBER_COUNT);
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(2 * INITIAL_MEMBER_COUNT);
+
+    final int newMemberCount = 5;
+    for(int i = 2 * INITIAL_MEMBER_COUNT; i < 2 * INITIAL_MEMBER_COUNT + newMemberCount; i++) {
+      updateMap.put("member_" + i, Double.valueOf((i) + ""));
+    }
+
+    addCount = jedis.zadd(SORTED_SET_KEY, updateMap, zAddParam);
+    assertThat(addCount).isEqualTo(newMemberCount);
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(2 * INITIAL_MEMBER_COUNT + newMemberCount);
+  }
+
+  @Test
   public void zaddDoesNotUpdateMembers_whenNXSpecified() {
     Map<String, Double> initMap = makeMemberScoreMap(INITIAL_MEMBER_COUNT, 0);
     Long addCount = (Long) jedis.zadd(SORTED_SET_KEY, initMap);
