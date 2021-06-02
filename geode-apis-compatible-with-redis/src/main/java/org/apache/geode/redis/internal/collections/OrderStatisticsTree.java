@@ -25,6 +25,8 @@
  */
 package org.apache.geode.redis.internal.collections;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -38,9 +40,9 @@ import java.util.TreeSet;
 /**
  * This class implements an order statistic tree which is based on AVL-trees.
  *
+ * @param <T> the actual element type.
  * @author Rodion "rodde" Efremov
  * @version 1.6 (Feb 11, 2016)
- * @param <T> the actual element type.
  */
 @SuppressWarnings("all")
 public class OrderStatisticsTree<T extends Comparable<? super T>>
@@ -779,16 +781,18 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
   @Override
   public boolean equals(Object o) {
     // self check
-    if (this == o)
+    if (this == o) {
       return true;
+    }
     // null check
-    if (o == null)
+    if (o == null) {
       return false;
+    }
     // type check and cast
     if (!(o instanceof OrderStatisticsSet)) {
       return false;
     }
-    TreeSet<T> treeSet = (TreeSet<T>) o;
+    TreeSet<T> treeSet = uncheckedCast(o);
     // field comparison
     Iterator<T> treeSetIterator = treeSet.iterator();
     Iterator<T> thisIterator = this.iterator();

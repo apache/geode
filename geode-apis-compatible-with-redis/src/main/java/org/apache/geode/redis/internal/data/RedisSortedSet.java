@@ -381,15 +381,15 @@ public class RedisSortedSet extends AbstractRedisData {
     return processedDouble;
   }
 
-  static class OrderedSetEntry implements Comparable {
+  static class OrderedSetEntry implements Comparable<OrderedSetEntry> {
     public byte[] member;
     public Double score;
 
     @Override
-    public int compareTo(Object o) {
-      int comparison = score.compareTo(((OrderedSetEntry) o).score);
+    public int compareTo(OrderedSetEntry o) {
+      int comparison = score.compareTo(o.score);
       if (comparison == 0) {
-        return javaImplementationOfAnsiCMemCmp((OrderedSetEntry) o);
+        return javaImplementationOfAnsiCMemCmp(o);
       }
       return comparison;
     }
