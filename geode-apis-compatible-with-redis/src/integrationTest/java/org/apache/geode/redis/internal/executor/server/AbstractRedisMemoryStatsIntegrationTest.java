@@ -25,6 +25,7 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.redis.RedisTestHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIntegrationTest {
@@ -56,14 +57,14 @@ public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIn
 
   @Test
   public void maxMemory_shouldBeASensibleValue() {
-    long maxMemory = Long.valueOf(getInfo(jedis).get(MAX_MEMORY));
+    long maxMemory = Long.valueOf(RedisTestHelper.getInfo(jedis).get(MAX_MEMORY));
     assertThat(maxMemory).isGreaterThan(0L);
   }
 
   @Test
   public void memoryFragmentationRatio_shouldBeGreaterThanZero() {
     double memoryFragmentationRatio =
-        Double.parseDouble(getInfo(jedis).get(MEM_FRAGMENTATION_RATIO));
+        Double.parseDouble(RedisTestHelper.getInfo(jedis).get(MEM_FRAGMENTATION_RATIO));
     assertThat(memoryFragmentationRatio).isGreaterThan(0.0);
   }
 
@@ -71,36 +72,16 @@ public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIn
   public void usedMemory_shouldIncrease_givenAdditionalValuesAdded() {
     Map<String, String> addedData = makeHashMap(100_000, "field", "value");
 
-    long initialUsedMemory = Long.parseLong(getInfo(jedis).get(USED_MEMORY));
+    long initialUsedMemory = Long.parseLong(RedisTestHelper.getInfo(jedis).get(USED_MEMORY));
 
     jedis.hset(EXISTING_HASH_KEY, addedData);
 
-    long finalUsedMemory = Long.parseLong(getInfo(jedis).get(USED_MEMORY));
+    long finalUsedMemory = Long.parseLong(RedisTestHelper.getInfo(jedis).get(USED_MEMORY));
     assertThat(finalUsedMemory).isGreaterThan(initialUsedMemory);
   }
 
 
   // ------------------- Helper Methods ----------------------------- //
-
-  /**
-   * Convert the values returned by the INFO command into a basic param:value map.
-   */
-  static synchronized Map<String, String> getInfo(Jedis jedis) {
-    Map<String, String> results = new HashMap<>();
-    String rawInfo = jedis.info();
-
-    for (String line : rawInfo.split("\r\n")) {
-      int colonIndex = line.indexOf(":");
-      if (colonIndex > 0) {
-        String key = line.substring(0, colonIndex);
-        String value = line.substring(colonIndex + 1);
-        results.put(key, value);
-      }
-    }
-
-    return results;
-  }
-
   private Map<String, String> makeHashMap(int hashSize, String baseFieldName,
       String baseValueName) {
     Map<String, String> map = new HashMap<>();

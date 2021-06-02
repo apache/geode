@@ -32,6 +32,7 @@ import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.redis.RedisTestHelper;
 import org.apache.geode.redis.internal.PassiveExpirationManager;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -291,18 +292,18 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testBitpos() {
-    Map<String, String> info = getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
     Long currentHits = Long.parseLong(info.get(HITS));
     Long currentMisses = Long.parseLong(info.get(MISSES));
 
     jedis.bitpos("string", true);
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
 
     jedis.bitpos("missed", true);
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
@@ -310,18 +311,18 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testBitop() {
-    Map<String, String> info = getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
     Long currentHits = Long.parseLong(info.get(HITS));
     Long currentMisses = Long.parseLong(info.get(MISSES));
 
     jedis.bitop(BitOP.OR, "dest", "string", "string", "dest");
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 2));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
 
     jedis.bitop(BitOP.OR, "dest", "string", "missed");
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 2 + 1));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1 + 1));
@@ -486,36 +487,36 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   // ------------ Helper Methods -----------
 
   private void runCommandAndAssertHitsAndMisses(String key, Consumer<String> command) {
-    Map<String, String> info = getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
     Long currentHits = Long.parseLong(info.get(HITS));
     Long currentMisses = Long.parseLong(info.get(MISSES));
 
     command.accept(key);
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
 
     command.accept("missed");
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
   }
 
   private void runCommandAndAssertHitsAndMisses(String key, BiConsumer<String, String> command) {
-    Map<String, String> info = getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
     Long currentHits = Long.parseLong(info.get(HITS));
     Long currentMisses = Long.parseLong(info.get(MISSES));
 
     command.accept(key, "42");
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
 
     command.accept("missed", "42");
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
@@ -523,12 +524,12 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   private void runCommandAndAssertHitsAndMisses(String key1, String key2,
       BiConsumer<String, String> command) {
-    Map<String, String> info = getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
     Long currentHits = Long.parseLong(info.get(HITS));
     Long currentMisses = Long.parseLong(info.get(MISSES));
 
     command.accept(key1, key2);
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 2));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
@@ -536,18 +537,18 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   private void runDiffCommandAndAssertHitsAndMisses(String key,
       BiConsumer<String, String> command) {
-    Map<String, String> info = getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
     Long currentHits = Long.parseLong(info.get(HITS));
     Long currentMisses = Long.parseLong(info.get(MISSES));
 
     command.accept(key, key);
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 2));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
 
     command.accept(key, "missed");
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 3));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
@@ -558,42 +559,42 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
    */
   private void runDiffStoreCommandAndAssertNoStatUpdates(String key,
       TriConsumer<String, String, String> command) {
-    Map<String, String> info = getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
     String currentHits = info.get(HITS);
     String currentMisses = info.get(MISSES);
 
     command.accept("destination", key, key);
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(currentHits);
     assertThat(info.get(MISSES)).isEqualTo(currentMisses);
 
     command.accept("destination", key, "missed");
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(currentHits);
     assertThat(info.get(MISSES)).isEqualTo(currentMisses);
   }
 
   private void runCommandAndAssertNoStatUpdates(String key, Consumer<String> command) {
-    Map<String, String> info = getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
     String currentHits = info.get(HITS);
     String currentMisses = info.get(MISSES);
 
     command.accept(key);
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(currentHits);
     assertThat(info.get(MISSES)).isEqualTo(currentMisses);
   }
 
   private void runCommandAndAssertNoStatUpdates(String key, BiConsumer<String, String> command) {
-    Map<String, String> info = getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
     String currentHits = info.get(HITS);
     String currentMisses = info.get(MISSES);
 
     command.accept(key, "42");
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(currentHits);
     assertThat(info.get(MISSES)).isEqualTo(currentMisses);
@@ -601,33 +602,14 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   private void runCommandAndAssertNoStatUpdates(String key,
       TriConsumer<String, String, String> command) {
-    Map<String, String> info = getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
     String currentHits = info.get(HITS);
     String currentMisses = info.get(MISSES);
 
     command.accept(key, key, "42");
-    info = getInfo(jedis);
+    info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(currentHits);
     assertThat(info.get(MISSES)).isEqualTo(currentMisses);
-  }
-
-  /**
-   * Convert the values returned by the INFO command into a basic param:value map.
-   */
-  static Map<String, String> getInfo(Jedis jedis) {
-    Map<String, String> results = new HashMap<>();
-    String rawInfo = jedis.info();
-
-    for (String line : rawInfo.split("\r\n")) {
-      int colonIndex = line.indexOf(":");
-      if (colonIndex > 0) {
-        String key = line.substring(0, colonIndex);
-        String value = line.substring(colonIndex + 1);
-        results.put(key, value);
-      }
-    }
-
-    return results;
   }
 }
