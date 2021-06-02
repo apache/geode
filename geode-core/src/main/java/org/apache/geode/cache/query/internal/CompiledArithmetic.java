@@ -92,59 +92,63 @@ public abstract class CompiledArithmetic extends AbstractCompiledValue
     Number num1 = (Number) left;
     Number num2 = (Number) right;
     try {
-      if (num1 instanceof Double)
-        if (num2 instanceof Double)
+      if (num1 instanceof Double) {
+        if (num2 instanceof Double) {
           return evaluateArithmeticOperation((Double) num1, ((Double) num2));
-        else
+        } else {
           return evaluateArithmeticOperation((Double) num1, Double.valueOf(num2.doubleValue()));
-      else if (num2 instanceof Double)
+        }
+      } else if (num2 instanceof Double) {
         return evaluateArithmeticOperation(Double.valueOf(num1.doubleValue()), (Double) num2);
+      }
 
-      if (num1 instanceof Float)
-        if (num2 instanceof Float)
+      if (num1 instanceof Float) {
+        if (num2 instanceof Float) {
           return evaluateArithmeticOperation((Float) num1, (Float) num2);
-        else
+        } else {
           return evaluateArithmeticOperation((Float) num1, new Float(num2.doubleValue()));
-      else if (num2 instanceof Float)
+        }
+      } else if (num2 instanceof Float) {
         return evaluateArithmeticOperation(new Float(num1.doubleValue()), (Float) num2);
+      }
 
-      if (num1 instanceof Long)
-        if (num2 instanceof Long)
+      if (num1 instanceof Long) {
+        if (num2 instanceof Long) {
           return evaluateArithmeticOperation((Long) num1, ((Long) num2));
-        else {
+        } else {
           long l1 = num1.longValue();
           long l2 = num2.longValue();
           return evaluateArithmeticOperation(l1, l2);
         }
-      else if (num2 instanceof Long) {
+      } else if (num2 instanceof Long) {
         long l1 = num1.longValue();
         long l2 = num2.longValue();
         return evaluateArithmeticOperation(l1, l2);
       }
 
-      if (num1 instanceof Integer)
-        if (num2 instanceof Integer)
+      if (num1 instanceof Integer) {
+        if (num2 instanceof Integer) {
           return evaluateArithmeticOperation((Integer) num1, (Integer) num2);
-        else {
+        } else {
           int i1 = num1.intValue();
           int i2 = num2.intValue();
           return evaluateArithmeticOperation(i1, i2);
         }
-      else if (num2 instanceof Integer) {
+      } else if (num2 instanceof Integer) {
         int i1 = num1.intValue();
         int i2 = num2.intValue();
         return evaluateArithmeticOperation(i1, i2);
       }
 
-      if (num1 instanceof Short)
-        if (num2 instanceof Short)
+      if (num1 instanceof Short) {
+        if (num2 instanceof Short) {
           return evaluateArithmeticOperation((Short) num1, ((Short) num2));
-        else {
+        } else {
           short s1 = num1.shortValue();
           short s2 = num2.shortValue();
           return evaluateArithmeticOperation(s1, s2);
         }
-      else if (num2 instanceof Short) {
+      } else if (num2 instanceof Short) {
         short s1 = num1.shortValue();
         short s2 = num2.shortValue();
         return evaluateArithmeticOperation(s1, s2);

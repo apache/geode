@@ -350,8 +350,9 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
     for (i = 0; i < ba.length; i++) {
       int cbyte = ba[i];
 
-      if (cbyte == INT_TAB || cbyte == INT_LF || cbyte == INT_CR || cbyte == INT_SPACE)
+      if (cbyte == INT_TAB || cbyte == INT_LF || cbyte == INT_CR || cbyte == INT_SPACE) {
         continue;
+      }
       withoutspace[j++] = ba[i];
     }
 
@@ -382,16 +383,19 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
   }
 
   public void compareByteArray(byte[] b1, byte[] b2) {
-    if (b1.length != b2.length)
+    if (b1.length != b2.length) {
       throw new IllegalStateException(
           "Json byte array length are not equal " + b1.length + " ; " + b2.length);
+    }
 
-    if (Boolean.getBoolean(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY))
+    if (Boolean.getBoolean(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY)) {
       return;// we just need to compare length as blob will be different because fields are sorted
+    }
 
     for (int i = 0; i < b1.length; i++) {
-      if (b1[i] != b2[i])
+      if (b1[i] != b2[i]) {
         throw new IllegalStateException("Json byte arrays are not equal ");
+      }
     }
   }
 
@@ -405,8 +409,9 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
     for (i = 0; i < ba.length; i++) {
       int cbyte = ba[i];
 
-      if (cbyte == INT_TAB || cbyte == INT_LF || cbyte == INT_CR || cbyte == INT_SPACE)
+      if (cbyte == INT_TAB || cbyte == INT_LF || cbyte == INT_CR || cbyte == INT_SPACE) {
         continue;
+      }
       withoutspace[j++] = ba[i];
     }
 
@@ -427,8 +432,9 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
     int i = 0;
     for (String jsonFileName : dir.list()) {
 
-      if (!jsonFileName.contains(".txt"))
+      if (!jsonFileName.contains(".txt")) {
         continue;
+      }
       try {
         byte[] ba = getBytesFromFile(dir.getAbsolutePath() + File.separator + jsonFileName);
         JSONDatas[i++] = new JSONData(jsonFileName, ba);

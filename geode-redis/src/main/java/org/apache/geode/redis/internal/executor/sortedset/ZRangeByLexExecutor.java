@@ -133,10 +133,11 @@ public class ZRangeByLexExecutor extends SortedSetExecutor {
         throw new RuntimeException(e);
       }
     }
-    if (list == null)
+    if (list == null) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-    else
+    } else {
       command.setResponse(getCustomBulkStringArrayResponse(list, context));
+    }
   }
 
   private List<ByteArrayWrapper> getRange(ByteArrayWrapper key,
@@ -148,12 +149,14 @@ public class ZRangeByLexExecutor extends SortedSetExecutor {
       List<ByteArrayWrapper> l = new ArrayList<ByteArrayWrapper>(keyRegion.keySet());
       int size = l.size();
       Collections.sort(l);
-      if (limit == 0)
+      if (limit == 0) {
         limit += size;
+      }
       l = l.subList(Math.min(size, offset), Math.min(offset + limit, size));
       return l;
-    } else if (start.equals(plus) || stop.equals(minus))
+    } else if (start.equals(plus) || stop.equals(minus)) {
       return null;
+    }
 
     Query query;
     Object[] params;
@@ -187,8 +190,9 @@ public class ZRangeByLexExecutor extends SortedSetExecutor {
       }
       params = new Object[] {start, stop, INFINITY_LIMIT};
     }
-    if (limit > 0)
+    if (limit > 0) {
       params[params.length - 1] = (limit + offset);
+    }
     SelectResults<ByteArrayWrapper> results =
         (SelectResults<ByteArrayWrapper>) query.execute(params);
     List<ByteArrayWrapper> list = results.asList();

@@ -836,8 +836,9 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   private void addCacheServerConfig(CacheServerConfig managerConfig) {
     checkReadOnly();
 
-    if (managerConfig == null)
+    if (managerConfig == null) {
       return;
+    }
     for (Iterator iter = this.cacheServerConfigs.iterator(); iter.hasNext();) {
       CacheServerConfigImpl impl = (CacheServerConfigImpl) iter.next();
       if (impl.equals(managerConfig)) {
@@ -1189,8 +1190,9 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   public String toString() {
     StringBuffer buf = new StringBuffer(1000);
     String lf = System.getProperty("line.separator");
-    if (lf == null)
+    if (lf == null) {
       lf = ",";
+    }
 
     buf.append("DistributedSystemConfig(");
     buf.append(lf);

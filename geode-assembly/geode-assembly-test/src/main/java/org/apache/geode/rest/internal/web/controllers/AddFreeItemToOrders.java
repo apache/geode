@@ -83,31 +83,36 @@ public class AddFreeItemToOrders implements Function {
       result = (SelectResults) query.execute(queryArgs);
       int resultSize = result.size();
 
-      if (result instanceof Collection<?>)
+      if (result instanceof Collection<?>) {
         for (Object item : result) {
           keys.add(item);
         }
+      }
     } catch (FunctionDomainException e) {
-      if (cache != null)
+      if (cache != null) {
         cache.getLogger()
             .info("Caught FunctionDomainException while executing function AddFreeItemToOrders: "
                 + e.getMessage());
+      }
 
     } catch (TypeMismatchException e) {
-      if (cache != null)
+      if (cache != null) {
         cache.getLogger()
             .info("Caught TypeMismatchException while executing function AddFreeItemToOrders: "
                 + e.getMessage());
+      }
     } catch (NameResolutionException e) {
-      if (cache != null)
+      if (cache != null) {
         cache.getLogger()
             .info("Caught NameResolutionException while executing function AddFreeItemToOrders: "
                 + e.getMessage());
+      }
     } catch (QueryInvocationTargetException e) {
-      if (cache != null)
+      if (cache != null) {
         cache.getLogger().info(
             "Caught QueryInvocationTargetException while executing function AddFreeItemToOrders"
                 + e.getMessage());
+      }
     }
 
     // class has to be in classpath.

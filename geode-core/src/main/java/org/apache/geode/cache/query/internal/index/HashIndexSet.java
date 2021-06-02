@@ -201,11 +201,13 @@ public class HashIndexSet implements Set {
      */
     if (!((curr = set[pos = (it.unimi.dsi.fastutil.HashCommon.mix(hash)) & mask]) == null
         || curr == REMOVED)) {
-      if (((curr).equals(obj) && pos != ignoreThisSlot))
+      if (((curr).equals(obj) && pos != ignoreThisSlot)) {
         return pos;
+      }
       while (!((curr = set[pos = (pos + 1) & mask]) == null || curr == REMOVED)) {
-        if (((curr).equals(obj)) && pos != ignoreThisSlot)
+        if (((curr).equals(obj)) && pos != ignoreThisSlot) {
           return pos;
+        }
       }
     }
     return -1;
@@ -611,8 +613,9 @@ public class HashIndexSet implements Set {
 
   public boolean trimToSize(final int n) {
     final int l = HashCommon.nextPowerOfTwo((int) Math.ceil(n / _loadFactor));
-    if (this.hashIndexSetProperties.n <= l)
+    if (this.hashIndexSetProperties.n <= l) {
       return true;
+    }
     try {
       rehash(l);
     } catch (OutOfMemoryError cantDoIt) {

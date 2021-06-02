@@ -240,10 +240,18 @@ public class LogFileParser {
             // find where the year/mo/dy starts and delete it and the time zone
             int start = 5;
             if (line.charAt(start) != ' ') // info & fine
+            {
               if (line.charAt(++start) != ' ') // finer & error
+              {
                 if (line.charAt(++start) != ' ') // finest, severe, config
+                {
                   if (line.charAt(++start) != ' ') // warning
+                  {
                     start = 0;
+                  }
+                }
+              }
+            }
             if (start > 0) {
               line.delete(start + 25, start + 29); // time zone
               line.delete(start, start + 11); // date

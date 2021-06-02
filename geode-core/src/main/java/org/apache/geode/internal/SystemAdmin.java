@@ -108,8 +108,9 @@ public class SystemAdmin {
    */
   public static File findGemFireLibDir() {
     URL jarURL = GemFireVersion.getJarURL();
-    if (jarURL == null)
+    if (jarURL == null) {
       return null;
+    }
     String path = jarURL.getPath();
     // Decode URL to get rid of escaped characters. See bug 32465.
     path = URLDecoder.decode(path);
@@ -135,12 +136,14 @@ public class SystemAdmin {
       String gemfirePropertiesFileOption, Properties propertyOptionArg, List xoptions,
       boolean peerOption, boolean serverOption, String hostnameForClientsOption)
       throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     int port = DistributionLocator.parsePort(portOption);
 
-    if (addressOption == null)
+    if (addressOption == null) {
       addressOption = "";
+    }
 
     if (!addressOption.equals("")) {
       // make sure its a valid ip address
@@ -258,11 +261,13 @@ public class SystemAdmin {
   @SuppressWarnings("hiding")
   public void locatorStop(File directory, String portOption, String addressOption,
       Properties propertyOption) throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     InetAddress addr = null; // fix for bug 30810
-    if (addressOption == null)
+    if (addressOption == null) {
       addressOption = "";
+    }
     if (!addressOption.equals("")) {
       // make sure its a valid ip address
       try {

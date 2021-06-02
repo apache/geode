@@ -198,8 +198,9 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
 
   private SSLConfig validateSSLConfig(SSLConfig sslConfig) {
-    if (sslConfig == null)
+    if (sslConfig == null) {
       return new SSLConfig.Builder().build(); // uses defaults
+    }
     return sslConfig;
   }
 
@@ -319,20 +320,26 @@ public class DistributionLocatorId implements java.io.Serializable {
    */
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof DistributionLocatorId))
+    }
+    if (!(other instanceof DistributionLocatorId)) {
       return false;
+    }
     final DistributionLocatorId that = (DistributionLocatorId) other;
 
-    if (this.host != that.host && !(this.host != null && this.host.equals(that.host)))
+    if (this.host != that.host && !(this.host != null && this.host.equals(that.host))) {
       return false;
-    if (this.port != that.port)
+    }
+    if (this.port != that.port) {
       return false;
-    if (!StringUtils.equals(this.bindAddress, that.bindAddress))
+    }
+    if (!StringUtils.equals(this.bindAddress, that.bindAddress)) {
       return false;
+    }
 
     return true;
   }

@@ -208,8 +208,9 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       Iterator biI = badList.iterator();
       while (biI.hasNext()) {
         badIds.append(biI.next().toString());
-        if (biI.hasNext())
+        if (biI.hasNext()) {
           badIds.append(", ");
+        }
       }
       throw new IllegalStateException(
           String.format("Illegal Region Configuration for members: %s",
@@ -542,51 +543,71 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
           s |= PERSISTENT_MASK;
         }
       } else {
-        if (dataPolicy.isEmpty())
+        if (dataPolicy.isEmpty()) {
           s |= PROXY_MASK;
-        if (dataPolicy.isPreloaded())
+        }
+        if (dataPolicy.isPreloaded()) {
           s |= PRELOADED_MASK;
+        }
       }
       if (subscriptionAttributes != null
           && subscriptionAttributes.getInterestPolicy().isAll()) {
         s |= INTEREST_MASK;
       }
-      if (hasCacheLoader)
+      if (hasCacheLoader) {
         s |= LOADER_MASK;
-      if (hasCacheWriter)
+      }
+      if (hasCacheWriter) {
         s |= WRITER_MASK;
-      if (hasCacheListener)
+      }
+      if (hasCacheListener) {
         s |= LISTENER_MASK;
-      if (scope.isDistributedAck())
+      }
+      if (scope.isDistributedAck()) {
         s |= DIST_ACK_MASK;
-      if (scope.isGlobal())
+      }
+      if (scope.isGlobal()) {
         s |= GLOBAL_MASK;
-      if (inRecovery)
+      }
+      if (inRecovery) {
         s |= IN_RECOVERY_MASK;
-      if (isPartitioned)
+      }
+      if (isPartitioned) {
         s |= IS_PARTITIONED_MASK;
-      if (isGatewayEnabled)
+      }
+      if (isGatewayEnabled) {
         s |= IS_GATEWAY_ENABLED_MASK;
-      if (isPersistent)
+      }
+      if (isPersistent) {
         s |= PERSISTENT_MASK;
-      if (regionInitialized)
+      }
+      if (regionInitialized) {
         s |= REGION_INITIALIZED_MASK;
-      if (persistentID != null)
+      }
+      if (persistentID != null) {
         s |= PERSISTENT_ID_MASK;
-      if (hasCacheServer)
+      }
+      if (hasCacheServer) {
         s |= HAS_CACHE_SERVER_MASK;
-      if (requiresOldValueInEvents)
+      }
+      if (requiresOldValueInEvents) {
         s |= REQUIRES_OLD_VALUE_MASK;
-      if (persistenceInitialized)
+      }
+      if (persistenceInitialized) {
         s |= PERSISTENCE_INITIALIZED_MASK;
-      if (!gatewaySenderIds.isEmpty())
+      }
+      if (!gatewaySenderIds.isEmpty()) {
         s |= GATEWAY_SENDER_IDS_MASK;
-      if (!asyncEventQueueIds.isEmpty())
+      }
+      if (!asyncEventQueueIds.isEmpty()) {
         s |= ASYNC_EVENT_QUEUE_IDS_MASK;
-      if (isOffHeap)
+      }
+      if (isOffHeap) {
         s |= IS_OFF_HEAP_MASK;
-      if (!cacheServiceProfiles.isEmpty())
+      }
+      if (!cacheServiceProfiles.isEmpty()) {
         s |= CACHE_SERVICE_PROFILES_MASK;
+      }
       Assert.assertTrue(!scope.isLocal());
       return s;
     }

@@ -165,8 +165,9 @@ public class QCompiler implements OQLLexerTokenTypes {
 
     CompiledValue obj = (CompiledValue) this.stack.pop();
     boolean criterion = false;
-    if (sortCriterion.equals("desc"))
+    if (sortCriterion.equals("desc")) {
       criterion = true;
+    }
     CompiledSortCriterion csc = new CompiledSortCriterion(criterion, obj);
     push(csc);
 
@@ -571,10 +572,12 @@ public class QCompiler implements OQLLexerTokenTypes {
           && ((CompiledJunction) operand).getOperator() == operator) {
         CompiledJunction junction = (CompiledJunction) operand;
         List jOperands = junction.getOperands();
-        for (int j = 0; j < jOperands.size(); j++)
+        for (int j = 0; j < jOperands.size(); j++) {
           operands.add(jOperands.get(j));
-      } else
+        }
+      } else {
         operands.add(operand);
+      }
     }
 
     push(new CompiledJunction(
@@ -587,10 +590,11 @@ public class QCompiler implements OQLLexerTokenTypes {
     Object obj = this.stack.peek();
     Assert.assertTrue(obj instanceof CompiledValue);
 
-    if (obj instanceof Negatable)
+    if (obj instanceof Negatable) {
       ((Negatable) obj).negate();
-    else
+    } else {
       push(new CompiledNegation((CompiledValue) pop()));
+    }
   }
 
   public void unaryMinus() {
@@ -698,8 +702,9 @@ public class QCompiler implements OQLLexerTokenTypes {
     if (this.imports != null) {
       as = (String) this.imports.get(typeName);
     }
-    if (as != null)
+    if (as != null) {
       typeName = as;
+    }
 
     Class resultClass;
     try {

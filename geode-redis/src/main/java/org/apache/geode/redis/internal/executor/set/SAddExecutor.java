@@ -44,8 +44,9 @@ public class SAddExecutor extends SetExecutor {
 
     if (commandElems.size() >= 4) {
       Map<ByteArrayWrapper, Boolean> entries = new HashMap<ByteArrayWrapper, Boolean>();
-      for (int i = 2; i < commandElems.size(); i++)
+      for (int i = 2; i < commandElems.size(); i++) {
         entries.put(new ByteArrayWrapper(commandElems.get(i)), true);
+      }
 
       keyRegion.putAll(entries);
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), entries.size()));

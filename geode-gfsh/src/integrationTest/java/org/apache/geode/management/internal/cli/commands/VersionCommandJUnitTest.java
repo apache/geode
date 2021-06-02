@@ -70,8 +70,9 @@ public class VersionCommandJUnitTest {
   @Parameters({"version --full", "version --full=true"})
   public void versionFull(String versionCommand) throws Exception {
     String result = gfsh.execute(versionCommand);
-    for (String datum : EXPECTED_FULL_DATA)
+    for (String datum : EXPECTED_FULL_DATA) {
       assertThat(result).contains(datum);
+    }
   }
 
   @Test

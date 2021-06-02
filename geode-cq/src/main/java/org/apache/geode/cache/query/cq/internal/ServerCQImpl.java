@@ -380,8 +380,9 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       this.cqState.setState(CqStateImpl.CLOSED);
       cqService.stats().incCqsClosed();
       cqService.stats().decCqsOnClient();
-      if (this.stats != null)
+      if (this.stats != null) {
         this.stats.close();
+      }
     }
 
     if (isDebugEnabled) {

@@ -288,8 +288,9 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   }
 
   private void updateLocatorList(LocatorListResponse response) {
-    if (response == null)
+    if (response == null) {
       return;
+    }
     isBalanced = response.isBalanced();
     List<ServerLocation> locatorResponse = response.getLocators();
 

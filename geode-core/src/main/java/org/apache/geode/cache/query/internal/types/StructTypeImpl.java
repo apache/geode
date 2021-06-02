@@ -102,8 +102,9 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof StructTypeImpl))
+    if (!(obj instanceof StructTypeImpl)) {
       return false;
+    }
     StructTypeImpl t = (StructTypeImpl) obj;
     return (Arrays.equals(this.fieldNames, t.getFieldNames())
         || Arrays.equals(this.indexAlternativeFieldNames, t.getFieldNames()))
@@ -119,8 +120,9 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
   public String toString() {
     StringBuffer sb = new StringBuffer("struct<");
     for (int i = 0; i < fieldNames.length; i++) {
-      if (i > 0)
+      if (i > 0) {
         sb.append(',');
+      }
       sb.append(fieldNames[i] + ":" + fieldTypes[i]);
     }
     sb.append('>');

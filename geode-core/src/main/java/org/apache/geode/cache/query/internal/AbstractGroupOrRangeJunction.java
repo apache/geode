@@ -363,11 +363,14 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     // using auxFilterEvaluate ,meaning no need to do iterations below )
     // but it can never be null. As null itself signifies that the junction
     // cannot be evaluated as a filter.
-    if (intermediateResults == null)
+    if (intermediateResults == null) {
       throw new RuntimeException(
           "intermediateResults can not be null");
+    }
     if (intermediateResults.isEmpty()) // short circuit
+    {
       return intermediateResults;
+    }
     List currentIters = (this.completeExpansion) ? context.getCurrentIterators()
         : QueryUtils.getDependentItrChainForIndpndntItrs(this.indpndntItr, context);
     SelectResults resultSet = null;
@@ -404,9 +407,10 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
           if (((Boolean) result).booleanValue()) {
             resultSet.add(tuple);
           }
-        } else if (result != null && result != QueryService.UNDEFINED)
+        } else if (result != null && result != QueryService.UNDEFINED) {
           throw new TypeMismatchException("AND/OR operands must be of type boolean, not type '"
               + result.getClass().getName() + "'");
+        }
       }
     } finally {
       observer.endIteration(resultSet);
@@ -459,8 +463,9 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
       result.isSingleFilter = true;
     } else {
       CompiledValue[] newOperands = new CompiledValue[indexCount];
-      for (int i = 0; i < indexCount; i++)
+      for (int i = 0; i < indexCount; i++) {
         newOperands[i] = (CompiledValue) evalOperands.get(i);
+      }
       filterOperands = new GroupJunction(getOperator(), getIndependentIteratorForGroup(),
           getExpansionFlag(), newOperands);
     }
@@ -478,12 +483,13 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     // In this case (pkid like '1') is iterating condition for the GJ.
     // Support.Assert(getOperator() == LITERAL_and || numIterating == 0);
     if (numIterating > 0) {
-      if (numIterating == 1)
+      if (numIterating == 1) {
         iterateOperands = (CompiledValue) evalOperands.get(indexCount);
-      else {
+      } else {
         CompiledValue[] newOperands = new CompiledValue[numIterating];
-        for (int i = 0; i < numIterating; i++)
+        for (int i = 0; i < numIterating; i++) {
           newOperands[i] = (CompiledValue) evalOperands.get(i + indexCount);
+        }
         iterateOperands = new CompiledJunction(newOperands, getOperator());
       }
     }

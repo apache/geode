@@ -56,23 +56,30 @@ public class Dependency<A, B> implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (!(obj instanceof Dependency))
+    }
+    if (!(obj instanceof Dependency)) {
       return false;
+    }
     Dependency<?, ?> other = (Dependency<?, ?>) obj;
     if (depender == null) {
-      if (other.depender != null)
+      if (other.depender != null) {
         return false;
-    } else if (!depender.equals(other.depender))
+      }
+    } else if (!depender.equals(other.depender)) {
       return false;
+    }
     if (dependsOn == null) {
-      if (other.dependsOn != null)
+      if (other.dependsOn != null) {
         return false;
-    } else if (!dependsOn.equals(other.dependsOn))
+      }
+    } else if (!dependsOn.equals(other.dependsOn)) {
       return false;
+    }
     return true;
   }
 

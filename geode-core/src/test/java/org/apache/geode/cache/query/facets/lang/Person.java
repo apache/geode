@@ -61,8 +61,9 @@ public class Person {
 
     int age = now.get(Calendar.YEAR) - bd.get(Calendar.YEAR);
 
-    if (bdThisYear.after(now))
+    if (bdThisYear.after(now)) {
       age--;
+    }
 
     return age;
   }

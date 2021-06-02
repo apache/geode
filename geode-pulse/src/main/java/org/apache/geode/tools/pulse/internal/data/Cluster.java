@@ -418,10 +418,11 @@ public class Cluster extends Thread {
     }
 
     public String getHostnameForClients() {
-      if (StringUtils.isNotBlank(hostnameForClients))
+      if (StringUtils.isNotBlank(hostnameForClients)) {
         return this.hostnameForClients;
-      else if (StringUtils.isNotBlank(bindAddress))
+      } else if (StringUtils.isNotBlank(bindAddress)) {
         return this.bindAddress;
+      }
       return null;
     }
 
@@ -2848,8 +2849,9 @@ public class Cluster extends Thread {
   public void addAlert(Alert alert) {
     synchronized (this.alertsList) {
       this.alertsList.add(alert);
-      if (this.alertsList.size() > Cluster.ALERTS_MAX_SIZE)
+      if (this.alertsList.size() > Cluster.ALERTS_MAX_SIZE) {
         this.alertsList.remove(0);
+      }
     }
   }
 

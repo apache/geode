@@ -362,8 +362,9 @@ public class Coder {
 
   public static ByteBuf zRangeResponse(ByteBufAllocator alloc, Collection<?> list,
       boolean withScores) {
-    if (list.isEmpty())
+    if (list.isEmpty()) {
       return Coder.getEmptyArrayResponse(alloc);
+    }
 
     ByteBuf buffer = alloc.buffer();
     buffer.writeByte(Coder.ARRAY_ID);
@@ -419,15 +420,17 @@ public class Coder {
     response.writeBytes(intToBytes(length));
     response.writeBytes(Coder.CRLFar);
 
-    for (int i = 0; i < length; i++)
+    for (int i = 0; i < length; i++) {
       response.writeBytes(bNIL);
+    }
 
     return response;
   }
 
   public static String bytesToString(byte[] bytes) {
-    if (bytes == null)
+    if (bytes == null) {
       return null;
+    }
     try {
       return new String(bytes, CHARSET).intern();
     } catch (UnsupportedEncodingException e) {
@@ -436,16 +439,18 @@ public class Coder {
   }
 
   public static String doubleToString(double d) {
-    if (d == Double.POSITIVE_INFINITY)
+    if (d == Double.POSITIVE_INFINITY) {
       return "Infinity";
-    else if (d == Double.NEGATIVE_INFINITY)
+    } else if (d == Double.NEGATIVE_INFINITY) {
       return "-Infinity";
+    }
     return String.valueOf(d);
   }
 
   public static byte[] stringToBytes(String string) {
-    if (string == null || string.equals(""))
+    if (string == null || string.equals("")) {
       return null;
+    }
     try {
       return string.getBytes(CHARSET);
     } catch (UnsupportedEncodingException e) {
@@ -502,12 +507,13 @@ public class Coder {
    * @throws NumberFormatException if the double cannot be parsed
    */
   public static double stringToDouble(String d) {
-    if (d.equalsIgnoreCase(P_INF))
+    if (d.equalsIgnoreCase(P_INF)) {
       return Double.POSITIVE_INFINITY;
-    else if (d.equalsIgnoreCase(N_INF))
+    } else if (d.equalsIgnoreCase(N_INF)) {
       return Double.NEGATIVE_INFINITY;
-    else
+    } else {
       return Double.parseDouble(d);
+    }
   }
 
   public static ByteArrayWrapper stringToByteWrapper(String s) {

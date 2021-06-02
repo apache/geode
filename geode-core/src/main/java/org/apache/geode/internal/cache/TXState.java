@@ -360,9 +360,10 @@ public class TXState implements TXStateInterface {
     this.locks.obtain(getCache().getInternalDistributedSystem());
     // for now check account the dlock service time
     // later this stat end should be moved to a finally block
-    if (statisticsClock.isEnabled())
+    if (statisticsClock.isEnabled()) {
       this.proxy.getTxMgr().getCachePerfStats()
           .incTxConflictCheckTime(statisticsClock.getTime() - conflictStart);
+    }
     if (this.internalAfterReservation != null) {
       this.internalAfterReservation.run();
     }
@@ -914,9 +915,10 @@ public class TXState implements TXStateInterface {
         } catch (IllegalArgumentException | IllegalMonitorStateException e) {
           exception = e;
         }
-        if (statisticsClock.isEnabled())
+        if (statisticsClock.isEnabled()) {
           this.proxy.getTxMgr().getCachePerfStats()
               .incTxConflictCheckTime(statisticsClock.getTime() - conflictStart);
+        }
       }
       Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
       while (it.hasNext()) {
@@ -1028,8 +1030,9 @@ public class TXState implements TXStateInterface {
 
     @Override
     public boolean equals(Object o) {
-      if (o == null || !(o instanceof TXEntryStateWithRegionAndKey))
+      if (o == null || !(o instanceof TXEntryStateWithRegionAndKey)) {
         return false;
+      }
       return compareTo(o) == 0;
     }
 

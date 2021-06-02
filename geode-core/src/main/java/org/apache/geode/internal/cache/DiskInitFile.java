@@ -1433,16 +1433,21 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   private void compactIfNeeded() {
     lock(true);
     try {
-      if (this.compactInProgress)
+      if (this.compactInProgress) {
         return;
-      if (this.ifTotalRecordCount == 0)
+      }
+      if (this.ifTotalRecordCount == 0) {
         return;
-      if (this.ifTotalRecordCount == this.ifLiveRecordCount)
+      }
+      if (this.ifTotalRecordCount == this.ifLiveRecordCount) {
         return;
-      if (this.ifRAF.length() <= MIN_SIZE_BEFORE_COMPACT)
+      }
+      if (this.ifRAF.length() <= MIN_SIZE_BEFORE_COMPACT) {
         return;
-      if ((double) this.ifLiveRecordCount / (double) this.ifTotalRecordCount > COMPACT_RATIO)
+      }
+      if ((double) this.ifLiveRecordCount / (double) this.ifTotalRecordCount > COMPACT_RATIO) {
         return;
+      }
       compact();
     } catch (IOException ignore) {
       return;
@@ -2213,8 +2218,9 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   void close() {
     lock(true);
     try {
-      if (this.closed)
+      if (this.closed) {
         return;
+      }
       this.closed = true;
       stopListeningForDataSerializerChanges();
       try {
@@ -2647,8 +2653,9 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         String message = basicModifyRegion(printInfo, dr, lruOption, lruActionOption,
             lruLimitOption, concurrencyLevelOption, initialCapacityOption, loadFactorOption,
             compressorClassNameOption, statisticsEnabledOption, offHeapOption, printToConsole);
-        if (printInfo)
+        if (printInfo) {
           sb.append(message);
+        }
         printInfo = false;
       }
     } finally {

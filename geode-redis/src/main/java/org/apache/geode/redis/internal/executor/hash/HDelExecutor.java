@@ -53,8 +53,9 @@ public class HDelExecutor extends HashExecutor {
     for (int i = START_FIELDS_INDEX; i < commandElems.size(); i++) {
       ByteArrayWrapper field = new ByteArrayWrapper(commandElems.get(i));
       Object oldValue = keyRegion.remove(field);
-      if (oldValue != null)
+      if (oldValue != null) {
         numDeleted++;
+      }
     }
     if (keyRegion.isEmpty()) {
       context.getRegionProvider().removeKey(key, RedisDataType.REDIS_HASH);

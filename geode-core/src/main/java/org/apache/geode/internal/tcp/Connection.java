@@ -515,8 +515,9 @@ public class Connection implements Runnable {
     if (AlertingAction.isThreadAlerting()) {
       return config.getMemberTimeout();
     }
-    if (IS_P2P_CONNECT_TIMEOUT_INITIALIZED)
+    if (IS_P2P_CONNECT_TIMEOUT_INITIALIZED) {
       return P2P_CONNECT_TIMEOUT;
+    }
     String connectTimeoutStr = System.getProperty("p2p.connectTimeout");
     if (connectTimeoutStr != null) {
       P2P_CONNECT_TIMEOUT = Integer.parseInt(connectTimeoutStr);
@@ -1326,8 +1327,9 @@ public class Connection implements Runnable {
                 } catch (InterruptedException ie) {
                   interrupted = true;
                 } finally {
-                  if (interrupted)
+                  if (interrupted) {
                     Thread.currentThread().interrupt();
+                  }
                 }
               }
             }

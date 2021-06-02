@@ -1101,8 +1101,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     thread2.start();
 
     // Interrupt second thread
-    while (!started)
+    while (!started) {
       Thread.yield();
+    }
     thread2.interrupt();
     ThreadUtils.join(thread2, 20 * 1000);
 
@@ -1169,8 +1170,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     if (logger.isDebugEnabled()) {
       logger.debug("[testLockIsNotInterruptible] interrupt second thread");
     }
-    while (!started)
+    while (!started) {
       Thread.yield();
+    }
     Thread.sleep(500);
     thread2.interrupt();
     // Expect it didn't get an exception and didn't lock the service
@@ -1573,8 +1575,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     thread2.start();
 
     // Interrupt second thread
-    while (!started)
+    while (!started) {
       Thread.yield();
+    }
     thread2.interrupt();
     ThreadUtils.join(thread2, 20 * 1000);
 
@@ -1624,8 +1627,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     thread2.start();
 
     // Interrupt second thread
-    while (!started)
+    while (!started) {
       Thread.yield();
+    }
     thread2.interrupt();
     // Expect it didn't get an exception and didn't lock the service
     Thread.sleep(500);

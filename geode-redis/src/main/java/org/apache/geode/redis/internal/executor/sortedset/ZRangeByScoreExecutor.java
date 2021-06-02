@@ -142,10 +142,11 @@ public class ZRangeByScoreExecutor extends SortedSetExecutor implements Extendab
       throw new RuntimeException(e);
     }
 
-    if (list == null)
+    if (list == null) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-    else
+    } else {
       command.setResponse(Coder.zRangeResponse(context.getByteBufAllocator(), list, withScores));
+    }
   }
 
   private Collection<?> getKeys(ByteArrayWrapper key,
@@ -154,10 +155,12 @@ public class ZRangeByScoreExecutor extends SortedSetExecutor implements Extendab
       int limit) throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     if (start == Double.POSITIVE_INFINITY || stop == Double.NEGATIVE_INFINITY || start > stop
-        || (start == stop && (!startInclusive || !stopInclusive)))
+        || (start == stop && (!startInclusive || !stopInclusive))) {
       return null;
-    if (start == Double.NEGATIVE_INFINITY && stop == Double.POSITIVE_INFINITY)
+    }
+    if (start == Double.NEGATIVE_INFINITY && stop == Double.POSITIVE_INFINITY) {
       return new HashSet(keyRegion.entrySet());
+    }
 
     Query query;
     Object[] params;
@@ -192,14 +195,16 @@ public class ZRangeByScoreExecutor extends SortedSetExecutor implements Extendab
       }
       params = new Object[] {start, stop, INFINITY_LIMIT};
     }
-    if (limit > 0)
+    if (limit > 0) {
       params[params.length - 1] = (limit + offset);
+    }
 
     SelectResults<?> results = (SelectResults<?>) query.execute(params);
-    if (offset < results.size())
+    if (offset < results.size()) {
       return (Collection<Struct>) results.asList().subList(offset, results.size());
-    else
+    } else {
       return null;
+    }
   }
 
   protected boolean isReverse() {

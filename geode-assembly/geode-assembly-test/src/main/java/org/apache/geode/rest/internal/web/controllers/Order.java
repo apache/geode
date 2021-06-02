@@ -66,8 +66,9 @@ public class Order implements PdxSerializable {
   }
 
   public void addItem(final Item item) {
-    if (item != null)
+    if (item != null) {
       this.items.add(item);
+    }
   }
 
   public Long getPurchaseOrderNo() {
@@ -131,11 +132,13 @@ public class Order implements PdxSerializable {
   }
 
   public void setItems(List<Item> items) {
-    if (this.items == null)
+    if (this.items == null) {
       this.items = new ArrayList<Item>();
+    }
 
-    for (Item it : items)
+    for (Item it : items) {
       this.items.add(it);
+    }
   }
 
   public Date getOrderDate() {

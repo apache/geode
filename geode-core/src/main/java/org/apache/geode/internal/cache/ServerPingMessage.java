@@ -69,8 +69,9 @@ public class ServerPingMessage extends PooledDistributionMessage {
         filteredRecipients.add(recipient);
       }
     }
-    if (filteredRecipients.size() == 0)
+    if (filteredRecipients.size() == 0) {
       return true;
+    }
 
     ReplyProcessor21 replyProcessor = new ReplyProcessor21(dm, filteredRecipients);
     ServerPingMessage spm = new ServerPingMessage(replyProcessor);
@@ -78,8 +79,9 @@ public class ServerPingMessage extends PooledDistributionMessage {
     spm.setRecipients(filteredRecipients);
     Set failedServers = null;
     try {
-      if (cache.getLogger().fineEnabled())
+      if (cache.getLogger().fineEnabled()) {
         cache.getLogger().fine("Pinging following servers " + filteredRecipients);
+      }
       failedServers = dm.putOutgoing(spm);
 
       // wait for the replies for timeout msecs
@@ -99,8 +101,9 @@ public class ServerPingMessage extends PooledDistributionMessage {
       return false;
     }
 
-    if (failedServers == null || failedServers.size() == 0)
+    if (failedServers == null || failedServers.size() == 0) {
       return true;
+    }
 
     cache.getLogger()
         .info(String.format("Could not ping one of the following servers: %s", failedServers));

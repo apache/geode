@@ -89,11 +89,12 @@ public class LRangeExecutor extends ListExecutor {
       throw new RuntimeException(e);
     }
 
-    if (range == null)
+    if (range == null) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-    else
+    } else {
       command.setResponse(
           Coder.getBulkStringArrayResponseOfValues(context.getByteBufAllocator(), range));
+    }
   }
 
   private List<Struct> getRange(ExecutionHandlerContext context, ByteArrayWrapper key, int start,

@@ -242,10 +242,12 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
       boolean compareViewIds) {
     int myPort = getMembershipPort();
     int otherPort = other.getMembershipPort();
-    if (myPort < otherPort)
+    if (myPort < otherPort) {
       return -1;
-    if (myPort > otherPort)
+    }
+    if (myPort > otherPort) {
       return 1;
+    }
 
     InetAddress myAddr = getInetAddress();
     InetAddress otherAddr = other.getInetAddress();
@@ -255,23 +257,28 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
       return 0;
     } else if (myAddr == null) {
       return -1;
-    } else if (otherAddr == null)
+    } else if (otherAddr == null) {
       return 1;
+    }
 
     byte[] myBytes = myAddr.getAddress();
     byte[] otherBytes = otherAddr.getAddress();
 
     if (myBytes != otherBytes) {
       for (int i = 0; i < myBytes.length; i++) {
-        if (i >= otherBytes.length)
+        if (i >= otherBytes.length) {
           return -1; // same as far as they go, but shorter...
-        if (myBytes[i] < otherBytes[i])
+        }
+        if (myBytes[i] < otherBytes[i]) {
           return -1;
-        if (myBytes[i] > otherBytes[i])
+        }
+        if (myBytes[i] > otherBytes[i]) {
           return 1;
+        }
       }
-      if (myBytes.length > otherBytes.length)
+      if (myBytes.length > otherBytes.length) {
         return 1; // same as far as they go, but longer...
+      }
     }
 
     String myName = getName();
@@ -397,14 +404,16 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
   }
 
   private String shortName(String hostname) {
-    if (hostname == null)
+    if (hostname == null) {
       return "<null inet_addr hostname>";
+    }
     int index = hostname.indexOf('.');
 
-    if (index > 0 && !Character.isDigit(hostname.charAt(0)))
+    if (index > 0 && !Character.isDigit(hostname.charAt(0))) {
       return hostname.substring(0, index);
-    else
+    } else {
       return hostname;
+    }
   }
 
 
@@ -438,9 +447,9 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     String host;
 
     InetAddress add = getInetAddress();
-    if (add.isMulticastAddress() || useIpAddress)
+    if (add.isMulticastAddress() || useIpAddress) {
       host = add.getHostAddress();
-    else {
+    } else {
       String hostName = memberData.getHostName();
       InetAddressValidator inetAddressValidator = InetAddressValidator.getInstance();
       boolean isIpAddress = inetAddressValidator.isValid(hostName);
@@ -462,8 +471,9 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
         }
       }
 
-      if (vmPid > 0)
+      if (vmPid > 0) {
         sb.append(vmPid);
+      }
 
       String vmStr = "";
       switch (vmKind) {
@@ -542,12 +552,15 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     StaticSerialization.writeString(memberData.getHostName(), out);
 
     int flags = 0;
-    if (memberData.isNetworkPartitionDetectionEnabled())
+    if (memberData.isNetworkPartitionDetectionEnabled()) {
       flags |= NPD_ENABLED_BIT;
-    if (memberData.isPreferredForCoordinator())
+    }
+    if (memberData.isPreferredForCoordinator()) {
       flags |= COORD_ENABLED_BIT;
-    if (this.isPartial())
+    }
+    if (this.isPartial()) {
       flags |= PARTIAL_ID_BIT;
+    }
     // always write product version but enable reading from older versions
     // that do not have it
     flags |= VERSION_BIT;
@@ -654,12 +667,15 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     StaticSerialization.writeString(memberData.getHostName(), out);
 
     int flags = 0;
-    if (memberData.isNetworkPartitionDetectionEnabled())
+    if (memberData.isNetworkPartitionDetectionEnabled()) {
       flags |= NPD_ENABLED_BIT;
-    if (memberData.isPreferredForCoordinator())
+    }
+    if (memberData.isPreferredForCoordinator()) {
       flags |= COORD_ENABLED_BIT;
-    if (this.isPartial())
+    }
+    if (this.isPartial()) {
       flags |= PARTIAL_ID_BIT;
+    }
     // always write product version but enable reading from older versions
     // that do not have it
     flags |= VERSION_BIT;
@@ -707,12 +723,15 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     StaticSerialization.writeString(memberData.getHostName(), out);
 
     int flags = 0;
-    if (memberData.isNetworkPartitionDetectionEnabled())
+    if (memberData.isNetworkPartitionDetectionEnabled()) {
       flags |= NPD_ENABLED_BIT;
-    if (memberData.isPreferredForCoordinator())
+    }
+    if (memberData.isPreferredForCoordinator()) {
       flags |= COORD_ENABLED_BIT;
-    if (this.isPartial())
+    }
+    if (this.isPartial()) {
       flags |= PARTIAL_ID_BIT;
+    }
     out.writeByte((byte) (flags & 0xff));
 
     out.writeInt(memberData.getDirectChannelPort());
@@ -908,10 +927,12 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     out.writeInt(getMembershipPort());
 
     int flags = 0;
-    if (memberData.isNetworkPartitionDetectionEnabled())
+    if (memberData.isNetworkPartitionDetectionEnabled()) {
       flags |= NPD_ENABLED_BIT;
-    if (memberData.isPreferredForCoordinator())
+    }
+    if (memberData.isPreferredForCoordinator()) {
       flags |= COORD_ENABLED_BIT;
+    }
     flags |= PARTIAL_ID_BIT;
     out.writeByte((byte) (flags & 0xff));
 

@@ -58,8 +58,9 @@ public class Filter70 implements GatewayEventFilter, Serializable {
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof Filter70))
+    if (!(obj instanceof Filter70)) {
       return false;
+    }
     Filter70 filter = (Filter70) obj;
     return this.Id.equals(filter.Id);
   }

@@ -130,9 +130,10 @@ public class FlowController {
    */
   public void sendAck(DistributionManager dmgr, DistributedMember member, int windowId,
       String packetId) {
-    if (getLogger().fineEnabled())
+    if (getLogger().fineEnabled()) {
       getLogger().fine("SNP: Sending ACK for packet " + packetId + " on window " + windowId
           + " to member " + member);
+    }
 
     if (dmgr.getDistributionManagerId().equals(member)) {
       WindowImpl<?, ?> win = (WindowImpl<?, ?>) processors.retrieve(windowId);
@@ -154,8 +155,9 @@ public class FlowController {
    * @param member the data source
    */
   public void sendAbort(DistributionManager dmgr, int windowId, DistributedMember member) {
-    if (getLogger().fineEnabled())
+    if (getLogger().fineEnabled()) {
       getLogger().fine("SNP: Sending ABORT to member " + member + " for window " + windowId);
+    }
 
     if (dmgr.getDistributionManagerId().equals(member)) {
       WindowImpl<?, ?> win = (WindowImpl<?, ?>) processors.retrieve(windowId);
@@ -194,8 +196,9 @@ public class FlowController {
         @Override
         public void afterRemoteRegionCrash(RegionEvent<K, V> event) {
           if (event.getDistributedMember().equals(sink)) {
-            if (getLogger().fineEnabled())
+            if (getLogger().fineEnabled()) {
               getLogger().fine("SNP: " + sink + " has crashed, closing window");
+            }
 
             abort();
           }
@@ -274,9 +277,10 @@ public class FlowController {
 
     @Override
     protected void process(ClusterDistributionManager dm) {
-      if (getLogger().fineEnabled())
+      if (getLogger().fineEnabled()) {
         getLogger()
             .fine("SNP: Received ABORT on window " + windowId + " from member " + getSender());
+      }
 
       WindowImpl<?, ?> win =
           (WindowImpl<?, ?>) FlowController.getInstance().processors.retrieve(windowId);
@@ -332,9 +336,10 @@ public class FlowController {
 
     @Override
     protected void process(ClusterDistributionManager dm) {
-      if (getLogger().fineEnabled())
+      if (getLogger().fineEnabled()) {
         getLogger().fine("SNP: Received ACK for packet " + packetId + " on window " + windowId
             + " from member " + getSender());
+      }
 
       WindowImpl<?, ?> win =
           (WindowImpl<?, ?>) FlowController.getInstance().processors.retrieve(windowId);

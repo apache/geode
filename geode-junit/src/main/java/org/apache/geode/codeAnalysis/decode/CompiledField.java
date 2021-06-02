@@ -53,23 +53,31 @@ public class CompiledField implements Comparable {
   public String accessString() {
     StringBuffer result;
 
-    if (accessString != null)
+    if (accessString != null) {
       return accessString;
+    }
     result = new StringBuffer();
-    if ((access_flags & 0x0001) != 0)
+    if ((access_flags & 0x0001) != 0) {
       result.append("public ");
-    if ((access_flags & 0x0002) != 0)
+    }
+    if ((access_flags & 0x0002) != 0) {
       result.append("private ");
-    if ((access_flags & 0x0004) != 0)
+    }
+    if ((access_flags & 0x0004) != 0) {
       result.append("protected ");
-    if ((access_flags & 0x0008) != 0)
+    }
+    if ((access_flags & 0x0008) != 0) {
       result.append("static ");
-    if ((access_flags & 0x0010) != 0)
+    }
+    if ((access_flags & 0x0010) != 0) {
       result.append("final ");
-    if ((access_flags & 0x0040) != 0)
+    }
+    if ((access_flags & 0x0040) != 0) {
       result.append("volatile ");
-    if ((access_flags & 0x0080) != 0)
+    }
+    if ((access_flags & 0x0080) != 0) {
       result.append("transient ");
+    }
 
     accessString = result.toString();
     return accessString;
@@ -101,8 +109,9 @@ public class CompiledField implements Comparable {
   }
 
   public String signature() {
-    if (signature == null)
+    if (signature == null) {
       signature = accessString() + descriptor() + " " + name() + ";";
+    }
     return signature;
   }
 

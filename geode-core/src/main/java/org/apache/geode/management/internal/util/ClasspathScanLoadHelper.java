@@ -80,7 +80,8 @@ public class ClasspathScanLoadHelper implements AutoCloseable {
 
   @Override
   public void close() {
-    if (scanResult != null)
+    if (scanResult != null) {
       scanResult.close();
+    }
   }
 }

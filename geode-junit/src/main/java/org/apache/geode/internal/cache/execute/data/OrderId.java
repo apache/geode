@@ -61,11 +61,13 @@ public class OrderId implements DataSerializable {
   }
 
   public boolean equals(Object o) {
-    if (this == o)
+    if (this == o) {
       return true;
+    }
 
-    if (!(o instanceof OrderId))
+    if (!(o instanceof OrderId)) {
       return false;
+    }
 
     OrderId otherOrderId = (OrderId) o;
     return (otherOrderId.orderId.equals(orderId) && otherOrderId.custId.equals(custId));

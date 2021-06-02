@@ -75,8 +75,9 @@ public class ClusterManagementOperationResult<V extends OperationResult>
    */
   @JsonIgnore
   public CompletableFuture<V> getFutureResult() {
-    if (operationResult instanceof Dormant)
+    if (operationResult instanceof Dormant) {
       ((Dormant) operationResult).wakeUp();
+    }
     return operationResult;
   }
 

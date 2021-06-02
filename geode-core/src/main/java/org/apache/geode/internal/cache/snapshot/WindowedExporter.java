@@ -215,8 +215,9 @@ public class WindowedExporter<K, V> implements Exporter<K, V> {
 
         window.waitForOpening();
         rs.lastResult(new SnapshotPacket(window.getWindowId(), me, buffer));
-        if (getLogger().fineEnabled())
+        if (getLogger().fineEnabled()) {
           getLogger().fine("SNP: Sent all entries in region " + region.getName());
+        }
 
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
@@ -307,8 +308,9 @@ public class WindowedExporter<K, V> implements Exporter<K, V> {
     public void abort() {
       try {
         if (done.compareAndSet(false, true)) {
-          if (getLogger().fineEnabled())
+          if (getLogger().fineEnabled()) {
             getLogger().fine("SNP: Aborting export of region");
+          }
 
           entries.clear();
           entries.put(end);
@@ -360,9 +362,10 @@ public class WindowedExporter<K, V> implements Exporter<K, V> {
     public void endResults() {
       try {
         if (done.compareAndSet(false, true)) {
-          if (getLogger().fineEnabled())
+          if (getLogger().fineEnabled()) {
             getLogger()
                 .fine("SNP: All results received for export of region " + region.getName());
+          }
 
           entries.put(end);
         }

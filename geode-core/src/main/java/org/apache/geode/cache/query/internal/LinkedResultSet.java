@@ -80,9 +80,10 @@ public class LinkedResultSet extends java.util.LinkedHashSet
 
   @Override
   public void setElementType(ObjectType elementType) {
-    if (elementType instanceof StructType)
+    if (elementType instanceof StructType) {
       throw new IllegalArgumentException(
           "This collection does not support struct elements");
+    }
     this.elementType = elementType;
   }
 

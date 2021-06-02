@@ -68,18 +68,23 @@ public class BitCountExecutor extends StringExecutor {
 
     int start = (int) startL;
     int end = (int) endL;
-    if (start < 0)
+    if (start < 0) {
       start += value.length;
-    if (end < 0)
+    }
+    if (end < 0) {
       end += value.length;
+    }
 
-    if (start < 0)
+    if (start < 0) {
       start = 0;
-    if (end < 0)
+    }
+    if (end < 0) {
       end = 0;
+    }
 
-    if (end > value.length - 1)
+    if (end > value.length - 1) {
       end = value.length - 1;
+    }
 
     if (end < start || start >= value.length) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
@@ -87,9 +92,10 @@ public class BitCountExecutor extends StringExecutor {
     }
 
     long setBits = 0;
-    for (int j = start; j <= end; j++)
+    for (int j = start; j <= end; j++) {
       setBits += Integer.bitCount(0xFF & value[j]); // 0xFF keeps same bit sequence as the byte as
-                                                    // opposed to keeping the same value
+    }
+    // opposed to keeping the same value
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), setBits));
   }

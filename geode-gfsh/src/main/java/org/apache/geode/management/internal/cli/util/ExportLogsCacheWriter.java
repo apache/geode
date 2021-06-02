@@ -70,8 +70,9 @@ public class ExportLogsCacheWriter extends CacheWriterAdapter implements Seriali
     IOUtils.closeQuietly(currentOutputStream);
     currentOutputStream = null;
     currentFile = null;
-    if (isEmpty)
+    if (isEmpty) {
       return null;
+    }
     return completedFile;
   }
 }

@@ -61,8 +61,9 @@ public class GetMemberConfigInformationFunction extends CliFunction {
     memberConfigInfo
         .setGfePropsSetUsingApi(distConfigImpl.getConfigPropsFromSource(ConfigSource.api()));
 
-    if (!hideDefaults)
+    if (!hideDefaults) {
       memberConfigInfo.setGfePropsSetWithDefaults(distConfigImpl.getConfigPropsFromSource(null));
+    }
 
     memberConfigInfo.setGfePropsSetFromFile(distConfigImpl.getConfigPropsDefinedUsingFiles());
 
@@ -96,7 +97,7 @@ public class GetMemberConfigInformationFunction extends CliFunction {
     List<Map<String, String>> cacheServerAttributesList = new ArrayList<Map<String, String>>();
     List<CacheServer> cacheServers = cache.getCacheServers();
 
-    if (cacheServers != null)
+    if (cacheServers != null) {
       for (CacheServer cacheServer : cacheServers) {
         Map<String, String> cacheServerAttributes = new HashMap<String, String>();
 
@@ -120,11 +121,13 @@ public class GetMemberConfigInformationFunction extends CliFunction {
             Long.toString(cacheServer.getLoadPollInterval()));
         cacheServerAttributes.put("tcp-no-delay", Boolean.toString(cacheServer.getTcpNoDelay()));
 
-        if (hideDefaults)
+        if (hideDefaults) {
           removeDefaults(cacheServerAttributes, getCacheServerAttributesDefaultValues());
+        }
 
         cacheServerAttributesList.add(cacheServerAttributes);
       }
+    }
 
     memberConfigInfo.setCacheServerAttributes(cacheServerAttributesList);
 

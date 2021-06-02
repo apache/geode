@@ -291,12 +291,15 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
   @Override
   protected short computeCompressedShort() {
     short flags = super.computeCompressedShort();
-    if (this.posDup)
+    if (this.posDup) {
       flags |= POS_DUP;
-    if (this.bridgeContext != null)
+    }
+    if (this.bridgeContext != null) {
       flags |= HAS_BRIDGE_CONTEXT;
-    if (this.skipCallbacks)
+    }
+    if (this.skipCallbacks) {
       flags |= SKIP_CALLBACKS;
+    }
     return flags;
   }
 

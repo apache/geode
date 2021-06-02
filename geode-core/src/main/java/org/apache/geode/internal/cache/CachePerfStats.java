@@ -1108,14 +1108,16 @@ public class CachePerfStats {
 
   public void endPutAll(long start) {
     stats.incInt(putAllsId, 1);
-    if (clock.isEnabled())
+    if (clock.isEnabled()) {
       stats.incLong(putAllTimeId, getTime() - start);
+    }
   }
 
   public void endRemoveAll(long start) {
     stats.incInt(removeAllsId, 1);
-    if (clock.isEnabled())
+    if (clock.isEnabled()) {
       stats.incLong(removeAllTimeId, getTime() - start);
+    }
   }
 
   public void endQueryExecution(long executionTime) {

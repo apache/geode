@@ -280,10 +280,12 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
   @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
-    if (this.bridgeContext != null)
+    if (this.bridgeContext != null) {
       s |= HAS_BRIDGE_CONTEXT;
-    if (this.skipCallbacks)
+    }
+    if (this.skipCallbacks) {
       s |= SKIP_CALLBACKS;
+    }
     return s;
   }
 
@@ -546,10 +548,12 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
         }
       }
     } finally {
-      if (baseEvent != null)
+      if (baseEvent != null) {
         baseEvent.release();
-      if (op != null)
+      }
+      if (op != null) {
         op.freeOffHeapResources();
+      }
     }
 
     return true;

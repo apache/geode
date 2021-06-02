@@ -65,8 +65,9 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof PositionPdx))
+    if (!(o instanceof PositionPdx)) {
       return false;
+    }
     return this.secId.equals(((PositionPdx) o).secId);
   }
 

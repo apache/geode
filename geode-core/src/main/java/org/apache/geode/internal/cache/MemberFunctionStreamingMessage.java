@@ -283,8 +283,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       this.processorId = in.readInt();
       ReplyProcessor21.setMessageRPId(this.processorId);
     }
-    if ((flags & HAS_TX_ID) != 0)
+    if ((flags & HAS_TX_ID) != 0) {
       this.txUniqId = in.readInt();
+    }
     if ((flags & HAS_TX_MEMBERID) != 0) {
       this.txMemberId = DataSerializer.readObject(in);
     }
@@ -311,22 +312,29 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     super.toData(out, context);
 
     short flags = 0;
-    if (this.processorId != 0)
+    if (this.processorId != 0) {
       flags |= HAS_PROCESSOR_ID;
-    if (this.txUniqId != TXManagerImpl.NOTX)
+    }
+    if (this.txUniqId != TXManagerImpl.NOTX) {
       flags |= HAS_TX_ID;
-    if (this.txMemberId != null)
+    }
+    if (this.txMemberId != null) {
       flags |= HAS_TX_MEMBERID;
-    if (this.isReExecute)
+    }
+    if (this.isReExecute) {
       flags |= IS_REEXECUTE;
+    }
     out.writeShort(flags);
 
-    if (this.processorId != 0)
+    if (this.processorId != 0) {
       out.writeInt(this.processorId);
-    if (this.txUniqId != TXManagerImpl.NOTX)
+    }
+    if (this.txUniqId != TXManagerImpl.NOTX) {
       out.writeInt(this.txUniqId);
-    if (this.txMemberId != null)
+    }
+    if (this.txMemberId != null) {
       DataSerializer.writeObject(this.txMemberId, out);
+    }
 
     if (this.isFnSerializationReqd) {
       DataSerializer.writeObject(this.functionObject, out);
@@ -345,8 +353,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       return false;
     }
 
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     int msgNum = this.replyMsgNum;
     this.replyLastMsg = lastResult;
 

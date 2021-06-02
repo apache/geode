@@ -256,15 +256,19 @@ public class AutoSerializableJUnitTest {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       MyExternalizable other = (MyExternalizable) obj;
-      if (v != other.v)
+      if (v != other.v) {
         return false;
+      }
       return true;
     }
   }
@@ -361,53 +365,72 @@ public class AutoSerializableJUnitTest {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       PrimitiveObjectHolder other = (PrimitiveObjectHolder) obj;
       if (b == null) {
-        if (other.b != null)
+        if (other.b != null) {
           return false;
-      } else if (!b.equals(other.b))
+        }
+      } else if (!b.equals(other.b)) {
         return false;
+      }
       if (bool == null) {
-        if (other.bool != null)
+        if (other.bool != null) {
           return false;
-      } else if (!bool.equals(other.bool))
+        }
+      } else if (!bool.equals(other.bool)) {
         return false;
+      }
       if (c == null) {
-        if (other.c != null)
+        if (other.c != null) {
           return false;
-      } else if (!c.equals(other.c))
+        }
+      } else if (!c.equals(other.c)) {
         return false;
+      }
       if (d == null) {
-        if (other.d != null)
+        if (other.d != null) {
           return false;
-      } else if (!d.equals(other.d))
+        }
+      } else if (!d.equals(other.d)) {
         return false;
+      }
       if (f == null) {
-        if (other.f != null)
+        if (other.f != null) {
           return false;
-      } else if (!f.equals(other.f))
+        }
+      } else if (!f.equals(other.f)) {
         return false;
+      }
       if (i == null) {
-        if (other.i != null)
+        if (other.i != null) {
           return false;
-      } else if (!i.equals(other.i))
+        }
+      } else if (!i.equals(other.i)) {
         return false;
+      }
       if (l == null) {
-        if (other.l != null)
+        if (other.l != null) {
           return false;
-      } else if (!l.equals(other.l))
+        }
+      } else if (!l.equals(other.l)) {
         return false;
+      }
       if (s == null) {
-        if (other.s != null)
+        if (other.s != null) {
           return false;
-      } else if (!s.equals(other.s))
+        }
+      } else if (!s.equals(other.s)) {
         return false;
+      }
       return true;
     }
 
@@ -439,23 +462,30 @@ public class AutoSerializableJUnitTest {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       BigHolder other = (BigHolder) obj;
       if (bd == null) {
-        if (other.bd != null)
+        if (other.bd != null) {
           return false;
-      } else if (!bd.equals(other.bd))
+        }
+      } else if (!bd.equals(other.bd)) {
         return false;
+      }
       if (bi == null) {
-        if (other.bi != null)
+        if (other.bi != null) {
           return false;
-      } else if (!bi.equals(other.bi))
+        }
+      } else if (!bi.equals(other.bi)) {
         return false;
+      }
       return true;
     }
   }
@@ -478,18 +508,23 @@ public class AutoSerializableJUnitTest {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       CHMHolder other = (CHMHolder) obj;
       if (chm == null) {
-        if (other.chm != null)
+        if (other.chm != null) {
           return false;
-      } else if (!chm.equals(other.chm))
+        }
+      } else if (!chm.equals(other.chm)) {
         return false;
+      }
       return true;
     }
   }

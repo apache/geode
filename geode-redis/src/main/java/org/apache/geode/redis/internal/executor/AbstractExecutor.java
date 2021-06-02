@@ -95,46 +95,55 @@ public abstract class AbstractExecutor implements Executor {
 
   protected boolean removeEntry(ByteArrayWrapper key, RedisDataType type,
       ExecutionHandlerContext context) {
-    if (type == null || type == RedisDataType.REDIS_PROTECTED)
+    if (type == null || type == RedisDataType.REDIS_PROTECTED) {
       return false;
+    }
     RegionProvider rC = context.getRegionProvider();
     return rC.removeKey(key, type);
   }
 
   protected int getBoundedStartIndex(int index, int size) {
-    if (size < 0)
+    if (size < 0) {
       throw new IllegalArgumentException("Size < 0, really?");
-    if (index >= 0)
+    }
+    if (index >= 0) {
       return Math.min(index, size);
-    else
+    } else {
       return Math.max(index + size, 0);
+    }
   }
 
   protected int getBoundedEndIndex(int index, int size) {
-    if (size < 0)
+    if (size < 0) {
       throw new IllegalArgumentException("Size < 0, really?");
-    if (index >= 0)
+    }
+    if (index >= 0) {
       return Math.min(index, size);
-    else
+    } else {
       return Math.max(index + size, -1);
+    }
   }
 
   protected long getBoundedStartIndex(long index, long size) {
-    if (size < 0L)
+    if (size < 0L) {
       throw new IllegalArgumentException("Size < 0, really?");
-    if (index >= 0L)
+    }
+    if (index >= 0L) {
       return Math.min(index, size);
-    else
+    } else {
       return Math.max(index + size, 0);
+    }
   }
 
   protected long getBoundedEndIndex(long index, long size) {
-    if (size < 0L)
+    if (size < 0L) {
       throw new IllegalArgumentException("Size < 0, really?");
-    if (index >= 0L)
+    }
+    if (index >= 0L) {
       return Math.min(index, size);
-    else
+    } else {
       return Math.max(index + size, -1);
+    }
   }
 
   protected void respondBulkStrings(Command command, ExecutionHandlerContext context,

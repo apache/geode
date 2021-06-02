@@ -244,8 +244,9 @@ public class ConnectionPoolingJUnitTest {
           ex.printStackTrace();
         }
       }
-      if (numConn != maxPoolSize)
+      if (numConn != maxPoolSize) {
         fail("#### Error in filling the the connection pool from " + threadName);
+      }
       ThreadB.start();
       logger.debug(" AFTER starting THREADB");
       int numC = 0;
@@ -277,8 +278,9 @@ public class ConnectionPoolingJUnitTest {
           ex.printStackTrace();
         }
       }
-      if (numC != maxPoolSize)
+      if (numC != maxPoolSize) {
         fail("#### Error in returning all the connections to the  pool from " + threadName);
+      }
       logger.debug(" ****************Returned all connections " + threadName + "***********");
     }
   }
@@ -317,8 +319,9 @@ public class ConnectionPoolingJUnitTest {
             e.printStackTrace();
           }
         }
-        if (numConn2 != maxPoolSize)
+        if (numConn2 != maxPoolSize) {
           fail("#### Error in getting all connections from the " + threadName);
+        }
         logger.debug(" ****************GOT ALL connections " + threadName + "***********");
       } catch (Exception e1) {
         e1.printStackTrace();

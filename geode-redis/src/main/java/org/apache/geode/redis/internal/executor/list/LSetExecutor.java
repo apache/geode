@@ -68,8 +68,9 @@ public class LSetExecutor extends ListExecutor {
     }
 
     int listSize = keyRegion.size() - LIST_EMPTY_SIZE;
-    if (index < 0)
+    if (index < 0) {
       index += listSize;
+    }
     if (index < 0 || index > listSize) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INDEX));
       return;
@@ -85,8 +86,9 @@ public class LSetExecutor extends ListExecutor {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INDEX));
       return;
     }
-    if (index == listSize)
+    if (index == listSize) {
       indexKey++;
+    }
     keyRegion.put(indexKey, new ByteArrayWrapper(value));
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
   }

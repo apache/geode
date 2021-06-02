@@ -55,8 +55,9 @@ public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
       return;
     }
 
-    if (!timeUnitMillis())
+    if (!timeUnitMillis()) {
       timestamp = timestamp * millisInSecond;
+    }
 
     long currentTimeMillis = System.currentTimeMillis();
 
@@ -69,15 +70,17 @@ public class ExpireAtExecutor extends AbstractExecutor implements Extendable {
 
     boolean expirationSet = false;
 
-    if (rC.hasExpiration(wKey))
+    if (rC.hasExpiration(wKey)) {
       expirationSet = rC.modifyExpiration(wKey, delayMillis);
-    else
+    } else {
       expirationSet = rC.setExpiration(wKey, delayMillis);
+    }
 
-    if (expirationSet)
+    if (expirationSet) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), SET));
-    else
+    } else {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_SET));
+    }
   }
 
   protected boolean timeUnitMillis() {

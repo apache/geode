@@ -1513,8 +1513,9 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
                 + "|" + CommitReplyException.class.getName());
         origin.invoke(doTransaction);
       } finally {
-        if (ee != null)
+        if (ee != null) {
           ee.remove();
+        }
       }
 
       SerializableCallable allowCacheToShutdown = new SerializableCallable() {

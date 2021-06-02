@@ -30,10 +30,12 @@ public class SDiffExecutor extends SetOpExecutor {
   @Override
   protected Set<ByteArrayWrapper> setOp(Set<ByteArrayWrapper> firstSet,
       List<Set<ByteArrayWrapper>> setList) {
-    if (firstSet == null)
+    if (firstSet == null) {
       return null;
-    for (Set<ByteArrayWrapper> set : setList)
+    }
+    for (Set<ByteArrayWrapper> set : setList) {
       firstSet.removeAll(set);
+    }
     return firstSet;
   }
 

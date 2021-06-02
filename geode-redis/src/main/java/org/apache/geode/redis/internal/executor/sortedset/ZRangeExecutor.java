@@ -82,8 +82,9 @@ public class ZRangeExecutor extends SortedSetExecutor implements Extendable {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
       return;
     }
-    if (stop == sSetSize)
+    if (stop == sSetSize) {
       stop--;
+    }
     List<?> list;
     try {
       list = getRange(context, key, start, stop);
@@ -98,10 +99,11 @@ public class ZRangeExecutor extends SortedSetExecutor implements Extendable {
       int stop) throws Exception {
     Query query;
 
-    if (isReverse())
+    if (isReverse()) {
       query = getQuery(key, SortedSetQuery.ZRANGE, context);
-    else
+    } else {
       query = getQuery(key, SortedSetQuery.ZREVRANGE, context);
+    }
 
     Object[] params = {stop + 1};
 

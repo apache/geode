@@ -83,10 +83,11 @@ public class AddFreeItemToOrders implements Function {
     try {
       result = (SelectResults) query.execute(queryArgs);
 
-      if (result instanceof Collection<?>)
+      if (result instanceof Collection<?>) {
         for (Object item : result) {
           keys.add(item);
         }
+      }
     } catch (FunctionDomainException e) {
       cache.getLogger()
           .info("Caught FunctionDomainException while executing function AddFreeItemToOrders: "

@@ -72,10 +72,11 @@ public class ZRankExecutor extends SortedSetExecutor implements Extendable {
   private int getRange(ExecutionHandlerContext context, ByteArrayWrapper key,
       ByteArrayWrapper member, DoubleWrapper valueWrapper) throws Exception {
     Query query;
-    if (isReverse())
+    if (isReverse()) {
       query = getQuery(key, SortedSetQuery.ZREVRANK, context);
-    else
+    } else {
       query = getQuery(key, SortedSetQuery.ZRANK, context);
+    }
 
     Object[] params = {valueWrapper.score, valueWrapper.score, member};
 

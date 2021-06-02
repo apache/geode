@@ -102,8 +102,9 @@ public class ZRemRangeByLexExecutor extends SortedSetExecutor {
 
     for (ByteArrayWrapper entry : removeList) {
       Object oldVal = keyRegion.remove(entry);
-      if (oldVal != null)
+      if (oldVal != null) {
         numRemoved++;
+      }
     }
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
@@ -113,10 +114,11 @@ public class ZRemRangeByLexExecutor extends SortedSetExecutor {
       Region<ByteArrayWrapper, DoubleWrapper> keyRegion, ExecutionHandlerContext context,
       ByteArrayWrapper start, ByteArrayWrapper stop, boolean startInclusive, boolean stopInclusive)
       throws Exception {
-    if (start.equals(minus) && stop.equals(plus))
+    if (start.equals(minus) && stop.equals(plus)) {
       return new ArrayList<ByteArrayWrapper>(keyRegion.keySet());
-    else if (start.equals(plus) || stop.equals(minus))
+    } else if (start.equals(plus) || stop.equals(minus)) {
       return null;
+    }
 
     Query query;
     Object[] params;

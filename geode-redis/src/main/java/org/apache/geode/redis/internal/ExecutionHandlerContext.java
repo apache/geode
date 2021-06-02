@@ -100,8 +100,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public ExecutionHandlerContext(Channel ch, Cache cache, RegionProvider regionProvider,
       GeodeRedisServer server, byte[] pwd, KeyRegistrar keyRegistrar) {
     this.keyRegistrar = keyRegistrar;
-    if (ch == null || cache == null || regionProvider == null || server == null)
+    if (ch == null || cache == null || regionProvider == null || server == null) {
       throw new IllegalArgumentException("Only the authentication password may be null");
+    }
     this.cache = cache;
     this.server = server;
     this.logger = cache.getLogger();
@@ -161,24 +162,25 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private ByteBuf getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
     ByteBuf response;
-    if (cause instanceof RedisDataTypeMismatchException)
+    if (cause instanceof RedisDataTypeMismatchException) {
       response = Coder.getWrongTypeResponse(this.byteBufAllocator, cause.getMessage());
-    else if (cause instanceof DecoderException
-        && cause.getCause() instanceof RedisCommandParserException)
+    } else if (cause instanceof DecoderException
+        && cause.getCause() instanceof RedisCommandParserException) {
       response =
           Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.PARSING_EXCEPTION_MESSAGE);
-    else if (cause instanceof RegionCreationException) {
+    } else if (cause instanceof RegionCreationException) {
       this.logger.error(cause);
       response =
           Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.ERROR_REGION_CREATION);
-    } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException)
+    } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException) {
       response =
           Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.SERVER_ERROR_SHUTDOWN);
-    else if (cause instanceof IllegalStateException) {
+    } else if (cause instanceof IllegalStateException) {
       response = Coder.getErrorResponse(this.byteBufAllocator, cause.getMessage());
     } else {
-      if (this.logger.errorEnabled())
+      if (this.logger.errorEnabled()) {
         this.logger.error("GeodeRedisServer-Unexpected error handler for " + ctx.channel(), cause);
+      }
       response = Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.SERVER_ERROR_MESSAGE);
     }
     return response;
@@ -186,8 +188,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) {
-    if (logger.fineEnabled())
+    if (logger.fineEnabled()) {
       logger.fine("GeodeRedisServer-Connection closing with " + ctx.channel().remoteAddress());
+    }
     ctx.channel().close();
     ctx.close();
   }
@@ -200,10 +203,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         this.server.shutdown();
         return;
       }
-      if (hasTransaction() && !(exec instanceof TransactionExecutor))
+      if (hasTransaction() && !(exec instanceof TransactionExecutor)) {
         executeWithTransaction(ctx, exec, command);
-      else
+      } else {
         executeWithoutTransaction(exec, command);
+      }
 
       if (hasTransaction() && command.getCommandType() != RedisCommandType.MULTI) {
         writeToChannel(
@@ -244,8 +248,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       } catch (Exception e) {
         cause = e;
         if (e instanceof RegionDestroyedException || e instanceof RegionNotFoundException
-            || e.getCause() instanceof QueryInvocationTargetException)
+            || e.getCause() instanceof QueryInvocationTargetException) {
           Thread.sleep(WAIT_REGION_DSTRYD_MILLIS);
+        }
       }
     }
     throw cause;
@@ -308,8 +313,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     if (this.transactionQueue != null) {
       for (Command c : this.transactionQueue) {
         ByteBuf r = c.getResponse();
-        if (r != null)
+        if (r != null) {
           r.release();
+        }
       }
       this.transactionQueue.clear();
     }
@@ -321,8 +327,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @return Command queue
    */
   public Queue<Command> getTransactionQueue() {
-    if (this.transactionQueue == null)
+    if (this.transactionQueue == null) {
       this.transactionQueue = new ConcurrentLinkedQueue<Command>();
+    }
     return this.transactionQueue;
   }
 

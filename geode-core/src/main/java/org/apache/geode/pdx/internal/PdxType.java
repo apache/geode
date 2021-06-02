@@ -208,8 +208,9 @@ public class PdxType implements DataSerializable {
    * @return true if two pdx types are compatible.
    */
   public boolean compatible(PdxType other) {
-    if (other == null)
+    if (other == null) {
       return false;
+    }
     if (!getClassName().equals(other.getClassName())) {
       return false;
     }

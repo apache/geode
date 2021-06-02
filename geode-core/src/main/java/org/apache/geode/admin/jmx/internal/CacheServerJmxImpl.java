@@ -114,8 +114,9 @@ public class CacheServerJmxImpl extends CacheServerImpl
 
     // Refresh Interval
     AdminDistributedSystemJmxImpl sysJmx = (AdminDistributedSystemJmxImpl) system;
-    if (sysJmx.getRefreshInterval() > 0)
+    if (sysJmx.getRefreshInterval() > 0) {
       this.refreshInterval = sysJmx.getRefreshInterval();
+    }
   }
 
   @Override
@@ -275,8 +276,9 @@ public class CacheServerJmxImpl extends CacheServerImpl
     boolean isRegistered = MBeanUtil.isRefreshNotificationRegistered(this,
         RefreshNotificationType.SYSTEM_MEMBER_CONFIG);
 
-    if (isRegistered && (getRefreshInterval() == refreshInterval))
+    if (isRegistered && (getRefreshInterval() == refreshInterval)) {
       return;
+    }
 
     this.refreshInterval = Helper.setAndReturnRefreshInterval(this, refreshInterval);
   }

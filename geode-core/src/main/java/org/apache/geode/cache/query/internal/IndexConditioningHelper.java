@@ -234,8 +234,9 @@ class IndexConditioningHelper {
         }
       }
       boolean cutDownNeeded = unMappedFields > 0;
-      if (!cutDownNeeded)
+      if (!cutDownNeeded) {
         this.checkList = null;
+      }
       /*
        * indexReults = QueryUtils.cutDownAndExpandIndexResults(indexReults, indexFieldToItrsMapping,
        * expansionList, finalList, context, checkList, iterOperands);

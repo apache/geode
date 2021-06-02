@@ -44,8 +44,9 @@ public class TTLExecutor extends AbstractExecutor implements Extendable {
     RegionProvider rC = context.getRegionProvider();
     boolean exists = false;
     RedisDataType val = context.getKeyRegistrar().getType(key);
-    if (val != null)
+    if (val != null) {
       exists = true;
+    }
 
     if (!exists) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
@@ -58,8 +59,9 @@ public class TTLExecutor extends AbstractExecutor implements Extendable {
       return;
     }
 
-    if (!timeUnitMillis())
+    if (!timeUnitMillis()) {
       ttl = ttl / millisInSecond;
+    }
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), ttl));
   }

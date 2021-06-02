@@ -471,8 +471,9 @@ public class ConnectionTable {
         result = null;
       }
     }
-    if (result != null)
+    if (result != null) {
       return result;
+    }
 
     // OK, we have to create a new connection.
     result = Connection.createSender(owner.getMembership(), this, true, id, false, startTime,
@@ -763,13 +764,15 @@ public class ConnectionTable {
     }
     boolean needsRemoval = false;
     synchronized (orderedConnectionMap) {
-      if (orderedConnectionMap.get(memberID) != null)
+      if (orderedConnectionMap.get(memberID) != null) {
         needsRemoval = true;
+      }
     }
     if (!needsRemoval) {
       synchronized (unorderedConnectionMap) {
-        if (unorderedConnectionMap.get(memberID) != null)
+        if (unorderedConnectionMap.get(memberID) != null) {
           needsRemoval = true;
+        }
       }
     }
     if (!needsRemoval) {

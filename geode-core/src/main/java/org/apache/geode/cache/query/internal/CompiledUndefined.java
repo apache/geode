@@ -184,8 +184,9 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     PlanInfo result = new PlanInfo();
     IndexInfo[] indexInfo = getIndexInfo(context);
-    if (indexInfo == null)
+    if (indexInfo == null) {
       return result;
+    }
     Support.Assert(indexInfo.length == 1,
         "For a CompiledUndefined  we cannot have a join of two indexes. There should be only a single index to use");
     result.indexes.add(indexInfo[0]._index);
@@ -205,8 +206,9 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
         return indexInfo;
       }
     }
-    if (!IndexUtils.indexesEnabled)
+    if (!IndexUtils.indexesEnabled) {
       return null;
+    }
     // TODO:Asif : Check if the condition is such that Primary Key Index is used
     // & its key is DEFINED
     // , then are we returning all the values of the region ?
@@ -240,10 +242,11 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     clauseBuffer.insert(0, ')');
     _value.generateCanonicalizedExpression(clauseBuffer, context);
-    if (_is_defined)
+    if (_is_defined) {
       clauseBuffer.insert(0, "IS_DEFINED(");
-    else
+    } else {
       clauseBuffer.insert(0, "IS_UNDEFINED(");
+    }
   }
 
   // _indexInfo is a transient field

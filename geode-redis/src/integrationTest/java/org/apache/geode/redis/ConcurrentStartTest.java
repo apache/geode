@@ -91,8 +91,9 @@ public class ConcurrentStartTest {
       t.start();
       threads[i] = t;
     }
-    for (Thread t : threads)
+    for (Thread t : threads) {
       t.join();
+    }
     this.cache = GemFireCacheImpl.getInstance();
     assertFalse(this.cache.isClosed());
   }

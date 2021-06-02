@@ -733,13 +733,15 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     }
     ea = this.partitionedRegion.getAttributes().getRegionIdleTimeout();
     if (ea != null) {
-      if (ea.getAction() != ExpirationAction.DESTROY)
+      if (ea.getAction() != ExpirationAction.DESTROY) {
         factory.setRegionIdleTimeout(ea);
+      }
     }
     ea = this.partitionedRegion.getAttributes().getRegionTimeToLive();
     if (ea != null) {
-      if (ea.getAction() != ExpirationAction.DESTROY)
+      if (ea.getAction() != ExpirationAction.DESTROY) {
         factory.setRegionTimeToLive(ea);
+      }
     }
     CustomExpiry ce = this.partitionedRegion.getAttributes().getCustomEntryIdleTimeout();
     if (ce != null) {

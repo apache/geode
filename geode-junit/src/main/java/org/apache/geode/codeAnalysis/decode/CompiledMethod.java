@@ -52,25 +52,34 @@ public class CompiledMethod implements Comparable {
   public String accessString() {
     StringBuffer result;
 
-    if (accessString != null)
+    if (accessString != null) {
       return accessString;
+    }
     result = new StringBuffer();
-    if ((access_flags & 0x0001) != 0)
+    if ((access_flags & 0x0001) != 0) {
       result.append("public ");
-    if ((access_flags & 0x0002) != 0)
+    }
+    if ((access_flags & 0x0002) != 0) {
       result.append("private ");
-    if ((access_flags & 0x0004) != 0)
+    }
+    if ((access_flags & 0x0004) != 0) {
       result.append("protected ");
-    if ((access_flags & 0x0008) != 0)
+    }
+    if ((access_flags & 0x0008) != 0) {
       result.append("static ");
-    if ((access_flags & 0x0010) != 0)
+    }
+    if ((access_flags & 0x0010) != 0) {
       result.append("final ");
-    if ((access_flags & 0x0020) != 0)
+    }
+    if ((access_flags & 0x0020) != 0) {
       result.append("synchronized ");
-    if ((access_flags & 0x0100) != 0)
+    }
+    if ((access_flags & 0x0100) != 0) {
       result.append("native ");
-    if ((access_flags & 0x0400) != 0)
+    }
+    if ((access_flags & 0x0400) != 0) {
       result.append("abstract ");
+    }
     // if ((access_flags & 0x0800) != 0)
     // result.append("strict ");
     // if ((access_flags & 0x1000) != 0)
@@ -110,21 +119,24 @@ public class CompiledMethod implements Comparable {
       argCount = ((CpUtf8) myclass.constant_pool[descriptor_index]).argCount();
       for (idx = 1; idx <= argCount; idx++) {
         str = ((CpUtf8) myclass.constant_pool[descriptor_index]).decodeClassName(idx);
-        if (args == null)
+        if (args == null) {
           args = str;
-        else
+        } else {
           args = args + ", " + str;
+        }
       }
     }
-    if (args == null)
+    if (args == null) {
       args = "";
+    }
     return args;
   }
 
 
   public String signature() {
-    if (signature == null)
+    if (signature == null) {
       signature = accessString() + descriptor() + " " + name() + "( " + args() + " );";
+    }
     return signature;
   }
 

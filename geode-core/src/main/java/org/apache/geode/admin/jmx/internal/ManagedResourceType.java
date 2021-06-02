@@ -182,18 +182,23 @@ public class ManagedResourceType implements java.io.Serializable {
    */
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof ManagedResourceType))
+    }
+    if (!(other instanceof ManagedResourceType)) {
       return false;
+    }
     final ManagedResourceType that = (ManagedResourceType) other;
 
-    if (!StringUtils.equals(this.name, that.name))
+    if (!StringUtils.equals(this.name, that.name)) {
       return false;
-    if (this.clazz != that.clazz && !(this.clazz != null && this.clazz.equals(that.clazz)))
+    }
+    if (this.clazz != that.clazz && !(this.clazz != null && this.clazz.equals(that.clazz))) {
       return false;
+    }
 
     return true;
   }

@@ -185,10 +185,12 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     GemFireVM vm = getGemFireVM();
     if (vm != null) {
       String[] log = vm.getSystemLogs();
-      if (log != null && log.length > 0)
+      if (log != null && log.length > 0) {
         mainTail = log[0];
-      if (log != null && log.length > 1)
+      }
+      if (log != null && log.length > 1) {
         childTail = log[1];
+      }
     }
 
     if (childTail == null && mainTail == null) {
@@ -210,16 +212,18 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   @Override
   public java.util.Properties getLicense() {
     GemFireVM vm = getGemFireVM();
-    if (vm == null)
+    if (vm == null) {
       return null;
+    }
     return new Properties();
   }
 
   @Override
   public String getVersion() {
     GemFireVM vm = getGemFireVM();
-    if (vm == null)
+    if (vm == null) {
       return null;
+    }
     return vm.getVersionInfo();
   }
 
@@ -256,8 +260,9 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   @Override
   public SystemMemberCache getCache() throws org.apache.geode.admin.AdminException {
     GemFireVM vm = getGemFireVM(); // fix for bug 33505
-    if (vm == null)
+    if (vm == null) {
       return null;
+    }
     try {
       return createSystemMemberCache(vm);
 
@@ -272,8 +277,9 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   @Override
   public void refreshConfig() throws org.apache.geode.admin.AdminException {
     GemFireVM vm = getGemFireVM();
-    if (vm == null)
+    if (vm == null) {
       return;
+    }
     refreshConfig(vm.getConfig());
   }
 

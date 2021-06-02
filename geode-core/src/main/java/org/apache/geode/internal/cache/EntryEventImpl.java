@@ -866,8 +866,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   @Released(ENTRY_EVENT_NEW_VALUE)
   protected void basicSetNewValue(@Retained(ENTRY_EVENT_NEW_VALUE) Object v,
       boolean clearCachedSerializedAndBytes) {
-    if (v == this.newValue)
+    if (v == this.newValue) {
       return;
+    }
     if (mayHaveOffHeapReferences()) {
       if (this.offHeapOk) {
         OffHeapHelper.releaseAndTrackOwner(this.newValue, this);
@@ -2033,8 +2034,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   }
 
   public static Object deserialize(byte[] bytes, Version version, ByteArrayDataInput in) {
-    if (bytes == null)
+    if (bytes == null) {
       return null;
+    }
     try {
       return BlobHelper.deserializeBlob(bytes, version, in);
     } catch (IOException e) {
@@ -2054,8 +2056,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * off-heap address.
    */
   public static @Unretained Object deserializeOffHeap(StoredObject bytes) {
-    if (bytes == null)
+    if (bytes == null) {
       return null;
+    }
     try {
       return BlobHelper.deserializeOffHeapBlob(bytes);
     } catch (IOException e) {
@@ -2085,10 +2088,11 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * @throws IllegalArgumentException If <code>obj</code> should not be serialized
    */
   public static byte[] serialize(Object obj, Version version) {
-    if (obj == null || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj))
+    if (obj == null || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj)) {
       throw new IllegalArgumentException(
           String.format("Must not serialize %s in this context.",
               obj));
+    }
     try {
       return BlobHelper.serializeToBlob(obj, version);
     } catch (IOException e) {
@@ -2111,9 +2115,10 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    */
   public static void fillSerializedValue(BytesAndBitsForCompactor wrapper, Object obj,
       byte userBits) {
-    if (obj == null || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj))
+    if (obj == null || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj)) {
       throw new IllegalArgumentException(
           String.format("Must not serialize %s in this context.", obj));
+    }
     try {
       HeapDataOutputStream hdos = null;
       if (wrapper.getBytes().length < 32) {
@@ -2821,8 +2826,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * Return true if this event was marked as having its callbacks invoked by the current thread.
    */
   public boolean getCallbacksInvokedByCurrentThread() {
-    if (this.invokeCallbacksThread == null)
+    if (this.invokeCallbacksThread == null) {
       return false;
+    }
     return Thread.currentThread().equals(this.invokeCallbacksThread);
   }
 
@@ -2876,8 +2882,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   @Released({ENTRY_EVENT_NEW_VALUE, ENTRY_EVENT_OLD_VALUE})
   public void release() {
     // noop if already freed or values can not be off-heap
-    if (!this.offHeapOk)
+    if (!this.offHeapOk) {
       return;
+    }
     if (!mayHaveOffHeapReferences()) {
       return;
     }

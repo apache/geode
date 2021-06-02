@@ -71,8 +71,9 @@ public class ZRemRangeByRankExecutor extends SortedSetExecutor {
 
     startRank = getBoundedStartIndex(startRank, sSetSize);
     stopRank = getBoundedEndIndex(stopRank, sSetSize);
-    if (stopRank > sSetSize - 1)
+    if (stopRank > sSetSize - 1) {
       stopRank = sSetSize - 1;
+    }
 
     if (startRank > stopRank) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
@@ -95,16 +96,19 @@ public class ZRemRangeByRankExecutor extends SortedSetExecutor {
     if (removeList != null) {
       for (Object entry : removeList) {
         ByteArrayWrapper removeKey;
-        if (entry instanceof Entry)
+        if (entry instanceof Entry) {
           removeKey = (ByteArrayWrapper) ((Entry<?, ?>) entry).getKey();
-        else
+        } else {
           removeKey = (ByteArrayWrapper) ((Struct) entry).getFieldValues()[0];
+        }
         Object oldVal = keyRegion.remove(removeKey);
-        if (oldVal != null)
+        if (oldVal != null) {
           numRemoved++;
+        }
       }
-      if (keyRegion.isEmpty())
+      if (keyRegion.isEmpty()) {
         context.getRegionProvider().removeKey(key);
+      }
     }
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
   }

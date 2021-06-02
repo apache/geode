@@ -2894,7 +2894,8 @@ public class CompiledJunctionInternalsJUnitTest {
   public void tearDown() throws Exception {
     CacheUtils.closeCache();
     IndexManager indexManager = ((LocalRegion) region).getIndexManager();
-    if (indexManager != null)
+    if (indexManager != null) {
       indexManager.destroy();
+    }
   }
 }

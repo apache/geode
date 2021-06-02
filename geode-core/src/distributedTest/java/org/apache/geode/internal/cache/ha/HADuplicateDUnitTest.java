@@ -130,8 +130,9 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (waitFlag)
+        if (waitFlag) {
           fail("test failed");
+        }
       }
     });
 
@@ -139,8 +140,9 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
     client1.invoke(new CacheSerializableRunnable("validateDuplicates") {
       @Override
       public void run2() throws CacheException {
-        if (!isEventDuplicate)
+        if (!isEventDuplicate) {
           fail(" Not all duplicates received");
+        }
 
       }
     });
@@ -287,8 +289,9 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
     @Override
     public void afterUpdate(EntryEvent event) {
       Object value = storeEvents.get(event.getKey());
-      if (value == null)
+      if (value == null) {
         isEventDuplicate = false;
+      }
       synchronized (dummyObj) {
         try {
           put_counter++;

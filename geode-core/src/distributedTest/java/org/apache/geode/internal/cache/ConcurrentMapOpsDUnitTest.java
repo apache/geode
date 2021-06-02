@@ -1456,8 +1456,9 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public boolean equals(Object obj) {
-      if (!(obj instanceof CustomerDelta))
+      if (!(obj instanceof CustomerDelta)) {
         return false;
+      }
       CustomerDelta other = (CustomerDelta) obj;
       return this.name.equals(other.name) && this.address.equals(other.address);
     }

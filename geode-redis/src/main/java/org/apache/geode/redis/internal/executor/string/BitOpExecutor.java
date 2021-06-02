@@ -62,20 +62,21 @@ public class BitOpExecutor extends StringExecutor {
         values[0] = val;
         values[i - 3] = tmp;
       }
-      if (i == 3 && operation.equalsIgnoreCase("NOT"))
+      if (i == 3 && operation.equalsIgnoreCase("NOT")) {
         break;
+      }
     }
 
 
-    if (operation.equals("AND"))
+    if (operation.equals("AND")) {
       and(context, r, destKey, values, maxLength);
-    else if (operation.equals("OR"))
+    } else if (operation.equals("OR")) {
       or(context, r, destKey, values, maxLength);
-    else if (operation.equals("XOR"))
+    } else if (operation.equals("XOR")) {
       xor(context, r, destKey, values, maxLength);
-    else if (operation.equals("NOT"))
+    } else if (operation.equals("NOT")) {
       not(context, r, destKey, values, maxLength);
-    else {
+    } else {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NO_SUCH_OP));
       return;
     }
@@ -91,10 +92,11 @@ public class BitOpExecutor extends StringExecutor {
       for (int j = 1; j < values.length; j++) {
         if (values[j] == null) {
           break outer;
-        } else if (i < values[j].length)
+        } else if (i < values[j].length) {
           b &= values[j][i];
-        else
+        } else {
           b &= 0;
+        }
       }
       dest[i] = b;
     }
@@ -109,10 +111,11 @@ public class BitOpExecutor extends StringExecutor {
       byte b = values[0][i];
       for (int j = 1; j < values.length; j++) {
         byte[] cA = values[j];
-        if (cA != null && i < cA.length)
+        if (cA != null && i < cA.length) {
           b |= cA[i];
-        else
+        } else {
           b |= 0;
+        }
       }
       dest[i] = b;
     }
@@ -127,10 +130,11 @@ public class BitOpExecutor extends StringExecutor {
       byte b = values[0][i];
       for (int j = 1; j < values.length; j++) {
         byte[] cA = values[j];
-        if (cA != null && i < cA.length)
+        if (cA != null && i < cA.length) {
           b ^= cA[i];
-        else
+        } else {
           b ^= 0;
+        }
       }
       dest[i] = b;
     }
@@ -143,10 +147,11 @@ public class BitOpExecutor extends StringExecutor {
     byte[] dest = new byte[max];
     byte[] cA = values[0];
     for (int i = 0; i < max; i++) {
-      if (cA == null)
+      if (cA == null) {
         dest[i] = ~0;
-      else
+      } else {
         dest[i] = (byte) (~cA[i] & 0xFF);
+      }
     }
     checkAndSetDataType(destKey, context);
     r.put(destKey, new ByteArrayWrapper(dest));

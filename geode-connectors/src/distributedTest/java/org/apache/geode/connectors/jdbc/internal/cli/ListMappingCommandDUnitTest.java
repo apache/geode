@@ -75,8 +75,9 @@ public class ListMappingCommandDUnitTest implements Serializable {
 
   private void executeSql(String sql) {
     for (MemberVM server : Arrays.asList(server1, server2, server3, server4)) {
-      if (server == null)
+      if (server == null) {
         continue;
+      }
       server.invoke(() -> {
         try {
           DataSource ds = JNDIInvoker.getDataSource("connection");

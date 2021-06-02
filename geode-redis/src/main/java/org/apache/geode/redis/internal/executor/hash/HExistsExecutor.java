@@ -54,10 +54,11 @@ public class HExistsExecutor extends HashExecutor {
 
     boolean hasField = keyRegion.containsKey(field);
 
-    if (hasField)
+    if (hasField) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
-    else
+    } else {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
+    }
 
   }
 

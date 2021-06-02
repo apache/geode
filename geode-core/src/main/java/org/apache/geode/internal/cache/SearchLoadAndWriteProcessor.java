@@ -507,8 +507,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   /** perform a net-search, setting this.result to the object found in the search */
   private void netSearchForBlob() throws TimeoutException {
-    if (this.netSearchDone)
+    if (this.netSearchDone) {
       return;
+    }
     this.netSearchDone = true;
     CachePerfStats stats = region.getCachePerfStats();
     long start = 0;
@@ -588,8 +589,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           waitForObject2(this.remainingTimeout);
           if (this.selectedNodeDead && remoteGetInProgress) {
             sendNetSearchRequest();
-          } else
+          } else {
             done = true;
+          }
         } while (!done);
 
         if (this.result != null) {
@@ -671,8 +673,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       } finally {
         // The lock will not actually be released until release is
         // called on this processor
-        if (!locked)
+        if (!locked) {
           this.lock = null;
+        }
       }
     }
     if (scope.isDistributed()) {
@@ -689,8 +692,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   }
 
   Object doNetLoad() throws CacheLoaderException, TimeoutException {
-    if (this.netLoadDone)
+    if (this.netLoadDone) {
       return null;
+    }
     this.netLoadDone = true;
     if (advisor != null) {
       Set loadCandidatesSet = advisor.adviseNetLoad();
@@ -840,16 +844,19 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         }
       }
       if (op == Operation.REPLACE) {
-        if (result == r)
+        if (result == r) {
           result = new EntryEventImpl(r);
+        }
         result.setOperation(Operation.UPDATE);
       } else if (op == Operation.PUT_IF_ABSENT) {
-        if (result == r)
+        if (result == r) {
           result = new EntryEventImpl(r);
+        }
         result.setOperation(Operation.CREATE);
       } else if (op == Operation.REMOVE) {
-        if (result == r)
+        if (result == r) {
           result = new EntryEventImpl(r);
+        }
         result.setOperation(Operation.DESTROY);
       }
       return result;
@@ -1043,8 +1050,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             // just fall through since we must be shutting down.
           }
         }
-        if (responseQueue == null)
+        if (responseQueue == null) {
           responseQueue = new LinkedList();
+        }
         if (logger.isDebugEnabled()) {
           logger.debug("Saving isPresent response, requestInProgress {}", sender);
         }
@@ -1442,14 +1450,18 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       super.toData(out, context);
 
       short flags = 0;
-      if (this.processorId != 0)
+      if (this.processorId != 0) {
         flags |= HAS_PROCESSOR_ID;
-      if (this.ttl != 0)
+      }
+      if (this.ttl != 0) {
         flags |= HAS_TTL;
-      if (this.idleTime != 0)
+      }
+      if (this.idleTime != 0) {
         flags |= HAS_IDLE_TIME;
-      if (this.alwaysSendResult)
+      }
+      if (this.alwaysSendResult) {
         flags |= ALWAYS_SEND_RESULT;
+      }
       out.writeShort(flags);
 
       if (this.processorId != 0) {
@@ -1806,12 +1818,15 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       super.toData(out, context);
 
       short flags = 0;
-      if (this.processorId != 0)
+      if (this.processorId != 0) {
         flags |= HAS_PROCESSOR_ID;
-      if (this.ttl != 0)
+      }
+      if (this.ttl != 0) {
         flags |= HAS_TTL;
-      if (this.idleTime != 0)
+      }
+      if (this.idleTime != 0) {
         flags |= HAS_IDLE_TIME;
+      }
       out.writeShort(flags);
 
       if (this.processorId != 0) {
@@ -2074,16 +2089,21 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       }
       out.writeLong(this.lastModified);
       byte booleans = 0;
-      if (this.isSerialized)
+      if (this.isSerialized) {
         booleans |= SERIALIZED;
-      if (this.requestorTimedOut)
+      }
+      if (this.requestorTimedOut) {
         booleans |= REQUESTOR_TIMEOUT;
-      if (this.authoritative)
+      }
+      if (this.authoritative) {
         booleans |= AUTHORATIVE;
-      if (this.versionTag != null)
+      }
+      if (this.versionTag != null) {
         booleans |= VERSIONED;
-      if (this.versionTag instanceof DiskVersionTag)
+      }
+      if (this.versionTag instanceof DiskVersionTag) {
         booleans |= PERSISTENT;
+      }
       out.writeByte(booleans);
       if (this.versionTag != null) {
         InternalDataSerializer.invokeToData(this.versionTag, out);

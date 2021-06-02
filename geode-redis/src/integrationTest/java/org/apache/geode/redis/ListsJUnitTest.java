@@ -233,8 +233,9 @@ public class ListsJUnitTest {
   private String randString() {
     int length = rand.nextInt(8) + 5;
     StringBuilder rString = new StringBuilder();
-    for (int i = 0; i < length; i++)
+    for (int i = 0; i < length; i++) {
       rString.append((char) (rand.nextInt(57) + 65));
+    }
     // return rString.toString();
     return Long.toHexString(Double.doubleToLongBits(Math.random()));
   }

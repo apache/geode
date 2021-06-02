@@ -798,14 +798,15 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
 
   // to validate updates in listener
   private static void validateUpdates(EntryEvent event, Object obj, String str) {
-    if (obj instanceof String)
+    if (obj instanceof String) {
       assertTrue(str + " update missed ",
           ((DeltaTestImpl) event.getNewValue()).getStr().equals((String) obj));
-    else if (obj instanceof Integer)
+    } else if (obj instanceof Integer) {
       assertTrue(str + " update missed ",
           ((DeltaTestImpl) event.getNewValue()).getIntVar() == (Integer) obj);
-    else
+    } else {
       error = true;
+    }
   }
 
   /*

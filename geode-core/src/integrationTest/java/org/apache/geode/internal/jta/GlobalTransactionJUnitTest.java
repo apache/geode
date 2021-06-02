@@ -73,9 +73,10 @@ public class GlobalTransactionJUnitTest {
     Context ctx = cache.getJNDIContext();
     GemFireBasicDataSource ds = (GemFireBasicDataSource) ctx.lookup("java:/SimpleDataSource");
     Connection conn = ds.getConnection();
-    if (conn == null)
+    if (conn == null) {
       fail(
           "DataSourceFactoryTest-testGetSimpleDataSource() Error in creating the GemFireBasicDataSource");
+    }
   }
 
   @Test
@@ -103,8 +104,9 @@ public class GlobalTransactionJUnitTest {
       } catch (SQLException e) {
         exceptionoccurred = true;
       }
-      if (exceptionoccurred)
+      if (exceptionoccurred) {
         fail("SQLException occurred while trying to enlist resource");
+      }
       utx.rollback();
     } catch (Exception e) {
       try {
@@ -129,8 +131,9 @@ public class GlobalTransactionJUnitTest {
       } catch (RollbackException e) {
         exceptionoccurred = true;
       }
-      if (exceptionoccurred)
+      if (exceptionoccurred) {
         fail("exception occurred while trying to register synchronization ");
+      }
       utx.rollback();
     } catch (Exception e) {
       try {
@@ -157,8 +160,9 @@ public class GlobalTransactionJUnitTest {
       } catch (SQLException e) {
         exceptionoccurred = true;
       }
-      if (!exceptionoccurred)
+      if (!exceptionoccurred) {
         fail("SQLException not occurred although the transaction was marked for rollback");
+      }
       utx.rollback();
     } catch (Exception e) {
       try {
@@ -185,8 +189,9 @@ public class GlobalTransactionJUnitTest {
       } catch (RollbackException e) {
         exceptionoccurred = true;
       }
-      if (!exceptionoccurred)
+      if (!exceptionoccurred) {
         fail("RollbackException not occurred although the transaction was marked for rollback");
+      }
       utx.rollback();
     } catch (Exception e) {
       try {
@@ -204,8 +209,9 @@ public class GlobalTransactionJUnitTest {
     utx.begin();
     tm.suspend();
     Transaction txn1 = tm.getTransaction();
-    if (txn1 != null)
+    if (txn1 != null) {
       fail("suspend failed to suspend the transaction");
+    }
   }
 
   @Test
@@ -214,8 +220,9 @@ public class GlobalTransactionJUnitTest {
     Transaction txn = tm.getTransaction();
     Transaction txn1 = tm.suspend();
     tm.resume(txn1);
-    if (txn != tm.getTransaction())
+    if (txn != tm.getTransaction()) {
       fail("resume failed ");
+    }
     utx.commit();
   }
 }

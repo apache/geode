@@ -125,27 +125,36 @@ public class InstallViewMessage<ID extends MemberIdentifier> extends AbstractGMS
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     InstallViewMessage<ID> other = (InstallViewMessage<ID>) obj;
     if (credentials == null) {
-      if (other.credentials != null)
+      if (other.credentials != null) {
         return false;
-    } else if (!credentials.equals(other.credentials))
+      }
+    } else if (!credentials.equals(other.credentials)) {
       return false;
-    if (kind != other.kind)
+    }
+    if (kind != other.kind) {
       return false;
-    if (previousViewId != other.previousViewId)
+    }
+    if (previousViewId != other.previousViewId) {
       return false;
+    }
     if (view == null) {
-      if (other.view != null)
+      if (other.view != null) {
         return false;
-    } else if (!view.equals(other.view))
+      }
+    } else if (!view.equals(other.view)) {
       return false;
+    }
     return true;
   }
 }

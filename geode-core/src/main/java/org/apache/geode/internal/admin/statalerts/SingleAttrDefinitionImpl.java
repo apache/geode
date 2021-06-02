@@ -74,14 +74,16 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
   public boolean verify(StatisticsFactory factory) {
     boolean result = false;
 
-    if (name == null || name.length() == 0)
+    if (name == null || name.length() == 0) {
       return false;
+    }
 
     if (statisticInfo != null) {
       Statistics[] temp = factory.findStatisticsByTextId(statisticInfo.getStatisticsTextId());
 
-      if (temp == null || temp.length == 0)
+      if (temp == null || temp.length == 0) {
         return false;
+      }
 
       StatisticDescriptor[] temp1 = temp[0].getType().getStatistics();
       for (int i = 0; i < temp1.length; i++) {
@@ -157,9 +159,10 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
    */
   @Override
   public void setStatisticInfo(StatisticInfo[] info) {
-    if (info == null || info.length != 1)
+    if (info == null || info.length != 1) {
       throw new IllegalArgumentException(
           "setStatisticInfo method requires 1 length array of StatisticInfo objects.");
+    }
 
     statisticInfo = info[0];
   }

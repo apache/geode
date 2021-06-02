@@ -183,15 +183,19 @@ public class EventStateHelper {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (!(obj instanceof EventStateMemberIdentifier))
+      }
+      if (!(obj instanceof EventStateMemberIdentifier)) {
         return false;
+      }
       EventStateMemberIdentifier other = (EventStateMemberIdentifier) obj;
-      if (!Arrays.equals(bytes, other.bytes))
+      if (!Arrays.equals(bytes, other.bytes)) {
         return false;
+      }
       return true;
     }
   }
