@@ -2057,7 +2057,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     VM datastore2 = VM.getVM(2);
     initAccessorAndDataStore(accessor, datastore1, datastore2, redundancy);
 
-    accessor.invoke(new SerializableCallable() {
+    TXId txId = (TXId) accessor.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         Region custRegion = getCache().getRegion(CUSTOMER);
@@ -2094,19 +2094,20 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             throw new IllegalArgumentException();
         }
         assertNotNull(mgr.getTXState());
-        return null;
+        return mgr.suspend();
       }
     });
     datastore1.invoke(verifyNoTxState);
     datastore2.invoke(verifyNoTxState);
 
-    TXId txId = (TXId) accessor.invoke(new SerializableCallable() {
+    accessor.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         Region custRegion = getCache().getRegion(CUSTOMER);
         Region orderRegion = getCache().getRegion(ORDER);
 
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         assertNotNull(mgr.getTXState());
         int expectedSetSize = 0;
         switch (op) {
