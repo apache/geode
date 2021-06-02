@@ -175,7 +175,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(2 * INITIAL_MEMBER_COUNT);
 
     Map<String, Double> updateMap = new HashMap<>();
-    for(String member : initMap.keySet()) {
+    for (String member : initMap.keySet()) {
       Double score = initMap.get(member);
       score++;
       updateMap.put(member, score);
@@ -185,7 +185,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(2 * INITIAL_MEMBER_COUNT);
 
     final int newMemberCount = 5;
-    for(int i = 2 * INITIAL_MEMBER_COUNT; i < 2 * INITIAL_MEMBER_COUNT + newMemberCount; i++) {
+    for (int i = 2 * INITIAL_MEMBER_COUNT; i < 2 * INITIAL_MEMBER_COUNT + newMemberCount; i++) {
       updateMap.put("member_" + i, Double.valueOf((i) + ""));
     }
 

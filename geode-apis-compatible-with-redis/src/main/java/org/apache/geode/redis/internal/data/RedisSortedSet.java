@@ -24,8 +24,6 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SE
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -223,7 +221,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
   private int getChangesCount(int changesCount, byte[] score, byte[] member) {
     boolean sameScore = Arrays.equals(members.getOrDefault(member, null), score);
-    if(!sameScore) {
+    if (!sameScore) {
       changesCount++;
     }
     return changesCount;
