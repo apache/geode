@@ -235,11 +235,11 @@ public class RedisSortedSet extends AbstractRedisData {
     double incr = processIncrement(Coder.bytesToString(increment).toLowerCase());
 
     if (byteScore != null) {
-      double score = Coder.bytesToDouble(byteScore);
-      if (Double.isInfinite(score) && Double.isInfinite(incr)) {
+      incr += Coder.bytesToDouble(byteScore);
+
+      if (Double.isNaN(incr)) {
         throw new NumberFormatException(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
       }
-      incr = score + incr;
     }
 
     byte[] byteIncr = Coder.doubleToBytes(incr);

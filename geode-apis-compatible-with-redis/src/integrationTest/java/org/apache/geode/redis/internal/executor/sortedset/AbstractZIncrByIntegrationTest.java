@@ -203,6 +203,20 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
         .hasMessageContaining(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
   }
 
+  @Test
+  public void incrementingScoreOfNegativeInfinityByNegativeInfinity_IsAllowed() {
+    jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER);
+
+    assertThat(jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER)).isEqualTo(NEGATIVE_INFINITY);
+  }
+
+  @Test
+  public void incrementingScoreOfPositiveInfinityByPositiveiveInfinity_IsAllowed() {
+    jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER);
+
+    assertThat(jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER)).isEqualTo(POSITIVE_INFINITY);
+  }
+
   /************* key or member does not exist *************/
   @Test
   public void shouldCreateNewKey_whenIncrementedKeyDoesNotExist() {
