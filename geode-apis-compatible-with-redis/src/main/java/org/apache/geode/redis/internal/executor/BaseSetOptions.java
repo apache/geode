@@ -47,6 +47,10 @@ public abstract class BaseSetOptions implements DataSerializableFixedID {
     return exists.equals(Exists.XX);
   }
 
+  public boolean isCH() {
+    return exists.equals(Exists.CH);
+  }
+
   public Exists getExists() {
     return exists;
   }
@@ -77,6 +81,12 @@ public abstract class BaseSetOptions implements DataSerializableFixedID {
     /**
      * Only set if key already exists
      */
-    XX
+    XX,
+
+    /**
+     * Modify the return value from the number of new elements added, to the total number
+     * of elements changed
+     */
+    CH
   }
 }

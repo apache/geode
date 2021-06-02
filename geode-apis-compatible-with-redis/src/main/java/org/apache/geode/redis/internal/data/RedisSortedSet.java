@@ -24,6 +24,8 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SE
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -192,12 +194,18 @@ public class RedisSortedSet extends AbstractRedisData {
     Iterator<byte[]> iterator = membersToAdd.iterator();
 
     int initialSize = getSortedSetSize();
-
+    int changesCount = 0;
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
       validateScoreIsDouble(score);
       byte[] member = iterator.next();
-
+      if (options.isCH() && members.containsKey(member)) {
+        String oldScore = Coder.bytesToString(members.getOrDefault(member, null));
+        String newScore = Coder.bytesToString(score);
+        if(!newScore.equals(oldScore)) {
+          changesCount++;
+        }
+      }
       if (options.isNX() && members.containsKey(member)) {
         continue;
       }
@@ -214,7 +222,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     storeChanges(region, key, deltaInfo);
-    return getSortedSetSize() - initialSize;
+    return getSortedSetSize() - initialSize + changesCount;
   }
 
   private void validateScoreIsDouble(byte[] score) {
