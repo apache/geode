@@ -86,12 +86,6 @@ public abstract class BaseSetOptions implements DataSerializableFixedID {
     /**
      * Only set if key already exists
      */
-    XX,
-
-    /**
-     * Modify the return value from the number of new elements added, to the total number
-     * of elements changed
-     */
-    CH
+    XX
   }
 }
