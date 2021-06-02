@@ -23,14 +23,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Category({RedisTest.class})
+@Ignore("GEODE-9341")
 public class RedisSessionDUnitTest extends SessionDUnitTest {
 
   @Rule
