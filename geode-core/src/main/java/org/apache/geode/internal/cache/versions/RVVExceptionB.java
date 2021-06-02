@@ -194,8 +194,9 @@ public class RVVExceptionB extends RVVException {
       if (other.received != null && !other.received.isEmpty()) {
         return false;
       }
-    } else if (!this.received.equals(other.received))
+    } else if (!this.received.equals(other.received)) {
       return false;
+    }
     return true;
   }
 

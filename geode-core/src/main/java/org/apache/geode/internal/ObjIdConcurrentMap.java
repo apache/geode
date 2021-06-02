@@ -321,8 +321,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
         while (e != null) {
           if (e.hash == hash && key == e.key) {
             V v = e.value;
-            if (v != null)
+            if (v != null) {
               return v;
+            }
             return readValueUnderLock(e); // recheck
           }
           e = e.next;
@@ -335,8 +336,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
       if (count != 0) { // read-volatile
         HashEntry<V> e = getFirst(hash);
         while (e != null) {
-          if (e.hash == hash && key == e.key)
+          if (e.hash == hash && key == e.key) {
             return true;
+          }
           e = e.next;
         }
       }
@@ -351,9 +353,12 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
           for (HashEntry<V> e = tab[i]; e != null; e = e.next) {
             V v = e.value;
             if (v == null) // recheck
+            {
               v = readValueUnderLock(e);
-            if (value.equals(v))
+            }
+            if (value.equals(v)) {
               return true;
+            }
           }
         }
       }
@@ -364,8 +369,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
       lock();
       try {
         HashEntry<V> e = getFirst(hash);
-        while (e != null && (e.hash != hash || key != e.key))
+        while (e != null && (e.hash != hash || key != e.key)) {
           e = e.next;
+        }
 
         boolean replaced = false;
         if (e != null && oldValue.equals(e.value)) {
@@ -382,8 +388,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
       lock();
       try {
         HashEntry<V> e = getFirst(hash);
-        while (e != null && (e.hash != hash || key != e.key))
+        while (e != null && (e.hash != hash || key != e.key)) {
           e = e.next;
+        }
 
         V oldValue = null;
         if (e != null) {
@@ -402,19 +409,23 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
       try {
         int c = count;
         if (c++ > threshold) // ensure capacity
+        {
           rehash();
+        }
         HashEntry<V>[] tab = table;
         int index = hash & (tab.length - 1);
         HashEntry<V> first = tab[index];
         HashEntry<V> e = first;
-        while (e != null && (e.hash != hash || key != e.key))
+        while (e != null && (e.hash != hash || key != e.key)) {
           e = e.next;
+        }
 
         V oldValue;
         if (e != null) {
           oldValue = e.value;
-          if (!onlyIfAbsent)
+          if (!onlyIfAbsent) {
             e.value = value;
+          }
         } else {
           oldValue = null;
           ++modCount;
@@ -430,8 +441,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
     void rehash() {
       HashEntry<V>[] oldTable = table;
       int oldCapacity = oldTable.length;
-      if (oldCapacity >= MAXIMUM_CAPACITY)
+      if (oldCapacity >= MAXIMUM_CAPACITY) {
         return;
+      }
 
       /*
        * Reclassify nodes in each list to new Map. Because we are using power-of-two expansion, the
@@ -456,10 +468,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
           int idx = e.hash & sizeMask;
 
           // Single node on list
-          if (next == null)
+          if (next == null) {
             newTable[idx] = e;
-
-          else {
+          } else {
             // Reuse trailing consecutive sequence at same slot
             HashEntry<V> lastRun = e;
             int lastIdx = idx;
@@ -495,8 +506,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
         int index = hash & (tab.length - 1);
         HashEntry<V> first = tab[index];
         HashEntry<V> e = first;
-        while (e != null && (e.hash != hash || key != e.key))
+        while (e != null && (e.hash != hash || key != e.key)) {
           e = e.next;
+        }
 
         V oldValue = null;
         if (e != null) {
@@ -508,8 +520,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
             // cloned.
             ++modCount;
             HashEntry<V> newFirst = e.next;
-            for (HashEntry<V> p = first; p != e; p = p.next)
+            for (HashEntry<V> p = first; p != e; p = p.next) {
               newFirst = new HashEntry<V>(p.key, p.hash, newFirst, p.value);
+            }
             tab[index] = newFirst;
             count = c; // write-volatile
           }
@@ -525,8 +538,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
         lock();
         try {
           HashEntry<V>[] tab = table;
-          for (int i = 0; i < tab.length; i++)
+          for (int i = 0; i < tab.length; i++) {
             tab[i] = null;
+          }
           ++modCount;
           count = 0; // write-volatile
         } finally {
@@ -554,11 +568,13 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
    *         concurrencyLevel are nonpositive.
    */
   public ObjIdConcurrentMap(int initialCapacity, float loadFactor, int concurrencyLevel) {
-    if (!(loadFactor > 0) || initialCapacity < 0 || concurrencyLevel <= 0)
+    if (!(loadFactor > 0) || initialCapacity < 0 || concurrencyLevel <= 0) {
       throw new IllegalArgumentException();
+    }
 
-    if (concurrencyLevel > MAX_SEGMENTS)
+    if (concurrencyLevel > MAX_SEGMENTS) {
       concurrencyLevel = MAX_SEGMENTS;
+    }
 
     // Find power-of-two sizes best matching arguments
     int sshift = 0;
@@ -571,17 +587,21 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
     segmentMask = ssize - 1;
     this.segments = Segment.newArray(ssize);
 
-    if (initialCapacity > MAXIMUM_CAPACITY)
+    if (initialCapacity > MAXIMUM_CAPACITY) {
       initialCapacity = MAXIMUM_CAPACITY;
+    }
     int c = initialCapacity / ssize;
-    if (c * ssize < initialCapacity)
+    if (c * ssize < initialCapacity) {
       ++c;
+    }
     int cap = 1;
-    while (cap < c)
+    while (cap < c) {
       cap <<= 1;
+    }
 
-    for (int i = 0; i < this.segments.length; ++i)
+    for (int i = 0; i < this.segments.length; ++i) {
       this.segments[i] = new Segment<V>(cap, loadFactor);
+    }
   }
 
   /**
@@ -637,18 +657,20 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
     int[] mc = new int[segments.length];
     int mcsum = 0;
     for (int i = 0; i < segments.length; ++i) {
-      if (segments[i].count != 0)
+      if (segments[i].count != 0) {
         return false;
-      else
+      } else {
         mcsum += mc[i] = segments[i].modCount;
+      }
     }
     // If mcsum happens to be zero, then we know we got a snapshot
     // before any modifications at all were made. This is
     // probably common enough to bother tracking.
     if (mcsum != 0) {
       for (int i = 0; i < segments.length; ++i) {
-        if (segments[i].count != 0 || mc[i] != segments[i].modCount)
+        if (segments[i].count != 0 || mc[i] != segments[i].modCount) {
           return false;
+        }
       }
     }
     return true;
@@ -684,22 +706,27 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
           }
         }
       }
-      if (check == sum)
+      if (check == sum) {
         break;
+      }
     }
     if (check != sum) { // Resort to locking all segments
       sum = 0;
-      for (int i = 0; i < segments.length; ++i)
+      for (int i = 0; i < segments.length; ++i) {
         segments[i].lock();
-      for (int i = 0; i < segments.length; ++i)
+      }
+      for (int i = 0; i < segments.length; ++i) {
         sum += segments[i].count;
-      for (int i = 0; i < segments.length; ++i)
+      }
+      for (int i = 0; i < segments.length; ++i) {
         segments[i].unlock();
+      }
     }
-    if (sum > Integer.MAX_VALUE)
+    if (sum > Integer.MAX_VALUE) {
       return Integer.MAX_VALUE;
-    else
+    } else {
       return (int) sum;
+    }
   }
 
   /**
@@ -741,8 +768,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
    * @throws NullPointerException if the specified value is null
    */
   public boolean containsValue(Object value) {
-    if (value == null)
+    if (value == null) {
       throw new NullPointerException();
+    }
 
     // See explanation of modCount use above
 
@@ -756,8 +784,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
       for (int i = 0; i < segments.length; ++i) {
         // int c = segments[i].count;
         mcsum += mc[i] = segments[i].modCount;
-        if (segments[i].containsValue(value))
+        if (segments[i].containsValue(value)) {
           return true;
+        }
       }
       boolean cleanSweep = true;
       if (mcsum != 0) {
@@ -769,12 +798,14 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
           }
         }
       }
-      if (cleanSweep)
+      if (cleanSweep) {
         return false;
+      }
     }
     // Resort to locking all segments
-    for (int i = 0; i < segments.length; ++i)
+    for (int i = 0; i < segments.length; ++i) {
       segments[i].lock();
+    }
     boolean found = false;
     try {
       for (int i = 0; i < segments.length; ++i) {
@@ -784,8 +815,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
         }
       }
     } finally {
-      for (int i = 0; i < segments.length; ++i)
+      for (int i = 0; i < segments.length; ++i) {
         segments[i].unlock();
+      }
     }
     return found;
   }
@@ -820,8 +852,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
    * @throws NullPointerException if the specified key or value is null
    */
   public V put(int key, V value) {
-    if (value == null)
+    if (value == null) {
       throw new NullPointerException();
+    }
     int hash = hash(key);
     return segmentFor(hash).put(key, hash, value, false);
   }
@@ -833,8 +866,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
    * @throws NullPointerException if the specified key or value is null
    */
   public V putIfAbsent(int key, V value) {
-    if (value == null)
+    if (value == null) {
       throw new NullPointerException();
+    }
     int hash = hash(key);
     return segmentFor(hash).put(key, hash, value, true);
   }
@@ -859,8 +893,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
    */
   public boolean remove(int key, Object value) {
     int hash = hash(key);
-    if (value == null)
+    if (value == null) {
       return false;
+    }
     return segmentFor(hash).remove(key, hash, value) != null;
   }
 
@@ -869,8 +904,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
    * @throws NullPointerException if any of the arguments are null
    */
   public boolean replace(int key, V oldValue, V newValue) {
-    if (oldValue == null || newValue == null)
+    if (oldValue == null || newValue == null) {
       throw new NullPointerException();
+    }
     int hash = hash(key);
     return segmentFor(hash).replace(key, hash, oldValue, newValue);
   }
@@ -882,8 +918,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
    * @throws NullPointerException if the specified key or value is null
    */
   public V replace(int key, V value) {
-    if (value == null)
+    if (value == null) {
       throw new NullPointerException();
+    }
     int hash = hash(key);
     return segmentFor(hash).replace(key, hash, value);
   }
@@ -892,8 +929,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
    * Removes all of the mappings from this map.
    */
   public void clear() {
-    for (int i = 0; i < segments.length; ++i)
+    for (int i = 0; i < segments.length; ++i) {
       segments[i].clear();
+    }
   }
 
   /* ---------------- Serialization Support -------------- */

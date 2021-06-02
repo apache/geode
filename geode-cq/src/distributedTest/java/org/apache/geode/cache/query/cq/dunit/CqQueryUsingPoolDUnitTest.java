@@ -2864,13 +2864,15 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     createValues(producer, regions[0], (2 * size));
 
     for (int i = 1; i <= size; i++) {
-      if (i % 2 == 0)
+      if (i % 2 == 0) {
         waitForUpdated(client, "testQuery_9", KEY + i);
+      }
     }
 
     for (int i = (size + 1); i <= 2 * size; i++) {
-      if (i % 2 == 0)
+      if (i % 2 == 0) {
         waitForCreated(client, "testQuery_9", KEY + i);
+      }
     }
 
     validateCQ(client, "testQuery_9", noTest, 25, 25, noTest);

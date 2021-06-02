@@ -310,9 +310,9 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
         throws AdminException, MalformedObjectNameException {
       try {
         StatisticResource[] stats = member.getStat(statisticsTypeName);
-        if (stats == null)
+        if (stats == null) {
           return null;
-        else {
+        } else {
           ObjectName[] statNames = new ObjectName[stats.length];
           for (int i = 0; i < stats.length; i++) {
             StatisticResourceJmxImpl statJMX = (StatisticResourceJmxImpl) stats[i];

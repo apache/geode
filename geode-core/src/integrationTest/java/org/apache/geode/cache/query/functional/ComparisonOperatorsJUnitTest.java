@@ -103,8 +103,9 @@ public class ComparisonOperatorsJUnitTest {
               isPassed = (p.getID() >= value);
               break;
           }
-          if (!isPassed)
+          if (!isPassed) {
             fail(this.getName() + " failed for operator " + operators[i]);
+          }
         }
       } else {
         fail(this.getName() + " failed for operator " + operators[i]);
@@ -150,8 +151,9 @@ public class ComparisonOperatorsJUnitTest {
               isPassed = (p.getP1().getSecId().compareTo(value) >= 0);
               break;
           }
-          if (!isPassed)
+          if (!isPassed) {
             fail(this.getName() + " failed for operator " + operators[i]);
+          }
         }
       } else {
         fail(this.getName() + " failed for operator " + operators[i]);
@@ -182,8 +184,9 @@ public class ComparisonOperatorsJUnitTest {
               isPassed = (p.getP2() != value);
               break;
           }
-          if (!isPassed)
+          if (!isPassed) {
             fail(this.getName() + " failed for operator " + operators[i]);
+          }
         }
       } else {
         fail(this.getName() + " failed for operator " + operators[i]);
@@ -206,8 +209,9 @@ public class ComparisonOperatorsJUnitTest {
                 + " UNDEFINED");
         Object result = query.execute();
         if (result instanceof Collection) {
-          if (((Collection) result).size() != 0)
+          if (((Collection) result).size() != 0) {
             fail(this.getName() + " failed for operator " + operators[i]);
+          }
         } else {
           fail(this.getName() + " failed for operator " + operators[i]);
         }

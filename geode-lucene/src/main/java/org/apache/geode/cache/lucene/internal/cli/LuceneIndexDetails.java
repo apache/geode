@@ -85,8 +85,9 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
 
   private Map<String, Integer> getIndexStatsMap(LuceneIndexStats indexStats) {
     Map<String, Integer> statsMap = new HashMap<>();
-    if (indexStats == null)
+    if (indexStats == null) {
       return statsMap;
+    }
     statsMap.put("queryExecutions", indexStats.getQueryExecutions());
     statsMap.put("updates", indexStats.getUpdates());
     statsMap.put("commits", indexStats.getCommits());

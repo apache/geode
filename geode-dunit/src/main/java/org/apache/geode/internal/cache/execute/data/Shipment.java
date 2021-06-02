@@ -48,8 +48,9 @@ public class Shipment implements DataSerializable {
   }
 
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
+    }
 
     if (obj instanceof Shipment) {
       Shipment other = (Shipment) obj;

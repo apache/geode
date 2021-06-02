@@ -105,12 +105,13 @@ public class GlobalTransaction {
       xid = XidImpl.createXid(GTid);
     } catch (Exception e) {
       LogWriter writer = TransactionUtils.getLogWriter();
-      if (writer.severeEnabled())
+      if (writer.severeEnabled()) {
         writer.severe(
             String.format(
                 "GlobalTransaction::Constructor::Error while trying to create Xid due to %s",
                 e),
             e);
+      }
       String exception =
           String.format(
               "GlobalTransaction::Constructor::Error while trying to create Xid due to %s",
@@ -131,8 +132,9 @@ public class GlobalTransaction {
       String exception =
           "GlobalTransaction::addTransaction::Cannot add a null Transaction";
       LogWriter writer = TransactionUtils.getLogWriter();
-      if (VERBOSE)
+      if (VERBOSE) {
         writer.fine(exception);
+      }
       throw new SystemException(exception);
     }
     transactions.add(txn);
@@ -180,8 +182,9 @@ public class GlobalTransaction {
             entry = (Map.Entry) iterator.next();
             xar = (XAResource) entry.getKey();
             isActive = (Boolean) entry.getValue();
-            if (loop == 0)
+            if (loop == 0) {
               xar1 = xar;
+            }
             loop++;
             if (isActive.booleanValue()) {
               // delistResource(xar, XAResource.TMSUCCESS);
@@ -189,16 +192,19 @@ public class GlobalTransaction {
               entry.setValue(Boolean.FALSE);
             }
           } catch (Exception e) {
-            if (VERBOSE)
+            if (VERBOSE) {
               writer.info("GlobalTransaction::commit:Exception in delisting XAResource", e);
+            }
           }
         }
       }
-      if (xar1 != null)
+      if (xar1 != null) {
         xar1.commit(xid, true);
+      }
       status = Status.STATUS_COMMITTED;
-      if (VERBOSE)
+      if (VERBOSE) {
         writer.fine("GlobalTransaction::commit:Transaction committed successfully");
+      }
     } catch (Exception e) {
       status = Status.STATUS_ROLLING_BACK;
       try {
@@ -221,8 +227,9 @@ public class GlobalTransaction {
             String.format(
                 "GlobalTransaction::commit::Error in committing, but transaction could not be rolled back due to exception: %s",
                 t);
-        if (VERBOSE)
+        if (VERBOSE) {
           writer.fine(exception, t);
+        }
         SystemException sysEx = new SystemException(exception);
         sysEx.initCause(t);
         throw sysEx;
@@ -232,8 +239,9 @@ public class GlobalTransaction {
               "GlobalTransaction::commit:Error in committing the transaction. Transaction rolled back.Exception, %s %s",
               new Object[] {e, " " + (e instanceof XAException
                   ? ("Error Code =" + ((XAException) e).errorCode) : "")});
-      if (VERBOSE)
+      if (VERBOSE) {
         writer.fine(exception, e);
+      }
       RollbackException rbEx = new RollbackException(exception);
       rbEx.initCause(e);
       throw rbEx;
@@ -287,16 +295,19 @@ public class GlobalTransaction {
               entry.setValue(Boolean.FALSE);
             }
           } catch (Exception e) {
-            if (VERBOSE)
+            if (VERBOSE) {
               writer.info("GlobalTransaction::rollback:Exception in delisting XAResource", e);
+            }
           }
         }
       }
-      if (xar1 != null)
+      if (xar1 != null) {
         xar1.rollback(xid);
+      }
       status = Status.STATUS_ROLLEDBACK;
-      if (VERBOSE)
+      if (VERBOSE) {
         writer.fine("Transaction rolled back successfully");
+      }
     } catch (Exception e) {
       // we will throw an error later, make sure that the synchronizations rollback
       status = Status.STATUS_ROLLEDBACK;
@@ -305,8 +316,9 @@ public class GlobalTransaction {
               "GlobalTransaction::rollback:Rollback not successful due to exception %s %s",
               e, " " + (e instanceof XAException
                   ? ("Error Code =" + ((XAException) e).errorCode) : ""));
-      if (VERBOSE)
+      if (VERBOSE) {
         writer.fine(exception);
+      }
       SystemException sysEx = new SystemException(exception);
       sysEx.initCause(e);
       throw sysEx;
@@ -363,15 +375,17 @@ public class GlobalTransaction {
           String exception =
               "GlobalTransaction::enlistResource::Cannot enlist resource as the transaction has been marked for rollback";
           LogWriter writer = TransactionUtils.getLogWriter();
-          if (VERBOSE)
+          if (VERBOSE) {
             writer.fine(exception);
+          }
           throw new RollbackException(exception);
         } else if (status != Status.STATUS_ACTIVE) {
           String exception =
               "GlobalTransaction::enlistResource::Cannot enlist a resource to a transaction which is not active";
           LogWriter writer = TransactionUtils.getLogWriter();
-          if (VERBOSE)
+          if (VERBOSE) {
             writer.fine(exception);
+          }
           throw new IllegalStateException(exception);
         }
         if (resourceMap.isEmpty()) {
@@ -387,8 +401,9 @@ public class GlobalTransaction {
                     "GlobalTransaction::enlistResource:Exception occurred in trying to set XAResource timeout due to %s Error Code, %s",
                     new Object[] {xe, Integer.valueOf(xe.errorCode)});
             LogWriter writer = TransactionUtils.getLogWriter();
-            if (VERBOSE)
+            if (VERBOSE) {
               writer.fine(exception);
+            }
             throw new SystemException(exception);
           }
           resourceMap.put(xaRes, Boolean.TRUE);
@@ -399,9 +414,10 @@ public class GlobalTransaction {
           }
           if (!xar.isSameRM(xaRes)) {
             LogWriter writer = TransactionUtils.getLogWriter();
-            if (writer.severeEnabled())
+            if (writer.severeEnabled()) {
               writer.severe(
                   "GlobalTransaction::enlistResource::Only one Resouce Manager supported");
+            }
             throw new SystemException(
                 "GlobalTransaction::enlistResource::Only one Resouce Manager supported");
           } else {
@@ -414,12 +430,13 @@ public class GlobalTransaction {
       String addon =
           (e instanceof XAException ? ("Error Code =" + ((XAException) e).errorCode) : "");
       LogWriter writer = TransactionUtils.getLogWriter();
-      if (VERBOSE)
+      if (VERBOSE) {
         writer.fine(
             String.format(
                 "GlobalTransaction::enlistResource::error while enlisting XAResource %s %s",
                 new Object[] {e, addon}),
             e);
+      }
       SystemException sysEx = new SystemException(
           String.format("GlobalTransaction::enlistResource::error while enlisting XAResource %s %s",
               new Object[] {e, addon}));
@@ -459,8 +476,9 @@ public class GlobalTransaction {
           new Object[] {e, " "
               + (e instanceof XAException ? ("Error Code =" + ((XAException) e).errorCode) : "")});
       LogWriter writer = TransactionUtils.getLogWriter();
-      if (VERBOSE)
+      if (VERBOSE) {
         writer.fine(exception, e);
+      }
       SystemException se = new SystemException(exception);
       se.initCause(e);
     }
@@ -489,7 +507,7 @@ public class GlobalTransaction {
         entry = (Map.Entry) iterator.next();
         xar = (XAResource) entry.getKey();
         isActive = (Boolean) entry.getValue();
-        if (isActive.booleanValue())
+        if (isActive.booleanValue()) {
           try {
             // delistResource(xar, XAResource.TMSUCCESS);
             xar.end(xid, XAResource.TMSUSPEND);
@@ -500,10 +518,12 @@ public class GlobalTransaction {
                     new Object[] {e, " " + (e instanceof XAException
                         ? ("Error Code =" + ((XAException) e).errorCode) : "")});
             LogWriter writer = TransactionUtils.getLogWriter();
-            if (VERBOSE)
+            if (VERBOSE) {
               writer.fine(exception);
+            }
             throw new SystemException(exception);
           }
+        }
         /*
          * catch (SystemException e) { String exception =
          * "GlobaTransaction::suspend not succesful due to " + e; LogWriter writer =
@@ -529,7 +549,7 @@ public class GlobalTransaction {
         entry = (Map.Entry) iterator.next();
         xar = (XAResource) entry.getKey();
         isActive = (Boolean) entry.getValue();
-        if (!isActive.booleanValue())
+        if (!isActive.booleanValue()) {
           try {
             xar.start(xid, XAResource.TMRESUME);
             entry.setValue(Boolean.TRUE);
@@ -538,10 +558,12 @@ public class GlobalTransaction {
                 String.format("GlobaTransaction::resume:Resume not succesful due to %s",
                     e);
             LogWriter writer = TransactionUtils.getLogWriter();
-            if (VERBOSE)
+            if (VERBOSE) {
               writer.fine(exception, e);
+            }
             throw new SystemException(exception);
           }
+        }
       }
     }
   }
@@ -601,10 +623,11 @@ public class GlobalTransaction {
     // Asif: The counter should be attached to the string inside Synch block
     StringBuffer sbuff = new StringBuffer(getId());
     synchronized (GlobalTransaction.class) {
-      if (mCounter == 99999)
+      if (mCounter == 99999) {
         mCounter = 1;
-      else
+      } else {
         ++mCounter;
+      }
       sbuff.append(String.valueOf(mCounter));
     }
     sbuff.append('_').append(System.currentTimeMillis());
@@ -617,23 +640,26 @@ public class GlobalTransaction {
    * transaction is rolled back and the thread removed from thread-Transaction Map.
    */
   void expireGTX() {
-    if (timedOut)
+    if (timedOut) {
       return; // this method is only called by a single thread so this is safe
+    }
     timedOut = true;
     LogWriter writer = TransactionUtils.getLogWriter();
     try {
-      if (writer.infoEnabled())
+      if (writer.infoEnabled()) {
         writer.info(String.format("Transaction %s has timed out.", this));
+      }
       TransactionManagerImpl.getTransactionManager()
           .removeTranxnMappingsAndRollbackExpiredTransaction(transactions);
       setStatus(Status.STATUS_NO_TRANSACTION);
     } catch (Exception e) {
-      if (writer.severeEnabled())
+      if (writer.severeEnabled()) {
         writer.severe(
             String.format(
                 "GlobaTransaction::expireGTX:Error occurred while removing transactional mappings %s",
                 e),
             e);
+      }
     }
   }
 
@@ -661,8 +687,9 @@ public class GlobalTransaction {
                     "Exception occurred while trying to set the XAResource TimeOut due to %s Error code, %s",
                     e, Integer.valueOf(e.errorCode));
             LogWriter writer = TransactionUtils.getLogWriter();
-            if (VERBOSE)
+            if (VERBOSE) {
               writer.fine(exception);
+            }
             throw new SystemException(exception);
           }
           break;
@@ -670,8 +697,9 @@ public class GlobalTransaction {
       }
     }
     long newExp = System.currentTimeMillis() + (seconds * 1000L);
-    if (!resetXATimeOut)
+    if (!resetXATimeOut) {
       newExp = -1;
+    }
     return newExp;
   }
 

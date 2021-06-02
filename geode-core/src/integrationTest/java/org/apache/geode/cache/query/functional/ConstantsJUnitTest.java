@@ -59,8 +59,9 @@ public class ConstantsJUnitTest {
         CacheUtils.getQueryService()
             .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where TRUE");
     Object result = query.execute();
-    if (!(result instanceof Collection) || ((Collection) result).size() != 4)
+    if (!(result instanceof Collection) || ((Collection) result).size() != 4) {
       fail(query.getQueryString());
+    }
   }
 
   @Test
@@ -69,8 +70,9 @@ public class ConstantsJUnitTest {
         CacheUtils.getQueryService()
             .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where FALSE");
     Object result = query.execute();
-    if (!(result instanceof Collection) || ((Collection) result).size() != 0)
+    if (!(result instanceof Collection) || ((Collection) result).size() != 0) {
       fail(query.getQueryString());
+    }
   }
 
   @Test
@@ -79,13 +81,15 @@ public class ConstantsJUnitTest {
         CacheUtils.getQueryService()
             .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where UNDEFINED");
     Object result = query.execute();
-    if (!(result instanceof Collection) || ((Collection) result).size() != 0)
+    if (!(result instanceof Collection) || ((Collection) result).size() != 0) {
       fail(query.getQueryString());
+    }
 
     query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM UNDEFINED");
     result = query.execute();
-    if (!(result instanceof Collection) || ((Collection) result).size() != 0)
+    if (!(result instanceof Collection) || ((Collection) result).size() != 0) {
       fail(query.getQueryString());
+    }
   }
 
   @Test
@@ -94,12 +98,14 @@ public class ConstantsJUnitTest {
         CacheUtils.getQueryService()
             .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where NULL");
     Object result = query.execute();
-    if (!(result instanceof Collection) || ((Collection) result).size() != 0)
+    if (!(result instanceof Collection) || ((Collection) result).size() != 0) {
       fail(query.getQueryString());
+    }
 
     query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM NULL");
     result = query.execute();
-    if (!(result instanceof Collection) || ((Collection) result).size() != 0)
+    if (!(result instanceof Collection) || ((Collection) result).size() != 0) {
       fail(query.getQueryString());
+    }
   }
 }

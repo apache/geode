@@ -287,18 +287,23 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       MixedObjectIndexDUnitTest.TestObject other = (MixedObjectIndexDUnitTest.TestObject) obj;
       if (text == null) {
-        if (other.text != null)
+        if (other.text != null) {
           return false;
-      } else if (!text.equals(other.text))
+        }
+      } else if (!text.equals(other.text)) {
         return false;
+      }
       return true;
     }
 
@@ -328,19 +333,24 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       TestObjectSameFieldNameButDifferentDataTypeFloat other =
           (TestObjectSameFieldNameButDifferentDataTypeFloat) obj;
       if (text == null) {
-        if (other.text != null)
+        if (other.text != null) {
           return false;
-      } else if (!text.equals(other.text))
+        }
+      } else if (!text.equals(other.text)) {
         return false;
+      }
       return true;
     }
 
@@ -369,19 +379,24 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       MixedObjectIndexDUnitTest.TestObjectSameFieldNameButDifferentDataTypeInteger other =
           (MixedObjectIndexDUnitTest.TestObjectSameFieldNameButDifferentDataTypeInteger) obj;
       if (text == null) {
-        if (other.text != null)
+        if (other.text != null) {
           return false;
-      } else if (!text.equals(other.text))
+        }
+      } else if (!text.equals(other.text)) {
         return false;
+      }
       return true;
     }
 
@@ -409,18 +424,23 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       TestObjectWithSameFieldName other = (TestObjectWithSameFieldName) obj;
       if (text == null) {
-        if (other.text != null)
+        if (other.text != null) {
           return false;
-      } else if (!text.equals(other.text))
+        }
+      } else if (!text.equals(other.text)) {
         return false;
+      }
       return true;
     }
 
@@ -450,18 +470,23 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       TestObjectWithNoCommonField other = (TestObjectWithNoCommonField) obj;
       if (data == null) {
-        if (other.data != null)
+        if (other.data != null) {
           return false;
-      } else if (!data.equals(other.data))
+        }
+      } else if (!data.equals(other.data)) {
         return false;
+      }
       return true;
     }
 

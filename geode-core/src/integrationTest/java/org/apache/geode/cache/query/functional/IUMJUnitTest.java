@@ -212,10 +212,12 @@ public class IUMJUnitTest {
     itert3 = set3.iterator();
     while (itert3.hasNext()) {
       Struct stc3 = (Struct) itert3.next();
-      if (!((Position) stc3.get(strg3[1])).secId.equals("IBM"))
+      if (!((Position) stc3.get(strg3[1])).secId.equals("IBM")) {
         fail("FAILED:  secId found is not IBM");
-      if (((Portfolio) stc3.get(strg3[0])).isActive() != false)
+      }
+      if (((Portfolio) stc3.get(strg3[0])).isActive() != false) {
         fail("FAILED:Portfolio in Search result is Active");
+      }
     }
 
   }

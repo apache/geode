@@ -307,8 +307,9 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
       Object ret = helper.getKey();
 
       if (ret instanceof String) {
-        if (ret != null && ret.equals(NON_EXISTENT_KEY))
+        if (ret != null && ret.equals(NON_EXISTENT_KEY)) {
           return null;
+        }
       }
       return ret;
 

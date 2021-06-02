@@ -62,25 +62,33 @@ public class Vertex implements Comparable<Vertex> {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (!(obj instanceof Vertex))
+    }
+    if (!(obj instanceof Vertex)) {
       return false;
+    }
     Vertex other = (Vertex) obj;
     if (name == null) {
-      if (other.name != null)
+      if (other.name != null) {
         return false;
-    } else if (!name.equals(other.name))
+      }
+    } else if (!name.equals(other.name)) {
       return false;
+    }
     if (state == null) {
-      if (other.state != null)
+      if (other.state != null) {
         return false;
-    } else if (!state.equals(other.state))
+      }
+    } else if (!state.equals(other.state)) {
       return false;
-    if (timestamp != other.timestamp)
+    }
+    if (timestamp != other.timestamp) {
       return false;
+    }
     return true;
   }
 

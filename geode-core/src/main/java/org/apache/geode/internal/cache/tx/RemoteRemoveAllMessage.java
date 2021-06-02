@@ -287,10 +287,12 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
   @Override
   protected short computeCompressedShort() {
     short flags = super.computeCompressedShort();
-    if (this.posDup)
+    if (this.posDup) {
       flags |= POS_DUP;
-    if (this.bridgeContext != null)
+    }
+    if (this.bridgeContext != null) {
       flags |= HAS_BRIDGE_CONTEXT;
+    }
     return flags;
   }
 

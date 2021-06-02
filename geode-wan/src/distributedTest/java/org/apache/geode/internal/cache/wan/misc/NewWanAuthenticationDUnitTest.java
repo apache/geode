@@ -421,10 +421,11 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
         final LongAdder ackReadAttempts = new LongAdder();
 
         GatewaySenderEventRemoteDispatcher.messageProcessingAttempted = isAck -> {
-          if (isAck)
+          if (isAck) {
             ackReadAttempts.increment();
-          else
+          } else {
             dispatchAttempts.increment();
+          }
         };
 
         doPuts(regionName, numPuts);

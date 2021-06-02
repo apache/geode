@@ -1212,8 +1212,9 @@ public class CqServiceImpl implements CqService {
       CacheProfile cf;
       if (i < 0) {
         cf = (CacheProfile) localProfile;
-        if (cf == null)
+        if (cf == null) {
           continue;
+        }
       } else {
         cf = (CacheProfile) profiles[i];
       }
@@ -1279,8 +1280,9 @@ public class CqServiceImpl implements CqService {
       CacheProfile cf;
       if (i < 0) {
         cf = (CacheProfile) localProfile;
-        if (cf == null)
+        if (cf == null) {
           continue;
+        }
       } else {
         cf = (CacheProfile) profiles[i];
       }

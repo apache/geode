@@ -181,9 +181,10 @@ public abstract class ServerContainer {
    * calling the cargo container's start function
    */
   public void start() {
-    if (container.getState().isStarted())
+    if (container.getState().isStarted()) {
       throw new IllegalArgumentException("Container " + description
           + " failed to start because it is currently " + container.getState());
+    }
 
     LocalConfiguration config = getConfiguration();
     // Set container ports from available ports
@@ -403,9 +404,10 @@ public abstract class ServerContainer {
     LocalConfiguration config = getConfiguration();
     config.applyPortOffset();
 
-    if (!container.getState().isStarted())
+    if (!container.getState().isStarted()) {
       throw new IllegalStateException(
           "Container is not started, thus a port has not yet been assigned to the container.");
+    }
 
     return config.getPropertyValue(portType);
   }

@@ -109,8 +109,9 @@ public class DefaultQueryService implements InternalQueryService {
       Collections.synchronizedMap(new HashMap<>());
 
   public DefaultQueryService(InternalCache cache) {
-    if (cache == null)
+    if (cache == null) {
       throw new IllegalArgumentException("Cache must not be null");
+    }
     QueryConfigurationService queryConfigurationService =
         cache.getService(QueryConfigurationService.class);
 
@@ -140,12 +141,14 @@ public class DefaultQueryService implements InternalQueryService {
           QueryMonitor.getMemoryUsedBytes());
       throw new QueryExecutionLowMemoryException(reason);
     }
-    if (queryString == null)
+    if (queryString == null) {
       throw new QueryInvalidException(
           "The query string must not be null");
-    if (queryString.length() == 0)
+    }
+    if (queryString.length() == 0) {
       throw new QueryInvalidException(
           "The query string must not be empty");
+    }
     ServerProxy serverProxy = pool == null ? null : new ServerProxy(pool);
     DefaultQuery query = new DefaultQuery(queryString, this.cache, serverProxy != null);
     query.setServerProxy(serverProxy);
@@ -339,8 +342,9 @@ public class DefaultQueryService implements InternalQueryService {
       return (Index) ((PartitionedRegion) region).getIndex().get(indexName);
     } else {
       IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
-      if (indexManager == null)
+      if (indexManager == null) {
         return null;
+      }
       return indexManager.getIndex(indexName);
     }
   }
@@ -504,8 +508,9 @@ public class DefaultQueryService implements InternalQueryService {
       }
     }
     IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
-    if (indexManager == null)
+    if (indexManager == null) {
       return;
+    }
 
     indexManager.removeIndexes();
   }

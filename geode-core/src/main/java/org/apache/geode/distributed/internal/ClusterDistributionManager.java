@@ -676,8 +676,9 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private void startThreads() {
     system.setDM(this); // fix for bug 33362
-    if (memberEventThread != null)
+    if (memberEventThread != null) {
       memberEventThread.start();
+    }
     try {
 
       // And the distinguished guests today are...
@@ -727,8 +728,9 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   private void waitUntilReadyForMessages() {
-    if (readyForMessages)
+    if (readyForMessages) {
       return;
+    }
     synchronized (this) {
       while (!readyForMessages) {
         stopper.checkCancelInProgress(null);
@@ -1171,8 +1173,9 @@ public class ClusterDistributionManager implements DistributionManager {
     executors.askThreadsToStop();
 
     Thread th = memberEventThread;
-    if (th != null)
+    if (th != null) {
       th.interrupt();
+    }
   }
 
   private void waitForThreadsToStop(long timeInMillis) throws InterruptedException {
@@ -1196,8 +1199,9 @@ public class ClusterDistributionManager implements DistributionManager {
    * @param t the thread to kill
    */
   private void clobberThread(Thread t) {
-    if (t == null)
+    if (t == null) {
       return;
+    }
     if (t.isAlive()) {
       logger.warn("Forcing thread stop on < {} >", t);
 
@@ -1573,8 +1577,9 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private boolean sendStartupMessage(StartupOperation startupOperation)
       throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     receivedStartupResponse = false;
     boolean ok;
 
@@ -1640,10 +1645,11 @@ public class ClusterDistributionManager implements DistributionManager {
       int unresponsiveCount;
 
       synchronized (unfinishedStartupsLock) {
-        if (unfinishedStartups == null)
+        if (unfinishedStartups == null) {
           unresponsiveCount = 0;
-        else
+        } else {
           unresponsiveCount = unfinishedStartups.size();
+        }
 
         if (unresponsiveCount != 0) {
           if (Boolean.getBoolean("DistributionManager.requireAllStartupResponses")) {
@@ -1664,8 +1670,9 @@ public class ClusterDistributionManager implements DistributionManager {
           while (itt.hasNext()) {
             Object m = itt.next();
             sb.append(m.toString());
-            if (itt.hasNext())
+            if (itt.hasNext()) {
               sb.append(", ");
+            }
           }
           if (DEBUG_NO_ACKNOWLEDGEMENTS) {
             printStacks(allOthers, false);
@@ -1681,10 +1688,11 @@ public class ClusterDistributionManager implements DistributionManager {
       if (e != null) { // an elder exists
         boolean unresponsiveElder;
         synchronized (unfinishedStartupsLock) {
-          if (unfinishedStartups == null)
+          if (unfinishedStartups == null) {
             unresponsiveElder = false;
-          else
+          } else {
             unresponsiveElder = unfinishedStartups.contains(e);
+          }
         }
         if (unresponsiveElder) {
           logger.warn(
@@ -1736,10 +1744,12 @@ public class ClusterDistributionManager implements DistributionManager {
       if (logger.isDebugEnabled()) {
         logger.debug("removeUnfinishedStartup for {} wtih {}", m, unfinishedStartups);
       }
-      if (unfinishedStartups == null)
+      if (unfinishedStartups == null) {
         return; // not yet done with startup
-      if (!unfinishedStartups.remove(m))
+      }
+      if (!unfinishedStartups.remove(m)) {
         return;
+      }
       String msg;
       if (departed) {
         msg =
@@ -2045,8 +2055,9 @@ public class ClusterDistributionManager implements DistributionManager {
       throws NotSerializableException {
     if (distribution == null) {
       logger.warn("Attempting a send to a disconnected DistributionManager");
-      if (destinations.size() == 1 && destinations.get(0) == Message.ALL_RECIPIENTS)
+      if (destinations.size() == 1 && destinations.get(0) == Message.ALL_RECIPIENTS) {
         return null;
+      }
       return new HashSet<>(destinations);
     }
 

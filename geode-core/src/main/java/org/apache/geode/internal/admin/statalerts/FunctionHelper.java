@@ -85,17 +85,22 @@ public class FunctionHelper {
    */
   public static short getFunctionIdentifier(String qFunctionName) {
 
-    if (qFunctionName == null)
+    if (qFunctionName == null) {
       return -1;
+    }
 
-    if (qFunctionName.equalsIgnoreCase(STR_ADD))
+    if (qFunctionName.equalsIgnoreCase(STR_ADD)) {
       return FUN_SUM;
-    if (qFunctionName.equalsIgnoreCase(STR_AVG))
+    }
+    if (qFunctionName.equalsIgnoreCase(STR_AVG)) {
       return FUN_AVG;
-    if (qFunctionName.equalsIgnoreCase(STR_MIN))
+    }
+    if (qFunctionName.equalsIgnoreCase(STR_MIN)) {
       return FUN_MIN;
-    if (qFunctionName.equalsIgnoreCase(STR_MAX))
+    }
+    if (qFunctionName.equalsIgnoreCase(STR_MAX)) {
       return FUN_MAX;
+    }
 
     return -1;
   }

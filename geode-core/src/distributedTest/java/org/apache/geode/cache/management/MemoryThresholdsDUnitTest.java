@@ -728,16 +728,19 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
               if (owners.contains(server1Id)) {
                 keyFoundOnSickMember = true;
                 try {
-                  if (useTx)
+                  if (useTx) {
                     getCache().getCacheTransactionManager().begin();
+                  }
                   pr.getCache().getLogger().fine("SWAP:putting in tx:" + useTx);
                   pr.put(key, "value");
-                  if (useTx)
+                  if (useTx) {
                     getCache().getCacheTransactionManager().commit();
+                  }
                 } catch (LowMemoryException ex) {
                   caughtException = true;
-                  if (useTx)
+                  if (useTx) {
                     getCache().getCacheTransactionManager().rollback();
+                  }
                 }
               } else {
                 // puts on healthy member should continue

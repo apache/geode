@@ -1330,11 +1330,13 @@ public class DistributionAdvisor {
     for (int i = 0; i < profs.length; i++) {
       Profile p = profs[i];
       if (id instanceof InternalDistributedMember) {
-        if (p.getDistributedMember().equals(id))
+        if (p.getDistributedMember().equals(id)) {
           return i;
+        }
       } else {
-        if (p.getId().equals(id))
+        if (p.getId().equals(id)) {
           return i;
+        }
       }
     }
     return -1;

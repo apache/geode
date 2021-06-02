@@ -518,8 +518,9 @@ public class PRQueryDUnitHelper implements Serializable {
       public void run2() throws CacheException {
         Cache cache = getCache();
         Region region = cache.getRegion(regionName);
-        for (int j = from; j < to; j++)
+        for (int j = from; j < to; j++) {
           region.put(new Integer(j), portfolio[j]);
+        }
       }
     };
     return (CacheSerializableRunnable) prPuts;
@@ -599,8 +600,9 @@ public class PRQueryDUnitHelper implements Serializable {
       public void run2() throws CacheException {
         Cache cache = getCache();
         Region region = cache.getRegion(regionName);
-        for (int j = from, i = to; j < to; j++, i++)
+        for (int j = from, i = to; j < to; j++, i++) {
           region.put(new Integer(i), portfolio[j]);
+        }
       }
     };
     return (CacheSerializableRunnable) prPuts;
@@ -618,8 +620,9 @@ public class PRQueryDUnitHelper implements Serializable {
       public void run2() throws CacheException {
         Cache cache = getCache();
         Region region = cache.getRegion(regionName);
-        for (int j = from; j < to; j++)
+        for (int j = from; j < to; j++) {
           region.put(portfolio[j], portfolio[j]);
+        }
       }
     };
     return (CacheSerializableRunnable) prPuts;
@@ -1856,8 +1859,9 @@ public class PRQueryDUnitHelper implements Serializable {
           Collection indexes = qs.getIndexes();
           assertEquals(3, indexes.size());
           Iterator it = indexes.iterator();
-          while (it.hasNext())
+          while (it.hasNext()) {
             logger.info("Following indexes found : " + it.next());
+          }
           qs.removeIndexes(parRegion);
           logger.info("Removed all the index on this paritioned regions : " + parRegion);
           indexes = qs.getIndexes();

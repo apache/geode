@@ -300,8 +300,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
           Iterator<Map.Entry<EventID, EventWrapper>> it =
               this.unprocessedEvents.entrySet().iterator();
           while (it.hasNext()) {
-            if (stopped())
+            if (stopped()) {
               break;
+            }
             Map.Entry<EventID, EventWrapper> me = it.next();
             EventWrapper ew = me.getValue();
             GatewaySenderEventImpl gatewayEvent = ew.event;
@@ -631,8 +632,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         // no need to do anything if we have become the primary
         return false;
       }
-      if (this.unprocessedEvents == null)
+      if (this.unprocessedEvents == null) {
         return false;
+      }
       // now we can safely use the unprocessedEvents field
       EventWrapper ew = this.unprocessedEvents.remove(eventId);
       if (ew != null) {
@@ -669,8 +671,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         // no need to do anything if we have become the primary
         return;
       }
-      if (this.unprocessedEvents == null)
+      if (this.unprocessedEvents == null) {
         return;
+      }
       // now we can safely use the unprocessedEvents field
       EventWrapper ew = this.unprocessedEvents.remove(gatewayEvent.getEventId());
 

@@ -182,8 +182,9 @@ public class PooledConnection implements Connection {
   public synchronized boolean switchConnection(Connection newCon) throws InterruptedException {
     Connection oldCon = null;
     synchronized (this) {
-      if (shouldDestroy())
+      if (shouldDestroy()) {
         return false;
+      }
 
       if (this.active && !shouldDestroy()) {
         this.waitingToSwitch = true;
@@ -196,8 +197,9 @@ public class PooledConnection implements Connection {
           notifyAll();
         }
       }
-      if (shouldDestroy())
+      if (shouldDestroy()) {
         return false;
+      }
       assert !this.active;
       final long now = System.nanoTime();
       oldCon = this.connection;
@@ -268,8 +270,9 @@ public class PooledConnection implements Connection {
    * is active we can't time it out now and a hint is returned as when we should check again.
    */
   public long doIdleTimeout(long now, long timeoutNanos) {
-    if (shouldDestroy())
+    if (shouldDestroy()) {
       return 0;
+    }
     synchronized (this) {
       if (isActive()) {
         // this is a reasonable value to return since odds are that

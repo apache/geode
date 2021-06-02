@@ -884,8 +884,9 @@ class OverflowOplog implements CompactableOplog, Flushable {
         bb = new BytesAndBits(DiskEntry.LOCAL_INVALID_BYTES, userBits);
       }
     } else {
-      if (offsetInOplog == -1)
+      if (offsetInOplog == -1) {
         return null;
+      }
       try {
         for (;;) {
           dr.getCancelCriterion().checkCancelInProgress(null);
@@ -937,10 +938,12 @@ class OverflowOplog implements CompactableOplog, Flushable {
       this.maxOplogSize = 0;
       olf.currSize = 0;
     }
-    if (olf.f == null)
+    if (olf.f == null) {
       return;
-    if (!olf.f.exists())
+    }
+    if (!olf.f.exists()) {
       return;
+    }
     if (!olf.f.delete() && olf.f.exists()) {
       throw new DiskAccessException(
           String.format("Could not delete %s.", olf.f.getAbsolutePath()),
@@ -1030,12 +1033,15 @@ class OverflowOplog implements CompactableOplog, Flushable {
   }
 
   boolean needsCompaction() {
-    if (!isCompactionPossible())
+    if (!isCompactionPossible()) {
       return false;
-    if (getParent().getCompactionThreshold() == 100)
+    }
+    if (getParent().getCompactionThreshold() == 100) {
       return true;
-    if (getParent().getCompactionThreshold() == 0)
+    }
+    if (getParent().getCompactionThreshold() == 0) {
       return false;
+    }
     // otherwise check if we have enough garbage to collect with a compact
     long rvHWMtmp = this.totalCount.get();
     if (rvHWMtmp > 0) {
@@ -1211,8 +1217,9 @@ class OverflowOplog implements CompactableOplog, Flushable {
   private static final ThreadLocal isCompactorThread = new ThreadLocal();
 
   private boolean calledByCompactorThread() {
-    if (!this.compacting)
+    if (!this.compacting) {
       return false;
+    }
     Object v = isCompactorThread.get();
     return v != null && v == Boolean.TRUE;
   }

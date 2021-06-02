@@ -407,8 +407,9 @@ public class AutoSerializableManager {
     if (classInfo == null) {
       synchronized (classMap) {
         classInfo = classMap.get(tmpClass);
-        if (classInfo != null)
+        if (classInfo != null) {
           return classInfo;
+        }
 
         List<PdxFieldWrapper> fieldList = new ArrayList<PdxFieldWrapper>();
         List<PdxFieldWrapper> variableLenFields = new ArrayList<PdxFieldWrapper>();
@@ -779,8 +780,9 @@ public class AutoSerializableManager {
 
     protected Object readTransformIf(Object o, Object serializedValue)
         throws IllegalArgumentException, IllegalAccessException {
-      if (!transform())
+      if (!transform()) {
         return serializedValue;
+      }
       return readTransform(o, serializedValue);
     }
 
@@ -2425,21 +2427,28 @@ public class AutoSerializableManager {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     AutoSerializableManager other = (AutoSerializableManager) obj;
-    if (checkPortability != other.checkPortability)
+    if (checkPortability != other.checkPortability) {
       return false;
-    if (!classPatterns.equals(other.classPatterns))
+    }
+    if (!classPatterns.equals(other.classPatterns)) {
       return false;
-    if (!excludePatterns.equals(other.excludePatterns))
+    }
+    if (!excludePatterns.equals(other.excludePatterns)) {
       return false;
-    if (!identityPatterns.equals(other.identityPatterns))
+    }
+    if (!identityPatterns.equals(other.identityPatterns)) {
       return false;
+    }
     return true;
   }
 }

@@ -44,8 +44,9 @@ public class RestoreLocaleRuleTest {
     Locale[] locales = Locale.getAvailableLocales();
     while (notDefaultLocale == null) {
       Locale l = locales[new Random().nextInt(locales.length)];
-      if (l != Locale.getDefault())
+      if (l != Locale.getDefault()) {
         notDefaultLocale = l;
+      }
     }
   }
 

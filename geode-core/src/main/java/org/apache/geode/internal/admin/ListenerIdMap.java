@@ -188,10 +188,11 @@ public class ListenerIdMap {
 
     for (Entry e = table[bucket], prev = null; e != null; prev = e, e = e.next) {
       if (key == e.key) {
-        if (prev != null)
+        if (prev != null) {
           prev.next = e.next;
-        else
+        } else {
           table[bucket] = e.next;
+        }
 
         count--;
         Object oldValue = e.value;

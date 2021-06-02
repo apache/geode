@@ -156,8 +156,9 @@ public class ChunkedMessage extends Message {
   }
 
   public void setServerConnection(ServerConnection servConn) {
-    if (serverConnection != servConn)
+    if (serverConnection != servConn) {
       throw new IllegalStateException("this.sc was not correctly set");
+    }
   }
 
   /**
@@ -295,17 +296,19 @@ public class ChunkedMessage extends Message {
    * Sends a chunk of this message.
    */
   public void sendChunk(ServerConnection servConn) throws IOException {
-    if (serverConnection != servConn)
+    if (serverConnection != servConn) {
       throw new IllegalStateException("this.sc was not correctly set");
+    }
     sendChunk();
   }
 
   @Override
   protected Part getSecurityPart() {
-    if (isLastChunk())
+    if (isLastChunk()) {
       return super.getSecurityPart();
-    else
+    } else {
       return null;
+    }
   }
 
   @Override

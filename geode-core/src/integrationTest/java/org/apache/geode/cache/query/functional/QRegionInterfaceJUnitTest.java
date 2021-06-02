@@ -61,8 +61,9 @@ public class QRegionInterfaceJUnitTest {
     Query query = CacheUtils.getQueryService()
         .newQuery("select distinct * from " + SEPARATOR + "Portfolios.keys where toString = '1'");
     Collection result = (Collection) query.execute();
-    if (!result.iterator().next().equals("1"))
+    if (!result.iterator().next().equals("1")) {
       fail(query.getQueryString());
+    }
   }
 
   @Test
@@ -71,8 +72,9 @@ public class QRegionInterfaceJUnitTest {
         .newQuery("select distinct * from " + SEPARATOR + "Portfolios.values where ID = 1");
     Collection result = (Collection) query.execute();
     Portfolio p = (Portfolio) result.iterator().next();
-    if (p.getID() != 1)
+    if (p.getID() != 1) {
       fail(query.getQueryString());
+    }
   }
 
   @Test
@@ -82,8 +84,9 @@ public class QRegionInterfaceJUnitTest {
             + "Portfolios.entries where value.ID = 1 and key = '1'");
     Collection result = (Collection) query.execute();
     Region.Entry entry = (Region.Entry) result.iterator().next();
-    if (!entry.getKey().equals("1") || ((Portfolio) entry.getValue()).getID() != 1)
+    if (!entry.getKey().equals("1") || ((Portfolio) entry.getValue()).getID() != 1) {
       fail(query.getQueryString());
+    }
   }
 
   @Test
@@ -94,8 +97,9 @@ public class QRegionInterfaceJUnitTest {
     for (int i = 0; i < testData.length; i++) {
       Query query = CacheUtils.getQueryService().newQuery(testData[i][0]);
       String result = query.execute().toString();
-      if (!result.equals(testData[i][1]))
+      if (!result.equals(testData[i][1])) {
         fail(query.getQueryString());
+      }
     }
   }
 
@@ -104,8 +108,9 @@ public class QRegionInterfaceJUnitTest {
     Query query = CacheUtils.getQueryService()
         .newQuery("select distinct * from " + SEPARATOR + "Portfolios.keySet where toString = '1'");
     Collection result = (Collection) query.execute();
-    if (!result.iterator().next().equals("1"))
+    if (!result.iterator().next().equals("1")) {
       fail(query.getQueryString());
+    }
   }
 
   @Test
@@ -114,8 +119,9 @@ public class QRegionInterfaceJUnitTest {
         "select distinct key from " + SEPARATOR
             + "Portfolios.entrySet , value.positions.values   where value.ID = 1 and key = '1'");
     Collection result = (Collection) query.execute();
-    if (!result.iterator().next().equals("1"))
+    if (!result.iterator().next().equals("1")) {
       fail(query.getQueryString());
+    }
   }
 
   @Test
@@ -126,8 +132,9 @@ public class QRegionInterfaceJUnitTest {
       String result =
           query.execute(new Object[] {CacheUtils.getRegion(SEPARATOR + "Portfolios").get("1")})
               .toString();
-      if (!result.equals(testData[i][1]))
+      if (!result.equals(testData[i][1])) {
         fail(query.getQueryString());
+      }
     }
   }
 

@@ -66,26 +66,32 @@ class LocalLockInfo implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (!(obj instanceof LocalLockInfo))
+    }
+    if (!(obj instanceof LocalLockInfo)) {
       return false;
+    }
     LocalLockInfo other = (LocalLockInfo) obj;
     if (info == null) {
-      if (other.info != null)
+      if (other.info != null) {
         return false;
+      }
     } else if (!info.getClassName().equals(other.info.getClassName())) {
       return false;
     } else if (info.getIdentityHashCode() != other.info.getIdentityHashCode()) {
       return false;
     }
     if (locatility == null) {
-      if (other.locatility != null)
+      if (other.locatility != null) {
         return false;
-    } else if (!locatility.equals(other.locatility))
+      }
+    } else if (!locatility.equals(other.locatility)) {
       return false;
+    }
     return true;
   }
 

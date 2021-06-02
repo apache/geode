@@ -143,15 +143,17 @@ public class StructMemberAccessJUnitTest {
       Object o = q.execute();
       if (o instanceof SelectResults) {
         SelectResults sr = (SelectResults) o;
-        if (sr instanceof StructSet && i != 2)
+        if (sr instanceof StructSet && i != 2) {
           fail(
               " StructMemberAccess::testResultComposition: Got StrcutSet when expecting ResultSet");
+        }
         CollectionType ct = sr.getCollectionType();
         CacheUtils.log("***Elememt Type of Colelction = " + ct.getElementType());
         CacheUtils.log((sr.getCollectionType()).getElementType().getSimpleClassName());
         List ls = sr.asList();
-        for (int j = 0; j < ls.size(); ++j)
+        for (int j = 0; j < ls.size(); ++j) {
           CacheUtils.log("Object in the resultset = " + ls.get(j).getClass());
+        }
         switch (i) {
           case 0:
             if (ct.getElementType().getSimpleClassName().equals("Portfolio")) {

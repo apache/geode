@@ -179,8 +179,9 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
         evReturned = true;
         return ev;
       } finally {
-        if (!evReturned)
+        if (!evReturned) {
           ev.release();
+        }
       }
     }
 

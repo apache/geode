@@ -87,8 +87,9 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
       e.handleCause();
     }
 
-    if (this.reply == null)
+    if (this.reply == null) {
       return false;
+    }
     return this.reply.replyCode == DLockReleaseReplyMessage.OK;
   }
 
@@ -249,8 +250,9 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
       int replyCode = DLockReleaseReplyMessage.NOT_GRANTOR;
       ReplyException replyException = null;
       try {
-        if (svc == null || svc.isDestroyed())
+        if (svc == null || svc.isDestroyed()) {
           return;
+        }
 
         if (waitForGrantor) {
           try {

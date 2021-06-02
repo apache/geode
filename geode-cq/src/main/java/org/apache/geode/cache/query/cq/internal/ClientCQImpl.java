@@ -174,8 +174,9 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
         this.cqState.setState(CqStateImpl.CLOSED);
         cqService.stats().incCqsClosed();
         cqService.stats().decCqsOnClient();
-        if (this.stats != null)
+        if (this.stats != null) {
           this.stats.close();
+        }
       } else {
         if (shutdownInProgress()) {
           return;

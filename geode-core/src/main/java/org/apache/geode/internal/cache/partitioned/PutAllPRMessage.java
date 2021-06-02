@@ -287,10 +287,12 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
-    if (this.bridgeContext != null)
+    if (this.bridgeContext != null) {
       s |= HAS_BRIDGE_CONTEXT;
-    if (this.skipCallbacks)
+    }
+    if (this.skipCallbacks) {
       s |= SKIP_CALLBACKS;
+    }
     return s;
   }
 
@@ -539,10 +541,12 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
         }
       }
     } finally {
-      if (baseEvent != null)
+      if (baseEvent != null) {
         baseEvent.release();
-      if (dpao != null)
+      }
+      if (dpao != null) {
         dpao.freeOffHeapResources();
+      }
     }
 
     return true;

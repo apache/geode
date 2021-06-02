@@ -978,8 +978,9 @@ public class IndexManager {
     if (logger.isDebugEnabled()) {
       logger.debug("IndexManager.updateIndexes {} + action: {}", entry.getKey(), action);
     }
-    if (entry == null)
+    if (entry == null) {
       return;
+    }
     if (isIndexMaintenanceTypeSynchronous()) {
       // System.out.println("Synchronous update");
       processAction(entry, action, opCode);
@@ -1305,8 +1306,9 @@ public class IndexManager {
    */
   public void destroy() throws QueryException {
     this.indexes.clear();
-    if (!isIndexMaintenanceTypeSynchronous())
+    if (!isIndexMaintenanceTypeSynchronous()) {
       updater.shutdown();
+    }
   }
 
   /**

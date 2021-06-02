@@ -1689,8 +1689,9 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    if (true)
+    if (true) {
       return;
+    }
 
     // initiate moveBucket to move from otherVM to newVM
 

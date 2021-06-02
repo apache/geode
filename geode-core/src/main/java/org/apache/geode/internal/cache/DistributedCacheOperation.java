@@ -147,8 +147,9 @@ public abstract class DistributedCacheOperation {
    * Given a VALUE_IS_* constant convert and return the corresponding DESERIALIZATION_POLICY_*.
    */
   public static byte valueIsToDeserializationPolicy(boolean oldValueIsSerialized) {
-    if (!oldValueIsSerialized)
+    if (!oldValueIsSerialized) {
       return DESERIALIZATION_POLICY_NONE;
+    }
     return DESERIALIZATION_POLICY_LAZY;
   }
 

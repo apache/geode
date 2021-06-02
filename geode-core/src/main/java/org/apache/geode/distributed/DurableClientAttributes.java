@@ -105,20 +105,25 @@ public class DurableClientAttributes {
 
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof DurableClientAttributes))
+    }
+    if (!(other instanceof DurableClientAttributes)) {
       return false;
+    }
     final DurableClientAttributes that = (DurableClientAttributes) other;
 
-    if (this.timeout != that.getTimeout())
+    if (this.timeout != that.getTimeout()) {
       return false;
+    }
     if (!(this.id != null && this.id.equals(that.id)
         && ((this.poolName == null && that.poolName == null)
-            || (this.poolName != null && this.poolName.equals(that.poolName)))))
+            || (this.poolName != null && this.poolName.equals(that.poolName))))) {
       return false;
+    }
 
     return true;
   }
