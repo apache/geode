@@ -14,16 +14,14 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -51,32 +49,26 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public class ZRemDUnitTest implements Serializable {
+public class ZRemDUnitTest {
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
   @Rule
   public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
 
-  private transient JedisCluster jedis;
+  private JedisCluster jedis;
   private List<MemberVM> servers;
-  private final String sortedSetKey = "key";
+  private static final String sortedSetKey = "key";
   private final String baseName = "member1-";
   private final int setSize = 1000;
 
-  private static final String LOCAL_HOST = "127.0.0.1";
-  private static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-
   @Before
   public void setup() {
-    Properties locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
-
-    MemberVM locator = clusterStartUp.startLocatorVM(0, locatorProperties);
-    MemberVM server1 = clusterStartUp.startRedisVM(1, locator.getPort());
-    MemberVM server2 = clusterStartUp.startRedisVM(2, locator.getPort());
-    MemberVM server3 = clusterStartUp.startRedisVM(3, locator.getPort());
+    MemberVM locator = clusterStartUp.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 = clusterStartUp.startRedisVM(1, locatorPort);
+    MemberVM server2 = clusterStartUp.startRedisVM(2, locatorPort);
+    MemberVM server3 = clusterStartUp.startRedisVM(3, locatorPort);
     servers = new ArrayList<>();
     servers.add(server1);
     servers.add(server2);
@@ -84,7 +76,7 @@ public class ZRemDUnitTest implements Serializable {
 
     int redisServerPort = clusterStartUp.getRedisPort(1);
 
-    jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -216,7 +208,7 @@ public class ZRemDUnitTest implements Serializable {
   private void stopNodeWithPrimaryBucketOfTheKey(boolean isCrash) {
     boolean isPrimary;
     for (MemberVM server : servers) {
-      isPrimary = server.invoke(this::isPrimaryForKey);
+      isPrimary = server.invoke(ZRemDUnitTest::isPrimaryForKey);
       if (isPrimary) {
         if (isCrash) {
           server.getVM().bounceForcibly();
@@ -228,21 +220,21 @@ public class ZRemDUnitTest implements Serializable {
     }
   }
 
-  private boolean isPrimaryForKey() {
+  private static boolean isPrimaryForKey() {
     int bucketId = getBucketId(new RedisKey(Coder.stringToBytes(sortedSetKey)));
     return isPrimaryForBucket(bucketId);
   }
 
-  private int getBucketId(Object key) {
+  private static int getBucketId(Object key) {
     return PartitionedRegionHelper.getHashKey((PartitionedRegion) getDataRegion(), Operation.GET,
         key, null, null);
   }
 
-  private Region<RedisKey, RedisData> getDataRegion() {
+  private static Region<RedisKey, RedisData> getDataRegion() {
     return ClusterStartupRule.getCache().getRegion(RegionProvider.REDIS_DATA_REGION);
   }
 
-  private boolean isPrimaryForBucket(int bucketId) {
+  private static boolean isPrimaryForBucket(int bucketId) {
     return ((PartitionedRegion) getDataRegion()).getLocalPrimaryBucketsListTestOnly()
         .contains(bucketId);
   }
