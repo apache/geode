@@ -382,8 +382,8 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   static class OrderedSetEntry implements Comparable<OrderedSetEntry> {
-    public byte[] member;
-    public Double score;
+    private final byte[] member;
+    private final Double score;
 
     @Override
     public int compareTo(OrderedSetEntry o) {

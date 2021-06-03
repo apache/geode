@@ -25,7 +25,6 @@
  */
 package org.apache.geode.redis.internal.collections;
 
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,7 +34,6 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * This class implements an order statistic tree which is based on AVL-trees.
@@ -789,21 +787,29 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
       return false;
     }
     // type check and cast
-    if (!(o instanceof OrderStatisticsSet)) {
+    if (!(o instanceof Set)) {
       return false;
     }
-    TreeSet<T> treeSet = uncheckedCast(o);
-    // field comparison
-    Iterator<T> treeSetIterator = treeSet.iterator();
-    Iterator<T> thisIterator = this.iterator();
-    while (treeSetIterator.hasNext()) {
-      if (!thisIterator.hasNext()) {
-        return false;
-      }
-      if (!Objects.equals(treeSetIterator.next(), thisIterator.next())) {
-        return false;
-      }
+
+    Set<?> otherSet = (Set<?>) o;
+
+    if (this.size != otherSet.size()) {
+      return false;
     }
+    if (!this.containsAll(otherSet)) {
+      return false;
+    }
+
     return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int hash = 0;
+    Iterator it = this.iterator();
+    while (it.hasNext()) {
+      hash += it.next().hashCode();
+    }
+    return hash;
   }
 }

@@ -204,9 +204,8 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
       memberSet.add(memberName);
     }
 
-    Iterator<String> memberIterator = memberSet.iterator();
-    while (memberIterator.hasNext()) {
-      map.put(memberIterator.next(), 1.0);
+    for (String s : memberSet) {
+      map.put(s, 1.0);
     }
 
     return map;
