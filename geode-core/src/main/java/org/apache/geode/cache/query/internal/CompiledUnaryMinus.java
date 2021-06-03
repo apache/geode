@@ -59,20 +59,27 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
   private Object minus(Object obj) throws TypeMismatchException {
 
     if (obj instanceof Number) {
-      if (obj instanceof Integer)
+      if (obj instanceof Integer) {
         return Integer.valueOf(((Integer) obj).intValue() * -1);
-      if (obj instanceof Long)
+      }
+      if (obj instanceof Long) {
         return Long.valueOf(((Long) obj).longValue() * -1);
-      if (obj instanceof Double)
+      }
+      if (obj instanceof Double) {
         return Double.valueOf(((Double) obj).doubleValue() * -1);
-      if (obj instanceof Float)
+      }
+      if (obj instanceof Float) {
         return Float.valueOf(((Float) obj).floatValue() * -1);
-      if (obj instanceof Byte)
+      }
+      if (obj instanceof Byte) {
         return Byte.valueOf((byte) (((Byte) obj).byteValue() * -1));
-      if (obj instanceof Short)
+      }
+      if (obj instanceof Short) {
         return Short.valueOf((short) (((Short) obj).shortValue() * -1));
-    } else if (obj == null || obj == QueryService.UNDEFINED)
+      }
+    } else if (obj == null || obj == QueryService.UNDEFINED) {
       return QueryService.UNDEFINED;
+    }
     throw new TypeMismatchException(String.format("%s cannot be unary minus",
         obj.getClass()));
   }

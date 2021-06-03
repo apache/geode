@@ -86,8 +86,9 @@ public class Functions {
 
   public static Object element(Object arg, ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException {
-    if (arg == null || arg == QueryService.UNDEFINED)
+    if (arg == null || arg == QueryService.UNDEFINED) {
       return QueryService.UNDEFINED;
+    }
 
     if (arg instanceof Collection) {
       Collection c = (Collection) arg;
@@ -97,10 +98,11 @@ public class Functions {
 
     // not a Collection, must be an array
     Class clazz = arg.getClass();
-    if (!clazz.isArray())
+    if (!clazz.isArray()) {
       throw new TypeMismatchException(
           String.format("The 'element' function cannot be applied to an object of type ' %s '",
               clazz.getName()));
+    }
 
     // handle arrays
     if (arg instanceof Object[]) {
@@ -173,10 +175,11 @@ public class Functions {
   }
 
   private static void checkSingleton(int size) throws FunctionDomainException {
-    if (size != 1)
+    if (size != 1) {
       throw new FunctionDomainException(
           String.format("element() applied to parameter of size %s",
               Integer.valueOf(size)));
+    }
   }
 
 

@@ -1835,8 +1835,9 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       String fromClause = atts.getValue(FROM_CLAUSE);
       String expression = atts.getValue(EXPRESSION);
       String importStr = null;
-      if (len == 3)
+      if (len == 3) {
         importStr = atts.getValue(IMPORTS);
+      }
       if (fromClause == null || expression == null) {
         throwExcep = true;
       } else {
@@ -3062,8 +3063,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       } else if (qName.equals(CONFIG_PROPERTY_NAME)) {
         String name = null;
         if (this.stack.peek() instanceof StringBuffer)
-          // Pop the config-property-name element value from the stack.
+        // Pop the config-property-name element value from the stack.
+        {
           name = ((StringBuffer) this.stack.pop()).toString();
+        }
         BindingCreation bc = (BindingCreation) this.stack.peek();
         List vsList = bc.getVendorSpecificList();
         ConfigProperty cp = (ConfigProperty) vsList.get(vsList.size() - 1);
@@ -3079,8 +3082,9 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       } else if (qName.equals(CONFIG_PROPERTY_VALUE)) {
         String value = null;
         // Pop the config-property-value element value from the stack.
-        if (this.stack.peek() instanceof StringBuffer)
+        if (this.stack.peek() instanceof StringBuffer) {
           value = ((StringBuffer) this.stack.pop()).toString();
+        }
         BindingCreation bc = (BindingCreation) this.stack.peek();
         List vsList = bc.getVendorSpecificList();
         ConfigProperty cp = (ConfigProperty) vsList.get(vsList.size() - 1);
@@ -3088,8 +3092,9 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         cp.setValue(value);
       } else if (qName.equals(CONFIG_PROPERTY_TYPE)) {
         String type = null;
-        if (this.stack.peek() instanceof StringBuffer)
+        if (this.stack.peek() instanceof StringBuffer) {
           type = ((StringBuffer) this.stack.pop()).toString();
+        }
         BindingCreation bc = (BindingCreation) this.stack.peek();
         List vsList = bc.getVendorSpecificList();
         ConfigProperty cp = (ConfigProperty) vsList.get(vsList.size() - 1);

@@ -111,13 +111,15 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   }
 
   private void validateConstraint(ObjectType constraint) {
-    if (constraint == null)
+    if (constraint == null) {
       throw new IllegalArgumentException(
           "constraint cannot be null");
+    }
     // must be public
-    if (!Modifier.isPublic(constraint.resolveClass().getModifiers()))
+    if (!Modifier.isPublic(constraint.resolveClass().getModifiers())) {
       throw new IllegalArgumentException(
           "constraint class must be public");
+    }
   }
 
   // @todo should we bother taking the performance hit to check the constraint?
@@ -343,8 +345,9 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
         arr[idx++] = itr.next();
       }
       if (!itr.hasNext()) {
-        if (idx == len)
+        if (idx == len) {
           return arr;
+        }
         // otherwise have to trim
         return Arrays.copyOf(arr, idx, Object[].class);
       }
@@ -376,8 +379,9 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
         arr[idx++] = itr.next();
       }
       if (!itr.hasNext()) {
-        if (idx == len)
+        if (idx == len) {
           return arr;
+        }
         if (arr == a) {
           // orig array -> null terminate
           a[idx] = null;

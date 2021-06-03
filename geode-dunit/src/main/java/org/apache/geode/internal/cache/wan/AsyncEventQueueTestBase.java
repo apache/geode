@@ -1226,10 +1226,12 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     Iterator itr = values.iterator();
     while (itr.hasNext()) {
       AsyncEvent asyncEvent = (AsyncEvent) itr.next();
-      if (isLoad)
+      if (isLoad) {
         assertTrue(asyncEvent.getOperation().isLoad());
-      if (isPutAll)
+      }
+      if (isPutAll) {
         assertTrue(asyncEvent.getOperation().isPutAll());
+      }
     }
   }
 

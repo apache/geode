@@ -343,8 +343,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
     public void afterCreate(EntryEvent event) {
       paperRegion.put("callbackCame", "true");
       Integer counter = (Integer) paperRegion.get("afterCreate");
-      if (counter == null)
+      if (counter == null) {
         counter = new Integer(1);
+      }
       paperRegion.put("afterCreate", new Integer(counter.intValue() + 1));
 
       LogWriterUtils.getLogWriter().info("In afterCreate" + putAllcounter);
@@ -368,8 +369,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
     public void afterUpdate(EntryEvent event) {
       paperRegion.put("callbackCame", "true");
       Integer counter = (Integer) paperRegion.get("afterUpdate");
-      if (counter == null)
+      if (counter == null) {
         counter = new Integer(1);
+      }
       paperRegion.put("afterUpdate", new Integer(counter.intValue() + 1));
       LogWriterUtils.getLogWriter().info("In afterUpdate" + afterUpdateputAllcounter);
       if (afterUpdateputAllcounter == forUpdate) {
@@ -396,8 +398,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
     @Override
     public void beforeCreate(EntryEvent event) {
       Integer counter = (Integer) paperRegion.get("beforeCreate");
-      if (counter == null)
+      if (counter == null) {
         counter = new Integer(1);
+      }
       paperRegion.put("beforeCreate", new Integer(counter.intValue() + 1));
       LogWriterUtils.getLogWriter().info("*******BeforeCreate***** event=" + event);
     }
@@ -405,8 +408,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
     @Override
     public void beforeUpdate(EntryEvent event) {
       Integer counter = (Integer) paperRegion.get("beforeUpdate");
-      if (counter == null)
+      if (counter == null) {
         counter = new Integer(1);
+      }
       paperRegion.put("beforeUpdate", new Integer(counter.intValue() + 1));
       LogWriterUtils.getLogWriter().info("In beforeUpdate" + beforeUpdateputAllcounter);
       LogWriterUtils.getLogWriter().info("*******BeforeUpdate***** event=" + event);

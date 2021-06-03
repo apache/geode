@@ -84,9 +84,10 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
 
   @Override
   public void setElementType(ObjectType elementType) {
-    if (elementType instanceof StructType)
+    if (elementType instanceof StructType) {
       throw new IllegalArgumentException(
           "This collection does not support struct elements");
+    }
     this.elementType = elementType;
   }
 

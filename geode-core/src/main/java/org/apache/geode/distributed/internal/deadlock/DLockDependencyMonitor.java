@@ -114,23 +114,30 @@ public class DLockDependencyMonitor implements DependencyMonitor {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (!(obj instanceof LockId))
+      }
+      if (!(obj instanceof LockId)) {
         return false;
+      }
       LockId other = (LockId) obj;
       if (serviceName == null) {
-        if (other.serviceName != null)
+        if (other.serviceName != null) {
           return false;
-      } else if (!serviceName.equals(other.serviceName))
+        }
+      } else if (!serviceName.equals(other.serviceName)) {
         return false;
+      }
       if (tokenName == null) {
-        if (other.tokenName != null)
+        if (other.tokenName != null) {
           return false;
-      } else if (!tokenName.equals(other.tokenName))
+        }
+      } else if (!tokenName.equals(other.tokenName)) {
         return false;
+      }
       return true;
     }
 

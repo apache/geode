@@ -429,17 +429,21 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
         @Override
         public boolean done() {
           Entry e1 = r.getEntry(k1);
-          if (e1 == null)
+          if (e1 == null) {
             return false;
+          }
           Entry e2 = r.getEntry(k2);
-          if (e2 == null)
+          if (e2 == null) {
             return false;
+          }
           Object v1 = e1.getValue();
-          if (!server_k1.equals(v1))
+          if (!server_k1.equals(v1)) {
             return false;
+          }
           Object v2 = e2.getValue();
-          if (!client_k2.equals(v2))
+          if (!client_k2.equals(v2)) {
             return false;
+          }
           // our state is ready for the assertions
           return true;
         }
@@ -447,11 +451,13 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
         @Override
         public String description() {
           Entry e1 = r.getEntry(k1);
-          if (e1 == null)
+          if (e1 == null) {
             return "Entry for " + k1 + " is null";
+          }
           Entry e2 = r.getEntry(k2);
-          if (e2 == null)
+          if (e2 == null) {
             return "Entry for " + k2 + " is null";
+          }
           Object v1 = e1.getValue();
           if (!server_k1.equals(v1)) {
             return "v1 supposed to be " + server_k1 + " but is " + v1;

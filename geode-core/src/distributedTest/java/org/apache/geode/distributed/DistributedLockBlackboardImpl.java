@@ -41,8 +41,9 @@ public class DistributedLockBlackboardImpl extends UnicastRemoteObject
    * Creates a singleton event listeners blackboard.
    */
   public static DistributedLockBlackboard getInstance() throws Exception {
-    if (blackboard == null)
+    if (blackboard == null) {
       initialize();
+    }
     return blackboard;
   }
 
@@ -81,11 +82,13 @@ public class DistributedLockBlackboardImpl extends UnicastRemoteObject
   @Override
   public synchronized void setIsLocked(boolean isLocked) {
     if (isLocked) {
-      if (IsLocked < 1)
+      if (IsLocked < 1) {
         IsLocked = 1;
+      }
     } else {
-      if (IsLocked > 0)
+      if (IsLocked > 0) {
         IsLocked = 0;
+      }
     }
   }
 

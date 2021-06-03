@@ -132,24 +132,28 @@ public class StatisticInfoImpl implements StatisticInfo {
     int startBrack = toString.indexOf("[");
     int endBrack = toString.indexOf("]");
 
-    if (startBrack == -1 || endBrack == -1)
+    if (startBrack == -1 || endBrack == -1) {
       return null;
+    }
 
     String name = toString.substring(0, startBrack).trim();
     String ids = toString.substring(startBrack + 1, endBrack).trim();
 
     StatisticsType type = f.findType(name);
-    if (type == null)
+    if (type == null) {
       return null;
+    }
 
     Statistics[] stats = f.findStatisticsByType(type);
-    if (stats.length == 0)
+    if (stats.length == 0) {
       return null;
+    }
 
     StatisticDescriptor[] descs = type.getStatistics();
     for (int i = 0; i < descs.length; i++) {
-      if (descs[i].getName().equalsIgnoreCase(ids))
+      if (descs[i].getName().equalsIgnoreCase(ids)) {
         return new StatisticInfoImpl(stats[0], descs[i]);
+      }
     }
 
     return null;

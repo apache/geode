@@ -112,10 +112,11 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
+          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY)) {
             assertEquals(key, value);
-          else
+          } else {
             assertEquals(null, value);
+          }
         }
 
         assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
@@ -164,10 +165,11 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
+          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY)) {
             assertEquals(key, value);
-          else
+          } else {
             assertEquals(null, value);
+          }
         }
 
         assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
@@ -462,10 +464,11 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
+          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY)) {
             assertEquals(key, value);
-          else
+          } else {
             assertEquals(null, value);
+          }
         }
 
         assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
@@ -540,10 +543,11 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
+          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY)) {
             assertEquals(key, value);
-          else
+          } else {
             assertEquals(null, value);
+          }
         }
         assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
       }

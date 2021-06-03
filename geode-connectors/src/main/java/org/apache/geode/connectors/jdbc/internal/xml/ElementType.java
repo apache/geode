@@ -82,8 +82,9 @@ public enum ElementType {
 
   static ElementType getTypeFromName(String typeName) {
     for (ElementType type : ElementType.values()) {
-      if (type.typeName.equals(typeName))
+      if (type.typeName.equals(typeName)) {
         return type;
+      }
     }
     throw new IllegalArgumentException("Invalid type '" + typeName + "'");
   }

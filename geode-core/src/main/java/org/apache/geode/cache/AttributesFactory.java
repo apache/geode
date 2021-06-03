@@ -712,9 +712,10 @@ public class AttributesFactory<K, V> {
    * @throws IllegalArgumentException if {@code keyConstraint} is a class denoting a primitive type
    */
   public void setKeyConstraint(Class<K> keyConstraint) {
-    if (keyConstraint != null && keyConstraint.isPrimitive())
+    if (keyConstraint != null && keyConstraint.isPrimitive()) {
       throw new IllegalArgumentException(
           "keyConstraint must not be a primitive type");
+    }
     this.regionAttributes.keyConstraint = keyConstraint;
     this.regionAttributes.setHasKeyConstraint(true);
   }
@@ -729,9 +730,10 @@ public class AttributesFactory<K, V> {
    *         type
    */
   public void setValueConstraint(Class<V> valueConstraint) {
-    if (valueConstraint != null && valueConstraint.isPrimitive())
+    if (valueConstraint != null && valueConstraint.isPrimitive()) {
       throw new IllegalArgumentException(
           "valueConstraint must not be a primitive type");
+    }
     this.regionAttributes.valueConstraint = valueConstraint;
     this.regionAttributes.setHasValueConstraint(true);
   }
@@ -748,9 +750,10 @@ public class AttributesFactory<K, V> {
    * @see java.util.HashMap
    */
   public void setInitialCapacity(int initialCapacity) {
-    if (initialCapacity < 0)
+    if (initialCapacity < 0) {
       throw new IllegalArgumentException(
           "initialCapacity must be >= 0");
+    }
     this.regionAttributes.initialCapacity = initialCapacity;
     this.regionAttributes.setHasInitialCapacity(true);
   }
@@ -764,10 +767,11 @@ public class AttributesFactory<K, V> {
    * @see java.util.HashMap
    */
   public void setLoadFactor(float loadFactor) {
-    if (loadFactor <= 0)
+    if (loadFactor <= 0) {
       throw new IllegalArgumentException(
           String.format("loadFactor must be > 0, value is %s",
               new Float(loadFactor)));
+    }
     this.regionAttributes.loadFactor = loadFactor;
     this.regionAttributes.setHasLoadFactor(true);
   }
@@ -780,9 +784,10 @@ public class AttributesFactory<K, V> {
    * @throws IllegalArgumentException if concurrencyLevel is nonpositive
    */
   public void setConcurrencyLevel(int concurrencyLevel) {
-    if (concurrencyLevel <= 0)
+    if (concurrencyLevel <= 0) {
       throw new IllegalArgumentException(
           "concurrencyLevel must be > 0");
+    }
     this.regionAttributes.concurrencyLevel = concurrencyLevel;
     this.regionAttributes.setHasConcurrencyLevel(true);
   }

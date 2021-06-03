@@ -77,8 +77,9 @@ public class NestedQueryJUnitTest {
   public void setUp() throws java.lang.Exception {
     CacheUtils.startCache();
     Region r = CacheUtils.createRegion("Portfolios", Portfolio.class);
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++) {
       r.put(i + "", new Portfolio(i));
+    }
   }
 
   @After
@@ -230,8 +231,9 @@ public class NestedQueryJUnitTest {
     while (itert1.hasNext()) {
       Portfolio p1 = (Portfolio) itert1.next();
       Portfolio p2 = (Portfolio) itert2.next();
-      if (!set1.contains(p2) || !set2.contains(p1))
+      if (!set1.contains(p2) || !set2.contains(p1)) {
         fail("FAILED: In both the Cases the members of ResultsSet are different.");
+      }
     }
     CacheUtils.compareResultsOfWithAndWithoutIndex(r, this);
   }
@@ -332,11 +334,13 @@ public class NestedQueryJUnitTest {
           found = true;
         }
       }
-      if (!found)
+      if (!found) {
         pass = false;
+      }
     }
-    if (!pass)
+    if (!pass) {
       fail("Test failed");
+    }
 
     CacheUtils.compareResultsOfWithAndWithoutIndex(r, this);
   }

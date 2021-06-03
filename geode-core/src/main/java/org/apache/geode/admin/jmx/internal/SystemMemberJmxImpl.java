@@ -121,8 +121,9 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
 
     // Refresh Interval
     AdminDistributedSystemJmxImpl sysJmx = (AdminDistributedSystemJmxImpl) system;
-    if (sysJmx.getRefreshInterval() > 0)
+    if (sysJmx.getRefreshInterval() > 0) {
       this.refreshInterval = sysJmx.getRefreshInterval();
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -166,8 +167,9 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
     boolean isRegistered = MBeanUtil.isRefreshNotificationRegistered(this,
         RefreshNotificationType.SYSTEM_MEMBER_CONFIG);
 
-    if (isRegistered && (getRefreshInterval() == refreshInterval))
+    if (isRegistered && (getRefreshInterval() == refreshInterval)) {
       return;
+    }
 
     this.refreshInterval = Helper.setAndReturnRefreshInterval(this, refreshInterval);
   }

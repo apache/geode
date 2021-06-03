@@ -65,8 +65,9 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
 
   @Override
   public void close() {
-    if (isClosed)
+    if (isClosed) {
       return;
+    }
 
     isClosed = true;
     if (tmProcess != null) {

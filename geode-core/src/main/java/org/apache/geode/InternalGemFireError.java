@@ -55,8 +55,9 @@ public class InternalGemFireError extends Error {
    */
   public InternalGemFireError(Object detailMessage) {
     this("" + detailMessage);
-    if (detailMessage instanceof Throwable)
+    if (detailMessage instanceof Throwable) {
       initCause((Throwable) detailMessage);
+    }
   }
 
   /**

@@ -305,10 +305,12 @@ class SerializableObject implements Serializable {
     if (!(obj instanceof SerializableObject)) {
       return false;
     }
-    if (obj == null)
+    if (obj == null) {
       return false;
-    if (this.str.equals(((SerializableObject) obj).str) && this.i == ((SerializableObject) obj).i)
+    }
+    if (this.str.equals(((SerializableObject) obj).str) && this.i == ((SerializableObject) obj).i) {
       return true;
+    }
     return false;
   }
 }

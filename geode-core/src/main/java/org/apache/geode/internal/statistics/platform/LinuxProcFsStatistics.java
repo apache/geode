@@ -120,8 +120,9 @@ public class LinuxProcFsStatistics {
    */
   public static void refreshProcess(int pid, LocalStatisticsImpl stats) {
     // Just incase a pid is not available
-    if (pid == 0)
+    if (pid == 0) {
       return;
+    }
     InputStreamReader isr = null;
     BufferedReader br = null;
     try {
@@ -149,11 +150,12 @@ public class LinuxProcFsStatistics {
       // as they are.
     } finally {
       tokenizer.releaseResources();
-      if (br != null)
+      if (br != null) {
         try {
           br.close();
         } catch (IOException ignore) {
         }
+      }
     }
   }
 
@@ -212,11 +214,12 @@ public class LinuxProcFsStatistics {
       }
     } catch (IOException ioe) {
     } finally {
-      if (br != null)
+      if (br != null) {
         try {
           br.close();
         } catch (IOException ignore) {
         }
+      }
     }
     getLoadAvg(stats);
     getMemInfo(stats);
@@ -249,11 +252,12 @@ public class LinuxProcFsStatistics {
     } catch (IOException ioe) {
     } finally {
       tokenizer.releaseResources();
-      if (br != null)
+      if (br != null) {
         try {
           br.close();
         } catch (IOException ignore) {
         }
+      }
     }
   }
 
@@ -351,11 +355,12 @@ public class LinuxProcFsStatistics {
     } catch (IOException ioe) {
     } finally {
       tokenizer.releaseResources();
-      if (br != null)
+      if (br != null) {
         try {
           br.close();
         } catch (IOException ignore) {
         }
+      }
     }
   }
 
@@ -499,11 +504,12 @@ public class LinuxProcFsStatistics {
     } catch (IOException ioe) {
     } finally {
       tokenizer.releaseResources();
-      if (br != null)
+      if (br != null) {
         try {
           br.close();
         } catch (IOException ignore) {
         }
+      }
     }
   }
 
@@ -627,11 +633,12 @@ public class LinuxProcFsStatistics {
     } catch (IOException ioe) {
     } finally {
       tokenizer.releaseResources();
-      if (br != null)
+      if (br != null) {
         try {
           br.close();
         } catch (IOException ignore) {
         }
+      }
     }
   }
 
@@ -667,11 +674,12 @@ public class LinuxProcFsStatistics {
     } catch (NoSuchElementException nsee) {
     } catch (IOException ioe) {
     } finally {
-      if (br != null)
+      if (br != null) {
         try {
           br.close();
         } catch (IOException ignore) {
         }
+      }
     }
   }
 
@@ -882,7 +890,9 @@ public class LinuxProcFsStatistics {
 
     protected void skipTokens(int numberToSkip) {
       int remaining = numberToSkip + 1;
-      while (--remaining > 0 && skipToken());
+      while (--remaining > 0 && skipToken()) {
+        ;
+      }
     }
 
     protected static long parseAsLong(String number) {

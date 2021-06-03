@@ -170,11 +170,12 @@ public abstract class PulseAcceptanceTestBase {
 
       String displaySocketCount =
           getWebDriver().findElement(By.id(MEMBER_VIEW_SOCKETS_ID)).getText();
-      if (actualMember.getTotalFileDescriptorOpen() < 0)
+      if (actualMember.getTotalFileDescriptorOpen() < 0) {
         assertThat("NA").isEqualTo(displaySocketCount);
-      else
+      } else {
         assertThat(String.valueOf(actualMember.getTotalFileDescriptorOpen()))
             .isEqualTo(displaySocketCount);
+      }
 
       String displayedJVMPauses =
           getWebDriver().findElement(By.id(MEMBER_VIEW_JVMPAUSES_ID)).getText();
@@ -304,11 +305,12 @@ public abstract class PulseAcceptanceTestBase {
       String displayedEntrySize = getWebDriver()
           .findElement(By.xpath("//div[@id='_tooltip']/div/div/div[2]/div[3]/div[2]/div"))
           .getText();
-      if (actualRegion.getEntrySize() > 0)
+      if (actualRegion.getEntrySize() > 0) {
         assertThat(new DecimalFormat("##.####").format(actualRegion.getEntrySize()))
             .isEqualTo(displayedEntrySize);
-      else
+      } else {
         assertThat("NA").isEqualTo(displayedEntrySize);
+      }
       builder.moveToElement(TreeMapMember).release().perform();
     }
   }
@@ -340,11 +342,12 @@ public abstract class PulseAcceptanceTestBase {
       String displayedSocketCount = getWebDriver()
           .findElement(By.xpath("//div[@id='_tooltip']/div/div/div[2]/div[5]/div[2]/div"))
           .getText();
-      if (actualMember.getTotalFileDescriptorOpen() > 0)
+      if (actualMember.getTotalFileDescriptorOpen() > 0) {
         assertThat(String.valueOf(actualMember.getTotalFileDescriptorOpen()))
             .isEqualTo(displayedSocketCount);
-      else
+      } else {
         assertThat("NA").isEqualTo(displayedSocketCount);
+      }
       builder.moveToElement(TreeMapMember).release().perform();
     }
   }

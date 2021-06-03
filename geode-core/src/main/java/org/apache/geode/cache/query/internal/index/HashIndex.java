@@ -1170,8 +1170,9 @@ public class HashIndex extends AbstractIndex {
         RuntimeIterator rIter = (RuntimeIterator) runtimeIterators.get(level);
         // System.out.println("Level = "+level+" Iter = "+rIter.getDef());
         Collection c = rIter.evaluateCollection(this.initContext);
-        if (c == null)
+        if (c == null) {
           return;
+        }
         Iterator cIter = c.iterator();
         while (cIter.hasNext()) {
           rIter.setCurrent(cIter.next());
@@ -1235,8 +1236,9 @@ public class HashIndex extends AbstractIndex {
         RuntimeIterator rIter = (RuntimeIterator) iterList.get(level);
         // System.out.println("Level = "+level+" Iter = "+rIter.getDef());
         Collection c = rIter.evaluateCollection(context);
-        if (c == null)
+        if (c == null) {
           return;
+        }
         Iterator cIter = c.iterator();
         while (cIter.hasNext()) {
           rIter.setCurrent(cIter.next());

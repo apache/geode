@@ -120,8 +120,9 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
     try {
       TimeKeeper t = new TimeKeeper();
       t.start();
-      for (int i = 0; i < NUM_ITERATION; i++)
+      for (int i = 0; i < NUM_ITERATION; i++) {
         execute(member, Boolean.TRUE, functionNoAck, isByName, toRegister);
+      }
       t.stop();
       logger.info("Time taken to execute boolean based" + NUM_ITERATION
           + "NoAck functions :" + t.getTimeInMs());
@@ -138,8 +139,9 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
       }
       TimeKeeper t = new TimeKeeper();
       t.start();
-      for (int i = 0; i < NUM_ITERATION; i++)
+      for (int i = 0; i < NUM_ITERATION; i++) {
         execute(member, testKeysSet, functionNoAck, isByName, toRegister);
+      }
       t.stop();
       logger.info(
           "Time taken to execute setbased" + NUM_ITERATION + "NoAck functions :" + t.getTimeInMs());

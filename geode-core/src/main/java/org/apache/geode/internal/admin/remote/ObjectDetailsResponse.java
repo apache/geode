@@ -58,22 +58,27 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
   void buildDetails(Region r, Object objName, int inspectionType) {
     try {
       objName = getObjectName(r, objName);
-      if (cancelled)
+      if (cancelled) {
         return;
+      }
       if (r.containsKey(objName)) {
-        if (cancelled)
+        if (cancelled) {
           return;
+        }
         // @todo darrel: race condition; could be unloaded between isPresent and get call.
         Region.Entry e = r.getEntry(objName);
         Object v = e.getValue();
-        if (cancelled)
+        if (cancelled) {
           return;
+        }
         objectValue = CacheDisplay.getCachedObjectDisplay(v, inspectionType);
-        if (cancelled)
+        if (cancelled) {
           return;
+        }
         userAttribute = CacheDisplay.getCachedObjectDisplay(e.getUserAttribute(), inspectionType);
-        if (cancelled)
+        if (cancelled) {
           return;
+        }
         try {
           stats = new RemoteCacheStatistics(e.getStatistics());
         } catch (StatisticsDisabledException ignore) {

@@ -82,14 +82,17 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
         pr.getRegionAdvisor().putBucketProfile(profile.getKey(), profile.getValue());
       }
     } catch (PRLocallyDestroyedException fre) {
-      if (logger.isDebugEnabled())
+      if (logger.isDebugEnabled()) {
         logger.debug("<region locally destroyed> ///{}", this);
+      }
     } catch (RegionDestroyedException e) {
-      if (logger.isDebugEnabled())
+      if (logger.isDebugEnabled()) {
         logger.debug("<region destroyed> ///{}", this);
+      }
     } catch (CancelException e) {
-      if (logger.isDebugEnabled())
+      if (logger.isDebugEnabled()) {
         logger.debug("<cache closed> ///{}", this);
+      }
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned

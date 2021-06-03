@@ -470,18 +470,24 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   protected short computeCompressedShort() {
     short s = super.computeCompressedShort();
     // this will be on wire for cqs old value generations.
-    if (this.hasOldValue)
+    if (this.hasOldValue) {
       s |= HAS_OLD_VALUE;
-    if (this.useOriginRemote)
+    }
+    if (this.useOriginRemote) {
       s |= USE_ORIGIN_REMOTE;
-    if (this.possibleDuplicate)
+    }
+    if (this.possibleDuplicate) {
       s |= POS_DUP;
-    if (this.bridgeContext != null)
+    }
+    if (this.bridgeContext != null) {
       s |= HAS_BRIDGE_CONTEXT;
-    if (this.originalSender != null)
+    }
+    if (this.originalSender != null) {
       s |= HAS_ORIGINAL_SENDER;
-    if (this.versionTag != null)
+    }
+    if (this.versionTag != null) {
       s |= HAS_VERSION_TAG;
+    }
     return s;
   }
 

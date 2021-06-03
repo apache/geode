@@ -54,8 +54,9 @@ public class VersionOrdinalImpl implements VersionOrdinal {
 
   @Override
   public boolean equals(final Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
+    }
     if (other instanceof VersionOrdinalImpl) {
       return this.ordinal == ((VersionOrdinalImpl) other).ordinal;
     } else {

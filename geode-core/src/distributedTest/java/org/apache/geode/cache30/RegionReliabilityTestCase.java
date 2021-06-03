@@ -1089,10 +1089,12 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
   @Test
   public void testCommitDistributionException() throws Exception {
-    if (getRegionScope().isGlobal())
+    if (getRegionScope().isGlobal()) {
       return; // skip test under Global
-    if (getRegionScope().isDistributedNoAck())
+    }
+    if (getRegionScope().isDistributedNoAck()) {
       return; // skip test under DistributedNoAck
+    }
 
     final String name = this.getUniqueName();
     final String roleA = name + "-A";
@@ -1219,8 +1221,9 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
   @Test
   public void testRegionDistributionException() throws Exception {
-    if (getRegionScope().isDistributedNoAck())
+    if (getRegionScope().isDistributedNoAck()) {
       return; // skip test under DistributedNoAck
+    }
 
     final String name = this.getUniqueName();
     final String roleA = name + "-A";

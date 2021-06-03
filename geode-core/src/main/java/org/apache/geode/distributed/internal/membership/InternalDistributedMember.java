@@ -294,9 +294,10 @@ public class InternalDistributedMember
       return 0;
     }
     // obligatory type check
-    if (!(o instanceof InternalDistributedMember))
+    if (!(o instanceof InternalDistributedMember)) {
       throw new ClassCastException(
           "InternalDistributedMember.compareTo(): comparison between different classes");
+    }
     InternalDistributedMember other = (InternalDistributedMember) o;
 
     return compareTo(other.memberIdentifier, compareMemberData, compareViewIds);

@@ -185,8 +185,9 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     async[0] = vm0.invokeAsync(putFrmVm("vm0_2"));
     t1.start();
     ThreadUtils.join(t1, 30 * 1000);
-    if (isTestFailed)
+    if (isTestFailed) {
       fail("HARegionQueue can not be created");
+    }
 
     for (int count = 0; count < 1; count++) {
       ThreadUtils.join(async[count], 30 * 1000);
@@ -200,16 +201,18 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
     boolean validationFlag = false;
     validateResults(validationFlag);
-    if (keys_set_before_gii.size() != 0)
+    if (keys_set_before_gii.size() != 0) {
       fail("Data in the HARegion Queue is inconsistent for the keys that are put before GII");
+    }
 
     validationFlag = true;
     validateResults(validationFlag);
     LogWriterUtils.getLogWriter().info(
         "No. of keys that are missed by HARegion Queue during GII " + keys_set_after_gii.size());
 
-    if (keys_set_after_gii.size() != 0)
+    if (keys_set_after_gii.size() != 0) {
       fail("Set of the keys are missed by HARegion Queue during GII");
+    }
 
   }
 
@@ -294,8 +297,9 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         int j = 0;
         while (true) {
-          if (isStop)
+          if (isStop) {
             break;
+          }
           for (int i = 0; i < NO_OF_PUTS; i++) {
             region.put(whichVm + j, whichVm + j);
             j++;

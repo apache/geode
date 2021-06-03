@@ -310,8 +310,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     try {
       String regionName = userRegion.getFullPath();
 
-      if (this.userRegionNameToShadowPRMap.containsKey(regionName))
+      if (this.userRegionNameToShadowPRMap.containsKey(regionName)) {
         return;
+      }
 
       InternalCache cache = sender.getCache();
       final String prQName = getQueueName(sender.getId(), userRegion.getFullPath());
@@ -338,9 +339,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // has set
         // else set it to false
         // optimize with above check of enable persistence
-        if (sender.isPersistenceEnabled())
+        if (sender.isPersistenceEnabled()) {
           fact.setDiskSynchronous(sender.isDiskSynchronous());
-        else {
+        } else {
           fact.setDiskSynchronous(false);
         }
 
@@ -392,7 +393,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // in case shadowPR exists already (can be possible when sender is
         // started from stop operation)
         if (this.index == 0) // HItesh: for first processor only
+        {
           handleShadowPRExistsScenario(cache, prQ);
+        }
       }
       /*
        * Here, enqueueTempEvents need to be invoked when a sender is already running and userPR is
@@ -439,8 +442,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         return;
       }
 
-      if (this.userRegionNameToShadowPRMap.containsKey(regionName))
+      if (this.userRegionNameToShadowPRMap.containsKey(regionName)) {
         return;
+      }
 
       if (userPR.getDataPolicy().withPersistence() && !sender.isPersistenceEnabled()) {
         throw new GatewaySenderException(
@@ -481,9 +485,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
         // if persistence is enabled, set the diskSyncronous to whatever user has set
         // else set it to false
-        if (sender.isPersistenceEnabled())
+        if (sender.isPersistenceEnabled()) {
           fact.setDiskSynchronous(sender.isDiskSynchronous());
-        else {
+        } else {
           fact.setDiskSynchronous(false);
         }
 
@@ -513,8 +517,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
         // TODO This should not be set on the PR but on the GatewaySender
         prQ.enableConflation(sender.isBatchConflationEnabled());
-        if (isAccessor)
+        if (isAccessor) {
           return; // return from here if accessor node
+        }
 
         // Add the overflow statistics to the mbean
         addOverflowStatisticsToMBean(cache, prQ);
@@ -526,12 +531,15 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           logger.debug("{}: Created queue region: {}", this, prQ);
         }
       } else {
-        if (isAccessor)
+        if (isAccessor) {
           return; // return from here if accessor node
+        }
         // in case shadowPR exists already (can be possible when sender is
         // started from stop operation)
         if (this.index == 0) // HItesh:for first parallelGatewaySenderQueue only
+        {
           handleShadowPRExistsScenario(cache, prQ);
+        }
       }
 
     } finally {
@@ -932,8 +940,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   protected boolean areLocalBucketQueueRegionsPresent() {
     boolean bucketsAvailable = false;
     for (PartitionedRegion prQ : this.userRegionNameToShadowPRMap.values()) {
-      if (prQ.getDataStore().getAllLocalBucketRegions().size() > 0)
+      if (prQ.getDataStore().getAllLocalBucketRegions().size() > 0) {
         return true;
+      }
     }
     return false;
   }
@@ -963,8 +972,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       int nTry = thisProcessorBuckets.size();
 
       while (nTry-- > 0) {
-        if (pickBucketId >= thisProcessorBuckets.size())
+        if (pickBucketId >= thisProcessorBuckets.size()) {
           pickBucketId = 0;
+        }
         BucketRegionQueue br =
             getBucketRegionQueueByBucketId(prQ, thisProcessorBuckets.get(pickBucketId++));
         if (br != null && br.isReadyForPeek()) {
@@ -1473,8 +1483,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
             ((PartitionedRegion) prQ.getRegion()).getDataStore().getAllLocalPrimaryBucketRegions();
 
         for (BucketRegion br : primaryBuckets) {
-          if (br.getId() % this.nDispatcher == this.index)
+          if (br.getId() % this.nDispatcher == this.index) {
             size += br.size();
+          }
         }
       }
       if (logger.isDebugEnabled()) {
@@ -1664,8 +1675,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
               // the thread,
               // but following the pattern is still good
               // practice...
-              if (interrupted)
+              if (interrupted) {
                 Thread.currentThread().interrupt();
+              }
             }
 
             if (logger.isDebugEnabled()) {
@@ -1685,8 +1697,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
               while (regionToDispatchedKeysMap.isEmpty()) {
                 regionToDispatchedKeysMapEmpty.await(StoppableCondition.TIME_TO_WAIT);
               }
-              if (wasEmpty)
+              if (wasEmpty) {
                 continue;
+              }
               // TODO: This should be optimized.
               temp = new HashMap<String, Map<Integer, List>>(regionToDispatchedKeysMap);
               regionToDispatchedKeysMap.clear();

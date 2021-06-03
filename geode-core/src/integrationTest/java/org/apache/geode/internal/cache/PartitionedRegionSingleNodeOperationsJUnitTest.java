@@ -118,8 +118,9 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     }
     logger.info("<ExpectedException action=remove>" + expectedExceptions + "</ExpectedException>");
 
-    if (!pr.isDestroyed())
+    if (!pr.isDestroyed()) {
       pr.destroyRegion();
+    }
 
     pr = (PartitionedRegion) PartitionedRegionTestHelper.createPartitionedRegion(regionname,
         String.valueOf(400), 0);
@@ -144,8 +145,9 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
       assertEquals((num + 1) * 2, ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getPuts());
     }
 
-    if (!pr.isDestroyed())
+    if (!pr.isDestroyed()) {
       pr.destroyRegion();
+    }
 
     pr = (PartitionedRegion) PartitionedRegionTestHelper.createPartitionedRegion(regionname,
         String.valueOf(400), 0);
@@ -214,8 +216,9 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
 
     for (int num = 0; num < 3; num++) {
       Object retval = pr.get(new Integer(num));
-      if (retval != null)
+      if (retval != null) {
         fail("testDestroy()- entry not destroyed  properly in destroy(key)");
+      }
     }
 
     logger.info(addExpected);
@@ -483,9 +486,10 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     pr.put("K1", "V1");
     pr.get("K1");
     pr.close();
-    if (!pr.isClosed || !pr.isDestroyed())
+    if (!pr.isClosed || !pr.isDestroyed()) {
       fail("testClose(): After close isClosed = " + pr.isClosed + " and isDestroyed = "
           + pr.isDestroyed());
+    }
     try {
       pr.put("K2", "V2");
       fail("testClose(): put operation completed on a closed PartitionedRegion. ");
@@ -520,9 +524,10 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     pr.put("K1", "V1");
     pr.get("K1");
     pr.localDestroyRegion();
-    if (pr.isClosed || !pr.isDestroyed())
+    if (pr.isClosed || !pr.isDestroyed()) {
       fail("testClose(): After close isClosed = " + pr.isClosed + " and isDestroyed = "
           + pr.isDestroyed());
+    }
     try {
       pr.put("K2", "V2");
       fail("testClose(): put operation completed on a closed PartitionedRegion. ");

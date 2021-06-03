@@ -89,9 +89,9 @@ public class JmxManagerLocatorRequest implements DataSerializableFixedID {
     Object responseFromServer = client.requestToServer(new HostAndPort(locatorHost, locatorPort),
         SINGLETON, msTimeout, true);
 
-    if (responseFromServer instanceof JmxManagerLocatorResponse)
+    if (responseFromServer instanceof JmxManagerLocatorResponse) {
       return (JmxManagerLocatorResponse) responseFromServer;
-    else {
+    } else {
       throw new IllegalStateException(
           "Unrecognisable response received: This could be the result of trying to connect a non-SSL-enabled client to an SSL-enabled locator.");
     }

@@ -52,8 +52,9 @@ public class ObjectWithCharAttr implements Serializable {
     if (t instanceof ObjectWithCharAttr) {
       ObjectWithCharAttr otherKey = (ObjectWithCharAttr) t;
       return otherKey.t == this.t;
-    } else
+    } else {
       return false;
+    }
   }
 
   public int hashCode() {

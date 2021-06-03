@@ -904,8 +904,9 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
           switch (opType) {
             case PUT:
               rgn.put("key" + threadID, "val" + counter++);
-              if (counter == 10)
+              if (counter == 10) {
                 counter = 0;
+              }
               break;
             case TAKE:
               cnf = (Conflatable) hrq.take();

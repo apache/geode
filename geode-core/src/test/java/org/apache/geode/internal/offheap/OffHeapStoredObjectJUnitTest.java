@@ -737,8 +737,9 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
     // loop though and invoke retain for MAX_REF_COUNT-1 times, as create chunk above counted as one
     // reference
-    for (int i = 0; i < OffHeapStoredObject.MAX_REF_COUNT - 1; i++)
+    for (int i = 0; i < OffHeapStoredObject.MAX_REF_COUNT - 1; i++) {
       chunk.retain();
+    }
 
     // invoke for the one more time should throw exception
     chunk.retain();

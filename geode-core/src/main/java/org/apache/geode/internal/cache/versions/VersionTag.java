@@ -524,24 +524,32 @@ public abstract class VersionTag<T extends VersionSource>
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     VersionTag<?> other = (VersionTag<?>) obj;
-    if (entryVersion != other.entryVersion)
+    if (entryVersion != other.entryVersion) {
       return false;
+    }
     if (memberID == null) {
-      if (other.memberID != null)
+      if (other.memberID != null) {
         return false;
-    } else if (!memberID.equals(other.memberID))
+      }
+    } else if (!memberID.equals(other.memberID)) {
       return false;
-    if (regionVersionHighBytes != other.regionVersionHighBytes)
+    }
+    if (regionVersionHighBytes != other.regionVersionHighBytes) {
       return false;
-    if (regionVersionLowBytes != other.regionVersionLowBytes)
+    }
+    if (regionVersionLowBytes != other.regionVersionLowBytes) {
       return false;
+    }
     if (isGatewayTag() != other.isGatewayTag()) {
       return false;
     }

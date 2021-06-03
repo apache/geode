@@ -202,8 +202,9 @@ public class CacheUtils {
   }
 
   public static QueryService getQueryService() {
-    if (cache.isClosed())
+    if (cache.isClosed()) {
       startCache();
+    }
     return cache.getQueryService();
   }
 

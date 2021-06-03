@@ -72,8 +72,9 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   }
 
   private void checkDomain(ObjectName name) {
-    if (ManagementConstants.OBJECTNAME__DEFAULTDOMAIN.equals(name.getDomain()))
+    if (ManagementConstants.OBJECTNAME__DEFAULTDOMAIN.equals(name.getDomain())) {
       throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
+    }
   }
 
   @Override
@@ -135,18 +136,20 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   @Override
   public Set<ObjectInstance> queryMBeans(ObjectName name, QueryExp query) {
     // We need to filter out the AccessControlMXBean so that the clients wouldn't see it
-    if (query != null)
+    if (query != null) {
       return mbs.queryMBeans(name, Query.and(query, notAccessControlMBean));
-    else
+    } else {
       return mbs.queryMBeans(name, notAccessControlMBean);
+    }
   }
 
   @Override
   public Set<ObjectName> queryNames(ObjectName name, QueryExp query) {
-    if (query != null)
+    if (query != null) {
       return mbs.queryNames(name, Query.and(query, notAccessControlMBean));
-    else
+    } else {
       return mbs.queryNames(name, notAccessControlMBean);
+    }
   }
 
   @Override

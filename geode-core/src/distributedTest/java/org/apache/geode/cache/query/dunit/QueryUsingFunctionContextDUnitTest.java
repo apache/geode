@@ -237,12 +237,14 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
           QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest();
           ArrayList queryResults2 =
               test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, queries[i]);
-          if (queryResults2 == null)
+          if (queryResults2 == null) {
             fail(queries[i] + "result is null from client function");
+          }
 
           ArrayList queryResults1 = test.runLDSQueryOnClientUsingFunc(func, filter, queries[i]);
-          if (queryResults1 == null)
+          if (queryResults1 == null) {
             fail(queries[i] + "result is null from LDS function");
+          }
 
           r[0][0] = queryResults1;
           r[0][1] = queryResults2;
@@ -311,11 +313,13 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
           QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest();
           ArrayList queryResults2 =
               test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, queries[i]);
-          if (queryResults2 == null)
+          if (queryResults2 == null) {
             fail(queries[i] + "result is null from client function");
+          }
           ArrayList queryResults1 = test.runLDSQueryOnClientUsingFunc(func, filter, queries[i]);
-          if (queryResults1 == null)
+          if (queryResults1 == null) {
             fail(queries[i] + "result is null from LDS function");
+          }
 
 
           r[0][0] = queryResults1;
@@ -346,8 +350,9 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
               Region KeyRegion = null;
               for (int i = 3; i < 7; i++) {
                 KeyRegion = ((PartitionedRegion) pr).getBucketRegion(i/* key */);
-                if (KeyRegion != null)
+                if (KeyRegion != null) {
                   KeyRegion.destroyRegion();
+                }
               }
             }
           }
@@ -409,8 +414,9 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
             Region KeyRegion = null;
             for (int i = 0; i < 7; i++) {
               KeyRegion = ((PartitionedRegion) pr).getBucketRegion(i/* key */);
-              if (KeyRegion != null)
+              if (KeyRegion != null) {
                 KeyRegion.destroyRegion();
+              }
             }
           }
         };
@@ -479,8 +485,9 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
             Region KeyRegion = null;
             for (int i = 6; i < 9; i++) {
               KeyRegion = ((PartitionedRegion) pr).getBucketRegion(i/* key */);
-              if (KeyRegion != null)
+              if (KeyRegion != null) {
                 KeyRegion.destroyRegion();
+              }
             }
           }
         };
@@ -579,8 +586,9 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
         for (int i = 3; i < 5; i++) {
           ArrayList queryResults2 =
               test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, queries[i]);
-          if (queryResults2 == null)
+          if (queryResults2 == null) {
             fail(queries[i] + "result is null from client function");
+          }
           r[j++][1] = queryResults2;
         }
         createIndex();
@@ -588,8 +596,9 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
         for (int i = 3; i < 5; i++) {
           ArrayList queryResults1 =
               test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, queries[i]);
-          if (queryResults1 == null)
+          if (queryResults1 == null) {
             fail(queries[i] + "result is null from client function");
+          }
           r[j++][0] = queryResults1;
         }
 
@@ -1011,8 +1020,9 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         Cache cache = CacheFactory.getAnyInstance();
         Region region = cache.getRegion(regionName);
-        for (int j = from; j < to; j++)
+        for (int j = from; j < to; j++) {
           region.put(new Integer(j), portfolio[j]);
+        }
         LogWriterUtils.getLogWriter()
             .info("getCacheSerializableRunnableForPRPuts: Inserted Portfolio data on Region "
                 + regionName);

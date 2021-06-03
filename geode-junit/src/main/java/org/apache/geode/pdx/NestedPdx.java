@@ -51,32 +51,43 @@ public class NestedPdx implements PdxSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     NestedPdx other = (NestedPdx) obj;
-    if (Float.floatToIntBits(myFloat) != Float.floatToIntBits(other.myFloat))
+    if (Float.floatToIntBits(myFloat) != Float.floatToIntBits(other.myFloat)) {
       return false;
+    }
     if (myHashMap == null) {
-      if (other.myHashMap != null)
+      if (other.myHashMap != null) {
         return false;
-    } else if (!myHashMap.equals(other.myHashMap))
+      }
+    } else if (!myHashMap.equals(other.myHashMap)) {
       return false;
-    if (myLong != other.myLong)
+    }
+    if (myLong != other.myLong) {
       return false;
+    }
     if (myString1 == null) {
-      if (other.myString1 != null)
+      if (other.myString1 != null) {
         return false;
-    } else if (!myString1.equals(other.myString1))
+      }
+    } else if (!myString1.equals(other.myString1)) {
       return false;
+    }
     if (myString2 == null) {
-      if (other.myString2 != null)
+      if (other.myString2 != null) {
         return false;
-    } else if (!myString2.equals(other.myString2))
+      }
+    } else if (!myString2.equals(other.myString2)) {
       return false;
+    }
     return true;
   }
 

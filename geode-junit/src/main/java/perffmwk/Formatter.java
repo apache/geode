@@ -58,10 +58,11 @@ public class Formatter {
     Vector v = new Vector();
     for (Iterator i = c.iterator(); i.hasNext();) {
       Object o = i.next();
-      if (o instanceof Double)
+      if (o instanceof Double) {
         v.add(f.format(o));
-      else
+      } else {
         v.add(o);
+      }
     }
     return v;
   }

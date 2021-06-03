@@ -120,8 +120,9 @@ public class VMLRURegionMap extends AbstractRegionMap {
   private int getDelta() {
     Object d = lruDelta.get();
     lruDelta.set(null); // We only want the delta consumed once
-    if (d == null)
+    if (d == null) {
       return 0;
+    }
     return ((Integer) d).intValue();
   }
 
@@ -205,8 +206,9 @@ public class VMLRURegionMap extends AbstractRegionMap {
 
   private boolean getMustRemove() {
     Object d = mustRemove.get();
-    if (d == null)
+    if (d == null) {
       return false;
+    }
     return ((Boolean) d).booleanValue();
   }
 
@@ -216,8 +218,9 @@ public class VMLRURegionMap extends AbstractRegionMap {
 
   private boolean getCallbackDisabled() {
     Object d = callbackDisabled.get();
-    if (d == null)
+    if (d == null) {
       return false;
+    }
     return ((Boolean) d).booleanValue();
   }
 

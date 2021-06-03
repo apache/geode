@@ -153,8 +153,9 @@ public class PdxListHelper {
   }
 
   public void addObjectField(String fieldName, JSONToPdxMapper dpi) {
-    if (fieldName != null)
+    if (fieldName != null) {
       throw new IllegalStateException("addObjectField:list should have object no fieldname");
+    }
     if (logger.isTraceEnabled()) {
       logger.trace("addObjectField fieldName: {}", fieldName);
     }

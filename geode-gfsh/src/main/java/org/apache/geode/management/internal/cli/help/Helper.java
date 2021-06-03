@@ -108,8 +108,9 @@ public class Helper {
 
     // resolve the hint message for each method
     CliMetaData cliMetaData = commandMethod.getDeclaredAnnotation(CliMetaData.class);
-    if (cliMetaData == null)
+    if (cliMetaData == null) {
       return;
+    }
     String[] related = cliMetaData.relatedTopic();
 
     // for hint message, we only need to show the first synonym
@@ -449,11 +450,13 @@ public class Helper {
   private static List<String> getSynonyms(CliOption option) {
     List<String> synonyms = new ArrayList<>();
     String[] keys = option.key();
-    if (keys.length < 2)
+    if (keys.length < 2) {
       return synonyms;
+    }
     // if the primary key is empty (like sh and help command), then there should be no synonyms.
-    if ("".equals(keys[0]))
+    if ("".equals(keys[0])) {
       return synonyms;
+    }
 
     synonyms.addAll(Arrays.asList(keys).subList(1, keys.length));
     return synonyms;

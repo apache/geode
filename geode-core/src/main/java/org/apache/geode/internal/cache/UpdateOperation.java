@@ -384,8 +384,9 @@ public class UpdateOperation extends AbstractUpdateOperation {
       super.toData(out, context);
 
       byte extraFlags = this.deserializationPolicy;
-      if (this.eventId != null)
+      if (this.eventId != null) {
         extraFlags |= HAS_EVENTID;
+      }
       if (this.deserializationPolicy != DistributedCacheOperation.DESERIALIZATION_POLICY_NONE
           && this.sendDeltaWithFullValue && this.event.getDeltaBytes() != null) {
         extraFlags |= HAS_DELTA_WITH_FULL_VALUE;

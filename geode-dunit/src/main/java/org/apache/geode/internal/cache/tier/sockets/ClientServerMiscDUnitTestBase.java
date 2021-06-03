@@ -1167,14 +1167,18 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     assertNotNull(r1);
     assertNotNull(r2);
 
-    if (!r1.containsKey(k1))
+    if (!r1.containsKey(k1)) {
       r1.create(k1, k1);
-    if (!r1.containsKey(k2))
+    }
+    if (!r1.containsKey(k2)) {
       r1.create(k2, k2);
-    if (!r2.containsKey(k1))
+    }
+    if (!r2.containsKey(k1)) {
       r2.create(k1, k1);
-    if (!r2.containsKey(k2))
+    }
+    if (!r2.containsKey(k2)) {
       r2.create(k2, k2);
+    }
 
     assertEquals(r1.getEntry(k1).getValue(), k1);
     assertEquals(r1.getEntry(k2).getValue(), k2);

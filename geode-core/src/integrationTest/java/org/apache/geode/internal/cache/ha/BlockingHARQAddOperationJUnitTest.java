@@ -137,8 +137,9 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
     assertNotNull(obj);
     assertEquals(id1, obj.getEventId());
 
-    if (testFailed)
+    if (testFailed) {
       fail("Test failed due to " + message);
+    }
   }
 
   /**
@@ -194,8 +195,9 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
       assertNotNull(c);
     }
 
-    if (testFailed)
+    if (testFailed) {
       fail("Test failed due to " + message);
+    }
     this.logWriter.info("HARQAddOperationJUnitTest : testConcurrentBlockingTake END");
   }
 }

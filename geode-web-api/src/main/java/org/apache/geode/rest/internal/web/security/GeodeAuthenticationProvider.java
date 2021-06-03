@@ -49,10 +49,12 @@ public class GeodeAuthenticationProvider implements AuthenticationProvider, Serv
     String username = authentication.getName();
     String password = authentication.getCredentials().toString();
     Properties credentials = new Properties();
-    if (username != null)
+    if (username != null) {
       credentials.put(ResourceConstants.USER_NAME, username);
-    if (password != null)
+    }
+    if (password != null) {
       credentials.put(ResourceConstants.PASSWORD, password);
+    }
 
     try {
       securityService.login(credentials);

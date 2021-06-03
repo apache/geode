@@ -42,8 +42,9 @@ public class Value2 implements Serializable {
     if (other instanceof Value2) {
       Value2 v2 = (Value2) other;
       return v2.stateName.equals(stateName);
-    } else
+    } else {
       return false;
+    }
   }
 
   public int hashCode() {

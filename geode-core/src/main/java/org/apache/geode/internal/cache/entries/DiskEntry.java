@@ -1253,8 +1253,9 @@ public interface DiskEntry extends RegionEntry {
       try {
         synchronized (did) {
           Object value = getValueFromDisk(dr, did, null, dr.getCache());
-          if (value == null)
+          if (value == null) {
             return null;
+          }
           setValueOnFaultIn(value, did, entry, dr, region);
           return value;
         }
@@ -1418,8 +1419,9 @@ public interface DiskEntry extends RegionEntry {
     }
 
     public static void doAsyncFlush(VersionTag tag, InternalRegion region) {
-      if (region.isThisRegionBeingClosedOrDestroyed())
+      if (region.isThisRegionBeingClosedOrDestroyed()) {
         return;
+      }
       DiskRegion dr = region.getDiskRegion();
       if (!dr.isBackup()) {
         return;
@@ -1451,8 +1453,9 @@ public interface DiskEntry extends RegionEntry {
      */
     private static void writeEntryToDisk(DiskEntry entry, InternalRegion region, VersionTag tag,
         boolean asyncQueueWasFull) {
-      if (region.isThisRegionBeingClosedOrDestroyed())
+      if (region.isThisRegionBeingClosedOrDestroyed()) {
         return;
+      }
       DiskRegion dr = region.getDiskRegion();
       if (!asyncQueueWasFull) {
         dr.setClearCountReference();
@@ -1475,8 +1478,9 @@ public interface DiskEntry extends RegionEntry {
                 final int entryValSize = region.calculateRegionEntryValueSize(entry);
                 try {
                   if (Token.isRemovedFromDisk(entryVal)) {
-                    if (region.isThisRegionBeingClosedOrDestroyed())
+                    if (region.isThisRegionBeingClosedOrDestroyed()) {
                       return;
+                    }
                     dr.remove(region, entry, true, false);
                     if (dr.isBackup()) {
                       did.setKeyId(DiskRegion.INVALID_ID); // fix for bug 41340

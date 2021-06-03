@@ -103,8 +103,9 @@ public class StopCQ extends BaseCQCommand {
         authzRequest.stopCQAuthorize(cqName, queryStr, cqRegionNames);
       }
       cqService.stopCq(cqName, id);
-      if (cqQuery != null)
+      if (cqQuery != null) {
         serverConnection.removeCq(cqName, cqQuery.isDurable());
+      }
     } catch (CqException cqe) {
       sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", clientMessage.getTransactionId(), cqe,
           serverConnection);

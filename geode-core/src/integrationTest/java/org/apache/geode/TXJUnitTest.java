@@ -710,8 +710,9 @@ public class TXJUnitTest {
         assertEquals(true, ev.isCallbackArgumentAvailable());
         assertTrue(!ev.isOriginRemote());
         assertTrue(!ev.getOperation().isExpiration());
-        if (!isPR())
+        if (!isPR()) {
           assertTrue(!ev.getOperation().isDistributed());
+        }
       }
     }
     reg1.localDestroy("key1");
@@ -779,8 +780,9 @@ public class TXJUnitTest {
         assertEquals(true, ev.isCallbackArgumentAvailable());
         assertTrue(!ev.isOriginRemote());
         assertTrue(!ev.getOperation().isExpiration());
-        if (!isPR())
+        if (!isPR()) {
           assertTrue(!ev.getOperation().isDistributed());
+        }
       }
     }
     reg1.localDestroy("key1");
@@ -3141,9 +3143,10 @@ public class TXJUnitTest {
       assertNotNull(event.getRegion().getCache().getCacheTransactionManager());
       assertEquals(this.getTXId(), event.getTransactionId());
 
-      if (!isPR())
+      if (!isPR()) {
         assertEquals("IsDistributed Assertion!", this.isDistributed(),
             event.getOperation().isDistributed());
+      }
       assertEquals(this.getKey(), event.getKey());
       assertSame(this.getCallBackArg(), event.getCallbackArgument());
       if (newValIdentCheck) {
@@ -3660,8 +3663,9 @@ public class TXJUnitTest {
     cbv.setTXId(txMgr.getTransactionId());
     cbv.setExpectedCount(appCallCount++);
     this.region.localDestroy(key1, callBackArg);
-    if (!isPR())
+    if (!isPR()) {
       vCw.localDestroyMakeup(1); // Account for cacheWriter not begin called
+    }
     assertTrue("Non-TX LocalDestroy Validation Assertion", cbv.passedValidation());
     cbv.suspendValidation(true);
     this.region.create(key1, value1);
@@ -3672,8 +3676,9 @@ public class TXJUnitTest {
     cbv.setTXId(txMgr.getTransactionId());
     cbv.setExpectedCount(appCallCount++);
     this.region.localDestroy(key1, callBackArg);
-    if (!isPR())
+    if (!isPR()) {
       vCw.localDestroyMakeup(1); // Account for cacheWriter not begin called
+    }
     this.txMgr.commit();
     assertTrue("TX LocalDestroy Validation Assertion", cbv.passedValidation());
 
@@ -4354,8 +4359,9 @@ public class TXJUnitTest {
       public void close() {}
     });
     LocalRegion reg1 = (LocalRegion) this.region;
-    if (isPR())
+    if (isPR()) {
       ((PartitionedRegion) reg1).setHaveCacheLoader();
+    }
     assertTrue(!reg1.containsKey("key1"));
     assertEquals("LV 1", reg1.get("key1"));
     assertTrue(reg1.containsKey("key1"));
@@ -6311,7 +6317,7 @@ public class TXJUnitTest {
         public void run() {
           try {
             region.put("syncKey4", "syncVal4");
-            while (true)
+            while (true) {
               synchronized (signal) {
                 signal[0] = 1;
                 signal.notify();
@@ -6320,6 +6326,7 @@ public class TXJUnitTest {
                   break;
                 }
               }
+            }
           } catch (Exception error) {
             fail("Non-tx thread failure due to: " + error);
           }
@@ -6327,7 +6334,7 @@ public class TXJUnitTest {
       };
       t.start();
       try {
-        while (true)
+        while (true) {
           synchronized (signal) {
             if (signal[0] == 1) {
               signal[0] = 0;
@@ -6337,6 +6344,7 @@ public class TXJUnitTest {
               signal.wait();
             }
           }
+        }
       } catch (InterruptedException dangit) {
         fail("Tx thread waiting for non-tx thread failed due to : " + dangit);
       }

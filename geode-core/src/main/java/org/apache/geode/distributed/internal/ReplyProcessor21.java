@@ -631,8 +631,9 @@ public class ReplyProcessor21 implements MembershipListener {
     MessageDependencyMonitor.waitingForReply(this);
     try {
       // do the interrupted check inside the try so that cleanup is called
-      if (interrupted)
+      if (interrupted) {
         throw new InterruptedException();
+      }
       if (stillWaiting()) {
         preWait();
         try {
@@ -653,8 +654,9 @@ public class ReplyProcessor21 implements MembershipListener {
         try {
           cleanup();
         } finally {
-          if (interrupted)
+          if (interrupted) {
             throw new InterruptedException();
+          }
         }
       }
       MessageDependencyMonitor.doneWaiting(this);
@@ -1060,8 +1062,9 @@ public class ReplyProcessor21 implements MembershipListener {
    */
   private void timeout(boolean suspectThem, boolean severeAlert) {
 
-    if (!this.processTimeout())
+    if (!this.processTimeout()) {
       return;
+    }
 
     Set activeMembers = getDistributionManagerIds();
 

@@ -736,8 +736,9 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
 
     @Override
     public boolean equals(Object o) {
-      if (!(o instanceof SimplePositionPdx))
+      if (!(o instanceof SimplePositionPdx)) {
         return false;
+      }
       return this.secId.equals(((SimplePositionPdx) o).secId);
     }
 

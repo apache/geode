@@ -48,8 +48,9 @@ public class IndexUsageInNestedQueryJUnitTest {
   public void setUp() throws java.lang.Exception {
     CacheUtils.startCache();
     Region r = CacheUtils.createRegion("portfolios", Portfolio.class);
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++) {
       r.put(i + "", new Portfolio(i));
+    }
   }
 
   @After

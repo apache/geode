@@ -215,10 +215,11 @@ public abstract class DynamicRegionFactory {
    * Returns the configuration for this factory. Returns null if the factory is closed;
    */
   public Config getConfig() {
-    if (this.config == null)
+    if (this.config == null) {
       return null;
-    else
+    } else {
       return new Config(this.config);
+    }
   }
 
   public static boolean regionIsDynamicRegionList(String regionPath) {
@@ -287,8 +288,9 @@ public abstract class DynamicRegionFactory {
           }
 
           for (GatewaySender gs : this.cache.getGatewaySenders()) {
-            if (!gs.isParallel())
+            if (!gs.isParallel()) {
               factory.addGatewaySenderId(gs.getId());
+            }
           }
           factory.setInternalMetaRegion(new DistributedMetaRegion(factory.getCreateAttributes()));
         }
@@ -741,27 +743,36 @@ public abstract class DynamicRegionFactory {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       Config other = (Config) obj;
       if (diskDir == null) {
-        if (other.diskDir != null)
+        if (other.diskDir != null) {
           return false;
-      } else if (!diskDir.equals(other.diskDir))
+        }
+      } else if (!diskDir.equals(other.diskDir)) {
         return false;
-      if (persistBackup != other.persistBackup)
+      }
+      if (persistBackup != other.persistBackup) {
         return false;
+      }
       if (poolName == null) {
-        if (other.poolName != null)
+        if (other.poolName != null) {
           return false;
-      } else if (!poolName.equals(other.poolName))
+        }
+      } else if (!poolName.equals(other.poolName)) {
         return false;
-      if (registerInterest != other.registerInterest)
+      }
+      if (registerInterest != other.registerInterest) {
         return false;
+      }
       return true;
     }
 
@@ -808,13 +819,15 @@ public abstract class DynamicRegionFactory {
   }
 
   protected void buildDynamicRegion(EntryEvent event) {
-    if (!DynamicRegionFactory.this.isOpen())
+    if (!DynamicRegionFactory.this.isOpen()) {
       return;
+    }
 
     // Ignore the callback if it originated in this process (because the region
     // will already have been created) and the event is not a client event
-    if (!event.isOriginRemote() && !event.hasClientOrigin())
+    if (!event.isOriginRemote() && !event.hasClientOrigin()) {
       return;
+    }
     //
     DynamicRegionAttributes dra = (DynamicRegionAttributes) event.getNewValue();
     String parentRegionName = dra.rootRegionName;
@@ -833,8 +846,9 @@ public abstract class DynamicRegionFactory {
   }
 
   protected void razeDynamicRegion(EntryEvent event) {
-    if (!DynamicRegionFactory.this.isOpen())
+    if (!DynamicRegionFactory.this.isOpen()) {
       return;
+    }
 
     // Because CacheClientUpdater calls localDestroy we need to allow
     // "local" events. If this is a true local then c.getRegion will return

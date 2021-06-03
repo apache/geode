@@ -1330,8 +1330,9 @@ public class FilterProfile implements DataSerializableFixedID {
         // can be used to detect the change and the receiver can recompute
         // the routing.
         if (!pf.isLocalProfile() && cacheOpRecipients.contains(cf.getDistributedMember())) {
-          if (frInfo == null)
+          if (frInfo == null) {
             frInfo = new FilterRoutingInfo();
+          }
           frInfo.addInterestedClients(cf.getDistributedMember(), Collections.emptySet(),
               Collections.emptySet(), false);
         }
@@ -1362,8 +1363,9 @@ public class FilterProfile implements DataSerializableFixedID {
           logger.debug("Setting local interested clients={} and clientsInv={}", clients,
               clientsInv);
         }
-        if (frInfo == null)
+        if (frInfo == null) {
           frInfo = new FilterRoutingInfo();
+        }
         frInfo.setLocalInterestedClients(clients, clientsInv);
       } else {
         if (cacheOpRecipients.contains(cf.getDistributedMember()) || // always send a routing with
@@ -1374,8 +1376,9 @@ public class FilterProfile implements DataSerializableFixedID {
             logger.debug("Adding interested clients={} and clientsIn={} to {}", clients, clientsInv,
                 filterRoutingInfo);
           }
-          if (frInfo == null)
+          if (frInfo == null) {
             frInfo = new FilterRoutingInfo();
+          }
           frInfo.addInterestedClients(cf.getDistributedMember(), clients, clientsInv,
               this.clientMap.hasLongID);
         }
@@ -1409,8 +1412,9 @@ public class FilterProfile implements DataSerializableFixedID {
         Set keys = (Set) entry.getValue();
         if (keys.contains(event.getKey())) {
           Object clientID = entry.getKey();
-          if (result == null)
+          if (result == null) {
             result = new HashSet();
+          }
           result.add(clientID);
           if (logger.isDebugEnabled()) {
             logger.debug("client {} matched for key list (size {})", clientID,
@@ -1427,8 +1431,9 @@ public class FilterProfile implements DataSerializableFixedID {
         for (Pattern keyPattern : interestList.values()) {
           if (keyPattern.matcher(stringKey).matches()) {
             Object clientID = entry.getKey();
-            if (result == null)
+            if (result == null) {
               result = new HashSet();
+            }
             result.add(clientID);
             if (logger.isDebugEnabled()) {
               logger.debug("client {} matched for pattern ({})", clientID, pats.get(clientID));
@@ -1461,8 +1466,9 @@ public class FilterProfile implements DataSerializableFixedID {
               || (op.isDestroy() && filter.notifyOnDestroy(iev))
               || (op.isInvalidate() && filter.notifyOnInvalidate(iev))) {
             Object clientID = entry.getKey();
-            if (result == null)
+            if (result == null) {
               result = new HashSet();
+            }
             result.add(clientID);
             if (logger.isDebugEnabled()) {
               logger.debug("client {} matched for filter ({})", clientID,

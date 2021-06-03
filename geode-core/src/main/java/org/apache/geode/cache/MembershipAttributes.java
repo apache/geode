@@ -167,23 +167,30 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
    */
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof MembershipAttributes))
+    }
+    if (!(other instanceof MembershipAttributes)) {
       return false;
+    }
     final MembershipAttributes that = (MembershipAttributes) other;
 
     if (this.requiredRoles != that.requiredRoles
-        && !(this.requiredRoles != null && this.requiredRoles.equals(that.requiredRoles)))
+        && !(this.requiredRoles != null && this.requiredRoles.equals(that.requiredRoles))) {
       return false;
+    }
     if (this.lossAction != that.lossAction
-        && !(this.lossAction != null && this.lossAction.equals(that.lossAction)))
+        && !(this.lossAction != null && this.lossAction.equals(that.lossAction))) {
       return false;
+    }
     if (this.resumptionAction != that.resumptionAction
-        && !(this.resumptionAction != null && this.resumptionAction.equals(that.resumptionAction)))
+        && !(this.resumptionAction != null
+            && this.resumptionAction.equals(that.resumptionAction))) {
       return false;
+    }
 
     return true;
   }
@@ -220,8 +227,9 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
       sb.append("RequiredRoles(");
       boolean comma = false;
       for (Iterator<Role> iter = this.requiredRoles.iterator(); iter.hasNext();) {
-        if (comma)
+        if (comma) {
           sb.append(",");
+        }
         Role role = iter.next();
         sb.append(role.getName());
         comma = true;

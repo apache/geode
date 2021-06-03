@@ -82,19 +82,25 @@ public class SimpleClass implements PdxSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     SimpleClass other = (SimpleClass) obj;
-    if (myByte != other.myByte)
+    if (myByte != other.myByte) {
       return false;
-    if (myEnum != other.myEnum)
+    }
+    if (myEnum != other.myEnum) {
       return false;
-    if (myInt != other.myInt)
+    }
+    if (myInt != other.myInt) {
       return false;
+    }
     return true;
   }
 }

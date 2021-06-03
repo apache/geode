@@ -128,8 +128,9 @@ public class PRQueryProcessor {
 
   private void executeWithThreadPool(Collection<Collection> resultCollector)
       throws QueryException, InterruptedException, ForceReattemptException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
 
     java.util.List callableTasks = buildCallableTaskList(resultCollector);
     ExecutorService execService = PRQueryExecutor.getExecutorService();
@@ -316,8 +317,9 @@ public class PRQueryProcessor {
     }
 
     static synchronized void shutdownNow() {
-      if (execService != null)
+      if (execService != null) {
         execService.shutdownNow();
+      }
     }
 
     static synchronized ExecutorService getExecutorService() {

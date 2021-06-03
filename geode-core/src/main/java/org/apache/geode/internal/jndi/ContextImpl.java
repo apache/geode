@@ -468,17 +468,19 @@ public class ContextImpl implements Context {
       return res;
     } catch (NameNotFoundException e) {
       LogWriter writer = TransactionUtils.getLogWriter();
-      if (writer.infoEnabled())
+      if (writer.infoEnabled()) {
         writer.info(String.format("ContextImpl::lookup::Error while looking up %s", name),
             e);
+      }
       throw new NameNotFoundException(
           String.format("Name %s not found", name));
     } catch (SystemException se) {
       LogWriter writer = TransactionUtils.getLogWriter();
-      if (writer.severeEnabled())
+      if (writer.severeEnabled()) {
         writer.info(
             "ContextImpl::lookup::Error while creating UserTransaction object",
             se);
+      }
       throw new NameNotFoundException(
           "ContextImpl::lookup::Error while creating UserTransaction object");
     }
@@ -500,9 +502,10 @@ public class ContextImpl implements Context {
       return lookup(nameParser.parse(name));
     } catch (NameNotFoundException e) {
       LogWriter writer = TransactionUtils.getLogWriter();
-      if (writer.infoEnabled())
+      if (writer.infoEnabled()) {
         writer.info(String.format("ContextImpl::lookup::Error while looking up %s", name),
             e);
+      }
       throw new NameNotFoundException(
           String.format("Name %s not found", new Object[] {name}));
     }

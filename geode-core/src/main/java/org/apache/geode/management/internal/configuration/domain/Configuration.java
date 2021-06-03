@@ -102,8 +102,9 @@ public class Configuration implements DataSerializable {
   }
 
   public void setPropertiesFile(File propertiesFile) throws IOException {
-    if (!propertiesFile.exists())
+    if (!propertiesFile.exists()) {
       return;
+    }
 
     try (FileInputStream fis = new FileInputStream(propertiesFile)) {
       gemfireProperties.load(fis);

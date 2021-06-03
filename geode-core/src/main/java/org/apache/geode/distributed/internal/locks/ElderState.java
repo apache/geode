@@ -340,8 +340,9 @@ public class ElderState {
   }
 
   private boolean isInitiatingTransfer(GrantorInfo gi) {
-    if (gi == null)
+    if (gi == null) {
       return false;
+    }
     synchronized (this) {
       return gi.isInitiatingTransfer();
     }
@@ -373,8 +374,9 @@ public class ElderState {
           }
         }
       } finally {
-        if (interrupted)
+        if (interrupted) {
           Thread.currentThread().interrupt();
+        }
       }
     }
   }

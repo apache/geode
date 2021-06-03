@@ -74,13 +74,15 @@ public class SortedSetsIntegrationTest {
     String key = randString();
     Map<String, Double> scoreMembers = new HashMap<>();
 
-    for (int i = 0; i < numMembers; i++)
+    for (int i = 0; i < numMembers; i++) {
       scoreMembers.put(randString(), rand.nextDouble());
+    }
 
     jedis.zadd(key, scoreMembers);
     int k = 0;
-    for (String entry : scoreMembers.keySet())
+    for (String entry : scoreMembers.keySet()) {
       assertNotNull(jedis.zscore(key, entry));
+    }
 
     Set<Tuple> results = jedis.zrangeWithScores(key, 0, -1);
     Map<String, Double> resultMap = new HashMap<String, Double>();
@@ -99,8 +101,9 @@ public class SortedSetsIntegrationTest {
       } while (start > stop);
       results = jedis.zrangeWithScores(key, start, stop);
       List<Entry<String, Double>> resultList = new ArrayList<Entry<String, Double>>();
-      for (Tuple t : results)
+      for (Tuple t : results) {
         resultList.add(new AbstractMap.SimpleEntry<String, Double>(t.getElement(), t.getScore()));
+      }
       List<Entry<String, Double>> list =
           new ArrayList<Entry<String, Double>>(scoreMembers.entrySet());
       Collections.sort(list, new EntryCmp());
@@ -116,8 +119,9 @@ public class SortedSetsIntegrationTest {
 
     Map<String, Double> scoreMembers = new HashMap<String, Double>();
 
-    for (int i = 0; i < numMembers; i++)
+    for (int i = 0; i < numMembers; i++) {
       scoreMembers.put(randString(), rand.nextDouble());
+    }
 
     jedis.zadd(key, scoreMembers);
 
@@ -132,8 +136,9 @@ public class SortedSetsIntegrationTest {
       } while (start > stop);
       results = jedis.zrevrangeWithScores(key, start, stop);
       List<Entry<String, Double>> resultList = new ArrayList<Entry<String, Double>>();
-      for (Tuple t : results)
+      for (Tuple t : results) {
         resultList.add(new AbstractMap.SimpleEntry<String, Double>(t.getElement(), t.getScore()));
+      }
       List<Entry<String, Double>> list =
           new ArrayList<Entry<String, Double>>(scoreMembers.entrySet());
       Collections.sort(list, new EntryRevCmp());
@@ -162,8 +167,9 @@ public class SortedSetsIntegrationTest {
 
       for (int j = 0; j < num; j++) {
         Double nextDouble = rand.nextDouble();
-        if (nextDouble >= min && nextDouble <= max)
+        if (nextDouble >= min && nextDouble <= max) {
           count++;
+        }
         scoreMembers.put(randString(), nextDouble);
       }
 
@@ -211,14 +217,16 @@ public class SortedSetsIntegrationTest {
         String s = randString();
         Double d = rand.nextDouble();
         scoreMembers.put(s, d);
-        if (d > min && d < max)
+        if (d > min && d < max) {
           expected.add(new AbstractMap.SimpleEntry<String, Double>(s, d));
+        }
       }
       jedis.zadd(key, scoreMembers);
       Set<Tuple> results = jedis.zrangeByScoreWithScores(key, min, max);
       List<Entry<String, Double>> resultList = new ArrayList<Entry<String, Double>>();
-      for (Tuple t : results)
+      for (Tuple t : results) {
         resultList.add(new AbstractMap.SimpleEntry<String, Double>(t.getElement(), t.getScore()));
+      }
       Collections.sort(expected, new EntryCmp());
 
       assertEquals(expected, resultList);
@@ -243,14 +251,16 @@ public class SortedSetsIntegrationTest {
         String s = randString();
         Double d = rand.nextDouble();
         scoreMembers.put(s, d);
-        if (d > min && d < max)
+        if (d > min && d < max) {
           expected.add(new AbstractMap.SimpleEntry<String, Double>(s, d));
+        }
       }
       jedis.zadd(key, scoreMembers);
       Set<Tuple> results = jedis.zrevrangeByScoreWithScores(key, max, min);
       List<Entry<String, Double>> resultList = new ArrayList<Entry<String, Double>>();
-      for (Tuple t : results)
+      for (Tuple t : results) {
         resultList.add(new AbstractMap.SimpleEntry<String, Double>(t.getElement(), t.getScore()));
+      }
       Collections.sort(expected, new EntryRevCmp());
 
       assertEquals(expected, resultList);
@@ -275,8 +285,9 @@ public class SortedSetsIntegrationTest {
         String s = randString();
         Double d = rand.nextDouble();
         scoreMembers.put(s, d);
-        if (d > min && d < max)
+        if (d > min && d < max) {
           expected.add(new AbstractMap.SimpleEntry<String, Double>(s, d));
+        }
       }
       jedis.zadd(key, scoreMembers);
       Collections.sort(expected, new EntryCmp());
@@ -289,8 +300,9 @@ public class SortedSetsIntegrationTest {
         assertTrue(jedis.zrem(key, rem) == 1);
       }
       String s = randString();
-      if (!expected.contains(s))
+      if (!expected.contains(s)) {
         assertTrue(jedis.zrem(key, s) == 0);
+      }
       jedis.del(key);
     }
   }
@@ -317,8 +329,9 @@ public class SortedSetsIntegrationTest {
         assertEquals(new Long(i), rank);
       }
       String field = randString();
-      if (!expected.contains(field))
+      if (!expected.contains(field)) {
         assertNull(jedis.zrank(key, field));
+      }
       jedis.del(key);
     }
   }
@@ -345,8 +358,9 @@ public class SortedSetsIntegrationTest {
         assertEquals(new Long(i), rank);
       }
       String field = randString();
-      if (!expected.contains(field))
+      if (!expected.contains(field)) {
         assertNull(jedis.zrank(key, field));
+      }
       jedis.del(key);
     }
   }
@@ -356,10 +370,11 @@ public class SortedSetsIntegrationTest {
     @Override
     public int compare(Entry<String, Double> o1, Entry<String, Double> o2) {
       Double diff = o1.getValue() - o2.getValue();
-      if (diff == 0)
+      if (diff == 0) {
         return o2.getKey().compareTo(o1.getKey());
-      else
+      } else {
         return diff > 0 ? 1 : -1;
+      }
     }
 
   }
@@ -369,10 +384,11 @@ public class SortedSetsIntegrationTest {
     @Override
     public int compare(Entry<String, Double> o1, Entry<String, Double> o2) {
       Double diff = o2.getValue() - o1.getValue();
-      if (diff == 0)
+      if (diff == 0) {
         return o1.getKey().compareTo(o2.getKey());
-      else
+      } else {
         return diff > 0 ? 1 : -1;
+      }
     }
 
   }
@@ -396,8 +412,9 @@ public class SortedSetsIntegrationTest {
         Double d = rand.nextDouble();
         scoreMembers.put(s, d);
         fullList.add(new AbstractMap.SimpleEntry<String, Double>(s, d));
-        if (d > min && d < max)
+        if (d > min && d < max) {
           toRemoveList.add(new AbstractMap.SimpleEntry<String, Double>(s, d));
+        }
       }
       jedis.zadd(key, scoreMembers);
       Long numRemoved = jedis.zremrangeByScore(key, min, max);
@@ -406,8 +423,9 @@ public class SortedSetsIntegrationTest {
       Collections.sort(expectedList, new EntryCmp());
       Set<Tuple> result = jedis.zrangeWithScores(key, 0, -1);
       List<Entry<String, Double>> resultList = new ArrayList<Entry<String, Double>>();
-      for (Tuple t : result)
+      for (Tuple t : result) {
         resultList.add(new AbstractMap.SimpleEntry<String, Double>(t.getElement(), t.getScore()));
+      }
       assertEquals(expectedList, resultList);
       jedis.del(key);
     }

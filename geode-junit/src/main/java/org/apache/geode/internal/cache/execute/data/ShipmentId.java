@@ -68,8 +68,9 @@ public class ShipmentId implements DataSerializable {
   }
 
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
+    }
 
     if (obj instanceof ShipmentId) {
       ShipmentId other = (ShipmentId) obj;

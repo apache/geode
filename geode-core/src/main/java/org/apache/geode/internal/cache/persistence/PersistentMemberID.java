@@ -116,37 +116,50 @@ public class PersistentMemberID implements DataSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     PersistentMemberID other = (PersistentMemberID) obj;
     if (directory == null) {
-      if (other.directory != null)
+      if (other.directory != null) {
         return false;
-    } else if (!directory.equals(other.directory))
+      }
+    } else if (!directory.equals(other.directory)) {
       return false;
+    }
     if (diskStoreId == null) {
-      if (other.diskStoreId != null)
+      if (other.diskStoreId != null) {
         return false;
-    } else if (!diskStoreId.equals(other.diskStoreId))
+      }
+    } else if (!diskStoreId.equals(other.diskStoreId)) {
       return false;
+    }
     if (host == null) {
-      if (other.host != null)
+      if (other.host != null) {
         return false;
-    } else if (!host.equals(other.host))
+      }
+    } else if (!host.equals(other.host)) {
       return false;
-    if (timeStamp != other.timeStamp)
+    }
+    if (timeStamp != other.timeStamp) {
       return false;
-    if (version != other.version)
+    }
+    if (version != other.version) {
       return false;
+    }
     if (name == null) {
-      if (other.name != null)
+      if (other.name != null) {
         return false;
-    } else if (!name.equals(other.name))
+      }
+    } else if (!name.equals(other.name)) {
       return false;
+    }
 
     return true;
   }

@@ -496,8 +496,9 @@ public class FreeListManager {
     ArrayList<Fragment> tmp = new ArrayList<Fragment>();
     for (int i = sorted.size() - 1; i >= 0; i--) {
       long addr = sorted.get(i);
-      if (addr == 0L)
+      if (addr == 0L) {
         continue;
+      }
       int addrSize = OffHeapStoredObject.getSize(addr);
       Fragment f = createFragment(addr, addrSize);
       if (addrSize >= chunkSize) {
@@ -592,8 +593,9 @@ public class FreeListManager {
   }
 
   private void collectFreeFragmentChunks(List<LongStack> l) {
-    if (this.fragmentList.size() == 0)
+    if (this.fragmentList.size() == 0) {
       return;
+    }
     OffHeapStoredObjectAddressStack result = new OffHeapStoredObjectAddressStack();
     for (Fragment f : this.fragmentList) {
       int offset;
@@ -648,8 +650,9 @@ public class FreeListManager {
   }
 
   OffHeapStoredObject allocateFromFragment(final int fragIdx, final int chunkSize) {
-    if (fragIdx >= this.fragmentList.size())
+    if (fragIdx >= this.fragmentList.size()) {
       return null;
+    }
     final Fragment fragment;
     try {
       fragment = this.fragmentList.get(fragIdx);
@@ -864,8 +867,9 @@ public class FreeListManager {
     final List<MemoryBlock> value = new ArrayList<MemoryBlock>();
     final MemoryAllocatorImpl sma = this.ma;
     for (int i = 0; i < this.tinyFreeLists.length(); i++) {
-      if (this.tinyFreeLists.get(i) == null)
+      if (this.tinyFreeLists.get(i) == null) {
         continue;
+      }
       long addr = this.tinyFreeLists.get(i).getTopAddress();
       while (addr != 0L) {
         value.add(new MemoryBlockNode(sma, new TinyMemoryBlock(addr, i)));

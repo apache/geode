@@ -44,8 +44,9 @@ public class ClientRegistrationEventQueueManager {
       final Conflatable conflatable,
       final Set<ClientProxyMembershipID> originalFilterClientIDs,
       final CacheClientNotifier cacheClientNotifier) {
-    if (registeringProxyEventQueues.isEmpty())
+    if (registeringProxyEventQueues.isEmpty()) {
       return;
+    }
 
     ClientRegistrationEvent clientRegistrationEvent =
         new ClientRegistrationEvent(event, conflatable);
