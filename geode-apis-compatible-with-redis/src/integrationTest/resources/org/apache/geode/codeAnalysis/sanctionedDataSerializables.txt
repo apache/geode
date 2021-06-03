@@ -38,6 +38,10 @@ org/apache/geode/redis/internal/executor/BaseSetOptions,2
 fromData,14
 toData,9
 
+org/apache/geode/redis/internal/executor/sortedset/ZAddOptions,2
+fromData,17
+toData,17
+
 org/apache/geode/redis/internal/executor/string/SetOptions,2
 fromData,27
 toData,27

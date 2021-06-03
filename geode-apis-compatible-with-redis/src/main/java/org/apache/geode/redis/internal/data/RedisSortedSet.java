@@ -190,21 +190,22 @@ public class RedisSortedSet extends AbstractRedisData {
       ZAddOptions options) {
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
-
     int initialSize = getSortedSetSize();
-
+    int changesCount = 0;
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
       validateScoreIsDouble(score);
       byte[] member = iterator.next();
-
       if (options.isNX() && members.containsKey(member)) {
         continue;
       }
       if (options.isXX() && !members.containsKey(member)) {
         continue;
       }
-      memberAdd(member, score);
+      byte[] oldScore = memberAdd(member, score);
+      if (options.isCH() && oldScore != null && !Arrays.equals(oldScore, score)) {
+        changesCount++;
+      }
 
       if (deltaInfo == null) {
         deltaInfo = new AddsDeltaInfo(new ArrayList<>());
@@ -214,7 +215,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     storeChanges(region, key, deltaInfo);
-    return getSortedSetSize() - initialSize;
+    return getSortedSetSize() - initialSize + changesCount;
   }
 
   private void validateScoreIsDouble(byte[] score) {

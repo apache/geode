@@ -73,6 +73,10 @@ public class ZAddExecutor extends AbstractExecutor {
           executorState.xxFound = true;
           optionsFoundCount++;
           break;
+        case "ch":
+          executorState.chFound = true;
+          optionsFoundCount++;
+          break;
         default:
           try {
             Double.valueOf(subCommandString);
@@ -99,17 +103,19 @@ public class ZAddExecutor extends AbstractExecutor {
     if (executorState.xxFound) {
       existsOption = ZAddOptions.Exists.XX;
     }
-    return new ZAddOptions(existsOption);
+    return new ZAddOptions(existsOption, executorState.chFound);
   }
 
   static class ZAddExecutorState {
     public boolean nxFound;
     public boolean xxFound;
+    public boolean chFound;
     public String exceptionMessage;
 
     public void initialize() {
       nxFound = false;
       xxFound = false;
+      chFound = false;
       exceptionMessage = null;
     }
   }
