@@ -1922,7 +1922,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
     VM taskVM = isAccessor ? accessor : datastore1;
 
-    taskVM.invoke(new SerializableCallable() {
+    final TXId txId = (TXId) taskVM.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         Region custRegion = getCache().getRegion(CUSTOMER);
@@ -1930,19 +1930,18 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         mgr.begin();
         assertEquals(5, custRegion.size());
         assertNotNull(mgr.getTXState());
-        return null;
+        return mgr.suspend();
       }
     });
     datastore1.invoke(verifyNoTxState);
     datastore2.invoke(verifyNoTxState);
 
-    TXId txId = (TXId) taskVM.invoke(new SerializableCallable() {
+    taskVM.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         Region custRegion = getCache().getRegion(CUSTOMER);
         Region orderRegion = getCache().getRegion(ORDER);
         TXManagerImpl mgr = getGemfireCache().getTxManager();
-        TransactionId txId = mgr.suspend();
         PartitionedRegion custPR = (PartitionedRegion) custRegion;
         int remoteKey = -1;
         for (int i = 100; i < 200; i++) {
@@ -1964,7 +1963,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             .info("Putting " + custId + ", keyInfo:" + custPR.getKeyInfo(new CustId(remoteKey)));
         orderRegion.put(orderId, new Order("order" + remoteKey));
         assertEquals(6, custRegion.size());
-        return mgr.suspend();
+        mgr.suspend();
+        return null;
       }
     });
     final Integer txOnDatastore1 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
@@ -2057,7 +2057,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     VM datastore2 = VM.getVM(2);
     initAccessorAndDataStore(accessor, datastore1, datastore2, redundancy);
 
-    accessor.invoke(new SerializableCallable() {
+    final TXId txId = (TXId) accessor.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         Region custRegion = getCache().getRegion(CUSTOMER);
@@ -2094,19 +2094,20 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             throw new IllegalArgumentException();
         }
         assertNotNull(mgr.getTXState());
-        return null;
+        return mgr.suspend();
       }
     });
     datastore1.invoke(verifyNoTxState);
     datastore2.invoke(verifyNoTxState);
 
-    TXId txId = (TXId) accessor.invoke(new SerializableCallable() {
+    accessor.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         Region custRegion = getCache().getRegion(CUSTOMER);
         Region orderRegion = getCache().getRegion(ORDER);
 
         TXManagerImpl mgr = getGemfireCache().getTxManager();
+        mgr.resume(txId);
         assertNotNull(mgr.getTXState());
         int expectedSetSize = 0;
         switch (op) {
