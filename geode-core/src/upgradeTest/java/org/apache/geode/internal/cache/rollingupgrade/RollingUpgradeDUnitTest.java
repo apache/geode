@@ -51,7 +51,6 @@ import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -135,9 +134,9 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   @Override
   public void postSetUp() throws Exception {
     deleteWorkingDirFiles();
+    addIgnoredException("Abandoned because shutdown is in progress");
     addIgnoredException("cluster configuration service not available");
     addIgnoredException(ConflictingPersistentDataException.class);
-    addIgnoredException(DistributedSystemDisconnectedException.class);
   }
 
   // We start an "old" locator and old servers
