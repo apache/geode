@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -413,8 +414,7 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
     int locatorAPort = create2WanSitesAndClient(locatorInA, serversInA, senderIdInA, locatorInB,
         serversInB, client, usePartitionedRegion, regionName);
 
-
-    // Put entries & verify result
+    // Put entries
     client.invoke(() -> WANTestBase.doClientPutsFrom(regionName, 0, entries));
     for (VM member : serversInA) {
       member.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
@@ -431,6 +431,8 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
       createReceiverInVMs(server2InB, server3InB);
     }
 
+    CountDownLatch replicateCommandStartlatch = new CountDownLatch(1);
+
     FutureTask<CommandResultAssert> replicateCommandFuture =
         new FutureTask<>(() -> {
           String command = new CommandStringBuilder(REPLICATE_REGION)
@@ -445,80 +447,90 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
           } catch (Exception e) {
             e.printStackTrace();
           }
+          replicateCommandStartlatch.countDown();
           return gfsh.executeAndAssertThat(command);
         });
     LoggingExecutors.newSingleThreadExecutor(getTestMethodName(), true)
         .submit(replicateCommandFuture);
 
-    Thread.sleep(5000);
+    // Wait for the replicate command to start
+    replicateCommandStartlatch.await();
+    Thread.sleep(1000);
+
+    // Stop sender or receiver and verify result
     if (gwToBeStopped == Gateway.SENDER) {
-
-      // Stop sender
-      // If parallel: stop any server
-      // If serial: stop primary or secondary
-      if (useParallel) {
-        server2InA.invoke(() -> WANTestBase.killSender((senderIdInA)));
-      } else {
-        for (VM server : serversInA) {
-          boolean senderWasStopped = server.invoke(() -> {
-            GatewaySender sender = cache.getGatewaySender(senderIdInA);
-            if (((InternalGatewaySender) sender).isPrimary() == stopPrimarySender) {
-              WANTestBase.killSender();
-              return true;
-            }
-            return false;
-          });
-          if (senderWasStopped) {
-            break;
-          }
-        }
-      }
-
-      CommandResultAssert result = replicateCommandFuture.get();
-      System.out.println(
-          "Command result after stopping sender: \n" + result.getCommandResult().asString());
-      // Verify result
-      if (useParallel) {
-        verifyResultOfStoppingParallelSender(result);
-      } else {
-        if (stopPrimarySender) {
-          verifyResultOfStoppingPrimarySerialSender(result);
-        } else {
-          verifyResultStoppingSecondarySerialSender(result);
-        }
-      }
-
+      stopSenderAndVerifyResult(useParallel, stopPrimarySender, server2InA, serversInA, senderIdInA,
+          replicateCommandFuture);
     } else if (gwToBeStopped == Gateway.RECEIVER) {
-
-      // Stop receiver
-      // if parallel sender: stop any receiver
-      // if serial sender: stop receiver connected to primary or secondary
-      if (useParallel) {
-        server2InB.invoke(() -> cache.close());
-      } else {
-        // Region type has no influence on which server should be stopped
-        if (stopPrimarySender) {
-          // Stop the first server which had an available receiver
-          server1InB.invoke(() -> cache.close());
-        } else {
-          server3InB.invoke(() -> cache.close());
-        }
-      }
-
-      CommandResultAssert result = replicateCommandFuture.get();
-      System.out.println(
-          "Command result after stopping receiver: \n" + result.getCommandResult().asString());
-      // Verify result
-      if (useParallel) {
-        verifyResultOfStoppingReceiverWhenUsingParallelSender(result);
-      } else {
-        verifyResultOfStoppingReceiverWhenUsingSerialSender(result);
-        server2InB.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
-      }
-
-    } // END stop RECEIVER
+      stopReceiverAndVerifyResult(useParallel, stopPrimarySender, entries, regionName, server1InB,
+          server2InB, server3InB, replicateCommandFuture);
+    }
   }
 
+  private void stopReceiverAndVerifyResult(boolean useParallel, boolean stopPrimarySender,
+      int entries, String regionName, VM server1InB, VM server2InB, VM server3InB,
+      FutureTask<CommandResultAssert> replicateCommandFuture)
+      throws InterruptedException, java.util.concurrent.ExecutionException {
+    // if parallel sender: stop any receiver
+    // if serial sender: stop receiver connected to primary or secondary
+    if (useParallel) {
+      server2InB.invoke(() -> cache.close());
+    } else {
+      // Region type has no influence on which server should be stopped
+      if (stopPrimarySender) {
+        // Stop the first server which had an available receiver
+        server1InB.invoke(() -> cache.close());
+      } else {
+        server3InB.invoke(() -> cache.close());
+      }
+    }
+
+    CommandResultAssert result = replicateCommandFuture.get();
+    // Verify result
+    if (useParallel) {
+      verifyResultOfStoppingReceiverWhenUsingParallelSender(result);
+    } else {
+      verifyResultOfStoppingReceiverWhenUsingSerialSender(result);
+      server2InB.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
+    }
+  }
+
+  private void stopSenderAndVerifyResult(boolean useParallel, boolean stopPrimarySender,
+      VM server2InA, List<VM> serversInA, String senderIdInA,
+      FutureTask<CommandResultAssert> replicateCommandFuture)
+      throws InterruptedException, java.util.concurrent.ExecutionException {
+    // If parallel: stop any server
+    // If serial: stop primary or secondary
+    if (useParallel) {
+      server2InA.invoke(() -> WANTestBase.killSender(senderIdInA));
+    } else {
+      for (VM server : serversInA) {
+        boolean senderWasStopped = server.invoke(() -> {
+          GatewaySender sender = cache.getGatewaySender(senderIdInA);
+          if (((InternalGatewaySender) sender).isPrimary() == stopPrimarySender) {
+            WANTestBase.killSender();
+            return true;
+          }
+          return false;
+        });
+        if (senderWasStopped) {
+          break;
+        }
+      }
+    }
+
+    CommandResultAssert result = replicateCommandFuture.get();
+    // Verify result
+    if (useParallel) {
+      verifyResultOfStoppingParallelSender(result);
+    } else {
+      if (stopPrimarySender) {
+        verifyResultOfStoppingPrimarySerialSender(result);
+      } else {
+        verifyResultStoppingSecondarySerialSender(result);
+      }
+    }
+  }
 
   public void verifyResultOfStoppingReceiverWhenUsingSerialSender(
       CommandResultAssert _replicateRegionCommand) {
@@ -578,18 +590,17 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
 
     replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
         .asList().haveExactly(1, startsWithError).haveExactly(2, haveEntriesReplicated);
-
   }
 
   public void verifyResultOfStoppingPrimarySerialSender(
-      CommandResultAssert _replicateRegionCommand) {
-    _replicateRegionCommand.statusIsError();
-    _replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
-    _replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+      CommandResultAssert replicateRegionCommand) {
+    replicateRegionCommand.statusIsError();
+    replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
         .hasSize(3);
-    _replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
         .hasSize(3);
-    _replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
         .containsExactlyInAnyOrder("OK", "OK", "ERROR");
 
     Condition<String> startsWithError = new Condition<>(
@@ -605,15 +616,14 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
         s -> s.equals("Sender B is serial and not primary. 0 entries replicated."),
         "sender not primary");
 
-    _replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+    replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
         .asList().haveAtMost(1, startsWithError).haveAtMost(1, noConnectionAvailable)
         .haveExactly(2, senderNotPrimary);
-
   }
 
   public void verifyResultStoppingSecondarySerialSender(
-      CommandResultAssert _replicateRegionCommand) {
-    CommandResultAssert replicateRegionCommand = _replicateRegionCommand.statusIsSuccess();
+      CommandResultAssert replicateRegionCommand) {
+    replicateRegionCommand.statusIsSuccess();
     replicateRegionCommand.hasTableSection().hasColumns().hasSize(3);
     replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
         .hasSize(3);
@@ -671,7 +681,6 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
     client.invoke(() -> WANTestBase.doClientPutsFrom(regionName, 0, entries + 1));
     // remove an entry to make sure that replication works well even when removes.
     client.invoke(() -> removeEntry(regionName, entries));
-
 
     // Check that entries are put in the region
     for (VM member : serversInA) {
@@ -900,6 +909,8 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
         senderIdInA, senderIdInB);
     createReceivers(serverInB, serverInC);
 
+    CountDownLatch replicateCommandStartLatch = new CountDownLatch(1);
+
     // Execute replicate region command to be canceled in an independent thread
     FutureTask<CommandResultAssert> replicateCommandFuture =
         new FutureTask<>(() -> {
@@ -915,13 +926,15 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
           } catch (Exception e) {
             e.printStackTrace();
           }
+          replicateCommandStartLatch.countDown();
           return gfsh.executeAndAssertThat(command).statusIsSuccess();
         });
     LoggingExecutors.newSingleThreadExecutor(getTestMethodName(), true)
         .submit(replicateCommandFuture);
 
-    // Wait a bit to let the replicate command start
-    Thread.sleep(10000);
+    // Wait for the replicate command to start
+    replicateCommandStartLatch.await();
+    Thread.sleep(1000);
 
     // Cancel replicate region command
     GfshCommandRule gfsh = new GfshCommandRule();
@@ -1132,7 +1145,5 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
             isOffHeap(), true));
       }
     }
-
-
   }
 }
