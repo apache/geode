@@ -224,6 +224,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
     runCommandAndAssertNoStatUpdates("key", (k) -> jedis.hmset(k, map));
   }
+
   @Test
   public void testHdel() {
     runCommandAndAssertNoStatUpdates("hash", (k, v) -> jedis.hdel(k, v));
@@ -263,6 +264,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   public void testHstrlen() {
     runCommandAndAssertHitsAndMisses("hash", (k, v) -> jedis.hstrlen(k, v));
   }
+
   @Test
   public void testHscan() {
     runCommandAndAssertHitsAndMisses("hash", (k, v) -> jedis.hscan(k, v));
