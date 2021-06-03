@@ -37,7 +37,9 @@ public class ZAddOptions extends BaseSetOptions {
     this.isCH = isCH;
   }
 
-  public boolean isCH() { return this.isCH; }
+  public boolean isCH() {
+    return this.isCH;
+  }
 
   public ZAddOptions() {}
 
