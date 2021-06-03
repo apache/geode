@@ -35,6 +35,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.pdx.PdxSerializationException;
 
 /**
  * Represents an operation that can be performed in a client by sending a message to a server.
@@ -331,8 +332,14 @@ public abstract class AbstractOp implements Op {
     final int msgType = msg.getMessageType();
     if (msgType == MessageType.RESPONSE) {
       do {
-        msg.receiveChunk();
-        callback.handle(msg);
+        try {
+          msg.receiveChunk();
+          callback.handle(msg);
+        } catch (PdxSerializationException e) {
+          throw new IOException(
+              "Unexpected PdxSerializationException, it could be caused by broken socket, retrying...",
+              e);
+        }
       } while (!msg.isLastChunk());
     } else {
       if (msgType == MessageType.EXCEPTION) {
