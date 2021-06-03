@@ -94,18 +94,23 @@ public class RefreshNotificationType implements java.io.Serializable {
    */
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof RefreshNotificationType))
+    }
+    if (!(other instanceof RefreshNotificationType)) {
       return false;
+    }
     final RefreshNotificationType that = (RefreshNotificationType) other;
 
-    if (!StringUtils.equals(this.type, that.type))
+    if (!StringUtils.equals(this.type, that.type)) {
       return false;
-    if (!StringUtils.equals(this.msg, that.msg))
+    }
+    if (!StringUtils.equals(this.msg, that.msg)) {
       return false;
+    }
 
     return true;
   }

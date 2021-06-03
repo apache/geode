@@ -42,10 +42,11 @@ public class LuceneQueryInfo extends LuceneFunctionSerializable {
   }
 
   public int getLimit() {
-    if (limit == -1)
+    if (limit == -1) {
       return LuceneQueryFactory.DEFAULT_LIMIT;
-    else
+    } else {
       return limit;
+    }
   }
 
   public boolean getKeysOnly() {

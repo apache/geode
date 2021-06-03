@@ -1116,8 +1116,9 @@ public class Message {
   }
 
   public void send(ServerConnection servConn) throws IOException {
-    if (this.serverConnection != servConn)
+    if (this.serverConnection != servConn) {
       throw new IllegalStateException("this.sc was not correctly set");
+    }
     send(true);
   }
 

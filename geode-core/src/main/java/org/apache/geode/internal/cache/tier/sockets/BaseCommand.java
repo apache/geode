@@ -327,8 +327,9 @@ public abstract class BaseCommand implements Command {
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     if (!crHelper.isShutdown() && serverConnection.isOpen()) {
       if (!SUPPRESS_IO_EXCEPTION_LOGGING) {
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
           logger.debug("Aborted message due to interrupt: {}", e.getMessage(), e);
+        }
       }
     }
     serverConnection.setFlagProcessMessagesAsFalse();

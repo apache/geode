@@ -470,8 +470,9 @@ public abstract class ContainerInstall {
         // Rewrite the node attributes
         rewriteNodeAttributes(node, attributes);
         // Write the tagId so that it can be found easier next time
-        if (tagId != null)
+        if (tagId != null) {
           ((Element) node).setAttribute("id", tagId);
+        }
       }
       // No node found creates new element under the parent tag passed in
       else {

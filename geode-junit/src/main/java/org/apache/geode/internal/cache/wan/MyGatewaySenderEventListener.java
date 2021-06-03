@@ -63,8 +63,9 @@ public class MyGatewaySenderEventListener implements AsyncEventListener, Seriali
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof MyGatewaySenderEventListener))
+    if (!(obj instanceof MyGatewaySenderEventListener)) {
       return false;
+    }
     MyGatewaySenderEventListener listener = (MyGatewaySenderEventListener) obj;
     return this.id.equals(listener.id);
   }

@@ -1238,8 +1238,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
             } finally {
               // Not particularly important since we're exiting the thread,
               // but following the pattern is still good practice...
-              if (interrupted)
+              if (interrupted) {
                 Thread.currentThread().interrupt();
+              }
             }
 
             if (logger.isDebugEnabled()) {
@@ -1255,8 +1256,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
                 SerialGatewaySenderQueue.this.wait();
                 temp = lastDispatchedKey;
               }
-              if (wasEmpty)
+              if (wasEmpty) {
                 continue;
+              }
             }
             // release not needed since disallowOffHeapValues called
             EntryEventImpl event = EntryEventImpl.create((LocalRegion) region, Operation.DESTROY,

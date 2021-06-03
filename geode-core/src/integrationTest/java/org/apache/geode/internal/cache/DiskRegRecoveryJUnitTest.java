@@ -187,8 +187,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
      */
     if (cache != null) {
       cache.close();
-      if (logWriter.fineEnabled())
+      if (logWriter.fineEnabled()) {
         logWriter.fine("Cache closed");
+      }
     }
 
     /**
@@ -200,8 +201,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       } catch (Exception e) {
         fail(" failure in creation of cache due to " + e);
       }
-      if (logWriter.fineEnabled())
+      if (logWriter.fineEnabled()) {
         logWriter.fine("Cache created to test the recovery..");
+      }
       // Create region
       diskProps.setPersistBackup(true);
       diskProps.setRegionName("RecoveryTestRegion");
@@ -236,8 +238,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
      */
     if (cache != null) {
       cache.close();
-      if (logWriter.fineEnabled())
+      if (logWriter.fineEnabled()) {
         logWriter.fine("Cache closed");
+      }
     }
 
     /**
@@ -249,8 +252,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       } catch (Exception e) {
         fail(" failure in creation of cache due to " + e);
       }
-      if (logWriter.fineEnabled())
+      if (logWriter.fineEnabled()) {
         logWriter.fine("Cache created to test the recovery..");
+      }
       // Create region
       diskProps.setPersistBackup(true);
       diskProps.setRegionName("RecoveryTestRegion");
@@ -343,8 +347,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
      */
     if (cache != null) {
       cache.close();
-      if (logWriter.fineEnabled())
+      if (logWriter.fineEnabled()) {
         logWriter.fine("Cache closed");
+      }
     }
 
     /**
@@ -356,8 +361,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       } catch (Exception e) {
         fail(" failure in creation of cache due to " + e);
       }
-      if (logWriter.fineEnabled())
+      if (logWriter.fineEnabled()) {
         logWriter.fine("Cache created to test the recovery..");
+      }
       // Create region
       diskProps.setPersistBackup(true);
       diskProps.setRegionName("RecoveryTestRegion");
@@ -436,8 +442,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
      */
     if (cache != null) {
       cache.close();
-      if (logWriter.fineEnabled())
+      if (logWriter.fineEnabled()) {
         logWriter.fine("Cache closed");
+      }
     }
 
     /**
@@ -449,8 +456,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       } catch (Exception e) {
         fail(" failure in creation of cache due to " + e);
       }
-      if (logWriter.fineEnabled())
+      if (logWriter.fineEnabled()) {
         logWriter.fine("Cache created to test the recovery..");
+      }
       // Create region
       diskProps.setPersistBackup(true);
       diskProps.setRegionName("RecoveryTestRegion");

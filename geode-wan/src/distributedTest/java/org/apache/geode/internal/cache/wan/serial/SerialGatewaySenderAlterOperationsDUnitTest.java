@@ -774,8 +774,9 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
       if (this == obj) {
         return true;
       }
-      if (!(obj instanceof MyGatewayEventFilter))
+      if (!(obj instanceof MyGatewayEventFilter)) {
         return false;
+      }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
       return this.Id.equals(filter.Id);
     }
@@ -822,8 +823,9 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
       if (this == obj) {
         return true;
       }
-      if (!(obj instanceof MyGatewayEventFilter))
+      if (!(obj instanceof MyGatewayEventFilter)) {
         return false;
+      }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
       return this.Id.equals(filter.Id);
     }
@@ -874,8 +876,9 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
       if (this == obj) {
         return true;
       }
-      if (!(obj instanceof WANTestBase.MyGatewayEventFilter))
+      if (!(obj instanceof WANTestBase.MyGatewayEventFilter)) {
         return false;
+      }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
       return this.Id.equals(filter.Id);
     }

@@ -46,8 +46,9 @@ public class Key2 implements Serializable {
     if (other instanceof Key2) {
       Key2 k1 = (Key2) other;
       return k1.getId().equals(id) && k1.getName().equals(name);
-    } else
+    } else {
       return false;
+    }
   }
 
   public int hashCode() {

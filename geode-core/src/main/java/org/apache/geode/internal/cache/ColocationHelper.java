@@ -160,9 +160,9 @@ public class ColocationHelper {
     prConf = null;
     while (true) {
       String colocatedWithRegionName = tempColocatedWith.getColocatedWith();
-      if (colocatedWithRegionName == null)
+      if (colocatedWithRegionName == null) {
         break;
-      else {
+      } else {
         prConf = (PartitionRegionConfig) prRoot.get(getRegionIdentifier(colocatedWithRegionName));
         if (prConf == null) {
           break;
@@ -307,9 +307,9 @@ public class ColocationHelper {
     PartitionedRegion tempColocatedWith = partitionedRegion;
     while (true) {
       PartitionedRegion colocatedWithRegion = tempColocatedWith.getColocatedWithRegion();
-      if (colocatedWithRegion == null)
+      if (colocatedWithRegion == null) {
         break;
-      else {
+      } else {
         colocatedRegions.put(colocatedWithRegion.getFullPath(), colocatedWithRegion);
         tempColocatedWith = colocatedWithRegion;
       }

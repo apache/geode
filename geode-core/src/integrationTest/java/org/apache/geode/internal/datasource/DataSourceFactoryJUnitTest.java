@@ -61,9 +61,10 @@ public class DataSourceFactoryJUnitTest {
     Context ctx = cache.getJNDIContext();
     GemFireBasicDataSource ds = (GemFireBasicDataSource) ctx.lookup("java:/SimpleDataSource");
     Connection conn = ds.getConnection();
-    if (conn == null)
+    if (conn == null) {
       fail(
           "DataSourceFactoryJUnitTest-testGetSimpleDataSource() Error in creating the GemFireBasicDataSource");
+    }
   }
 
   @Test
@@ -72,9 +73,10 @@ public class DataSourceFactoryJUnitTest {
     DataSource ds =
         (DataSource) ctx.lookup("java:/PooledDataSource");
     Connection conn = ds.getConnection();
-    if (conn == null)
+    if (conn == null) {
       fail(
           "DataSourceFactoryJUnitTest-testGetPooledDataSource() Error in creating the PooledDataSource");
+    }
   }
 
   @Test
@@ -86,8 +88,9 @@ public class DataSourceFactoryJUnitTest {
     // GemFireTransactionDataSource ds =
     // (GemFireTransactionDataSource)dsf.getTranxDataSource(map);
     Connection conn = ds.getConnection();
-    if (conn == null)
+    if (conn == null) {
       fail(
           "DataSourceFactoryJUnitTest-testGetTranxDataSource() Error in creating the getTranxDataSource");
+    }
   }
 }

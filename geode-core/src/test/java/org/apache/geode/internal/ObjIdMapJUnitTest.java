@@ -183,8 +183,9 @@ public class ObjIdMapJUnitTest {
         case 0: // Add new value - more likely to occur than removes
         case 1:
         case 2:
-          if (!growing)
+          if (!growing) {
             break;
+          }
           int key = Math.abs(random.nextInt(10 * maxSize));
           if (bits.get(key)) {
             // We don't want the newValue in the saver List twice
@@ -196,12 +197,14 @@ public class ObjIdMapJUnitTest {
           map.put(key, new WeakReference(newValue));
           saver.add(newValue);
           bits.set(key);
-          if (saver.size() >= maxSize)
+          if (saver.size() >= maxSize) {
             growing = false;
+          }
           break;
         case 3: // Explicitly remove random entry
-          if (saver.size() == 0)
+          if (saver.size() == 0) {
             break;
+          }
           numRemoves++;
           key = random.nextInt(saver.size());
           Integer value = (Integer) saver.remove(key);
@@ -209,8 +212,9 @@ public class ObjIdMapJUnitTest {
           assertNotNull(map.remove(value.intValue()));
           break;
         case 4: // Release reference to random entry
-          if (saver.size() == 0)
+          if (saver.size() == 0) {
             break;
+          }
           numReleases++;
           key = random.nextInt(saver.size());
           value = (Integer) saver.remove(key);
@@ -219,8 +223,9 @@ public class ObjIdMapJUnitTest {
         case 5: // Validate random entry
         case 6:
         case 7:
-          if (saver.size() == 0)
+          if (saver.size() == 0) {
             break;
+          }
           numChecks++;
           Integer valueToCheck = (Integer) saver.get(random.nextInt(saver.size()));
           WeakReference ref = (WeakReference) map.get(valueToCheck.intValue());

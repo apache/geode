@@ -101,8 +101,9 @@ public class CloseCQ extends BaseCQCommand {
 
         cqService.closeCq(cqName, id);
       }
-      if (cqQuery != null)
+      if (cqQuery != null) {
         serverConnection.removeCq(cqName, cqQuery.isDurable());
+      }
     } catch (CqException cqe) {
       sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", clientMessage.getTransactionId(), cqe,
           serverConnection);

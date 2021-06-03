@@ -97,16 +97,20 @@ public class ServerLocation implements DataSerializable, Comparable<ServerLocati
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (!(obj instanceof ServerLocation))
+    }
+    if (!(obj instanceof ServerLocation)) {
       return false;
+    }
     final ServerLocation other = (ServerLocation) obj;
     if (hostName == null) {
-      if (other.hostName != null)
+      if (other.hostName != null) {
         return false;
+      }
     } else if (other.hostName == null) {
       return false;
     } else if (!hostName.equals(other.hostName)) {
@@ -128,8 +132,9 @@ public class ServerLocation implements DataSerializable, Comparable<ServerLocati
         return false; // fix for bug 42040
       }
     }
-    if (port != other.port)
+    if (port != other.port) {
       return false;
+    }
     return true;
   }
 

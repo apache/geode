@@ -282,8 +282,9 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     } catch (UnsupportedOperationException expected) {
       exceptionOccurred = true;
     } finally {
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail("UnsupportedOperationException was not thrown as expected for registerInterest(key)");
+      }
     }
 
     // test registerInterest(key,policy)
@@ -293,9 +294,10 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     } catch (UnsupportedOperationException expected) {
       exceptionOccurred = true;
     } finally {
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail(
             "UnsupportedOperationException was not thrown as expected for  registerInterest(key,policy)");
+      }
     }
 
     // test registerInterest(keylist)
@@ -305,9 +307,10 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     } catch (UnsupportedOperationException expected) {
       exceptionOccurred = true;
     } finally {
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail(
             "UnsupportedOperationException was not thrown as expected for registerInterest(keylist)");
+      }
     }
 
     // test registerInterest(keylist,policy)
@@ -317,9 +320,10 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     } catch (UnsupportedOperationException expected) {
       exceptionOccurred = true;
     } finally {
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail(
             "UnsupportedOperationException was not thrown as expected for registerInterest(keylist,policy)");
+      }
     }
 
     // test registerInterestRegex(expr)
@@ -329,9 +333,10 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     } catch (UnsupportedOperationException expected) {
       exceptionOccurred = true;
     } finally {
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail(
             "UnsupportedOperationException was not thrown as expected for registerInterestRegex(expr)");
+      }
     }
 
     // test registerInterestRegex(expr,policy)
@@ -341,9 +346,10 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     } catch (UnsupportedOperationException expected) {
       exceptionOccurred = true;
     } finally {
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail(
             "UnsupportedOperationException was not thrown as expected for registerInterestRegex(expr,policy)");
+      }
     }
   }
 
@@ -370,9 +376,10 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     } catch (UnsupportedOperationException expected) {
       exceptionOccurred = true;
     } finally {
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail(
             "UnsupportedOperationException was not thrown as expected for unregisterInterest(key)");
+      }
     }
 
     // test unregisterInterest(keylist)
@@ -382,9 +389,10 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     } catch (UnsupportedOperationException expected) {
       exceptionOccurred = true;
     } finally {
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail(
             "UnsupportedOperationException was not thrown as expected for unregisterInterest(keylist)");
+      }
     }
 
     // test unregisterInterestRegex(expr)
@@ -394,9 +402,10 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     } catch (UnsupportedOperationException expected) {
       exceptionOccurred = true;
     } finally {
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail(
             "UnsupportedOperationException was not thrown as expected for unregisterInterestRegex(expr)");
+      }
     }
   }
 
@@ -418,8 +427,9 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     } catch (UnsupportedOperationException e) {
       exceptionOccurred = true;
     } finally {
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail("UnsupportedOperationException was not thrown as expected for getInterestList()");
+      }
     }
 
     // test getInterestListRegex()
@@ -430,8 +440,9 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     } catch (UnsupportedOperationException e) {
       exceptionOccurred = true;
     } finally {
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail("UnsupportedOperationException was not thrown as expected for getInterestListRegex()");
+      }
     }
   }
 }

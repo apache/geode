@@ -316,8 +316,9 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         }
         AbstractGatewaySenderEventProcessor ep =
             region.getParallelGatewaySender().getEventProcessor();
-        if (ep == null)
+        if (ep == null) {
           return;
+        }
         ConcurrentParallelGatewaySenderQueue queue =
             (ConcurrentParallelGatewaySenderQueue) ep.getQueue();
         // Give the actual conflation work to another thread.

@@ -146,8 +146,9 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
     configuration.setType(type.getType());
     configuration.setUserName(username);
     configuration.setXaDatasourceClass(xaDataSource);
-    if (dsConfigProperties != null && dsConfigProperties.length > 0)
+    if (dsConfigProperties != null && dsConfigProperties.length > 0) {
       configuration.getConfigProperties().addAll(Arrays.asList(dsConfigProperties));
+    }
 
     InternalConfigurationPersistenceService service = getConfigurationPersistenceService();
 

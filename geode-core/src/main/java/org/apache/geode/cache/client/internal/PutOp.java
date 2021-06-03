@@ -202,10 +202,12 @@ public class PutOp {
       getMessage().addStringPart(regionName, true);
       getMessage().addBytePart(op.ordinal);
       int flags = 0;
-      if (requireOldValue)
+      if (requireOldValue) {
         flags |= 0x01;
-      if (expectedOldValue != null)
+      }
+      if (expectedOldValue != null) {
         flags |= 0x02;
+      }
       getMessage().addIntPart(flags);
       if (expectedOldValue != null) {
         getMessage().addObjPart(expectedOldValue);

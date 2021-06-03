@@ -201,8 +201,9 @@ class LoopHelpers {
       if (!started) {
         started = true;
         startTime = t;
-      } else
+      } else {
         endTime = t;
+      }
     }
 
     public void clear() {
@@ -218,8 +219,9 @@ class LoopHelpers {
     // There's probably a better way to do this...
     String field = "         ";
     String num = Long.toString(n);
-    if (num.length() >= field.length())
+    if (num.length() >= field.length()) {
       return num;
+    }
     StringBuffer b = new StringBuffer(field);
     b.replace(b.length() - num.length(), b.length(), num);
     return b.toString();

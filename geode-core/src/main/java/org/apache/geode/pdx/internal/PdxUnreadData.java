@@ -76,8 +76,9 @@ public class PdxUnreadData implements PdxUnreadFields {
   }
 
   public void sendTo(PdxWriterImpl writer) {
-    if (isEmpty())
+    if (isEmpty()) {
       return;
+    }
     int[] indexes = this.unreadType.getUnreadFieldIndexes();
     int i = 0;
     while (i < this.unreadData.length) {
@@ -104,8 +105,9 @@ public class PdxUnreadData implements PdxUnreadFields {
     // exists.
     // So we need to call getInstance instead of getExisting.
     InternalCache cache = GemFireCacheImpl.getInstance();
-    if (cache == null)
+    if (cache == null) {
       return;
+    }
     TypeRegistry tr = cache.getPdxRegistry();
     PdxUnreadData ud = tr.getUnreadData(o);
     if (ud != null && !ud.isEmpty()) {

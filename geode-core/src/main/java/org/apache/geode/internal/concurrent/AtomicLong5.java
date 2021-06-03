@@ -38,10 +38,12 @@ public class AtomicLong5 extends java.util.concurrent.atomic.AtomicLong implemen
       long cur = get();
 
       if (update > cur) {
-        if (compareAndSet(cur, update))
+        if (compareAndSet(cur, update)) {
           return true;
-      } else
+        }
+      } else {
         return false;
+      }
     }
   }
 }

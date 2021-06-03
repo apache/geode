@@ -252,8 +252,9 @@ public class QueryObserverCallbacksTest {
     @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       dbIndx[j++] = index;
-      if (j == 3)
+      if (j == 3) {
         j = 0;
+      }
     }
 
     @Override

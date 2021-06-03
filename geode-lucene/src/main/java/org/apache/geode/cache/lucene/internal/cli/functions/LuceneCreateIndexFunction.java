@@ -90,8 +90,9 @@ public class LuceneCreateIndexFunction implements InternalFunction {
           indexFactory.addField(field);
         }
       } else {
-        if (analyzerName.length != fields.length)
+        if (analyzerName.length != fields.length) {
           throw new Exception("Mismatch in lengths of fields and analyzers");
+        }
         for (int i = 0; i < fields.length; i++) {
           Analyzer analyzer = toAnalyzer(analyzerName[i]);
           indexFactory.addField(fields[i], analyzer);
@@ -138,14 +139,15 @@ public class LuceneCreateIndexFunction implements InternalFunction {
   }
 
   private Analyzer toAnalyzer(String className) {
-    if (className == null)
+    if (className == null) {
       className = StandardAnalyzer.class.getCanonicalName();
-    else {
+    } else {
       String trimmedClassName = StringUtils.trim(className);
-      if (trimmedClassName.equals("") || trimmedClassName.equals("DEFAULT"))
+      if (trimmedClassName.equals("") || trimmedClassName.equals("DEFAULT")) {
         className = StandardAnalyzer.class.getCanonicalName();
-      else
+      } else {
         className = trimmedClassName;
+      }
     }
 
     Class<? extends Analyzer> clazz =

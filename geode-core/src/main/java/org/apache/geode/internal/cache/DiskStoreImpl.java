@@ -1202,8 +1202,9 @@ public class DiskStoreImpl implements DiskStore {
    * @since GemFire 5.1
    */
   public void forceRolling(DiskRegion dr) {
-    if (!dr.isBackup())
+    if (!dr.isBackup()) {
       return;
+    }
     if (!dr.isSync() && this.maxAsyncItems == 0 && getTimeInterval() == 0) {
       forceFlush();
     }
@@ -1222,8 +1223,9 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   public boolean forceCompaction(DiskRegion dr) {
-    if (!dr.isBackup())
+    if (!dr.isBackup()) {
       return false;
+    }
     acquireReadLock(dr);
     try {
       return basicForceCompaction(dr);
@@ -1356,8 +1358,9 @@ public class DiskStoreImpl implements DiskStore {
         Thread.currentThread().interrupt();
         ade.region.getCancelCriterion().checkCancelInProgress(ie);
         // @todo: I'm not sure we need an error here
-        if (!ade.versionOnly)
+        if (!ade.versionOnly) {
           ade.de.getDiskId().setPendingAsync(false);
+        }
       }
     } finally {
       endAsyncWrite(ade, dr, start);
@@ -1401,8 +1404,9 @@ public class DiskStoreImpl implements DiskStore {
    */
   void clearDrainList(LocalRegion r, RegionVersionVector rvv) {
     synchronized (getDrainSync()) {
-      if (this.drainList == null)
+      if (this.drainList == null) {
         return;
+      }
       Iterator it = this.drainList.iterator();
       while (it.hasNext()) {
         Object o = it.next();
@@ -2864,8 +2868,9 @@ public class DiskStoreImpl implements DiskStore {
      */
     private synchronized boolean schedule(CompactableOplog[] opLogs) {
       assert !this.scheduled;
-      if (!this.compactorEnabled)
+      if (!this.compactorEnabled) {
         return false;
+      }
       if (opLogs != null) {
         for (final CompactableOplog opLog : opLogs) {
           opLog.prepareForCompact();
@@ -2924,16 +2929,18 @@ public class DiskStoreImpl implements DiskStore {
      */
     @Override
     public void run() {
-      if (!this.scheduled)
+      if (!this.scheduled) {
         return;
+      }
       boolean compactedSuccessfully = false;
       try {
         SystemFailure.checkFailure();
         if (isClosing()) {
           return;
         }
-        if (!this.compactorEnabled)
+        if (!this.compactorEnabled) {
           return;
+        }
         final CompactableOplog[] oplogs = this.scheduledOplogs;
         this.me = Thread.currentThread();
         try {
@@ -3002,12 +3009,15 @@ public class DiskStoreImpl implements DiskStore {
       this.scheduled = false;
       this.scheduledOplogs = null;
       notifyAll();
-      if (!success)
+      if (!success) {
         return;
-      if (!this.compactorEnabled)
+      }
+      if (!this.compactorEnabled) {
         return;
-      if (isClosing())
+      }
+      if (isClosing()) {
         return;
+      }
       SystemFailure.checkFailure();
       // synchronized (DiskStoreImpl.this.oplogIdToOplog) {
       if (this.compactorEnabled) {

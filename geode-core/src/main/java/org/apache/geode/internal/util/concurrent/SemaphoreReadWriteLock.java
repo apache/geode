@@ -70,8 +70,9 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
           }
         }
       } finally {
-        if (interrupted)
+        if (interrupted) {
           Thread.currentThread().interrupt();
+        }
       }
     }
 
@@ -101,8 +102,9 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
           }
         }
       } finally {
-        if (interrupted)
+        if (interrupted) {
           Thread.currentThread().interrupt();
+        }
       }
     }
 
@@ -138,8 +140,9 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
           interrupted = true;
           continue;
         } finally {
-          if (interrupted)
+          if (interrupted) {
             Thread.currentThread().interrupt();
+          }
         }
         numReaders--;
         // The unlock method is forgiving
@@ -181,8 +184,9 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
           }
         }
       } finally {
-        if (interrupted)
+        if (interrupted) {
           Thread.currentThread().interrupt();
+        }
       }
     }
 

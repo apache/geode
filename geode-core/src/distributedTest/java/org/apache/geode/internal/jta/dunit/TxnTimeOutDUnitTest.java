@@ -77,8 +77,9 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(CACHE_XML_FILE, path);
     props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     ds = (new TxnTimeOutDUnitTest()).getSystem(props);
-    if (cache == null || cache.isClosed())
+    if (cache == null || cache.isClosed()) {
       cache = CacheFactory.create(ds);
+    }
   }
 
   public static Cache getCache() {
@@ -100,8 +101,9 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
       if (cache != null && !cache.isClosed()) {
         cache.close();
       }
-      if (ds != null && ds.isConnected())
+      if (ds != null && ds.isConnected()) {
         ds.disconnect();
+      }
 
     } catch (Exception e) {
       fail("Exception in closing cache or ds due to " + e);
@@ -216,8 +218,9 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
       } catch (Exception e) {
         exceptionOccurred = true;
       }
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail("Exception did not occur although was supposed to occur");
+      }
     } catch (Exception e) {
       LogWriterUtils.getLogWriter().fine("Exception caught " + e);
       fail("failed in naming lookup: " + e);
@@ -246,8 +249,9 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
       } catch (Exception e) {
         exceptionOccurred = true;
       }
-      if (!exceptionOccurred)
+      if (!exceptionOccurred) {
         fail("Exception did not occur although was supposed to occur");
+      }
     } catch (Exception e) {
       LogWriterUtils.getLogWriter().fine("Exception caught " + e);
       fail("failed in naming lookup: " + e);

@@ -78,15 +78,17 @@ public class OpenMethod {
 
   OpenType[] getOpenParameterTypes() {
     final OpenType[] types = new OpenType[paramTypeConverters.length];
-    for (int i = 0; i < paramTypeConverters.length; i++)
+    for (int i = 0; i < paramTypeConverters.length; i++) {
       types[i] = paramTypeConverters[i].getOpenType();
+    }
     return types;
   }
 
   void checkCallFromOpen() throws IllegalArgumentException {
     try {
-      for (OpenTypeConverter paramConverter : paramTypeConverters)
+      for (OpenTypeConverter paramConverter : paramTypeConverters) {
         paramConverter.checkReconstructible();
+      }
     } catch (InvalidObjectException e) {
       throw new IllegalArgumentException(e);
     }
@@ -101,12 +103,14 @@ public class OpenMethod {
   }
 
   String[] getOpenSignature() {
-    if (paramTypeConverters.length == 0)
+    if (paramTypeConverters.length == 0) {
       return noStrings;
+    }
 
     String[] sig = new String[paramTypeConverters.length];
-    for (int i = 0; i < paramTypeConverters.length; i++)
+    for (int i = 0; i < paramTypeConverters.length; i++) {
       sig[i] = paramTypeConverters[i].getOpenClass().getName();
+    }
     return sig;
   }
 
@@ -119,20 +123,24 @@ public class OpenMethod {
   }
 
   Object[] toOpenParameters(Object[] params) throws OpenDataException {
-    if (paramConversionIsIdentity || params == null)
+    if (paramConversionIsIdentity || params == null) {
       return params;
+    }
     final Object[] oparams = new Object[params.length];
-    for (int i = 0; i < params.length; i++)
+    for (int i = 0; i < params.length; i++) {
       oparams[i] = paramTypeConverters[i].toOpenValue(params[i]);
+    }
     return oparams;
   }
 
   Object[] fromOpenParameters(Object[] params) throws InvalidObjectException {
-    if (paramConversionIsIdentity || params == null)
+    if (paramConversionIsIdentity || params == null) {
       return params;
+    }
     final Object[] jparams = new Object[params.length];
-    for (int i = 0; i < params.length; i++)
+    for (int i = 0; i < params.length; i++) {
       jparams[i] = paramTypeConverters[i].fromOpenValue(params[i]);
+    }
     return jparams;
   }
 

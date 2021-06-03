@@ -68,8 +68,9 @@ public class EventSequenceID {
   }
 
   public boolean equals(Object obj) {
-    if (!(obj instanceof EventSequenceID))
+    if (!(obj instanceof EventSequenceID)) {
       return false;
+    }
 
     EventSequenceID obj2 = (EventSequenceID) obj;
     return (this.membershipID.equals(obj2.getMembershipID()) && this.threadID == obj2.getThreadID()

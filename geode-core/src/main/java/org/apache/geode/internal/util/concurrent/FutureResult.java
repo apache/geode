@@ -49,24 +49,28 @@ public class FutureResult<V> implements Future<V> {
 
   @Override
   public boolean cancel(boolean mayInterruptIfRunning) {
-    if (isCancelled)
+    if (isCancelled) {
       return false; // already cancelled
+    }
     isCancelled = true;
-    if (latch != null)
+    if (latch != null) {
       latch.countDown();
+    }
     return true;
   }
 
   @Override
   public V get() throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException(); // check in case latch is null
+    }
     if (isCancelled) {
       throw new CancellationException(
           "Future was cancelled");
     }
-    if (latch != null)
+    if (latch != null) {
       latch.await();
+    }
     if (isCancelled) {
       throw new CancellationException(
           "Future was cancelled");
@@ -76,8 +80,9 @@ public class FutureResult<V> implements Future<V> {
 
   @Override
   public V get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException(); // check in case latch is null
+    }
     if (isCancelled) {
       throw new CancellationException(
           "Future was cancelled");
@@ -102,7 +107,8 @@ public class FutureResult<V> implements Future<V> {
 
   public void set(V value) {
     this.value = value;
-    if (latch != null)
+    if (latch != null) {
       latch.countDown();
+    }
   }
 }

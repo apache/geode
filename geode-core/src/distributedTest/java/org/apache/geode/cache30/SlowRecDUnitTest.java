@@ -1065,8 +1065,9 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     Object putKey = key1;
     boolean flag = true;
     for (int i = 0; i < 30; i++) {
-      if (i == 10)
+      if (i == 10) {
         putKey = key2;
+      }
       if (flag) {
         if (i == 6) {
           r1.invalidate(putKey, new Integer(i));

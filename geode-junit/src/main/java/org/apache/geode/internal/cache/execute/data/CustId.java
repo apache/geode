@@ -56,11 +56,13 @@ public class CustId implements DataSerializable {
   }
 
   public boolean equals(Object o) {
-    if (this == o)
+    if (this == o) {
       return true;
+    }
 
-    if (!(o instanceof CustId))
+    if (!(o instanceof CustId)) {
       return false;
+    }
 
     CustId otherCustId = (CustId) o;
     return (otherCustId.custId.equals(custId));

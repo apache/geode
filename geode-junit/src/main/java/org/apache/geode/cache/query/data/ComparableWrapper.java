@@ -52,8 +52,9 @@ public class ComparableWrapper implements Comparable, Serializable {
         return 0;
       } else if (cwObj.getVal() > this.val) {
         return -1;
-      } else
+      } else {
         return 1;
+      }
     }
   }
 

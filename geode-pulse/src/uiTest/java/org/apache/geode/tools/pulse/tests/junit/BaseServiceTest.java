@@ -160,8 +160,9 @@ public abstract class BaseServiceTest {
           }
         }
       } finally {
-        if (loginResponse != null)
+        if (loginResponse != null) {
           loginResponse.close();
+        }
       }
     } catch (Exception failed) {
       logException(failed);
@@ -187,8 +188,9 @@ public abstract class BaseServiceTest {
           HttpEntity entity = logoutResponse.getEntity();
           EntityUtils.consume(entity);
         } finally {
-          if (logoutResponse != null)
+          if (logoutResponse != null) {
             logoutResponse.close();
+          }
           httpclient.close();
           httpclient = null;
         }

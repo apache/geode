@@ -155,21 +155,28 @@ public final class ServerLoad implements DataSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     final ServerLoad other = (ServerLoad) obj;
-    if (Float.floatToIntBits(connectionLoad) != Float.floatToIntBits(other.connectionLoad))
+    if (Float.floatToIntBits(connectionLoad) != Float.floatToIntBits(other.connectionLoad)) {
       return false;
-    if (Float.floatToIntBits(loadPerConnection) != Float.floatToIntBits(other.loadPerConnection))
+    }
+    if (Float.floatToIntBits(loadPerConnection) != Float.floatToIntBits(other.loadPerConnection)) {
       return false;
-    if (Float.floatToIntBits(loadPerSubscriber) != Float.floatToIntBits(other.loadPerSubscriber))
+    }
+    if (Float.floatToIntBits(loadPerSubscriber) != Float.floatToIntBits(other.loadPerSubscriber)) {
       return false;
-    if (Float.floatToIntBits(subscriberLoad) != Float.floatToIntBits(other.subscriberLoad))
+    }
+    if (Float.floatToIntBits(subscriberLoad) != Float.floatToIntBits(other.subscriberLoad)) {
       return false;
+    }
     return true;
   }
 

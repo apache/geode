@@ -130,10 +130,11 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    */
   long getExpiryMillis() throws EntryNotFoundException {
     long extm = getExpirationTime() - getNow();
-    if (extm < 0L)
+    if (extm < 0L) {
       return 0L;
-    else
+    } else {
       return extm;
+    }
   }
 
   /**
@@ -242,8 +243,9 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   protected boolean expire(boolean isPending) throws CacheException {
     ExpirationAction action = getAction();
-    if (action == null)
+    if (action == null) {
       return false;
+    }
     boolean result = expire(action, isPending);
     if (result && expiryTaskListener != null) {
       expiryTaskListener.afterExpire(this);
@@ -260,8 +262,9 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     long ttl = getTTLExpirationTime();
     long idle = getIdleExpirationTime();
     if (ttl == 0) {
-      if (idle == 0)
+      if (idle == 0) {
         return null;
+      }
       return getIdleAttributes().getAction();
     }
     if (idle == 0) {
@@ -287,14 +290,18 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
 
   protected boolean expire(ExpirationAction action, boolean isPending) throws CacheException {
-    if (action.isInvalidate())
+    if (action.isInvalidate()) {
       return invalidate();
-    if (action.isDestroy())
+    }
+    if (action.isDestroy()) {
       return destroy(isPending);
-    if (action.isLocalInvalidate())
+    }
+    if (action.isLocalInvalidate()) {
       return localInvalidate();
-    if (action.isLocalDestroy())
+    }
+    if (action.isLocalDestroy()) {
       return localDestroy();
+    }
     throw new InternalGemFireError(
         String.format("unrecognized expiration action: %s", action));
   }

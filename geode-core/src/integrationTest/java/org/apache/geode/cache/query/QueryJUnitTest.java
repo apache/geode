@@ -129,8 +129,9 @@ public class QueryJUnitTest {
     CacheUtils.log("testIsCompiled");
     String queryStr = "SELECT DISTINCT * FROM " + SEPARATOR + "root";
     Query q = CacheUtils.getQueryService().newQuery(queryStr);
-    if (q.isCompiled())
+    if (q.isCompiled()) {
       fail("Query.isCompiled() returns true for non-compiled query");
+    }
   }
 
   @Test

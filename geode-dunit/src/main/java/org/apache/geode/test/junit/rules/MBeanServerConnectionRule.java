@@ -71,13 +71,15 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
   @Override
   protected void before(Description description) throws Exception {
     // do not auto connect if port is not set
-    if (portSupplier == null)
+    if (portSupplier == null) {
       return;
+    }
 
     // do not auto connect if no ConnectionConfiguration is defined.
     ConnectionConfiguration config = description.getAnnotation(ConnectionConfiguration.class);
-    if (config == null)
+    if (config == null) {
       return;
+    }
 
     connect(portSupplier.get(), config.user(), config.password());
   }

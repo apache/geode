@@ -1446,9 +1446,10 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   }
 
   private void setCoordinatorPublicKey(FindCoordinatorResponse<ID> response) {
-    if (response.getCoordinator() != null && response.getCoordinatorPublicKey() != null)
+    if (response.getCoordinator() != null && response.getCoordinatorPublicKey() != null) {
       services.getMessenger().setPublicKey(response.getCoordinatorPublicKey(),
           response.getCoordinator());
+    }
   }
 
   void processNetworkPartitionMessage(NetworkPartitionMessage<ID> msg) {

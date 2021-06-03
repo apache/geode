@@ -47,8 +47,9 @@ public class Key1 implements Serializable {
     if (other instanceof Key1) {
       Key1 k1 = (Key1) other;
       return k1.id.equals(id);
-    } else
+    } else {
       return false;
+    }
   }
 
   public int hashCode() {

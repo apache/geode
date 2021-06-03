@@ -143,8 +143,9 @@ public class AttributeDescriptor {
             // eat the exception
             return QueryService.UNDEFINED;
           }
-          if (t instanceof Exception)
+          if (t instanceof Exception) {
             throw new QueryInvocationTargetException(t);
+          }
           throw new QueryInvocationTargetException(e);
         }
       } else {
@@ -202,8 +203,9 @@ public class AttributeDescriptor {
     String beanMethod = "get" + _name.substring(0, 1).toUpperCase() + _name.substring(1);
     m = getReadMethod(targetType, beanMethod);
 
-    if (m != null)
+    if (m != null) {
       return m;
+    }
 
     return getReadMethod(targetType, _name);
   }
@@ -259,8 +261,9 @@ public class AttributeDescriptor {
           updateClassToMethodsMap(pdxInstance.getClassName(), _name);
           throw ex;
         }
-      } else
+      } else {
         return QueryService.UNDEFINED;
+      }
     }
   }
 

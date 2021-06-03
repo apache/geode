@@ -1594,20 +1594,26 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       Create other = (Create) obj;
-      if (bucketId != other.bucketId)
+      if (bucketId != other.bucketId) {
         return false;
+      }
       if (targetMember == null) {
-        if (other.targetMember != null)
+        if (other.targetMember != null) {
           return false;
-      } else if (!targetMember.equals(other.targetMember))
+        }
+      } else if (!targetMember.equals(other.targetMember)) {
         return false;
+      }
       return true;
     }
 
@@ -1638,20 +1644,26 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       Create other = (Create) obj;
-      if (bucketId != other.bucketId)
+      if (bucketId != other.bucketId) {
         return false;
+      }
       if (targetMember == null) {
-        if (other.targetMember != null)
+        if (other.targetMember != null) {
           return false;
-      } else if (!targetMember.equals(other.targetMember))
+        }
+      } else if (!targetMember.equals(other.targetMember)) {
         return false;
+      }
       return true;
     }
 
@@ -1682,23 +1694,30 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       Move other = (Move) obj;
       if (sourceMember == null) {
-        if (other.sourceMember != null)
+        if (other.sourceMember != null) {
           return false;
-      } else if (!sourceMember.equals(other.sourceMember))
+        }
+      } else if (!sourceMember.equals(other.sourceMember)) {
         return false;
+      }
       if (targetMember == null) {
-        if (other.targetMember != null)
+        if (other.targetMember != null) {
           return false;
-      } else if (!targetMember.equals(other.targetMember))
+        }
+      } else if (!targetMember.equals(other.targetMember)) {
         return false;
+      }
       return true;
     }
 

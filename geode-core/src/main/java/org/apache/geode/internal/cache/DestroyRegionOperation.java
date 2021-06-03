@@ -201,16 +201,18 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
             // refetch to use special destroy region logic
             final LocalRegion lr = getRegionFromPath(dm, lclRgn.getFullPath());
             if (lr == null) {
-              if (logger.isDebugEnabled())
+              if (logger.isDebugEnabled()) {
                 logger.debug("{} region not found, nothing to do", this);
+              }
               return;
             }
             // In some subclasses, lclRgn may be destroyed, so be careful not
             // to
             // allow a RegionDestroyedException to be thrown on lclRgn access
             if (!(lr instanceof DistributedRegion)) {
-              if (logger.isDebugEnabled())
+              if (logger.isDebugEnabled()) {
                 logger.debug("{} local scope region, nothing to do", this);
+              }
               return;
             }
             DistributedRegion rgn = (DistributedRegion) lr;
@@ -302,8 +304,9 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
       if (getOperation().isDistributed()) {
         String rootName = GemFireCacheImpl.parsePath(path)[0];
         this.lockRoot = (LocalRegion) cache.getRegion(rootName);
-        if (this.lockRoot == null)
+        if (this.lockRoot == null) {
           return null;
+        }
         this.lockRoot.acquireDestroyLock();
       }
 
@@ -393,8 +396,9 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
                     assErr.initCause(e);
                     throw assErr;
                   } finally {
-                    if (loc_lockRoot != null)
+                    if (loc_lockRoot != null) {
                       loc_lockRoot.releaseDestroyLock();
+                    }
                   }
                 }
               });

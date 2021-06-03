@@ -348,10 +348,11 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     try {
       CqQuery cq1 = cqService.newCq(name, Cquery, cqa);
       assertTrue("newCq() state mismatch", cq1.getState().isStopped());
-      if (cqWithIR)
+      if (cqWithIR) {
         cq1.executeWithInitialResults();
-      else
+      } else {
         cq1.execute();
+      }
     } catch (Exception ex) {
       fail("Failed to create CQ " + cqName1, ex);
     }
@@ -384,10 +385,11 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     try {
       CqQuery cq1 = cqService.newCq(name, Cquery, cqa);
       assertTrue("newCq() state mismatch", cq1.getState().isStopped());
-      if (cqWithIR)
+      if (cqWithIR) {
         cq1.executeWithInitialResults();
-      else
+      } else {
         cq1.execute();
+      }
     } catch (Exception ex) {
       fail("Failed to create CQ " + cqName1, ex);
     }

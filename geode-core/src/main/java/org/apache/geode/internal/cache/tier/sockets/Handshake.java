@@ -352,10 +352,12 @@ public abstract class Handshake {
    */
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (!(other instanceof Handshake))
+    }
+    if (!(other instanceof Handshake)) {
       return false;
+    }
     final Handshake that = (Handshake) other;
 
     if (this.id.isSameDSMember(that.id) && getReplyCode() == that.getReplyCode()) {

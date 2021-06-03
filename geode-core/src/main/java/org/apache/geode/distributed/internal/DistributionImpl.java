@@ -260,16 +260,18 @@ public class DistributionImpl implements Distribution {
 
     // Handle trivial cases
     if (destinations == null) {
-      if (logger.isTraceEnabled())
+      if (logger.isTraceEnabled()) {
         logger.trace("Membership: Message send: returning early because null set passed in: '{}'",
             msg);
+      }
       return null; // trivially: all recipients received the message
     }
     if (destinations.isEmpty()) {
-      if (logger.isTraceEnabled())
+      if (logger.isTraceEnabled()) {
         logger.trace(
             "Membership: Message send: returning early because empty destination list passed in: '{}'",
             msg);
+      }
       return null; // trivially: all recipients received the message
     }
 
@@ -292,9 +294,9 @@ public class DistributionImpl implements Distribution {
     }
 
     // If the message was a broadcast, don't enumerate failures.
-    if (allDestinations)
+    if (allDestinations) {
       return null;
-    else {
+    } else {
       return result;
     }
   }
@@ -366,8 +368,9 @@ public class DistributionImpl implements Distribution {
         throw new DistributedSystemDisconnectedException();
       }
 
-      if (allDestinations)
+      if (allDestinations) {
         return null;
+      }
 
       // We need to return this list of failures
       List<InternalDistributedMember> members = ex.getMembers();
@@ -425,8 +428,9 @@ public class DistributionImpl implements Distribution {
   @Override
   public void waitForMessageState(InternalDistributedMember member,
       Map<String, Long> state) throws InterruptedException, TimeoutException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     DirectChannel dc = directChannel;
     if (dc != null) {
       dc.waitForChannelState(member, state);
@@ -656,8 +660,9 @@ public class DistributionImpl implements Distribution {
         if (!dc.isOpen()) {
           return;
         }
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
           logger.debug("Membership: closing connections for departed member {}", member);
+        }
         // close connections, but don't do membership notification since it's already been done
         dc.closeEndpoint(member, reason, false);
       }).start();
@@ -718,8 +723,9 @@ public class DistributionImpl implements Distribution {
   @Override
   public boolean waitForDeparture(InternalDistributedMember mbr, long timeoutMs)
       throws TimeoutException, InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     boolean result = false;
     // TODO - Move the bulk of this method to the adapter.
     DirectChannel dc = directChannel;
