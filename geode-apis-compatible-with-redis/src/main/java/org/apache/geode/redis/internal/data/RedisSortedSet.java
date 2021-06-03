@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 
@@ -37,6 +39,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -73,7 +76,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
-  int getSortedSetSize() {
+  protected int getSortedSetSize() {
     return members.size();
   }
 
@@ -226,6 +229,31 @@ public class RedisSortedSet extends AbstractRedisData {
     return members.get(member);
   }
 
+  byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
+      byte[] member) {
+    byte[] byteScore = members.get(member);
+    double incr = processIncrement(Coder.bytesToString(increment).toLowerCase());
+
+    if (byteScore != null) {
+      incr += Coder.bytesToDouble(byteScore);
+
+      if (Double.isNaN(incr)) {
+        throw new NumberFormatException(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
+      }
+    }
+
+    byte[] byteIncr = Coder.doubleToBytes(incr);
+    memberAdd(member, byteIncr);
+
+    AddsDeltaInfo deltaInfo = new AddsDeltaInfo(new ArrayList<>());
+    deltaInfo.add(member);
+    deltaInfo.add(byteIncr);
+
+    storeChanges(region, key, deltaInfo);
+
+    return byteIncr;
+  }
+
   long zrem(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToRemove) {
     int membersRemoved = 0;
     RemsDeltaInfo deltaInfo = null;
@@ -282,5 +310,29 @@ public class RedisSortedSet extends AbstractRedisData {
   @Override
   public KnownVersion[] getSerializationVersions() {
     return null;
+  }
+
+  private double processIncrement(String stringIncr) {
+    double incr;
+    switch (stringIncr) {
+      case "inf":
+      case "+inf":
+      case "infinity":
+      case "+infinity":
+        incr = POSITIVE_INFINITY;
+        break;
+      case "-inf":
+      case "-infinity":
+        incr = NEGATIVE_INFINITY;
+        break;
+      default:
+        try {
+          incr = Double.parseDouble(stringIncr);
+        } catch (NumberFormatException nfe) {
+          throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
+        }
+        break;
+    }
+    return incr;
   }
 }

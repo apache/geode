@@ -15,20 +15,16 @@
 
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.List;
+import org.junit.ClassRule;
 
-import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.GeodeRedisServerRule;
 
-public interface RedisSortedSetCommands {
+public class ZIncrByIntegrationTest extends AbstractZIncrByIntegrationTest {
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd,
-      ZAddOptions options);
-
-  byte[] zscore(RedisKey key, byte[] member);
-
-  long zrem(RedisKey key, List<byte[]> membersToRemove);
-
-  long zcard(RedisKey key);
-
-  byte[] zincrby(RedisKey key, byte[] increment, byte[] member);
+  @Override
+  public int getPort() {
+    return server.getPort();
+  }
 }

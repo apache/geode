@@ -65,7 +65,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   /***********************************************
    ************* Supported Commands **************
    **********************************************/
-  // ------------ Key related commands -----------
+  /************* Key related commands *************/
 
   @Test
   public void testKeys() {
@@ -102,7 +102,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     runCommandAndAssertNoStatUpdates("string", k -> jedis.del(k));
   }
 
-  // ------------ String related commands -----------
+  /************* String related commands *************/
 
   @Test
   public void testGet() {
@@ -124,7 +124,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.set(k, v));
   }
 
-  // ------------ Set related commands -----------
+  /************** Set related commands *************/
   @Test
   public void testSadd() {
     runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.sadd(k, v));
@@ -140,7 +140,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     runCommandAndAssertHitsAndMisses("set", k -> jedis.smembers(k));
   }
 
-  // ------------ Hash related commands -----------
+  /************* Hash related commands *************/
   @Test
   public void testHset() {
     runCommandAndAssertNoStatUpdates("hash", (k, v, s) -> jedis.hset(k, v, s));
@@ -160,7 +160,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     runCommandAndAssertNoStatUpdates("key", (k) -> jedis.hmset(k, map));
   }
 
-  // ------------ Key related commands -----------
+  /************* Key related commands *************/
 
   @Test
   public void testExpire() {
@@ -194,6 +194,12 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testPersist() {
     runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.persist(k));
+  }
+
+  /************* Sorted Set related commands *************/
+  @Test
+  public void testZIncrBy() {
+    runCommandAndAssertNoStatUpdates("key", (k, m) -> jedis.zincrby(k, 100.0, m));
   }
 
   /**********************************************
