@@ -163,6 +163,11 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
           CliStrings.format(CliStrings.REPLICATE_REGION__MSG__SENDER__NOT__FOUND, senderId));
     }
 
+    if (sender.isParallel() && !(region instanceof PartitionedRegion)) {
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+          CliStrings.REPLICATE_REGION__MSG__CANNOT__REPLICATE__NON__PARTITIONED__REGION__WITH__PARALLEL__SENDER);
+    }
+
     if (!sender.isRunning()) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           CliStrings.format(CliStrings.REPLICATE_REGION__MSG__SENDER__NOT__RUNNING, senderId));
@@ -234,22 +239,27 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
     int replicatedEntries = 0;
 
     try {
-      senderPool = ((AbstractGatewaySender) sender).getProxy();
-      if (senderPool == null) {
-        return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-            CliStrings.REPLICATE_REGION__MSG__NO__CONNECTION__POOL);
-      }
-      connection = senderPool.acquireConnection();
       final long startTime = clock.millis();
       int batchId = 0;
       final InternalCache cache = (InternalCache) context.getCache();
       GatewaySenderEventDispatcher dispatcher =
           ((AbstractGatewaySender) sender).getEventProcessor().getDispatcher();
-
       Iterator<?> entriesIter = getEntries(region, sender).iterator();
       while (entriesIter.hasNext()) {
         List<GatewayQueueEvent> batch =
             createBatch((InternalRegion) region, sender, batchSize, cache, entriesIter);
+        if (batch.size() == 0) {
+          continue;
+        }
+        if (senderPool == null) {
+          senderPool = ((AbstractGatewaySender) sender).getProxy();
+          if (senderPool == null) {
+            return new CliFunctionResult(context.getMemberName(),
+                CliFunctionResult.StatusState.ERROR,
+                CliStrings.REPLICATE_REGION__MSG__NO__CONNECTION__POOL);
+          }
+          connection = senderPool.acquireConnection();
+        }
         int retries = 0;
         while (true) {
           try {

@@ -1446,6 +1446,8 @@ public class CliStrings {
       "cancel an ongoing replication command";
   public static final String REPLICATE_REGION__MSG__REGION__NOT__FOUND = "Region {0} not found";
   public static final String REPLICATE_REGION__MSG__SENDER__NOT__FOUND = "Sender {0} not found";
+  public static final String REPLICATE_REGION__MSG__CANNOT__REPLICATE__NON__PARTITIONED__REGION__WITH__PARALLEL__SENDER =
+      "Cannot replicate non-partitioned region with parallel gateway sender.";
   public static final String REPLICATE_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY =
       "Sender {0} is serial and not primary. 0 entries replicated.";
   public static final String REPLICATE_REGION__MSG__SENDER__NOT__RUNNING =
