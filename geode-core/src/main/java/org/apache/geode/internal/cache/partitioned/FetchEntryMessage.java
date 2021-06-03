@@ -201,8 +201,9 @@ public class FetchEntryMessage extends PartitionMessage {
   @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
-    if (this.access)
+    if (this.access) {
       s |= HAS_ACCESS;
+    }
     return s;
   }
 

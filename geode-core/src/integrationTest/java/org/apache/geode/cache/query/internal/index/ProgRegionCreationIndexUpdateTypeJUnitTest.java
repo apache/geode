@@ -50,8 +50,9 @@ public class ProgRegionCreationIndexUpdateTypeJUnitTest {
 
   @After
   public void tearDown() throws Exception {
-    if (!cache.isClosed())
+    if (!cache.isClosed()) {
       cache.close();
+    }
 
   }
 
@@ -69,9 +70,10 @@ public class ProgRegionCreationIndexUpdateTypeJUnitTest {
     Region region = cache.createRegion("region1", regionAttributes);
     IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, region, true);
 
-    if (!im.isIndexMaintenanceTypeSynchronous())
+    if (!im.isIndexMaintenanceTypeSynchronous()) {
       fail(
           "IndexMaintenanceTest::testProgrammaticIndexUpdateType: Index Update Type found to be asynchronous when it was marked explicitly synchronous");
+    }
 
     // Create a Region with index mainteneace type as explicit asynchronous
     attributesFactory = new AttributesFactory();
@@ -79,9 +81,10 @@ public class ProgRegionCreationIndexUpdateTypeJUnitTest {
     regionAttributes = attributesFactory.create();
     region = cache.createRegion("region2", regionAttributes);
     im = IndexUtils.getIndexManager((InternalCache) cache, region, true);
-    if (im.isIndexMaintenanceTypeSynchronous())
+    if (im.isIndexMaintenanceTypeSynchronous()) {
       fail(
           "IndexMaintenanceTest::testProgrammaticIndexUpdateType: Index Update Type found to be synchronous when it was marked explicitly asynchronous");
+    }
 
     // create a default region & check index maintenecae type .It should be
     // synchronous
@@ -89,9 +92,10 @@ public class ProgRegionCreationIndexUpdateTypeJUnitTest {
     regionAttributes = attributesFactory.create();
     region = cache.createRegion("region3", regionAttributes);
     im = IndexUtils.getIndexManager((InternalCache) cache, region, true);
-    if (!im.isIndexMaintenanceTypeSynchronous())
+    if (!im.isIndexMaintenanceTypeSynchronous()) {
       fail(
           "IndexMaintenanceTest::testProgrammaticIndexUpdateType: Index Update Type found to be asynchronous when it default RegionAttributes should have created synchronous update type");
+    }
 
   }
 }

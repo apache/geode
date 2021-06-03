@@ -2255,8 +2255,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
     final int memoryDelta = op.computeMemoryDelta(oldSize, newSize);
 
-    if (memoryDelta == 0)
+    if (memoryDelta == 0) {
       return;
+    }
     // do the bigger one first to keep the sum > 0
     updateBucketMemoryStats(memoryDelta);
   }
@@ -2308,8 +2309,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   public void incNumOverflowBytesOnDisk(long delta) {
-    if (delta == 0)
+    if (delta == 0) {
       return;
+    }
     numOverflowBytesOnDisk.addAndGet(delta);
     // The following could be reenabled at a future time.
     // I deadcoded for now to make sure I didn't have it break
@@ -2346,11 +2348,13 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   public int getSizeForEviction() {
     EvictionAttributes ea = getAttributes().getEvictionAttributes();
-    if (ea == null)
+    if (ea == null) {
       return 0;
+    }
     EvictionAlgorithm algo = ea.getAlgorithm();
-    if (!algo.isLRUHeap())
+    if (!algo.isLRUHeap()) {
       return 0;
+    }
     EvictionAction action = ea.getAction();
     return action.isLocalDestroy() ? getRegionMap().sizeInVM() : (int) getNumEntriesInVM();
   }

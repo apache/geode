@@ -201,8 +201,9 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
         interrupted = true;
         sys.getCancelCriterion().checkCancelInProgress(ignore);
       } finally {
-        if (interrupted)
+        if (interrupted) {
           Thread.currentThread().interrupt();
+        }
       }
     }
   }

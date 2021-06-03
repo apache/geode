@@ -72,8 +72,9 @@ public class CacheDisplay {
       return "an array of float with " + ((float[]) instance).length + " elements";
     } else if (instance instanceof short[]) {
       return "an array of short with " + ((short[]) instance).length + " elements";
-    } else
+    } else {
       return null;
+    }
   }
 
   private static String getClassName(Class clazz) {

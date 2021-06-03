@@ -68,8 +68,9 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
       throws InterruptedException, ReplyException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     recipients = new HashSet(recipients);
     DistributedMember me = originDm.getDistributionManagerId();
     if (recipients.contains(me)) {

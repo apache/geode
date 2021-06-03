@@ -278,8 +278,9 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
         }
         long timeAfter = System.currentTimeMillis();
         timeoutInMillis = timeoutInMillis - (timeAfter - timeBefore);
-        if (timeoutInMillis < 0)
+        if (timeoutInMillis < 0) {
           timeoutInMillis = 0;
+        }
 
         if (this.removedNodes != null) {
           if (this.removedNodes.size() != 0) {

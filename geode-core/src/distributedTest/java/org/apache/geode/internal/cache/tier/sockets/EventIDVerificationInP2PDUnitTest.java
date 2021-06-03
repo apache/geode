@@ -125,12 +125,14 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
   public static void createServerCache(Integer type) throws Exception {
     new EventIDVerificationInP2PDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
-    if (type.intValue() == DISTRIBUTED_ACK)
+    if (type.intValue() == DISTRIBUTED_ACK) {
       factory.setScope(Scope.DISTRIBUTED_ACK);
-    if (type.intValue() == GLOBAL)
+    }
+    if (type.intValue() == GLOBAL) {
       factory.setScope(Scope.GLOBAL);
-    else
+    } else {
       factory.setScope(Scope.DISTRIBUTED_NO_ACK);
+    }
 
     factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.addCacheListener(new CacheListenerAdapter() {

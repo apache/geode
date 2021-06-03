@@ -42,8 +42,9 @@ public class SelectResultsComparatorJUnitTest implements OQLLexerTokenTypes {
       Random rand = new Random();
       SelectResults resultsSet = new ResultsSet();
       int size = rand.nextInt();
-      if (size < 0)
+      if (size < 0) {
         size = 0 - size;
+      }
       size = size % 20;
       if (!sameSizeVarSetFlag) {
         sameSizeVar = size;
@@ -60,8 +61,9 @@ public class SelectResultsComparatorJUnitTest implements OQLLexerTokenTypes {
       resultsSet.add(new Object());
     }
     testSet.add(resultsSet);
-    if (testSet.size() != 11)
+    if (testSet.size() != 11) {
       fail("Same size resultSets were overwritten");
+    }
     Iterator iter1 = testSet.iterator();
     Iterator iter2 = testSet.iterator();
     iter2.next();
@@ -69,8 +71,9 @@ public class SelectResultsComparatorJUnitTest implements OQLLexerTokenTypes {
     while (iter2.hasNext()) {
       SelectResults sr1 = (SelectResults) iter1.next();
       SelectResults sr2 = (SelectResults) iter2.next();
-      if (sr1.size() > sr2.size())
+      if (sr1.size() > sr2.size()) {
         fail("This is not expected behaviour");
+      }
     }
   }
 }

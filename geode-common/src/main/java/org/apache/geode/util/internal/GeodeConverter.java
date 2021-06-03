@@ -22,14 +22,17 @@ public class GeodeConverter {
       return stringValue;
     } else {
       Object o = null;
-      if (type.startsWith("java.lang."))
+      if (type.startsWith("java.lang.")) {
         type = type.substring(10);
+      }
 
-      if ("string".equalsIgnoreCase(type))
+      if ("string".equalsIgnoreCase(type)) {
         return stringValue;
+      }
 
-      if ("char".equalsIgnoreCase(type) || "Character".equals(type))
+      if ("char".equalsIgnoreCase(type) || "Character".equals(type)) {
         return stringValue.charAt(0);
+      }
 
       try {
         if ("byte".equalsIgnoreCase(type)) {

@@ -87,10 +87,12 @@ public class LocatorJoinMessage extends ServerLocationRequest {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (!(obj instanceof LocatorJoinMessage))
+    }
+    if (!(obj instanceof LocatorJoinMessage)) {
       return false;
+    }
     LocatorJoinMessage myObject = (LocatorJoinMessage) obj;
     if ((this.distributedSystemId == myObject.getDistributedSystemId())
         && this.locator.equals(myObject.getLocator())) {

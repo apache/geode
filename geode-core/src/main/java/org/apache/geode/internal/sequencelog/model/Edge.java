@@ -46,30 +46,40 @@ public class Edge {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (!(obj instanceof Edge))
+    }
+    if (!(obj instanceof Edge)) {
       return false;
+    }
     Edge other = (Edge) obj;
     if (dest == null) {
-      if (other.dest != null)
+      if (other.dest != null) {
         return false;
-    } else if (!dest.equals(other.dest))
+      }
+    } else if (!dest.equals(other.dest)) {
       return false;
+    }
     if (name == null) {
-      if (other.name != null)
+      if (other.name != null) {
         return false;
-    } else if (!name.equals(other.name))
+      }
+    } else if (!name.equals(other.name)) {
       return false;
+    }
     if (source == null) {
-      if (other.source != null)
+      if (other.source != null) {
         return false;
-    } else if (!source.equals(other.source))
+      }
+    } else if (!source.equals(other.source)) {
       return false;
-    if (timestamp != other.timestamp)
+    }
+    if (timestamp != other.timestamp) {
       return false;
+    }
     return true;
   }
 

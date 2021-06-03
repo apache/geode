@@ -28,8 +28,9 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
   private volatile long topAddr;
 
   public OffHeapStoredObjectAddressStack(long addr) {
-    if (addr != 0L)
+    if (addr != 0L) {
       MemoryAllocatorImpl.validateAddress(addr);
+    }
     this.topAddr = addr;
   }
 

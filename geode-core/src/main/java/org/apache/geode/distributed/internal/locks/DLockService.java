@@ -1186,8 +1186,9 @@ public class DLockService extends DistributedLockService {
     checkDestroyed();
     synchronized (this.tokens) {
       DLockToken token = basicGetToken(name);
-      if (token == null)
+      if (token == null) {
         return false;
+      }
       synchronized (token) {
         token.checkForExpiration();
         return token.isLeaseHeldByCurrentThread();
@@ -1199,8 +1200,9 @@ public class DLockService extends DistributedLockService {
     checkDestroyed();
     synchronized (this.tokens) {
       DLockToken token = basicGetToken(name);
-      if (token == null)
+      if (token == null) {
         return false;
+      }
       synchronized (token) {
         token.checkForExpiration();
         if (token.getLesseeThread() == null) {
@@ -1261,8 +1263,9 @@ public class DLockService extends DistributedLockService {
   /** Causes the current thread to sleep for millis and may or may not be interruptible */
   private void sleep(long millis, boolean interruptible) throws InterruptedException {
     if (interruptible) {
-      if (Thread.interrupted())
+      if (Thread.interrupted()) {
         throw new InterruptedException();
+      }
       Thread.sleep(millis);
       return;
     } else {
@@ -1374,15 +1377,18 @@ public class DLockService extends DistributedLockService {
       long requestLeaseTime = leaseTimeMillis;
 
       // -1 means "lease forever". Long.MAX_VALUE is pretty close.
-      if (requestLeaseTime == -1)
+      if (requestLeaseTime == -1) {
         requestLeaseTime = Long.MAX_VALUE;
+      }
       // -1 means "wait forever". Long.MAX_VALUE is pretty close.
-      if (requestWaitTime == -1)
+      if (requestWaitTime == -1) {
         requestWaitTime = Long.MAX_VALUE;
+      }
 
       long waitLimit = startTime + requestWaitTime;
-      if (waitLimit < 0)
+      if (waitLimit < 0) {
         waitLimit = Long.MAX_VALUE;
+      }
 
       if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
         logger.trace(LogMarker.DLS_VERBOSE, "{}, name: {} - entering lock()", this, name);
@@ -1661,8 +1667,9 @@ public class DLockService extends DistributedLockService {
       } while (requestWaitTime != 0);
 
     } finally {
-      if (interrupted)
+      if (interrupted) {
         Thread.currentThread().interrupt();
+      }
     }
 
     return false;
@@ -1709,8 +1716,9 @@ public class DLockService extends DistributedLockService {
 
       long startTime = System.currentTimeMillis();
       long waitLimit = startTime + waitTimeMillis;
-      if (waitLimit < 0)
+      if (waitLimit < 0) {
         waitLimit = Long.MAX_VALUE;
+      }
 
       while (!gotToken && keepTrying) {
         gotToken =
@@ -2010,8 +2018,9 @@ public class DLockService extends DistributedLockService {
   public boolean acquireTryLocks(final DLockBatch dlockBatch, final long waitTimeMillis,
       final long leaseTimeMillis, final Object[] keyIfFailed) throws InterruptedException {
     checkDestroyed();
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     if (keyIfFailed.length < 1) {
       throw new IllegalArgumentException(
           "keyIfFailed must have a length of one or greater");
@@ -2028,15 +2037,18 @@ public class DLockService extends DistributedLockService {
     long requestLeaseTime = leaseTimeMillis;
 
     // -1 means "lease forever". Long.MAX_VALUE is pretty close.
-    if (requestLeaseTime == -1)
+    if (requestLeaseTime == -1) {
       requestLeaseTime = Long.MAX_VALUE;
+    }
 
     // -1 means "wait forever". Long.MAX_VALUE is pretty close.
-    if (requestWaitTime == -1)
+    if (requestWaitTime == -1) {
       requestWaitTime = Long.MAX_VALUE;
+    }
     long waitLimit = startTime + requestWaitTime;
-    if (waitLimit < 0)
+    if (waitLimit < 0) {
       waitLimit = Long.MAX_VALUE;
+    }
 
     long statStart = getStats().startLockWait();
     boolean gotLocks = false;
@@ -2231,8 +2243,9 @@ public class DLockService extends DistributedLockService {
       try {
         synchronized (services) {
           try {
-            if (isDestroyed())
+            if (isDestroyed()) {
               return;
+            }
             setDestroyingThread();
             synchronized (this.lockGrantorIdLock) { // force ordering in lock request
               synchronized (this.destroyLock) {
@@ -2966,8 +2979,9 @@ public class DLockService extends DistributedLockService {
 
     @Override
     public boolean equals(Object o) {
-      if (o == null)
+      if (o == null) {
         return false;
+      }
       return o instanceof SuspendLockingToken;
     }
 

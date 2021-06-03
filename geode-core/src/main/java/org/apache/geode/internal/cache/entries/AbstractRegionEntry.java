@@ -965,17 +965,22 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
   public abstract Object getKey();
 
   private static boolean okToStoreOffHeap(Object v, AbstractRegionEntry e) {
-    if (v == null)
+    if (v == null) {
       return false;
-    if (Token.isInvalidOrRemoved(v))
+    }
+    if (Token.isInvalidOrRemoved(v)) {
       return false;
-    if (v == Token.NOT_AVAILABLE)
+    }
+    if (v == Token.NOT_AVAILABLE) {
       return false;
-    if (v instanceof DiskEntry.RecoveredEntry)
+    }
+    if (v instanceof DiskEntry.RecoveredEntry) {
       return false; // The disk layer has special logic that ends up storing the nested value in the
-                    // RecoveredEntry off heap
-    if (!(e instanceof OffHeapRegionEntry))
+    }
+    // RecoveredEntry off heap
+    if (!(e instanceof OffHeapRegionEntry)) {
       return false;
+    }
     // TODO should we check for deltas here or is that a user error?
     return true;
   }
@@ -1026,8 +1031,9 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     do {
       long bits = getLastModifiedField();
       long newBits = bits | bitMask;
-      if (bits == newBits)
+      if (bits == newBits) {
         return;
+      }
       done = compareAndSetLastModifiedField(bits, newBits);
     } while (!done);
   }
@@ -1040,8 +1046,9 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     do {
       long bits = getLastModifiedField();
       long newBits = bits & bitMask;
-      if (bits == newBits)
+      if (bits == newBits) {
         return;
+      }
       done = compareAndSetLastModifiedField(bits, newBits);
     } while (!done);
   }

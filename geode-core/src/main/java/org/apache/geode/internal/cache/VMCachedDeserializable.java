@@ -60,9 +60,10 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
    * {@link CachedDeserializableFactory}.
    */
   public VMCachedDeserializable(byte[] serializedValue) {
-    if (serializedValue == null)
+    if (serializedValue == null) {
       throw new NullPointerException(
           "value must not be null");
+    }
     this.value = serializedValue;
     this.valueSize = CachedDeserializableFactory.getByteSize(serializedValue);
   }
@@ -108,8 +109,9 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
         boolean isCacheListenerInvoked = re.isCacheListenerInvocationInProgress();
         synchronized (le) {
           v = this.value;
-          if (!(v instanceof byte[]))
+          if (!(v instanceof byte[])) {
             return v;
+          }
           v = EntryEventImpl.deserialize((byte[]) v);
           if (threadAlreadySynced && !isCacheListenerInvoked) {
             // to fix bug 43355 and 43409 don't change the value form
@@ -130,8 +132,9 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
         // we sync on this so we will only do one deserialize
         synchronized (this) {
           v = this.value;
-          if (!(v instanceof byte[]))
+          if (!(v instanceof byte[])) {
             return v;
+          }
           v = EntryEventImpl.deserialize((byte[]) v);
           if (!(v instanceof PdxInstance)) {
             this.value = v;
@@ -191,8 +194,9 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
   @Override
   public byte[] getSerializedValue() {
     Object v = this.value;
-    if (v instanceof byte[])
+    if (v instanceof byte[]) {
       return (byte[]) v;
+    }
     return EntryEventImpl.serialize(v);
   }
 

@@ -200,8 +200,9 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
+      }
       if (obj instanceof Customer) {
         Customer other = (Customer) obj;
         return this.id == other.id && this.name.equals(other.name);

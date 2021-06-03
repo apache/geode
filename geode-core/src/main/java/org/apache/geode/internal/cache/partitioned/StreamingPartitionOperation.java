@@ -81,10 +81,12 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
   public Set<InternalDistributedMember> getPartitionedDataFrom(Set recipients)
       throws org.apache.geode.cache.TimeoutException, InterruptedException, QueryException,
       ForceReattemptException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
-    if (recipients.isEmpty())
+    }
+    if (recipients.isEmpty()) {
       return Collections.emptySet();
+    }
 
     StreamingPartitionResponse processor = new StreamingPartitionResponse(this.sys, recipients);
     DistributionMessage m = createRequestMessage(recipients, processor);
@@ -373,8 +375,9 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
         throws CacheException, QueryException, ForceReattemptException, InterruptedException {
       final boolean isTraceEnabled = logger.isTraceEnabled();
 
-      if (Thread.interrupted())
+      if (Thread.interrupted()) {
         throw new InterruptedException();
+      }
       Object nextObject;
       Object failedObject = null;
       int socketBufferSize = dm.getSystem().getConfig().getSocketBufferSize();

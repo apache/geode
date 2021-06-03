@@ -223,12 +223,13 @@ public class AvailablePort {
     } catch (Exception ex) {
       return null;
     } finally {
-      if (server != null)
+      if (server != null) {
         try {
           server.close();
         } catch (Exception ex) {
 
         }
+      }
     }
   }
 
@@ -413,10 +414,11 @@ public class AvailablePort {
 
   static {
     boolean fast = Boolean.getBoolean("AvailablePort.fastRandom");
-    if (fast)
+    if (fast) {
       rand = new Random();
-    else
+    } else {
       rand = new java.security.SecureRandom();
+    }
   }
 
   private static int getRandomWildcardBindPortNumber() {

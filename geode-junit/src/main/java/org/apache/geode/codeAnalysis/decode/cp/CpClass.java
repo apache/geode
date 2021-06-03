@@ -33,8 +33,9 @@ public class CpClass extends Cp {
    * denote arrays of the given class. Max of 255 array specs
    */
   public String className(CompiledClass info) {
-    if (name == null)
+    if (name == null) {
       name = decodeNameRef(info);
+    }
     return name;
   }
 

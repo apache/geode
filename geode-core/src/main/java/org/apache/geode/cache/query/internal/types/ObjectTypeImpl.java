@@ -64,8 +64,9 @@ public class ObjectTypeImpl implements ObjectType, DataSerializableFixedID {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof ObjectTypeImpl))
+    if (!(obj instanceof ObjectTypeImpl)) {
       return false;
+    }
     return this.clazz == ((ObjectTypeImpl) obj).clazz;
   }
 

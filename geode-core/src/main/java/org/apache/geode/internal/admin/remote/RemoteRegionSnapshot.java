@@ -129,8 +129,9 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
 
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
+    }
     if (other instanceof RemoteRegionSnapshot) {
       RemoteRegionSnapshot snap = (RemoteRegionSnapshot) other;
       return this.name.equals(snap.name);

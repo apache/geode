@@ -569,8 +569,9 @@ public class JGroupsMessengerJUnitTest {
       } else {
         m.setSrc(fakeMember);
         UNICAST3.Header oldHeader = (UNICAST3.Header) m.getHeader(unicastHeaderId);
-        if (oldHeader == null)
+        if (oldHeader == null) {
           continue;
+        }
         UNICAST3.Header newHeader =
             UNICAST3.Header.createDataHeader(seqno, oldHeader.connId(), seqno == 1);
         seqno += 1;

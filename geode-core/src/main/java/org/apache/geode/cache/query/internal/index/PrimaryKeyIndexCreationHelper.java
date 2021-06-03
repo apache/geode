@@ -94,10 +94,11 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
               indexedExpression));
     }
     CompiledValue expr = (CompiledValue) ((Object[]) indexedExprs.get(0))[1];
-    if (expr.getType() == CompiledValue.LITERAL)
+    if (expr.getType() == CompiledValue.LITERAL) {
       throw new IndexInvalidException(
           String.format("Invalid indexed expressoion : ' %s '",
               indexedExpression));
+    }
     try {
       StringBuilder sb = new StringBuilder();
       expr.generateCanonicalizedExpression(sb, context);

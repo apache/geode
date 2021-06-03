@@ -297,8 +297,9 @@ public abstract class GridAdvisor extends DistributionAdvisor {
 
     @Override
     public ProfileId getId() {
-      if (this.id == null)
+      if (this.id == null) {
         throw new IllegalStateException("profile id not yet initialized");
+      }
       return this.id;
     }
 

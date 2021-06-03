@@ -118,8 +118,9 @@ public class TailLogResponse extends AdminResponse {
     String messageString = new String(buffer);
     char[] text = messageString.toCharArray();
     for (int i = text.length - 1, j = 0; i >= 0; i--) {
-      if (text[i] == '[')
+      if (text[i] == '[') {
         j++;
+      }
       if (j == numLines) {
         messageString = messageString.substring(i);
         break;

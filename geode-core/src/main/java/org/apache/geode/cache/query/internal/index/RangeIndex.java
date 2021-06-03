@@ -998,8 +998,9 @@ public class RangeIndex extends AbstractIndex {
 
   private void addValuesToResult(Object entriesMap, Collection result, Set keysToRemove, int limit,
       ExecutionContext context) {
-    if (entriesMap == null || result == null)
+    if (entriesMap == null || result == null) {
       return;
+    }
     QueryObserver observer = QueryObserverHolder.getInstance();
     if (verifyLimit(result, limit)) {
       observer.limitAppliedAtIndexLevel(this, limit, result);
@@ -1054,8 +1055,9 @@ public class RangeIndex extends AbstractIndex {
    */
   private void addValuesToResultSingleKeyToRemove(Object entriesMap, Collection result,
       Object keyToRemove, int limit, ExecutionContext context) {
-    if (entriesMap == null || result == null)
+    if (entriesMap == null || result == null) {
       return;
+    }
     QueryObserver observer = QueryObserverHolder.getInstance();
     if (verifyLimit(result, limit)) {
       observer.limitAppliedAtIndexLevel(this, limit, result);
@@ -1583,14 +1585,17 @@ public class RangeIndex extends AbstractIndex {
      */
     @Override
     public long getNumberOfValues(Object key) {
-      if (key == null)
+      if (key == null) {
         return nullMappedEntries.getNumValues();
-      if (key == QueryService.UNDEFINED)
+      }
+      if (key == QueryService.UNDEFINED) {
         return undefinedMappedEntries.getNumValues();
+      }
       RegionEntryToValuesMap rvMap =
           (RegionEntryToValuesMap) RangeIndex.this.valueToEntriesMap.get(key);
-      if (rvMap == null)
+      if (rvMap == null) {
         return 0;
+      }
       return rvMap.getNumValues();
     }
 

@@ -123,8 +123,9 @@ public class PutAllWithIndexPerfDUnitTest extends JUnit4CacheTestCase {
         Map data = new HashMap();
         for (int i = 0; i < 10000; i++) {
           Object p = new PortfolioPdx(i);
-          if (i < 1000)
+          if (i < 1000) {
             warmupMap.put(i, p);
+          }
           data.put(i, p);
         }
 
@@ -169,8 +170,9 @@ public class PutAllWithIndexPerfDUnitTest extends JUnit4CacheTestCase {
         Map data = new HashMap();
         for (int i = 0; i < 10000; i++) {
           Object p = new PortfolioPdx(i);
-          if (i < 1000)
+          if (i < 1000) {
             warmupMap.put(i, p);
+          }
           data.put(i, p);
         }
 

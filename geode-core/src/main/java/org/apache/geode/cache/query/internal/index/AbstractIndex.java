@@ -1677,8 +1677,9 @@ public abstract class AbstractIndex implements IndexProtocol {
      */
     public void remove(RegionEntry entry, Object value) {
       Object object = this.map.get(entry);
-      if (object == null)
+      if (object == null) {
         return;
+      }
       if (object instanceof Collection) {
         Collection coll = (Collection) object;
         boolean removed;
@@ -1717,8 +1718,9 @@ public abstract class AbstractIndex implements IndexProtocol {
 
     int getNumValues(RegionEntry entry) {
       Object object = this.map.get(entry);
-      if (object == null)
+      if (object == null) {
         return 0;
+      }
       if (object instanceof Collection) {
         Collection coll = (Collection) object;
         return coll.size();

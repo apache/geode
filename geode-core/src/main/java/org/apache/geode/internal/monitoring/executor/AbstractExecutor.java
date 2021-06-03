@@ -73,13 +73,15 @@ public abstract class AbstractExecutor {
           .append(" state <").append(thread.getThreadState())
           .append(">").append(lineSeparator);
 
-      if (thread.getLockName() != null)
+      if (thread.getLockName() != null) {
         stringBuilder.append("Waiting on <").append(thread.getLockName()).append(">")
             .append(lineSeparator);
+      }
 
-      if (thread.getLockOwnerName() != null)
+      if (thread.getLockOwnerName() != null) {
         stringBuilder.append("Owned By <").append(thread.getLockOwnerName()).append("> with ID <")
             .append(thread.getLockOwnerId()).append(">").append(lineSeparator);
+      }
     }
 
 

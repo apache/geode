@@ -61,9 +61,10 @@ public class PreferBytesCachedDeserializable
    */
   PreferBytesCachedDeserializable(byte[] serializedValue) {
     this.value = serializedValue;
-    if (serializedValue == null)
+    if (serializedValue == null) {
       throw new NullPointerException(
           "value must not be null");
+    }
   }
 
   public PreferBytesCachedDeserializable(Object object) {

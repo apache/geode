@@ -161,8 +161,9 @@ public class ClusterMembersRGraphService implements PulseService {
           double heapUsage = ((currentHeap * 1D) / usedHeapSize) * 100;
 
           memberData.put(MEMORY_USAGE, TWO_PLACE_DECIMAL_FORMAT.format(heapUsage));
-        } else
+        } else {
           memberData.put(MEMORY_USAGE, 0);
+        }
 
         double currentCPUUsage = member.getCpuUsage();
 

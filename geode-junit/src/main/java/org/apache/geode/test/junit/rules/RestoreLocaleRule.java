@@ -93,14 +93,16 @@ public class RestoreLocaleRule extends ExternalResource {
     originalLocale = Locale.getDefault();
 
     Locale.setDefault(initLocale);
-    if (consumer != null)
+    if (consumer != null) {
       consumer.accept(initLocale);
+    }
   }
 
   @Override
   protected void after() {
     Locale.setDefault(originalLocale);
-    if (consumer != null)
+    if (consumer != null) {
       consumer.accept(originalLocale);
+    }
   }
 }

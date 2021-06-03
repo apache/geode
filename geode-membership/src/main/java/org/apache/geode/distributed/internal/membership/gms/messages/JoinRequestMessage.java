@@ -132,27 +132,36 @@ public class JoinRequestMessage<ID extends MemberIdentifier> extends AbstractGMS
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     JoinRequestMessage<ID> other = (JoinRequestMessage<ID>) obj;
     if (credentials == null) {
-      if (other.credentials != null)
+      if (other.credentials != null) {
         return false;
-    } else if (!credentials.equals(other.credentials))
+      }
+    } else if (!credentials.equals(other.credentials)) {
       return false;
-    if (failureDetectionPort != other.failureDetectionPort)
+    }
+    if (failureDetectionPort != other.failureDetectionPort) {
       return false;
+    }
     if (memberID == null) {
-      if (other.memberID != null)
+      if (other.memberID != null) {
         return false;
-    } else if (!memberID.equals(other.memberID))
+      }
+    } else if (!memberID.equals(other.memberID)) {
       return false;
-    if (requestId != other.requestId)
+    }
+    if (requestId != other.requestId) {
       return false;
+    }
     return true;
   }
 }

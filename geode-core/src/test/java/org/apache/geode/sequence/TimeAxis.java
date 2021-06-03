@@ -108,12 +108,14 @@ public class TimeAxis extends JComponent {
       if (tickLength != 0) {
         if (orientation == HORIZONTAL) {
           g.drawLine(i, SIZE - 1, i, SIZE - tickLength - 1);
-          if (text != null)
+          if (text != null) {
             g.drawString(text, i - 3, 21);
+          }
         } else {
           g.drawLine(SIZE - 1, i, SIZE - tickLength - 1, i);
-          if (text != null)
+          if (text != null) {
             g.drawString(text, 9, i + 3);
+          }
         }
       }
     }

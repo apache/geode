@@ -90,9 +90,10 @@ public class InitialContextFactoryImpl implements InitialContextFactory {
   }
 
   private static void restoreSystemProperty(String key, String value) {
-    if (value != null)
+    if (value != null) {
       System.setProperty(key, value);
-    else
+    } else {
       System.getProperties().remove(key);
+    }
   }
 }

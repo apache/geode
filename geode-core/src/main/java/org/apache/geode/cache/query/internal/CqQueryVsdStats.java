@@ -280,8 +280,9 @@ public class CqQueryVsdStats {
    * @param cqEvent object containing info on the newly qualified CQ event
    */
   public void updateStats(CqEvent cqEvent) {
-    if (cqEvent.getQueryOperation() == null)
+    if (cqEvent.getQueryOperation() == null) {
       return;
+    }
     this.incNumEvents();
     if (cqEvent.getQueryOperation().isCreate()) {
       this.incNumInserts();

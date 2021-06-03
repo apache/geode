@@ -492,10 +492,12 @@ class KeyPartitionResolver implements PartitionResolver {
   public void close() {}
 
   public boolean equals(Object o) {
-    if (this == o)
+    if (this == o) {
       return true;
-    if (!(o instanceof KeyPartitionResolver))
+    }
+    if (!(o instanceof KeyPartitionResolver)) {
       return false;
+    }
     KeyPartitionResolver otherKeyPartitionResolver = (KeyPartitionResolver) o;
     return otherKeyPartitionResolver.getName().equals(getName());
   }

@@ -147,8 +147,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotClearCallback)
+        if (!gotClearCallback) {
           fail("test failed");
+        }
         gotClearCallback = false;
       }
     });
@@ -167,8 +168,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotClearCallback)
+        if (!gotClearCallback) {
           fail("test failed");
+        }
         gotClearCallback = false;
       }
     });
@@ -213,8 +215,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotClearCallback)
+        if (!gotClearCallback) {
           fail("test failed");
+        }
         gotClearCallback = false;
       }
     });
@@ -233,8 +236,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotClearCallback)
+        if (!gotClearCallback) {
           fail("test failed");
+        }
         gotClearCallback = false;
       }
     });
@@ -301,8 +305,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotDestroyRegionCallback)
+        if (!gotDestroyRegionCallback) {
           fail("test failed");
+        }
         gotDestroyRegionCallback = false;
       }
     });
@@ -321,8 +326,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotDestroyRegionCallback)
+        if (!gotDestroyRegionCallback) {
           fail("test failed");
+        }
         gotDestroyRegionCallback = false;
       }
     });
@@ -369,8 +375,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotDestroyRegionCallback)
+        if (!gotDestroyRegionCallback) {
           fail("test failed");
+        }
         gotDestroyRegionCallback = false;
       }
     });
@@ -388,8 +395,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotDestroyRegionCallback)
+        if (!gotDestroyRegionCallback) {
           fail("test failed");
+        }
         gotDestroyRegionCallback = false;
       }
     });

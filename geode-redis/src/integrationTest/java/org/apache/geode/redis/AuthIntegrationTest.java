@@ -152,10 +152,12 @@ public class AuthIntegrationTest {
       }
       assertNotNull(ex);
     } finally {
-      if (authorizedJedis != null)
+      if (authorizedJedis != null) {
         authorizedJedis.close();
-      if (nonAuthorizedJedis != null)
+      }
+      if (nonAuthorizedJedis != null) {
         nonAuthorizedJedis.close();
+      }
     }
   }
 

@@ -221,8 +221,9 @@ public class RemoveIndexesMessage extends PartitionMessage {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.removeSingleIndex = in.readBoolean();
-    if (this.removeSingleIndex)
+    if (this.removeSingleIndex) {
       this.indexName = in.readUTF();
+    }
   }
 
   @Override
@@ -230,8 +231,9 @@ public class RemoveIndexesMessage extends PartitionMessage {
       SerializationContext context) throws IOException {
     super.toData(out, context);
     out.writeBoolean(this.removeSingleIndex);
-    if (this.removeSingleIndex)
+    if (this.removeSingleIndex) {
       out.writeUTF(this.indexName);
+    }
   }
 
   /**

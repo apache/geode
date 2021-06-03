@@ -87,8 +87,9 @@ public class ConcurrentStartIntegrationTest {
       t.start();
       threads[i] = t;
     }
-    for (Thread t : threads)
+    for (Thread t : threads) {
       t.join();
+    }
     cache = getCache();
     assertFalse(cache.isClosed());
   }

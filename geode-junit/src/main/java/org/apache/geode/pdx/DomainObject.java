@@ -76,27 +76,36 @@ public abstract class DomainObject implements PdxSerializerObject {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     DomainObject other = (DomainObject) obj;
-    if (long_0 != other.long_0)
+    if (long_0 != other.long_0) {
       return false;
+    }
     if (string_0 == null) {
-      if (other.string_0 != null)
+      if (other.string_0 != null) {
         return false;
-    } else if (!string_0.equals(other.string_0))
+      }
+    } else if (!string_0.equals(other.string_0)) {
       return false;
-    if (!Arrays.equals(string_array, other.string_array))
+    }
+    if (!Arrays.equals(string_array, other.string_array)) {
       return false;
+    }
     if (string_list == null) {
-      if (other.string_list != null)
+      if (other.string_list != null) {
         return false;
-    } else if (!string_list.equals(other.string_list))
+      }
+    } else if (!string_list.equals(other.string_list)) {
       return false;
+    }
     return true;
   }
 }

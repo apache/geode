@@ -704,8 +704,9 @@ public class MBeanUtil {
             ObjectName objectName = serverNotification.getMBeanName();
             synchronized (MBeanUtil.managedResources) {
               Object entry = MBeanUtil.managedResources.get(objectName);
-              if (entry == null)
+              if (entry == null) {
                 return;
+              }
               if (!(entry instanceof ManagedResource)) {
                 throw new ClassCastException(String.format("%s is not a ManagedResource",
                     new Object[] {entry.getClass().getName()}));

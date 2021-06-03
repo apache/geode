@@ -417,10 +417,11 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
     } catch (Exception e) {
       throw new IndexInvalidException(e);
     }
-    if (isFromClauseNull)
+    if (isFromClauseNull) {
       throw new IndexInvalidException(
           String.format("Invalid FROM Clause : ' %s '",
               this.fromClause));
+    }
     this.fromClause = tempBuff.substring(0, tempBuff.length() - 2);
     this.fromClauseIterators = list;
   }

@@ -168,8 +168,9 @@ public class Launcher {
           exitRequest = ExitShellRequest.FATAL_EXIT;
         } else {
           if (!gfsh.executeScriptLine(commandLineCommand)) {
-            if (gfsh.getLastExecutionStatus() != 0)
+            if (gfsh.getLastExecutionStatus() != 0) {
               exitRequest = ExitShellRequest.FATAL_EXIT;
+            }
           } else if (gfsh.getLastExecutionStatus() != 0) {
             exitRequest = ExitShellRequest.FATAL_EXIT;
           }

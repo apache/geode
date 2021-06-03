@@ -439,8 +439,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         }
         replyMsg.setException(replyException);
         dm.putOutgoing(replyMsg);
-        if (lclRgn instanceof PartitionedRegion)
+        if (lclRgn instanceof PartitionedRegion) {
           ((PartitionedRegion) lclRgn).sendIndexCreationMsg(this.getSender());
+        }
       }
     }
 

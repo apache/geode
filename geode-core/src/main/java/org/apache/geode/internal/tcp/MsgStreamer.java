@@ -329,15 +329,17 @@ public class MsgStreamer extends OutputStream
             lastFlushForMessage && this.msg.containsRegionContentChange(), conflationMsg);
       } catch (IOException ex) {
         it.remove();
-        if (this.ce == null)
+        if (this.ce == null) {
           this.ce = new ConnectExceptions();
+        }
         this.ce.addFailure(con.getRemoteAddress(), ex);
         con.closeForReconnect(
             String.format("closing due to %s", "IOException"));
       } catch (ConnectionException ex) {
         it.remove();
-        if (this.ce == null)
+        if (this.ce == null) {
           this.ce = new ConnectExceptions();
+        }
         this.ce.addFailure(con.getRemoteAddress(), ex);
         con.closeForReconnect(
             String.format("closing due to %s", "ConnectionException"));

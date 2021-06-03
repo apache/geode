@@ -118,17 +118,22 @@ public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     DiskStoreID other = (DiskStoreID) obj;
-    if (leastSig != other.leastSig)
+    if (leastSig != other.leastSig) {
       return false;
-    if (mostSig != other.mostSig)
+    }
+    if (mostSig != other.mostSig) {
       return false;
+    }
     return true;
   }
 

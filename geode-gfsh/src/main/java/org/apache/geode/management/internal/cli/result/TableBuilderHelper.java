@@ -121,9 +121,10 @@ public class TableBuilderHelper {
       totalLength = 0;
       index = 0;
       for (int colSize : finalColSizes) {
-        if (colSize != colSizes[index] && colSize < 2)
+        if (colSize != colSizes[index] && colSize < 2) {
           throw new TooManyColumnsException("Computed ColSize=" + colSize
               + " Set RESULT_VIEWER to external. This uses the 'less' command (with horizontal scrolling) to see wider results");
+        }
         totalLength += colSize;
         index++;
       }
@@ -138,28 +139,31 @@ public class TableBuilderHelper {
   public static int trimWidthForScreen(int maxColLength) {
     if (shouldTrimColumns()) {
       int screenWidth = getScreenWidth();
-      if (maxColLength > screenWidth)
+      if (maxColLength > screenWidth) {
         return screenWidth;
-      else
+      } else {
         return maxColLength;
-    } else
+      }
+    } else {
       return maxColLength;
+    }
 
   }
 
   public static int getScreenWidth() {
     Gfsh gfsh = Gfsh.getCurrentInstance();
-    if (gfsh == null)
+    if (gfsh == null) {
       return Gfsh.DEFAULT_WIDTH;
-    else
+    } else {
       return gfsh.getTerminalWidth();
+    }
   }
 
   public static boolean shouldTrimColumns() {
     Gfsh gfsh = Gfsh.getCurrentInstance();
-    if (gfsh == null)
+    if (gfsh == null) {
       return Boolean.getBoolean("GFSH.TRIMSCRWIDTH");
-    else {
+    } else {
       return Gfsh.DEFAULT_APP_RESULT_VIEWER.equals(gfsh.getEnvProperty(Gfsh.ENV_APP_RESULT_VIEWER))
           && !Gfsh.isInfoResult();
     }

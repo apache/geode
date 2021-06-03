@@ -114,13 +114,17 @@ public class IndexElemArray implements Iterable, Collection {
     synchronized (lock) {
       int currentSize = size();
       if (o == null) {
-        for (int i = 0; i < currentSize; i++)
-          if (elementData[i] == null)
+        for (int i = 0; i < currentSize; i++) {
+          if (elementData[i] == null) {
             return i;
+          }
+        }
       } else {
-        for (int i = 0; i < currentSize; i++)
-          if (o.equals(elementData[i]))
+        for (int i = 0; i < currentSize; i++) {
+          if (o.equals(elementData[i])) {
             return i;
+          }
+        }
       }
     }
     return -1;
@@ -197,17 +201,19 @@ public class IndexElemArray implements Iterable, Collection {
     synchronized (lock) {
       int currentSize = size(); // byte to int
       if (o == null) {
-        for (int index = 0; index < currentSize; index++)
+        for (int index = 0; index < currentSize; index++) {
           if (elementData[index] == null) {
             fastRemove(index);
             return true;
           }
+        }
       } else {
-        for (int index = 0; index < currentSize; index++)
+        for (int index = 0; index < currentSize; index++) {
           if (o.equals(elementData[index])) {
             fastRemove(index);
             return true;
           }
+        }
       }
     }
     return false;

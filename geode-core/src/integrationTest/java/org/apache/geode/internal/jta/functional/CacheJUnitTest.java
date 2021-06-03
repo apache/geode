@@ -139,12 +139,13 @@ public class CacheJUnitTest {
       ta.rollback();
       fail(" failed " + e.getMessage());
     } finally {
-      if (conn != null)
+      if (conn != null) {
         try {
           conn.close();
         } catch (SQLException ex) {
           fail("SQL exception: " + ex.getMessage());
         }
+      }
     }
   }
 
@@ -194,22 +195,25 @@ public class CacheJUnitTest {
       }
 
     } catch (NamingException e) {
-      if (rollback_chances)
+      if (rollback_chances) {
         ta.rollback();
+      }
       fail(" failed " + e.getMessage());
     } catch (SQLException e) {
-      if (rollback_chances)
+      if (rollback_chances) {
         ta.rollback();
+      }
       fail(" failed " + e.getMessage());
     } catch (Exception e) {
       ta.rollback();
       fail(" failed " + e.getMessage());
     } finally {
-      if (conn != null)
+      if (conn != null) {
         try {
           conn.close();
         } catch (SQLException e) {
         }
+      }
     }
   }
 
@@ -291,23 +295,27 @@ public class CacheJUnitTest {
       ta.rollback();
       fail(" test 3 failed ");
     } catch (NamingException e) {
-      if (rollback_chances)
+      if (rollback_chances) {
         ta.rollback();
+      }
       fail(" test 3 failed " + e.getMessage());
     } catch (SQLException e) {
-      if (rollback_chances)
+      if (rollback_chances) {
         ta.rollback();
+      }
       fail(" test 3 failed " + e.getMessage());
     } catch (Exception e) {
-      if (rollback_chances)
+      if (rollback_chances) {
         ta.rollback();
+      }
       fail(" test 3 failed " + e.getMessage());
     } finally {
-      if (conn != null)
+      if (conn != null) {
         try {
           conn.close();
         } catch (SQLException e) {
         }
+      }
     }
   }
 
@@ -386,23 +394,27 @@ public class CacheJUnitTest {
       ta.rollback();
       fail(" failed " + e.getMessage());
     } catch (NamingException e) {
-      if (rollback_chances)
+      if (rollback_chances) {
         ta.rollback();
+      }
       fail(" failed " + e.getMessage());
     } catch (SQLException e) {
-      if (rollback_chances)
+      if (rollback_chances) {
         ta.rollback();
+      }
       fail(" failed " + e.getMessage());
     } catch (Exception e) {
-      if (rollback_chances)
+      if (rollback_chances) {
         ta.rollback();
+      }
       fail(" failed " + e.getMessage());
     } finally {
-      if (conn != null)
+      if (conn != null) {
         try {
           conn.close();
         } catch (SQLException e) {
         }
+      }
     }
   }
 
@@ -525,12 +537,13 @@ public class CacheJUnitTest {
       ta.rollback();
       fail(" failed: " + e.getMessage());
     } finally {
-      if (conn != null)
+      if (conn != null) {
         try {
           conn.close();
         } catch (SQLException ex) {
           fail("Exception: " + ex.getMessage());
         }
+      }
     }
   }
 
@@ -597,8 +610,9 @@ public class CacheJUnitTest {
       assertEquals("cache value found is: " + tok, "\"value1\"", tok);
 
     } catch (CacheExistsException e) {
-      if (rollback_chances)
+      if (rollback_chances) {
         ta.rollback();
+      }
       fail(" failed due to: " + e.getMessage());
     } catch (NamingException e) {
       ta.rollback();
@@ -607,15 +621,17 @@ public class CacheJUnitTest {
       ta.rollback();
       fail(" failed due to: " + e.getMessage());
     } catch (Exception e) {
-      if (rollback_chances)
+      if (rollback_chances) {
         ta.rollback();
+      }
       fail(" failed due to: " + e.getMessage());
     } finally {
-      if (conn != null)
+      if (conn != null) {
         try {
           conn.close();
         } catch (Exception e) {
         }
+      }
     }
   }
 
@@ -691,11 +707,12 @@ public class CacheJUnitTest {
         ta.rollback();
       }
     } finally {
-      if (conn != null)
+      if (conn != null) {
         try {
           conn.close();
         } catch (SQLException e) {
         }
+      }
     }
   }
 
@@ -758,14 +775,16 @@ public class CacheJUnitTest {
         boolean matched1 = jtaObj.checkTableAgainstData(this.tblName, (field1 + ""));
         boolean matched2 = jtaObj.checkTableAgainstData(this.tblName, (field2 + ""));
 
-        if (matched1)
+        if (matched1) {
           System.out.print("(PK " + field1 + "found ");
-        else
+        } else {
           System.out.print("(PK " + field1 + "not found ");
-        if (matched2)
+        }
+        if (matched2) {
           System.out.print("PK " + field2 + "found)");
-        else
+        } else {
           System.out.print("PK " + field2 + "not found)");
+        }
 
         if (matched1 & matched2) {
           System.out.println("ok");
@@ -782,17 +801,19 @@ public class CacheJUnitTest {
     } catch (Exception e) {
       ta.rollback();
     } finally {
-      if (conn1 != null)
+      if (conn1 != null) {
         try {
           conn1.close();
         } catch (SQLException e) {
         }
+      }
 
-      if (conn2 != null)
+      if (conn2 != null) {
         try {
           conn2.close();
         } catch (SQLException e) {
         }
+      }
     }
 
   }
@@ -875,11 +896,12 @@ public class CacheJUnitTest {
       fail(" failed due to: " + e.getMessage());
       ta.rollback();
     } finally {
-      if (conn != null)
+      if (conn != null) {
         try {
           conn.close();
         } catch (SQLException e) {
         }
+      }
     }
 
   }
@@ -904,8 +926,9 @@ public class CacheJUnitTest {
     Region re = currRegion.createSubregion("employee", fac.create());
     String retVal = (String) re.get(TABLEID); // TABLEID correspondes to
                                               // "name1".
-    if (!retVal.equals("newname"))
+    if (!retVal.equals("newname")) {
       fail("Uncommitted value 'newname' not read by cacheloader name = " + retVal);
+    }
     utx.rollback();
 
     DataSource ds = (DataSource) ctx.lookup("java:/XAPooledDataSource");
@@ -915,8 +938,9 @@ public class CacheJUnitTest {
     ResultSet rs = stm.executeQuery(str);
     rs.next();
     String str1 = rs.getString(1);
-    if (!str1.equals("name2"))
+    if (!str1.equals("name2")) {
       fail("Rollback not occurred on XAConnection got in a cache loader");
+    }
   }
 
   /**
@@ -974,8 +998,9 @@ public class CacheJUnitTest {
         } catch (SQLException e) {
           fail(" failed to drop, " + e.getMessage());
         }
-      } else
+      } else {
         fail("unable to create table");
+      }
 
       /** Code meant for Oracle DB **/
       /*
@@ -993,8 +1018,9 @@ public class CacheJUnitTest {
     } catch (Exception e) {
       fail("failed, " + e.getMessage());
     } finally {
-      if (conn != null)
+      if (conn != null) {
         conn.close();
+      }
     }
   }
 
@@ -1047,8 +1073,9 @@ public class CacheJUnitTest {
         } catch (SQLException e) {
           fail(" failed to drop, " + e.getMessage());
         }
-      } else
+      } else {
         fail("table do not exists");
+      }
 
       /*** Code meant for Oracle DB ***/
       /*
@@ -1066,11 +1093,12 @@ public class CacheJUnitTest {
     } catch (Exception e) {
       fail("failed, " + e.getMessage());
     } finally {
-      if (conn != null)
+      if (conn != null) {
         try {
           conn.close();
         } catch (SQLException e) {
         }
+      }
     }
   }
 
@@ -1140,18 +1168,20 @@ public class CacheJUnitTest {
         fail(", PK " + this.tblIDFld + " found in db)" + "   " + "rollback for conn #2 failed");
       }
     } finally {
-      if (conn1 != null)
+      if (conn1 != null) {
         try {
           conn1.close();
         } catch (SQLException ex) {
           fail(" Exception: " + ex.getMessage());
         }
-      if (conn2 != null)
+      }
+      if (conn2 != null) {
         try {
           conn2.close();
         } catch (SQLException ex) {
           fail(" Exception: " + ex.getMessage());
         }
+      }
     }
   }
 

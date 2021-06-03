@@ -111,10 +111,12 @@ public final class EvictionAlgorithm extends EnumSyntax implements Serializable 
   }
 
   public static EvictionAlgorithm parseAction(String s) {
-    if (s == null)
+    if (s == null) {
       return null;
-    if (s.length() < 1)
+    }
+    if (s.length() < 1) {
       return null;
+    }
     for (int i = 0; i < stringTable.length; ++i) {
       if (s.equals(stringTable[i])) {
         return enumValueTable[i];

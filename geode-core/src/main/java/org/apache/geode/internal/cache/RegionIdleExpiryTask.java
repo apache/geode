@@ -37,8 +37,9 @@ class RegionIdleExpiryTask extends RegionExpiryTask {
     if (action == ExpirationAction.INVALIDATE || action == ExpirationAction.LOCAL_INVALIDATE) {
       if (getLocalRegion().isRegionInvalid()) {
         int timeout = getIdleAttributes().getTimeout();
-        if (timeout == 0)
+        if (timeout == 0) {
           return 0L;
+        }
         if (!getLocalRegion().EXPIRY_UNITS_MS) {
           timeout *= 1000;
         }

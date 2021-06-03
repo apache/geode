@@ -398,11 +398,13 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends JUnit4CacheTes
 
             Region region = getCache().getRegion(regionName);
             for (int i = 0; i < 100; i++) {
-              if (i == 50)
+              if (i == 50) {
                 IndexManager.testHook = new LocalTestHook();
+              }
               region.put(i, new Portfolio(i));
-              if (i == 50)
+              if (i == 50) {
                 Wait.pause(20);
+              }
             }
           }
         });

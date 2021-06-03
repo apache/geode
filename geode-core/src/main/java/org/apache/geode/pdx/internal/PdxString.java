@@ -154,8 +154,9 @@ public class PdxString implements Comparable<PdxString>, Sendable {
         int i = this.offset;
         int j = o.offset;
         while (n-- != 0) {
-          if (bytes[i++] != o.bytes[j++])
+          if (bytes[i++] != o.bytes[j++]) {
             return false;
+          }
         }
         return true;
       }

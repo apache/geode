@@ -136,18 +136,23 @@ public class AlertLevel implements java.io.Serializable {
    */
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof AlertLevel))
+    }
+    if (!(other instanceof AlertLevel)) {
       return false;
+    }
     final AlertLevel that = (AlertLevel) other;
 
-    if (this.severity != that.severity)
+    if (this.severity != that.severity) {
       return false;
-    if (this.name != null && !this.name.equals(that.name))
+    }
+    if (this.name != null && !this.name.equals(that.name)) {
       return false;
+    }
 
     return true;
   }

@@ -105,8 +105,9 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    */
   @SuppressWarnings("unchecked")
   public IdentityArrayList(final int capacity) {
-    if (capacity < 0)
+    if (capacity < 0) {
       throw new IllegalArgumentException("Initial capacity (" + capacity + ") is negative");
+    }
     a = (K[]) new Object[capacity];
     wrapped = false;
   }
@@ -177,8 +178,9 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    */
   public IdentityArrayList(final Iterator<? extends K> i) {
     this();
-    while (i.hasNext())
+    while (i.hasNext()) {
       this.add(i.next());
+    }
   }
 
   /**
@@ -188,8 +190,9 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    */
   public IdentityArrayList(final ObjectIterator<? extends K> i) {
     this();
-    while (i.hasNext())
+    while (i.hasNext()) {
       this.add(i.next());
+    }
   }
 
   /**
@@ -218,9 +221,10 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    * @return a new array list of the given size, wrapping the given array.
    */
   public static <K> IdentityArrayList<K> wrap(final K a[], final int length) {
-    if (length > a.length)
+    if (length > a.length) {
       throw new IllegalArgumentException("The specified length (" + length
           + ") is greater than the array size (" + a.length + ")");
+    }
     final IdentityArrayList<K> l = new IdentityArrayList<K>(a, false);
     l.size = length;
     return l;
@@ -243,17 +247,18 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    */
   @SuppressWarnings("unchecked")
   public void ensureCapacity(final int capacity) {
-    if (wrapped)
+    if (wrapped) {
       a = ObjectArrays.ensureCapacity(a, capacity, size);
-    else {
+    } else {
       if (capacity > a.length) {
         final Object t[] = new Object[capacity];
         System.arraycopy(a, 0, t, 0, size);
         a = (K[]) t;
       }
     }
-    if (ASSERTS)
+    if (ASSERTS) {
       assert size <= a.length;
+    }
   }
 
   /**
@@ -264,9 +269,9 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    */
   @SuppressWarnings("unchecked")
   private void grow(final int capacity) {
-    if (wrapped)
+    if (wrapped) {
       a = ObjectArrays.grow(a, capacity, size);
-    else {
+    } else {
       if (capacity > a.length) {
         final int newLength = (int) Math
             .max(Math.min(2L * a.length, it.unimi.dsi.fastutil.Arrays.MAX_ARRAY_SIZE), capacity);
@@ -275,77 +280,91 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
         a = (K[]) t;
       }
     }
-    if (ASSERTS)
+    if (ASSERTS) {
       assert size <= a.length;
+    }
   }
 
   @Override
   public void add(final int index, final K k) {
     ensureIndex(index);
     grow(size + 1);
-    if (index != size)
+    if (index != size) {
       System.arraycopy(a, index, a, index + 1, size - index);
+    }
     a[index] = k;
     size++;
-    if (ASSERTS)
+    if (ASSERTS) {
       assert size <= a.length;
+    }
   }
 
   @Override
   public boolean add(final K k) {
     grow(size + 1);
     a[size++] = k;
-    if (ASSERTS)
+    if (ASSERTS) {
       assert size <= a.length;
+    }
     return true;
   }
 
   @Override
   public K get(final int index) {
-    if (index >= size)
+    if (index >= size) {
       throw new IndexOutOfBoundsException(
           "Index (" + index + ") is greater than or equal to list size (" + size + ")");
+    }
     return a[index];
   }
 
   @Override
   public int indexOf(final Object k) {
-    for (int i = 0; i < size; i++)
-      if (((k) == null ? (a[i]) == null : (k) == (a[i])))
+    for (int i = 0; i < size; i++) {
+      if (((k) == null ? (a[i]) == null : (k) == (a[i]))) {
         return i;
+      }
+    }
     return -1;
   }
 
   @Override
   public int lastIndexOf(final Object k) {
-    for (int i = size; i-- != 0;)
-      if (((k) == null ? (a[i]) == null : (k) == (a[i])))
+    for (int i = size; i-- != 0;) {
+      if (((k) == null ? (a[i]) == null : (k) == (a[i]))) {
         return i;
+      }
+    }
     return -1;
   }
 
   @Override
   public K remove(final int index) {
-    if (index >= size)
+    if (index >= size) {
       throw new IndexOutOfBoundsException(
           "Index (" + index + ") is greater than or equal to list size (" + size + ")");
+    }
     final K old = a[index];
     size--;
-    if (index != size)
+    if (index != size) {
       System.arraycopy(a, index + 1, a, index, size - index);
+    }
     a[size] = null;
-    if (ASSERTS)
+    if (ASSERTS) {
       assert size <= a.length;
+    }
     return old;
   }
 
   public boolean rem(final Object k) {
     int index = indexOf(k);
-    if (index == -1)
+    if (index == -1) {
       return false;
+    }
     remove(index);
-    if (ASSERTS)
+    if (ASSERTS) {
       assert size <= a.length;
+    }
     return true;
   }
 
@@ -356,9 +375,10 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
 
   @Override
   public K set(final int index, final K k) {
-    if (index >= size)
+    if (index >= size) {
       throw new IndexOutOfBoundsException(
           "Index (" + index + ") is greater than or equal to list size (" + size + ")");
+    }
     K old = a[index];
     a[index] = k;
     return old;
@@ -368,8 +388,9 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
   public void clear() {
     Arrays.fill(a, 0, size, null);
     size = 0;
-    if (ASSERTS)
+    if (ASSERTS) {
       assert size <= a.length;
+    }
   }
 
   @Override
@@ -379,12 +400,14 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
 
   @Override
   public void size(final int size) {
-    if (size > a.length)
+    if (size > a.length) {
       ensureCapacity(size);
-    if (size > this.size)
+    }
+    if (size > this.size) {
       Arrays.fill(a, this.size, size, (null));
-    else
+    } else {
       Arrays.fill(a, size, this.size, (null));
+    }
     this.size = size;
   }
 
@@ -420,13 +443,15 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
   @SuppressWarnings("unchecked")
   public void trim(final int n) {
     // TODO: use Arrays.trim() and preserve type only if necessary
-    if (n >= a.length || size == a.length)
+    if (n >= a.length || size == a.length) {
       return;
+    }
     final K t[] = (K[]) new Object[Math.max(n, size)];
     System.arraycopy(a, 0, t, 0, size);
     a = t;
-    if (ASSERTS)
+    if (ASSERTS) {
       assert size <= a.length;
+    }
   }
 
   /**
@@ -455,8 +480,9 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
     System.arraycopy(a, to, a, from, size - to);
     size -= (to - from);
     int i = to - from;
-    while (i-- != 0)
+    while (i-- != 0) {
       a[size + i] = null;
+    }
   }
 
   /**
@@ -495,15 +521,17 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
 
       @Override
       public K next() {
-        if (!hasNext())
+        if (!hasNext()) {
           throw new NoSuchElementException();
+        }
         return a[last = pos++];
       }
 
       @Override
       public K previous() {
-        if (!hasPrevious())
+        if (!hasPrevious()) {
           throw new NoSuchElementException();
+        }
         return a[last = --pos];
       }
 
@@ -519,30 +547,34 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
 
       @Override
       public void add(K k) {
-        if (last == -1)
+        if (last == -1) {
           throw new IllegalStateException();
+        }
         IdentityArrayList.this.add(pos++, k);
         last = -1;
       }
 
       @Override
       public void set(K k) {
-        if (last == -1)
+        if (last == -1) {
           throw new IllegalStateException();
+        }
         IdentityArrayList.this.set(last, k);
       }
 
       @Override
       public void remove() {
-        if (last == -1)
+        if (last == -1) {
           throw new IllegalStateException();
+        }
         IdentityArrayList.this.remove(last);
         /*
          * If the last operation was a next(), we are removing an element *before* us, and we must
          * decrease pos correspondingly.
          */
-        if (last < pos)
+        if (last < pos) {
           pos--;
+        }
         last = -1;
       }
     };
@@ -572,16 +604,20 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    * @return true if the argument contains the same elements of this type-specific array list.
    */
   public boolean equals(final IdentityArrayList<K> l) {
-    if (l == this)
+    if (l == this) {
       return true;
+    }
     int s = size();
-    if (s != l.size())
+    if (s != l.size()) {
       return false;
+    }
     final K[] a1 = a;
     final K[] a2 = l.a;
-    while (s-- != 0)
-      if (!valEquals(a1[s], a2[s]))
+    while (s-- != 0) {
+      if (!valEquals(a1[s], a2[s])) {
         return false;
+      }
+    }
     return true;
   }
 
@@ -605,16 +641,18 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
     for (i = 0; i < s1 && i < s2; i++) {
       e1 = a1[i];
       e2 = a2[i];
-      if ((r = (((Comparable<K>) (e1)).compareTo(e2))) != 0)
+      if ((r = (((Comparable<K>) (e1)).compareTo(e2))) != 0) {
         return r;
+      }
     }
     return i < s2 ? -1 : (i < s1 ? 1 : 0);
   }
 
   private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException {
     s.defaultWriteObject();
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < size; i++) {
       s.writeObject(a[i]);
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -622,8 +660,9 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
       throws java.io.IOException, ClassNotFoundException {
     s.defaultReadObject();
     a = (K[]) new Object[size];
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < size; i++) {
       a[i] = (K) s.readObject();
+    }
   }
 
   /**

@@ -44,8 +44,9 @@ public class UnsafeThreadLocal<T> extends ThreadLocal<T> {
       if (threadLocalMap != null) {
         Object entry = invokePrivate(threadLocalMap, "getEntry", new Class[] {ThreadLocal.class},
             new Object[] {threadLocal});
-        if (entry != null)
+        if (entry != null) {
           return getPrivate(entry, "value");
+        }
       }
       return null;
     } catch (Exception e) {

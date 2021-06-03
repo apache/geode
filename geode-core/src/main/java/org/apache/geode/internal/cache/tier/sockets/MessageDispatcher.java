@@ -248,8 +248,9 @@ public class MessageDispatcher extends LoggingThread {
             logger.debug("{}: Exception occurred while trying to stop dispatching", this, e);
           }
         } finally {
-          if (interrupted)
+          if (interrupted) {
             Thread.currentThread().interrupt();
+          }
         }
       } // for
     } finally {

@@ -66,17 +66,21 @@ public class SubscriptionAttributes implements DataSerializable, Externalizable 
 
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof SubscriptionAttributes))
+    }
+    if (!(other instanceof SubscriptionAttributes)) {
       return false;
+    }
     final SubscriptionAttributes that = (SubscriptionAttributes) other;
 
     if (this.interestPolicy != that.interestPolicy
-        && !(this.interestPolicy != null && this.interestPolicy.equals(that.interestPolicy)))
+        && !(this.interestPolicy != null && this.interestPolicy.equals(that.interestPolicy))) {
       return false;
+    }
 
     return true;
   }

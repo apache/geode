@@ -125,8 +125,9 @@ public class GMSAuthenticator implements Authenticator<InternalDistributedMember
           "Failed to acquire Authenticator object", ex);
 
     } finally {
-      if (auth != null)
+      if (auth != null) {
         auth.close();
+      }
     }
   }
 

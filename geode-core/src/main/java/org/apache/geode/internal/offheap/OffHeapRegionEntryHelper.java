@@ -53,26 +53,36 @@ public class OffHeapRegionEntryHelper {
           Token.REMOVED_PHASE2, Token.END_OF_STREAM, Token.NOT_AVAILABLE, Token.TOMBSTONE,};
 
   private static long objectToAddress(@Unretained Object v) {
-    if (v instanceof StoredObject)
+    if (v instanceof StoredObject) {
       return ((StoredObject) v).getAddress();
-    if (v == null)
+    }
+    if (v == null) {
       return NULL_ADDRESS;
-    if (v == Token.TOMBSTONE)
+    }
+    if (v == Token.TOMBSTONE) {
       return TOMBSTONE_ADDRESS;
-    if (v == Token.INVALID)
+    }
+    if (v == Token.INVALID) {
       return INVALID_ADDRESS;
-    if (v == Token.LOCAL_INVALID)
+    }
+    if (v == Token.LOCAL_INVALID) {
       return LOCAL_INVALID_ADDRESS;
-    if (v == Token.DESTROYED)
+    }
+    if (v == Token.DESTROYED) {
       return DESTROYED_ADDRESS;
-    if (v == Token.REMOVED_PHASE1)
+    }
+    if (v == Token.REMOVED_PHASE1) {
       return REMOVED_PHASE1_ADDRESS;
-    if (v == Token.REMOVED_PHASE2)
+    }
+    if (v == Token.REMOVED_PHASE2) {
       return REMOVED_PHASE2_ADDRESS;
-    if (v == Token.END_OF_STREAM)
+    }
+    if (v == Token.END_OF_STREAM) {
       return END_OF_STREAM_ADDRESS;
-    if (v == Token.NOT_AVAILABLE)
+    }
+    if (v == Token.NOT_AVAILABLE) {
       return NOT_AVAILABLE_ADDRESS;
+    }
     throw new IllegalStateException("Can not convert " + v + " to an off heap address.");
   }
 
@@ -362,10 +372,12 @@ public class OffHeapRegionEntryHelper {
   }
 
   public static boolean isOffHeap(long addr) {
-    if ((addr & ENCODED_BIT) != 0)
+    if ((addr & ENCODED_BIT) != 0) {
       return false;
-    if (addr < 0)
+    }
+    if (addr < 0) {
       return true;
+    }
     addr >>= 1; // shift right 1 to convert to array index;
     return addr >= addrToObj.length;
   }

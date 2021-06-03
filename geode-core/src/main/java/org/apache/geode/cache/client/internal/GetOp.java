@@ -83,8 +83,9 @@ public class GetOp {
           }
           cms.removeBucketServerLocation(server);
         } catch (CacheLoaderException e) {
-          if (e.getCause() instanceof ServerConnectivityException)
+          if (e.getCause() instanceof ServerConnectivityException) {
             cms.removeBucketServerLocation(server);
+          }
         }
       }
     }

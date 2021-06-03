@@ -474,28 +474,33 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
     // if it's false and the op in this case will always be AND so return
     // false immediately
-    if (r instanceof Boolean && !((Boolean) r).booleanValue())
+    if (r instanceof Boolean && !((Boolean) r).booleanValue()) {
       return r;
-    if (r == null || r == QueryService.UNDEFINED)
+    }
+    if (r == null || r == QueryService.UNDEFINED) {
       r = QueryService.UNDEFINED; // keep going to see if we hit a
+    }
     // short-circuiting truth value
-    else if (!(r instanceof Boolean))
+    else if (!(r instanceof Boolean)) {
       throw new TypeMismatchException(
           "LITERAL_and/LITERAL_or operands must be of type boolean, not type '"
               + r.getClass().getName() + "'");
+    }
     for (int i = 1; i < _operands.length; i++) {
       Object ri = _operands[i].evaluate(context); // UNDEFINED, null, or
       // Boolean
-      if (ri instanceof Boolean && !((Boolean) ri).booleanValue())
+      if (ri instanceof Boolean && !((Boolean) ri).booleanValue()) {
         return ri;
+      }
       if (ri == null || ri == QueryService.UNDEFINED || r == QueryService.UNDEFINED) {
         r = QueryService.UNDEFINED;
         continue; // keep going to see if we hit a short-circuiting
         // truth value
-      } else if (!(ri instanceof Boolean))
+      } else if (!(ri instanceof Boolean)) {
         throw new TypeMismatchException(
             "LITERAL_and/LITERAL_or operands must be of type boolean, not type '"
                 + ri.getClass().getName() + "'");
+      }
       // now do the actual and
 
       r = new Boolean(((Boolean) r).booleanValue() && ((Boolean) ri).booleanValue());

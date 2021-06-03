@@ -359,8 +359,9 @@ public class HeapDataOutputStream extends
    */
   @Override
   public void writeAsSerializedByteArray(Object v) throws IOException {
-    if (this.ignoreWrites)
+    if (this.ignoreWrites) {
       return;
+    }
     checkIfWritable();
     ensureCapacity(5);
     if (v instanceof HeapDataOutputStream) {
@@ -401,8 +402,9 @@ public class HeapDataOutputStream extends
       write(bb);
       return;
     }
-    if (this.ignoreWrites)
+    if (this.ignoreWrites) {
       return;
+    }
     checkIfWritable();
     int remainingSpace = this.buffer.limit() - this.buffer.position();
     if (remainingSpace < source.remaining()) {

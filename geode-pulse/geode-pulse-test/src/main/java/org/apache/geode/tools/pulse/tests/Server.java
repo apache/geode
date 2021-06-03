@@ -86,8 +86,9 @@ public class Server {
     cs.stop();
     unloadMBeans();
 
-    if (jsonAuthFile != null)
+    if (jsonAuthFile != null) {
       mbs.unregisterMBean(new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL));
+    }
   }
 
   public void start() throws Exception {

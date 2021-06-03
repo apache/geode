@@ -59,8 +59,9 @@ public class PrimaryKeyIndex extends AbstractIndex {
         origFromClause, origIndxExpr, defintions, indexStatistics);
     // TODO: Check if the below is correct
     Class constr = region.getAttributes().getValueConstraint();
-    if (constr == null)
+    if (constr == null) {
       constr = Object.class;
+    }
     this.indexResultType = new ObjectTypeImpl(constr);
     markValid(true);
   }
@@ -306,8 +307,9 @@ public class PrimaryKeyIndex extends AbstractIndex {
      */
     @Override
     public long getNumberOfValues(Object key) {
-      if (getRegion().containsValueForKey(key))
+      if (getRegion().containsValueForKey(key)) {
         return 1;
+      }
       return 0;
     }
 

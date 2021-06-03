@@ -36,8 +36,9 @@ public class PasswordUtil {
    */
   @Deprecated
   public static String decrypt(String password) {
-    if (!isEncryptedPassword(password))
+    if (!isEncryptedPassword(password)) {
       return password;
+    }
 
     String toDecrypt = password.substring(10, password.length() - 1);
     SecretKeySpec key = new SecretKeySpec(init, "Blowfish");
@@ -54,8 +55,9 @@ public class PasswordUtil {
   }
 
   private static boolean isEncryptedPassword(String password) {
-    if (password == null)
+    if (password == null) {
       return false;
+    }
     return password.startsWith("encrypted(") && password.endsWith(")");
   }
 

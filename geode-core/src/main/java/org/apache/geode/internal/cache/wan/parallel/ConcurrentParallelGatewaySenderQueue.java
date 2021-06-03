@@ -151,9 +151,10 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
 
   public long estimateMemoryFootprint(SingleObjectSizer sizer) {
     long size = 0;
-    for (int i = 0; i < processors.length; i++)
+    for (int i = 0; i < processors.length; i++) {
       size += ((ParallelGatewaySenderQueue) this.processors[i].getQueue())
           .estimateMemoryFootprint(sizer);
+    }
     return size;
   }
 
@@ -203,8 +204,9 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   }
 
   public void cleanUp() {
-    for (int i = 0; i < processors.length; i++)
+    for (int i = 0; i < processors.length; i++) {
       ((ParallelGatewaySenderQueue) this.processors[i].getQueue()).cleanUp();
+    }
   }
 
   public void conflateEvent(Conflatable conflatableObject, int bucketId, Long tailKey) {

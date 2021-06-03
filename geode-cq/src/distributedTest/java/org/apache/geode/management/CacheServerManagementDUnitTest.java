@@ -328,8 +328,9 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
             WaitCriterion ev = new WaitCriterion() {
               @Override
               public boolean done() {
-                if (bean.isRunning())
+                if (bean.isRunning()) {
                   return true;
+                }
                 return false;
               }
 
@@ -431,8 +432,9 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
         WaitCriterion ev = new WaitCriterion() {
           @Override
           public boolean done() {
-            if (bean.isRunning())
+            if (bean.isRunning()) {
               return true;
+            }
             return false;
           }
 
