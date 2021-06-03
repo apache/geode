@@ -32,7 +32,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 public abstract class BaseSetOptions implements DataSerializableFixedID {
 
   private Exists exists;
-  private boolean change = false;
+  private boolean isCH = false;
 
   public BaseSetOptions(Exists exists) {
     this.exists = exists;
@@ -48,12 +48,12 @@ public abstract class BaseSetOptions implements DataSerializableFixedID {
     return exists.equals(Exists.XX);
   }
 
-  public void enableChange() {
-    this.change = true;
+  public void setCH(boolean isCH) {
+    this.isCH = isCH;
   }
 
   public boolean isCH() {
-    return change;
+    return isCH;
   }
 
   public Exists getExists() {

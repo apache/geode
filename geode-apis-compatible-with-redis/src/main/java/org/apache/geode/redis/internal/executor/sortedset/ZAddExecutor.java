@@ -106,7 +106,7 @@ public class ZAddExecutor extends AbstractExecutor {
     ZAddOptions zaddOptions = new ZAddOptions(existsOption);
 
     if (executorState.chFound) {
-      zaddOptions.enableChange();
+      zaddOptions.setCH(true);
     }
     return zaddOptions;
   }

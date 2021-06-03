@@ -203,8 +203,8 @@ public class RedisSortedSet extends AbstractRedisData {
         continue;
       }
       byte[] oldScore = memberAdd(member, score);
-      if (options.isCH() && oldScore != null) {
-        changesCount = getChangesCount(changesCount, oldScore, score);
+      if (options.isCH() && oldScore != null && !Arrays.equals(oldScore, score)) {
+        changesCount++;
       }
 
       if (deltaInfo == null) {
@@ -216,14 +216,6 @@ public class RedisSortedSet extends AbstractRedisData {
 
     storeChanges(region, key, deltaInfo);
     return getSortedSetSize() - initialSize + changesCount;
-  }
-
-  private int getChangesCount(int changesCount, byte[] oldScore, byte[] newScore) {
-    boolean sameScore = Arrays.equals(oldScore, newScore);
-    if (!sameScore) {
-      changesCount++;
-    }
-    return changesCount;
   }
 
   private void validateScoreIsDouble(byte[] score) {
