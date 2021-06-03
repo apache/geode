@@ -21,7 +21,6 @@ import java.util.List;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.management.cli.CliMetaData;
@@ -58,34 +57,27 @@ public class ReplicateRegionCommand extends GfshCommand {
           help = CliStrings.REPLICATE_REGION__CANCEL__HELP) boolean isCancel) {
 
     authorize(Resource.DATA, Operation.WRITE, regionName);
-    ResultModel result;
-    try {
-      final Object[] args = {regionName, senderId, isCancel, maxRate, batchSize};
-      ResultCollector<?, ?> rc =
-          executeFunction(replicateRegionFunction, args, getAllNormalMembers());
-      final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
-      @SuppressWarnings("unchecked")
-      final List resultsObjects = (List) rc.getResult();
-      for (Object r : resultsObjects) {
-        if (r instanceof FunctionInvocationTargetException) {
-          CliFunctionResult errorResult =
-              new CliFunctionResult(((FunctionInvocationTargetException) r).getMemberId().getName(),
-                  CliFunctionResult.StatusState.ERROR,
-                  ((FunctionInvocationTargetException) r).getMessage());
-          cliFunctionResults.add(errorResult);
-        } else {
-          cliFunctionResults.add((CliFunctionResult) r);
-        }
+    final Object[] args = {regionName, senderId, isCancel, maxRate, batchSize};
+    ResultCollector<?, ?> rc =
+        executeFunction(replicateRegionFunction, args, getAllNormalMembers());
+    @SuppressWarnings("unchecked")
+    final List<CliFunctionResult> cliFunctionResults = getCliFunctionResults((List) rc.getResult());
+    return ResultModel.createMemberStatusResult(cliFunctionResults, false, false);
+  }
+
+  private List<CliFunctionResult> getCliFunctionResults(List resultsObjects) {
+    final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
+    for (Object r : resultsObjects) {
+      if (r instanceof FunctionInvocationTargetException) {
+        CliFunctionResult errorResult =
+            new CliFunctionResult(((FunctionInvocationTargetException) r).getMemberId().getName(),
+                CliFunctionResult.StatusState.ERROR,
+                ((FunctionInvocationTargetException) r).getMessage());
+        cliFunctionResults.add(errorResult);
+      } else {
+        cliFunctionResults.add((CliFunctionResult) r);
       }
-
-      result = ResultModel.createMemberStatusResult(cliFunctionResults, null, null, false, false);
-
-    } catch (CacheClosedException e) {
-      result = ResultModel.createError(e.getMessage());
-    } catch (FunctionInvocationTargetException e) {
-      result = ResultModel.createError(
-          CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.REPLICATE_REGION));
     }
-    return result;
+    return cliFunctionResults;
   }
 }
