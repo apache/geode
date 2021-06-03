@@ -88,14 +88,8 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
         redisCluster.start();
 
         int port = redisCluster.getServicePort("redis-node-0", REDIS_PORT);
-        Jedis jedis = new Jedis("localhost", port);
-        List<ClusterNode> nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes()).getNodes();
 
-        nodes.forEach(logger::info);
-
-        assertThat(nodes.stream().mapToInt(x -> x.primary ? 1 : 0).sum())
-            .as("Incorrect primary node count")
-            .isEqualTo(3);
+        waitForPrimaries(port, 3);
 
         // Used when translating internal redis host:port to the external host:port which is
         // ultimately what command results will return.
@@ -133,6 +127,32 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
     };
 
     return delegate.apply(containerStatement, description);
+  }
+
+  private void waitForPrimaries(int port, int wantedPrimaries) {
+    List<ClusterNode> nodes = null;
+    int primaryCount = 0;
+
+    try (Jedis jedis = new Jedis("localhost", port)) {
+      for (int i = 0; i < 10; i++) {
+        nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes()).getNodes();
+        primaryCount = nodes.stream().mapToInt(x -> x.primary ? 1 : 0).sum();
+        if (primaryCount == wantedPrimaries) {
+          break;
+        }
+
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException ignored) {
+        }
+      }
+    }
+
+    nodes.forEach(logger::info);
+
+    assertThat(primaryCount)
+        .as("Incorrect primary node count")
+        .isEqualTo(wantedPrimaries);
   }
 
   public void flushAll() {
