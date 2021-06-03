@@ -14,8 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -65,25 +63,5 @@ public abstract class AbstractZScoreIntegrationTest implements RedisIntegrationT
   public void zscoreReturnsScore_givenExistingKeyAndMember() {
     jedis.zadd("key", 1.0, "member");
     assertThat(jedis.zscore("key", "member")).isEqualTo(1.0);
-  }
-
-  @Test
-  public void shouldReturnPositiveInfinity_whenScoreIsSetToPositiveInfinity() {
-    final String key = "key";
-    final String member = "member";
-    final double score = POSITIVE_INFINITY;
-
-    jedis.zadd(key, score, member);
-    assertThat(jedis.zscore(key, member)).isEqualTo(score);
-  }
-
-  @Test
-  public void shouldReturnNegativeInfinity_whenScoreIsSetToNegativeInfinity() {
-    final String key = "key";
-    final String member = "member";
-    final double score = NEGATIVE_INFINITY;
-
-    jedis.zadd(key, score, member);
-    assertThat(jedis.zscore(key, member)).isEqualTo(score);
   }
 }
