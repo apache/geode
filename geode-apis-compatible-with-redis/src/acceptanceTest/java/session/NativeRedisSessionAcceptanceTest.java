@@ -16,11 +16,13 @@ package session;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.redis.NativeRedisClusterTestRule;
 import org.apache.geode.redis.session.RedisSessionDUnitTest;
 
+@Ignore("GEODE-9341")
 public class NativeRedisSessionAcceptanceTest extends RedisSessionDUnitTest {
 
   @ClassRule
@@ -30,14 +32,19 @@ public class NativeRedisSessionAcceptanceTest extends RedisSessionDUnitTest {
   public static void setup() {
     setupAppPorts();
     setupNativeRedis();
-    setupClient();
     startSpringApp(APP1, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER1));
     startSpringApp(APP2, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER1));
+    setupRetry();
   }
 
   protected static void setupNativeRedis() {
     ports.put(SERVER1, redis.getExposedPorts().get(0));
     ports.put(SERVER2, redis.getExposedPorts().get(0));
+  }
+
+  @Override
+  protected void flushAll() {
+    redis.flushAll();
   }
 
   @Test

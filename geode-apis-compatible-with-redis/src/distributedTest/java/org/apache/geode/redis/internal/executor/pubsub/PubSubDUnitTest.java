@@ -16,14 +16,12 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -77,8 +75,6 @@ public class PubSubDUnitTest {
   private static Jedis publisher1;
   private static Jedis publisher2;
 
-  private static Properties locatorProperties;
-
   private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
@@ -93,10 +89,7 @@ public class PubSubDUnitTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-
-    locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
-    locator = cluster.startLocatorVM(0, locatorProperties);
+    locator = cluster.startLocatorVM(0);
 
     int locatorPort = locator.getPort();
     SerializableFunction<ServerStarterRule> operator = x -> x

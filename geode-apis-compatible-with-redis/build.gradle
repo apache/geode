@@ -81,12 +81,14 @@ dependencies {
   acceptanceTestImplementation('org.apache.logging.log4j:log4j-core')
   // This only exists for debugging PubSubNativeRedisAcceptanceTest
   acceptanceTestImplementation('org.buildobjects:jproc:2.6.0')
+  acceptanceTestImplementation('io.github.resilience4j:resilience4j-retry')
 
   distributedTestImplementation('org.apache.logging.log4j:log4j-core')
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(sourceSets.commonTest.output)
   distributedTestImplementation('redis.clients:jedis')
   distributedTestImplementation('io.lettuce:lettuce-core')
+  distributedTestImplementation('io.github.resilience4j:resilience4j-retry')
 
   distributedTestImplementation('javax.servlet:javax.servlet-api')
   distributedTestImplementation('org.springframework.boot:spring-boot-starter-jetty')

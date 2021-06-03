@@ -93,7 +93,7 @@ public class HlenDUnitTest {
 
   @Before
   public void testSetup() {
-    lettuce.flushall();
+    cluster.flushAll();
   }
 
   @AfterClass

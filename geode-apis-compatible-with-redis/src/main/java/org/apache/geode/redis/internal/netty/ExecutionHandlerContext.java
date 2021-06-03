@@ -247,8 +247,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       response = RedisResponse.oom(RedisConstants.ERROR_OOM_COMMAND_NOT_ALLOWED);
     } else if (cause instanceof DecoderException
         && cause.getCause() instanceof RedisCommandParserException) {
-      response = RedisResponse.error(RedisConstants.PARSING_EXCEPTION_MESSAGE);
-
+      response =
+          RedisResponse.error(RedisConstants.PARSING_EXCEPTION_MESSAGE + ": " + cause.getMessage());
     } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException) {
       response = RedisResponse.error(RedisConstants.SERVER_ERROR_SHUTDOWN);
     } else if (cause instanceof IllegalStateException

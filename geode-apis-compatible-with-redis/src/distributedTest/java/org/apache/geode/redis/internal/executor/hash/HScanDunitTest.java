@@ -15,16 +15,13 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -67,7 +64,6 @@ public class HScanDunitTest {
   private static RedisAdvancedClusterCommands<String, String> commands;
   private RedisClusterClient redisClient;
   private StatefulRedisClusterConnection<String, String> connection;
-  private static Properties locatorProperties;
 
   private static MemberVM locator;
   private static MemberVM server1;
@@ -82,12 +78,8 @@ public class HScanDunitTest {
 
   @BeforeClass
   public static void classSetup() {
-    int locatorPort;
-    locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
-
-    locator = redisClusterStartupRule.startLocatorVM(0, locatorProperties);
-    locatorPort = locator.getPort();
+    locator = redisClusterStartupRule.startLocatorVM(0);
+    int locatorPort = locator.getPort();
     redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
 
     // note: due to rules around member weighting in split-brain scenarios,

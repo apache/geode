@@ -16,11 +16,13 @@ package session;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.redis.NativeRedisClusterTestRule;
 import org.apache.geode.redis.session.SessionExpirationDUnitTest;
 
+@Ignore("GEODE-9341")
 public class NativeRedisSessionExpirationAcceptanceTest extends SessionExpirationDUnitTest {
   @ClassRule
   public static NativeRedisClusterTestRule redis = new NativeRedisClusterTestRule();
@@ -29,9 +31,14 @@ public class NativeRedisSessionExpirationAcceptanceTest extends SessionExpiratio
   public static void setup() {
     setupAppPorts();
     setupNativeRedis();
-    setupClient();
     startSpringApp(APP1, SHORT_SESSION_TIMEOUT, ports.get(SERVER1));
     startSpringApp(APP2, SHORT_SESSION_TIMEOUT, ports.get(SERVER1));
+    setupRetry();
+  }
+
+  @Override
+  protected void flushAll() {
+    redis.flushAll();
   }
 
   protected static void setupNativeRedis() {

@@ -16,13 +16,11 @@
 package org.apache.geode.redis.session;
 
 import static java.util.Collections.singletonMap;
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -75,10 +73,7 @@ public class SessionsAndCrashesDUnitTest {
 
   @BeforeClass
   public static void classSetup() {
-    Properties locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
-
-    locator = cluster.startLocatorVM(0, locatorProperties);
+    locator = cluster.startLocatorVM(0);
 
     server1 = startRedisVM(1, 0);
     server2 = startRedisVM(2, 0);
@@ -120,7 +115,7 @@ public class SessionsAndCrashesDUnitTest {
   @After
   public void teardown() {
     springContext.stop();
-    jedis.getConnectionFromSlot(0).flushAll();
+    cluster.flushAll();
     sessionIds.clear();
   }
 
@@ -134,7 +129,7 @@ public class SessionsAndCrashesDUnitTest {
     Future<Integer> future1 = executor.submit(() -> sessionUpdater(1, running, phase));
     Future<Integer> future2 = executor.submit(() -> sessionUpdater(2, running, phase));
 
-    GeodeAwaitility.await().during(1, TimeUnit.SECONDS).until(() -> true);
+    GeodeAwaitility.await().during(10, TimeUnit.SECONDS).until(() -> true);
 
     phase.set("CRASH 1 SERVER2");
     cluster.crashVM(2);

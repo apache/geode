@@ -25,6 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
+import io.github.resilience4j.retry.RetryRegistry;
 import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
@@ -36,9 +39,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.rules.TestName;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpEntity;
@@ -49,6 +54,7 @@ import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.FastLogger;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
@@ -57,12 +63,17 @@ import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
 public abstract class SessionDUnitTest {
 
+  private static final Logger logger = LogService.getLogger();
+
   @ClassRule
   public static RedisClusterStartupRule cluster = new RedisClusterStartupRule();
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
+
+  @Rule
+  public TestName testName = new TestName();
 
   // 30 minutes
   protected static final int DEFAULT_SESSION_TIMEOUT = 60 * 30;
@@ -76,15 +87,25 @@ public abstract class SessionDUnitTest {
   protected static final Map<Integer, Integer> ports = new HashMap<>();
   private static ConfigurableApplicationContext springApplicationContext;
 
-  private static RedisClusterClient redisClient;
+  private RedisClusterClient redisClient;
   private static StatefulRedisClusterConnection<String, String> connection;
   protected static RedisAdvancedClusterCommands<String, String> commands;
+  private static Retry retry;
 
   @BeforeClass
   public static void setup() {
     setupAppPorts();
     setupGeodeRedis();
-    setupClient();
+    setupRetry();
+  }
+
+  protected static void setupRetry() {
+    RetryConfig config = RetryConfig.custom()
+        .maxAttempts(20)
+        .retryExceptions(HttpServerErrorException.InternalServerError.class)
+        .build();
+    RetryRegistry registry = RetryRegistry.of(config);
+    retry = registry.retry("sessions");
   }
 
   protected static void setupAppPorts() {
@@ -106,7 +127,8 @@ public abstract class SessionDUnitTest {
     startSpringApp(APP2, sessionTimeout, ports.get(SERVER2), ports.get(SERVER1));
   }
 
-  protected static void setupClient() {
+  @Before
+  public void setupClient() {
     redisClient = RedisClusterClient.create("redis://localhost:" + ports.get(SERVER1));
 
     ClusterTopologyRefreshOptions refreshOptions =
@@ -125,17 +147,31 @@ public abstract class SessionDUnitTest {
 
   @AfterClass
   public static void cleanupAfterClass() {
-    try {
-      redisClient.shutdown();
-    } catch (Exception ignored) {
-    }
     stopSpringApp(APP1);
     stopSpringApp(APP2);
   }
 
   @After
   public void cleanupAfterTest() {
-    GeodeAwaitility.await().ignoreExceptions().untilAsserted(() -> commands.flushall());
+    logger.info(
+        "RetryMetrics after test {}: [successfulCallsWithRetries: {} successfulCallsWithoutRetries: {} failedCallsWithRetries: {} failedCallsWithoutRetries: {}]",
+        testName.getMethodName(),
+        retry.getMetrics().getNumberOfSuccessfulCallsWithRetryAttempt(),
+        retry.getMetrics().getNumberOfSuccessfulCallsWithoutRetryAttempt(),
+        retry.getMetrics().getNumberOfFailedCallsWithRetryAttempt(),
+        retry.getMetrics().getNumberOfFailedCallsWithoutRetryAttempt());
+
+    flushAll();
+
+    try {
+      redisClient.shutdown();
+    } catch (Exception ignored) {
+    }
+  }
+
+  protected void flushAll() {
+    GeodeAwaitility.await().ignoreExceptions()
+        .untilAsserted(() -> cluster.flushAll());
   }
 
   protected static void startRedisServer(int server) {
@@ -167,66 +203,51 @@ public abstract class SessionDUnitTest {
     cluster.getVM(sessionApp).invoke(() -> springApplicationContext.close());
   }
 
-  protected String createNewSessionWithNote(int sessionApp, String note) {
-    HttpEntity<String> request = new HttpEntity<>(note);
-    String sessionCookie = null;
-    do {
-      try {
-        HttpHeaders resultHeaders = new RestTemplate()
-            .postForEntity(
-                "http://localhost:" + ports.get(sessionApp)
-                    + "/addSessionNote",
-                request,
-                String.class)
-            .getHeaders();
-        sessionCookie = resultHeaders.getFirst("Set-Cookie");
-      } catch (HttpServerErrorException e) {
-        if (!e.getMessage().contains("Server Error")) {
-          throw e;
-        }
-      }
-    } while (sessionCookie == null);
-
-    return sessionCookie;
+  protected String createNewSessionWithNote(int sessionApp, String note) throws Exception {
+    return Retry.decorateCallable(retry, () -> createNewSessionWithNote0(sessionApp, note)).call();
   }
 
-  protected String[] getSessionNotes(int sessionApp, String sessionCookie) {
+  private String createNewSessionWithNote0(int sessionApp, String note) {
+    HttpEntity<String> request = new HttpEntity<>(note);
+    HttpHeaders resultHeaders = new RestTemplate()
+        .postForEntity("http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
+            request, String.class)
+        .getHeaders();
+
+    return resultHeaders.getFirst("Set-Cookie");
+  }
+
+  protected String[] getSessionNotes(int sessionApp, String sessionCookie) throws Exception {
+    return Retry.decorateCallable(retry, () -> getSessionNotes0(sessionApp, sessionCookie)).call();
+  }
+
+  private String[] getSessionNotes0(int sessionApp, String sessionCookie) {
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionCookie);
     HttpEntity<String> request = new HttpEntity<>("", requestHeaders);
-    boolean sesssionObtained = false;
-    String[] responseBody = new String[0];
-    do {
-      try {
-        responseBody = new RestTemplate()
-            .exchange(
-                "http://localhost:" + ports.get(sessionApp) + "/getSessionNotes",
-                HttpMethod.GET,
-                request,
-                String[].class)
-            .getBody();
-        sesssionObtained = true;
-      } catch (HttpServerErrorException e) {
-        if (!e.getMessage().contains("Server Error")) {
-          throw e;
-        }
-      }
-    } while (!sesssionObtained);
-    return responseBody;
+
+    return new RestTemplate()
+        .exchange("http://localhost:" + ports.get(sessionApp) + "/getSessionNotes",
+            HttpMethod.GET, request, String[].class)
+        .getBody();
   }
 
-  void addNoteToSession(int sessionApp, String sessionCookie, String note) {
+  void addNoteToSession(int sessionApp, String sessionCookie, String note) throws Exception {
+    Retry.decorateCallable(retry, () -> addNoteToSession0(sessionApp, sessionCookie, note))
+        .call();
+  }
+
+  private Void addNoteToSession0(int sessionApp, String sessionCookie, String note)
+      throws Exception {
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionCookie);
     List<String> notes = new ArrayList<>();
     Collections.addAll(notes, getSessionNotes(sessionApp, sessionCookie));
     HttpEntity<String> request = new HttpEntity<>(note, requestHeaders);
     new RestTemplate()
-        .postForEntity(
-            "http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
-            request,
-            String.class)
-        .getHeaders();
+        .postForEntity("http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
+            request, String.class);
+    return null;
   }
 
   protected String getSessionId(String sessionCookie) {
@@ -234,4 +255,5 @@ public abstract class SessionDUnitTest {
     byte[] decodedCookie = Base64.getDecoder().decode(cookies.get(0).getValue());
     return new String(decodedCookie);
   }
+
 }

@@ -16,19 +16,16 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -69,8 +66,6 @@ public class HashesAndCrashesDUnitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static Properties locatorProperties;
-
   private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
@@ -87,10 +82,7 @@ public class HashesAndCrashesDUnitTest {
 
   @BeforeClass
   public static void classSetup() throws Exception {
-    locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
-
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    locator = clusterStartUp.startLocatorVM(0);
 
     int locatorPort = locator.getPort();
 

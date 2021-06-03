@@ -188,6 +188,16 @@
         <version>4.8.104</version>
       </dependency>
       <dependency>
+        <groupId>io.github.resilience4j</groupId>
+        <artifactId>resilience4j-retry</artifactId>
+        <version>1.7.0</version>
+      </dependency>
+      <dependency>
+        <groupId>io.lettuce</groupId>
+        <artifactId>lettuce-core</artifactId>
+        <version>6.1.1.RELEASE</version>
+      </dependency>
+      <dependency>
         <groupId>io.micrometer</groupId>
         <artifactId>micrometer-core</artifactId>
         <version>1.6.6</version>
@@ -451,11 +461,6 @@
         <groupId>redis.clients</groupId>
         <artifactId>jedis</artifactId>
         <version>3.5.2</version>
-      </dependency>
-      <dependency>
-        <groupId>io.lettuce</groupId>
-        <artifactId>lettuce-core</artifactId>
-        <version>6.1.1.RELEASE</version>
       </dependency>
       <dependency>
         <groupId>xerces</groupId>

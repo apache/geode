@@ -14,13 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
@@ -36,7 +33,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.internal.data.ByteArrayWrapper;
@@ -52,34 +48,29 @@ public class RenameDUnitTest {
   @ClassRule
   public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(3);
 
-  static final String LOCAL_HOST = "127.0.0.1";
+  private static final String LOCAL_HOST = "127.0.0.1";
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  ExecutorService pool = Executors.newCachedThreadPool();
+  private final ExecutorService pool = Executors.newCachedThreadPool();
 
-  static JedisCluster jedisCluster;
-  static Properties locatorProperties;
-  static MemberVM locator;
-  static MemberVM server1;
-  static MemberVM server2;
+  private static JedisCluster jedisCluster;
+  private static MemberVM locator;
+  private static MemberVM server1;
+  private static MemberVM server2;
 
   @BeforeClass
   public static void setup() {
-    locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
-
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    locator = clusterStartUp.startLocatorVM(0);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
-
     jedisCluster = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort1), JEDIS_TIMEOUT);
   }
 
   @Before
   public void testSetup() {
-    flushall();
+    clusterStartUp.flushAll();
   }
 
   @AfterClass
@@ -199,12 +190,6 @@ public class RenameDUnitTest {
     future2.get();
     future3.get();
     future4.get();
-  }
-
-  private void flushall() {
-    try (Jedis connection = jedisCluster.getConnectionFromSlot(0)) {
-      connection.flushAll();
-    }
   }
 
   private void cyclicBarrierAwait(CyclicBarrier startCyclicBarrier) {

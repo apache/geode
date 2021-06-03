@@ -76,4 +76,9 @@ public class RedisMemberInfo implements DataSerializableFixedID {
   public KnownVersion[] getSerializationVersions() {
     return null;
   }
+
+  @Override
+  public String toString() {
+    return member.toString() + " hostAddress: " + hostAddress + " redisPort: " + redisPort;
+  }
 }

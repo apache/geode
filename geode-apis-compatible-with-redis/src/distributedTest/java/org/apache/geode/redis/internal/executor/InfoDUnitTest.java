@@ -15,17 +15,14 @@
 
 package org.apache.geode.redis.internal.executor;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -49,8 +46,6 @@ public class InfoDUnitTest {
   private static Jedis jedis1;
   private static Jedis jedis2;
 
-  private static Properties locatorProperties;
-
   private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
@@ -60,10 +55,7 @@ public class InfoDUnitTest {
 
   @BeforeClass
   public static void classSetup() {
-    locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
-
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    locator = clusterStartUp.startLocatorVM(0);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
 
@@ -74,9 +66,9 @@ public class InfoDUnitTest {
     jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
   }
 
-  @Before
-  public void testSetup() {
-    jedis1.flushAll();
+  @After
+  public void cleanup() {
+    clusterStartUp.flushAll();
   }
 
   @AfterClass
@@ -97,7 +89,10 @@ public class InfoDUnitTest {
 
     AtomicInteger previousCommandsProcessed1 = new AtomicInteger(4);
     AtomicInteger previousCommandsProcessed2 = new AtomicInteger(1);
-    assertThat(Integer.valueOf(getInfo(jedis1).get(COMMANDS_PROCESSED))).isEqualTo(4);
+
+    int jedis1CommandCount = Integer.parseInt(getInfo(jedis1).get(COMMANDS_PROCESSED));
+    int jedis2CommandCount = Integer.parseInt(getInfo(jedis2).get(COMMANDS_PROCESSED));
+    assertThat(jedis1CommandCount + jedis2CommandCount).isEqualTo(4);
 
     new ConcurrentLoopingThreads(NUM_ITERATIONS,
         i -> {
