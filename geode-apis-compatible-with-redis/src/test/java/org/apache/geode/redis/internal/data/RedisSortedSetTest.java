@@ -128,7 +128,7 @@ public class RedisSortedSetTest {
     adds.add("1.61803".getBytes());
     adds.add("v3".getBytes());
 
-    sortedSet1.zadd(region, null, adds, new ZAddOptions(ZAddOptions.Exists.NONE));
+    sortedSet1.zadd(region, null, adds, new ZAddOptions(ZAddOptions.Exists.NONE, false));
     assertThat(sortedSet1.hasDelta()).isTrue();
 
     HeapDataOutputStream out = new HeapDataOutputStream(100);

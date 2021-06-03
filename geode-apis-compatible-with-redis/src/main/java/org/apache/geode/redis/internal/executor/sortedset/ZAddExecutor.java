@@ -103,12 +103,7 @@ public class ZAddExecutor extends AbstractExecutor {
     if (executorState.xxFound) {
       existsOption = ZAddOptions.Exists.XX;
     }
-    ZAddOptions zaddOptions = new ZAddOptions(existsOption);
-
-    if (executorState.chFound) {
-      zaddOptions.setCH(true);
-    }
-    return zaddOptions;
+    return new ZAddOptions(existsOption, executorState.chFound);
   }
 
   static class ZAddExecutorState {

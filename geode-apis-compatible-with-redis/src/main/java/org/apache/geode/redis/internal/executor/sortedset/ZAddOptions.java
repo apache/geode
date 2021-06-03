@@ -16,6 +16,12 @@
 
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.executor.BaseSetOptions;
 
 
@@ -23,9 +29,15 @@ import org.apache.geode.redis.internal.executor.BaseSetOptions;
  * Class representing different options that can be used with Redis Sorted Set ZADD command.
  */
 public class ZAddOptions extends BaseSetOptions {
-  public ZAddOptions(Exists existsOption) {
+  private boolean isCH;
+
+  public ZAddOptions(Exists existsOption, boolean isCH) {
     super(existsOption);
+
+    this.isCH = isCH;
   }
+
+  public boolean isCH() { return this.isCH; }
 
   public ZAddOptions() {}
 
@@ -33,4 +45,17 @@ public class ZAddOptions extends BaseSetOptions {
   public int getDSFID() {
     return REDIS_SORTED_SET_OPTIONS_ID;
   }
+
+  @Override
+  public void toData(DataOutput out, SerializationContext context) throws IOException {
+    super.toData(out, context);
+    out.writeBoolean(isCH);
+  }
+
+  @Override
+  public void fromData(DataInput in, DeserializationContext context) throws IOException {
+    super.fromData(in, context);
+    isCH = in.readBoolean();
+  }
+
 }
