@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 
@@ -93,7 +94,61 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
 
   @Override
   public boolean rename(RedisKey oldKey, RedisKey newKey) {
-    // caller has already done all the stripedExecutor locking
-    return getRedisData(oldKey).rename(getRegion(), oldKey, newKey);
+    RedisKey firstLock;
+    RedisKey secondLock;
+    if (arrayCmp(oldKey.toBytes(), newKey.toBytes()) > 0) {
+      firstLock = oldKey;
+      secondLock = newKey;
+    } else {
+      firstLock = newKey;
+      secondLock = oldKey;
+    }
+
+    return stripedExecute(firstLock, () -> rename0(secondLock, oldKey, newKey));
+  }
+
+  private boolean rename0(RedisKey lockKey, RedisKey oldKey, RedisKey newKey) {
+    return stripedExecute(lockKey,
+        () -> getRedisData(oldKey).rename(getRegionProvider().getDataRegion(), oldKey, newKey));
+  }
+
+  /**
+   * Private helper method to compare two byte arrays, A.compareTo(B). The comparison is basically
+   * numerical, for each byte index, the byte representing the greater value will be the greater
+   *
+   * @param A byte[]
+   * @param B byte[]
+   * @return 1 if A > B, -1 if B > A, 0 if A == B
+   */
+  private int arrayCmp(byte[] A, byte[] B) {
+    if (A == B) {
+      return 0;
+    }
+    if (A == null) {
+      return -1;
+    } else if (B == null) {
+      return 1;
+    }
+
+    int len = Math.min(A.length, B.length);
+
+    for (int i = 0; i < len; i++) {
+      byte a = A[i];
+      byte b = B[i];
+      int diff = a - b;
+      if (diff > 0) {
+        return 1;
+      } else if (diff < 0) {
+        return -1;
+      }
+    }
+
+    if (A.length > B.length) {
+      return 1;
+    } else if (B.length > A.length) {
+      return -1;
+    }
+
+    return 0;
   }
 }

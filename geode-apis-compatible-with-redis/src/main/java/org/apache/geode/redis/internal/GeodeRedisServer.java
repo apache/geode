@@ -31,7 +31,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfoRetrievalFunction;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
-import org.apache.geode.redis.internal.executor.key.RenameFunction;
 import org.apache.geode.redis.internal.netty.NettyRedisServer;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.pubsub.PubSubImpl;
@@ -80,8 +79,6 @@ public class GeodeRedisServer {
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
     regionProvider = new RegionProvider(cache, stripedExecutor, redisStats);
-
-    RenameFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
 
     passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 
