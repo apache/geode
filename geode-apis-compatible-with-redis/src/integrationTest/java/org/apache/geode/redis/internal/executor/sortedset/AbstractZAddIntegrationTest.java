@@ -93,12 +93,17 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   @Test
   public void shouldError_givenNonNumericScore() {
     assertThatThrownBy(
-        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "xlerb", member))
-            .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "invalidDoubleValue",
+            member))
+                .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
+    assertThat(jedis.zscore("fakeKey", member)).isNull();
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "1.0", "member01",
-            "purple flurp", "member02", "3.0", "member03"))
+            "invalidDoubleValue", "member02", "3.0", "member03"))
                 .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
+    assertThat(jedis.zscore("fakeKey", "member01")).isNull();
+    assertThat(jedis.zscore("fakeKey", "member02")).isNull();
+    assertThat(jedis.zscore("fakeKey", "member03")).isNull();
   }
 
   @Test
@@ -169,7 +174,8 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     Long addCount = (Long) jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY,
         "1", "member3", "1", "member2", "1", "member1", "1", "zed", "1", "alpha", "1", "");
     assertThat(addCount).isEqualTo(6);
-    // TODO: use ZCARD to confirm set size once command is implemented
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(6);
+
     assertThat(jedis.zscore(SORTED_SET_KEY, "")).isEqualTo(1.0);
     assertThat(jedis.zscore(SORTED_SET_KEY, "alpha")).isEqualTo(1.0);
     assertThat(jedis.zscore(SORTED_SET_KEY, "member1")).isEqualTo(1.0);
@@ -470,5 +476,4 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     }
     return map;
   }
-
 }

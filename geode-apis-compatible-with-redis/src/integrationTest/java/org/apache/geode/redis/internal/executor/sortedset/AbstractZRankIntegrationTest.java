@@ -40,6 +40,8 @@ import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTest {
+  public static final String KEY = "key";
+  public static final String MEMBER = "member";
   private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -69,33 +71,33 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void shouldReturnNil_givenNonexistentMember() {
-    jedis.zadd("key", 1.0, "member");
-    assertThat(jedis.zrank("key", "fakeMember")).isEqualTo(null);
+    jedis.zadd(KEY, 1.0, MEMBER);
+    assertThat(jedis.zrank(KEY, "fakeMember")).isEqualTo(null);
   }
 
   @Test
   public void shouldReturnRank_givenExistingKeyAndMember() {
-    jedis.zadd("key", 1.0, "member");
-    assertThat(jedis.zrank("key", "member")).isEqualTo(0);
+    jedis.zadd(KEY, 1.0, MEMBER);
+    assertThat(jedis.zrank(KEY, MEMBER)).isEqualTo(0);
   }
 
   @Test
   public void shouldReturnRankByScore_givenUniqueScoresAndMembers() {
     Map<String, Double> map = makeMemberScoreMap_differentScores();
-    jedis.zadd("key", map);
+    jedis.zadd(KEY, map);
 
     // get the ranks of the members
     Iterator<String> membersIterator = map.keySet().iterator();
     String[] members = new String[10];
     while (membersIterator.hasNext()) {
       String memberName = membersIterator.next();
-      long rank = jedis.zrank("key", memberName);
+      long rank = jedis.zrank(KEY, memberName);
       members[(int) rank] = memberName;
     }
 
     Double previousScore = Double.NEGATIVE_INFINITY;
     for (int i = 0; i < ENTRY_COUNT; i++) {
-      Double score = jedis.zscore("key", members[i]);
+      Double score = jedis.zscore(KEY, members[i]);
       assertThat(score).isGreaterThanOrEqualTo(previousScore);
       previousScore = score;
     }
@@ -104,7 +106,7 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
   @Test
   public void shouldReturnRankByLex_givenMembersWithSameScore() {
     Map<String, Double> map = makeMemberScoreMap_sameScores();
-    jedis.zadd("key", map);
+    jedis.zadd(KEY, map);
 
     // get the ranks of the members
     Iterator<String> membersIterator = map.keySet().iterator();
@@ -112,7 +114,7 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     List<byte[]> memberList = new ArrayList<>();
     while (membersIterator.hasNext()) {
       String memberName = membersIterator.next();
-      long rank = jedis.zrank("key", memberName);
+      long rank = jedis.zrank(KEY, memberName);
       rankMap.put(rank, memberName.getBytes(StandardCharsets.UTF_8));
       memberList.add(memberName.getBytes(StandardCharsets.UTF_8));
     }
@@ -129,10 +131,10 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     Map<String, Double> memberScoreMap = makeMemberScoreMap_withVariedScores_andADuplicate();
     Map<Long, String> rankMap = makeRankToMemberMap_withExpectedRankings();
 
-    jedis.zadd("key", memberScoreMap);
+    jedis.zadd(KEY, memberScoreMap);
 
     for (long i = 0; i < rankMap.size(); i++) {
-      assertThat(i).isEqualTo(jedis.zrank("key", rankMap.get(i)));
+      assertThat(i).isEqualTo(jedis.zrank(KEY, rankMap.get(i)));
     }
   }
 
@@ -196,13 +198,7 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     Map<String, Double> map = new HashMap<>();
 
     // Use set so all values are unique.
-    byte[] memberNameArray = new byte[6];
-    Set<String> memberSet = new HashSet<>();
-    while (memberSet.size() < ENTRY_COUNT) {
-      random.nextBytes(memberNameArray);
-      String memberName = Coder.bytesToString(memberNameArray);
-      memberSet.add(memberName);
-    }
+    Set<String> memberSet = initializeSetWithRandomMemberValues();
 
     for (String s : memberSet) {
       map.put(s, 1.0);
@@ -223,13 +219,7 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     scoreSet.add(Double.POSITIVE_INFINITY);
     scoreSet.add(Double.NEGATIVE_INFINITY);
 
-    byte[] memberNameArray = new byte[6];
-    Set<String> memberSet = new HashSet<>();
-    while (memberSet.size() < ENTRY_COUNT) {
-      random.nextBytes(memberNameArray);
-      String memberName = Coder.bytesToString(memberNameArray);
-      memberSet.add(memberName);
-    }
+    Set<String> memberSet = initializeSetWithRandomMemberValues();
 
     Iterator<String> memberIterator = memberSet.iterator();
     Iterator<Double> scoreIterator = scoreSet.iterator();
@@ -239,4 +229,16 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
 
     return map;
   }
+
+  private Set<String> initializeSetWithRandomMemberValues() {
+    byte[] memberNameArray = new byte[6];
+    Set<String> memberSet = new HashSet<>();
+    while (memberSet.size() < ENTRY_COUNT) {
+      random.nextBytes(memberNameArray);
+      String memberName = Coder.bytesToString(memberNameArray);
+      memberSet.add(memberName);
+    }
+    return memberSet;
+  }
+
 }

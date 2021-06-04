@@ -165,8 +165,8 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   protected synchronized void memberAdd(byte[] memberToAdd, byte[] scoreToAdd) {
-    byte[] oldScore = members.put(memberToAdd, scoreToAdd);
     scoreSet.add(new OrderedSetEntry(memberToAdd, scoreToAdd));
+    byte[] oldScore = members.put(memberToAdd, scoreToAdd);
     if (oldScore == null) {
       sizeInBytes += calculateSizeOfFieldValuePair(memberToAdd, scoreToAdd);
     } else {
@@ -418,22 +418,6 @@ public class RedisSortedSet extends AbstractRedisData {
     OrderedSetEntry(byte[] member, byte[] score) {
       this.member = member;
       this.score = makeDoubleWhileHandlingInfinity(score);
-    }
-
-    private Double makeDoubleWhileHandlingInfinity(byte[] score) {
-      String scoreString = Coder.bytesToString(score).toLowerCase();
-      switch (scoreString) {
-        case "inf":
-        case "infinity":
-        case "+inf":
-        case "+infinity":
-          return Double.POSITIVE_INFINITY;
-        case "-inf":
-        case "-infinity":
-          return Double.NEGATIVE_INFINITY;
-        default:
-          return Coder.bytesToDouble(score);
-      }
     }
   }
 }

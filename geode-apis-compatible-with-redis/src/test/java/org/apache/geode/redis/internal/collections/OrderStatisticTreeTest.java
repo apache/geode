@@ -25,24 +25,24 @@
  */
 package org.apache.geode.redis.internal.collections;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.TreeSet;
 
-import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
+
 
 public class OrderStatisticTreeTest {
 
@@ -51,8 +51,8 @@ public class OrderStatisticTreeTest {
 
   private final TreeSet<Integer> set = new TreeSet<>();
 
-  @Before
-  public void before() {
+  @After
+  public void cleanup() {
     tree.clear();
     set.clear();
   }
@@ -70,6 +70,7 @@ public class OrderStatisticTreeTest {
       assertTrue(tree.isHealthy());
     }
 
+    assertFalse(set.isEmpty());
     assertEquals(set.isEmpty(), tree.isEmpty());
   }
 
@@ -99,6 +100,7 @@ public class OrderStatisticTreeTest {
     assertEquals(set.size(), tree.size());
     set.clear();
     tree.clear();
+    assertEquals(0, set.size());
     assertEquals(set.size(), tree.size());
   }
 
@@ -186,8 +188,8 @@ public class OrderStatisticTreeTest {
 
   @Test
   public void testSize() {
+    assertEquals(set.size(), tree.size());
     for (int i = 0; i < 200; ++i) {
-      assertEquals(set.size(), tree.size());
       assertEquals(set.add(i), tree.add(i));
       assertEquals(set.size(), tree.size());
     }
@@ -255,61 +257,6 @@ public class OrderStatisticTreeTest {
     }
   }
 
-  @Test
-  public void findBug() {
-    tree.add(0);
-    assertTrue(tree.isHealthy());
-
-    tree.add(-1);
-    tree.remove(-1);
-    assertTrue(tree.isHealthy());
-
-    tree.add(1);
-    tree.remove(1);
-    assertTrue(tree.isHealthy());
-
-    tree.add(-1);
-    tree.add(1);
-    tree.remove(0);
-    assertTrue(tree.isHealthy());
-
-    tree.clear();
-    tree.add(0);
-    tree.add(-1);
-    tree.add(10);
-    tree.add(5);
-    tree.add(15);
-    tree.add(11);
-    tree.add(30);
-    tree.add(7);
-
-    tree.remove(-1);
-
-    assertTrue(tree.isHealthy());
-  }
-
-  @Test
-  public void tryReproduceTheCounterBug() {
-    long seed = System.nanoTime();
-    Random random = new Random(seed);
-    List<Integer> list = new ArrayList<>();
-
-    System.out.println("tryReproduceTheCounterBug: seed = " + seed);
-
-    for (int i = 0; i < 10; ++i) {
-      int number = random.nextInt(1000);
-      list.add(number);
-      tree.add(number);
-      assertTrue(tree.isHealthy());
-    }
-
-    for (Integer i : list) {
-      tree.remove(i);
-      boolean healthy = tree.isHealthy();
-      assertTrue(healthy);
-    }
-  }
-
   @Test(expected = NoSuchElementException.class)
   public void testEmptyIterator() {
     tree.iterator().next();
@@ -332,21 +279,9 @@ public class OrderStatisticTreeTest {
     iterator1.remove();
     iterator2.remove();
 
-    try {
-      iterator1.remove();
-      fail("iterator1 should have thrown an exception.");
-    } catch (IllegalStateException ex) {
-
-    }
-
-    try {
-      iterator2.remove();
-      fail("iterator2 should have thrown an exception.");
-    } catch (IllegalStateException ex) {
-
-    }
+    assertThatThrownBy(() -> iterator1.remove()).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(() -> iterator2.remove()).isInstanceOf(IllegalStateException.class);
   }
-
 
 
   @Test
@@ -366,36 +301,15 @@ public class OrderStatisticTreeTest {
 
     assertEquals(iterator1.hasNext(), iterator2.hasNext());
 
-    try {
-      iterator1.next();
-      fail("iterator1 should have thrown an exception.");
-    } catch (NoSuchElementException ex) {
-
-    }
-
-    try {
-      iterator2.next();
-      fail("iterator1 should have thrown an exception.");
-    } catch (NoSuchElementException ex) {
-
-    }
+    assertThatThrownBy(() -> iterator1.next()).isInstanceOf(NoSuchElementException.class);
+    assertThatThrownBy(() -> iterator2.next()).isInstanceOf(NoSuchElementException.class);
   }
 
   @Test
   public void testRemoveBeforeNextThrowsEmpty() {
-    try {
-      set.iterator().remove();
-      fail("The set iterator should have thrown an exception.");
-    } catch (IllegalStateException ex) {
 
-    }
-
-    try {
-      tree.iterator().remove();
-      fail("The tree iterator should have thrown an exception.");
-    } catch (IllegalStateException ex) {
-
-    }
+    assertThatThrownBy(() -> set.iterator().remove()).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(() -> tree.iterator().remove()).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
@@ -416,19 +330,8 @@ public class OrderStatisticTreeTest {
     iterator1.remove();
     iterator2.remove();
 
-    try {
-      iterator1.remove();
-      fail("Set iterator should have thrown an exception.");
-    } catch (IllegalStateException ex) {
-
-    }
-
-    try {
-      iterator2.remove();
-      fail("Tree iterator should have thrown an exception.");
-    } catch (IllegalStateException ex) {
-
-    }
+    assertThatThrownBy(() -> iterator1.remove()).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(() -> iterator2.remove()).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
@@ -508,12 +411,7 @@ public class OrderStatisticTreeTest {
           iterator1.remove();
           iterator2.remove();
         } catch (IllegalStateException ex) {
-          try {
-            iterator2.remove();
-            fail("iterator2 should have thrown an exception.");
-          } catch (IllegalStateException ex2) {
-
-          }
+          assertThatThrownBy(() -> iterator2.remove()).isInstanceOf(IllegalStateException.class);
         }
       } else {
         assertEquals(iterator1.hasNext(), iterator2.hasNext());
@@ -547,29 +445,19 @@ public class OrderStatisticTreeTest {
 
     assertEquals(iterator1.hasNext(), iterator2.hasNext());
 
-    boolean thrown = false;
-
     try {
       iterator1.next();
+      try {
+        iterator2.next();
+      } catch (ConcurrentModificationException ex) {
+        fail("iterator2 should NOT have thrown an exception.");
+      }
     } catch (ConcurrentModificationException ex) {
-      thrown = true;
-    }
-
-    if (thrown) {
-      try {
-        iterator2.next();
-        fail("iterator2 should have thrown an exception.");
-      } catch (ConcurrentModificationException ex) {
-
-      }
-    } else {
-      try {
-        iterator2.next();
-      } catch (ConcurrentModificationException ex) {
-        fail("iterator2. should not have thrown an exception.");
-      }
+      assertThatThrownBy(() -> iterator2.next())
+          .isInstanceOf(ConcurrentModificationException.class);
     }
   }
+
 
   @Test
   public void testIteratorConcurrentRemove() {
@@ -600,19 +488,10 @@ public class OrderStatisticTreeTest {
     tree.remove(12);
 
     // Both of them should throw.
-    try {
-      iterator1.remove();
-      fail();
-    } catch (ConcurrentModificationException ex) {
-
-    }
-
-    try {
-      iterator2.remove();
-      fail();
-    } catch (ConcurrentModificationException ex) {
-
-    }
+    assertThatThrownBy(() -> iterator1.remove())
+        .isInstanceOf(ConcurrentModificationException.class);
+    assertThatThrownBy(() -> iterator2.remove())
+        .isInstanceOf(ConcurrentModificationException.class);
   }
 
   @Test
@@ -622,25 +501,14 @@ public class OrderStatisticTreeTest {
       tree.add(i);
     }
 
-    Iterator<Integer> iterator1 = set.iterator();
-    Iterator<Integer> iterator2 = tree.iterator();
+    Iterator<Integer> setIterator = set.iterator();
+    Iterator<Integer> treeIterator = tree.iterator();
 
     set.add(100);
     tree.add(100);
 
-    try {
-      set.iterator().remove();
-      fail();
-    } catch (IllegalStateException ex) {
-
-    }
-
-    try {
-      tree.iterator().remove();
-      fail();
-    } catch (IllegalStateException ex) {
-
-    }
+    assertThatThrownBy(() -> setIterator.remove()).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(() -> treeIterator.remove()).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
@@ -665,19 +533,8 @@ public class OrderStatisticTreeTest {
 
     assertEquals(iterator1b.hasNext(), iterator2b.hasNext());
 
-    try {
-      iterator1b.next();
-      fail();
-    } catch (ConcurrentModificationException ex) {
-
-    }
-
-    try {
-      iterator2b.next();
-      fail();
-    } catch (ConcurrentModificationException ex) {
-
-    }
+    assertThatThrownBy(() -> iterator1b.next()).isInstanceOf(ConcurrentModificationException.class);
+    assertThatThrownBy(() -> iterator2b.next()).isInstanceOf(ConcurrentModificationException.class);
   }
 
   @Test
