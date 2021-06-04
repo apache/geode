@@ -42,9 +42,6 @@ class NullRedisSortedSet extends RedisSortedSet {
       return 0L;
     }
 
-    for (int i = 0; i < membersToAdd.size(); i += 2) {
-      membersToAdd.set(i, membersToAdd.get(i));
-    }
     RedisSortedSet sortedSet = new RedisSortedSet(membersToAdd);
     region.create(key, sortedSet);
 
