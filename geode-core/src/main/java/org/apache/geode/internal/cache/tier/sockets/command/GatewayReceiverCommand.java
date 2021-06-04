@@ -321,8 +321,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                     result = addPdxType(crHelper, key, value);
                   } else {
                     result = region.basicBridgeCreate(key, value, isObject, callbackArg,
-                        serverConnection.getProxyID(), false, clientEvent, false,
-                        true);
+                        serverConnection.getProxyID(), false, clientEvent, false);
                     // If the create fails (presumably because it already exists),
                     // attempt to update the entry
                     if (!result) {

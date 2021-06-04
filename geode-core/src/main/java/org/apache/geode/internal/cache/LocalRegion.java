@@ -5111,7 +5111,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   public boolean basicBridgeCreate(final Object key, final byte[] value, boolean isObject,
       Object callbackArg, final ClientProxyMembershipID client, boolean fromClient,
-      EntryEventImpl clientEvent, boolean throwEntryExists, boolean generateCallbacks)
+      EntryEventImpl clientEvent, boolean throwEntryExists)
       throws TimeoutException, EntryExistsException, CacheWriterException {
     EventID eventId = clientEvent.getEventId();
     Object theCallbackArg = callbackArg;
@@ -5122,7 +5122,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     final EntryEventImpl event =
         entryEventFactory.create(this, Operation.CREATE, key, value,
             theCallbackArg, false, client.getDistributedMember(),
-            generateCallbacks, eventId);
+            true, eventId);
 
     try {
       event.setContext(client);
