@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_KE
 import static org.apache.geode.internal.util.ArgumentRedactor.isTaboo;
 import static org.apache.geode.internal.util.ArgumentRedactor.redact;
 import static org.apache.geode.internal.util.ArgumentRedactor.redactEachInList;
+import static org.apache.geode.internal.util.ArgumentRedactor.redacted;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -217,5 +218,30 @@ public class ArgumentRedactorTest {
       System.clearProperty(somePasswordProperty);
       System.clearProperty(someOtherPasswordProperty);
     }
+  }
+
+  @Test
+  public void redactsArgumentForSslTruststorePassword() {
+    String prefix = "-Dgemfire.ssl-truststore-password=";
+    String password = "gibberish";
+    String value = redact(prefix + password);
+
+    assertThat(value).isEqualTo(prefix + redacted);
+  }
+
+  @Test
+  public void redactsArgumentForSslKeystorePassword() {
+    String prefix = "-Dgemfire.ssl-keystore-password=";
+    String password = "gibberish";
+    String value = redact(prefix + password);
+
+    assertThat(value).isEqualTo(prefix + redacted);
+  }
+
+  @Test
+  public void testArgBeginningWithMinus() {
+    String argBeginningWithMinus = "-Dgemfire.ssl-keystore-password=-supersecret";
+    String redacted = redact(argBeginningWithMinus);
+    assertThat(redacted).isEqualTo("-Dgemfire.ssl-keystore-password=********");
   }
 }
