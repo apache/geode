@@ -92,7 +92,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0')
         api(group: 'com.github.stephenc.findbugs', name: 'findbugs-annotations', version: '1.3.9-1')
         api(group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2')
-        api(group: 'com.google.guava', name: 'guava', version: '28.2-jre')
+        api(group: 'com.google.guava', name: 'guava', version: '30.1.1-jre')
         api(group: 'com.google.protobuf', name: 'protobuf-gradle-plugin', version: get('protobuf-gradle-plugin.version'))
         api(group: 'com.google.protobuf', name: 'protobuf-java', version: get('protobuf-java.version'))
         api(group: 'com.healthmarketscience.rmiio', name: 'rmiio', version: '2.1.2')
@@ -255,7 +255,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-security-oauth2-jose')
     }
 
-    dependencySet(group: 'org.springframework', version: '5.3.4') {
+    dependencySet(group: 'org.springframework', version: '5.3.7') {
       entry('spring-aspects')
       entry('spring-beans')
       entry('spring-context')
