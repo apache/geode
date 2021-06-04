@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.apache.geode.cache.Region;
@@ -49,5 +50,9 @@ public abstract class RedisDataCommandsFunctionExecutor {
 
   protected RedisData getRedisData(RedisKey key) {
     return regionProvider.getRedisData(key);
+  }
+
+  protected List<RedisKey> orderForLocking(RedisKey key1, RedisKey key2) {
+    return regionProvider.orderForLocking(key1, key2);
   }
 }
