@@ -1080,7 +1080,14 @@ public class ClusterDistributionManager implements DistributionManager {
       if (observer != null) {
         observer.beforeSendMessage(this, msg);
       }
-      return sendMessage(msg);
+      Set<InternalDistributedMember> membersNotSent = sendMessage(msg);
+
+      if(membersNotSent != null && !membersNotSent.isEmpty()) {
+        logger.warn("The following members: {} were not properly sent the message: {}. If unhandled this may"
+                + " cause the result processor to hang while collecting results.", membersNotSent, msg.getShortClassName());
+      }
+
+      return membersNotSent;
     } catch (NotSerializableException e) {
       throw new InternalGemFireException(e);
     }
