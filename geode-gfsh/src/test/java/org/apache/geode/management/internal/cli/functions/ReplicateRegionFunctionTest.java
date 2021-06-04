@@ -89,6 +89,7 @@ public class ReplicateRegionFunctionTest {
     doNothing().when(threadSleeperMock).millis(anyLong());
     internalCacheMock = mock(InternalCache.class);
     gatewaySenderMock = mock(AbstractGatewaySender.class, RETURNS_DEEP_STUBS);
+    when(gatewaySenderMock.getId()).thenReturn("mySender");
     poolMock = mock(PoolImpl.class);
     connectionMock = mock(PooledConnection.class);
     dispatcherMock = mock(GatewaySenderEventDispatcher.class);
