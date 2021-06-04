@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -48,7 +49,6 @@ import org.apache.geode.cache.client.internal.pooling.PooledConnection;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -74,10 +74,7 @@ public class ReplicateRegionFunctionTest {
   private final FunctionContext<Object[]> contextMock = mock(FunctionContext.class);
 
   @SuppressWarnings("unchecked")
-  private final Region<Object, Object> regionMock = mock(InternalRegion.class);
-
-  @SuppressWarnings("unchecked")
-  private final Region<Object, Object> replicatedRegionMock = mock(DistributedRegion.class);
+  private final Region<Object, Object> regionMock = mock(InternalRegion.class, RETURNS_DEEP_STUBS);
 
   @SuppressWarnings("unchecked")
   private final Region.Entry<String, String> entryMock = mock(Region.Entry.class);
@@ -156,6 +153,7 @@ public class ReplicateRegionFunctionTest {
   public void executeFunction_verifyOutputWhenSenderIsNotRunning() {
     Object[] options = new Object[] {"myRegion", "mySender", false, 1L, 10};
     when(gatewaySenderMock.isRunning()).thenReturn(false);
+    when(regionMock.getAttributes().getGatewaySenderIds().contains(anyString())).thenReturn(true);
     when(internalCacheMock.getRegion(any())).thenReturn(regionMock);
     when(internalCacheMock.getGatewaySender(any())).thenReturn(gatewaySenderMock);
     when(contextMock.getArguments()).thenReturn(options);
@@ -169,6 +167,7 @@ public class ReplicateRegionFunctionTest {
   public void executeFunction_verifyOutputWhenSenderIsSerialAndSenderIsNotPrimary() {
     Object[] options = new Object[] {"myRegion", "mySender", false, 1L, 10};
     when(gatewaySenderMock.isRunning()).thenReturn(true);
+    when(regionMock.getAttributes().getGatewaySenderIds().contains(anyString())).thenReturn(true);
     when(gatewaySenderMock.isParallel()).thenReturn(false);
     when(((InternalGatewaySender) gatewaySenderMock).isPrimary()).thenReturn(false);
     when(internalCacheMock.getRegion(any())).thenReturn(regionMock);
@@ -222,17 +221,21 @@ public class ReplicateRegionFunctionTest {
   }
 
   @Test
-  public void replicateRegion_verifyErrorWhenReplicatingReplicatedRegionWithParallelSender() {
+  public void replicateRegion_verifyErrorWhenSenderNotConfiguredWithForRegion() {
     Object[] options = new Object[] {"myRegion", "mySender", false, 1L, 10};
+    Set<String> senders = new HashSet<>();
+    senders.add("notMySender");
     when(gatewaySenderMock.isParallel()).thenReturn(true);
-    when(internalCacheMock.getRegion(any())).thenReturn(replicatedRegionMock);
+    when(internalCacheMock.getRegion(any())).thenReturn(regionMock);
+    when(regionMock.getAttributes().getGatewaySenderIds()).thenReturn(senders);
     when(internalCacheMock.getGatewaySender(any())).thenReturn(gatewaySenderMock);
     when(contextMock.getArguments()).thenReturn(options);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
+
     CliFunctionResult result = rrf.executeFunction(contextMock);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage())
-        .isEqualTo("Cannot replicate non-partitioned region with parallel gateway sender.");
+        .isEqualTo("Region myRegion is not configured to use sender mySender");
   }
 
   @Test

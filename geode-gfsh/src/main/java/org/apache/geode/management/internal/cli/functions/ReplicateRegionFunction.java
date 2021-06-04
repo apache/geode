@@ -163,9 +163,10 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
           CliStrings.format(CliStrings.REPLICATE_REGION__MSG__SENDER__NOT__FOUND, senderId));
     }
 
-    if (sender.isParallel() && !(region instanceof PartitionedRegion)) {
+    if (!region.getAttributes().getGatewaySenderIds().contains(sender.getId())) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-          CliStrings.REPLICATE_REGION__MSG__CANNOT__REPLICATE__NON__PARTITIONED__REGION__WITH__PARALLEL__SENDER);
+          CliStrings.format(CliStrings.REPLICATE_REGION__MSG__REGION__NOT__USING_SENDER, regionName,
+              senderId));
     }
 
     if (!sender.isRunning()) {
@@ -305,7 +306,7 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
         }
       }
     } finally {
-      if (connection != null) {
+      if (senderPool != null && connection != null) {
         ((PooledConnection) connection).setShouldDestroy();
         senderPool.returnConnection(connection);
       }
