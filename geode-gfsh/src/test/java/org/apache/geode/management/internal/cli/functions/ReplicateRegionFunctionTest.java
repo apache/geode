@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.functions;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -295,7 +296,7 @@ public class ReplicateRegionFunctionTest {
         .createGatewaySenderEvent(any(), any(),
             any(), any());
     doNothing().doThrow(ConnectionDestroyedException.class).doNothing().when(dispatcherMock)
-        .sendBatch(anyList(), any(), any(), anyInt());
+        .sendBatch(anyList(), any(), any(), anyInt(), anyBoolean());
 
     CliFunctionResult result =
         rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 1);
@@ -317,7 +318,7 @@ public class ReplicateRegionFunctionTest {
     doReturn(entries).when(rrfSpy).getEntries(regionMock, gatewaySenderMock);
     doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
         any(), any());
-    doNothing().when(dispatcherMock).sendBatch(anyList(), any(), any(), anyInt());
+    doNothing().when(dispatcherMock).sendBatch(anyList(), any(), any(), anyInt(), anyBoolean());
 
     CliFunctionResult result =
         rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
@@ -345,8 +346,7 @@ public class ReplicateRegionFunctionTest {
     doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
         any(), any());
     doThrow(exceptionWhenSendingBatch).doNothing().when(dispatcherMock).sendBatch(anyList(), any(),
-        any(),
-        anyInt());
+        any(), anyInt(), anyBoolean());
 
     CliFunctionResult result =
         rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
@@ -371,7 +371,7 @@ public class ReplicateRegionFunctionTest {
     doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
         any(), any());
     doThrow(exceptionWhenSendingBatch).when(dispatcherMock).sendBatch(anyList(), any(), any(),
-        anyInt());
+        anyInt(), anyBoolean());
 
     CliFunctionResult result =
         rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
@@ -398,8 +398,7 @@ public class ReplicateRegionFunctionTest {
     doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
         any(), any());
     doThrow(exceptionWhenSendingBatch).doNothing().when(dispatcherMock).sendBatch(anyList(), any(),
-        any(),
-        anyInt());
+        any(), anyInt(), anyBoolean());
 
     CliFunctionResult result =
         rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
@@ -425,7 +424,7 @@ public class ReplicateRegionFunctionTest {
     doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
         any(), any());
     doThrow(exceptionWhenSendingBatch).when(dispatcherMock).sendBatch(anyList(), any(), any(),
-        anyInt());
+        anyInt(), anyBoolean());
 
     CliFunctionResult result =
         rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
@@ -452,7 +451,7 @@ public class ReplicateRegionFunctionTest {
     doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
         any(), any());
     doThrow(exceptionWhenSendingBatch).when(dispatcherMock).sendBatch(anyList(), any(), any(),
-        anyInt());
+        anyInt(), anyBoolean());
 
     CliFunctionResult result =
         rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
@@ -478,7 +477,7 @@ public class ReplicateRegionFunctionTest {
     doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
         any(), any());
     doThrow(exceptionWhenSendingBatch).when(dispatcherMock).sendBatch(anyList(), any(), any(),
-        anyInt());
+        anyInt(), anyBoolean());
     doReturn(entries).when(rrfSpy).getEntries(regionMock, gatewaySenderMock);
 
     assertThatThrownBy(

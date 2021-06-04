@@ -983,10 +983,10 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
   @Override
   public void sendBatch(List<GatewayQueueEvent> events, Connection connection,
-      ExecutablePool senderPool, int batchId)
+      ExecutablePool senderPool, int batchId, boolean removeFromQueueOnException)
       throws BatchException70 {
-    GatewaySenderBatchOp.executeOn(connection, senderPool, events, batchId, false,
-        false);
+    GatewaySenderBatchOp.executeOn(connection, senderPool, events, batchId,
+        removeFromQueueOnException, false);
     GatewaySenderEventRemoteDispatcher.GatewayAck ack =
         (GatewaySenderEventRemoteDispatcher.GatewayAck) GatewaySenderBatchOp.executeOn(connection,
             senderPool);

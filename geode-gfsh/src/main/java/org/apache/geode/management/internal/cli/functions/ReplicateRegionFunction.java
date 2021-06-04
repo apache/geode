@@ -264,7 +264,7 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
         int retries = 0;
         while (true) {
           try {
-            dispatcher.sendBatch(batch, connection, senderPool, batchId++);
+            dispatcher.sendBatch(batch, connection, senderPool, batchId++, true);
             replicatedEntries += batch.size();
             break;
           } catch (BatchException70 e) {
