@@ -33,7 +33,7 @@ import org.junit.Test;
 
 import org.apache.geode.internal.logging.Banner;
 
-public class ArgumentRedactorJUnitTest {
+public class ArgumentRedactorTest {
   private static final String someProperty = "redactorTest.someProperty";
   private static final String somePasswordProperty = "redactorTest.aPassword";
   private static final String someOtherPasswordProperty =
