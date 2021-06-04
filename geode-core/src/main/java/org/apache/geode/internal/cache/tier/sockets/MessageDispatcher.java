@@ -633,9 +633,9 @@ public class MessageDispatcher extends LoggingThread {
    */
   protected void enqueueMessage(Conflatable clientMessage) {
     try {
-      _proxy._statistics.incNumberThreadsPutInQueue();
+      _proxy._statistics.incMessagesWaitingToQueue();
       _messageQueue.put(clientMessage);
-      _proxy._statistics.decNumberThreadsPutInQueue();
+      _proxy._statistics.decMessagesWaitingToQueue();
       _proxy._statistics.setQueueSize(_messageQueue.size());
 
       if (_proxy.isPaused() && _proxy.isDurable()) {
@@ -664,9 +664,9 @@ public class MessageDispatcher extends LoggingThread {
         logger.debug("{}: Queueing marker message. <{}>. The queue contains {} entries.", this,
             message, getQueueSize());
       }
-      _proxy._statistics.incNumberThreadsPutInQueue();
+      _proxy._statistics.incMessagesWaitingToQueue();
       _messageQueue.put(message);
-      _proxy._statistics.decNumberThreadsPutInQueue();
+      _proxy._statistics.decMessagesWaitingToQueue();
       _proxy._statistics.setQueueSize(_messageQueue.size());
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Queued marker message. The queue contains {} entries.", this,

@@ -31,16 +31,16 @@ import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.cache.EnumListenerEvent;
-import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.EnumListenerEvent;
+import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.HAContainerMap;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.net.SocketCloser;
@@ -136,10 +136,12 @@ public class CacheClientProxyTest {
 
     Region dataRegion = createDataRegion();
     proxy.initializeMessageDispatcher();
-    ClientUpdateMessage clientUpdateMessageImpl1 = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE,
+    ClientUpdateMessage clientUpdateMessageImpl1 =
+        new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE,
             (LocalRegion) dataRegion, "key", "value".getBytes(), (byte) 0x01, null,
             new ClientProxyMembershipID(), new EventID(cache.getDistributedSystem()));
-    ClientUpdateMessage clientUpdateMessageImpl2 = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE,
+    ClientUpdateMessage clientUpdateMessageImpl2 =
+        new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE,
             (LocalRegion) dataRegion, "key1", "value1".getBytes(), (byte) 0x01, null,
             new ClientProxyMembershipID(), new EventID(cache.getDistributedSystem()));
     proxy._messageDispatcher.enqueueMessage(clientUpdateMessageImpl1);

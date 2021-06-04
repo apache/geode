@@ -60,8 +60,8 @@ public class CacheClientProxyStats implements MessageStats {
   private static final String DELTA_FULL_MESSAGES_SENT = "deltaFullMessagesSent";
   /** Name of the CQ count statistic */
   private static final String CQ_COUNT = "cqCount";
-  /** Name of the number of threads currently adding message in queue statistic */
-  private static final String NUMBER_THREADS_PUT_IN_QUEUE = "numberThreadsPutInQueue";
+  /** Name of the messages waiting to be put in queue statistic */
+  private static final String MESSAGES_WAITING_TO_QUEUE = "messagesWaitingToQueue";
 
   /** Id of the messages received statistic */
   private static final int _messagesReceivedId;
@@ -87,8 +87,8 @@ public class CacheClientProxyStats implements MessageStats {
   private static final int _cqCountId;
   private static final int _sentBytesId;
 
-  /** Id of the number of threads currently adding message in queue statistic */
-  private static final int _numberThreadsPutInQueueId;
+  /** Id of the messages waiting to be put in queue statistic */
+  private static final int _messagesWaitingToQueueId;
 
   /*
    * Static initializer to create and initialize the <code>StatisticsType</code>
@@ -134,8 +134,9 @@ public class CacheClientProxyStats implements MessageStats {
 
         f.createLongCounter(CQ_COUNT, "Number of CQs on the client.", "operations"),
         f.createLongCounter("sentBytes", "Total number of bytes sent to client.", "bytes"),
-        f.createIntCounter(NUMBER_THREADS_PUT_IN_QUEUE,
-            "Number of threads currently adding message in queue", "operations"),
+        f.createLongGauge(MESSAGES_WAITING_TO_QUEUE,
+            "Threads currently adding a message to the queue. Consistently high values indicate that the queue is full and adds are being delayed",
+            "threads"),
     });
 
     // Initialize id fields
@@ -151,7 +152,7 @@ public class CacheClientProxyStats implements MessageStats {
     _deltaFullMessagesSentId = _type.nameToId(DELTA_FULL_MESSAGES_SENT);
     _cqCountId = _type.nameToId(CQ_COUNT);
     _sentBytesId = _type.nameToId("sentBytes");
-    _numberThreadsPutInQueueId = _type.nameToId(NUMBER_THREADS_PUT_IN_QUEUE);
+    _messagesWaitingToQueueId = _type.nameToId(MESSAGES_WAITING_TO_QUEUE);
 
   }
 
@@ -282,12 +283,12 @@ public class CacheClientProxyStats implements MessageStats {
   }
 
   /**
-   * Returns the current value of the "numberThreadsPutInQueue" stat.
+   * Returns the current value of the "_messagesWaitingToQueue" stat.
    *
-   * @return the current value of the "numberThreadsPutInQueue" stat
+   * @return the current value of the "_messagesWaitingToQueue" stat
    */
-  public int getNumberThreadsPutInQueue() {
-    return this._stats.getInt(_numberThreadsPutInQueueId);
+  public long getMessagesWaitingToQueue() {
+    return this._stats.getLong(_messagesWaitingToQueueId);
   }
 
   /**
@@ -333,12 +334,10 @@ public class CacheClientProxyStats implements MessageStats {
   }
 
   /**
-   * Increments the "numberThreadsPutInQueue" stat.
+   * Increments the "messagesWaitingToQueue" stat.
    */
-  public void incNumberThreadsPutInQueue() {
-    synchronized (this) {
-      this._stats.incInt(_numberThreadsPutInQueueId, 1);
-    }
+  public void incMessagesWaitingToQueue() {
+    this._stats.incLong(_messagesWaitingToQueueId, 1);
   }
 
 
@@ -350,12 +349,10 @@ public class CacheClientProxyStats implements MessageStats {
   }
 
   /**
-   * Decrements the "numberThreadsPutInQueue" stat.
+   * Decrements the "messagesWaitingToQueue" stat.
    */
-  public void decNumberThreadsPutInQueue() {
-    synchronized (this) {
-      this._stats.incInt(_numberThreadsPutInQueueId, -1);
-    }
+  public void decMessagesWaitingToQueue() {
+    this._stats.incLong(_messagesWaitingToQueueId, -1);
   }
 
   /**
@@ -363,7 +360,7 @@ public class CacheClientProxyStats implements MessageStats {
    *
    * @param size The size of the queue
    */
-  public synchronized void setQueueSize(int size) {
+  public void setQueueSize(int size) {
     this._stats.setInt(_messageQueueSizeId, size);
   }
 
