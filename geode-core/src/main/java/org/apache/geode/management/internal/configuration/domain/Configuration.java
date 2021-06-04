@@ -170,7 +170,13 @@ public class Configuration implements DataSerializable {
     DataSerializer.writeProperties(gemfireProperties, out);
     // As of 1.12, it writes a jarNames HashSet to the stream, so that pre 1.12.0 members can
     // read the jarName, and will now also write the deployment map for the post 1.12.0 members.
-    HashSet<String> jarNames = new HashSet<>(deployments.keySet());
+    HashSet<String> jarNames = new HashSet<>();
+    deployments.values().forEach(d -> {
+      String jarName;
+      if ((jarName = d.getFileName()) != null) {
+        jarNames.add(jarName);
+      }
+    });
     DataSerializer.writeHashSet(jarNames, out);
     // As of 1.12, this class starting writing the current version
     VersioningIO.writeOrdinal(out, KnownVersion.getCurrentVersion().ordinal(), true);
