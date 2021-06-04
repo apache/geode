@@ -17,16 +17,12 @@
 package org.apache.geode.redis.internal.data;
 
 
-import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.lang.Double.POSITIVE_INFINITY;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
-import org.apache.geode.redis.internal.netty.Coder;
 
 class NullRedisSortedSet extends RedisSortedSet {
 
@@ -47,8 +43,7 @@ class NullRedisSortedSet extends RedisSortedSet {
     }
 
     for (int i = 0; i < membersToAdd.size(); i += 2) {
-      byte[] incr = processIncrement(Coder.bytesToString(membersToAdd.get(i)));
-      membersToAdd.set(i, incr);
+      membersToAdd.set(i, membersToAdd.get(i));
     }
     RedisSortedSet sortedSet = new RedisSortedSet(membersToAdd);
     region.create(key, sortedSet);
@@ -64,38 +59,13 @@ class NullRedisSortedSet extends RedisSortedSet {
   @Override
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
-    byte[] incr = processIncrement(Coder.bytesToString(increment));
-
     List<byte[]> valuesToAdd = new ArrayList<>();
-    valuesToAdd.add(incr);
+    valuesToAdd.add(increment);
     valuesToAdd.add(member);
 
     RedisSortedSet sortedSet = new RedisSortedSet(valuesToAdd);
     region.create(key, sortedSet);
 
-    return incr;
-  }
-
-  private byte[] processIncrement(String stringIncr) {
-    switch (stringIncr) {
-      case "inf":
-      case "+inf":
-      case "infinity":
-      case "+infinity":
-        stringIncr = Coder.doubleToString(POSITIVE_INFINITY);
-        break;
-      case "-inf":
-      case "-infinity":
-        stringIncr = Coder.doubleToString(NEGATIVE_INFINITY);
-        break;
-      default:
-        try {
-          Double.parseDouble(stringIncr);
-        } catch (NumberFormatException nfe) {
-          throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
-        }
-        break;
-    }
-    return Coder.stringToBytes(stringIncr);
+    return increment;
   }
 }

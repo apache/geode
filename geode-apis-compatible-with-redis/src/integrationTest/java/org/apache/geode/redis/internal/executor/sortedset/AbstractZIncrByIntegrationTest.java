@@ -144,16 +144,15 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     final double increment = POSITIVE_INFINITY;
     jedis.zadd(KEY, 0.0, Coder.stringToBytes("something")); // init the key but not the member
 
-    jedis.zincrby(KEY, increment, MEMBER);
-    assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(increment);
+    assertKeyIsCreatedWithIncrementOf(increment);
   }
 
   @Test
   public void memberShouldBeCreatedWhenItDoesNotExist_withIncrementOfNegativeInfinity() {
     final double increment = NEGATIVE_INFINITY;
     jedis.zadd(KEY, 0.0, Coder.stringToBytes("something")); // init the key but not the member
-    jedis.zincrby(KEY, increment, MEMBER);
-    assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(increment);
+
+    assertKeyIsCreatedWithIncrementOf(increment);
   }
 
   @Test

@@ -70,7 +70,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
-      processIncrement(score);
+      score = Coder.doubleToBytes(processByteArrayAsDouble(score));
       byte[] member = iterator.next();
       memberAdd(member, score);
     }
@@ -194,7 +194,7 @@ public class RedisSortedSet extends AbstractRedisData {
     int changesCount = 0;
     while (iterator.hasNext()) {
       byte[] score =
-          Coder.doubleToBytes(processIncrement(iterator.next()));
+          Coder.doubleToBytes(processByteArrayAsDouble(iterator.next()));
       byte[] member = iterator.next();
       if (options.isNX() && members.containsKey(member)) {
         continue;
@@ -225,7 +225,7 @@ public class RedisSortedSet extends AbstractRedisData {
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
     byte[] byteScore = members.get(member);
-    double incr = processIncrement(increment);
+    double incr = processByteArrayAsDouble(increment);
 
     if (byteScore != null) {
       incr += Coder.bytesToDouble(byteScore);
@@ -305,7 +305,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
-  private double processIncrement(byte[] value) {
+  private double processByteArrayAsDouble(byte[] value) {
     String stringValue = Coder.bytesToString(value).toLowerCase();
     double processedDouble;
     switch (stringValue) {
