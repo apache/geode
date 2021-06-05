@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
@@ -90,7 +89,7 @@ public class RedisKeyCommandsFunctionInvoker extends RedisCommandsFunctionInvoke
       return false;
     }
 
-    List<ByteArrayWrapper> keysToOperateOn = new ArrayList<>();
+    List<RedisKey> keysToOperateOn = new ArrayList<>();
     keysToOperateOn.add(oldKey);
     keysToOperateOn.add(newKey);
 

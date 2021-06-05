@@ -31,7 +31,7 @@ public class RenameExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    List<RedisKey> commandElems = command.getProcessedCommandWrapperKeys();
+    List<RedisKey> commandElems = command.getProcessedCommandKeys();
     RedisKey key = command.getKey();
     RedisKey newKey = commandElems.get(2);
     RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);

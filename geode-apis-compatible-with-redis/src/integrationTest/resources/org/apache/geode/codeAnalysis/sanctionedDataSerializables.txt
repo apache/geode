@@ -6,10 +6,6 @@ org/apache/geode/redis/internal/data/AbstractRedisData,2
 fromData,11
 toData,11
 
-org/apache/geode/redis/internal/data/ByteArrayWrapper,2
-fromData,9
-toData,9
-
 org/apache/geode/redis/internal/data/NullRedisData,2
 fromData,8
 toData,8
@@ -19,8 +15,8 @@ toData,101
 fromData,72
 
 org/apache/geode/redis/internal/data/RedisKey,2
-fromData,20
-toData,17
+fromData,22
+toData,19
 
 org/apache/geode/redis/internal/data/RedisSet,2
 toData,66

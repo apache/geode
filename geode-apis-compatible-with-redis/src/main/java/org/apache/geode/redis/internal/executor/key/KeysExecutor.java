@@ -24,7 +24,6 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
@@ -37,12 +36,11 @@ public class KeysExecutor extends AbstractExecutor {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     String glob = Coder.bytesToString(commandElems.get(1));
     Set<RedisKey> allKeys = getDataRegion(context).keySet();
-    List<ByteArrayWrapper> matchingKeys = new ArrayList<>();
+    List<RedisKey> matchingKeys = new ArrayList<>();
 
     Pattern pattern;
     try {
@@ -54,7 +52,7 @@ public class KeysExecutor extends AbstractExecutor {
       return RedisResponse.emptyArray();
     }
 
-    for (ByteArrayWrapper bytesKey : allKeys) {
+    for (RedisKey bytesKey : allKeys) {
       String key = bytesKey.toString();
       if (pattern.matcher(key).matches()) {
         matchingKeys.add(bytesKey);
