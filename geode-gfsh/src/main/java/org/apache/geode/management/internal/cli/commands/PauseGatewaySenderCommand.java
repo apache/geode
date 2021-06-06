@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 
-import java.util.List;
 import java.util.Set;
 
 import javax.management.ObjectName;
@@ -34,6 +33,7 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
 import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -122,20 +122,6 @@ public class PauseGatewaySenderCommand extends SingleGfshCommand implements
 
   @Override
   public boolean updateConfigForGroup(String group, CacheConfig config, Object configObject) {
-    boolean gatewaySenderConfigUpdated = false;
-    List<CacheConfig.GatewaySender> gatewaySenders = config.getGatewaySenders();
-    if (gatewaySenders.isEmpty() || configObject == null) {
-      return false;
-    }
-
-    CacheConfig.GatewaySender gatewaySenderConfig = ((CacheConfig.GatewaySender) configObject);
-    String gatewaySenderId = gatewaySenderConfig.getId();
-    for (CacheConfig.GatewaySender gatewaySender : gatewaySenders) {
-      if (gatewaySender.getId().equals(gatewaySenderId)) {
-        gatewaySender.setState(gatewaySenderConfig.getState());
-        gatewaySenderConfigUpdated = true;
-      }
-    }
-    return gatewaySenderConfigUpdated;
+    return CliUtils.updateGatewaySenderState(config, configObject);
   }
 }
