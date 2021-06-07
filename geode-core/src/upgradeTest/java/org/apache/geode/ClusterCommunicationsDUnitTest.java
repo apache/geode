@@ -289,6 +289,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
       // if you need to debug SSL communications use this property:
       // System.setProperty("javax.net.debug", "all");
       Properties props = getDistributedSystemProperties();
+      props.setProperty(HTTP_SERVICE_PORT, "0");
       // locator must restart with the same port so that it reconnects to the server
       await().atMost(getTimeout().getSeconds(), TimeUnit.SECONDS)
           .until(() -> Locator.startLocatorAndDS(locatorPort, new File(""), props) != null);
