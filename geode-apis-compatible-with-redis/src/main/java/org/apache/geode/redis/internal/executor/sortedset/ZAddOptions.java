@@ -30,15 +30,21 @@ import org.apache.geode.redis.internal.executor.BaseSetOptions;
  */
 public class ZAddOptions extends BaseSetOptions {
   private boolean isCH;
+  private boolean isINCR;
 
-  public ZAddOptions(Exists existsOption, boolean isCH) {
+  public ZAddOptions(Exists existsOption, boolean isCH, boolean isINCR) {
     super(existsOption);
 
     this.isCH = isCH;
+    this.isINCR = isINCR;
   }
 
   public boolean isCH() {
-    return this.isCH;
+    return isCH;
+  }
+
+  public boolean isINCR() {
+    return isINCR;
   }
 
   public ZAddOptions() {}
@@ -52,12 +58,14 @@ public class ZAddOptions extends BaseSetOptions {
   public void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     out.writeBoolean(isCH);
+    out.writeBoolean(isINCR);
   }
 
   @Override
   public void fromData(DataInput in, DeserializationContext context) throws IOException {
     super.fromData(in, context);
     isCH = in.readBoolean();
+    isINCR = in.readBoolean();
   }
 
 }

@@ -20,8 +20,8 @@ import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLea
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,12 +35,17 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.params.ZAddParams;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
+  private final String member = "member";
+  private final String incrOption = "INCR";
+
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static final String SORTED_SET_KEY = "ss_key";
@@ -62,7 +67,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     final String STRING_KEY = "stringKey";
     jedis.set(STRING_KEY, "value");
     assertThatThrownBy(
-        () -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZADD, STRING_KEY, "1", "member"))
+        () -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZADD, STRING_KEY, "1", member))
             .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
@@ -74,14 +79,14 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   @Test
   public void zaddErrors_givenUnevenPairsOfArguments() {
     assertThatThrownBy(
-        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "1", "member", "2"))
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "1", member, "2"))
             .hasMessageContaining("ERR syntax error");
   }
 
   @Test
   public void zaddErrors_givenNonNumericScore() {
     assertThatThrownBy(
-        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "xlerb", "member"))
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "xlerb", member))
             .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "1.0", "member01",
@@ -101,14 +106,14 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   public void zadd_prioritizesErrors_inTheCorrectOrder() {
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "XX", "xlerb",
-            "member", "2"))
+            member, "2"))
                 .hasMessageContaining(ERROR_SYNTAX);
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "XX", "xlerb",
-            "member"))
+            member))
                 .hasMessageContaining(ERROR_INVALID_ZADD_OPTION_NX_XX);
     assertThatThrownBy(
-        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "xlerb", "member"))
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "xlerb", member))
             .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
   }
 
@@ -146,10 +151,10 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   @Test
   public void zaddCountsOnlyNewMembers_givenMultipleCopiesOfTheSameMember() {
     Long addCount = (Long) jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY,
-        "1", "member", "2", "member", "3", "member");
+        "1", member, "2", member, "3", member);
     assertThat(addCount).isEqualTo(1);
     assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(1);
-    assertThat(jedis.zscore(SORTED_SET_KEY, "member")).isEqualTo(3.0);
+    assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(3.0);
   }
 
   @Test
@@ -157,9 +162,9 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     Long addCount = jedis.zadd(SORTED_SET_KEY, 1.0, "otherMember");
     assertThat(addCount).isEqualTo(1);
     jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY,
-        "1", "member", "2", "member", "3", "member");
+        "1", member, "2", member, "3", member);
     assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(2);
-    assertThat(jedis.zscore(SORTED_SET_KEY, "member")).isEqualTo(3.0);
+    assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(3.0);
   }
 
   @Test
@@ -301,6 +306,106 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     assertThat(jedis.zscore(key, member)).isEqualTo(1.0);
   }
 
+
+  @Test
+  public void zaddIncrOptionSupportsOnlyOneIncrementingElementPair() {
+    assertThatThrownBy(() -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD,
+        SORTED_SET_KEY, incrOption, "1", member, "2", "member_1"))
+            .hasMessageContaining(RedisConstants.ERROR_ZADD_OPTION_TOO_MANY_INCR_PAIR);
+  }
+
+  @Test
+  public void zaddIncrOptionThrowsIfIncorrectScorePair() {
+    assertThatThrownBy(() -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD,
+        SORTED_SET_KEY, incrOption, "1", member, "2")).hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
+  public void zaddIncrOptionDoseNotAddANewMemberWithXXOption() {
+    Object result = jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY, "XX",
+        incrOption, "1", member);
+    assertThat(result).isNull();
+    assertThat(jedis.zscore(SORTED_SET_KEY, member)).isNull();
+  }
+
+  private final double initial = 355.681000005;
+  private final double increment = 9554257.921450001;
+  private final double expected = initial + increment;
+
+  @Test
+  public void zaddIncrOptionIncrementsScoreForExistingMemberWithXXOption() {
+    jedis.zadd(SORTED_SET_KEY, initial, member);
+
+    Object result = jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY, "XX",
+        incrOption, Coder.doubleToString(increment), member);
+    assertThat(Coder.bytesToDouble((byte[]) result)).isEqualTo(expected);
+    assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(expected);
+  }
+
+  @Test
+  public void zaddIncrOptionAddsANewMemberWithNXOption() {
+    Object result = jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY, "NX",
+        incrOption, Coder.doubleToString(increment), member);
+    assertThat(Coder.bytesToDouble((byte[]) result)).isEqualTo(increment);
+
+    assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(increment);
+  }
+
+  @Test
+  public void zaddIncrOptionDoseNotIncrementScoreForAExistingMemberWithNXOption() {
+    jedis.zadd(SORTED_SET_KEY, initial, member);
+    Object result = jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY, "NX",
+        incrOption, "1", member);
+    assertThat(result).isNull();
+
+    assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(initial);
+  }
+
+  @Test
+  public void zaddIncrOptionCanIncrementScoreForExistingMemberWithChangeOption() {
+    jedis.zadd(SORTED_SET_KEY, initial, member);
+    Object result = jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY, "CH",
+        incrOption, Coder.doubleToString(increment), member);
+    assertThat(Coder.bytesToDouble((byte[]) result)).isEqualTo(expected);
+
+    assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(expected);
+  }
+
+  @Test
+  public void zaddIncrOptionCanIncrementScoreForExistingMember() {
+    jedis.zadd(SORTED_SET_KEY, initial, member);
+    Object result =
+        jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY, incrOption,
+            Coder.doubleToString(increment), member);
+
+    assertThat(Coder.bytesToDouble((byte[]) result)).isEqualTo(expected);
+    result = jedis.zscore(SORTED_SET_KEY, member);
+    assertThat(result).isEqualTo(expected);
+  }
+
+  @Test
+  public void zaddIncrOptionCanIncrementScoreConcurrently() {
+    int membersCount = 1000;
+    double increment1 = 1.1;
+    double increment2 = 3.5;
+    double total = increment1 + increment2;
+    new ConcurrentLoopingThreads(membersCount,
+        (i) -> doZAddIncr(i, increment1, total),
+        (i) -> doZAddIncr(i, increment2, total)).run();
+
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(membersCount);
+    for (int i = 0; i < membersCount; i++) {
+      assertThat(jedis.zscore(SORTED_SET_KEY, member + i)).isEqualTo(total);
+    }
+  }
+
+  private void doZAddIncr(int i, double increment, double total) {
+    Object result =
+        jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY, incrOption,
+            Coder.doubleToString(increment), member + i);
+    assertThat(Coder.bytesToDouble((byte[]) result)).isIn(increment, total);
+  }
+
   private Map<String, Double> makeMemberScoreMap(int memberCount, double baseScore) {
     Map<String, Double> map = new HashMap<>();
 
@@ -309,4 +414,5 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     }
     return map;
   }
+
 }
