@@ -56,6 +56,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class ReplicateRegionFunctionTest {
@@ -93,6 +94,7 @@ public class ReplicateRegionFunctionTest {
     when(gatewaySenderMock.getId()).thenReturn("mySender");
     poolMock = mock(PoolImpl.class);
     connectionMock = mock(PooledConnection.class);
+    when(connectionMock.getWanSiteVersion()).thenReturn(KnownVersion.GEODE_1_15_0.ordinal());
     dispatcherMock = mock(GatewaySenderEventDispatcher.class);
     rrf = new ReplicateRegionFunction();
     rrf.setClock(clockMock);
@@ -181,6 +183,32 @@ public class ReplicateRegionFunctionTest {
     assertThat(result.getStatusMessage())
         .isEqualTo("Sender mySender is serial and not primary. 0 entries replicated.");
   }
+
+  @Test
+  public void replicateRegion_verifyErrorWhenRemoteSiteDoesNotSupportCommand() {
+    ReplicateRegionFunction rrfSpy = spy(rrf);
+    when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
+    PooledConnection oldWanSiteConn = mock(PooledConnection.class);
+    when(oldWanSiteConn.getWanSiteVersion()).thenReturn(KnownVersion.GEODE_1_14_0.ordinal());
+    when(oldWanSiteConn.setShouldDestroy()).thenReturn(true);
+    when(poolMock.acquireConnection()).thenReturn(oldWanSiteConn);
+
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
+        .thenReturn(dispatcherMock);
+    Set<Region.Entry<String, String>> entries = new HashSet<>();
+    entries.add(entryMock);
+    doReturn(entries).when(rrfSpy).getEntries(regionMock, gatewaySenderMock);
+    doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
+        any(), any());
+
+    CliFunctionResult result =
+        rrfSpy.replicateRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
+    assertThat(result.getStatusMessage())
+        .isEqualTo("Command not supported at remote site.");
+  }
+
 
   @Test
   public void replicateRegion_verifyOutputWhenNoPoolAvailableAndEntriesInRegion() {

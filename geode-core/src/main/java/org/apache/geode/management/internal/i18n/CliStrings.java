@@ -1458,6 +1458,8 @@ public class CliStrings {
   public static final String REPLICATE_REGION__MSG__ENTRIES__REPLICATED = "Entries replicated: {0}";
   public static final String REPLICATE_REGION__MSG__NO__CONNECTION__POOL =
       "No connection pool available towards receiver";
+  public static final String REPLICATE_REGION__MSG__COMMAND__NOT__SUPPORTED__AT__REMOTE__SITE =
+      "Command not supported at remote site.";
   public static final String REPLICATE_REGION__MSG__NO__CONNECTION =
       "No connection available towards receiver after having replicated {0} entries";
   public static final String REPLICATE_REGION__MSG__ERROR__AFTER__HAVING__REPLICATED =

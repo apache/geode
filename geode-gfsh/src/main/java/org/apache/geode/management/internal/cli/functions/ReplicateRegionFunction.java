@@ -61,6 +61,7 @@ import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
@@ -260,6 +261,11 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
                 CliStrings.REPLICATE_REGION__MSG__NO__CONNECTION__POOL);
           }
           connection = senderPool.acquireConnection();
+          if (connection.getWanSiteVersion() < KnownVersion.GEODE_1_15_0.ordinal()) {
+            return new CliFunctionResult(context.getMemberName(),
+                CliFunctionResult.StatusState.ERROR,
+                CliStrings.REPLICATE_REGION__MSG__COMMAND__NOT__SUPPORTED__AT__REMOTE__SITE);
+          }
         }
         int retries = 0;
         while (true) {
