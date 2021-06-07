@@ -184,10 +184,13 @@ public class RedisSortedSet extends AbstractRedisData {
    * @param region the region this instance is stored in
    * @param key the name of the set to add to
    * @param membersToAdd members to add to this set; NOTE this list may by modified by this call
-   * @return the number of members actually added
+   * @return the number of members actually added OR incremented value if INCR option specified
    */
-  long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
+  Object zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
       ZAddOptions options) {
+    if (options.isINCR()) {
+      return zaddIncr(region, key, membersToAdd, options);
+    }
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
     int initialSize = getSortedSetSize();
@@ -216,6 +219,20 @@ public class RedisSortedSet extends AbstractRedisData {
 
     storeChanges(region, key, deltaInfo);
     return getSortedSetSize() - initialSize + changesCount;
+  }
+
+  private byte[] zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
+      List<byte[]> membersToAdd, ZAddOptions options) {
+    // for zadd incr option, only one incrementing element pair is allowed to get here.
+    byte[] increment = membersToAdd.get(0);
+    byte[] member = membersToAdd.get(1);
+    if (options.isNX() && members.containsKey(member)) {
+      return null;
+    }
+    if (options.isXX() && !members.containsKey(member)) {
+      return null;
+    }
+    return zincrby(region, key, increment, member);
   }
 
   private void validateScoreIsDouble(byte[] score) {

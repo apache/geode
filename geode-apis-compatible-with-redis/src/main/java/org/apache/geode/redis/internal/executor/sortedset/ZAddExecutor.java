@@ -14,10 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_ZADD_OPTION_TOO_MANY_INCR_PAIR;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,11 +30,10 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ZAddExecutor extends AbstractExecutor {
-  private final ZAddExecutorState zAddExecutorState = new ZAddExecutorState();
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    zAddExecutorState.initialize();
+    ZAddExecutorState zAddExecutorState = new ZAddExecutorState();
     RedisSortedSetCommands redisSortedSetCommands = context.getRedisSortedSetCommands();
     List<byte[]> commandElements = command.getProcessedCommand();
     Iterator<byte[]> commandIterator = commandElements.iterator();
@@ -46,8 +45,18 @@ public class ZAddExecutor extends AbstractExecutor {
       return RedisResponse.error(zAddExecutorState.exceptionMessage);
     }
 
+    if (zAddExecutorState.incrFound) {
+      byte[] result = (byte[]) redisSortedSetCommands.zadd(command.getKey(),
+          new ArrayList<>(commandElements.subList(optionsFoundCount + 2, commandElements.size())),
+          makeOptions(zAddExecutorState));
+      if (result == null) {
+        return RedisResponse.nil();
+      }
+      return RedisResponse.string(result);
+    }
+
     return RedisResponse
-        .integer(redisSortedSetCommands.zadd(command.getKey(),
+        .integer((int) redisSortedSetCommands.zadd(command.getKey(),
             new ArrayList<>(commandElements.subList(optionsFoundCount + 2, commandElements.size())),
             makeOptions(zAddExecutorState)));
   }
@@ -77,6 +86,10 @@ public class ZAddExecutor extends AbstractExecutor {
           executorState.chFound = true;
           optionsFoundCount++;
           break;
+        case "incr":
+          executorState.incrFound = true;
+          optionsFoundCount++;
+          break;
         default:
           try {
             Double.valueOf(subCommandString);
@@ -90,6 +103,9 @@ public class ZAddExecutor extends AbstractExecutor {
       executorState.exceptionMessage = ERROR_SYNTAX;
     } else if (executorState.nxFound && executorState.xxFound) {
       executorState.exceptionMessage = ERROR_INVALID_ZADD_OPTION_NX_XX;
+    } else if (executorState.incrFound
+        && command.getProcessedCommand().size() - optionsFoundCount - 2 > 2) {
+      executorState.exceptionMessage = ERROR_ZADD_OPTION_TOO_MANY_INCR_PAIR;
     }
     return optionsFoundCount;
   }
@@ -103,20 +119,14 @@ public class ZAddExecutor extends AbstractExecutor {
     if (executorState.xxFound) {
       existsOption = ZAddOptions.Exists.XX;
     }
-    return new ZAddOptions(existsOption, executorState.chFound);
+    return new ZAddOptions(existsOption, executorState.chFound, executorState.incrFound);
   }
 
-  static class ZAddExecutorState {
-    public boolean nxFound;
-    public boolean xxFound;
-    public boolean chFound;
-    public String exceptionMessage;
-
-    public void initialize() {
-      nxFound = false;
-      xxFound = false;
-      chFound = false;
-      exceptionMessage = null;
-    }
+  private static class ZAddExecutorState {
+    private boolean nxFound = false;
+    private boolean xxFound = false;
+    private boolean chFound = false;
+    private boolean incrFound = false;
+    private String exceptionMessage = null;
   }
 }

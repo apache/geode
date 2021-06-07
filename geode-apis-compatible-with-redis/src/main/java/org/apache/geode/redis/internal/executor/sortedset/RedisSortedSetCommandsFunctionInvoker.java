@@ -42,7 +42,7 @@ public class RedisSortedSetCommandsFunctionInvoker extends RedisCommandsFunction
   }
 
   @Override
-  public long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd,
+  public Object zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd,
       ZAddOptions options) {
     return invokeCommandFunction(key, ZADD, scoresAndMembersToAdd, options);
   }

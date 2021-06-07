@@ -41,14 +41,29 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
+  Object zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
       ZAddOptions options) {
     if (options.isXX()) {
+      if (options.isINCR()) {
+        return null;
+      }
       return 0;
+    }
+
+    if (options.isINCR()) {
+      return zaddIncr(region, key, membersToAdd);
     }
     RedisSortedSet sortedSet = new RedisSortedSet(membersToAdd);
     region.create(key, sortedSet);
     return sortedSet.getSortedSetSize();
+  }
+
+  private Object zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
+      List<byte[]> membersToAdd) {
+    // for zadd incr option, only one incrementing element pair is allowed to get here.
+    byte[] increment = membersToAdd.get(0);
+    byte[] member = membersToAdd.get(1);
+    return zincrby(region, key, increment, member);
   }
 
   @Override
