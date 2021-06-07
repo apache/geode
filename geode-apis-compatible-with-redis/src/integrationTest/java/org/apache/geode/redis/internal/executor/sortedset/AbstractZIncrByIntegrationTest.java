@@ -144,16 +144,15 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     final double increment = POSITIVE_INFINITY;
     jedis.zadd(KEY, 0.0, Coder.stringToBytes("something")); // init the key but not the member
 
-    jedis.zincrby(KEY, increment, MEMBER);
-    assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(increment);
+    assertKeyIsCreatedWithIncrementOf(increment);
   }
 
   @Test
   public void memberShouldBeCreatedWhenItDoesNotExist_withIncrementOfNegativeInfinity() {
     final double increment = NEGATIVE_INFINITY;
     jedis.zadd(KEY, 0.0, Coder.stringToBytes("something")); // init the key but not the member
-    jedis.zincrby(KEY, increment, MEMBER);
-    assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(increment);
+
+    assertKeyIsCreatedWithIncrementOf(increment);
   }
 
   @Test
@@ -168,7 +167,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
 
   @Test
   public void scoreOfPositiveInfinityShouldRemainInfinite_whenIncrementingOrDecrementing() {
-    jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER);
+    jedis.zadd(KEY, POSITIVE_INFINITY, MEMBER);
 
     jedis.zincrby(KEY, 100.0, MEMBER);
     assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(POSITIVE_INFINITY);
@@ -179,7 +178,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
 
   @Test
   public void scoreOfNegativeInfinityShouldRemainInfinite_whenIncrementingOrDecrementing() {
-    jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER);
+    jedis.zadd(KEY, NEGATIVE_INFINITY, MEMBER);
 
     jedis.zincrby(KEY, 100.0, MEMBER);
     assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(NEGATIVE_INFINITY);
@@ -190,7 +189,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
 
   @Test
   public void incrementingScoreOfInfinityByNegativeInfinity_throwsNaNError() {
-    jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER);
+    jedis.zadd(KEY, POSITIVE_INFINITY, MEMBER);
 
     assertThatThrownBy(() -> jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER))
         .hasMessageContaining(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
@@ -198,7 +197,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
 
   @Test
   public void incrementingScoreOfNegativeInfinityByPositiveInfinity_throwsNaNError() {
-    jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER);
+    jedis.zadd(KEY, NEGATIVE_INFINITY, MEMBER);
 
     assertThatThrownBy(() -> jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER))
         .hasMessageContaining(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
@@ -206,14 +205,14 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
 
   @Test
   public void incrementingScoreOfNegativeInfinityByNegativeInfinity_IsAllowed() {
-    jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER);
+    jedis.zadd(KEY, NEGATIVE_INFINITY, MEMBER);
 
     assertThat(jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER)).isEqualTo(NEGATIVE_INFINITY);
   }
 
   @Test
   public void incrementingScoreOfPositiveInfinityByPositiveiveInfinity_IsAllowed() {
-    jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER);
+    jedis.zadd(KEY, POSITIVE_INFINITY, MEMBER);
 
     assertThat(jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER)).isEqualTo(POSITIVE_INFINITY);
   }

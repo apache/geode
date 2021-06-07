@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
@@ -269,11 +271,41 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     }
   }
 
-  private Map<String, Double> makeMemberScoreMap(int memberCount, int baseScore) {
+  @Test
+  public void shouldStoreScore_whenScoreIsSetToInfinity() {
+    final String key = "key";
+    final String member = "member";
+    final double score = POSITIVE_INFINITY;
+
+    jedis.zadd(key, score, member);
+    assertThat(jedis.zscore(key, member)).isEqualTo(score);
+  }
+
+  @Test
+  public void shouldStoreScore_whenScoreIsSetToNegativeInfinity() {
+    final String key = "key";
+    final String member = "member";
+    final double score = NEGATIVE_INFINITY;
+
+    jedis.zadd(key, score, member);
+    assertThat(jedis.zscore(key, member)).isEqualTo(score);
+  }
+
+  @Test
+  public void shouldUpdateScore_whenSettingMemberThatAlreadyExists() {
+    final String key = "key";
+    final String member = "member";
+    jedis.zadd(key, 0.0, member);
+
+    assertThat(jedis.zadd(key, 1.0, member)).isEqualTo(0);
+    assertThat(jedis.zscore(key, member)).isEqualTo(1.0);
+  }
+
+  private Map<String, Double> makeMemberScoreMap(int memberCount, double baseScore) {
     Map<String, Double> map = new HashMap<>();
 
     for (int i = 0; i < memberCount; i++) {
-      map.put("member_" + i, Double.valueOf((i + baseScore) + ""));
+      map.put("member_" + i, i + baseScore);
     }
     return map;
   }
