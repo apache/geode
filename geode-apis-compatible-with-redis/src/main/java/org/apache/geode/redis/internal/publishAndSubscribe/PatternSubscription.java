@@ -14,55 +14,54 @@
  *
  */
 
-package org.apache.geode.redis.internal.pubsub;
+package org.apache.geode.redis.internal.publishAndSubscribe;
 
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
- * This class represents a single channel subscription as created by the SUBSCRIBE command
+ * This class represents a pattern subscription as created by the PSUBSCRIBE command
  */
-class ChannelSubscription extends AbstractSubscription {
-  private byte[] channel;
+class PatternSubscription extends AbstractSubscription {
+  final GlobPattern pattern;
 
-  public ChannelSubscription(Client client, byte[] channel, ExecutionHandlerContext context,
+  public PatternSubscription(Client client, GlobPattern pattern, ExecutionHandlerContext context,
       Subscriptions subscriptions) {
     super(client, context, subscriptions);
 
-    if (channel == null) {
-      throw new IllegalArgumentException("channel cannot be null");
+    if (pattern == null) {
+      throw new IllegalArgumentException("pattern cannot be null");
     }
-    this.channel = channel;
+    this.pattern = pattern;
   }
 
   @Override
   public Type getType() {
-    return Type.CHANNEL;
+    return Type.PATTERN;
   }
 
   @Override
   public List<Object> createResponse(byte[] channel, byte[] message) {
-    return Arrays.asList("message", channel, message);
+    return Arrays.asList("pmessage", pattern.globPattern(), channel, message);
   }
 
   @Override
   public boolean isEqualTo(Object channelOrPattern, Client client) {
-    return channel != null
-        && channelOrPattern instanceof byte[]
-        && Arrays.equals(channel, (byte[]) channelOrPattern)
+    return this.pattern != null && this.pattern.equals(channelOrPattern)
         && this.getClient().equals(client);
   }
 
   @Override
   public boolean matches(byte[] channel) {
-    return Arrays.equals(this.channel, channel);
+    return pattern.matches(new String(channel));
   }
 
   @Override
   public byte[] getSubscriptionName() {
-    return channel;
+    return pattern.globPattern().getBytes();
   }
 }

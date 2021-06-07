@@ -11,17 +11,15 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
-package org.apache.geode.redis.internal.executor.pubsub;
+package org.apache.geode.redis.internal.executor.publishAndSubscribe;
 
 import org.junit.ClassRule;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class SubCommandsIntegrationTest extends AbstractSubCommandsIntegrationTest {
-
+public class PublishAndSubscribeIntegrationTest extends AbstractPublishAndSubscribeIntegrationTest {
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 

@@ -15,19 +15,20 @@
  *
  */
 
-package org.apache.geode.redis.internal.executor.pubsub;
+package org.apache.geode.redis.internal.executor.publishAndSubscribe;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtMostNArgsForSubCommand;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_PUBSUB_SUBCOMMAND;
-import static org.apache.geode.redis.internal.executor.pubsub.AbstractPubSubIntegrationTest.JEDIS_TIMEOUT;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static redis.clients.jedis.Protocol.PUBSUB_CHANNELS;
+import static redis.clients.jedis.Protocol.PUBSUB_NUMSUB;
 
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -42,7 +43,7 @@ import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegrationTest {
+public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationTest {
   private Jedis subscriber;
   private Jedis introspector;
   private MockSubscriber mockSubscriber;
@@ -68,19 +69,21 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void channels_shouldError_givenTooManyArguments() {
-    assertAtMostNArgsForSubCommand(introspector,
-        Protocol.Command.PUBSUB,
-        Coder.stringToBytes(PUBSUB_CHANNELS),
-        1);
-  }
-
-  @Test
   public void pubsub_shouldReturnError_givenUnknownSubcommand() {
     String expected = String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, "nonesuch");
 
     assertThatThrownBy(() -> introspector.sendCommand(Protocol.Command.PUBSUB, "nonesuch"))
         .hasMessageContaining(expected);
+  }
+
+  /** -- CHANNELS-- **/
+
+  @Test
+  public void channels_shouldError_givenTooManyArguments() {
+    assertAtMostNArgsForSubCommand(introspector,
+        Protocol.Command.PUBSUB,
+        Coder.stringToBytes(PUBSUB_CHANNELS),
+        1);
   }
 
   @Test
@@ -115,7 +118,6 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
 
     mockSubscriber.punsubscribe();
   }
-
 
   @Test
   public void channels_shouldReturnListOfMatchingChannels_withActiveChannelSubscribers_whenCalledWithPattern() {
@@ -161,7 +163,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   @Test
   public void channels_shouldNotReturnDuplicates_givenMultipleSubscribersToSameChannel_whenCalledWithoutPattern() {
 
-    Jedis subscriber2 = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
+    Jedis subscriber2 =
+        new Jedis("localhost", getPort(), AbstractPublishAndSubscribeIntegrationTest.JEDIS_TIMEOUT);
 
     MockSubscriber mockSubscriber2 = new MockSubscriber();
     List<byte[]> expectedChannels = new ArrayList<>();
@@ -189,6 +192,91 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     waitFor(() -> mockSubscriber2.getSubscribedChannels() == 0);
 
     subscriber2.close();
+  }
+
+  /** -- NUMSUB-- **/
+
+  @Test
+  public void numsub_shouldReturnEmptyList_whenCalledWithOutChannelNames() {
+    Runnable fooRunnable =
+        () -> subscriber.subscribe(mockSubscriber, "foo");
+    Thread fooSubscriberThread = new Thread(fooRunnable);
+    fooSubscriberThread.start();
+
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    List<Object> result =
+        uncheckedCast(
+            introspector.sendCommand(Protocol.Command.PUBSUB, PUBSUB_NUMSUB));
+
+    assertThat(result).isEmpty();
+  }
+
+
+  @Test
+  public void numsub_shouldReturnListOfChannelsWithSubscriberCount_whenCalledWithActiveChannels() {
+
+    Jedis subscriber2 = new Jedis("localhost", getPort());
+    MockSubscriber fooAndBarSubscriber = new MockSubscriber();
+
+    Runnable fooRunnable =
+        () -> subscriber.subscribe(mockSubscriber, "foo");
+    Thread fooSubscriberThread = new Thread(fooRunnable);
+    fooSubscriberThread.start();
+
+    Runnable fooAndBarRunnable =
+        () -> subscriber2.subscribe(fooAndBarSubscriber, "foo", "bar");
+    Thread fooAndBarSubscriberThread = new Thread(fooAndBarRunnable);
+    fooAndBarSubscriberThread.start();
+
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1
+        && fooAndBarSubscriber.getSubscribedChannels() == 2);
+
+    HashMap<String, String> result =
+        (HashMap<String, String>) introspector.pubsubNumSub("foo", "bar");
+
+    assertThat(result.containsKey("foo")).isTrue();
+    assertThat(result.containsKey("bar")).isTrue();
+    assertThat(result.get("foo")).isEqualTo("2");
+    assertThat(result.get("bar")).isEqualTo("1");
+
+    fooAndBarSubscriber.unsubscribe();
+
+    waitFor(() -> fooAndBarSubscriber.getSubscribedChannels() == 0);
+    subscriber2.close();
+  }
+
+  @Test
+  public void numsub_shouldReturnChannelNameWithZero_whenCalledWithChannelWithNoSubscribers() {
+    Runnable fooRunnable =
+        () -> subscriber.subscribe(mockSubscriber, "foo");
+    Thread fooSubscriberThread = new Thread(fooRunnable);
+    fooSubscriberThread.start();
+
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    HashMap<String, String> result =
+        (HashMap<String, String>) introspector.pubsubNumSub("bar");
+
+    assertThat(result.containsKey("bar")).isTrue();
+    assertThat(result.get("bar")).isEqualTo("0");
+  }
+
+  @Test
+  public void numsub_shouldReturnPatternWithZero_whenCalledWithPatternWithNoChannelSubscribers() {
+    Runnable runnable = () -> subscriber.psubscribe(mockSubscriber, "f*");
+    Thread patternSubscriberThread = new Thread(runnable);
+
+    patternSubscriberThread.start();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    HashMap<String, String> result =
+        (HashMap<String, String>) introspector.pubsubNumSub("f*");
+
+
+    assertThat(result.containsKey("f*")).isTrue();
+    assertThat(result.get("f*")).isEqualTo("0");
+    mockSubscriber.punsubscribe();
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {

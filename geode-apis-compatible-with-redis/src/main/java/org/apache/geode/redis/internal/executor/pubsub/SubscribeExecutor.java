@@ -24,7 +24,7 @@ import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.pubsub.SubscribeResult;
+import org.apache.geode.redis.internal.publishAndSubscribe.SubscribeResult;
 
 public class SubscribeExecutor extends AbstractExecutor {
 

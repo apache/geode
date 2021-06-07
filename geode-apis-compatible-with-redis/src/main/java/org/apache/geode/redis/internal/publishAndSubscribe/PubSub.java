@@ -14,7 +14,7 @@
  *
  */
 
-package org.apache.geode.redis.internal.pubsub;
+package org.apache.geode.redis.internal.publishAndSubscribe;
 
 import java.util.List;
 
@@ -96,7 +96,9 @@ public interface PubSub {
    */
   List<byte[]> findSubscriptionNames(Client client);
 
-  List<byte[]> findChannelNames();
+  List<Object> findChannelNames();
 
-  List<byte[]> findChannelNames(byte[] pattern);
+  List<Object> findChannelNames(byte[] pattern);
+
+  List<Object> findNumberOfSubscribersForChannel(List<byte[]> names);
 }

@@ -19,8 +19,8 @@ package org.apache.geode.redis.mocks;
 import java.util.List;
 
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.pubsub.PublishResultCollector;
-import org.apache.geode.redis.internal.pubsub.Subscription;
+import org.apache.geode.redis.internal.publishAndSubscribe.PublishResultCollector;
+import org.apache.geode.redis.internal.publishAndSubscribe.Subscription;
 
 public class DummySubscription implements Subscription {
 

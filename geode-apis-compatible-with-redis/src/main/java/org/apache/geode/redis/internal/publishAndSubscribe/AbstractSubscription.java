@@ -14,7 +14,7 @@
  *
  */
 
-package org.apache.geode.redis.internal.pubsub;
+package org.apache.geode.redis.internal.publishAndSubscribe;
 
 import java.util.concurrent.CountDownLatch;
 

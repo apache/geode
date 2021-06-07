@@ -15,7 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
-import static org.apache.geode.redis.internal.pubsub.Subscription.Type.CHANNEL;
+import static org.apache.geode.redis.internal.publishAndSubscribe.Subscription.Type.CHANNEL;
 
 import java.util.ArrayList;
 import java.util.Collection;

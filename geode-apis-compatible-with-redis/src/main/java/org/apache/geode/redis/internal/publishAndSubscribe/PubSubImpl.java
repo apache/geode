@@ -14,7 +14,7 @@
  *
  */
 
-package org.apache.geode.redis.internal.pubsub;
+package org.apache.geode.redis.internal.publishAndSubscribe;
 
 import java.util.HashSet;
 import java.util.List;
@@ -144,13 +144,18 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public List<byte[]> findChannelNames() {
+  public List<Object> findChannelNames() {
     return subscriptions.findChannelNames();
   }
 
   @Override
-  public List<byte[]> findChannelNames(byte[] pattern) {
+  public List<Object> findChannelNames(byte[] pattern) {
     return subscriptions.findChannelNames(pattern);
+  }
+
+  @Override
+  public List<Object> findNumberOfSubscribersForChannel(List<byte[]> names) {
+    return subscriptions.findNumberOfSubscribersForChannel(names);
   }
 
   @Override
@@ -177,5 +182,4 @@ public class PubSubImpl implements PubSub {
 
     return publishResultCollector.getSuccessCount();
   }
-
 }

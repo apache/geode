@@ -13,19 +13,41 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.executor.pubsub;
+package org.apache.geode.redis.internal.executor.publishAndSubscribe;
+
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.ClassRule;
+import org.junit.Test;
+import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.mocks.MockSubscriber;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-public class PubSubIntegrationTest extends AbstractPubSubIntegrationTest {
+public class SubscriptionsIntegrationTest extends AbstractSubscriptionsIntegrationTest {
+
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {
     return server.getPort();
+  }
+
+  @Test
+  public void leakedSubscriptions() {
+    for (int i = 0; i < 100; i++) {
+      Jedis client = new Jedis("localhost", getPort());
+      MockSubscriber mockSubscriber = new MockSubscriber();
+      executor.submit(() -> client.subscribe(mockSubscriber, "same"));
+      mockSubscriber.awaitSubscribe("same");
+      client.close();
+    }
+
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(server.getServer().getSubscriptionCount()).isEqualTo(0));
   }
 
 }

@@ -11,22 +11,16 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
-package org.apache.geode.redis.internal.executor.pubsub;
-
-
-import static org.assertj.core.api.Assertions.assertThat;
+package org.apache.geode.redis.internal.executor.publishAndSubscribe;
 
 import org.junit.ClassRule;
-import org.junit.Test;
-import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
-import org.apache.geode.redis.mocks.MockSubscriber;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-public class SubscriptionsIntegrationTest extends AbstractSubscriptionsIntegrationTest {
+public class PubSubIntegrationTest extends AbstractPubSubIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
@@ -34,20 +28,6 @@ public class SubscriptionsIntegrationTest extends AbstractSubscriptionsIntegrati
   @Override
   public int getPort() {
     return server.getPort();
-  }
-
-  @Test
-  public void leakedSubscriptions() {
-    for (int i = 0; i < 100; i++) {
-      Jedis client = new Jedis("localhost", getPort());
-      MockSubscriber mockSubscriber = new MockSubscriber();
-      executor.submit(() -> client.subscribe(mockSubscriber, "same"));
-      mockSubscriber.awaitSubscribe("same");
-      client.close();
-    }
-
-    GeodeAwaitility.await()
-        .untilAsserted(() -> assertThat(server.getServer().getSubscriptionCount()).isEqualTo(0));
   }
 
 }

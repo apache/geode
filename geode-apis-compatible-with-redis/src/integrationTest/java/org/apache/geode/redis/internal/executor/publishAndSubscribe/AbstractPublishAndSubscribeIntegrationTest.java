@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.executor.pubsub;
+package org.apache.geode.redis.internal.executor.publishAndSubscribe;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,7 +50,7 @@ import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationTest {
+public abstract class AbstractPublishAndSubscribeIntegrationTest implements RedisIntegrationTest {
   private Jedis publisher;
   private Jedis subscriber;
 

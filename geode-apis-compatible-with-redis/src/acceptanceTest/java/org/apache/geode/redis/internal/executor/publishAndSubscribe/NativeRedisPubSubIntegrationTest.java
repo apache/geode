@@ -1,3 +1,4 @@
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -11,22 +12,28 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import org.junit.ClassRule;
 
-import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.NativeRedisClusterTestRule;
+import org.apache.geode.redis.internal.executor.publishAndSubscribe.AbstractPubSubIntegrationTest;
 
-public class LettucePubSubIntegrationTest extends AbstractLettucePubSubIntegrationTest {
+
+public class NativeRedisPubSubIntegrationTest extends AbstractPubSubIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static NativeRedisClusterTestRule cluster = new NativeRedisClusterTestRule();
 
   @Override
   public int getPort() {
-    return server.getPort();
+    return cluster.getExposedPorts().get(0);
   }
 
+  public void flushAll() {
+    cluster.flushAll();
+  }
 }

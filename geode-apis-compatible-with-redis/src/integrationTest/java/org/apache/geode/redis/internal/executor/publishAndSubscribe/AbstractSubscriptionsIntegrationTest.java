@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.executor.pubsub;
+package org.apache.geode.redis.internal.executor.publishAndSubscribe;
 
 
 import static org.assertj.core.api.Assertions.assertThat;

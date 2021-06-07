@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.executor.pubsub;
+package org.apache.geode.redis.internal.executor.publishAndSubscribe;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,7 +41,8 @@ import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public abstract class AbstractLettucePubSubIntegrationTest implements RedisIntegrationTest {
+public abstract class AbstractLettucePublishAndSubscribeIntegrationTest
+    implements RedisIntegrationTest {
 
   private static final String CHANNEL = "best-channel";
   private static final String PATTERN = "best-*";

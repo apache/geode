@@ -11,37 +11,22 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
+package org.apache.geode.redis.internal.executor.pubsub;
 
-package org.apache.geode.redis.internal.pubsub;
 
-public class SubscribeResult {
-  private final Subscription subscription;
-  private final long channelCount;
-  private final byte[] channel;
+import org.junit.ClassRule;
 
-  public SubscribeResult(Subscription subscription, long channelCount, byte[] channel) {
-    this.subscription = subscription;
-    this.channelCount = channelCount;
-    this.channel = channel;
+import org.apache.geode.NativeRedisTestRule;
+import org.apache.geode.redis.internal.executor.publishAndSubscribe.AbstractSubscriptionsIntegrationTest;
+
+public class SubscriptionsNativeRedisAcceptanceTest extends AbstractSubscriptionsIntegrationTest {
+  @ClassRule
+  public static NativeRedisTestRule redis = new NativeRedisTestRule();
+
+  @Override
+  public int getPort() {
+    return redis.getPort();
   }
 
-  /**
-   * Returns the Subscription instance this subscribe operations created; possibly null.
-   */
-  public Subscription getSubscription() {
-    return subscription;
-  }
-
-  /**
-   * returns the number of channels this subscribe operation subscribed to.
-   */
-  public long getChannelCount() {
-    return channelCount;
-  }
-
-  public byte[] getChannel() {
-    return channel;
-  }
 }

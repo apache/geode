@@ -14,7 +14,7 @@
  *
  */
 
-package org.apache.geode.redis.internal.pubsub;
+package org.apache.geode.redis.internal.publishAndSubscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,28 +73,52 @@ public class Subscriptions {
         .collect(Collectors.toList());
   }
 
-  public List<byte[]> findChannelNames() {
+  public List<Object> findChannelNames() {
 
     ObjectOpenCustomHashSet<byte[]> hashSet =
         new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
 
-    findChannels()
+    findChannelSubscriptions()
         .forEach(channel -> hashSet.add(channel.getSubscriptionName()));
 
     return new ArrayList<>(hashSet);
   }
 
-  public List<byte[]> findChannelNames(byte[] pattern) {
+  public List<Object> findChannelNames(byte[] pattern) {
 
     GlobPattern globPattern = new GlobPattern(Coder.bytesToString(pattern));
 
     return findChannelNames()
         .stream()
-        .filter(name -> globPattern.matches(Coder.bytesToString(name)))
+        .filter(name -> globPattern.matches(Coder.bytesToString((byte[]) name)))
         .collect(Collectors.toList());
   }
 
-  private Stream<ChannelSubscription> findChannels() {
+  public List<Object> findNumberOfSubscribersForChannel(List<byte[]> names) {
+
+    List<Object> result = new ArrayList<>();
+
+    names.forEach(name -> {
+
+      List<Subscription> subscriptions =
+          findSubscriptions(name)
+              .stream()
+              .filter(subscription -> subscription instanceof ChannelSubscription)
+              .collect(Collectors.toList());
+
+      if (subscriptions.isEmpty()) {
+        result.add(name);
+        result.add(0L);
+      } else {
+        result.add(name);
+        result.add((long) subscriptions.size());
+      }
+    });
+
+    return result;
+  }
+
+  private Stream<ChannelSubscription> findChannelSubscriptions() {
     return subscriptions.stream()
         .filter(subscription -> subscription instanceof ChannelSubscription)
         .map(subscription -> (ChannelSubscription) subscription);

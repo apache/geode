@@ -19,7 +19,7 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_PUBSUB_SUBCOMMAND;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.Executor;
@@ -33,28 +33,57 @@ public class PubSubExecutor implements Executor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
-    byte[] subCommand = command.getProcessedCommand().get(1);
+    List<byte[]> processedCommand = command.getProcessedCommand();
+    String subCommand = Coder.bytesToString(processedCommand.get(1)).toLowerCase();
 
-    if (!Arrays.equals(subCommand, Coder.stringToBytes("channels"))) {
-      return RedisResponse
-          .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, new String(subCommand)));
+    List<Object> response;
+
+    switch (subCommand) {
+      case "channels":
+        // in a subsequent story, a new parameter requirement class
+        // specific to subCommands might be a better way to do this
+        if (processedCommand.size() > 3) {
+          return RedisResponse
+              .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, subCommand));
+        }
+
+        response = doChannels(processedCommand, context);
+        break;
+
+      case "numsub":
+        response = doNumsub(processedCommand, context);
+        break;
+
+      default:
+        return RedisResponse
+            .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, subCommand));
+
     }
 
-    // in a subsequent story, a new parameter requirement class
-    // specific to subCommands might be a better way to do this
-    if (command.getProcessedCommand().size() > 3) {
-      return RedisResponse
-          .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, new String(subCommand)));
-    }
+    return RedisResponse.array(response);
+  }
 
-    List<byte[]> response;
-    if (command.getProcessedCommand().size() > 2) {
-      byte[] pattern = command.getProcessedCommand().get(2);
+  private List<Object> doChannels(List<byte[]> processedCommand, ExecutionHandlerContext context) {
+    List<Object> response;
+
+    if (processedCommand.size() > 2) {
+      byte[] pattern = processedCommand.get(2);
       response = context.getPubSub().findChannelNames(pattern);
     } else {
       response = context.getPubSub().findChannelNames();
     }
 
-    return RedisResponse.array(response);
+    return response;
+  }
+
+  private List<Object> doNumsub(List<byte[]> processedCommand, ExecutionHandlerContext context) {
+
+    ArrayList<byte[]> channelNames = new ArrayList<>();
+
+    for (int i = 2; i < processedCommand.size(); i++) {
+      channelNames.add(processedCommand.get(i));
+    }
+
+    return context.getPubSub().findNumberOfSubscribersForChannel(channelNames);
   }
 }
