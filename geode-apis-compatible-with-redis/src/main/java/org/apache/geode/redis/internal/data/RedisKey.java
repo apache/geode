@@ -63,7 +63,7 @@ public class RedisKey implements DataSerializableFixedID {
 
   public int getBucketId() {
     // & (REDIS_SLOTS - 1) is equivalent to % REDIS_SLOTS but supposedly faster
-    return getCrc16() & (REDIS_SLOTS - 1) / REDIS_SLOTS_PER_BUCKET;
+    return (getCrc16() & (REDIS_SLOTS - 1)) / REDIS_SLOTS_PER_BUCKET;
   }
 
   /**
