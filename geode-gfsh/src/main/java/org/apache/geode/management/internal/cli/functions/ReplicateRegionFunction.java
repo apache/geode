@@ -239,13 +239,17 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
     PoolImpl senderPool = null;
     int replicatedEntries = 0;
 
+    Iterator<?> entriesIter = null;
     try {
       final long startTime = clock.millis();
       int batchId = 0;
       final InternalCache cache = (InternalCache) context.getCache();
       GatewaySenderEventDispatcher dispatcher =
           ((AbstractGatewaySender) sender).getEventProcessor().getDispatcher();
-      Iterator<?> entriesIter = getEntries(region, sender).iterator();
+      Set<?> entriesSet = getEntries(region, sender);
+      entriesIter = entriesSet.iterator();
+      logger
+          .info("ReplicateRegionFunction is going to replicate " + entriesSet.size() + " entries");
       while (entriesIter.hasNext()) {
         List<GatewayQueueEvent> batch =
             createBatch((InternalRegion) region, sender, batchSize, cache, entriesIter);
@@ -311,7 +315,9 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
         senderPool.returnConnection(connection);
       }
     }
-
+    if (entriesIter != null && entriesIter.hasNext()) {
+      logger.info("ReplicateRegionFunction - Exitting ok but entriesIter still has entries");
+    }
     return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
         CliStrings.format(CliStrings.REPLICATE_REGION__MSG__REPLICATED__ENTRIES,
             replicatedEntries));

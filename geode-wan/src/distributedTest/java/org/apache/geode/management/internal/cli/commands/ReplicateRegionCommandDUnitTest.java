@@ -254,11 +254,17 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
   @Test
   public void testUnsuccessfulExecutionWithReplicatedRegionDueToSerialPrimarySenderWentDown()
       throws Exception {
-    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
-    try {
-      testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.SENDER, true);
-    } finally {
-      removeIgnoredExceptions(ignoredExceptions);
+    for (int i = 0; i < 10; i++) {
+      List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
+      try {
+        testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.SENDER, true);
+      } finally {
+        removeIgnoredExceptions(ignoredExceptions);
+        for (VM vm : new VM[] {vm0, vm1, vm2, vm3, vm4, vm5, vm6, vm7, vm8}) {
+          vm.bounce();
+        }
+      }
+
     }
   }
 
@@ -418,6 +424,7 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
     client.invoke(() -> WANTestBase.doClientPutsFrom(regionName, 0, entries));
     for (VM member : serversInA) {
       member.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
+
     }
 
     // Create senders and receivers with replication as follows: "A" -> "B"
