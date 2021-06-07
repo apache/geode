@@ -77,8 +77,8 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
 
     client.invoke(this::startClientSessionCache);
 
-    server0.invoke(this::validateServer);
-    server1.invoke(this::validateServer);
+    server0.invoke(() -> await().untilAsserted(this::validateServer));
+    server1.invoke(() -> await().untilAsserted(this::validateServer));
   }
 
   @Test
@@ -91,7 +91,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
 
     client.invoke(this::startClientSessionCache);
 
-    server0.invoke(this::validateServer);
+    server0.invoke(() -> await().untilAsserted(this::validateServer));
 
     server1.invoke(this::startCacheServer);
 
@@ -106,15 +106,13 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     final VM client = VM.getVM(2);
 
     server0.invoke(this::startCacheServer);
-
-
     server0.invoke(this::createSessionRegion);
-
+    server0.invoke(() -> await().untilAsserted(this::validateSessionRegion));
 
     client.invoke(this::startClientSessionCache);
     server1.invoke(this::startCacheServer);
 
-    server0.invoke(() -> await().untilAsserted(this::validateBootstrapped));
+    server0.invoke(() -> await().untilAsserted(this::validateServer));
     server1.invoke(() -> await().untilAsserted(this::validateBootstrapped));
 
     // server1 should not have created the session region
@@ -147,13 +145,13 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     server0.invoke(this::createSessionRegion);
     server1.invoke(this::createSessionRegion);
 
-    server0.invoke(this::validateSessionRegion);
-    server1.invoke(this::validateSessionRegion);
+    server0.invoke(() -> await().untilAsserted(this::validateSessionRegion));
+    server1.invoke(() -> await().untilAsserted(this::validateSessionRegion));
 
     client.invoke(this::startClientSessionCache);
 
-    server0.invoke(this::validateServer);
-    server1.invoke(this::validateServer);
+    server0.invoke(() -> await().untilAsserted(this::validateServer));
+    server1.invoke(() -> await().untilAsserted(this::validateServer));
   }
 
   @Test
