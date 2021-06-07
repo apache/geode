@@ -147,6 +147,9 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     server0.invoke(this::createSessionRegion);
     server1.invoke(this::createSessionRegion);
 
+    server0.invoke(this::validateSessionRegion);
+    server1.invoke(this::validateSessionRegion);
+
     client.invoke(this::startClientSessionCache);
 
     server0.invoke(this::validateServer);
@@ -154,7 +157,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
   }
 
   @Test
-  public void cantPreCreateMismatchedSessionRegionBeforeStartingClient() {
+  public void cannotPreCreateMismatchedSessionRegionBeforeStartingClient() {
     final VM server0 = VM.getVM(0);
     final VM server1 = VM.getVM(1);
     final VM client = VM.getVM(2);
