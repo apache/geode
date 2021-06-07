@@ -9,5 +9,5 @@ org/apache/geode/redis/internal/delta/DeltaType,false
 org/apache/geode/redis/internal/executor/BaseSetOptions$Exists,false
 org/apache/geode/redis/internal/netty/CoderException,true,4707944288714910949
 org/apache/geode/redis/internal/netty/RedisCommandParserException,true,4707944288714910949
-org/apache/geode/redis/internal/pubsub/PubSubImpl$1,false,this$0:org/apache/geode/redis/internal/pubsub/PubSubImpl
-org/apache/geode/redis/internal/pubsub/Subscription$Type,false
+org/apache/geode/redis/internal/publishAndSubscribe/PubSubImpl$1,false,this$0:org/apache/geode/redis/internal/publishAndSubscribe/PubSubImpl
+org/apache/geode/redis/internal/publishAndSubscribe/Subscription$Type,false

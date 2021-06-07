@@ -32,9 +32,9 @@ import org.apache.geode.redis.internal.cluster.RedisMemberInfoRetrievalFunction;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
 import org.apache.geode.redis.internal.netty.NettyRedisServer;
-import org.apache.geode.redis.internal.pubsub.PubSub;
-import org.apache.geode.redis.internal.pubsub.PubSubImpl;
-import org.apache.geode.redis.internal.pubsub.Subscriptions;
+import org.apache.geode.redis.internal.publishAndSubscribe.PubSub;
+import org.apache.geode.redis.internal.publishAndSubscribe.PubSubImpl;
+import org.apache.geode.redis.internal.publishAndSubscribe.Subscriptions;
 import org.apache.geode.redis.internal.statistics.GeodeRedisStats;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
