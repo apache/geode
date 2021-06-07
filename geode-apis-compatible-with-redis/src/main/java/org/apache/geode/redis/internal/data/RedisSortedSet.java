@@ -164,7 +164,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return REDIS_SORTED_SET_ID;
   }
 
-  protected synchronized void memberAdd(byte[] memberToAdd, byte[] scoreToAdd) {
+  protected synchronized byte[] memberAdd(byte[] memberToAdd, byte[] scoreToAdd) {
     scoreSet.add(new OrderedSetEntry(memberToAdd, scoreToAdd));
     byte[] oldScore = members.put(memberToAdd, scoreToAdd);
     if (oldScore == null) {
@@ -172,6 +172,7 @@ public class RedisSortedSet extends AbstractRedisData {
     } else {
       sizeInBytes += scoreToAdd.length - oldScore.length;
     }
+    return oldScore;
   }
 
   private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
