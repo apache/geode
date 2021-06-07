@@ -262,7 +262,7 @@ public class DistTXState extends TXState {
     }
 
     try {
-      List/* <TXEntryStateWithRegionAndKey> */ entries = generateEventOffsets();
+      List<TXEntryStateWithRegionAndKey> entries = generateEventOffsets();
       if (logger.isDebugEnabled()) {
         logger.debug("commit entries " + entries);
       }
