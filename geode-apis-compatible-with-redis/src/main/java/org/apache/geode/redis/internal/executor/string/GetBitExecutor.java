@@ -17,12 +17,13 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class GetBitExecutor extends StringExecutor {
+public class GetBitExecutor extends AbstractExecutor {
 
   private static final String ERROR_NOT_INT = "The offset provided must be numeric";
 

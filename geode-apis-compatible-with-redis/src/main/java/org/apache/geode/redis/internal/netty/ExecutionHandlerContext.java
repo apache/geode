@@ -270,10 +270,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   private static Throwable getInitialCause(FunctionException ex) {
-    Throwable result = ex.getCause();
-    while (result != null && result.getCause() != null) {
-      result = result.getCause();
-    }
+    Throwable result = ex.getRootCause();
     if (result == null) {
       if (!ex.getExceptions().isEmpty()) {
         result = ex.getExceptions().get(0);

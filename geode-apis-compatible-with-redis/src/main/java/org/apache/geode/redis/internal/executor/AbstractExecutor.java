@@ -27,6 +27,8 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  */
 public abstract class AbstractExecutor implements Executor {
 
+  protected static final int HASH_FIELD_INDEX = 2;
+
   protected RedisResponse respondBulkStrings(Object message) {
     if (message instanceof Collection) {
       return RedisResponse.array((Collection<?>) message);

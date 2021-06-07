@@ -25,12 +25,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SetExecutor extends StringExecutor {
+public class SetExecutor extends AbstractExecutor {
 
   private static final int VALUE_INDEX = 2;
   private static final String SUCCESS = "OK";

@@ -20,11 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class BitOpExecutor extends StringExecutor {
+public class BitOpExecutor extends AbstractExecutor {
 
   protected static final String ERROR_BITOP_NOT =
       "BITOP NOT must be called with a single source key";

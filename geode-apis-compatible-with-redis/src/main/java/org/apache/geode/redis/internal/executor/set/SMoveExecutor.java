@@ -22,11 +22,12 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SMoveExecutor extends SetExecutor {
+public class SMoveExecutor extends AbstractExecutor {
 
   private static final int MOVED = 1;
 

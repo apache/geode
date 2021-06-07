@@ -19,11 +19,12 @@ import static org.apache.geode.redis.internal.executor.BaseSetOptions.Exists.NX;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SetNXExecutor extends StringExecutor {
+public class SetNXExecutor extends AbstractExecutor {
 
   private static final int VALUE_INDEX = 2;
 
