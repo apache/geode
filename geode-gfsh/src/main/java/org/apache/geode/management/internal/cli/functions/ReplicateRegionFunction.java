@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -200,14 +200,13 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
   private CliFunctionResult executeReplicateFunctionInNewThread(FunctionContext<Object[]> context,
       Region region, String regionName, GatewaySender sender, long maxRate, int batchSize)
       throws InterruptedException, ExecutionException {
-    Callable<CliFunctionResult> callable =
-        new ReplicateRegionCallable(context, region, sender, maxRate, batchSize);
-    FutureTask<CliFunctionResult> futureTask = new FutureTask<>(callable);
     ExecutorService executor = LoggingExecutors
         .newSingleThreadExecutor(getReplicateRegionFunctionThreadName(regionName,
             sender.getId()), true);
-    executor.execute(futureTask);
-    return futureTask.get();
+    Callable<CliFunctionResult> callable =
+        new ReplicateRegionCallable(context, region, sender, maxRate, batchSize);
+    Future<CliFunctionResult> future = executor.submit(callable);
+    return future.get();
   }
 
   class ReplicateRegionCallable implements Callable<CliFunctionResult> {
@@ -316,6 +315,14 @@ public class ReplicateRegionFunction extends CliFunction<Object[]> implements De
         ((PooledConnection) connection).setShouldDestroy();
         senderPool.returnConnection(connection);
       }
+    }
+
+    if (region.isDestroyed()) {
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+          CliStrings.format(
+              CliStrings.REPLICATE_REGION__MSG__ERROR__AFTER__HAVING__REPLICATED,
+              "Region destroyed",
+              replicatedEntries));
     }
 
     return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,

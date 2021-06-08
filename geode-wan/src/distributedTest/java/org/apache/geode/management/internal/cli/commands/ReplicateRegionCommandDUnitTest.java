@@ -459,9 +459,9 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
     final int replicateRegionBatchSize = 10;
     final int entries;
     if (!useParallel && !usePartitionedRegion && stopPrimarySender) {
-      entries = 25000;
+      entries = 2500;
     } else {
-      entries = 10000;
+      entries = 1000;
     }
 
     final String regionName = getRegionName(usePartitionedRegion);
@@ -502,7 +502,7 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
       createReceiverInVMs(server2InB, server3InB);
     }
 
-    CountDownLatch replicateCommandStartlatch = new CountDownLatch(1);
+    CountDownLatch replicateCommandStartLatch = new CountDownLatch(1);
 
     FutureTask<CommandResultAssert> replicateCommandFuture =
         new FutureTask<>(() -> {
@@ -510,7 +510,7 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
               .addOption(REPLICATE_REGION__REGION, regionName)
               .addOption(REPLICATE_REGION__SENDERID, senderIdInA)
               .addOption(REPLICATE_REGION__BATCHSIZE, String.valueOf(replicateRegionBatchSize))
-              .addOption(REPLICATE_REGION__MAXRATE, "500")
+              .addOption(REPLICATE_REGION__MAXRATE, "50")
               .getCommandString();
           GfshCommandRule gfsh = new GfshCommandRule();
           try {
@@ -518,14 +518,14 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
           } catch (Exception e) {
             e.printStackTrace();
           }
-          replicateCommandStartlatch.countDown();
+          replicateCommandStartLatch.countDown();
           return gfsh.executeAndAssertThat(command);
         });
     LoggingExecutors.newSingleThreadExecutor(getTestMethodName(), true)
         .submit(replicateCommandFuture);
 
     // Wait for the replicate command to start
-    replicateCommandStartlatch.await();
+    replicateCommandStartLatch.await();
     Thread.sleep(1000);
 
     // Stop sender or receiver and verify result
@@ -652,12 +652,17 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
         s -> s.startsWith("No connection available towards receiver after having replicated"),
         "no connection available");
 
+    Condition<String> regionDestroyed = new Condition<>(
+        s -> s.startsWith("Error (Region destroyed)"),
+        "region destroyed");
+
     Condition<String> senderNotPrimary = new Condition<>(
         s -> s.equals("Sender B is serial and not primary. 0 entries replicated."),
         "sender not primary");
 
     replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
         .asList().haveAtMost(1, startsWithError).haveAtMost(1, noConnectionAvailable)
+        .haveAtMost(1, regionDestroyed)
         .haveExactly(2, senderNotPrimary);
   }
 
