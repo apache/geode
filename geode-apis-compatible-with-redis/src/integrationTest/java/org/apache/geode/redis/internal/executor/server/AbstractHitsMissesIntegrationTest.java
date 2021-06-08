@@ -200,11 +200,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     runCommandAndAssertHitsAndMisses("sortedSet", (k, m) -> jedis.zrank(k, m));
   }
 
-  @Test
-  public void testZIncrBy() {
-    runCommandAndAssertNoStatUpdates("key", (k, m) -> jedis.zincrby(k, 100.0, m));
-  }
-
   /************* Set related commands *************/
   @Test
   public void testSadd() {

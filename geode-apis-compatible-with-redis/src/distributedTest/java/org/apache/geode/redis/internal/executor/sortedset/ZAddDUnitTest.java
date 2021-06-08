@@ -101,8 +101,8 @@ public class ZAddDUnitTest {
   private void confirmAllDataIsPresent() throws Exception {
     for (int i = 0; i < NUM_SORTED_SETS; i++) {
       for (int j = 0; j < SET_SIZE; j++) {
-        int final_i = i;
-        int final_j = j;
+        final int final_i = i;
+        final int final_j = j;
         assertThat(
             redisCommandWithRetries(() -> jedis.zscore(KEY_BASE + final_i, MEMBER_BASE + final_j),
                 10)).isEqualTo((double) final_j);

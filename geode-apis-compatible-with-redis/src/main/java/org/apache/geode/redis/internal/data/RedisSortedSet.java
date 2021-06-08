@@ -418,7 +418,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
     OrderedSetEntry(byte[] member, byte[] score) {
       this.member = member;
-      this.score = makeDoubleWhileHandlingInfinity(score);
+      this.score = processByteArrayAsDouble(score);
     }
   }
 }
