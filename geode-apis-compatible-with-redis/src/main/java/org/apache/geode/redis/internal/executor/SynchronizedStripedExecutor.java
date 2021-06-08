@@ -58,14 +58,7 @@ public class SynchronizedStripedExecutor implements StripedExecutor {
   }
 
   private int getStripeIndex(Object stripeId) {
-    int hash = stripeId.hashCode();
-
-    hash %= syncs.length;
-    if (hash < 0) {
-      hash = -hash;
-    }
-
-    return hash;
+    return Math.abs(stripeId.hashCode() % syncs.length);
   }
 
   @Override
