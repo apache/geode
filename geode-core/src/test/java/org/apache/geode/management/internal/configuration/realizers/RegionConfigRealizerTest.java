@@ -42,6 +42,7 @@ public class RegionConfigRealizerTest {
   RegionConfigRealizer realizer;
   RegionConfigValidator validator;
   Region config;
+  org.apache.geode.cache.Region region;
 
   @Before
   public void setup() {
@@ -52,6 +53,7 @@ public class RegionConfigRealizerTest {
     realizer = new RegionConfigRealizer();
     config = new Region();
     config.setName("test");
+    region = mock(org.apache.geode.cache.Region.class);
   }
 
   @Test
@@ -112,5 +114,30 @@ public class RegionConfigRealizerTest {
     verify(regionFactory, never()).setValueConstraint(any());
     verify(regionFactory, never()).setDiskStoreName(any());
     verify(regionFactory).setDataPolicy(DataPolicy.REPLICATE);
+  }
+
+  @Test
+  public void regionDoesNotExistIfNotInCache() {
+    config.setName("test");
+    when(cache.getRegion("/test")).thenReturn(null);
+    assertThat(realizer.exists(config, cache)).isFalse();
+  }
+
+
+  @Test
+  public void regionDoesNotExistIfDestroyed() {
+    when(cache.getRegion("/test")).thenReturn(region);
+    when(region.isDestroyed()).thenReturn(true);
+    assertThat(realizer.exists(config, cache)).isFalse();
+  }
+
+  @Test
+  public void regionExistsDoesNotGetRuntimeInfo() {
+    config.setName("test");
+    when(cache.getRegion("/test")).thenReturn(region);
+    when(region.isDestroyed()).thenReturn(false);
+    boolean exists = realizer.exists(config, cache);
+    assertThat(exists).isTrue();
+    verify(region, never()).size();
   }
 }
