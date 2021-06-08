@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Before;
@@ -55,7 +56,7 @@ public class ZAddIncrOptionDUnitTest {
   public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
 
   private JedisCluster jedis;
-  private List<MemberVM> servers;
+  private List<MemberVM> servers = new ArrayList<>();
   private static final String sortedSetKey = "key";
   private final String baseMemberName = "member";
   private final int setSize = 1000;
@@ -67,13 +68,9 @@ public class ZAddIncrOptionDUnitTest {
   public void setup() {
     MemberVM locator = clusterStartUp.startLocatorVM(0);
     int locatorPort = locator.getPort();
-    MemberVM server1 = clusterStartUp.startRedisVM(1, locatorPort);
-    MemberVM server2 = clusterStartUp.startRedisVM(2, locatorPort);
-    MemberVM server3 = clusterStartUp.startRedisVM(3, locatorPort);
-    servers = new ArrayList<>();
-    servers.add(server1);
-    servers.add(server2);
-    servers.add(server3);
+    servers.add(clusterStartUp.startRedisVM(1, locatorPort));
+    servers.add(clusterStartUp.startRedisVM(2, locatorPort));
+    servers.add(clusterStartUp.startRedisVM(3, locatorPort));
 
     int redisServerPort = clusterStartUp.getRedisPort(1);
 
@@ -123,9 +120,9 @@ public class ZAddIncrOptionDUnitTest {
     verifyZScores();
   }
 
-  private void doZAddIncrForAllMembers(double increment1, double increment12) {
+  private void doZAddIncrForAllMembers(double increment1, double increment2) {
     for (int i = 0; i < setSize; i++) {
-      doZAddIncr(i, increment1, increment12, false);
+      doZAddIncr(i, increment1, increment2, false);
     }
   }
 
@@ -151,31 +148,31 @@ public class ZAddIncrOptionDUnitTest {
     return true;
   }
 
-  private boolean hitJedisClusterIssue2347 = false;
-
   @Test
   @Ignore("Fails due to GEODE-9310 and/or GEODE-9311")
   public void zAddWithIncrOptionCanIncrementScoresDuringPrimaryIsCrashed() throws Exception {
+    AtomicBoolean hitJedisClusterIssue2347 = new AtomicBoolean(false);
     doZAddIncrForAllMembers(increment1, increment1);
 
-    Future<Void> future1 = executor.submit(this::doZAddIncrForAllMembersDuringCrash);
+    Future<Void> future1 =
+        executor.submit(() -> doZAddIncrForAllMembersDuringCrash(hitJedisClusterIssue2347));
     Future<Void> future2 = executor.submit(() -> stopNodeWithPrimaryBucketOfTheKey(true));
 
     future1.get();
     future2.get();
 
-    if (!hitJedisClusterIssue2347) {
+    if (!hitJedisClusterIssue2347.get()) {
       doZCardWithRetries();
       verifyZScores();
     }
   }
 
-  private void doZAddIncrForAllMembersDuringCrash() {
+  private void doZAddIncrForAllMembersDuringCrash(AtomicBoolean hitJedisClusterIssue2347) {
     for (int i = 0; i < setSize; i++) {
       try {
         doZAddIncr(i, increment2, total, false);
       } catch (JedisClusterMaxAttemptsException ignore) {
-        hitJedisClusterIssue2347 = true;
+        hitJedisClusterIssue2347.set(true);
       }
     }
   }

@@ -23,10 +23,15 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,21 +44,23 @@ import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
 public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
   private final String member = "member";
   private final String incrOption = "INCR";
+  private final double initial = 355.681000005;
+  private final double increment = 9554257.921450001;
+  private final double expected = initial + increment;
 
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static final String SORTED_SET_KEY = "ss_key";
   private static final int INITIAL_MEMBER_COUNT = 5;
 
   @Before
   public void setUp() {
-    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(RedisClusterStartupRule.BIND_ADDRESS, getPort()),
+        REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -328,10 +335,6 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     assertThat(jedis.zscore(SORTED_SET_KEY, member)).isNull();
   }
 
-  private final double initial = 355.681000005;
-  private final double increment = 9554257.921450001;
-  private final double expected = initial + increment;
-
   @Test
   public void zaddIncrOptionIncrementsScoreForExistingMemberWithXXOption() {
     jedis.zadd(SORTED_SET_KEY, initial, member);
@@ -352,13 +355,20 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void zaddIncrOptionDoseNotIncrementScoreForAExistingMemberWithNXOption() {
+  public void zaddIncrOptionDoesNotIncrementScoreForAnExistingMemberWithNXOption() {
     jedis.zadd(SORTED_SET_KEY, initial, member);
     Object result = jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY, "NX",
         incrOption, "1", member);
     assertThat(result).isNull();
 
     assertThat(jedis.zscore(SORTED_SET_KEY, member)).isEqualTo(initial);
+  }
+
+  @Test
+  public void zaddIncrOptionThrowsErrorIfBothNXAndXXOptionsSpecified() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, incrOption, "NX", "XX",
+            "1.0", member)).hasMessageContaining(ERROR_INVALID_ZADD_OPTION_NX_XX);
   }
 
   @Test
@@ -404,6 +414,38 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
         jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY, incrOption,
             Coder.doubleToString(increment), member + i);
     assertThat(Coder.bytesToDouble((byte[]) result)).isIn(increment, total);
+  }
+
+  @Test
+  public void zaddIncrOptionCanIncrementScoreOnSameMemberConcurrently() {
+    int iteration = 100;
+    AtomicDouble totalIncremented = new AtomicDouble();
+    Random random = new Random();
+    new ConcurrentLoopingThreads(iteration,
+        (i) -> doZAddIncr(totalIncremented, random),
+        (i) -> doZAddIncr(totalIncremented, random)).run();
+
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(1);
+    double score = jedis.zscore(SORTED_SET_KEY, member);
+    // avoid java floating point issue.
+    assertThat(getValueWthPrecision(score)).isEqualTo(getValueWthPrecision(totalIncremented.get()));
+  }
+
+  private void doZAddIncr(AtomicDouble totalIncremented, Random random) {
+    int maxValue = 10000;
+    double randomDouble = ThreadLocalRandom.current().nextDouble(maxValue);
+    double increment = getValueWthPrecision(randomDouble);
+    boolean isNegativeIncrement = random.nextBoolean();
+    if (isNegativeIncrement) {
+      increment *= -1;
+    }
+    totalIncremented.addAndGet(increment);
+    jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, SORTED_SET_KEY, incrOption,
+        Coder.doubleToString(increment), member);
+  }
+
+  private double getValueWthPrecision(double value) {
+    return BigDecimal.valueOf(value).setScale(6, RoundingMode.HALF_UP).doubleValue();
   }
 
   private Map<String, Double> makeMemberScoreMap(int memberCount, double baseScore) {

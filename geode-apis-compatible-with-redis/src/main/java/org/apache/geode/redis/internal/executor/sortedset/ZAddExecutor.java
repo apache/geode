@@ -52,7 +52,7 @@ public class ZAddExecutor extends AbstractExecutor {
       if (retVal == null) {
         return RedisResponse.nil();
       }
-      return RedisResponse.string((byte[]) retVal);
+      return RedisResponse.bulkString(retVal);
     }
 
     return RedisResponse.integer((int) retVal);
