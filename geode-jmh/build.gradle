@@ -40,7 +40,11 @@ jar {
 }
 
 test {
-  systemProperty 'some.prop', 'value'
+  jvmArgs += ['-javaagent:' + jar.outputs.files.singleFile]
+  dependsOn jar
+}
+
+repeatUnitTest {
   jvmArgs += ['-javaagent:' + jar.outputs.files.singleFile]
   dependsOn jar
 }
