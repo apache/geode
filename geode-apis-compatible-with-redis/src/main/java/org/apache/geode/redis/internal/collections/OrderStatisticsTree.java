@@ -38,85 +38,26 @@ import java.util.Set;
 /**
  * This class implements an order statistic tree which is based on AVL-trees.
  *
- * @param <T> the actual element type.
+ * @param <E> the actual element type.
  * @author Rodion "rodde" Efremov
  * @version 1.6 (Feb 11, 2016)
  */
-@SuppressWarnings("all")
-public class OrderStatisticsTree<T extends Comparable<? super T>>
-    implements OrderStatisticsSet<T> {
+public class OrderStatisticsTree<E extends Comparable<? super E>>
+    implements OrderStatisticsSet<E> {
+
+  private Node<E> root;
+  private int size;
+  private int modCount;
 
   @Override
-  public Iterator<T> iterator() {
+  public Iterator<E> iterator() {
     return new TreeIterator();
-  }
-
-  private final class TreeIterator implements Iterator<T> {
-
-    private Node<T> previousNode;
-    private Node<T> nextNode;
-    private int expectedModCount = modCount;
-
-    TreeIterator() {
-      if (root == null) {
-        nextNode = null;
-      } else {
-        nextNode = minimumNode(root);
-      }
-    }
-
-    @Override
-    public boolean hasNext() {
-      return nextNode != null;
-    }
-
-    @Override
-    public T next() {
-      if (nextNode == null) {
-        throw new NoSuchElementException("Iteration exceeded.");
-      }
-
-      checkConcurrentModification();
-      T datum = nextNode.key;
-      previousNode = nextNode;
-      nextNode = successorOf(nextNode);
-      return datum;
-    }
-
-    @Override
-    public void remove() {
-      if (previousNode == null) {
-        throw new IllegalStateException(
-            nextNode == null ? "Not a single call to next(); nothing to remove."
-                : "Removing the same element twice.");
-      }
-
-      checkConcurrentModification();
-
-      Node<T> x = deleteNode(previousNode);
-      fixAfterModification(x, false);
-
-      if (x == nextNode) {
-        nextNode = previousNode;
-      }
-
-      expectedModCount = ++modCount;
-      size--;
-      previousNode = null;
-    }
-
-    private void checkConcurrentModification() {
-      if (expectedModCount != modCount) {
-        throw new ConcurrentModificationException(
-            "The set was modified while iterating.");
-      }
-    }
   }
 
   @Override
   public Object[] toArray() {
     Object[] array = new Object[size];
-    Iterator<T> iterator = iterator();
+    Iterator<E> iterator = iterator();
     int index = 0;
 
     while (iterator.hasNext()) {
@@ -129,7 +70,7 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
   @Override
   @SuppressWarnings("unchecked")
   public <T> T[] toArray(T[] a) {
-    Iterator iterator = iterator();
+    Iterator<E> iterator = iterator();
 
     if (size > a.length) {
       a = Arrays.copyOf(a, size);
@@ -149,10 +90,9 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public boolean containsAll(Collection<?> c) {
     for (Object element : c) {
-      if (!contains((T) element)) {
+      if (!contains(element)) {
         return false;
       }
     }
@@ -161,10 +101,10 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
   }
 
   @Override
-  public boolean addAll(Collection<? extends T> c) {
+  public boolean addAll(Collection<? extends E> c) {
     boolean modified = false;
 
-    for (T element : c) {
+    for (E element : c) {
       if (add(element)) {
         modified = true;
       }
@@ -175,15 +115,15 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
 
   @Override
   public boolean retainAll(Collection<?> c) {
-    if (!c.getClass().equals(HashSet.class.getClass())) {
+    if (!c.getClass().equals(HashSet.class)) {
       c = new HashSet<>(c);
     }
 
-    Iterator<T> iterator = iterator();
+    Iterator<E> iterator = iterator();
     boolean modified = false;
 
     while (iterator.hasNext()) {
-      T element = iterator.next();
+      E element = iterator.next();
 
       if (!c.contains(element)) {
         iterator.remove();
@@ -195,12 +135,11 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public boolean removeAll(Collection<?> c) {
     boolean modified = false;
 
     for (Object element : c) {
-      if (remove((T) element)) {
+      if (remove(element)) {
         modified = true;
       }
     }
@@ -208,27 +147,8 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
     return modified;
   }
 
-  private static final class Node<T> {
-    T key;
-
-    Node<T> parent;
-    Node<T> left;
-    Node<T> right;
-
-    int height;
-    int count;
-
-    Node(T key) {
-      this.key = key;
-    }
-  }
-
-  private Node<T> root;
-  private int size;
-  private int modCount;
-
   @Override
-  public boolean add(T element) {
+  public boolean add(E element) {
     Objects.requireNonNull(element, "The input element is null.");
 
     if (root == null) {
@@ -238,8 +158,8 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
       return true;
     }
 
-    Node<T> parent = null;
-    Node<T> node = root;
+    Node<E> parent = null;
+    Node<E> node = root;
     int cmp;
 
     while (node != null) {
@@ -259,7 +179,7 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
       }
     }
 
-    Node<T> newnode = new Node<>(element);
+    Node<E> newnode = new Node<>(element);
 
     if (element.compareTo(parent.key) < 0) {
       parent.left = newnode;
@@ -270,8 +190,8 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
     newnode.parent = parent;
     size++;
     modCount++;
-    Node<T> hi = parent;
-    Node<T> lo = newnode;
+    Node<E> hi = parent;
+    Node<E> lo = newnode;
 
     while (hi != null) {
       if (hi.left == lo) {
@@ -289,8 +209,8 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
   @Override
   @SuppressWarnings("unchecked")
   public boolean contains(Object o) {
-    T element = (T) o;
-    Node<T> x = root;
+    E element = (E) o;
+    Node<E> x = root;
     int cmp;
 
     while (x != null && (cmp = element.compareTo(x.key)) != 0) {
@@ -307,8 +227,8 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
   @Override
   @SuppressWarnings("unchecked")
   public boolean remove(Object o) {
-    T element = (T) o;
-    Node<T> x = root;
+    E element = (E) o;
+    Node<E> x = root;
     int cmp;
 
     while (x != null && (cmp = element.compareTo(x.key)) != 0) {
@@ -331,9 +251,9 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
   }
 
   @Override
-  public T get(int index) {
+  public E get(int index) {
     checkIndex(index);
-    Node<T> node = root;
+    Node<E> node = root;
 
     while (true) {
       if (index > node.count) {
@@ -348,8 +268,8 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
   }
 
   @Override
-  public int indexOf(T element) {
-    Node<T> node = root;
+  public int indexOf(E element) {
+    Node<E> node = root;
 
     if (root == null) {
       return -1;
@@ -358,7 +278,7 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
     int rank = root.count;
     int cmp;
 
-    while (node != null) {
+    while (true) {
       if ((cmp = element.compareTo(node.key)) < 0) {
         if (node.left == null) {
           return -1;
@@ -378,7 +298,7 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
       }
     }
 
-    return node == null ? -1 : rank;
+    return rank;
   }
 
   @Override
@@ -398,7 +318,39 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
     size = 0;
   }
 
-  private Node<T> successorOf(Node<T> node) {
+  @Override
+  public boolean equals(Object o) {
+    // self check
+    if (this == o) {
+      return true;
+    }
+    // null check
+    if (o == null) {
+      return false;
+    }
+    // type check and cast
+    if (!(o instanceof Set)) {
+      return false;
+    }
+
+    Set<?> otherSet = (Set<?>) o;
+
+    if (this.size != otherSet.size()) {
+      return false;
+    }
+    return this.containsAll(otherSet);
+  }
+
+  @Override
+  public int hashCode() {
+    int hash = 0;
+    for (E t : this) {
+      hash += t.hashCode();
+    }
+    return hash;
+  }
+
+  private Node<E> successorOf(Node<E> node) {
     if (node.right != null) {
       node = node.right;
 
@@ -409,7 +361,7 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
       return node;
     }
 
-    Node<T> parent = node.parent;
+    Node<E> parent = node.parent;
 
     while (parent != null && parent.right == node) {
       node = parent;
@@ -432,10 +384,10 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
     }
   }
 
-  private Node<T> deleteNode(Node<T> node) {
+  private Node<E> deleteNode(Node<E> node) {
     if (node.left == null && node.right == null) {
       // 'node' has no children.
-      Node<T> parent = node.parent;
+      Node<E> parent = node.parent;
 
       if (parent == null) {
         // 'node' is the root node of this tree.
@@ -444,8 +396,8 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
         return node;
       }
 
-      Node<T> lo = node;
-      Node<T> hi = parent;
+      Node<E> lo = node;
+      Node<E> hi = parent;
 
       while (hi != null) {
         if (hi.left == lo) {
@@ -467,11 +419,11 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
 
     if (node.left != null && node.right != null) {
       // 'node' has both children.
-      T tmpKey = node.key;
-      Node<T> successor = minimumNode(node.right);
+      E tmpKey = node.key;
+      Node<E> successor = minimumNode(node.right);
       node.key = successor.key;
-      Node<T> child = successor.right;
-      Node<T> parent = successor.parent;
+      Node<E> child = successor.right;
+      Node<E> parent = successor.parent;
 
       if (parent.left == successor) {
         parent.left = child;
@@ -483,8 +435,8 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
         child.parent = parent;
       }
 
-      Node<T> lo = child;
-      Node<T> hi = parent;
+      Node<E> lo = child;
+      Node<E> hi = parent;
 
       while (hi != null) {
         if (hi.left == lo) {
@@ -499,7 +451,7 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
       return successor;
     }
 
-    Node<T> child;
+    Node<E> child;
 
     // 'node' has only one child.
     if (node.left != null) {
@@ -508,7 +460,7 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
       child = node.right;
     }
 
-    Node<T> parent = node.parent;
+    Node<E> parent = node.parent;
     child.parent = parent;
 
     if (parent == null) {
@@ -522,8 +474,8 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
       parent.right = child;
     }
 
-    Node<T> hi = parent;
-    Node<T> lo = child;
+    Node<E> hi = parent;
+    Node<E> lo = child;
 
     while (hi != null) {
       if (hi.left == lo) {
@@ -538,7 +490,7 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
 
   }
 
-  private Node<T> minimumNode(Node<T> node) {
+  private Node<E> minimumNode(Node<E> node) {
     while (node.left != null) {
       node = node.left;
     }
@@ -546,12 +498,12 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
     return node;
   }
 
-  private int height(Node<T> node) {
+  private int height(Node<E> node) {
     return node == null ? -1 : node.height;
   }
 
-  private Node<T> leftRotate(Node<T> node1) {
-    Node<T> node2 = node1.right;
+  private Node<E> leftRotate(Node<E> node1) {
+    Node<E> node2 = node1.right;
     node2.parent = node1.parent;
     node1.parent = node2;
     node1.right = node2.left;
@@ -567,8 +519,8 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
     return node2;
   }
 
-  private Node<T> rightRotate(Node<T> node1) {
-    Node<T> node2 = node1.left;
+  private Node<E> rightRotate(Node<E> node1) {
+    Node<E> node2 = node1.left;
     node2.parent = node1.parent;
     node1.parent = node2;
     node1.left = node2.right;
@@ -584,24 +536,24 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
     return node2;
   }
 
-  private Node<T> rightLeftRotate(Node<T> node1) {
-    Node<T> node2 = node1.right;
+  private Node<E> rightLeftRotate(Node<E> node1) {
+    Node<E> node2 = node1.right;
     node1.right = rightRotate(node2);
     return leftRotate(node1);
   }
 
-  private Node<T> leftRightRotate(Node<T> node1) {
-    Node<T> node2 = node1.left;
+  private Node<E> leftRightRotate(Node<E> node1) {
+    Node<E> node2 = node1.left;
     node1.left = leftRotate(node2);
     return rightRotate(node1);
   }
 
   // Fixing an insertion: use insertionMode = true.
   // Fixing a deletion: use insertionMode = false.
-  private void fixAfterModification(Node<T> node, boolean insertionMode) {
-    Node<T> parent = node.parent;
-    Node<T> grandParent;
-    Node<T> subTree;
+  private void fixAfterModification(Node<E> node, boolean insertionMode) {
+    Node<E> parent = node.parent;
+    Node<E> grandParent;
+    Node<E> subTree;
 
     while (parent != null) {
       if (height(parent.left) == height(parent.right) + 2) {
@@ -678,11 +630,11 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
   }
 
   private boolean containsCycles() {
-    Set<Node<T>> visitedNodes = new HashSet<>();
+    Set<Node<E>> visitedNodes = new HashSet<>();
     return containsCycles(root, visitedNodes);
   }
 
-  private boolean containsCycles(Node<T> current, Set<Node<T>> visitedNodes) {
+  private boolean containsCycles(Node<E> current, Set<Node<E>> visitedNodes) {
     if (current == null) {
       return false;
     }
@@ -701,7 +653,7 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
     return getHeight(root) == root.height;
   }
 
-  private int getHeight(Node<T> node) {
+  private int getHeight(Node<E> node) {
     if (node == null) {
       return -1;
     }
@@ -729,7 +681,7 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
     return isBalanced(root);
   }
 
-  private boolean isBalanced(Node<T> node) {
+  private boolean isBalanced(Node<E> node) {
     if (node == null) {
       return true;
     }
@@ -752,7 +704,7 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
     return size == count(root);
   }
 
-  private int count(Node<T> node) {
+  private int count(Node<E> node) {
     if (node == null) {
       return 0;
     }
@@ -776,40 +728,79 @@ public class OrderStatisticsTree<T extends Comparable<? super T>>
     return leftTreeSize + 1 + rightTreeSize;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    // self check
-    if (this == o) {
-      return true;
-    }
-    // null check
-    if (o == null) {
-      return false;
-    }
-    // type check and cast
-    if (!(o instanceof Set)) {
-      return false;
-    }
+  private static final class Node<T> {
+    T key;
 
-    Set<?> otherSet = (Set<?>) o;
+    Node<T> parent;
+    Node<T> left;
+    Node<T> right;
 
-    if (this.size != otherSet.size()) {
-      return false;
-    }
-    if (!this.containsAll(otherSet)) {
-      return false;
-    }
+    int height;
+    int count;
 
-    return true;
+    Node(T key) {
+      this.key = key;
+    }
   }
 
-  @Override
-  public int hashCode() {
-    int hash = 0;
-    Iterator it = this.iterator();
-    while (it.hasNext()) {
-      hash += it.next().hashCode();
+  private final class TreeIterator implements Iterator<E> {
+    private Node<E> previousNode;
+    private Node<E> nextNode;
+    private int expectedModCount = modCount;
+
+    TreeIterator() {
+      if (root == null) {
+        nextNode = null;
+      } else {
+        nextNode = minimumNode(root);
+      }
     }
-    return hash;
+
+    @Override
+    public boolean hasNext() {
+      return nextNode != null;
+    }
+
+    @Override
+    public E next() {
+      if (nextNode == null) {
+        throw new NoSuchElementException("Iteration exceeded.");
+      }
+
+      checkConcurrentModification();
+      E datum = nextNode.key;
+      previousNode = nextNode;
+      nextNode = successorOf(nextNode);
+      return datum;
+    }
+
+    @Override
+    public void remove() {
+      if (previousNode == null) {
+        throw new IllegalStateException(
+            nextNode == null ? "Not a single call to next(); nothing to remove."
+                : "Removing the same element twice.");
+      }
+
+      checkConcurrentModification();
+
+      Node<E> x = deleteNode(previousNode);
+      fixAfterModification(x, false);
+
+      if (x == nextNode) {
+        nextNode = previousNode;
+      }
+
+      expectedModCount = ++modCount;
+      size--;
+      previousNode = null;
+    }
+
+    private void checkConcurrentModification() {
+      if (expectedModCount != modCount) {
+        throw new ConcurrentModificationException(
+            "The set was modified while iterating.");
+      }
+    }
   }
 }

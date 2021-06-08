@@ -25,9 +25,13 @@
  */
 package org.apache.geode.redis.internal.collections;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -45,7 +49,6 @@ import org.junit.Test;
 
 
 public class OrderStatisticTreeTest {
-
   private final OrderStatisticsTree<Integer> tree =
       new OrderStatisticsTree<>();
 
@@ -70,8 +73,7 @@ public class OrderStatisticTreeTest {
       assertTrue(tree.isHealthy());
     }
 
-    assertFalse(set.isEmpty());
-    assertEquals(set.isEmpty(), tree.isEmpty());
+    assertThat(set.isEmpty()).isEqualTo(tree.isEmpty()).isFalse();
   }
 
   @Test
@@ -100,8 +102,8 @@ public class OrderStatisticTreeTest {
     assertEquals(set.size(), tree.size());
     set.clear();
     tree.clear();
-    assertEquals(0, set.size());
-    assertEquals(set.size(), tree.size());
+    // noinspection ConstantConditions
+    assertThat(set.size()).isEqualTo(tree.size()).isEqualTo(0);
   }
 
   @Test
@@ -279,8 +281,8 @@ public class OrderStatisticTreeTest {
     iterator1.remove();
     iterator2.remove();
 
-    assertThatThrownBy(() -> iterator1.remove()).isInstanceOf(IllegalStateException.class);
-    assertThatThrownBy(() -> iterator2.remove()).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(iterator1::remove).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(iterator2::remove).isInstanceOf(IllegalStateException.class);
   }
 
 
@@ -301,8 +303,8 @@ public class OrderStatisticTreeTest {
 
     assertEquals(iterator1.hasNext(), iterator2.hasNext());
 
-    assertThatThrownBy(() -> iterator1.next()).isInstanceOf(NoSuchElementException.class);
-    assertThatThrownBy(() -> iterator2.next()).isInstanceOf(NoSuchElementException.class);
+    assertThatThrownBy(iterator1::next).isInstanceOf(NoSuchElementException.class);
+    assertThatThrownBy(iterator2::next).isInstanceOf(NoSuchElementException.class);
   }
 
   @Test
@@ -330,8 +332,8 @@ public class OrderStatisticTreeTest {
     iterator1.remove();
     iterator2.remove();
 
-    assertThatThrownBy(() -> iterator1.remove()).isInstanceOf(IllegalStateException.class);
-    assertThatThrownBy(() -> iterator2.remove()).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(iterator1::remove).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(iterator2::remove).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
@@ -411,7 +413,7 @@ public class OrderStatisticTreeTest {
           iterator1.remove();
           iterator2.remove();
         } catch (IllegalStateException ex) {
-          assertThatThrownBy(() -> iterator2.remove()).isInstanceOf(IllegalStateException.class);
+          assertThatThrownBy(iterator2::remove).isInstanceOf(IllegalStateException.class);
         }
       } else {
         assertEquals(iterator1.hasNext(), iterator2.hasNext());
@@ -453,7 +455,7 @@ public class OrderStatisticTreeTest {
         fail("iterator2 should NOT have thrown an exception.");
       }
     } catch (ConcurrentModificationException ex) {
-      assertThatThrownBy(() -> iterator2.next())
+      assertThatThrownBy(iterator2::next)
           .isInstanceOf(ConcurrentModificationException.class);
     }
   }
@@ -488,9 +490,9 @@ public class OrderStatisticTreeTest {
     tree.remove(12);
 
     // Both of them should throw.
-    assertThatThrownBy(() -> iterator1.remove())
+    assertThatThrownBy(iterator1::remove)
         .isInstanceOf(ConcurrentModificationException.class);
-    assertThatThrownBy(() -> iterator2.remove())
+    assertThatThrownBy(iterator2::remove)
         .isInstanceOf(ConcurrentModificationException.class);
   }
 
@@ -507,8 +509,8 @@ public class OrderStatisticTreeTest {
     set.add(100);
     tree.add(100);
 
-    assertThatThrownBy(() -> setIterator.remove()).isInstanceOf(IllegalStateException.class);
-    assertThatThrownBy(() -> treeIterator.remove()).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(setIterator::remove).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(treeIterator::remove).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
@@ -533,8 +535,8 @@ public class OrderStatisticTreeTest {
 
     assertEquals(iterator1b.hasNext(), iterator2b.hasNext());
 
-    assertThatThrownBy(() -> iterator1b.next()).isInstanceOf(ConcurrentModificationException.class);
-    assertThatThrownBy(() -> iterator2b.next()).isInstanceOf(ConcurrentModificationException.class);
+    assertThatThrownBy(iterator1b::next).isInstanceOf(ConcurrentModificationException.class);
+    assertThatThrownBy(iterator2b::next).isInstanceOf(ConcurrentModificationException.class);
   }
 
   @Test
@@ -547,7 +549,7 @@ public class OrderStatisticTreeTest {
       tree.add(num);
     }
 
-    assertTrue(Arrays.equals(set.toArray(), tree.toArray()));
+    assertArrayEquals(set.toArray(), tree.toArray());
   }
 
   @Test
@@ -563,9 +565,9 @@ public class OrderStatisticTreeTest {
     Integer[] array1after = set.toArray(array1before);
     Integer[] array2after = tree.toArray(array2before);
 
-    assertFalse(array1before == array1after);
-    assertFalse(array2before == array2after);
-    assertTrue(Arrays.equals(array1after, array2after));
+    assertNotSame(array1before, array1after);
+    assertNotSame(array2before, array2after);
+    assertArrayEquals(array1after, array2after);
 
     set.remove(1);
     tree.remove(1);
@@ -573,8 +575,8 @@ public class OrderStatisticTreeTest {
     array1after = set.toArray(array1before);
     array2after = tree.toArray(array2before);
 
-    assertTrue(array1before == array1after);
-    assertTrue(array2before == array2after);
-    assertTrue(Arrays.equals(array1after, array2after));
+    assertSame(array1before, array1after);
+    assertSame(array2before, array2after);
+    assertArrayEquals(array1after, array2after);
   }
 }

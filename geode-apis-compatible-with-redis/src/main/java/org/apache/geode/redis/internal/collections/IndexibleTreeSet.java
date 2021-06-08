@@ -23,11 +23,16 @@ import java.util.TreeSet;
  * Only for testing and performance comparisons.
  */
 class IndexibleTreeSet<E> extends TreeSet<E> implements OrderStatisticsSet<E> {
+  private static final long serialVersionUID = 521865987126101683L;
 
   @Override
   public E get(int index) {
     Iterator<E> iterator = iterator();
     E value = null;
+
+    if (this.size() < index) {
+      return null;
+    }
     for (int i = 0; i <= index; i++) {
       if (!iterator.hasNext()) {
         return null;

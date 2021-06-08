@@ -15,9 +15,9 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -36,21 +36,20 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.redis.internal.data.RedisSortedSet;
 import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTest {
   public static final String KEY = "key";
   public static final String MEMBER = "member";
   private JedisCluster jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+
   private static final int ENTRY_COUNT = 10;
   private static final Random random = new Random();
 
   @Before
   public void setUp() {
-    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -61,7 +60,7 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void shouldError_givenWrongNumberOfArguments() {
-    assertExactNumberOfArgs(jedis, Protocol.Command.ZSCORE, 2);
+    assertExactNumberOfArgs(jedis, Protocol.Command.ZRANK, 2);
   }
 
   @Test
@@ -87,17 +86,15 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     jedis.zadd(KEY, map);
 
     // get the ranks of the members
-    Iterator<String> membersIterator = map.keySet().iterator();
-    String[] members = new String[10];
-    while (membersIterator.hasNext()) {
-      String memberName = membersIterator.next();
+    String[] members = new String[ENTRY_COUNT];
+    for (String memberName : map.keySet()) {
       long rank = jedis.zrank(KEY, memberName);
       members[(int) rank] = memberName;
     }
 
     Double previousScore = Double.NEGATIVE_INFINITY;
-    for (int i = 0; i < ENTRY_COUNT; i++) {
-      Double score = jedis.zscore(KEY, members[i]);
+    for (String member : members) {
+      Double score = jedis.zscore(KEY, member);
       assertThat(score).isGreaterThanOrEqualTo(previousScore);
       previousScore = score;
     }
@@ -112,23 +109,38 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     Iterator<String> membersIterator = map.keySet().iterator();
     Map<Long, byte[]> rankMap = new HashMap<>();
     List<byte[]> memberList = new ArrayList<>();
-    while (membersIterator.hasNext()) {
-      String memberName = membersIterator.next();
+    for (String memberName : map.keySet()) {
       long rank = jedis.zrank(KEY, memberName);
-      rankMap.put(rank, memberName.getBytes(StandardCharsets.UTF_8));
-      memberList.add(memberName.getBytes(StandardCharsets.UTF_8));
+      rankMap.put(rank, Coder.stringToBytes(memberName));
+      memberList.add(Coder.stringToBytes(memberName));
     }
 
-    memberList.sort(new byteArrayComparator());
+    memberList.sort(new ByteArrayComparator());
 
-    for (int i = 0; i < 10; i++) {
-      assertThat(rankMap.get((long) i)).isEqualTo(memberList.get(i));
-    }
+    assertThat(rankMap.values()).containsExactlyElementsOf(memberList);
+  }
+
+  @Test
+  public void shouldUpdateRank_whenScoreChanges() {
+    Map<String, Double> memberScoreMap = new HashMap<>();
+
+    memberScoreMap.put("first", 2.0);
+    memberScoreMap.put("second", 3.0);
+    memberScoreMap.put("third", 4.0);
+
+    jedis.zadd(KEY, memberScoreMap);
+    assertThat(jedis.zrank(KEY, "first")).isEqualTo(0);
+    assertThat(jedis.zrank(KEY, "second")).isEqualTo(1);
+    assertThat(jedis.zrank(KEY, "third")).isEqualTo(2);
+
+    jedis.zadd(KEY, 1.0, MEMBER);
+    assertThat(jedis.zrank(KEY, MEMBER)).isEqualTo(0);
+    assertThat(jedis.zrank(KEY, "first")).isEqualTo(1);
   }
 
   @Test
   public void shouldSort_byBothScoreAndLexical() {
-    Map<String, Double> memberScoreMap = makeMemberScoreMap_withVariedScores_andADuplicate();
+    Map<String, Double> memberScoreMap = makeMemberScoreMap_withVariedScores();
     Map<Long, String> rankMap = makeRankToMemberMap_withExpectedRankings();
 
     jedis.zadd(KEY, memberScoreMap);
@@ -136,14 +148,14 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     for (long i = 0; i < rankMap.size(); i++) {
       assertThat(i).isEqualTo(jedis.zrank(KEY, rankMap.get(i)));
     }
+
   }
 
-  private Map<String, Double> makeMemberScoreMap_withVariedScores_andADuplicate() {
+  private Map<String, Double> makeMemberScoreMap_withVariedScores() {
     Map<String, Double> map = new HashMap<>();
 
     map.put("equal-a", 1.0);
     map.put("equal-b", 1.0);
-    map.put("changed", 0.0);
     map.put("posInfy", Double.POSITIVE_INFINITY);
     map.put("negInfy", Double.NEGATIVE_INFINITY);
     map.put("minus", -1000.5);
@@ -151,7 +163,7 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     map.put("minnie", Double.MIN_VALUE);
     map.put("zed", 0.0);
     map.put("zero", 0.0);
-    map.put("changed", 100.0);
+    map.put("century", 100.0);
 
     return map;
   }
@@ -166,31 +178,17 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     map.put(4L, "minnie");
     map.put(5L, "equal-a");
     map.put(6L, "equal-b");
-    map.put(7L, "changed");
+    map.put(7L, "century");
     map.put(8L, "maxy");
     map.put(9L, "posInfy");
 
     return map;
   }
 
-  private static class byteArrayComparator implements Comparator<byte[]> {
+  private static class ByteArrayComparator implements Comparator<byte[]> {
     @Override
     public int compare(byte[] o1, byte[] o2) {
-      int last = Math.min(o1.length, o2.length);
-      for (int i = 0; i < last; i++) {
-        int localComp = Byte.toUnsignedInt(o1[i]) - Byte.toUnsignedInt(o2[i]);
-        if (localComp != 0) {
-          return localComp;
-        }
-      }
-      // shorter array whose items are all equal to the first items of a longer array is
-      // considered 'less than'
-      if (o1.length < o2.length) {
-        return -1; // o1 < o2
-      } else if (o1.length > o2.length) {
-        return 1; // o2 < o1
-      }
-      return 0; // totally equal - should never happen...
+      return RedisSortedSet.javaImplementationOfAnsiCMemCmp(o1, o2);
     }
   }
 

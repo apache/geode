@@ -35,6 +35,7 @@ import java.util.Objects;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -401,6 +402,27 @@ public class RedisSortedSet extends AbstractRedisData {
     return processedDouble;
   }
 
+  @VisibleForTesting
+  public static int javaImplementationOfAnsiCMemCmp(byte[] array1, byte[] array2) {
+    // Scores equal, try lexical ordering
+    int shortestLength = Math.min(array1.length, array2.length);
+    for (int i = 0; i < shortestLength; i++) {
+      int localComp = Byte.toUnsignedInt(array1[i]) - Byte.toUnsignedInt(array2[i]);
+      if (localComp != 0) {
+        return localComp;
+      }
+    }
+    // shorter array whose items are all equal to the first items of a longer array is
+    // considered 'less than'
+    if (array1.length < array2.length) {
+      return -1; // member < other
+    } else if (array1.length > array2.length) {
+      return 1; // other < member
+    }
+    return 0; // totally equal - should never happen, because you can't have two members
+    // with same name...
+  }
+
   static class OrderedSetEntry implements Comparable<OrderedSetEntry> {
     private final byte[] member;
     private final byte[] scoreBytes;
@@ -414,31 +436,31 @@ public class RedisSortedSet extends AbstractRedisData {
     public int compareTo(OrderedSetEntry o) {
       int comparison = score.compareTo(o.score);
       if (comparison == 0) {
-        return javaImplementationOfAnsiCMemCmp(o);
+        return javaImplementationOfAnsiCMemCmp(member, o.member);
       }
       return comparison;
     }
 
-    private int javaImplementationOfAnsiCMemCmp(OrderedSetEntry o) {
-      // Scores equal, try lexical ordering
-      byte[] otherMember = o.member;
-      int shortestLength = Math.min(member.length, otherMember.length);
-      for (int i = 0; i < shortestLength; i++) {
-        int localComp = Byte.toUnsignedInt(member[i]) - Byte.toUnsignedInt(otherMember[i]);
-        if (localComp != 0) {
-          return localComp;
-        }
-      }
-      // shorter array whose items are all equal to the first items of a longer array is
-      // considered 'less than'
-      if (member.length < otherMember.length) {
-        return -1; // member < other
-      } else if (member.length > otherMember.length) {
-        return 1; // other < member
-      }
-      return 0; // totally equal - should never happen, because you can't have two members
-      // with same name...
-    }
+    // private int javaImplementationOfAnsiCMemCmp(OrderedSetEntry o) {
+    // // Scores equal, try lexical ordering
+    // byte[] otherMember = o.member;
+    // int shortestLength = Math.min(member.length, otherMember.length);
+    // for (int i = 0; i < shortestLength; i++) {
+    // int localComp = Byte.toUnsignedInt(member[i]) - Byte.toUnsignedInt(otherMember[i]);
+    // if (localComp != 0) {
+    // return localComp;
+    // }
+    // }
+    // // shorter array whose items are all equal to the first items of a longer array is
+    // // considered 'less than'
+    // if (member.length < otherMember.length) {
+    // return -1; // member < other
+    // } else if (member.length > otherMember.length) {
+    // return 1; // other < member
+    // }
+    // return 0; // totally equal - should never happen, because you can't have two members
+    // // with same name...
+    // }
 
     OrderedSetEntry(byte[] member, byte[] score) {
       this.member = member;
