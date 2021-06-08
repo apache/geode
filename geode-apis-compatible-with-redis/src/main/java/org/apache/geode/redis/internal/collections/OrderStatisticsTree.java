@@ -209,35 +209,27 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
   @Override
   @SuppressWarnings("unchecked")
   public boolean contains(Object o) {
-    E element = (E) o;
+    return findNode((E) o) != null;
+  }
+
+  private Node<E> findNode(E o) {
     Node<E> x = root;
     int cmp;
 
-    while (x != null && (cmp = element.compareTo(x.key)) != 0) {
+    while (x != null && (cmp = o.compareTo(x.key)) != 0) {
       if (cmp < 0) {
         x = x.left;
       } else {
         x = x.right;
       }
     }
-
-    return x != null;
+    return x;
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public boolean remove(Object o) {
-    E element = (E) o;
-    Node<E> x = root;
-    int cmp;
-
-    while (x != null && (cmp = element.compareTo(x.key)) != 0) {
-      if (cmp < 0) {
-        x = x.left;
-      } else {
-        x = x.right;
-      }
-    }
+    Node<E> x = findNode((E) o);
 
     if (x == null) {
       return false;
@@ -396,17 +388,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
         return node;
       }
 
-      Node<E> lo = node;
-      Node<E> hi = parent;
-
-      while (hi != null) {
-        if (hi.left == lo) {
-          hi.count--;
-        }
-
-        lo = hi;
-        hi = hi.parent;
-      }
+      updateParentCounts(node, parent);
 
       if (node == parent.left) {
         parent.left = null;
@@ -435,17 +417,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
         child.parent = parent;
       }
 
-      Node<E> lo = child;
-      Node<E> hi = parent;
-
-      while (hi != null) {
-        if (hi.left == lo) {
-          hi.count--;
-        }
-
-        lo = hi;
-        hi = hi.parent;
-      }
+      updateParentCounts(child, parent);
 
       successor.key = tmpKey;
       return successor;
@@ -474,9 +446,13 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
       parent.right = child;
     }
 
-    Node<E> hi = parent;
-    Node<E> lo = child;
+    updateParentCounts(child, parent);
 
+    return node;
+
+  }
+
+  private void updateParentCounts(Node<E> lo, Node<E> hi) {
     while (hi != null) {
       if (hi.left == lo) {
         hi.count--;
@@ -485,9 +461,6 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
       lo = hi;
       hi = hi.parent;
     }
-
-    return node;
-
   }
 
   private Node<E> minimumNode(Node<E> node) {
@@ -565,23 +538,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
           subTree = leftRightRotate(parent);
         }
 
-        if (grandParent == null) {
-          root = subTree;
-        } else if (grandParent.left == parent) {
-          grandParent.left = subTree;
-        } else {
-          grandParent.right = subTree;
-        }
-
-        if (grandParent != null) {
-          grandParent.height = Math.max(
-              height(grandParent.left),
-              height(grandParent.right)) + 1;
-        }
-
-        if (insertionMode) {
-          // Whenever fixing after insertion, at most one rotation is
-          // required in order to maintain the balance.
+        if (updateGrandparentAfterRotation(insertionMode, parent, grandParent, subTree)) {
           return;
         }
       } else if (height(parent.right) == height(parent.left) + 2) {
@@ -593,21 +550,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
           subTree = rightLeftRotate(parent);
         }
 
-        if (grandParent == null) {
-          root = subTree;
-        } else if (grandParent.left == parent) {
-          grandParent.left = subTree;
-        } else {
-          grandParent.right = subTree;
-        }
-
-        if (grandParent != null) {
-          grandParent.height =
-              Math.max(height(grandParent.left),
-                  height(grandParent.right)) + 1;
-        }
-
-        if (insertionMode) {
+        if (updateGrandparentAfterRotation(insertionMode, parent, grandParent, subTree)) {
           return;
         }
       }
@@ -616,6 +559,31 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
           height(parent.right)) + 1;
       parent = parent.parent;
     }
+  }
+
+  private boolean updateGrandparentAfterRotation(boolean insertionMode, Node<E> parent,
+      Node<E> grandParent,
+      Node<E> subTree) {
+    if (grandParent == null) {
+      root = subTree;
+    } else if (grandParent.left == parent) {
+      grandParent.left = subTree;
+    } else {
+      grandParent.right = subTree;
+    }
+
+    if (grandParent != null) {
+      grandParent.height =
+          Math.max(height(grandParent.left),
+              height(grandParent.right)) + 1;
+    }
+
+    if (insertionMode) {
+      // Whenever fixing after insertion, at most one rotation is
+      // required in order to maintain the balance.
+      return true;
+    }
+    return false;
   }
 
   public boolean isHealthy() {
