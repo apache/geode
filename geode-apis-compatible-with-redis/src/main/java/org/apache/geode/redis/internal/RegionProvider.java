@@ -26,6 +26,7 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SE
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +74,7 @@ public class RegionProvider {
 
   public static final int REDIS_SLOTS_PER_BUCKET = REDIS_SLOTS / REDIS_REGION_BUCKETS;
 
-  private static final Map<RedisDataType, RedisData> nullTypes = new HashMap<>();
+  private static final Map<RedisDataType, RedisData> NULL_TYPES = new HashMap<>();
 
   private final Region<RedisKey, RedisData> dataRegion;
   private final RedisHashCommandsFunctionExecutor hashCommands;
@@ -86,11 +87,11 @@ public class RegionProvider {
   private final RedisStats redisStats;
 
   static {
-    nullTypes.put(REDIS_STRING, NULL_REDIS_STRING);
-    nullTypes.put(REDIS_HASH, NULL_REDIS_HASH);
-    nullTypes.put(REDIS_SET, NULL_REDIS_SET);
-    nullTypes.put(REDIS_SORTED_SET, NULL_REDIS_SORTED_SET);
-    nullTypes.put(REDIS_DATA, NULL_REDIS_DATA);
+    NULL_TYPES.put(REDIS_STRING, NULL_REDIS_STRING);
+    NULL_TYPES.put(REDIS_HASH, NULL_REDIS_HASH);
+    NULL_TYPES.put(REDIS_SET, NULL_REDIS_SET);
+    NULL_TYPES.put(REDIS_SORTED_SET, NULL_REDIS_SORTED_SET);
+    NULL_TYPES.put(REDIS_DATA, NULL_REDIS_DATA);
   }
 
   public RegionProvider(InternalCache cache, StripedExecutor stripedExecutor,
@@ -157,9 +158,9 @@ public class RegionProvider {
 
   public <T extends RedisData> T getTypedRedisData(RedisDataType type, RedisKey key,
       boolean updateStats) {
-    RedisData redisData = getRedisData(key, nullTypes.get(type));
+    RedisData redisData = getRedisData(key, NULL_TYPES.get(type));
     if (updateStats) {
-      if (redisData == nullTypes.get(type)) {
+      if (redisData == NULL_TYPES.get(type)) {
         redisStats.incKeyspaceMisses();
       } else {
         redisStats.incKeyspaceHits();
