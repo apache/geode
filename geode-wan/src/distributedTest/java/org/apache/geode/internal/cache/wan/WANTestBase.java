@@ -107,6 +107,9 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ConnectionStats;
@@ -206,6 +209,7 @@ public class WANTestBase extends DistributedTestCase {
   protected static VM vm5;
   protected static VM vm6;
   protected static VM vm7;
+  protected static VM vm8;
 
   protected static QueueListener listener1;
   protected static QueueListener listener2;
@@ -233,6 +237,7 @@ public class WANTestBase extends DistributedTestCase {
     vm5 = getHost(0).getVM(5);
     vm6 = getHost(0).getVM(6);
     vm7 = getHost(0).getVM(7);
+    vm8 = getHost(0).getVM(8);
   }
 
   @Before
@@ -438,7 +443,6 @@ public class WANTestBase extends DistributedTestCase {
     }
   }
 
-
   public static void createReplicatedProxyRegion(String regionName, String senderIds,
       Boolean offHeap) {
     IgnoredException exp =
@@ -544,6 +548,12 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void createReplicatedRegion(String regionName, String senderIds, Scope scope,
       DataPolicy policy, Boolean offHeap) {
+    createReplicatedRegion(regionName, senderIds, scope, policy, offHeap, false);
+  }
+
+
+  public static void createReplicatedRegion(String regionName, String senderIds, Scope scope,
+      DataPolicy policy, Boolean offHeap, boolean statisticsEnabled) {
     RegionFactory fact = cache.createRegionFactory();
     if (senderIds != null) {
       StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
@@ -556,6 +566,7 @@ public class WANTestBase extends DistributedTestCase {
     fact.setDataPolicy(policy);
     fact.setScope(scope);
     fact.setOffHeap(offHeap);
+    fact.setStatisticsEnabled(statisticsEnabled);
     Region r = fact.create(regionName);
     assertNotNull(r);
   }
@@ -597,6 +608,13 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void createPartitionedRegion(String regionName, String senderIds,
       Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap, RegionShortcut shortcut) {
+    createPartitionedRegion(regionName, senderIds, redundantCopies, totalNumBuckets, offHeap,
+        shortcut, false);
+  }
+
+  public static void createPartitionedRegion(String regionName, String senderIds,
+      Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap, RegionShortcut shortcut,
+      boolean statisticsEnabled) {
     IgnoredException exp =
         IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
@@ -616,6 +634,7 @@ public class WANTestBase extends DistributedTestCase {
       pfact.setRecoveryDelay(0);
       fact.setPartitionAttributes(pfact.create());
       fact.setOffHeap(offHeap);
+      fact.setStatisticsEnabled(statisticsEnabled);
       Region r = fact.create(regionName);
       assertNotNull(r);
     } finally {
@@ -1318,6 +1337,23 @@ public class WANTestBase extends DistributedTestCase {
     }
     assertEquals(eventsReceived, gatewayReceiverStats.getEventsReceived());
     assertEquals(creates, gatewayReceiverStats.getCreateRequest());
+  }
+
+  public static List<Integer> getReceiverStats() {
+    Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
+    GatewayReceiver receiver = gatewayReceivers.iterator().next();
+    CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
+    assertTrue(stats instanceof GatewayReceiverStats);
+    GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
+    ArrayList<Integer> statsList = new ArrayList<>();
+    statsList.add(gatewayReceiverStats.getEventsReceived());
+    statsList.add(gatewayReceiverStats.getEventsRetried());
+    statsList.add(gatewayReceiverStats.getProcessBatchRequests());
+    statsList.add(gatewayReceiverStats.getDuplicateBatchesReceived());
+    statsList.add(gatewayReceiverStats.getOutoforderBatchesReceived());
+    statsList.add(gatewayReceiverStats.getEarlyAcks());
+    statsList.add(gatewayReceiverStats.getExceptionsOccurred());
+    return statsList;
   }
 
   public static void checkMinimumGatewayReceiverStats(int processBatches, int eventsReceived) {
@@ -2180,6 +2216,18 @@ public class WANTestBase extends DistributedTestCase {
     return port;
   }
 
+  public static void createClientWithLocator(int port0, String host, String regionName,
+      ClientRegionShortcut regionType) {
+    ClientCache cache = new ClientCacheFactory().addPoolLocator(host, port0).create();
+
+    Region region =
+        cache.createClientRegionFactory(regionType)
+            .create(regionName);
+
+    assertNotNull(region);
+  }
+
+
   public static void createClientWithLocator(int port0, String host, String regionName) {
     createClientWithLocator(port0, host);
 
@@ -2345,6 +2393,14 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void doPutsFrom(String regionName, int from, int numPuts) {
     Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
+    for (long i = from; i < numPuts; i++) {
+      r.put(i, "Value_" + i);
+    }
+  }
+
+  public static void doClientPutsFrom(String regionName, int from, int numPuts) {
+    Region r = ClientCacheFactory.getAnyInstance().getRegion(SEPARATOR + regionName);
     assertNotNull(r);
     for (long i = from; i < numPuts; i++) {
       r.put(i, "Value_" + i);
@@ -2925,6 +2981,40 @@ public class WANTestBase extends DistributedTestCase {
       exp.remove();
       exp1.remove();
     }
+  }
+
+  public ArrayList getKeys(String regionName) {
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
+    return new ArrayList(r.keySet());
+
+  }
+
+  public void checkEqualRegionData(String regionName, VM vm1, VM vm2) {
+    assertThat(vm1.invoke(() -> getRegionSize(regionName)))
+        .isEqualTo(vm2.invoke(() -> getRegionSize(regionName)));
+    for (Object key : vm1.invoke(() -> getKeys(regionName))) {
+      assertThat(vm1.invoke(() -> getValueForEntry((long) key, regionName)))
+          .isEqualTo(vm2.invoke(() -> getValueForEntry((long) key, regionName)));
+      assertThat(vm1.invoke(() -> getTimestampForEntry((long) key, regionName)))
+          .isEqualTo(vm2.invoke(() -> getTimestampForEntry((long) key, regionName)));
+    }
+  }
+
+  public static Object getValueForEntry(long key, String regionName) {
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
+    return r.get(key);
+  }
+
+  public static long getTimestampForEntry(long key, String regionName) {
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
+    if (r.getEntry(key) == null) {
+      return 0;
+    }
+    assertNotNull(r.getEntry(key).getStatistics());
+    return r.getEntry(key).getStatistics().getLastModifiedTime();
   }
 
   public static void validateAsyncEventListener(String asyncQueueId, final int expectedSize) {

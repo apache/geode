@@ -100,6 +100,8 @@ org/apache/geode/management/internal/cli/functions/SizeExportLogsFunction,true,1
 org/apache/geode/management/internal/cli/functions/UndeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/UnregisterFunction,true,1
 org/apache/geode/management/internal/cli/functions/UserFunctionExecution,true,1
+org/apache/geode/management/internal/cli/functions/WanCopyRegionFunction,true,1,clock:java/time/Clock,threadSleeper:org/apache/geode/management/internal/cli/functions/WanCopyRegionFunction$ThreadSleeper
+org/apache/geode/management/internal/cli/functions/WanCopyRegionFunction$ThreadSleeper,false
 org/apache/geode/management/internal/cli/result/Align,false
 org/apache/geode/management/internal/cli/result/CommandResultException,true,1
 org/apache/geode/management/internal/cli/result/TooManyColumnsException,true,4703710831740034363

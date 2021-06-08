@@ -1426,6 +1426,51 @@ public class CliStrings {
   public static final String EXPORT_DATA__SUCCESS__MESSAGE =
       "Data successfully exported from region : {0} to file : {1} on host : {2}";
 
+  /* 'replicate region' command */
+  public static final String WAN_COPY_REGION = "wan-copy region";
+  public static final String WAN_COPY_REGION__HELP =
+      "Copy a region with a senderId via WAN replication";
+  public static final String WAN_COPY_REGION__REGION = "region";
+  public static final String WAN_COPY_REGION__REGION__HELP =
+      "Region from which data will be exported.";
+  public static final String WAN_COPY_REGION__SENDERID = "sender-id";
+  public static final String WAN_COPY_REGION__SENDERID__HELP =
+      "senderId to use to copy the region.";
+  public static final String WAN_COPY_REGION__MAXRATE = "max-rate";
+  public static final String WAN_COPY_REGION__MAXRATE__HELP =
+      "maximum rate for copying in events per second.";
+  public static final String WAN_COPY_REGION__BATCHSIZE = "batch-size";
+  public static final String WAN_COPY_REGION__BATCHSIZE__HELP =
+      "size for batches of events to be copied.";
+  public static final String WAN_COPY_REGION__CANCEL = "cancel";
+  public static final String WAN_COPY_REGION__CANCEL__HELP =
+      "cancel an ongoing wan-copy region command";
+  public static final String WAN_COPY_REGION__MSG__REGION__NOT__FOUND = "Region {0} not found";
+  public static final String WAN_COPY_REGION__MSG__REGION__NOT__USING_SENDER =
+      "Region {0} is not configured to use sender {1}";
+  public static final String WAN_COPY_REGION__MSG__SENDER__NOT__FOUND = "Sender {0} not found";
+  public static final String WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY =
+      "Sender {0} is serial and not primary. 0 entries copied.";
+  public static final String WAN_COPY_REGION__MSG__SENDER__NOT__RUNNING =
+      "Sender {0} is not running";
+  public static final String WAN_COPY_REGION__MSG__EXECUTION__CANCELED = "Execution canceled";
+  public static final String WAN_COPY_REGION__MSG__EXECUTION__FAILED =
+      "Execution failed. Error: {0}";
+  public static final String WAN_COPY_REGION__MSG__ENTRIES__COPIED = "Entries copied: {0}";
+  public static final String WAN_COPY_REGION__MSG__NO__CONNECTION__POOL =
+      "No connection pool available towards receiver";
+  public static final String WAN_COPY_REGION__MSG__COMMAND__NOT__SUPPORTED__AT__REMOTE__SITE =
+      "Command not supported at remote site.";
+  public static final String WAN_COPY_REGION__MSG__NO__CONNECTION =
+      "No connection available towards receiver after having copied {0} entries";
+  public static final String WAN_COPY_REGION__MSG__ERROR__AFTER__HAVING__COPIED =
+      "Error ({0}) in operation after having copied {1} entries";
+  public static final String WAN_COPY_REGION__MSG__CANCELED__AFTER__HAVING__COPIED =
+      "Operation canceled after having copied {0} entries";
+  public static final String WAN_COPY_REGION__MSG__COPIED__ENTRIES = "Entries copied: {0}";
+  public static final String WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND =
+      "No running command to be canceled for region {0} and sender {1}";
+
   /* export logs command */
   public static final String EXPORT_LOGS = "export logs";
   public static final String EXPORT_LOGS__HELP = "Export the log files for a member or members.";
