@@ -83,8 +83,9 @@ public class ASTLiteral extends GemFireAST {
     char last = s.charAt(s.length() - 1);
     boolean strip = last == 'L' || last == 'l';
 
-    if (strip)
+    if (strip) {
       s = s.substring(0, s.length() - 1);
+    }
     try {
       return Long.valueOf(s);
     } catch (NumberFormatException e) {
@@ -97,8 +98,9 @@ public class ASTLiteral extends GemFireAST {
     char last = s.charAt(s.length() - 1);
     boolean strip = last == 'F' || last == 'f';
 
-    if (strip)
+    if (strip) {
       s = s.substring(0, s.length() - 1);
+    }
     try {
       return new Float(s);
     } catch (NumberFormatException e) {
@@ -110,8 +112,9 @@ public class ASTLiteral extends GemFireAST {
   public Double getDouble(String s) throws QueryInvalidException {
     char last = s.charAt(s.length() - 1);
     boolean strip = last == 'D' || last == 'd';
-    if (strip)
+    if (strip) {
       s = s.substring(0, s.length() - 1);
+    }
     try {
       return Double.valueOf(s);
     } catch (NumberFormatException e) {
@@ -126,8 +129,9 @@ public class ASTLiteral extends GemFireAST {
     StringBuffer buf = new StringBuffer(s.length());
     for (int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);
-      if (c == delim && i < (s.length() - 1) && s.charAt(i + 1) == delim)
+      if (c == delim && i < (s.length() - 1) && s.charAt(i + 1) == delim) {
         i++;
+      }
       buf.append(c);
     }
     return buf.toString();
@@ -142,9 +146,10 @@ public class ASTLiteral extends GemFireAST {
 
 
   private Character getChar(String s) {
-    if (s.length() != 1)
+    if (s.length() != 1) {
       throw new QueryInvalidException(
           "Illegal format for CHAR literal. A character literal must have exactly one character");
+    }
     return new Character(s.charAt(0));
   }
 
@@ -156,12 +161,14 @@ public class ASTLiteral extends GemFireAST {
       int secondDash = s.indexOf('-', firstDash + 1);
       int month = Integer.parseInt(s.substring(firstDash + 1, secondDash));
       int day = Integer.parseInt(s.substring(secondDash + 1));
-      if (month < 1 || month > 12)
+      if (month < 1 || month > 12) {
         throw new QueryInvalidException(
             "Month must be 1..12 in DATE literal");
-      if (day < 1 || day > 31)
+      }
+      if (day < 1 || day > 31) {
         throw new QueryInvalidException(
             "Day must be 1..31 in DATE literal");
+      }
       return date;
     } catch (IllegalArgumentException e) {
       throw new QueryInvalidException(
@@ -180,15 +187,18 @@ public class ASTLiteral extends GemFireAST {
       int hour = Integer.parseInt(s.substring(0, firstColon));
       int minute = Integer.parseInt(s.substring(firstColon + 1, secondColon));
       int second = Integer.parseInt(s.substring(secondColon + 1));
-      if (hour < 0 || hour > 23)
+      if (hour < 0 || hour > 23) {
         throw new QueryInvalidException(
             "Hour must be 0..23 in TIME literal");
-      if (minute < 0 || minute > 59)
+      }
+      if (minute < 0 || minute > 59) {
         throw new QueryInvalidException(
             "Minute must be 0..59 in TIME literal");
-      if (second < 0 || second > 59)
+      }
+      if (second < 0 || second > 59) {
         throw new QueryInvalidException(
             "Second must be 0..59 in TIME literal");
+      }
       return time;
     } catch (IllegalArgumentException e) {
       throw new QueryInvalidException(
@@ -204,43 +214,51 @@ public class ASTLiteral extends GemFireAST {
       // first rule out negative numbers by counting the dashes
       int count = 0;
       int index = -1;
-      while ((index = s.indexOf('-', index + 1)) >= 0)
+      while ((index = s.indexOf('-', index + 1)) >= 0) {
         count++;
+      }
 
-      if (count > 2)
+      if (count > 2) {
         throw new QueryInvalidException(
             "Negative numbers not allowed in TIMESTAMP literal");
+      }
 
       // now just get the numbers, ignoring delimiters
       StringTokenizer tokenizer = new StringTokenizer(s, ":-\t\n\r\f ");
       // skip year, anything is valid
       tokenizer.nextToken();
       int month = Integer.parseInt(tokenizer.nextToken());
-      if (month < 1 || month > 12)
+      if (month < 1 || month > 12) {
         throw new QueryInvalidException(
             "Month must be 1..12 in TIMESTAMP literal");
+      }
       int day = Integer.parseInt(tokenizer.nextToken());
-      if (day < 1 || day > 31)
+      if (day < 1 || day > 31) {
         throw new QueryInvalidException(
             "Day must be 1..31 in TIMESTAMP literal");
+      }
       int hour = Integer.parseInt(tokenizer.nextToken());
-      if (hour < 0 || hour > 23)
+      if (hour < 0 || hour > 23) {
         throw new QueryInvalidException(
             "Hour must be 0..23 in TIMESTAMP literal");
+      }
       int minute = Integer.parseInt(tokenizer.nextToken());
-      if (minute < 0 || minute > 59)
+      if (minute < 0 || minute > 59) {
         throw new QueryInvalidException(
             "Minute must be 0..59 in TIMESTAMP literal");
+      }
       String sec_s = tokenizer.nextToken();
       int period = sec_s.indexOf('.');
       int second;
-      if (period >= 0)
+      if (period >= 0) {
         second = Integer.parseInt(sec_s.substring(0, period));
-      else
+      } else {
         second = Integer.parseInt(sec_s);
-      if (second < 0 || second > 59)
+      }
+      if (second < 0 || second > 59) {
         throw new QueryInvalidException(
             "Second must be 0..59 in TIMESTAMP literal");
+      }
       return timestamp;
     } catch (IllegalArgumentException e) {
       throw new QueryInvalidException(

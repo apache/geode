@@ -68,8 +68,9 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
 
     // process msg and reply directly if this VM is a participant...
     if (members.contains(dm.getId())) {
-      if (msg.getSender() == null)
+      if (msg.getSender() == null) {
         msg.setSender(dm.getId());
+      }
       msg.process((ClusterDistributionManager) dm);
     }
 

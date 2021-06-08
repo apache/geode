@@ -92,8 +92,9 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTest
       region.get("" + i);
     }
     long endTimeGet = System.currentTimeMillis();
-    if (debug)
+    if (debug) {
       System.out.println(" done with getting 0-9999 entries fuatling in from current oplog");
+    }
 
     // Perf stats for get op
     float etGet = endTimeGet - startTimeGet;
@@ -104,8 +105,9 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTest
     String statsGet =
         "etGet=" + etGet + "ms gets/sec=" + opPerSecGet + " bytes/sec=" + bytesPerSecGet;
     log.info(statsGet);
-    if (debug)
+    if (debug) {
       System.out.println("Perf Stats of get which is fauting in from current Oplog :" + statsGet);
+    }
 
   }
 
@@ -132,8 +134,9 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTest
       region.get("" + i);
     }
     long endTimeGet2 = System.currentTimeMillis();
-    if (debug)
+    if (debug) {
       System.out.println(" done with getting 10000-19999 which will fault in from second oplog");
+    }
     // to fault-in entries from H-tree first verify that the rolling of oplog is
     // over
     if (((LocalRegion) region).getDiskRegion().isBackup()) {
@@ -157,8 +160,9 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTest
       region.get("" + i);
     }
     long endTimeGet1 = System.currentTimeMillis();
-    if (debug)
+    if (debug) {
       System.out.println(" done with getting 0-9999 entries from H-tree");
+    }
 
     region.close(); // closes disk file which will flush all buffers
 
@@ -171,8 +175,9 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTest
     String statsGet1 =
         "etGet=" + etGet1 + "ms gets/sec=" + opPerSecGet1 + " bytes/sec=" + bytesPerSecGet1;
     log.info(statsGet1);
-    if (debug)
+    if (debug) {
       System.out.println("Perf Stats of get which is fauting in from H-tree  :" + statsGet1);
+    }
 
     // Perf stats for get op (fauting in from second op log)
     float etGet2 = endTimeGet2 - startTimeGet2;
@@ -183,8 +188,9 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTest
     String statsGet2 =
         "etGet=" + etGet2 + "ms gets/sec=" + opPerSecGet2 + " bytes/sec=" + bytesPerSecGet2;
     log.info(statsGet2);
-    if (debug)
+    if (debug) {
       System.out.println("Perf Stats of get which is fauting in from Second OpLog  :" + statsGet2);
+    }
     unSetCacheObserverCallBack();
   }
 

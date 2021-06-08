@@ -241,8 +241,9 @@ public class RebalanceOperationImpl implements RebalanceOperation {
 
   private boolean isAllDone() {
     for (Future<RebalanceResults> fr : getFutureList()) {
-      if (!fr.isDone())
+      if (!fr.isDone()) {
         return false;
+      }
     }
     return true;
   }

@@ -112,6 +112,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'commons-validator', name: 'commons-validator', version: get('commons-validator.version'))
         // Careful when upgrading this dependency: see GEODE-7370 and GEODE-8150.
         api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.104')
+        api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.0')
+        api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.1.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
         api(group: 'io.netty', name: 'netty-all', version: '4.1.59.Final')
         api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2')
@@ -129,6 +131,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
         api(group: 'net.java.dev.jna', name: 'jna', version: '5.8.0')
         api(group: 'net.java.dev.jna', name: 'jna-platform', version: '5.8.0')
+        api(group: 'net.minidev', name: 'json-smart', version: '2.3.1')
         api(group: 'net.openhft', name: 'compiler', version: '2.4.1')
         api(group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4')
         api(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.33.0')
@@ -164,7 +167,6 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.15.3')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'redis.clients', name: 'jedis', version: '3.5.2')
-        api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.1.RELEASE')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
       }
     }

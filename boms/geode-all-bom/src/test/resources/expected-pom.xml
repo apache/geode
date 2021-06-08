@@ -188,6 +188,16 @@
         <version>4.8.104</version>
       </dependency>
       <dependency>
+        <groupId>io.github.resilience4j</groupId>
+        <artifactId>resilience4j-retry</artifactId>
+        <version>1.7.0</version>
+      </dependency>
+      <dependency>
+        <groupId>io.lettuce</groupId>
+        <artifactId>lettuce-core</artifactId>
+        <version>6.1.1.RELEASE</version>
+      </dependency>
+      <dependency>
         <groupId>io.micrometer</groupId>
         <artifactId>micrometer-core</artifactId>
         <version>1.6.6</version>
@@ -271,6 +281,11 @@
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna-platform</artifactId>
         <version>5.8.0</version>
+      </dependency>
+      <dependency>
+        <groupId>net.minidev</groupId>
+        <artifactId>json-smart</artifactId>
+        <version>2.3.1</version>
       </dependency>
       <dependency>
         <groupId>net.openhft</groupId>
@@ -446,11 +461,6 @@
         <groupId>redis.clients</groupId>
         <artifactId>jedis</artifactId>
         <version>3.5.2</version>
-      </dependency>
-      <dependency>
-        <groupId>io.lettuce</groupId>
-        <artifactId>lettuce-core</artifactId>
-        <version>6.1.1.RELEASE</version>
       </dependency>
       <dependency>
         <groupId>xerces</groupId>

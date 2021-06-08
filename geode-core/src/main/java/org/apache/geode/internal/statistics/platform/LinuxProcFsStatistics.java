@@ -843,7 +843,9 @@ public class LinuxProcFsStatistics {
 
     protected void skipTokens(int numberToSkip) {
       int remaining = numberToSkip + 1;
-      while (--remaining > 0 && skipToken());
+      while (--remaining > 0 && skipToken()) {
+        ;
+      }
     }
 
     protected static long parseAsLong(String number) {

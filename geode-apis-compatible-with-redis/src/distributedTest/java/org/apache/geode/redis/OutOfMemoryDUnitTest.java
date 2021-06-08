@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 
 import java.util.Arrays;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.AfterClass;
@@ -72,9 +71,8 @@ public class OutOfMemoryDUnitTest {
 
     MemberVM locator = clusterStartUp.startLocatorVM(0);
 
-    Properties serverProperties = new Properties();
-    server1 = clusterStartUp.startRedisVM(1, serverProperties, locator.getPort());
-    server2 = clusterStartUp.startRedisVM(2, serverProperties, locator.getPort());
+    server1 = clusterStartUp.startRedisVM(1, locator.getPort());
+    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
 
     server1.getVM().invoke(() -> RedisClusterStartupRule.getCache().getResourceManager()
         .setCriticalHeapPercentage(5.0F));
@@ -90,7 +88,7 @@ public class OutOfMemoryDUnitTest {
 
   @Before
   public void testSetup() {
-    jedis1.flushAll();
+    clusterStartUp.flushAll();
   }
 
   @AfterClass

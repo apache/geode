@@ -208,8 +208,9 @@ public class CliUtils {
     } catch (IOException | InterruptedException e) {
       Gfsh.println(e.getMessage());
     } finally {
-      if (file != null)
+      if (file != null) {
         file.delete();
+      }
     }
   }
 

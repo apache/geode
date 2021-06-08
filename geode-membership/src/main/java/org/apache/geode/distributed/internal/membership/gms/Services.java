@@ -410,8 +410,9 @@ public class Services<ID extends MemberIdentifier> {
     }
 
     public String cancelInProgress() {
-      if (Services.this.shutdownCause != null)
+      if (Services.this.shutdownCause != null) {
         return Services.this.shutdownCause.toString();
+      }
       return this.reasonForStopping;
     }
 

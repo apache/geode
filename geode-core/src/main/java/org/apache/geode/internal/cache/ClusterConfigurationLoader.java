@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -88,6 +89,7 @@ public class ClusterConfigurationLoader {
     logger.info("deploying jars received from cluster configuration");
     List<String> jarFileNames =
         response.getJarNames().values().stream()
+            .filter(Objects::nonNull)
             .flatMap(Set::stream)
             .collect(Collectors.toList());
 

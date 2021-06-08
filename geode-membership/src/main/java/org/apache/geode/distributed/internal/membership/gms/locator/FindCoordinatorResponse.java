@@ -202,47 +202,63 @@ public class FindCoordinatorResponse<ID extends MemberIdentifier> extends Abstra
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     FindCoordinatorResponse other = (FindCoordinatorResponse) obj;
     if (coordinator == null) {
-      if (other.coordinator != null)
+      if (other.coordinator != null) {
         return false;
-    } else if (!coordinator.equals(other.coordinator))
+      }
+    } else if (!coordinator.equals(other.coordinator)) {
       return false;
-    if (!Arrays.equals(coordinatorPublicKey, other.coordinatorPublicKey))
+    }
+    if (!Arrays.equals(coordinatorPublicKey, other.coordinatorPublicKey)) {
       return false;
-    if (fromView != other.fromView)
+    }
+    if (fromView != other.fromView) {
       return false;
-    if (isShortForm != other.isShortForm)
+    }
+    if (isShortForm != other.isShortForm) {
       return false;
-    if (networkPartitionDetectionEnabled != other.networkPartitionDetectionEnabled)
+    }
+    if (networkPartitionDetectionEnabled != other.networkPartitionDetectionEnabled) {
       return false;
+    }
     if (registrants == null) {
-      if (other.registrants != null)
+      if (other.registrants != null) {
         return false;
-    } else if (!registrants.equals(other.registrants))
+      }
+    } else if (!registrants.equals(other.registrants)) {
       return false;
+    }
     // as we are not sending requestId as part of FinDCoordinator resposne
     /*
      * if (requestId != other.requestId) return false;
      */
     if (senderId == null) {
-      if (other.senderId != null)
+      if (other.senderId != null) {
         return false;
-    } else if (!senderId.equals(other.senderId))
+      }
+    } else if (!senderId.equals(other.senderId)) {
       return false;
-    if (usePreferredCoordinators != other.usePreferredCoordinators)
+    }
+    if (usePreferredCoordinators != other.usePreferredCoordinators) {
       return false;
+    }
     if (view == null) {
-      if (other.view != null)
+      if (other.view != null) {
         return false;
-    } else if (!view.equals(other.view))
+      }
+    } else if (!view.equals(other.view)) {
       return false;
+    }
     return true;
   }
 

@@ -370,13 +370,16 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
 
     @Override
     public boolean equals(Object o) {
-      if (this == o)
+      if (this == o) {
         return true;
-      if (o == null || getClass() != o.getClass())
+      }
+      if (o == null || getClass() != o.getClass()) {
         return false;
+      }
       QueryObject that = (QueryObject) o;
-      if (getId() != that.getId())
+      if (getId() != that.getId()) {
         return false;
+      }
 
       return getName() != null ? getName().equals(that.getName()) : that.getName() == null;
     }

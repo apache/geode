@@ -48,8 +48,9 @@ abstract class AbstractVersion implements Version {
 
   @Override
   public boolean equals(final Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
+    }
     if (other instanceof Version) {
       return ordinal() == ((Version) other).ordinal();
     } else {

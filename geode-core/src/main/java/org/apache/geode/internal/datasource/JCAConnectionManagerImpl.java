@@ -149,8 +149,9 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
       TransactionManagerImpl transManager = TransactionManagerImpl.getTransactionManager();
       try {
         Transaction txn = transManager.getTransaction();
-        if (txn != null && xar != null)
+        if (txn != null && xar != null) {
           txn.delistResource(xar, XAResource.TMSUCCESS);
+        }
       } catch (SystemException se) {
         se.printStackTrace();
       }
@@ -177,8 +178,9 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
     if (isActive) {
       ManagedConnection conn = (ManagedConnection) event.getSource();
       XAResource xar = null;
-      if (xaResourcesMap.get(conn) != null)
+      if (xaResourcesMap.get(conn) != null) {
         xar = (XAResource) xaResourcesMap.get(conn);
+      }
       xaResourcesMap.remove(conn);
       try {
         Transaction txn = transManager.getTransaction();

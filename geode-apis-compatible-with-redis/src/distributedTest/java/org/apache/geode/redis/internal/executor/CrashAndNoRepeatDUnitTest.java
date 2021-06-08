@@ -17,15 +17,12 @@
 package org.apache.geode.redis.internal.executor;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -62,8 +59,6 @@ public class CrashAndNoRepeatDUnitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static Properties locatorProperties;
-
   private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
@@ -79,17 +74,15 @@ public class CrashAndNoRepeatDUnitTest {
 
   @BeforeClass
   public static void classSetup() throws Exception {
-    String log_level = "info";
-    locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
+    String logLevel = "info";
 
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    locator = clusterStartUp.startLocatorVM(0);
     int locatorPort = locator.getPort();
 
     server1 = clusterStartUp.startServerVM(1,
         x -> x.withProperty(REDIS_PORT, "0")
             .withProperty(REDIS_ENABLED, "true")
-            .withProperty(LOG_LEVEL, log_level)
+            .withProperty(LOG_LEVEL, logLevel)
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
             .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
@@ -98,7 +91,7 @@ public class CrashAndNoRepeatDUnitTest {
     server2 = clusterStartUp.startServerVM(2,
         x -> x.withProperty(REDIS_PORT, "0")
             .withProperty(REDIS_ENABLED, "true")
-            .withProperty(LOG_LEVEL, log_level)
+            .withProperty(LOG_LEVEL, logLevel)
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
             .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));
@@ -107,7 +100,7 @@ public class CrashAndNoRepeatDUnitTest {
     server3 = clusterStartUp.startServerVM(3,
         x -> x.withProperty(REDIS_PORT, "0")
             .withProperty(REDIS_ENABLED, "true")
-            .withProperty(LOG_LEVEL, log_level)
+            .withProperty(LOG_LEVEL, logLevel)
             .withProperty(REDIS_BIND_ADDRESS, "localhost")
             .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
             .withConnectionToLocator(locatorPort));

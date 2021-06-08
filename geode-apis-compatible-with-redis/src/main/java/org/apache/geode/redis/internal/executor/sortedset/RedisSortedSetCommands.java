@@ -21,8 +21,13 @@ import org.apache.geode.redis.internal.data.RedisKey;
 
 public interface RedisSortedSetCommands {
 
-  long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd,
-      ZAddOptions options);
+  long zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd, ZAddOptions options);
 
   byte[] zscore(RedisKey key, byte[] member);
+
+  long zrem(RedisKey key, List<byte[]> membersToRemove);
+
+  long zcard(RedisKey key);
+
+  byte[] zincrby(RedisKey key, byte[] increment, byte[] member);
 }

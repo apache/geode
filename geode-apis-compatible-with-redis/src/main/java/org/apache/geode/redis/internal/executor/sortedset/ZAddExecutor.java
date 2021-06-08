@@ -46,10 +46,11 @@ public class ZAddExecutor extends AbstractExecutor {
       return RedisResponse.error(zAddExecutorState.exceptionMessage);
     }
 
-    return RedisResponse
-        .integer(redisSortedSetCommands.zadd(command.getKey(),
-            new ArrayList<>(commandElements.subList(optionsFoundCount + 2, commandElements.size())),
-            makeOptions(zAddExecutorState)));
+    long retVal = redisSortedSetCommands.zadd(command.getKey(),
+        new ArrayList<>(commandElements.subList(optionsFoundCount + 2, commandElements.size())),
+        makeOptions(zAddExecutorState));
+
+    return RedisResponse.integer(retVal);
   }
 
   private void skipCommandAndKey(Iterator<byte[]> commandIterator) {
@@ -72,6 +73,18 @@ public class ZAddExecutor extends AbstractExecutor {
         case "xx":
           executorState.xxFound = true;
           optionsFoundCount++;
+          break;
+        case "ch":
+          executorState.chFound = true;
+          optionsFoundCount++;
+          break;
+        case "inf":
+        case "+inf":
+        case "-inf":
+        case "infinity":
+        case "+infinity":
+        case "-infinity":
+          scoreFound = true;
           break;
         default:
           try {
@@ -99,17 +112,19 @@ public class ZAddExecutor extends AbstractExecutor {
     if (executorState.xxFound) {
       existsOption = ZAddOptions.Exists.XX;
     }
-    return new ZAddOptions(existsOption);
+    return new ZAddOptions(existsOption, executorState.chFound);
   }
 
   static class ZAddExecutorState {
     public boolean nxFound;
     public boolean xxFound;
+    public boolean chFound;
     public String exceptionMessage;
 
     public void initialize() {
       nxFound = false;
       xxFound = false;
+      chFound = false;
       exceptionMessage = null;
     }
   }

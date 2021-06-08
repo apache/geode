@@ -68,8 +68,9 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
 
   @Override
   public void put(E e) throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     preAddInterruptibly(e);
     boolean didOp = false;
     try {
@@ -85,8 +86,9 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
 
   @Override
   public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     preAddInterruptibly(e);
     boolean didOp = false;
     try {
@@ -106,8 +108,9 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
 
   @Override
   public E take() throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     E result = super.take();
     postRemove(result);
     this.stats.remove();
@@ -116,8 +119,9 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
 
   @Override
   public E poll(long timeout, TimeUnit unit) throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     E result = super.poll(timeout, unit);
     if (result != null) {
       postRemove(result);

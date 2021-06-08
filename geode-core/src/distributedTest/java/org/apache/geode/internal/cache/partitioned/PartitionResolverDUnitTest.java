@@ -408,47 +408,61 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
         CustId custId = new CustId(6);
         Customer customer = new Customer("customer6", "address6");
         getGemfireCache().getLogger().fine("SWAP:Begin");
-        if (isTx)
+        if (isTx) {
           mgr.begin();
+        }
         custRegion.put(custId, customer);
-        if (isTx)
+        if (isTx) {
           mgr.commit();
+        }
 
-        if (isTx)
+        if (isTx) {
           mgr.begin();
+        }
         custRegion.invalidate(custId);
-        if (isTx)
+        if (isTx) {
           mgr.commit();
+        }
 
-        if (isTx)
+        if (isTx) {
           mgr.begin();
+        }
         custRegion.put(custId, customer);
-        if (isTx)
+        if (isTx) {
           mgr.commit();
+        }
 
-        if (isTx)
+        if (isTx) {
           mgr.begin();
+        }
         custRegion.destroy(custId);
-        if (isTx)
+        if (isTx) {
           mgr.commit();
+        }
 
-        if (isTx)
+        if (isTx) {
           mgr.begin();
+        }
         custRegion.put(custId, customer);
-        if (isTx)
+        if (isTx) {
           mgr.commit();
+        }
 
-        if (isTx)
+        if (isTx) {
           mgr.begin();
+        }
         custRegion.containsKey(custId);
-        if (isTx)
+        if (isTx) {
           mgr.commit();
+        }
 
-        if (isTx)
+        if (isTx) {
           mgr.begin();
+        }
         custRegion.containsValueForKey(custId);
-        if (isTx)
+        if (isTx) {
           mgr.commit();
+        }
         return null;
       }
     });

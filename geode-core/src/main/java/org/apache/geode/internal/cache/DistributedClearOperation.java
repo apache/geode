@@ -322,23 +322,30 @@ public class DistributedClearOperation extends DistributedCacheOperation {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       LockKey other = (LockKey) obj;
       if (locker == null) {
-        if (other.locker != null)
+        if (other.locker != null) {
           return false;
-      } else if (!locker.equals(other.locker))
+        }
+      } else if (!locker.equals(other.locker)) {
         return false;
+      }
       if (regionPath == null) {
-        if (other.regionPath != null)
+        if (other.regionPath != null) {
           return false;
-      } else if (!regionPath.equals(other.regionPath))
+        }
+      } else if (!regionPath.equals(other.regionPath)) {
         return false;
+      }
       return true;
     }
 

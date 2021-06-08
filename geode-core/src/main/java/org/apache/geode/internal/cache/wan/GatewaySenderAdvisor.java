@@ -686,17 +686,19 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       DataSerializer.writeArrayList(senderEventListenerClassNames, out);
       out.writeBoolean(isDiskSynchronous);
       // out.writeInt(dispatcherThreads);
-      if (isParallel)
+      if (isParallel) {
         out.writeInt(1);// it was 1 on previous version of gemfire
-      else if (orderPolicy == null)
+      } else if (orderPolicy == null) {
         out.writeInt(1);// it was 1 on previous version of gemfire
-      else
+      } else {
         out.writeInt(dispatcherThreads);
+      }
 
-      if (isParallel)
+      if (isParallel) {
         DataSerializer.writeObject(null, out);
-      else
+      } else {
         DataSerializer.writeObject(orderPolicy, out);
+      }
 
       boolean serverLocationFound = (this.serverLocation != null);
       DataSerializer.writePrimitiveBoolean(serverLocationFound, out);

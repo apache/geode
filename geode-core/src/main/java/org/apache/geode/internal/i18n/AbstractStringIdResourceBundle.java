@@ -120,8 +120,9 @@ public class AbstractStringIdResourceBundle {
    * @return a String translated to the current {@link java.util.Locale}
    */
   public String getString(StringId key) {
-    if (usingRawMode())
+    if (usingRawMode()) {
       return key.getRawText();
+    }
     String txt = (String) data.get(((StringId) key).id);
     if (txt != null) {
       return txt;

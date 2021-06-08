@@ -1335,15 +1335,19 @@ public class PdxSerializableJUnitTest {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       LongFieldHolder other = (LongFieldHolder) obj;
-      if (v != other.v)
+      if (v != other.v) {
         return false;
+      }
       return true;
     }
 
@@ -2248,10 +2252,12 @@ public class PdxSerializableJUnitTest {
     }
 
     public boolean equals(Object obj) {
-      if (obj == null)
+      if (obj == null) {
         return false;
-      if (!(obj instanceof POS))
+      }
+      if (!(obj instanceof POS)) {
         return false;
+      }
       POS other = (POS) obj;
       return this.f == other.f;
     }

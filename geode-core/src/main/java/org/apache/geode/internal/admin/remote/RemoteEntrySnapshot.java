@@ -106,8 +106,9 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
 
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
+    }
     if (other instanceof RemoteEntrySnapshot) {
       RemoteEntrySnapshot snap = (RemoteEntrySnapshot) other;
       return this.name.equals(snap.name);

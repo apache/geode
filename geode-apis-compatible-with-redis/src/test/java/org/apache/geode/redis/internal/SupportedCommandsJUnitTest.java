@@ -67,6 +67,7 @@ public class SupportedCommandsJUnitTest {
       "PEXPIREAT",
       "PING",
       "PSUBSCRIBE",
+      "PUBSUB",
       "PTTL",
       "PUBLISH",
       "PUNSUBSCRIBE",
@@ -84,6 +85,9 @@ public class SupportedCommandsJUnitTest {
       "TYPE",
       "UNSUBSCRIBE",
       "ZADD",
+      "ZINCRBY",
+      "ZCARD",
+      "ZREM",
       "ZSCORE"
   };
 

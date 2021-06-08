@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,15 +39,30 @@ class NullRedisSortedSet extends RedisSortedSet {
   long zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
       ZAddOptions options) {
     if (options.isXX()) {
-      return 0;
+      return 0L;
     }
+
     RedisSortedSet sortedSet = new RedisSortedSet(membersToAdd);
     region.create(key, sortedSet);
+
     return sortedSet.getSortedSetSize();
   }
 
   @Override
   byte[] zscore(byte[] member) {
     return null;
+  }
+
+  @Override
+  byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
+      byte[] member) {
+    List<byte[]> valuesToAdd = new ArrayList<>();
+    valuesToAdd.add(increment);
+    valuesToAdd.add(member);
+
+    RedisSortedSet sortedSet = new RedisSortedSet(valuesToAdd);
+    region.create(key, sortedSet);
+
+    return increment;
   }
 }

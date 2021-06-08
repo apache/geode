@@ -24,7 +24,7 @@ import java.util.List;
 import io.netty.buffer.ByteBuf;
 
 import org.apache.geode.annotations.internal.MakeImmutable;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 
 /**
  * This is a safe encoder and decoder for all redis matching needs
@@ -117,8 +117,8 @@ public class Coder {
     } else if (v instanceof byte[]) {
       toWrite = (byte[]) v;
       writeStringResponse(buffer, toWrite);
-    } else if (v instanceof ByteArrayWrapper) {
-      toWrite = ((ByteArrayWrapper) v).toBytes();
+    } else if (v instanceof RedisKey) {
+      toWrite = ((RedisKey) v).toBytes();
       writeStringResponse(buffer, toWrite);
     } else if (v instanceof Double) {
       toWrite = doubleToBytes((Double) v);
@@ -200,8 +200,8 @@ public class Coder {
       if (nextObject instanceof String) {
         String next = (String) nextObject;
         bytes = stringToBytes(next);
-      } else if (nextObject instanceof ByteArrayWrapper) {
-        bytes = ((ByteArrayWrapper) nextObject).toBytes();
+      } else if (nextObject instanceof RedisKey) {
+        bytes = ((RedisKey) nextObject).toBytes();
       } else {
         bytes = (byte[]) nextObject;
       }

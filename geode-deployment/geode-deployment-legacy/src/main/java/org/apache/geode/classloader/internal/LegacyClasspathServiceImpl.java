@@ -191,8 +191,9 @@ public class LegacyClasspathServiceImpl implements ClasspathService {
     }
 
     Class<?> clazz = forName(name, isTraceEnabled);
-    if (clazz != null)
+    if (clazz != null) {
       return clazz;
+    }
 
     throw new ClassNotFoundException(name);
   }

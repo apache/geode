@@ -41,8 +41,9 @@ public class Student extends Person {
   }
 
   public Set getCourses() {
-    if (_courses.isEmpty())
+    if (_courses.isEmpty()) {
       return Collections.EMPTY_SET;
+    }
     return _courses;
   }
 
@@ -55,17 +56,20 @@ public class Student extends Person {
   }
 
   public void addCourse(Course course) {
-    if (_courses == null)
+    if (_courses == null) {
       initCourses();
+    }
     _courses.add(course);
   }
 
   public void removeCourse(Course course) {
-    if (_courses == null)
+    if (_courses == null) {
       return;
+    }
     _courses.remove(course);
-    if (_courses.isEmpty())
+    if (_courses.isEmpty()) {
       _courses = null;
+    }
   }
 
   public void setGPA(float gpa) {

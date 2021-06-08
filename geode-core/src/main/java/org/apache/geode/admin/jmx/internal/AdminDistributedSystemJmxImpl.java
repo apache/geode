@@ -739,8 +739,9 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
   @Override
   public boolean waitToBeConnected(long timeout) throws InterruptedException {
 
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     try {
       return super.waitToBeConnected(timeout);
     } catch (java.lang.RuntimeException e) {
@@ -958,8 +959,9 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       throws AdminException, MalformedObjectNameException {
     try {
       SystemMember member = lookupSystemMember(distributedMember);
-      if (member == null)
+      if (member == null) {
         return null;
+      }
       SystemMemberJmxImpl jmx = (SystemMemberJmxImpl) member;
       ObjectName oname = new ObjectName(jmx.getMBeanName());
       return oname;
@@ -1624,18 +1626,20 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
           new Object[] {ex.getClass().getName(), statAlertDefnSerFile}),
           ex);
     } finally {
-      if (foStr != null)
+      if (foStr != null) {
         try {
           foStr.close();
         } catch (IOException ex) {
           ;
         }
-      if (ooStr != null)
+      }
+      if (ooStr != null) {
         try {
           ooStr.close();
         } catch (IOException ex) {
           ;
         }
+      }
     }
   }
 
@@ -1984,8 +1988,9 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
     for (int i = 0; i < alerts.length; i++) {
       alert = alerts[i];
 
-      if (getAlertDefinition(alert.getDefinitionId()) == null)
+      if (getAlertDefinition(alert.getDefinitionId()) == null) {
         continue; // Ignore any removed AlertDefns
+      }
 
       /*
        * 1. check if it's system-wide. 2. if system-wide keep, it in a collection (that should get

@@ -447,27 +447,35 @@ public class XmlEntity implements VersionedDataSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     XmlEntity other = (XmlEntity) obj;
     if (attributes == null) {
-      if (other.attributes != null)
+      if (other.attributes != null) {
         return false;
-    } else if (!attributes.equals(other.attributes))
+      }
+    } else if (!attributes.equals(other.attributes)) {
       return false;
+    }
     if (namespace == null) {
-      if (other.namespace != null)
+      if (other.namespace != null) {
         return false;
-    } else if (!namespace.equals(other.namespace))
+      }
+    } else if (!namespace.equals(other.namespace)) {
       return false;
+    }
     if (type == null) {
       return other.type == null;
-    } else
+    } else {
       return type.equals(other.type);
+    }
   }
 
   @Override

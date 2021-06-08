@@ -80,9 +80,10 @@ public class DeclarativeIndexCreationJUnitTest {
       CacheUtils.log("List of indexes= " + im.toString());
       RegionAttributes ra = root.getAttributes();
       assertTrue(!ra.getIndexMaintenanceSynchronous());
-    } else
+    } else {
       fail(
           "DeclarativeIndexCreationJUnitTest::testAsynchronousIndexCreatedOnRoot_PortfoliosRegion:No index found in the root region");
+    }
   }
 
   @Test
@@ -95,14 +96,16 @@ public class DeclarativeIndexCreationJUnitTest {
       CacheUtils.log("List of indexes= " + im.toString());
       RegionAttributes ra = root.getAttributes();
       assertTrue(ra.getIndexMaintenanceSynchronous());
-    } else
+    } else {
       fail(
           "DeclarativeIndexCreationJUnitTest::testSynchronousIndexCreatedOnRoot_StringRegion Region:No index found in the root region");
+    }
     root = cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string1");
     im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
-    if (!im.isIndexMaintenanceTypeSynchronous())
+    if (!im.isIndexMaintenanceTypeSynchronous()) {
       fail(
           "DeclarativeIndexCreationJUnitTest::testSynchronousIndexCreatedOnRoot_StringRegion: The index update type not synchronous if no index-update-type attribuet specified in cache.cml");
+    }
   }
 
   @Test
@@ -115,8 +118,9 @@ public class DeclarativeIndexCreationJUnitTest {
       CacheUtils.log("List of indexes= " + im.toString());
       RegionAttributes ra = root.getAttributes();
       assertTrue(ra.getIndexMaintenanceSynchronous());
-    } else
+    } else {
       fail(
           "DeclarativeIndexCreationJUnitTest::testAsynchronousIndexCreatedOnRoot_PortfoliosRegion:No index found in the root region");
+    }
   }
 }

@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 
@@ -37,6 +39,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -56,7 +59,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return sizeInBytes;
   }
 
-  private int calculateSizeOfFieldValuePair(byte[] member, byte[] score) {
+  int calculateSizeOfFieldValuePair(byte[] member, byte[] score) {
     return PER_PAIR_OVERHEAD + member.length + score.length;
   }
 
@@ -67,7 +70,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
-      validateScoreIsDouble(score);
+      score = Coder.doubleToBytes(processByteArrayAsDouble(score));
       byte[] member = iterator.next();
       memberAdd(member, score);
     }
@@ -171,11 +174,9 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
-
   private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
     for (byte[] member : remsDeltaInfo.getRemoves()) {
-      sizeInBytes -= calculateSizeOfFieldValuePair(member, members.get(member));
-      members.remove(member);
+      memberRemove(member);
     }
   }
 
@@ -189,21 +190,22 @@ public class RedisSortedSet extends AbstractRedisData {
       ZAddOptions options) {
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
-
     int initialSize = getSortedSetSize();
-
+    int changesCount = 0;
     while (iterator.hasNext()) {
-      byte[] score = iterator.next();
-      validateScoreIsDouble(score);
+      byte[] score =
+          Coder.doubleToBytes(processByteArrayAsDouble(iterator.next()));
       byte[] member = iterator.next();
-
       if (options.isNX() && members.containsKey(member)) {
         continue;
       }
       if (options.isXX() && !members.containsKey(member)) {
         continue;
       }
-      memberAdd(member, score);
+      byte[] oldScore = memberAdd(member, score);
+      if (options.isCH() && oldScore != null && !Arrays.equals(oldScore, score)) {
+        changesCount++;
+      }
 
       if (deltaInfo == null) {
         deltaInfo = new AddsDeltaInfo(new ArrayList<>());
@@ -213,19 +215,69 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     storeChanges(region, key, deltaInfo);
-    return getSortedSetSize() - initialSize;
-  }
-
-  private void validateScoreIsDouble(byte[] score) {
-    try {
-      Double.valueOf(Coder.bytesToString(score));
-    } catch (NumberFormatException e) {
-      throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
-    }
+    return getSortedSetSize() - initialSize + changesCount;
   }
 
   byte[] zscore(byte[] member) {
     return members.get(member);
+  }
+
+  byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
+      byte[] member) {
+    byte[] byteScore = members.get(member);
+    double incr = processByteArrayAsDouble(increment);
+
+    if (byteScore != null) {
+      incr += Coder.bytesToDouble(byteScore);
+
+      if (Double.isNaN(incr)) {
+        throw new NumberFormatException(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
+      }
+    }
+
+    byte[] byteIncr = Coder.doubleToBytes(incr);
+    memberAdd(member, byteIncr);
+
+    AddsDeltaInfo deltaInfo = new AddsDeltaInfo(new ArrayList<>());
+    deltaInfo.add(member);
+    deltaInfo.add(byteIncr);
+
+    storeChanges(region, key, deltaInfo);
+
+    return byteIncr;
+  }
+
+  long zrem(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToRemove) {
+    int membersRemoved = 0;
+    RemsDeltaInfo deltaInfo = null;
+    for (byte[] memberToRemove : membersToRemove) {
+      if (memberRemove(memberToRemove) != null) {
+        if (deltaInfo == null) {
+          deltaInfo = new RemsDeltaInfo();
+        }
+        deltaInfo.add(memberToRemove);
+        membersRemoved++;
+      }
+    }
+    storeChanges(region, key, deltaInfo);
+    return membersRemoved;
+  }
+
+  synchronized byte[] memberRemove(byte[] member) {
+    byte[] oldValue = members.remove(member);
+    if (oldValue != null) {
+      sizeInBytes -= calculateSizeOfFieldValuePair(member, oldValue);
+    }
+
+    if (members.isEmpty()) {
+      sizeInBytes = BASE_REDIS_SORTED_SET_OVERHEAD;
+    }
+
+    return oldValue;
+  }
+
+  long zcard() {
+    return members.size();
   }
 
   @Override
@@ -251,5 +303,30 @@ public class RedisSortedSet extends AbstractRedisData {
   @Override
   public KnownVersion[] getSerializationVersions() {
     return null;
+  }
+
+  private double processByteArrayAsDouble(byte[] value) {
+    String stringValue = Coder.bytesToString(value).toLowerCase();
+    double processedDouble;
+    switch (stringValue) {
+      case "inf":
+      case "+inf":
+      case "infinity":
+      case "+infinity":
+        processedDouble = POSITIVE_INFINITY;
+        break;
+      case "-inf":
+      case "-infinity":
+        processedDouble = NEGATIVE_INFINITY;
+        break;
+      default:
+        try {
+          processedDouble = Double.parseDouble(stringValue);
+        } catch (NumberFormatException nfe) {
+          throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
+        }
+        break;
+    }
+    return processedDouble;
   }
 }

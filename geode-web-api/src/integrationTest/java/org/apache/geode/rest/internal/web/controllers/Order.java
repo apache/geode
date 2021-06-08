@@ -66,8 +66,9 @@ public class Order implements PdxSerializable {
   }
 
   public void addItem(final Item item) {
-    if (item != null)
+    if (item != null) {
       items.add(item);
+    }
   }
 
   @SuppressWarnings("unused")
@@ -139,8 +140,9 @@ public class Order implements PdxSerializable {
   }
 
   public void setItems(List<Item> items) {
-    if (this.items == null)
+    if (this.items == null) {
       this.items = new ArrayList<>();
+    }
 
     this.items.addAll(items);
   }

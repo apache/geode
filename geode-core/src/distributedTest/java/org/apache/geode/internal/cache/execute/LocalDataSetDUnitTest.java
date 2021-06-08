@@ -369,10 +369,12 @@ class LDSPartitionResolver implements PartitionResolver {
   public void close() {}
 
   public boolean equals(Object o) {
-    if (this == o)
+    if (this == o) {
       return true;
-    if (!(o instanceof LDSPartitionResolver))
+    }
+    if (!(o instanceof LDSPartitionResolver)) {
       return false;
+    }
     LDSPartitionResolver otherKeyPartitionResolver = (LDSPartitionResolver) o;
     return otherKeyPartitionResolver.getName().equals(getName());
   }

@@ -878,8 +878,9 @@ public class HARegionQueue implements RegionQueue {
    * Implementation in BlockingHARegionQueue class
    */
   void checkQueueSizeConstraint() throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
   }
 
   /**
@@ -2294,8 +2295,9 @@ public class HARegionQueue implements RegionQueue {
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("TLW_TWO_LOCK_WAIT")
     void checkQueueSizeConstraint() throws InterruptedException {
       if (this.haContainer instanceof HAContainerMap && isPrimary()) { // Fix for bug 39413
-        if (Thread.interrupted())
+        if (Thread.interrupted()) {
           throw new InterruptedException();
+        }
         synchronized (this.putGuard) {
           if (putPermits <= 0) {
             synchronized (this.permitMon) {
@@ -2429,8 +2431,9 @@ public class HARegionQueue implements RegionQueue {
           region.getCache().getCancelCriterion().checkCancelInProgress(ie);
           throw new TimeoutException(ie);
         } finally {
-          if (interrupted)
+          if (interrupted) {
             Thread.currentThread().interrupt();
+          }
         }
       }
       return true;
@@ -2506,8 +2509,9 @@ public class HARegionQueue implements RegionQueue {
         region.getCache().getCancelCriterion().checkCancelInProgress(ie);
         throw new TimeoutException(ie);
       } finally {
-        if (interrupted)
+        if (interrupted) {
           Thread.currentThread().interrupt();
+        }
       }
       return !this.internalIsEmpty();
     }
@@ -2773,8 +2777,9 @@ public class HARegionQueue implements RegionQueue {
             } finally {
               // Not particularly important since we're exiting the thread,
               // but following the pattern is still good practice...
-              if (interrupted)
+              if (interrupted) {
                 Thread.currentThread().interrupt();
+              }
             }
 
             if (logger.isTraceEnabled()) {

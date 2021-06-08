@@ -94,8 +94,9 @@ public class MethodDispatch {
       // if targetException is Exception, wrap it, otherwise wrap the InvocationTargetException
       // itself
       Throwable t = e.getTargetException();
-      if (t instanceof Exception)
+      if (t instanceof Exception) {
         throw new QueryInvocationTargetException(t);
+      }
       throw new QueryInvocationTargetException(e);
     }
   }
@@ -104,11 +105,12 @@ public class MethodDispatch {
     // if argTypes contains a null, then go directly to resolveGeneral(),
     // otherwise try to resolve on the specific types first
     // (a null type gets passed in if the runtime value of the arg is null)
-    for (int i = 0; i < _argTypes.length; i++)
+    for (int i = 0; i < _argTypes.length; i++) {
       if (_argTypes[i] == null) {
         resolveGeneral();
         return;
       }
+    }
 
     // first try to get the method based on the exact parameter types
     try {
@@ -127,13 +129,16 @@ public class MethodDispatch {
       /*
        * if (Modifier.isStatic(meth.getModifiers())) continue;
        */
-      if (!meth.getName().equals(_methodName))
+      if (!meth.getName().equals(_methodName)) {
         continue;
-      if (meth.getParameterTypes().length != _argTypes.length)
+      }
+      if (meth.getParameterTypes().length != _argTypes.length) {
         continue;
+      }
       // are the args all convertible to the parameter types?
-      if (!TypeUtils.areTypesConvertible(_argTypes, meth.getParameterTypes()))
+      if (!TypeUtils.areTypesConvertible(_argTypes, meth.getParameterTypes())) {
         continue;
+      }
       candidates.add(meth);
     }
 
@@ -161,11 +166,12 @@ public class MethodDispatch {
     // special case a null argument type in this case, since there should
     // be not differentiation for those parameter types regarding specificity
 
-    if (equalSpecificity(meth1, meth2, _argTypes))
+    if (equalSpecificity(meth1, meth2, _argTypes)) {
       throw new AmbiguousNameException(
           String.format(
               "Two or more maximally specific methods were found for the method named ' %s ' in class ' %s ' for the argument types: %s",
               meth1.getName(), _targetClass.getName(), Arrays.asList(_argTypes)));
+    }
 
     _method = meth1;
   }
@@ -176,14 +182,16 @@ public class MethodDispatch {
       public int compare(Object o1, Object o2) {
         Method m1 = (Method) o1;
         Method m2 = (Method) o2;
-        if (m1.equals(m2))
+        if (m1.equals(m2)) {
           return 0;
+        }
 
         boolean convertible1 = methodConvertible(m1, m2);
         boolean convertible2 = methodConvertible(m2, m1);
         // check to see if they are convertible both ways or neither way
-        if (convertible1 == convertible2)
+        if (convertible1 == convertible2) {
           return 0;
+        }
         return convertible1 ? -1 : 1;
       }
     });
@@ -208,8 +216,9 @@ public class MethodDispatch {
   private boolean equalSpecificity(Method m1, Method m2, Class[] argTypes) {
     // if the m1 is not convertible to m2, then definitely equal specificity,
     // since this would be ambiguous even in Java
-    if (!methodConvertible(m1, m2))
+    if (!methodConvertible(m1, m2)) {
       return true;
+    }
 
     // if there is at least one param type that is more specific
     // ignoring parameters with a null argument, then
@@ -218,8 +227,9 @@ public class MethodDispatch {
     Class[] p2 = m2.getParameterTypes();
     for (int i = 0; i < p1.length; i++) {
       // assumes m1 is <= m2 in specificity
-      if (argTypes[i] != null && p1[i] != p2[i] && TypeUtils.isTypeConvertible(p1[i], p2[i]))
+      if (argTypes[i] != null && p1[i] != p2[i] && TypeUtils.isTypeConvertible(p1[i], p2[i])) {
         return false;
+      }
     }
 
     return true;

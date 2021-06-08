@@ -40,8 +40,9 @@ public class ExportLogsStatsOverHttpDistributedTest extends ExportLogsStatsDistr
 
   @Override
   public void connectIfNeeded() throws Exception {
-    if (!connector.isConnected())
+    if (!connector.isConnected()) {
       connector.connect(locator.getHttpPort(), GfshCommandRule.PortType.http);
+    }
   }
 
   @Test

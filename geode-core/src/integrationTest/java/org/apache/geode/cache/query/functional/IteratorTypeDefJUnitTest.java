@@ -91,13 +91,15 @@ public class IteratorTypeDefJUnitTest {
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        if (!(r instanceof SelectResults))
+        if (!(r instanceof SelectResults)) {
           fail(
               "testIteratorDefSyntaxForObtainingResultBag: Test failed as obtained Result Data not an instance of SelectResults. Query= "
                   + q.getQueryString());
-        if (((SelectResults) r).getCollectionType().allowsDuplicates())
+        }
+        if (((SelectResults) r).getCollectionType().allowsDuplicates()) {
           fail(
               "testIteratorDefSyntaxForObtainingResultBag: results of query should not allow duplicates, but says it does");
+        }
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());

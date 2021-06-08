@@ -101,8 +101,7 @@ public class RedisDistDUnitTest implements Serializable {
 
   @After
   public void cleanup() {
-    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
-    jedis.flushAll();
+    cluster.flushAll();
   }
 
   @Test
@@ -272,6 +271,7 @@ public class RedisDistDUnitTest implements Serializable {
             jedis.smembers(sKey);
             jedis.sdiff(sKey, "afd");
             jedis.sunionstore("dst", sKey, "afds");
+            jedis.sinterstore("dst", sKey, "afds");
           }
         }
       }

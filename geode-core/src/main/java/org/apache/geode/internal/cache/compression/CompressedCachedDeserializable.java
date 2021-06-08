@@ -92,9 +92,10 @@ public abstract class CompressedCachedDeserializable
    * @param obj a region entry value.
    */
   public CompressedCachedDeserializable(final Object obj) {
-    if (obj == null)
+    if (obj == null) {
       throw new NullPointerException(
           "value must not be null");
+    }
 
     this.value = getCompressor().compress(EntryEventImpl.serialize(obj));
   }

@@ -14,13 +14,13 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-import org.apache.geode.redis.internal.data.RedisDataType;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -33,24 +33,22 @@ public class SMoveExecutor extends SetExecutor {
   private static final int NOT_MOVED = 0;
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     RedisKey source = command.getKey();
     RedisKey destination = new RedisKey(commandElems.get(2));
-    ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(3));
+    byte[] member = commandElems.get(3);
 
     String destinationType = getRedisKeyCommands(context).internalType(destination);
-    if (!destinationType.equals(RedisDataType.REDIS_SET.toString())
-        && !destinationType.equals("none")) {
-      return RedisResponse.wrongType(RedisConstants.ERROR_WRONG_TYPE);
+    if (!destinationType.equals(REDIS_SET.toString()) && !destinationType.equals("none")) {
+      return RedisResponse.wrongType(ERROR_WRONG_TYPE);
     }
 
-    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
+    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
 
-    boolean removed = redisSetCommands.srem(source,
-        new ArrayList<>(Collections.singletonList(member))) == 1;
+    boolean removed =
+        redisSetCommands.srem(source, new ArrayList<>(Collections.singletonList(member))) == 1;
     if (!removed) {
       return RedisResponse.integer(NOT_MOVED);
     }

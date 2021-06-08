@@ -1461,8 +1461,9 @@ public class InitialImageOperation {
     buf.append("[");
     for (int i = 0; i < a.length; i++) {
       buf.append(String.valueOf(a[i]));
-      if (i < (a.length - 1))
+      if (i < (a.length - 1)) {
         buf.append(",");
+      }
     }
     buf.append("]");
     return buf.toString();
@@ -1618,8 +1619,9 @@ public class InitialImageOperation {
 
       Throwable thr = null;
       final boolean lclAbortTest = abortTest;
-      if (lclAbortTest)
+      if (lclAbortTest) {
         abortTest = false;
+      }
       DistributedRegion targetRegion = null;
       boolean sendFailureMessage = true;
       try {

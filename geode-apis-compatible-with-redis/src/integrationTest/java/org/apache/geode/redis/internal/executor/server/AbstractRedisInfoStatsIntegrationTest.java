@@ -18,7 +18,6 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,6 +35,7 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.internal.statistics.EnabledStatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.redis.RedisTestHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisIntegrationTest {
@@ -301,20 +301,9 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
    * Convert the values returned by the INFO command into a basic param:value map.
    */
   static synchronized Map<String, String> getInfo(Jedis jedis) {
-    Map<String, String> results = new HashMap<>();
-    String rawInfo = jedis.info();
     numInfoCalled.incrementAndGet();
 
-    for (String line : rawInfo.split("\r\n")) {
-      int colonIndex = line.indexOf(":");
-      if (colonIndex > 0) {
-        String key = line.substring(0, colonIndex);
-        String value = line.substring(colonIndex + 1);
-        results.put(key, value);
-      }
-    }
-
-    return results;
+    return RedisTestHelper.getInfo(jedis);
   }
 
   private void validateNetworkBytesRead(Jedis jedis, long initialNetworkBytesRead,

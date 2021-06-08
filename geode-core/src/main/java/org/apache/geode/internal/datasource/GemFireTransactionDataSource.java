@@ -154,8 +154,9 @@ public class GemFireTransactionDataSource extends AbstractDataSource
         XAResource xar = (XAResource) xaResourcesMap.get(conn);
         xaResourcesMap.remove(conn);
         Transaction txn = transManager.getTransaction();
-        if (txn != null && xar != null)
+        if (txn != null && xar != null) {
           txn.delistResource(xar, XAResource.TMSUCCESS);
+        }
         provider.returnConnection(conn);
       } catch (Exception e) {
         String exception =

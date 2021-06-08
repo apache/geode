@@ -53,6 +53,7 @@ public class RedisPartitionResolverDUnitTest {
   private static MemberVM server2;
   private static MemberVM server3;
 
+
   @BeforeClass
   public static void classSetup() {
     MemberVM locator = cluster.startLocatorVM(0);
@@ -60,12 +61,13 @@ public class RedisPartitionResolverDUnitTest {
     server2 = cluster.startRedisVM(2, locator.getPort());
     server3 = cluster.startRedisVM(3, locator.getPort());
 
-    jedis1 = new Jedis(LOCAL_HOST, cluster.getRedisPort(1), JEDIS_TIMEOUT);
+    int redisServerPort1 = cluster.getRedisPort(1);
+    jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
   }
 
   @Before
   public void testSetup() {
-    jedis1.flushAll();
+    cluster.flushAll();
   }
 
   @Test

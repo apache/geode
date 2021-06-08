@@ -17,11 +17,7 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -47,18 +43,15 @@ public class PartitionedRegionStatsUpdateTest {
 
   private static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static final String LOCAL_HOST = "127.0.0.1";
-  public static final String STRING_KEY = "string key";
-  public static final String SET_KEY = "set key";
-  public static final String HASH_KEY = "hash key";
-  public static final String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
-  public static final String FIELD = "field";
+  private static final String STRING_KEY = "string key";
+  private static final String SET_KEY = "set key";
+  private static final String HASH_KEY = "hash key";
+  private static final String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
+  private static final String FIELD = "field";
 
   @BeforeClass
   public static void classSetup() {
-    Properties locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, DEFAULT_MAX_WAIT_TIME_RECONNECT);
-
-    MemberVM locator = clusterStartUpRule.startLocatorVM(0, locatorProperties);
+    MemberVM locator = clusterStartUpRule.startLocatorVM(0);
     int locatorPort = locator.getPort();
 
     server1 = clusterStartUpRule.startRedisVM(1, locatorPort);
@@ -72,7 +65,7 @@ public class PartitionedRegionStatsUpdateTest {
 
   @Before
   public void setup() {
-    jedis1.flushAll();
+    clusterStartUpRule.flushAll();
   }
 
   @Test
@@ -133,7 +126,7 @@ public class PartitionedRegionStatsUpdateTest {
 
     jedis1.set(STRING_KEY, "value");
 
-    jedis1.flushAll();
+    clusterStartUpRule.flushAll();
 
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
 

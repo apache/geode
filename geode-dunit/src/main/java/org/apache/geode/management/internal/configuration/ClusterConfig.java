@@ -104,10 +104,11 @@ public class ClusterConfig implements Serializable {
   }
 
   public void verify(MemberVM memberVM) throws ClassNotFoundException {
-    if (memberVM.isLocator())
+    if (memberVM.isLocator()) {
       verifyLocator(memberVM);
-    else
+    } else {
       verifyServer(memberVM);
+    }
   }
 
   public void verifyLocator(MemberVM locatorVM) {

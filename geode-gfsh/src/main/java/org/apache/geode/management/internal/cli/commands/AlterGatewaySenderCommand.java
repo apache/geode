@@ -255,12 +255,14 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
     for (String group : groups) {
       List<CacheConfig.GatewaySender> gwSendersList =
           ccService.getCacheConfig(group).getGatewaySenders();
-      if (gwSendersList.isEmpty())
+      if (gwSendersList.isEmpty()) {
         continue;
+      }
 
       for (CacheConfig.GatewaySender sender : gwSendersList) {
-        if (sender.getId().equals(gwId))
+        if (sender.getId().equals(gwId)) {
           return sender;
+        }
       }
 
     }

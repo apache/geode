@@ -172,8 +172,9 @@ public class CompiledComparison extends AbstractCompiledValue
     // if not let super handle it
     // RuntimeIterator itr = context.getCurrentIterator();
     // Support.Assert(itr != null);
-    if (!isDependentOnCurrentScope(context))
+    if (!isDependentOnCurrentScope(context)) {
       return super.filterEvaluate(context, intermediateResults);
+    }
     IndexInfo[] idxInfo = getIndexInfo(context);
     Support.Assert(idxInfo != null,
         "a comparison that is dependent, not indexed, and filter evaluated is not possible");
@@ -264,8 +265,9 @@ public class CompiledComparison extends AbstractCompiledValue
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     PlanInfo result = new PlanInfo();
     IndexInfo[] indexInfo = getIndexInfo(context);
-    if (indexInfo == null)
+    if (indexInfo == null) {
       return result;
+    }
     for (int i = 0; i < indexInfo.length; ++i) {
       result.indexes.add(indexInfo[i]._index);
     }
@@ -293,8 +295,9 @@ public class CompiledComparison extends AbstractCompiledValue
 
   int reflectOnOperator(CompiledValue key) {
     int operator = _operator;
-    if (key == _left)
+    if (key == _left) {
       operator = reflectOperator(operator);
+    }
     return operator;
   }
 
@@ -628,8 +631,9 @@ public class CompiledComparison extends AbstractCompiledValue
       }
     }
 
-    if (!IndexUtils.indexesEnabled)
+    if (!IndexUtils.indexesEnabled) {
       return null;
+    }
     // get the path and index key to try
     PathAndKey pAndK = getPathAndKey(context);
     IndexInfo newIndexInfo[] = null;
@@ -735,8 +739,9 @@ public class CompiledComparison extends AbstractCompiledValue
     // RuntimeIterator rIter = context.findRuntimeIterator(_right);
     boolean isLeftDependent = context.isDependentOnCurrentScope(_left);
     boolean isRightDependent = context.isDependentOnCurrentScope(_right);
-    if ((isLeftDependent == false) == (isRightDependent == false))
+    if ((isLeftDependent == false) == (isRightDependent == false)) {
       return null;
+    }
     CompiledValue indexKey;
     CompiledValue path;
     if (isLeftDependent == false) {
@@ -746,8 +751,9 @@ public class CompiledComparison extends AbstractCompiledValue
       path = _left;
       indexKey = _right;
     }
-    if (indexKey.isDependentOnCurrentScope(context))
+    if (indexKey.isDependentOnCurrentScope(context)) {
       return null; // this check
+    }
     // seems to be
     // redunant.
     return new PathAndKey(path, indexKey);

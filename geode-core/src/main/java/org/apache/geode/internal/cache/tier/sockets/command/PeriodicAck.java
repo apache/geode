@@ -60,8 +60,9 @@ public class PeriodicAck extends BaseCommand {
           eventIdPart.setVersion(serverConnection.getClientVersion());
           EventID eid = (EventID) eventIdPart.getObject();
           success = ccn.processDispatchedMessage(serverConnection.getProxyID(), eid);
-          if (!success)
+          if (!success) {
             break;
+          }
         }
       }
       if (success) {

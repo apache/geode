@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.geode.redis.internal.RedisCommandType;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 
@@ -35,7 +34,7 @@ public class Command {
   private final List<byte[]> commandElems;
   private final RedisCommandType commandType;
   private String key;
-  private ByteArrayWrapper bytes;
+  private byte[] bytes;
 
   /**
    * Constructor used to create a static marker Command for shutting down executors.
@@ -91,20 +90,11 @@ public class Command {
   }
 
   /**
-   * Used to get the command element list
-   *
-   * @return List of command elements in form of {@link List}
-   */
-  public List<ByteArrayWrapper> getProcessedCommandWrappers() {
-    return this.commandElems.stream().map(ByteArrayWrapper::new).collect(Collectors.toList());
-  }
-
-  /**
    * Used to get the command element list when every argument is also a key
    *
    * @return List of command elements in form of {@link List}
    */
-  public List<RedisKey> getProcessedCommandWrapperKeys() {
+  public List<RedisKey> getProcessedCommandKeys() {
     return this.commandElems.stream().map(RedisKey::new).collect(Collectors.toList());
   }
 
@@ -127,10 +117,10 @@ public class Command {
   public String getStringKey() {
     if (this.commandElems.size() > 1) {
       if (this.bytes == null) {
-        this.bytes = new ByteArrayWrapper(this.commandElems.get(1));
-        this.key = this.bytes.toString();
+        this.bytes = this.commandElems.get(1);
+        this.key = Coder.bytesToString(this.bytes);
       } else if (this.key == null) {
-        this.key = this.bytes.toString();
+        this.key = Coder.bytesToString(this.bytes);
       }
       return this.key;
     } else {
@@ -141,9 +131,9 @@ public class Command {
   public RedisKey getKey() {
     if (this.commandElems.size() > 1) {
       if (this.bytes == null) {
-        this.bytes = new RedisKey(this.commandElems.get(1));
+        this.bytes = this.commandElems.get(1);
       }
-      return (RedisKey) this.bytes;
+      return new RedisKey(this.bytes);
     } else {
       return null;
     }

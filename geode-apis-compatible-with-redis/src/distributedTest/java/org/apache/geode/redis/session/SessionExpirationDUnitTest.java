@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -38,6 +39,7 @@ import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
+@Ignore("GEODE-9341")
 public class SessionExpirationDUnitTest extends SessionDUnitTest {
 
   protected static final int SHORT_SESSION_TIMEOUT = 5;
@@ -49,7 +51,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void sessionShouldTimeout_whenRequestedFromSameServer() {
+  public void sessionShouldTimeout_whenRequestedFromSameServer() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP1, "note1");
     String sessionId = getSessionId(sessionCookie);
 
@@ -59,7 +61,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void sessionShouldTimeout_OnSecondaryServer() {
+  public void sessionShouldTimeout_OnSecondaryServer() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP1, "note1");
     String sessionId = getSessionId(sessionCookie);
 
@@ -69,7 +71,8 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void sessionShouldNotTimeoutOnFirstServer_whenAccessedOnSecondaryServer() {
+  public void sessionShouldNotTimeoutOnFirstServer_whenAccessedOnSecondaryServer()
+      throws Exception {
     String sessionCookie = createNewSessionWithNote(APP1, "note1");
     String sessionId = getSessionId(sessionCookie);
 
@@ -82,7 +85,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void sessionShouldTimeout_whenAppFailsOverToAnotherRedisServer() {
+  public void sessionShouldTimeout_whenAppFailsOverToAnotherRedisServer() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP2, "note1");
     String sessionId = getSessionId(sessionCookie);
 
@@ -100,7 +103,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void sessionShouldNotTimeout_whenPersisted() {
+  public void sessionShouldNotTimeout_whenPersisted() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP2, "note1");
     setMaxInactiveInterval(APP2, sessionCookie, -1);
 

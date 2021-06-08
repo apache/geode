@@ -301,8 +301,9 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     for (PartitionedRegion colocatedPR : colocatedPRs.values()) {
       if (!colocatedPR.isShadowPR() && isThisSenderAttached(colocatedPR)) {
         BucketRegion parentBucket = colocatedPR.getDataStore().getLocalBucketById(getId());
-        if (parentBucket != null)
+        if (parentBucket != null) {
           userPRBuckets.add(parentBucket);
+        }
       }
     }
     return userPRBuckets;

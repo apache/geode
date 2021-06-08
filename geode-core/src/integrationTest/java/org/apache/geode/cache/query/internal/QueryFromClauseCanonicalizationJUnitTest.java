@@ -155,8 +155,9 @@ public class QueryFromClauseCanonicalizationJUnitTest {
       }
 
     }
-    if (overallTestFailed)
+    if (overallTestFailed) {
       Assert.fail();
+    }
 
   }
 

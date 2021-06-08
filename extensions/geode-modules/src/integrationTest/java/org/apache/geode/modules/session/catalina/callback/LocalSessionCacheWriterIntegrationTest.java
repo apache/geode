@@ -172,20 +172,23 @@ public class LocalSessionCacheWriterIntegrationTest {
 
     @Override
     public void beforeCreate(EntryEvent event) throws CacheWriterException {
-      if (throwExceptionOnCreate.get())
+      if (throwExceptionOnCreate.get()) {
         throw new RuntimeException("Mock Exception");
+      }
     }
 
     @Override
     public void beforeUpdate(EntryEvent event) throws CacheWriterException {
-      if (throwExceptionOnUpdate.get())
+      if (throwExceptionOnUpdate.get()) {
         throw new RuntimeException("Mock Exception");
+      }
     }
 
     @Override
     public void beforeDestroy(EntryEvent event) throws CacheWriterException {
-      if (throwExceptionOnDestroy.get())
+      if (throwExceptionOnDestroy.get()) {
         throw new RuntimeException("Mock Exception");
+      }
     }
   }
 

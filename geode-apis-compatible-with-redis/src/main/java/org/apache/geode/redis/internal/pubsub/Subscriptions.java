@@ -16,13 +16,19 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
@@ -65,6 +71,33 @@ public class Subscriptions {
     return subscriptions.stream()
         .filter(subscription -> subscription.matches(channelOrPattern))
         .collect(Collectors.toList());
+  }
+
+  public List<byte[]> findChannelNames() {
+
+    ObjectOpenCustomHashSet<byte[]> hashSet =
+        new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
+
+    findChannels()
+        .forEach(channel -> hashSet.add(channel.getSubscriptionName()));
+
+    return new ArrayList<>(hashSet);
+  }
+
+  public List<byte[]> findChannelNames(byte[] pattern) {
+
+    GlobPattern globPattern = new GlobPattern(Coder.bytesToString(pattern));
+
+    return findChannelNames()
+        .stream()
+        .filter(name -> globPattern.matches(Coder.bytesToString(name)))
+        .collect(Collectors.toList());
+  }
+
+  private Stream<ChannelSubscription> findChannels() {
+    return subscriptions.stream()
+        .filter(subscription -> subscription instanceof ChannelSubscription)
+        .map(subscription -> (ChannelSubscription) subscription);
   }
 
   /**

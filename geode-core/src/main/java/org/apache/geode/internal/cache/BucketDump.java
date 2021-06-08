@@ -114,23 +114,30 @@ public class BucketDump {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     BucketDump other = (BucketDump) obj;
     if (values == null) {
-      if (other.values != null)
+      if (other.values != null) {
         return false;
-    } else if (!values.equals(other.values))
+      }
+    } else if (!values.equals(other.values)) {
       return false;
+    }
     if (versions == null) {
-      if (other.versions != null)
+      if (other.versions != null) {
         return false;
-    } else if (!versions.equals(other.versions))
+      }
+    } else if (!versions.equals(other.versions)) {
       return false;
+    }
     return true;
   }
 }

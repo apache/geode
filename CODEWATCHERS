@@ -49,14 +49,12 @@ geode-core/**/org/apache/geode/**/deployment/**                   @kohlmu-pivota
 geode-deployment/**                                               @kohlmu-pivotal
 geode-core/**/org/apache/geode/cache/internal/execute/*           @kohlmu-pivotal
 
-
 #-----------------------------------------------------------------
 # Client/server messaging and cache operations
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/cache/client/**                    @albertogpz
 geode-core/**/org/apache/geode/cache/server/**                    @albertogpz
 geode-core/**/org/apache/geode/internal/cache/tier/**             @albertogpz
-
 
 #-----------------------------------------------------------------
 # WAN messaging and queues
@@ -65,7 +63,6 @@ geode-wan/**                                                      @albertogpz @a
 geode-core/**/org/apache/geode/cache/asyncqueue/**                @albertogpz @alb3rtobr
 geode-core/**/org/apache/geode/cache/wan/**                       @albertogpz @alb3rtobr
 geode-core/**/org/apache/geode/internal/cache/wan/**              @albertogpz @alb3rtobr
-
 
 #-----------------------------------------------------------------
 # Metrics & Statistics
@@ -84,3 +81,8 @@ geode-core/**/org/apache/geode/cache/query/**                     @mkevo
 # Misc
 #-----------------------------------------------------------------
 geode-core/**/org/apache/geode/internal/cache/properties.md       @alb3rtobr
+
+#-----------------------------------------------------------------
+# Build and tooling
+#-----------------------------------------------------------------
+dev-tools/release/**                                              @demery-pivotal

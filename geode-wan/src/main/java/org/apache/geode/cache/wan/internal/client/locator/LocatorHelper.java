@@ -57,8 +57,9 @@ public class LocatorHelper {
           if (!locator.detailCompare(existingLocator)) {
             // some parameters had changed for existing locator
             // replace it
-            if (existingLocator.getTimeStamp() > locator.getTimeStamp())
+            if (existingLocator.getTimeStamp() > locator.getTimeStamp()) {
               return false;
+            }
 
             existingValue.remove(existingLocator);
             ConcurrentHashMap<Integer, Set<String>> allServerLocatorsInfo =
@@ -82,11 +83,13 @@ public class LocatorHelper {
           DistributionLocatorId oldLocator =
               getLocatorFromCollection(existingValue, locator);
 
-          if (oldLocator == null)
+          if (oldLocator == null) {
             return false;
+          }
 
-          if (oldLocator.getTimeStamp() > locator.getTimeStamp())
+          if (oldLocator.getTimeStamp() > locator.getTimeStamp()) {
             return false;
+          }
 
           // for new member name, existing host[port] received
           // replace it, to contain latest info
@@ -162,8 +165,9 @@ public class LocatorHelper {
 
                 // if locator received in response, is already stored in local collection,
                 // ignore this info
-                if (existingLocator != null)
+                if (existingLocator != null) {
                   continue;
+                }
 
               }
               localLocators.add(locator);

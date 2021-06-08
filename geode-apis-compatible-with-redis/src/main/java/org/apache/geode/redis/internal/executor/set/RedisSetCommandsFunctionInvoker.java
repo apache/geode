@@ -29,7 +29,6 @@ import static org.apache.geode.redis.internal.RedisCommandType.SSCAN;
 import static org.apache.geode.redis.internal.RedisCommandType.SUNIONSTORE;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +37,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisCommandsFunctionInvoker;
@@ -56,22 +54,22 @@ public class RedisSetCommandsFunctionInvoker extends RedisCommandsFunctionInvoke
   }
 
   @Override
-  public long sadd(RedisKey key, ArrayList<ByteArrayWrapper> membersToAdd) {
+  public long sadd(RedisKey key, List<byte[]> membersToAdd) {
     return invokeCommandFunction(key, SADD, membersToAdd);
   }
 
   @Override
-  public long srem(RedisKey key, ArrayList<ByteArrayWrapper> membersToRemove) {
+  public long srem(RedisKey key, List<byte[]> membersToRemove) {
     return invokeCommandFunction(key, SREM, membersToRemove);
   }
 
   @Override
-  public Set<ByteArrayWrapper> smembers(RedisKey key) {
+  public Set<byte[]> smembers(RedisKey key) {
     return invokeCommandFunction(key, SMEMBERS);
   }
 
   @Override
-  public Set<ByteArrayWrapper> internalsmembers(RedisKey key) {
+  public Set<byte[]> internalsmembers(RedisKey key) {
     return invokeCommandFunction(key, INTERNALSMEMBERS);
   }
 
@@ -81,39 +79,38 @@ public class RedisSetCommandsFunctionInvoker extends RedisCommandsFunctionInvoke
   }
 
   @Override
-  public boolean sismember(RedisKey key, ByteArrayWrapper member) {
+  public boolean sismember(RedisKey key, byte[] member) {
     return invokeCommandFunction(key, SISMEMBER, member);
   }
 
   @Override
-  public Collection<ByteArrayWrapper> srandmember(RedisKey key, int count) {
+  public Collection<byte[]> srandmember(RedisKey key, int count) {
     return invokeCommandFunction(key, SRANDMEMBER, count);
   }
 
   @Override
-  public Collection<ByteArrayWrapper> spop(RedisKey key, int popCount) {
+  public Collection<byte[]> spop(RedisKey key, int popCount) {
     return invokeCommandFunction(key, SPOP, popCount);
   }
 
   @Override
-  public Pair<BigInteger, List<Object>> sscan(RedisKey key, Pattern matchPattern,
-      int count,
+  public Pair<BigInteger, List<Object>> sscan(RedisKey key, Pattern matchPattern, int count,
       BigInteger cursor) {
     return invokeCommandFunction(key, SSCAN, matchPattern, count, cursor);
   }
 
   @Override
-  public int sunionstore(RedisKey destination, ArrayList<RedisKey> setKeys) {
+  public int sunionstore(RedisKey destination, List<RedisKey> setKeys) {
     return invokeCommandFunction(destination, SUNIONSTORE, setKeys);
   }
 
   @Override
-  public int sinterstore(RedisKey destination, ArrayList<RedisKey> setKeys) {
+  public int sinterstore(RedisKey destination, List<RedisKey> setKeys) {
     return invokeCommandFunction(destination, SINTERSTORE, setKeys);
   }
 
   @Override
-  public int sdiffstore(RedisKey destination, ArrayList<RedisKey> setKeys) {
+  public int sdiffstore(RedisKey destination, List<RedisKey> setKeys) {
     return invokeCommandFunction(destination, SDIFFSTORE, setKeys);
   }
 }

@@ -16,12 +16,10 @@ package org.apache.geode.redis.internal.executor.set;
 
 import java.util.Set;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
-
 public class SDiffExecutor extends SetOpExecutor {
 
   @Override
-  protected boolean doSetOp(Set<ByteArrayWrapper> resultSet, Set<ByteArrayWrapper> nextSet) {
+  protected boolean doSetOp(Set<byte[]> resultSet, Set<byte[]> nextSet) {
     resultSet.removeAll(nextSet);
     return resultSet.isEmpty();
   }

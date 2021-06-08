@@ -335,15 +335,15 @@ public class TXRegionState {
           TXEntryState txes = (TXEntryState) me.getValue();
           txes.buildMessage(r, eKey, msg, this.otherMembers);
           if (txes.getFilterRoutingInfo() != null) {
+            msg.setNotificationOnlyMembers(txes.getAdjunctRecipients());
+            // exclude members that actually host targeted bucket from notification only list
+            msg.getNotificationOnlyMembers().removeAll(newMemberSet);
             newMemberSet.addAll(txes.getFilterRoutingInfo().getMembers());
           }
           if (txes.getAdjunctRecipients() != null) {
             newMemberSet.addAll(txes.getAdjunctRecipients());
           }
-
         }
-
-
 
         if (!newMemberSet.equals(this.otherMembers)) {
           // r.getCache().getLogger().info("DEBUG: participants list has changed! bug 32999.");
@@ -495,19 +495,18 @@ public class TXRegionState {
    * Put all the entries this region knows about into the given "entries" list as instances of
    * TXEntryStateWithRegionAndKey.
    */
-  void getEntries(ArrayList/* <TXEntryStateWithRegionAndKey> */ entries, InternalRegion r) {
-    Iterator it = this.entryMods.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = (Map.Entry) it.next();
-      Object eKey = me.getKey();
-      TXEntryState txes = (TXEntryState) me.getValue();
+  void getEntries(ArrayList<TXState.TXEntryStateWithRegionAndKey> entries, InternalRegion r) {
+    for (Entry<Object, TXEntryState> objectTXEntryStateEntry : this.entryMods.entrySet()) {
+      Object eKey = objectTXEntryStateEntry.getKey();
+      TXEntryState txes = objectTXEntryStateEntry.getValue();
       entries.add(new TXState.TXEntryStateWithRegionAndKey(txes, r, eKey));
     }
   }
 
   void cleanup(InternalRegion r) {
-    if (this.cleanedUp)
+    if (this.cleanedUp) {
       return;
+    }
     this.cleanedUp = true;
     Iterator it = this.entryMods.values().iterator();
     while (it.hasNext()) {

@@ -93,8 +93,9 @@ public class ClientUserAuths {
   public boolean removeSubject(long userId) {
     Subject subject = uniqueIdVsSubject.remove(userId);
     logger.debug("Subject of {} removed.", userId);
-    if (subject == null)
+    if (subject == null) {
       return false;
+    }
 
     subject.logout();
     return true;
@@ -110,9 +111,9 @@ public class ClientUserAuths {
     UserAuthAttributes uaa = this.uniqueIdVsUserAuth.get(uniqueId);
 
     if (uaa != null) {
-      if (!isDurable)
+      if (!isDurable) {
         this.cqNameVsUserAuth.put(cqName, uaa);
-      else {
+      } else {
         UserAuthAttributes oldUaa = this.cqNameVsUserAuth.put(cqName, uaa);
         if (oldUaa != null) {
           if (oldUaa != uaa)// clean earlier one
@@ -132,8 +133,9 @@ public class ClientUserAuths {
 
   public void removeUserAuthAttributesForCq(String cqName, boolean isDurable) {
     UserAuthAttributes uaa = this.cqNameVsUserAuth.remove(cqName);
-    if (uaa != null && isDurable)
+    if (uaa != null && isDurable) {
       uaa.unsetDurable();
+    }
   }
 
   public boolean removeUserId(long userId, boolean keepAlive) {

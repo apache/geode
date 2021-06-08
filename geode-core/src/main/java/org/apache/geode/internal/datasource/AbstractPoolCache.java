@@ -233,9 +233,10 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
           this.availableCache.wait(loginTimeOut);
           long newtime = System.currentTimeMillis();
           long duration = newtime - now;
-          if (duration > loginTimeOut)
+          if (duration > loginTimeOut) {
             throw new PoolException(
                 "AbstractPooledCache::getPooledConnectionFromPool:Login time-out exceeded");
+          }
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           // TODO add a cancellation check?
@@ -395,10 +396,11 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
       synchronized (this.availableCache) {
         this.activeConnections -= numConnTimedOut;
         this.totalConnections -= numConnTimedOut;
-        if (numConnTimedOut == 1)
+        if (numConnTimedOut == 1) {
           this.availableCache.notify();
-        else
+        } else {
           this.availableCache.notifyAll();
+        }
       }
     }
     // Asif : Create a temp list which copies the connections in
@@ -471,8 +473,9 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
         SystemFailure.checkFailure();
         try {
           cleanUp();
-          if (sleepTime != -1)
+          if (sleepTime != -1) {
             Thread.sleep(sleepTime);
+          }
           // Asif : The cleaner thread will wait on activeCache if it is
           // empty . Else it will sleep for a while & again do the
           // clean up. If the activeMap is empty cleaner thread will

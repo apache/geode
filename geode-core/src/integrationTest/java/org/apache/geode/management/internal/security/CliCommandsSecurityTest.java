@@ -62,8 +62,9 @@ public class CliCommandsSecurityTest {
     SoftAssertions softly = new SoftAssertions();
     for (TestCommand command : commands) {
       // skip query commands since query commands are only available in client shell
-      if (command.getCommand().startsWith("query"))
+      if (command.getCommand().startsWith("query")) {
         continue;
+      }
       LogService.getLogger().info("processing: " + command.getCommand());
       // for those commands that requires a permission, we expect an exception to be thrown
       // This has the potential to become flaky for commands with more than one permission.

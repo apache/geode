@@ -275,8 +275,9 @@ public class DLockGrantor {
    * @return instance of grantor for the lock service or null if no local grantor has been created
    */
   static DLockGrantor getGrantorForService(DLockService dlock) {
-    if (dlock == null)
+    if (dlock == null) {
       return null;
+    }
     return dlock.getGrantor();
   }
 
@@ -290,22 +291,27 @@ public class DLockGrantor {
    * @param svc the lock service to return the grantor instance for
    */
   public static DLockGrantor waitForGrantor(DLockService svc) throws InterruptedException {
-    if (svc == null)
+    if (svc == null) {
       return null;
+    }
     // now we need to get the grantor and make sure it's ready...
     DLockGrantor oldGrantor = null;
     DLockGrantor grantor = getGrantorForService(svc);
     do {
-      if (grantor == null || grantor.isDestroyed())
+      if (grantor == null || grantor.isDestroyed()) {
         return null;
+      }
       grantor.waitWhileInitializing();
-      if (svc.isDestroyed())
+      if (svc.isDestroyed()) {
         return null;
+      }
       // make sure we are lock grantor
-      if (!svc.isCurrentlyOrIsMakingLockGrantor())
+      if (!svc.isCurrentlyOrIsMakingLockGrantor()) {
         return null;
-      if (!grantor.isReady())
+      }
+      if (!grantor.isReady()) {
         return null;
+      }
       // Now make sure the service still has this member as its grantor
       oldGrantor = grantor;
       grantor = getGrantorForService(svc);
@@ -404,8 +410,9 @@ public class DLockGrantor {
         interrupted = true;
         throwIfInterruptible(e);
       } finally {
-        if (interrupted)
+        if (interrupted) {
           Thread.currentThread().interrupt();
+        }
       }
     }
   }
@@ -729,8 +736,9 @@ public class DLockGrantor {
    */
   boolean hasWaitingRequests(Object name) {
     DLockGrantToken grant = getGrantToken(name);
-    if (grant == null)
+    if (grant == null) {
       return false;
+    }
     synchronized (grant) {
       return grant.hasWaitingRequests();
     }
@@ -881,8 +889,9 @@ public class DLockGrantor {
   void initializeHeldLocks(InternalDistributedMember owner, Set tokens)
       throws InterruptedException {
     synchronized (this) {
-      if (isDestroyed())
+      if (isDestroyed()) {
         return;
+      }
       if (!acquireDestroyReadLock(0)) {
         return;
       }
@@ -1220,8 +1229,9 @@ public class DLockGrantor {
    */
   void destroy() {
     synchronized (this) {
-      if (isDestroyed())
+      if (isDestroyed()) {
         return;
+      }
       final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
       if (isDebugEnabled_DLS) {
         logger.trace(LogMarker.DLS_VERBOSE, "[simpleDestroy]");
@@ -1728,10 +1738,12 @@ public class DLockGrantor {
   protected long handleSuspendTimeouts() {
     long smallestTimeout = Long.MAX_VALUE;
     synchronized (suspendLock) {
-      if (suspendQueue.isEmpty())
+      if (suspendQueue.isEmpty()) {
         return smallestTimeout;
-      if (isDestroyed())
+      }
+      if (isDestroyed()) {
         return smallestTimeout;
+      }
     }
     List timeouts = new ArrayList();
 
@@ -1922,8 +1934,9 @@ public class DLockGrantor {
     if (DEBUG_SUSPEND_LOCK) {
       Assert.assertHoldsLock(this.suspendLock, true);
     }
-    if (rThread == null)
+    if (rThread == null) {
       return false;
+    }
     return rThread.equals(this.lockingSuspendedBy);
   }
 
@@ -2518,8 +2531,9 @@ public class DLockGrantor {
      */
     protected synchronized long expireAndGrantLock() {
       // isGranted calls checkForExpiration...
-      if (this.grantor.isDestroyed())
+      if (this.grantor.isDestroyed()) {
         return Long.MAX_VALUE;
+      }
       if (!isGranted(true) && !this.grantor.isLockingSuspendedWithSync()) {
         grantLockToNextRequest();
       }
@@ -2540,8 +2554,9 @@ public class DLockGrantor {
      * @return true if there are pending requests waiting to lock this
      */
     protected synchronized boolean hasWaitingRequests() {
-      if (this.pendingRequests == null)
+      if (this.pendingRequests == null) {
         return false;
+      }
       return !this.pendingRequests.isEmpty();
     }
 
@@ -2565,8 +2580,9 @@ public class DLockGrantor {
       }
 
       long newLeaseExpireTime = grantAndRespondToRequest(request);
-      if (newLeaseExpireTime == -1)
+      if (newLeaseExpireTime == -1) {
         return false;
+      }
 
       if (newLeaseExpireTime < Long.MAX_VALUE) {
         long now = DLockService.getLockTimeStamp(this.grantor.dm);
@@ -2643,10 +2659,12 @@ public class DLockGrantor {
     protected long handleRequestTimeouts() {
       long smallestTimeout = Long.MAX_VALUE;
       synchronized (this) {
-        if (this.pendingRequests == null)
+        if (this.pendingRequests == null) {
           return smallestTimeout;
-        if (this.grantor.isDestroyed())
+        }
+        if (this.grantor.isDestroyed()) {
           return smallestTimeout;
+        }
       }
       List timeouts = new ArrayList();
 
@@ -2688,10 +2706,12 @@ public class DLockGrantor {
       try {
         synchronized (this) {
           try {
-            if (isDestroyed())
+            if (isDestroyed()) {
               return;
-            if (this.pendingRequests == null)
+            }
+            if (this.pendingRequests == null) {
               return;
+            }
             // remove member from pendingRequests...
             DLockRequestMessage req = null;
             for (Iterator iter = this.pendingRequests.iterator(); iter.hasNext();) {
@@ -2839,8 +2859,9 @@ public class DLockGrantor {
           }
 
           long newLeaseExpireTime = grantAndRespondToRequest(request);
-          if (newLeaseExpireTime == -1)
+          if (newLeaseExpireTime == -1) {
             continue;
+          }
 
           if (newLeaseExpireTime < Long.MAX_VALUE) {
             long now = DLockService.getLockTimeStamp(this.grantor.dm);
@@ -3161,8 +3182,9 @@ public class DLockGrantor {
      */
     synchronized boolean checkForExpiration() {
       if (this.lessee != null && this.leaseId > -1) {
-        if (this.leaseExpireTime == Long.MAX_VALUE)
+        if (this.leaseExpireTime == Long.MAX_VALUE) {
           return false;
+        }
         long currentTime = getCurrentTime();
         if (currentTime > this.leaseExpireTime) {
           // expired!
@@ -3282,8 +3304,9 @@ public class DLockGrantor {
      * @return true if lock was released guarded.By this
      */
     private boolean releaseLock(InternalDistributedMember member, int lockId) {
-      if (lockId == -1)
+      if (lockId == -1) {
         return false;
+      }
       checkDestroyed();
 
       if (isLeaseHeldBy(member, lockId)) {
@@ -3428,8 +3451,9 @@ public class DLockGrantor {
                   this.timeToWait = newTimeToWait;
                 }
 
-                if (this.timeToWait < 0)
+                if (this.timeToWait < 0) {
                   this.timeToWait = 0;
+                }
                 if (isDebugEnabled_DLS) {
                   logger.trace(LogMarker.DLS_VERBOSE,
                       "DLockGrantorThread will wait for {} ms. nextExpire={} nextTimeout={} now={}",
@@ -3469,18 +3493,21 @@ public class DLockGrantor {
                   this.waiting = true;
                   this.lock.wait(timeToWaitThisTime); // spurious wakeup ok
                   this.waiting = false;
-                  if (this.goIntoWait)
+                  if (this.goIntoWait) {
                     break; // out of for loop
+                  }
                   timeToWaitThisTime = this.expectedWakeupTimeStamp - now();
-                  if (timeToWaitThisTime <= 0)
+                  if (timeToWaitThisTime <= 0) {
                     break; // out of for loop
+                  }
                 }
               }
               if (isDebugEnabled_DLS) {
                 logger.trace(LogMarker.DLS_VERBOSE, "DLockGrantorThread has woken up...");
               }
-              if (this.shutdown)
+              if (this.shutdown) {
                 break;
+              }
               // if goIntoWait, continue back around and enter wait again
               if (this.goIntoWait) {
                 this.goIntoWait = false;

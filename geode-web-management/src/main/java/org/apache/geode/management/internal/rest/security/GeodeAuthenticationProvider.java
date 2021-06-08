@@ -56,10 +56,12 @@ public class GeodeAuthenticationProvider implements AuthenticationProvider, Serv
         credentials.setProperty(ResourceConstants.TOKEN, password);
       }
     } else {
-      if (username != null)
+      if (username != null) {
         credentials.put(ResourceConstants.USER_NAME, username);
-      if (password != null)
+      }
+      if (password != null) {
         credentials.put(ResourceConstants.PASSWORD, password);
+      }
     }
 
     try {

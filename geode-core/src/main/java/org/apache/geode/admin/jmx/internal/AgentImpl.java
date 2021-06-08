@@ -902,8 +902,9 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * Stops the HttpAdaptor and its XsltProcessor. Unregisters the associated MBeans.
    */
   private void stopHttpAdaptor() {
-    if (!this.agentConfig.isHttpEnabled())
+    if (!this.agentConfig.isHttpEnabled()) {
       return;
+    }
 
     // stop the adaptor...
     try {
@@ -922,8 +923,9 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
 
   /** Stops the RMIConnectorServer and unregisters its MBean. */
   private void stopRMIConnectorServer() {
-    if (!this.agentConfig.isRmiEnabled())
+    if (!this.agentConfig.isRmiEnabled()) {
       return;
+    }
 
     // stop the RMI Connector server...
     try {
@@ -962,8 +964,9 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
 
   /** Stops the SnmpAdaptor and unregisters its MBean. */
   private void stopSnmpAdaptor() {
-    if (!this.agentConfig.isSnmpEnabled())
+    if (!this.agentConfig.isSnmpEnabled()) {
       return;
+    }
 
     // stop the SnmpAdaptor...
     try {
@@ -1103,8 +1106,9 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * If {@link AgentConfig#isRmiEnabled} returns false, then this adaptor will not be started.
    */
   private void startRMIConnectorServer() {
-    if (!this.agentConfig.isRmiEnabled())
+    if (!this.agentConfig.isRmiEnabled()) {
       return;
+    }
 
     String rmiBindAddress = this.agentConfig.getRmiBindAddress();
 
@@ -1213,8 +1217,9 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * If {@link AgentConfig#isSnmpEnabled} returns false, then this adaptor will not be started.
    */
   private void startSnmpAdaptor() {
-    if (!this.agentConfig.isSnmpEnabled())
+    if (!this.agentConfig.isSnmpEnabled()) {
       return;
+    }
     try {
       ObjectName objName = getSnmpAdaptorName();
 
@@ -1276,8 +1281,9 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * If {@link AgentConfig#isHttpEnabled} returns false, then this adaptor will not be started.
    */
   private void startHttpAdaptor() {
-    if (!this.agentConfig.isHttpEnabled())
+    if (!this.agentConfig.isHttpEnabled()) {
       return;
+    }
     try {
       ObjectName objName = getHttpAdaptorName();
 

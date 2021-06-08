@@ -677,8 +677,9 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
     // Adapted from a bug report by Eric Zoerner
     CustomEntryConcurrentHashMap map = new CustomEntryConcurrentHashMap(2, 5.0f, 1);
     assertTrue(map.isEmpty());
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 20; i++) {
       map.put(new Integer(i), new Integer(i));
+    }
     assertFalse(map.isEmpty());
     Map.Entry entry1 = (Map.Entry) map.entrySet().iterator().next();
 
