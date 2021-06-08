@@ -27,13 +27,7 @@ package org.apache.geode.redis.internal.collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,7 +42,7 @@ import org.junit.After;
 import org.junit.Test;
 
 
-public class OrderStatisticTreeTest {
+public class OrderStatisticsTreeTest {
   private final OrderStatisticsTree<Integer> tree =
       new OrderStatisticsTree<>();
 
@@ -62,15 +56,15 @@ public class OrderStatisticTreeTest {
 
   @Test
   public void testAdd() {
-    assertEquals(set.isEmpty(), tree.isEmpty());
+    assertThat(tree.isEmpty()).isEqualTo(set.isEmpty());
 
     for (int i = 10; i < 30; i += 2) {
-      assertTrue(tree.isHealthy());
-      assertEquals(set.contains(i), tree.contains(i));
-      assertEquals(set.add(i), tree.add(i));
-      assertEquals(set.add(i), tree.add(i));
-      assertEquals(set.contains(i), tree.contains(i));
-      assertTrue(tree.isHealthy());
+      assertThat(tree.isHealthy()).isTrue();
+      assertThat(tree.contains(i)).isEqualTo(set.contains(i));
+      assertThat(tree.add(i)).isEqualTo(set.add(i));
+      assertThat(tree.add(i)).isEqualTo(set.add(i));
+      assertThat(tree.contains(i)).isEqualTo(set.contains(i));
+      assertThat(tree.isHealthy()).isTrue();
     }
 
     assertThat(set.isEmpty()).isEqualTo(tree.isEmpty()).isFalse();
@@ -79,16 +73,16 @@ public class OrderStatisticTreeTest {
   @Test
   public void testAddAll() {
     for (int i = 0; i < 10; ++i) {
-      assertEquals(set.add(i), tree.add(i));
+      assertThat(tree.add(i)).isEqualTo(set.add(i));
     }
 
     Collection<Integer> coll = Arrays.asList(10, 9, 7, 11, 12);
 
-    assertEquals(set.addAll(coll), tree.addAll(coll));
-    assertEquals(set.size(), tree.size());
+    assertThat(tree.addAll(coll)).isEqualTo(set.addAll(coll));
+    assertThat(tree.size()).isEqualTo(set.size());
 
     for (int i = -10; i < 20; ++i) {
-      assertEquals(set.contains(i), tree.contains(i));
+      assertThat(tree.contains(i)).isEqualTo(set.contains(i));
     }
   }
 
@@ -99,7 +93,7 @@ public class OrderStatisticTreeTest {
       tree.add(i);
     }
 
-    assertEquals(set.size(), tree.size());
+    assertThat(tree.size()).isEqualTo(set.size());
     set.clear();
     tree.clear();
     // noinspection ConstantConditions
@@ -109,15 +103,15 @@ public class OrderStatisticTreeTest {
   @Test
   public void testContains() {
     for (int i = 100; i < 200; i += 3) {
-      assertTrue(tree.isHealthy());
-      assertEquals(set.add(i), tree.add(i));
-      assertTrue(tree.isHealthy());
+      assertThat(tree.isHealthy()).isTrue();
+      assertThat(tree.add(i)).isEqualTo(set.add(i));
+      assertThat(tree.isHealthy()).isTrue();
     }
 
-    assertEquals(set.size(), tree.size());
+    assertThat(tree.size()).isEqualTo(set.size());
 
     for (int i = 0; i < 300; ++i) {
-      assertEquals(set.contains(i), tree.contains(i));
+      assertThat(tree.contains(i)).isEqualTo(set.contains(i));
     }
   }
 
@@ -134,24 +128,24 @@ public class OrderStatisticTreeTest {
       coll.add(i);
     }
 
-    assertEquals(set.containsAll(coll), tree.containsAll(coll));
+    assertThat(tree.containsAll(coll)).isEqualTo(set.containsAll(coll));
     coll.add(100);
-    assertEquals(set.containsAll(coll), tree.containsAll(coll));
+    assertThat(tree.containsAll(coll)).isEqualTo(set.containsAll(coll));
   }
 
   @Test
   public void testRemove() {
     for (int i = 0; i < 200; ++i) {
-      assertEquals(set.add(i), tree.add(i));
+      assertThat(tree.add(i)).isEqualTo(set.add(i));
     }
 
     for (int i = 50; i < 150; i += 2) {
-      assertEquals(set.remove(i), tree.remove(i));
-      assertTrue(tree.isHealthy());
+      assertThat(tree.remove(i)).isEqualTo(set.remove(i));
+      assertThat(tree.isHealthy()).isTrue();
     }
 
     for (int i = -100; i < 300; ++i) {
-      assertEquals(set.contains(i), tree.contains(i));
+      assertThat(tree.contains(i)).isEqualTo(set.contains(i));
     }
   }
 
@@ -159,7 +153,7 @@ public class OrderStatisticTreeTest {
   public void testRemoveLast() {
     tree.add(1);
     tree.remove(1);
-    assertEquals(0, tree.size());
+    assertThat(tree.size()).isEqualTo(0);
   }
 
   @Test
@@ -175,49 +169,49 @@ public class OrderStatisticTreeTest {
       coll.add(i);
     }
 
-    assertEquals(set.removeAll(coll), tree.removeAll(coll));
+    assertThat(tree.removeAll(coll)).isEqualTo(set.removeAll(coll));
 
     for (int i = -10; i < 50; ++i) {
-      assertEquals(set.contains(i), tree.contains(i));
+      assertThat(tree.contains(i)).isEqualTo(set.contains(i));
     }
 
-    assertEquals(set.removeAll(coll), tree.removeAll(coll));
+    assertThat(tree.removeAll(coll)).isEqualTo(set.removeAll(coll));
 
     for (int i = -10; i < 50; ++i) {
-      assertEquals(set.contains(i), tree.contains(i));
+      assertThat(tree.contains(i)).isEqualTo(set.contains(i));
     }
   }
 
   @Test
   public void testSize() {
-    assertEquals(set.size(), tree.size());
+    assertThat(tree.size()).isEqualTo(set.size());
     for (int i = 0; i < 200; ++i) {
-      assertEquals(set.add(i), tree.add(i));
-      assertEquals(set.size(), tree.size());
+      assertThat(tree.add(i)).isEqualTo(set.add(i));
+      assertThat(tree.size()).isEqualTo(set.size());
     }
   }
 
   @Test
   public void testIndexOf() {
     for (int i = 0; i < 100; ++i) {
-      assertTrue(tree.add(i * 2));
+      assertThat(tree.add(i * 2)).isTrue();
     }
 
     for (int i = 0; i < 100; ++i) {
-      assertEquals(i, tree.indexOf(2 * i));
+      assertThat(tree.indexOf(2 * i)).isEqualTo(i);
     }
 
     for (int i = 100; i < 150; ++i) {
-      assertEquals(-1, tree.indexOf(2 * i));
+      assertThat(tree.indexOf(2 * i)).isEqualTo(-1);
     }
   }
 
   @Test
   public void testEmpty() {
-    assertEquals(set.isEmpty(), tree.isEmpty());
+    assertThat(tree.isEmpty()).isEqualTo(set.isEmpty());
     set.add(0);
     tree.add(0);
-    assertEquals(set.isEmpty(), tree.isEmpty());
+    assertThat(tree.isEmpty()).isEqualTo(set.isEmpty());
   }
 
   @Test(expected = IndexOutOfBoundsException.class)
@@ -255,7 +249,7 @@ public class OrderStatisticTreeTest {
     }
 
     for (int i = 0; i < tree.size(); ++i) {
-      assertEquals(Integer.valueOf(3 * i), tree.get(i));
+      assertThat(tree.get(i)).isEqualTo(Integer.valueOf(3 * i));
     }
   }
 
@@ -275,7 +269,7 @@ public class OrderStatisticTreeTest {
     Iterator<Integer> iterator2 = tree.iterator();
 
     for (int i = 0; i < 3; ++i) {
-      assertEquals(iterator1.next(), iterator2.next());
+      assertThat(iterator2.next()).isEqualTo(iterator1.next());
     }
 
     iterator1.remove();
@@ -297,11 +291,11 @@ public class OrderStatisticTreeTest {
     Iterator<Integer> iterator2 = tree.iterator();
 
     for (int i = 0; i < 5; ++i) {
-      assertEquals(iterator1.hasNext(), iterator2.hasNext());
-      assertEquals(iterator1.next(), iterator2.next());
+      assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
+      assertThat(iterator2.next()).isEqualTo(iterator1.next());
     }
 
-    assertEquals(iterator1.hasNext(), iterator2.hasNext());
+    assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
 
     assertThatThrownBy(iterator1::next).isInstanceOf(NoSuchElementException.class);
     assertThatThrownBy(iterator2::next).isInstanceOf(NoSuchElementException.class);
@@ -325,8 +319,8 @@ public class OrderStatisticTreeTest {
     Iterator<Integer> iterator2 = tree.iterator();
 
     for (int i = 0; i < 4; ++i) {
-      assertEquals(iterator1.hasNext(), iterator2.hasNext());
-      assertEquals(iterator1.next(), iterator2.next());
+      assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
+      assertThat(iterator2.next()).isEqualTo(iterator1.next());
     }
 
     iterator1.remove();
@@ -345,51 +339,51 @@ public class OrderStatisticTreeTest {
 
     Collection<Integer> coll = Arrays.asList(26, 29, 25);
 
-    assertEquals(set.retainAll(coll), tree.retainAll(coll));
-    assertEquals(set.size(), tree.size());
+    assertThat(tree.retainAll(coll)).isEqualTo(set.retainAll(coll));
+    assertThat(tree.size()).isEqualTo(set.size());
 
-    assertTrue(set.containsAll(tree));
-    assertTrue(tree.containsAll(set));
+    assertThat(set.containsAll(tree)).isTrue();
+    assertThat(tree.containsAll(set)).isTrue();
   }
 
   @Test
   public void testIteratorRemove() {
     for (int i = 10; i < 16; ++i) {
-      assertEquals(set.add(i), tree.add(i));
+      assertThat(tree.add(i)).isEqualTo(set.add(i));
     }
 
     Iterator<Integer> iterator1 = set.iterator();
     Iterator<Integer> iterator2 = tree.iterator();
 
-    assertEquals(iterator1.hasNext(), iterator2.hasNext());
-    assertEquals(iterator1.next(), iterator2.next());
+    assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
+    assertThat(iterator2.next()).isEqualTo(iterator1.next());
 
-    assertEquals(iterator1.hasNext(), iterator2.hasNext());
-    assertEquals(iterator1.next(), iterator2.next());
+    assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
+    assertThat(iterator2.next()).isEqualTo(iterator1.next());
 
     iterator1.remove(); // remove 11
     iterator2.remove();
 
-    assertEquals(iterator1.hasNext(), iterator2.hasNext());
-    assertEquals(iterator1.next(), iterator2.next());
+    assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
+    assertThat(iterator2.next()).isEqualTo(iterator1.next());
 
-    assertEquals(iterator1.hasNext(), iterator2.hasNext());
-    assertEquals(iterator1.next(), iterator2.next());
+    assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
+    assertThat(iterator2.next()).isEqualTo(iterator1.next());
 
     iterator1.remove(); // remove 13
     iterator2.remove();
 
-    assertEquals(set.size(), tree.size());
+    assertThat(tree.size()).isEqualTo(set.size());
 
     for (int i = 10; i < 16; ++i) {
-      assertEquals(set.contains(i), tree.contains(i));
+      assertThat(tree.contains(i)).isEqualTo(set.contains(i));
     }
   }
 
   @Test
   public void testIteratorBruteForce() {
     for (int i = 0; i < 10_000; ++i) {
-      assertEquals(set.add(i), tree.add(i));
+      assertThat(tree.add(i)).isEqualTo(set.add(i));
     }
 
     Iterator<Integer> iterator1 = set.iterator();
@@ -402,7 +396,7 @@ public class OrderStatisticTreeTest {
 
     while (true) {
       if (!iterator1.hasNext()) {
-        assertFalse(iterator2.hasNext());
+        assertThat(iterator2.hasNext()).isFalse();
         break;
       }
 
@@ -416,20 +410,20 @@ public class OrderStatisticTreeTest {
           assertThatThrownBy(iterator2::remove).isInstanceOf(IllegalStateException.class);
         }
       } else {
-        assertEquals(iterator1.hasNext(), iterator2.hasNext());
+        assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
 
         if (iterator1.hasNext()) {
-          assertEquals(iterator1.next(), iterator2.next());
+          assertThat(iterator2.next()).isEqualTo(iterator1.next());
         } else {
           break;
         }
       }
     }
 
-    assertEquals(set.size(), tree.size());
-    assertTrue(tree.isHealthy());
-    assertTrue(set.containsAll(tree));
-    assertTrue(tree.containsAll(set));
+    assertThat(tree.size()).isEqualTo(set.size());
+    assertThat(tree.isHealthy()).isTrue();
+    assertThat(set.containsAll(tree)).isTrue();
+    assertThat(tree.containsAll(set)).isTrue();
   }
 
   @Test
@@ -445,15 +439,11 @@ public class OrderStatisticTreeTest {
     set.remove(10);
     tree.remove(10);
 
-    assertEquals(iterator1.hasNext(), iterator2.hasNext());
+    assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
 
     try {
       iterator1.next();
-      try {
-        iterator2.next();
-      } catch (ConcurrentModificationException ex) {
-        fail("iterator2 should NOT have thrown an exception.");
-      }
+      assertThatCode(() -> iterator2.next()).doesNotThrowAnyException();
     } catch (ConcurrentModificationException ex) {
       assertThatThrownBy(iterator2::next)
           .isInstanceOf(ConcurrentModificationException.class);
@@ -533,7 +523,7 @@ public class OrderStatisticTreeTest {
     iterator1a.remove();
     iterator2a.remove();
 
-    assertEquals(iterator1b.hasNext(), iterator2b.hasNext());
+    assertThat(iterator2b.hasNext()).isEqualTo(iterator1b.hasNext());
 
     assertThatThrownBy(iterator1b::next).isInstanceOf(ConcurrentModificationException.class);
     assertThatThrownBy(iterator2b::next).isInstanceOf(ConcurrentModificationException.class);
@@ -549,7 +539,7 @@ public class OrderStatisticTreeTest {
       tree.add(num);
     }
 
-    assertArrayEquals(set.toArray(), tree.toArray());
+    assertThat(tree.toArray()).isEqualTo(set.toArray());
   }
 
   @Test
@@ -565,9 +555,9 @@ public class OrderStatisticTreeTest {
     Integer[] array1after = set.toArray(array1before);
     Integer[] array2after = tree.toArray(array2before);
 
-    assertNotSame(array1before, array1after);
-    assertNotSame(array2before, array2after);
-    assertArrayEquals(array1after, array2after);
+    assertThat(array1after).isNotSameAs(array1before);
+    assertThat(array2after).isNotSameAs(array2before);
+    assertThat(array2after).isEqualTo(array1after);
 
     set.remove(1);
     tree.remove(1);
@@ -575,8 +565,8 @@ public class OrderStatisticTreeTest {
     array1after = set.toArray(array1before);
     array2after = tree.toArray(array2before);
 
-    assertSame(array1before, array1after);
-    assertSame(array2before, array2after);
-    assertArrayEquals(array1after, array2after);
+    assertThat(array1after).isSameAs(array1before);
+    assertThat(array2after).isSameAs(array2before);
+    assertThat(array2after).isEqualTo(array1after);
   }
 }

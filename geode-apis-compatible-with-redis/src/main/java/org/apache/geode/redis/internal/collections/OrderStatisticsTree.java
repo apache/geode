@@ -26,6 +26,8 @@
 package org.apache.geode.redis.internal.collections;
 
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -34,6 +36,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
+
+import org.apache.geode.annotations.VisibleForTesting;
 
 /**
  * This class implements an order statistic tree which is based on AVL-trees.
@@ -68,7 +72,6 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public <T> T[] toArray(T[] a) {
     Iterator<E> iterator = iterator();
 
@@ -79,7 +82,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     int index = 0;
 
     for (; index < size; ++index) {
-      a[index] = (T) iterator.next();
+      a[index] = uncheckedCast(iterator.next());
     }
 
     if (index < a.length) {
@@ -179,19 +182,19 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
       }
     }
 
-    Node<E> newnode = new Node<>(element);
+    Node<E> newNode = new Node<>(element);
 
     if (element.compareTo(parent.key) < 0) {
-      parent.left = newnode;
+      parent.left = newNode;
     } else {
-      parent.right = newnode;
+      parent.right = newNode;
     }
 
-    newnode.parent = parent;
+    newNode.parent = parent;
     size++;
     modCount++;
     Node<E> hi = parent;
-    Node<E> lo = newnode;
+    Node<E> lo = newNode;
 
     while (hi != null) {
       if (hi.left == lo) {
@@ -202,7 +205,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
       hi = hi.parent;
     }
 
-    fixAfterModification(newnode, true);
+    fixAfterModification(newNode, true);
     return true;
   }
 
@@ -315,10 +318,6 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     // self check
     if (this == o) {
       return true;
-    }
-    // null check
-    if (o == null) {
-      return false;
     }
     // type check and cast
     if (!(o instanceof Set)) {
@@ -586,7 +585,8 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     return false;
   }
 
-  public boolean isHealthy() {
+  @VisibleForTesting
+  protected boolean isHealthy() {
     if (root == null) {
       return true;
     }
