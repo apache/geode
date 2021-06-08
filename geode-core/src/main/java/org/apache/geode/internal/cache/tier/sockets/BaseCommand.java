@@ -1137,13 +1137,13 @@ public abstract class BaseCommand implements Command {
         region.getConcurrencyChecksEnabled(), serializeValues);
 
     if (keyInfo instanceof List) {
-      HashMap<Integer, HashSet<Integer>> bucketKeys = new HashMap<>();
-      for (Integer key : (List<Integer>) keyInfo) {
+      HashMap<Integer, HashSet<Object>> bucketKeys = new HashMap<>();
+      for (Object key : (List<?>) keyInfo) {
         int id = PartitionedRegionHelper.getHashKey(region, null, key, null, null);
         if (bucketKeys.containsKey(id)) {
           bucketKeys.get(id).add(key);
         } else {
-          HashSet<Integer> keys = new HashSet<>();
+          HashSet<Object> keys = new HashSet<>();
           keys.add(key);
           bucketKeys.put(id, keys);
         }

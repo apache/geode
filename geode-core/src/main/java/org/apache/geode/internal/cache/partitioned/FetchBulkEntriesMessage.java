@@ -75,7 +75,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   /**
    * Map of bucket-id as key and set of keys as value.
    */
-  private HashMap<Integer, HashSet<Integer>> bucketKeys;
+  private HashMap<Integer, HashSet> bucketKeys;
 
   private static final byte ALL_KEYS = (byte) 0;
 
@@ -90,8 +90,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   public FetchBulkEntriesMessage() {}
 
   private FetchBulkEntriesMessage(InternalDistributedMember recipient, int regionId,
-      ReplyProcessor21 processor, HashMap<Integer, HashSet<Integer>> bucketKeys,
-      HashSet<Integer> bucketIds,
+      ReplyProcessor21 processor, HashMap<Integer, HashSet> bucketKeys, HashSet<Integer> bucketIds,
       String regex, boolean allowTombstones) {
     super(recipient, regionId, processor);
     this.bucketKeys = bucketKeys;
@@ -112,8 +111,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static FetchBulkEntriesResponse send(InternalDistributedMember recipient,
-      PartitionedRegion r, HashMap<Integer, HashSet<Integer>> bucketKeys,
-      HashSet<Integer> bucketIds,
+      PartitionedRegion r, HashMap<Integer, HashSet> bucketKeys, HashSet<Integer> bucketIds,
       String regex, boolean allowTombstones) throws ForceReattemptException {
     Assert.assertTrue(recipient != null, "FetchBulkEntriesMessage NULL reply message");
     FetchBulkEntriesResponse p = new FetchBulkEntriesResponse(r.getSystem(), r, recipient);
@@ -121,7 +119,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
         bucketIds, regex, allowTombstones);
     m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
-    Set<InternalDistributedMember> failures = r.getDistributionManager().putOutgoing(m);
+    Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
           String.format("Failed sending < %s >", m));
@@ -216,16 +214,15 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
 
     public static void sendReply(PartitionedRegion pr, final InternalDistributedMember recipient,
         final int processorId, final DistributionManager dm,
-        final HashMap<Integer, HashSet<Integer>> bucketKeys, final HashSet<Integer> bucketIds,
-        String regex,
+        final HashMap<Integer, HashSet> bucketKeys, final HashSet<Integer> bucketIds, String regex,
         boolean allowTombstones, long startTime) throws ForceReattemptException {
 
       PartitionedRegionDataStore ds = pr.getDataStore();
       if (ds == null) {
         return;
       }
-      ArrayList<BucketRegion> maps = new ArrayList<>();
-      HashSet<Integer> failedBuckets = new HashSet<>();
+      ArrayList<BucketRegion> maps = new ArrayList<BucketRegion>();
+      HashSet<Integer> failedBuckets = new HashSet<Integer>();
 
       Set<Integer> bucketIdSet = null;
       if (bucketKeys != null) {
@@ -247,7 +244,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
           new HeapDataOutputStream(InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048,
               Versioning.getKnownVersionOrDefault(recipient.getVersion(), KnownVersion.CURRENT))) {
         Iterator<BucketRegion> mapsIterator = maps.iterator();
-        Iterator it;
+        Iterator it = null;
 
         boolean keepGoing = true;
         boolean writeFooter = false;
