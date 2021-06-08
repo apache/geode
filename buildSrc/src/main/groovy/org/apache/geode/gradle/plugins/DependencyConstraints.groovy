@@ -254,7 +254,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-security-oauth2-jose')
     }
 
-    dependencySet(group: 'org.springframework', version: '5.2.10.RELEASE') {
+    dependencySet(group: 'org.springframework', version: '5.2.15.RELEASE') {
       entry('spring-aspects')
       entry('spring-beans')
       entry('spring-context')
