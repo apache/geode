@@ -630,7 +630,8 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
     verifyStatusIsErrorInOneServer(replicateRegionCommand);
     Condition<String> startsWithError = new Condition<>(
         s -> (s.startsWith("Execution failed. Error:")
-            || s.startsWith("Error (Unknown error sending batch)")),
+            || s.startsWith("Error (Unknown error sending batch)")
+            || s.startsWith("MemberResponse got memberDeparted event for")),
         "execution error");
     Condition<String> haveEntriesReplicated =
         new Condition<>(s -> s.startsWith("Entries replicated:"), "entries replicated");
@@ -645,25 +646,18 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
 
     Condition<String> startsWithError = new Condition<>(
         s -> (s.startsWith("Execution failed. Error:")
-            || s.startsWith("Error (Unknown error sending batch)")),
+            || s.startsWith("Error (Unknown error sending batch)")
+            || s.startsWith("No connection available towards receiver after having replicated")
+            || s.startsWith("Error (Region destroyed)")
+            || s.startsWith("MemberResponse got memberDeparted event for")),
         "execution error");
-
-    Condition<String> noConnectionAvailable = new Condition<>(
-        s -> s.startsWith("No connection available towards receiver after having replicated"),
-        "no connection available");
-
-    Condition<String> regionDestroyed = new Condition<>(
-        s -> s.startsWith("Error (Region destroyed)"),
-        "region destroyed");
 
     Condition<String> senderNotPrimary = new Condition<>(
         s -> s.equals("Sender B is serial and not primary. 0 entries replicated."),
         "sender not primary");
 
     replicateRegionCommand.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-        .asList().haveAtMost(1, startsWithError).haveAtMost(1, noConnectionAvailable)
-        .haveAtMost(1, regionDestroyed)
-        .haveExactly(2, senderNotPrimary);
+        .asList().haveExactly(1, startsWithError).haveExactly(2, senderNotPrimary);
   }
 
   public void verifyResultStoppingSecondarySerialSender(
