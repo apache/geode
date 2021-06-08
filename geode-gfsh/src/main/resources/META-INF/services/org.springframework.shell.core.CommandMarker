@@ -6,6 +6,7 @@ org.apache.geode.management.internal.cli.commands.AlterRegionCommand
 org.apache.geode.management.internal.cli.commands.AlterRuntimeConfigCommand
 org.apache.geode.management.internal.cli.commands.BackupDiskStoreCommand
 org.apache.geode.management.internal.cli.commands.ChangeLogLevelCommand
+org.apache.geode.management.internal.cli.commands.ClearCommand
 org.apache.geode.management.internal.cli.commands.ClearDefinedIndexesCommand
 org.apache.geode.management.internal.cli.commands.CloseDurableClientCommand
 org.apache.geode.management.internal.cli.commands.CloseDurableCQsCommand
