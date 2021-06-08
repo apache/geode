@@ -37,8 +37,8 @@ import javax.xml.transform.TransformerException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionOrdinal;
 import org.apache.geode.internal.serialization.Versioning;
@@ -49,7 +49,7 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils;
  * Domain object for all the configuration related data.
  *
  */
-public class Configuration implements DataSerializable {
+public class Configuration implements VersionedDataSerializable {
   private static final long serialVersionUID = 1L;
   private String configName;
   private String cacheXmlContent;
@@ -158,6 +158,16 @@ public class Configuration implements DataSerializable {
     return deployments.keySet();
   }
 
+  public void toDataPre_GEODE_1_12_0_0(DataOutput out) throws IOException {
+    DataSerializer.writeString(configName, out);
+    DataSerializer.writeString(cacheXmlFileName, out);
+    DataSerializer.writeString(cacheXmlContent, out);
+    DataSerializer.writeString(propertiesFileName, out);
+    DataSerializer.writeProperties(gemfireProperties, out);
+    HashSet<String> jarNames = new HashSet<>(deployments.keySet());
+    DataSerializer.writeHashSet(jarNames, out);
+  }
+
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(configName, out);
@@ -172,6 +182,19 @@ public class Configuration implements DataSerializable {
     // As of 1.12, this class starting writing the current version
     Version.getCurrentVersion().writeOrdinal(out, true);
     DataSerializer.writeHashMap(deployments, out);
+  }
+
+  public void fromDataPre_GEODE_1_12_0_0(DataInput in) throws IOException, ClassNotFoundException {
+    this.configName = DataSerializer.readString(in);
+    this.cacheXmlFileName = DataSerializer.readString(in);
+    this.cacheXmlContent = DataSerializer.readString(in);
+    this.propertiesFileName = DataSerializer.readString(in);
+    this.gemfireProperties = DataSerializer.readProperties(in);
+    HashSet<String> jarNames = DataSerializer.readHashSet(in);
+    jarNames.stream()
+        .map(x -> new Deployment(x, null, null))
+        .forEach(deployment -> deployments.put(deployment.getFileName(),
+            deployment));
   }
 
   @Override
@@ -234,4 +257,8 @@ public class Configuration implements DataSerializable {
         gemfireProperties, deployments);
   }
 
+  @Override
+  public Version[] getSerializationVersions() {
+    return new Version[] {Version.GEODE_1_12_0};
+  }
 }
