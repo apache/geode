@@ -30,8 +30,7 @@ import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
-import org.apache.geode.redis.internal.executor.set.RedisSetCommandsFunctionInvoker;
+import org.apache.geode.redis.internal.RegionProvider;
 
 class NullRedisSet extends RedisSet {
 
@@ -85,47 +84,53 @@ class NullRedisSet extends RedisSet {
     UNION, INTERSECTION, DIFF
   }
 
-  public int sunionstore(CommandHelper helper, RedisKey destination, List<RedisKey> setKeys) {
-    return doSetOp(SetOp.UNION, helper, destination, setKeys);
-  }
-
-  public int sinterstore(CommandHelper helper, RedisKey destination, List<RedisKey> setKeys) {
-    return doSetOp(SetOp.INTERSECTION, helper, destination, setKeys);
-  }
-
-  public int sdiffstore(CommandHelper helper, RedisKey destination, List<RedisKey> setKeys) {
-    return doSetOp(SetOp.DIFF, helper, destination, setKeys);
-  }
-
-  private int doSetOp(SetOp setOp, CommandHelper helper, RedisKey destination,
+  public int sunionstore(RegionProvider regionProvider, RedisKey destination,
       List<RedisKey> setKeys) {
-    List<Set<byte[]>> nonDestinationSets = fetchSets(helper.getRegion(), setKeys, destination);
-    return helper.getStripedExecutor()
-        .execute(destination,
-            () -> doSetOpWhileLocked(setOp, helper, destination, nonDestinationSets));
+    return doSetOp(SetOp.UNION, regionProvider, destination, setKeys);
   }
 
-  private int doSetOpWhileLocked(SetOp setOp, CommandHelper helper, RedisKey destination,
+  public int sinterstore(RegionProvider regionProvider, RedisKey destination,
+      List<RedisKey> setKeys) {
+    return doSetOp(SetOp.INTERSECTION, regionProvider, destination, setKeys);
+  }
+
+  public int sdiffstore(RegionProvider regionProvider, RedisKey destination,
+      List<RedisKey> setKeys) {
+    return doSetOp(SetOp.DIFF, regionProvider, destination, setKeys);
+  }
+
+  private int doSetOp(SetOp setOp, RegionProvider regionProvider, RedisKey destination,
+      List<RedisKey> setKeys) {
+    List<Set<byte[]>> nonDestinationSets = fetchSets(regionProvider, setKeys, destination);
+    return regionProvider.execute(destination,
+        () -> doSetOpWhileLocked(setOp, regionProvider, destination, nonDestinationSets));
+  }
+
+  private int doSetOpWhileLocked(SetOp setOp, RegionProvider regionProvider,
+      RedisKey destination,
       List<Set<byte[]>> nonDestinationSets) {
-    Set<byte[]> result = computeSetOp(setOp, nonDestinationSets, helper, destination);
+    Set<byte[]> result =
+        computeSetOp(setOp, nonDestinationSets, regionProvider, destination);
     if (result.isEmpty()) {
-      helper.getRegion().remove(destination);
+      regionProvider.getDataRegion().remove(destination);
       return 0;
     } else {
-      helper.getRegion().put(destination, new RedisSet(result));
+      regionProvider.getDataRegion().put(destination, new RedisSet(result));
       return result.size();
     }
   }
 
   private Set<byte[]> computeSetOp(SetOp setOp, List<Set<byte[]>> nonDestinationSets,
-      CommandHelper helper, RedisKey destination) {
-    Set<byte[]> result = null;
+      RegionProvider regionProvider, RedisKey destination) {
+    ObjectOpenCustomHashSet<byte[]> result = null;
     if (nonDestinationSets.isEmpty()) {
       return emptySet();
     }
     for (Set<byte[]> set : nonDestinationSets) {
       if (set == null) {
-        set = helper.getRedisSet(destination, false).smembers();
+        RedisSet redisSet =
+            regionProvider.getTypedRedisData(RedisDataType.REDIS_SET, destination, false);
+        set = redisSet.smembers();
       }
       if (result == null) {
         result = new ObjectOpenCustomHashSet<>(set, ByteArrays.HASH_STRATEGY);
@@ -154,15 +159,14 @@ class NullRedisSet extends RedisSet {
    * the corresponding key is the destination.
    * This is all done outside the striped executor to prevent a deadlock.
    */
-  private List<Set<byte[]>> fetchSets(Region<RedisKey, RedisData> region, List<RedisKey> setKeys,
+  private List<Set<byte[]>> fetchSets(RegionProvider regionProvider, List<RedisKey> setKeys,
       RedisKey destination) {
     List<Set<byte[]>> result = new ArrayList<>(setKeys.size());
-    RedisSetCommands redisSetCommands = new RedisSetCommandsFunctionInvoker(region);
     for (RedisKey key : setKeys) {
       if (key.equals(destination)) {
         result.add(null);
       } else {
-        result.add(redisSetCommands.internalsmembers(key));
+        result.add(regionProvider.getSetCommands().internalsmembers(key));
       }
     }
     return result;

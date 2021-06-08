@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.string.IncrByFloatExecutor;
 import org.apache.geode.redis.internal.netty.Command;
@@ -48,9 +49,9 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  *
  * </pre>
  */
-public class HIncrByFloatExecutor extends HashExecutor {
+public class HIncrByFloatExecutor extends AbstractExecutor {
 
-  private static final int INCREMENT_INDEX = FIELD_INDEX + 1;
+  private static final int INCREMENT_INDEX = HASH_FIELD_INDEX + 1;
 
   @Override
   public RedisResponse executeCommand(Command command,
@@ -64,8 +65,8 @@ public class HIncrByFloatExecutor extends HashExecutor {
     }
 
     RedisKey key = command.getKey();
-    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
-    byte[] field = commandElems.get(FIELD_INDEX);
+    RedisHashCommands redisHashCommands = context.getHashCommands();
+    byte[] field = commandElems.get(HASH_FIELD_INDEX);
 
     BigDecimal value = redisHashCommands.hincrbyfloat(key, field, validated.getLeft());
 

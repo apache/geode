@@ -29,7 +29,7 @@ public class TypeExecutor extends AbstractExecutor {
       ExecutionHandlerContext context) {
 
     RedisKey key = command.getKey();
-    String result = getRedisKeyCommands(context).type(key);
+    String result = context.getKeyCommands().type(key);
 
     return respondBulkStrings(result);
   }

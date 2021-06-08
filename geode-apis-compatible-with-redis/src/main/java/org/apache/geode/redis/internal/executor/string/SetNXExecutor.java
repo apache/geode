@@ -19,11 +19,12 @@ import static org.apache.geode.redis.internal.executor.BaseSetOptions.Exists.NX;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SetNXExecutor extends StringExecutor {
+public class SetNXExecutor extends AbstractExecutor {
 
   private static final int VALUE_INDEX = 2;
 
@@ -32,7 +33,7 @@ public class SetNXExecutor extends StringExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisKey key = command.getKey();
 
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
     SetOptions setOptions = new SetOptions(NX, 0L, false);
 
     boolean result = stringCommands.set(key, commandElems.get(VALUE_INDEX), setOptions);

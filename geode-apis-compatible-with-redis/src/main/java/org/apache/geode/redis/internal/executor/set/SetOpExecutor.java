@@ -22,11 +22,12 @@ import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public abstract class SetOpExecutor extends SetExecutor {
+public abstract class SetOpExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
@@ -41,7 +42,7 @@ public abstract class SetOpExecutor extends SetExecutor {
         new ArrayList<>(commandElements.subList(setsStartIndex, commandElements.size()));
     if (isStorage()) {
       RedisKey destination = command.getKey();
-      RedisSetCommands redisSetCommands = context.getRedisSetCommands();
+      RedisSetCommands redisSetCommands = context.getSetCommands();
       int storeCount;
       switch (command.getCommandType()) {
         case SUNIONSTORE:
@@ -65,7 +66,7 @@ public abstract class SetOpExecutor extends SetExecutor {
 
   private RedisResponse doActualSetOperation(ExecutionHandlerContext context,
       List<RedisKey> setKeys) {
-    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
+    RedisSetCommands redisSetCommands = context.getSetCommands();
     RedisKey firstSetKey = setKeys.remove(0);
     Set<byte[]> resultSet = new ObjectOpenCustomHashSet<>(redisSetCommands.smembers(firstSetKey),
         ByteArrays.HASH_STRATEGY);

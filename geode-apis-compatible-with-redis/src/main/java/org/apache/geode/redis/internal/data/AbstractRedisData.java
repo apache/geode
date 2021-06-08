@@ -30,6 +30,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.AppendDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
@@ -67,22 +68,22 @@ public abstract class AbstractRedisData implements RedisData {
   }
 
   @Override
-  public int pexpireat(CommandHelper helper, RedisKey key, long timestamp) {
+  public int pexpireat(RegionProvider regionProvider, RedisKey key, long timestamp) {
     long now = System.currentTimeMillis();
     if (now >= timestamp) {
       // already expired
-      doExpiration(helper, key);
+      doExpiration(regionProvider, key);
     } else {
-      setExpirationTimestamp(helper.getRegion(), key, timestamp);
+      setExpirationTimestamp(regionProvider.getDataRegion(), key, timestamp);
     }
     return 1;
   }
 
   @Override
-  public void doExpiration(CommandHelper helper, RedisKey key) {
-    long start = helper.getRedisStats().startExpiration();
-    helper.getRegion().remove(key);
-    helper.getRedisStats().endExpiration(start);
+  public void doExpiration(RegionProvider regionProvider, RedisKey key) {
+    long start = regionProvider.getRedisStats().startExpiration();
+    regionProvider.getDataRegion().remove(key);
+    regionProvider.getRedisStats().endExpiration(start);
   }
 
   @Override

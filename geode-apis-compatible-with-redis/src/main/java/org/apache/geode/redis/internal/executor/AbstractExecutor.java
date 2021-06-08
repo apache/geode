@@ -20,8 +20,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionInvoker;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
@@ -29,16 +27,14 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  */
 public abstract class AbstractExecutor implements Executor {
 
+  protected static final int HASH_FIELD_INDEX = 2;
+
   protected RedisResponse respondBulkStrings(Object message) {
     if (message instanceof Collection) {
       return RedisResponse.array((Collection<?>) message);
     } else {
       return RedisResponse.bulkString(message);
     }
-  }
-
-  protected RedisKeyCommands getRedisKeyCommands(ExecutionHandlerContext context) {
-    return new RedisKeyCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
   }
 
   protected Region<RedisKey, RedisData> getDataRegion(ExecutionHandlerContext context) {

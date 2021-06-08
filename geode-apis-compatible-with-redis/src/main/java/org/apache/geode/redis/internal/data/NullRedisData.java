@@ -24,6 +24,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.RegionProvider;
 
 /**
  * Implements behaviour for when no instance of RedisData exists.
@@ -69,12 +70,12 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
-  public int pexpireat(CommandHelper helper, RedisKey key, long timestamp) {
+  public int pexpireat(RegionProvider regionProvider, RedisKey key, long timestamp) {
     return 0;
   }
 
   @Override
-  public void doExpiration(CommandHelper helper, RedisKey key) {
+  public void doExpiration(RegionProvider regionProvider, RedisKey key) {
     // nothing needed
   }
 

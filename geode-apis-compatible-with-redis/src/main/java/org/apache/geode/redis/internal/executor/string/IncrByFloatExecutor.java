@@ -22,12 +22,13 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class IncrByFloatExecutor extends StringExecutor {
+public class IncrByFloatExecutor extends AbstractExecutor {
 
   private static final int INCREMENT_INDEX = 2;
 
@@ -45,7 +46,7 @@ public class IncrByFloatExecutor extends StringExecutor {
       return validated.getRight();
     }
 
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
     BigDecimal result = stringCommands.incrbyfloat(key, validated.getLeft());
 
     return RedisResponse.bigDecimal(result);

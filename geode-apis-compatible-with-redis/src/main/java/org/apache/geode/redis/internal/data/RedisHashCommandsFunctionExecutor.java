@@ -23,17 +23,18 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 
 public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor implements
     RedisHashCommands {
 
-  public RedisHashCommandsFunctionExecutor(CommandHelper helper) {
-    super(helper);
+  public RedisHashCommandsFunctionExecutor(RegionProvider regionProvider) {
+    super(regionProvider);
   }
 
   private RedisHash getRedisHash(RedisKey key, boolean updateStats) {
-    return helper.getRedisHash(key, updateStats);
+    return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_HASH, key, updateStats);
   }
 
   @Override

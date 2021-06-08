@@ -22,11 +22,12 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SMoveExecutor extends SetExecutor {
+public class SMoveExecutor extends AbstractExecutor {
 
   private static final int MOVED = 1;
 
@@ -40,12 +41,12 @@ public class SMoveExecutor extends SetExecutor {
     RedisKey destination = new RedisKey(commandElems.get(2));
     byte[] member = commandElems.get(3);
 
-    String destinationType = getRedisKeyCommands(context).internalType(destination);
+    String destinationType = context.getKeyCommands().internalType(destination);
     if (!destinationType.equals(REDIS_SET.toString()) && !destinationType.equals("none")) {
       return RedisResponse.wrongType(ERROR_WRONG_TYPE);
     }
 
-    RedisSetCommands redisSetCommands = context.getRedisSetCommands();
+    RedisSetCommands redisSetCommands = context.getSetCommands();
 
     boolean removed =
         redisSetCommands.srem(source, new ArrayList<>(Collections.singletonList(member))) == 1;

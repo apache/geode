@@ -17,9 +17,11 @@
 package org.apache.geode.redis.internal.data;
 
 
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.RegionProvider;
 
 /**
  * Provides some of the common code shared by all FunctionExecutor classes.
@@ -28,22 +30,29 @@ import org.apache.geode.cache.Region;
  * running a function that was invoked by a *FunctionInvoker class.
  */
 public abstract class RedisDataCommandsFunctionExecutor {
-  protected final CommandHelper helper;
+  private final RegionProvider regionProvider;
 
-  protected RedisDataCommandsFunctionExecutor(CommandHelper helper) {
-    this.helper = helper;
+  protected RegionProvider getRegionProvider() {
+    return regionProvider;
+  }
+
+  protected RedisDataCommandsFunctionExecutor(RegionProvider regionProvider) {
+    this.regionProvider = regionProvider;
   }
 
   protected Region<RedisKey, RedisData> getRegion() {
-    return helper.getRegion();
+    return regionProvider.getDataRegion();
   }
 
-  protected <T> T stripedExecute(Object key,
-      Callable<T> callable) {
-    return helper.getStripedExecutor().execute(key, callable);
+  protected <T> T stripedExecute(Object key, Callable<T> callable) {
+    return regionProvider.execute(key, callable);
   }
 
   protected RedisData getRedisData(RedisKey key) {
-    return helper.getRedisData(key);
+    return regionProvider.getRedisData(key);
+  }
+
+  protected List<RedisKey> orderForLocking(RedisKey key1, RedisKey key2) {
+    return regionProvider.orderForLocking(key1, key2);
   }
 }

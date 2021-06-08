@@ -23,7 +23,7 @@ public class ZCardExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
-    RedisSortedSetCommands redisSortedSetCommands = context.getRedisSortedSetCommands();
+    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
 
     long size = redisSortedSetCommands.zcard(command.getKey());
 

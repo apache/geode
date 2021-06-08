@@ -27,7 +27,7 @@ public class ZRemExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisSortedSetCommands redisSortedSetCommands = context.getRedisSortedSetCommands();;
+    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();;
 
     List<byte[]> commandElements = command.getProcessedCommand();
     RedisKey key = command.getKey();

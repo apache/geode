@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -37,7 +38,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  *
  * </pre>
  */
-public class HSetExecutor extends HashExecutor {
+public class HSetExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
@@ -46,7 +47,7 @@ public class HSetExecutor extends HashExecutor {
 
     RedisKey key = command.getKey();
 
-    RedisHashCommands redisHashCommands = context.getRedisHashCommands();
+    RedisHashCommands redisHashCommands = context.getHashCommands();
 
     List<byte[]> fieldsToSet = new ArrayList<>(commandElems.subList(2, commandElems.size()));
     int fieldsAdded = redisHashCommands.hset(key, fieldsToSet, onlySetOnAbsent());
