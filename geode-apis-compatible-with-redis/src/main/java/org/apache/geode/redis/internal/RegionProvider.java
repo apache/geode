@@ -26,7 +26,6 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SE
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
