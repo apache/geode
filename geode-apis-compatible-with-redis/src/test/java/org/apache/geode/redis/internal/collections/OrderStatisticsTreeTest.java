@@ -193,16 +193,16 @@ public class OrderStatisticsTreeTest {
 
   @Test
   public void testIndexOf() {
-    for (int i = 0; i < 100; ++i) {
-      assertThat(tree.add(i * 2)).isTrue();
+    for (int i = 100; i < 200; ++i) {
+      assertThat(tree.add(i)).isTrue();
     }
 
-    for (int i = 0; i < 100; ++i) {
-      assertThat(tree.indexOf(2 * i)).isEqualTo(i);
+    for (int i = 100; i < 200; ++i) {
+      assertThat(tree.indexOf(i)).isEqualTo(i - 100);
     }
 
-    for (int i = 100; i < 150; ++i) {
-      assertThat(tree.indexOf(2 * i)).isEqualTo(-1);
+    for (int i = 200; i < 250; ++i) {
+      assertThat(tree.indexOf(i)).isEqualTo(-1);
     }
   }
 
@@ -214,32 +214,32 @@ public class OrderStatisticsTreeTest {
     assertThat(tree.isEmpty()).isEqualTo(set.isEmpty());
   }
 
-  @Test(expected = IndexOutOfBoundsException.class)
+  @Test
   public void testEmptyTreeGetThrowsOnNegativeIndex() {
-    tree.get(-1);
+    assertThatThrownBy(() -> tree.get(-1)).isInstanceOf(IndexOutOfBoundsException.class);
   }
 
-  @Test(expected = IndexOutOfBoundsException.class)
+  @Test
   public void testEmptyTreeSelectThrowsOnTooLargeIndex() {
-    tree.get(0);
+    assertThatThrownBy(() -> tree.get(0)).isInstanceOf(IndexOutOfBoundsException.class);
   }
 
-  @Test(expected = IndexOutOfBoundsException.class)
+  @Test
   public void testSelectThrowsOnNegativeIndex() {
     for (int i = 0; i < 5; ++i) {
       tree.add(i);
     }
 
-    tree.get(-1);
+    assertThatThrownBy(() -> tree.get(-1)).isInstanceOf(IndexOutOfBoundsException.class);
   }
 
-  @Test(expected = IndexOutOfBoundsException.class)
+  @Test
   public void testSelectThrowsOnTooLargeIndex() {
     for (int i = 0; i < 5; ++i) {
       tree.add(i);
     }
 
-    tree.get(5);
+    assertThatThrownBy(() -> tree.get(5)).isInstanceOf(IndexOutOfBoundsException.class);
   }
 
   @Test
@@ -253,9 +253,8 @@ public class OrderStatisticsTreeTest {
     }
   }
 
-  @Test(expected = NoSuchElementException.class)
   public void testEmptyIterator() {
-    tree.iterator().next();
+    assertThatThrownBy(() -> tree.iterator().next()).isInstanceOf(NoSuchElementException.class);
   }
 
   @Test
