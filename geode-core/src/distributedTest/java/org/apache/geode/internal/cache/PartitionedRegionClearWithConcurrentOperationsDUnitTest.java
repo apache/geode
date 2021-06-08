@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.internal.util.ArrayUtils.asList;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.AsyncInvocation.await;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.rules.DistributedRule.getLocators;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,6 +58,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.internal.cache.PartitionedRegionClearMessage.OperationType;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
@@ -607,6 +609,7 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
 
     private static void create(boolean coordinator, Runnable action) {
       MemberKiller memberKiller = new MemberKiller(coordinator, action);
+      addIgnoredException(MemberDisconnectedException.class);
       DistributionMessageObserver.setInstance(memberKiller);
     }
 
