@@ -220,12 +220,12 @@ public class OrderStatisticsTreeTest {
   }
 
   @Test
-  public void testEmptyTreeSelectThrowsOnTooLargeIndex() {
+  public void testEmptyTreeGetThrowsOnTooLargeIndex() {
     assertThatThrownBy(() -> tree.get(0)).isInstanceOf(IndexOutOfBoundsException.class);
   }
 
   @Test
-  public void testSelectThrowsOnNegativeIndex() {
+  public void testGetThrowsOnNegativeIndex() {
     for (int i = 0; i < 5; ++i) {
       tree.add(i);
     }
@@ -234,7 +234,7 @@ public class OrderStatisticsTreeTest {
   }
 
   @Test
-  public void testSelectThrowsOnTooLargeIndex() {
+  public void testGetThrowsOnTooLargeIndex() {
     for (int i = 0; i < 5; ++i) {
       tree.add(i);
     }
@@ -253,6 +253,7 @@ public class OrderStatisticsTreeTest {
     }
   }
 
+  @Test
   public void testEmptyIterator() {
     assertThatThrownBy(() -> tree.iterator().next()).isInstanceOf(NoSuchElementException.class);
   }
@@ -289,7 +290,7 @@ public class OrderStatisticsTreeTest {
     Iterator<Integer> iterator1 = set.iterator();
     Iterator<Integer> iterator2 = tree.iterator();
 
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < set.size(); ++i) {
       assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
       assertThat(iterator2.next()).isEqualTo(iterator1.next());
     }
@@ -341,8 +342,7 @@ public class OrderStatisticsTreeTest {
     assertThat(tree.retainAll(coll)).isEqualTo(set.retainAll(coll));
     assertThat(tree.size()).isEqualTo(set.size());
 
-    assertThat(set.containsAll(tree)).isTrue();
-    assertThat(tree.containsAll(set)).isTrue();
+    assertThat(set).containsExactlyInAnyOrderElementsOf(tree);
   }
 
   @Test
@@ -486,7 +486,7 @@ public class OrderStatisticsTreeTest {
   }
 
   @Test
-  public void testConcurrentOrIllegalStateOnRemove() {
+  public void testIllegalStateOnRemove() {
     for (int i = 0; i < 10; ++i) {
       set.add(i);
       tree.add(i);
@@ -509,23 +509,24 @@ public class OrderStatisticsTreeTest {
       tree.add(i);
     }
 
-    Iterator<Integer> iterator1a = set.iterator();
-    Iterator<Integer> iterator1b = set.iterator();
-    Iterator<Integer> iterator2a = tree.iterator();
-    Iterator<Integer> iterator2b = tree.iterator();
+    Iterator<Integer> firstSetIterator = set.iterator();
+    Iterator<Integer> secondSetIterator = set.iterator();
+    Iterator<Integer> firstTreeIterator = tree.iterator();
+    Iterator<Integer> secondTreeIterator = tree.iterator();
 
     for (int i = 0; i < 3; ++i) {
-      iterator1a.next();
-      iterator2a.next();
+      firstSetIterator.next();
+      firstTreeIterator.next();
     }
 
-    iterator1a.remove();
-    iterator2a.remove();
+    firstSetIterator.remove();
+    firstTreeIterator.remove();
 
-    assertThat(iterator2b.hasNext()).isEqualTo(iterator1b.hasNext());
+    assertThat(secondTreeIterator.hasNext()).isEqualTo(secondSetIterator.hasNext());
 
-    assertThatThrownBy(iterator1b::next).isInstanceOf(ConcurrentModificationException.class);
-    assertThatThrownBy(iterator2b::next).isInstanceOf(ConcurrentModificationException.class);
+    assertThatThrownBy(secondSetIterator::next).isInstanceOf(ConcurrentModificationException.class);
+    assertThatThrownBy(secondTreeIterator::next)
+        .isInstanceOf(ConcurrentModificationException.class);
   }
 
   @Test
@@ -537,8 +538,13 @@ public class OrderStatisticsTreeTest {
       set.add(num);
       tree.add(num);
     }
+    Object[] treeArray = tree.toArray();
+    Object[] setArray = set.toArray();
 
-    assertThat(tree.toArray()).isEqualTo(set.toArray());
+    assertThat(treeArray).isEqualTo(setArray);
+    assertThat(Arrays.equals(setArray, treeArray)).isTrue();
+    assertThat(setArray).containsExactlyInAnyOrderElementsOf(set);
+    assertThat(treeArray).containsExactlyInAnyOrderElementsOf(tree);
   }
 
   @Test
@@ -548,8 +554,8 @@ public class OrderStatisticsTreeTest {
       tree.add(i);
     }
 
-    Integer[] array1before = new Integer[99];
-    Integer[] array2before = new Integer[99];
+    Integer[] array1before = new Integer[set.size() - 1];
+    Integer[] array2before = new Integer[set.size() - 1];
 
     Integer[] array1after = set.toArray(array1before);
     Integer[] array2after = tree.toArray(array2before);
