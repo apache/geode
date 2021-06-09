@@ -27,7 +27,6 @@ package org.apache.geode.redis.internal.collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 
 import java.util.Arrays;
 import java.util.Collection;
