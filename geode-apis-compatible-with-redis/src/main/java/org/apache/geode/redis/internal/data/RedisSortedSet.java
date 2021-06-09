@@ -441,27 +441,6 @@ public class RedisSortedSet extends AbstractRedisData {
       return comparison;
     }
 
-    // private int javaImplementationOfAnsiCMemCmp(OrderedSetEntry o) {
-    // // Scores equal, try lexical ordering
-    // byte[] otherMember = o.member;
-    // int shortestLength = Math.min(member.length, otherMember.length);
-    // for (int i = 0; i < shortestLength; i++) {
-    // int localComp = Byte.toUnsignedInt(member[i]) - Byte.toUnsignedInt(otherMember[i]);
-    // if (localComp != 0) {
-    // return localComp;
-    // }
-    // }
-    // // shorter array whose items are all equal to the first items of a longer array is
-    // // considered 'less than'
-    // if (member.length < otherMember.length) {
-    // return -1; // member < other
-    // } else if (member.length > otherMember.length) {
-    // return 1; // other < member
-    // }
-    // return 0; // totally equal - should never happen, because you can't have two members
-    // // with same name...
-    // }
-
     OrderedSetEntry(byte[] member, byte[] score) {
       this.member = member;
       this.scoreBytes = score;
