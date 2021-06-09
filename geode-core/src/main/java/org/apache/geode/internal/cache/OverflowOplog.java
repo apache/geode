@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.distributed.OplogCancelledException;
@@ -103,6 +104,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    *
    * @param oplogId integer identifying the new oplog
    * @param dirHolder The directory in which to create new Oplog
+   * @param minSize Minimum oplog file size in bytes
    */
   OverflowOplog(int oplogId, OverflowOplogSet parent, DirectoryHolder dirHolder, long minSize) {
     this.oplogId = oplogId;
@@ -142,7 +144,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
     }
   }
 
-  private DiskStoreImpl getParent() {
+  DiskStoreImpl getParent() {
     return this.parent;
   }
 
@@ -183,13 +185,26 @@ class OverflowOplog implements CompactableOplog, Flushable {
     this.stats.incOpenOplogs();
   }
 
-  private static ByteBuffer allocateWriteBuf(OverflowOplog previous) {
+  @VisibleForTesting
+  boolean writeBufferSizeSystemPropertyIsDefined() {
+    return (Integer.getInteger("WRITE_BUF_SIZE") != null);
+  }
+
+  @VisibleForTesting
+  Integer getWriteBufferCapacity() {
+    if (writeBufferSizeSystemPropertyIsDefined()) {
+      return Integer.getInteger("WRITE_BUF_SIZE");
+    }
+    return getParent().getWriteBufferSize();
+  }
+
+  private ByteBuffer allocateWriteBuf(OverflowOplog previous) {
     ByteBuffer result = null;
     if (previous != null) {
       result = previous.consumeWriteBuf();
     }
     if (result == null) {
-      result = ByteBuffer.allocateDirect(Integer.getInteger("WRITE_BUF_SIZE", 32768));
+      return ByteBuffer.allocateDirect(getWriteBufferCapacity());
     }
     return result;
   }

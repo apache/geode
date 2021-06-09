@@ -75,6 +75,7 @@ public class OplogRVVJUnitTest {
     final DiskStoreID m1 = DiskStoreID.random();
     final DiskStoreID m2 = DiskStoreID.random();
     final DiskRecoveryStore drs = mock(DiskRecoveryStore.class);
+    when(parent.getWriteBufferSize()).thenReturn(32768);
     when(df.getOrCreateCanonicalId(m1)).thenReturn(1);
     when(df.getOrCreateCanonicalId(m2)).thenReturn(2);
     when(df.getOrCreateCanonicalId(ownerId)).thenReturn(3);

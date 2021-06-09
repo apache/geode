@@ -758,7 +758,7 @@ public class CliStrings {
       "For asynchronous queueing. The number of milliseconds that can elapse before data is flushed to disk. Reaching this limit or the queue-size limit causes the queue to flush.";
   public static final String CREATE_DISK_STORE__WRITE_BUFFER_SIZE = "write-buffer-size";
   public static final String CREATE_DISK_STORE__WRITE_BUFFER_SIZE__HELP =
-      "Size of the buffer used to write to disk.";
+      "Size in bytes of the buffer used to write to disk.";
   public static final String CREATE_DISK_STORE__DIRECTORY_AND_SIZE = "dir";
   public static final String CREATE_DISK_STORE__DIRECTORY_AND_SIZE__HELP =
       "Directories where the disk store files will be written, the directories will be created if they don't exist.  Optionally, directory names may be followed by # and the maximum number of megabytes that the disk store can use in the directory.  Example: --dir=/data/ds1 --dir=/data/ds2#5000";

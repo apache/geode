@@ -57,6 +57,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SerializationException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DiskAccessException;
@@ -881,7 +882,7 @@ public class Oplog implements CompactableOplog, Flushable {
     return isRecovering;
   }
 
-  private DiskStoreImpl getParent() {
+  DiskStoreImpl getParent() {
     return parent;
   }
 
@@ -1086,13 +1087,26 @@ public class Oplog implements CompactableOplog, Flushable {
     maxCrfSize += crf.currSize;
   }
 
-  private static ByteBuffer allocateWriteBuf(OplogFile prevOlf) {
+  @VisibleForTesting
+  boolean writeBufferSizeSystemPropertyIsDefined() {
+    return (Integer.getInteger("WRITE_BUF_SIZE") != null);
+  }
+
+  @VisibleForTesting
+  Integer getWriteBufferCapacity() {
+    if (writeBufferSizeSystemPropertyIsDefined()) {
+      return Integer.getInteger("WRITE_BUF_SIZE");
+    }
+    return getParent().getWriteBufferSize();
+  }
+
+  private ByteBuffer allocateWriteBuf(OplogFile prevOlf) {
     if (prevOlf != null && prevOlf.writeBuf != null) {
       ByteBuffer result = prevOlf.writeBuf;
       prevOlf.writeBuf = null;
       return result;
     } else {
-      return ByteBuffer.allocateDirect(Integer.getInteger("WRITE_BUF_SIZE", 32768));
+      return ByteBuffer.allocateDirect(getWriteBufferCapacity());
     }
   }
 
