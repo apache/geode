@@ -2425,25 +2425,19 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .subscriptionAckInterval()
         .subscriptionEnabled(true)
         .subscriptionRedundancy()
-        .readTimeoutMillis(100000)
         .create());
 
-    new ClientBuilder()
-        .serverPorts(serverPort1, serverPort2, serverPort3)
-        .subscriptionAckInterval()
-        .subscriptionEnabled(true)
-        .subscriptionRedundancy()
-        .create();
-
-    Region<String, TickerData> myRegion = getClientCache().getRegion(regionName);
-
     // do some putAll to get ClientMetaData for future putAll
-    client1.invoke(() -> doPutAll(getClientCache().getRegion(regionName), "key-", ONE_HUNDRED));
+    client1.invoke(() -> {
+      // register interest and add listener
+      Region<String, TickerData> region = getClientCache().getRegion(regionName);
+      doPutAll(getClientCache().getRegion(regionName), "key-", ONE_HUNDRED);
 
-    // register interest and add listener
-    Counter clientCounter = new Counter("client");
-    myRegion.getAttributesMutator().addCacheListener(new CountingCacheListener<>(clientCounter));
-    myRegion.registerInterest("ALL_KEYS");
+      COUNTER.set(new Counter("client1"));
+      region.getAttributesMutator()
+          .addCacheListener(new CountingCacheListener<>(COUNTER.get()));
+      region.registerInterest("ALL_KEYS");
+    });
 
     // server1 and server2 will closeCache after created 10 keys
     // server1 add slow listener
@@ -2453,7 +2447,6 @@ public class PutAllClientServerDistributedTest implements Serializable {
           .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
               creates -> closeCacheConditionally(creates, 10))));
     });
-
 
     // server2 add slow listener
     server2.invoke(() -> {
@@ -2475,16 +2468,11 @@ public class PutAllClientServerDistributedTest implements Serializable {
     client1.invoke(() -> {
       Region<String, TickerData> region = getClientCache().getRegion(regionName);
       doPutAll(region, keyPrefix, ONE_HUNDRED);
+
+      assertThat(COUNTER.get().getCreates()).isEqualTo(100);
+      assertThat(COUNTER.get().getUpdates()).isZero();
     });
 
-    client1.invoke(() -> await() // TODO: GEODE-9242 fails on this assertion even with await
-        .untilAsserted(() -> assertThat(clientCounter.getCreates()).isEqualTo(ONE_HUNDRED)));
-
-    await().untilAsserted(() -> assertThat(clientCounter.getCreates()).isEqualTo(ONE_HUNDRED));
-
-    assertThat(clientCounter.getUpdates()).isZero();
-
-    // server1 and server2 will closeCache after created 10 keys
     // server3 print counter
     server3.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
