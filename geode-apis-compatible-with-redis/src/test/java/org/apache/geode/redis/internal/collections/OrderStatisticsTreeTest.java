@@ -347,7 +347,9 @@ public class OrderStatisticsTreeTest {
 
   @Test
   public void testIteratorRemove() {
-    for (int i = 10; i < 16; ++i) {
+    int lowerNonZeroBound = 10;
+    int upperNonZeroBound = 16;
+    for (int i = lowerNonZeroBound; i < upperNonZeroBound; ++i) {
       assertThat(tree.add(i)).isEqualTo(set.add(i));
     }
 
@@ -360,7 +362,7 @@ public class OrderStatisticsTreeTest {
     assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
     assertThat(iterator2.next()).isEqualTo(iterator1.next());
 
-    iterator1.remove(); // remove 11
+    iterator1.remove(); // remove second element
     iterator2.remove();
 
     assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
@@ -369,12 +371,12 @@ public class OrderStatisticsTreeTest {
     assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
     assertThat(iterator2.next()).isEqualTo(iterator1.next());
 
-    iterator1.remove(); // remove 13
+    iterator1.remove(); // remove fourth element
     iterator2.remove();
 
     assertThat(tree.size()).isEqualTo(set.size());
 
-    for (int i = 10; i < 16; ++i) {
+    for (int i = lowerNonZeroBound; i < upperNonZeroBound; ++i) {
       assertThat(tree.contains(i)).isEqualTo(set.contains(i));
     }
   }
@@ -385,8 +387,8 @@ public class OrderStatisticsTreeTest {
       assertThat(tree.add(i)).isEqualTo(set.add(i));
     }
 
-    Iterator<Integer> iterator1 = set.iterator();
-    Iterator<Integer> iterator2 = tree.iterator();
+    Iterator<Integer> setIterator = set.iterator();
+    Iterator<Integer> treeIterator = tree.iterator();
 
     long seed = System.nanoTime();
     Random random = new Random(seed);
@@ -394,8 +396,8 @@ public class OrderStatisticsTreeTest {
     System.out.println("testIteratorBruteForce - seed: " + seed);
 
     while (true) {
-      if (!iterator1.hasNext()) {
-        assertThat(iterator2.hasNext()).isFalse();
+      if (!setIterator.hasNext()) {
+        assertThat(treeIterator.hasNext()).isFalse();
         break;
       }
 
@@ -403,16 +405,16 @@ public class OrderStatisticsTreeTest {
 
       if (toRemove) {
         try {
-          iterator1.remove();
-          iterator2.remove();
+          setIterator.remove();
+          treeIterator.remove();
         } catch (IllegalStateException ex) {
-          assertThatThrownBy(iterator2::remove).isInstanceOf(IllegalStateException.class);
+          assertThatThrownBy(treeIterator::remove).isInstanceOf(IllegalStateException.class);
         }
       } else {
-        assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
+        assertThat(treeIterator.hasNext()).isEqualTo(setIterator.hasNext());
 
-        if (iterator1.hasNext()) {
-          assertThat(iterator2.next()).isEqualTo(iterator1.next());
+        if (setIterator.hasNext()) {
+          assertThat(treeIterator.next()).isEqualTo(setIterator.next());
         } else {
           break;
         }
@@ -421,8 +423,7 @@ public class OrderStatisticsTreeTest {
 
     assertThat(tree.size()).isEqualTo(set.size());
     assertThat(tree.isHealthy()).isTrue();
-    assertThat(set.containsAll(tree)).isTrue();
-    assertThat(tree.containsAll(set)).isTrue();
+    assertThat(set).containsExactlyInAnyOrderElementsOf(tree);
   }
 
   @Test
@@ -432,21 +433,16 @@ public class OrderStatisticsTreeTest {
       tree.add(i);
     }
 
-    Iterator<Integer> iterator1 = set.iterator();
-    Iterator<Integer> iterator2 = tree.iterator();
+    Iterator<Integer> setIterator = set.iterator();
+    Iterator<Integer> treeIterator = tree.iterator();
 
     set.remove(10);
     tree.remove(10);
 
-    assertThat(iterator2.hasNext()).isEqualTo(iterator1.hasNext());
+    assertThat(treeIterator.hasNext()).isEqualTo(setIterator.hasNext());
 
-    try {
-      iterator1.next();
-      assertThatCode(() -> iterator2.next()).doesNotThrowAnyException();
-    } catch (ConcurrentModificationException ex) {
-      assertThatThrownBy(iterator2::next)
-          .isInstanceOf(ConcurrentModificationException.class);
-    }
+    assertThatThrownBy(setIterator::next).isInstanceOf(ConcurrentModificationException.class);
+    assertThatThrownBy(treeIterator::next).isInstanceOf(ConcurrentModificationException.class);
   }
 
 
@@ -457,31 +453,31 @@ public class OrderStatisticsTreeTest {
       tree.add(i);
     }
 
-    Iterator<Integer> iterator1 = set.iterator();
-    Iterator<Integer> iterator2 = tree.iterator();
+    Iterator<Integer> setIterator = set.iterator();
+    Iterator<Integer> treeIterator = tree.iterator();
 
     for (int i = 0; i < 4; ++i) {
-      iterator1.next();
-      iterator2.next();
+      setIterator.next();
+      treeIterator.next();
     }
 
     // None of them contains 2, should not change the modification count.
     set.remove(2);
     tree.remove(2);
 
-    iterator1.remove();
-    iterator2.remove();
+    setIterator.remove();
+    treeIterator.remove();
 
-    iterator1.next();
-    iterator2.next();
+    setIterator.next();
+    treeIterator.next();
 
     set.remove(12);
     tree.remove(12);
 
     // Both of them should throw.
-    assertThatThrownBy(iterator1::remove)
+    assertThatThrownBy(setIterator::remove)
         .isInstanceOf(ConcurrentModificationException.class);
-    assertThatThrownBy(iterator2::remove)
+    assertThatThrownBy(treeIterator::remove)
         .isInstanceOf(ConcurrentModificationException.class);
   }
 
