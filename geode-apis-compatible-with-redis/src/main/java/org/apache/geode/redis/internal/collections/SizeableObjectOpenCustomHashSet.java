@@ -96,7 +96,7 @@ public class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<
   public boolean add(K k) {
     boolean added = super.add(k);
     if (added) {
-      memberOverhead += elementSizer.sizeof(k);
+      memberOverhead += (int) elementSizer.sizeof(k);
     }
     return added;
   }

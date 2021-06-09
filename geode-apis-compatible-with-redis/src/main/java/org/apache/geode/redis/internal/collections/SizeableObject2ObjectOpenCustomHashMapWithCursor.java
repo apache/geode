@@ -198,11 +198,11 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     V oldValue = super.put(k, v);
     if (oldValue == null) {
       // A create
-      keysOverhead += elementSizer.sizeof(k);
-      valuesOverhead += elementSizer.sizeof(v);
+      keysOverhead += (int) elementSizer.sizeof(k);
+      valuesOverhead += (int) elementSizer.sizeof(v);
     } else {
       // An update
-      valuesOverhead += elementSizer.sizeof(v) - elementSizer.sizeof(oldValue);
+      valuesOverhead += (int) (elementSizer.sizeof(v) - elementSizer.sizeof(oldValue));
     }
     return oldValue;
   }
