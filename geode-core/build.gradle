@@ -22,6 +22,7 @@ apply plugin: 'antlr'
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/pmd.gradle"
 apply from: "${project.projectDir}/../gradle/jmh.gradle"
+apply plugin: 'geode.jboss-modules-plugin'
 
 sourceSets {
     jca {
@@ -405,3 +406,12 @@ distributedTest {
 }
 
 rootProject.generate.dependsOn(generateGrammarSource)
+
+jbossModulesExtension {
+    geodeConfigurations = [
+        {
+            mainClass = "MainClass"
+            outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
+        }]
+    projectsToExclude = ['projectToExclude1']
+}

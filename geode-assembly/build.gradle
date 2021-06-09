@@ -104,10 +104,10 @@ configurations {
   }
 
   distributedTest {
-    environment 'CLASSLOADER_ISOLATED' , 'false'
+    environment 'CLASSLOADER_ISOLATED', 'false'
   }
   upgradeTest {
-    environment 'CLASSLOADER_ISOLATED' , 'false'
+    environment 'CLASSLOADER_ISOLATED', 'false'
   }
 }
 
@@ -241,7 +241,7 @@ dependencies {
   distributedTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  distributedTestImplementation(project(':geode-dunit')){
+  distributedTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   distributedTestImplementation(project(':extensions:session-testing-war'))
@@ -318,7 +318,7 @@ dependencies {
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
   upgradeTestRuntimeOnly(project(':extensions:session-testing-war'))
   upgradeTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')
-  upgradeTestRuntimeOnly files({ downloadWebServers } )
+  upgradeTestRuntimeOnly files({ downloadWebServers })
 
   //Web servers used for session module testing
   webServerTomcat6('apache:tomcat:' + DependencyConstraints.get('tomcat6.version') + '@zip')
@@ -454,7 +454,7 @@ tasks.register('depsJar', Jar) {
     configureDepsJar
   }
   description 'Assembles the jar archive that defines the gemfire classpath.'
-  archiveFileName='geode-dependencies.jar'
+  archiveFileName = 'geode-dependencies.jar'
   doFirst {
     manifest {
       attributes("Class-Path": configureDepsJar.outputs.files.singleFile.text)
@@ -467,7 +467,7 @@ tasks.register('gfshDepsJar', Jar) {
     configureGfshDepsJar
   }
   description 'Assembles the jar archive that defines the gfsh classpath.'
-  archiveFileName='gfsh-dependencies.jar'
+  archiveFileName = 'gfsh-dependencies.jar'
   doFirst {
     manifest {
       attributes("Class-Path": configureGfshDepsJar.outputs.files.singleFile.text)
@@ -588,7 +588,8 @@ distributions {
         }
 
         from {
-          [project(':geode-deployment:geode-deployment-jboss-modules').tasks.named('jar').get().outputs.files.first(),
+          [project(':frameworks:geode-extensions').tasks.named('jar').get().outputs.files.first(),
+           project(':frameworks:geode-custom-jar-deployments').tasks.named('jar').get().outputs.files.first(),project(':geode-deployment:geode-deployment-jboss-modules').tasks.named('jar').get().outputs.files.first(),
            project(':geode-deployment:geode-jboss-extensions').tasks.named('jar').get().outputs.files.first()]
         }
 
@@ -635,10 +636,19 @@ distributions {
       }
 
       with copySpec {
-        into('moduleDescriptors')
-//        from { tasks.named("generateModuleDescriptors") }
-        from { tasks.named("generateExtensionsModuleXML") }
-        from { tasks.named("generateThirdPartyModuleXML") }
+        into('moduleDescriptors/main/external-library-dependencies')
+        afterEvaluate {
+          from tasks.named("combineExternalModuleDescriptors")
+        }
+      }
+
+        project.afterEvaluate {
+          tasks.getByName('combineModuleDescriptors').getOutputs().files.each { directory ->
+            with copySpec {
+            into("moduleDescriptors/main/${directory.name}")
+            from directory
+          }
+        }
       }
     }
   }
@@ -650,7 +660,7 @@ distributions {
  tasks.named('srcDistTar'),
 ]*.configure {
   compression Compression.GZIP
-  archiveExtension='tgz'
+  archiveExtension = 'tgz'
   build.dependsOn(it)
 }
 // Make build final task to generate all test and product resources

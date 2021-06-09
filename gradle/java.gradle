@@ -23,6 +23,7 @@ if (project.name.endsWith("geode-all-bom")) {
   apply plugin: 'java-platform'
 }
 apply plugin: 'java-library'
+apply plugin: 'geode.jboss-modules-plugin'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -111,4 +112,13 @@ javadoc {
   exclude "**/internal/**"
 
   classpath += configurations.compileOnly
+}
+
+jbossModulesExtension {
+  geodeConfigurations = [
+      {
+        outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
+      }]
+  projectsToExclude = ['projectToExclude1']
+  assemblyRoot = project(':geode-assembly').buildDir.toPath().resolve("moduleDescriptors")
 }

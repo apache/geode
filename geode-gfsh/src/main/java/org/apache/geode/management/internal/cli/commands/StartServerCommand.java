@@ -641,9 +641,7 @@ public class StartServerCommand extends OfflineGfshCommand {
       addJBossClassPath(GEODE_HOME, commandLine);
       commandLine.add("org.jboss.modules.Main");
       commandLine.add("-mp");
-      commandLine.add(GEODE_HOME + File.separator + "moduleDescriptors" + File.separator + "main"
-          + File.pathSeparator + GEODE_HOME
-          + File.separator + "moduleDescriptors" + File.separator + "thirdParty");
+      commandLine.add(GEODE_HOME + File.separator + "moduleDescriptors" + File.separator + "main");
       commandLine.add("geode-core:" + GemFireVersion.getGemFireVersion());
     } else {
       commandLine.add(ServerLauncher.class.getName());
