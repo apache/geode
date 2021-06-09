@@ -29,7 +29,6 @@ import static org.apache.geode.management.internal.i18n.CliStrings.REPLICATE_REG
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -292,132 +291,88 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
   @Test
   public void testUnsuccessfulExecutionWithPartitionedRegionDueToParallelSenderWentDown()
       throws Exception {
-    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
-    try {
-      testSenderOrReceiverGoesDownDuringExecution(true, true, Gateway.SENDER, false);
-    } finally {
-      removeIgnoredExceptions(ignoredExceptions);
-    }
+    addIgnoredExceptionsForSenderInUseWentDown();
+    testSenderOrReceiverGoesDownDuringExecution(true, true, Gateway.SENDER, false);
   }
 
   @Test
   public void testUnsuccessfulExecutionWithPartitionedRegionDueToSerialPrimarySenderWentDown()
       throws Exception {
-    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
-    try {
-      testSenderOrReceiverGoesDownDuringExecution(false, true, Gateway.SENDER, true);
-    } finally {
-      removeIgnoredExceptions(ignoredExceptions);
-    }
+    addIgnoredExceptionsForSenderInUseWentDown();
+    testSenderOrReceiverGoesDownDuringExecution(false, true, Gateway.SENDER, true);
   }
 
   @Test
   public void testSuccessfulExecutionWithPartitionedRegionDueToSerialSecondarySenderWentDown()
       throws Exception {
-    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
-    try {
-      testSenderOrReceiverGoesDownDuringExecution(false, true, Gateway.SENDER, false);
-    } finally {
-      removeIgnoredExceptions(ignoredExceptions);
-    }
+    testSenderOrReceiverGoesDownDuringExecution(false, true, Gateway.SENDER, false);
   }
 
   @Test
   public void testUnsuccessfulExecutionWithReplicatedRegionDueToSerialPrimarySenderWentDown()
       throws Exception {
-    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
-    try {
-      testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.SENDER, true);
-    } finally {
-      removeIgnoredExceptions(ignoredExceptions);
-    }
+    addIgnoredExceptionsForSenderInUseWentDown();
+    testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.SENDER, true);
   }
 
   @Test
   public void testSuccessfulExecutionWithReplicatedRegionDueToSerialSecondarySenderWentDown()
       throws Exception {
-    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
-    try {
-      testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.SENDER, false);
-    } finally {
-      removeIgnoredExceptions(ignoredExceptions);
-    }
+    testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.SENDER, false);
   }
 
   @Test
   public void testSuccessfulExecutionWithPartitionedRegionAndParallelSenderDueToReceiverWentDown()
       throws Exception {
-    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
-    try {
-      testSenderOrReceiverGoesDownDuringExecution(true, true, Gateway.RECEIVER, false);
-    } finally {
-      removeIgnoredExceptions(ignoredExceptions);
-    }
+    addIgnoredExceptionsForReceiverConnectedToSenderInUseWentDown();
+    testSenderOrReceiverGoesDownDuringExecution(true, true, Gateway.RECEIVER, false);
   }
 
   @Test
   public void testSuccessfulExecutionWithPartitionedRegionAndSerialSenderDueToReceiverConnectedToPrimarySenderWentDown()
       throws Exception {
-    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
-    try {
-      testSenderOrReceiverGoesDownDuringExecution(false, true, Gateway.RECEIVER, true);
-    } finally {
-      removeIgnoredExceptions(ignoredExceptions);
-    }
+    addIgnoredExceptionsForReceiverConnectedToSenderInUseWentDown();
+    testSenderOrReceiverGoesDownDuringExecution(false, true, Gateway.RECEIVER, true);
   }
 
   @Test
   public void testSuccessfulExecutionWithPartitionedRegionAndSerialSenderDueToReceiverNotConnectedToPrimarySenderWentDown()
       throws Exception {
-    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
-    try {
-      testSenderOrReceiverGoesDownDuringExecution(false, true, Gateway.RECEIVER, false);
-    } finally {
-      removeIgnoredExceptions(ignoredExceptions);
-    }
+    testSenderOrReceiverGoesDownDuringExecution(false, true, Gateway.RECEIVER, false);
   }
 
   @Test
   public void testSuccessfulExecutionWithReplicatedRegionAndSerialSenderDueToReceiverConnectedToPrimarySenderWentDown()
       throws Exception {
-    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
-    try {
-      testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.RECEIVER, true);
-    } finally {
-      removeIgnoredExceptions(ignoredExceptions);
-    }
+    addIgnoredExceptionsForReceiverConnectedToSenderInUseWentDown();
+    testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.RECEIVER, true);
   }
 
   @Test
   public void testSuccessfulExecutionWithReplicatedRegionAndSerialSenderDueToReceiverNotConnectedToPrimarySenderWentDown()
       throws Exception {
-    List<IgnoredException> ignoredExceptions = addIgnoredExceptions();
-    try {
-      testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.RECEIVER, false);
-    } finally {
-      removeIgnoredExceptions(ignoredExceptions);
-    }
+    testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.RECEIVER, false);
   }
 
-  private List<IgnoredException> addIgnoredExceptions() {
-    List<IgnoredException> ignoredExceptionsList = new ArrayList<>();
-    ignoredExceptionsList.add(IgnoredException.addIgnoredException(
-        "Exception when running replicate command: java.util.concurrent.ExecutionException: org.apache.geode.distributed.PoolCancelledException"));
-    ignoredExceptionsList.add(IgnoredException.addIgnoredException(
-        "Exception org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException in sendBatch. Retrying"));
-    ignoredExceptionsList.add(IgnoredException.addIgnoredException(
-        "Exception org.apache.geode.cache.client.ServerConnectivityException in sendBatch. Retrying"));
-    ignoredExceptionsList
-        .add(IgnoredException.addIgnoredException("DistributedSystemDisconnectedException"));
-    ignoredExceptionsList.add(IgnoredException.addIgnoredException(
-        "Exception when running replicate command: java.util.concurrent.ExecutionException: org.apache.geode.cache.EntryDestroyedException"));
-    return ignoredExceptionsList;
+  private void addIgnoredExceptionsForSenderInUseWentDown() {
+    IgnoredException.addIgnoredException(
+        "Exception org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException in sendBatch. Retrying");
+    IgnoredException.addIgnoredException(
+        "Exception org.apache.geode.cache.client.ServerConnectivityException in sendBatch. Retrying");
+    IgnoredException.addIgnoredException("DistributedSystemDisconnectedException");
+
+    IgnoredException.addIgnoredException(
+        "Exception when running replicate command: java.util.concurrent.ExecutionException: org.apache.geode.distributed.PoolCancelledException");
+    IgnoredException.addIgnoredException(
+        "Exception when running replicate command: java.util.concurrent.ExecutionException: org.apache.geode.cache.EntryDestroyedException");
   }
 
-  private void removeIgnoredExceptions(List<IgnoredException> ignoredExceptionList) {
-    for (IgnoredException ie : ignoredExceptionList) {
-      ie.remove();
-    }
+  private void addIgnoredExceptionsForReceiverConnectedToSenderInUseWentDown() {
+    IgnoredException.addIgnoredException(
+        "Exception org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException in sendBatch. Retrying");
+    IgnoredException.addIgnoredException(
+        "Exception org.apache.geode.cache.client.ServerConnectivityException in sendBatch. Retrying");
+    IgnoredException.addIgnoredException("DistributedSystemDisconnectedException");
   }
 
   private int create2WanSitesAndClient(VM locatorInA, List<VM> serversInA, String senderIdInA,
