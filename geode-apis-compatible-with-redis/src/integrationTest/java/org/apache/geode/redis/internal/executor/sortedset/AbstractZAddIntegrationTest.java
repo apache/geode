@@ -45,7 +45,6 @@ import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
 public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
