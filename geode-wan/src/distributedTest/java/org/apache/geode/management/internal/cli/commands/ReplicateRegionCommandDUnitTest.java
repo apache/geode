@@ -409,6 +409,8 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
         "Exception org.apache.geode.cache.client.ServerConnectivityException in sendBatch. Retrying"));
     ignoredExceptionsList
         .add(IgnoredException.addIgnoredException("DistributedSystemDisconnectedException"));
+    ignoredExceptionsList.add(IgnoredException.addIgnoredException(
+        "Exception when running replicate command: java.util.concurrent.ExecutionException: org.apache.geode.cache.EntryDestroyedException"));
     return ignoredExceptionsList;
   }
 
