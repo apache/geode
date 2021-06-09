@@ -40,16 +40,15 @@ import org.apache.geode.test.junit.categories.WanTest;
 public class GatewayReceiverMBeanDUnitTest extends ManagementTestBase {
 
   @Test
-  public void testMBeanAndProxiesForGatewayReceiverAreCreated() throws Exception {
+  public void testMBeanAndProxiesForGatewayReceiverAreCreated() {
     initManagement(true);
-
 
     // Verify MBean is created in each managed node
     for (VM vm : getManagedNodeList()) {
       vm.invoke(() -> {
-        GatewayReceiver receiver = getCache().createGatewayReceiverFactory().create();
+        getCache().createGatewayReceiverFactory().create();
       });
-      vm.invoke(() -> verifyMBean());
+      vm.invoke(this::verifyMBean);
     }
 
     // Verify MBean proxies are created in the managing node
@@ -57,23 +56,34 @@ public class GatewayReceiverMBeanDUnitTest extends ManagementTestBase {
   }
 
   @Test
-  public void testMBeanAndProxiesForGatewayReceiverAreRemovedOnDestroy() throws Exception {
+  public void testMBeanAndProxiesForGatewayReceiverAreRemovedOnDestroy() {
     initManagement(true);
 
-    // Verify MBean is created in each managed node
+    // Create a GatewayReceiver and verify an MBean is created in each managed node
     for (VM vm : getManagedNodeList()) {
       vm.invoke(() -> {
         GatewayReceiver receiver = getCache().createGatewayReceiverFactory().create();
         receiver.start();
-        receiver.stop();
-        receiver.destroy();
-
       });
-      vm.invoke(() -> verifyMBeanDoesNotExist());
+      vm.invoke(this::verifyMBean);
     }
 
-    // Verify MBean proxies are created in the managing node
-    getManagingNode().invoke(() -> verifyMBeanProxiesDoesNotExist(getCache()));
+    // Wait for the MBean proxies to exist in the manager
+    getManagingNode().invoke(() -> verifyMBeanProxies(getCache()));
+
+    // Destroy the GatewayReceiver and verify its MBean is destroyed in each managed node
+    for (VM vm : getManagedNodeList()) {
+      vm.invoke(() -> {
+        GatewayReceiver receiver = getCache().getGatewayReceivers().iterator().next();
+        receiver.stop();
+        receiver.destroy();
+      });
+      vm.invoke(this::verifyMBeanDoesNotExist);
+    }
+
+    // Wait for the MBean proxies to be removed from the managing node
+    // The wait is necessary because the monitoringRegion is no-ack
+    getManagingNode().invoke(() -> verifyMBeanProxiesDoNotExist(getCache()));
   }
 
   private void verifyMBean() {
@@ -94,16 +104,15 @@ public class GatewayReceiverMBeanDUnitTest extends ManagementTestBase {
     Set<? extends DistributedMember> members =
         cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     for (DistributedMember member : members) {
-      await()
-          .untilAsserted(() -> assertNotNull(getMBeanProxy(member)));
+      await().untilAsserted(() -> assertNotNull(getMBeanProxy(member)));
     }
   }
 
-  private static void verifyMBeanProxiesDoesNotExist(final InternalCache cache) {
+  private static void verifyMBeanProxiesDoNotExist(final InternalCache cache) {
     Set<? extends DistributedMember> members =
         cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     for (DistributedMember member : members) {
-      assertNull(getMBeanProxy(member));
+      await().untilAsserted(() -> assertNull(getMBeanProxy(member)));
     }
   }
 
@@ -112,6 +121,4 @@ public class GatewayReceiverMBeanDUnitTest extends ManagementTestBase {
     ObjectName objectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
     return service.getMBeanProxy(objectName, GatewayReceiverMXBean.class);
   }
-
-
 }
