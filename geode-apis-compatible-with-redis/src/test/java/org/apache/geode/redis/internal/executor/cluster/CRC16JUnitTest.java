@@ -15,10 +15,12 @@
 
 package org.apache.geode.redis.internal.executor.cluster;
 
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import redis.clients.jedis.util.JedisClusterCRC16;
+
 
 public class CRC16JUnitTest {
 
@@ -32,19 +34,19 @@ public class CRC16JUnitTest {
     assertThat(CRC16.calculate(new byte[] {1}, 0, 1))
         .isEqualTo((short) JedisClusterCRC16.getCRC16(data));
 
-    data = "123456789".getBytes();
+    data = stringToBytes("123456789");
     assertThat(CRC16.calculate(data, 0, data.length))
         .isEqualTo((short) JedisClusterCRC16.getCRC16(data));
 
-    data = "---123456789---".getBytes();
+    data = stringToBytes("---123456789---");
     assertThat(CRC16.calculate(data, 3, 12))
         .isEqualTo((short) JedisClusterCRC16.getCRC16(data, 3, 12));
 
-    data = "abcdefghijklmnopqrstuvwxyz".getBytes();
+    data = stringToBytes("abcdefghijklmnopqrstuvwxyz");
     assertThat(CRC16.calculate(data, 0, data.length))
         .isEqualTo((short) JedisClusterCRC16.getCRC16(data));
 
-    data = "user1000".getBytes();
+    data = stringToBytes("user1000");
     assertThat(CRC16.calculate(data, 0, data.length))
         .isEqualTo((short) JedisClusterCRC16.getCRC16(data));
   }

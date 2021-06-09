@@ -16,6 +16,8 @@
 package org.apache.geode.redis.session;
 
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+
 import java.net.HttpCookie;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -253,7 +255,7 @@ public abstract class SessionDUnitTest {
   protected String getSessionId(String sessionCookie) {
     List<HttpCookie> cookies = HttpCookie.parse(sessionCookie);
     byte[] decodedCookie = Base64.getDecoder().decode(cookies.get(0).getValue());
-    return new String(decodedCookie);
+    return bytesToString(decodedCookie);
   }
 
 }

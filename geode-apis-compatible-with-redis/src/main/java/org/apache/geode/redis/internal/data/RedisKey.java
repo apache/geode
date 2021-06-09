@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -30,7 +31,6 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.executor.cluster.CRC16;
 import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
-import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisKey implements DataSerializableFixedID {
 
@@ -111,7 +111,7 @@ public class RedisKey implements DataSerializableFixedID {
 
   @Override
   public String toString() {
-    return Coder.bytesToString(value);
+    return bytesToString(value);
   }
 
   public byte[] toBytes() {

@@ -23,8 +23,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ShutDownExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     context.shutdown();
     return RedisResponse.nil();
   }

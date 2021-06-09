@@ -29,10 +29,6 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SMoveExecutor extends AbstractExecutor {
 
-  private static final int MOVED = 1;
-
-  private static final int NOT_MOVED = 0;
-
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
@@ -50,10 +46,9 @@ public class SMoveExecutor extends AbstractExecutor {
 
     boolean removed =
         redisSetCommands.srem(source, new ArrayList<>(Collections.singletonList(member))) == 1;
-    if (!removed) {
-      return RedisResponse.integer(NOT_MOVED);
+    if (removed) {
+      redisSetCommands.sadd(destination, new ArrayList<>(Collections.singletonList(member)));
     }
-    redisSetCommands.sadd(destination, new ArrayList<>(Collections.singletonList(member)));
-    return RedisResponse.integer(MOVED);
+    return RedisResponse.integer(removed);
   }
 }

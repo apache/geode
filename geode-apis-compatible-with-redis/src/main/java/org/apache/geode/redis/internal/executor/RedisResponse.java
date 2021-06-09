@@ -82,7 +82,7 @@ public class RedisResponse {
   }
 
   public static RedisResponse ok() {
-    return new RedisResponse((buffer) -> Coder.getSimpleStringResponse(buffer, "OK"));
+    return new RedisResponse(Coder::getOKResponse);
   }
 
   public static RedisResponse nil() {

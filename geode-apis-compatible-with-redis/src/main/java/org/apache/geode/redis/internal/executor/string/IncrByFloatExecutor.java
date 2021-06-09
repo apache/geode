@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -53,8 +55,7 @@ public class IncrByFloatExecutor extends AbstractExecutor {
   }
 
   public static Pair<BigDecimal, RedisResponse> validateIncrByFloatArgument(byte[] incrArray) {
-    String doub = Coder.bytesToString(incrArray).toLowerCase();
-    if (invalidArgs.matcher(doub).matches()) {
+    if (isInfinity(incrArray)) {
       return Pair.of(null, RedisResponse.error(RedisConstants.ERROR_NAN_OR_INFINITY));
     }
 

@@ -18,13 +18,14 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_PUBSUB_SUBCOMMAND;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCHANNELS;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -35,16 +36,16 @@ public class PubSubExecutor implements Executor {
 
     byte[] subCommand = command.getProcessedCommand().get(1);
 
-    if (!Arrays.equals(subCommand, Coder.stringToBytes("channels"))) {
+    if (!equalsIgnoreCaseBytes(subCommand, bCHANNELS)) {
       return RedisResponse
-          .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, new String(subCommand)));
+          .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, bytesToString(subCommand)));
     }
 
     // in a subsequent story, a new parameter requirement class
     // specific to subCommands might be a better way to do this
     if (command.getProcessedCommand().size() > 3) {
       return RedisResponse
-          .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, new String(subCommand)));
+          .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, bytesToString(subCommand)));
     }
 
     List<byte[]> response;

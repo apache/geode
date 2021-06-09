@@ -16,10 +16,10 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 
 import org.junit.After;
 import org.junit.Before;
@@ -94,7 +94,7 @@ public abstract class AbstractKeysIntegrationTest implements RedisIntegrationTes
   @Test
   public void givenBinaryValue_withExactMatch_preservesBinaryData() {
     String chineseHashTag = "{子}";
-    byte[] utf8encodedBytes = chineseHashTag.getBytes(StandardCharsets.UTF_8);
+    byte[] utf8encodedBytes = stringToBytes(chineseHashTag);
     byte[] stringKey =
         new byte[] {(byte) 0xac, (byte) 0xed, 0, 4, 0, 5, 's', 't', 'r', 'i', 'n', 'g', '1'};
     byte[] allByteArray = new byte[utf8encodedBytes.length + stringKey.length];
@@ -105,7 +105,7 @@ public abstract class AbstractKeysIntegrationTest implements RedisIntegrationTes
     byte[] combined = buff.array();
 
     jedis.set(combined, combined);
-    assertThat(jedis.keys("{子}*".getBytes(StandardCharsets.UTF_8)))
+    assertThat(jedis.keys(stringToBytes("{子}*")))
         .containsExactlyInAnyOrder(combined);
   }
 

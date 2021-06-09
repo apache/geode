@@ -49,6 +49,7 @@ dependencies {
   testImplementation('redis.clients:jedis')
   testImplementation('com.pholser:junit-quickcheck-core')
   testImplementation('com.pholser:junit-quickcheck-generators')
+  testImplementation('pl.pragmatists:JUnitParams')
 
   commonTestImplementation(project(':geode-junit'))
   commonTestImplementation(project(':geode-dunit'))

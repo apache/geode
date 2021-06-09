@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+
 import java.util.Collection;
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class SPopExecutor extends AbstractExecutor {
     }
 
     if (!isCountPassed) {
-      return RedisResponse.bulkString(Coder.bytesToString(popped.iterator().next()));
+      return RedisResponse.bulkString(popped.iterator().next());
     }
 
     return RedisResponse.array(popped);

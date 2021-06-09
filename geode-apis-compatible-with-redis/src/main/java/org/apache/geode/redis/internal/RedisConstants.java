@@ -18,11 +18,6 @@ package org.apache.geode.redis.internal;
 public class RedisConstants {
 
   /*
-   * Responses
-   */
-  public static final String QUIT_RESPONSE = "OK";
-
-  /*
    * Error responses
    */
   public static final String PARSING_EXCEPTION_MESSAGE =

@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.emptyList;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -47,7 +48,6 @@ import org.apache.geode.redis.internal.collections.SizeableObjectOpenCustomHashS
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
-import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSet extends AbstractRedisData {
   private SizeableObjectOpenCustomHashSet<byte[]> members;
@@ -84,7 +84,7 @@ public class RedisSet extends AbstractRedisData {
       }
 
       if (matchPattern != null) {
-        if (matchPattern.matcher(Coder.bytesToString(value)).matches()) {
+        if (matchPattern.matcher(bytesToString(value)).matches()) {
           returnList.add(value);
           numElements++;
         }

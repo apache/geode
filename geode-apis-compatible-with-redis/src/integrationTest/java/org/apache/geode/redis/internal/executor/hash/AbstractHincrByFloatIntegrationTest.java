@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.offset;
@@ -112,13 +113,13 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisIntegr
     String field = "field";
 
     Object response = jedis.sendCommand(key, Protocol.Command.HINCRBYFLOAT, key, field, "1.23");
-    assertThat(new String((byte[]) response)).isEqualTo("1.23");
+    assertThat(bytesToString((byte[]) response)).isEqualTo("1.23");
 
     response = jedis.sendCommand(key, Protocol.Command.HINCRBYFLOAT, key, field, "0.77");
-    assertThat(new String((byte[]) response)).isEqualTo("2");
+    assertThat(bytesToString((byte[]) response)).isEqualTo("2");
 
     response = jedis.sendCommand(key, Protocol.Command.HINCRBYFLOAT, key, field, "-0.1");
-    assertThat(new String((byte[]) response)).isEqualTo("1.9");
+    assertThat(bytesToString((byte[]) response)).isEqualTo("1.9");
   }
 
   @Test
@@ -149,7 +150,7 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisIntegr
     // Beyond this, native redis produces inconsistent results.
     Object rawResult =
         jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "1");
-    BigDecimal result = new BigDecimal(new String((byte[]) rawResult));
+    BigDecimal result = new BigDecimal(bytesToString((byte[]) rawResult));
 
     assertThat(result.toPlainString()).isEqualTo(biggy.add(BigDecimal.ONE).toPlainString());
   }

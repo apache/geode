@@ -37,7 +37,7 @@ public class FlushAllExecutor extends AbstractExecutor {
       redisKeyCommands.del((RedisKey) skey);
     }
 
-    return RedisResponse.string("OK");
+    return RedisResponse.ok();
   }
 
 }

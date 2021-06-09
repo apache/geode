@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal.netty;
 
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -161,7 +163,7 @@ public class NettyRedisServer {
   private ChannelInitializer<SocketChannel> createChannelInitializer() {
     String redisPassword = configSupplier.get().getRedisPassword();
     final byte[] redisPasswordBytes =
-        StringUtils.isBlank(redisPassword) ? null : Coder.stringToBytes(redisPassword);
+        StringUtils.isBlank(redisPassword) ? null : stringToBytes(redisPassword);
 
     return new ChannelInitializer<SocketChannel>() {
       @Override

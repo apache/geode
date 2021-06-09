@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -151,7 +152,7 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
 
     // Beyond this, native redis produces inconsistent results.
     Object rawResult = jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "1");
-    BigDecimal result = new BigDecimal(new String((byte[]) rawResult));
+    BigDecimal result = new BigDecimal(bytesToString((byte[]) rawResult));
 
     assertThat(result.toPlainString()).isEqualTo(biggy.add(BigDecimal.ONE).toPlainString());
   }

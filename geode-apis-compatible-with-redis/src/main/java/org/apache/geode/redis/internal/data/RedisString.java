@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -141,7 +143,7 @@ public class RedisString extends AbstractRedisData {
   }
 
   private BigDecimal parseValueAsBigDecimal() {
-    String valueString = Coder.bytesToString(value);
+    String valueString = bytesToString(value);
     if (valueString.contains(" ")) {
       throw new NumberFormatException(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
     }
@@ -435,7 +437,7 @@ public class RedisString extends AbstractRedisData {
   public String toString() {
     return "RedisString{" +
         super.toString() + ", " +
-        "value=" + new String(value) +
+        "value=" + bytesToString(value) +
         '}';
   }
 

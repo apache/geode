@@ -15,7 +15,12 @@
  */
 package org.apache.geode.redis.internal.netty;
 
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCRLF;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
@@ -40,18 +45,6 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
  */
 public class ByteToCommandDecoder extends ByteToMessageDecoder {
 
-  /**
-   * Important note
-   * <p>
-   * Do not use '' <-- java primitive chars. Redis uses {@link Coder#CHARSET} encoding so we should
-   * not risk java handling char to byte conversions, rather just hard code {@link Coder#CHARSET}
-   * chars as bytes
-   */
-
-  private static final byte rID = 13; // '\r';
-  private static final byte nID = 10; // '\n';
-  private static final byte bulkStringID = 36; // '$';
-  private static final byte arrayID = 42; // '*';
   private static final int MAX_BULK_STRING_LENGTH = 512 * 1024 * 1024; // 512 MB
 
   private final RedisStats redisStats;
@@ -86,9 +79,9 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
     }
 
     byte firstB = buffer.readByte();
-    if (firstB != arrayID) {
+    if (firstB != ARRAY_ID) {
       throw new RedisCommandParserException(
-          "Expected: " + (char) arrayID + " Actual: " + (char) firstB);
+          "Expected: " + (char) ARRAY_ID + " Actual: " + (char) firstB);
     }
     List<byte[]> commandElems = parseArray(buffer);
 
@@ -117,7 +110,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
         return null;
       }
       currentChar = buffer.readByte();
-      if (currentChar == bulkStringID) {
+      if (currentChar == BULK_STRING_ID) {
         byte[] newBulkString = parseBulkString(buffer);
         if (newBulkString == null) {
           return null;
@@ -200,17 +193,12 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
     if (!buffer.isReadable(2)) {
       return false;
     }
-    byte b = buffer.readByte();
-    if (b != rID) {
+    byte[] bytes = {buffer.readByte(), buffer.readByte()};
+    if (!Arrays.equals(bytes, bCRLF)) {
       throw new RedisCommandParserException(
-          "expected \'" + (char) rID + "\', got \'" + (char) b + "\'");
-    }
-    b = buffer.readByte();
-    if (b != nID) {
-      throw new RedisCommandParserException(
-          "expected: \'" + (char) nID + "\', got \'" + (char) b + "\'");
+          "expected \'\\r\\n\' as byte[] of " + Arrays.toString(bCRLF) + ", got byte[] of "
+              + Arrays.toString(bytes));
     }
     return true;
   }
-
 }

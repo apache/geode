@@ -17,6 +17,8 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMBER_1_BYTE;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -89,7 +91,7 @@ public class NullRedisString extends RedisString {
   @Override
   public long incr(Region<RedisKey, RedisData> region, RedisKey key)
       throws NumberFormatException, ArithmeticException {
-    byte[] newValue = {Coder.NUMBER_1_BYTE};
+    byte[] newValue = {NUMBER_1_BYTE};
     region.put(key, new RedisString(newValue));
     return 1;
   }
@@ -113,7 +115,7 @@ public class NullRedisString extends RedisString {
   @Override
   public long decr(Region<RedisKey, RedisData> region, RedisKey key)
       throws NumberFormatException, ArithmeticException {
-    region.put(key, new RedisString(Coder.stringToBytes("-1")));
+    region.put(key, new RedisString(stringToBytes("-1")));
     return -1;
   }
 

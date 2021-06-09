@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 import static java.lang.Math.round;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.BASE_REDIS_SORTED_SET_OVERHEAD;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -125,8 +126,8 @@ public class RedisSortedSetTest {
     RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
 
     List<byte[]> adds = new ArrayList<>();
-    adds.add("1.61803".getBytes());
-    adds.add("v3".getBytes());
+    adds.add(stringToBytes("1.61803"));
+    adds.add(stringToBytes("v3"));
 
     sortedSet1.zadd(region, null, adds, new ZAddOptions(ZAddOptions.Exists.NONE, false, false));
     assertThat(sortedSet1.hasDelta()).isTrue();
@@ -208,8 +209,8 @@ public class RedisSortedSetTest {
   @Ignore("Redo when we have a defined Sizable strategy")
   public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithSingleValue() {
     List<byte[]> data = new ArrayList<>();
-    data.add("1.0".getBytes());
-    data.add("membernamethatisverylonggggggggg".getBytes());
+    data.add(stringToBytes("1.0"));
+    data.add(stringToBytes("membernamethatisverylonggggggggg"));
 
     RedisSortedSet sortedSet = new RedisSortedSet(data);
 
@@ -251,9 +252,9 @@ public class RedisSortedSetTest {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     RedisKey key = new RedisKey();
     ArrayList<byte[]> membersToRemove = new ArrayList<>();
-    membersToRemove.add(Coder.stringToBytes("nonExisting"));
-    membersToRemove.add(Coder.stringToBytes(member1));
-    membersToRemove.add(Coder.stringToBytes(member3));
+    membersToRemove.add(stringToBytes("nonExisting"));
+    membersToRemove.add(stringToBytes(member1));
+    membersToRemove.add(stringToBytes(member3));
 
     long removed = sortedSet.zrem(region, key, membersToRemove);
 
@@ -267,12 +268,12 @@ public class RedisSortedSetTest {
     RedisSortedSet sortedSet2 = createRedisSortedSet(score2, member2);
     int originalSize = sortedSet.getSizeInBytes();
 
-    byte[] returnValue = sortedSet.memberRemove(Coder.stringToBytes(member1));
+    byte[] returnValue = sortedSet.memberRemove(stringToBytes(member1));
     int removedSize =
-        sortedSet.calculateSizeOfFieldValuePair(Coder.stringToBytes(member1), returnValue);
+        sortedSet.calculateSizeOfFieldValuePair(stringToBytes(member1), returnValue);
 
     assertThat(sortedSet).isEqualTo(sortedSet2);
-    assertThat(returnValue).isEqualTo(Coder.stringToBytes(score1));
+    assertThat(returnValue).isEqualTo(stringToBytes(score1));
     assertThat(sortedSet.getSizeInBytes()).isEqualTo(originalSize - removedSize);
   }
 
@@ -291,7 +292,7 @@ public class RedisSortedSetTest {
     Offset<Integer> offset = Offset.offset((int) round(expected * 0.03));
     assertThat(actual).isCloseTo(expected, offset);
 
-    sortedSet.memberRemove(Coder.stringToBytes(member1));
+    sortedSet.memberRemove(stringToBytes(member1));
     expected = reflectionObjectSizer.sizeof(sortedSet);
     actual = sortedSet.getSizeInBytes();
     offset = Offset.offset((int) round(expected * 0.03));

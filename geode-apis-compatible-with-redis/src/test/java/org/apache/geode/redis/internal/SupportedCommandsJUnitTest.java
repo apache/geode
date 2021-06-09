@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal;
 
 import static java.util.Arrays.asList;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -140,7 +141,7 @@ public class SupportedCommandsJUnitTest {
   public void crossCheckAllUnsupportedCommands_areMarkedUnsupported() {
     for (String commandName : unSupportedCommands) {
       List<byte[]> args = new ArrayList<>();
-      args.add(commandName.getBytes());
+      args.add(stringToBytes(commandName));
 
       Command command = new Command(args);
 
@@ -154,7 +155,7 @@ public class SupportedCommandsJUnitTest {
   public void crossCheckAllSupportedCommands_areMarkedSupported() {
     for (String commandName : supportedCommands) {
       List<byte[]> args = new ArrayList<>();
-      args.add(commandName.getBytes());
+      args.add(stringToBytes(commandName));
 
       Command command = new Command(args);
 

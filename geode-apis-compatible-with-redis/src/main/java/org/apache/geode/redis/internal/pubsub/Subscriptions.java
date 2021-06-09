@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -28,7 +30,6 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
@@ -86,11 +87,11 @@ public class Subscriptions {
 
   public List<byte[]> findChannelNames(byte[] pattern) {
 
-    GlobPattern globPattern = new GlobPattern(Coder.bytesToString(pattern));
+    GlobPattern globPattern = new GlobPattern(bytesToString(pattern));
 
     return findChannelNames()
         .stream()
-        .filter(name -> globPattern.matches(Coder.bytesToString(name)))
+        .filter(name -> globPattern.matches(bytesToString(name)))
         .collect(Collectors.toList());
   }
 
@@ -144,7 +145,7 @@ public class Subscriptions {
 
   public SubscribeResult psubscribe(byte[] patternBytes, ExecutionHandlerContext context,
       Client client) {
-    GlobPattern pattern = new GlobPattern(new String(patternBytes));
+    GlobPattern pattern = new GlobPattern(bytesToString(patternBytes));
     Subscription createdSubscription = null;
     synchronized (this) {
       if (!exists(pattern, client)) {

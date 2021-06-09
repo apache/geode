@@ -15,6 +15,9 @@
 
 package org.apache.geode.redis.internal.executor.cluster;
 
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+
+
 /**
  * Helper class to calculate the CRC-16/XMODEM value of a byte array. This is the same algorithm
  * that Redis uses.
@@ -60,7 +63,7 @@ public class CRC16 {
   }
 
   public static int calculate(String data) {
-    byte[] bytes = data.getBytes();
+    byte[] bytes = stringToBytes(data);
     return calculate(bytes, 0, bytes.length);
   }
 

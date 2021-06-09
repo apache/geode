@@ -17,6 +17,12 @@ package org.apache.geode.redis.internal.ParameterRequirements;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGET;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEN;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRESET;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -39,21 +45,23 @@ public class SlowlogParameterRequirements implements ParameterRequirements {
   }
 
   private void confirmKnownSubcommands(Command command) {
-    if (!command.getStringKey().toLowerCase().equals("reset") &&
-        !command.getStringKey().toLowerCase().equals("len") &&
-        !command.getStringKey().toLowerCase().equals("get")) {
+    byte[] bytes = command.getBytesKey();
+    if (!equalsIgnoreCaseBytes(bytes, bRESET) &&
+        !equalsIgnoreCaseBytes(bytes, bLEN) &&
+        !equalsIgnoreCaseBytes(bytes, bGET)) {
       throw new RedisParametersMismatchException(
-          String.format(ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND, command.getStringKey()));
+          String.format(ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND, bytesToString(bytes)));
     }
   }
 
   private void confirmArgumentsToGetSubcommand(Command command) {
-    if (!command.getStringKey().toLowerCase().equals("get")) {
+    byte[] bytes = command.getBytesKey();
+    if (!equalsIgnoreCaseBytes(bytes, bGET)) {
       throw new RedisParametersMismatchException(
-          String.format(ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND, command.getStringKey()));
+          String.format(ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND, bytesToString(bytes)));
     }
     try {
-      Long.parseLong(new String(command.getProcessedCommand().get(2)));
+      bytesToLong(command.getProcessedCommand().get(2));
     } catch (NumberFormatException nex) {
       throw new RedisParametersMismatchException(ERROR_NOT_INTEGER);
     }

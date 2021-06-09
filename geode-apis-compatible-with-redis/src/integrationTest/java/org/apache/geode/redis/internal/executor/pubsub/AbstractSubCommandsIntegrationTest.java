@@ -21,6 +21,7 @@ import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLea
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtMostNArgsForSubCommand;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_PUBSUB_SUBCOMMAND;
 import static org.apache.geode.redis.internal.executor.pubsub.AbstractPubSubIntegrationTest.JEDIS_TIMEOUT;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,7 +39,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -71,7 +71,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   public void channels_shouldError_givenTooManyArguments() {
     assertAtMostNArgsForSubCommand(introspector,
         Protocol.Command.PUBSUB,
-        Coder.stringToBytes(PUBSUB_CHANNELS),
+        stringToBytes(PUBSUB_CHANNELS),
         1);
   }
 
@@ -86,8 +86,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   @Test
   public void channels_shouldReturnListOfAllChannels_withActiveChannelSubscribers_whenCalledWithoutPattern() {
     List<byte[]> expectedChannels = new ArrayList<>();
-    expectedChannels.add(Coder.stringToBytes("foo"));
-    expectedChannels.add(Coder.stringToBytes("bar"));
+    expectedChannels.add(stringToBytes("foo"));
+    expectedChannels.add(stringToBytes("bar"));
     Runnable runnable =
         () -> subscriber.subscribe(mockSubscriber, "foo", "bar");
     Thread subscriberThread = new Thread(runnable);
@@ -144,7 +144,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   @Test
   public void channels_shouldOnlyReturnChannelsWithActiveSubscribers() {
     List<byte[]> expectedChannels = new ArrayList<>();
-    expectedChannels.add(Coder.stringToBytes("bar"));
+    expectedChannels.add(stringToBytes("bar"));
     Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "foo", "bar");
     Thread subscriberThread = new Thread(runnable);
 
@@ -165,7 +165,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
 
     MockSubscriber mockSubscriber2 = new MockSubscriber();
     List<byte[]> expectedChannels = new ArrayList<>();
-    expectedChannels.add(Coder.stringToBytes("foo"));
+    expectedChannels.add(stringToBytes("foo"));
 
     Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "foo");
     Thread subscriber1Thread = new Thread(runnable);

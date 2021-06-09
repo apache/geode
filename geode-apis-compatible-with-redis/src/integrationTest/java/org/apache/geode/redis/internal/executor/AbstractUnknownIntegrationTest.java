@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
@@ -44,46 +45,54 @@ public abstract class AbstractUnknownIntegrationTest implements RedisIntegration
 
   @Test
   public void givenUnknownCommand_returnsUnknownCommandError() {
-    assertThatThrownBy(() -> jedis.sendCommand("fhqwhgads"::getBytes))
+    assertThatThrownBy(() -> jedis.sendCommand(() -> stringToBytes("fhqwhgads")))
         .hasMessage("ERR unknown command `fhqwhgads`, with args beginning with: ");
   }
 
   @Test
   public void givenUnknownCommand_withArguments_returnsUnknownCommandErrorWithArgumentsListed() {
-    assertThatThrownBy(() -> jedis.sendCommand("fhqwhgads"::getBytes, "EVERYBODY", "TO THE LIMIT"))
-        .hasMessage(
-            "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, `TO THE LIMIT`, ");
+    assertThatThrownBy(() -> jedis.sendCommand(() -> stringToBytes("fhqwhgads"), "EVERYBODY",
+        "TO THE LIMIT"))
+            .hasMessage(
+                "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, `TO THE LIMIT`, ");
   }
 
   @Test
   public void givenUnknownCommand_withEmptyStringArgument_returnsUnknownCommandErrorWithArgumentsListed() {
-    assertThatThrownBy(() -> jedis.sendCommand("fhqwhgads"::getBytes, "EVERYBODY", ""))
-        .hasMessage("ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, ``, ");
+    assertThatThrownBy(
+        () -> jedis.sendCommand(() -> stringToBytes("fhqwhgads"), "EVERYBODY", ""))
+            .hasMessage(
+                "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, ``, ");
   }
 
   @Test // HELLO is not a recognized command until Redis 6.0.0
   public void givenHelloCommand_returnsUnknownCommandErrorWithArgumentsListed() {
-    assertThatThrownBy(() -> jedis.sendCommand("HELLO"::getBytes))
+    assertThatThrownBy(() -> jedis.sendCommand(() -> stringToBytes("HELLO")))
         .hasMessage("ERR unknown command `HELLO`, with args beginning with: ");
   }
 
   @Test
   public void givenInternalSMembersCommand_returnsUnknownCommandErrorWithArgumentsListed() {
     assertThatThrownBy(
-        () -> jedis.sendCommand("INTERNALSMEMBERS"::getBytes, "something", "somethingElse"))
-            .hasMessage(
-                "ERR unknown command `INTERNALSMEMBERS`, with args beginning with: `something`, `somethingElse`, ");
+        () -> jedis.sendCommand(() -> stringToBytes("INTERNALSMEMBERS"), "something",
+            "somethingElse"))
+                .hasMessage(
+                    "ERR unknown command `INTERNALSMEMBERS`, with args beginning with: `something`, `somethingElse`, ");
   }
 
   @Test
   public void givenInternalPTTLCommand_returnsUnknownCommandErrorWithArgumentsListed() {
-    assertThatThrownBy(() -> jedis.sendCommand("INTERNALPTTL"::getBytes, "something"))
-        .hasMessage("ERR unknown command `INTERNALPTTL`, with args beginning with: `something`, ");
+    assertThatThrownBy(
+        () -> jedis.sendCommand(() -> stringToBytes("INTERNALPTTL"), "something"))
+            .hasMessage(
+                "ERR unknown command `INTERNALPTTL`, with args beginning with: `something`, ");
   }
 
   @Test
   public void givenInternalTypeCommand_returnsUnknownCommandErrorWithArgumentsListed() {
-    assertThatThrownBy(() -> jedis.sendCommand("INTERNALTYPE"::getBytes, "something"))
-        .hasMessage("ERR unknown command `INTERNALTYPE`, with args beginning with: `something`, ");
+    assertThatThrownBy(
+        () -> jedis.sendCommand(() -> stringToBytes("INTERNALTYPE"), "something"))
+            .hasMessage(
+                "ERR unknown command `INTERNALTYPE`, with args beginning with: `something`, ");
   }
 }

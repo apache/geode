@@ -15,6 +15,8 @@
  */
 package org.apache.geode.redis.internal.netty;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+
 import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,7 +62,7 @@ public class Command {
     RedisCommandType type;
     try {
       byte[] charCommand = commandElems.get(0);
-      String commandName = Coder.bytesToString(charCommand).toUpperCase();
+      String commandName = bytesToString(charCommand).toUpperCase();
       type = RedisCommandType.valueOf(commandName);
     } catch (Exception e) {
       type = RedisCommandType.UNKNOWN;
@@ -108,6 +110,24 @@ public class Command {
   }
 
   /**
+   * Convenience method to get the byte array representation of the key in a Redis command, always
+   * at the second position in the sent command array
+   *
+   * @return Returns the second element in the parsed command list, which is always the key for
+   *         commands indicating a key
+   */
+  public byte[] getBytesKey() {
+    if (this.commandElems.size() > 1) {
+      if (this.bytes == null) {
+        this.bytes = this.commandElems.get(1);
+      }
+      return this.bytes;
+    } else {
+      return null;
+    }
+  }
+
+  /**
    * Convenience method to get a String representation of the key in a Redis command, always at the
    * second position in the sent command array
    *
@@ -118,9 +138,9 @@ public class Command {
     if (this.commandElems.size() > 1) {
       if (this.bytes == null) {
         this.bytes = this.commandElems.get(1);
-        this.key = Coder.bytesToString(this.bytes);
+        this.key = bytesToString(this.bytes);
       } else if (this.key == null) {
-        this.key = Coder.bytesToString(this.bytes);
+        this.key = bytesToString(this.bytes);
       }
       return this.key;
     } else {

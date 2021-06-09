@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisSet.BASE_REDIS_SET_OVERHEAD;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -197,7 +198,7 @@ public class RedisSetTest {
   @Test
   public void should_calculateSize_equalToROS_withSingleMember() {
     Set<byte[]> members = new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
-    members.add("value".getBytes());
+    members.add(stringToBytes("value"));
     RedisSet set = new RedisSet(members);
 
     int actual = set.getSizeInBytes();
@@ -236,10 +237,10 @@ public class RedisSetTest {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
-    final RedisKey key = new RedisKey("key".getBytes());
+    final RedisKey key = new RedisKey(stringToBytes("key"));
     String valueString = "value";
 
-    final byte[] value = valueString.getBytes();
+    final byte[] value = stringToBytes(valueString);
     List<byte[]> members = new ArrayList<>();
     members.add(value);
 
@@ -256,13 +257,13 @@ public class RedisSetTest {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
-    final RedisKey key = new RedisKey("key".getBytes());
+    final RedisKey key = new RedisKey(stringToBytes("key"));
     String baseString = "value";
 
     for (int i = 0; i < 1_000; i++) {
       List<byte[]> members = new ArrayList<>();
       String valueString = baseString + i;
-      final byte[] value = valueString.getBytes();
+      final byte[] value = stringToBytes(valueString);
       members.add(value);
       set.sadd(members, region, key);
 
@@ -281,9 +282,9 @@ public class RedisSetTest {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
-    final RedisKey key = new RedisKey("key".getBytes());
-    final byte[] value1 = "value1".getBytes();
-    final byte[] value2 = "value2".getBytes();
+    final RedisKey key = new RedisKey(stringToBytes("key"));
+    final byte[] value1 = stringToBytes("value1");
+    final byte[] value2 = stringToBytes("value2");
 
     List<byte[]> members = new ArrayList<>();
     members.add(value1);
@@ -346,14 +347,14 @@ public class RedisSetTest {
   private RedisSet createRedisSetOfSpecifiedSize(int setSize) {
     List<byte[]> arrayList = new ArrayList<>();
     for (int i = 0; i < setSize; i++) {
-      arrayList.add(("abcdefgh" + i).getBytes());
+      arrayList.add(stringToBytes(("abcdefgh" + i)));
     }
     return new RedisSet(arrayList);
   }
 
   private RedisSet createRedisSetWithMemberOfSpecifiedSize(int memberSize) {
     List<byte[]> arrayList = new ArrayList<>();
-    byte[] member = createMemberOfSpecifiedSize("a", memberSize).getBytes();
+    byte[] member = stringToBytes(createMemberOfSpecifiedSize("a", memberSize));
     if (member.length > 0) {
       arrayList.add(member);
     }

@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.session;
 
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -165,7 +166,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
       return 0;
     }
     ObjectInputStream inputStream;
-    byte[] bytes = redisHash.hget("maxInactiveInterval".getBytes());
+    byte[] bytes = redisHash.hget(stringToBytes("maxInactiveInterval"));
     ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
     try {
       inputStream = new ObjectInputStream(byteStream);

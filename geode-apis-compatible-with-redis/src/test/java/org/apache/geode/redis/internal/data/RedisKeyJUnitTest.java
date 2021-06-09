@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.BeforeClass;
@@ -37,34 +38,34 @@ public class RedisKeyJUnitTest {
 
   @Test
   public void testRoutingId_withHashtags() {
-    RedisKey key = new RedisKey("name{user1000}".getBytes());
+    RedisKey key = new RedisKey(stringToBytes("name{user1000}"));
     assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user1000"));
 
-    key = new RedisKey("{user1000".getBytes());
+    key = new RedisKey(stringToBytes("{user1000"));
     assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("{user1000"));
 
-    key = new RedisKey("}user1000{".getBytes());
+    key = new RedisKey(stringToBytes("}user1000{"));
     assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("}user1000{"));
 
-    key = new RedisKey("user{}1000".getBytes());
+    key = new RedisKey(stringToBytes("user{}1000"));
     assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user{}1000"));
 
-    key = new RedisKey("user}{1000".getBytes());
+    key = new RedisKey(stringToBytes("user}{1000"));
     assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user}{1000"));
 
-    key = new RedisKey("{user1000}}bar".getBytes());
+    key = new RedisKey(stringToBytes("{user1000}}bar"));
     assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user1000"));
 
-    key = new RedisKey("foo{user1000}{bar}".getBytes());
+    key = new RedisKey(stringToBytes("foo{user1000}{bar}"));
     assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user1000"));
 
-    key = new RedisKey("foo{}{user1000}".getBytes());
+    key = new RedisKey(stringToBytes("foo{}{user1000}"));
     assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("foo{}{user1000}"));
 
-    key = new RedisKey("{}{user1000}".getBytes());
+    key = new RedisKey(stringToBytes("{}{user1000}"));
     assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("{}{user1000}"));
 
-    key = new RedisKey("foo{{user1000}}bar".getBytes());
+    key = new RedisKey(stringToBytes("foo{{user1000}}bar"));
     assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("{user1000"));
 
     key = new RedisKey(new byte[] {});
@@ -73,7 +74,7 @@ public class RedisKeyJUnitTest {
 
   @Test
   public void testSerialization_withPositiveSignedShortCRC16() throws Exception {
-    RedisKey keyOut = new RedisKey("012345".getBytes());
+    RedisKey keyOut = new RedisKey(stringToBytes("012345"));
     assertThat((short) keyOut.getCrc16()).isPositive();
 
     HeapDataOutputStream out = new HeapDataOutputStream(100);
@@ -86,7 +87,7 @@ public class RedisKeyJUnitTest {
 
   @Test
   public void testSerialization_withNegativeSignedShortCRC16() throws Exception {
-    RedisKey keyOut = new RedisKey("k2".getBytes());
+    RedisKey keyOut = new RedisKey(stringToBytes("k2"));
     assertThat((short) keyOut.getCrc16()).isNegative();
 
     HeapDataOutputStream out = new HeapDataOutputStream(100);

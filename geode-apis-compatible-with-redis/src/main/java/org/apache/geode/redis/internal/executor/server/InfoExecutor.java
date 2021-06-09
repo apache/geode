@@ -15,13 +15,24 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bALL;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCLIENTS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCLUSTER;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bDEFAULT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bKEYSPACE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMEMORY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPERSISTENCE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bREPLICATION;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSERVER;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSTATS;
+
 import java.text.DecimalFormat;
 import java.util.List;
 
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.statistics.RedisStats;
@@ -50,44 +61,29 @@ public class InfoExecutor extends AbstractExecutor {
     return commands.size() == 2;
   }
 
-  private String getSpecifiedSection(ExecutionHandlerContext context,
-      List<byte[]> commands) {
-    String result;
-    String section = Coder.bytesToString(commands.get(1)).toLowerCase();
-    switch (section) {
-      case "server":
-        result = getServerSection(context);
-        break;
-      case "cluster":
-        result = getClusterSection();
-        break;
-      case "persistence":
-        result = getPersistenceSection();
-        break;
-      case "replication":
-        result = getReplicationSection();
-        break;
-      case "stats":
-        result = getStatsSection(context);
-        break;
-      case "clients":
-        result = getClientsSection(context);
-        break;
-      case "memory":
-        result = getMemorySection(context);
-        break;
-      case "keyspace":
-        result = getKeyspaceSection(context);
-        break;
-      case "default":
-      case "all":
-        result = getAllSections(context);
-        break;
-      default:
-        result = "";
-        break;
+  private String getSpecifiedSection(ExecutionHandlerContext context, List<byte[]> commands) {
+    byte[] bytes = commands.get(1);
+    if (equalsIgnoreCaseBytes(bytes, bSERVER)) {
+      return getServerSection(context);
+    } else if (equalsIgnoreCaseBytes(bytes, bCLUSTER)) {
+      return getClusterSection();
+    } else if (equalsIgnoreCaseBytes(bytes, bPERSISTENCE)) {
+      return getPersistenceSection();
+    } else if (equalsIgnoreCaseBytes(bytes, bREPLICATION)) {
+      return getReplicationSection();
+    } else if (equalsIgnoreCaseBytes(bytes, bSTATS)) {
+      return getStatsSection(context);
+    } else if (equalsIgnoreCaseBytes(bytes, bCLIENTS)) {
+      return getClientsSection(context);
+    } else if (equalsIgnoreCaseBytes(bytes, bMEMORY)) {
+      return getMemorySection(context);
+    } else if (equalsIgnoreCaseBytes(bytes, bKEYSPACE)) {
+      return getKeyspaceSection(context);
+    } else if (equalsIgnoreCaseBytes(bytes, bDEFAULT) || equalsIgnoreCaseBytes(bytes, bALL)) {
+      return getAllSections(context);
+    } else {
+      return "";
     }
-    return result;
   }
 
   private String getStatsSection(ExecutionHandlerContext context) {

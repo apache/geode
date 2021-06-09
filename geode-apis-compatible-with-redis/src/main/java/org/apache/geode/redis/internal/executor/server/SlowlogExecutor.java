@@ -15,6 +15,11 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGET;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEN;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRESET;
+
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -24,18 +29,16 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class SlowlogExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-    String subCommand = command.getStringKey().toLowerCase();
-    switch (subCommand) {
-      case "get":
-        return RedisResponse.emptyArray();
-      case "len":
-        return RedisResponse.integer(0);
-      case "reset":
-        return RedisResponse.ok();
-      default:
-        return null; // Should never happen
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+    byte[] subCommand = command.getBytesKey();
+    if (equalsIgnoreCaseBytes(subCommand, bGET)) {
+      return RedisResponse.emptyArray();
+    } else if (equalsIgnoreCaseBytes(subCommand, bLEN)) {
+      return RedisResponse.integer(0);
+    } else if (equalsIgnoreCaseBytes(subCommand, bRESET)) {
+      return RedisResponse.ok();
+    } else {
+      return null;
     }
   }
 }
