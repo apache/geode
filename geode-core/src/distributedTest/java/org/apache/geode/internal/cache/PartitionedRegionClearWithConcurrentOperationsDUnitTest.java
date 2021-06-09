@@ -101,6 +101,8 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
     asList(accessor, server1, server2).forEach(vm -> vm.invoke(() -> {
       cache.set((InternalCache) new CacheFactory().set(LOCATORS, getLocators()).create());
     }));
+
+    addIgnoredException(MemberDisconnectedException.class);
   }
 
   @After
@@ -486,6 +488,7 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
         Optional<String> nullableValue = Optional.ofNullable(region.get(String.valueOf(i)));
         nullableValue.ifPresent(value -> assertThat(value).isEqualTo("Value_" + i));
       });
+      endOfLoop();
     }
   }
 
@@ -498,6 +501,7 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
 
     while (Instant.now().isBefore(finishTime)) {
       IntStream.range(0, entryCount).forEach(i -> region.put(String.valueOf(i), "Value_" + i));
+      endOfLoop();
     }
   }
 
@@ -513,6 +517,7 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
 
     while (Instant.now().isBefore(finishTime)) {
       region.putAll(valuesToInsert);
+      endOfLoop();
     }
   }
 
@@ -529,6 +534,7 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
         Optional<String> nullableValue = Optional.ofNullable(region.remove(String.valueOf(i)));
         nullableValue.ifPresent(value -> assertThat(value).isEqualTo("Value_" + i));
       });
+      endOfLoop();
     }
   }
 
@@ -543,6 +549,7 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
 
     while (Instant.now().isBefore(finishTime)) {
       region.removeAll(keysToRemove);
+      endOfLoop();
     }
   }
 
@@ -557,9 +564,12 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
 
   private void executeClears(int count) {
     Region<String, String> region = cache.get().getRegion(REGION_NAME);
-    // for (int invocation = 0; invocation < count; invocation++) {
-    while (!DONE.get()) {
+    for (int invocation = 0; invocation < count; invocation++) {
       region.clear();
+      if (DONE.get()) {
+        return;
+      }
+      endOfLoop();
     }
   }
 
@@ -575,7 +585,16 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
       } catch (PartitionedRegionPartialClearException pce) {
         retry = true;
       }
+      endOfLoop();
     } while (retry);
+  }
+
+  private void endOfLoop() {
+    try {
+      Thread.sleep(10);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private void killMember() {
@@ -609,7 +628,6 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
 
     private static void create(boolean coordinator, Runnable action) {
       MemberKiller memberKiller = new MemberKiller(coordinator, action);
-      addIgnoredException(MemberDisconnectedException.class);
       DistributionMessageObserver.setInstance(memberKiller);
     }
 
