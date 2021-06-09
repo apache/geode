@@ -11,33 +11,32 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
 package org.apache.geode.redis.internal.executor.key;
 
-import org.apache.geode.redis.internal.data.RedisKey;
+/**
+ * Class to hold options set by the RESTORE command
+ */
+public class RestoreOptions {
+  private boolean isReplace;
+  private boolean isAbsttl;
 
-public interface RedisKeyCommands {
-  boolean del(RedisKey key);
+  public RestoreOptions() {}
 
-  boolean exists(RedisKey key);
+  public boolean isReplace() {
+    return isReplace;
+  }
 
-  boolean rename(RedisKey oldKey, RedisKey newKey);
+  public void setReplace(boolean replace) {
+    isReplace = replace;
+  }
 
-  long pttl(RedisKey key);
+  public boolean isAbsttl() {
+    return isAbsttl;
+  }
 
-  long internalPttl(RedisKey key);
-
-  int pexpireat(RedisKey key, long timestamp);
-
-  int persist(RedisKey key);
-
-  String type(RedisKey key);
-
-  String internalType(RedisKey key);
-
-  byte[] dump(RedisKey key);
-
-  void restore(RedisKey key, long ttl, byte[] data, RestoreOptions options);
+  public void setAbsttl(boolean absttl) {
+    isAbsttl = absttl;
+  }
 }

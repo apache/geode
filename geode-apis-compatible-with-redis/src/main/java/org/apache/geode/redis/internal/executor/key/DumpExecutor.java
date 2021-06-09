@@ -11,33 +11,26 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
 package org.apache.geode.redis.internal.executor.key;
 
+import java.util.List;
+
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public interface RedisKeyCommands {
-  boolean del(RedisKey key);
+public class DumpExecutor extends AbstractExecutor {
+  @Override
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context)
+      throws Exception {
+    List<RedisKey> commandElems = command.getProcessedCommandKeys();
 
-  boolean exists(RedisKey key);
+    byte[] rawData = context.getKeyCommands().dump(commandElems.get(1));
 
-  boolean rename(RedisKey oldKey, RedisKey newKey);
-
-  long pttl(RedisKey key);
-
-  long internalPttl(RedisKey key);
-
-  int pexpireat(RedisKey key, long timestamp);
-
-  int persist(RedisKey key);
-
-  String type(RedisKey key);
-
-  String internalType(RedisKey key);
-
-  byte[] dump(RedisKey key);
-
-  void restore(RedisKey key, long ttl, byte[] data, RestoreOptions options);
+    return RedisResponse.bulkString(rawData);
+  }
 }

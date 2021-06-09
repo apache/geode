@@ -17,6 +17,8 @@
 package org.apache.geode.redis.internal.data;
 
 
+import java.io.IOException;
+
 import org.apache.geode.Delta;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -62,5 +64,9 @@ public interface RedisData extends Delta, DataSerializableFixedID, Sizeable {
   default boolean getForceRecalculateSize() {
     return true;
   }
+
+  byte[] dump() throws IOException;
+
+  RedisData restore(byte[] data, boolean replaceExisting) throws Exception;
 
 }

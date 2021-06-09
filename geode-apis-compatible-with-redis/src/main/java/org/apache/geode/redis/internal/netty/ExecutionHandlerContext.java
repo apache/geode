@@ -49,6 +49,7 @@ import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisDataMovedException;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;

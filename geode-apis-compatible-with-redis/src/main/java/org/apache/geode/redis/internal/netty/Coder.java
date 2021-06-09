@@ -230,6 +230,15 @@ public class Coder {
     return getErrorResponse0(buffer, bWRONGTYPE, error);
   }
 
+  public static ByteBuf getBusyKeyResponse(ByteBuf buffer, String error) {
+    byte[] errorAr = stringToBytes(error);
+    buffer.writeByte(ERROR_ID);
+    buffer.writeBytes(BUSYKEY);
+    buffer.writeBytes(errorAr);
+    buffer.writeBytes(CRLFar);
+    return buffer;
+  }
+
   public static ByteBuf getCustomErrorResponse(ByteBuf buffer, String error) {
     byte[] errorAr = stringToBytes(error);
     buffer.writeByte(ERROR_ID);

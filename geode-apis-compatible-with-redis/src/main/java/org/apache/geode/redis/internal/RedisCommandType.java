@@ -55,6 +55,7 @@ import org.apache.geode.redis.internal.executor.hash.HSetNXExecutor;
 import org.apache.geode.redis.internal.executor.hash.HStrLenExecutor;
 import org.apache.geode.redis.internal.executor.hash.HValsExecutor;
 import org.apache.geode.redis.internal.executor.key.DelExecutor;
+import org.apache.geode.redis.internal.executor.key.DumpExecutor;
 import org.apache.geode.redis.internal.executor.key.ExistsExecutor;
 import org.apache.geode.redis.internal.executor.key.ExpireAtExecutor;
 import org.apache.geode.redis.internal.executor.key.ExpireExecutor;
@@ -64,6 +65,7 @@ import org.apache.geode.redis.internal.executor.key.PExpireExecutor;
 import org.apache.geode.redis.internal.executor.key.PTTLExecutor;
 import org.apache.geode.redis.internal.executor.key.PersistExecutor;
 import org.apache.geode.redis.internal.executor.key.RenameExecutor;
+import org.apache.geode.redis.internal.executor.key.RestoreExecutor;
 import org.apache.geode.redis.internal.executor.key.ScanExecutor;
 import org.apache.geode.redis.internal.executor.key.TTLExecutor;
 import org.apache.geode.redis.internal.executor.key.TypeExecutor;
@@ -240,6 +242,8 @@ public enum RedisCommandType {
 
   /*************** Keys ******************/
 
+  DUMP(new DumpExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
+  RESTORE(new RestoreExecutor(), UNSUPPORTED, new MinimumParameterRequirements(4)),
   SCAN(new ScanExecutor(), UNSUPPORTED,
       new EvenParameterRequirements(ERROR_SYNTAX).and(new MinimumParameterRequirements(2))),
   UNLINK(new DelExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),

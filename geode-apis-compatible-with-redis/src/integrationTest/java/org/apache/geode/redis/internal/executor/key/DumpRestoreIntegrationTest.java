@@ -11,33 +11,22 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
 package org.apache.geode.redis.internal.executor.key;
 
-import org.apache.geode.redis.internal.data.RedisKey;
+import org.junit.ClassRule;
 
-public interface RedisKeyCommands {
-  boolean del(RedisKey key);
+import org.apache.geode.redis.GeodeRedisServerRule;
 
-  boolean exists(RedisKey key);
+public class DumpRestoreIntegrationTest extends AbstractDumpRestoreIntegrationTest {
 
-  boolean rename(RedisKey oldKey, RedisKey newKey);
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  long pttl(RedisKey key);
+  @Override
+  public int getPort() {
+    return server.getPort();
+  }
 
-  long internalPttl(RedisKey key);
-
-  int pexpireat(RedisKey key, long timestamp);
-
-  int persist(RedisKey key);
-
-  String type(RedisKey key);
-
-  String internalType(RedisKey key);
-
-  byte[] dump(RedisKey key);
-
-  void restore(RedisKey key, long ttl, byte[] data, RestoreOptions options);
 }

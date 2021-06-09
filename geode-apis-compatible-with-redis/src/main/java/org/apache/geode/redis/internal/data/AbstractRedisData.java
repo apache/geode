@@ -16,8 +16,14 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_RESTORE_KEY_EXISTS;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -30,6 +36,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.RedisRestoreKeyExistsException;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.AppendDeltaInfo;
@@ -42,12 +49,8 @@ public abstract class AbstractRedisData implements RedisData {
   private static final BucketRegion.PrimaryMoveReadLockAcquired primaryMoveReadLockAcquired =
       new BucketRegion.PrimaryMoveReadLockAcquired();
 
-  @Override
-  public String toString() {
-    return "expirationTimestamp=" + expirationTimestamp;
-  }
+  public static final long NO_EXPIRATION = -1L;
 
-  private static final long NO_EXPIRATION = -1L;
   /**
    * The timestamp at which this instance should expire.
    * NO_EXPIRATION means it never expires.
@@ -207,6 +210,25 @@ public abstract class AbstractRedisData implements RedisData {
     this.deltaInfo = null;
   }
 
+  @Override
+  public byte[] dump() throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataSerializer.writeObject(this, new DataOutputStream(baos));
+    return baos.toByteArray();
+  }
+
+  @Override
+  public RedisData restore(byte[] data, boolean replaceExisting) throws Exception {
+    if (!replaceExisting) {
+      throw new RedisRestoreKeyExistsException(ERROR_RESTORE_KEY_EXISTS);
+    }
+
+    ByteArrayInputStream bais = new ByteArrayInputStream(data);
+    Object obj = DataSerializer.readObject(new DataInputStream(bais));
+
+    return (RedisData) obj;
+  }
+
   private <T> ArrayList<T> readArrayList(DataInput in) throws IOException {
     try {
       return DataSerializer.readArrayList(in);
@@ -247,4 +269,10 @@ public abstract class AbstractRedisData implements RedisData {
   public int hashCode() {
     return Objects.hash(getExpirationTimestamp());
   }
+
+  @Override
+  public String toString() {
+    return "expirationTimestamp=" + expirationTimestamp;
+  }
+
 }
