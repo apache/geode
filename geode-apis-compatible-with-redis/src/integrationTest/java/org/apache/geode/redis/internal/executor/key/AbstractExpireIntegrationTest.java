@@ -69,7 +69,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
 
     assertThat(timeToLive).isEqualTo(-1);
 
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     timeToLive = jedis.ttl(key);
     assertThat(timeToLive).isGreaterThanOrEqualTo(15);
@@ -86,7 +86,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
 
     assertThat(timeToLive).isEqualTo(-1);
 
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
     timeToLive = jedis.ttl(key);
 
     assertThat(timeToLive).isGreaterThanOrEqualTo(15);
@@ -104,7 +104,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
 
     assertThat(timeToLive).isEqualTo(-1);
 
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
     timeToLive = jedis.ttl(key);
 
     assertThat(timeToLive).isGreaterThanOrEqualTo(15);
@@ -122,7 +122,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
     Long timeToLive = jedis.ttl(key);
     assertThat(timeToLive).isEqualTo(-1);
 
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
     timeToLive = jedis.ttl(key);
 
     assertThat(timeToLive).isGreaterThanOrEqualTo(15);
@@ -136,7 +136,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
     String anotherValue = "anotherValue";
     jedis.set(key, value);
 
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.set(key, anotherValue);
 
@@ -152,7 +152,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
     String anotherValue = "anotherValue";
 
     jedis.set(key, value);
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.getSet(key, anotherValue);
     Long timeToLive = jedis.ttl(key);
@@ -167,7 +167,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
     String value = "value";
 
     jedis.set(key, value);
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.del(key);
     jedis.set(key, value);
@@ -192,7 +192,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
     jedis.sadd(key2, value2);
 
     jedis.sadd(key3, value3);
-    jedis.expire(key3, 20);
+    jedis.expire(key3, 20L);
 
     jedis.sdiffstore(key3, key1, key2);
 
@@ -215,7 +215,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
     jedis.sadd(key2, value2);
 
     jedis.sadd(key3, value3);
-    jedis.expire(key3, 20);
+    jedis.expire(key3, 20L);
 
     jedis.sinterstore(key3, key1, key2);
 
@@ -238,7 +238,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
     jedis.sadd(key2, value2);
 
     jedis.sadd(key3, value3);
-    jedis.expire(key3, 20);
+    jedis.expire(key3, 20L);
 
     jedis.sinterstore(key3, key1, key2);
 
@@ -252,7 +252,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
     String value = "0";
 
     jedis.set(key, value);
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.incr(key);
 
@@ -269,7 +269,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
 
     jedis.hset(key, field, value);
 
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.hset(key, field, value2);
 
@@ -284,7 +284,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
     String newKeyName = "{user1}new key name";
     String value = "value";
     jedis.set(key, value);
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.rename(key, newKeyName);
 
@@ -299,7 +299,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
     String value = "value";
 
     jedis.set(key, value);
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.set(key2, value);
 
@@ -316,10 +316,10 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
     String value = "value";
 
     jedis.set(key, value);
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.set(key2, value);
-    jedis.expire(key2, 14);
+    jedis.expire(key2, 14L);
 
     jedis.rename(key, key2);
 
@@ -334,7 +334,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
     String value = "value";
     jedis.set(key, value);
 
-    Long expirationWasSet = jedis.expire(key, -5);
+    Long expirationWasSet = jedis.expire(key, -5L);
     assertThat(expirationWasSet).isEqualTo(1);
 
     Boolean keyExists = jedis.exists(key);
@@ -348,8 +348,8 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
     String value = "value";
     jedis.set(key, value);
 
-    jedis.expire(key, 20);
-    jedis.expire(key, 20000);
+    jedis.expire(key, 20L);
+    jedis.expire(key, 20000L);
 
     Long timeToLive = jedis.ttl(key);
     assertThat(timeToLive).isGreaterThan(21);

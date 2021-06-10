@@ -47,7 +47,7 @@ public abstract class AbstractSetEXIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void testSetEX() {
-    jedis.setex("key", 20, "value");
+    jedis.setex("key", 20L, "value");
 
     assertThat(jedis.ttl("key")).isGreaterThanOrEqualTo(15);
   }
@@ -66,7 +66,7 @@ public abstract class AbstractSetEXIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void testSetEXWithIllegalSeconds() {
-    assertThatThrownBy(() -> jedis.setex("key", -1, "value"))
+    assertThatThrownBy(() -> jedis.setex("key", -1L, "value"))
         .hasMessage("ERR invalid expire time in setex");
   }
 }

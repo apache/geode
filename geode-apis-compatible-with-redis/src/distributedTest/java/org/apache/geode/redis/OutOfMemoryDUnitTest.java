@@ -188,7 +188,7 @@ public class OutOfMemoryDUnitTest {
   private void setRedisKeyAndValue(Jedis jedis, boolean withExpiration, String valueString,
       int keyNumber) {
     if (withExpiration) {
-      jedis.setex(FILLER_KEY + keyNumber, KEY_TTL_SECONDS, valueString);
+      jedis.setex(FILLER_KEY + keyNumber, (long) KEY_TTL_SECONDS, valueString);
     } else {
       jedis.set(FILLER_KEY + keyNumber, valueString);
     }

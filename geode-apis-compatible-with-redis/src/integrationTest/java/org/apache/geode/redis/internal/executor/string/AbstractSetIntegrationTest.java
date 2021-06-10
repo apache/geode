@@ -191,7 +191,7 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
   public void testSET_withNXAndExArguments() {
     SetParams setParams = new SetParams();
     setParams.nx();
-    setParams.ex(20);
+    setParams.ex(20L);
 
     jedis.set(key, value, setParams);
     assertThat(jedis.ttl(key)).isGreaterThan(15);
@@ -204,7 +204,7 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
 
     SetParams setParams = new SetParams();
     setParams.xx();
-    setParams.ex(20);
+    setParams.ex(20L);
 
     jedis.set(key, value, setParams);
     assertThat(jedis.ttl(key)).isGreaterThan(15);
@@ -263,7 +263,7 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
 
   @Test
   public void testSET_withEXArgument_shouldSetExpireTime() {
-    int secondsUntilExpiration = 20;
+    long secondsUntilExpiration = 20L;
 
     SetParams setParams = new SetParams();
     setParams.ex(secondsUntilExpiration);
@@ -277,7 +277,7 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
 
   @Test
   public void testSET_withNegativeEXTime_shouldReturnError() {
-    int millisecondsUntilExpiration = -1;
+    long millisecondsUntilExpiration = -1L;
 
     SetParams setParams = new SetParams();
     setParams.ex(millisecondsUntilExpiration);
@@ -315,7 +315,7 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
 
   @Test
   public void testSET_shouldClearPreviousTTL() {
-    int secondsUntilExpiration = 20;
+    long secondsUntilExpiration = 20L;
 
     SetParams setParams = new SetParams();
     setParams.ex(secondsUntilExpiration);
@@ -332,7 +332,7 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
   @Test
   public void testSET_withXXArgument_shouldClearPreviousTTL() {
     String value = "did exist";
-    int secondsUntilExpiration = 20;
+    long secondsUntilExpiration = 20L;
     SetParams setParamsXX = new SetParams();
     setParamsXX.xx();
     SetParams setParamsEX = new SetParams();
@@ -352,7 +352,7 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
   public void testSET_shouldNotClearPreviousTTL_onFailure() {
     String key_NX = "nx_key";
     String value_NX = "set only if key did not exist";
-    int secondsUntilExpiration = 20;
+    long secondsUntilExpiration = 20L;
 
     SetParams setParamsEX = new SetParams();
     setParamsEX.ex(secondsUntilExpiration);
@@ -371,7 +371,7 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
   @Test
   @Ignore("KEEPTTL is part of redis 6")
   public void testSET_withKEEPTTL_shouldRetainPreviousTTL_onSuccess() {
-    int secondsToExpire = 30;
+    long secondsToExpire = 30L;
 
     SetParams setParamsEx = new SetParams();
     setParamsEx.ex(secondsToExpire);

@@ -294,13 +294,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   /************* Key related commands *************/
   @Test
   public void testExpire() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expire(k, 5));
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expire(k, 5L));
   }
 
   @Test
   public void testPassiveExpiration() {
     runCommandAndAssertNoStatUpdates("hash", (k) -> {
-      jedis.expire(k, 1);
+      jedis.expire(k, 1L);
       GeodeAwaitility.await().atMost(Duration.ofMinutes(PassiveExpirationManager.INTERVAL * 2))
           .until(() -> jedis.keys("hash").isEmpty());
     });
@@ -361,7 +361,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testSetex() {
-    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.setex(k, 200, v));
+    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.setex(k, 200L, v));
   }
 
   @Test
