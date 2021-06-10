@@ -62,7 +62,7 @@ dependencies {
   integrationTestImplementation('io.lettuce:lettuce-core')
   integrationTestImplementation('org.apache.logging.log4j:log4j-core')
   // This only exists for debugging PubSubNativeRedisAcceptanceTest
-  integrationTestImplementation('org.buildobjects:jproc:2.6.0')
+  integrationTestImplementation('org.buildobjects:jproc:2.6.2')
   integrationTestRuntimeOnly(project(':geode-log4j'))
 
   acceptanceTestImplementation(sourceSets.integrationTest.output)
@@ -80,7 +80,7 @@ dependencies {
   acceptanceTestImplementation('org.springframework.session:spring-session-data-redis')
   acceptanceTestImplementation('org.apache.logging.log4j:log4j-core')
   // This only exists for debugging PubSubNativeRedisAcceptanceTest
-  acceptanceTestImplementation('org.buildobjects:jproc:2.6.0')
+  acceptanceTestImplementation('org.buildobjects:jproc:2.6.2')
   acceptanceTestImplementation('io.github.resilience4j:resilience4j-retry')
 
   distributedTestImplementation('org.apache.logging.log4j:log4j-core')
