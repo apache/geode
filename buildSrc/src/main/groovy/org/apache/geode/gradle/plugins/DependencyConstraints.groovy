@@ -56,7 +56,7 @@ class DependencyConstraints implements Plugin<Project> {
     // This would possibly be corrected if they were proper source sets.
     deps.put("tomcat6.version", "6.0.37")
     deps.put("tomcat7.version", "7.0.109")
-    deps.put("tomcat8.version", "8.5.65")
+    deps.put("tomcat8.version", "8.5.66")
     deps.put("tomcat9.version", "9.0.46")
 
     // The jetty version is also hard-coded in geode-assembly:test
