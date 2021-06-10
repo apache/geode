@@ -123,7 +123,7 @@ public class PersistDUnitTest implements Serializable {
   private void setKeysWithExpiration(JedisCluster jedis, Long iterationCount, String key) {
     for (int i = 0; i < iterationCount; i++) {
       jedis.sadd(key + i, "value" + 9);
-      jedis.expire(key + i, 600L);
+      jedis.expire(key + i, 600);
     }
   }
 }

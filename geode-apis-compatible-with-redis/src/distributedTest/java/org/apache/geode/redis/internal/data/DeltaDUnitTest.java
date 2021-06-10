@@ -173,12 +173,12 @@ public class DeltaDUnitTest {
     for (int i = 0; i < ITERATION_COUNT; i++) {
       String key = baseKey + i;
       jedis1.set(key, "value");
-      jedis1.expire(key, 20L);
+      jedis1.expire(key, 20);
     }
 
     for (int i = 0; i < ITERATION_COUNT; i++) {
       String key = baseKey + i;
-      jedis1.expire(key, 80L);
+      jedis1.expire(key, 80);
     }
     compareBuckets();
   }

@@ -68,7 +68,7 @@ public abstract class AbstractTTLIntegrationTest implements RedisIntegrationTest
   @Test
   public void shouldReturnCorrectExpiration_givenKeyHasExpirationSet() {
     jedis.set("orange", "crush");
-    jedis.expire("orange", 20L);
+    jedis.expire("orange", 20);
 
     assertThat(jedis.ttl("orange")).isEqualTo(20);
   }
@@ -76,7 +76,7 @@ public abstract class AbstractTTLIntegrationTest implements RedisIntegrationTest
   @Test
   public void shouldSeeTTLdecreasing() {
     jedis.set("orange", "crush");
-    jedis.expire("orange", 20L);
+    jedis.expire("orange", 20);
 
     await("TTL should decrease").atMost(2, TimeUnit.SECONDS)
         .until(() -> jedis.ttl("orange") < 20);
