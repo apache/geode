@@ -386,16 +386,20 @@ public class DistributionImpl implements Distribution {
         InternalDistributedMember member = it_mem.next();
         Throwable th = it_causes.next();
 
+        if (!membership.hasMember(member) || (th instanceof ShunnedMemberException)) {
+          if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Failed to send message <%s> to member <%s> view, %s",
+                content, member, membership.getView()), th);
+          }
+          continue;
+        }
+
         logger
             .fatal(String.format("Failed to send message <%s> to member <%s> view, %s",
                 // TODO - This used to be services.getJoinLeave().getView(), which is a different
                 // view object. Is it ok to log membershipManager.getView here?
                 new Object[] {content, member, membership.getView()}),
                 th);
-
-        if (!membership.hasMember(member) || (th instanceof ShunnedMemberException)) {
-          continue;
-        }
 
         // Assert.assertTrue(false, "messaging contract failure");
       }
