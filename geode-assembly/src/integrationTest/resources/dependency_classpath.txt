@@ -39,7 +39,7 @@ shiro-config-ogdl-1.7.1.jar
 commons-beanutils-1.9.4.jar
 commons-codec-1.15.jar
 commons-collections-3.2.2.jar
-commons-io-2.9.0.jar
+commons-io-2.8.0.jar
 commons-logging-1.2.jar
 classgraph-4.8.108.jar
 micrometer-core-1.7.0.jar
