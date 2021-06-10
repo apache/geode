@@ -22,6 +22,7 @@ import static org.apache.geode.gradle.jboss.modules.plugins.utils.ProjectUtils.g
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -58,22 +59,21 @@ public class GeodeJBossModuleDescriptorService extends GeodeCommonModuleDescript
   private static final String RUNTIME_ONLY = "runtimeOnly";
   private static final String RUNTIME_CLASSPATH = "runtimeClasspath";
   private static final String JBOSS_MODULAR = "jbossModular";
-  private static final String
-      EXTERNAL_LIBRARY_DEPENDENCIES_MODULE_NAME = "external-library-dependencies";
+  private static final String EXTERNAL_LIBRARY_DEPENDENCIES_MODULE_NAME =
+      "external-library-dependencies";
   private static final String LIB_PATH_PREFIX = "../../../../lib/";
   private final ModuleDescriptorGenerator moduleDescriptorGenerator =
       new JBossModuleDescriptorGenerator();
-
-  private List<Project> allProjects;
-
-  private final Map<String, List<ResolvedArtifact>> resolvedProjectRuntimeArtifacts = new HashMap<>();
+  private final Map<String, List<ResolvedArtifact>> resolvedProjectRuntimeArtifacts =
+      new HashMap<>();
   private final Map<String, List<DependencyWrapper>> apiProjectDependencies = new HashMap<>();
   private final Map<String, List<DependencyWrapper>> runtimeProjectDependencies = new HashMap<>();
   private final Map<String, List<String>> embeddedArtifactNames = new HashMap<>();
+  private List<Project> allProjects;
 
   @Override
   public void createModuleDescriptor(Project project, GeodeJBossModulesGeneratorConfig config,
-                                     File projectJarFile) {
+      File projectJarFile) {
 
     List<ModuleDependency> moduleDependencies = generateModuleDependencies(project, config);
 
@@ -88,18 +88,20 @@ public class GeodeJBossModuleDescriptorService extends GeodeCommonModuleDescript
   }
 
   private List<ModuleDependency> generateModuleDependencies(Project project,
-                                                            GeodeJBossModulesGeneratorConfig config) {
+      GeodeJBossModulesGeneratorConfig config) {
     List<ModuleDependency> moduleDependencies =
         getModuleDependencies(getApiProjectDependencies(project, config),
             getRuntimeProjectDependencies(project, config), config.projectsToInclude);
 
     moduleDependencies.add(new ModuleDependency(EXTERNAL_LIBRARY_DEPENDENCIES_MODULE_NAME,
-        project.getVersion().toString(), false, false));
+        false, false));
+
+    moduleDependencies.addAll(getJBossJDKModuleDependencies());
     return moduleDependencies;
   }
 
   private synchronized List<DependencyWrapper> getRuntimeProjectDependencies(Project project,
-                                                                             GeodeJBossModulesGeneratorConfig config) {
+      GeodeJBossModulesGeneratorConfig config) {
     String projectName = project.getName();
     if (runtimeProjectDependencies.get(projectName) == null) {
       runtimeProjectDependencies.put(projectName, Collections.unmodifiableList(
@@ -111,7 +113,7 @@ public class GeodeJBossModuleDescriptorService extends GeodeCommonModuleDescript
   }
 
   private synchronized List<DependencyWrapper> getApiProjectDependencies(Project project,
-                                                                         GeodeJBossModulesGeneratorConfig config) {
+      GeodeJBossModulesGeneratorConfig config) {
     String projectName = project.getName();
     if (apiProjectDependencies.get(projectName) == null) {
       apiProjectDependencies.put(projectName, Collections.unmodifiableList(
@@ -123,13 +125,13 @@ public class GeodeJBossModuleDescriptorService extends GeodeCommonModuleDescript
 
   @Override
   public void createExternalLibraryDependenciesModuleDescriptor(Project project,
-                                                                GeodeJBossModulesGeneratorConfig config) {
+      GeodeJBossModulesGeneratorConfig config) {
     Set<String> embeddedProjectArtifacts = new TreeSet<>();
     embeddedProjectArtifacts.addAll(getEmbeddedArtifactsNames(project, config));
     List<ResolvedArtifact> resolvedArtifacts = getResolvedProjectRuntimeArtifacts(project, config);
     for (ResolvedArtifact resolvedArtifact : resolvedArtifacts) {
       for (Project innerProject : getAllProjects(project)) {
-        if(innerProject.getName().equals(resolvedArtifact.getName())){
+        if (innerProject.getName().equals(resolvedArtifact.getName())) {
           embeddedProjectArtifacts.addAll(getEmbeddedArtifactsNames(innerProject, config));
         }
       }
@@ -144,35 +146,45 @@ public class GeodeJBossModuleDescriptorService extends GeodeCommonModuleDescript
         .map(artifact -> LIB_PATH_PREFIX + artifact.getFile().getName())
         .collect(Collectors.toList());
 
+    List<ModuleDependency> moduleDependencies = getJBossJDKModuleDependencies();
+
     moduleDescriptorGenerator.generate(config.outputRoot, EXTERNAL_LIBRARY_DEPENDENCIES_MODULE_NAME,
-        project.getVersion().toString(), artifactNames, Collections.emptyList());
+        project.getVersion().toString(), artifactNames, moduleDependencies);
+  }
+
+  private List<ModuleDependency> getJBossJDKModuleDependencies() {
+    return Arrays.asList(new ModuleDependency("java.se", false, false),
+        new ModuleDependency("jdk.unsupported", false, false),
+        new ModuleDependency("jdk.scripting.nashorn", false, false));
   }
 
   @Override
   public void combineModuleDescriptors(Project project, GeodeJBossModulesGeneratorConfig config,
-                                       List<File> externalLibraryModuleDescriptors) {
+      List<File> externalLibraryModuleDescriptors) {
     Set<String> externalLibraries = new TreeSet<>();
     for (File inputFile : externalLibraryModuleDescriptors) {
       externalLibraries.addAll(getResourceRootsFromModuleXml(inputFile));
     }
 
     moduleDescriptorGenerator.generate(config.outputRoot, EXTERNAL_LIBRARY_DEPENDENCIES_MODULE_NAME,
-        project.getVersion().toString(), new ArrayList<>(externalLibraries),
-        Collections.emptyList());
+        project.getVersion().toString(), new ArrayList<>(externalLibraries), getJBossJDKModuleDependencies());
+
+    moduleDescriptorGenerator.generateAlias(config.outputRoot, EXTERNAL_LIBRARY_DEPENDENCIES_MODULE_NAME, project.getVersion().toString());
   }
 
   private synchronized List<ResolvedArtifact> getResolvedProjectRuntimeArtifacts(Project project,
-                                                                                 GeodeJBossModulesGeneratorConfig config) {
+      GeodeJBossModulesGeneratorConfig config) {
     String projectName = project.getName();
     if (resolvedProjectRuntimeArtifacts.get(projectName) == null) {
-      resolvedProjectRuntimeArtifacts.put(projectName, ProjectUtils.getResolvedProjectRuntimeArtifacts(project,
-          getTargetConfigurations(config.facetName, RUNTIME_CLASSPATH)));
+      resolvedProjectRuntimeArtifacts.put(projectName,
+          ProjectUtils.getResolvedProjectRuntimeArtifacts(project,
+              getTargetConfigurations(config.facetName, RUNTIME_CLASSPATH)));
     }
     return resolvedProjectRuntimeArtifacts.get(projectName);
   }
 
   private List<String> generateResourceRoots(Project project, File resourceFile,
-                                             GeodeJBossModulesGeneratorConfig config) {
+      GeodeJBossModulesGeneratorConfig config) {
     List<String> resourceRoots = new ArrayList<>();
     resourceRoots.add(LIB_PATH_PREFIX + resourceFile.getName());
 
@@ -184,7 +196,8 @@ public class GeodeJBossModuleDescriptorService extends GeodeCommonModuleDescript
     return resourceRoots;
   }
 
-  private List<String> getEmbeddedArtifactsNames(Project project, GeodeJBossModulesGeneratorConfig config) {
+  private List<String> getEmbeddedArtifactsNames(Project project,
+      GeodeJBossModulesGeneratorConfig config) {
     String projectName = project.getName();
     if (embeddedArtifactNames.get(projectName) == null) {
       LinkedList<String> artifacts = new LinkedList<>();
@@ -232,8 +245,9 @@ public class GeodeJBossModuleDescriptorService extends GeodeCommonModuleDescript
                 .contains(dependencyWrapper.getDependency().getName()))
             .map(dependencyWrapper -> {
               Dependency dependency = dependencyWrapper.getDependency();
-              boolean optional = ProjectUtils.invokeGroovyCode((org.gradle.api.artifacts.ModuleDependency) dependency, "optional");
-              return new ModuleDependency(dependency.getName(), dependency.getVersion(), true,
+              boolean optional = ProjectUtils.invokeGroovyCode(
+                  (org.gradle.api.artifacts.ModuleDependency) dependency, "optional");
+              return new ModuleDependency(dependency.getName(), true,
                   optional);
             }).collect(Collectors.toList());
 
@@ -243,8 +257,9 @@ public class GeodeJBossModuleDescriptorService extends GeodeCommonModuleDescript
                 .contains(dependencyWrapper.getDependency().getName()))
             .map(dependencyWrapper -> {
               Dependency dependency = dependencyWrapper.getDependency();
-              boolean optional = ProjectUtils.invokeGroovyCode((org.gradle.api.artifacts.ModuleDependency) dependency, "optional");
-              return new ModuleDependency(dependency.getName(), dependency.getVersion(), false,
+              boolean optional = ProjectUtils.invokeGroovyCode(
+                  (org.gradle.api.artifacts.ModuleDependency) dependency, "optional");
+              return new ModuleDependency(dependency.getName(), false,
                   optional);
             }).collect(Collectors.toList()));
 
@@ -252,8 +267,9 @@ public class GeodeJBossModuleDescriptorService extends GeodeCommonModuleDescript
   }
 
   private synchronized List<Project> getAllProjects(Project project) {
-    if(allProjects == null) {
-      allProjects = Collections.unmodifiableList(new LinkedList<>(project.getRootProject().getSubprojects()));
+    if (allProjects == null) {
+      allProjects =
+          Collections.unmodifiableList(new LinkedList<>(project.getRootProject().getSubprojects()));
     }
     return allProjects;
   }

@@ -16,13 +16,13 @@
 */
 package org.apache.geode.gradle.jboss.modules.plugins.config;
 
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Optional;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.Optional;
 
 public class GeodeJBossModulesGeneratorConfig {
 

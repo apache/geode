@@ -16,24 +16,26 @@
  */
 package org.apache.geode.gradle.jboss.modules.plugins.task;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-
+import org.apache.geode.gradle.jboss.modules.plugins.config.GeodeJBossModulesGeneratorConfig;
+import org.apache.geode.gradle.jboss.modules.plugins.services.GeodeModuleDescriptorService;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.Project;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.OutputDirectories;
 import org.gradle.api.tasks.OutputDirectory;
-import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.OutputFiles;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 
-import org.apache.geode.gradle.jboss.modules.plugins.config.GeodeJBossModulesGeneratorConfig;
-import org.apache.geode.gradle.jboss.modules.plugins.services.GeodeModuleDescriptorService;
+import javax.inject.Inject;
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GeodeCombineModuleDescriptorsTask extends DefaultTask {
 
@@ -49,11 +51,10 @@ public class GeodeCombineModuleDescriptorsTask extends DefaultTask {
   @Internal
   public Path assemblyRoot;
 
-
   @Inject
   public GeodeCombineModuleDescriptorsTask(
       List<String> projectInclusions,
-    List<GeodeJBossModulesGeneratorConfig> configurations, Path assemblyRoot,
+      List<GeodeJBossModulesGeneratorConfig> configurations, Path assemblyRoot,
       GeodeModuleDescriptorService descriptorService) {
     this.configurations = configurations;
     this.projectInclusions = projectInclusions;
@@ -61,19 +62,22 @@ public class GeodeCombineModuleDescriptorsTask extends DefaultTask {
     this.assemblyRoot = assemblyRoot;
 
     dependsOn(getProject().getRootProject().getSubprojects().stream()
-        .filter(project -> projectInclusions.isEmpty() || projectInclusions.contains(project.getName()))
-        .map(project ->
-            project.getTasks().named("generateExternalDependenciesModule")).collect(Collectors.toSet()));
+        .filter(
+            project -> projectInclusions.isEmpty() || projectInclusions.contains(project.getName()))
+        .map(project -> project.getTasks().named("generateExternalDependenciesModule"))
+        .collect(Collectors.toSet()));
   }
 
   @InputFiles
   @PathSensitive(PathSensitivity.ABSOLUTE)
   public List<File> getInputFiles() {
     return getProject().getRootProject().getSubprojects().stream()
-        .filter(project -> projectInclusions.isEmpty() || projectInclusions.contains(project.getName()))
-        .map(project ->
-                project.getTasks().named("generateExternalDependenciesModule").get().getOutputs()
-              .getFiles().getSingleFile()).collect(Collectors.toList());
+        .filter(
+            project -> projectInclusions.isEmpty() || projectInclusions.contains(project.getName()))
+        .map(project -> project.getTasks().named("generateExternalDependenciesModule").get()
+            .getOutputs()
+            .getFiles().getSingleFile())
+        .collect(Collectors.toList());
   }
 
   @OutputDirectory

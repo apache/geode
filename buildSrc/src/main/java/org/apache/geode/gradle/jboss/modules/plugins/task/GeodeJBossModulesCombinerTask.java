@@ -16,17 +16,15 @@
  */
 package org.apache.geode.gradle.jboss.modules.plugins.task;
 
-import java.io.File;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.OutputDirectories;
-import org.gradle.api.tasks.OutputFiles;
 import org.gradle.api.tasks.TaskAction;
+
+import javax.inject.Inject;
+import java.io.File;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GeodeJBossModulesCombinerTask extends DefaultTask {
   public List<String> getProjectsToInclude() {

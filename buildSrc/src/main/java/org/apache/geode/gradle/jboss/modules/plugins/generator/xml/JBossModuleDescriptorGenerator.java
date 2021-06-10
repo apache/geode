@@ -16,12 +16,12 @@
  */
 package org.apache.geode.gradle.jboss.modules.plugins.generator.xml;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.geode.gradle.jboss.modules.plugins.generator.ModuleDescriptorGenerator;
+import org.apache.geode.gradle.jboss.modules.plugins.generator.domain.ModuleDependency;
+import org.gradle.internal.Pair;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,14 +32,12 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
-import org.apache.commons.lang3.StringUtils;
-import org.gradle.internal.Pair;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import org.apache.geode.gradle.jboss.modules.plugins.generator.ModuleDescriptorGenerator;
-import org.apache.geode.gradle.jboss.modules.plugins.generator.domain.ModuleDependency;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class JBossModuleDescriptorGenerator implements ModuleDescriptorGenerator {
 
@@ -173,20 +171,12 @@ public class JBossModuleDescriptorGenerator implements ModuleDescriptorGenerator
         for (ModuleDependency dependency : dependencies) {
             String services = dependency.isExport() ? EXPORT : IMPORT;
             Element exportedDependencyElement = createElement(document, MODULE,
-                    Pair.of(NAME, getVersionedDependencyName(dependency)),
+                    Pair.of(NAME, dependency.getName()),
                     Pair.of(OPTIONAL, Boolean.toString(dependency.isOptional())),
                     Pair.of(SERVICES, services),
                     Pair.of(EXPORT, Boolean.toString(dependency.isExport())));
 
             dependenciesElement.appendChild(exportedDependencyElement);
         }
-    }
-
-    private String getVersionedDependencyName(ModuleDependency dependency) {
-        String dependencyName = dependency.getName();
-        if (dependency.getVersion() != null && !dependency.getVersion().isEmpty()) {
-            dependencyName += ":" + dependency.getVersion();
-        }
-        return dependencyName;
     }
 }

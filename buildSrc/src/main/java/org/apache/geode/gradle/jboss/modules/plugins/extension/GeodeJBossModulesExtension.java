@@ -1,14 +1,13 @@
 package org.apache.geode.gradle.jboss.modules.plugins.extension;
 
+import groovy.lang.Closure;
+import org.apache.geode.gradle.jboss.modules.plugins.config.GeodeJBossModulesGeneratorConfig;
+import org.gradle.api.Project;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import groovy.lang.Closure;
-import org.gradle.api.Project;
-
-import org.apache.geode.gradle.jboss.modules.plugins.config.GeodeJBossModulesGeneratorConfig;
 
 public class GeodeJBossModulesExtension {
   private final Project project;

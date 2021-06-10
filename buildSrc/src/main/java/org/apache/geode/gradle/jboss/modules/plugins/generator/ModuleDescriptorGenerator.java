@@ -16,10 +16,10 @@
  */
 package org.apache.geode.gradle.jboss.modules.plugins.generator;
 
+import org.apache.geode.gradle.jboss.modules.plugins.generator.domain.ModuleDependency;
+
 import java.nio.file.Path;
 import java.util.List;
-
-import org.apache.geode.gradle.jboss.modules.plugins.generator.domain.ModuleDependency;
 
 public interface ModuleDescriptorGenerator {
 

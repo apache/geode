@@ -18,13 +18,11 @@ package org.apache.geode.gradle.jboss.modules.plugins.generator.domain;
 
 public class ModuleDependency {
   private final String name;
-  private final String version;
   private final boolean export;
   private final boolean optional;
 
-  public ModuleDependency(String name, String version, boolean export, boolean optional) {
+  public ModuleDependency(String name, boolean export, boolean optional) {
     this.name = name;
-    this.version = version;
     this.export = export;
     this.optional = optional;
   }
@@ -39,9 +37,5 @@ public class ModuleDependency {
 
   public boolean isOptional() {
     return optional;
-  }
-
-  public String getVersion() {
-    return version;
   }
 }

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
@@ -24,7 +25,7 @@ public class ProjectUtils {
 
     static {
         try {
-            hasExtensionScript = new GroovyShell().parse(Objects.requireNonNull(org.apache.geode.gradle.jboss.modules.plugins.utils.ProjectUtils.class.getClassLoader().getResource("ProjectUtilGroovy.groovy")).toURI());
+            hasExtensionScript = new GroovyShell().parse(Objects.requireNonNull(ProjectUtils.class.getClassLoader().getResource("ProjectUtilGroovy.groovy")).toURI());
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }

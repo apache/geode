@@ -44,7 +44,7 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
   private final GeodeCompositeModuleFinder compositeModuleFinder;
   private static final ModuleLoader JDK_MODULE_LOADER =
       new ModuleLoader(JDKModuleFinder.getInstance());
-  private static final String THIRD_PARTY_MODULE_NAME = "thirdParty";
+  private static final String THIRD_PARTY_MODULE_NAME = "external-library-dependencies";
   private static final String CUSTOM_JAR_DEPLOYMENT_MODULE_NAME = "geode-custom-jar-deployments";
   private static final String CORE_MODULE_NAME = "geode-core";
   private static final String GEODE_BASE_PACKAGE_PATH = "org/apache/geode";

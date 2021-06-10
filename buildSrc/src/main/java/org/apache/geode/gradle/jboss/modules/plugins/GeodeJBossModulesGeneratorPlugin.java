@@ -16,13 +16,6 @@
  */
 package org.apache.geode.gradle.jboss.modules.plugins;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import org.gradle.api.Plugin;
-import org.gradle.api.Project;
-
 import org.apache.geode.gradle.jboss.modules.plugins.config.GeodeJBossModulesGeneratorConfig;
 import org.apache.geode.gradle.jboss.modules.plugins.extension.GeodeJBossModulesExtension;
 import org.apache.geode.gradle.jboss.modules.plugins.services.GeodeJBossModuleDescriptorService;
@@ -31,9 +24,16 @@ import org.apache.geode.gradle.jboss.modules.plugins.task.GeodeCombineModuleDesc
 import org.apache.geode.gradle.jboss.modules.plugins.task.GeodeExternalLibraryDependenciesModuleGeneratorTask;
 import org.apache.geode.gradle.jboss.modules.plugins.task.GeodeJBossModuleGeneratorTask;
 import org.apache.geode.gradle.jboss.modules.plugins.task.GeodeJBossModulesCombinerTask;
+import org.gradle.api.Plugin;
+import org.gradle.api.Project;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class GeodeJBossModulesGeneratorPlugin implements Plugin<Project> {
 
+//  private final List<String> projectInclusions = Collections.emptyList();
   private final List<String> projectInclusions = Arrays.asList("geode-custom-jar-deployments",
       "geode-extensions", "geode-apis-compatible-with-redis", "geode-common", "geode-connectors",
       "geode-core", "geode-cq", "geode-deployment-jboss-modules", "geode-gfsh",
@@ -68,6 +68,7 @@ public class GeodeJBossModulesGeneratorPlugin implements Plugin<Project> {
     }
 
     if (assemblyRootProject == null) {
+//      assemblyRootProject = project.getRootProject();
       assemblyRootProject = project.getRootProject().project(":geode-assembly");
     }
 
@@ -106,7 +107,7 @@ public class GeodeJBossModulesGeneratorPlugin implements Plugin<Project> {
               GeodeExternalLibraryDependenciesModuleGeneratorTask thirdPartyJBossModuleGeneratorTask =
                   (GeodeExternalLibraryDependenciesModuleGeneratorTask) task;
               thirdPartyJBossModuleGeneratorTask.configurations =
-                  Collections.singletonList(new GeodeJBossModulesGeneratorConfig(null,
+                  Collections.singletonList(new GeodeJBossModulesGeneratorConfig("org.apache.geode.distributed.ServerLauncher",
                       project.getBuildDir().toPath().resolve("moduleDescriptors"), "",
                       projectInclusions));
               // jbossModulesExtension.getConfigList();
@@ -121,9 +122,10 @@ public class GeodeJBossModulesGeneratorPlugin implements Plugin<Project> {
     project.getTasks().create("testGenerate", geodeJBossModuleGeneratorTaskClass, task -> {
       GeodeJBossModuleGeneratorTask geodeJBossModuleGeneratorTask =
           (GeodeJBossModuleGeneratorTask) task;
-      geodeJBossModuleGeneratorTask.configurations =
-          Collections.singletonList(new GeodeJBossModulesGeneratorConfig(null,
-              project.getBuildDir().toPath().resolve("moduleDescriptors"), "", projectInclusions));
+      geodeJBossModuleGeneratorTask.configurations = Collections.singletonList(new GeodeJBossModulesGeneratorConfig("org.apache.geode.distributed.ServerLauncher",
+          project.getBuildDir().toPath().resolve("moduleDescriptors"), "",
+          projectInclusions));
+    //jbossModulesExtension.getConfigList();
       geodeJBossModuleGeneratorTask.descriptorService = generator;
     });
   }

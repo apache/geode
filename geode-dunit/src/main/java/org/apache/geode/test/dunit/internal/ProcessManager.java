@@ -330,9 +330,7 @@ class ProcessManager implements ChildVMLauncher {
       cmds.add("org.jboss.modules.Main");
       cmds.add("-mp");
       cmds.add(GEODE_DISTRIBUTED_TEST_HOME + File.separator + "moduleDescriptors" + File.separator
-          + "main"
-          + File.pathSeparator + GEODE_DISTRIBUTED_TEST_HOME
-          + File.separator + "moduleDescriptors" + File.separator + "thirdParty");
+          + "main");
       cmds.add("geode-dunit:" + GemFireVersion.getGemFireVersion());
     } else {
       cmds.add(ChildVM.class.getName());

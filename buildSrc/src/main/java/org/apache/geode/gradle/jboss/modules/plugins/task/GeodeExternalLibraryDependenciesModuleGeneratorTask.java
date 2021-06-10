@@ -16,11 +16,8 @@
  */
 package org.apache.geode.gradle.jboss.modules.plugins.task;
 
-import java.io.File;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import org.apache.geode.gradle.jboss.modules.plugins.config.GeodeJBossModulesGeneratorConfig;
+import org.apache.geode.gradle.jboss.modules.plugins.services.GeodeModuleDescriptorService;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
@@ -29,8 +26,10 @@ import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 
-import org.apache.geode.gradle.jboss.modules.plugins.config.GeodeJBossModulesGeneratorConfig;
-import org.apache.geode.gradle.jboss.modules.plugins.services.GeodeModuleDescriptorService;
+import java.io.File;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class GeodeExternalLibraryDependenciesModuleGeneratorTask extends DefaultTask {
   @Internal
