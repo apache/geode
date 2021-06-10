@@ -39,7 +39,6 @@ github:
         contexts:
           - concourse-ci/api-check-test-openjdk11
           - concourse-ci/build
-          - concourse-ci/stress-new-test-openjdk11
           - concourse-ci/unit-test-openjdk11
           - concourse-ci/unit-test-openjdk8
 
