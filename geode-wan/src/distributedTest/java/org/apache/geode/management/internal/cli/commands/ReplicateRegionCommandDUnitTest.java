@@ -588,6 +588,7 @@ public class ReplicateRegionCommandDUnitTest extends WANTestBase {
     Condition<String> startsWithError = new Condition<>(
         s -> (s.startsWith("Execution failed. Error:")
             || s.startsWith("Error (Unknown error sending batch)")
+            || s.startsWith("Error (Region destroyed)")
             || s.startsWith("MemberResponse got memberDeparted event for")),
         "execution error");
     Condition<String> haveEntriesReplicated =
