@@ -225,7 +225,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
       map.put(new byte[i], new byte[250 - i]);
 
       // Calculate the overhead associated only with the backing array
-      backingArrayOverhead = sizer.sizeof(map) - map.getKeysOverhead() - map.getValuesOverhead();
+      backingArrayOverhead = sizer.sizeof(map) - map.getArrayContentsOverhead();
       int expected = BACKING_ARRAY_OVERHEAD_CONSTANT
           + BACKING_ARRAY_LENGTH_COEFFICIENT * map.getTotalBackingArrayLength();
       softly.assertThat(backingArrayOverhead)

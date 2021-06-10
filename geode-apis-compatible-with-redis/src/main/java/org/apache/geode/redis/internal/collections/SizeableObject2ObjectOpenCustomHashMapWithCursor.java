@@ -37,13 +37,12 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     extends Object2ObjectOpenCustomHashMap<K, V> implements Sizeable {
 
   private static final long serialVersionUID = 9079713776660851891L;
-  public static final int BACKING_ARRAY_OVERHEAD_CONSTANT = 136;
+  public static final int BACKING_ARRAY_OVERHEAD_CONSTANT = 128;
   public static final int BACKING_ARRAY_LENGTH_COEFFICIENT = 4;
   private static final ReflectionSingleObjectSizer elementSizer =
       ReflectionSingleObjectSizer.getInstance();
 
-  private int keysOverhead;
-  private int valuesOverhead;
+  private int arrayContentsOverhead;
 
   public SizeableObject2ObjectOpenCustomHashMapWithCursor(int expected, float f,
       Strategy<? super K> strategy) {
@@ -198,11 +197,10 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     V oldValue = super.put(k, v);
     if (oldValue == null) {
       // A create
-      keysOverhead += (int) elementSizer.sizeof(k);
-      valuesOverhead += (int) elementSizer.sizeof(v);
+      arrayContentsOverhead += (int) (elementSizer.sizeof(k) + elementSizer.sizeof(v));
     } else {
       // An update
-      valuesOverhead += (int) (elementSizer.sizeof(v) - elementSizer.sizeof(oldValue));
+      arrayContentsOverhead += (int) (elementSizer.sizeof(v) - elementSizer.sizeof(oldValue));
     }
     return oldValue;
   }
@@ -211,15 +209,14 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
   public V remove(Object k) {
     V oldValue = super.remove(k);
     if (oldValue != null) {
-      keysOverhead -= elementSizer.sizeof(k);
-      valuesOverhead -= elementSizer.sizeof(oldValue);
+      arrayContentsOverhead -= (elementSizer.sizeof(k) + elementSizer.sizeof(oldValue));
     }
     return oldValue;
   }
 
   @Override
   public int getSizeInBytes() {
-    return keysOverhead + valuesOverhead + calculateBackingArraysOverhead();
+    return arrayContentsOverhead + calculateBackingArraysOverhead();
   }
 
   @VisibleForTesting
@@ -230,13 +227,8 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
   }
 
   @VisibleForTesting
-  int getKeysOverhead() {
-    return keysOverhead;
-  }
-
-  @VisibleForTesting
-  int getValuesOverhead() {
-    return valuesOverhead;
+  int getArrayContentsOverhead() {
+    return arrayContentsOverhead;
   }
 
   @VisibleForTesting
