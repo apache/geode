@@ -23,12 +23,12 @@ how to use the client.
 
 For an in-depth look at how to use <%=vars.product_name_long%> clients, see [Client/Server Configuration](../topologies_and_comm/cs_configuration/chapter_overview.html).
 
-## Installing <%=vars.product_name_long%>
+## <a id="client-intro-installing"></a>Installing <%=vars.product_name_long%>
 
 You can download <%=vars.product_name_long%> from the website, run a Docker image, or install with homebrew on OSX.
 See [How to Install Apache Geode](installation/install_standalone.html) for details.
 
-## Start an <%=vars.product_name_long%> Cluster
+## <a id="client-intro-starting"></a>Starting an <%=vars.product_name_long%> Cluster
 
 For client tests and examples, start a simple cluster and create an example region.
 
@@ -52,7 +52,7 @@ When you are through running client tests and examples, shut down the <%=vars.pr
 gfsh> shutdown --include-locators=true
 ```
 
-## <%=vars.product_name_long%> Java Client
+## <a id="client-intro-java"></a><%=vars.product_name_long%> Java Client
 
 **Maven Dependencies**
 
@@ -85,11 +85,11 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 public class HelloWorld {
 
   public static void main(String[] args) {
-    ClientCache cache = new ClientCacheFactory().addPoolLocator("127.0.0.1", 10334).create();
+      ClientCache cache = new ClientCacheFactory().addPoolLocator("127.0.0.1", 10334).create();
 
-    System.out.println(cache.getDefaultPool().getLocators());
+      System.out.println(cache.getDefaultPool().getLocators());
 
-  cache.close();
+    cache.close();
  }
 }
 ```
@@ -100,7 +100,7 @@ The information printed out should match the host and port of your <%=vars.produ
 [/127.0.0.1:10334]
 ```
 
-### Simple Put and Get with <%=vars.product_name_long%> Java client
+**Simple Put and Get with <%=vars.product_name_long%> Java client**
  
 ```
 public static void main(String[] args) {
@@ -121,12 +121,12 @@ ClientCache cache = new ClientCacheFactory().addPoolLocator("127.0.0.1", 10334).
 Build and run the application.  This puts the key ‘1’ with a value of ‘HelloWorldValue’ into the
 ‘helloWorld’ region, then retrieves and prints the value of key ‘1’.
 
-### Additional Resources
+**Additional Resources**
 
 - [Apache Geode Examples GitHub Repo](https://github.com/apache/geode-examples)
 - [Apache Geode Javadocs](https://geode.apache.org/releases/latest/javadoc/index.html)
 
-## Spring Boot Client For Apache Geode
+## <a id="client-intro-spring-boot"></a>Spring Boot Client For Apache Geode
 
 Spring Boot for Apache Geode provides a powerful abstraction that simplifies the developer
 experience when using Spring Boot and Apache Geode.  The best way to get started with Spring Boot
@@ -204,22 +204,22 @@ dependencyManagement {
 
 This confirms that without adding any additional code, the application was able to connect to our Geode Cluster.
 
-### Building an Application with Spring Boot for Apache Geode.
+**Building an Application with Spring Boot for Apache Geode.**
 
 Spring Boot for Apache Geode is very powerful and robust.  We recommend looking at the Spring Boot for Apache Geode documentation and examples for your next steps in working with this dependency.
 
-### Additional Resources
+**Additional Resources**
 
 - [Spring Boot for Apache Geode Reference Guide](https://docs.spring.io/spring-boot-data-geode-build/1.4.x/reference/html5/)
 
-## <%=vars.product_name_long%> Native Clients 
+## <a id="client-intro-native"></a><%=vars.product_name_long%> Native Clients 
 
 To begin using the <%=vars.product_name_long%> Native Clients, you must first build the <%=vars.product_name_long%> Native Client libraries from the source code. 
 You can download the <%=vars.product_name_long%> Native Source code here
 `https://geode.apache.org/releases`, then refer to the `BUILDING.md]` file in the source release to compile the libraries.
 
 
-## <%=vars.product_name_long%> Native .NET Client
+### <a id="client-intro-native-dotnet"></a><%=vars.product_name_long%> Native .NET Client
 
 **Put, Get and Remove with <%=vars.product_name_long%> Native .NET Client (C#)**
 
@@ -280,14 +280,14 @@ namespace Apache.Geode.Examples.PutGetRemove
 }
 ```
 
-### Additional Resources
+**Additional Resources**
 
 - [Apache Geode Native Client Examples GitHub Repo](https://github.com/apache/geode-native/tree/develop/examples)
 - [Apache Geode Native .NET Client Documentation](https://geode.apache.org/docs/)
 - [Apache Geode Native Client .NET API Reference](https://geode.apache.org/releases/latest/dotnetdocs/hierarchy.html)
 
 
-## <%=vars.product_name_long%> Native C++ Client
+### <a id="client-intro-native-cpp"></a><%=vars.product_name_long%> Native C++ Client
 
 **Put, Get, and Remove with <%=vars.product_name_long%> Native C++ Client**
 
@@ -341,13 +341,13 @@ int main(int argc, char** argv) {
 }
 ```
 
-### Additional Resources
+**Additional Resources**
 
 - [Apache Geode Native Client Examples GitHub Repo](https://github.com/apache/geode-native/tree/develop/examples)
 - [Apache Geode Native C++ Client Documentation](https://geode.apache.org/docs/)
 - [Apache Geode Native Client C++ API Reference](https://geode.apache.org/releases/latest/cppdocs/hierarchy.html)
 
-## Geode APIs Compatible with Redis
+## <a id="client-intro-redis"></a>Geode APIs Compatible with Redis
 
 The <%=vars.product_name_long%> APIs compatible with Redis allow <%=vars.product_name_long%> to function as a drop-in replacement for a
 highly-available Redis data store, letting Redis applications take advantage of
