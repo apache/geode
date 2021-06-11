@@ -159,8 +159,8 @@ public class DistributionConfigJUnitTest {
 
   @Test
   public void sameCount() {
-    assertThat(setters).hasSize(attributes.size());
-    assertThat(getters).hasSize(setters.size());
+    assertThat(setters).hasSameSizeAs(attributes);
+    assertThat(getters).hasSameSizeAs(setters);
   }
 
   @Test
@@ -168,7 +168,7 @@ public class DistributionConfigJUnitTest {
     for (String attr : attributes.keySet()) {
       Method setter = setters.get(attr);
       assertThat(setter).as(attr + " should have a setter").isNotNull();
-      assertThat(setter.getName().startsWith("set")).isTrue();
+      assertThat(setter.getName()).startsWith("set");
       assertThat(setter.getParameterCount()).isEqualTo(1);
 
       if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(SECURITY_LOG_LEVEL))) {
@@ -233,10 +233,8 @@ public class DistributionConfigJUnitTest {
       Method getter = getters.get(attr);
       Method setter = setters.get(attr);
       assertThat(setter).as("every getter should have a corresponding setter " + attr).isNotNull();
-      String setterName = setter.getName();
-      String getterName = getter.getName();
-      assertThat(getterName.substring(getterName.indexOf("get") + 3))
-          .isEqualTo(setterName.substring(setterName.indexOf("set") + 3));
+      String attrNameInGetterSignature = getter.getName().substring(3);
+      assertThat(setter.getName()).contains(attrNameInGetterSignature);
       assertThat(getter.getReturnType()).isEqualTo(setter.getParameterTypes()[0]);
     }
 
@@ -267,15 +265,14 @@ public class DistributionConfigJUnitTest {
     assertThat(config.getAttributeObject(LOG_LEVEL)).isEqualTo("config");
     assertThat(config.getAttributeObject(SECURITY_LOG_LEVEL)).isEqualTo("config");
     assertThat(config.getAttributeObject(REDUNDANCY_ZONE)).isEqualTo("");
-    assertThat(config.getAttributeObject(ENABLE_CLUSTER_CONFIGURATION).getClass())
-        .isEqualTo(Boolean.class);
+    assertThat(config.getAttributeObject(ENABLE_CLUSTER_CONFIGURATION)).isInstanceOf(Boolean.class);
   }
 
   @Test
   public void testCheckerChecksValidAttribute() {
     for (String att : checkers.keySet()) {
       System.out.println("att = " + att);
-      assertThat(attributes.containsKey(att)).isTrue();
+      assertThat(attributes).containsKey(att);
       Method checker = checkers.get(att);
       assertThat(checker.getParameterCount()).isEqualTo(1);
       assertThat(checker.getParameterTypes()[0]).as("invalid checker: " + checker.getName())
