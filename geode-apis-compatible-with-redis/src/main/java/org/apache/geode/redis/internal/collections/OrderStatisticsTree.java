@@ -118,10 +118,6 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
 
   @Override
   public boolean retainAll(Collection<?> c) {
-    if (!c.getClass().equals(HashSet.class)) {
-      c = new HashSet<>(c);
-    }
-
     Iterator<E> iterator = iterator();
     boolean modified = false;
 
@@ -577,12 +573,9 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
               height(grandParent.right)) + 1;
     }
 
-    if (insertionMode) {
-      // Whenever fixing after insertion, at most one rotation is
-      // required in order to maintain the balance.
-      return true;
-    }
-    return false;
+    // Whenever fixing after insertion, at most one rotation is
+    // required in order to maintain the balance.
+    return insertionMode;
   }
 
   @VisibleForTesting

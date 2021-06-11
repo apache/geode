@@ -40,22 +40,20 @@ public class ZAddDUnitTest {
   private static final String KEY_BASE = "key";
   private static final int NUM_SORTED_SETS = 100;
   private static final String MEMBER_BASE = "member-";
+  public static final int NUM_VMS = 4;
 
   @ClassRule
-  public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
+  public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(NUM_VMS);
 
   private static final int SET_SIZE = 10;
   private static JedisCluster jedis;
-  private static MemberVM server1;
-  private static MemberVM server2;
-  private static MemberVM server3;
 
   @BeforeClass
   public static void classSetup() {
     MemberVM locator = clusterStartUp.startLocatorVM(0);
-    server1 = clusterStartUp.startRedisVM(1, locator.getPort());
-    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
-    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
+    clusterStartUp.startRedisVM(1, locator.getPort());
+    clusterStartUp.startRedisVM(2, locator.getPort());
+    clusterStartUp.startRedisVM(3, locator.getPort());
 
     int redisServerPort = clusterStartUp.getRedisPort(1);
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT);
@@ -69,10 +67,6 @@ public class ZAddDUnitTest {
   @AfterClass
   public static void tearDown() {
     jedis.close();
-
-    server1.stop();
-    server2.stop();
-    server3.stop();
   }
 
   @Test
@@ -90,7 +84,7 @@ public class ZAddDUnitTest {
 
     confirmAllDataIsPresent();
 
-    clusterStartUp.crashVM(3);
+    clusterStartUp.crashVM(NUM_VMS - 1);
 
     confirmAllDataIsPresent();
   }
@@ -114,6 +108,7 @@ public class ZAddDUnitTest {
   private Number redisCommandWithRetries(Supplier<Number> supplier, int maxRetries)
       throws Exception {
     Exception lastException = null;
+    assertThat(maxRetries).isGreaterThan(0);
     for (int i = 0; i < maxRetries; i++) {
       try {
         return supplier.get();

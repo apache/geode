@@ -241,23 +241,6 @@ public class RedisSortedSet extends AbstractRedisData {
     return getSortedSetSize() - initialSize + changesCount;
   }
 
-  private void validateScoreIsDouble(byte[] score) {
-    String scoreString = Coder.bytesToString(score).toLowerCase();
-    switch (scoreString) {
-      case "inf":
-      case "infinity":
-      case "+inf":
-      case "+infinity":
-      case "-inf":
-      case "-infinity":
-        return;
-      default:
-        if (!Coder.bytesToString(score).matches("^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$")) {
-          throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
-        }
-    }
-  }
-
   private byte[] zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
       List<byte[]> membersToAdd, ZAddOptions options) {
     // for zadd incr option, only one incrementing element pair is allowed to get here.

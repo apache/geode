@@ -106,7 +106,6 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     jedis.zadd(KEY, map);
 
     // get the ranks of the members
-    Iterator<String> membersIterator = map.keySet().iterator();
     Map<Long, byte[]> rankMap = new HashMap<>();
     List<byte[]> memberList = new ArrayList<>();
     for (String memberName : map.keySet()) {
