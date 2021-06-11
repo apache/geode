@@ -28,6 +28,8 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.DiskStoreFactory;
+
 
 public class OplogTest {
   private final DiskStoreImpl.OplogCompactor compactor = mock(DiskStoreImpl.OplogCompactor.class);
@@ -38,7 +40,8 @@ public class OplogTest {
   @Before
   public void setup() {
     DiskStoreImpl parentDiskStore = mock(DiskStoreImpl.class);
-    when(parentDiskStore.getWriteBufferSize()).thenReturn(32768);
+    when(parentDiskStore.getWriteBufferSize())
+        .thenReturn(DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE);
     when(parent.getParent()).thenReturn(parentDiskStore);
     oplogSpy = spy(new Oplog(oplogId, parent));
     doReturn(true).when(oplogSpy).needsCompaction();
@@ -85,13 +88,14 @@ public class OplogTest {
 
   @Test
   public void writeBufferSizeValueIsObtainedFromParentIfSystemPropertyNotDefined() {
-    when(oplogSpy.writeBufferSizeSystemPropertyIsDefined()).thenReturn(false);
-    assertThat(oplogSpy.getWriteBufferCapacity()).isEqualTo(32768);
+    when(oplogSpy.getWriteBufferSizeProperty()).thenReturn(null);
+    assertThat(oplogSpy.getWriteBufferCapacity())
+        .isEqualTo(DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE);
   }
 
   @Test
   public void writeBufferSizeValueIsObtainedFromSystemPropertyWhenDefined() {
-    when(oplogSpy.writeBufferSizeSystemPropertyIsDefined()).thenReturn(true);
-    assertThat(oplogSpy.getWriteBufferCapacity()).isNull();
+    when(oplogSpy.getWriteBufferSizeProperty()).thenReturn(12345);
+    assertThat(oplogSpy.getWriteBufferCapacity()).isEqualTo(12345);
   }
 }

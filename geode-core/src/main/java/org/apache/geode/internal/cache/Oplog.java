@@ -120,6 +120,9 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class Oplog implements CompactableOplog, Flushable {
   private static final Logger logger = LogService.getLogger();
 
+  /* System property to override the disk store write buffer size. */
+  public final String WRITE_BUFFER_SIZE_SYS_PROP_NAME = "WRITE_BUF_SIZE";
+
   /** Extension of the oplog file * */
   public static final String CRF_FILE_EXT = ".crf";
   public static final String DRF_FILE_EXT = ".drf";
@@ -1088,14 +1091,15 @@ public class Oplog implements CompactableOplog, Flushable {
   }
 
   @VisibleForTesting
-  boolean writeBufferSizeSystemPropertyIsDefined() {
-    return (Integer.getInteger("WRITE_BUF_SIZE") != null);
+  Integer getWriteBufferSizeProperty() {
+    return Integer.getInteger(WRITE_BUFFER_SIZE_SYS_PROP_NAME);
   }
 
   @VisibleForTesting
   Integer getWriteBufferCapacity() {
-    if (writeBufferSizeSystemPropertyIsDefined()) {
-      return Integer.getInteger("WRITE_BUF_SIZE");
+    Integer writeBufferSizeProperty = getWriteBufferSizeProperty();
+    if (writeBufferSizeProperty != null) {
+      return writeBufferSizeProperty;
     }
     return getParent().getWriteBufferSize();
   }

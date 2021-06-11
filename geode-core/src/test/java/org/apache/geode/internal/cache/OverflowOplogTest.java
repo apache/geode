@@ -21,6 +21,8 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.DiskStoreFactory;
+
 public class OverflowOplogTest {
 
   private OverflowOplog oplogMock;
@@ -28,7 +30,8 @@ public class OverflowOplogTest {
   @Before
   public void setup() {
     DiskStoreImpl parentDiskStoreMock = mock(DiskStoreImpl.class);
-    when(parentDiskStoreMock.getWriteBufferSize()).thenReturn(32768);
+    when(parentDiskStoreMock.getWriteBufferSize())
+        .thenReturn(DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE);
 
     oplogMock = mock(OverflowOplog.class);
     when(oplogMock.getParent()).thenReturn(parentDiskStoreMock);
@@ -37,13 +40,14 @@ public class OverflowOplogTest {
 
   @Test
   public void writeBufferSizeValueIsObtainedFromParentIfSystemPropertyNotDefined() {
-    when(oplogMock.writeBufferSizeSystemPropertyIsDefined()).thenReturn(false);
-    assertThat(oplogMock.getWriteBufferCapacity()).isEqualTo(32768);
+    when(oplogMock.getWriteBufferSizeProperty()).thenReturn(null);
+    assertThat(oplogMock.getWriteBufferCapacity())
+        .isEqualTo(DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE);
   }
 
   @Test
   public void writeBufferSizeValueIsObtainedFromSystemPropertyWhenDefined() {
-    when(oplogMock.writeBufferSizeSystemPropertyIsDefined()).thenReturn(true);
-    assertThat(oplogMock.getWriteBufferCapacity()).isNull();
+    when(oplogMock.getWriteBufferSizeProperty()).thenReturn(12345);
+    assertThat(oplogMock.getWriteBufferCapacity()).isEqualTo(12345);
   }
 }
