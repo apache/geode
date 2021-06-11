@@ -1962,9 +1962,11 @@ org/apache/geode/management/internal/ManagerStartupMessage,2
 fromData,17
 toData,17
 
-org/apache/geode/management/internal/configuration/domain/Configuration,2
+org/apache/geode/management/internal/configuration/domain/Configuration,4
 fromData,112
+fromDataPre_GEODE_1_12_0_0,71
 toData,79
+toDataPre_GEODE_1_12_0_0,63
 
 org/apache/geode/management/internal/configuration/domain/ConfigurationChangeResult,2
 fromData,31
