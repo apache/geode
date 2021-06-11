@@ -19,3 +19,11 @@
 dependencies {
 
 }
+
+jbossModulesExtension {
+  geodeConfigurations {
+    main {
+      jbossJdkModules = [ "java.se","jdk.unsupported", "jdk.scripting.nashorn", "java.desktop" ]
+    }
+  }
+}

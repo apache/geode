@@ -637,7 +637,7 @@ distributions {
       with copySpec {
         into('moduleDescriptors/main/external-library-dependencies')
         afterEvaluate {
-          from tasks.named("combineExternalModuleDescriptors")
+          from tasks.named("combineLibraryModuleDescriptors")
         }
       }
 

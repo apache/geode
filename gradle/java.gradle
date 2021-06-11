@@ -119,6 +119,7 @@ jbossModulesExtension {
     global{
       outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
       assemblyProject = project.getRootProject().project(':geode-assembly')
+      jbossJdkModules = [ "java.se","jdk.unsupported"]
       projectsToInclude = [ "geode-custom-jar-deployments",
                             "geode-extensions", "geode-apis-compatible-with-redis", "geode-common", "geode-connectors",
                             "geode-core", "geode-cq", "geode-deployment-jboss-modules", "geode-gfsh",
