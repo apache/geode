@@ -87,6 +87,27 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
         1);
   }
 
+
+  // test added to address issue in original ticket where subcommand was case sensitive
+  // unclear if this test should be kept indefinitely once functionality has been verified
+  @Test
+  public void channels_shouldNotError_givenMixedCaseArguments() {
+    List<byte[]> expectedChannels = new ArrayList<>();
+    expectedChannels.add(Coder.stringToBytes("foo"));
+    expectedChannels.add(Coder.stringToBytes("bar"));
+    Runnable runnable =
+        () -> subscriber.subscribe(mockSubscriber, "foo", "bar");
+    Thread subscriberThread = new Thread(runnable);
+
+    subscriberThread.start();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
+
+    List<byte[]> result =
+        uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, "cHaNNEls"));
+
+    assertThat(result).containsExactlyInAnyOrderElementsOf(expectedChannels);
+  }
+
   @Test
   public void channels_shouldReturnListOfAllChannels_withActiveChannelSubscribers_whenCalledWithoutPattern() {
     List<byte[]> expectedChannels = new ArrayList<>();
