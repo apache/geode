@@ -115,10 +115,19 @@ javadoc {
 }
 
 jbossModulesExtension {
-  geodeConfigurations = [
-      {
-        outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
-      }]
-  projectsToExclude = ['projectToExclude1']
-  assemblyRoot = project(':geode-assembly').buildDir.toPath().resolve("moduleDescriptors")
+  geodeConfigurations {
+    global{
+      outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
+      assemblyProject = project.getRootProject().project(':geode-assembly')
+      projectsToInclude = [ "geode-custom-jar-deployments",
+                            "geode-extensions", "geode-apis-compatible-with-redis", "geode-common", "geode-connectors",
+                            "geode-core", "geode-cq", "geode-deployment-jboss-modules", "geode-gfsh",
+                            "geode-http-service", "geode-log4j", "geode-logging", "geode-lucene", "geode-management",
+                            "geode-membership", "geode-memcached", "geode-rebalancer", "geode-serialization",
+                            "geode-tcp-server", "geode-unsafe", "geode-wan" ]
+    }
+    main {
+
+    }
+  }
 }

@@ -408,10 +408,9 @@ distributedTest {
 rootProject.generate.dependsOn(generateGrammarSource)
 
 jbossModulesExtension {
-    geodeConfigurations = [
-        {
-            mainClass = "MainClass"
-            outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
-        }]
-    projectsToExclude = ['projectToExclude1']
+    geodeConfigurations {
+        main {
+            mainClass = "org.apache.geode.distributed.ServerLauncher"
+        }
+    }
 }
