@@ -2492,6 +2492,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
    * entry in the putall.
    * Further, we also check that the region size is correct on the remaining server.
    *
+   * When the client has finished registerInterest to build the subscription queue, the servers
+   * should guarantee all the afterCreate events arrive.
+   *
    */
   @Test
   public void testEventIdOutOfOrderInPartitionRegionSingleHopFromClientRegisteredInterest() {
