@@ -15,7 +15,7 @@
  */
 
 
-package org.apache.geode.redis.internal.executor.pubsub;
+package org.apache.geode.redis.internal.executor.publishAndSubscribe;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_PUBSUB_SUBCOMMAND;
 
@@ -36,8 +36,6 @@ public class PubSubExecutor implements Executor {
     List<byte[]> processedCommand = command.getProcessedCommand();
     String subCommand = Coder.bytesToString(processedCommand.get(1)).toLowerCase();
 
-    List<Object> response;
-
     switch (subCommand) {
       case "channels":
         // in a subsequent story, a new parameter requirement class
@@ -47,24 +45,21 @@ public class PubSubExecutor implements Executor {
               .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, subCommand));
         }
 
-        response = doChannels(processedCommand, context);
-        break;
+        List<byte[]> channelsResponse = doChannels(processedCommand, context);
+        return RedisResponse.array(channelsResponse);
 
       case "numsub":
-        response = doNumsub(processedCommand, context);
-        break;
+        List<Object> numSubresponse = doNumsub(processedCommand, context);
+        return RedisResponse.array(numSubresponse);
 
       default:
         return RedisResponse
             .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, subCommand));
-
     }
-
-    return RedisResponse.array(response);
   }
 
-  private List<Object> doChannels(List<byte[]> processedCommand, ExecutionHandlerContext context) {
-    List<Object> response;
+  private List<byte[]> doChannels(List<byte[]> processedCommand, ExecutionHandlerContext context) {
+    List<byte[]> response;
 
     if (processedCommand.size() > 2) {
       byte[] pattern = processedCommand.get(2);

@@ -12,13 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.pubsub;
+package org.apache.geode.redis.internal.executor.publishAndSubscribe;
 
 
 import org.junit.ClassRule;
 
 import org.apache.geode.NativeRedisTestRule;
-import org.apache.geode.redis.internal.executor.publishAndSubscribe.AbstractLettucePublishAndSubscribeIntegrationTest;
 
 public class LettucePublishAndSubscribeNativeRedisAcceptanceTest
     extends AbstractLettucePublishAndSubscribeIntegrationTest {

@@ -14,7 +14,7 @@
  *
  */
 
-package org.apache.geode.redis.internal.executor.pubsub;
+package org.apache.geode.redis.internal.executor.publishAndSubscribe;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,7 +55,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 
-public class PubSubDUnitTest {
+public class PublishAndSubscribeDUnitTest {
 
   public static final String CHANNEL_NAME = "salutations";
   public static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());

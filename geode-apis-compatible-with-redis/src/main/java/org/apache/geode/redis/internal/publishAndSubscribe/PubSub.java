@@ -96,9 +96,9 @@ public interface PubSub {
    */
   List<byte[]> findSubscriptionNames(Client client);
 
-  List<Object> findChannelNames();
+  List<byte[]> findChannelNames();
 
-  List<Object> findChannelNames(byte[] pattern);
+  List<byte[]> findChannelNames(byte[] pattern);
 
   List<Object> findNumberOfSubscribersForChannel(List<byte[]> names);
 }

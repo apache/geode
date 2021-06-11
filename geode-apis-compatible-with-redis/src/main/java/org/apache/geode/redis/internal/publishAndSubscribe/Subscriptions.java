@@ -73,7 +73,7 @@ public class Subscriptions {
         .collect(Collectors.toList());
   }
 
-  public List<Object> findChannelNames() {
+  public List<byte[]> findChannelNames() {
 
     ObjectOpenCustomHashSet<byte[]> hashSet =
         new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
@@ -84,7 +84,7 @@ public class Subscriptions {
     return new ArrayList<>(hashSet);
   }
 
-  public List<Object> findChannelNames(byte[] pattern) {
+  public List<byte[]> findChannelNames(byte[] pattern) {
 
     GlobPattern globPattern = new GlobPattern(Coder.bytesToString(pattern));
 
@@ -95,24 +95,18 @@ public class Subscriptions {
   }
 
   public List<Object> findNumberOfSubscribersForChannel(List<byte[]> names) {
-
     List<Object> result = new ArrayList<>();
 
     names.forEach(name -> {
-
-      List<Subscription> subscriptions =
+      Long subscriptionCount =
           findSubscriptions(name)
               .stream()
               .filter(subscription -> subscription instanceof ChannelSubscription)
-              .collect(Collectors.toList());
+              .count();
 
-      if (subscriptions.isEmpty()) {
-        result.add(name);
-        result.add(0L);
-      } else {
-        result.add(name);
-        result.add((long) subscriptions.size());
-      }
+      result.add(name);
+      result.add(subscriptionCount);
+
     });
 
     return result;

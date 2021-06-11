@@ -144,12 +144,12 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public List<Object> findChannelNames() {
+  public List<byte[]> findChannelNames() {
     return subscriptions.findChannelNames();
   }
 
   @Override
-  public List<Object> findChannelNames(byte[] pattern) {
+  public List<byte[]> findChannelNames(byte[] pattern) {
     return subscriptions.findChannelNames(pattern);
   }
 

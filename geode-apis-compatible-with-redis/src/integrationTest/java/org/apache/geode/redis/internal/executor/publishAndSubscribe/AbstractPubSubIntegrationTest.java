@@ -20,6 +20,7 @@ package org.apache.geode.redis.internal.executor.publishAndSubscribe;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtMostNArgsForSubCommand;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_PUBSUB_SUBCOMMAND;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -163,8 +164,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   @Test
   public void channels_shouldNotReturnDuplicates_givenMultipleSubscribersToSameChannel_whenCalledWithoutPattern() {
 
-    Jedis subscriber2 =
-        new Jedis("localhost", getPort(), AbstractPublishAndSubscribeIntegrationTest.JEDIS_TIMEOUT);
+    Jedis subscriber2 = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
 
     MockSubscriber mockSubscriber2 = new MockSubscriber();
     List<byte[]> expectedChannels = new ArrayList<>();
@@ -216,7 +216,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   @Test
   public void numsub_shouldReturnListOfChannelsWithSubscriberCount_whenCalledWithActiveChannels() {
 
-    Jedis subscriber2 = new Jedis("localhost", getPort());
+    Jedis subscriber2 = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
     MockSubscriber fooAndBarSubscriber = new MockSubscriber();
 
     Runnable fooRunnable =

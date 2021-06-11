@@ -34,6 +34,9 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SubscriptionsJUnitTest {
 
+  final byte[] FOO_AS_BYTES = Coder.stringToBytes("foo");
+  final byte[] BAR_AS_BYTES = Coder.stringToBytes("bar");
+
   @Test
   public void correctlyIdentifiesChannelSubscriber() {
     Subscriptions subscriptions = new Subscriptions();
@@ -216,18 +219,18 @@ public class SubscriptionsJUnitTest {
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
 
     Subscription subscriptionFoo =
-        new ChannelSubscription(client, Coder.stringToBytes("foo"), context, subject);
+        new ChannelSubscription(client, FOO_AS_BYTES, context, subject);
 
     Subscription subscriptionBar =
-        new ChannelSubscription(client, Coder.stringToBytes("bar"), context, subject);
+        new ChannelSubscription(client, BAR_AS_BYTES, context, subject);
 
     subject.add(subscriptionFoo);
     subject.add(subscriptionBar);
 
-    List<Object> result = subject.findChannelNames();
+    List<byte[]> result = subject.findChannelNames();
 
-    assertThat(result).containsExactlyInAnyOrder(Coder.stringToBytes("foo"),
-        Coder.stringToBytes("bar"));
+    assertThat(result).containsExactlyInAnyOrder(FOO_AS_BYTES,
+        BAR_AS_BYTES);
   }
 
   @Test
@@ -240,14 +243,14 @@ public class SubscriptionsJUnitTest {
     Client client = new Client(channel);
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
 
-    subject.add(new ChannelSubscription(client, Coder.stringToBytes("foo"), context, subject));
-    subject.add(new ChannelSubscription(client, Coder.stringToBytes("bar"), context, subject));
+    subject.add(new ChannelSubscription(client, FOO_AS_BYTES, context, subject));
+    subject.add(new ChannelSubscription(client, BAR_AS_BYTES, context, subject));
     subject
         .add(new ChannelSubscription(client, Coder.stringToBytes("barbarella"), context, subject));
 
-    List<Object> result = subject.findChannelNames(pattern);
+    List<byte[]> result = subject.findChannelNames(pattern);
 
-    assertThat(result).containsExactlyInAnyOrder(Coder.stringToBytes("bar"),
+    assertThat(result).containsExactlyInAnyOrder(BAR_AS_BYTES,
         Coder.stringToBytes("barbarella"));
   }
 
@@ -262,7 +265,7 @@ public class SubscriptionsJUnitTest {
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
 
     Subscription subscriptionFoo =
-        new ChannelSubscription(client, Coder.stringToBytes("foo"), context, subject);
+        new ChannelSubscription(client, FOO_AS_BYTES, context, subject);
 
     Subscription patternSubscriptionBar =
         new PatternSubscription(client, new GlobPattern("bar"), context, subject);
@@ -270,9 +273,9 @@ public class SubscriptionsJUnitTest {
     subject.add(subscriptionFoo);
     subject.add(patternSubscriptionBar);
 
-    List<Object> result = subject.findChannelNames();
+    List<byte[]> result = subject.findChannelNames();
 
-    assertThat(result).containsExactlyInAnyOrder(Coder.stringToBytes("foo"));
+    assertThat(result).containsExactlyInAnyOrder(FOO_AS_BYTES);
   }
 
 
@@ -287,17 +290,17 @@ public class SubscriptionsJUnitTest {
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
 
     Subscription subscriptionFoo1 =
-        new ChannelSubscription(client, Coder.stringToBytes("foo"), context, subject);
+        new ChannelSubscription(client, FOO_AS_BYTES, context, subject);
 
     Subscription subscriptionFoo2 =
-        new ChannelSubscription(client, Coder.stringToBytes("foo"), context, subject);
+        new ChannelSubscription(client, FOO_AS_BYTES, context, subject);
 
     subject.add(subscriptionFoo1);
     subject.add(subscriptionFoo2);
 
-    List<Object> result = subject.findChannelNames();
+    List<byte[]> result = subject.findChannelNames();
 
-    assertThat(result).containsExactlyInAnyOrder(Coder.stringToBytes("foo"));
+    assertThat(result).containsExactlyInAnyOrder(FOO_AS_BYTES);
   }
 
   @Test
@@ -311,17 +314,17 @@ public class SubscriptionsJUnitTest {
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
 
     Subscription subscriptionFoo1 =
-        new ChannelSubscription(client, Coder.stringToBytes("foo"), context, subject);
+        new ChannelSubscription(client, FOO_AS_BYTES, context, subject);
 
     Subscription subscriptionFoo2 =
-        new ChannelSubscription(client, Coder.stringToBytes("foo"), context, subject);
+        new ChannelSubscription(client, FOO_AS_BYTES, context, subject);
 
     subject.add(subscriptionFoo1);
     subject.add(subscriptionFoo2);
 
-    List<Object> result = subject.findChannelNames(Coder.stringToBytes("f*"));
+    List<byte[]> result = subject.findChannelNames(Coder.stringToBytes("f*"));
 
-    assertThat(result).containsExactlyInAnyOrder(Coder.stringToBytes("foo"));
+    assertThat(result).containsExactlyInAnyOrder(FOO_AS_BYTES);
   }
 
   @Test
@@ -334,20 +337,20 @@ public class SubscriptionsJUnitTest {
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
 
     Subscription subscriptionFoo1 =
-        new ChannelSubscription(client, Coder.stringToBytes("foo"), context, subject);
+        new ChannelSubscription(client, FOO_AS_BYTES, context, subject);
 
     Subscription subscriptionFoo2 =
-        new ChannelSubscription(client, Coder.stringToBytes("foo"), context, subject);
+        new ChannelSubscription(client, FOO_AS_BYTES, context, subject);
 
     subject.add(subscriptionFoo1);
     subject.add(subscriptionFoo2);
 
     List<byte[]> channels = new ArrayList<>();
-    channels.add(Coder.stringToBytes("foo"));
+    channels.add(FOO_AS_BYTES);
 
     List<Object> actual = subject.findNumberOfSubscribersForChannel(channels);
 
-    assertThat(actual.get(0)).isEqualTo(Coder.stringToBytes("foo"));
+    assertThat(actual.get(0)).isEqualTo(FOO_AS_BYTES);
 
     assertThat(actual.get(1)).isEqualTo(2L);
   }
@@ -357,18 +360,17 @@ public class SubscriptionsJUnitTest {
     Subscriptions subject = new Subscriptions();
 
     List<byte[]> channels = new ArrayList<>();
-    channels.add(Coder.stringToBytes("bar"));
+    channels.add(BAR_AS_BYTES);
 
-    ArrayList<Object> result =
-        (ArrayList<Object>) subject.findNumberOfSubscribersForChannel(channels);
+    List<Object> result = subject.findNumberOfSubscribersForChannel(channels);
 
-    assertThat(result.get(0)).isEqualTo(Coder.stringToBytes("bar"));
+    assertThat(result.get(0)).isEqualTo(BAR_AS_BYTES);
     assertThat(result.get(1)).isEqualTo(0L);
   }
 
 
   @Test
-  public void findNumberOfSubscribersByChannel_shouldPatterAndZero_givenPatternSubscription() {
+  public void findNumberOfSubscribersByChannel_shouldReturnPatternAndZero_givenPatternSubscription() {
     Subscriptions subject = new Subscriptions();
 
     Channel channel = mock(Channel.class);

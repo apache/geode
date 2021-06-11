@@ -15,12 +15,11 @@
  *
  */
 
-package org.apache.geode.redis.internal.executor.pubsub;
+package org.apache.geode.redis.internal.executor.publishAndSubscribe;
 
 import org.junit.ClassRule;
 
 import org.apache.geode.redis.NativeRedisClusterTestRule;
-import org.apache.geode.redis.internal.executor.publishAndSubscribe.AbstractPubSubIntegrationTest;
 
 
 public class NativeRedisPubSubIntegrationTest extends AbstractPubSubIntegrationTest {
