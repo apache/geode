@@ -17,12 +17,23 @@
 
 apply plugin: 'me.champeau.gradle.jmh'
 
+configurations {
+  javaagent {
+    transitive = false
+  }
+}
+
 dependencies {
   jmh(project(':geode-jmh'))
+
+  javaagent(project(':geode-jmh'))
 }
 
 jmh {
+  zip64 = true
   duplicateClassesStrategy = 'exclude'
+  jvmArgs += ['-javaagent:' + configurations.javaagent.singleFile]
+
   include = project.hasProperty('jmh.include') ? project.property('jmh.include').tokenize() : ['.*']
   profilers = project.hasProperty('jmh.profilers') ? project.property('jmh.profilers').tokenize() : []
   threads = project.hasProperty('jmh.threads') ? project.property('jmh.threads') as Integer : null
@@ -31,6 +42,7 @@ jmh {
   timeOnIteration = project.hasProperty('jmh.timeOnIteration') ? project.property('jmh.timeOnIteration') as Integer : null
   fork = project.hasProperty('jmh.fork') ? project.property('jmh.fork') as Integer : null
   jvm = project.hasProperty('jmh.jvm') ? project.property('jmh.jvm') as String : null
+  jvmArgs += project.hasProperty('jmh.jvmArgs') ? project.property('jmh.jvmArgs').tokenize() : []
 }
 
 jmhJar {
