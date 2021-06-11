@@ -52,6 +52,10 @@ public class PubSubExecutor implements Executor {
         List<Object> numSubresponse = doNumsub(processedCommand, context);
         return RedisResponse.array(numSubresponse);
 
+      case "numpat":
+        Long numPatResponse = context.getPubSub().findNumberOfPatternsSubscribedTo();
+        return RedisResponse.integer(numPatResponse);
+
       default:
         return RedisResponse
             .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, subCommand));

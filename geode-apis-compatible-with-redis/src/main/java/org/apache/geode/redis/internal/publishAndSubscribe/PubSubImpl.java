@@ -75,7 +75,7 @@ public class PubSubImpl implements PubSub {
         .setArguments(new Object[] {channel, message})
         .execute(REDIS_PUB_SUB_FUNCTION_ID);
 
-    List<Long> subscriberCounts = null;
+    List<Long> subscriberCounts;
 
     try {
       subscriberCounts = subscriberCountCollector.getResult();
@@ -156,6 +156,11 @@ public class PubSubImpl implements PubSub {
   @Override
   public List<Object> findNumberOfSubscribersForChannel(List<byte[]> names) {
     return subscriptions.findNumberOfSubscribersForChannel(names);
+  }
+
+  @Override
+  public Long findNumberOfPatternsSubscribedTo() {
+    return subscriptions.findNumberOfPatternSubscriptions();
   }
 
   @Override

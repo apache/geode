@@ -101,4 +101,6 @@ public interface PubSub {
   List<byte[]> findChannelNames(byte[] pattern);
 
   List<Object> findNumberOfSubscribersForChannel(List<byte[]> names);
+
+  Long findNumberOfPatternsSubscribedTo();
 }

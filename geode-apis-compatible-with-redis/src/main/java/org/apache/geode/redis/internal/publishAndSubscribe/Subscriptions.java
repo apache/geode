@@ -112,10 +112,21 @@ public class Subscriptions {
     return result;
   }
 
+  public long findNumberOfPatternSubscriptions() {
+    return findPatternSubscriptions().count();
+  }
+
   private Stream<ChannelSubscription> findChannelSubscriptions() {
     return subscriptions.stream()
         .filter(subscription -> subscription instanceof ChannelSubscription)
         .map(subscription -> (ChannelSubscription) subscription);
+  }
+
+
+  private Stream<PatternSubscription> findPatternSubscriptions() {
+    return subscriptions.stream()
+        .filter(subscription -> subscription instanceof PatternSubscription)
+        .map(subscription -> (PatternSubscription) subscription);
   }
 
   /**

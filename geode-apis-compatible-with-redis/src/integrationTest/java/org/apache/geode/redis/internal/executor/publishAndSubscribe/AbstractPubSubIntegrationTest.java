@@ -300,6 +300,47 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     mockSubscriber.punsubscribe();
   }
 
+  /** -- NUMPAT-- **/
+
+  @Test
+  public void numpat_shouldReturncountOfAllPatternSubscriptions() {
+    Runnable runnable = () -> subscriber.psubscribe(mockSubscriber, "f*");
+    Thread patternSubscriberThread = new Thread(runnable);
+
+    patternSubscriberThread.start();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    Long result = introspector.pubsubNumPat();
+
+    assertThat(result).isEqualTo(1);
+
+    mockSubscriber.punsubscribe();
+  }
+
+  @Test
+  public void numpat_shouldNotIncludeChannelSubscriptions() {
+    Jedis patternSubscriberJedis = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
+    MockSubscriber patternSubscriber = new MockSubscriber();
+
+    Runnable channelRunnable = () -> patternSubscriberJedis.subscribe(patternSubscriber, "f*");
+    Thread channelSubscriberThread = new Thread(channelRunnable);
+
+    Runnable runnable = () -> subscriber.psubscribe(mockSubscriber, "foo");
+    Thread patternSubscriberThread = new Thread(runnable);
+
+    patternSubscriberThread.start();
+    channelSubscriberThread.start();
+
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1
+        && patternSubscriber.getSubscribedChannels() == 1);
+
+    Long result = introspector.pubsubNumPat();
+
+    assertThat(result).isEqualTo(1);
+
+    patternSubscriber.unsubscribe();
+  }
+
   private void waitFor(Callable<Boolean> booleanCallable) {
     GeodeAwaitility.await()
         .ignoreExceptionsInstanceOf(SocketException.class)

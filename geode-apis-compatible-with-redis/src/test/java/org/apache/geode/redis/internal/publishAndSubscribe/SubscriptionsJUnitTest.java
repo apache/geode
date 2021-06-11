@@ -278,7 +278,6 @@ public class SubscriptionsJUnitTest {
     assertThat(result).containsExactlyInAnyOrder(FOO_AS_BYTES);
   }
 
-
   @Test
   public void findChannelNames_shouldNotReturnDuplicates_givenMultipleSubscriptionsToSameChannel_whenCalledWithoutPattern() {
 
@@ -368,7 +367,6 @@ public class SubscriptionsJUnitTest {
     assertThat(result.get(1)).isEqualTo(0L);
   }
 
-
   @Test
   public void findNumberOfSubscribersByChannel_shouldReturnPatternAndZero_givenPatternSubscription() {
     Subscriptions subject = new Subscriptions();
@@ -390,5 +388,41 @@ public class SubscriptionsJUnitTest {
 
     assertThat(actual.get(0)).isEqualTo(Coder.stringToBytes("f*"));
     assertThat(actual.get(1)).isEqualTo(0L);
+  }
+
+
+  @Test
+  public void findNumberOfPatternSubscriptions_shouldReturnTotalNumberOfPatternSubscriptions() {
+    Subscriptions subject = new Subscriptions();
+
+    Channel channel = mock(Channel.class);
+    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
+    Client client = new Client(channel);
+
+    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+
+    GlobPattern pattern = new GlobPattern("sub*s");
+
+    subject.add(new PatternSubscription(client, pattern, context, subject));
+
+    assertThat(subject.findNumberOfPatternSubscriptions()).isEqualTo(1l);
+  }
+
+  @Test
+  public void findNumberOfPatternSubscriptions_shouldNotIncludeChannelSubscriptions() {
+    Subscriptions subject = new Subscriptions();
+
+    Channel channel = mock(Channel.class);
+    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
+    Client client = new Client(channel);
+
+    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+
+    GlobPattern pattern = new GlobPattern("sub*s");
+
+    subject.add(new ChannelSubscription(client, FOO_AS_BYTES, context, subject));
+    subject.add(new PatternSubscription(client, pattern, context, subject));
+
+    assertThat(subject.findNumberOfPatternSubscriptions()).isEqualTo(1l);
   }
 }
