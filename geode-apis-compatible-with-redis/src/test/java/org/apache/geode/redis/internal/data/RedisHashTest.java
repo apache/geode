@@ -55,7 +55,7 @@ import org.apache.geode.redis.internal.netty.Coder;
 public class RedisHashTest {
   private final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
   private final ReflectionSingleObjectSizer elementSizer =
-      ReflectionSingleObjectSizer.getInstance();
+      new ReflectionSingleObjectSizer();
 
   @BeforeClass
   public static void beforeClass() {

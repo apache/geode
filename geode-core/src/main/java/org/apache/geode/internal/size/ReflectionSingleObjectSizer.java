@@ -30,8 +30,6 @@ import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
  *
  */
 public class ReflectionSingleObjectSizer implements SingleObjectSizer {
-  @Immutable
-  private static final ReflectionSingleObjectSizer INSTANCE = new ReflectionSingleObjectSizer();
 
   public static final int REFERENCE_SIZE = JvmSizeUtils.getReferenceSize();
   public static final int OBJECT_SIZE = JvmSizeUtils.getObjectHeaderSize();
@@ -180,9 +178,4 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
       return REFERENCE_SIZE;
     }
   }
-
-  public static ReflectionSingleObjectSizer getInstance() {
-    return INSTANCE;
-  }
-
 }

@@ -26,13 +26,14 @@ import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 
+import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
+import org.apache.geode.internal.size.SingleObjectSizer;
 
 public class SizeableObjectOpenCustomHashSetTest {
-  private final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
-  private final ReflectionSingleObjectSizer elementSizer =
-      ReflectionSingleObjectSizer.getInstance();
+  private final ObjectSizer sizer = ReflectionObjectSizer.getInstance();
+  private final SingleObjectSizer elementSizer = new ReflectionSingleObjectSizer();
 
   // This test can be used to derive the formula for calculating overhead associated with resizing
   // the backing array of the set. If it fails examine the output of this test and determine if the

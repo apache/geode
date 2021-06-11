@@ -28,10 +28,11 @@ import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 
+import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 
 public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
-  private final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
+  private final ObjectSizer sizer = ReflectionObjectSizer.getInstance();
 
   private static final Hash.Strategy<Integer> NATURAL_HASH = new Hash.Strategy<Integer>() {
     @Override
@@ -63,8 +64,8 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
         new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
     IntStream.range(0, 10).forEach(i -> map.put(i, "value-" + i));
 
-    HashMap<Integer, String> scanned = new HashMap<>();
-    int result = map.scan(0, 10000, HashMap::put, scanned);
+    Map<Integer, String> scanned = new HashMap<>();
+    int result = map.scan(0, 10000, Map::put, scanned);
     assertThat(result).isEqualTo(0);
     assertThat(scanned).isEqualTo(map);
   }
@@ -75,15 +76,16 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
         new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
     IntStream.range(0, 10).forEach(i -> map.put(i, "value-" + i));
 
-    HashMap<Integer, String> scanned = new HashMap<>();
-    int cursor = map.scan(0, 3, HashMap::put, scanned);
-    assertThat(scanned).hasSize(3);
-    cursor = map.scan(cursor, 3, HashMap::put, scanned);
-    assertThat(scanned).hasSize(6);
-    cursor = map.scan(cursor, 4, HashMap::put, scanned);
-    assertThat(scanned).hasSize(10);
-    cursor = map.scan(cursor, 4, HashMap::put, scanned);
-    assertThat(scanned).hasSize(10);
+    Map<Integer, String> scanned = new HashMap<>();
+
+    int scanSize = 1 + map.size() / 2;
+    // Scan part way through the map
+    int cursor = map.scan(0, scanSize, Map::put, scanned);
+    assertThat(scanned).hasSize(scanSize);
+
+    // Scan past the end of the map
+    cursor = map.scan(cursor, scanSize, Map::put, scanned);
+    assertThat(scanned).hasSize(map.size());
     assertThat(cursor).isEqualTo(0);
 
     assertThat(scanned).isEqualTo(map);
@@ -95,8 +97,8 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
         new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
     IntStream.range(0, 10).forEach(i -> map.put(i, "value-" + i));
 
-    HashMap<Integer, String> scanned = new HashMap<>();
-    int cursor = map.scan(0, 5, HashMap::put, scanned);
+    Map<Integer, String> scanned = new HashMap<>();
+    int cursor = map.scan(0, 5, Map::put, scanned);
     assertThat(scanned).hasSize(5);
 
     // Remove some of the elements
@@ -105,7 +107,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
     map.remove(5);
     map.remove(7);
 
-    cursor = map.scan(cursor, 5, HashMap::put, scanned);
+    cursor = map.scan(cursor, 5, Map::put, scanned);
     assertThat(cursor).isEqualTo(0);
 
     assertThat(scanned).containsKeys(0, 1, 3, 6, 8, 9);
@@ -118,21 +120,21 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
     IntStream.range(0, 10).forEach(i -> map.put(i, "value-" + i));
 
     // The colliding hash is just key % 5. So 0 and 5 will have the same hashcode, etc.
-    HashMap<Integer, String> scanned = new HashMap<>();
-    int cursor = map.scan(0, 1, HashMap::put, scanned);
+    Map<Integer, String> scanned = new HashMap<>();
+    int cursor = map.scan(0, 1, Map::put, scanned);
 
     // The scan had to ignore the count and return all of the elements with the same hash
     assertThat(scanned).hasSize(2);
 
-    cursor = map.scan(cursor, 1, HashMap::put, scanned);
+    cursor = map.scan(cursor, 1, Map::put, scanned);
     assertThat(scanned).hasSize(4);
-    cursor = map.scan(cursor, 1, HashMap::put, scanned);
+    cursor = map.scan(cursor, 1, Map::put, scanned);
     assertThat(scanned).hasSize(6);
-    cursor = map.scan(cursor, 1, HashMap::put, scanned);
+    cursor = map.scan(cursor, 1, Map::put, scanned);
     assertThat(scanned).hasSize(8);
-    cursor = map.scan(cursor, 1, HashMap::put, scanned);
+    cursor = map.scan(cursor, 1, Map::put, scanned);
     assertThat(scanned).hasSize(10);
-    cursor = map.scan(cursor, 1, HashMap::put, scanned);
+    cursor = map.scan(cursor, 1, Map::put, scanned);
     assertThat(scanned).hasSize(10);
 
     assertThat(cursor).isEqualTo(0);
@@ -145,8 +147,8 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
         new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(COLLIDING_HASH);
     IntStream.range(0, 10).forEach(i -> map.put(i, "value-" + i));
 
-    HashMap<Integer, String> scanned = new HashMap<>();
-    int cursor = map.scan(0, 5, HashMap::put, scanned);
+    Map<Integer, String> scanned = new HashMap<>();
+    int cursor = map.scan(0, 5, Map::put, scanned);
     assertThat(scanned).hasSize(6);
 
     // Remove some of the elements
@@ -155,7 +157,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
     map.remove(5);
     map.remove(7);
 
-    cursor = map.scan(cursor, 5, HashMap::put, scanned);
+    cursor = map.scan(cursor, 5, Map::put, scanned);
 
     assertThat(cursor).isEqualTo(0);
     assertThat(scanned).containsKeys(0, 1, 3, 6, 8, 9);
@@ -167,15 +169,15 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
         new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
     IntStream.range(0, 10).forEach(i -> map.put(i, "value-" + i));
 
-    HashMap<Integer, String> scanned = new HashMap<>();
-    int cursor = map.scan(0, 5, HashMap::put, scanned);
+    Map<Integer, String> scanned = new HashMap<>();
+    int cursor = map.scan(0, 5, Map::put, scanned);
     assertThat(scanned).hasSize(5);
 
 
     // Add a lot of elements to trigger a resize
     IntStream.range(10, 500).forEach(i -> map.put(i, "value-" + i));
 
-    cursor = map.scan(cursor, 500, HashMap::put, scanned);
+    cursor = map.scan(cursor, 500, Map::put, scanned);
     assertThat(cursor).isEqualTo(0);
 
     // We don't know that we will have all of the 500 new elements, only that
@@ -189,15 +191,15 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
         new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
     IntStream.range(0, 500).forEach(i -> map.put(i, "value-" + i));
 
-    HashMap<Integer, String> scanned = new HashMap<>();
-    int cursor = map.scan(0, 50, HashMap::put, scanned);
+    Map<Integer, String> scanned = new HashMap<>();
+    int cursor = map.scan(0, 50, Map::put, scanned);
     assertThat(scanned).hasSize(50);
 
 
     // Remove a lot of elements to trigger a resize
     IntStream.range(100, 500).forEach(map::remove);
 
-    cursor = map.scan(cursor, 500, HashMap::put, scanned);
+    cursor = map.scan(cursor, 500, Map::put, scanned);
     assertThat(cursor).isEqualTo(0);
 
     // Scan should at least have all of the remaining keys

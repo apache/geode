@@ -22,6 +22,7 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
+import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.size.Sizeable;
 
 public class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<K>
@@ -29,8 +30,7 @@ public class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<
   private static final long serialVersionUID = 9174920505089089517L;
   public static final int BACKING_ARRAY_OVERHEAD_CONSTANT = 92;
   public static final int BACKING_ARRAY_LENGTH_COEFFICIENT = 4;
-  private static final ReflectionSingleObjectSizer elementSizer =
-      ReflectionSingleObjectSizer.getInstance();
+  private static final SingleObjectSizer elementSizer = new ReflectionSingleObjectSizer();
 
   private int memberOverhead;
 
