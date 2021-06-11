@@ -41,13 +41,13 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("javax.transaction-api.version", "1.3")
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.14.1")
-    deps.put("micrometer.version", "1.6.6")
+    deps.put("micrometer.version", "1.7.0")
     deps.put("shiro.version", "1.7.1")
     deps.put("slf4j-api.version", "1.7.30")
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.12.3")
     deps.put("springshell.version", "1.2.0.RELEASE")
-    deps.put("springframework.version", "5.3.7")
+    deps.put("springframework.version", "5.3.8")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
@@ -55,13 +55,13 @@ class DependencyConstraints implements Plugin<Project> {
     // specifying @zip in a dependency, the manner in which we consume them in custom configurations.
     // This would possibly be corrected if they were proper source sets.
     deps.put("tomcat6.version", "6.0.37")
-    deps.put("tomcat7.version", "7.0.108")
-    deps.put("tomcat8.version", "8.5.65")
-    deps.put("tomcat9.version", "9.0.45")
+    deps.put("tomcat7.version", "7.0.109")
+    deps.put("tomcat8.version", "8.5.66")
+    deps.put("tomcat9.version", "9.0.46")
 
     // The jetty version is also hard-coded in geode-assembly:test
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
-    deps.put("jetty.version", "9.4.40.v20210413")
+    deps.put("jetty.version", "9.4.42.v20210604")
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
     deps.put("junit.version", "4.13.2")
@@ -111,9 +111,9 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'commons-modeler', name: 'commons-modeler', version: '2.0.1')
         api(group: 'commons-validator', name: 'commons-validator', version: get('commons-validator.version'))
         // Careful when upgrading this dependency: see GEODE-7370 and GEODE-8150.
-        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.104')
+        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.108')
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.0')
-        api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.1.RELEASE')
+        api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.2.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
         api(group: 'io.netty', name: 'netty-all', version: '4.1.59.Final')
         api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2')
@@ -134,8 +134,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'net.minidev', name: 'json-smart', version: '2.3.1')
         api(group: 'net.openhft', name: 'compiler', version: '2.4.1')
         api(group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4')
-        api(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.33.0')
-        api(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.33.0')
+        api(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.35.0')
+        api(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.35.0')
         api(group: 'net.spy', name: 'spymemcached', version: '2.12.3')
         api(group: 'org.apache.bcel', name: 'bcel', version: '6.5.0')
         api(group: 'org.apache.commons', name: 'commons-lang3', version: get('commons-lang3.version'))
@@ -145,9 +145,9 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.14')
         api(group: 'org.apache.shiro', name: 'shiro-core', version: get('shiro.version'))
         api(group: 'org.assertj', name: 'assertj-core', version: '3.19.0')
-        api(group: 'org.awaitility', name: 'awaitility', version: '4.0.3')
-        api(group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.68')
-        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.9.3')
+        api(group: 'org.awaitility', name: 'awaitility', version: '4.1.0')
+        api(group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.69')
+        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.9.4')
         api(group: 'org.eclipse.jetty', name: 'jetty-server', version: get('jetty.version'))
         api(group: 'org.eclipse.jetty', name: 'jetty-webapp', version: get('jetty.version'))
         api(group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.2.1')
@@ -155,13 +155,13 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.iq80.snappy', name: 'snappy', version: '0.4')
         api(group: 'org.jboss.modules', name: 'jboss-modules', version: get('jboss-modules.version'))
         api(group: 'org.jgroups', name: 'jgroups', version: get('jgroups.version'))
-        api(group: 'org.mockito', name: 'mockito-core', version: '3.9.0')
+        api(group: 'org.mockito', name: 'mockito-core', version: '3.11.0')
         api(group: 'org.mortbay.jetty', name: 'servlet-api', version: '3.0.20100224')
         api(group: 'org.openjdk.jmh', name: 'jmh-core', version: '1.26')
         api(group: 'org.postgresql', name: 'postgresql', version: '42.2.8')
         api(group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0')
         api(group: 'org.slf4j', name: 'slf4j-api', version: get('slf4j-api.version'))
-        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.3.0')
+        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.3.1')
         api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.2.RELEASE')
         api(group: 'org.springframework.shell', name: 'spring-shell', version: get('springshell.version'))
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.15.3')
@@ -182,7 +182,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('jackson-datatype-jsr310')
     }
 
-    dependencySet(group: 'com.jayway.jsonpath', version: '2.5.0') {
+    dependencySet(group: 'com.jayway.jsonpath', version: '2.6.0') {
       entry('json-path-assert')
       entry('json-path')
     }
@@ -229,7 +229,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('selenium-support')
     }
 
-    dependencySet(group: 'org.springframework.security', version: '5.4.6') {
+    dependencySet(group: 'org.springframework.security', version: '5.5.0') {
       entry('spring-security-config')
       entry('spring-security-core')
       entry('spring-security-ldap')
@@ -253,18 +253,18 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-webmvc')
     }
 
-    dependencySet(group: 'org.springframework.boot', version: '2.4.5') {
+    dependencySet(group: 'org.springframework.boot', version: '2.5.0') {
       entry('spring-boot-starter')
       entry('spring-boot-starter-jetty')
       entry('spring-boot-starter-web')
       entry('spring-boot-starter-data-redis')
     }
 
-    dependencySet(group: 'org.springframework.session', version: '2.4.3') {
+    dependencySet(group: 'org.springframework.session', version: '2.5.0') {
       entry('spring-session-data-redis')
     }
 
-    dependencySet(group: 'org.jetbrains', version: '20.1.0') {
+    dependencySet(group: 'org.jetbrains', version: '21.0.1') {
       entry('annotations')
     }
 

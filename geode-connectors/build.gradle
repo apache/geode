@@ -118,7 +118,7 @@ dependencies {
   acceptanceTestRuntimeOnly('org.apache.derby:derby')
   acceptanceTestRuntimeOnly('org.postgresql:postgresql')
 
-  jdbcTestingJars('mysql:mysql-connector-java:8.0.23')
+  jdbcTestingJars('mysql:mysql-connector-java:8.0.25')
 }
 
 integrationTest.forkEvery 0
