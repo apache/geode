@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UTFDataFormatException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -462,17 +461,6 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
       buffer = tmp;
       return buffer.array();
     }
-  }
-
-  protected void flushBuffer(SocketChannel sc, ByteBuffer out) throws IOException {
-    if (out.position() == 0) {
-      return;
-    }
-    out.flip();
-    while (out.remaining() > 0) {
-      sc.write(out);
-    }
-    out.clear();
   }
 
   /**

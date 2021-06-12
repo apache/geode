@@ -1480,9 +1480,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
                 maxConnections});
 
         try {
-          refuseHandshake(socket.getOutputStream(),
-              String.format("exceeded max-connections %s",
-                  maxConnections),
+          refuseHandshake(String.format("exceeded max-connections %s",
+              maxConnections),
               REPLY_REFUSED, ioFilter, socket);
         } catch (Exception ex) {
           logger.debug("rejection message failed", ex);
@@ -1518,9 +1517,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
             "Rejected connection from {} because incoming request was rejected by pool possibly due to thread exhaustion",
             serverConn);
         try {
-          refuseHandshake(socket.getOutputStream(),
-              String.format("exceeded max-connections %s",
-                  maxConnections),
+          refuseHandshake(String.format("exceeded max-connections %s",
+              maxConnections),
               REPLY_REFUSED, ioFilter, socket);
 
         } catch (Exception ex) {
@@ -1566,10 +1564,10 @@ public class AcceptorImpl implements Acceptor, Runnable {
   }
 
   @Override
-  public void refuseHandshake(OutputStream out, String message, byte exception,
+  public void refuseHandshake(String message, byte exception,
       NioFilter ioFilter, Socket socket) throws IOException {
     if (ioFilter == null) {
-      refuseHandshake(out, message, exception);
+      refuseHandshake(socket.getOutputStream(), message, exception);
       return;
     }
     try (ByteBufferOutputStream bbos =

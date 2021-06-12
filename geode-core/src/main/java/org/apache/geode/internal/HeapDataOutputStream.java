@@ -186,7 +186,7 @@ public class HeapDataOutputStream extends
     int bytesSent = in.remaining();
     if (in.isDirect()) {
       flushBuffer(sc, out, ioFilter);
-      writeToSC(sc, in, ioFilter);
+      writeToSocketChannel(sc, in, ioFilter);
     } else {
       // copy in to out. If out fills flush it
       int OUT_MAX = out.remaining();
@@ -424,11 +424,11 @@ public class HeapDataOutputStream extends
     if (out.position() == 0)
       return;
     out.flip();
-    writeToSC(sc, out, ioFilter);
+    writeToSocketChannel(sc, out, ioFilter);
     out.clear();
   }
 
-  private void writeToSC(SocketChannel sc, ByteBuffer out, NioFilter ioFilter)
+  private void writeToSocketChannel(SocketChannel sc, ByteBuffer out, NioFilter ioFilter)
       throws IOException {
     if (ioFilter == null) {
       while (out.remaining() > 0) {

@@ -103,7 +103,7 @@ public interface Acceptor extends CommBufferPool {
 
   void refuseHandshake(OutputStream out, String message, byte exception) throws IOException;
 
-  void refuseHandshake(OutputStream out, String message, byte exception, NioFilter ioFilter,
+  void refuseHandshake(String message, byte exception, NioFilter ioFilter,
       Socket socket) throws IOException;
 
   void registerServerConnection(ServerConnection serverConnection);

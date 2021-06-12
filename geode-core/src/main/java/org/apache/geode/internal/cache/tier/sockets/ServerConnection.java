@@ -672,7 +672,7 @@ public class ServerConnection implements Runnable {
 
   private void refuseHandshake(String message, byte exception) {
     try {
-      acceptor.refuseHandshake(theSocket.getOutputStream(), message, exception, ioFilter,
+      acceptor.refuseHandshake(message, exception, ioFilter,
           theSocket);
     } catch (IOException ignore) {
     } finally {

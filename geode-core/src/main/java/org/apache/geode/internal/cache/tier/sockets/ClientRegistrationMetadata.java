@@ -60,13 +60,9 @@ class ClientRegistrationMetadata {
   }
 
   boolean initialize() throws IOException {
-    InputStream inputStream = null;
+    final InputStream inputStream = getInputStream(socket, ioFilter);
+
     try {
-      if (ioFilter == null) {
-        inputStream = socket.getInputStream();
-      } else {
-        inputStream = ioFilter.getInputStream(socket);
-      }
       DataInputStream unversionedDataInputStream = new DataInputStream(inputStream);
 
       DataOutputStream unversionedDataOutputStream = new DataOutputStream(socket.getOutputStream());
@@ -216,5 +212,13 @@ class ClientRegistrationMetadata {
 
   public Socket getSocket() {
     return socket;
+  }
+
+  private InputStream getInputStream(Socket socket, NioFilter iofilter) throws IOException {
+    if (ioFilter == null) {
+      return socket.getInputStream();
+    } else {
+      return ioFilter.getInputStream(socket);
+    }
   }
 }
