@@ -16,6 +16,7 @@ package org.apache.geode.cache.wan;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
@@ -24,8 +25,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -51,7 +53,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.parallel.BatchRemovalThreadHelper;
@@ -61,6 +62,7 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
@@ -105,15 +107,18 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     Locator.startLocatorAndDS(port, null, props);
   }
 
-  int startLocatorWithJmxManager(int port, int distributedSystemId, String locators,
-      String remoteLocators) throws IOException {
-    Properties props = getLocatorProperties(distributedSystemId, locators, remoteLocators);
-    int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    props.put(JMX_MANAGER_PORT, String.valueOf(jmxPort));
-    props.put(JMX_MANAGER, "true");
-    props.put(JMX_MANAGER_START, "true");
-    Locator.startLocatorAndDS(port, null, props);
-    return jmxPort;
+  SerializableRunnable startLocatorWithJmxManager(int port, int distributedSystemId,
+      String locators, String remoteLocators, int jmxManagerPort) {
+    return new SerializableRunnable() {
+      @Override
+      public void run() throws Exception {
+        Properties props = getLocatorProperties(distributedSystemId, locators, remoteLocators);
+        props.put(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
+        props.put(JMX_MANAGER, "true");
+        props.put(JMX_MANAGER_START, "true");
+        Locator.startLocatorAndDS(port, null, props);
+      }
+    };
   }
 
   private Properties getLocatorProperties(int distributedSystemId, String locators,
@@ -134,6 +139,8 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     }
     props.setProperty(LOG_LEVEL, DUnitLauncher.logLevel);
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, String.valueOf(enableClusterConfiguration));
+    // Turn off HTTP service, otherwise second (and subsequent) locators will see a port conflict
+    props.setProperty(HTTP_SERVICE_PORT, String.valueOf(0));
     return props;
   }
 
@@ -176,15 +183,17 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
 
     // Start and configure server 1
     server1.invoke(() -> createCache(locators));
-    server1.invoke(() -> addCacheServer());
+    int server1Port = getRandomAvailableTCPPort();
+    server1.invoke(addCacheServer(server1Port));
     server1.invoke(() -> createGatewaySender(senderId, distributedSystem, messageSyncInterval));
     server1.invoke(() -> createGatewayReceiver());
     server1.invoke(() -> createPartitionedRegion(regionName, senderId));
 
     // Start and configure server 2 if necessary
     if (server2 != null) {
+      int server2Port = getRandomAvailableTCPPort();
       server2.invoke(() -> createCache(locators));
-      server2.invoke(() -> addCacheServer());
+      server2.invoke(addCacheServer(server2Port));
       server2.invoke(() -> createGatewaySender(senderId, distributedSystem, messageSyncInterval));
       server2.invoke(() -> createGatewayReceiver());
       server2.invoke(() -> createPartitionedRegion(regionName, senderId));
@@ -207,7 +216,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     // Verify remote site received events
     int remoteServer1EventsReceived = remoteServer1.invoke(() -> getEventsReceived(regionName));
     int remoteServer2EventsReceived = remoteServer2.invoke(() -> getEventsReceived(regionName));
-    assertEquals(numPuts, remoteServer1EventsReceived + remoteServer2EventsReceived);
+    assertThat(remoteServer1EventsReceived + remoteServer2EventsReceived).isEqualTo(numPuts);
 
     // Clear events received in both sites
     localServer1.invoke(() -> clearEventsReceived(regionName));
@@ -221,7 +230,9 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     // Verify the secondary events still exist
     int localServer1QueueSize = localServer1.invoke(() -> getQueueRegionSize(senderId, false));
     int localServer2QueueSize = localServer2.invoke(() -> getQueueRegionSize(senderId, false));
-    assertEquals(numPuts, localServer1QueueSize + localServer2QueueSize);
+    // The actual number of events in the queues can be greater than the number of puts in the case
+    // of a client timeout / failover
+    assertThat(localServer1QueueSize + localServer2QueueSize).isGreaterThanOrEqualTo(numPuts);
 
     // Stop one sender
     localServer1.invoke(() -> closeCache());
@@ -233,7 +244,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     // all members, so there should be 0 events received on the remote site.
     int remoteServer1EventsReceived = remoteServer1.invoke(() -> getEventsReceived(regionName));
     int remoteServer2EventsReceived = remoteServer2.invoke(() -> getEventsReceived(regionName));
-    assertEquals(0, remoteServer1EventsReceived + remoteServer2EventsReceived);
+    assertThat(remoteServer1EventsReceived + remoteServer2EventsReceived).isEqualTo(0);
   }
 
   String getCreateGatewaySenderCommand(String id, int remoteDsId) {
@@ -259,11 +270,15 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     getCache(props);
   }
 
-  private void addCacheServer() throws Exception {
-    CacheServer server = getCache().addCacheServer();
-    int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    server.setPort(port);
-    server.start();
+  private SerializableRunnable addCacheServer(int port) {
+    return new SerializableRunnable() {
+      @Override
+      public void run() throws Exception {
+        CacheServer server = getCache().addCacheServer();
+        server.setPort(port);
+        server.start();
+      }
+    };
   }
 
   protected void startClient(String hostName, int locatorPort, String regionName) {

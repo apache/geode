@@ -556,10 +556,12 @@ public abstract class PartitionMessage extends DistributionMessage
       this.processorId = in.readInt();
       ReplyProcessor21.setMessageRPId(this.processorId);
     }
-    if ((s & NOTIFICATION_ONLY) != 0)
+    if ((s & NOTIFICATION_ONLY) != 0) {
       this.notificationOnly = true;
-    if ((s & HAS_TX_ID) != 0)
+    }
+    if ((s & HAS_TX_ID) != 0) {
       this.txUniqId = in.readInt();
+    }
     if ((s & HAS_TX_MEMBERID) != 0) {
       this.txMemberId = context.getDeserializer().readObject(in);
     }
@@ -577,12 +579,15 @@ public abstract class PartitionMessage extends DistributionMessage
     short compressedShort = 0;
     compressedShort = computeCompressedShort(compressedShort);
     out.writeShort(compressedShort);
-    if (this.processorId != 0)
+    if (this.processorId != 0) {
       out.writeInt(this.processorId);
-    if (this.txUniqId != TXManagerImpl.NOTX)
+    }
+    if (this.txUniqId != TXManagerImpl.NOTX) {
       out.writeInt(this.txUniqId);
-    if (this.txMemberId != null)
+    }
+    if (this.txMemberId != null) {
       context.getSerializer().writeObject(this.txMemberId, out);
+    }
     out.writeInt(this.regionId);
     // extra field post 9.0
     if (StaticSerialization.getVersionForDataStream(out).isNotOlderThan(KnownVersion.GFE_90)) {
@@ -597,10 +602,12 @@ public abstract class PartitionMessage extends DistributionMessage
    * @return short with appropriate bits set
    */
   protected short computeCompressedShort(short s) {
-    if (this.processorId != 0)
+    if (this.processorId != 0) {
       s |= HAS_PROCESSOR_ID;
-    if (this.notificationOnly)
+    }
+    if (this.notificationOnly) {
       s |= NOTIFICATION_ONLY;
+    }
     if (this.getTXUniqId() != TXManagerImpl.NOTX) {
       s |= HAS_TX_ID;
       if (this.txMemberId != null) {

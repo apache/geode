@@ -25,7 +25,7 @@ Plan and configure your multi-site topology, and configure the regions that will
 
 Before you start, you should understand how to configure membership and communication in peer-to-peer systems using locators. See [Configuring Peer-to-Peer Discovery](../p2p_configuration/setting_up_a_p2p_system.html) and [Configuring Peer Communication](../p2p_configuration/setting_up_peer_communication.html).
 
-WAN deployments increase the messaging demands on a <%=vars.product_name%> system. To avoid hangs related to WAN messaging, always set `conserve-sockets=false` for <%=vars.product_name%> members that participate in a WAN deployment. See [Configuring Sockets in Multi-Site (WAN) Deployments](../../managing/monitor_tune/sockets_and_gateways.html) and [Making Sure You Have Enough Sockets](../../managing/monitor_tune/socket_communication_have_enough_sockets.html).
+WAN deployments increase the messaging demands on a <%=vars.product_name%> system. To avoid hangs related to WAN messaging, always use the default setting of <code class="ph codeph">conserve-sockets=false</code> for <%=vars.product_name%> members that participate in a WAN deployment. See [Configuring Sockets in Multi-Site (WAN) Deployments](../../managing/monitor_tune/sockets_and_gateways.html) and [Making Sure You Have Enough Sockets](../../managing/monitor_tune/socket_communication_have_enough_sockets.html).
 
 ## <a id="setting_up_a_multisite_system__section_86F9FE9D786D407FB438C56E43FC5DB1" class="no-quick-link"></a>Main Steps
 
@@ -310,80 +310,129 @@ As an example, assume the following scenario:
 
 You can then execute the following in gfsh to see the effects of rebalancing:
 
-    gfsh -e "connect --locator=localhost[10331]" -e "list gateways"
-    ...
-    (2) Executing - list gateways
+``` pre
+gfsh -e "connect --locator=localhost[10331]" -e "list gateways"
+...
+(2) Executing - list gateways
 
-    Gateways
+GatewaySender Section
 
-    GatewaySender
+GatewaySender Id |              Member               | Remote Cluster Id |   Type   | Status  | Queued Events | Receiver Location
+---------------- | --------------------------------- | ----------------- | -------- | ------- | ------------- | -----------------
+ln               | mymac(ny-1:88641)<v2>:33491       | 2                 | Parallel | Running | 0             | mymac:5037
+ln               | mymac(ny-2:88705)<v3>:29329       | 2                 | Parallel | Running | 0             | mymac:5064
+ln               | mymac(ny-3:88715)<v4>:36808       | 2                 | Parallel | Running | 0             | mymac:5132
+ln               | mymac(ny-4:88724)<v5>:52993       | 2                 | Parallel | Running | 0             | mymac:5324
 
-    GatewaySender Id |              Member               | Remote Cluster Id |   Type   | Status  | Queued Events | Receiver Location
-    ---------------- | --------------------------------- | ----------------- | -------- | ------- | ------------- | -----------------
-    ln               | boglesbymac(ny-1:88641)<v2>:33491 | 2                 | Parallel | Running | 0             | boglesbymac:5037
-    ln               | boglesbymac(ny-2:88705)<v3>:29329 | 2                 | Parallel | Running | 0             | boglesbymac:5064
-    ln               | boglesbymac(ny-3:88715)<v4>:36808 | 2                 | Parallel | Running | 0             | boglesbymac:5132
-    ln               | boglesbymac(ny-4:88724)<v5>:52993 | 2                 | Parallel | Running | 0             | boglesbymac:5324
+GatewayReceiver Section
 
-    GatewayReceiver
-
-                 Member               | Port | Sender Count | Sender's Connected
-    --------------------------------- | ---- | ------------ | --------------------------------------------------------------------------
-    boglesbymac(ny-1:88641)<v2>:33491 | 5057 | 24           | ["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
-    boglesbymac(ny-2:88705)<v3>:29329 | 5082 | 0            | []
-    boglesbymac(ny-3:88715)<v4>:36808 | 5371 | 0            | []
-    boglesbymac(ny-4:88724)<v5>:52993 | 5247 | 0            | []
-
+             Member               | Port | Sender Count | Senders Connected
+--------------------------------- | ---- | ------------ | --------------------------------------------------------------------------
+mymac(ny-1:88641)<v2>:33491       | 5057 | 24           | ["mymac(ln-1:88651)<v2>:48277","mymac(ln-4:88681)<v5>:42784","mymac(ln-2:88662)<v3>:12796","mymac(ln-3:88672)<v4>:43675"]
+mymac(ny-2:88705)<v3>:29329       | 5082 | 0            | []
+mymac(ny-3:88715)<v4>:36808       | 5371 | 0            | []
+mymac(ny-4:88724)<v5>:52993       | 5247 | 0            | []
+```
 
 Execute the load-balance command:
 
-    gfsh -e "connect --locator=localhost[10441]" -e "load-balance gateway-sender --id=ny"...
+``` pre
+gfsh -e "connect --locator=localhost[10441]" -e "load-balance gateway-sender --id=ny"...
 
-    (2) Executing - load-balance gateway-sender --id=ny
+(2) Executing - load-balance gateway-sender --id=ny
 
-                 Member               | Result | Message
-    --------------------------------- | ------ |--------------------------------------------------------------------------
-    boglesbymac(ln-1:88651)<v2>:48277 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-1:88651)<v2>:48277
-    boglesbymac(ln-4:88681)<v5>:42784 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-4:88681)<v5>:42784
-    boglesbymac(ln-3:88672)<v4>:43675 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-3:88672)<v4>:43675
-    boglesbymac(ln-2:88662)<v3>:12796 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-2:88662)<v3>:12796
+             Member               | Result | Message
+--------------------------------- | ------ |--------------------------------------------------------------------------
+mymac(ln-1:88651)<v2>:48277       | OK     | GatewaySender ny is rebalanced on member mymac(ln-1:88651)<v2>:48277
+mymac(ln-4:88681)<v5>:42784       | OK     | GatewaySender ny is rebalanced on member mymac(ln-4:88681)<v5>:42784
+mymac(ln-3:88672)<v4>:43675       | OK     | GatewaySender ny is rebalanced on member mymac(ln-3:88672)<v4>:43675
+mymac(ln-2:88662)<v3>:12796       | OK     | GatewaySender ny is rebalanced on member mymac(ln-2:88662)<v3>:12796
+```
 
 Listing gateways in ny again shows the connections are spread much better among the receivers.
 
+``` pre
+gfsh -e "connect --locator=localhost[10331]" -e "list gateways"...
 
-    gfsh -e "connect --locator=localhost[10331]" -e "list gateways"...
+(2) Executing - list gateways
 
-    (2) Executing - list gateways
+GatewaySender Section
 
-    Gateways
+GatewaySender Id |              Member               | Remote Cluster Id |  Type    | Status  | Queued Events | Receiver Location
+---------------- | --------------------------------- |  ---------------- | -------- | ------- | ------------- | -----------------
+ln               | mymac(ny-1:88641)<v2>:33491       | 2                 | Parallel | Running | 0             | mymac:5037
+ln               | mymac(ny-2:88705)<v3>:29329       | 2                 | Parallel | Running | 0             | mymac:5064
+ln               | mymac(ny-3:88715)<v4>:36808       | 2                 | Parallel | Running | 0             | mymac:5132
+ln               | mymac(ny-4:88724)<v5>:52993       | 2                 | Parallel | Running | 0             | mymac:5324
 
-    GatewaySender
+GatewayReceiver Section
 
-    GatewaySender Id |              Member               | Remote Cluster Id |  Type    | Status  | Queued Events | Receiver Location
-    ---------------- | --------------------------------- |  ---------------- | -------- | ------- | ------------- | -----------------
-    ln               | boglesbymac(ny-1:88641)<v2>:33491 | 2                 | Parallel | Running | 0             | boglesbymac:5037
-    ln               | boglesbymac(ny-2:88705)<v3>:29329 | 2                 | Parallel | Running | 0             | boglesbymac:5064
-    ln               | boglesbymac(ny-3:88715)<v4>:36808 | 2                 | Parallel | Running | 0             | boglesbymac:5132
-    ln               | boglesbymac(ny-4:88724)<v5>:52993 | 2                 | Parallel | Running | 0             | boglesbymac:5324
-
-    GatewayReceiver
-
-             Member                   | Port | Sender Count | Sender's Connected
-    --------------------------------- | ---- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------
-    boglesbymac(ny-1:88641)<v2>:33491 | 5057 | 9            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675","boglesbymac(ln-2:88662)<v3>:12796"]
-    boglesbymac(ny-2:88705)<v3>:29329 | 5082 | 4            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
-    boglesbymac(ny-3:88715)<v4>:36808 | 5371 | 4            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
-    boglesbymac(ny-4:88724)<v5>:52993 | 5247 | 3            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
-
+         Member                   | Port | Sender Count | Senders Connected
+--------------------------------- | ---- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------
+mymac(ny-1:88641)<v2>:33491       | 5057 | 9            |["mymac(ln-1:88651)<v2>:48277","mymac(ln-4:88681)<v5>:42784","mymac(ln-3:88672)<v4>:43675","mymac(ln-2:88662)<v3>:12796"]
+mymac(ny-2:88705)<v3>:29329       | 5082 | 4            |["mymac(ln-1:88651)<v2>:48277","mymac(ln-4:88681)<v5>:42784","mymac(ln-3:88672)<v4>:43675"]
+mymac(ny-3:88715)<v4>:36808       | 5371 | 4            |["mymac(ln-1:88651)<v2>:48277","mymac(ln-4:88681)<v5>:42784","mymac(ln-3:88672)<v4>:43675"]
+mymac(ny-4:88724)<v5>:52993       | 5247 | 3            |["mymac(ln-1:88651)<v2>:48277","mymac(ln-4:88681)<v5>:42784","mymac(ln-3:88672)<v4>:43675"]
+```
 
 Running the load balance command in site ln again produces even better balance.
 
 ``` pre
-         Member                   | Port | Sender Count | Sender's Connected
+         Member                   | Port | Sender Count | Senders Connected
 --------------------------------- | ---- | ------------ |-------------------------------------------------------------------------------------------------------------------------------------------------
-boglesbymac(ny-1:88641)<v2>:33491 | 5057 | 7            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
-boglesbymac(ny-2:88705)<v3>:29329 | 5082 | 3            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-3:88672)<v4>:43675","boglesbymac(ln-2:88662)<v3>:12796"]
-boglesbymac(ny-3:88715)<v4>:36808 | 5371 | 5            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
-boglesbymac(ny-4:88724)<v5>:52993 | 5247 | 6            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
+mymac(ny-1:88641)<v2>:33491       | 5057 | 7            |["mymac(ln-1:88651)<v2>:48277","mymac(ln-4:88681)<v5>:42784","mymac(ln-2:88662)<v3>:12796","mymac(ln-3:88672)<v4>:43675"]
+mymac(ny-2:88705)<v3>:29329       | 5082 | 3            |["mymac(ln-1:88651)<v2>:48277","mymac(ln-3:88672)<v4>:43675","mymac(ln-2:88662)<v3>:12796"]
+mymac(ny-3:88715)<v4>:36808       | 5371 | 5            |["mymac(ln-1:88651)<v2>:48277","mymac(ln-4:88681)<v5>:42784","mymac(ln-2:88662)<v3>:12796","mymac(ln-3:88672)<v4>:43675"]
+mymac(ny-4:88724)<v5>:52993       | 5247 | 6            |["mymac(ln-1:88651)<v2>:48277","mymac(ln-4:88681)<v5>:42784","mymac(ln-2:88662)<v3>:12796","mymac(ln-3:88672)<v4>:43675"]
 ```
 
+## <a id="setting_up_a_multisite_system_one_ipaddr" class="no-quick-link"></a>Configuring One IP Address and Port to Access All Gateway Receivers in a Site
+
+You may have a WAN deployment in which you do not want to expose the IP address and port of every gateway receiver to other sites, but instead expose just one IP address and port for all gateway receivers. This way, the internal topology of the site is hidden to other sites. This case is quite common in cloud deployments, in which a reverse proxy/load balancer distributes incoming requests to the site (in this case, replication requests) among the available servers (in this case, gateway receivers).
+
+<%=vars.product_name%> supports this configuration by means of a particular use of the `hostname-for-senders`, `start-port` and `end-port` parameters of the gateway receiver.
+
+In order to configure a WAN deployment that hides the gateway receivers behind the same IP address and port,
+
+- All the gateway receivers must have the same value for the `hostname-for-senders` parameter (the hostname or IP address to be used by clients to access them)
+- All gateway receivers must have the same value in the `start-port` and `end-port` parameters (the ports to be used by clients to access them).
+
+The following example shows a deployment in which all gateway receivers of a site are accessed via the "gateway1.mycompany.com" hostname and port "1971"; every gateway receiver in the site must be configured as follows:
+
+``` pre
+gfsh> create gateway-receiver --hostname-for-senders="gateway1.mycompany.com" --start-port=1971 --end-port=1971
+```
+
+The following output shows how the receiver side would look like after this configuration if four gateway receivers were configured:
+
+``` pre
+Cluster-ny gfsh>list gateways
+GatewayReceiver Section
+
+                    Member        | Port | Sender Count | Senders Connected
+----------------------------------| ---- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------
+192.168.1.20(ny1:21901)<v1>:41000 | 1971 | 1            | 192.168.0.13(ln4:22520)<v4>:41005
+192.168.2.20(ny2:22150)<v2>:41000 | 1971 | 2            | 192.168.0.13(ln2:22004)<v2>:41003, 192.168.0.13(ln3:22252)<v3>:41004
+192.168.3.20(ny3:22371)<v3>:41000 | 1971 | 2            | 192.168.0.13(ln3:22252)<v3>:41004, 192.168.0.13(ln2:22004)<v2>:41003
+192.168.4.20(ny4:22615)<v4>:41000 | 1971 | 3            | 192.168.0.13(ln4:22520)<v4>:41005, 192.168.0.13(ln1:21755)<v1>:41002, 192.168.0.13(ln1:21755)<v1>:41002
+```
+
+When the gateway senders on one site are started, they get the information about the gateway receivers of the remote site from the locator(s) running on the remote site. The remote locator provides a list of gateway receivers to send replication events to (one element per gateway receiver running in the site), with all of them listening on the same hostname and port. From the gateway sender's standpoint, it is as if only one gateway receiver is on the other side.
+
+The following output shows the gateways information at the sender side, in which it can be seen that there is only one IP address/hostname and port for the receiver location (gateway1.mycompany.com:1971), while the reality is that there are four gateway receivers on the other side.
+
+``` pre
+Cluster-ln gfsh>list gateways
+GatewaySender Section
+
+GatewaySender Id |                    Member         | Remote Cluster Id |   Type   |        Status         | Queued Events | Receiver Location
+---------------- | ----------------------------------| ----------------- | -------- | --------------------- | ------------- | ---------------------------
+ny               | 192.168.0.13(ln2:22004)<v2>:41003 | 2                 | Parallel | Running and Connected | 0             | gateway1.mycompany.com:1971
+ny               | 192.168.0.13(ln3:22252)<v3>:41004 | 2                 | Parallel | Running and Connected | 0             | gateway1.mycompany.com:1971
+ny               | 192.168.0.13(ln4:22520)<v4>:41005 | 2                 | Parallel | Running and Connected | 0             | gateway1.mycompany.com:1971
+ny               | 192.168.0.13(ln1:21755)<v1>:41002 | 2                 | Parallel | Running and Connected | 0             | gateway1.mycompany.com:1971
+
+```
+
+
+In order for the gateway senders to communicate with the remote gateway receivers, a reverse proxy/load balancer service must be in place in the deployment in order to receive the requests directed to the gateway receivers on the IP address and port configured, and to forward the requests to one of the gateway receivers on the remote site.

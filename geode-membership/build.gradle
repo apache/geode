@@ -20,7 +20,7 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
-    compile(platform(project(':boms:geode-all-bom')))
+    api(platform(project(':boms:geode-all-bom')))
 
     // Geode-common has annotations and other pieces used by geode-logging
     api(project(':geode-common'))
@@ -48,24 +48,22 @@ dependencies {
     testImplementation('org.assertj:assertj-core')
     testImplementation('com.tngtech.archunit:archunit-junit4')
 
-    testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
     integrationTestImplementation(project(':geode-junit'))
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
     integrationTestImplementation('pl.pragmatists:JUnitParams')
 
-    integrationTestRuntime('org.apache.logging.log4j:log4j-core')
+    integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-core')
 
 
     distributedTestImplementation(project(':geode-junit'))
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation('pl.pragmatists:JUnitParams')
 
-    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
-    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }
 
 distributedTest {

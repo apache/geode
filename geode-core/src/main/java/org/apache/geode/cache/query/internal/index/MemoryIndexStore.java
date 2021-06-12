@@ -147,7 +147,9 @@ public class MemoryIndexStore implements IndexStore {
           retry = true;
           continue;
         } else if (regionEntries == null) {
-          internalIndexStats.incNumKeys(1);
+          if (indexKey != IndexManager.NULL && indexKey != QueryService.UNDEFINED) {
+            internalIndexStats.incNumKeys(1);
+          }
           numIndexKeys.incrementAndGet();
         } else if (regionEntries instanceof RegionEntry) {
           IndexElemArray elemArray = new IndexElemArray();
@@ -184,7 +186,11 @@ public class MemoryIndexStore implements IndexStore {
         } else {
           IndexElemArray elemArray = (IndexElemArray) regionEntries;
           synchronized (elemArray) {
-            if (elemArray.size() >= IndexManager.INDEX_ELEMARRAY_THRESHOLD) {
+            int threshold = IndexManager.INDEX_ELEMARRAY_THRESHOLD;
+            if (IndexManager.INDEX_ELEMARRAY_THRESHOLD_FOR_TESTING > 0) {
+              threshold = IndexManager.INDEX_ELEMARRAY_THRESHOLD_FOR_TESTING;
+            }
+            if (elemArray.size() >= threshold) {
               IndexConcurrentHashSet set =
                   new IndexConcurrentHashSet(IndexManager.INDEX_ELEMARRAY_THRESHOLD + 20, 0.75f, 1);
               // Replace first so that we are sure that the set is placed in
@@ -323,8 +329,10 @@ public class MemoryIndexStore implements IndexStore {
             found = regionEntries == entry;
             if (found) {
               if (this.valueToEntriesMap.remove(newKey, regionEntries)) {
+                if (newKey != IndexManager.NULL && newKey != QueryService.UNDEFINED) {
+                  internalIndexStats.incNumKeys(-1);
+                }
                 numIndexKeys.decrementAndGet();
-                internalIndexStats.incNumKeys(-1);
               } else {
                 // is another thread has since done an add and shifted us into a collection
                 retry = true;
@@ -360,8 +368,10 @@ public class MemoryIndexStore implements IndexStore {
               synchronized (entries) {
                 if (entries.isEmpty()) {
                   if (valueToEntriesMap.remove(newKey, entries)) {
+                    if (newKey != IndexManager.NULL && newKey != QueryService.UNDEFINED) {
+                      internalIndexStats.incNumKeys(-1);
+                    }
                     numIndexKeys.decrementAndGet();
-                    internalIndexStats.incNumKeys(-1);
                   }
                 }
               }
@@ -833,7 +843,7 @@ public class MemoryIndexStore implements IndexStore {
     }
   }
 
-  class CachedEntryWrapper {
+  public class CachedEntryWrapper {
 
     private Object key, value;
 

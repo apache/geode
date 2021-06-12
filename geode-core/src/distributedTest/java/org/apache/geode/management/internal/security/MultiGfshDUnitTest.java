@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import java.util.List;
 
@@ -62,8 +61,6 @@ public class MultiGfshDUnitTest {
       while (true) {
         GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, PortType.jmxManager);
         gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "dataRead", "dataRead");
-
-        await();
         gfsh.close();
       }
     });
@@ -87,13 +84,15 @@ public class MultiGfshDUnitTest {
     });
 
 
-    VM vm3 = lsRule.getVM(3);
+    VM vm0 = lsRule.getVM(0);
     IgnoredException
-        .addIgnoredException("java.lang.IllegalArgumentException: Region does not exist: {0}", vm3);
-    IgnoredException.addIgnoredException("java.lang.ClassNotFoundException: myApp.myListener", vm3);
+        .addIgnoredException("java.lang.IllegalArgumentException: Region does not exist: RegionA",
+            vm0);
+    IgnoredException.addIgnoredException("java.lang.ClassNotFoundException: myApp.myListener", vm0);
 
     // set up vm_3 as another gfsh vm, and then connect as "super-user" and try to execute the
     // commands and assert we don't get a NotAuthorized Exception
+    VM vm3 = lsRule.getVM(3);
     AsyncInvocation vm3Invoke = vm3.invokeAsync("run as superUser", () -> {
       GfshCommandRule gfsh = new GfshCommandRule();
       gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "data,cluster", "data,cluster");

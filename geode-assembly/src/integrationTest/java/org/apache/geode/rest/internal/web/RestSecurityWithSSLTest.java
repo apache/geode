@@ -57,7 +57,7 @@ public class RestSecurityWithSSLTest {
       .withProperty(SSL_KEYSTORE_PASSWORD, "password").withProperty(SSL_KEYSTORE_TYPE, "JKS")
       .withProperty(SSL_TRUSTSTORE, KEYSTORE_FILE.getPath())
       .withProperty(SSL_TRUSTSTORE_PASSWORD, "password")
-      .withProperty(SSL_PROTOCOLS, "TLSv1.2,TLSv1.1").withAutoStart();
+      .withProperty(SSL_PROTOCOLS, "TLSv1.2").withAutoStart();
 
   @Test
   public void testRestSecurityWithSSL() {

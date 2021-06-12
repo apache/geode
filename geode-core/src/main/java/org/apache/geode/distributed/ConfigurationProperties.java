@@ -15,6 +15,7 @@
 
 package org.apache.geode.distributed;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 
 /**
@@ -153,11 +154,18 @@ public interface ConfigurationProperties {
    * <U>Description</U>: This property specifies the directory in which the cluster configuration
    * related disk-store and artifacts are stored This property is only applicable to dedicated
    * locators which have "enable-cluster-configuration" set to true.
+   *
+   * Since 1.12, the product does not use this property anymore.
    * </p>
    * <U>Default</U>: ""
    * </p>
    * <U>Since</U>: GemFire 8.1
+   *
+   * @deprecated Since Geode1.14. use import-cluster-configuration and export-cluster-configuration
+   *             to upload/download cluster configuration to/from the cluster.
    */
+
+  @Deprecated
   String CLUSTER_CONFIGURATION_DIR = "cluster-configuration-dir";
 
   /**
@@ -331,7 +339,7 @@ public interface ConfigurationProperties {
    * "false" then every application thread that sends distribution messages to other members of the
    * distributed system will own its own sockets and have exclusive access to them. The length of
    * time a thread can have exclusive access to a socket can be configured with "socket-lease-time".
-   * <U>Default</U>: "true"
+   * <U>Default</U>: "false"
    * </p>
    * <U>Allowed values</U>: true|false
    * </p>
@@ -1914,55 +1922,73 @@ public interface ConfigurationProperties {
    */
   String OFF_HEAP_MEMORY_SIZE = "off-heap-memory-size";
   /**
-   * The static String definition of the <i>"redis-bind-address"</i> property <a
-   * name="redis-bind-address"/a>
+   * The static String definition of the <i>"compatible-with-redis-bind-address"</i> property <a
+   * name="compatible-with-redis-bind-address"/a>
    * </p>
-   * <U>Description</U>: Specifies the address on which the Redis API for Geode is listening. If set
-   * to the empty string or this property is not specified, the server listens on all local
-   * addresses.
+   * <U>Description</U>: Specifies the address on which Geode APIs compatible with Redis are
+   * listening. If set to the empty string or this property is not specified, the server listens on
+   * all local addresses.
    * </p>
    * <U>Default</U>: ""
+   *
+   * <p>
+   * Experimental: Geode API compatible with Redis is subject to change in future releases
+   * <p/>
    */
-  String REDIS_BIND_ADDRESS = "redis-bind-address";
+
+  @Experimental
+  String REDIS_BIND_ADDRESS = "compatible-with-redis-bind-address";
   /**
-   * The static String definition of the <i>"redis-enabled"</i> property <a
-   * name="redis-enabled"/a>
+   * The static String definition of the <i>"compatible-with-redis-enabled"</i> property <a
+   * name="compatible-with-redis-enabled"/a>
    * </p>
-   * <U>Description</U>: When the default value of false, the Redis API for Geode is not available.
-   * Set to true to enable the Redis API for Geode.</td>
+   * <U>Description</U>: When the default value of false, the Geode APIs compatible with Redis are
+   * not available.
+   * Set to true to enable the Geode APIs compatible with Redis.</td>
    * </p>
    * <U>Default</U>: false
-   * <td>redis-enabled</td>
-   * <td>When the default value of false, the Redis API for <%=vars.product_name%> is not available.
-   * Set
-   * to true to enable the Redis API for <%=vars.product_name%>.</td>
-   * <td>S</td>
-   * <td>false</td>
-   * </tr>
+   * When the default value of false, the Geode APIs compatible with Redis are not available.
+   * Set to true to enable the Geode APIs compatible with Redis.
    * </p>
+   *
+   * <p>
+   * Experimental: Geode API compatible with Redis is subject to change in future releases
+   * <p/>
    */
-  String REDIS_ENABLED = "redis-enabled";
+  @Experimental
+  String REDIS_ENABLED = "compatible-with-redis-enabled";
   /**
-   * The static String definition of the <i>"redis-password"</i> property <a
-   * name="redis-password"/a>
+   * The static String definition of the <i>"compatible-with-redis-password"</i> property <a
+   * name="compatible-with-redis-password"/a>
    * </p>
    * <U>Description</U>: Specifies the password that the server uses when a client attempts to
    * authenticate.
    * </p>
    * <U>Default</U>: no password set
+   *
+   * <p>
+   * Experimental: Geode API compatible with Redis is subject to change in future releases
+   * <p/>
    */
-  String REDIS_PASSWORD = "redis-password";
+  @Experimental
+  String REDIS_PASSWORD = "compatible-with-redis-password";
   /**
-   * The static String definition of the <i>"redis-port"</i> property <a name="redis-port"/a>
+   * The static String definition of the <i>"compatible-with-redis-port"</i> property <a
+   * name="compatible-with-redis-port"/a>
    * </p>
-   * <U>Description</U>: Specifies the port on which the server listens for Redis API for Geode
-   * connections. A value of 0 selects a random port.</td>
+   * <U>Description</U>: Specifies the port on which the server listens for connections from Geode
+   * APIs compatible with Redis. A value of 0 selects a random port.</td>
    * </p>
    * <U>Default</U>: 6379
    * </p>
    * <U>Allowed values</U>: 0..65535
+   *
+   * <p>
+   * Experimental: Geode API compatible with Redis is subject to change in future releases
+   * <p/>
    */
-  String REDIS_PORT = "redis-port";
+  @Experimental
+  String REDIS_PORT = "compatible-with-redis-port";
   /**
    * The static String definition of the <i>"lock-memory"</i> property <a name="lock-memory"/a>
    * </p>

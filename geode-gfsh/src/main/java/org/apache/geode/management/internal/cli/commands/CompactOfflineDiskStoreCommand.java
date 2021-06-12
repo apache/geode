@@ -100,12 +100,13 @@ public class CompactOfflineDiskStoreCommand extends GfshCommand {
       procBuilder.redirectErrorStream(true);
       compactorProcess = procBuilder.start();
 
-      InputStream inputStream = compactorProcess.getInputStream();
-      BufferedReader inputReader = new BufferedReader(new InputStreamReader(inputStream));
-
       String line;
-      while ((line = inputReader.readLine()) != null) {
-        infoResult.addLine(line);
+      try (InputStream inputStream = compactorProcess.getInputStream();
+          InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+          BufferedReader inputReader = new BufferedReader(inputStreamReader)) {
+        while ((line = inputReader.readLine()) != null) {
+          infoResult.addLine(line);
+        }
       }
 
       compactorProcess.waitFor(2, TimeUnit.SECONDS);

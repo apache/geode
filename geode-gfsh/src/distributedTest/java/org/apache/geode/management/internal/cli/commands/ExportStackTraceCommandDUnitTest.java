@@ -23,18 +23,20 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-
-
+@RunWith(JUnitParamsRunner.class)
 public class ExportStackTraceCommandDUnitTest {
 
   @ClassRule
@@ -67,8 +69,9 @@ public class ExportStackTraceCommandDUnitTest {
   }
 
   @Test
-  public void exportStackTrace_on_one_member() {
-    gfsh.executeAndAssertThat("export stack-traces --member=server-1").statusIsSuccess()
+  @Parameters({"server-1", "locator-0"})
+  public void exportStackTrace_on_one_member(String memberName) {
+    gfsh.executeAndAssertThat("export stack-traces --member=" + memberName).statusIsSuccess()
         .containsOutput("stack-trace(s) exported to file").containsOutput("On host : ");
     File[] files = locator.getWorkingDir().listFiles(x -> x.getName().startsWith("stacktrace_"));
     assertThat(files.length).isEqualTo(1);

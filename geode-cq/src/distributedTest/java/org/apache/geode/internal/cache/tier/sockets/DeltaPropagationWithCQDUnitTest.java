@@ -19,6 +19,7 @@ import static java.lang.System.out;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -51,7 +52,6 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CqListenerAdapter;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -251,7 +251,7 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
         ((Cache) cache).createRegionFactory(RegionShortcut.REPLICATE);
     rf.create(regionName);
     CacheServer server = ((Cache) cache).addCacheServer();
-    server.setPort(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
+    server.setPort(getRandomAvailableTCPPort());
     server.start();
     return server.getPort();
   }

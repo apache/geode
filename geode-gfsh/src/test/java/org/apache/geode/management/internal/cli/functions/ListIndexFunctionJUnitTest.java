@@ -48,8 +48,6 @@ import org.apache.geode.management.internal.cli.domain.IndexDetails.IndexStatist
 /**
  * The ListIndexFunctionJUnitTest class is test suite of test cases testing the contract and
  * functionality of the ListIndexFunction GemFire function.
- * </p>
- * </p>
  *
  * @see org.apache.geode.management.internal.cli.functions.ListIndexFunction
  * @see org.junit.Test

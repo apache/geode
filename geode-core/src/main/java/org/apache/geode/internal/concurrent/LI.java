@@ -67,20 +67,26 @@ public class LI implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (!(obj instanceof LI))
+    }
+    if (!(obj instanceof LI)) {
       return false;
+    }
     LI other = (LI) obj;
     if (className == null) {
-      if (other.className != null)
+      if (other.className != null) {
         return false;
-    } else if (!className.equals(other.className))
+      }
+    } else if (!className.equals(other.className)) {
       return false;
-    if (identityHashCode != other.identityHashCode)
+    }
+    if (identityHashCode != other.identityHashCode) {
       return false;
+    }
     return true;
   }
 

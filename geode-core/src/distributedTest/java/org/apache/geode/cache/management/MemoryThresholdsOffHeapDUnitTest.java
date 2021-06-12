@@ -125,10 +125,10 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     @Override
     public Object call() throws Exception {
       InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
-      Set<ResourceListener> listeners = irm.getResourceListeners(ResourceType.OFFHEAP_MEMORY);
-      Iterator<ResourceListener> it = listeners.iterator();
+      Set<ResourceListener<?>> listeners = irm.getResourceListeners(ResourceType.OFFHEAP_MEMORY);
+      Iterator<ResourceListener<?>> it = listeners.iterator();
       while (it.hasNext()) {
-        ResourceListener<MemoryEvent> l = it.next();
+        ResourceListener<?> l = it.next();
         if (l instanceof TestMemoryThresholdListener) {
           ((TestMemoryThresholdListener) l).resetThresholdCalls();
         }
@@ -866,16 +866,19 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
               if (hasCriticalOwners) {
                 keyFoundOnSickMember = true;
                 try {
-                  if (useTx)
+                  if (useTx) {
                     getCache().getCacheTransactionManager().begin();
+                  }
                   pr.getCache().getLogger().fine("SWAP:putting in tx:" + useTx);
                   pr.put(key, "value");
-                  if (useTx)
+                  if (useTx) {
                     getCache().getCacheTransactionManager().commit();
+                  }
                 } catch (LowMemoryException ex) {
                   caughtException = true;
-                  if (useTx)
+                  if (useTx) {
                     getCache().getCacheTransactionManager().rollback();
+                  }
                 }
               } else {
                 // puts on healthy member should continue
@@ -1557,8 +1560,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
             @Override
             public boolean done() {
-              if (!ohm.getState().isCritical())
+              if (!ohm.getState().isCritical()) {
                 return false;
+              }
               // Only done once the bucket has been marked sick
               try {
                 pr.getRegionAdvisor().checkIfBucketSick(bucketId, bigKey);
@@ -1803,12 +1807,12 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         WaitCriterion wc = null;
-        Set<ResourceListener> listeners = getGemfireCache().getInternalResourceManager()
+        Set<ResourceListener<?>> listeners = getGemfireCache().getInternalResourceManager()
             .getResourceListeners(ResourceType.OFFHEAP_MEMORY);
         TestMemoryThresholdListener tmp_listener = null;
-        Iterator<ResourceListener> it = listeners.iterator();
+        Iterator<ResourceListener<?>> it = listeners.iterator();
         while (it.hasNext()) {
-          ResourceListener<MemoryEvent> l = it.next();
+          ResourceListener<?> l = it.next();
           if (l instanceof TestMemoryThresholdListener) {
             tmp_listener = (TestMemoryThresholdListener) l;
             break;

@@ -676,8 +676,9 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private void startThreads() {
     system.setDM(this); // fix for bug 33362
-    if (memberEventThread != null)
+    if (memberEventThread != null) {
       memberEventThread.start();
+    }
     try {
 
       // And the distinguished guests today are...
@@ -727,8 +728,9 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   private void waitUntilReadyForMessages() {
-    if (readyForMessages)
+    if (readyForMessages) {
       return;
+    }
     synchronized (this) {
       while (!readyForMessages) {
         stopper.checkCancelInProgress(null);
@@ -1171,8 +1173,9 @@ public class ClusterDistributionManager implements DistributionManager {
     executors.askThreadsToStop();
 
     Thread th = memberEventThread;
-    if (th != null)
+    if (th != null) {
       th.interrupt();
+    }
   }
 
   private void waitForThreadsToStop(long timeInMillis) throws InterruptedException {
@@ -1196,8 +1199,9 @@ public class ClusterDistributionManager implements DistributionManager {
    * @param t the thread to kill
    */
   private void clobberThread(Thread t) {
-    if (t == null)
+    if (t == null) {
       return;
+    }
     if (t.isAlive()) {
       logger.warn("Forcing thread stop on < {} >", t);
 
@@ -1573,8 +1577,9 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private boolean sendStartupMessage(StartupOperation startupOperation)
       throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     receivedStartupResponse = false;
     boolean ok;
 
@@ -1640,10 +1645,11 @@ public class ClusterDistributionManager implements DistributionManager {
       int unresponsiveCount;
 
       synchronized (unfinishedStartupsLock) {
-        if (unfinishedStartups == null)
+        if (unfinishedStartups == null) {
           unresponsiveCount = 0;
-        else
+        } else {
           unresponsiveCount = unfinishedStartups.size();
+        }
 
         if (unresponsiveCount != 0) {
           if (Boolean.getBoolean("DistributionManager.requireAllStartupResponses")) {
@@ -1664,8 +1670,9 @@ public class ClusterDistributionManager implements DistributionManager {
           while (itt.hasNext()) {
             Object m = itt.next();
             sb.append(m.toString());
-            if (itt.hasNext())
+            if (itt.hasNext()) {
               sb.append(", ");
+            }
           }
           if (DEBUG_NO_ACKNOWLEDGEMENTS) {
             printStacks(allOthers, false);
@@ -1681,10 +1688,11 @@ public class ClusterDistributionManager implements DistributionManager {
       if (e != null) { // an elder exists
         boolean unresponsiveElder;
         synchronized (unfinishedStartupsLock) {
-          if (unfinishedStartups == null)
+          if (unfinishedStartups == null) {
             unresponsiveElder = false;
-          else
+          } else {
             unresponsiveElder = unfinishedStartups.contains(e);
+          }
         }
         if (unresponsiveElder) {
           logger.warn(
@@ -1736,10 +1744,12 @@ public class ClusterDistributionManager implements DistributionManager {
       if (logger.isDebugEnabled()) {
         logger.debug("removeUnfinishedStartup for {} wtih {}", m, unfinishedStartups);
       }
-      if (unfinishedStartups == null)
+      if (unfinishedStartups == null) {
         return; // not yet done with startup
-      if (!unfinishedStartups.remove(m))
+      }
+      if (!unfinishedStartups.remove(m)) {
         return;
+      }
       String msg;
       if (departed) {
         msg =
@@ -2045,8 +2055,9 @@ public class ClusterDistributionManager implements DistributionManager {
       throws NotSerializableException {
     if (distribution == null) {
       logger.warn("Attempting a send to a disconnected DistributionManager");
-      if (destinations.size() == 1 && destinations.get(0) == Message.ALL_RECIPIENTS)
+      if (destinations.size() == 1 && destinations.get(0) == Message.ALL_RECIPIENTS) {
         return null;
+      }
       return new HashSet<>(destinations);
     }
 
@@ -2209,6 +2220,11 @@ public class ClusterDistributionManager implements DistributionManager {
     }
   }
 
+  private List<MembershipTestHook> getMembershipTestHooks() {
+    return membershipTestHooks;
+  }
+
+
   @Override
   public Set<InternalDistributedMember> getAdminMemberSet() {
     return distribution.getView().getMembers().stream()
@@ -2283,7 +2299,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * This is the listener implementation for responding from events from the Membership Manager.
    *
    */
-  private class DMListener implements
+  static class DMListener implements
       org.apache.geode.distributed.internal.membership.api.MembershipListener<InternalDistributedMember> {
     ClusterDistributionManager dm;
 
@@ -2293,26 +2309,25 @@ public class ClusterDistributionManager implements DistributionManager {
 
     @Override
     public void membershipFailure(String reason, Throwable t) {
-      exceptionInThreads = true;
-      rootCause = t;
-      if (rootCause != null && !(rootCause instanceof ForcedDisconnectException)) {
-        logger.info("cluster membership failed due to ", rootCause);
-        rootCause = new ForcedDisconnectException(rootCause.getMessage());
+      dm.exceptionInThreads = true;
+      Throwable cause = t;
+      if (cause != null && !(cause instanceof ForcedDisconnectException)) {
+        logger.info("cluster membership failed due to ", cause);
+        cause = new ForcedDisconnectException(cause.getMessage());
       }
+      dm.setRootCause(cause);
       try {
-        if (membershipTestHooks != null) {
-          List<MembershipTestHook> l = membershipTestHooks;
-          for (final MembershipTestHook aL : l) {
-            MembershipTestHook dml = aL;
-            dml.beforeMembershipFailure(reason, rootCause);
+        List<MembershipTestHook> testHooks = dm.getMembershipTestHooks();
+        if (testHooks != null) {
+          for (final MembershipTestHook testHook : testHooks) {
+            testHook.beforeMembershipFailure(reason, cause);
           }
         }
-        getSystem().disconnect(reason, true);
-        if (membershipTestHooks != null) {
-          List<MembershipTestHook> l = membershipTestHooks;
-          for (final MembershipTestHook aL : l) {
-            MembershipTestHook dml = aL;
-            dml.afterMembershipFailure(reason, rootCause);
+        dm.getSystem().disconnect(reason, true);
+        testHooks = dm.getMembershipTestHooks();
+        if (testHooks != null) {
+          for (final MembershipTestHook testHook : testHooks) {
+            testHook.afterMembershipFailure(reason, cause);
           }
         }
       } catch (RuntimeException re) {
@@ -2344,7 +2359,7 @@ public class ClusterDistributionManager implements DistributionManager {
     @Override
     public void memberDeparted(InternalDistributedMember theId, boolean crashed, String reason) {
       try {
-        boolean wasAdmin = getAdminMemberSet().contains(theId);
+        boolean wasAdmin = dm.getAdminMemberSet().contains(theId);
         if (wasAdmin) {
           // Pretend we received an AdminConsoleDisconnectMessage from the console that
           // is no longer in the JavaGroup view.
@@ -2357,9 +2372,9 @@ public class ClusterDistributionManager implements DistributionManager {
           message.setIgnoreAlertListenerRemovalFailure(true); // we don't know if it was a listener
                                                               // so
           // don't issue a warning
-          message.setRecipient(localAddress);
-          message.setReason(reason); // added for #37950
-          handleIncomingDMsg(message);
+          message.setRecipient(dm.getDistributionManagerId());
+          message.setReason(reason);
+          dm.handleIncomingDMsg(message);
         }
         dm.handleManagerDeparture(theId, crashed, reason);
       } catch (DistributedSystemDisconnectedException se) {
@@ -2393,8 +2408,8 @@ public class ClusterDistributionManager implements DistributionManager {
 
     @Override
     public void saveConfig() {
-      if (!getConfig().getDisableAutoReconnect()) {
-        cache.saveCacheXmlForReconnect();
+      if (!dm.getConfig().getDisableAutoReconnect()) {
+        dm.getCache().saveCacheXmlForReconnect();
       }
     }
   }

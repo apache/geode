@@ -152,7 +152,7 @@ public class OAuthSecurityTokenHandoffTest {
     return ClientRegistration
         .withRegistrationId(AUTHENTICATION_PROVIDER_ID)
         .authorizationGrantType(AUTHORIZATION_CODE)
-        .redirectUriTemplate("{baseUrl}/oauth2/code/{registrationId}")
+        .redirectUri("{baseUrl}/oauth2/code/{registrationId}")
         .clientId("client-id")
         .authorizationUri("authorization-uri")
         .tokenUri("token-uri")

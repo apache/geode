@@ -40,7 +40,7 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.pdx.internal.TypeRegistry;
-import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
@@ -114,7 +114,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * }
  * </pre>
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"serial", "unused"})
 public class DistributedRule extends AbstractDistributedRule {
 
   /**
@@ -154,7 +154,11 @@ public class DistributedRule extends AbstractDistributedRule {
   }
 
   public static int getLocatorPort() {
-    return DistributedTestUtils.getLocatorPort();
+    return DUnitEnv.get().getLocatorPort();
+  }
+
+  public static String getLocators() {
+    return "localhost[" + getLocatorPort() + "]";
   }
 
   /**
@@ -201,6 +205,7 @@ public class DistributedRule extends AbstractDistributedRule {
    * <p>
    * Note: {@link CacheRule} handles its own cleanup of Cache and Regions.
    */
+  @SuppressWarnings("serial")
   public static class TearDown extends SerializableExternalResource {
 
     @Override
@@ -213,7 +218,7 @@ public class DistributedRule extends AbstractDistributedRule {
       doTearDown();
     }
 
-    static void doTearDown() {
+    private static void doTearDown() {
       tearDownInVM();
       invokeInEveryVM(() -> {
         tearDownInVM();

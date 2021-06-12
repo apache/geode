@@ -288,8 +288,13 @@ public class MergeLogFiles {
     // Create output stream
     PrintStream ps;
     if (mergeFile != null) {
-      ps = new PrintStream(new FileOutputStream(mergeFile), true);
-
+      FileOutputStream fileOutputStream = new FileOutputStream(mergeFile);
+      try {
+        ps = new PrintStream(fileOutputStream, true);
+      } catch (Exception ex) {
+        fileOutputStream.close();
+        throw ex;
+      }
     } else {
       ps = out;
     }

@@ -31,6 +31,7 @@ def dependentProjectNames = [
   ':geode-common',
   ':geode-connectors',
   ':geode-core',
+  ':geode-unsafe',
   ':geode-cq',
   ':geode-gfsh',
   ':geode-log4j',
@@ -38,10 +39,8 @@ def dependentProjectNames = [
   ':geode-lucene',
   ':geode-memcached',
   ':geode-old-client-support',
-  ':geode-protobuf',
-  ':geode-protobuf-messages',
   ':geode-rebalancer',
-  ':geode-redis',
+  ':geode-apis-compatible-with-redis',
   ':geode-serialization',
   ':geode-tcp-server',
   ':geode-wan'
@@ -56,7 +55,6 @@ def otherDependentProjectNames = [
   ':extensions:geode-modules-tomcat7',
   ':extensions:geode-modules-tomcat8',
   ':extensions:geode-modules-tomcat9',
-  ':geode-experimental-driver',
   ':geode-management',
   ':geode-pulse',
   ':geode-web',
@@ -127,22 +125,20 @@ artifacts {
   compositeTarget distTar
 }
 
-//This "repository" only exists to download tomcat-6, because the zip for tomcat 6 is
-//not in a maven repo. Later versions of tomcat are.
 repositories {
+  //This "repository" only exists to download tomcat-6, because the zip for tomcat 6 is
+  //not in a maven repo. Later versions of tomcat are.
   ivy {
     url 'https://archive.apache.org/'
     patternLayout {
       artifact '/dist/tomcat/tomcat-6/v6.0.37/bin/[organisation]-[module]-[revision].[ext]'
     }
+    // Infer the metadata from the presence of the artifact
+    metadataSources { artifact() }
   }
   // For gradle tooling dependencies
   maven {
     url 'https://repo.gradle.org/gradle/libs-releases'
-  }
-  // docker-compose-rule is published on bintray
-  maven {
-    url 'https://dl.bintray.com/palantir/releases'
   }
 }
 
@@ -163,7 +159,7 @@ task downloadWebServers(type:Copy) {
 }
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
   gfshDependencies(platform(project(':boms:geode-all-bom')))
 
   dependentProjectNames.each {
@@ -180,7 +176,6 @@ dependencies {
   javadocOnly project(':extensions:geode-modules-tomcat7')
   javadocOnly project(':extensions:geode-modules-tomcat9')
   javadocOnly project(':extensions:geode-modules-tomcat8')
-  javadocOnly project(':geode-experimental-driver')
 
   testImplementation(project(':geode-core'))
   testImplementation(project(':geode-gfsh'))
@@ -190,10 +185,10 @@ dependencies {
   testImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-
-  acceptanceTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  testImplementation('org.assertj:assertj-core')
 
   integrationTestImplementation(project(':geode-core'))
+  integrationTestImplementation(project(':geode-membership'))
   integrationTestImplementation(project(':geode-gfsh'))
   integrationTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
@@ -217,7 +212,6 @@ dependencies {
   integrationTestImplementation('javax.annotation:javax.annotation-api')
   integrationTestImplementation('javax.servlet:javax.servlet-api')
 
-  integrationTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
   integrationTestRuntimeOnly('io.swagger:swagger-annotations')
   // these two modules are for testing only
@@ -250,7 +244,8 @@ dependencies {
   distributedTestRuntimeOnly(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }
-  distributedTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')
+  distributedTestImplementation('org.codehaus.cargo:cargo-core-uberjar')
+
   distributedTestRuntimeOnly('io.swagger:swagger-annotations')
   distributedTestRuntimeOnly(project(':geode-wan'))
 
@@ -268,8 +263,7 @@ dependencies {
   // don't have it be the same version as the outer gradle version.
   acceptanceTestImplementation('org.gradle:gradle-tooling-api:5.1.1')
 
-  acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-core')
-  acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-junit4')
+  acceptanceTestImplementation('org.testcontainers:testcontainers')
 
   uiTestImplementation(project(':geode-core'))
   uiTestImplementation(project(':geode-dunit')) {
@@ -294,14 +288,14 @@ dependencies {
   }
   upgradeTestImplementation(project(':geode-assembly:geode-assembly-test'))
 
+  upgradeTestImplementation('org.apache.httpcomponents:httpclient')
+
   upgradeTestCompileOnly(platform(project(':boms:geode-all-bom')))
   upgradeTestCompileOnly('io.swagger:swagger-annotations')
-
-  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
   upgradeTestRuntimeOnly(project(':extensions:session-testing-war'))
   upgradeTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')
-  upgradeTestRuntimeOnly('org.apache.httpcomponents:httpclient')
-  upgradeTestRuntime files({ downloadWebServers } )
+  upgradeTestRuntimeOnly files({ downloadWebServers } )
 
   //Web servers used for session module testing
   webServerTomcat6('apache:tomcat:' + DependencyConstraints.get('tomcat6.version') + '@zip')
@@ -436,7 +430,7 @@ tasks.register('depsJar', Jar) {
     configureDepsJar
   }
   description 'Assembles the jar archive that defines the gemfire classpath.'
-  archiveName 'geode-dependencies.jar'
+  archiveFileName='geode-dependencies.jar'
   doFirst {
     manifest {
       attributes("Class-Path": configureDepsJar.outputs.files.singleFile.text)
@@ -449,7 +443,7 @@ tasks.register('gfshDepsJar', Jar) {
     configureGfshDepsJar
   }
   description 'Assembles the jar archive that defines the gfsh classpath.'
-  archiveName 'gfsh-dependencies.jar'
+  archiveFileName='gfsh-dependencies.jar'
   doFirst {
     manifest {
       attributes("Class-Path": configureGfshDepsJar.outputs.files.singleFile.text)
@@ -460,8 +454,8 @@ tasks.register('gfshDepsJar', Jar) {
 tasks.register('docs', Javadoc) {
   def docsDir = file("$buildDir/javadocs")
   options.addStringOption('Xdoclint:none', '-quiet')
-  options.links("https://lucene.apache.org/core/6_4_1/core/")
-  options.links("https://lucene.apache.org/core/6_4_1/queryparser/")
+  options.links("https://lucene.apache.org/core/6_6_6/core/")
+  options.links("https://lucene.apache.org/core/6_6_6/queryparser/")
   options.links("https://docs.oracle.com/javase/8/docs/api/")
   options.encoding = 'UTF-8'
   title = "${productName} ${project.version}"
@@ -493,7 +487,7 @@ tasks.register('docs', Javadoc) {
 
 distributions {
   src {
-    baseName = 'apache-geode'
+    distributionBaseName = 'apache-geode'
     contents {
       from rootProject.tasks.writeBuildInfo
       from (rootDir) {
@@ -533,7 +527,7 @@ distributions {
     }
   }
   named('main') {
-    baseName = 'apache-geode'
+    distributionBaseName = 'apache-geode'
     contents {
       duplicatesStrategy 'exclude'
       exclude '*.asc'
@@ -590,11 +584,6 @@ distributions {
       }
 
       with copySpec {
-        into('tools/ClientProtocol')
-        from {project(':geode-protobuf-messages').zip.outputs.files}
-      }
-
-      with copySpec {
         into('javadoc')
         from { docs }
       }
@@ -622,7 +611,7 @@ distributions {
  tasks.named('srcDistTar'),
 ]*.configure {
   compression Compression.GZIP
-  extension 'tgz'
+  archiveExtension='tgz'
   build.dependsOn(it)
 }
 // Make build final task to generate all test and product resources
@@ -641,16 +630,14 @@ tasks.named('srcDistTar').configure {
 
 tasks.withType(Test) {
   dependsOn installDist
-  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
+  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.distributionBaseName.get()}"
 }
 
 
 acceptanceTest.dependsOn(rootProject.getTasksByName("publishToMavenLocal", true))
 installDist.dependsOn ':extensions:geode-modules-assembly:dist'
 distributedTest.dependsOn ':extensions:session-testing-war:war'
-distributedTest.dependsOn ':geode-old-versions:build'
 upgradeTest.dependsOn ':extensions:session-testing-war:war'
-upgradeTest.dependsOn ':geode-old-versions:build'
 
 /**Print the names of all jar files in a fileTree */
 def printJars(tree) {

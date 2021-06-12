@@ -20,6 +20,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
@@ -189,7 +190,9 @@ public class ClientServerSessionCache extends AbstractSessionCache {
         sessionRegion.getAttributesMutator().addCacheListener(new SessionExpirationCacheListener());
       }
 
-      sessionRegion.registerInterestForAllKeys(InterestResultPolicy.KEYS);
+      if (sessionRegion.getAttributes().getDataPolicy() != DataPolicy.EMPTY) {
+        sessionRegion.registerInterestForAllKeys(InterestResultPolicy.KEYS);
+      }
     }
   }
 
@@ -224,10 +227,11 @@ public class ClientServerSessionCache extends AbstractSessionCache {
   Region<String, HttpSession> createLocalSessionRegionWithRegisterInterest() {
     Region<String, HttpSession> region = createLocalSessionRegion();
 
-    // register interest are needed for proxy or caching-proxy client:
+    // register interest are needed for caching proxy client:
     // to get updates from server if local cache is enabled;
-    // to get callbacks for listener invocation for proxy client.
-    region.registerInterestForAllKeys(InterestResultPolicy.KEYS);
+    if (region.getAttributes().getDataPolicy() != DataPolicy.EMPTY) {
+      region.registerInterestForAllKeys(InterestResultPolicy.KEYS);
+    }
 
     return region;
   }

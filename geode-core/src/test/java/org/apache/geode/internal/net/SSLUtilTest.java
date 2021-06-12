@@ -16,16 +16,15 @@
 package org.apache.geode.internal.net;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.security.NoSuchAlgorithmException;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
-import org.apache.commons.lang3.JavaVersion;
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.Test;
 
 public class SSLUtilTest {
@@ -76,40 +75,6 @@ public class SSLUtilTest {
   }
 
   @Test
-  public void testAnyAndTLSv1_3() throws NoSuchAlgorithmException {
-    final String[] algorithms = {"any"};
-    final SSLContext sslContextInstance =
-        SSLUtil.findSSLContextForProtocols(algorithms, SSLUtil.getDefaultAlgorithms());
-    if (sslContextInstance.getProtocol().equalsIgnoreCase("tlsv1.3")) {
-      // GEODE-8463: TLSV1.3 is not supported by Geode until Java 11
-      assertThat(SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_11));
-    }
-  }
-
-  @Test
-  public void testTLSv1_3_specified() {
-    final String[] algorithms = {"TLSv1.3"};
-    try {
-      final SSLContext sslContextInstance =
-          SSLUtil.findSSLContextForProtocols(algorithms, SSLUtil.getDefaultAlgorithms());
-      if (sslContextInstance.getProtocol().equalsIgnoreCase("tlsv1.3")) {
-        // GEODE-8463: TLSV1.3 is not supported by Geode until Java 11
-        assertThat(SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_11));
-      }
-    } catch (IllegalStateException e) {
-      assertThat(SystemUtils.isJavaVersionAtMost(JavaVersion.JAVA_10));
-    } catch (NoSuchAlgorithmException e) {
-      // TLSv1.3 is not available in this JVM
-      try {
-        SSLContext context = SSLContext.getInstance("TLSv1.3");
-        fail("Expected TLSv1.3 to not be supported in this JVM but found " + context);
-      } catch (NoSuchAlgorithmException e2) {
-        // expected
-      }
-    }
-  }
-
-  @Test
   public void getARealProtocolAfterProcessingAny() throws Exception {
     final String[] algorithms = {"dream weaver", "any", "TLSv1.2"};
     final String[] algorithmsForAny = new String[] {"sweet dreams (are made of this)"};
@@ -118,4 +83,18 @@ public class SSLUtilTest {
     assertThat(sslContextInstance.getProtocol().equalsIgnoreCase("TLSv1.2")).isTrue();
   }
 
+  @Test
+  public void getDefaultKeyManagerFactory() throws NoSuchAlgorithmException {
+    final KeyManagerFactory keyManagerFactory = SSLUtil.getDefaultKeyManagerFactory();
+    assertThat(keyManagerFactory).isNotNull();
+    assertThat(keyManagerFactory.getAlgorithm()).isEqualTo(KeyManagerFactory.getDefaultAlgorithm());
+  }
+
+  @Test
+  public void getDefaultTrustManagerFactory() throws NoSuchAlgorithmException {
+    final TrustManagerFactory trustManagerFactory = SSLUtil.getDefaultTrustManagerFactory();
+    assertThat(trustManagerFactory).isNotNull();
+    assertThat(trustManagerFactory.getAlgorithm())
+        .isEqualTo(TrustManagerFactory.getDefaultAlgorithm());
+  }
 }

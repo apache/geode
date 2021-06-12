@@ -106,8 +106,10 @@ public class Index extends AbstractConfiguration<IndexInfo> implements RegionSco
   @Override
   public Links getLinks() {
     String regionName = getRegionName();
+    // /indexes/indexName is not implemented in controller anymore. region name is required for the
+    // self link
     if (StringUtils.isBlank(regionName)) {
-      return new Links(getId(), INDEXES);
+      return new Links(null, INDEXES);
     }
     Links links = new Links(getId(), Region.REGION_CONFIG_ENDPOINT + "/" + regionName + INDEXES);
     links.addLink("region", Region.REGION_CONFIG_ENDPOINT + "/" + regionName);

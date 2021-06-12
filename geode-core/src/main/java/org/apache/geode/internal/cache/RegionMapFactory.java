@@ -15,7 +15,7 @@
 
 package org.apache.geode.internal.cache;
 
-
+import org.apache.geode.internal.cache.eviction.EvictionController;
 
 /**
  * Used to produce instances of RegionMap
@@ -39,6 +39,13 @@ class RegionMapFactory {
                                                                        // eviction tests to fail
       return new ProxyRegionMap(owner, attrs, internalRegionArgs);
     } else if (owner.isEntryEvictionPossible()) {
+      if (owner instanceof PartitionedRegion) {
+        PartitionedRegion pr = (PartitionedRegion) owner;
+        EvictionController evctrl = pr.getPREvictionControllerFromDiskInitialization();
+        if (evctrl != null) {
+          return new VMLRURegionMap(owner, attrs, internalRegionArgs, evctrl);
+        }
+      }
       return new VMLRURegionMap(owner, attrs, internalRegionArgs);
     } else {
       return new VMRegionMap(owner, attrs, internalRegionArgs);

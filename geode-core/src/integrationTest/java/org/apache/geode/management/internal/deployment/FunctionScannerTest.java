@@ -18,6 +18,7 @@ import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResourc
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 
 import org.junit.Before;
@@ -40,7 +41,7 @@ public class FunctionScannerTest {
   private File outputJar;
 
   @Before
-  public void setup() {
+  public void setup() throws IOException {
     jarBuilder = new JarBuilder();
     functionScanner = new FunctionScanner();
     outputJar = new File(temporaryFolder.getRoot(), "output.jar");

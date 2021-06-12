@@ -15,6 +15,7 @@
 
 package org.apache.geode.test.dunit.rules.tests;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;
@@ -22,7 +23,6 @@ import org.junit.Test;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -44,7 +44,7 @@ public class MemberStarterRuleIntegrationTest {
 
   @Test
   public void testWithPortOnLocator() {
-    int targetPort = AvailablePort.getRandomAvailablePort(1);
+    int targetPort = getRandomAvailableTCPPort();
     locator = new LocatorStarterRule().withPort(targetPort).withAutoStart();
     locator.before();
 
@@ -59,7 +59,7 @@ public class MemberStarterRuleIntegrationTest {
 
   @Test
   public void testWithPortOnServer() {
-    int targetPort = AvailablePort.getRandomAvailablePort(1);
+    int targetPort = getRandomAvailableTCPPort();
     server = new ServerStarterRule().withPort(targetPort).withAutoStart();
     server.before();
 

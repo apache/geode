@@ -24,15 +24,15 @@
 {% macro plan_resource_gets(test) %}
 - in_parallel:
   - get: geode-ci
-    passed: [PinGeode]
+    passed: [pin-geode]
     params:
       depth: 1
   - get: geode
-    passed: [PinGeode]
+    passed: [pin-geode]
     params:
       depth: 1
   - get: geode-build-version
-    passed: [PinGeode]
+    passed: [pin-geode]
 {% endmacro %}
 
 {%- macro deep_merge(a, b): %}
@@ -60,6 +60,7 @@
 GCP_PROJECT: ((gcp-project))
 CPUS: {{ test.CPUS }}
 RAM: {{ test.RAM }}
+DISK: {{ test.DISK }}
 {%- endmacro %}
 
 {% macro common_test_params(test) -%}
@@ -90,7 +91,7 @@ resources:
   source:
     interval: 168h
     days: [Friday]
-    start: 3PM
+    start: 5PM
     stop: 11PM
     location: America/Los_Angeles
 - name: test-finish-time
@@ -143,6 +144,8 @@ resource_types:
 - name: gci
   type: registry-image
   source:
+    registry_mirror:
+      host: mirror.gcr.io
     repository: smgoller/gci-resource
 - name: concourse-metadata-resource
   type: docker-image
@@ -154,10 +157,12 @@ resource_types:
 - name: gcs-resource
   type: docker-image
   source:
+    registry_mirror:
+      host: mirror.gcr.io
     repository: frodenas/gcs-resource
 
 jobs:
-- name: PinGeode
+- name: pin-geode
   serial: true
   plan:
   - in_parallel:
@@ -171,15 +176,15 @@ jobs:
         depth: 1
     - get: geode-build-version
 
-- name: TriggerMassRun
+- name: trigger-mass-run
   serial: true
   plan:
   - in_parallel:
     - get: weekly
       trigger: true
-      passed: [PinGeode]
+      passed: [pin-geode]
     - get: alpine-tools-image
-  - task: run-distributed-test-N-times
+  - task: run-distributed-test-n-times
     image: alpine-tools-image
     config:
       platform: linux
@@ -201,17 +206,17 @@ jobs:
           TARGET_NAME=concourse
           ./fly -t ${TARGET_NAME} login -c "${CONCOURSE_URL}" -n "${CONCOURSE_TEAM}" -u "${CONCOURSE_USERNAME}" -p "${CONCOURSE_PASSWORD}"
           for t in $(seq ${MASS_RUN_NUMBER}); do
-            ./fly -t ${TARGET_NAME} trigger-job -j ${PIPELINE_PREFIX}mass-test-run/DistributedTestOpenJDK8
+            ./fly -t ${TARGET_NAME} trigger-job -j ${PIPELINE_PREFIX}mass-test-run/distributed-test-openjdk8
           done
 
-{%- for test in tests if test.name=="Distributed" %}
+{%- for test in tests if test.name=="distributed" %}
   {%- set parameters = {} %}
   {%- do deep_merge(parameters, test) %}
-  {%- for java_test_version in (java_test_versions) if java_test_version.name=="OpenJDK8" -%}
+  {%- for java_test_version in (java_test_versions) if java_test_version.name=="openjdk8" -%}
     {%- if java_test_version.override is defined and java_test_version.override[test.name] is defined %}
       {%- do deep_merge(parameters, java_test_version.override[test.name]) %}
     {%- endif %}
-- name: {{test.name}}Test{{java_test_version.name}}
+- name: {{test.name}}-test-{{java_test_version.name}}
   max_in_flight: 10
   public: true
   plan:
@@ -219,7 +224,7 @@ jobs:
     {{- plan_resource_gets(test) |indent(4) }}
       - put: concourse-metadata-resource
       - get: alpine-tools-image
-        passed: [TriggerMassRun]
+        passed: [trigger-mass-run]
       - get: {{ test.PLATFORM}}-builder-image-family
     - do:
       {{ init_retry()|indent(6) }}
@@ -242,6 +247,8 @@ jobs:
           - name: geode
           - name: attempts-log
             path: old
+          - name: {{ test.PLATFORM }}-builder-image-family
+            path: builder-image
           outputs:
           - name: instance-data-{{java_test_version.name}}
             path: instance-data
@@ -304,7 +311,7 @@ jobs:
                 attempts: 5
               ensure:
                 do:
-                - aggregate:
+                - in_parallel:
                   - task: archive_results-{{java_test_version.name}}
                     image: alpine-tools-image
                     config:
@@ -344,11 +351,11 @@ jobs:
   plan:
   - in_parallel:
     - get: geode
-      passed: [{{test.name}}Test{{java_test_version.name}}]
+      passed: [{{test.name}}-test-{{java_test_version.name}}]
     - get: alpine-tools-image
-      passed: [TriggerMassRun]
+      passed: [trigger-mass-run]
     - get: test-finish-time
-      passed: [{{test.name}}Test{{java_test_version.name}}]
+      passed: [{{test.name}}-test-{{java_test_version.name}}]
       trigger: true
     - put: concourse-metadata-resource
   - task: poll-for-test-run-completion
@@ -365,13 +372,13 @@ jobs:
           . concourse-metadata-resource/concourse_metadata
           curl -L -k -o fly "((concourse-url))/api/v1/cli?arch=amd64&platform=linux"
           chmod +x fly
-          job="{{test.name}}Test{{java_test_version.name}}"
+          job="{{test.name}}-test-{{java_test_version.name}}"
           ./fly -t cc login \
             --concourse-url=((concourse-url)) \
             --team-name=((concourse-team)) \
             --username=((concourse-username)) \
             --password=((concourse-password))
-          latest_job=$(./fly -t cc builds --job="${BUILD_PIPELINE_NAME}/${job}" --json | jq -r 'max_by(.name | tonumber)')
+          latest_job=$(./fly -t cc builds --job="${BUILD_PIPELINE_NAME}/${job}" --json | jq -r '[.[] | select(.status!="aborted")] | max_by(.name | tonumber)')
           count=$(echo "${latest_job}" | jq -r .name)
           if [ $((${count}%{{metadata.mass_test_run_iterations}})) -ne 0 ]; then
             echo "Only generating report every [{{metadata.mass_test_run_iterations}}] jobs. Exiting."
@@ -421,7 +428,7 @@ jobs:
           . concourse-metadata-resource/concourse_metadata
           curl -L -k -o fly "((concourse-url))/api/v1/cli?arch=amd64&platform=linux"
           chmod +x fly
-          job="{{test.name}}Test{{java_test_version.name}}"
+          job="{{test.name}}-test-{{java_test_version.name}}"
           ./fly -t cc login \
             --concourse-url=((concourse-url)) \
             --team-name=((concourse-team)) \
@@ -436,6 +443,6 @@ jobs:
             --number-of-builds {{metadata.mass_test_run_iterations}} \
             ((concourse-url)) \
             ${BUILD_PIPELINE_NAME} \
-            {{test.name}}Test{{java_test_version.name}}
+            {{test.name}}-test-{{java_test_version.name}}
 {% endfor -%}
 {% endfor -%}

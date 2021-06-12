@@ -29,9 +29,11 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.Delta;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.SerializedCacheValue;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -995,6 +997,60 @@ public class EntryEventImplTest {
     tag.setVersionTimeStamp(timestamp + 1000l);
     e.setVersionTag(tag);
     assertThat(e.getEventTime(timestamp)).isEqualTo(timestamp);
+  }
+
+  @Test
+  public void shouldRecalculateSize_returnsTrue_ifGetForceRecalculateSizeIsTrue_andDELTAS_RECALCULATE_SIZEisTrue() {
+    GemFireCacheImpl.DELTAS_RECALCULATE_SIZE = true;
+    Delta deltaValue = mock(Delta.class);
+    when(deltaValue.getForceRecalculateSize())
+        .thenReturn(true);
+
+    boolean value = EntryEventImpl.shouldRecalculateSize(deltaValue);
+
+    assertThat(value).isTrue();
+  }
+
+  @Test
+  public void shouldRecalculateSize_returnsTrue_ifDELTAS_RECALCULATE_SIZEisTrue_andGetForceRecalculateSizeIsFalse() {
+    GemFireCacheImpl.DELTAS_RECALCULATE_SIZE = true;
+    Delta deltaValue = mock(Delta.class);
+    when(deltaValue.getForceRecalculateSize())
+        .thenReturn(false);
+
+    boolean value = EntryEventImpl.shouldRecalculateSize(deltaValue);
+
+    assertThat(value).isTrue();
+  }
+
+  @Test
+  public void shouldRecalculateSize_returnsTrue_ifGetForceRecalculateSizeIsTrue_andDELTAS_RECALCULATE_SIZEIsFalse() {
+    GemFireCacheImpl.DELTAS_RECALCULATE_SIZE = false;
+    Delta deltaValue = mock(Delta.class);
+    when(deltaValue.getForceRecalculateSize())
+        .thenReturn(true);
+
+    boolean value = EntryEventImpl.shouldRecalculateSize(deltaValue);
+
+    assertThat(value).isTrue();
+  }
+
+
+  @Test
+  public void shouldRecalculateSize_returnsFalse_ifBothDELTAS_RECALCULATE_SIZEIsFalse_andGetForceRecalculateSizeIsFalse() {
+    GemFireCacheImpl.DELTAS_RECALCULATE_SIZE = false;
+    Delta deltaValue = mock(Delta.class);
+    when(deltaValue.getForceRecalculateSize())
+        .thenReturn(false);
+
+    boolean value = EntryEventImpl.shouldRecalculateSize(deltaValue);
+
+    assertThat(value).isFalse();
+  }
+
+  @After
+  public void tearDown() {
+    GemFireCacheImpl.DELTAS_RECALCULATE_SIZE = false;
   }
 
   private static class EntryEventImplWithOldValuesDisabled extends EntryEventImpl {

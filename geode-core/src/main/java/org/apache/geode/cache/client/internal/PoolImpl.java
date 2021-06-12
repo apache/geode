@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.net.InetSocketAddress;
@@ -26,7 +27,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -56,6 +56,7 @@ import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.EventID;
@@ -296,8 +297,9 @@ public class PoolImpl implements InternalPool {
    * @since GemFire 6.5
    */
   public boolean isCompatible(Pool p) {
-    if (p == null)
+    if (p == null) {
       return false;
+    }
     return getFreeConnectionTimeout() == p.getFreeConnectionTimeout()
         && getServerConnectionTimeout() == p.getServerConnectionTimeout()
         && getSocketConnectTimeout() == p.getSocketConnectTimeout()
@@ -321,8 +323,9 @@ public class PoolImpl implements InternalPool {
   }
 
   private void start() {
-    if (startDisabled)
+    if (startDisabled) {
       return;
+    }
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
@@ -335,8 +338,8 @@ public class PoolImpl implements InternalPool {
     }
 
     final String timerName = "poolTimer-" + getName() + "-";
-    backgroundProcessor = CoreLoggingExecutors.newScheduledThreadPool(timerName,
-        BACKGROUND_TASK_POOL_SIZE, BACKGROUND_TASK_POOL_KEEP_ALIVE, threadMonitoring);
+    backgroundProcessor = CoreLoggingExecutors.newScheduledThreadPool(BACKGROUND_TASK_POOL_SIZE,
+        BACKGROUND_TASK_POOL_KEEP_ALIVE, MILLISECONDS, timerName, threadMonitoring);
     source.start(this);
     connectionFactory.start(backgroundProcessor);
     endpointManager.addListener(new InstantiatorRecoveryListener(backgroundProcessor, this));
@@ -360,7 +363,7 @@ public class PoolImpl implements InternalPool {
 
     if (statisticInterval > 0 && distributedSystem.getConfig().getStatisticSamplingEnabled()) {
       backgroundProcessor.scheduleWithFixedDelay(new PublishClientStatsTask(), statisticInterval,
-          statisticInterval, TimeUnit.MILLISECONDS);
+          statisticInterval, MILLISECONDS);
     }
     // LOG: changed from config to info
     logger.info("Pool {} started with multiuser-authentication={}",
@@ -600,7 +603,7 @@ public class PoolImpl implements InternalPool {
       try {
         if (backgroundProcessor != null) {
           backgroundProcessor.shutdown();
-          if (!backgroundProcessor.awaitTermination(SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS)) {
+          if (!backgroundProcessor.awaitTermination(SHUTDOWN_TIMEOUT, MILLISECONDS)) {
             logger.warn("Timeout waiting for background tasks to complete.");
           }
         }
@@ -889,7 +892,7 @@ public class PoolImpl implements InternalPool {
   }
 
   @Override
-  public Map<ServerLocation, Endpoint> getEndpointMap() {
+  public Map<ServerLocationAndMemberId, Endpoint> getEndpointMap() {
     return endpointManager.getEndpointMap();
   }
 
@@ -967,10 +970,12 @@ public class PoolImpl implements InternalPool {
    * Test hook that returns the ThreadIdToSequenceIdMap
    */
   public Map getThreadIdToSequenceIdMap() {
-    if (queueManager == null)
+    if (queueManager == null) {
       return Collections.emptyMap();
-    if (queueManager.getState() == null)
+    }
+    if (queueManager.getState() == null) {
       return Collections.emptyMap();
+    }
     return queueManager.getState().getThreadIdToSequenceIdMap();
   }
 
@@ -1169,8 +1174,8 @@ public class PoolImpl implements InternalPool {
   /**
    * Returns a list of ServerLocation instances; one for each server we are currently connected to.
    */
-  public List<ServerLocation> getCurrentServers() {
-    Map<ServerLocation, Endpoint> endpointMap = endpointManager.getEndpointMap();
+  public List<ServerLocationAndMemberId> getCurrentServers() {
+    Map<ServerLocationAndMemberId, Endpoint> endpointMap = endpointManager.getEndpointMap();
     return new ArrayList<>(endpointMap.keySet());
   }
 
@@ -1179,10 +1184,10 @@ public class PoolImpl implements InternalPool {
    * connected to.
    */
   public List<String> getCurrentServerNames() {
-    List<ServerLocation> servers = getCurrentServers();
+    List<ServerLocationAndMemberId> servers = getCurrentServers();
     ArrayList<String> result = new ArrayList<>(servers.size());
-    for (ServerLocation sl : servers) {
-      String name = sl.getHostName() + sl.getPort();
+    for (ServerLocationAndMemberId sl : servers) {
+      String name = sl.getServerLocation().getHostName() + sl.getServerLocation().getPort();
       result.add(name);
     }
     return result;
@@ -1218,7 +1223,7 @@ public class PoolImpl implements InternalPool {
       // do nothing.
     }
 
-    Map<ServerLocation, Endpoint> endpoints = endpointManager.getEndpointMap();
+    Map<ServerLocationAndMemberId, Endpoint> endpoints = endpointManager.getEndpointMap();
     for (Endpoint endpoint : endpoints.values()) {
       logger.debug("PoolImpl Simulating crash of endpoint {}", endpoint);
       endpointManager.serverCrashed(endpoint);

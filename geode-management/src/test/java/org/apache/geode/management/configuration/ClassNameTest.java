@@ -103,13 +103,13 @@ public class ClassNameTest {
     properties.put("key1", "value1");
     ClassName className = new ClassName("abc", properties);
     ClassName className1 = new ClassName("abc", mapper.writeValueAsString(properties));
-    assertThat(className).isEqualToComparingFieldByField(className1);
+    assertThat(className).usingRecursiveComparison().isEqualTo(className1);
     String json = mapper.writeValueAsString(className);
     String json1 = mapper.writeValueAsString(className1);
     assertThat(json).isEqualTo(json1);
 
     ClassName className2 = mapper.readValue(json, ClassName.class);
-    assertThat(className2).isEqualToComparingFieldByField(className);
+    assertThat(className2).usingRecursiveComparison().isEqualTo(className);
   }
 
   @Test

@@ -27,7 +27,9 @@ public interface ThreadsMonitoring {
     SerialQueuedExecutor,
     OneTaskOnlyExecutor,
     ScheduledThreadExecutor,
-    AGSExecutor
+    AGSExecutor,
+    P2PReaderExecutor,
+    ServerConnectionExecutor
   };
 
   Map<Long, AbstractExecutor> getMonitorMap();
@@ -38,17 +40,44 @@ public interface ThreadsMonitoring {
   void close();
 
   /**
-   * Starting to monitor a new executor object.
+   * Start monitoring the calling thread.
    *
-   * @param mode the object executor group.
+   * @param mode describes the group the calling thread should be associated with.
    * @return true - if succeeded , false - if failed.
    */
   public boolean startMonitor(Mode mode);
 
   /**
-   * Ending the monitoring of an executor object.
+   * Stops monitoring the calling thread if it is currently being monitored.
    */
   public void endMonitor();
+
+  /**
+   * Creates a new executor that is associated with the calling thread.
+   * Callers need to pass the returned executor to {@link #register(AbstractExecutor)}
+   * for this executor to be monitored.
+   *
+   * @param mode describes the group the calling thread should be associated with.
+   * @return the created {@link AbstractExecutor} instance.
+   */
+  public AbstractExecutor createAbstractExecutor(Mode mode);
+
+  /**
+   * Call to cause this thread monitor to start monitoring
+   * the given executor.
+   *
+   * @param executor the executor to monitor.
+   * @return true - if succeeded , false - if failed.
+   */
+  public boolean register(AbstractExecutor executor);
+
+  /**
+   * Call to cause this thread monitor to stop monitoring
+   * the given executor.
+   *
+   * @param executor the executor to stop monitoring.
+   */
+  public void unregister(AbstractExecutor executor);
 
   /**
    * A long-running thread that may appear stuck should periodically update its "alive"

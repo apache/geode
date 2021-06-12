@@ -35,13 +35,13 @@ Before you begin, you should understand <%=vars.product_name%> [Basic Configurat
 
 1.  Work with your system designers and developers to plan for anticipated disk storage requirements in your testing and production caching systems. Take into account space and functional requirements.
     -   For efficiency, separate data that is only overflowed in separate disk stores from data that is persisted or persisted and overflowed. Regions can be overflowed, persisted, or both. Server subscription queues are only overflowed.
-    -   When calculating your disk requirements, figure in your data modification patterns and your compaction strategy. <%=vars.product_name%> creates each oplog file at the max-oplog-size, which defaults to 1 GB. Obsolete operations are only removed from the oplogs during compaction, so you need enough space to store all operations that are done between compactions. For regions where you are doing a mix of updates and deletes, if you use automatic compaction, a good upper bound for the required disk space is
+    -   When calculating your disk requirements, figure in your data modification patterns and your compaction strategy. <%=vars.product_name%> creates each oplog file at the max-oplog-size, which defaults to 1 GB. Obsolete operations are removed from the oplogs only during compaction, so you need enough space to store all operations that are done between compactions. For regions where you are doing a mix of updates and deletes, if you use automatic compaction, a good upper bound for the required disk space is
 
         ``` pre
-        (1 / (1 - (compaction_threshold/100)) ) * data size
+        (1 / (compaction_threshold/100) ) * data size
         ```
 
-        where data size is the total size of all the data you store in the disk store. So, for the default compaction-threshold of 50, the disk space is roughly twice your data size. Note that the compaction thread could lag behind other operations, causing disk use to rise above the threshold temporarily. If you disable automatic compaction, the amount of disk required depends on how many obsolete operations accumulate between manual compactions.
+        where data size is the total size of all the data you store in the disk store. So, for the default compaction-threshold of 50, the disk space is roughly twice your data size. Note that the compaction thread could lag behind other operations, causing disk use to rise temporarily above the upper bound. If you disable automatic compaction, the amount of disk required depends on how many obsolete operations accumulate between manual compactions.
 
 2.  Work with your host system administrators to determine where to place your disk store directories, based on your anticipated disk storage requirements and the available disks on your host systems.
     -   Make sure the new storage does not interfere with other processes that use disk on your systems. If possible, store your files to disks that are not used by other processes, including virtual memory or swap space. If you have multiple disks available, for the best performance, place one directory on each disk.

@@ -157,6 +157,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   public static boolean ALLOW_PERSISTENT_TRANSACTIONS =
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "ALLOW_PERSISTENT_TRANSACTIONS");
 
+  @MutableForTesting
+  static int INITIAL_UNIQUE_ID_VALUE = 0;
+
   /**
    * this keeps track of all the transactions that were initiated locally.
    */
@@ -193,7 +196,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     this.cache = cache;
     this.dm = ((InternalDistributedSystem) cache.getDistributedSystem()).getDistributionManager();
     this.distributionMgrId = this.dm.getDistributionManagerId();
-    this.uniqId = new AtomicInteger(0);
+    this.uniqId = new AtomicInteger(INITIAL_UNIQUE_ID_VALUE);
     this.cachePerfStats = cachePerfStats;
     this.hostedTXStates = new HashMap<>();
     this.txContext = new ThreadLocal<>();
@@ -332,6 +335,17 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   /**
+   * Get a new {@link TXId}.
+   * This method builds a new {@link TXId} with uniqueID incremented by one.
+   * Special case: If uniqueID has reached Integer.MAX_VALUE, then it is not incremented,
+   * but set to one. This is done to prevent memory overflow of uniqueID to Integer.MIN_VALUE.
+   */
+  private TXId getNewTXId() {
+    return new TXId(this.distributionMgrId,
+        this.uniqId.updateAndGet(i -> i == Integer.MAX_VALUE ? 1 : i + 1));
+  }
+
+  /**
    * Build a new {@link TXId}, use it as part of the transaction state and associate with the
    * current thread using a {@link ThreadLocal}.
    */
@@ -353,7 +367,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
             "Current thread has paused its transaction so it can not start a new transaction");
       }
     }
-    TXId id = new TXId(this.distributionMgrId, this.uniqId.incrementAndGet());
+    TXId id = getNewTXId();
     TXStateProxyImpl proxy = null;
     if (isDistributed()) {
       proxy = new DistTXStateProxyImplOnCoordinator(cache, this, id, null, statisticsClock);
@@ -375,7 +389,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   public TXStateProxy beginJTA() {
     checkClosed();
-    TXId id = new TXId(this.distributionMgrId, this.uniqId.incrementAndGet());
+    TXId id = getNewTXId();
     TXStateProxy newState = null;
 
     if (isDistributed()) {
@@ -512,17 +526,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       }
     }
   }
-
-  /**
-   * prepare for transaction replay by assigning a new tx id to the current proxy
-   */
-  private void _incrementTXUniqueIDForReplay() {
-    TXStateProxyImpl tx = (TXStateProxyImpl) getTXState();
-    assert tx != null : "expected a transaction to be in progress";
-    TXId id = new TXId(this.distributionMgrId, this.uniqId.incrementAndGet());
-    tx.setTXIDForReplay(id);
-  }
-
 
   /**
    * Roll back the transaction associated with the current thread. When this method completes, the
@@ -866,12 +869,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       return null;
     }
     return currentInstance.getTXState();
-  }
-
-  public static void incrementTXUniqueIDForReplay() {
-    if (currentInstance != null) {
-      currentInstance._incrementTXUniqueIDForReplay();
-    }
   }
 
   public int getMyTXUniqueId() {
@@ -1849,14 +1846,16 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     if (timeout <= 0) {
       removeTransactionsSentFromDepartedProxy(proxyServer);
     } else {
-      if (departedProxyServers != null)
+      if (departedProxyServers != null) {
         departedProxyServers.add(proxyServer);
+      }
       SystemTimerTask task = new SystemTimerTask() {
         @Override
         public void run2() {
           removeTransactionsSentFromDepartedProxy(proxyServer);
-          if (departedProxyServers != null)
+          if (departedProxyServers != null) {
             departedProxyServers.remove(proxyServer);
+          }
         }
       };
       try {
@@ -1867,8 +1866,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         }
         // task not able to be scheduled due to cache is closing,
         // do not set it in the test hook.
-        if (departedProxyServers != null)
+        if (departedProxyServers != null) {
           departedProxyServers.remove(proxyServer);
+        }
       }
     }
   }

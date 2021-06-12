@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.size;
 
+import java.lang.ref.PhantomReference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -22,7 +23,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.size.ObjectTraverser.Visitor;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -229,7 +230,8 @@ public class ObjectGraphSizer {
       // We do want to include the size of the reference itself, but
       // we don't visit the children because they will be GC'd if there is no
       // other reference
-      return !(object instanceof WeakReference) && !(object instanceof SoftReference);
+      return !(object instanceof WeakReference) && !(object instanceof SoftReference)
+          && !(object instanceof PhantomReference);
     }
 
     public long getTotalSize() {

@@ -51,14 +51,17 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
   private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = -4846425364943216425L;
 
-  @Override
-  public boolean isHA() {
-    return false;
-  }
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.RegionAlterFunction";
 
   @Override
   public String getId() {
-    return RegionAlterFunction.class.getName();
+    return ID;
+  }
+
+  @Override
+  public boolean isHA() {
+    return false;
   }
 
   @Override

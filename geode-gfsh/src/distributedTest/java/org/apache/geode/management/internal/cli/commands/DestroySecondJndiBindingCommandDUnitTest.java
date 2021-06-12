@@ -17,18 +17,14 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-import java.util.Properties;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
@@ -50,16 +46,9 @@ public class DestroySecondJndiBindingCommandDUnitTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
   @Before
   public void before() throws Exception {
-    String clusterConfigDir = temporaryFolder.getRoot().getAbsolutePath();
-    Properties properties = new Properties();
-    properties.setProperty(ConfigurationProperties.CLUSTER_CONFIGURATION_DIR, clusterConfigDir);
-
-    locator = cluster.startLocatorVM(0, properties);
+    locator = cluster.startLocatorVM(0);
     server1 = cluster.startServerVM(1, locator.getPort());
     server2 = cluster.startServerVM(2, locator.getPort());
 

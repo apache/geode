@@ -30,14 +30,14 @@ public interface DistributedLockStats {
   /**
    * Returns the number of threads currently waiting for a distributed lock
    */
-  int getLockWaitsInProgress();
+  long getLockWaitsInProgress();
 
   /**
    * Returns the total number of waits for a distributed lock
    */
-  int getLockWaitsCompleted();
+  long getLockWaitsCompleted();
 
-  int getLockWaitsFailed();
+  long getLockWaitsFailed();
 
   /**
    * Returns the total number of nanoseconds spent waiting for a distributed lock.
@@ -57,41 +57,41 @@ public interface DistributedLockStats {
   void endLockWait(long start, boolean success);
 
   // incSerialQueueSize everytime getWaitingQueueHelper add/remove called
-  int getWaitingQueueSize();
+  long getWaitingQueueSize();
 
-  void incWaitingQueueSize(int messages);
+  void incWaitingQueueSize(long messages);
 
   // incSerialQueueSize everytime getSerialQueueHelper add/remove called
-  int getSerialQueueSize();
+  long getSerialQueueSize();
 
-  void incSerialQueueSize(int messages);
+  void incSerialQueueSize(long messages);
 
   // incNumSerialThreads everytime we execute with dlock getSerialExecutor()
-  int getNumSerialThreads();
+  long getNumSerialThreads();
 
-  void incNumSerialThreads(int threads);
+  void incNumSerialThreads(long threads);
 
   // incWaitingThreads for every invoke of getWaitingPoolHelper startJob/endJob
-  int getWaitingThreads();
+  long getWaitingThreads();
 
-  void incWaitingThreads(int threads);
+  void incWaitingThreads(long threads);
 
   // current number of lock services used by this system member
-  int getServices();
+  long getServices();
 
-  void incServices(int val);
+  void incServices(long val);
 
   // current number of lock grantors hosted by this system member
-  int getGrantors();
+  long getGrantors();
 
-  void incGrantors(int val);
+  void incGrantors(long val);
 
   // time spent granting of lock requests to completion
-  int getGrantWaitsInProgress();
+  long getGrantWaitsInProgress();
 
-  int getGrantWaitsCompleted();
+  long getGrantWaitsCompleted();
 
-  int getGrantWaitsFailed();
+  long getGrantWaitsFailed();
 
   long getGrantWaitTime();
 
@@ -114,9 +114,9 @@ public interface DistributedLockStats {
   void endGrantWaitSuspended(long start);
 
   // time spent creating initial grantor for lock service
-  int getCreateGrantorsInProgress();
+  long getCreateGrantorsInProgress();
 
-  int getCreateGrantorsCompleted();
+  long getCreateGrantorsCompleted();
 
   long getCreateGrantorTime();
 
@@ -125,9 +125,9 @@ public interface DistributedLockStats {
   void endCreateGrantor(long start);
 
   // time spent creating each lock service
-  int getServiceCreatesInProgress();
+  long getServiceCreatesInProgress();
 
-  int getServiceCreatesCompleted();
+  long getServiceCreatesCompleted();
 
   long startServiceCreate();
 
@@ -140,11 +140,11 @@ public interface DistributedLockStats {
   long getServiceInitLatchTime();
 
   // time spent waiting for grantor latches to open
-  int getGrantorWaitsInProgress();
+  long getGrantorWaitsInProgress();
 
-  int getGrantorWaitsCompleted();
+  long getGrantorWaitsCompleted();
 
-  int getGrantorWaitsFailed();
+  long getGrantorWaitsFailed();
 
   long getGrantorWaitTime();
 
@@ -162,9 +162,9 @@ public interface DistributedLockStats {
   QueueStatHelper getWaitingQueueHelper();
 
   // time spent by grantor threads
-  int getGrantorThreadsInProgress();
+  long getGrantorThreadsInProgress();
 
-  int getGrantorThreadsCompleted();
+  long getGrantorThreadsCompleted();
 
   long getGrantorThreadTime();
 
@@ -185,16 +185,16 @@ public interface DistributedLockStats {
   void endGrantorThread(long start);
 
   // current number of lock grantors hosted by this system member
-  int getPendingRequests();
+  long getPendingRequests();
 
-  void incPendingRequests(int val);
+  void incPendingRequests(long val);
 
   // acquisition of destroyReadLock in DLockService
-  int getDestroyReadWaitsInProgress();
+  long getDestroyReadWaitsInProgress();
 
-  int getDestroyReadWaitsCompleted();
+  long getDestroyReadWaitsCompleted();
 
-  int getDestroyReadWaitsFailed();
+  long getDestroyReadWaitsFailed();
 
   long getDestroyReadWaitTime();
 
@@ -205,11 +205,11 @@ public interface DistributedLockStats {
   void endDestroyReadWait(long start, boolean success);
 
   // acquisition of destroyWriteLock in DLockService
-  int getDestroyWriteWaitsInProgress();
+  long getDestroyWriteWaitsInProgress();
 
-  int getDestroyWriteWaitsCompleted();
+  long getDestroyWriteWaitsCompleted();
 
-  int getDestroyWriteWaitsFailed();
+  long getDestroyWriteWaitsFailed();
 
   long getDestroyWriteWaitTime();
 
@@ -220,19 +220,19 @@ public interface DistributedLockStats {
   void endDestroyWriteWait(long start, boolean success);
 
   // current number of DLockService destroy read locks held by this process
-  int getDestroyReads();
+  long getDestroyReads();
 
-  void incDestroyReads(int val);
+  void incDestroyReads(long val);
 
   // current number of DLockService destroy write locks held by this process
-  int getDestroyWrites();
+  long getDestroyWrites();
 
-  void incDestroyWrites(int val);
+  void incDestroyWrites(long val);
 
   // time for call to unlock() to complete
-  int getLockReleasesInProgress();
+  long getLockReleasesInProgress();
 
-  int getLockReleasesCompleted();
+  long getLockReleasesCompleted();
 
   long getLockReleaseTime();
 
@@ -241,30 +241,30 @@ public interface DistributedLockStats {
   void endLockRelease(long start);
 
   // total number of times this member has requested to become grantor
-  int getBecomeGrantorRequests();
+  long getBecomeGrantorRequests();
 
   void incBecomeGrantorRequests();
 
   // current number of lock tokens used by this system member
-  int getTokens();
+  long getTokens();
 
-  void incTokens(int val);
+  void incTokens(long val);
 
   // current number of grant tokens used by local grantors
-  int getGrantTokens();
+  long getGrantTokens();
 
-  void incGrantTokens(int val);
+  void incGrantTokens(long val);
 
   // current number of lock request queues used by this system member
-  int getRequestQueues();
+  long getRequestQueues();
 
-  void incRequestQueues(int val);
+  void incRequestQueues(long val);
 
-  int getFreeResourcesCompleted();
+  long getFreeResourcesCompleted();
 
   void incFreeResourcesCompleted();
 
-  int getFreeResourcesFailed();
+  long getFreeResourcesFailed();
 
   void incFreeResourcesFailed();
 }

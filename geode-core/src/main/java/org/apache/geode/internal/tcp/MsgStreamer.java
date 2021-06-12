@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.internal.Assert;
@@ -129,7 +130,8 @@ public class MsgStreamer extends OutputStream
     this.stats = stats;
     this.msg = msg;
     this.cons = cons;
-    this.buffer = bufferPool.acquireDirectSenderBuffer(sendBufferSize);
+    int bufferSize = Math.min(sendBufferSize, Connection.MAX_MSG_SIZE);
+    this.buffer = bufferPool.acquireDirectSenderBuffer(bufferSize);
     this.buffer.clear();
     this.buffer.position(Connection.MSG_HEADER_BYTES);
     this.msgId = MsgIdGenerator.NO_MSG_ID;
@@ -329,15 +331,17 @@ public class MsgStreamer extends OutputStream
             lastFlushForMessage && this.msg.containsRegionContentChange(), conflationMsg);
       } catch (IOException ex) {
         it.remove();
-        if (this.ce == null)
+        if (this.ce == null) {
           this.ce = new ConnectExceptions();
+        }
         this.ce.addFailure(con.getRemoteAddress(), ex);
         con.closeForReconnect(
             String.format("closing due to %s", "IOException"));
       } catch (ConnectionException ex) {
         it.remove();
-        if (this.ce == null)
+        if (this.ce == null) {
           this.ce = new ConnectExceptions();
+        }
         this.ce.addFailure(con.getRemoteAddress(), ex);
         con.closeForReconnect(
             String.format("closing due to %s", "ConnectionException"));
@@ -347,6 +351,11 @@ public class MsgStreamer extends OutputStream
     startSerialization();
     this.buffer.clear();
     this.buffer.position(Connection.MSG_HEADER_BYTES);
+  }
+
+  @VisibleForTesting
+  protected ByteBuffer getBuffer() {
+    return buffer;
   }
 
   @Override

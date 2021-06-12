@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedHashMap;
@@ -78,13 +80,6 @@ public class PutAll80 extends BaseCommand {
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long startp) throws IOException, InterruptedException {
     long start = startp; // copy this since we need to modify it
-    Part regionNamePart = null, numberOfKeysPart = null, keyPart = null, valuePart = null;
-    String regionName = null;
-    int numberOfKeys = 0;
-    Object key = null;
-    Part eventPart = null;
-    boolean replyWithMetaData = false;
-    VersionedObjectList response = null;
 
     StringBuilder errMessage = new StringBuilder();
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
@@ -99,10 +94,13 @@ public class PutAll80 extends BaseCommand {
       stats.incReadPutAllRequestTime(start - oldStart);
     }
 
+    final String regionName;
+    boolean replyWithMetaData = false;
+    VersionedObjectList response;
     try {
       // Retrieve the data from the message parts
       // part 0: region name
-      regionNamePart = clientMessage.getPart(0);
+      Part regionNamePart = clientMessage.getPart(0);
       regionName = regionNamePart.getCachedString();
 
       if (regionName == null) {
@@ -127,7 +125,7 @@ public class PutAll80 extends BaseCommand {
       final int BASE_PART_COUNT = getBasePartCount();
 
       // part 1: eventID
-      eventPart = clientMessage.getPart(1);
+      Part eventPart = clientMessage.getPart(1);
       ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
       long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
       long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
@@ -138,7 +136,7 @@ public class PutAll80 extends BaseCommand {
 
       // part 2: invoke callbacks (used by import)
       Part callbacksPart = clientMessage.getPart(2);
-      boolean skipCallbacks = callbacksPart.getInt() == 1 ? true : false;
+      boolean skipCallbacks = callbacksPart.getInt() == 1;
 
       // part 3: flags
       int flags = clientMessage.getPart(3).getInt();
@@ -146,26 +144,27 @@ public class PutAll80 extends BaseCommand {
       boolean clientHasCCEnabled = (flags & PutAllOp.FLAG_CONCURRENCY_CHECKS) != 0;
 
       // part 4: number of keys
-      numberOfKeysPart = clientMessage.getPart(4);
-      numberOfKeys = numberOfKeysPart.getInt();
+      Part numberOfKeysPart = clientMessage.getPart(4);
+      int numberOfKeys = numberOfKeysPart.getInt();
 
       Object callbackArg = getOptionalCallbackArg(clientMessage);
 
       if (logger.isDebugEnabled()) {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append(serverConnection.getName()).append(": Received ")
-            .append(this.putAllClassName()).append(" request from ")
-            .append(serverConnection.getSocketString()).append(" for region ").append(regionName)
-            .append(callbackArg != null ? (" callbackArg " + callbackArg) : "").append(" with ")
-            .append(numberOfKeys).append(" entries.");
-        logger.debug(buffer.toString());
+        final String buffer = serverConnection.getName() + ": Received "
+            + putAllClassName() + " request from "
+            + serverConnection.getSocketString() + " for region " + regionName
+            + (callbackArg != null ? (" callbackArg " + callbackArg) : "") + " with "
+            + numberOfKeys + " entries.";
+        logger.debug(buffer);
       }
       // building the map
-      Map map = new LinkedHashMap();
-      Map<Object, VersionTag> retryVersions = new LinkedHashMap<Object, VersionTag>();
+      Map<Object, Object> map = new LinkedHashMap<>();
+      final Map<Object, VersionTag<?>> retryVersions = new LinkedHashMap<>();
       // Map isObjectMap = new LinkedHashMap();
+      Part valuePart;
+      Object key;
       for (int i = 0; i < numberOfKeys; i++) {
-        keyPart = clientMessage.getPart(BASE_PART_COUNT + i * 2);
+        Part keyPart = clientMessage.getPart(BASE_PART_COUNT + i * 2);
         key = keyPart.getStringOrObject();
         if (key == null) {
           String putAllMsg =
@@ -224,7 +223,7 @@ public class PutAll80 extends BaseCommand {
                 entryEventId.getSequenceID());
           }
 
-          VersionTag tag = findVersionTagsForRetriedBulkOp(region, entryEventId);
+          VersionTag<?> tag = findVersionTagsForRetriedBulkOp(region, entryEventId);
           if (tag != null) {
             retryVersions.put(key, tag);
           }
@@ -254,23 +253,15 @@ public class PutAll80 extends BaseCommand {
               authzRequest.putAllAuthorize(regionName, map, callbackArg);
           map = putAllContext.getMap();
           if (map instanceof UpdateOnlyMap) {
-            map = ((UpdateOnlyMap) map).getInternalMap();
+            map = uncheckedCast(((UpdateOnlyMap) map).getInternalMap());
           }
           callbackArg = putAllContext.getCallbackArg();
         }
-      } else {
-        // no auth, so update the map based on isObjectMap here
-        /*
-         * Collection entries = map.entrySet(); Iterator iterator = entries.iterator(); Map.Entry
-         * mapEntry = null; while (iterator.hasNext()) { mapEntry = (Map.Entry)iterator.next();
-         * Object currkey = mapEntry.getKey(); byte[] serializedValue = (byte[])mapEntry.getValue();
-         * boolean isObject = ((Boolean)isObjectMap.get(currkey)).booleanValue(); if (isObject) {
-         * map.put(currkey, CachedDeserializableFactory.create(serializedValue)); } }
-         */
       }
 
-      response = region.basicBridgePutAll(map, retryVersions, serverConnection.getProxyID(),
-          eventId, skipCallbacks, callbackArg);
+      response =
+          region.basicBridgePutAll(map, uncheckedCast(retryVersions), serverConnection.getProxyID(),
+              eventId, skipCallbacks, callbackArg, clientMessage.isRetry());
       if (!region.getConcurrencyChecksEnabled() || clientIsEmpty || !clientHasCCEnabled) {
         // the client only needs this if versioning is being used and the client
         // has storage
@@ -291,16 +282,8 @@ public class PutAll80 extends BaseCommand {
           replyWithMetaData = true;
         }
       }
-    } catch (RegionDestroyedException rde) {
+    } catch (RegionDestroyedException | ResourceException | PutAllPartialResultException rde) {
       writeChunkedException(clientMessage, rde, serverConnection);
-      serverConnection.setAsTrue(RESPONDED);
-      return;
-    } catch (ResourceException re) {
-      writeChunkedException(clientMessage, re, serverConnection);
-      serverConnection.setAsTrue(RESPONDED);
-      return;
-    } catch (PutAllPartialResultException pre) {
-      writeChunkedException(clientMessage, pre, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (Exception ce) {
@@ -383,12 +366,6 @@ public class PutAll80 extends BaseCommand {
     if (logger.isTraceEnabled()) {
       logger.trace("{}: rpl tx: {}", servConn.getName(), origMsg.getTransactionId());
     }
-  }
-
-  @Override
-  protected void writeReplyWithRefreshMetadata(Message origMsg, ServerConnection serverConnection,
-      PartitionedRegion pr, byte nwHop) throws IOException {
-    throw new UnsupportedOperationException();
   }
 
   private void writeReplyWithRefreshMetadata(Message origMsg, VersionedObjectList response,

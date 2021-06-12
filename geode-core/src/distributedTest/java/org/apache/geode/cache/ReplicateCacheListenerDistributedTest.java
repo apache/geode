@@ -31,9 +31,9 @@ import org.junit.Test;
 
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedCounters;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.rules.SharedCountersRule;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -69,19 +69,19 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   public SerializableTestName testName = new SerializableTestName();
 
   @Rule
-  public SharedCountersRule sharedCountersRule = new SharedCountersRule();
+  public DistributedCounters distributedCounters = new DistributedCounters();
 
   @Rule
-  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   @Before
   public void setUp() {
     regionName = getClass().getSimpleName();
 
-    sharedCountersRule.initialize(CREATES);
-    sharedCountersRule.initialize(DESTROYS);
-    sharedCountersRule.initialize(INVALIDATES);
-    sharedCountersRule.initialize(UPDATES);
+    distributedCounters.initialize(CREATES);
+    distributedCounters.initialize(DESTROYS);
+    distributedCounters.initialize(INVALIDATES);
+    distributedCounters.initialize(UPDATES);
   }
 
   @Test
@@ -96,7 +96,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
 
     region.put(KEY, ENTRY_VALUE, cacheRule.getSystem().getDistributedMember());
 
-    assertThat(sharedCountersRule.getTotal(CREATES)).isEqualTo(expectedCreates());
+    assertThat(distributedCounters.getTotal(CREATES)).isEqualTo(expectedCreates());
   }
 
   @Test
@@ -112,7 +112,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
     region.put(KEY, ENTRY_VALUE, cacheRule.getSystem().getDistributedMember());
     region.put(KEY, UPDATED_ENTRY_VALUE, cacheRule.getSystem().getDistributedMember());
 
-    assertThat(sharedCountersRule.getTotal(UPDATES)).isEqualTo(expectedUpdates());
+    assertThat(distributedCounters.getTotal(UPDATES)).isEqualTo(expectedUpdates());
   }
 
   @Test
@@ -128,7 +128,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
     region.put(KEY, 0, cacheRule.getSystem().getDistributedMember());
     region.invalidate(KEY);
 
-    assertThat(sharedCountersRule.getTotal(INVALIDATES)).isEqualTo(expectedInvalidates());
+    assertThat(distributedCounters.getTotal(INVALIDATES)).isEqualTo(expectedInvalidates());
     assertThat(region.get(KEY)).isNull();
   }
 
@@ -145,7 +145,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
     region.put(KEY, 0, cacheRule.getSystem().getDistributedMember());
     region.destroy(KEY);
 
-    assertThat(sharedCountersRule.getTotal(DESTROYS)).isEqualTo(expectedDestroys());
+    assertThat(distributedCounters.getTotal(DESTROYS)).isEqualTo(expectedDestroys());
   }
 
   protected Region<String, Integer> createRegion(final String name,
@@ -210,7 +210,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
 
     @Override
     public void afterCreate(final EntryEvent<String, Integer> event) {
-      sharedCountersRule.increment(CREATES);
+      distributedCounters.increment(CREATES);
 
       errorCollector.checkThat(event.getDistributedMember(), equalTo(event.getCallbackArgument()));
       errorCollector.checkThat(event.getOperation(), equalTo(Operation.CREATE));
@@ -237,7 +237,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
 
     @Override
     public void afterUpdate(final EntryEvent<String, Integer> event) {
-      sharedCountersRule.increment(UPDATES);
+      distributedCounters.increment(UPDATES);
 
       errorCollector.checkThat(event.getDistributedMember(), equalTo(event.getCallbackArgument()));
       errorCollector.checkThat(event.getOperation(), equalTo(Operation.UPDATE));
@@ -264,7 +264,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
 
     @Override
     public void afterInvalidate(final EntryEvent<String, Integer> event) {
-      sharedCountersRule.increment(INVALIDATES);
+      distributedCounters.increment(INVALIDATES);
 
       if (event.isOriginRemote()) {
         errorCollector.checkThat(event.getDistributedMember(),
@@ -288,7 +288,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
 
     @Override
     public void afterDestroy(final EntryEvent<String, Integer> event) {
-      sharedCountersRule.increment(DESTROYS);
+      distributedCounters.increment(DESTROYS);
 
       if (event.isOriginRemote()) {
         errorCollector.checkThat(event.getDistributedMember(),

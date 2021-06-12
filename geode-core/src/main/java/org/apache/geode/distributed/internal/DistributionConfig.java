@@ -1396,7 +1396,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#SOCKET_BUFFER_SIZE} property
    */
-  int DEFAULT_SOCKET_BUFFER_SIZE = 32768;
+  static int DEFAULT_SOCKET_BUFFER_SIZE = 32768;
   /**
    * The minimum {@link ConfigurationProperties#SOCKET_BUFFER_SIZE}.
    * <p>
@@ -1411,9 +1411,6 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   int MAX_SOCKET_BUFFER_SIZE = Connection.MAX_MSG_SIZE;
 
   boolean VALIDATE = Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "validateMessageSize");
-  int VALIDATE_CEILING = Integer
-      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "validateMessageSizeCeiling", 8 * 1024 * 1024)
-      .intValue();
 
   /**
    * The name of the {@link ConfigurationProperties#SOCKET_BUFFER_SIZE} property
@@ -1911,7 +1908,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#CONSERVE_SOCKETS} property
    */
-  boolean DEFAULT_CONSERVE_SOCKETS = true;
+  boolean DEFAULT_CONSERVE_SOCKETS = false;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#ROLES} property

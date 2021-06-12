@@ -30,7 +30,7 @@ import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.runtime.DeploymentInfo;
 import org.apache.geode.test.compiler.JarBuilder;
@@ -117,16 +117,17 @@ public class DeployToMultiGroupDUnitTest {
         assertManagementListResult(list).isSuccessful();
     resultAssert.hasConfigurations().extracting(Deployment::getFileName)
         .containsExactlyInAnyOrder("lib.jar", "lib.jar");
-    resultAssert.hasRuntimeInfos().extracting(DeploymentInfo::getJarLocation).extracting(
-        FilenameUtils::getName).containsExactlyInAnyOrder("lib.v1.jar", "lib.v1.jar");
+    resultAssert.hasRuntimeInfos()
+        .extracting(DeploymentInfo::getJarLocation).extracting(
+            FilenameUtils::getName)
+        .containsExactlyInAnyOrder("lib.v1.jar", "lib.v1.jar");
   }
 
   @Test
   public void getById() throws Exception {
     Deployment filter = new Deployment();
     filter.setFileName("lib.jar");
-    ClusterManagementGetResult<Deployment, DeploymentInfo> getResult =
-        client.get(filter);
+    ClusterManagementGetResult<Deployment, DeploymentInfo> getResult = client.get(filter);
     assertThat(getResult.getResult().getConfigurations()).extracting(Deployment::getGroup)
         .containsExactlyInAnyOrder("group1", "group2");
   }

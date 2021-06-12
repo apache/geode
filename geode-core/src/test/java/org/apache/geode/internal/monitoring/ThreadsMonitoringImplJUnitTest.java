@@ -14,10 +14,12 @@
  */
 package org.apache.geode.internal.monitoring;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -27,6 +29,7 @@ import org.junit.Test;
 
 import org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
+import org.apache.geode.internal.monitoring.executor.FunctionExecutionPooledExecutorGroup;
 
 /**
  * Contains simple tests for the {@link org.apache.geode.internal.monitoring.ThreadsMonitoringImpl}.
@@ -39,7 +42,7 @@ public class ThreadsMonitoringImplJUnitTest {
 
   @Before
   public void before() {
-    threadsMonitoringImpl = new ThreadsMonitoringImpl(null);
+    threadsMonitoringImpl = new ThreadsMonitoringImpl(null, 100000, 0, false);
   }
 
   @After
@@ -58,6 +61,60 @@ public class ThreadsMonitoringImplJUnitTest {
     assertTrue(threadsMonitoringImpl.startMonitor(Mode.OneTaskOnlyExecutor));
     assertTrue(threadsMonitoringImpl.startMonitor(Mode.ScheduledThreadExecutor));
     assertTrue(threadsMonitoringImpl.startMonitor(Mode.AGSExecutor));
+    assertTrue(threadsMonitoringImpl.startMonitor(Mode.P2PReaderExecutor));
+    assertTrue(threadsMonitoringImpl.startMonitor(Mode.ServerConnectionExecutor));
+  }
+
+  @Test
+  public void verifyMonitorLifeCycle() {
+    assertFalse(threadsMonitoringImpl.isMonitoring());
+    threadsMonitoringImpl.startMonitor(Mode.FunctionExecutor);
+    assertTrue(threadsMonitoringImpl.isMonitoring());
+    threadsMonitoringImpl.endMonitor();
+    assertFalse(threadsMonitoringImpl.isMonitoring());
+  }
+
+  @Test
+  public void verifyExecutorMonitoringLifeCycle() {
+    AbstractExecutor executor =
+        threadsMonitoringImpl.createAbstractExecutor(Mode.P2PReaderExecutor);
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isFalse();
+    threadsMonitoringImpl.register(executor);
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isTrue();
+    executor.suspendMonitoring();
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isFalse();
+    executor.resumeMonitoring();
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isTrue();
+    threadsMonitoringImpl.unregister(executor);
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isFalse();
+    threadsMonitoringImpl.register(executor);
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isTrue();
+    threadsMonitoringImpl.unregister(executor);
+    assertThat(threadsMonitoringImpl.isMonitoring(executor)).isFalse();
+  }
+
+  @Test
+  public void createAbstractExecutorIsAssociatedWithCallingThread() {
+    AbstractExecutor executor = threadsMonitoringImpl.createAbstractExecutor(Mode.FunctionExecutor);
+    assertThat(executor.getThreadID()).isEqualTo(Thread.currentThread().getId());
+  }
+
+  @Test
+  public void createAbstractExecutorDoesNotSetStartTime() {
+    AbstractExecutor executor = threadsMonitoringImpl.createAbstractExecutor(Mode.FunctionExecutor);
+    assertThat(executor.getStartTime()).isEqualTo(0);
+  }
+
+  @Test
+  public void createAbstractExecutorSetsNumIterationsStuckToZero() {
+    AbstractExecutor executor = threadsMonitoringImpl.createAbstractExecutor(Mode.FunctionExecutor);
+    assertThat(executor.getNumIterationsStuck()).isEqualTo((short) 0);
+  }
+
+  @Test
+  public void createAbstractExecutorSetsExpectedGroupName() {
+    AbstractExecutor executor = threadsMonitoringImpl.createAbstractExecutor(Mode.FunctionExecutor);
+    assertThat(executor.getGroupName()).isEqualTo(FunctionExecutionPooledExecutorGroup.GROUPNAME);
   }
 
   /**
@@ -65,24 +122,28 @@ public class ThreadsMonitoringImplJUnitTest {
    */
   @Test
   public void testClosure() {
-    assertTrue(threadsMonitoringImpl.getThreadsMonitoringProcess() != null);
-    assertFalse(threadsMonitoringImpl.isClosed());
-    threadsMonitoringImpl.close();
-    assertTrue(threadsMonitoringImpl.isClosed());
-    assertFalse(threadsMonitoringImpl.getThreadsMonitoringProcess() != null);
+    ThreadsMonitoringImpl liveMonitor = new ThreadsMonitoringImpl(null, 100000, 0, true);
+    assertTrue(liveMonitor.getThreadsMonitoringProcess() != null);
+    assertFalse(liveMonitor.isClosed());
+    liveMonitor.close();
+    assertTrue(liveMonitor.isClosed());
+    assertFalse(liveMonitor.getThreadsMonitoringProcess() != null);
   }
 
   @Test
-  public void updateThreadStatus() {
+  public void updateThreadStatusCallsSetStartTime() {
     AbstractExecutor executor = mock(AbstractExecutor.class);
     long threadId = Thread.currentThread().getId();
 
     threadsMonitoringImpl.getMonitorMap().put(threadId, executor);
     threadsMonitoringImpl.updateThreadStatus();
-
-    // also test the case where there is no AbstractExcecutor present
-    threadsMonitoringImpl.getMonitorMap().remove(threadId);
-    threadsMonitoringImpl.updateThreadStatus();
     verify(executor, times(1)).setStartTime(any(Long.class));
+  }
+
+  @Test
+  public void updateThreadStatusWithoutExecutorInMapDoesNotCallSetStartTime() {
+    AbstractExecutor executor = mock(AbstractExecutor.class);
+    threadsMonitoringImpl.updateThreadStatus();
+    verify(executor, never()).setStartTime(any(Long.class));
   }
 }

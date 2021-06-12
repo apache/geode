@@ -663,8 +663,9 @@ public class PartitionedRegionHelper {
   public static PartitionedRegion getPartitionedRegion(String prName, Cache cache) {
     Region region = cache.getRegion(prName);
     if (region != null) {
-      if (region instanceof PartitionedRegion)
+      if (region instanceof PartitionedRegion) {
         return (PartitionedRegion) region;
+      }
     }
     return null;
   }
@@ -751,8 +752,9 @@ public class PartitionedRegionHelper {
 
   public static String getBucketFullPath(String prFullPath, int bucketId) {
     String name = getBucketName(prFullPath, bucketId);
-    if (name != null)
+    if (name != null) {
       return SEPARATOR + PR_ROOT_REGION_NAME + SEPARATOR + name;
+    }
 
     return null;
 
@@ -814,8 +816,9 @@ public class PartitionedRegionHelper {
     boolean isSubRegion = false;
     if (null != fullPath) {
       int idx = fullPath.indexOf(SEPARATOR, SEPARATOR.length());
-      if (idx >= 0)
+      if (idx >= 0) {
         isSubRegion = true;
+      }
     }
     return isSubRegion;
   }
@@ -837,8 +840,9 @@ public class PartitionedRegionHelper {
     // root, partitionedRegion.getCache());
     PartitionRegionConfig prConfig =
         (PartitionRegionConfig) root.get(partitionedRegion.getRegionIdentifier());
-    if (prConfig == null)
+    if (prConfig == null) {
       return;
+    }
 
     Set members = partitionedRegion.getDistributionManager().getDistributionManagerIds();
     logger.warn(

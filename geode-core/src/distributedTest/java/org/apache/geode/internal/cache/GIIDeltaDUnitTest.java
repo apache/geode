@@ -2376,11 +2376,11 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
         CachePerfStats stats = lr.getRegionPerfStats();
 
         // we saved GII completed count in RegionPerfStats only
-        int size = stats.getGetInitialImageKeysReceived();
+        long size = stats.getGetInitialImageKeysReceived();
         cache.getLogger().info("Delta contains: " + size + " keys");
         assertEquals(expectedKeyNum, size);
 
-        int num = stats.getDeltaGetInitialImagesCompleted();
+        long num = stats.getDeltaGetInitialImagesCompleted();
         cache.getLogger().info("Delta GII completed: " + num + " times");
         assertEquals(expectedDeltaGIINum, num);
       }

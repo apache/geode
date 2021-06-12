@@ -54,9 +54,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
@@ -80,7 +80,7 @@ public class MBeanFederationErrorHandlingDistributedTest implements Serializable
   public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
@@ -178,7 +178,7 @@ public class MBeanFederationErrorHandlingDistributedTest implements Serializable
         (SystemManagementService) ManagementService.getManagementService(cache);
     service.startManager();
     FederatingManager federatingManager = service.getFederatingManager();
-    proxyFactory = federatingManager.getProxyFactory();
+    proxyFactory = federatingManager.proxyFactory();
 
     return locatorLauncher.getPort();
   }

@@ -2,7 +2,7 @@
 
 All platforms require a Java installation, with JDK 1.8 or more recent version.
 
-Set the JAVA\_HOME environment variable.  For example:
+Set the JAVA\_HOME environment variable. For example:
 
 | Platform | Command |
 | :---: | --- |
@@ -14,16 +14,17 @@ Download the project source from the Releases page at
 [Apache Geode](http://geode.apache.org/releases/), and unpack the source code.
 
 Within the directory containing the unpacked source code, run the gradle build:
+
 ```console
 $ ./gradlew build
 ```
 
 Once the build completes, the project files will be installed at
-`geode-assembly/build/install/apache-geode`. The distribution archives will be
-created in `geode-assembly/build/distributions/`.
+`geode-assembly/build/install/apache-geode`. The distribution archives will be created
+in `geode-assembly/build/distributions/`.
 
-Verify the installation by invoking the `gfsh` shell command to print version
-information:
+Verify the installation by invoking the `gfsh` shell command to print version information:
+
 ```console
 $ ./geode-assembly/build/install/apache-geode/bin/gfsh version
 v1.1.0
@@ -33,64 +34,74 @@ Note: on Windows invoke the `gfsh.bat` script to print the version string.
 
 ## Setting up IntelliJ
 
-The following steps have been tested with:
+The following steps have been tested with **IntelliJ IDEA 2020.3.3**
 
-* **IntelliJ IDEA 2018.3.5**
+1. Run `./gradlew --parallel generate` from Geode repository root to create compiler generated
+   source.
 
-1. Run `./gradlew --parallel generate` from Geode repository root to create compiler generated source.
-   1. Alternatively (and to ensure these sources stay up-to-date):
-      - Perform step 2
-      - In the **Gradle** dockable, expand the **geode** (the root project) -> **Tasks** -> **build**
-      - Right-click **generate** task, select **Execute Before Sync** and **Execute Before Build**
-      - Click **Refresh All Gradle Projects** at the top of the Gradle dockable
+1. Import the project into IntelliJ IDEA.
 
-      ![After](https://cwiki.apache.org/confluence/download/attachments/103096184/geode-generate-before-sync.png?api=v2)
+    1. Select  **File -> Open...** from the menu.
+    1. Select the `build.gradle` file in the Geode repository root and select **Open**.
+    1. In the **Open Project?** popup, select **Open Project**.
+    1. In the **Trust and Open Gradle Project?** popup, select **Trust Project**.
+    1. Wait for IntelliJ to import the project and complete its background tasks.
 
-2. Import project into IntelliJ IDEA.
+1. Configure IntelliJ IDEA to build and run the project and tests.
+    * Set the Java SDK for the project.
+        1. Select **File -> Project Structure...** from the menu.
+        1. Open the **Project Settings -> Project** section.
+        1. Set **Project SDK** to your most recent Java 1.8 JDK.
 
-   From the **Welcome to IntelliJ IDEA** window:
+    * To automatically re-generate sources when needed (recommended).
+        1. Select **View -> Tool Windows -> Gradle** from the menu.
+        1. In the Gradle dockable, open **geode -> Tasks -> build**.
+        1. Right click the **generate** task and select **Execute Before Sync**.
+        1. Right click the **generate** task and select **Execute Before Build**.
 
-   1. **Import Project ->** select *build.gradle* file from Geode repository root and press **Open**.
-   2. Optionally, enable **Use auto-import**
-   3. Enable **Create separate module per source set**
-   4. Select **Use Project JDK 1.8.0_*nnn*** where *nnn* is latest build required for Geode
+    * To reload the project when build scripts change (recommended).
+        1. Select **IntelliJ IDEA -> Preferences...** from the menu.
+        1. Open the **Build, Execution, Deployment -> Build Tools** section.
+        1. Set **Reload project after changes in the build scripts:** to **Any changes**.
 
-3. Change Code Style Scheme to GeodeStyle.
+    * To build and run with Gradle (recommended).
+        1. Select **IntelliJ IDEA -> Preferences...** from the menu.
+        1. Open the **Build, Execution, Deployment -> Build Tools -> Gradle** section.
+        1. Set **Build and run using:** to **Gradle**.
+        1. Set **Run tests using:** to **Gradle**.
 
-   Navigate to **IntelliJ IDEA -> Preferences... -> Editor -> Code Style**. Select *GeodeStyle* in Scheme drop-down box if it already exists.
+1. Set the Code Style Scheme to GeodeStyle.
 
-   To define the *GeodeStyle* in **Scheme**, select the gear icon next to the drop-down box, click **Import Scheme ->** and select **IntelliJ IDEA code style XML**. Select *etc/intellij-java-modified-google-style.xml* from Geode repository root, enter **To:** *GeodeStyle*, check **Current scheme** and press **OK**.
+    1. Select **IntelliJ IDEA -> Preferences...**
+    1. Open the **Editor -> Code Style** section.
+    1. If *GeodeStyle* style does not appear in the **Scheme** drop-down box
+        1. Select the gear icon next to the drop-down.
+        1. Select **Import Scheme -> IntelliJ IDEA code style XML**.
+        1. Select `etc/intellij-java-modified-google-style.xml` from the Geode repository root.
+        1. Enter **To:** *GeodeStyle*, check **Current scheme**, and press **OK**.
+    1. Select *GeodeStyle* in **Scheme** drop-down box.
 
-4. Make Apache the default Copyright.
+1. Make Apache the default Copyright.
 
-   Navigate to **IntelliJ IDEA -> Preferences... -> Editor -> Copyright**. Select *Apache* in drop-down box **Default project copyright**.
+    1. Select **IntelliJ IDEA -> Preferences...** from the menu.
+    1. Open the **Editor -> Copyright** section.
+    1. If *Apache* does not appear in the **Default project copyright** drop-down box:
+        1. Open the **Copyright Profiles** subsection.
+        1. Select the "import" icon (the small arrow pointing down and to the left) from the
+           Copyright Profiles section's toolbar.
+        1. Select `etc/intellij-apache-copyright-notice.xml` from the Geode repository root.
+        1. Return to the **Copyright** section.
+    1. Select *Apache* in the **Default project copyright** drop-down box.
+    1. Open the **Formatting** subsection.
+    1. Uncheck **Add blank line after** and select **OK**.
 
-   To define *Apache* in **Copyright**, navigate to **IntelliJ IDEA -> Preferences... -> Editor -> Copyright -> Copyright Profiles**. Click **+** to add a new project. Enter *Apache* as the **Name** and enter the following block without asterisks or leading spaces:
+1. Rebuild the Project.
 
-   ```text
-   Licensed to the Apache Software Foundation (ASF) under one or more contributor license
-   agreements. See the NOTICE file distributed with this work for additional information regarding
-   copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
-   "License"); you may not use this file except in compliance with the License. You may obtain a
-   copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software distributed under the License
-   is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-   or implied. See the License for the specific language governing permissions and limitations under
-   the License.
-   ```
-
-   ...then return to **Copyright** and select *Apache* in drop-down box **Default project copyright**.
-
-   Navigate to **IntelliJ IDEA -> Preferences... -> Editor -> Copyright -> Formatting**. Uncheck **Add blank line after** and press **OK**.
-
-5. Rebuild the Project.
-
-   Navigate to **Build -> Rebuild Project** and the full project should compile without errors.
+    1. Select **Build -> Rebuild Project** from the menu. The full project should compile without
+       errors.
 
    Some optional sanity tests to make sure things are working properly:
-   * Try looking up classes using **Navigate -> Class...**
-   * Open and run a distributed test such as BasicDistributedTest in geode-core.
-   * Create a new java class and ensure the Apache license is automatically added to the top of the file with no blank line before the package line.
+    * Try looking up classes using **Navigate -> Class...**
+    * Open and run a distributed test such as BasicDistributedTest in geode-core.
+    * Create a new java class and ensure the Apache license is automatically added to the top of the
+      file with no blank line before the package line.

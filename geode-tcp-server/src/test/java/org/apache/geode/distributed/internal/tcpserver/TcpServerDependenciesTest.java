@@ -50,5 +50,6 @@ public class TcpServerDependenciesTest {
               .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
 
               .or(not(resideInAPackage("org.apache.geode..")))
-              .or(resideInAPackage("org.apache.geode.test..")));
+              .or(resideInAPackage("org.apache.geode.test.."))
+              .or(resideInAPackage("org.apache.geode.annotations..")));
 }

@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -28,8 +29,9 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.management.DistributedSystemMXBean;
-import org.apache.geode.management.internal.json.QueryResultFormatter;
+import org.apache.geode.management.model.Employee;
 import org.apache.geode.test.junit.assertions.TabularResultModelAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
@@ -37,7 +39,10 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class DistributedSystemMBeanIntegrationTest {
 
-  public static final String SELECT = "select * from /testRegion r where r.id=1";
+  public static final String SELECT_ALL = "select * from /testRegion r where r.id=1";
+  public static final String SELECT_ALL_BUT_LOCAL_DATE =
+      "select name, address, startDate, endDate, title from /testRegion r where r.id=1";
+  public static final String SELECT_FIELDS = "select id, title from /testRegion r where r.id=1";
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule()
@@ -53,6 +58,8 @@ public class DistributedSystemMBeanIntegrationTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
+  private DistributedSystemMXBean bean;
+
   private static Date date;
   private static java.sql.Date sqlDate;
   private static LocalDate localDate;
@@ -63,87 +70,86 @@ public class DistributedSystemMBeanIntegrationTest {
     localDate = LocalDate.of(2020, 1, 1);
     sqlDate = java.sql.Date.valueOf(localDate);
     date = new Date(sqlDate.getTime());
-    Data data = new Data(1, date, sqlDate, localDate);
-    testRegion.put(1, data);
+    Employee employee = new Employee();
+    employee.setId(1);
+    employee.setName("John");
+    employee.setTitle("Manager");
+    employee.setStartDate(date);
+    employee.setEndDate(sqlDate);
+    employee.setBirthday(localDate);
+    testRegion.put(1, employee);
   }
 
-  // this is to make sure dates are formatted correctly
-  @Test
-  public void queryUsingMBean() throws Exception {
+  @Before
+  public void setup() throws Exception {
     connectionRule.connect(server.getJmxPort());
-    SimpleDateFormat formater =
-        new SimpleDateFormat(QueryResultFormatter.DATE_FORMAT_PATTERN);
+    bean = connectionRule.getProxyMXBean(DistributedSystemMXBean.class);
+  }
+
+  // this is to make sure dates are formatted correctly and it does not honor the json annotations
+  @Test
+  public void queryAllUsingMBean() throws Exception {
+    SimpleDateFormat formater = DateFormatter.createLocalizedDateFormat();
     String dateString = formater.format(date);
-    DistributedSystemMXBean bean = connectionRule.getProxyMXBean(DistributedSystemMXBean.class);
-    String result = bean.queryData(SELECT, "server", 100);
+    String result = bean.queryData(SELECT_ALL, "server", 100);
     System.out.println(result);
     assertThat(result)
+        .contains("id")
+        .contains("title")
+        .contains("address")
+        .doesNotContain("Job Title")
         .contains("\"java.util.Date\",\"" + dateString + "\"")
         .contains("\"java.sql.Date\",\"" + dateString + "\"")
         .contains("\"java.time.LocalDate\",\"2020-01-01\"");
   }
 
-  // this is simply to document the current behavior of gfsh
-  // gfsh doesn't attempt tp format the date objects as of now
   @Test
-  public void queryUsingGfsh() throws Exception {
-    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
-    TabularResultModelAssert tabularAssert =
-        gfsh.executeAndAssertThat("query --query='" + SELECT + "'")
-            .statusIsSuccess()
-            .hasTableSection();
-    tabularAssert.hasColumn("id").containsExactly("1");
-    tabularAssert.hasColumn("date").containsExactly(date.getTime() + "");
-    tabularAssert.hasColumn("sqlDate").containsExactly(sqlDate.getTime() + "");
-    tabularAssert.hasColumn("localDate")
-        .asList().asString().contains("\"year\":2020,\"month\":\"JANUARY\"");
+  public void queryFieldsUsingMbeanDoesNotHonorAnnotations() throws Exception {
+    String result = bean.queryData(SELECT_FIELDS, "server", 100);
+    System.out.println(result);
+    assertThat(result).contains("id").contains("title");
   }
 
-  public static class Data {
-    private int id;
-    private Date date;
-    private java.sql.Date sqlDate;
-    private LocalDate localDate;
+  // this is simply to document the current behavior of gfsh
+  @Test
+  public void queryAllUsingGfshDoesNotFormatDate() throws Exception {
+    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+    TabularResultModelAssert tabularAssert =
+        gfsh.executeAndAssertThat("query --query='" + SELECT_ALL_BUT_LOCAL_DATE + "'")
+            .statusIsSuccess()
+            .hasTableSection();
+    tabularAssert.hasColumns().asList().containsExactlyInAnyOrder("name", "address", "startDate",
+        "endDate", "title");
+    tabularAssert.hasColumn("startDate").containsExactly(date.getTime() + "");
+    tabularAssert.hasColumn("endDate").containsExactly(sqlDate.getTime() + "");
+  }
 
-    public Data() {}
+  // this is simply to document the current behavior of gfsh
+  // gfsh refused to format the date objects as of jackson 2.12's fix#2683
+  @Test
+  public void queryAllUsingGfshRefusesToFormatLocalDate() throws Exception {
+    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+    gfsh.executeAndAssertThat("query --query='" + SELECT_ALL + "'")
+        .statusIsError()
+        .containsOutput(
+            "Java 8 date/time type `java.time.LocalDate` not supported by default: add Module \"com.fasterxml.jackson.datatype:jackson-datatype-jsr310\"");
+  }
 
-    public Data(int id, Date date, java.sql.Date sqlDate, LocalDate localDate) {
-      this.id = id;
-      this.date = date;
-      this.sqlDate = sqlDate;
-      this.localDate = localDate;
-    }
+  @Test
+  public void queryFieldsUsingGfshDoesNotHonorAnnotations() throws Exception {
+    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+    gfsh.executeAndAssertThat("query --query='" + SELECT_FIELDS + "'")
+        .statusIsSuccess()
+        .hasTableSection().hasColumns().asList()
+        .containsExactlyInAnyOrder("id", "title");
+  }
 
-    public int getId() {
-      return id;
-    }
+  @Test
+  public void documentZeroResultsBehavior() throws Exception {
+    String result = bean.queryData("select * from /testRegion r where r.id=0", "server", 100);
+    assertThat(result).isEqualTo("{\"result\":[{\"message\":\"No Data Found\"}]}");
 
-    public void setId(int id) {
-      this.id = id;
-    }
-
-    public Date getDate() {
-      return date;
-    }
-
-    public void setDate(Date date) {
-      this.date = date;
-    }
-
-    public java.sql.Date getSqlDate() {
-      return sqlDate;
-    }
-
-    public void setSqlDate(java.sql.Date sqlDate) {
-      this.sqlDate = sqlDate;
-    }
-
-    public LocalDate getLocalDate() {
-      return localDate;
-    }
-
-    public void setLocalDate(LocalDate localDate) {
-      this.localDate = localDate;
-    }
+    result = bean.queryData("select id, title from /testRegion r where r.id=0", "server", 100);
+    assertThat(result).isEqualTo("{\"result\":[{\"message\":\"No Data Found\"}]}");
   }
 }

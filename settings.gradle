@@ -27,6 +27,7 @@ include 'geode-unsafe'
 include 'geode-junit'
 include 'geode-dunit'
 include 'geode-logging'
+include 'geode-jmh'
 include 'geode-membership'
 include 'geode-serialization'
 include 'geode-tcp-server'
@@ -47,7 +48,7 @@ include 'geode-lucene:geode-lucene-test'
 include 'geode-old-client-support'
 include 'geode-wan'
 include 'geode-cq'
-include 'geode-redis'
+include 'geode-apis-compatible-with-redis'
 include 'geode-memcached'
 include 'geode-connectors'
 include 'geode-http-service'
@@ -59,15 +60,13 @@ include 'extensions:geode-modules-tomcat9'
 include 'extensions:geode-modules-session-internal'
 include 'extensions:geode-modules-session'
 include 'extensions:geode-modules-assembly'
-include 'geode-protobuf'
-include 'geode-protobuf:geode-protobuf-test'
-include 'geode-experimental-driver'
-include 'geode-protobuf-messages'
 include 'extensions:session-testing-war'
 include 'geode-concurrency-test'
 include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
+include 'geode-deployment'
+include 'geode-deployment:geode-deployment-legacy'
 
 
 ['1.0.0-incubating',
@@ -85,7 +84,12 @@ include 'static-analysis:pmd-rules'
  '1.9.2',
  '1.10.0',
  '1.11.0',
- '1.12.0'].each {
+ '1.12.0',
+ '1.12.1',
+ '1.12.2',
+ '1.13.0',
+ '1.13.1',
+ '1.13.2'].each {
   include 'geode-old-versions:'.concat(it)
 }
 

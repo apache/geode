@@ -14,17 +14,14 @@
  */
 package org.apache.geode.internal.statistics;
 
+import static org.apache.geode.internal.statistics.platform.LinuxSystemStats.TCP_EXT_LISTEN_DROPS;
+import static org.apache.geode.internal.statistics.platform.LinuxSystemStats.TCP_EXT_LISTEN_OVERFLOWS;
+import static org.apache.geode.internal.statistics.platform.LinuxSystemStats.TCP_EXT_SYN_COOKIES_RECV;
+import static org.apache.geode.internal.statistics.platform.LinuxSystemStats.TCP_EXT_SYN_COOKIES_SENT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,13 +29,6 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
@@ -52,9 +42,6 @@ import org.apache.geode.test.junit.categories.StatisticsTest;
  * host os.
  */
 @Category(StatisticsTest.class)
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore("*.IntegrationTest")
-@PrepareForTest(LinuxProcFsStatistics.class)
 public class LinuxSystemStatsTest extends StatSamplerTestCase {
 
   @Rule
@@ -89,46 +76,62 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
 
   @Test
   public void testFlatStealTime() throws Exception {
-    String[] results = {"cpu  0 0 0 0 0 0 0 0 0 0",
-        // add on 4 clicks 4 idle 0 steal
-        "cpu  0 0 0 4 0 0 0 0 0 0"};
+    // add on 4 clicks 4 idle 0 steal
+    String mockStats = LinuxSystemStatsTest.class.getResource("FlatStealTime.txt").getFile();
 
-    doTest(results, 0);
+    doStealTimeTest(mockStats, 0);
   }
 
   @Test
   public void test25PercentStealTime() throws Exception {
-    String[] results = {"cpu  0 0 0 0 0 0 0 0 0 0",
-        // add on 4 clicks 3 idle 1 steal
-        "cpu  0 0 0 3 0 0 0 1 0 0"};
+    // add on 4 clicks 3 idle 1 steal
+    String mockStats = LinuxSystemStatsTest.class.getResource("25PercentStealTime.txt").getFile();
 
-    doTest(results, 25);
+    doStealTimeTest(mockStats, 25);
   }
 
   @Test
   public void test66PercentStealTime() throws Exception {
-    String[] results = {"cpu  0 0 0 0 0 0 0 0 0 0",
-        // add on 3 clicks 1 idle 2 steal
-        "cpu  0 0 0 1 0 0 0 2 0 0"};
+    // add on 3 clicks 1 idle 2 steal
+    String mockStats = LinuxSystemStatsTest.class.getResource("66PercentStealTime.txt").getFile();
 
-    doTest(results, 66);
+    doStealTimeTest(mockStats, 66);
   }
 
   @Test
   public void test100PercentStealTime() throws Exception {
-    String[] results = {"cpu  0 0 0 0 0 0 0 0 0 0",
-        // add on 1 clicks 0 idle 1 steal
-        "cpu  0 0 0 0 0 0 0 1 0 0"};
+    // add on 1 clicks 0 idle 1 steal
+    String mockStats = LinuxSystemStatsTest.class.getResource("100PercentStealTime.txt").getFile();
 
-    doTest(results, 100);
+    doStealTimeTest(mockStats, 100);
   }
 
-  private void doTest(String[] results, int expectedStatValue) throws Exception {
-    Answer<FileInputStream> answer = new MyStealTimeAnswer(results);
-    PowerMockito.whenNew(FileInputStream.class).withArguments(anyString()).thenAnswer(answer);
+  @Test
+  public void netstatStatsTest() throws Exception {
+    long expectedSyncookiesSent = 1L;
+    long expectedSyncookiesRecv = 2L;
+    long expectedListenOverflows = 3L;
+    long expectedListenDrops = 4L;
 
-    LinuxProcFsStatistics.refreshSystem(localStats);
-    LinuxProcFsStatistics.refreshSystem(localStats);
+    // This file simulates the contents of the /proc/net/netstat file, omitting all stats that
+    // aren't parsed in the LinuxProcFsStatistics.getNetStatStats() method and including a dummy
+    // stat that should not be parsed
+    String mockNetstatStats =
+        LinuxSystemStatsTest.class.getResource("mockNetstatStats.txt").getFile();
+    LinuxProcFsStatistics.refreshSystem(localStats,
+        LinuxSystemStatsTest.class.getResource("100PercentStealTime.txt").getFile(),
+        mockNetstatStats);
+
+    Statistics statistics = getStatisticsManager().findStatisticsByTextId("LinuxSystemStats")[0];
+    assertThat(statistics.getLong(TCP_EXT_SYN_COOKIES_SENT)).isEqualTo(expectedSyncookiesSent);
+    assertThat(statistics.getLong(TCP_EXT_SYN_COOKIES_RECV)).isEqualTo(expectedSyncookiesRecv);
+    assertThat(statistics.getLong(TCP_EXT_LISTEN_OVERFLOWS)).isEqualTo(expectedListenOverflows);
+    assertThat(statistics.getLong(TCP_EXT_LISTEN_DROPS)).isEqualTo(expectedListenDrops);
+  }
+
+  private void doStealTimeTest(String fileInputPath, int expectedStatValue) {
+    LinuxProcFsStatistics.refreshSystem(localStats, fileInputPath,
+        LinuxSystemStatsTest.class.getResource("mockNetstatStats.txt").getFile());
 
     Statistics[] statistics = getStatisticsManager().findStatisticsByTextId("LinuxSystemStats");
     waitForExpectedStatValue(statistics[0], "cpuSteal", expectedStatValue, 20000, 10);
@@ -148,42 +151,8 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
     });
   }
 
-  /**
-   * This method will allow junit to mock up how Linux reports the CPU information though a file
-   * called "/proc/stat". We need to create a new file for each call since each file could represent
-   * another phase in the mock test.
-   */
-  private File writeStringToFile(String mockProcStatFileContents) throws IOException {
-    File mockFile = temporaryFolder.newFile();
-    FileUtils.writeStringToFile(mockFile, mockProcStatFileContents, (Charset) null);
-
-    return mockFile;
-  }
-
   @Override
   protected StatisticsManager getStatisticsManager() {
     return this.statisticsFactory;
-  }
-
-  private class MyStealTimeAnswer implements Answer<FileInputStream> {
-
-    private final List<FileInputStream> results = new ArrayList<>();
-    private final FileInputStream bogus;
-
-    MyStealTimeAnswer(String[] samples) throws IOException {
-      for (String item : samples) {
-        results.add(new FileInputStream(writeStringToFile(item)));
-      }
-      bogus = new FileInputStream(writeStringToFile(""));
-    }
-
-    @Override
-    public FileInputStream answer(InvocationOnMock invocation) throws Throwable {
-      // Since we are mocking the test we can run this test on any OS.
-      if ("/proc/stat".equals(invocation.getArgument(0))) {
-        return results.remove(0);
-      }
-      return bogus;
-    }
   }
 }

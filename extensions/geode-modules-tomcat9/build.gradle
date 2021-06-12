@@ -1,5 +1,3 @@
-import org.apache.geode.gradle.plugins.DependencyConstraints
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -17,43 +15,39 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
  * limitations under the License.
  */
 
+import org.apache.geode.gradle.plugins.DependencyConstraints
+
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
+apply from: "${rootDir}/${scriptDir}/publish-java.gradle"
 
 evaluationDependsOn(":geode-core")
 
-
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
-  api(project(':extensions:geode-modules')) {
-    exclude group: 'org.apache.tomcat'
-  }
+  // main
+  implementation(platform(project(':boms:geode-all-bom')))
 
-  implementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat9.version')) {
-    exclude module: 'tomcat-annotations-api'
-    exclude module: 'tomcat-servlet-api'
-  }
-  implementation('org.apache.tomcat:tomcat-coyote:' + DependencyConstraints.get('tomcat9.version')) {
-    exclude module: 'tomcat-servlet-api'
-  }
-  implementation('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat9.version'))
-  implementation('javax.servlet:javax.servlet-api:4.0.1')
+  api(project(':geode-core'))
+  api(project(':extensions:geode-modules'))
 
-  testImplementation('org.httpunit:httpunit')
+  compileOnly(platform(project(':boms:geode-all-bom')))
+  compileOnly('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat9.version'))
+
+
+  // test
+  testImplementation(project(':extensions:geode-modules-test'))
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
-  testImplementation(project(':extensions:geode-modules-test'))
+  testImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat9.version'))
 
+
+  // integrationTest
   integrationTestImplementation(project(':extensions:geode-modules-test'))
-  integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.mockito:mockito-core')
-
+  integrationTestImplementation(project(':geode-dunit'))
+  integrationTestImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat9.version'))
 }
 
-eclipse.classpath.file {
-  whenMerged { classpath ->
-    classpath.entries.removeAll { entry -> entry.path.contains('geode-modules/build') }
-  }
+sonarqube {
+  skipProject = true
 }
-

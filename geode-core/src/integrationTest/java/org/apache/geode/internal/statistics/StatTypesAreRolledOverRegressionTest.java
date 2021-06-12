@@ -147,8 +147,9 @@ public class StatTypesAreRolledOverRegressionTest {
       }
 
       for (ResourceInst resourceInstance : resources) {
-        if (resourceInstance == null)
+        if (resourceInstance == null) {
           continue;
+        }
         assertThat(resourceInstance.getName()).isNotNull();
         assertThat(resourceInstance.getType()).isNotNull();
         assertThat(resourceInstance.getType().getName()).isEqualTo(this.statisticsType.getName());

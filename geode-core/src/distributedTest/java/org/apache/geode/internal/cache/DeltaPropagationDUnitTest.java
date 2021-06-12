@@ -26,8 +26,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.internal.DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT;
 import static org.apache.geode.distributed.internal.DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_OFF;
 import static org.apache.geode.distributed.internal.DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_ON;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.cache.CacheServerImpl.generateNameForClientMsgsRegion;
 import static org.apache.geode.internal.cache.tier.sockets.CacheClientProxyFactory.INTERNAL_FACTORY_PROPERTY;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEMFIRE_PREFIX;
@@ -101,9 +100,9 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -152,7 +151,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
   @Rule
   public SerializableTestName testName = new SerializableTestName();
   @Rule
-  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   @Before
   public void setUp() {
@@ -1347,7 +1346,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
 
       factory.create(regionName);
 
-      int port = getRandomAvailablePort(SOCKET);
+      int port = getRandomAvailableTCPPort();
       CacheServer cacheServer = getCache().addCacheServer();
       cacheServer.setPort(port);
 
@@ -1486,9 +1485,9 @@ public class DeltaPropagationDUnitTest implements Serializable {
 
   private static class ValidatingClientListener extends CacheListenerAdapter<String, Object> {
 
-    private final SharedErrorCollector errorCollector;
+    private final DistributedErrorCollector errorCollector;
 
-    private ValidatingClientListener(SharedErrorCollector errorCollector) {
+    private ValidatingClientListener(DistributedErrorCollector errorCollector) {
       this.errorCollector = errorCollector;
     }
 
@@ -1511,9 +1510,9 @@ public class DeltaPropagationDUnitTest implements Serializable {
 
   private static class SkipThirdDeltaValue extends ValidatingClientListener {
 
-    private final SharedErrorCollector errorCollector;
+    private final DistributedErrorCollector errorCollector;
 
-    private SkipThirdDeltaValue(SharedErrorCollector errorCollector) {
+    private SkipThirdDeltaValue(DistributedErrorCollector errorCollector) {
       super(errorCollector);
       this.errorCollector = errorCollector;
     }
@@ -1562,9 +1561,9 @@ public class DeltaPropagationDUnitTest implements Serializable {
 
   private static class DurableClientListener extends CacheListenerAdapter<String, Object> {
 
-    private final SharedErrorCollector errorCollector;
+    private final DistributedErrorCollector errorCollector;
 
-    private DurableClientListener(SharedErrorCollector errorCollector) {
+    private DurableClientListener(DistributedErrorCollector errorCollector) {
       this.errorCollector = errorCollector;
     }
 

@@ -55,13 +55,6 @@ are kept in a
 {@link org.apache.geode.internal.tcp.ConnectionTable ConnectionTable}.
 </p>
 
-<p>The use of NIO can be turned off with the property <code>p2p.oldIO=true</code>.
-This will force the use of sockets instead of socket channels.
-Each <code>Connection</code> always creates a reader thread for pulling information out
-of its socket.</p>
-
-<p>NIO and oldIO communications are interoperable</p>
-
 <p><code>TCPConduit</code> is used to send and receive messages using
 endpoint <code>Stubs</code> holding target host/port information. The conduit
 uses this information to select the correct <code>Connection</code>,
@@ -97,21 +90,6 @@ much simpler.</p>
   p2p.tcpBufferSize - the size of operating system buffers on the tcp socket.
       outgoing messages.  The default is 32768.
 
-  p2p.readerBufferSize - the size of the buffer used by reader threads
-      to buffer incoming data.  The default is 32768.
-
-  p2p.VERBOSE - turn on verbose logging at finer and finest log settings
-  
-  p2p.defaultLogLevel - level of logging to use if there is no distribution
-      manager or gemfire log writer.  The value is "info", "config", "fine"
-      etc
-  
-  p2p.DEBUG - turn on VERBOSE and defaultLogLevel of "finest"
-  
-  p2p.oldIO - turn off the use of java.nio for I/O operations.  If there is
-      a custom socket implementation being used in the VM that doesn't support
-      NIO you might want to use this property.
-  
   p2p.useSSL - causes the conduit to use the javax.ssl JSSE factory to create
       its server socket.  This also sets p2p.oldIO=true since SSL sockets
       don't currently seem to support NIO.  TCPConduit has the method

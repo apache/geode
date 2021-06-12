@@ -727,12 +727,11 @@ public class TXCommitMessage extends PooledDistributionMessage
     firePendingCallbacks(pendingCallbacks);
   }
 
-  private void firePendingCallbacks(List<EntryEventImpl> callbacks) {
+  void firePendingCallbacks(List<EntryEventImpl> callbacks) {
     boolean isConfigError = false;
     EntryEventImpl lastTransactionEvent = null;
     try {
-      lastTransactionEvent =
-          TXLastEventInTransactionUtils.getLastTransactionEvent(callbacks, dm.getCache());
+      lastTransactionEvent = getLastTransactionEvent(callbacks);
     } catch (ServiceConfigurationError ex) {
       logger.error(ex.getMessage());
       isConfigError = true;
@@ -751,8 +750,13 @@ public class TXCommitMessage extends PooledDistributionMessage
           ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, ee, true,
               isLastTransactionEvent);
         } else {
-          ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, ee, true,
-              isLastTransactionEvent);
+          if (!ee.hasNewValue()) { // GEODE-8964, fixes GII and TX create conflict that
+            ee.getRegion(). // produces an Update with null value
+                invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, ee, true, isLastTransactionEvent);
+          } else {
+            ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, ee, true,
+                isLastTransactionEvent);
+          }
         }
       } finally {
         ee.release();
@@ -760,6 +764,9 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
   }
 
+  EntryEventImpl getLastTransactionEvent(List<EntryEventImpl> callbacks) {
+    return TXLastEventInTransactionUtils.getLastTransactionEvent(callbacks, dm.getCache());
+  }
 
   protected void processCacheRuntimeException(CacheRuntimeException problem) {
     if (problem instanceof RegionDestroyedException) { // catch RegionDestroyedException

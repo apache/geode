@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
@@ -25,15 +26,16 @@ import static org.apache.geode.cache.client.PoolFactory.DEFAULT_SUBSCRIPTION_ACK
 import static org.apache.geode.cache.client.PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED;
 import static org.apache.geode.cache.client.PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.internal.cache.AbstractCacheServer.MAXIMUM_TIME_BETWEEN_PINGS_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
-import static org.apache.geode.test.dunit.DistributedTestUtils.getLocators;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
 import static org.apache.geode.test.dunit.rules.DistributedRule.getDistributedSystemProperties;
+import static org.apache.geode.test.dunit.rules.DistributedRule.getLocators;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
@@ -111,6 +113,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -123,10 +126,12 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  */
 @Category({ClientServerTest.class, ClientSubscriptionTest.class})
 @RunWith(JUnitParamsRunner.class)
-@SuppressWarnings("serial")
+@SuppressWarnings("serial,NumericCastThatLosesPrecision")
 public class PutAllClientServerDistributedTest implements Serializable {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
+  private static final long TIMEOUT_MILLIS_LONG = getTimeout().toMillis();
+  private static final int TIMEOUT_MILLIS_INTEGER = (int) TIMEOUT_MILLIS_LONG;
+  private static final String TIMEOUT_MILLIS_STRING = String.valueOf(TIMEOUT_MILLIS_LONG);
 
   private static final int ONE_HUNDRED = 100;
   private static final int ONE_THOUSAND = 1000;
@@ -163,6 +168,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
   @Rule
   public DistributedExecutorServiceRule executorServiceRule = new DistributedExecutorServiceRule();
   @Rule
+  public DistributedRestoreSystemProperties restoreProps = new DistributedRestoreSystemProperties();
+  @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Before
@@ -189,6 +196,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
         CACHE.set(DUMMY_CACHE);
         CLIENT_CACHE.set(DUMMY_CLIENT_CACHE);
         DISK_DIR.set(temporaryFolder.newFolder("diskDir-" + getVMId()).getAbsoluteFile());
+        System.setProperty(MAXIMUM_TIME_BETWEEN_PINGS_PROPERTY, TIMEOUT_MILLIS_STRING);
       });
     }
 
@@ -206,9 +214,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
   public void tearDown() {
     for (VM vm : asList(getController(), client1, client2, server1, server2)) {
       vm.invoke(() -> {
-        LATCH.get().countDown();
-        BEFORE.get().countDown();
-        AFTER.get().countDown();
+        countDown(LATCH);
+        countDown(BEFORE);
+        countDown(AFTER);
         closeClientCache();
         closeCache();
         PoolManager.close();
@@ -226,16 +234,18 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .regionShortcut(REPLICATE)
         .create());
 
-    for (VM clientVM : asList(client1, client2)) {
-      clientVM.invoke(() -> new ClientBuilder()
-          .concurrencyChecksEnabled()
-          .prSingleHopEnabled(true)
-          .serverPorts(serverPort)
-          .subscriptionAckInterval()
-          .subscriptionEnabled(true)
-          .subscriptionRedundancy()
-          .create());
-    }
+    client1.invoke(() -> new ClientBuilder()
+        .serverPorts(serverPort)
+        .subscriptionAckInterval()
+        .subscriptionEnabled(true)
+        .subscriptionRedundancy()
+        .create());
+    client2.invoke(() -> new ClientBuilder()
+        .serverPorts(serverPort)
+        .subscriptionAckInterval()
+        .subscriptionEnabled(true)
+        .subscriptionRedundancy()
+        .create());
 
     client2.invoke(() -> {
       Region<String, TickerData> region = getClientCache().getRegion(regionName);
@@ -280,8 +290,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
         localSaveRegion.put("key-" + i, tickerData);
       }
 
-      BEFORE.get().countDown();
-      AFTER.get().await(TIMEOUT_MILLIS, MILLISECONDS);
+      countDown(BEFORE);
+      awaitLatch(AFTER);
 
       cqQuery.close();
     });
@@ -298,7 +308,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     // verify CQ is ready
     client1.invoke(() -> {
-      BEFORE.get().await(TIMEOUT_MILLIS, MILLISECONDS);
+      awaitLatch(BEFORE);
 
       Region<String, TickerData> localSaveRegion = getClientCache().getRegion("localsave");
       await().untilAsserted(() -> assertThat(localSaveRegion.size()).isGreaterThan(0));
@@ -346,7 +356,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
         });
       }
 
-      AFTER.get().countDown();
+      countDown(AFTER);
     });
 
     createCqInClient1.await();
@@ -387,16 +397,12 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
         .serverPorts(serverPort1)
         .subscriptionAckInterval()
         .subscriptionEnabled(true)
         .subscriptionRedundancy()
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
         .serverPorts(serverPort2)
         .subscriptionAckInterval()
         .subscriptionEnabled(true)
@@ -412,7 +418,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
               event -> {
                 assertThat(event.getOldValue()).isNotNull();
                 VALUE.set(event.getOldValue());
-                LATCH.get().countDown();
+                countDown(LATCH);
               })));
       region.registerInterest("ALL_KEYS");
     });
@@ -426,7 +432,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
               event -> {
                 assertThat(event.getOldValue()).isNotNull();
                 VALUE.set(event.getOldValue());
-                LATCH.get().countDown();
+                countDown(LATCH);
               })));
 
       // create keys
@@ -440,12 +446,12 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     // the local PUTALL_UPDATE event should contain old value
     client1.invoke(() -> {
-      LATCH.get().await(TIMEOUT_MILLIS, MILLISECONDS);
+      awaitLatch(LATCH);
       assertThat(VALUE.get()).isInstanceOf(TickerData.class);
     });
 
     client2.invoke(() -> {
-      LATCH.get().await(TIMEOUT_MILLIS, MILLISECONDS);
+      awaitLatch(LATCH);
       assertThat(VALUE.get()).isInstanceOf(TickerData.class);
     });
   }
@@ -464,13 +470,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .registerInterest(true)
         .serverPorts(serverPort1)
-        .subscriptionAckInterval()
-        .subscriptionEnabled(true)
-        .subscriptionRedundancy()
         .create());
 
     client1.invoke(() -> {
@@ -503,8 +503,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
     List<VersionTag> versionTags = versions.getVersionTags();
     // noinspection rawtypes
     List<VersionTag> versionTagsAfterRetry = versionsAfterRetry.getVersionTags();
-    assertThat(versionTags.size()).isEqualTo(versionTagsAfterRetry.size());
-    assertThat(versionTags).containsAll(versionTagsAfterRetry);
+    assertThat(versionTags)
+        .hasSameSizeAs(versionTagsAfterRetry)
+        .containsAll(versionTagsAfterRetry);
   }
 
   /**
@@ -521,8 +522,6 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
         .registerInterest(true)
         .serverPorts(serverPort1)
         .subscriptionAckInterval()
@@ -530,8 +529,6 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .subscriptionRedundancy()
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
         .registerInterest(true)
         .serverPorts(serverPort2)
         .subscriptionAckInterval()
@@ -855,22 +852,10 @@ public class PutAllClientServerDistributedTest implements Serializable {
     });
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .readTimeout(59000)
-        .registerInterest(true)
         .serverPorts(serverPort1)
-        .subscriptionEnabled(true)
-        .subscriptionRedundancy()
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .readTimeout(59000)
-        .registerInterest(true)
         .serverPorts(serverPort2)
-        .subscriptionEnabled(true)
-        .subscriptionRedundancy()
         .create());
 
     // test case 1: putAll and removeAll to server1
@@ -1044,16 +1029,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .readTimeout(59000)
-        .registerInterest(true)
         .serverPorts(serverPort1)
-        .subscriptionEnabled(true)
-        .subscriptionRedundancy()
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .readTimeout(59000)
         .registerInterest(true)
         .serverPorts(serverPort2)
         .subscriptionEnabled(true)
@@ -1198,7 +1176,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
   @Test
   @Parameters({"true", "false"})
   @TestCaseName("{method}(singleHop={0})")
-  public void testBug51725(boolean singleHop) {
+  public void clientPutAllIsMissingKeyUntilShutdownServerRestarts(boolean singleHop) {
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
         .regionShortcut(PARTITION_PERSISTENT)
         .create());
@@ -1206,16 +1184,16 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .regionShortcut(PARTITION_PERSISTENT)
         .create());
 
-    for (VM clientVM : asList(client1, client2)) {
-      clientVM.invoke(() -> new ClientBuilder()
-          .concurrencyChecksEnabled()
-          .prSingleHopEnabled(singleHop)
-          .readTimeout(59000)
-          .serverPorts(serverPort1)
-          .subscriptionEnabled(true)
-          .subscriptionRedundancy()
-          .create());
-    }
+    client1.invoke(() -> new ClientBuilder()
+        .prSingleHopEnabled(singleHop)
+        .serverPorts(serverPort1)
+        .create());
+    client2.invoke(() -> new ClientBuilder()
+        .prSingleHopEnabled(singleHop)
+        .serverPorts(serverPort1)
+        .subscriptionEnabled(true)
+        .subscriptionRedundancy()
+        .create());
 
     // client2 add listener
     client2.invoke(() -> {
@@ -1246,8 +1224,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       assertThat(thrown)
           .isInstanceOf(ServerOperationException.class)
-          .hasMessageContaining(message);
-      assertThat(thrown.getCause())
+          .hasMessageContaining(message)
+          .getCause()
           .isInstanceOf(PartitionOfflineException.class);
 
       assertThat(region.size()).isEqualTo(ONE_HUNDRED * 3 / 2);
@@ -1270,8 +1248,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       assertThat(thrown)
           .isInstanceOf(ServerOperationException.class)
-          .hasMessageContaining(message);
-      assertThat(thrown.getCause())
+          .hasMessageContaining(message)
+          .getCause()
           .isInstanceOf(PartitionOfflineException.class);
 
       // putAll only created 50 entries, removeAll removed them. So 100 entries are all NULL
@@ -1307,16 +1285,12 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .readTimeout(59000)
         .registerInterest(true)
         .serverPorts(serverPort1)
         .subscriptionEnabled(true)
         .subscriptionRedundancy()
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .readTimeout(59000)
         .registerInterest(true)
         .serverPorts(serverPort2)
         .subscriptionEnabled(true)
@@ -1618,12 +1592,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
         .serverPorts(serverPort1)
-        .subscriptionAckInterval()
-        .subscriptionEnabled(true)
-        .subscriptionRedundancy()
         .create());
 
     // server1 add cacheWriter
@@ -1637,9 +1606,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
                   throw new CacheWriterException("Expected by test");
                 }
               })));
+      assertThat(region.size()).isZero();
     });
-
-    assertThat(server1.invoke(() -> getCache().getRegion(regionName).size())).isZero();
 
     // client1 destroy
     client1.invoke(() -> {
@@ -1668,16 +1636,15 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .regionShortcut(REPLICATE)
         .create());
 
-    for (VM clientVM : asList(client1, client2)) {
-      clientVM.invoke(() -> new ClientBuilder()
-          .concurrencyChecksEnabled()
-          .prSingleHopEnabled(true)
-          .serverPorts(serverPort1)
-          .subscriptionAckInterval()
-          .subscriptionEnabled(true)
-          .subscriptionRedundancy()
-          .create());
-    }
+    client1.invoke(() -> new ClientBuilder()
+        .serverPorts(serverPort1)
+        .create());
+    client2.invoke(() -> new ClientBuilder()
+        .serverPorts(serverPort1)
+        .subscriptionAckInterval()
+        .subscriptionEnabled(true)
+        .subscriptionRedundancy()
+        .create());
 
     // server1 add cacheWriter
     server1.invoke(() -> {
@@ -1710,8 +1677,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       assertThat(thrown)
           .isInstanceOf(ServerOperationException.class)
-          .hasMessageContaining(message);
-      assertThat(thrown.getCause())
+          .hasMessageContaining(message)
+          .getCause()
           .isInstanceOf(CacheWriterException.class);
     });
 
@@ -1781,8 +1748,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       assertThat(thrown)
           .isInstanceOf(ServerOperationException.class)
-          .hasMessageContaining(message);
-      assertThat(thrown.getCause())
+          .hasMessageContaining(message)
+          .getCause()
           .isInstanceOf(CacheWriterException.class);
     });
 
@@ -1845,12 +1812,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
         .serverPorts(serverPort1)
-        .subscriptionAckInterval()
-        .subscriptionEnabled(true)
-        .subscriptionRedundancy()
         .create());
 
     // server1 add cacheWriter
@@ -1866,12 +1828,10 @@ public class PutAllClientServerDistributedTest implements Serializable {
               })));
 
       Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
-      assertThat(thrown)
-          .isInstanceOf(CacheWriterException.class);
+      assertThat(thrown).isInstanceOf(CacheWriterException.class);
 
       thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
-      assertThat(thrown)
-          .isInstanceOf(CacheWriterException.class);
+      assertThat(thrown).isInstanceOf(CacheWriterException.class);
     });
 
     // client1 putAll
@@ -1886,15 +1846,13 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       assertThat(thrown)
           .isInstanceOf(ServerOperationException.class)
-          .hasMessageContaining(message);
-      assertThat(thrown.getCause())
-          .isInstanceOf(CacheWriterException.class);
+          .hasMessageContaining(message)
+          .hasCauseInstanceOf(CacheWriterException.class);
 
       thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
       assertThat(thrown)
-          .isInstanceOf(ServerOperationException.class);
-      assertThat(thrown.getCause())
-          .isInstanceOf(CacheWriterException.class);
+          .isInstanceOf(ServerOperationException.class)
+          .hasCauseInstanceOf(CacheWriterException.class);
     });
 
     // let server1 to throw CancelException
@@ -1908,12 +1866,10 @@ public class PutAllClientServerDistributedTest implements Serializable {
               })));
 
       Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
-      assertThat(thrown)
-          .isInstanceOf(OplogCancelledException.class);
+      assertThat(thrown).isInstanceOf(OplogCancelledException.class);
 
       thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
-      assertThat(thrown)
-          .isInstanceOf(OplogCancelledException.class);
+      assertThat(thrown).isInstanceOf(OplogCancelledException.class);
     });
 
     // client1 putAll
@@ -1922,15 +1878,13 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
       assertThat(thrown)
-          .isInstanceOf(ServerConnectivityException.class);
-      assertThat(thrown.getCause())
-          .isInstanceOf(OplogCancelledException.class);
+          .isInstanceOf(ServerConnectivityException.class)
+          .hasCauseInstanceOf(OplogCancelledException.class);
 
       thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
       assertThat(thrown)
-          .isInstanceOf(ServerConnectivityException.class);
-      assertThat(thrown.getCause())
-          .isInstanceOf(OplogCancelledException.class);
+          .isInstanceOf(ServerConnectivityException.class)
+          .hasCauseInstanceOf(OplogCancelledException.class);
     });
 
     // let server1 to throw LowMemoryException
@@ -1940,16 +1894,14 @@ public class PutAllClientServerDistributedTest implements Serializable {
       region.getAttributesMutator()
           .setCacheWriter(new ActionCacheWriter<>(new Action<>(Operation.CREATE,
               creates -> {
-                throw new LowMemoryException();
+                throw new LowMemoryException("Testing", emptySet());
               })));
 
       Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
-      assertThat(thrown)
-          .isInstanceOf(LowMemoryException.class);
+      assertThat(thrown).isInstanceOf(LowMemoryException.class);
 
       thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
-      assertThat(thrown)
-          .isInstanceOf(LowMemoryException.class);
+      assertThat(thrown).isInstanceOf(LowMemoryException.class);
     });
 
     // client1 putAll
@@ -1958,14 +1910,14 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
       assertThat(thrown)
-          .isInstanceOf(ServerOperationException.class);
-      assertThat(thrown.getCause())
+          .isInstanceOf(ServerOperationException.class)
+          .getCause()
           .isInstanceOf(LowMemoryException.class);
 
       thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
       assertThat(thrown)
-          .isInstanceOf(ServerOperationException.class);
-      assertThat(thrown.getCause())
+          .isInstanceOf(ServerOperationException.class)
+          .getCause()
           .isInstanceOf(LowMemoryException.class);
     });
 
@@ -1976,33 +1928,33 @@ public class PutAllClientServerDistributedTest implements Serializable {
       region.getAttributesMutator()
           .setCacheWriter(new ActionCacheWriter<>(new Action<>(Operation.CREATE,
               creates -> {
-                throw new TimeoutException();
+                throw new TimeoutException("Testing");
               })));
 
       Map<String, TickerData> map = new LinkedHashMap<>();
       for (int i = 0; i < ONE_HUNDRED; i++) {
         map.put(keyPrefix + i, new TickerData(i));
       }
-      try {
-        region.putAll(map);
-      } catch (TimeoutException e) {
-        assertThat(e.getCause()).isNull();
-      }
 
-      try {
-        region.put("dummyKey", new TickerData(0));
-      } catch (TimeoutException e) {
-        assertThat(e.getCause()).isNull();
-      }
-
-      Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
+      Throwable thrown = catchThrowable(() -> region.putAll(map));
       assertThat(thrown)
-          .isInstanceOf(TimeoutException.class);
-      assertThat(thrown.getCause()).isNull();
+          .isInstanceOf(TimeoutException.class)
+          .hasNoCause();
 
       thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
       assertThat(thrown)
-          .isInstanceOf(TimeoutException.class);
+          .isInstanceOf(TimeoutException.class)
+          .hasNoCause();
+
+      thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
+      assertThat(thrown)
+          .isInstanceOf(TimeoutException.class)
+          .hasNoCause();
+
+      thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
+      assertThat(thrown)
+          .isInstanceOf(TimeoutException.class)
+          .hasNoCause();
     });
 
     // client1 putAll
@@ -2013,29 +1965,26 @@ public class PutAllClientServerDistributedTest implements Serializable {
       for (int i = 0; i < ONE_HUNDRED; i++) {
         map.put(keyPrefix + i, new TickerData(i));
       }
-      try {
-        region.putAll(map);
-      } catch (ServerOperationException e) {
-        assertThat(e.getCause()).isInstanceOf(TimeoutException.class);
-      }
 
-      try {
-        region.put("dummyKey", new TickerData(0));
-      } catch (ServerOperationException e) {
-        assertThat(e.getCause()).isInstanceOf(TimeoutException.class);
-      }
-
-      Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
+      Throwable thrown = catchThrowable(() -> region.putAll(map));
       assertThat(thrown)
-          .isInstanceOf(ServerOperationException.class);
-      assertThat(thrown.getCause())
-          .isInstanceOf(TimeoutException.class);
+          .isInstanceOf(ServerOperationException.class)
+          .hasCauseInstanceOf(TimeoutException.class);
 
       thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
       assertThat(thrown)
-          .isInstanceOf(ServerOperationException.class);
-      assertThat(thrown.getCause())
-          .isInstanceOf(TimeoutException.class);
+          .isInstanceOf(ServerOperationException.class)
+          .hasCauseInstanceOf(TimeoutException.class);
+
+      thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_HUNDRED));
+      assertThat(thrown)
+          .isInstanceOf(ServerOperationException.class)
+          .hasCauseInstanceOf(TimeoutException.class);
+
+      thrown = catchThrowable(() -> region.put("dummyKey", new TickerData(0)));
+      assertThat(thrown)
+          .isInstanceOf(ServerOperationException.class)
+          .hasCauseInstanceOf(TimeoutException.class);
     });
   }
 
@@ -2055,7 +2004,6 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     for (VM clientVM : asList(client1, client2)) {
       clientVM.invoke(() -> new ClientBuilder()
-          .prSingleHopEnabled(true)
           .serverPorts(serverPort1, serverPort2)
           .subscriptionAckInterval()
           .subscriptionEnabled(true)
@@ -2098,8 +2046,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       assertThat(thrown)
           .isInstanceOf(ServerOperationException.class)
-          .hasMessageContaining(message);
-      assertThat(thrown.getCause())
+          .hasMessageContaining(message)
+          .getCause()
           .isInstanceOf(PartitionOfflineException.class);
     });
 
@@ -2139,8 +2087,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       assertThat(thrown)
           .isInstanceOf(ServerOperationException.class)
-          .hasMessageContaining(message);
-      assertThat(thrown.getCause())
+          .hasMessageContaining(message)
+          .getCause()
           .isInstanceOf(PartitionOfflineException.class);
     });
 
@@ -2204,12 +2152,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .prSingleHopEnabled(true)
         .serverPorts(serverPort1, serverPort2)
-        .subscriptionEnabled(false)
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .prSingleHopEnabled(true)
         .serverPorts(serverPort1, serverPort2)
         .subscriptionAckInterval()
         .subscriptionEnabled(true)
@@ -2264,8 +2209,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       assertThat(thrown)
           .isInstanceOf(ServerOperationException.class)
-          .hasMessageContaining(message);
-      assertThat(thrown.getCause())
+          .hasMessageContaining(message)
+          .getCause()
           .isInstanceOf(PartitionOfflineException.class);
     });
 
@@ -2297,8 +2242,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       assertThat(thrown)
           .isInstanceOf(ServerOperationException.class)
-          .hasMessageContaining(message);
-      assertThat(thrown.getCause())
+          .hasMessageContaining(message)
+          .getCause()
           .isInstanceOf(PartitionOfflineException.class);
     });
 
@@ -2338,8 +2283,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       assertThat(thrown)
           .isInstanceOf(ServerOperationException.class)
-          .hasMessageContaining(message);
-      assertThat(thrown.getCause())
+          .hasMessageContaining(message)
+          .getCause()
           .isInstanceOf(CacheWriterException.class)
           .hasMessageContaining("Expected by test");
     });
@@ -2361,14 +2306,12 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .prSingleHopEnabled(true)
         .serverPorts(serverPort1, serverPort2)
         .subscriptionAckInterval()
         .subscriptionEnabled(true)
         .subscriptionRedundancy()
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .prSingleHopEnabled(true)
         .serverPorts(serverPort1, serverPort2)
         .subscriptionAckInterval()
         .subscriptionEnabled(true)
@@ -2432,7 +2375,6 @@ public class PutAllClientServerDistributedTest implements Serializable {
     // restart server2
     server2.invoke(() -> {
       new ServerBuilder()
-
           .redundantCopies(1)
           .regionShortcut(PARTITION_PERSISTENT)
           .create();
@@ -2459,13 +2401,10 @@ public class PutAllClientServerDistributedTest implements Serializable {
     assertThat(newSizeOnClient2).isEqualTo(newSizeOnServer1);
   }
 
-
   /**
    * The purpose of this test is to validate that when two servers of three in a cluster configured
    * with a client doing singlehop, that the client gets afterCreate messages for each entry in the
-   * putall.
-   * Further, we also check that the region size is correct on the remaining server.
-   *
+   * putall. Further, we also check that the region size is correct on the remaining server.
    */
   @Test
   public void testEventIdOutOfOrderInPartitionRegionSingleHop() {
@@ -2474,43 +2413,31 @@ public class PutAllClientServerDistributedTest implements Serializable {
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
         .regionShortcut(PARTITION)
         .create());
-
     int serverPort2 = server2.invoke(() -> new ServerBuilder()
         .regionShortcut(PARTITION)
         .create());
-
     int serverPort3 = server3.invoke(() -> new ServerBuilder()
         .regionShortcut(PARTITION)
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
         .serverPorts(serverPort1, serverPort2, serverPort3)
         .subscriptionAckInterval()
         .subscriptionEnabled(true)
         .subscriptionRedundancy()
-        .readTimeout(100000)
         .create());
 
-    new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .serverPorts(serverPort1, serverPort2, serverPort3)
-        .subscriptionAckInterval()
-        .subscriptionEnabled(true)
-        .subscriptionRedundancy()
-        .create();
-
-    Region<String, TickerData> myRegion = getClientCache().getRegion(regionName);
-
     // do some putAll to get ClientMetaData for future putAll
-    client1.invoke(() -> doPutAll(getClientCache().getRegion(regionName), "key-", ONE_HUNDRED));
+    client1.invoke(() -> {
+      // register interest and add listener
+      Region<String, TickerData> region = getClientCache().getRegion(regionName);
+      doPutAll(getClientCache().getRegion(regionName), "key-", ONE_HUNDRED);
 
-    // register interest and add listener
-    Counter clientCounter = new Counter("client");
-    myRegion.getAttributesMutator().addCacheListener(new CountingCacheListener<>(clientCounter));
-    myRegion.registerInterest("ALL_KEYS");
+      COUNTER.set(new Counter("client1"));
+      region.getAttributesMutator()
+          .addCacheListener(new CountingCacheListener<>(COUNTER.get()));
+      region.registerInterest("ALL_KEYS");
+    });
 
     // server1 and server2 will closeCache after created 10 keys
     // server1 add slow listener
@@ -2520,7 +2447,6 @@ public class PutAllClientServerDistributedTest implements Serializable {
           .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
               creates -> closeCacheConditionally(creates, 10))));
     });
-
 
     // server2 add slow listener
     server2.invoke(() -> {
@@ -2541,29 +2467,22 @@ public class PutAllClientServerDistributedTest implements Serializable {
     // client1 add listener and putAll
     client1.invoke(() -> {
       Region<String, TickerData> region = getClientCache().getRegion(regionName);
-      doPutAll(region, keyPrefix, ONE_HUNDRED); // fails in GEODE-7812
+      doPutAll(region, keyPrefix, ONE_HUNDRED);
+
+      assertThat(COUNTER.get().getCreates()).isEqualTo(100);
+      assertThat(COUNTER.get().getUpdates()).isZero();
     });
 
-    client1.invoke(() -> await()
-        .untilAsserted(() -> assertThat(clientCounter.getCreates()).isEqualTo(ONE_HUNDRED)));
-
-    await().untilAsserted(() -> assertThat(clientCounter.getCreates()).isEqualTo(ONE_HUNDRED));
-
-    assertThat(clientCounter.getUpdates()).isZero();
-
-    // server1 and server2 will closeCache after created 10 keys
     // server3 print counter
     server3.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
 
       assertThat(region.size())
           .describedAs("Should have 100 entries plus 3 to 4 buckets worth of entries")
-          .isIn(ONE_HUNDRED + 3 * (ONE_HUNDRED) / 10, ONE_HUNDRED + 4 * (ONE_HUNDRED) / 10);
+          .isIn(ONE_HUNDRED + 3 * ONE_HUNDRED / 10, ONE_HUNDRED + 4 * ONE_HUNDRED / 10);
       assertThat(COUNTER.get().getUpdates()).isZero();
       verifyPutAll(region, keyPrefix);
-
     });
-
   }
 
   /**
@@ -2580,17 +2499,20 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .regionShortcut(REPLICATE)
         .create());
 
-    for (VM clientVM : asList(client1, client2)) {
-      clientVM.invoke(() -> new ClientBuilder()
-          .concurrencyChecksEnabled()
-          .prSingleHopEnabled(true)
-          .registerInterest(true)
-          .serverPorts(serverPort1, serverPort2)
-          .subscriptionAckInterval()
-          .subscriptionEnabled(true)
-          .subscriptionRedundancy()
-          .create());
-    }
+    client1.invoke(() -> new ClientBuilder()
+        .registerInterest(true)
+        .serverPorts(serverPort1, serverPort2)
+        .subscriptionAckInterval()
+        .subscriptionEnabled(true)
+        .subscriptionRedundancy()
+        .create());
+    client2.invoke(() -> new ClientBuilder()
+        .registerInterest(true)
+        .serverPorts(serverPort1, serverPort2)
+        .subscriptionAckInterval()
+        .subscriptionEnabled(true)
+        .subscriptionRedundancy()
+        .create());
 
     // server1 add slow listener
     server1.invoke(() -> {
@@ -2662,17 +2584,22 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .regionShortcut(REPLICATE)
         .create());
 
-    for (VM clientVM : asList(client1, client2)) {
-      clientVM.invoke(() -> new ClientBuilder()
-          .concurrencyChecksEnabled()
-          .prSingleHopEnabled(true)
-          .registerInterest(true)
-          .serverPorts(serverPort1, serverPort2)
-          .subscriptionAckInterval()
-          .subscriptionEnabled(true)
-          .subscriptionRedundancy()
-          .create());
-    }
+    client1.invoke(() -> new ClientBuilder()
+        .readTimeoutMillis(DEFAULT_READ_TIMEOUT)
+        .registerInterest(true)
+        .serverPorts(serverPort1, serverPort2)
+        .subscriptionAckInterval()
+        .subscriptionEnabled(true)
+        .subscriptionRedundancy()
+        .create());
+    client2.invoke(() -> new ClientBuilder()
+        .readTimeoutMillis(DEFAULT_READ_TIMEOUT)
+        .registerInterest(true)
+        .serverPorts(serverPort1, serverPort2)
+        .subscriptionAckInterval()
+        .subscriptionEnabled(true)
+        .subscriptionRedundancy()
+        .create());
 
     // server1 add slow listener
     server1.invoke(() -> {
@@ -2708,18 +2635,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .registerInterest(true)
         .serverPorts(serverPort1, serverPort2)
-        .subscriptionAckInterval()
-        .subscriptionEnabled(true)
-        .subscriptionRedundancy()
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .registerInterest(false)
         .serverPorts(serverPort1, serverPort2)
         .subscriptionAckInterval()
         .subscriptionEnabled(true)
@@ -2768,21 +2686,15 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .registerInterest(true)
         .serverPorts(serverPort1, serverPort2)
         .subscriptionEnabled(true)
         .subscriptionAckInterval()
         .subscriptionRedundancy()
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .registerInterest(false)
         .serverPorts(serverPort1, serverPort2)
-        .subscriptionEnabled(true)
         .subscriptionAckInterval()
+        .subscriptionEnabled(true)
         .subscriptionRedundancy()
         .create());
 
@@ -2838,19 +2750,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     // set queueRedundancy=1
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .readTimeout(59000)
-        .registerInterest(true)
         .serverPorts(serverPort1)
-        .subscriptionEnabled(true)
-        .subscriptionRedundancy()
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .readTimeout(59000)
-        .registerInterest(true)
         .serverPorts(serverPort2)
         .subscriptionEnabled(true)
         .subscriptionRedundancy()
@@ -2923,18 +2825,9 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     // set queueRedundancy=1
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .readTimeout(59000)
-        .registerInterest(true)
         .serverPorts(serverPort1)
-        .subscriptionEnabled(true)
         .create());
     client2.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .readTimeout(59000)
-        .registerInterest(true)
         .serverPorts(serverPort2)
         .subscriptionEnabled(true)
         .create());
@@ -3017,10 +2910,6 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .readTimeout(59000)
-        .registerInterest(true)
         .serverPorts(serverPort3)
         .subscriptionEnabled(true)
         .create());
@@ -3105,10 +2994,6 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .readTimeout(59000)
-        .registerInterest(true)
         .serverPorts(serverPort3)
         .subscriptionEnabled(true)
         .create());
@@ -3186,12 +3071,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
         .create());
 
     client1.invoke(() -> new ClientBuilder()
-        .concurrencyChecksEnabled()
-        .prSingleHopEnabled(true)
-        .readTimeout(59000)
-        .registerInterest(true)
         .serverPorts(serverPort1)
-        .subscriptionEnabled(true)
         .create());
 
     // client1 putAll
@@ -3297,9 +3177,8 @@ public class PutAllClientServerDistributedTest implements Serializable {
   }
 
   private void verifyPutAll(Map<String, TickerData> region, String keyPrefix) {
-    for (int i = 0; i < PutAllClientServerDistributedTest.ONE_HUNDRED; i++) {
-      assertThat(
-          region.containsKey(keyPrefix + i));
+    for (int i = 0; i < ONE_HUNDRED; i++) {
+      assertThat(region.containsKey(keyPrefix + i)).isTrue();
     }
   }
 
@@ -3364,6 +3243,15 @@ public class PutAllClientServerDistributedTest implements Serializable {
     return (T) object;
   }
 
+  private static void awaitLatch(AtomicReference<CountDownLatch> latch)
+      throws InterruptedException {
+    latch.get().await(TIMEOUT_MILLIS_LONG, MILLISECONDS);
+  }
+
+  private static void countDown(AtomicReference<CountDownLatch> latch) {
+    latch.get().countDown();
+  }
+
   private class ServerBuilder {
 
     private int redundantCopies;
@@ -3426,27 +3314,21 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
   private class ClientBuilder {
 
-    private boolean concurrencyChecksEnabled;
-    private boolean prSingleHopEnabled;
-    private int readTimeout = DEFAULT_READ_TIMEOUT;
+    private boolean prSingleHopEnabled = true;
+    private int readTimeoutMillis = TIMEOUT_MILLIS_INTEGER;
     private boolean registerInterest;
     private final Collection<Integer> serverPorts = new ArrayList<>();
-    private int subscriptionAckInterval = DEFAULT_SUBSCRIPTION_ACK_INTERVAL;
-    private boolean subscriptionEnabled = DEFAULT_SUBSCRIPTION_ENABLED;
-    private int subscriptionRedundancy = DEFAULT_SUBSCRIPTION_REDUNDANCY;
-
-    private ClientBuilder concurrencyChecksEnabled() {
-      this.concurrencyChecksEnabled = true;
-      return this;
-    }
+    private int subscriptionAckInterval = DEFAULT_SUBSCRIPTION_ACK_INTERVAL; // 100 millis
+    private boolean subscriptionEnabled = DEFAULT_SUBSCRIPTION_ENABLED; // false
+    private int subscriptionRedundancy = DEFAULT_SUBSCRIPTION_REDUNDANCY; // 0
 
     private ClientBuilder prSingleHopEnabled(boolean prSingleHopEnabled) {
       this.prSingleHopEnabled = prSingleHopEnabled;
       return this;
     }
 
-    private ClientBuilder readTimeout(int readTimeout) {
-      this.readTimeout = readTimeout;
+    private ClientBuilder readTimeoutMillis(int readTimeoutMillis) {
+      this.readTimeoutMillis = readTimeoutMillis;
       return this;
     }
 
@@ -3461,7 +3343,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
     }
 
     private ClientBuilder subscriptionAckInterval() {
-      this.subscriptionAckInterval = 1;
+      subscriptionAckInterval = 1;
       return this;
     }
 
@@ -3471,7 +3353,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
     }
 
     private ClientBuilder subscriptionRedundancy() {
-      this.subscriptionRedundancy = -1;
+      subscriptionRedundancy = -1;
       return this;
     }
 
@@ -3493,7 +3375,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
       }
       poolFactory
           .setPRSingleHopEnabled(prSingleHopEnabled)
-          .setReadTimeout(readTimeout)
+          .setReadTimeout(readTimeoutMillis)
           .setSubscriptionAckInterval(subscriptionAckInterval)
           .setSubscriptionEnabled(subscriptionEnabled)
           .setSubscriptionRedundancy(subscriptionRedundancy)
@@ -3503,7 +3385,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
           getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
 
       clientRegionFactory
-          .setConcurrencyChecksEnabled(concurrencyChecksEnabled);
+          .setConcurrencyChecksEnabled(true);
 
       clientRegionFactory
           .setPoolName(poolName);

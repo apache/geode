@@ -19,7 +19,7 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
   implementation('org.awaitility:awaitility')
   implementation('junit:junit')
   implementation('org.eclipse.jetty:jetty-server')
@@ -30,9 +30,10 @@ dependencies {
     ext.optional = true
   }
 
-  compile(project(':geode-core'))
-  compile(project(':geode-http-service'))
-  compile(project(':geode-junit')) {
+  api(project(':geode-core'))
+  api(project(':geode-membership'))
+  api(project(':geode-http-service'))
+  api(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   compileOnly(project(':geode-pulse'))

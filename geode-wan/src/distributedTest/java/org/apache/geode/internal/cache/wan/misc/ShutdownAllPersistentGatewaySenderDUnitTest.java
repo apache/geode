@@ -161,8 +161,9 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
               region.getCache().getLogger()
                   .info("Last key has arrived, its value is " + lastValue + ", end of wait.");
               return true;
-            } else
+            } else {
               return (region.size() == NUM_KEYS);
+            }
           }
 
           @Override

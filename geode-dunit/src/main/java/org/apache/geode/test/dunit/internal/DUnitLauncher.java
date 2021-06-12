@@ -35,10 +35,12 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -108,8 +110,7 @@ public class DUnitLauncher {
   static final String STARTUP_TIMEOUT_MESSAGE =
       "VMs did not start up within " + STARTUP_TIMEOUT / 1000 + " seconds";
 
-  private static final String SUSPECT_FILENAME = "dunit_suspect.log";
-  private static File DUNIT_SUSPECT_FILE;
+  private static final String SUSPECT_FILENAME_PREFIX = "dunit_suspect";
 
   public static final String DUNIT_DIR = "dunit";
   public static final String WORKSPACE_DIR_PARAM = "WORKSPACE_DIR";
@@ -117,6 +118,7 @@ public class DUnitLauncher {
 
   static final String MASTER_PARAM = "DUNIT_MASTER";
 
+  public static final String REMOTE_STUB_PORT_PARAM = "DUnitLauncher.REMOTE_STUB_PORT";
   public static final String RMI_PORT_PARAM = GEMFIRE_PREFIX + "DUnitLauncher.RMI_PORT";
   public static final String RMI_HOST_PARAM = GEMFIRE_PREFIX + "DUnitLauncher.RMI_HOST";
   public static final String VM_NUM_PARAM = GEMFIRE_PREFIX + "DUnitLauncher.VM_NUM";
@@ -188,9 +190,8 @@ public class DUnitLauncher {
 
   private static void launch(boolean launchLocator) throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
-    DUNIT_SUSPECT_FILE = new File(SUSPECT_FILENAME);
-    DUNIT_SUSPECT_FILE.delete();
-    DUNIT_SUSPECT_FILE.deleteOnExit();
+
+    deleteDunitSuspectFiles();
 
     // create an RMI registry and add an object to share our tests config
     int namingPort = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -259,8 +260,8 @@ public class DUnitLauncher {
    * format so that hydra will be able to parse them.
    */
   private static void addSuspectFileAppender(final String workspaceDir) {
-    final String suspectFilename = new File(workspaceDir, SUSPECT_FILENAME).getAbsolutePath();
-
+    final String suspectFilename = createDunitSuspectFile(DUnitEnv.get().getId(), workspaceDir)
+        .getAbsolutePath();
 
     Object mainLogger = LogManager.getLogger(LoggingProvider.MAIN_LOGGER_NAME);
     if (!(mainLogger instanceof org.apache.logging.log4j.core.Logger)) {
@@ -330,11 +331,7 @@ public class DUnitLauncher {
 
   public static void init(MasterRemote master) {
     DUnitEnv.set(new StandAloneDUnitEnv(master));
-    // fake out tests that are using a bunch of hydra stuff
-    String workspaceDir = System.getProperty(DUnitLauncher.WORKSPACE_DIR_PARAM);
-    workspaceDir = workspaceDir == null ? new File(".").getAbsolutePath() : workspaceDir;
-
-    addSuspectFileAppender(workspaceDir);
+    addSuspectFileAppender(getWorkspaceDir());
 
     // Free off heap memory when disconnecting from the distributed system
     System.setProperty(GEMFIRE_PREFIX + "free-off-heap-memory", "true");
@@ -343,61 +340,132 @@ public class DUnitLauncher {
     System.setProperty(LAUNCHED_PROPERTY, "true");
   }
 
-  public static void closeAndCheckForSuspects() {
-    if (isLaunched()) {
-      final List<Pattern> expectedStrings = ExpectedStrings.create("dunit");
-      final LogConsumer logConsumer = new LogConsumer(true, expectedStrings, "log4j", 5);
+  private static List<File> getDunitSuspectFiles() {
+    File[] suspectFiles = getDunitSuspectsDir()
+        .listFiles((dir, name) -> name.startsWith(SUSPECT_FILENAME_PREFIX));
 
-      final StringBuilder suspectStringBuilder = new StringBuilder();
+    return Arrays.asList(suspectFiles);
+  }
 
-      BufferedReader buffReader = null;
-      FileChannel fileChannel = null;
-      try {
-        fileChannel = new FileOutputStream(DUNIT_SUSPECT_FILE, true).getChannel();
-        buffReader = new BufferedReader(new FileReader(DUNIT_SUSPECT_FILE));
-      } catch (FileNotFoundException e) {
-        System.err.println("Could not find the suspect string output file: " + e);
-        return;
-      }
-      try {
-        String line;
-        try {
-          while ((line = buffReader.readLine()) != null) {
-            final StringBuilder builder = logConsumer.consume(line);
-            if (builder != null) {
-              suspectStringBuilder.append(builder);
-            }
-          }
-        } catch (IOException e) {
-          System.err.println("Could not read the suspect string output file: " + e);
-        }
+  private static File getDunitSuspectsDir() {
+    return Paths.get(getWorkspaceDir()).toFile();
+  }
 
-        try {
-          fileChannel.truncate(0);
-        } catch (IOException e) {
-          System.err.println("Could not truncate the suspect string output file: " + e);
-        }
+  private static void deleteDunitSuspectFiles() {
+    getDunitSuspectFiles().forEach(File::delete);
+  }
 
-      } finally {
-        try {
-          buffReader.close();
-          fileChannel.close();
-        } catch (IOException e) {
-          System.err.println("Could not close the suspect string output file: " + e);
-        }
-      }
+  private static File createDunitSuspectFile(int vmId, String workingDir) {
+    String suffix;
 
-      if (suspectStringBuilder.length() != 0) {
-        System.err.println("Suspicious strings were written to the log during this run.\n"
-            + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
-            + suspectStringBuilder);
+    switch (vmId) {
+      case -2:
+        suffix = "locator";
+        break;
+      case -1:
+        suffix = "local";
+        break;
+      default:
+        suffix = "vm" + vmId;
+    }
 
-        Assert.fail("Suspicious strings were written to the log during this run.\n"
-            + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
-            + suspectStringBuilder);
-      }
+    File dunitSuspect = new File(getDunitSuspectsDir(),
+        getSuspectFileName(suffix));
+    dunitSuspect.deleteOnExit();
+
+    return dunitSuspect;
+  }
+
+  private static String getWorkspaceDir() {
+    String workspaceDir = System.getProperty(DUnitLauncher.WORKSPACE_DIR_PARAM);
+    workspaceDir = workspaceDir == null ? new File(".").getAbsolutePath() : workspaceDir;
+
+    return workspaceDir;
+  }
+
+  public static void closeAndCheckForSuspects(int vmIndex) {
+    String suffix = "vm" + vmIndex;
+    String fileName = getSuspectFileName(suffix);
+    File[] suspectFiles = getDunitSuspectsDir()
+        .listFiles((dir, name) -> name.startsWith(fileName));
+    closeAndCheckForSuspects(Arrays.asList(suspectFiles));
+  }
+
+  private static String getSuspectFileName(String suffix) {
+    return String.format("%s-%s.log", SUSPECT_FILENAME_PREFIX, suffix);
+  }
+
+  public static void closeAndCheckForSuspects(List<File> suspectFiles) {
+    StringBuilder suspectStringCollector = new StringBuilder();
+    for (File suspect : suspectFiles) {
+      checkSuspectFile(suspect, suspectStringCollector);
+    }
+
+    if (suspectStringCollector.length() != 0) {
+      System.err.println("Suspicious strings were written to the log during this run.\n"
+          + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
+          + suspectStringCollector);
+
+      Assert.fail("Suspicious strings were written to the log during this run.\n"
+          + "Fix the strings or use IgnoredException.addIgnoredException to ignore.\n"
+          + suspectStringCollector);
     }
   }
 
+  public static void closeAndCheckForSuspects() {
+    if (!isLaunched()) {
+      return;
+    }
+    List<File> suspectFiles = getDunitSuspectFiles();
+    if (suspectFiles.isEmpty()) {
+      throw new IllegalStateException("No dunit suspect log files found in '"
+          + getDunitSuspectsDir().getAbsolutePath()
+          + "' - perhaps a rule that is cleaning up before suspect processing has already run.");
+    }
+    closeAndCheckForSuspects(suspectFiles);
+  }
+
+  private static void checkSuspectFile(File suspectFile, StringBuilder suspectStringCollector) {
+    final List<Pattern> expectedStrings = ExpectedStrings.create("dunit");
+    final LogConsumer logConsumer = new LogConsumer(true, expectedStrings,
+        suspectFile.getName(), 5);
+
+    BufferedReader buffReader;
+    FileChannel fileChannel;
+    try {
+      fileChannel = new FileOutputStream(suspectFile, true).getChannel();
+      buffReader = new BufferedReader(new FileReader(suspectFile));
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+
+    try {
+      String line;
+      try {
+        while ((line = buffReader.readLine()) != null) {
+          final String suspectString = logConsumer.consume(line);
+          if (suspectString != null) {
+            suspectStringCollector.append(suspectString);
+          }
+        }
+      } catch (IOException e) {
+        System.err.println("Could not read the suspect string output file: " + e);
+      }
+
+      try {
+        fileChannel.truncate(0);
+      } catch (IOException e) {
+        System.err.println("Could not truncate the suspect string output file: " + e);
+      }
+
+    } finally {
+      try {
+        buffReader.close();
+        fileChannel.close();
+      } catch (IOException e) {
+        System.err.println("Could not close the suspect string output file: " + e);
+      }
+    }
+  }
 
 }

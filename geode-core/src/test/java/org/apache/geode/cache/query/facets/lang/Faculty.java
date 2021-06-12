@@ -65,15 +65,17 @@ public class Faculty extends Person {
   }
 
   public Set getHobbies() {
-    if (_hobbies == null)
+    if (_hobbies == null) {
       return Collections.EMPTY_SET;
+    }
     return _hobbies;
   }
 
 
   public Set getAdvisees() {
-    if (_advisees == null)
+    if (_advisees == null) {
       return Collections.EMPTY_SET;
+    }
     return _advisees;
   }
 
@@ -94,17 +96,20 @@ public class Faculty extends Person {
 
 
   public void addHobby(String hobby) {
-    if (_hobbies == null)
+    if (_hobbies == null) {
       initHobbies();
+    }
     _hobbies.add(hobby);
   }
 
   public void removeHobby(String hobby) {
-    if (_hobbies == null)
+    if (_hobbies == null) {
       return;
+    }
     _hobbies.remove(hobby);
-    if (_hobbies.isEmpty())
+    if (_hobbies.isEmpty()) {
       _hobbies = null;
+    }
   }
 
   public void setAdvisees(Set set) {
@@ -113,8 +118,9 @@ public class Faculty extends Person {
 
 
   public void addAdvisee(Student stud) {
-    if (_advisees == null)
+    if (_advisees == null) {
       initAdvisees();
+    }
     _advisees.add(stud);
   }
 

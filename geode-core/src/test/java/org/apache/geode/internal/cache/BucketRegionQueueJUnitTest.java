@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -37,8 +38,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderHelper;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.test.fake.Fakes;
 
@@ -138,38 +140,39 @@ public class BucketRegionQueueJUnitTest {
   }
 
   @Test
-  public void testGetElementsMatchingWithHasTransactionIdPredicateAndIsLastEventInTransactionPredicate()
+  public void testGetElementsMatchingWithParallelGatewaySenderQueuePredicatesAndSomeEventsNotInTransactions()
       throws ForceReattemptException {
-    ParallelGatewaySenderEventProcessor processor =
-        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+    ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
 
     TransactionId tx1 = new TXId(null, 1);
     TransactionId tx2 = new TXId(null, 2);
     TransactionId tx3 = new TXId(null, 3);
 
     GatewaySenderEventImpl event1 = createMockGatewaySenderEvent(1, tx1, false);
-    GatewaySenderEventImpl event2 = createMockGatewaySenderEvent(2, tx2, false);
-    GatewaySenderEventImpl event3 = createMockGatewaySenderEvent(3, tx1, true);
-    GatewaySenderEventImpl event4 = createMockGatewaySenderEvent(4, tx2, true);
-    GatewaySenderEventImpl event5 = createMockGatewaySenderEvent(5, tx3, false);
-    GatewaySenderEventImpl event6 = createMockGatewaySenderEvent(6, tx3, false);
-    GatewaySenderEventImpl event7 = createMockGatewaySenderEvent(7, tx1, true);
+    GatewaySenderEventImpl eventNotInTransaction1 = createMockGatewaySenderEvent(2, null, false);
+    GatewaySenderEventImpl event2 = createMockGatewaySenderEvent(3, tx2, false);
+    GatewaySenderEventImpl event3 = createMockGatewaySenderEvent(4, tx1, true);
+    GatewaySenderEventImpl event4 = createMockGatewaySenderEvent(5, tx2, true);
+    GatewaySenderEventImpl event5 = createMockGatewaySenderEvent(6, tx3, false);
+    GatewaySenderEventImpl event6 = createMockGatewaySenderEvent(7, tx3, false);
+    GatewaySenderEventImpl event7 = createMockGatewaySenderEvent(8, tx1, true);
 
     this.bucketRegionQueue
         .cleanUpDestroyedTokensAndMarkGIIComplete(InitialImageOperation.GIIStatus.NO_GII);
 
-    this.bucketRegionQueue.addToQueue(Long.valueOf(1), event1);
-    this.bucketRegionQueue.addToQueue(Long.valueOf(2), event2);
-    this.bucketRegionQueue.addToQueue(Long.valueOf(3), event3);
-    this.bucketRegionQueue.addToQueue(Long.valueOf(4), event4);
-    this.bucketRegionQueue.addToQueue(Long.valueOf(5), event5);
-    this.bucketRegionQueue.addToQueue(Long.valueOf(6), event6);
-    this.bucketRegionQueue.addToQueue(Long.valueOf(7), event7);
+    this.bucketRegionQueue.addToQueue(1L, event1);
+    this.bucketRegionQueue.addToQueue(2L, eventNotInTransaction1);
+    this.bucketRegionQueue.addToQueue(3L, event2);
+    this.bucketRegionQueue.addToQueue(4L, event3);
+    this.bucketRegionQueue.addToQueue(5L, event4);
+    this.bucketRegionQueue.addToQueue(6L, event5);
+    this.bucketRegionQueue.addToQueue(7L, event6);
+    this.bucketRegionQueue.addToQueue(8L, event7);
 
-    Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
-        x -> x.getTransactionId().equals(tx1);
-    Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
-        x -> x.isLastEventInTransaction();
+    Predicate<InternalGatewayQueueEvent> hasTransactionIdPredicate =
+        ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx1);
+    Predicate<InternalGatewayQueueEvent> isLastEventInTransactionPredicate =
+        ParallelGatewaySenderQueue.getIsLastEventInTransactionPredicate();
     List<Object> objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
 
@@ -182,11 +185,66 @@ public class BucketRegionQueueJUnitTest {
     assertEquals(objects, Arrays.asList(new Object[] {event7}));
 
     hasTransactionIdPredicate =
-        x -> x.getTransactionId().equals(tx2);
+        ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx2);
     objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
     assertEquals(2, objects.size());
     assertEquals(objects, Arrays.asList(new Object[] {event2, event4}));
+  }
+
+  @Test
+  public void testPeekedElementsArePossibleDuplicate()
+      throws Exception {
+    ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+
+    LocalRegion lr = mock(LocalRegion.class);
+    when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
+    when(lr.getCache()).thenReturn(this.cache);
+
+    // Configure conflation
+    when(this.sender.isBatchConflationEnabled()).thenReturn(true);
+    when(sender.getStatistics()).thenReturn(mock(GatewaySenderStats.class));
+
+    this.bucketRegionQueue
+        .cleanUpDestroyedTokensAndMarkGIIComplete(InitialImageOperation.GIIStatus.NO_GII);
+
+    // Create a batch of conflatable events with duplicate update events
+    Object lastUpdateValue = "Object_13968_5";
+    long lastUpdateSequenceId = 104;
+    GatewaySenderEventImpl event1 = createGatewaySenderEvent(lr, Operation.CREATE,
+        "Object_13964", "Object_13964_1", 1, 100);
+    GatewaySenderEventImpl event2 = createGatewaySenderEvent(lr, Operation.CREATE,
+        "Object_13965", "Object_13965_2", 1, 101);
+    GatewaySenderEventImpl event3 = createGatewaySenderEvent(lr, Operation.CREATE,
+        "Object_13966", "Object_13966_3", 1, 102);
+    GatewaySenderEventImpl event4 = createGatewaySenderEvent(lr, Operation.CREATE,
+        "Object_13967", "Object_13967_4", 1, 103);
+    GatewaySenderEventImpl event5 = createGatewaySenderEvent(lr, Operation.CREATE,
+        "Object_13968", lastUpdateValue, 1, lastUpdateSequenceId);
+
+    this.bucketRegionQueue.addToQueue(1L, event1);
+    this.bucketRegionQueue.addToQueue(2L, event2);
+    this.bucketRegionQueue.addToQueue(3L, event3);
+    this.bucketRegionQueue.addToQueue(4L, event4);
+    this.bucketRegionQueue.addToQueue(5L, event5);
+
+    this.bucketRegionQueue.beforeAcquiringPrimaryState();
+
+    List<Object> objects = this.bucketRegionQueue.getHelperQueueList();
+
+    assertThat(objects.size()).isEqualTo(5);
+
+    for (Object o : objects) {
+      assertThat(((GatewaySenderEventImpl) o).getPossibleDuplicate()).isFalse();
+    }
+
+    Object peekObj = this.bucketRegionQueue.peek();
+
+    while (peekObj != null) {
+      assertThat(((GatewaySenderEventImpl) peekObj).getPossibleDuplicate()).isTrue();
+      peekObj = this.bucketRegionQueue.peek();
+    }
+
   }
 
   GatewaySenderEventImpl createMockGatewaySenderEvent(Object key, TransactionId tId,
@@ -197,4 +255,31 @@ public class BucketRegionQueueJUnitTest {
     when(event.getKey()).thenReturn(key);
     return event;
   }
+
+  private GatewaySenderEventImpl createGatewaySenderEvent(LocalRegion lr, Operation operation,
+      Object key, Object value, long threadId, long sequenceId)
+      throws Exception {
+    when(lr.getKeyInfo(key, value, null)).thenReturn(new KeyInfo(key, null, null));
+    when(lr.getTXId()).thenReturn(null);
+
+    EntryEventImpl eei = EntryEventImpl.create(lr, operation, key, value, null, false, null);
+    eei.setEventId(new EventID(new byte[16], threadId, sequenceId));
+
+    return new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true, false);
+  }
+
+  private EnumListenerEvent getEnumListenerEvent(Operation operation) {
+    EnumListenerEvent ele = null;
+    if (operation.isCreate()) {
+      ele = EnumListenerEvent.AFTER_CREATE;
+    } else if (operation.isUpdate()) {
+      ele = EnumListenerEvent.AFTER_UPDATE;
+    } else if (operation.isDestroy()) {
+      ele = EnumListenerEvent.AFTER_DESTROY;
+    }
+    return ele;
+  }
+
+
+
 }

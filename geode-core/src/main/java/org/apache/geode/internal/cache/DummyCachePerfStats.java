@@ -29,43 +29,43 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getLoadsCompleted() {
-    return 0;
+  public long getLoadsCompleted() {
+    return 0L;
   }
 
   @Override
   public long getLoadTime() {
-    return 0;
+    return 0L;
   }
 
   @Override
-  public int getNetloadsCompleted() {
-    return 0;
+  public long getNetloadsCompleted() {
+    return 0L;
   }
 
   @Override
-  public int getNetsearchesCompleted() {
-    return 0;
+  public long getNetsearchesCompleted() {
+    return 0L;
   }
 
   @Override
   public long getNetsearchTime() {
-    return 0;
+    return 0L;
   }
 
   @Override
-  public int getGetInitialImagesCompleted() {
-    return 0;
+  public long getGetInitialImagesCompleted() {
+    return 0L;
   }
 
   @Override
-  public int getGetInitialImageKeysReceived() {
-    return 0;
+  public long getGetInitialImageKeysReceived() {
+    return 0L;
   }
 
   @Override
-  public int getRegions() {
-    return 0;
+  public long getRegions() {
+    return 0L;
   }
 
   @Override
@@ -75,7 +75,7 @@ public class DummyCachePerfStats extends CachePerfStats {
 
   @Override
   public long getCreates() {
-    return 0;
+    return 0L;
   }
 
   @Override
@@ -84,18 +84,18 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getPutAlls() {
-    return 0;
+  public long getPutAlls() {
+    return 0L;
   }
 
   @Override
   public long getUpdates() {
-    return 0;
+    return 0L;
   }
 
   @Override
   public long getInvalidates() {
-    return 0l;
+    return 0L;
   }
 
   @Override
@@ -109,65 +109,65 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getReliableQueuedOps() {
-    return 0;
+  public long getReliableQueuedOps() {
+    return 0L;
   }
 
   @Override
-  public void incReliableQueuedOps(int inc) {}
+  public void incReliableQueuedOps(long inc) {}
 
   @Override
-  public void incReliableQueueSize(int inc) {}
+  public void incReliableQueueSize(long inc) {}
 
   @Override
-  public void incReliableQueueMax(int inc) {}
+  public void incReliableQueueMax(long inc) {}
 
   @Override
-  public void incReliableRegions(int inc) {}
+  public void incReliableRegions(long inc) {}
 
   @Override
-  public int getReliableRegionsMissing() {
-    return 0;
+  public long getReliableRegionsMissing() {
+    return 0L;
   }
 
   @Override
-  public void incReliableRegionsMissing(int inc) {}
+  public void incReliableRegionsMissing(long inc) {}
 
   @Override
-  public void incReliableRegionsQueuing(int inc) {}
+  public void incReliableRegionsQueuing(long inc) {}
 
   @Override
-  public int getReliableRegionsMissingFullAccess() {
-    return 0;
+  public long getReliableRegionsMissingFullAccess() {
+    return 0L;
   }
 
   @Override
-  public void incReliableRegionsMissingFullAccess(int inc) {}
+  public void incReliableRegionsMissingFullAccess(long inc) {}
 
   @Override
-  public int getReliableRegionsMissingLimitedAccess() {
-    return 0;
+  public long getReliableRegionsMissingLimitedAccess() {
+    return 0L;
   }
 
   @Override
-  public void incReliableRegionsMissingLimitedAccess(int inc) {}
+  public void incReliableRegionsMissingLimitedAccess(long inc) {}
 
   @Override
-  public int getReliableRegionsMissingNoAccess() {
-    return 0;
+  public long getReliableRegionsMissingNoAccess() {
+    return 0L;
   }
 
   @Override
-  public void incReliableRegionsMissingNoAccess(int inc) {}
+  public void incReliableRegionsMissingNoAccess(long inc) {}
 
   @Override
-  public void incQueuedEvents(int inc) {}
+  public void incQueuedEvents(long inc) {}
 
   // //////////////////// Updating Stats //////////////////////
 
   @Override
   public long startLoad() {
-    return 0;
+    return 0L;
   }
 
   @Override
@@ -175,7 +175,7 @@ public class DummyCachePerfStats extends CachePerfStats {
 
   @Override
   public long startNetload() {
-    return 0;
+    return 0L;
   }
 
   @Override
@@ -183,7 +183,7 @@ public class DummyCachePerfStats extends CachePerfStats {
 
   @Override
   public long startNetsearch() {
-    return 0;
+    return 0L;
   }
 
   @Override
@@ -191,7 +191,7 @@ public class DummyCachePerfStats extends CachePerfStats {
 
   @Override
   public long startCacheWriterCall() {
-    return 0;
+    return 0L;
   }
 
   @Override
@@ -199,7 +199,7 @@ public class DummyCachePerfStats extends CachePerfStats {
 
   @Override
   public long startCacheListenerCall() {
-    return 0;
+    return 0L;
   }
 
   @Override
@@ -207,7 +207,7 @@ public class DummyCachePerfStats extends CachePerfStats {
 
   @Override
   public long startGetInitialImage() {
-    return 0;
+    return 0L;
   }
 
   @Override
@@ -220,10 +220,10 @@ public class DummyCachePerfStats extends CachePerfStats {
   public void incGetInitialImageKeysReceived() {}
 
   @Override
-  public void incRegions(int inc) {}
+  public void incRegions(long inc) {}
 
   @Override
-  public void incPartitionedRegions(int inc) {}
+  public void incPartitionedRegions(long inc) {}
 
   @Override
   public void incDestroys() {}
@@ -236,7 +236,7 @@ public class DummyCachePerfStats extends CachePerfStats {
 
   @Override
   public long startGet() {
-    return 0;
+    return 0L;
   }
 
   @Override
@@ -244,7 +244,7 @@ public class DummyCachePerfStats extends CachePerfStats {
 
   @Override
   public long endPut(long start, boolean isUpdate) {
-    return 0;
+    return 0L;
   }
 
   @Override
@@ -254,76 +254,76 @@ public class DummyCachePerfStats extends CachePerfStats {
   public void endQueryExecution(long executionTime) {}
 
   @Override
-  public int getTxCommits() {
-    return 0;
+  public long getTxCommits() {
+    return 0L;
   }
 
   @Override
-  public int getTxCommitChanges() {
-    return 0;
+  public long getTxCommitChanges() {
+    return 0L;
   }
 
   @Override
   public long getTxCommitTime() {
-    return 0;
+    return 0L;
   }
 
   @Override
   public long getTxSuccessLifeTime() {
-    return 0;
+    return 0L;
   }
 
   @Override
-  public int getTxFailures() {
-    return 0;
+  public long getTxFailures() {
+    return 0L;
   }
 
   @Override
-  public int getTxFailureChanges() {
-    return 0;
+  public long getTxFailureChanges() {
+    return 0L;
   }
 
   @Override
   public long getTxFailureTime() {
-    return 0;
+    return 0L;
   }
 
   @Override
   public long getTxFailedLifeTime() {
-    return 0;
+    return 0L;
   }
 
   @Override
-  public int getTxRollbacks() {
-    return 0;
+  public long getTxRollbacks() {
+    return 0L;
   }
 
   @Override
-  public int getTxRollbackChanges() {
-    return 0;
+  public long getTxRollbackChanges() {
+    return 0L;
   }
 
   @Override
   public long getTxRollbackTime() {
-    return 0;
+    return 0L;
   }
 
   @Override
   public long getTxRollbackLifeTime() {
-    return 0;
+    return 0L;
   }
 
   @Override
   public void incTxConflictCheckTime(long delta) {}
 
   @Override
-  public void txSuccess(long opTime, long txLifeTime, int txChanges) {}
+  public void txSuccess(long opTime, long txLifeTime, long txChanges) {}
 
   @Override
-  public void txFailure(long opTime, long txLifeTime, int txChanges) {}
+  public void txFailure(long opTime, long txLifeTime, long txChanges) {}
 
   @Override
-  public void txRollback(long opTime, long txLifeTime, int txChanges) {}
+  public void txRollback(long opTime, long txLifeTime, long txChanges) {}
 
   @Override
   protected void close() {
@@ -336,24 +336,24 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getEventQueueSize() {
-    return 0;
+  public long getEventQueueSize() {
+    return 0L;
   }
 
   @Override
-  public void incEventQueueSize(int items) {}
+  public void incEventQueueSize(long items) {}
 
   @Override
-  public void incEventQueueThrottleCount(int items) {}
+  public void incEventQueueThrottleCount(long items) {}
 
   @Override
   protected void incEventQueueThrottleTime(long nanos) {}
 
   @Override
-  protected void incEventThreads(int items) {}
+  protected void incEventThreads(long items) {}
 
   @Override
-  public void incEntryCount(int delta) {}
+  public void incEntryCount(long delta) {}
 
   @Override
   public void incRetries() {}

@@ -59,7 +59,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
         final Map<Integer, MyObject> expected = createExpected(st);
 
         region.putAll(expected);
-        region.getSnapshotService().save(snapshotFile, SnapshotFormat.GEMFIRE);
+        region.getSnapshotService().save(snapshotFile, SnapshotFormat.GEODE);
 
         final Map<Integer, Object> read = new HashMap<>();
         try (SnapshotIterator<Integer, Object> iter = SnapshotReader.read(snapshotFile)) {
@@ -83,7 +83,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
         final Map<Integer, MyObject> expected = createExpected(st);
 
         region.putAll(expected);
-        region.getSnapshotService().save(snapshotFile, SnapshotFormat.GEMFIRE);
+        region.getSnapshotService().save(snapshotFile, SnapshotFormat.GEODE);
 
         region.destroyRegion();
         region = regionGenerator.createRegion(cache, diskStore.getName(), rt, name);
@@ -104,7 +104,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
               }
             });
 
-        region.getSnapshotService().load(snapshotFile, SnapshotFormat.GEMFIRE);
+        region.getSnapshotService().load(snapshotFile, SnapshotFormat.GEODE);
 
         assertEquals("Comparison failure for " + rt.name() + "/" + st.name(), expected.entrySet(),
             region.entrySet());
@@ -128,13 +128,13 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
         region.putAll(expected);
         RegionSnapshotService<Integer, MyObject> rss = region.getSnapshotService();
         SnapshotOptions<Integer, MyObject> options = rss.createOptions().setFilter(odd);
-        rss.save(snapshotFile, SnapshotFormat.GEMFIRE, options);
+        rss.save(snapshotFile, SnapshotFormat.GEODE, options);
 
         region.destroyRegion();
         region = regionGenerator.createRegion(cache, diskStore.getName(), rt, name);
 
         rss = region.getSnapshotService();
-        rss.load(snapshotFile, SnapshotFormat.GEMFIRE, rss.createOptions());
+        rss.load(snapshotFile, SnapshotFormat.GEODE, rss.createOptions());
 
         region.entrySet().forEach(entry -> assertTrue(odd.accept(entry)));
         assertTrue("Comparison failure for " + rt.name() + "/" + st.name(), region.size() > 0);
@@ -156,14 +156,14 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
 
         region.putAll(expected);
         RegionSnapshotService<Integer, MyObject> rss = region.getSnapshotService();
-        rss.save(snapshotFile, SnapshotFormat.GEMFIRE, rss.createOptions());
+        rss.save(snapshotFile, SnapshotFormat.GEODE, rss.createOptions());
 
         region.destroyRegion();
         region = regionGenerator.createRegion(cache, diskStore.getName(), rt, name);
 
         rss = region.getSnapshotService();
         SnapshotOptions<Integer, MyObject> options = rss.createOptions().setFilter(odd);
-        rss.load(snapshotFile, SnapshotFormat.GEMFIRE, options);
+        rss.load(snapshotFile, SnapshotFormat.GEODE, options);
 
         region.entrySet().forEach(entry -> assertTrue(odd.accept(entry)));
         assertTrue("Comparison failure for " + rt.name() + "/" + st.name(), region.size() > 0);
@@ -189,14 +189,14 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
         region.putAll(expected);
         RegionSnapshotService<Integer, MyObject> rss = region.getSnapshotService();
         SnapshotOptions<Integer, MyObject> options = rss.createOptions().setFilter(even);
-        rss.save(snapshotFile, SnapshotFormat.GEMFIRE, options);
+        rss.save(snapshotFile, SnapshotFormat.GEODE, options);
 
         region.destroyRegion();
         region = regionGenerator.createRegion(cache, diskStore.getName(), rt, name);
 
         rss = region.getSnapshotService();
         options = rss.createOptions().setFilter(odd);
-        rss.load(snapshotFile, SnapshotFormat.GEMFIRE, options);
+        rss.load(snapshotFile, SnapshotFormat.GEODE, options);
 
         assertEquals("Comparison failure for " + rt.name() + "/" + st.name(), 0, region.size());
       }
@@ -222,7 +222,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
 
         boolean caughtException = false;
         try {
-          rss.save(snapshotFile, SnapshotFormat.GEMFIRE, options);
+          rss.save(snapshotFile, SnapshotFormat.GEODE, options);
         } catch (RuntimeException e) {
           caughtException = true;
         }
@@ -232,7 +232,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
         region = regionGenerator.createRegion(cache, diskStore.getName(), rt, name);
 
         rss = region.getSnapshotService();
-        rss.load(snapshotFile, SnapshotFormat.GEMFIRE, options);
+        rss.load(snapshotFile, SnapshotFormat.GEODE, options);
 
         assertEquals("Comparison failure for " + rt.name() + "/" + st.name(), 0, region.size());
       }
@@ -254,7 +254,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
 
         region.putAll(expected);
         RegionSnapshotService<Integer, MyObject> rss = region.getSnapshotService();
-        rss.save(snapshotFile, SnapshotFormat.GEMFIRE);
+        rss.save(snapshotFile, SnapshotFormat.GEODE);
 
         region.destroyRegion();
         region = regionGenerator.createRegion(cache, diskStore.getName(), rt, name);
@@ -264,7 +264,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
 
         boolean caughtException = false;
         try {
-          rss.load(snapshotFile, SnapshotFormat.GEMFIRE, options);
+          rss.load(snapshotFile, SnapshotFormat.GEODE, options);
         } catch (RuntimeException e) {
           caughtException = true;
         }
@@ -285,8 +285,8 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
     region.put(1, obj);
     region.invalidate(1);
 
-    region.getSnapshotService().save(snapshotFile, SnapshotFormat.GEMFIRE);
-    region.getSnapshotService().load(snapshotFile, SnapshotFormat.GEMFIRE);
+    region.getSnapshotService().save(snapshotFile, SnapshotFormat.GEODE);
+    region.getSnapshotService().load(snapshotFile, SnapshotFormat.GEODE);
 
     assertTrue(region.containsKey(1));
     assertFalse(region.containsValueForKey(1));
@@ -310,7 +310,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
     final Map<Integer, MyObject> expected = createExpected(st);
 
     region.putAll(expected);
-    region.getSnapshotService().save(snapshotFile, SnapshotFormat.GEMFIRE);
+    region.getSnapshotService().save(snapshotFile, SnapshotFormat.GEODE);
 
     cache.close();
 

@@ -210,8 +210,9 @@ public class FederationComponent
       if (anotherFedComp.interfaceClassName.equals(this.interfaceClassName)
           && anotherFedComp.notificationEmitter == this.notificationEmitter
           && anotherFedComp.objectState.equals(this.objectState)
-          && anotherFedComp.objectName.equals(this.objectName))
+          && anotherFedComp.objectName.equals(this.objectName)) {
         return true;
+      }
     }
 
     return false;

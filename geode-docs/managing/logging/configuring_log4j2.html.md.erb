@@ -67,13 +67,7 @@ Custom Log4j 2 configuration in <%=vars.product_name%> comes with some caveats a
 
 - Geode's custom Log4j 2 Appenders can be used in a custom log4j2.xml. This requires:
  
-  1. Specify "org.apache.geode" in the packages attribute of Configuration to enable Log4j 2 to find and use Geode classes:
-     
-    ```xml
-    <Configuration status="WARN" shutdownHook="disable" packages="org.apache.geode">
-    ```
-
-  2. Specify GeodeConsole, GeodeLogWriter, and/or GeodeAlert in the Appenders section:
+  1. Specify GeodeConsole, GeodeLogWriter, and/or GeodeAlert in the Appenders section:
  
     ```xml
     <Properties>
@@ -93,4 +87,4 @@ Custom Log4j 2 configuration in <%=vars.product_name%> comes with some caveats a
  
     (Note that GeodeAlert does not use a PatternLayout)
 
-  3. See the default `log4j2.xml` in the Geode source directory `geode-log4j/src/main/resources/` as a reference for creating a custom configuration.
+  2. See the default `log4j2.xml` in the Geode source directory `geode-log4j/src/main/resources/` as a reference for creating a custom configuration.

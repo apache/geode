@@ -23,8 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
@@ -54,8 +53,7 @@ public class TcpClient {
 
   private static final int DEFAULT_REQUEST_TIMEOUT = 60 * 2 * 1000;
 
-  private final Map<HostAndPort, Short> serverVersions =
-      new HashMap<>();
+  private final ConcurrentHashMap<HostAndPort, Short> serverVersions = new ConcurrentHashMap<>();
 
   private final TcpSocketCreator socketCreator;
   private final ObjectSerializer objectSerializer;
@@ -165,13 +163,6 @@ public class TcpClient {
       debugVersionMessage = null;
     }
 
-    // establish the old GossipVersion for the server
-    int gossipVersion = TcpServer.getCurrentGossipVersion();
-
-    if (serverVersion.isNotNewerThan(KnownVersion.GFE_71)) {
-      gossipVersion = TcpServer.getOldGossipVersion();
-    }
-
     long newTimeout = giveupTime - System.currentTimeMillis();
     if (newTimeout <= 0) {
       return null;
@@ -191,30 +182,31 @@ public class TcpClient {
         out = new VersionedDataOutputStream(out, serverVersion);
       }
 
-      out.writeInt(gossipVersion);
-      if (gossipVersion > TcpServer.getOldGossipVersion()) {
-        out.writeShort(serverVersionShort);
-      }
+      out.writeInt(TcpServer.GOSSIPVERSION);
+      out.writeShort(serverVersionShort);
 
       objectSerializer.writeObject(request, out);
       out.flush();
 
       if (replyExpected) {
-        DataInputStream in = new DataInputStream(sock.getInputStream());
-        if (debugVersionMessage != null && logger.isDebugEnabled()) {
-          logger.debug(debugVersionMessage);
-        }
-        in = new VersionedDataInputStream(in, serverVersion);
-        try {
-          Object response = objectDeserializer.readObject(in);
-          logger.debug("received response: {}", response);
-          return response;
-        } catch (EOFException ex) {
-          logger.debug("requestToServer EOFException ", ex);
-          EOFException eof = new EOFException("Locator at " + addr
-              + " did not respond. This is normal if the locator was shutdown. If it wasn't check its log for exceptions.");
-          eof.initCause(ex);
-          throw eof;
+
+        try (DataInputStream dataInputStream = new DataInputStream(sock.getInputStream());
+            VersionedDataInputStream versionedDataInputStream =
+                new VersionedDataInputStream(dataInputStream, serverVersion)) {
+          if (debugVersionMessage != null && logger.isDebugEnabled()) {
+            logger.debug(debugVersionMessage);
+          }
+          try {
+            Object response = objectDeserializer.readObject(versionedDataInputStream);
+            logger.debug("received response: {}", response);
+            return response;
+          } catch (EOFException ex) {
+            logger.debug("requestToServer EOFException ", ex);
+            EOFException eof = new EOFException("Locator at " + addr
+                + " did not respond. This is normal if the locator was shutdown. If it wasn't check its log for exceptions.");
+            eof.initCause(ex);
+            throw eof;
+          }
         }
       } else {
         return null;
@@ -240,26 +232,18 @@ public class TcpClient {
     }
   }
 
-  private Short getServerVersion(HostAndPort addr, int timeout)
+  private Short getServerVersion(final HostAndPort address, final int timeout)
       throws IOException, ClassNotFoundException {
 
-    int gossipVersion;
-    Short serverVersion;
-    Socket sock;
-
     // Get GemFire version of TcpServer first, before sending any other request.
-    synchronized (serverVersions) {
-      serverVersion = serverVersions.get(addr);
-    }
-
+    Short serverVersion = serverVersions.get(address);
     if (serverVersion != null) {
       return serverVersion;
     }
 
-    gossipVersion = TcpServer.getOldGossipVersion();
-
+    final Socket sock;
     try {
-      sock = socketCreator.forCluster().connect(addr, timeout, null, socketFactory);
+      sock = socketCreator.forCluster().connect(address, timeout, null, socketFactory);
       sock.setSoTimeout(timeout);
     } catch (SSLHandshakeException e) {
       if ((e.getCause() instanceof EOFException)
@@ -272,33 +256,32 @@ public class TcpClient {
       throw new IllegalStateException("Unable to form SSL connection", e);
     }
 
-    try {
-      OutputStream outputStream = new BufferedOutputStream(sock.getOutputStream());
-      DataOutputStream out =
-          new VersionedDataOutputStream(new DataOutputStream(outputStream), KnownVersion.GFE_57);
+    // TODO do we really need versioned in/out? Should it be some OLDEST_VERSION constant?
+    try (OutputStream outputStream = new BufferedOutputStream(sock.getOutputStream());
+        final DataOutputStream out =
+            new VersionedDataOutputStream(new DataOutputStream(outputStream), KnownVersion.OLDEST);
+        final InputStream inputStream = sock.getInputStream();
+        final DataInputStream in = new DataInputStream(inputStream);
+        final VersionedDataInputStream versionedIn =
+            new VersionedDataInputStream(in, KnownVersion.OLDEST)) {
 
-      out.writeInt(gossipVersion);
+      out.writeInt(TcpServer.GOSSIPVERSION);
+      out.writeShort(KnownVersion.OLDEST.ordinal());
 
-      VersionRequest verRequest = new VersionRequest();
+      final VersionRequest verRequest = new VersionRequest();
       objectSerializer.writeObject(verRequest, out);
       out.flush();
 
-      InputStream inputStream = sock.getInputStream();
-      DataInputStream in = new DataInputStream(inputStream);
-      in = new VersionedDataInputStream(in, KnownVersion.GFE_57);
       try {
-        Object readObject = objectDeserializer.readObject(in);
+        final Object readObject = objectDeserializer.readObject(versionedIn);
         if (!(readObject instanceof VersionResponse)) {
           throw new IllegalThreadStateException(
-              "Server version response invalid: "
-                  + "This could be the result of trying to connect a non-SSL-enabled client to an SSL-enabled locator.");
+              "Server version response invalid: This could be the result of trying to connect a non-SSL-enabled client to an SSL-enabled locator.");
         }
 
-        VersionResponse response = (VersionResponse) readObject;
+        final VersionResponse response = (VersionResponse) readObject;
         serverVersion = response.getVersionOrdinal();
-        synchronized (serverVersions) {
-          serverVersions.put(addr, serverVersion);
-        }
+        serverVersions.put(address, serverVersion);
 
         return serverVersion;
 
@@ -319,9 +302,9 @@ public class TcpClient {
         }
       }
     }
-    synchronized (serverVersions) {
-      serverVersions.put(addr, KnownVersion.GFE_57.ordinal());
-    }
-    return KnownVersion.GFE_57.ordinal();
+
+    // TODO seems more appropriate for this to not be cached or to be an exception.
+    serverVersions.putIfAbsent(address, KnownVersion.OLDEST.ordinal());
+    return KnownVersion.OLDEST.ordinal();
   }
 }

@@ -34,7 +34,7 @@ public class OneTaskOnlyExecutorGroupJUnitTest {
    */
   @Test
   public void testVerifyGroupName() {
-    AbstractExecutor oneTaskOnlyExecutorGroup = new OneTaskOnlyExecutorGroup(null);
+    AbstractExecutor oneTaskOnlyExecutorGroup = new OneTaskOnlyExecutorGroup();
     assertTrue(oneTaskOnlyExecutorGroup.getGroupName().equals(GROUPNAME));
   }
 }

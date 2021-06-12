@@ -18,7 +18,9 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -74,7 +76,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -84,7 +85,6 @@ import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
@@ -169,7 +169,8 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
   }
 
   int initServerCache(boolean notifyBySub, VM vm, boolean isHA) {
-    return vm.invoke(() -> createServerCache(notifyBySub, getMaxThreads(), isHA));
+    int port = getRandomAvailableTCPPort();
+    return vm.invoke(() -> createServerCache(notifyBySub, getMaxThreads(), isHA, port));
   }
 
   @Test
@@ -739,7 +740,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
   @Test
   public void testSystemCanBeCycledWithAnInitializedPool() {
     // work around GEODE-477
-    IgnoredException.addIgnoredException("Connection reset");
+    addIgnoredException("Connection reset");
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -788,7 +789,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
 
   @Test(expected = GemFireConfigException.class)
   public void clientIsPreventedFromConnectingToLocatorAsServer() {
-    IgnoredException.addIgnoredException("Improperly configured client detected");
+    addIgnoredException("Improperly configured client detected", VM.getLocator());
     ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
     clientCacheFactory.addPoolServer("localhost", DistributedTestUtils.getDUnitLocatorPort());
     clientCacheFactory.setPoolSubscriptionEnabled(true);
@@ -945,8 +946,8 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
   }
 
 
-  public static Integer createServerCache(Boolean notifyBySubscription, Integer maxThreads,
-      boolean isHA) throws Exception {
+  protected static Integer createServerCache(Boolean notifyBySubscription, Integer maxThreads,
+      boolean isHA, int port) throws Exception {
     Cache cache = new ClientServerMiscDUnitTestBase().createCacheV(new Properties());
     unsetSlowDispatcherFlag();
     AttributesFactory factory = new AttributesFactory();
@@ -971,7 +972,6 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     assertNotNull(pr);
 
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     r1.getCache().getDistributedSystem().getLogWriter().info("Starting server on port " + port);
     server.setPort(port);
     server.setMaxThreads(maxThreads);
@@ -1168,14 +1168,18 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     assertNotNull(r1);
     assertNotNull(r2);
 
-    if (!r1.containsKey(k1))
+    if (!r1.containsKey(k1)) {
       r1.create(k1, k1);
-    if (!r1.containsKey(k2))
+    }
+    if (!r1.containsKey(k2)) {
       r1.create(k2, k2);
-    if (!r2.containsKey(k1))
+    }
+    if (!r2.containsKey(k1)) {
       r2.create(k1, k1);
-    if (!r2.containsKey(k2))
+    }
+    if (!r2.containsKey(k2)) {
       r2.create(k2, k2);
+    }
 
     assertEquals(r1.getEntry(k1).getValue(), k1);
     assertEquals(r1.getEntry(k2).getValue(), k2);

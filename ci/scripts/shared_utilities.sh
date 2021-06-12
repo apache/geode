@@ -23,8 +23,9 @@ find-here-test-reports() {
   find .  -type d -name "test-results" >> ${output_directories_file}
   (find . -type d -name "*Test" | grep "build/[^/]*Test$") >> ${output_directories_file}
   find . -name "*-progress*txt" >> ${output_directories_file}
-  find . -name "*.hprof" >> ${output_directories_file}
+  find . -name "*.hprof" -o -name "hs_err*.log" -o -name "replay*.log" >> ${output_directories_file}
   find . -type d -name "callstacks" >> ${output_directories_file}
+  find .gradle_logs -name '*.log' >> ${output_directories_file}
   echo "Collecting the following artifacts..."
   cat ${output_directories_file}
   echo ""
@@ -107,13 +108,13 @@ is_source_from_pr_testable() {
           local files=$(git diff --name-only $(cat "${github_pr_dir}/base_sha") $(cat "${github_pr_dir}/head_sha") -- . $(echo ${exclude_pathspec}))
         popd &> /dev/null
         if [[ -z "${files}" ]]; then
-          >&2 echo "Code changes are from CI only"
+          >&2 echo "CI changes only, skipping tests..."
           return_code=1
         else
-          >&2 echo "real code change here!"
+          >&2 echo "Running PR tests..."
         fi
       else
-        >&2 echo "repo is not from a PR"
+        >&2 echo "Running tests..."
       fi
     popd 2>&1 >> /dev/null
   popd 2>&1 >> /dev/null

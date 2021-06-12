@@ -33,6 +33,8 @@ public interface SecurityService {
 
   Subject getSubject();
 
+  Object getPrincipal();
+
   Subject login(Properties credentials);
 
   void logout();

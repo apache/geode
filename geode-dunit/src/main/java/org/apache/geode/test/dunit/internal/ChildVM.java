@@ -41,6 +41,7 @@ public class ChildVM {
     try {
       int namingPort = Integer.getInteger(DUnitLauncher.RMI_PORT_PARAM);
       int vmNum = Integer.getInteger(DUnitLauncher.VM_NUM_PARAM);
+      int remoteStubPort = Integer.getInteger(DUnitLauncher.REMOTE_STUB_PORT_PARAM, 0);
       String geodeVersion = System.getProperty(DUnitLauncher.VM_VERSION_PARAM);
       int pid = OSProcess.getId();
       logger.info("VM" + vmNum + " is launching" + (pid > 0 ? " with PID " + pid : ""));
@@ -52,7 +53,7 @@ public class ChildVM {
           .lookup("//localhost:" + namingPort + "/" + DUnitLauncher.MASTER_PARAM);
       DUnitLauncher.init(holder);
       DUnitLauncher.locatorPort = holder.getLocatorPort();
-      final RemoteDUnitVM dunitVM = new RemoteDUnitVM();
+      final RemoteDUnitVM dunitVM = new RemoteDUnitVM(remoteStubPort);
       final String name = "//localhost:" + namingPort + "/vm" + vmNum;
       Naming.rebind(name, dunitVM);
       JUnit4DistributedTestCase.initializeBlackboard();

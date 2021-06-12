@@ -66,15 +66,17 @@ public class GraphReader {
     if (areGemfireLogs) {
       // TODO - probably don't need to go all the way
       // to a binary format here, but this is quick and easy.
-      HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
-      GemfireLogConverter.convertFiles(out, files);
-      InputStreamReader reader = new InputStreamReader(out.getInputStream());
-      reader.addToGraphs(graphs, filter);
+      try (HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT)) {
+        GemfireLogConverter.convertFiles(out, files);
+        InputStreamReader reader = new InputStreamReader(out.getInputStream());
+        reader.addToGraphs(graphs, filter);
+      }
     } else {
       for (File file : files) {
-        FileInputStream fis = new FileInputStream(file);
-        InputStreamReader reader = new InputStreamReader(fis);
-        reader.addToGraphs(graphs, filter);
+        try (FileInputStream fis = new FileInputStream(file)) {
+          InputStreamReader reader = new InputStreamReader(fis);
+          reader.addToGraphs(graphs, filter);
+        }
       }
     }
     graphs.readingDone();

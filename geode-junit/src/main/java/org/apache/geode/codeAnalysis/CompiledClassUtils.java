@@ -84,8 +84,7 @@ public class CompiledClassUtils {
    */
   public static Map<String, CompiledClass> parseClassFilesInJar(File jar) {
     Map<String, CompiledClass> result = new HashMap<String, CompiledClass>();
-    try {
-      JarFile jarfile = new JarFile(jar);
+    try (JarFile jarfile = new JarFile(jar)) {
       for (Enumeration<JarEntry> entries = jarfile.entries(); entries.hasMoreElements();) {
         JarEntry entry = entries.nextElement();
         if (entry.getName().endsWith(".class")) {
@@ -117,8 +116,8 @@ public class CompiledClassUtils {
       if (entry.isDirectory()) {
         result.putAll(parseClassFilesInDir(entry));
       } else if (entry.getName().endsWith(".class")) {
-        try {
-          CompiledClass parsed = CompiledClass.getInstance(new FileInputStream(entry));
+        try (FileInputStream fis = new FileInputStream(entry)) {
+          CompiledClass parsed = CompiledClass.getInstance(fis);
           if (!parsed.isInterface()) {
             result.put(parsed.fullyQualifiedName(), parsed);
           }

@@ -38,6 +38,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.Locator.getLocator;
 import static org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper.getDistribution;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.Host.getHost;
@@ -94,7 +95,6 @@ import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -134,7 +134,9 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    IgnoredException.addIgnoredException("ForcedDisconnectException");
+    IgnoredException.addIgnoredException("Possible loss of quorum");
+    locatorPort = getRandomAvailableTCPPort();
     final int locPort = locatorPort;
     Host.getHost(0).getVM(locatorVMNumber).invoke(new SerializableRunnable("start locator") {
       @Override
@@ -148,8 +150,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           system = (InternalDistributedSystem) locator.getDistributedSystem();
           cache = ((InternalLocator) locator).getCache();
           ReconnectDUnitTest.savedSystem = locator.getDistributedSystem();
-          IgnoredException.addIgnoredException(
-              "org.apache.geode.ForcedDisconnectException||Possible loss of quorum");
           // MembershipManagerHelper.getMembershipManager(InternalDistributedSystem.getConnectedInstance()).setDebugJGroups(true);
         } catch (IOException e) {
           Assert.fail("unable to start locator", e);
@@ -265,8 +265,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             props.put(MAX_NUM_RECONNECT_TRIES, "2");
             // props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
             cache = (InternalCache) new CacheFactory(props).create();
-            IgnoredException.addIgnoredException(
-                "org.apache.geode.ForcedDisconnectException||Possible loss of quorum");
+            IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException");
+            IgnoredException.addIgnoredException("Possible loss of quorum");
             Region myRegion = cache.getRegion("root" + SEPARATOR + "myRegion");
             ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
             myRegion.put("MyKey1", "MyValue1");
@@ -551,12 +551,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
     final String xmlFileLoc = (new File(".")).getAbsolutePath();
 
-    // This locator was started in setUp.
-    File locatorViewLog =
-        new File(locatorVm.getWorkingDirectory(), "locator" + locatorPort + "views.log");
-    assertTrue("Expected to find " + locatorViewLog.getPath() + " file", locatorViewLog.exists());
-    long logSize = locatorViewLog.length();
-
     vm0.invoke("Create a second locator", () -> {
       locatorPort = locPort;
       Properties props = getDistributedSystemProperties();
@@ -572,11 +566,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         Assert.fail("exception starting locator", e);
       }
     });
-
-    File locator2ViewLog =
-        new File(vm0.getWorkingDirectory(), "locator" + secondLocPort + "views.log");
-    assertTrue("Expected to find " + locator2ViewLog.getPath() + " file", locator2ViewLog.exists());
-    long log2Size = locator2ViewLog.length();
 
     // create a cache in vm1 so there is more weight in the system
     vm1.invoke("Create Cache and Regions from cache.xml", () -> {
@@ -610,14 +599,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           }));
 
       assertNotSame("expected a reconnect to occur in the locator", dm, newdm);
-
-      // the log should have been opened and appended with a new view
-      assertTrue("expected " + locator2ViewLog.getPath() + " to grow in size",
-          locator2ViewLog.length() > log2Size);
-      // the other locator should have logged a new view
-      assertTrue("expected " + locatorViewLog.getPath() + " to grow in size",
-          locatorViewLog.length() > logSize);
-
     } finally {
       vm0.invoke(new SerializableRunnable("stop locator") {
         @Override
@@ -679,7 +660,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testReconnectWithRoleLoss() throws TimeoutException, RegionExistsException {
-
+    IgnoredException.addIgnoredException(CacheClosedException.class);
+    IgnoredException.addIgnoredException(DistributedSystemDisconnectedException.class);
     final String rr1 = "RoleA";
     final String rr2 = "RoleB";
     final String[] requiredRoles = {rr1, rr2};
@@ -810,6 +792,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   // for the 2014 8.0 release.
   @Test
   public void testReconnectWithRequiredRoleRegained() throws Throwable {
+    IgnoredException.addIgnoredException(DistributedSystemDisconnectedException.class);
 
     final String rr1 = "RoleA";
     // final String rr2 = "RoleB";
@@ -1116,6 +1099,9 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testReconnectFailsDueToBadCacheXML() throws Exception {
+    IgnoredException.addIgnoredException(DistributedSystemDisconnectedException.class);
+    IgnoredException.addIgnoredException("Cause parsing to fail");
+    IgnoredException.addIgnoredException("Exception while initializing an instance");
 
     Host host = getHost(0);
     VM vm0 = host.getVM(0);

@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
 
 import org.apache.logging.log4j.Logger;
@@ -34,7 +35,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.modules.session.functions.GetMaxInactiveInterval;
@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.categories.SessionTest;
 @Category({SessionTest.class})
 public abstract class CargoTestBase {
   private final UniquePortSupplier portSupplier = new UniquePortSupplier();
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @Rule
   public TestName testName = new TestName();
@@ -82,8 +82,7 @@ public abstract class CargoTestBase {
   public void setup() throws Exception {
     dumpDockerInfo();
     announceTest("START");
-    int locatorPortSuggestion = AvailablePortHelper.getRandomAvailableTCPPort();
-    locatorVM = clusterStartupRule.startLocatorVM(0, locatorPortSuggestion);
+    locatorVM = clusterStartupRule.startLocatorVM(0);
 
     client = new Client();
     manager = new ContainerManager();
@@ -107,15 +106,14 @@ public abstract class CargoTestBase {
   public void stop() throws IOException {
     try {
       manager.stopAllActiveContainers();
+    } catch (Exception exception) {
+      manager.dumpLogs();
+      throw exception;
     } finally {
       try {
-        manager.dumpLogs();
+        manager.cleanUp();
       } finally {
-        try {
-          manager.cleanUp();
-        } finally {
-          announceTest("END");
-        }
+        announceTest("END");
       }
     }
   }
@@ -171,6 +169,10 @@ public abstract class CargoTestBase {
   @Test
   public void containersShouldReplicateCookies() throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.get(null);
@@ -184,6 +186,10 @@ public abstract class CargoTestBase {
   @Test
   public void containersShouldHavePersistentSessionData() throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     String key = "value_testSessionPersists";
     String value = "Foo";
@@ -201,6 +207,10 @@ public abstract class CargoTestBase {
   public void failureShouldStillAllowOtherContainersDataAccess()
       throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     String key = "value_testSessionPersists";
     String value = "Foo";
@@ -221,6 +231,10 @@ public abstract class CargoTestBase {
   @Test
   public void invalidationShouldRemoveValueAccessForAllContainers() throws Exception {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     String key = "value_testInvalidate";
     String value = "Foo";
@@ -247,6 +261,10 @@ public abstract class CargoTestBase {
   public void containersShouldExpireInSetTimeframe()
       throws IOException, URISyntaxException, InterruptedException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     String key = "value_testSessionExpiration";
     String value = "Foo";
@@ -257,7 +275,7 @@ public abstract class CargoTestBase {
     client.setMaxInactive(1); // max inactive time is 1 second. Lets wait a second.
     Thread.sleep(2000);
 
-    await().untilAsserted(() -> {
+    await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
       verifySessionIsRemoved(key);
       Thread.sleep(1000);
     });
@@ -273,6 +291,10 @@ public abstract class CargoTestBase {
   public void sessionPicksUpSessionTimeoutConfiguredInWebXml()
       throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     String key = "value_testSessionExpiration";
     String value = "Foo";
@@ -293,7 +315,7 @@ public abstract class CargoTestBase {
     for (int i = 0; i < manager.numContainers(); i++) {
       client.setPort(Integer.parseInt(manager.getContainerPort(i)));
       if (install.getConnectionType() == ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER) {
-        await().until(() -> Integer.toString(expected)
+        await().atMost(30, TimeUnit.SECONDS).until(() -> Integer.toString(expected)
             .equals(client.executionFunction(GetMaxInactiveInterval.class).getResponse()));
       } else {
         assertEquals(Integer.toString(expected),
@@ -311,6 +333,10 @@ public abstract class CargoTestBase {
   public void containersShouldShareSessionExpirationReset()
       throws URISyntaxException, IOException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     int timeToExp = 30;
     String key = "value_testSessionExpiration";
@@ -349,6 +375,11 @@ public abstract class CargoTestBase {
   @Test
   public void containersShouldShareDataRemovals() throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
+
     String key = "value_testSessionRemove";
     String value = "Foo";
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
@@ -369,6 +400,10 @@ public abstract class CargoTestBase {
   @Test
   public void newContainersShouldShareDataAccess() throws Exception {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
 
     String key = "value_testSessionAdd";
     String value = "Foo";
@@ -391,6 +426,11 @@ public abstract class CargoTestBase {
   @Test
   public void attributesCanBeReplaced() throws IOException, URISyntaxException {
     manager.startAllInactiveContainers();
+    await().until(() -> {
+      ServerContainer container = manager.getContainer(0);
+      return container.getState().isStarted();
+    });
+
     String key = "value_testSessionUpdate";
     String value = "Foo";
     String updateValue = "Bar";

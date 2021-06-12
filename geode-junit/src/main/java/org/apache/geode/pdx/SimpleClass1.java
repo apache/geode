@@ -88,38 +88,52 @@ public class SimpleClass1 implements PdxSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     SimpleClass1 other = (SimpleClass1) obj;
-    if (myFlag != other.myFlag)
+    if (myFlag != other.myFlag) {
       return false;
-    if (Float.floatToIntBits(myFloat) != Float.floatToIntBits(other.myFloat))
+    }
+    if (Float.floatToIntBits(myFloat) != Float.floatToIntBits(other.myFloat)) {
       return false;
-    if (myInt != other.myInt)
+    }
+    if (myInt != other.myInt) {
       return false;
-    if (myLong != other.myLong)
+    }
+    if (myLong != other.myLong) {
       return false;
-    if (myShort != other.myShort)
+    }
+    if (myShort != other.myShort) {
       return false;
+    }
     if (myString1 == null) {
-      if (other.myString1 != null)
+      if (other.myString1 != null) {
         return false;
-    } else if (!myString1.equals(other.myString1))
+      }
+    } else if (!myString1.equals(other.myString1)) {
       return false;
+    }
     if (myString2 == null) {
-      if (other.myString2 != null)
+      if (other.myString2 != null) {
         return false;
-    } else if (!myString2.equals(other.myString2))
+      }
+    } else if (!myString2.equals(other.myString2)) {
       return false;
+    }
     if (myString3 == null) {
-      if (other.myString3 != null)
+      if (other.myString3 != null) {
         return false;
-    } else if (!myString3.equals(other.myString3))
+      }
+    } else if (!myString3.equals(other.myString3)) {
       return false;
+    }
     return true;
   }
 

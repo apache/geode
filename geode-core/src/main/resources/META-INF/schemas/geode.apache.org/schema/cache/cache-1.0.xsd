@@ -203,6 +203,7 @@ declarative caching XML file elements unless indicated otherwise.
             <xsd:attribute name="dispatcher-threads" type="xsd:string" use="optional" />
             <xsd:attribute name="order-policy" type="xsd:string" use="optional" />
             <xsd:attribute name="group-transaction-events" type="xsd:boolean" use="optional" />
+            <xsd:attribute name="enforce-threads-connect-same-receiver" type="xsd:boolean" use="optional" />
           </xsd:complexType>
         </xsd:element>
 

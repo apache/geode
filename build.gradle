@@ -17,19 +17,20 @@
 
 plugins {
   id "wrapper"
-  id "nebula.facet" version "6.0.2" apply false
+  id "nebula.facet" version "8.0.0" apply false
   id "base"
   id "idea"
   id "eclipse"
-  id "com.diffplug.gradle.spotless" version "3.28.0" apply false
-  id "com.github.ben-manes.versions" version "0.28.0" apply false
-  id "nebula.lint" version "16.4.0" apply false
-  id "com.palantir.docker" version "0.22.1" apply false
-  id "io.spring.dependency-management" version "1.0.9.RELEASE" apply false
-  id "org.ajoberstar.grgit" version "4.0.1" apply false
-  id "org.nosphere.apache.rat" version "0.6.0" apply false
-  id "org.sonarqube" version "2.8" apply false
+  id "com.diffplug.spotless" version "5.12.5" apply false
+  id "com.github.ben-manes.versions" version "0.39.0" apply false
+  id "nebula.lint" version "16.23.0" apply false
+  id "com.palantir.docker" version "0.26.0" apply false
+  id "io.spring.dependency-management" version "1.0.11.RELEASE" apply false
+  id "org.ajoberstar.grgit" version "4.1.0" apply false
+  id "org.nosphere.apache.rat" version "0.7.0" apply false
+  id "org.sonarqube" version "3.2.0" apply false
   id "me.champeau.gradle.japicmp" apply false // Version defined in buildSrc/build.gradle
+  id 'me.champeau.gradle.jmh' version '0.5.3' apply false
 }
 
 
@@ -50,7 +51,6 @@ allprojects {
   }
 
   repositories {
-    mavenLocal()
     mavenCentral()
     maven { url "https://repo.spring.io/release" }
   }
@@ -128,9 +128,38 @@ tasks.register('devBuild') {
 tasks.register('generate') {
   group = 'Build'
   description = "Top-level target for all source generation. Helps IDE integration"
-  // This task is a no-op, with other tasks (such as geode-protobuf-messages:generateProto)
+  // This task is a no-op, with other tasks
   // injecting themselves as a task dependency into this task.  E.g., via
   // `afterEvaluate.rootProject.generate.dependsOn(generateProto)`
+}
+
+tasks.register('printTestClasspath') {
+  group 'Build'
+  description "Print the classpath used in all tests for all subprojects"
+
+  doLast {
+    Set result = new LinkedHashSet()
+    // Prefer sources at the start of the classpath
+    subprojects.each { sub ->
+      if (sub.hasProperty("sourceSets")) {
+        sub.sourceSets.each { ss ->
+          ss.each { x ->
+            x.output.classesDirs.each { y -> result.add(y) }
+          }
+        }
+      }
+    }
+
+    subprojects.each { sub ->
+      sub.configurations.each { c ->
+        if (c.name.toLowerCase().endsWith("runtimeclasspath")) {
+          c.each { f -> result.add(f) }
+        }
+      }
+    }
+
+    println result.join(File.pathSeparator)
+  }
 }
 
 // Prompt the user for a publication passsword to sign archives or upload artifacts, if requested

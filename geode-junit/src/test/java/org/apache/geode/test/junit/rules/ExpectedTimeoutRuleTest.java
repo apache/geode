@@ -82,9 +82,9 @@ public class ExpectedTimeoutRuleTest {
     assertThat(failures.size()).as("Failures: " + failures).isEqualTo(1);
 
     Failure failure = failures.get(0);
-    String expectedMessage = "\n"
+    String expectedMessage = System.lineSeparator()
         + "Expected: (an instance of java.util.concurrent.TimeoutException and exception with message a string containing \"this is a message for FailsWithExpectedTimeoutButWrongError\")"
-        + "\n" + "     "
+        + System.lineSeparator() + "     "
         + "but: an instance of java.util.concurrent.TimeoutException <java.lang.NullPointerException> is a java.lang.NullPointerException";
     assertThat(failure.getException()).isExactlyInstanceOf(AssertionError.class)
         .hasMessageContaining(expectedMessage);

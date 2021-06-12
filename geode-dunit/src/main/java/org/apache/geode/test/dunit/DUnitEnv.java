@@ -15,10 +15,8 @@
 package org.apache.geode.test.dunit;
 
 import java.io.File;
-import java.rmi.RemoteException;
 import java.util.Properties;
 
-import org.apache.geode.test.dunit.internal.BounceResult;
 
 /**
  * This class provides an abstraction over the environment that is used to run dunit. This will
@@ -60,9 +58,6 @@ public abstract class DUnitEnv {
   public abstract Properties getDistributedSystemProperties();
 
   public abstract int getId();
-
-  public abstract BounceResult bounce(String version, int pid, boolean force)
-      throws RemoteException;
 
   public abstract File getWorkingDirectory(int pid);
 

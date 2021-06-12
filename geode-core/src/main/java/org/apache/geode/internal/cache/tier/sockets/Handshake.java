@@ -34,7 +34,7 @@ import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.ClientSideHandshakeImpl;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.tier.ConnectionProxy;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -352,10 +352,12 @@ public abstract class Handshake {
    */
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (!(other instanceof Handshake))
+    }
+    if (!(other instanceof Handshake)) {
       return false;
+    }
     final Handshake that = (Handshake) other;
 
     if (this.id.isSameDSMember(that.id) && getReplyCode() == that.getReplyCode()) {
@@ -486,7 +488,7 @@ public abstract class Handshake {
       if (securityService.isIntegratedSecurity()) {
         return securityService.login(credentials);
       } else {
-        Method instanceGetter = ClassLoadUtil.methodFromName(authenticatorMethod);
+        Method instanceGetter = ClassLoadUtils.methodFromName(authenticatorMethod);
         auth = (Authenticator) instanceGetter.invoke(null, (Object[]) null);
         auth.init(securityProperties, logWriter, securityLogWriter);
         return auth.authenticate(credentials, member);

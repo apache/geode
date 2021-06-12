@@ -31,7 +31,7 @@ pushd ${WORK_DIR}
   git clone -b develop --depth 1 https://github.com/apache/geode.git geode
 
   pushd geode
-    ./gradlew --no-daemon resolveDependencies
+    ./gradlew --no-daemon --console=plain --info resolveDependencies
   popd
 popd
 

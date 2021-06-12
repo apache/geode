@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -57,7 +56,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
   protected boolean processQuery(final Message msg,
       final Query query,
       final String queryString,
-      final Set regionNames,
+      final Set<String> regionNames,
       final long start,
       final ServerCQ cqQuery,
       final QueryOperationContext queryContext,
@@ -77,7 +76,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
   protected boolean processQueryUsingParams(final Message msg,
       final Query query,
       final String queryString,
-      final Set regionNames,
+      final Set<String> regionNames,
       long start,
       final ServerCQ cqQuery,
       QueryOperationContext queryContext,
@@ -114,8 +113,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       // For now we assume the results are a SelectResults
       // which is the only possibility now, but this may change
       // in the future if we support arbitrary queries
-      Object result = null;
-
+      Object result;
       if (params != null) {
         result = query.execute(params);
       } else {
@@ -126,9 +124,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       // of the regions involved in the query have been destroyed
       // or not. If yes, throw an Exception.
       // This is a workaround/fix for Bug 36969
-      Iterator itr = regionNames.iterator();
-      while (itr.hasNext()) {
-        String regionName = (String) itr.next();
+      for (final String regionName : regionNames) {
         if (crHelper.getRegion(regionName) == null) {
           throw new RegionDestroyedException(
               "Region destroyed during the execution of the query",
@@ -148,16 +144,12 @@ public abstract class BaseCommandQuery extends BaseCommand {
       }
 
       if (result instanceof SelectResults) {
-        SelectResults selectResults = (SelectResults) result;
+        SelectResults<?> selectResults = (SelectResults<?>) result;
 
         if (logger.isDebugEnabled()) {
           logger.debug("Query Result size for : {} is {}", query.getQueryString(),
               selectResults.size());
         }
-
-        CollectionType collectionType = null;
-        boolean sendCqResultsWithKey = true;
-        boolean isStructs = false;
 
         // check if resultset has serialized objects, so that they could be sent
         // as ObjectPartList
@@ -177,20 +169,15 @@ public abstract class BaseCommandQuery extends BaseCommand {
 
         // Get the collection type (which includes the element type)
         // (used to generate the appropriate instance on the client)
-        collectionType = getCollectionType(selectResults);
-        isStructs = collectionType.getElementType().isStructType();
+        CollectionType collectionType = getCollectionType(selectResults);
+        boolean isStructs = collectionType.getElementType().isStructType();
 
         // Check if the Query is from CQ execution.
         if (cqQuery != null) {
-          // Check if the key can be sent to the client based on its version.
-          sendCqResultsWithKey = sendCqResultsWithKey(servConn);
-
-          if (sendCqResultsWithKey) {
-            // Update the collection type to include key info.
-            collectionType = new CollectionTypeImpl(Collection.class,
-                new StructTypeImpl(new String[] {"key", "value"}));
-            isStructs = collectionType.getElementType().isStructType();
-          }
+          // Update the collection type to include key info.
+          collectionType = new CollectionTypeImpl(Collection.class,
+              new StructTypeImpl(new String[] {"key", "value"}));
+          isStructs = collectionType.getElementType().isStructType();
         }
 
         int numberOfChunks = (int) Math.ceil(selectResults.size() * 1.0 / MAXIMUM_CHUNK_SIZE);
@@ -226,11 +213,11 @@ public abstract class BaseCommandQuery extends BaseCommand {
           // send it as a part of ObjectPartList
           if (hasSerializedObjects) {
             sendResultsAsObjectPartList(numberOfChunks, servConn, selectResults.asList(), isStructs,
-                collectionType, queryString, cqQuery, sendCqResultsWithKey, sendResults,
+                collectionType, queryString, cqQuery, sendResults,
                 securityService);
           } else {
             sendResultsAsObjectArray(selectResults, numberOfChunks, servConn, isStructs,
-                collectionType, queryString, cqQuery, sendCqResultsWithKey, sendResults);
+                collectionType, queryString, cqQuery, sendResults);
           }
         }
 
@@ -260,9 +247,8 @@ public abstract class BaseCommandQuery extends BaseCommand {
       logger.warn(String.format("Unexpected QueryInvalidException while processing query %s",
           queryString),
           e);
-      QueryInvalidException qie =
-          new QueryInvalidException(String.format("%s : QueryString is: %s.",
-              new Object[] {e.getLocalizedMessage(), queryString}));
+      QueryInvalidException qie = new QueryInvalidException(
+          String.format("%s : QueryString is: %s.", e.getLocalizedMessage(), queryString));
       writeQueryResponseException(msg, qie, servConn);
       return false;
     } catch (DistributedSystemDisconnectedException se) {
@@ -287,13 +273,6 @@ public abstract class BaseCommandQuery extends BaseCommand {
       }
       writeQueryResponseException(msg, e, servConn);
       return false;
-    } finally {
-      // Since the query object is being shared in case of bind queries,
-      // resetting the flag may cause inconsistency.
-      // Also since this flag is only being set in code path executed by
-      // remote query execution, resetting it is not required.
-
-      // ((DefaultQuery)query).setRemoteQuery(false);
     }
 
     if (logger.isDebugEnabled()) {
@@ -304,16 +283,8 @@ public abstract class BaseCommandQuery extends BaseCommand {
     return true;
   }
 
-  protected CollectionType getCollectionType(SelectResults results) {
+  protected CollectionType getCollectionType(SelectResults<?> results) {
     return results.getCollectionType();
-  }
-
-  private boolean sendCqResultsWithKey(ServerConnection servConn) {
-    KnownVersion clientVersion = servConn.getClientVersion();
-    if (clientVersion.isNotOlderThan(KnownVersion.GFE_65)) {
-      return true;
-    }
-    return false;
   }
 
   protected void sendCqResponse(int msgType, String msgStr, int txId, Throwable e,
@@ -365,9 +336,11 @@ public abstract class BaseCommandQuery extends BaseCommand {
     }
   }
 
-  private void sendResultsAsObjectArray(SelectResults selectResults, int numberOfChunks,
-      ServerConnection servConn, boolean isStructs, CollectionType collectionType,
-      String queryString, ServerCQ cqQuery, boolean sendCqResultsWithKey, boolean sendResults)
+  private void sendResultsAsObjectArray(SelectResults<?> selectResults, int numberOfChunks,
+      ServerConnection servConn, boolean isStructs,
+      CollectionType collectionType,
+      String queryString, ServerCQ cqQuery,
+      boolean sendResults)
       throws IOException {
     int resultIndex = 0;
     // For CQ only as we dont want CQEntries which have null values.
@@ -408,11 +381,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
           }
 
           // Add to the Results object array.
-          if (sendCqResultsWithKey) {
-            results[i] = e.getKeyValuePair();
-          } else {
-            results[i] = e.getValue();
-          }
+          results[i] = e.getKeyValuePair();
         } else {
           // instance check added to fix bug 40516.
           if (isStructs && (objs[resultIndex] instanceof Struct)) {
@@ -428,15 +397,13 @@ public abstract class BaseCommandQuery extends BaseCommand {
       // of entries in the chunk does not divide evenly into the
       // number of entries in the result set.
       if (incompleteArray) {
-        Object[] newResults;
-        if (cqQuery != null) {
-          newResults = new Object[cqResultIndex % MAXIMUM_CHUNK_SIZE];
-        } else {
+        final Object[] newResults;
+        if (cqQuery == null) {
           newResults = new Object[resultIndex % MAXIMUM_CHUNK_SIZE];
+        } else {
+          newResults = new Object[cqResultIndex % MAXIMUM_CHUNK_SIZE];
         }
-        for (int i = 0; i < newResults.length; i++) {
-          newResults[i] = results[i];
-        }
+        System.arraycopy(results, 0, newResults, 0, newResults.length);
         results = newResults;
       }
 
@@ -457,12 +424,14 @@ public abstract class BaseCommandQuery extends BaseCommand {
     }
   }
 
-  private void sendResultsAsObjectPartList(int numberOfChunks, ServerConnection servConn, List objs,
-      boolean isStructs, CollectionType collectionType, String queryString, ServerCQ cqQuery,
-      boolean sendCqResultsWithKey, boolean sendResults, final SecurityService securityService)
+  private void sendResultsAsObjectPartList(int numberOfChunks, ServerConnection servConn,
+      List<?> objs,
+      boolean isStructs, CollectionType collectionType,
+      String queryString, ServerCQ cqQuery,
+      boolean sendResults,
+      final SecurityService securityService)
       throws IOException {
     int resultIndex = 0;
-    Object result = null;
     for (int j = 0; j < numberOfChunks; j++) {
       if (logger.isTraceEnabled()) {
         logger.trace("{}: Creating chunk: {}", servConn.getName(), j);
@@ -476,6 +445,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
           logger.trace("{}: Adding entry [{}] to query results: {}", servConn.getName(),
               resultIndex, objs.get(resultIndex));
         }
+        Object result;
         if (cqQuery != null) {
           CqEntry e = (CqEntry) objs.get(resultIndex);
           // The value may have become null because of entry invalidation.
@@ -494,16 +464,12 @@ public abstract class BaseCommandQuery extends BaseCommand {
           }
 
           // Add to the Results object array.
-          if (sendCqResultsWithKey) {
-            result = e.getKeyValuePair();
-          } else {
-            result = e.getValue();
-          }
+          result = e.getKeyValuePair();
         } else {
           result = objs.get(resultIndex);
         }
         if (sendResults) {
-          addToObjectPartList(serializedObjs, result, collectionType, false, servConn, isStructs,
+          addToObjectPartList(serializedObjs, result, isStructs,
               securityService);
         }
         resultIndex++;
@@ -522,8 +488,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
   }
 
   private void addToObjectPartList(ObjectPartList serializedObjs, Object res,
-      CollectionType collectionType, boolean lastChunk, ServerConnection servConn,
-      boolean isStructs, final SecurityService securityService) throws IOException {
+      boolean isStructs, final SecurityService securityService) {
     if (isStructs && (res instanceof Struct)) {
       Object[] values = ((Struct) res).getFieldValues();
       // create another ObjectPartList for the struct

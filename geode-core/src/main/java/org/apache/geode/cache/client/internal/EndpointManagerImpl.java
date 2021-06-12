@@ -30,6 +30,7 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -37,8 +38,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class EndpointManagerImpl implements EndpointManager {
   private static final Logger logger = LogService.getLogger();
 
-  private volatile Map<ServerLocation, Endpoint> endpointMap = Collections.emptyMap();
-  private final Map<ServerLocation, ConnectionStats> statMap = new HashMap<>();
+  private volatile Map<ServerLocationAndMemberId, Endpoint> endpointMap = Collections.emptyMap();
+  private final Map<ServerLocationAndMemberId, ConnectionStats> statMap = new HashMap<>();
   private final DistributedSystem ds;
   private final String poolName;
   private final EndpointListenerBroadcaster listener = new EndpointListenerBroadcaster();
@@ -56,17 +57,19 @@ public class EndpointManagerImpl implements EndpointManager {
 
   @Override
   public Endpoint referenceEndpoint(ServerLocation server, DistributedMember memberId) {
-    Endpoint endpoint = endpointMap.get(server);
+    ServerLocationAndMemberId serverLocationAndMemberId =
+        new ServerLocationAndMemberId(server, memberId.getUniqueId());
+    Endpoint endpoint = endpointMap.get(serverLocationAndMemberId);
     boolean addedEndpoint = false;
     if (endpoint == null || endpoint.isClosed()) {
       synchronized (this) {
-        endpoint = endpointMap.get(server);
+        endpoint = endpointMap.get(serverLocationAndMemberId);
         if (endpoint == null || endpoint.isClosed()) {
-          ConnectionStats stats = getStats(server);
-          Map<ServerLocation, Endpoint> endpointMapTemp = new HashMap<>(endpointMap);
+          ConnectionStats stats = getStats(serverLocationAndMemberId);
+          Map<ServerLocationAndMemberId, Endpoint> endpointMapTemp = new HashMap<>(endpointMap);
           endpoint = new Endpoint(this, ds, server, stats, memberId);
           listener.clearPdxRegistry(endpoint);
-          endpointMapTemp.put(server, endpoint);
+          endpointMapTemp.put(serverLocationAndMemberId, endpoint);
           endpointMap = Collections.unmodifiableMap(endpointMapTemp);
           addedEndpoint = true;
           poolStats.setServerCount(endpointMap.size());
@@ -97,8 +100,9 @@ public class EndpointManagerImpl implements EndpointManager {
     endpoint.close();
     boolean removedEndpoint = false;
     synchronized (this) {
-      Map<ServerLocation, Endpoint> endpointMapTemp = new HashMap<>(endpointMap);
-      endpoint = endpointMapTemp.remove(endpoint.getLocation());
+      Map<ServerLocationAndMemberId, Endpoint> endpointMapTemp = new HashMap<>(endpointMap);
+      endpoint = endpointMapTemp.remove(new ServerLocationAndMemberId(endpoint.getLocation(),
+          endpoint.getMemberId().getUniqueId()));
       if (endpoint != null) {
         endpointMap = Collections.unmodifiableMap(endpointMapTemp);
         removedEndpoint = true;
@@ -152,7 +156,7 @@ public class EndpointManagerImpl implements EndpointManager {
 
 
   @Override
-  public Map<ServerLocation, Endpoint> getEndpointMap() {
+  public Map<ServerLocationAndMemberId, Endpoint> getEndpointMap() {
     return endpointMap;
   }
 
@@ -177,7 +181,7 @@ public class EndpointManagerImpl implements EndpointManager {
     this.listener.removeListener(listener);
   }
 
-  private synchronized ConnectionStats getStats(ServerLocation location) {
+  private synchronized ConnectionStats getStats(ServerLocationAndMemberId location) {
     ConnectionStats stats = statMap.get(location);
     if (stats == null) {
       PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
@@ -198,7 +202,7 @@ public class EndpointManagerImpl implements EndpointManager {
   }
 
   @Override
-  public synchronized Map<ServerLocation, ConnectionStats> getAllStats() {
+  public synchronized Map<ServerLocationAndMemberId, ConnectionStats> getAllStats() {
     return new HashMap<>(statMap);
   }
 

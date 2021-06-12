@@ -14,6 +14,9 @@
  */
 package org.apache.geode.cache.util;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.scheduling.support.CronSequenceGenerator;
+import org.springframework.scheduling.support.CronExpression;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Experimental;
@@ -195,7 +198,7 @@ public class AutoBalancer implements Declarable {
    */
   private class CronScheduler implements AuditScheduler {
     final ScheduledExecutorService trigger;
-    CronSequenceGenerator generator;
+    CronExpression generator;
 
     CronScheduler() {
       trigger = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
@@ -219,7 +222,7 @@ public class AutoBalancer implements Declarable {
       }
 
       try {
-        generator = new CronSequenceGenerator(schedule);
+        generator = CronExpression.parse(schedule);
       } catch (Exception e) {
         throw new GemFireConfigException("Cron expression could not be parsed: " + schedule, e);
       }
@@ -229,8 +232,12 @@ public class AutoBalancer implements Declarable {
 
     private void submitNext() {
       long currentTime = clock.currentTimeMillis();
-      Date nextSchedule = generator.next(new Date(currentTime));
-      long delay = nextSchedule.getTime() - currentTime;
+      Instant currentInstant = new Date(currentTime).toInstant();
+      ZoneId localTimeZone = ZoneId.systemDefault();
+      LocalDateTime now = currentInstant.atZone(localTimeZone).toLocalDateTime();
+      LocalDateTime next = generator.next(now);
+      long nextSchedule = 1000 * next.toEpochSecond(localTimeZone.getRules().getOffset(next));
+      long delay = nextSchedule - currentTime;
 
       if (logger.isDebugEnabled()) {
         logger.debug("Now={}, next audit time={}, delay={} ms", new Date(currentTime), nextSchedule,

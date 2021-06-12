@@ -65,7 +65,7 @@ public class CacheClientProxyTest {
     final InetAddress address = mock(InetAddress.class);
     when(socket.getInetAddress()).thenReturn(address);
     when(address.getHostAddress()).thenReturn("localhost");
-    doNothing().when(sc).asyncClose(any(), eq("localhost"), eq(null));
+    doNothing().when(sc).asyncClose(any(), eq("localhost"), any(Runnable.class));
 
     final ClientProxyMembershipID proxyID = mock(ClientProxyMembershipID.class);
     final DistributedMember member = cache.getDistributedSystem().getDistributedMember();

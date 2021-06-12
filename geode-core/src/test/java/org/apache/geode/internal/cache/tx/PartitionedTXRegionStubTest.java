@@ -34,9 +34,11 @@ import org.apache.geode.cache.TransactionDataRebalancedException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.ForceReattemptException;
+import org.apache.geode.internal.cache.InternalDataView;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXStateStub;
@@ -96,7 +98,7 @@ public class PartitionedTXRegionStubTest {
       throws Exception {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doReturn(true).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion).destroyRemotely(remoteTransactionHost,
@@ -114,7 +116,7 @@ public class PartitionedTXRegionStubTest {
       throws Exception {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doReturn(false).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion).destroyRemotely(remoteTransactionHost,
@@ -128,6 +130,36 @@ public class PartitionedTXRegionStubTest {
   }
 
   @Test
+  public void getEntryForIteratorReturnsEntryGotFromTransactionHost() throws Exception {
+    PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
+    EntrySnapshot entry = mock(EntrySnapshot.class);
+
+    when(event.getRegion()).thenReturn(partitionedRegion);
+    when(partitionedRegion.getBucketPrimary(1))
+        .thenReturn((InternalDistributedMember) remoteTransactionHost);
+    when(partitionedRegion.getEntryRemotely((InternalDistributedMember) remoteTransactionHost, 1,
+        key, false, true)).thenReturn(entry);
+
+    assertThat(stub.getEntryForIterator(keyInfo, true)).isEqualTo(entry);
+    verify(stub).trackBucketForTx(keyInfo);
+  }
+
+  @Test
+  public void getEntryForIteratorReturnsEntryGotFromAnyDataHosts() {
+    PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
+    EntrySnapshot entry = mock(EntrySnapshot.class);
+    InternalDistributedMember member = mock(InternalDistributedMember.class);
+    InternalDataView dataView = mock(InternalDataView.class);
+
+    when(event.getRegion()).thenReturn(partitionedRegion);
+    when(partitionedRegion.getBucketPrimary(keyInfo.getBucketId())).thenReturn(member);
+    when(partitionedRegion.getSharedDataView()).thenReturn(dataView);
+    when(dataView.getEntry(keyInfo, partitionedRegion, true)).thenReturn(entry);
+
+    assertThat(stub.getEntryForIterator(keyInfo, true)).isEqualTo(entry);
+  }
+
+  @Test
   public void getEntryReturnsEntryGotFromRemote() throws Exception {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     EntrySnapshot entry = mock(EntrySnapshot.class);
@@ -137,6 +169,32 @@ public class PartitionedTXRegionStubTest {
 
     assertThat(stub.getEntry(keyInfo, true)).isEqualTo(entry);
     verify(stub).trackBucketForTx(keyInfo);
+  }
+
+  @Test
+  public void isBucketNotFoundExceptionReturnsTrue() {
+    PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
+    BucketNotFoundException ex = new BucketNotFoundException("Test BNFE");
+
+    assertThat(stub.isBucketNotFoundException(ex)).isEqualTo(true);
+  }
+
+  @Test
+  public void isBucketNotFoundExceptionReturnsFalse() {
+    PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
+    ForceReattemptException ex = new ForceReattemptException("Test FRE");
+
+    assertThat(stub.isBucketNotFoundException(ex)).isEqualTo(false);
+  }
+
+  @Test
+  public void isBucketNotFoundExceptionReturnsTrueIfCausedByBucketNotFoundException() {
+    PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
+
+    Throwable cause = new BucketNotFoundException("Test BNFE");
+    ForceReattemptException ex = new ForceReattemptException("Test FRE", cause);
+
+    assertThat(stub.isBucketNotFoundException(ex)).isEqualTo(true);
   }
 
   @Test
@@ -157,7 +215,7 @@ public class PartitionedTXRegionStubTest {
       throws Exception {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doReturn(true).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion)
@@ -175,7 +233,7 @@ public class PartitionedTXRegionStubTest {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
 
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doReturn(false).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion)
@@ -218,7 +276,7 @@ public class PartitionedTXRegionStubTest {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
     when(keyInfo.getBucketId()).thenReturn(1);
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doReturn(true).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion)
@@ -237,7 +295,7 @@ public class PartitionedTXRegionStubTest {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
     when(keyInfo.getBucketId()).thenReturn(1);
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doReturn(false).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion)
@@ -290,7 +348,7 @@ public class PartitionedTXRegionStubTest {
       throws Exception {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doReturn(true).when(stub).isBucketNotFoundException(forceReattemptException);
     when(partitionedRegion.containsKeyRemotely((InternalDistributedMember) remoteTransactionHost, 1,
         key)).thenThrow(forceReattemptException);
@@ -310,7 +368,7 @@ public class PartitionedTXRegionStubTest {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
 
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doNothing().when(stub).waitToRetry();
     doReturn(false).when(stub).isBucketNotFoundException(forceReattemptException);
     when(partitionedRegion.containsKeyRemotely((InternalDistributedMember) remoteTransactionHost, 1,
@@ -366,7 +424,7 @@ public class PartitionedTXRegionStubTest {
       throws Exception {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doReturn(true).when(stub).isBucketNotFoundException(forceReattemptException);
     doReturn(expectedException).when(stub).getTransactionException(keyInfo,
         forceReattemptException);
@@ -386,7 +444,7 @@ public class PartitionedTXRegionStubTest {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
 
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doNothing().when(stub).waitToRetry();
     doReturn(false).when(stub).isBucketNotFoundException(forceReattemptException);
     when(partitionedRegion
@@ -433,7 +491,7 @@ public class PartitionedTXRegionStubTest {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub,
         partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doReturn(true).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion)
@@ -456,7 +514,7 @@ public class PartitionedTXRegionStubTest {
         partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
 
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doReturn(false).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion)
@@ -520,7 +578,7 @@ public class PartitionedTXRegionStubTest {
       throws Exception {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doReturn(true).when(stub).isBucketNotFoundException(forceReattemptException);
     doReturn(expectedException).when(stub).getTransactionException(keyInfo,
         forceReattemptException);
@@ -542,7 +600,7 @@ public class PartitionedTXRegionStubTest {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
 
-    ForceReattemptException forceReattemptException = mock(ForceReattemptException.class);
+    ForceReattemptException forceReattemptException = new ForceReattemptException("Test FRE");
     doNothing().when(stub).waitToRetry();
     doReturn(false).when(stub).isBucketNotFoundException(forceReattemptException);
     doReturn(expectedException).when(stub).getTransactionException(keyInfo,

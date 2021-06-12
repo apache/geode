@@ -223,12 +223,13 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * This is the latest view (ordered list of IDs) that has been installed
    *
-   * All accesses to this object are protected via {@link #latestViewLock}
+   * Writing to this object is protected via {@link #latestViewWriteLock}
    */
   private volatile MembershipView<ID> latestView = new MembershipView<>();
 
   /**
-   * This is the lock for protecting access to latestView
+   * This is the lock for protecting access to latestView and modification of data used in
+   * {@link #processView} method
    *
    * @see #latestView
    */
@@ -257,33 +258,20 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   private volatile boolean hasJoined;
 
   /**
-   * Members of the distributed system that we believe have shut down. Keys are instances of
-   * {@link ID}, values are Longs indicating the time this member was
-   * shunned.
-   *
-   * Members are removed after {@link #SHUNNED_SUNSET} seconds have passed.
-   *
-   * Accesses to this list needs to be under the read or write lock of {@link #latestViewLock}
-   *
-   * @see System#currentTimeMillis()
-   */
-  // protected final Set shunnedMembers = Collections.synchronizedSet(new HashSet());
-  private final Map<ID, Long> shunnedMembers = new ConcurrentHashMap<>();
-
-  /**
    * Members that have sent a shutdown message. This is used to suppress suspect processing that
    * otherwise becomes pretty aggressive when a member is shutting down.
    */
-  private final Map<ID, Object> shutdownMembers = new BoundedLinkedHashMap<>();
+  private final Set<ID> shutdownMembers = Collections.newSetFromMap(new BoundedLinkedHashMap<>());
 
   /**
-   * per bug 39552, keep a list of members that have been shunned and for which a message is
-   * printed. Contents of this list are cleared at the same time they are removed from
-   * {@link #shunnedMembers}.
+   * This is the lock for protecting access to shutdownMembers
    *
-   * Accesses to this list needs to be under the read or write lock of {@link #latestViewLock}
+   * @see #shutdownMembers
    */
-  private final HashSet<ID> shunnedAndWarnedMembers = new HashSet<>();
+  private final ReadWriteLock shutdownMembersLock = new ReentrantReadWriteLock();
+  private final Lock shutdownMembersReadLock = shutdownMembersLock.readLock();
+  private final Lock shutdownMembersWriteLock = shutdownMembersLock.writeLock();
+
   /**
    * The identities and birth-times of others that we have allowed into membership at the
    * distributed system level, but have not yet appeared in a view.
@@ -295,7 +283,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * {@link #surpriseMemberTimeout} milliseconds have passed, a view containing the member has not
    * arrived, the member is removed from membership and member-left notification is performed.
    * <p>
-   * > Accesses to this list needs to be under the read or write lock of {@link #latestViewLock}
+   * > Writing to this list needs to be under {@link #latestViewWriteLock}
    *
    * @see System#currentTimeMillis()
    */
@@ -311,14 +299,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * of suspected members that we use to detect crashes.
    */
   private final Map<ID, Long> suspectedMembers = new ConcurrentHashMap<>();
-
-  /**
-   * Length of time, in seconds, that a member is retained in the zombie set
-   *
-   * @see #shunnedMembers
-   */
-  private static final int SHUNNED_SUNSET = Integer
-      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "shunned-member-timeout", 300).intValue();
 
   /**
    * Set to true when the service should stop.
@@ -359,7 +339,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * Analyze a given view object, generate events as appropriate
    */
-  public void processView(MembershipView<ID> newView) {
+  public void processView(final MembershipView<ID> newView) {
     // Sanity check...
     if (logger.isDebugEnabled()) {
       StringBuilder msg = new StringBuilder(200);
@@ -388,7 +368,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
       // update the view to reflect our changes, so that
       // callbacks will see the new (updated) view.
-      MembershipView<ID> newlatestView = new MembershipView<>(newView, newView.getViewId());
+      MembershipView<ID> newlatestView = newView;
 
       // look for additions
       for (int i = 0; i < newView.getMembers().size(); i++) { // additions
@@ -432,14 +412,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         }
 
         if (shutdownInProgress()) {
-          addShunnedMember(m);
           continue; // no additions processed after shutdown begins
-        } else {
-          boolean wasShunned = endShun(m); // bug #45158 - no longer shun a process that is now in
-          // view
-          if (wasShunned && logger.isDebugEnabled()) {
-            logger.debug("No longer shunning {} as it is in the current membership view", m);
-          }
         }
 
         logger.info("Membership: Processing addition <{}>", m);
@@ -488,7 +461,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
               "not seen in membership view in " + this.surpriseMemberTimeout + "ms");
         } else {
           if (!newlatestView.contains(entry.getKey())) {
-            newlatestView.add(entry.getKey());
+            newlatestView = newlatestView.createNewViewWithMember(entry.getKey());
           }
         }
       }
@@ -505,7 +478,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       }
 
       // the view is complete - let's install it
-      newlatestView.makeUnmodifiable();
       latestView = newlatestView;
       listener.viewInstalled(latestView);
     } finally {
@@ -535,19 +507,12 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     }
   }
 
-  public boolean isCleanupTimerStarted() {
-    return this.cleanupTimer != null;
-  }
-
   /**
    * the timer used to perform periodic tasks
-   *
-   * Concurrency: protected by {@link #latestViewLock} ReentrantReadWriteLock
    */
   private ScheduledExecutorService cleanupTimer;
 
   private Services<ID> services;
-
 
 
   /**
@@ -565,16 +530,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         this.isJoining = true; // added for bug #44373
 
         // connect
-        boolean ok = services.getJoinLeave().join();
+        services.getJoinLeave().join();
 
-        if (!ok) {
-          throw new MembershipConfigurationException("Unable to join the distributed system.  "
-              + "Operation either timed out, was stopped or Locator does not exist.");
-        }
-
-        MembershipView<ID> initialView = createGeodeView(services.getJoinLeave().getView());
-        latestView = new MembershipView<>(initialView, initialView.getViewId());
-        latestView.makeUnmodifiable();
+        latestView = createGeodeView(services.getJoinLeave().getView());
         listener.viewInstalled(latestView);
       } finally {
         this.isJoining = false;
@@ -585,28 +543,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   }
 
   private MembershipView<ID> createGeodeView(GMSMembershipView<ID> view) {
-    MembershipView<ID> result =
-        createGeodeView(view.getCreator(), view.getViewId(), view.getMembers(),
-            view.getShutdownMembers(),
-            view.getCrashedMembers());
-    result.makeUnmodifiable();
-    return result;
-  }
-
-  private MembershipView<ID> createGeodeView(ID gmsCreator, int viewId,
-      List<ID> gmsMembers,
-      Set<ID> gmsShutdowns, Set<ID> gmsCrashes) {
-    ID geodeCreator = gmsCreator;
-    List<ID> geodeMembers = new ArrayList<>(gmsMembers.size());
-    for (ID member : gmsMembers) {
-      geodeMembers.add(member);
-    }
-    Set<ID> geodeShutdownMembers =
-        gmsMemberCollectionToIDSet(gmsShutdowns);
-    Set<ID> geodeCrashedMembers =
-        gmsMemberCollectionToIDSet(gmsCrashes);
-    return new MembershipView<>(geodeCreator, viewId, geodeMembers, geodeShutdownMembers,
-        geodeCrashedMembers);
+    return new MembershipView<>(view.getCreator(), view.getViewId(), view.getMembers(),
+        view.getShutdownMembers(),
+        view.getCrashedMembers());
   }
 
   private Set<ID> gmsMemberCollectionToIDSet(
@@ -669,11 +608,11 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   }
 
   /**
-   * Remove a member. {@link #latestViewLock} must be held before this method is called. If member
-   * is not already shunned, the uplevel event handler is invoked.
+   * Remove a member. {@link #latestViewWriteLock} must be held before this method is called. If
+   * member is not already shunned, the uplevel event handler is invoked.
    */
   private void removeWithViewLock(ID dm, boolean crashed, String reason) {
-    boolean wasShunned = isShunned(dm);
+    final boolean wasShunned = isShunned(dm);
 
     // Delete resources
     destroyMember(dm, reason);
@@ -682,10 +621,19 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       return; // Explicit deletion, no upcall.
     }
 
-    if (!shutdownMembers.containsKey(dm)) {
+    if (!isMemberShuttingDown(dm)) {
       // if we've received a shutdown message then DistributionManager will already have
       // notified listeners
       listener.memberDeparted(dm, crashed, reason);
+    }
+  }
+
+  private boolean isMemberShuttingDown(ID dm) {
+    shutdownMembersReadLock.lock();
+    try {
+      return shutdownMembers.contains(dm);
+    } finally {
+      shutdownMembersReadLock.unlock();
     }
   }
 
@@ -709,7 +657,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   @Override
   public void startupMessageFailed(ID mbr, String failureMessage) {
     // fix for bug #40666
-    addShunnedMember(mbr);
     listener.memberDeparted(mbr, true,
         "failed to pass startup checks");
   }
@@ -719,8 +666,8 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * Logic for handling a direct connection event (message received from a member not in the view).
    * Does not employ the startup queue.
    * <p>
-   * Must be called with {@link #latestViewLock} held. Waits until there is a stable view. If the
-   * member has already been added, simply returns; else adds the member.
+   * Waits until there is a stable view. If the member has already been added, simply returns;
+   * else adds the member.
    *
    * @param dm the member joining
    */
@@ -759,7 +706,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
             // okay to ignore
           }
         }).start();
-        addShunnedMember(member);
         return false;
       }
 
@@ -791,10 +737,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         // should ensure it is not chosen as an elder.
         // This will get corrected when the member finally shows up in the
         // view.
-        MembershipView<ID> newMembers = new MembershipView<>(latestView, latestView.getViewId());
-        newMembers.add(member);
-        newMembers.makeUnmodifiable();
-        latestView = newMembers;
+        latestView = latestView.createNewViewWithMember(member);
       }
     } finally {
       latestViewWriteLock.unlock();
@@ -812,7 +755,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /** starts periodic task to perform cleanup chores such as expire surprise members */
   private void startCleanupTimer() {
     this.cleanupTimer =
-        LoggingExecutors.newScheduledThreadPool("GMSMembership.cleanupTimer", 1, false);
+        LoggingExecutors.newScheduledThreadPool(1, "GMSMembership.cleanupTimer", false);
 
     this.cleanupTimer.scheduleAtFixedRate(this::cleanUpSurpriseMembers, surpriseMemberTimeout,
         surpriseMemberTimeout / 3, TimeUnit.MILLISECONDS);
@@ -861,25 +804,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     dispatchMessage(msg);
   }
 
-  @Override
-  public void warnShun(ID m) {
-    latestViewWriteLock.lock();
-    try {
-      if (!shunnedMembers.containsKey(m)) {
-        return; // not shunned
-      }
-      if (shunnedAndWarnedMembers.contains(m)) {
-        return; // already warned
-      }
-      shunnedAndWarnedMembers.add(m);
-    } finally {
-      latestViewWriteLock.unlock();
-    }
-    // issue warning outside of sync since it may cause messaging and we don't
-    // want to hold the view lock while doing that
-    logger.warn("Membership: disregarding shunned member <{}>", m);
-  }
-
   /**
    * Logic for processing a distribution message.
    * <p>
@@ -895,32 +819,25 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     // If this member is shunned or new, grab the latestViewWriteLock: update the appropriate data
     // structure.
     if (isShunnedOrNew(m)) {
-      latestViewWriteLock.lock();
-      try {
-        if (isShunned(m)) {
-          if (msg instanceof StopShunningMarker) {
-            endShun(m);
-          } else {
-            // fix for bug 41538 - sick alert listener causes deadlock
-            // due to view latestViewReadWriteLock being held during messaging
-            shunned = true;
-          }
+      if (isShunned(m)) {
+        if (!(msg instanceof StopShunningMarker)) {
+          // fix for bug 41538 - sick alert listener causes deadlock
+          // due to view latestViewReadWriteLock being held during messaging
+          shunned = true;
         }
+      }
 
-        if (!shunned) {
-          // If it's a new sender, wait our turn, generate the event
-          if (isNew(m)) {
-            shunned = !addSurpriseMember(m);
-          }
+      if (!shunned) {
+        // If it's a new sender, wait our turn, generate the event
+        if (isNew(m)) {
+          shunned = !addSurpriseMember(m);
         }
-      } finally {
-        latestViewWriteLock.unlock();
       }
     }
 
     if (shunned) { // bug #41538 - shun notification must be outside synchronization to avoid
       // hanging
-      warnShun(m);
+      logger.warn("Membership: disregarding shunned member <{}>", m);
       if (logger.isTraceEnabled()) {
         logger.trace("Membership: Ignoring message from shunned member <{}>:{}", m, msg);
       }
@@ -970,22 +887,16 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         return;
       }
     }
-    latestViewWriteLock.lock();
-    try {
-      if (!processingEvents) {
-        synchronized (startupLock) {
-          if (!startupMessagesDrained) {
-            startupMessages.add(new StartupEvent<>(viewArg));
-            return;
-          }
+    if (!processingEvents) {
+      synchronized (startupLock) {
+        if (!startupMessagesDrained) {
+          startupMessages.add(new StartupEvent<>(viewArg));
+          return;
         }
       }
-
-      viewExecutor.submit(() -> processView(viewArg));
-
-    } finally {
-      latestViewWriteLock.unlock();
     }
+
+    viewExecutor.submit(() -> processView(viewArg));
   }
 
   private ID gmsMemberToDMember(ID gmsMember) {
@@ -998,23 +909,17 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * @param suspectInfo the suspectee and suspector
    */
   protected void handleOrDeferSuspect(SuspectMember<ID> suspectInfo) {
-    latestViewWriteLock.lock();
-    try {
-      if (!processingEvents) {
-        return;
-      }
-      ID suspect = gmsMemberToDMember(suspectInfo.suspectedMember);
-      ID who = gmsMemberToDMember(suspectInfo.whoSuspected);
-      this.suspectedMembers.put(suspect, Long.valueOf(System.currentTimeMillis()));
-      listener.memberSuspect(suspect, who, suspectInfo.reason);
-    } finally {
-      latestViewWriteLock.unlock();
+    if (!processingEvents) {
+      return;
     }
+    ID suspect = gmsMemberToDMember(suspectInfo.suspectedMember);
+    ID who = gmsMemberToDMember(suspectInfo.whoSuspected);
+    this.suspectedMembers.put(suspect, System.currentTimeMillis());
+    listener.memberSuspect(suspect, who, suspectInfo.reason);
   }
 
   /**
-   * Process a potential direct connect. Does not use the startup queue. It grabs the
-   * {@link #latestViewLock} and then processes the event.
+   * Process a potential direct connect. Does not use the startup queue.
    * <p>
    * It is a <em>potential</em> event, because we don't know until we've grabbed a stable view if
    * this is really a new member.
@@ -1058,8 +963,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   public void startEventProcessing() {
     // Only allow one thread to perform the work
     synchronized (startupMutex) {
-      if (logger.isDebugEnabled())
+      if (logger.isDebugEnabled()) {
         logger.debug("Membership: draining startup events.");
+      }
       // Remove the backqueue of messages, but allow
       // additional messages to be added.
       for (;;) {
@@ -1096,8 +1002,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
               t);
         }
       } // for
-      if (logger.isDebugEnabled())
+      if (logger.isDebugEnabled()) {
         logger.debug("Membership: finished processing startup events.");
+      }
     } // startupMutex
   }
 
@@ -1105,10 +1012,12 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   @Override
   public void waitForEventProcessing() throws InterruptedException {
     // First check outside of a synchronized block. Cheaper and sufficient.
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
-    if (processingEvents)
+    }
+    if (processingEvents) {
       return;
+    }
     if (logger.isDebugEnabled()) {
       logger.debug("Membership: waiting until the system is ready for events");
     }
@@ -1150,10 +1059,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    */
   @Override
   public MembershipView<ID> getView() {
-    // Grab the latest view under a mutex...
-    MembershipView<ID> v = latestView;
-    MembershipView<ID> result = new MembershipView<>(v, v.getViewId());
-    return result;
+    return latestView;
   }
 
   public boolean isJoining() {
@@ -1167,20 +1073,13 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    */
   @Override
   public ID getCoordinator() {
-    latestViewReadLock.lock();
-    try {
-      return latestView == null ? null : latestView.getCoordinator();
-    } finally {
-      latestViewReadLock.unlock();
-    }
+    final MembershipView<ID> view = latestView;
+    return view == null ? null : view.getCoordinator();
   }
 
   @Override
   public boolean memberExists(ID m) {
-    latestViewReadLock.lock();
-    MembershipView<ID> v = latestView;
-    latestViewReadLock.unlock();
-    return v.contains(m);
+    return latestView.contains(m);
   }
 
   /**
@@ -1236,23 +1135,24 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     if (logger.isDebugEnabled()) {
       logger.debug("Membership: recording shutdown status of {}", id);
     }
-    synchronized (this.shutdownMembers) {
-      this.shutdownMembers.put(id, id);
-      services.getHealthMonitor()
-          .memberShutdown(id, reason);
+    shutdownMembersWriteLock.lock();
+    try {
+      this.shutdownMembers.add(id);
       services.getJoinLeave().memberShutdown(id, reason);
+    } finally {
+      shutdownMembersWriteLock.unlock();
     }
   }
 
   @Override
   public Set<ID> getMembersNotShuttingDown() {
-    latestViewReadLock.lock();
+    shutdownMembersReadLock.lock();
     try {
-      return latestView.getMembers().stream().filter(id -> !shutdownMembers.containsKey(id))
+      return latestView.getMembers().stream().filter(id -> !shutdownMembers.contains(id))
           .collect(
               Collectors.toSet());
     } finally {
-      latestViewReadLock.unlock();
+      shutdownMembersReadLock.unlock();
     }
   }
 
@@ -1267,25 +1167,27 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   public void uncleanShutdown(String reason, final Exception e) {
     inhibitForcedDisconnectLogging(false);
 
-    if (services.getShutdownCause() == null) {
-      services.setShutdownCause(e);
-    }
+    try {
+      if (services.getShutdownCause() == null) {
+        services.setShutdownCause(e);
+      }
 
-    if (cleanupTimer != null && !cleanupTimer.isShutdown()) {
-      cleanupTimer.shutdownNow();
-    }
+      if (cleanupTimer != null && !cleanupTimer.isShutdown()) {
+        cleanupTimer.shutdownNow();
+      }
 
-    lifecycleListener.disconnect(e);
+      lifecycleListener.disconnect(e);
 
-    // first shut down communication so we don't do any more harm to other
-    // members
-    services.emergencyClose();
-
-    if (e != null) {
-      try {
-        listener.membershipFailure(reason, e);
-      } catch (RuntimeException re) {
-        logger.warn("Exception caught while shutting down", re);
+      // first shut down communication so we don't do any more harm to other
+      // members
+      services.emergencyClose();
+    } finally {
+      if (e != null) {
+        try {
+          listener.membershipFailure(reason, e);
+        } catch (RuntimeException re) {
+          logger.warn("Exception caught while shutting down", re);
+        }
       }
     }
   }
@@ -1338,7 +1240,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
   @Override
   public void suspectMember(ID mbr, String reason) {
-    if (!this.shutdownInProgress && !this.shutdownMembers.containsKey(mbr)) {
+    if (!this.shutdownInProgress && !isMemberShuttingDown(mbr)) {
       verifyMember(mbr, reason);
     }
   }
@@ -1363,13 +1265,8 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
   @Override
   public ID[] getAllMembers(final ID[] arrayType) {
-    latestViewReadLock.lock();
-    try {
-      List<ID> keySet = latestView.getMembers();
-      return keySet.toArray(arrayType);
-    } finally {
-      latestViewReadLock.unlock();
-    }
+    final List<ID> keySet = latestView.getMembers();
+    return keySet.toArray(arrayType);
   }
 
   @Override
@@ -1451,6 +1348,10 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     }
   }
 
+  /**
+   * This method holds the {@link #latestViewWriteLock} to protect
+   * {@link #shutdownInProgress} from modification while {@link #processView} is in progress.
+   */
   @Override
   public void setShutdown() {
     latestViewWriteLock.lock();
@@ -1460,8 +1361,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
   /**
    * Clean up and create consistent new view with member removed. No uplevel events are generated.
-   *
-   * Must be called with the {@link #latestViewLock} held.
    */
   private void destroyMember(final ID member, final String reason) {
 
@@ -1469,23 +1368,11 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     latestViewWriteLock.lock();
     try {
       if (latestView.contains(member)) {
-        MembershipView<ID> newView = new MembershipView<>(latestView, latestView.getViewId());
-        newView.remove(member);
-        newView.makeUnmodifiable();
-        latestView = newView;
+        latestView = latestView.createNewViewWithoutMember(member);
       }
+      surpriseMembers.remove(member);
     } finally {
       latestViewWriteLock.unlock();
-    }
-
-    surpriseMembers.remove(member);
-
-    // Trickiness: there is a minor recursion
-    // with addShunnedMembers, since it will
-    // attempt to destroy really really old members. Performing the check
-    // here breaks the recursion.
-    if (!isShunned(member)) {
-      addShunnedMember(member);
     }
 
     lifecycleListener.destroyMember(member, reason);
@@ -1496,40 +1383,22 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    *
    * @param m the member in question
    *
-   *        This also checks the time the given member was shunned, and has the side effect of
-   *        removing the member from the list if it was shunned too far in the past.
-   *
-   *        Concurrency: protected by {@link #latestViewLock} ReentrantReadWriteLock
-   *
    * @return true if the given member is a zombie
    */
   @Override
   public boolean isShunned(ID m) {
-    if (!shunnedMembers.containsKey(m)) {
-      return false;
-    }
-
-    latestViewWriteLock.lock();
-    try {
-      // Make sure that the entry isn't stale...
-      long shunTime = shunnedMembers.get(m).longValue();
-      long now = System.currentTimeMillis();
-      if (shunTime + SHUNNED_SUNSET * 1000L > now) {
-        return true;
-      }
-
-      // Oh, it _is_ stale. Remove it while we're here.
-      endShun(m);
-      return false;
-    } finally {
-      latestViewWriteLock.unlock();
-    }
+    final MembershipView<ID> view = latestView;
+    return m.getVmViewId() <= view.getViewId() && !view.contains(m);
   }
 
   private boolean isShunnedOrNew(final ID m) {
+    final MembershipView<ID> view = latestView;
+    if (m.getVmViewId() <= view.getViewId() && view.contains(m)) {
+      return false;
+    }
     latestViewReadLock.lock();
     try {
-      return shunnedMembers.containsKey(m) || isNew(m);
+      return isShunned(m) || isNew(m);
     } finally { // synchronized
       latestViewReadLock.unlock();
     }
@@ -1543,12 +1412,10 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * Indicate whether the given member is in the surprise member list
    * <P>
-   * Unlike isShunned, this method will not cause expiry of a surprise member. That must be done
+   * This method will not cause expiry of a surprise member. That must be done
    * during view processing.
    * <p>
-   * Like isShunned, this method holds the view lock while executing
-   *
-   * Concurrency: protected by {@link #latestViewLock} ReentrantReadWriteLock
+   * Concurrency: protected by {@link #latestViewReadLock}
    *
    * @param m the member in question
    * @return true if the given member is a surprise member
@@ -1558,8 +1425,8 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     latestViewReadLock.lock();
     try {
       if (surpriseMembers.containsKey(m)) {
-        long birthTime = surpriseMembers.get(m).longValue();
-        long now = System.currentTimeMillis();
+        final long birthTime = surpriseMembers.get(m);
+        final long now = System.currentTimeMillis();
         return (birthTime >= (now - this.surpriseMemberTimeout));
       }
       return false;
@@ -1595,74 +1462,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     return this.surpriseMemberTimeout;
   }
 
-  private boolean endShun(ID m) {
-    boolean wasShunned = (shunnedMembers.remove(m) != null);
-    shunnedAndWarnedMembers.remove(m);
-    return wasShunned;
-  }
-
-  /**
-   * Add the given member to the shunned list. Also, purge any shunned members that are really
-   * really old.
-   * <p>
-   * Must be called with {@link #latestViewLock} held and the view stable.
-   *
-   * @param m the member to add
-   */
-  private void addShunnedMember(ID m) {
-    long deathTime = System.currentTimeMillis() - SHUNNED_SUNSET * 1000L;
-
-    surpriseMembers.remove(m); // for safety
-
-    // Update the shunned set.
-    if (!isShunned(m)) {
-      shunnedMembers.put(m, Long.valueOf(System.currentTimeMillis()));
-    }
-
-    // Remove really really old shunned members.
-    // First, make a copy of the old set. New arrivals _a priori_ don't matter,
-    // and we're going to be updating the list so we don't want to disturb
-    // the iterator.
-    Set<Map.Entry<ID, Long>> oldMembers = new HashSet<>(shunnedMembers.entrySet());
-
-    Set<ID> removedMembers = new HashSet<>();
-
-    for (final Map.Entry<ID, Long> oldMember : oldMembers) {
-      Entry<ID, Long> e = oldMember;
-
-      // Key is the member. Value is the time to remove it.
-      long ll = e.getValue().longValue();
-      if (ll >= deathTime) {
-        continue; // too new.
-      }
-
-      ID mm = e.getKey();
-
-      if (latestView.contains(mm)) {
-        // Fault tolerance: a shunned member can conceivably linger but never
-        // disconnect.
-        //
-        // We may not delete it at the time that we shun it because the view
-        // isn't necessarily stable. (Note that a well-behaved cache member
-        // will depart on its own accord, but we force the issue here.)
-        destroyMember(mm, "shunned but never disconnected");
-      }
-      if (logger.isDebugEnabled()) {
-        logger.debug("Membership: finally removed shunned member entry <{}>", mm);
-      }
-
-      removedMembers.add(mm);
-    }
-
-    // removed timed-out entries from the shunned-members collections
-    if (removedMembers.size() > 0) {
-      for (final ID removedMember : removedMembers) {
-        ID idm = removedMember;
-        endShun(idm);
-      }
-    }
-  }
-
   @Override
   public void setReconnectCompleted(boolean reconnectCompleted) {
     this.reconnectCompleted = reconnectCompleted;
@@ -1690,25 +1489,22 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     return shutdownInProgress;
   }
 
-  // TODO GEODE-1752 rewrite this to get rid of the latches, which are currently a memory leak
   @Override
   public boolean waitForNewMember(ID remoteId) {
     boolean foundRemoteId = false;
     CountDownLatch currentLatch = null;
-    // ARB: preconditions
-    // remoteId != null
+    // latestViewWriteLock protects memberLatch from modification while processView is in progress
     latestViewWriteLock.lock();
     try {
-      if (latestView == null) {
-        // Not sure how this would happen, but see bug 38460.
-        // No view?? Not found!
-      } else if (latestView.contains(remoteId)) {
-        // ARB: check if remoteId is already in membership view.
-        // If not, then create a latch if needed and wait for the latch to open.
-        foundRemoteId = true;
-      } else if ((currentLatch = this.memberLatch.get(remoteId)) == null) {
-        currentLatch = new CountDownLatch(1);
-        this.memberLatch.put(remoteId, currentLatch);
+      if (latestView != null) {
+        if (latestView.contains(remoteId)) {
+          // check if remoteId is already in membership view.
+          // If not, then create a latch if needed and wait for the latch to open.
+          foundRemoteId = true;
+        } else if ((currentLatch = this.memberLatch.get(remoteId)) == null) {
+          currentLatch = new CountDownLatch(1);
+          this.memberLatch.put(remoteId, currentLatch);
+        }
       }
     } finally {
       latestViewWriteLock.unlock();
@@ -1719,18 +1515,13 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         if (currentLatch != null
             && currentLatch.await(membershipCheckTimeout, TimeUnit.MILLISECONDS)) {
           foundRemoteId = true;
-          // @todo
-          // ARB: remove latch from memberLatch map if this is the last thread waiting on latch.
         }
       } catch (InterruptedException ex) {
-        // ARB: latch attempt was interrupted.
+        // latch attempt was interrupted.
         Thread.currentThread().interrupt();
         logger.warn("The membership check was terminated with an exception.");
       }
     }
-
-    // ARB: postconditions
-    // (foundRemoteId == true) ==> (currentLatch is non-null ==> currentLatch is open)
     return foundRemoteId;
   }
 
@@ -1892,29 +1683,18 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
     /* Service interface */
     @Override
-    public void started() throws MemberStartupException {
+    public void started() {
       startCleanupTimer();
     }
 
     /* Service interface */
     @Override
     public void stop() {
-      // [bruce] Do not null out the channel w/o adding appropriate synchronization
-
       logger.debug("Membership closing");
 
       if (lifecycleListener.disconnect(null)) {
-
         if (address != null) {
-          // Make sure that channel information is consistent
-          // Probably not important in this particular case, but just
-          // to be consistent...
-          latestViewWriteLock.lock();
-          try {
-            destroyMember(address, "orderly shutdown");
-          } finally {
-            latestViewWriteLock.unlock();
-          }
+          destroyMember(address, "orderly shutdown");
         }
       }
 

@@ -207,13 +207,6 @@ public class CacheClientProxy implements ClientSession {
   protected final CacheClientNotifier _cacheClientNotifier;
 
   /**
-   * Defaults to true; meaning do some logging of dropped client notification messages. Set the
-   * system property to true to cause dropped messages to NOT be logged.
-   */
-  protected static final boolean LOG_DROPPED_MSGS =
-      !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disableNotificationWarnings");
-
-  /**
    * for testing purposes, delays the start of the dispatcher thread
    */
   @MutableForTesting
@@ -363,8 +356,9 @@ public class CacheClientProxy implements ClientSession {
   }
 
   private void initializeClientAuths() {
-    if (AcceptorImpl.isPostAuthzCallbackPresent())
+    if (AcceptorImpl.isPostAuthzCallbackPresent()) {
       this.clientUserAuths = ServerConnection.getClientUserAuths(this.proxyID);
+    }
   }
 
   private void reinitializeClientAuths() {
@@ -380,8 +374,9 @@ public class CacheClientProxy implements ClientSession {
   public void setPostAuthzCallback(AccessControl authzCallback) {
     // TODO:hitesh synchronization
     synchronized (this.clientUserAuthsLock) {
-      if (this.postAuthzCallback != null)
+      if (this.postAuthzCallback != null) {
         this.postAuthzCallback.close();
+      }
       this.postAuthzCallback = authzCallback;
     }
   }
@@ -399,8 +394,9 @@ public class CacheClientProxy implements ClientSession {
   public void setCQVsUserAuth(String cqName, long uniqueId, boolean isDurable) {
     if (postAuthzCallback == null) // only for multiuser
     {
-      if (this.clientUserAuths != null)
+      if (this.clientUserAuths != null) {
         this.clientUserAuths.setUserAuthAttributesForCq(cqName, uniqueId, isDurable);
+      }
     }
   }
 
@@ -954,7 +950,9 @@ public class CacheClientProxy implements ClientSession {
     String remoteHostAddress = this._remoteHostAddress;
     if (this._socketClosed.compareAndSet(false, true) && remoteHostAddress != null) {
       // Only one thread is expected to close the socket
-      this._cacheClientNotifier.getSocketCloser().asyncClose(this._socket, remoteHostAddress, null);
+      this._cacheClientNotifier.getSocketCloser().asyncClose(this._socket, remoteHostAddress,
+          () -> {
+          });
       getCacheClientNotifier().getAcceptorStats().decCurrentQueueConnections();
       return true;
     }
@@ -1612,8 +1610,9 @@ public class CacheClientProxy implements ClientSession {
       this._statistics.incMessagesFailedQueued();
     }
 
-    if (state != null)
+    if (state != null) {
       state.clear();
+    }
   }
 
   protected void sendMessageDirectly(ClientMessage message) {

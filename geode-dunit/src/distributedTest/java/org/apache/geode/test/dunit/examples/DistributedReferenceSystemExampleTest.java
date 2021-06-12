@@ -16,10 +16,11 @@
  */
 package org.apache.geode.test.dunit.examples;
 
+import static java.util.Arrays.asList;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
-import static org.apache.geode.test.dunit.VM.toArray;
+import static org.apache.geode.test.dunit.rules.DistributedRule.getLocators;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -30,7 +31,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedReference;
 
@@ -43,9 +43,9 @@ public class DistributedReferenceSystemExampleTest implements Serializable {
   @Before
   public void setUp() {
     Properties configProperties = new Properties();
-    configProperties.setProperty(LOCATORS, DistributedTestUtils.getLocators());
+    configProperties.setProperty(LOCATORS, getLocators());
 
-    for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+    for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
       vm.invoke(() -> {
         system.set(DistributedSystem.connect(configProperties));
       });
@@ -54,9 +54,9 @@ public class DistributedReferenceSystemExampleTest implements Serializable {
 
   @Test
   public void eachVmHasItsOwnSystemConnection() {
-    for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+    for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
       vm.invoke(() -> {
-        assertThat(system.get()).isInstanceOf(DistributedSystem.class);
+        assertThat(system.get()).isNotNull();
       });
     }
   }

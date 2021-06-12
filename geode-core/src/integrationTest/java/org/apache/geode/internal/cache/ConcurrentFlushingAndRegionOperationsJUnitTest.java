@@ -261,8 +261,9 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
       public void afterWritingBytes() {
         if (!alreadyComeHere) {
           DiskEntry de = (DiskEntry) ((LocalRegion) region).basicGetEntry("Key");
-          if (de == null)
+          if (de == null) {
             return; // this is caused by the first flush
+          }
           DiskId id = de.getDiskId();
           long oldOplogId = id.getOplogId();
           long oldOplogOffset = id.getOffsetInOplog();

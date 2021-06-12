@@ -20,6 +20,7 @@ import java.io.IOException;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.sockets.CommandRegistry;
 
 public interface CqServiceFactory {
 
@@ -28,7 +29,7 @@ public interface CqServiceFactory {
   /**
    * Create a new CqService for the given cache
    */
-  CqService create(InternalCache cache);
+  CqService create(InternalCache cache, CommandRegistry commandRegistry);
 
   ServerCQ readCqQuery(DataInput in) throws ClassNotFoundException, IOException;
 }

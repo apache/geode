@@ -22,10 +22,11 @@ apply plugin: 'war'
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
   implementation('javax.servlet:javax.servlet-api')
+  implementation(project(':geode-deployment:geode-deployment-legacy'))
 }
 
 war {
-    version = ''
+    archiveVersion = ''
 }

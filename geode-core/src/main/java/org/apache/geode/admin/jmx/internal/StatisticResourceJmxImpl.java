@@ -73,19 +73,20 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
   /** Create and register the MBean to manage this resource */
   private void initializeMBean() throws org.apache.geode.admin.AdminException {
     this.mbeanName = new StringBuffer("GemFire.Statistic:").append("source=")
-        .append(MBeanUtil.makeCompliantMBeanNameProperty(this.member.getId())).append(",type=")
-        .append(MBeanUtil.makeCompliantMBeanNameProperty(getType())).append(",name=")
-        .append(MBeanUtil.makeCompliantMBeanNameProperty(getName())).append(",uid=")
+        .append(MBeanUtils.makeCompliantMBeanNameProperty(this.member.getId())).append(",type=")
+        .append(MBeanUtils.makeCompliantMBeanNameProperty(getType())).append(",name=")
+        .append(MBeanUtils.makeCompliantMBeanNameProperty(getName())).append(",uid=")
         .append(getUniqueId()).toString();
 
     this.objectName =
-        MBeanUtil.createMBean(this, addDynamicAttributes(MBeanUtil.lookupManagedBean(this)));
+        MBeanUtils.createMBean(this, addDynamicAttributes(MBeanUtils.lookupManagedBean(this)));
 
     // Refresh Interval
     AdminDistributedSystemJmxImpl sysJmx =
         (AdminDistributedSystemJmxImpl) this.member.getDistributedSystem();
-    if (sysJmx.getRefreshInterval() > 0)
+    if (sysJmx.getRefreshInterval() > 0) {
       this.refreshInterval = sysJmx.getRefreshInterval();
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -108,14 +109,15 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
    * @param refreshInterval the new refresh interval in seconds
    */
   private void _setRefreshInterval(int refreshInterval) {
-    boolean isRegistered = MBeanUtil.isRefreshNotificationRegistered(this,
+    boolean isRegistered = MBeanUtils.isRefreshNotificationRegistered(this,
         RefreshNotificationType.STATISTIC_RESOURCE_STATISTICS);
 
-    if (isRegistered && (getRefreshInterval() == refreshInterval))
+    if (isRegistered && (getRefreshInterval() == refreshInterval)) {
       return;
+    }
 
     try {
-      MBeanUtil.registerRefreshNotification(this, // NotificationListener
+      MBeanUtils.registerRefreshNotification(this, // NotificationListener
           getMBeanName(), // User Data as MBean Name
           RefreshNotificationType.STATISTIC_RESOURCE_STATISTICS, refreshInterval); // int
 

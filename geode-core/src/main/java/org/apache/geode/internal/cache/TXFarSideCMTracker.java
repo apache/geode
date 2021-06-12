@@ -137,8 +137,9 @@ public class TXFarSideCMTracker {
    * txInProgress is empty.
    */
   public void waitForAllToProcess() throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException(); // wisest to do this before the synchronize below
+    }
     // Assume that a thread interrupt is only set in the
     // case of a shutdown, in that case we don't need to wait
     // around any longer, propagating the interrupt is reasonable behavior

@@ -63,8 +63,8 @@ import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.offheap.OffHeapClearRequired;
 import org.apache.geode.internal.offheap.OffHeapHelper;
-import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -433,7 +433,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
               boolean tombstone = re.isTombstone();
               // note: it.remove() did not reliably remove the entry so we use remove(K,V) here
               if (getEntryMap().remove(re.getKey(), re)) {
-                if (OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap()) {
+                if (OffHeapClearRequired.doesClearNeedToCheckForOffHeap()) {
                   GatewaySenderEventImpl.release(re.getValue()); // OFFHEAP _getValue ok
                 }
                 // If this is an overflow only region, we need to free the entry on
@@ -838,36 +838,23 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                 if (result) {
                   if (oldIsTombstone) {
                     owner.unscheduleTombstone(oldRe);
-                    if (newValue != Token.TOMBSTONE) {
-                      lruEntryCreate(oldRe);
-                    } else {
-                      lruEntryUpdate(oldRe);
-                    }
                   }
                   if (newValue == Token.TOMBSTONE) {
                     if (!oldIsDestroyedOrRemoved) {
                       owner.updateSizeOnRemove(key, oldSize);
                     }
-                    if (owner.getServerProxy() == null
-                        && owner.getVersionVector().isTombstoneTooOld(
-                            entryVersion.getMemberID(), entryVersion.getRegionVersion())) {
-                      // the received tombstone has already been reaped, so don't retain it
-                      if (owner.getIndexManager() != null) {
-                        owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
-                            IndexProtocol.REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP);
-                      }
-                      removeTombstone(oldRe, entryVersion, false, false);
-                      return false;
-                    } else {
-                      owner.scheduleTombstone(oldRe, entryVersion);
+                    owner.scheduleTombstone(oldRe, entryVersion);
+                    if (!oldIsTombstone) {
                       lruEntryDestroy(oldRe);
                     }
                   } else {
                     int newSize = owner.calculateRegionEntryValueSize(oldRe);
                     if (!oldIsTombstone) {
                       owner.updateSizeOnPut(key, oldSize, newSize);
+                      lruEntryUpdate(oldRe);
                     } else {
                       owner.updateSizeOnCreate(key, newSize);
+                      lruEntryCreate(oldRe);
                     }
                     EntryLogger.logInitialImagePut(_getOwnerObject(), key, newValue);
                   }
@@ -955,10 +942,12 @@ public abstract class AbstractRegionMap extends BaseRegionMap
       done = false;
       cleared = true;
     } finally {
-      if (done && !deferLRUCallback) {
-        lruUpdateCallback();
-      } else if (!cleared) {
-        resetThreadLocals();
+      if (!deferLRUCallback) {
+        if (done) {
+          lruUpdateCallback();
+        } else if (!cleared) {
+          resetThreadLocals();
+        }
       }
     }
 
@@ -993,6 +982,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     final LocalRegion owner = _getOwner();
 
     final boolean isRegionReady = !inTokenMode;
+    inTokenMode = isInTokenModeNeeded(owner, inTokenMode);
     final boolean hasRemoteOrigin = !txId.getMemberId().equals(owner.getMyId());
     boolean callbackEventAddedToPending = false;
     IndexManager oqlIndexManager = owner.getIndexManager();
@@ -1082,8 +1072,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                   txEntryState.setVersionTag(callbackEvent.getVersionTag());
                 }
               } finally {
-                if (!callbackEventAddedToPending)
+                if (!callbackEventAddedToPending) {
                   releaseEvent(callbackEvent);
+                }
               }
             }
           }
@@ -1092,10 +1083,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
             oqlIndexManager.countDownIndexUpdaters();
           }
         }
-      } else if (inTokenMode || owner.getConcurrencyChecksEnabled()) {
+      } else if (!isRegionReady || owner.getConcurrencyChecksEnabled()) {
         // treating tokenMode and re == null as same, since we now want to
         // generate versions and Tombstones for destroys
-        boolean dispatchListenerEvent = inTokenMode;
         boolean opCompleted = false;
         RegionEntry newRe = getEntryFactory().createEntry(owner, key, Token.REMOVED_PHASE1);
         if (oqlIndexManager != null) {
@@ -1156,8 +1146,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                           false /* Clear Conflicting with the operation */, wasDestroyedOrRemoved);
                       lruEntryDestroy(oldRe);
                     } finally {
-                      if (!callbackEventAddedToPending)
+                      if (!callbackEventAddedToPending) {
                         releaseEvent(callbackEvent);
+                      }
                     }
                   } catch (RegionClearedException rce) {
                     owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,
@@ -1214,8 +1205,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                 // Note no need for LRU work since the entry is destroyed
                 // and will be removed when gii completes
               } finally {
-                if (!callbackEventAddedToPending)
+                if (!callbackEventAddedToPending) {
                   releaseEvent(callbackEvent);
+                }
               }
             }
             if (owner.getConcurrencyChecksEnabled() && txEntryState != null) {
@@ -1249,8 +1241,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
           pendingCallbacks.add(callbackEvent);
           callbackEventAddedToPending = true;
         } finally {
-          if (!callbackEventAddedToPending)
+          if (!callbackEventAddedToPending) {
             releaseEvent(callbackEvent);
+          }
         }
       }
     } catch (DiskAccessException dae) {
@@ -1261,6 +1254,10 @@ public abstract class AbstractRegionMap extends BaseRegionMap
         owner.unlockWhenRegionIsInitializing();
       }
     }
+  }
+
+  boolean isInTokenModeNeeded(LocalRegion owner, boolean inTokenMode) {
+    return !owner.getConcurrencyChecksEnabled() && inTokenMode;
   }
 
   void releaseEvent(final EntryEventImpl event) {
@@ -1859,8 +1856,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                       txEntryState.setVersionTag(callbackEvent.getVersionTag());
                     }
                   } finally {
-                    if (!callbackEventInPending)
+                    if (!callbackEventInPending) {
                       releaseEvent(callbackEvent);
+                    }
                   }
                 }
               }
@@ -1902,8 +1900,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                   txEntryState.setVersionTag(callbackEvent.getVersionTag());
                 }
               } finally {
-                if (!callbackEventInPending)
+                if (!callbackEventInPending) {
                   releaseEvent(callbackEvent);
+                }
               }
             }
           } finally {
@@ -1964,8 +1963,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                   txEntryState.setVersionTag(callbackEvent.getVersionTag());
                 }
               } finally {
-                if (!callbackEventInPending)
+                if (!callbackEventInPending) {
                   releaseEvent(callbackEvent);
+                }
               }
               return;
             }
@@ -1987,8 +1987,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
             pendingCallbacks.add(callbackEvent);
             callbackEventInPending = true;
           } finally {
-            if (!callbackEventInPending)
+            if (!callbackEventInPending) {
               releaseEvent(callbackEvent);
+            }
           }
         }
       }
@@ -2242,8 +2243,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
   public void releaseCacheModificationLock(InternalRegion owner, EntryEventImpl event) {
     boolean lockedByBulkOp = event.isBulkOpInProgress() && owner.getDataPolicy().withReplication();
 
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.beforeRelease(owner, event);
+    }
 
     if (!event.isOriginRemote() && !lockedByBulkOp && !owner.hasServerProxy()) {
       RegionVersionVector vector = owner.getVersionVector();
@@ -2252,37 +2254,42 @@ public abstract class AbstractRegionMap extends BaseRegionMap
       }
     }
 
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.afterRelease(owner, event);
+    }
 
   }
 
   @Override
   public void lockRegionForAtomicTX(InternalRegion r) {
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.beforeLock(r, null);
+    }
 
     RegionVersionVector vector = r.getVersionVector();
     if (vector != null) {
       vector.lockForCacheModification();
     }
 
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.afterLock(r, null);
+    }
   }
 
   @Override
   public void unlockRegionForAtomicTX(InternalRegion r) {
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.beforeRelease(r, null);
+    }
 
     RegionVersionVector vector = r.getVersionVector();
     if (vector != null) {
       vector.releaseCacheModificationLock();
     }
 
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.afterRelease(r, null);
+    }
   }
 
   /**

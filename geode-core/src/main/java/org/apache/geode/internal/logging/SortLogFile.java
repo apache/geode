@@ -120,17 +120,23 @@ public class SortLogFile {
       usage("Missing filename");
     }
 
-    InputStream logFileStream = new FileInputStream(logFile);
+    try (InputStream logFileStream = new FileInputStream(logFile)) {
 
-    PrintStream ps;
-    if (sortedFile != null) {
-      ps = new PrintStream(new FileOutputStream(sortedFile), true);
+      PrintStream ps;
+      if (sortedFile != null) {
+        FileOutputStream fileOutputStream = new FileOutputStream(sortedFile);
+        try {
+          ps = new PrintStream(fileOutputStream, true);
+        } catch (Exception ex) {
+          fileOutputStream.close();
+          throw ex;
+        }
+      } else {
+        ps = out;
+      }
 
-    } else {
-      ps = out;
+      sortLogFile(logFileStream, new PrintWriter(ps, true));
     }
-
-    sortLogFile(logFileStream, new PrintWriter(ps, true));
 
     ExitCode.NORMAL.doSystemExit();
   }

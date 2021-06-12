@@ -14,13 +14,13 @@
  */
 package org.apache.geode.cache.wan;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -31,7 +31,7 @@ import org.apache.geode.test.version.VersionManager;
 
 public class WANRollingUpgradeVerifyGatewaySenderProfile extends WANRollingUpgradeDUnitTest {
   @Test
-  // This test verifies that a GatewaySenderProfile serializes properly between versions.
+  // This test verifies that a GatewaySenderProfile serializes properly between versions new to old.
   public void testVerifyGatewaySenderProfile() {
     final Host host = Host.getHost(0);
     VM oldLocator = host.getVM(oldVersion, 0);
@@ -39,7 +39,7 @@ public class WANRollingUpgradeVerifyGatewaySenderProfile extends WANRollingUpgra
     VM currentServer = host.getVM(VersionManager.CURRENT_VERSION, 2);
 
     // Start locator
-    final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int port = getRandomAvailableTCPPort();
     oldLocator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(port));
     final String locators = NetworkUtils.getServerHostName(host) + "[" + port + "]";
     oldLocator.invoke(() -> startLocator(port, 0, locators, ""));
@@ -69,6 +69,52 @@ public class WANRollingUpgradeVerifyGatewaySenderProfile extends WANRollingUpgra
       // Attempt to create GatewaySender in new server
       currentServer.invoke(() -> createGatewaySender(senderId, 10,
           ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL));
+    } finally {
+      ie.remove();
+    }
+  }
+
+  @Test
+  // This test verifies that a GatewaySenderProfile serializes properly between versions old to new.
+  public void testOldServerCanUnderstandNewGatewaySenderProfile() {
+
+    VM oldLocator = VM.getVM(oldVersion, 0);
+    VM oldServer = VM.getVM(oldVersion, 1);
+    VM currentServer = VM.getVM(VersionManager.CURRENT_VERSION, 2);
+
+    // Start locator
+    final int port = getRandomAvailableTCPPort();
+    oldLocator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(port));
+    final String locators = VM.getHostName() + "[" + port + "]";
+    oldLocator.invoke(() -> startLocator(port, 0, locators, ""));
+
+    IgnoredException ie =
+        IgnoredException.addIgnoredException("could not get remote locator information");
+    try {
+      String senderId = getName() + "_gatewaysender";
+
+      // Start current server
+      currentServer.invoke(() -> createCache(locators));
+
+      // Create GatewaySender in new server
+      currentServer.invoke(() -> createGatewaySender(senderId, 10,
+          ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL));
+
+      // Locators before 1.4 handled configuration asynchronously.
+      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
+      oldLocator.invoke(
+          () -> await()
+              .untilAsserted(() -> assertTrue(
+                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
+                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
+
+      // Start old server
+      oldServer.invoke(() -> createCache(locators));
+
+      // Attempt to create GatewaySender in old server
+      oldServer.invoke(() -> createGatewaySender(senderId, 10,
+          ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL));
+
     } finally {
       ie.remove();
     }

@@ -47,6 +47,8 @@ public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
   private volatile long lruEvictions = 0;
   private volatile long bytesOverflowedToDisk = 0;
   private volatile long entriesOverflowedToDisk = 0;
+  private volatile long bytesInUse = 0;
+
   private final Map<Statistics, ValueMonitor> monitors;
   private final Map<Statistics, StatisticsListener> listeners;
 
@@ -56,6 +58,10 @@ public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
 
   public long getBytesOverflowedToDisk() {
     return bytesOverflowedToDisk;
+  }
+
+  public long getTotalQueueSizeBytesInUse() {
+    return bytesInUse;
   }
 
   public long getEntriesOverflowedToDisk() {
@@ -93,6 +99,11 @@ public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
       return currentValue.longValue() - prevValue.longValue();
     }
 
+    if (name.equals(StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY)) {
+      Number prevValue = statsMap.getOrDefault(StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY, 0);
+      return currentValue.longValue() - prevValue.longValue();
+    }
+
     return 0;
   }
 
@@ -111,6 +122,12 @@ public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
       bytesOverflowedToDisk += value.longValue();
       return;
     }
+
+    if (name.equals(StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY)) {
+      bytesInUse += value.longValue();
+      return;
+    }
+
   }
 
   @Override
@@ -125,6 +142,10 @@ public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
 
     if (name.equals(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK)) {
       return getBytesOverflowedToDisk();
+    }
+
+    if (name.equals(StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY)) {
+      return getTotalQueueSizeBytesInUse();
     }
 
     return 0;
@@ -155,6 +176,13 @@ public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
 
   @Override
   public void removeStatisticsFromMonitor(Statistics stats) {}
+
+  public void clearCounters() {
+    lruEvictions = 0;
+    bytesOverflowedToDisk = 0;
+    entriesOverflowedToDisk = 0;
+    bytesInUse = 0;
+  }
 
   class GatewaySenderOverflowStatisticsListener implements StatisticsListener {
     Map<String, Number> statsMap = new HashMap<>();

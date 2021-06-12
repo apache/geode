@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,6 +47,7 @@ public class GatewaySenderFunctionArgs implements Serializable {
   // array of fully qualified class names of the filters
   private final List<String> gatewayEventFilters;
   private final List<String> gatewayTransportFilters;
+  private final Boolean enforceThreadsConnectSameReceiver;
 
   public GatewaySenderFunctionArgs(CacheConfig.GatewaySender sender) {
     this.id = sender.getId();
@@ -65,18 +67,24 @@ public class GatewaySenderFunctionArgs implements Serializable {
     this.alertThreshold = string2int(sender.getAlertThreshold());
     this.dispatcherThreads = string2int(sender.getDispatcherThreads());
     this.orderPolicy = sender.getOrderPolicy();
-    this.gatewayEventFilters =
-        Optional.of(sender.getGatewayEventFilters())
-            .map(filters -> filters
-                .stream().map(DeclarableType::getClassName)
-                .collect(Collectors.toList()))
-            .orElse(null);
+    if (sender.areGatewayEventFiltersUpdated()) {
+      this.gatewayEventFilters =
+          Optional.of(sender.getGatewayEventFilters())
+              .map(filters -> filters
+                  .stream().map(DeclarableType::getClassName)
+                  .collect(Collectors.toList()))
+              .orElse(Collections.emptyList());
+    } else {
+      this.gatewayEventFilters = null;
+    }
+
     this.gatewayTransportFilters =
         Optional.of(sender.getGatewayTransportFilters())
             .map(filters -> filters
                 .stream().map(DeclarableType::getClassName)
                 .collect(Collectors.toList()))
             .orElse(null);
+    this.enforceThreadsConnectSameReceiver = sender.getEnforceThreadsConnectSameReceiver();
   }
 
   private Integer string2int(String x) {
@@ -157,5 +165,9 @@ public class GatewaySenderFunctionArgs implements Serializable {
 
   public List<String> getGatewayTransportFilter() {
     return this.gatewayTransportFilters;
+  }
+
+  public Boolean getEnforceThreadsConnectSameReceiver() {
+    return this.enforceThreadsConnectSameReceiver;
   }
 }

@@ -95,6 +95,8 @@ public class TXEntryState implements Releasable {
 
   private byte[] serializedPendingValue;
 
+  private EntryEventImpl pendingCallback;
+
   /**
    * Remember the callback argument for listener invocation
    */
@@ -939,8 +941,9 @@ public class TXEntryState implements Releasable {
       returnedResult = true;
       return result;
     } finally {
-      if (!returnedResult)
+      if (!returnedResult) {
         result.release();
+      }
     }
   }
 
@@ -1421,11 +1424,13 @@ public class TXEntryState implements Releasable {
   }
 
   private boolean areIdentical(Object o1, Object o2) {
-    if (o1 == o2)
+    if (o1 == o2) {
       return true;
+    }
     if (o1 instanceof StoredObject) {
-      if (o1.equals(o2))
+      if (o1.equals(o2)) {
         return true;
+      }
     }
     return false;
   }
@@ -1939,6 +1944,14 @@ public class TXEntryState implements Releasable {
     return this.modSerialNum;
   }
 
+  public EntryEventImpl getPendingCallback() {
+    return pendingCallback;
+  }
+
+  public void setPendingCallback(EntryEventImpl pendingCallback) {
+    this.pendingCallback = pendingCallback;
+  }
+
   /**
    * Just like an EntryEventImpl but also has access to TxEntryState to make it Comparable
    *
@@ -1970,8 +1983,9 @@ public class TXEntryState implements Releasable {
 
     @Override
     public boolean equals(Object o) {
-      if (!(o instanceof TxEntryEventImpl))
+      if (!(o instanceof TxEntryEventImpl)) {
         return false;
+      }
       return compareTo(o) == 0;
     }
 

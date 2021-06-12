@@ -224,8 +224,9 @@ public class Installer {
         index = i;
       }
     }
-    if (index == -1)
+    if (index == -1) {
       return null;
+    }
     if (nodelist.getLength() > (index + 1)) {
       return nodelist.item(index + 1);
     }
@@ -235,8 +236,9 @@ public class Installer {
   private Node append(final Document doc, final Node parent, final String element,
       final String value) {
     final Element child = doc.createElement(element);
-    if (value != null)
+    if (value != null) {
       child.setTextContent(value);
+    }
     parent.appendChild(child);
     return child;
   }

@@ -30,7 +30,7 @@ You can configure socket sharing for peer-to-peer:
 - **Peer-to-peer**. You can configure whether your members share sockets both at the application
 level and at the thread level. To enable sharing at the application level, set the
 `gemfire.properties` property `conserve-sockets` to `true`. To achieve maximum throughput, however, we
-recommend that you set `conserve-sockets` to `false`.
+recommend that you use the default value of `false`.
 
     At the thread level, developers can override this setting by using the DistributedSystem API method `setThreadsSocketPolicy`. You might want to enable socket sharing at the application level and then have threads that do a lot of cache work take sole ownership of their sockets. Make sure to program these threads to release their sockets as soon as possible using the `releaseThreadsSockets` method, rather than waiting for a timeout or thread death.
 

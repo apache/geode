@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +38,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
-import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.internal.offheap.OffHeapClearRequired;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -265,27 +264,6 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     }
   }
 
-  /**
-   * Marks all events in the iterator as duplicate
-   */
-  protected void markEventsAsDuplicate(Iterator itr) {
-    int i = 0;
-    // mark setPossibleDuplicate to true for all events in this bucket before it becomes primary on
-    // the node
-    while (itr.hasNext()) {
-      Object key = itr.next();
-      Object senderEvent = getNoLRU(key, true, false, false);
-
-      if (senderEvent != null) {
-        ((GatewaySenderEventImpl) senderEvent).setPossibleDuplicate(true);
-        if (logger.isDebugEnabled()) {
-          logger.debug("Set possibleDuplicate to true on event: {}", senderEvent);
-        }
-      }
-      i++;
-    }
-  }
-
   @Override
   public void forceSerialized(EntryEventImpl event) {
     // NOOP since we want the value in the region queue to stay in object form.
@@ -294,11 +272,11 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   @Override
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModificaiton)
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModification)
       throws TimeoutException, CacheWriterException {
     try {
       boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
-          lastModified, overwriteDestroyed, invokeCallbacks, throwConcurrentModificaiton);
+          lastModified, overwriteDestroyed, invokeCallbacks, throwConcurrentModification);
       if (success) {
         if (logger.isDebugEnabled()) {
           logger.debug("Key : ----> {}", event.getKey());
@@ -323,8 +301,9 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     for (PartitionedRegion colocatedPR : colocatedPRs.values()) {
       if (!colocatedPR.isShadowPR() && isThisSenderAttached(colocatedPR)) {
         BucketRegion parentBucket = colocatedPR.getDataStore().getLocalBucketById(getId());
-        if (parentBucket != null)
+        if (parentBucket != null) {
           userPRBuckets.add(parentBucket);
+        }
       }
     }
     return userPRBuckets;
@@ -401,7 +380,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   @Override
   public void closeEntries() {
-    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
       @Override
       public void run() {
         AbstractBucketRegionQueue.super.closeEntries();
@@ -414,7 +393,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   @Override
   public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
     final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
-    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
       @Override
       public void run() {
         result.set(AbstractBucketRegionQueue.super.clearEntries(rvv));

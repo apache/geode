@@ -74,7 +74,7 @@ public class LocatorLoadSnapshot {
   private boolean rebalancing;
 
   private final ScheduledExecutorService estimateTimeoutProcessor =
-      LoggingExecutors.newScheduledThreadPool("loadEstimateTimeoutProcessor", 1, false);
+      LoggingExecutors.newScheduledThreadPool(1, "loadEstimateTimeoutProcessor", false);
 
   public LocatorLoadSnapshot() {
     connectionLoadMap.put(null, new HashMap<>());
@@ -580,8 +580,9 @@ public class LocatorLoadSnapshot {
         break;
       }
     }
-    if (currentLH == null)
+    if (currentLH == null) {
       return null;
+    }
     final float currentLoad = currentLH.getLoad();
     for (Map.Entry<ServerLocationAndMemberId, LoadHolder> loadEntry : groupServers.entrySet()) {
       ServerLocation location = loadEntry.getKey().getServerLocation();

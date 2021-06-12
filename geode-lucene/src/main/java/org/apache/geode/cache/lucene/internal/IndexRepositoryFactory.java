@@ -44,6 +44,7 @@ public class IndexRepositoryFactory {
   private static final Logger logger = LogService.getLogger();
   public static final String FILE_REGION_LOCK_FOR_BUCKET_ID = "FileRegionLockForBucketId:";
   public static final String APACHE_GEODE_INDEX_COMPLETE = "APACHE_GEODE_INDEX_COMPLETE";
+  protected static final int GET_INDEX_WRITER_MAX_ATTEMPTS = 200;
 
   public IndexRepositoryFactory() {}
 
@@ -74,7 +75,8 @@ public class IndexRepositoryFactory {
    * This is a util function just to not let computeIndexRepository be a huge chunk of code.
    */
   protected IndexRepository finishComputingRepository(Integer bucketId, LuceneSerializer serializer,
-      PartitionedRegion userRegion, IndexRepository oldRepository, InternalLuceneIndex index) {
+      PartitionedRegion userRegion, IndexRepository oldRepository, InternalLuceneIndex index)
+      throws IOException {
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     final PartitionedRegion fileRegion = indexForPR.getFileAndChunkRegion();
     BucketRegion fileAndChunkBucket = getMatchingBucket(fileRegion, bucketId);
@@ -129,7 +131,7 @@ public class IndexRepositoryFactory {
     } catch (IOException e) {
       logger.warn("Exception thrown while constructing Lucene Index for bucket:" + bucketId
           + " for file region:" + fileAndChunkBucket.getFullPath(), e);
-      return null;
+      throw e;
     } catch (CacheClosedException e) {
       logger.info("CacheClosedException thrown while constructing Lucene Index for bucket:"
           + bucketId + " for file region:" + fileAndChunkBucket.getFullPath());
@@ -144,11 +146,34 @@ public class IndexRepositoryFactory {
 
   protected IndexWriter buildIndexWriter(int bucketId, BucketRegion fileAndChunkBucket,
       LuceneIndexForPartitionedRegion indexForPR) throws IOException {
-    // bucketTargetingMap handles partition resolver (via bucketId as callbackArg)
-    Map bucketTargetingMap = getBucketTargetingMap(fileAndChunkBucket, bucketId);
-    RegionDirectory dir = new RegionDirectory(bucketTargetingMap, indexForPR.getFileSystemStats());
-    IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
+    int attempts = 0;
+    // IOExceptions can occur if the fileAndChunk region is being modified while the IndexWriter is
+    // being initialized, so allow limited retries here to account for that timing window
+    while (true) {
+      // bucketTargetingMap handles partition resolver (via bucketId as callbackArg)
+      Map<Object, Object> bucketTargetingMap = getBucketTargetingMap(fileAndChunkBucket, bucketId);
+      RegionDirectory dir =
+          new RegionDirectory(bucketTargetingMap, indexForPR.getFileSystemStats());
+      IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
+      try {
+        attempts++;
+        return getIndexWriter(dir, config);
+      } catch (IOException e) {
+        if (attempts >= GET_INDEX_WRITER_MAX_ATTEMPTS) {
+          throw e;
+        }
+        logger.info("Encountered {} while attempting to get IndexWriter for index {}. Retrying...",
+            e, indexForPR.getName());
+        try {
+          Thread.sleep(5);
+        } catch (InterruptedException ignore) {
+        }
+      }
+    }
+  }
 
+  protected IndexWriter getIndexWriter(RegionDirectory dir, IndexWriterConfig config)
+      throws IOException {
     return new IndexWriter(dir, config);
   }
 
@@ -186,8 +211,8 @@ public class IndexRepositoryFactory {
     return value;
   }
 
-  protected Map getBucketTargetingMap(BucketRegion region, int bucketId) {
-    return new BucketTargetingMap(region, bucketId);
+  protected Map<Object, Object> getBucketTargetingMap(BucketRegion region, int bucketId) {
+    return new BucketTargetingMap<>(region, bucketId);
   }
 
   protected String getLockName(final BucketRegion fileAndChunkBucket) {

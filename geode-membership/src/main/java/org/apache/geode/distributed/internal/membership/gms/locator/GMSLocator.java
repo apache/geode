@@ -22,7 +22,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +44,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.messenger.GMSMemberWrapper;
+import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
@@ -108,7 +108,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
    * @param objectSerializer a serializer used to persist the membership view
    * @param objectDeserializer a deserializer used to recover the membership view
    */
-  public GMSLocator(InetAddress bindAddress, String locatorString, boolean usePreferredCoordinators,
+  public GMSLocator(HostAddress bindAddress, String locatorString, boolean usePreferredCoordinators,
       boolean networkPartitionDetectionEnabled, MembershipLocatorStatistics locatorStats,
       String securityUDPDHAlgo, Path workingDirectory, final TcpClient locatorClient,
       ObjectSerializer objectSerializer,
@@ -121,7 +121,8 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
     if (this.locatorString == null || this.locatorString.isEmpty()) {
       locators = new ArrayList<>(0);
     } else {
-      locators = GMSUtil.parseLocators(locatorString, bindAddress);
+      locators = GMSUtil.parseLocators(locatorString,
+          bindAddress == null ? null : bindAddress.getAddress());
     }
     this.locatorStats = locatorStats;
     this.workingDirectory = workingDirectory;

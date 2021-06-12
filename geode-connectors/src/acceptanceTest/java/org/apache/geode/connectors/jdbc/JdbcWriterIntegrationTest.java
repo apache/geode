@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.sql.DataSource;
 
@@ -49,7 +50,6 @@ import org.apache.geode.pdx.WritablePdxInstance;
 
 public abstract class JdbcWriterIntegrationTest {
 
-  static final String DB_NAME = "test";
   protected static final String SCHEMA_NAME = "mySchema";
   protected static final String REGION_TABLE_NAME = "employees";
 
@@ -65,7 +65,7 @@ public abstract class JdbcWriterIntegrationTest {
   protected Employee employee2;
   protected Employee illegalEmployee;
   protected final TestDataSourceFactory testDataSourceFactory =
-      new TestDataSourceFactory(getConnectionUrl());
+      new TestDataSourceFactory(getConnectionUrlSupplier());
   protected String catalog;
   protected String schema;
 
@@ -153,7 +153,7 @@ public abstract class JdbcWriterIntegrationTest {
 
   public abstract Connection getConnection() throws SQLException;
 
-  public abstract String getConnectionUrl();
+  public abstract Supplier<String> getConnectionUrlSupplier();
 
   private void closeDB() throws Exception {
     if (statement == null) {

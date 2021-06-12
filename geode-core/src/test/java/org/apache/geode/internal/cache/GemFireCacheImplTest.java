@@ -14,9 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.internal.ClusterDistributionManager.LOCATOR_DM_TYPE;
 import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
@@ -26,6 +28,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.NotSerializableException;
 import java.util.List;
 import java.util.Properties;
@@ -55,6 +58,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.GemFireCacheImpl.ReplyProcessor21Factory;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
@@ -672,6 +676,26 @@ public class GemFireCacheImplTest {
     });
     verify(internalDistributedSystem.getConfig()).setDisableAutoReconnect(Boolean.TRUE);
     verify(cacheConfig, never()).setCacheXMLDescription(isA(String.class));
+  }
+
+  @Test
+  public void anythingThrownDuringInitializeDeclarativeCacheShouldBeCaughtAndFinallyCloseCache() {
+    InternalDistributedMember internalDistributedMember = mock(InternalDistributedMember.class);
+    when(internalDistributedSystem.getDistributedMember()).thenReturn(internalDistributedMember);
+    DistributionConfig distributionConfig = mock(DistributionConfig.class);
+    when(internalDistributedSystem.getConfig()).thenReturn(distributionConfig);
+    File file = mock(File.class);
+    when(distributionConfig.getDeployWorkingDir()).thenReturn(file);
+    when(file.canWrite()).thenReturn(true);
+    when(file.listFiles()).thenReturn(new File[0]);
+    when(file.list()).thenReturn(new String[0]);
+    when(internalDistributedMember.getVmKind()).thenReturn(LOCATOR_DM_TYPE);
+    when(internalDistributedSystem.getDistributedMember())
+        .thenThrow(new Error("Expected error by test."));
+    assertThat(gemFireCacheImpl.isClosed()).isFalse();
+    assertThatThrownBy(() -> gemFireCacheImpl.initialize()).isInstanceOf(Error.class)
+        .hasMessageContaining("Expected error by test.");
+    assertThat(gemFireCacheImpl.isClosed()).isTrue();
   }
 
   @SuppressWarnings({"LambdaParameterHidesMemberVariable", "OverlyCoupledMethod", "unchecked"})

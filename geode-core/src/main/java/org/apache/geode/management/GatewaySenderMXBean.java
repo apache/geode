@@ -174,7 +174,23 @@ public interface GatewaySenderMXBean {
   /**
    * Returns the total number of batches of events that were resent.
    */
+  int getTotalBatchesDistributed();
+
+  /**
+   * Returns the total number of batches of events that were resent.
+   */
   int getTotalBatchesRedistributed();
+
+  /**
+   * Returns the total number of batches sent with incomplete transactions.
+   * Only relevant if group-transaction-events is enabled.
+   */
+  int getTotalBatchesWithIncompleteTransactions();
+
+  /**
+   * Returns the total number of bytes in heap occupied by the event queue.
+   */
+  long getTotalQueueSizeBytesInUse();
 
   /**
    * Starts this GatewaySender. Once the GatewaySender is running its configuration cannot be

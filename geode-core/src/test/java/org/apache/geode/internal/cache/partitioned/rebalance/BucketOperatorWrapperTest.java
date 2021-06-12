@@ -120,12 +120,13 @@ public class BucketOperatorWrapperTest {
 
     // verify create buckets is recorded
     for (PartitionRebalanceDetailsImpl details : rebalanceDetails) {
-      if (details.getRegionPath().equalsIgnoreCase(PR_LEADER_REGION_NAME))
+      if (details.getRegionPath().equalsIgnoreCase(PR_LEADER_REGION_NAME)) {
         verify(details, times(1)).incCreates(eq(colocatedRegionBytes.get(PR_LEADER_REGION_NAME)),
             anyLong());
-      else if (details.getRegionPath().equals(PR_COLOCATED_REGION_NAME))
+      } else if (details.getRegionPath().equals(PR_COLOCATED_REGION_NAME)) {
         verify(details, times(1)).incTransfers(colocatedRegionBytes.get(PR_COLOCATED_REGION_NAME),
             0); // elapsed is recorded only if its leader
+      }
     }
   }
 
@@ -215,12 +216,13 @@ public class BucketOperatorWrapperTest {
 
     // verify the details is updated with bytes transfered
     for (PartitionRebalanceDetailsImpl details : rebalanceDetails) {
-      if (details.getRegionPath().equalsIgnoreCase(PR_LEADER_REGION_NAME))
+      if (details.getRegionPath().equalsIgnoreCase(PR_LEADER_REGION_NAME)) {
         verify(details, times(1)).incTransfers(eq(colocatedRegionBytes.get(PR_LEADER_REGION_NAME)),
             anyLong());
-      else if (details.getRegionPath().equals(PR_COLOCATED_REGION_NAME))
+      } else if (details.getRegionPath().equals(PR_COLOCATED_REGION_NAME)) {
         verify(details, times(1)).incTransfers(colocatedRegionBytes.get(PR_COLOCATED_REGION_NAME),
             0); // elapsed is recorded only if its leader
+      }
     }
 
     // verify we recorded necessary stats
@@ -265,17 +267,18 @@ public class BucketOperatorWrapperTest {
 
     // verify the details is updated with bytes transfered
     for (PartitionRebalanceDetailsImpl details : rebalanceDetails) {
-      if (details.getRegionPath().equalsIgnoreCase(PR_LEADER_REGION_NAME))
+      if (details.getRegionPath().equalsIgnoreCase(PR_LEADER_REGION_NAME)) {
         verify(details, times(1)).incRemoves((eq(colocatedRegionBytes.get(PR_LEADER_REGION_NAME))),
             anyLong());
-      else if (details.getRegionPath().equals(PR_COLOCATED_REGION_NAME))
+      } else if (details.getRegionPath().equals(PR_COLOCATED_REGION_NAME)) {
         verify(details, times(1)).incRemoves(colocatedRegionBytes.get(PR_COLOCATED_REGION_NAME), 0); // elapsed
-                                                                                                     // is
-                                                                                                     // recorded
-                                                                                                     // only
-                                                                                                     // if
-                                                                                                     // its
-                                                                                                     // leader
+      }
+      // is
+      // recorded
+      // only
+      // if
+      // its
+      // leader
     }
 
     // verify we recorded necessary stats
@@ -319,10 +322,11 @@ public class BucketOperatorWrapperTest {
 
     // verify the details is updated with bytes transfered
     for (PartitionRebalanceDetailsImpl details : rebalanceDetails) {
-      if (details.getRegionPath().equalsIgnoreCase(PR_LEADER_REGION_NAME))
+      if (details.getRegionPath().equalsIgnoreCase(PR_LEADER_REGION_NAME)) {
         verify(details, times(1)).incPrimaryTransfers(anyLong());
-      else if (details.getRegionPath().equals(PR_COLOCATED_REGION_NAME))
+      } else if (details.getRegionPath().equals(PR_COLOCATED_REGION_NAME)) {
         verify(details, times(1)).incPrimaryTransfers(0); // elapsed is recorded only if its leader
+      }
     }
 
     // verify we recorded necessary stats

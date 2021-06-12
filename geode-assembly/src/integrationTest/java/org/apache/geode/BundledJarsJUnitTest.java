@@ -67,7 +67,7 @@ public class BundledJarsJUnitTest {
         sortedJars.entrySet().stream().map(entry -> removeVersion(entry.getKey()));
     Set<String> bundledJarNames = new TreeSet<>(lines.collect(Collectors.toSet()));
 
-    Files.write(Paths.get("bundled_jars.txt"), bundledJarNames);
+    Files.write(Paths.get("..", "bundled_jars.txt"), bundledJarNames);
 
     Set<String> newJars = new TreeSet<>(bundledJarNames);
     newJars.removeAll(expectedJars);

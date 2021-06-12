@@ -302,12 +302,16 @@ public class StatsKey {
   public static final String GATEWAYSENDER_BATCHES_DISTRIBUTED = "batchesDistributed";
   public static final String GATEWAYSENDER_BATCHES_DISTRIBUTE_TIME = "batchDistributionTime";
   public static final String GATEWAYSENDER_TOTAL_BATCHES_REDISTRIBUTED = "batchesRedistributed";
+  public static final String GATEWAYSENDER_TOTAL_BATCHES_WITH_INCOMPLETE_TRANSACTIONS =
+      "batchesWithIncompleteTransactions";
   public static final String GATEWAYSENDER_EVENTS_QUEUED_CONFLATED = "eventsNotQueuedConflated";
   public static final String GATEWAYSENDER_EVENTS_EXCEEDING_ALERT_THRESHOLD =
       "eventsExceedingAlertThreshold";
   public static final String GATEWAYSENDER_LRU_EVICTIONS = "lruEvictions";
   public static final String GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK = "entriesOnlyOnDisk";
   public static final String GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK = "bytesOnlyOnDisk";
+
+  public static final String GATEWAYSENDER_BYTES_IN_MEMORY = "byteCount";
 
   /** AsyncEventQueue Stats **/
   public static final String ASYNCEVENTQUEUE_EVENTS_QUEUE_SIZE = "eventQueueSize";

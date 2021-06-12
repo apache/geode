@@ -14,14 +14,18 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -57,4 +61,26 @@ public class TXCommitMessageTest {
     verify(processor, timeout(60000)).waitForRepliesUninterruptibly();
   }
 
+  @Test
+  public void firePendingCallbacksSendsAFTER_CREATECallbackIfUpdateEntryEventHasNullNewValue() {
+    TXCommitMessage message = spy(new TXCommitMessage());
+    LocalRegion region = mock(LocalRegion.class, RETURNS_DEEP_STUBS);
+    EntryEventImpl updateEvent = mock(EntryEventImpl.class, RETURNS_DEEP_STUBS);
+    EntryEventImpl lastTxEvent = mock(EntryEventImpl.class, RETURNS_DEEP_STUBS);
+
+    List<EntryEventImpl> callbacks = new ArrayList<>();
+    callbacks.add(updateEvent);
+    callbacks.add(lastTxEvent);
+
+    when(updateEvent.getLocalFilterInfo()).thenReturn(null);
+    when(updateEvent.getNewValue()).thenReturn(null);
+    when(updateEvent.getRegion()).thenReturn(region);
+
+    doReturn(lastTxEvent).when(message).getLastTransactionEvent(callbacks);
+
+    message.firePendingCallbacks(callbacks);
+
+    verify(region, only()).invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, updateEvent, true,
+        false);
+  }
 }

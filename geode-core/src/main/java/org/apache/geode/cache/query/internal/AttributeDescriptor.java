@@ -36,7 +36,7 @@ import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.lang.JavaWorkarounds;
+import org.apache.geode.internal.lang.utils.JavaWorkarounds;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.internal.InternalPdxInstance;
@@ -143,8 +143,9 @@ public class AttributeDescriptor {
             // eat the exception
             return QueryService.UNDEFINED;
           }
-          if (t instanceof Exception)
+          if (t instanceof Exception) {
             throw new QueryInvocationTargetException(t);
+          }
           throw new QueryInvocationTargetException(e);
         }
       } else {
@@ -202,8 +203,9 @@ public class AttributeDescriptor {
     String beanMethod = "get" + _name.substring(0, 1).toUpperCase() + _name.substring(1);
     m = getReadMethod(targetType, beanMethod);
 
-    if (m != null)
+    if (m != null) {
       return m;
+    }
 
     return getReadMethod(targetType, _name);
   }
@@ -259,8 +261,9 @@ public class AttributeDescriptor {
           updateClassToMethodsMap(pdxInstance.getClassName(), _name);
           throw ex;
         }
-      } else
+      } else {
         return QueryService.UNDEFINED;
+      }
     }
   }
 

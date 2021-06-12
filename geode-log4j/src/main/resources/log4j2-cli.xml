@@ -13,9 +13,9 @@
   ~ or implied. See the License for the specific language governing permissions and limitations under
   ~ the License.
   -->
-<Configuration status="WARN" shutdownHook="disable" packages="org.apache.geode">
+<Configuration status="WARN" shutdownHook="disable">
   <Properties>
-    <Property name="geode-pattern">[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} &lt;%thread&gt; tid=%hexTid] %message%n%throwable%n</Property>
+    <Property name="geode-pattern">[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} %memberName &lt;%thread&gt; tid=%hexTid] %message%n%throwable%n</Property>
   </Properties>
   <Appenders>
     <Console name="STDOUT" target="SYSTEM_OUT">

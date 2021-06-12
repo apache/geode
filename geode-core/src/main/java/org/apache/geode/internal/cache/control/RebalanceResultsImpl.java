@@ -44,8 +44,9 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
     totalBucketTransfersCompleted += details.getBucketTransfersCompleted();
     totalPrimaryTransferTime += details.getPrimaryTransferTime();
     totalPrimaryTransfersCompleted += details.getPrimaryTransfersCompleted();
-    if (totalNumOfMembers == 0)
+    if (totalNumOfMembers == 0) {
       totalNumOfMembers += details.getNumberOfMembersExecutedOn();
+    }
     totalTime += details.getTime();
   }
 
@@ -60,8 +61,9 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
     totalPrimaryTransferTime += details.totalPrimaryTransferTime;
     totalPrimaryTransfersCompleted += details.totalPrimaryTransfersCompleted;
     totalNumOfMembers += details.totalNumOfMembers;
-    if (details.totalTime > totalTime)
+    if (details.totalTime > totalTime) {
       totalTime = details.totalTime;
+    }
   }
 
   @Override

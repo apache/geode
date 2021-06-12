@@ -35,8 +35,8 @@ import org.apache.geode.logging.internal.spi.LogFile;
  */
 public class LoggingSession implements InternalSessionContext {
 
-  static final boolean STANDARD_OUTPUT_ALWAYS_ON =
-      Boolean.valueOf(System.getProperty(GEMFIRE_PREFIX + "standard-output-always-on", "false"));
+  private static final boolean STANDARD_OUTPUT_ALWAYS_ON =
+      Boolean.getBoolean(GEMFIRE_PREFIX + "standard-output-always-on");
 
   private static final Logger logger = LogService.getLogger();
 

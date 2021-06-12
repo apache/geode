@@ -224,8 +224,11 @@ public class ConnectionManagerImpl implements ConnectionManager {
    */
   private PooledConnection forceCreateConnection(Set<ServerLocation> excludedServers)
       throws NoAvailableServersException, ServerOperationException {
-    connectionAccounting.create();
-    return createPooledConnection(excludedServers);
+    PooledConnection pooledConnection = createPooledConnection(excludedServers);
+    if (pooledConnection != null) {
+      connectionAccounting.create();
+    }
+    return pooledConnection;
   }
 
   private boolean checkShutdownInterruptedOrTimeout(final long timeout)
@@ -490,7 +493,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     this.backgroundProcessor = backgroundProcessor;
     String name = "poolLoadConditioningMonitor-" + getPoolName();
     loadConditioningProcessor =
-        LoggingExecutors.newScheduledThreadPool(name, 1, false);
+        LoggingExecutors.newScheduledThreadPool(1, name, false);
 
     endpointManager.addListener(endpointListener);
 

@@ -60,10 +60,12 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 public class DurableClientTestBase extends JUnit4DistributedTestCase {
@@ -80,8 +82,8 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   VM publisherClientVM;
   protected String regionName;
   int server1Port;
+  int server2Port;
   String durableClientId;
-
 
   @Override
   public final void postSetUp() throws Exception {
@@ -170,6 +172,32 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   void verifyDurableClientNotPresent(int durableClientTimeout, String durableClientId,
       final VM serverVM) {
     verifyDurableClientPresence(durableClientTimeout, durableClientId, serverVM, 0);
+  }
+
+  void waitForDurableClientPresence(String durableClientId, VM serverVM, final int count) {
+    serverVM.invoke(() -> {
+      if (count > 0) {
+
+        WaitCriterion ev = new WaitCriterion() {
+          @Override
+          public boolean done() {
+            checkNumberOfClientProxies(count);
+            CacheClientProxy proxy = getClientProxy();
+
+            if (proxy != null && durableClientId.equals(proxy.getDurableId())) {
+              return true;
+            }
+            return false;
+          }
+
+          @Override
+          public String description() {
+            return null;
+          }
+        };
+        GeodeAwaitility.await().untilAsserted(ev);
+      }
+    });
   }
 
   void verifyDurableClientPresence(int durableClientTimeout, String durableClientId,
@@ -372,7 +400,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     }
   }
 
-  private CqQuery createCq(String cqName, String cqQuery, boolean durable)
+  CqQuery createCq(String cqName, String cqQuery, boolean durable)
       throws CqException, CqExistsException {
     QueryService qs = CacheServerTestUtil.getCache().getQueryService();
     CqAttributesFactory cqf = new CqAttributesFactory();
@@ -460,7 +488,6 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     assertThat(bridgeServer).isNotNull();
     return bridgeServer;
   }
-
 
   Pool getClientPool(String host, int server1Port, int server2Port,
       boolean establishCallbackConnection, int redundancyLevel) {
@@ -664,14 +691,19 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   void checkCqListenerEvents(VM vm, final String cqName, final int numEvents,
       final int secondsToWait) {
     vm.invoke(() -> {
-      QueryService qs = CacheServerTestUtil.getCache().getQueryService();
-      CqQuery cq = qs.getCq(cqName);
-      // Get the listener and wait for the appropriate number of events
-      CacheServerTestUtil.ControlCqListener listener =
-          (CacheServerTestUtil.ControlCqListener) cq.getCqAttributes().getCqListener();
-      listener.waitWhileNotEnoughEvents(secondsToWait * 1000, numEvents);
-      assertThat(numEvents).isEqualTo(listener.events.size());
+      checkCqListenerEvents(cqName, numEvents, secondsToWait);
     });
+  }
+
+  void checkCqListenerEvents(final String cqName, final int numEvents,
+      final int secondsToWait) {
+    QueryService qs = CacheServerTestUtil.getCache().getQueryService();
+    CqQuery cq = qs.getCq(cqName);
+    // Get the listener and wait for the appropriate number of events
+    CacheServerTestUtil.ControlCqListener listener =
+        (CacheServerTestUtil.ControlCqListener) cq.getCqAttributes().getCqListener();
+    listener.waitWhileNotEnoughEvents(secondsToWait * 1000, numEvents);
+    assertThat(numEvents).isEqualTo(listener.events.size());
   }
 
   void checkListenerEvents(int numberOfEntries, final int sleepMinutes, final int eventType,

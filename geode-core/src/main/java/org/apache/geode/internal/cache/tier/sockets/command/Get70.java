@@ -29,7 +29,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.VersionTagHolder;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -62,27 +61,22 @@ public class Get70 extends BaseCommand {
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long startparam) throws IOException {
     long start = startparam;
-    Part regionNamePart = null, keyPart = null, valuePart = null;
-    String regionName = null;
-    Object callbackArg = null, key = null;
-    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
-    CacheServerStats stats = serverConnection.getCacheServerStats();
-    String errMessage = null;
+    final CacheServerStats stats = serverConnection.getCacheServerStats();
 
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
-    // requiresResponse = true;
     {
       long oldStart = start;
       start = DistributionStats.getStatTime();
       stats.incReadGetRequestTime(start - oldStart);
     }
     // Retrieve the data from the message parts
-    int parts = clientMessage.getNumberOfParts();
-    regionNamePart = clientMessage.getPart(0);
-    keyPart = clientMessage.getPart(1);
+    final int parts = clientMessage.getNumberOfParts();
+    final Part regionNamePart = clientMessage.getPart(0);
+    final Part keyPart = clientMessage.getPart(1);
     // valuePart = null; (redundant assignment)
+    Object callbackArg = null;
     if (parts > 2) {
-      valuePart = clientMessage.getPart(2);
+      Part valuePart = clientMessage.getPart(2);
       try {
         callbackArg = valuePart.getObject();
       } catch (Exception e) {
@@ -92,7 +86,8 @@ public class Get70 extends BaseCommand {
         return;
       }
     }
-    regionName = regionNamePart.getCachedString();
+    final String regionName = regionNamePart.getCachedString();
+    final Object key;
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
@@ -109,12 +104,13 @@ public class Get70 extends BaseCommand {
 
     // Process the get request
     if (key == null || regionName == null) {
+      final String errMessage;
       if ((key == null) && (regionName == null)) {
         errMessage =
             "The input region name and key for the get request are null.";
       } else if (key == null) {
         errMessage = "The input key for the get request is null.";
-      } else if (regionName == null) {
+      } else {
         errMessage = "The input region name for the get request is null.";
       }
       logger.warn("{}: {}", serverConnection.getName(), errMessage);
@@ -123,9 +119,9 @@ public class Get70 extends BaseCommand {
       return;
     }
 
-    Region region = serverConnection.getCache().getRegion(regionName);
+    final Region<?, ?> region = serverConnection.getCache().getRegion(regionName);
     if (region == null) {
-      String reason = String.format("%s was not found during get request", regionName);
+      String reason = " was not found during get request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
@@ -163,8 +159,8 @@ public class Get70 extends BaseCommand {
     Object data = originalData;
     try {
       boolean isObject = entry.isObject;
-      VersionTag versionTag = entry.versionTag;
-      boolean keyNotPresent = entry.keyNotPresent;
+      final VersionTag<?> versionTag = entry.versionTag;
+      final boolean keyNotPresent = entry.keyNotPresent;
 
       try {
         AuthorizeRequestPP postAuthzRequest = serverConnection.getPostAuthzRequest();
@@ -234,7 +230,7 @@ public class Get70 extends BaseCommand {
    * code needs to call getValueAndIsObject then this method can go away.
    */
   @Retained
-  protected Entry getEntry(Region region, Object key, Object callbackArg,
+  protected Entry getEntry(Region<?, ?> region, Object key, Object callbackArg,
       ServerConnection servConn) {
     return getEntryRetained(region, key, callbackArg, servConn);
   }
@@ -243,7 +239,7 @@ public class Get70 extends BaseCommand {
   // returning as the result to avoid creating the array repeatedly
   // for large number of entries like in getAll. Third element added in
   // 7.0 for retrieving version information
-  public Entry getValueAndIsObject(Region region, Object key, Object callbackArg,
+  public Entry getValueAndIsObject(Region<?, ?> region, Object key, Object callbackArg,
       ServerConnection servConn) {
 
     // Region.Entry entry;
@@ -251,40 +247,12 @@ public class Get70 extends BaseCommand {
     if (servConn != null) {
       servConn.setModificationInfo(true, regionName, key);
     }
-    VersionTag versionTag = null;
-    // LocalRegion lregion = (LocalRegion)region;
 
-    // entry = lregion.getEntry(key, true);
-
-    boolean isObject = true;
-    Object data = null;
-
-
-    // if (entry != null && region.getAttributes().getConcurrencyChecksEnabled()) {
-    // RegionEntry re;
-    // if (entry instanceof NonTXEntry) {
-    // re = ((NonTXEntry)entry).getRegionEntry();
-    // } else if (entry instanceof EntrySnapshot) {
-    // re = ((EntrySnapshot)entry).getRegionEntry();
-    // } else if (entry instanceof TXEntry) {
-    // re = null; // versioning not supported in tx yet
-    // data = entry.getValue(); // can I get a serialized form??
-    // } else {
-    // re = (RegionEntry)entry;
-    // }
-    // if (re != null) {
-    // data = re.getValueInVM();
-    // VersionStamp stamp = re.getVersionStamp();
-    // if (stamp != null) {
-    // versionHolder.setVersionTag(stamp.asVersionTag());
-    // }
-    // }
-    // } else {
-    ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
-    VersionTagHolder versionHolder = new VersionTagHolder();
-    data = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, versionHolder, true);
-    // }
-    versionTag = versionHolder.getVersionTag();
+    final ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
+    final VersionTagHolder versionHolder = new VersionTagHolder();
+    Object data =
+        ((LocalRegion) region).get(key, callbackArg, true, true, true, id, versionHolder, true);
+    final VersionTag<?> versionTag = versionHolder.getVersionTag();
 
     // If the value in the VM is a CachedDeserializable,
     // get its value. If it is Token.REMOVED, Token.DESTROYED,
@@ -292,6 +260,7 @@ public class Get70 extends BaseCommand {
     // set it to null. If it is NOT_AVAILABLE, get the value from
     // disk. If it is already a byte[], set isObject to false.
     boolean wasInvalid = false;
+    boolean isObject = true;
     if (data instanceof CachedDeserializable) {
       CachedDeserializable cd = (CachedDeserializable) data;
       if (!cd.isSerialized()) {
@@ -318,7 +287,7 @@ public class Get70 extends BaseCommand {
    * Same as getValueAndIsObject but the returned value can be a retained off-heap reference.
    */
   @Retained
-  public Entry getEntryRetained(Region region, Object key, Object callbackArg,
+  public Entry getEntryRetained(Region<?, ?> region, Object key, Object callbackArg,
       ServerConnection servConn) {
 
     // Region.Entry entry;
@@ -326,26 +295,21 @@ public class Get70 extends BaseCommand {
     if (servConn != null) {
       servConn.setModificationInfo(true, regionName, key);
     }
-    VersionTag versionTag = null;
-    // LocalRegion lregion = (LocalRegion)region;
-
-    // entry = lregion.getEntry(key, true);
-
-    boolean isObject = true;
-    @Retained
-    Object data = null;
 
     ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
     VersionTagHolder versionHolder = new VersionTagHolder();
-    data =
+
+    @Retained
+    Object data =
         ((LocalRegion) region).getRetained(key, callbackArg, true, true, id, versionHolder, true);
-    versionTag = versionHolder.getVersionTag();
+    final VersionTag<?> versionTag = versionHolder.getVersionTag();
 
     // If it is Token.REMOVED, Token.DESTROYED,
     // Token.INVALID, or Token.LOCAL_INVALID
     // set it to null. If it is NOT_AVAILABLE, get the value from
     // disk. If it is already a byte[], set isObject to false.
     boolean wasInvalid = false;
+    boolean isObject = true;
     if (data == Token.REMOVED_PHASE1 || data == Token.REMOVED_PHASE2 || data == Token.DESTROYED) {
       data = null;
     } else if (data == Token.INVALID || data == Token.LOCAL_INVALID) {
@@ -369,9 +333,9 @@ public class Get70 extends BaseCommand {
     public final Object value;
     public final boolean isObject;
     public final boolean keyNotPresent;
-    public final VersionTag versionTag;
+    public final VersionTag<?> versionTag;
 
-    public Entry(Object value, boolean isObject, boolean keyNotPresent, VersionTag versionTag) {
+    public Entry(Object value, boolean isObject, boolean keyNotPresent, VersionTag<?> versionTag) {
       this.value = value;
       this.isObject = isObject;
       this.keyNotPresent = keyNotPresent;
@@ -390,14 +354,8 @@ public class Get70 extends BaseCommand {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  protected void writeReplyWithRefreshMetadata(Message origMsg, ServerConnection serverConnection,
-      PartitionedRegion pr, byte nwHop) throws IOException {
-    throw new UnsupportedOperationException();
-  }
-
   private void writeResponse(@Unretained Object data, Object callbackArg, Message origMsg,
-      boolean isObject, VersionTag versionTag, boolean keyNotPresent, ServerConnection servConn)
+      boolean isObject, VersionTag<?> versionTag, boolean keyNotPresent, ServerConnection servConn)
       throws IOException {
     Message responseMsg = servConn.getResponseMessage();
     responseMsg.setMessageType(MessageType.RESPONSE);
@@ -439,14 +397,9 @@ public class Get70 extends BaseCommand {
     origMsg.clearParts();
   }
 
-  protected static void writeResponse(Object data, Object callbackArg, Message origMsg,
-      boolean isObject, ServerConnection servConn) throws IOException {
-    throw new UnsupportedOperationException();
-  }
-
   private void writeResponseWithRefreshMetadata(@Unretained Object data, Object callbackArg,
       Message origMsg, boolean isObject, ServerConnection servConn, PartitionedRegion pr,
-      byte nwHop, VersionTag versionTag, boolean keyNotPresent) throws IOException {
+      byte nwHop, VersionTag<?> versionTag, boolean keyNotPresent) throws IOException {
     Message responseMsg = servConn.getResponseMessage();
     responseMsg.setMessageType(MessageType.RESPONSE);
     responseMsg.setTransactionId(origMsg.getTransactionId());

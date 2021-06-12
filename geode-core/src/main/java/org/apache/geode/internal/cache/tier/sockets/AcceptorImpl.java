@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ClientToServerForQueue;
 import static org.apache.geode.internal.cache.tier.sockets.Handshake.REPLY_REFUSED;
@@ -52,7 +54,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -92,6 +93,7 @@ import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -121,6 +123,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
   private final CacheServerStats stats;
   private final int maxConnections;
   private final int maxThreads;
+  private final int maximumTimeBetweenPings;
 
   private final ExecutorService pool;
   /**
@@ -345,7 +348,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
   private final SecurityService securityService;
 
-  private final ServerConnectionFactory serverConnectionFactory;
+  private final SocketCloser socketCloser = new SocketCloser();
 
   /**
    * Constructs an AcceptorImpl for use within a CacheServer.
@@ -374,14 +377,14 @@ public class AcceptorImpl implements Acceptor, Runnable {
       final InternalCache internalCache, final int maxConnections, final int maxThreads,
       final int maximumMessageCount, final int messageTimeToLive,
       final ConnectionListener connectionListener, final OverflowAttributes overflowAttributes,
-      final boolean tcpNoDelay, final ServerConnectionFactory serverConnectionFactory,
+      final boolean tcpNoDelay,
       final long timeLimitMillis, final SecurityService securityService,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) throws IOException {
     this(port, bindHostName, notifyBySubscription, socketBufferSize, maximumTimeBetweenPings,
         internalCache, maxConnections, maxThreads, maximumMessageCount, messageTimeToLive,
-        connectionListener, overflowAttributes, tcpNoDelay, serverConnectionFactory,
+        connectionListener, overflowAttributes, tcpNoDelay,
         timeLimitMillis, securityService, socketCreatorSupplier, cacheClientNotifierProvider,
         clientHealthMonitorProvider, false, Collections.emptyList(),
         StatisticsClockFactory.disabledClock());
@@ -401,7 +404,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
    * @param connectionListener listener to detect if connect or disconnect events
    * @param overflowAttributes overflow attributes of Cache Client Notifier
    * @param tcpNoDelay TCP delay for the outgoing sockets
-   * @param serverConnectionFactory server connection factory for the client
    * @param timeLimitMillis time limit to wait attemping to bind to a server socket
    * @param socketCreatorSupplier socket creator for the server connection
    * @param cacheClientNotifierProvider collection of cache client notifiers
@@ -425,7 +427,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
       final int maximumMessageCount, final int messageTimeToLive,
       final ConnectionListener connectionListener,
       final OverflowAttributes overflowAttributes,
-      final boolean tcpNoDelay, final ServerConnectionFactory serverConnectionFactory,
+      final boolean tcpNoDelay,
       final long timeLimitMillis, final SecurityService securityService,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
@@ -443,7 +445,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
     this.connectionListener =
         connectionListener == null ? new ConnectionListenerAdapter() : connectionListener;
     this.notifyBySubscription = notifyBySubscription;
-    this.serverConnectionFactory = serverConnectionFactory;
 
     {
       int tmp_maxConnections = maxConnections;
@@ -635,6 +636,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
     this.socketBufferSize = socketBufferSize;
 
     // Create the singleton ClientHealthMonitor
+    this.maximumTimeBetweenPings = maximumTimeBetweenPings;
     healthMonitor = clientHealthMonitorProvider.get(internalCache, maximumTimeBetweenPings,
         clientNotifier.getStats());
 
@@ -656,8 +658,9 @@ public class AcceptorImpl implements Acceptor, Runnable {
         "Handshaker " + serverSock.getInetAddress() + ":" + localPort + " Thread ";
     try {
       logger.warn("Handshaker max Pool size: " + HANDSHAKE_POOL_SIZE);
-      return CoreLoggingExecutors.newThreadPoolWithSynchronousFeedThatHandlesRejection(threadName,
-          thread -> getStats().incAcceptThreadsCreated(), null, 1, HANDSHAKE_POOL_SIZE, 60);
+      return CoreLoggingExecutors.newThreadPoolWithSynchronousFeedThatHandlesRejection(1,
+          HANDSHAKE_POOL_SIZE, 60, SECONDS, threadName,
+          thread -> getStats().incAcceptThreadsCreated(), null);
     } catch (IllegalArgumentException poolInitException) {
       stats.close();
       serverSock.close();
@@ -668,6 +671,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
   private ExecutorService initializeClientQueueInitializerThreadPool() {
     return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed(
+        CLIENT_QUEUE_INITIALIZATION_POOL_SIZE, 60000, MILLISECONDS,
         "Client Queue Initialization Thread ",
         command -> {
           try {
@@ -675,8 +679,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
           } catch (CancelException e) {
             logger.debug("Client Queue Initialization was canceled.", e);
           }
-        }, CLIENT_QUEUE_INITIALIZATION_POOL_SIZE, getStats().getCnxPoolHelper(), 60000,
-        getThreadMonitorObj());
+        },
+        getStats().getCnxPoolHelper(), getThreadMonitorObj());
   }
 
   private ExecutorService initializeServerConnectionThreadPool() throws IOException {
@@ -693,13 +697,12 @@ public class AcceptorImpl implements Acceptor, Runnable {
     try {
       String threadName = "ServerConnection on port " + localPort + " Thread ";
       if (isSelector()) {
-        return CoreLoggingExecutors.newThreadPoolWithUnlimitedFeed(threadName, threadInitializer,
-            commandWrapper, maxThreads,
-            getStats().getCnxPoolHelper(), Integer.MAX_VALUE, getThreadMonitorObj());
+        return CoreLoggingExecutors.newThreadPoolWithUnlimitedFeed(maxThreads, Integer.MAX_VALUE,
+            MILLISECONDS, threadName, threadInitializer, commandWrapper,
+            getStats().getCnxPoolHelper(), getThreadMonitorObj());
       }
-      return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed(threadName, threadInitializer,
-          commandWrapper,
-          MINIMUM_MAX_CONNECTIONS, maxConnections, 0L);
+      return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed(MINIMUM_MAX_CONNECTIONS,
+          maxConnections, 0L, SECONDS, threadName, threadInitializer, commandWrapper);
     } catch (IllegalArgumentException poolInitException) {
       stats.close();
       serverSock.close();
@@ -1296,7 +1299,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
         }
         loggedAcceptError = false;
 
-        handOffNewClientConnection(socket, serverConnectionFactory);
+        handOffNewClientConnection(socket);
       } catch (InterruptedIOException e) { // Solaris only
         closeSocket(socket);
         if (isRunning()) {
@@ -1331,14 +1334,13 @@ public class AcceptorImpl implements Acceptor, Runnable {
    * threads in this pool are busy then the hand off will block until a thread is available. This
    * blocking is good because it will throttle the rate at which we create new connections.
    */
-  private void handOffNewClientConnection(final Socket socket,
-      final ServerConnectionFactory serverConnectionFactory) {
+  private void handOffNewClientConnection(final Socket socket) {
     try {
       stats.incAcceptsInProgress();
       hsPool.execute(() -> {
         boolean finished = false;
         try {
-          handleNewClientConnection(socket, serverConnectionFactory);
+          handleNewClientConnection(socket);
           finished = true;
         } catch (RegionDestroyedException rde) {
           // aborted due to disconnect - bug 42273
@@ -1416,8 +1418,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
     return notifyBySubscription;
   }
 
-  private void handleNewClientConnection(final Socket socket,
-      final ServerConnectionFactory serverConnectionFactory) throws IOException {
+  private void handleNewClientConnection(final Socket socket) throws IOException {
     // Read the first byte. If this socket is being used for 'client to server'
     // communication, create a ServerConnection. If this socket is being used
     // for 'server to client' communication, send it to the CacheClientNotifier
@@ -1454,25 +1455,22 @@ public class AcceptorImpl implements Acceptor, Runnable {
             "Rejected connection from {} because current connection count of {} is greater than or equal to the configured max of {}",
             new Object[] {socket.getInetAddress(), curCnt,
                 maxConnections});
-        if (communicationMode.expectsConnectionRefusalMessage()) {
-          try {
-            refuseHandshake(socket.getOutputStream(),
-                String.format("exceeded max-connections %s",
-                    maxConnections),
-                REPLY_REFUSED);
-          } catch (Exception ex) {
-            logger.debug("rejection message failed", ex);
-          }
+        try {
+          refuseHandshake(socket.getOutputStream(),
+              String.format("exceeded max-connections %s",
+                  maxConnections),
+              REPLY_REFUSED);
+        } catch (Exception ex) {
+          logger.debug("rejection message failed", ex);
         }
         closeSocket(socket);
         return;
       }
     }
 
-    ServerConnection serverConn =
-        serverConnectionFactory.makeServerConnection(socket, cache, crHelper, stats,
-            handshakeTimeout, socketBufferSize, communicationMode.toString(),
-            communicationMode.getModeNumber(), this, securityService);
+    ServerConnection serverConn = new ServerConnection(socket, cache, crHelper, stats,
+        handshakeTimeout, socketBufferSize, communicationMode.toString(),
+        communicationMode.getModeNumber(), this, securityService);
 
     synchronized (allSCsLock) {
       allSCs.add(serverConn);
@@ -1510,35 +1508,36 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
   @Override
   public void refuseHandshake(OutputStream out, String message, byte exception) throws IOException {
-    HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT);
-    DataOutputStream dos = new DataOutputStream(hdos);
-    // Write refused reply
-    dos.writeByte(exception);
+    try (HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT)) {
+      DataOutputStream dos = new DataOutputStream(hdos);
+      // Write refused reply
+      dos.writeByte(exception);
 
-    // write dummy endpointType
-    dos.writeByte(0);
-    // write dummy queueSize
-    dos.writeInt(0);
+      // write dummy endpointType
+      dos.writeByte(0);
+      // write dummy queueSize
+      dos.writeInt(0);
 
-    // Write the server's member
-    DistributedMember member = InternalDistributedSystem.getAnyInstance().getDistributedMember();
-    HeapDataOutputStream memberDos = new HeapDataOutputStream(KnownVersion.CURRENT);
-    DataSerializer.writeObject(member, memberDos);
-    DataSerializer.writeByteArray(memberDos.toByteArray(), dos);
-    memberDos.close();
+      // Write the server's member
+      DistributedMember member = InternalDistributedSystem.getAnyInstance().getDistributedMember();
+      HeapDataOutputStream memberDos = new HeapDataOutputStream(KnownVersion.CURRENT);
+      DataSerializer.writeObject(member, memberDos);
+      DataSerializer.writeByteArray(memberDos.toByteArray(), dos);
+      memberDos.close();
 
-    // Write the refusal message
-    if (message == null) {
-      message = "";
+      // Write the refusal message
+      if (message == null) {
+        message = "";
+      }
+      dos.writeUTF(message);
+
+      // Write dummy delta-propagation property value. This will never be read at
+      // receiver because the exception byte above will cause the receiver code
+      // throw an exception before the below byte could be read.
+      dos.writeBoolean(Boolean.TRUE);
+
+      out.write(hdos.toByteArray());
     }
-    dos.writeUTF(message);
-
-    // Write dummy delta-propagation property value. This will never be read at
-    // receiver because the exception byte above will cause the receiver code
-    // throw an exception before the below byte could be read.
-    dos.writeBoolean(Boolean.TRUE);
-
-    out.write(hdos.toByteArray());
     out.flush();
   }
 
@@ -1683,7 +1682,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
   private void shutdownPools() {
     pool.shutdown();
     try {
-      if (!pool.awaitTermination(PoolImpl.SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS)) {
+      if (!pool.awaitTermination(PoolImpl.SHUTDOWN_TIMEOUT, MILLISECONDS)) {
         logger.warn("Timeout waiting for background tasks to complete.");
         pool.shutdownNow();
       }
@@ -1702,6 +1701,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
       for (ServerConnection serverConnection : snap) {
         serverConnection.cleanup();
       }
+      socketCloser.close();
     }
   }
 
@@ -1860,6 +1860,16 @@ public class AcceptorImpl implements Acceptor, Runnable {
     }
 
     releaseCommBuffer(Message.setTLCommBuffer(null));
+  }
+
+  @Override
+  public int getMaximumTimeBetweenPings() {
+    return maximumTimeBetweenPings;
+  }
+
+  @Override
+  public SocketCloser getSocketCloser() {
+    return socketCloser;
   }
 
   private static class ClientQueueInitializerTask implements Runnable {

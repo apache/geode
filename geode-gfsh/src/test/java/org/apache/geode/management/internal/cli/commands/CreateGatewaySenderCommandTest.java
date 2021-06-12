@@ -272,10 +272,10 @@ public class CreateGatewaySenderCommandTest {
     assertThat(argsArgumentCaptor.getValue().getAlertThreshold()).isNull();
     assertThat(argsArgumentCaptor.getValue().getDispatcherThreads()).isNull();
     assertThat(argsArgumentCaptor.getValue().getOrderPolicy()).isNull();
-    assertThat(argsArgumentCaptor.getValue().getGatewayEventFilter()).isNotNull().isEmpty();
+    assertThat(argsArgumentCaptor.getValue().getGatewayEventFilter()).isNull();
     assertThat(argsArgumentCaptor.getValue().getGatewayTransportFilter()).isNotNull().isEmpty();
     assertThat(argsArgumentCaptor.getValue().mustGroupTransactionEvents()).isNotNull();
-
+    assertThat(argsArgumentCaptor.getValue().getEnforceThreadsConnectSameReceiver()).isFalse();
   }
 
   @Test
@@ -346,5 +346,71 @@ public class CreateGatewaySenderCommandTest {
     assertThat(argsArgumentCaptor.getValue().isBatchConflationEnabled()).isFalse();
     assertThat(argsArgumentCaptor.getValue().mustGroupTransactionEvents()).isFalse();
 
+  }
+
+  @Test
+  public void testEnforceThreadsConnectSameReceiverCannotBeUsedForParallelSenders() {
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --id=1 --remote-distributed-system-id=1 --parallel --enforce-threads-connect-same-receiver")
+        .statusIsError()
+        .containsOutput(
+            "Option --" + CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER
+                + " only applies to serial gateway senders.");
+  }
+
+  @Test
+  public void testEnforceThreadsConnectSameReceiverIsTrueWhenUsedWithoutValue() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult =
+        new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --id=1 --remote-distributed-system-id=1 --enforce-threads-connect-same-receiver")
+        .statusIsSuccess();
+    verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
+
+    assertThat(argsArgumentCaptor.getValue().getEnforceThreadsConnectSameReceiver()).isTrue();
+  }
+
+  @Test
+  public void testEnforceThreadsConnectSameReceiverIsFalseWhenSetToFalse() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult =
+        new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --id=1 --remote-distributed-system-id=1 --enforce-threads-connect-same-receiver=false")
+        .statusIsSuccess();
+    verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
+
+    assertThat(argsArgumentCaptor.getValue().getEnforceThreadsConnectSameReceiver()).isFalse();
+  }
+
+  @Test
+  public void testEnforceThreadsConnectSameReceiverIsTrueWhenSetToTrue() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult =
+        new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --id=1 --remote-distributed-system-id=1 --enforce-threads-connect-same-receiver=true")
+        .statusIsSuccess();
+    verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
+
+    assertThat(argsArgumentCaptor.getValue().getEnforceThreadsConnectSameReceiver()).isTrue();
+  }
+
+  @Test
+  public void testEnforceThreadsConnectSameReceiverIsFalseByDefault() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult =
+        new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --id=1 --remote-distributed-system-id=1")
+        .statusIsSuccess();
+    verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
+
+    assertThat(argsArgumentCaptor.getValue().getEnforceThreadsConnectSameReceiver()).isFalse();
   }
 }

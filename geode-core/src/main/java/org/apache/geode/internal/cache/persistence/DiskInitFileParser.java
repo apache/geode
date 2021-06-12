@@ -51,7 +51,7 @@ public class DiskInitFileParser {
   private static final Logger logger = LogService.getLogger();
 
   private final CountingDataInputStream dis;
-  private DiskInitFileInterpreter interpreter;
+  private final DiskInitFileInterpreter interpreter;
 
   public DiskInitFileParser(CountingDataInputStream dis, DiskInitFileInterpreter interpreter) {
     this.dis = dis;
@@ -65,14 +65,10 @@ public class DiskInitFileParser {
   private transient boolean gotEOF;
 
   public DiskStoreID parse() throws IOException, ClassNotFoundException {
-    KnownVersion gfversion = KnownVersion.GFE_662;
+    KnownVersion gfversion = KnownVersion.GFE_70;
     DiskStoreID result = null;
     boolean endOfFile = false;
-    while (!endOfFile) {
-      if (dis.atEndOfFile()) {
-        endOfFile = true;
-        break;
-      }
+    while (!(endOfFile || dis.atEndOfFile())) {
       byte opCode = dis.readByte();
       if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
         logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "DiskInitFile opcode={}", opCode);
@@ -217,11 +213,11 @@ public class DiskInitFileParser {
           long drId = readDiskRegionID(dis);
           int size = dis.readInt();
           ConcurrentHashMap<DiskStoreID, RegionVersionHolder<DiskStoreID>> memberToVersion =
-              new ConcurrentHashMap<DiskStoreID, RegionVersionHolder<DiskStoreID>>(size);
+              new ConcurrentHashMap<>(size);
           for (int i = 0; i < size; i++) {
             DiskStoreID id = new DiskStoreID();
             InternalDataSerializer.invokeFromData(id, dis);
-            RegionVersionHolder holder = new RegionVersionHolder(dis);
+            RegionVersionHolder<DiskStoreID> holder = new RegionVersionHolder<>(dis);
             memberToVersion.put(id, holder);
           }
           readEndOfRecord(dis);
@@ -438,7 +434,7 @@ public class DiskInitFileParser {
           if (gfversion == null) {
             throw new DiskAccessException(
                 String.format("Unknown version ordinal %s found when recovering Oplogs", ver),
-                this.interpreter.getNameForError());
+                interpreter.getNameForError());
           }
           interpreter.cmnGemfireVersion(gfversion);
           break;
@@ -469,7 +465,7 @@ public class DiskInitFileParser {
           readEndOfRecord(dis);
           if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
             logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
-                "IFREC_REVOKE_DISK_STORE_ID id={}" + pattern);
+                "IFREC_REVOKE_DISK_STORE_ID id={}", pattern);
           }
           interpreter.cmnRevokeDiskStoreId(pattern);
         }
@@ -477,7 +473,7 @@ public class DiskInitFileParser {
         default:
           throw new DiskAccessException(
               String.format("Unknown opCode %s found in disk initialization file.", opCode),
-              this.interpreter.getNameForError());
+              interpreter.getNameForError());
       }
       if (interpreter.isClosing()) {
         break;
@@ -502,7 +498,7 @@ public class DiskInitFileParser {
     if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
       StringBuffer sb = new StringBuffer();
       for (int i = 0; i < OPLOG_TYPE.getLen(); i++) {
-        sb.append(" " + seq[i]);
+        sb.append(" ").append(seq[i]);
       }
       logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "oplog magic code: {}", sb);
     }
@@ -615,10 +611,9 @@ public class DiskInitFileParser {
 
   private static DiskInitFileInterpreter createPrintingInterpreter(
       DiskInitFileInterpreter wrapped) {
-    DiskInitFileInterpreter interpreter = (DiskInitFileInterpreter) Proxy.newProxyInstance(
+    return (DiskInitFileInterpreter) Proxy.newProxyInstance(
         DiskInitFileInterpreter.class.getClassLoader(), new Class[] {DiskInitFileInterpreter.class},
         new PrintingInterpreter(wrapped));
-    return interpreter;
   }
 
 
@@ -627,7 +622,7 @@ public class DiskInitFileParser {
     private final DiskInitFileInterpreter delegate;
 
     public PrintingInterpreter(DiskInitFileInterpreter wrapped) {
-      this.delegate = wrapped;
+      delegate = wrapped;
     }
 
     @Override
@@ -664,6 +659,6 @@ public class DiskInitFileParser {
   }
 
   public boolean gotEOF() {
-    return this.gotEOF;
+    return gotEOF;
   }
 }

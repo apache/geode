@@ -28,7 +28,7 @@ import org.xml.sax.ext.EntityResolver2;
 
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 
 /**
  * The abstract superclass of classes that convert XML into a {@link org.apache.geode.cache.Cache}
@@ -433,8 +433,11 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   protected static final String ORDER_POLICY = "order-policy";
   /** The name of the <code>remote-distributed-system</code> attribute */
   protected static final String REMOTE_DISTRIBUTED_SYSTEM_ID = "remote-distributed-system-id";
+  /** The name of the <code>group-transaction-events</code> attribute */
   protected static final String GROUP_TRANSACTION_EVENTS = "group-transaction-events";
-
+  /** The name of the <code>enforce-threads-connect-same-receiver</code> attribute */
+  protected static final String ENFORCE_THREADS_CONNECT_SAME_RECEIVER =
+      "enforce-threads-connect-same-receiver";
 
   /** The name of the <code>bind-address</code> attribute */
   protected static final String BIND_ADDRESS = "bind-address";

@@ -19,17 +19,8 @@ import org.apache.geode.internal.serialization.KnownVersion;
 
 /**
  * Provides the version of the client.
- *
- * @since GemFire 2.0.2
  */
-@SuppressWarnings("deprecation")
 public interface ConnectionProxy {
-
-  /**
-   * The GFE version of the client.
-   *
-   * @since GemFire 5.7
-   */
   @Immutable
-  KnownVersion VERSION = KnownVersion.CURRENT;
+  KnownVersion VERSION = KnownVersion.CURRENT.getClientServerProtocolVersion();
 }

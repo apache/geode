@@ -154,6 +154,59 @@ public class GatewaySenderOverflowMBeanAttributesDistributedTest extends WANTest
     vm4.invoke(() -> compareSerialOverflowStatsToMBeanAttributes(senderId));
   }
 
+  @Test
+  @Parameters({"true", "false"})
+  public void testParallelGatewaySenderOverflowMBeanAttributesClear(boolean createSenderFirst)
+      throws Exception {
+    // Start the locators
+    Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> createFirstRemoteLocator(2, lnPort));
+
+    // Create the cache
+    vm4.invoke(() -> createCache(lnPort));
+
+    String senderId = "ln";
+    if (createSenderFirst) {
+      // Create a gateway sender then a region (normal xml order)
+
+      // Create a gateway sender in paused state so it creates the queue, but doesn't read any
+      // events from disk
+      vm4.invoke(() -> createSender(senderId, 2, true, 1, 10, false, false, null, false));
+      vm4.invoke(() -> pauseSender(senderId));
+
+      // Create a partitioned region attached to the gateway sender
+      vm4.invoke(() -> createPartitionedRegion(getTestMethodName(), senderId, 1, 100, isOffHeap()));
+    } else {
+      // Create a partitioned region then a gateway sender
+
+      // Create a partitioned region attached to the gateway sender
+      vm4.invoke(() -> createPartitionedRegion(getTestMethodName(), senderId, 1, 100, isOffHeap()));
+
+      // Create a gateway sender in paused state so it creates the queue, but doesn't read any
+      // events from disk
+      vm4.invoke(() -> createSender(senderId, 2, true, 1, 10, false, false, null, false));
+      vm4.invoke(() -> pauseSender(senderId));
+    }
+
+    // Do some puts to cause overflow
+    int numPuts = 10;
+    vm4.invoke(() -> doHeavyPuts(getTestMethodName(), numPuts));
+
+    // Compare overflow stats to mbean attributes
+    vm4.invoke(() -> compareParallelOverflowStatsToMBeanAttributes(senderId));
+
+    vm4.invoke(() -> stopSender(senderId));
+    vm4.invoke(() -> startSenderwithCleanQueues(senderId));
+
+    vm4.invoke(() -> checkParallelOverflowStatsAreZero(senderId));
+
+    // Check queue is clear
+    vm4.invoke(() -> checkQueueSize(senderId, 0));
+
+    // Compare overflow stats to mbean attributes
+    vm4.invoke(() -> compareParallelOverflowStatsToMBeanAttributes(senderId));
+  }
+
   private void compareParallelOverflowStatsToMBeanAttributes(String senderId) throws Exception {
     // Get disk region stats associated with the queue region
     PartitionedRegion region =
@@ -215,5 +268,23 @@ public class GatewaySenderOverflowMBeanAttributesDistributedTest extends WANTest
     for (int i = 0; i < numTimesToSample; i++) {
       assertThat(ids.getStatSampler().waitForSample((60000))).isTrue();
     }
+  }
+
+  private void checkParallelOverflowStatsAreZero(String senderId) throws Exception {
+
+    // Get gateway sender mbean
+    ManagementService service = ManagementService.getManagementService(cache);
+    GatewaySenderMXBean bean = service.getLocalGatewaySenderMXBean(senderId);
+    assertThat(bean).isNotNull();
+
+    // Wait for the sampler to take a few samples
+    waitForSamplerToSample(5);
+
+    // Verify the bean attributes match the stat values
+    await().untilAsserted(() -> {
+      assertThat(bean.getEntriesOverflowedToDisk()).isEqualTo(0);
+      assertThat(bean.getBytesOverflowedToDisk()).isEqualTo(0);
+      assertThat(bean.getTotalQueueSizeBytesInUse()).isEqualTo(0);
+    });
   }
 }

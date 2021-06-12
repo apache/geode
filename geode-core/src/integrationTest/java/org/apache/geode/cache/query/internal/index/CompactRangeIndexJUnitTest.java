@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.internal.index;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -23,6 +24,7 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -45,6 +47,7 @@ import org.apache.geode.cache.query.internal.DefaultQuery.TestHook;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
+import org.apache.geode.util.internal.UncheckedUtils;
 
 @Category({OQLIndexTest.class})
 public class CompactRangeIndexJUnitTest {
@@ -54,7 +57,7 @@ public class CompactRangeIndexJUnitTest {
 
   @Before
   public void setUp() {
-    System.setProperty("index_elemarray_threshold", "3");
+    IndexManager.INDEX_ELEMARRAY_THRESHOLD_FOR_TESTING = 3;
     utils = new QueryTestUtils();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
@@ -65,7 +68,6 @@ public class CompactRangeIndexJUnitTest {
 
   @Test
   public void testCompactRangeIndex() throws Exception {
-    System.setProperty("index_elemarray_threshold", "3");
     index = utils.createIndex("type", "\"type\"", SEPARATOR + "exampleRegion");
     putValues(9);
     isUsingIndexElemArray("type1");
@@ -286,7 +288,6 @@ public class CompactRangeIndexJUnitTest {
       assertEquals("incorrect number of entries in collection", 3, count);
     } finally {
       DefaultQuery.testHook = null;
-      System.setProperty("index_elemarray_threshold", "100");
     }
   }
 
@@ -442,6 +443,58 @@ public class CompactRangeIndexJUnitTest {
     }
   }
 
+  /**
+   * Tests adding entries to compact range index where there are undefined and null values
+   * for the key
+   */
+  @Test
+  public void testNullAndUndefinedValuesForMapKeyInCompactRangeIndex() throws Exception {
+    index = utils.createIndex("indexName", "positions['SUN']", SEPARATOR + "exampleRegion");
+    Region<Object, Object> region = utils.getCache().getRegion("exampleRegion");
+
+    // create objects
+    Portfolio p1 = new Portfolio(1);
+    p1.positions = new HashMap<>();
+    p1.positions.put("SUN", "yes");
+    region.put("KEY-" + 1, p1);
+
+    // Equivalent to having a null value for positions['SUN'] when querying
+    Portfolio p2 = new Portfolio(2);
+    p2.positions = new HashMap<>();
+    p2.positions.put("ERIC", 2);
+    region.put("KEY-" + 2, p2);
+
+    // Undefined value for positions['SUN'] when querying
+    Portfolio p3 = new Portfolio(3);
+    p3.positions = null;
+    region.put("KEY-" + 3, p3);
+
+    // null value for positions['SUN']
+    Portfolio p4 = new Portfolio(4);
+    p4.positions = new HashMap<>();
+    p4.positions.put("SUN", null);
+    region.put("KEY-" + 4, p4);
+
+    // execute query for null value and check result size
+    QueryService qs = utils.getCache().getQueryService();
+    SelectResults<Object> results = UncheckedUtils.uncheckedCast(qs
+        .newQuery(
+            "Select * from " + SEPARATOR + "exampleRegion r where r.positions['SUN'] = null")
+        .execute());
+    assertThat(results.size()).isEqualTo(2);
+    assertThat(results.contains(p2)).isTrue();
+    assertThat(results.contains(p4)).isTrue();
+
+    // execute query for not null value and check result size
+    results = UncheckedUtils.uncheckedCast(qs
+        .newQuery(
+            "Select * from " + SEPARATOR + "exampleRegion r where r.positions['SUN'] != null")
+        .execute());
+    assertThat(results.size()).isEqualTo(2);
+    assertThat(results.contains(p1)).isTrue();
+    assertThat(results.contains(p3)).isTrue();
+  }
+
   private void putValues(int num) {
     Region region = utils.getRegion("exampleRegion");
     for (int i = 1; i <= num; i++) {
@@ -574,6 +627,7 @@ public class CompactRangeIndexJUnitTest {
 
   @After
   public void tearDown() throws Exception {
+    IndexManager.INDEX_ELEMARRAY_THRESHOLD_FOR_TESTING = -1;
     utils.closeCache();
   }
 

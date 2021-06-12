@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,13 +45,14 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.api.ClusterManagementException;
@@ -236,8 +236,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       ClusterManagementRealizationResult result = new ClusterManagementRealizationResult();
 
       // execute function on all targeted members
-      List<RealizationResult> functionResults = executeAndGetFunctionResult(
-          new CacheRealizationFunction(),
+      List<RealizationResult> functionResults = executeCacheRealizationFunction(
           config, CacheElementOperation.CREATE,
           targetedMembers);
       functionResults.forEach(result::addMemberStatus);
@@ -338,8 +337,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       // execute function on all members
       ClusterManagementRealizationResult result = new ClusterManagementRealizationResult();
 
-      List<RealizationResult> functionResults = executeAndGetFunctionResult(
-          new CacheRealizationFunction(),
+      List<RealizationResult> functionResults = executeCacheRealizationFunction(
           config, CacheElementOperation.DELETE,
           memberValidator.findServers(groupsWithThisElement));
       functionResults.forEach(result::addMemberStatus);
@@ -446,7 +444,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
         members = Collections.singleton(members.iterator().next());
       }
 
-      List<R> runtimeInfos = executeAndGetFunctionResult(new CacheRealizationFunction(),
+      List<R> runtimeInfos = executeCacheRealizationFunction(
           element, CacheElementOperation.GET,
           members);
       response.setRuntimeInfo(runtimeInfos);
@@ -593,14 +591,25 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @VisibleForTesting
-  <R> List<R> executeAndGetFunctionResult(Function function, AbstractConfiguration configuration,
+  <R> List<R> executeCacheRealizationFunction(AbstractConfiguration configuration,
       CacheElementOperation operation,
       Set<DistributedMember> targetMembers) {
     if (targetMembers.size() == 0) {
       return Collections.emptyList();
     }
+    Set<DistributedMember> targetMemberPRE1_12_0 = new HashSet<>();
+    Set<DistributedMember> targetMemberPOST1_12_0 = new HashSet<>();
 
-    List<R> results = new ArrayList();
+    targetMembers.stream().forEach(member -> {
+      if (((InternalDistributedMember) member).getVersion()
+          .isOlderThan(KnownVersion.GEODE_1_12_0)) {
+        targetMemberPRE1_12_0.add(member);
+      } else {
+        targetMemberPOST1_12_0.add(member);
+      }
+    });
+
+
 
     File file = null;
     if (configuration instanceof HasFile) {
@@ -608,12 +617,24 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     if (file == null) {
-      Execution execution = FunctionService.onMembers(targetMembers)
-          .setArguments(Arrays.asList(configuration, operation, null));
-      ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
-      ResultCollector rc = execution.execute(function);
-      return ((List<R>) rc.getResult()).stream().filter(Objects::nonNull)
-          .collect(Collectors.toList());
+      List<?> functionResults = new ArrayList<>();
+      if (targetMemberPRE1_12_0.size() > 0) {
+        Function function =
+            new org.apache.geode.management.internal.cli.functions.CacheRealizationFunction();
+        Execution execution = FunctionService.onMembers(targetMemberPRE1_12_0)
+            .setArguments(Arrays.asList(configuration, operation, null));
+        ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
+        functionResults.addAll(cleanResults((List<?>) execution.execute(function).getResult()));
+      }
+      if (targetMemberPOST1_12_0.size() > 0) {
+        Function function = new CacheRealizationFunction();
+        Execution execution = FunctionService.onMembers(targetMemberPOST1_12_0)
+            .setArguments(Arrays.asList(configuration, operation, null));
+        ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
+        functionResults.addAll(cleanResults((List<?>) execution.execute(function).getResult()));
+      }
+
+      return (List<R>) functionResults;
     }
 
     // if we have file arguments, we need to export the file input stream for each member
@@ -623,6 +644,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
             .getManagementAgent();
     exporter = agent.getRemoteStreamExporter();
 
+    List<R> results = new ArrayList();
     for (DistributedMember member : targetMembers) {
       FileInputStream fileInputStream = null;
       SimpleRemoteInputStream inputStream = null;
@@ -634,7 +656,17 @@ public class LocatorClusterManagementService implements ClusterManagementService
         Execution execution = FunctionService.onMember(member)
             .setArguments(Arrays.asList(configuration, operation, remoteInputStream));
         ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
-        results.add(((List<R>) execution.execute(function).getResult()).get(0));
+        List<R> functionResults;
+        if (((InternalDistributedMember) member).getVersion()
+            .isOlderThan(KnownVersion.GEODE_1_12_0)) {
+          Function function =
+              new org.apache.geode.management.internal.cli.functions.CacheRealizationFunction();
+          functionResults = cleanResults((List<?>) execution.execute(function).getResult());
+        } else {
+          Function function = new CacheRealizationFunction();
+          functionResults = cleanResults((List<?>) execution.execute(function).getResult());
+        }
+        results.addAll(functionResults);
       } catch (IOException e) {
         raise(StatusCode.ILLEGAL_ARGUMENT, "Invalid file: " + file.getAbsolutePath());
       } finally {
@@ -653,7 +685,23 @@ public class LocatorClusterManagementService implements ClusterManagementService
         }
       }
     }
+    return results;
+  }
 
+  @VisibleForTesting
+  <R> List<R> cleanResults(List<?> functionResults) {
+    List<R> results = new ArrayList<>();
+    for (Object functionResult : functionResults) {
+      if (functionResult == null) {
+        continue;
+      }
+      if (functionResult instanceof Throwable) {
+        // log the exception and continue
+        logger.warn("Error executing CacheRealizationFunction.", (Throwable) functionResult);
+        continue;
+      }
+      results.add((R) functionResult);
+    }
     return results;
   }
 

@@ -42,7 +42,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.datasource.ClientConnectionFactoryWrapper;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.datasource.DataSourceCreateException;
@@ -51,7 +51,7 @@ import org.apache.geode.internal.datasource.GemFireTransactionDataSource;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
-import org.apache.geode.internal.util.DriverJarUtil;
+import org.apache.geode.internal.util.DriverJarUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -155,53 +155,63 @@ public class JNDIInvoker {
       if (ne instanceof NoInitialContextException) {
         String exception =
             "JNDIInvoker::mapTransactions:: No application server context found, Starting GemFire JNDI Context Context ";
-        if (writer.finerEnabled())
+        if (writer.finerEnabled()) {
           writer.finer(exception);
+        }
         try {
           initializeGemFireContext();
           transactionManager = TransactionManagerImpl.getTransactionManager();
           ctx.rebind("java:/TransactionManager", transactionManager);
-          if (writer.fineEnabled())
+          if (writer.fineEnabled()) {
             writer.fine(
                 "JNDIInvoker::mapTransactions::Bound TransactionManager to Context GemFire JNDI Tree");
+          }
           UserTransactionImpl utx = new UserTransactionImpl();
           ctx.rebind("java:/UserTransaction", utx);
-          if (writer.fineEnabled())
+          if (writer.fineEnabled()) {
             writer.fine(
                 "JNDIInvoker::mapTransactions::Bound Transaction to Context GemFire JNDI Tree");
+          }
         } catch (NamingException ne1) {
-          if (writer.infoEnabled())
+          if (writer.infoEnabled()) {
             writer.info(
                 "JNDIInvoker::mapTransactions::NamingException while binding TransactionManager/UserTransaction to GemFire JNDI Tree");
+          }
         } catch (SystemException se1) {
-          if (writer.infoEnabled())
+          if (writer.infoEnabled()) {
             writer.info(
                 "JNDIInvoker::mapTransactions::SystemException while binding UserTransaction to GemFire JNDI Tree");
+          }
         }
       } else if (ne instanceof NameNotFoundException) {
         String exception =
             "JNDIInvoker::mapTransactions:: No TransactionManager associated to Application server context, trying to bind GemFire TransactionManager";
-        if (writer.finerEnabled())
+        if (writer.finerEnabled()) {
           writer.finer(exception);
+        }
         try {
           transactionManager = TransactionManagerImpl.getTransactionManager();
           ctx.rebind("java:/TransactionManager", transactionManager);
-          if (writer.fineEnabled())
+          if (writer.fineEnabled()) {
             writer.fine(
                 "JNDIInvoker::mapTransactions::Bound TransactionManager to Application Server Context");
+          }
           UserTransactionImpl utx = new UserTransactionImpl();
           ctx.rebind("java:/UserTransaction", utx);
-          if (writer.fineEnabled())
+          if (writer.fineEnabled()) {
             writer.fine(
                 "JNDIInvoker::mapTransactions::Bound UserTransaction to Application Server Context");
+          }
         } catch (NamingException ne1) {
-          if (writer.infoEnabled())
+          if (writer.infoEnabled()) {
             writer.info(
                 "JNDIInvoker::mapTransactions::NamingException while binding TransactionManager/UserTransaction to Application Server JNDI Tree");
+          }
         } catch (SystemException se1) {
-          if (writer.infoEnabled())
+          if (writer.infoEnabled()) {
             writer.info(
                 "JNDIInvoker::mapTransactions::SystemException while binding TransactionManager/UserTransaction to Application Server JNDI Tree");
+          }
         }
       }
     }
@@ -256,53 +266,62 @@ public class JNDIInvoker {
       } catch (NamingException e) {
         String exception = "JNDIInvoker::doTransactionLookup::Couldn't lookup ["
             + knownJNDIManagers[i][0] + " (" + knownJNDIManagers[i][1] + ")]";
-        if (writer.finerEnabled())
+        if (writer.finerEnabled()) {
           writer.finer(exception);
+        }
       }
       if (jndiObject instanceof TransactionManager) {
         transactionManager = (TransactionManager) jndiObject;
         String exception = "JNDIInvoker::doTransactionLookup::Found TransactionManager for "
             + knownJNDIManagers[i][1];
-        if (writer.fineEnabled())
+        if (writer.fineEnabled()) {
           writer.fine(exception);
+        }
         return;
       } else {
         String exception = "JNDIInvoker::doTransactionLookup::Found TransactionManager of class "
             + (jndiObject == null ? "null" : jndiObject.getClass())
             + " but is not of type javax.transaction.TransactionManager";
-        if (writer.fineEnabled())
+        if (writer.fineEnabled()) {
           writer.fine(exception);
+        }
       }
     }
     Class clazz;
     try {
-      if (writer.finerEnabled())
+      if (writer.finerEnabled()) {
         writer.finer(
             "JNDIInvoker::doTransactionLookup::Trying WebSphere 5.1: " + WS_FACTORY_CLASS_5_1);
+      }
       clazz = ClassPathLoader.getLatest().forName(WS_FACTORY_CLASS_5_1);
-      if (writer.fineEnabled())
+      if (writer.fineEnabled()) {
         writer
             .fine("JNDIInvoker::doTransactionLookup::Found WebSphere 5.1: " + WS_FACTORY_CLASS_5_1);
+      }
     } catch (ClassNotFoundException ex) {
       try {
-        if (writer.finerEnabled())
+        if (writer.finerEnabled()) {
           writer.finer(
               "JNDIInvoker::doTransactionLookup::Trying WebSphere 5.0: " + WS_FACTORY_CLASS_5_0);
+        }
         clazz = ClassPathLoader.getLatest().forName(WS_FACTORY_CLASS_5_0);
-        if (writer.fineEnabled())
+        if (writer.fineEnabled()) {
           writer.fine(
               "JNDIInvoker::doTransactionLookup::Found WebSphere 5.0: " + WS_FACTORY_CLASS_5_0);
+        }
       } catch (ClassNotFoundException ex2) {
         try {
           clazz = ClassPathLoader.getLatest().forName(WS_FACTORY_CLASS_4);
           String exception =
               "JNDIInvoker::doTransactionLookup::Found WebSphere 4: " + WS_FACTORY_CLASS_4;
-          if (writer.fineEnabled())
+          if (writer.fineEnabled()) {
             writer.fine(exception, ex);
+          }
         } catch (ClassNotFoundException ex3) {
-          if (writer.finerEnabled())
+          if (writer.finerEnabled()) {
             writer.finer(
                 "JNDIInvoker::doTransactionLookup::Couldn't find any WebSphere TransactionManager factory class, neither for WebSphere version 5.1 nor 5.0 nor 4");
+          }
           throw new NoInitialContextException();
         }
       }
@@ -354,7 +373,7 @@ public class JNDIInvoker {
     String driverClassName = null;
     if (map != null) {
       driverClassName = (String) map.get("jdbc-driver-class");
-      DriverJarUtil util = new DriverJarUtil();
+      DriverJarUtils util = new DriverJarUtils();
       if (driverClassName != null) {
         util.registerDriver(driverClassName);
       }

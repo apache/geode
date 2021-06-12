@@ -14,333 +14,351 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.Statistics;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
-import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
+import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheEvent;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionQueueException;
+import org.apache.geode.internal.cache.tier.sockets.ClientRegistrationEventQueueManager.ClientRegistrationEventQueue;
 import org.apache.geode.internal.statistics.StatisticsClock;
-import org.apache.geode.test.fake.Fakes;
+import org.apache.geode.internal.statistics.StatisticsManager;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class CacheClientNotifierTest {
-  @Before
-  public void setup() {
+
+  private static final String CQ_NAME = "testCQ";
+  private static final long CQ_ID = 0;
+
+  private final AtomicReference<CountDownLatch> afterLatch =
+      new AtomicReference<>(new CountDownLatch(0));
+  private final AtomicReference<CountDownLatch> beforeLatch =
+      new AtomicReference<>(new CountDownLatch(0));
+
+  private CacheClientProxy cacheClientProxy;
+  private ClientProxyMembershipID clientProxyMembershipId;
+  private ClientRegistrationEventQueueManager clientRegistrationEventQueueManager;
+  private ClientRegistrationMetadata clientRegistrationMetadata;
+  private InternalCache internalCache;
+  private InternalDistributedSystem internalDistributedSystem;
+  private Socket socket;
+  private Statistics statistics;
+  private StatisticsManager statisticsManager;
+  private InternalRegion region;
+
+  private CacheClientNotifier cacheClientNotifier;
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+
+  @BeforeClass
+  public static void clearStatics() {
     // Perform cleanup on any singletons received from previous test runs, since the
     // CacheClientNotifier is a static and previous tests may not have cleaned up properly.
-    shutdownExistingCacheClientNotifier();
-  }
-
-  @After
-  public void tearDown() {
-    shutdownExistingCacheClientNotifier();
-  }
-
-  @Test
-  public void eventsInClientRegistrationQueueAreSentToClientAfterRegistrationIsComplete()
-      throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
-      InvocationTargetException, InterruptedException, ExecutionException {
-    InternalCache internalCache = Fakes.cache();
-    CacheServerStats cacheServerStats = mock(CacheServerStats.class);
-    Socket socket = mock(Socket.class);
-    ConnectionListener connectionListener = mock(ConnectionListener.class);
-    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
-    CacheClientProxy cacheClientProxy = mock(CacheClientProxy.class);
-    ClientUpdateMessageImpl clientUpdateMessage = mock(ClientUpdateMessageImpl.class);
-    ClientRegistrationMetadata clientRegistrationMetadata = mock(ClientRegistrationMetadata.class);
-    StatisticsClock statisticsClock = mock(StatisticsClock.class);
-
-    when(clientRegistrationMetadata.getClientProxyMembershipID()).thenReturn(
-        clientProxyMembershipID);
-
-    CacheClientNotifier cacheClientNotifier = CacheClientNotifier.getInstance(internalCache,
-        new ClientRegistrationEventQueueManager(), statisticsClock, cacheServerStats, 0, 0,
-        connectionListener, null, false);
-    final CacheClientNotifier cacheClientNotifierSpy = spy(cacheClientNotifier);
-
-    CountDownLatch waitForEventDispatchCountdownLatch = new CountDownLatch(1);
-    CountDownLatch waitForRegistrationCountdownLatch = new CountDownLatch(1);
-    ExecutorService registerAndNotifyExecutor = Executors.newFixedThreadPool(2);
-
-    try {
-      // We stub out the CacheClientNotifier.registerClientInternal() to do some "work" until
-      // a new event is received and queued, as triggered by the waitForEventDispatchCountdownLatch
-      doAnswer((i) -> {
-        when(cacheClientProxy.getProxyID()).thenReturn(clientProxyMembershipID);
-        cacheClientNotifierSpy.addClientProxy(cacheClientProxy);
-        waitForRegistrationCountdownLatch.countDown();
-        waitForEventDispatchCountdownLatch.await();
-        return null;
-      }).when(cacheClientNotifierSpy).registerClientInternal(clientRegistrationMetadata, socket,
-          false, 0, true);
-      List<Callable<Void>> registerAndNotifyTasks = new ArrayList<>();
-
-      // In one thread, we register the new client which should create the temporary client
-      // registration event queue. Events will be passed to that queue while registration is
-      // underway. Once registration is complete, the queue is drained and the event is processed
-      // as normal.
-      registerAndNotifyTasks.add(() -> {
-        cacheClientNotifierSpy.registerClient(clientRegistrationMetadata, socket, false, 0, true);
-        return null;
-      });
-
-      // In a second thread, we mock the arrival of a new event. We want to ensure this event
-      // goes into the temporary client registration event queue. To do that, we wait on the
-      // waitForRegistrationCountdownLatch until registration is underway and the temp queue is
-      // created. Once it is, we process the event and notify clients, which should add the event
-      // to the temp queue. Finally, we resume registration and after it is complete, we verify
-      // that the event was drained, processed, and "delivered" (note message delivery is mocked
-      // and results in a no-op).
-      registerAndNotifyTasks.add(() -> {
-        try {
-          waitForRegistrationCountdownLatch.await();
-
-          InternalCacheEvent internalCacheEvent =
-              createMockInternalCacheEvent(clientProxyMembershipID, clientUpdateMessage,
-                  cacheClientNotifierSpy);
-
-          CacheClientNotifier.notifyClients(internalCacheEvent, clientUpdateMessage);
-        } finally {
-          // Ensure we always countdown so if the test fails it won't hang due to
-          // awaiting on this countdown latch.
-          waitForEventDispatchCountdownLatch.countDown();
-        }
-        return null;
-      });
-
-      final List<Future<Void>> futures =
-          registerAndNotifyExecutor.invokeAll(registerAndNotifyTasks);
-
-      for (final Future future : futures) {
-        future.get();
-      }
-    } finally {
-      // To prevent not cleaning up test resources in case an unexpected exception occurs
-      waitForEventDispatchCountdownLatch.countDown();
-      waitForRegistrationCountdownLatch.countDown();
-      registerAndNotifyExecutor.shutdownNow();
-      cacheClientNotifier.shutdown(0);
-    }
-
-    verify(cacheClientProxy, times(1)).deliverMessage(isA(HAEventWrapper.class));
-  }
-
-  @Test
-  public void initializingMessageShouldntSerializeValuePrematurely() throws Exception {
-    InternalCache internalCache = Fakes.cache();
-    CacheServerStats cacheServerStats = mock(CacheServerStats.class);
-    ConnectionListener connectionListener = mock(ConnectionListener.class);
-    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
-    ClientRegistrationMetadata clientRegistrationMetadata = mock(ClientRegistrationMetadata.class);
-    StatisticsClock statisticsClock = mock(StatisticsClock.class);
-
-    when(clientRegistrationMetadata.getClientProxyMembershipID()).thenReturn(
-        clientProxyMembershipID);
-
-    CacheClientNotifier cacheClientNotifier = CacheClientNotifier.getInstance(internalCache,
-        new ClientRegistrationEventQueueManager(), statisticsClock, cacheServerStats, 0, 0,
-        connectionListener, null, false);
-    LocalRegion region = mock(LocalRegion.class);
-
-    EntryEventImpl entryEvent = mock(EntryEventImpl.class);
-    when(entryEvent.getEventType()).thenReturn(EnumListenerEvent.AFTER_CREATE);
-    when(entryEvent.getOperation()).thenReturn(Operation.CREATE);
-    when(entryEvent.getRegion()).thenReturn(region);
-    cacheClientNotifier.constructClientMessage(entryEvent);
-    verify(entryEvent, times(0)).exportNewValue(any());
-  }
-
-  @Test
-  public void clientRegistrationFailsQueueStillDrained()
-      throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
-      IllegalAccessException, IOException {
-    InternalCache internalCache = Fakes.cache();
-    CacheServerStats cacheServerStats = mock(CacheServerStats.class);
-    Socket socket = mock(Socket.class);
-    ConnectionListener connectionListener = mock(ConnectionListener.class);
-    ClientRegistrationMetadata clientRegistrationMetadata = mock(ClientRegistrationMetadata.class);
-    StatisticsClock statisticsClock = mock(StatisticsClock.class);
-    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
-    ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
-        mock(ClientRegistrationEventQueueManager.class);
-    ClientRegistrationEventQueueManager.ClientRegistrationEventQueue clientRegistrationEventQueue =
-        mock(ClientRegistrationEventQueueManager.ClientRegistrationEventQueue.class);
-
-    when(clientRegistrationMetadata.getClientProxyMembershipID()).thenReturn(
-        clientProxyMembershipID);
-    when(clientRegistrationEventQueueManager.create(eq(clientProxyMembershipID), any(), any()))
-        .thenReturn(clientRegistrationEventQueue);
-
-    CacheClientNotifier cacheClientNotifier = CacheClientNotifier.getInstance(internalCache,
-        clientRegistrationEventQueueManager, statisticsClock, cacheServerStats, 0, 0,
-        connectionListener, null, false);
-    CacheClientNotifier cacheClientNotifierSpy = spy(cacheClientNotifier);
-
-    doAnswer((i) -> {
-      throw new RegionQueueException();
-    }).when(cacheClientNotifierSpy).registerClientInternal(clientRegistrationMetadata, socket,
-        false, 0, true);
-
-    assertThatThrownBy(() -> cacheClientNotifierSpy.registerClient(clientRegistrationMetadata,
-        socket, false, 0, true))
-            .isInstanceOf(IOException.class);
-
-    verify(clientRegistrationEventQueueManager, times(1)).create(
-        eq(clientProxyMembershipID), any(), any());
-
-    verify(clientRegistrationEventQueueManager, times(1)).drain(
-        eq(clientRegistrationEventQueue),
-        eq(cacheClientNotifierSpy));
-  }
-
-  private InternalCacheEvent createMockInternalCacheEvent(
-      final ClientProxyMembershipID clientProxyMembershipID,
-      final ClientUpdateMessageImpl clientUpdateMessage,
-      final CacheClientNotifier cacheClientNotifierSpy) {
-    InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
-
-    DistributedRegion region = mock(DistributedRegion.class);
-    when(internalCacheEvent.getRegion()).thenReturn(region);
-
-    FilterRoutingInfo.FilterInfo filterInfo = mock(FilterRoutingInfo.FilterInfo.class);
-    final Long cqId = 0L;
-    final String cqName = "testCQ";
-
-    HashMap cqs = new HashMap<Long, Integer>() {
-      {
-        put(cqId, 123);
-      }
-    };
-    when(filterInfo.getCQs()).thenReturn(cqs);
-    when(internalCacheEvent.getLocalFilterInfo()).thenReturn(
-        filterInfo);
-    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
-
-    FilterProfile filterProfile = mock(FilterProfile.class);
-    when(filterProfile.getRealCqID(cqId)).thenReturn(cqName);
-
-    ServerCQ serverCQ = mock(ServerCQ.class);
-    when(serverCQ.getClientProxyId()).thenReturn(clientProxyMembershipID);
-    when(filterProfile.getCq(cqName)).thenReturn(serverCQ);
-    when(region.getFilterProfile()).thenReturn(filterProfile);
-
-    FilterRoutingInfo filterRoutingInfo = mock(FilterRoutingInfo.class);
-    when(filterRoutingInfo.getLocalFilterInfo()).thenReturn(filterInfo);
-    when(filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent))
-        .thenReturn(filterRoutingInfo);
-    doReturn(clientUpdateMessage).when(cacheClientNotifierSpy)
-        .constructClientMessage(internalCacheEvent);
-
-    return internalCacheEvent;
-  }
-
-  @Test
-  public void testSingletonHasClientProxiesFalseNoCCN() {
-    assertFalse(CacheClientNotifier.singletonHasClientProxies());
-  }
-
-  @Test
-  public void testSingletonHasClientProxiesFalseNoProxy() {
-    InternalCache internalCache = Fakes.cache();
-
-    CacheClientNotifier ccn =
-        CacheClientNotifier.getInstance(internalCache,
-            mock(ClientRegistrationEventQueueManager.class),
-            mock(StatisticsClock.class),
-            mock(CacheServerStats.class), 10, 10, mock(ConnectionListener.class), null, true);
-
-    assertFalse(CacheClientNotifier.singletonHasClientProxies());
-    ccn.shutdown(111);
-
-  }
-
-  @Test
-  public void testSingletonHasClientProxiesTrue() {
-    InternalCache internalCache = Fakes.cache();
-    CacheClientProxy proxy = mock(CacheClientProxy.class);
-
-    CacheClientNotifier ccn =
-        CacheClientNotifier.getInstance(internalCache,
-            mock(ClientRegistrationEventQueueManager.class),
-            mock(StatisticsClock.class),
-            mock(CacheServerStats.class), 10, 10, mock(ConnectionListener.class), null, true);
-
-    when(proxy.getProxyID()).thenReturn(mock(ClientProxyMembershipID.class));
-    ccn.addClientProxy(proxy);
-
-    // check ClientProxy Map is not empty
-    assertTrue(CacheClientNotifier.singletonHasClientProxies());
-
-    when(proxy.getAcceptorId()).thenReturn(Long.valueOf(111));
-    ccn.shutdown(111);
-  }
-
-  @Test
-  public void testSingletonHasInitClientProxiesTrue() {
-    InternalCache internalCache = Fakes.cache();
-    CacheClientProxy proxy = mock(CacheClientProxy.class);
-
-    CacheClientNotifier ccn =
-        CacheClientNotifier.getInstance(internalCache,
-            mock(ClientRegistrationEventQueueManager.class),
-            mock(StatisticsClock.class),
-            mock(CacheServerStats.class), 10, 10, mock(ConnectionListener.class), null, true);
-
-    when(proxy.getProxyID()).thenReturn(mock(ClientProxyMembershipID.class));
-    ccn.addClientInitProxy(proxy);
-
-    // check InitClientProxy Map is not empty
-    assertTrue(CacheClientNotifier.singletonHasClientProxies());
-
-    ccn.addClientProxy(proxy);
-
-    // check ClientProxy Map is not empty
-    assertTrue(CacheClientNotifier.singletonHasClientProxies());
-
-    when(proxy.getAcceptorId()).thenReturn(Long.valueOf(111));
-    ccn.shutdown(111);
-  }
-
-  private void shutdownExistingCacheClientNotifier() {
     CacheClientNotifier cacheClientNotifier = CacheClientNotifier.getInstance();
     if (cacheClientNotifier != null) {
       cacheClientNotifier.shutdown(0);
     }
   }
+
+  @Before
+  public void setUp() {
+    cacheClientProxy = mock(CacheClientProxy.class);
+    clientProxyMembershipId = mock(ClientProxyMembershipID.class);
+    clientRegistrationEventQueueManager = mock(ClientRegistrationEventQueueManager.class);
+    clientRegistrationMetadata = mock(ClientRegistrationMetadata.class);
+    internalCache = mock(InternalCache.class);
+    internalDistributedSystem = mock(InternalDistributedSystem.class);
+    region = mock(InternalRegion.class);
+    socket = mock(Socket.class);
+    statistics = mock(Statistics.class);
+    statisticsManager = mock(StatisticsManager.class);
+  }
+
+  @After
+  public void tearDown() {
+    beforeLatch.get().countDown();
+    afterLatch.get().countDown();
+
+    clearStatics();
+  }
+
+  @Test
+  public void eventsInClientRegistrationQueueAreSentToClientAfterRegistrationIsComplete()
+      throws Exception {
+    // this test requires real impl instance of ClientRegistrationEventQueueManager
+    clientRegistrationEventQueueManager = new ClientRegistrationEventQueueManager();
+
+    when(cacheClientProxy.getProxyID())
+        .thenReturn(clientProxyMembershipId);
+    when(clientRegistrationMetadata.getClientProxyMembershipID())
+        .thenReturn(clientProxyMembershipId);
+    when(internalCache.getCancelCriterion())
+        .thenReturn(mock(CancelCriterion.class));
+    when(internalCache.getCCPTimer())
+        .thenReturn(mock(SystemTimer.class));
+    when(internalCache.getInternalDistributedSystem())
+        .thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getStatisticsManager())
+        .thenReturn(statisticsManager);
+    when(statisticsManager.createAtomicStatistics(any(), any()))
+        .thenReturn(statistics);
+
+    cacheClientNotifier = spy(CacheClientNotifier.getInstance(internalCache,
+        clientRegistrationEventQueueManager, mock(StatisticsClock.class),
+        mock(CacheServerStats.class), 0, 0, mock(ConnectionListener.class), null, false));
+
+    beforeLatch.set(new CountDownLatch(1));
+    afterLatch.set(new CountDownLatch(1));
+
+    // We stub out the CacheClientNotifier.registerClientInternal() to do some "work" until
+    // a new event is received and queued, as triggered by the afterLatch
+    doAnswer(invocation -> {
+      cacheClientNotifier.addClientProxy(cacheClientProxy);
+      beforeLatch.get().countDown();
+      afterLatch.get().await();
+      return null;
+    })
+        .when(cacheClientNotifier)
+        .registerClientInternal(clientRegistrationMetadata, socket, false, 0, true);
+
+    Collection<Callable<Void>> tasks = new ArrayList<>();
+
+    // In one thread, we register the new client which should create the temporary client
+    // registration event queue. Events will be passed to that queue while registration is
+    // underway. Once registration is complete, the queue is drained and the event is processed
+    // as normal.
+    tasks.add(() -> {
+      cacheClientNotifier.registerClient(clientRegistrationMetadata, socket, false, 0, true);
+      return null;
+    });
+
+    // In a second thread, we mock the arrival of a new event. We want to ensure this event
+    // goes into the temporary client registration event queue. To do that, we wait on the
+    // beforeLatch until registration is underway and the temp queue is
+    // created. Once it is, we process the event and notify clients, which should add the event
+    // to the temp queue. Finally, we resume registration and after it is complete, we verify
+    // that the event was drained, processed, and "delivered" (note message delivery is mocked
+    // and results in a no-op).
+    tasks.add(() -> {
+      beforeLatch.get().await();
+
+      InternalCacheEvent internalCacheEvent = internalCacheEvent(clientProxyMembershipId);
+      ClientUpdateMessageImpl clientUpdateMessageImpl = mock(ClientUpdateMessageImpl.class);
+      CacheClientNotifier.notifyClients(internalCacheEvent, clientUpdateMessageImpl);
+
+      afterLatch.get().countDown();
+      return null;
+    });
+
+    for (Future future : executorServiceRule.getExecutorService().invokeAll(tasks)) {
+      future.get();
+    }
+
+    verify(cacheClientProxy).deliverMessage(any());
+  }
+
+  @Test
+  public void initializingMessageDoesNotSerializeValuePrematurely() {
+    // this test requires mock of EntryEventImpl instead of InternalCacheEvent
+    EntryEventImpl entryEventImpl = mock(EntryEventImpl.class);
+
+    when(entryEventImpl.getEventType())
+        .thenReturn(EnumListenerEvent.AFTER_CREATE);
+    when(entryEventImpl.getOperation())
+        .thenReturn(Operation.CREATE);
+    when(entryEventImpl.getRegion())
+        .thenReturn(region);
+    when(internalCache.getCCPTimer())
+        .thenReturn(mock(SystemTimer.class));
+    when(internalCache.getInternalDistributedSystem())
+        .thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getStatisticsManager())
+        .thenReturn(statisticsManager);
+    when(statisticsManager.createAtomicStatistics(any(), any()))
+        .thenReturn(statistics);
+
+    cacheClientNotifier = CacheClientNotifier.getInstance(internalCache,
+        mock(ClientRegistrationEventQueueManager.class), mock(StatisticsClock.class),
+        mock(CacheServerStats.class), 0, 0, mock(ConnectionListener.class), null, false);
+
+    cacheClientNotifier.constructClientMessage(entryEventImpl);
+
+    verify(entryEventImpl, never()).exportNewValue(any());
+  }
+
+  @Test
+  public void clientRegistrationFailsQueueStillDrained() throws Exception {
+    ClientRegistrationEventQueue clientRegistrationEventQueue =
+        mock(ClientRegistrationEventQueue.class);
+
+    when(clientRegistrationEventQueueManager.create(eq(clientProxyMembershipId), any(), any()))
+        .thenReturn(clientRegistrationEventQueue);
+    when(clientRegistrationMetadata.getClientProxyMembershipID())
+        .thenReturn(clientProxyMembershipId);
+    when(internalCache.getCCPTimer())
+        .thenReturn(mock(SystemTimer.class));
+    when(internalCache.getInternalDistributedSystem())
+        .thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getStatisticsManager())
+        .thenReturn(statisticsManager);
+    when(statisticsManager.createAtomicStatistics(any(), any()))
+        .thenReturn(statistics);
+
+    cacheClientNotifier = spy(CacheClientNotifier.getInstance(internalCache,
+        clientRegistrationEventQueueManager, mock(StatisticsClock.class),
+        mock(CacheServerStats.class), 0, 0, mock(ConnectionListener.class), null, false));
+
+    doThrow(new RegionQueueException("thrown during client registration"))
+        .when(cacheClientNotifier)
+        .registerClientInternal(clientRegistrationMetadata, socket, false, 0, true);
+
+    Throwable thrown = catchThrowable(() -> {
+      cacheClientNotifier.registerClient(clientRegistrationMetadata, socket, false, 0, true);
+    });
+    assertThat(thrown).isInstanceOf(IOException.class);
+
+    verify(clientRegistrationEventQueueManager)
+        .create(eq(clientProxyMembershipId), any(), any());
+
+    verify(clientRegistrationEventQueueManager)
+        .drain(eq(clientRegistrationEventQueue), eq(cacheClientNotifier));
+  }
+
+  @Test
+  public void testSingletonHasClientProxiesFalseNoCCN() {
+    assertThat(CacheClientNotifier.singletonHasClientProxies()).isFalse();
+  }
+
+  @Test
+  public void testSingletonHasClientProxiesFalseNoProxy() {
+    when(internalCache.getCCPTimer())
+        .thenReturn(mock(SystemTimer.class));
+
+    cacheClientNotifier = CacheClientNotifier.getInstance(internalCache,
+        mock(ClientRegistrationEventQueueManager.class), mock(StatisticsClock.class),
+        mock(CacheServerStats.class), 10, 10, mock(ConnectionListener.class), null, true);
+
+    assertThat(CacheClientNotifier.singletonHasClientProxies()).isFalse();
+  }
+
+  @Test
+  public void testSingletonHasClientProxiesTrue() {
+    when(cacheClientProxy.getAcceptorId())
+        .thenReturn(111L);
+    when(cacheClientProxy.getProxyID())
+        .thenReturn(mock(ClientProxyMembershipID.class));
+    when(internalCache.getCCPTimer())
+        .thenReturn(mock(SystemTimer.class));
+
+    cacheClientNotifier = CacheClientNotifier.getInstance(internalCache,
+        mock(ClientRegistrationEventQueueManager.class), mock(StatisticsClock.class),
+        mock(CacheServerStats.class), 10, 10, mock(ConnectionListener.class), null, true);
+
+    cacheClientNotifier.addClientProxy(cacheClientProxy);
+
+    // check ClientProxy Map is not empty
+    assertThat(CacheClientNotifier.singletonHasClientProxies()).isTrue();
+  }
+
+  @Test
+  public void testSingletonHasInitClientProxiesTrue() {
+    when(cacheClientProxy.getAcceptorId())
+        .thenReturn(111L);
+    when(cacheClientProxy.getProxyID())
+        .thenReturn(mock(ClientProxyMembershipID.class));
+    when(internalCache.getCCPTimer())
+        .thenReturn(mock(SystemTimer.class));
+
+    cacheClientNotifier = CacheClientNotifier.getInstance(internalCache,
+        mock(ClientRegistrationEventQueueManager.class), mock(StatisticsClock.class),
+        mock(CacheServerStats.class), 10, 10, mock(ConnectionListener.class), null, true);
+
+    cacheClientNotifier.addClientInitProxy(cacheClientProxy);
+
+    // check InitClientProxy Map is not empty
+    assertThat(CacheClientNotifier.singletonHasClientProxies()).isTrue();
+
+    cacheClientNotifier.addClientProxy(cacheClientProxy);
+
+    // check ClientProxy Map is not empty
+    assertThat(CacheClientNotifier.singletonHasClientProxies()).isTrue();
+  }
+
+  private InternalCacheEvent internalCacheEvent(ClientProxyMembershipID clientProxyMembershipID) {
+    FilterInfo filterInfo = mock(FilterInfo.class);
+    FilterProfile filterProfile = mock(FilterProfile.class);
+    FilterRoutingInfo filterRoutingInfo = mock(FilterRoutingInfo.class);
+    InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
+    ServerCQ serverCQ = mock(ServerCQ.class);
+
+    HashMap<Long, Integer> cqs = new HashMap<>();
+    cqs.put(CQ_ID, 123);
+
+    when(filterInfo.getCQs())
+        .thenReturn(cqs);
+    when(filterProfile.getCq(CQ_NAME))
+        .thenReturn(serverCQ);
+    when(filterProfile.getRealCqID(CQ_ID))
+        .thenReturn(CQ_NAME);
+    when(filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent))
+        .thenReturn(filterRoutingInfo);
+    when(filterRoutingInfo.getLocalFilterInfo())
+        .thenReturn(filterInfo);
+    when(internalCacheEvent.getRegion())
+        .thenReturn(region);
+    when(internalCacheEvent.getLocalFilterInfo())
+        .thenReturn(filterInfo);
+    when(internalCacheEvent.getOperation())
+        .thenReturn(mock(Operation.class));
+    when(region.getFilterProfile())
+        .thenReturn(filterProfile);
+    when(serverCQ.getClientProxyId())
+        .thenReturn(clientProxyMembershipID);
+
+    return internalCacheEvent;
+  }
+
 }

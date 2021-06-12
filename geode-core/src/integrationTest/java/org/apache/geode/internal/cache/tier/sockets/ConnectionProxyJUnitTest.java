@@ -21,6 +21,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.cache.client.PoolManager.createFactory;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -52,7 +53,6 @@ import org.apache.geode.cache.client.internal.QueueStateImpl.SequenceIdAndExpira
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
@@ -110,8 +110,9 @@ public class ConnectionProxyJUnitTest {
     system.getLogWriter().info(removeExpectedREM);
 
     this.system.disconnect();
-    if (proxy != null)
+    if (proxy != null) {
       proxy.destroy();
+    }
   }
 
   /**
@@ -129,7 +130,7 @@ public class ConnectionProxyJUnitTest {
   @Ignore
   @Test
   public void testListenerOnServerSitForever() throws Exception {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = getRandomAvailableTCPPort();
     Region testRegion = null;
 
     CacheServer server = this.cache.addCacheServer();
@@ -198,7 +199,7 @@ public class ConnectionProxyJUnitTest {
    */
   @Test
   public void testDeadServerMonitorPingNature1() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = getRandomAvailableTCPPort();
 
     // final int maxWaitTime = 10000;
     try {
@@ -258,7 +259,7 @@ public class ConnectionProxyJUnitTest {
    */
   @Test
   public void testDeadServerMonitorPingNature2() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = getRandomAvailableTCPPort();
 
     // final int maxWaitTime = 10000;
     try {
@@ -303,7 +304,7 @@ public class ConnectionProxyJUnitTest {
 
   @Test
   public void testThreadIdToSequenceIdMapCreation() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = getRandomAvailableTCPPort();
     CacheServer server = null;
     try {
       try {
@@ -342,7 +343,7 @@ public class ConnectionProxyJUnitTest {
 
   @Test
   public void testThreadIdToSequenceIdMapExpiryPositive() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = getRandomAvailableTCPPort();
     CacheServer server = null;
     try {
       try {
@@ -388,7 +389,7 @@ public class ConnectionProxyJUnitTest {
 
   @Test
   public void testThreadIdToSequenceIdMapExpiryNegative() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = getRandomAvailableTCPPort();
     CacheServer server = null;
     try {
       try {
@@ -428,7 +429,7 @@ public class ConnectionProxyJUnitTest {
 
   @Test
   public void testThreadIdToSequenceIdMapConcurrency() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = getRandomAvailableTCPPort();
     CacheServer server = null;
     try {
       try {
@@ -480,7 +481,7 @@ public class ConnectionProxyJUnitTest {
 
   @Test
   public void testDuplicateSeqIdLesserThanCurrentSeqIdBeingIgnored() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = getRandomAvailableTCPPort();
     CacheServer server = null;
     try {
       try {
@@ -534,7 +535,7 @@ public class ConnectionProxyJUnitTest {
 
   @Test
   public void testCleanCloseOfThreadIdToSeqId() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = getRandomAvailableTCPPort();
     CacheServer server = null;
     try {
       try {
@@ -588,7 +589,7 @@ public class ConnectionProxyJUnitTest {
 
   @Test
   public void testTwoClientsHavingDifferentThreadIdMaps() {
-    int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port3 = getRandomAvailableTCPPort();
     CacheServer server = null;
     try {
       try {
@@ -636,7 +637,7 @@ public class ConnectionProxyJUnitTest {
 
   @Test
   public void testPeriodicAckSendByClient() {
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     CacheServer server = null;
     try {
       try {
@@ -703,7 +704,7 @@ public class ConnectionProxyJUnitTest {
   // No ack will be send if Redundancy level = 0
   @Test
   public void testNoAckSendByClient() {
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     CacheServer server = null;
     try {
       try {

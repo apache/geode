@@ -28,15 +28,18 @@ import org.junit.rules.TestName;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.PersistenceTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Category({PersistenceTest.class})
 public class ShowMissingDiskStoreCommandDUnitTest {
@@ -60,6 +63,7 @@ public class ShowMissingDiskStoreCommandDUnitTest {
 
     // start a server so that we can execute data commands that requires at least a server running
   }
+
 
   @Test
   public void showMissingDiskStoresDoesNotDuplicateDiskStores() {
@@ -155,6 +159,59 @@ public class ShowMissingDiskStoreCommandDUnitTest {
     List<String> missingDiskStoreIds = tableSection.getValuesInColumn("Disk Store ID");
     assertThat(missingDiskStoreIds).isNull();
   }
+
+
+  @Test
+  public void stopAllMembersAndStart2ndLocator() throws Exception {
+    IgnoredException.addIgnoredException(DistributedSystemDisconnectedException.class);
+
+    MemberVM locator1 = lsRule.startLocatorVM(1, locator.getPort());
+
+    lsRule.startServerVM(2, locator.getPort(), locator1.getPort());
+    lsRule.startServerVM(3, locator.getPort(), locator1.getPort());
+
+    final String testRegionName = "regionA";
+
+    CommandStringBuilder createRegion = new CommandStringBuilder(CliStrings.CREATE_REGION)
+        .addOption(CliStrings.CREATE_REGION__REGION, testRegionName)
+        .addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT,
+            RegionShortcut.PARTITION_REDUNDANT.toString());
+    await().untilAsserted(() -> gfshConnector.executeAndAssertThat(createRegion.getCommandString())
+        .statusIsSuccess());
+
+    // stop locator1 before locator0
+    lsRule.stop(1, false);
+
+    lsRule.stop(2, false);
+
+    lsRule.stop(0, false);
+
+    lsRule.stop(3, false);
+    final int locatorPort = locator1.getPort();
+
+    // start stale locator
+    locator1.invokeAsync("restart locator in vm1", () -> {
+      LocatorStarterRule locatorStarter = new LocatorStarterRule();
+      locatorStarter.withName("locator-1");
+      locatorStarter.withPort(locatorPort);
+      locatorStarter.withAutoStart();
+      locatorStarter.before();
+    });
+
+    await().untilAsserted(() -> gfshConnector.connectAndVerify(locator1));
+
+    // execute show missing-disk-stores
+    await().untilAsserted(() -> {
+      CommandStringBuilder csb1 = new CommandStringBuilder(CliStrings.SHOW_MISSING_DISK_STORE);
+      @SuppressWarnings("deprecation")
+      CommandResult commandResult = gfshConnector.executeCommand(csb1.getCommandString());
+      ResultModel result = commandResult.getResultData();
+      TabularResultModel tableSection = result.getTableSection("missing-disk-stores");
+      List<String> missingDiskStoreIds = tableSection.getValuesInColumn("Disk Store ID");
+      assertThat(missingDiskStoreIds).isNotNull();
+    });
+  }
+
 
   private void addData(MemberVM server1, String testRegionName) {
     server1.invoke(() -> {

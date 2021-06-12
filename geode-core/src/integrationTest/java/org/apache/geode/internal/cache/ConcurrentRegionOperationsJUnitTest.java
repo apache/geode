@@ -542,8 +542,9 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
   }
 
   void validate(Region r1, Region r2) {
-    if (!this.validate)
+    if (!this.validate) {
       return;
+    }
 
     Collection entrySet = r2.entrySet();
     Iterator iterator = entrySet.iterator();

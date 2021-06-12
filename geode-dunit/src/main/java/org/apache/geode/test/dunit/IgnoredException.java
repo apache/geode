@@ -114,6 +114,9 @@ public class IgnoredException implements Serializable, AutoCloseable {
       vm.invoke(addRunnable);
     } else {
       Invoke.invokeInEveryVM(addRunnable);
+      if (Host.getLocator() != null) {
+        Invoke.invokeInLocator(addRunnable);
+      }
     }
 
     IGNORED_EXCEPTIONS.add(ignoredException);

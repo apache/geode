@@ -87,32 +87,42 @@ public final class CopyHelper {
       return true;
     }
     if (o instanceof Number) {
-      if (o instanceof Integer)
+      if (o instanceof Integer) {
         return true;
-      if (o instanceof Long)
+      }
+      if (o instanceof Long) {
         return true;
-      if (o instanceof Byte)
+      }
+      if (o instanceof Byte) {
         return true;
-      if (o instanceof Short)
+      }
+      if (o instanceof Short) {
         return true;
-      if (o instanceof Float)
+      }
+      if (o instanceof Float) {
         return true;
-      if (o instanceof Double)
+      }
+      if (o instanceof Double) {
         return true;
+      }
       // subclasses of non-final classes may be mutable
-      if (o.getClass().equals(BigInteger.class))
+      if (o.getClass().equals(BigInteger.class)) {
         return true;
-      if (o.getClass().equals(BigDecimal.class))
+      }
+      if (o.getClass().equals(BigDecimal.class)) {
         return true;
+      }
     }
     if (o instanceof PdxInstance && !(o instanceof WritablePdxInstance)) {
       // no need to copy since it is immutable
       return true;
     }
-    if (o instanceof Character)
+    if (o instanceof Character) {
       return true;
-    if (o instanceof UUID)
+    }
+    if (o instanceof UUID) {
       return true;
+    }
     return false;
   }
 
@@ -155,8 +165,9 @@ public final class CopyHelper {
       } else if (o instanceof Token) {
         return o;
       } else {
-        if (isWellKnownImmutableInstance(o))
+        if (isWellKnownImmutableInstance(o)) {
           return o;
+        }
         if (o instanceof Cloneable) {
           try {
             // Note that Object.clone is protected so we need to use reflection

@@ -13,14 +13,13 @@
  * the License.
  */
 
-plugins {
-  id 'me.champeau.gradle.jmh' version '0.4.8'
-}
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
+
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
+apply from: "${project.projectDir}/../gradle/jmh.gradle"
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
@@ -76,32 +75,8 @@ dependencies {
   distributedTestImplementation('org.apache.commons:commons-lang3')
   distributedTestImplementation('org.assertj:assertj-core')
   distributedTestImplementation('org.awaitility:awaitility')
-  distributedTestImplementation('org.hamcrest:hamcrest-all')
-  distributedTestImplementation('org.hamcrest:hamcrest-core')
-  distributedTestImplementation('org.hamcrest:hamcrest-library')
+  distributedTestImplementation('org.hamcrest:hamcrest')
   distributedTestImplementation('org.mockito:mockito-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 }
 
-jmh {
-  duplicateClassesStrategy = 'warn'
-  include = project.hasProperty('jmh.include') ? project.getProperties().get('jmh.include') : '.*'
-  profilers = project.hasProperty('jmh.profilers') ? project.getProperties().get('jmh.profilers').tokenize() : []
-  threads = project.hasProperty('jmh.threads') ? project.getProperties().get('jmh.threads') : null
-}
-
-jmhJar {
-  inputs.files(project.sourceSets.main.output, project.sourceSets.test.output)
-  from {
-    [configurations.jmh, configurations.jmhRuntime, configurations.runtimeClasspath].collect {
-      it.asFileTree.collect {
-        it
-      }
-    }.flatten().unique().collect {
-      it.isDirectory() ? it : zipTree(it)
-    }
-  }
-  exclude(['META-INF/*.SF'])
-  exclude('META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat')
-  exclude('*.jar')
-}

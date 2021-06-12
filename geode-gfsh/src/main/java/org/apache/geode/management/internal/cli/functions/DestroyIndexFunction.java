@@ -31,6 +31,14 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 public class DestroyIndexFunction extends CliFunction {
   private static final long serialVersionUID = -868082551095130315L;
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.DestroyIndexFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
+
   @Override
   public CliFunctionResult executeFunction(FunctionContext context) {
     RegionConfig.Index indexInfo = (RegionConfig.Index) context.getArguments();
@@ -110,10 +118,4 @@ public class DestroyIndexFunction extends CliFunction {
 
     return removed;
   }
-
-  @Override
-  public String getId() {
-    return DestroyIndexFunction.class.getName();
-  }
-
 }

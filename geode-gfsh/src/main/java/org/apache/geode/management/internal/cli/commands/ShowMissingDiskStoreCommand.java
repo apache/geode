@@ -53,10 +53,11 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
     Set<DistributedMember> dataMembers =
         DiskStoreCommandsUtils.getNormalMembers((InternalCache) getCache());
 
-    if (dataMembers.isEmpty()) {
-      return ResultModel.createInfo(CliStrings.NO_CACHING_MEMBERS_FOUND_MESSAGE);
+    List<ColocatedRegionDetails> missingRegions = null;
+
+    if (!dataMembers.isEmpty()) {
+      missingRegions = getMissingColocatedRegionList(dataMembers);
     }
-    List<ColocatedRegionDetails> missingRegions = getMissingColocatedRegionList(dataMembers);
 
     DistributedSystemMXBean dsMXBean =
         ManagementService.getManagementService(getCache()).getDistributedSystemMXBean();
@@ -94,12 +95,9 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
       final List<ColocatedRegionDetails> missingColocatedRegions) {
     ResultModel result = new ResultModel();
 
-    boolean hasMissingDiskStores = missingDiskStores.length != 0;
-    boolean hasMissingColocatedRegions = !missingColocatedRegions.isEmpty();
-
     TabularResultModel missingDiskStoreSection = result.addTable(MISSING_DISK_STORES_SECTION);
 
-    if (hasMissingDiskStores) {
+    if (missingDiskStores.length != 0) {
       missingDiskStoreSection.setHeader("Missing Disk Stores");
 
       for (PersistentMemberDetails persistentMemberDetails : missingDiskStores) {
@@ -113,7 +111,9 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
     }
 
     TabularResultModel missingRegionsSection = result.addTable(MISSING_COLOCATED_REGIONS_SECTION);
-    if (hasMissingColocatedRegions) {
+    if (missingColocatedRegions == null) {
+      missingRegionsSection.setHeader("No caching members found.");
+    } else if (!missingColocatedRegions.isEmpty()) {
       missingRegionsSection.setHeader("Missing Colocated Regions");
 
       for (ColocatedRegionDetails colocatedRegionDetails : missingColocatedRegions) {

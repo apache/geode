@@ -63,6 +63,7 @@ public class ClientHealthMonitorTest {
     ClientProxyMembershipID mockId = mock(ClientProxyMembershipID.class);
     ServerConnection mockConnection = mock(ServerConnection.class);
 
+    clientHealthMonitor.registerClient(mockId);
     clientHealthMonitor.addConnection(mockId, mockConnection);
     clientHealthMonitor.receivedPing(mockId);
     clientHealthMonitor.testUseCustomHeartbeatCheck((a, b, c) -> true); // Fail all heartbeats
@@ -86,6 +87,7 @@ public class ClientHealthMonitorTest {
     ClientProxyMembershipID mockId = mock(ClientProxyMembershipID.class);
     ServerConnection mockConnection = mock(ServerConnection.class);
 
+    clientHealthMonitor.registerClient(mockId);
     clientHealthMonitor.addConnection(mockId, mockConnection);
     clientHealthMonitor.receivedPing(mockId);
 
@@ -149,6 +151,7 @@ public class ClientHealthMonitorTest {
   @Test
   public void receivedPingNewClientRegistersWithCurrentTimeAndIncrementsStat() {
     ClientProxyMembershipID mockId = mock(ClientProxyMembershipID.class);
+    clientHealthMonitor.registerClient(mockId);
     clientHealthMonitor.receivedPing(mockId);
     assertThat(clientHealthMonitor.getClientHeartbeats().get(mockId)).isNotNull()
         .isLessThanOrEqualTo(System.currentTimeMillis());
@@ -158,6 +161,7 @@ public class ClientHealthMonitorTest {
   @Test
   public void receivedPingExistingClientUpdatesTimeOnly() throws InterruptedException {
     ClientProxyMembershipID mockId = mock(ClientProxyMembershipID.class);
+    clientHealthMonitor.registerClient(mockId);
     clientHealthMonitor.receivedPing(mockId);
     Long expectedTime = clientHealthMonitor.getClientHeartbeats().get(mockId);
 

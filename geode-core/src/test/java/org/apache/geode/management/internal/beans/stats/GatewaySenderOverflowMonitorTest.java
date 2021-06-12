@@ -79,6 +79,7 @@ public class GatewaySenderOverflowMonitorTest {
     assertThat(gatewaySenderOverflowMonitor.getLruEvictions()).isEqualTo(0);
     assertThat(gatewaySenderOverflowMonitor.getBytesOverflowedToDisk()).isEqualTo(0);
     assertThat(gatewaySenderOverflowMonitor.getEntriesOverflowedToDisk()).isEqualTo(0);
+    assertThat(gatewaySenderOverflowMonitor.getTotalQueueSizeBytesInUse()).isEqualTo(0);
   }
 
   @Test
@@ -94,6 +95,7 @@ public class GatewaySenderOverflowMonitorTest {
     statsMap.put(StatsKey.GATEWAYSENDER_LRU_EVICTIONS, 50);
     statsMap.put(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK, 2048);
     statsMap.put(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK, 100);
+    statsMap.put(StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY, 1024);
 
     assertThat(gatewaySenderOverflowMonitor.computeDelta(statsMap,
         StatsKey.GATEWAYSENDER_LRU_EVICTIONS, 60)).isEqualTo(10L);
@@ -101,6 +103,9 @@ public class GatewaySenderOverflowMonitorTest {
         StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK, 2100)).isEqualTo(52L);
     assertThat(gatewaySenderOverflowMonitor.computeDelta(statsMap,
         StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK, 150)).isEqualTo(50L);
+    assertThat(gatewaySenderOverflowMonitor.computeDelta(statsMap,
+        StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY, 2048)).isEqualTo(1024L);
+
   }
 
   @Test
@@ -110,6 +115,8 @@ public class GatewaySenderOverflowMonitorTest {
         1024L);
     gatewaySenderOverflowMonitor.increaseStats(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK,
         10000L);
+    gatewaySenderOverflowMonitor.increaseStats(StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY,
+        4096L);
     assertThat(gatewaySenderOverflowMonitor.getStatistic(StatsKey.GATEWAYSENDER_LRU_EVICTIONS))
         .isEqualTo(5L);
     assertThat(
@@ -117,12 +124,16 @@ public class GatewaySenderOverflowMonitorTest {
             .isEqualTo(1024L);
     assertThat(gatewaySenderOverflowMonitor
         .getStatistic(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK)).isEqualTo(10000L);
+    assertThat(gatewaySenderOverflowMonitor
+        .getStatistic(StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY)).isEqualTo(4096L);
 
     gatewaySenderOverflowMonitor.increaseStats(StatsKey.GATEWAYSENDER_LRU_EVICTIONS, 5L);
     gatewaySenderOverflowMonitor.increaseStats(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK,
         1024L);
     gatewaySenderOverflowMonitor.increaseStats(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK,
         10000L);
+    gatewaySenderOverflowMonitor.increaseStats(StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY,
+        2048L);
     assertThat(gatewaySenderOverflowMonitor.getStatistic(StatsKey.GATEWAYSENDER_LRU_EVICTIONS))
         .isEqualTo(10L);
     assertThat(
@@ -130,6 +141,8 @@ public class GatewaySenderOverflowMonitorTest {
             .isEqualTo(2048L);
     assertThat(gatewaySenderOverflowMonitor
         .getStatistic(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK)).isEqualTo(20000L);
+    assertThat(gatewaySenderOverflowMonitor
+        .getStatistic(StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY)).isEqualTo(6144L);
   }
 
   @Test
@@ -144,7 +157,8 @@ public class GatewaySenderOverflowMonitorTest {
         2048);
     gatewaySenderOverflowMonitor.increaseStats(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK,
         10000);
-
+    gatewaySenderOverflowMonitor.increaseStats(StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY,
+        2048);
     assertThat(gatewaySenderOverflowMonitor.getStatistic(StatsKey.GATEWAYSENDER_LRU_EVICTIONS))
         .isEqualTo(5L);
     assertThat(
@@ -152,6 +166,8 @@ public class GatewaySenderOverflowMonitorTest {
             .isEqualTo(2048L);
     assertThat(gatewaySenderOverflowMonitor
         .getStatistic(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK)).isEqualTo(10000L);
+    assertThat(gatewaySenderOverflowMonitor
+        .getStatistic(StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY)).isEqualTo(2048L);
   }
 
   @Test

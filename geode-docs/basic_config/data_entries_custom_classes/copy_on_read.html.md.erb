@@ -1,0 +1,88 @@
+---
+title:  Copy on Read Behavior
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Methods that do a get type of operation
+receive as a return value a direct reference to the cached object.
+This provides the value as quickly as possible,
+but it also makes possible code implementations that 
+could incorrectly modify the referenced object,
+bypassing the distribution framework and causing region entries that
+are no longer consistent across cluster members.
+
+The code that has the potential for harming cache consistency by using
+a reference to access and change a region entry
+is code that executes within the servers.
+Examples are cache writers and listeners, transactions, and functions.
+A client invocation of a get type of operation that is handled by
+the servers is not subject to this potential for harm,
+as the clients are in a distinct JVM from the servers,
+and references do not cross JVM boundaries.
+That client cannot receive a return value that is a direct reference
+to a region entry, as the servers hold the region entries and the servers
+do not reside within the client JVM.
+
+To avoid modification of the referenced object,
+create a copy in one of two ways:
+
+- Change the entry retrieval behavior for your cache by setting
+the `copy-on-read` cache attribute to true;
+its default value is false.
+When `copy-on-read` is true,
+all entry access methods return copies of the entries.
+This protects all server-side code from inadvertently modifying in-place.
+This attribute will negatively impact performance and memory consumption
+when a copy is not needed,
+as it takes time and memory to create the copy.
+Note that the `copy-on-read` attribute is applied at the cache level;
+it cannot be set for individual regions.
+
+    There are two ways to set the `copy-on-read` attribute:
+
+    - Set the attribute in the `cache.xml` file that defines the cache.
+
+        ``` pre
+        <cache copy-on-read="true">
+         ...
+        </cache>
+        ```
+
+    - Use [`gfsh alter runtime`](../../tools_modules/gfsh/command-pages/alter.html#topic_7E6B7E1B972D4F418CB45354D1089C2B) to set the `copy-on-read` attribute
+    once the servers have been started.
+
+
+- Implement server-side code that creates and uses a copy of
+the returned object.
+For objects that are cloneable or serializable, copy the entry value to a new object using `org.apache.geode.CopyHelper.copy`. Example:
+
+    ``` pre
+    Object o = region.get(key);
+    StringBuffer s = (StringBuffer) CopyHelper.copy(o);
+    // further operations on the region entry value will use s
+    s.toUpperCase();
+    ```
+
+    Always use a `Region` method to then change data in the region.
+    Do not use the reference returned from the entry access method.
+    If the upper case string should become the new value for the region entry:
+
+    ``` pre
+    region.put(key, s);
+    ```

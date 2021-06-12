@@ -80,8 +80,7 @@ public class Size extends BaseCommand {
 
     LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
     if (region == null) {
-      String reason = String.format("%s was not found during %s request",
-          regionName, "size");
+      String reason = " was not found during size request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;

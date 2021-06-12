@@ -55,6 +55,7 @@ import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -83,7 +84,6 @@ public class SSLSocketHostNameVerificationIntegrationTest {
         new Boolean[] {Boolean.FALSE, Boolean.FALSE});
   }
 
-  private DistributionConfig distributionConfig;
   private SocketCreator socketCreator;
   private InetAddress localHost;
   private Thread serverThread;
@@ -103,9 +103,12 @@ public class SSLSocketHostNameVerificationIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
+
+    SocketCreatorFactory.close(); // to clear socket creators made in previous tests
+
     IgnoredException.addIgnoredException("javax.net.ssl.SSLException: Read timed out");
 
-    this.localHost = InetAddress.getLoopbackAddress();
+    localHost = InetAddress.getLoopbackAddress();
 
     CertificateMaterial ca = new CertificateBuilder()
         .commonName("Test CA")
@@ -120,30 +123,30 @@ public class SSLSocketHostNameVerificationIntegrationTest {
         .issuedBy(ca);
 
     if (addCertificateSAN) {
-      certBuilder.sanDnsName(this.localHost.getHostName());
+      certBuilder.sanDnsName(localHost.getHostName());
     }
 
     CertificateMaterial locatorCert = certBuilder.generate();
     certStores.withCertificate("locator", locatorCert);
 
-    this.distributionConfig =
-        new DistributionConfigImpl(
-            certStores.propertiesWith("cluster", false, doEndPointIdentification));
+    DistributionConfig distributionConfig = new DistributionConfigImpl(
+        certStores.propertiesWith("cluster", false, doEndPointIdentification));
 
-    SocketCreatorFactory.setDistributionConfig(this.distributionConfig);
-    this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER);
+    SocketCreatorFactory.setDistributionConfig(distributionConfig);
+    socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER);
   }
 
   @After
   public void tearDown() throws Exception {
-    if (this.clientSocket != null) {
-      this.clientSocket.close();
+    if (serverThread != null && serverThread.isAlive()) {
+      serverThread.interrupt();
+      serverThread.join(GeodeAwaitility.getTimeout().toMillis());
     }
-    if (this.serverSocket != null) {
-      this.serverSocket.close();
+    if (clientSocket != null) {
+      clientSocket.close();
     }
-    if (this.serverThread != null && this.serverThread.isAlive()) {
-      this.serverThread.interrupt();
+    if (serverSocket != null) {
+      serverSocket.close();
     }
     SocketCreatorFactory.close();
   }
@@ -151,13 +154,13 @@ public class SSLSocketHostNameVerificationIntegrationTest {
   @Test
   public void nioHandshakeValidatesHostName() throws Exception {
     ServerSocketChannel serverChannel = ServerSocketChannel.open();
-    this.serverSocket = serverChannel.socket();
+    serverSocket = serverChannel.socket();
 
     InetSocketAddress addr = new InetSocketAddress(localHost, 0);
     serverSocket.bind(addr, 10);
-    int serverPort = this.serverSocket.getLocalPort();
+    int serverPort = serverSocket.getLocalPort();
 
-    this.serverThread = startServerNIO(serverSocket, 15000);
+    serverThread = startServerNIO(serverSocket, 15000);
 
     await().until(() -> serverThread.isAlive());
 
@@ -165,14 +168,14 @@ public class SSLSocketHostNameVerificationIntegrationTest {
     await().until(
         () -> clientChannel.connect(new InetSocketAddress(localHost, serverPort)));
 
-    this.clientSocket = clientChannel.socket();
+    clientSocket = clientChannel.socket();
 
     SSLEngine sslEngine =
-        this.socketCreator.createSSLEngine(this.localHost.getHostName(), 1234, true);
+        socketCreator.createSSLEngine(localHost.getHostName(), 1234, true);
 
     try {
-      this.socketCreator.handshakeSSLSocketChannel(clientSocket.getChannel(),
-          sslEngine, 0, true,
+      socketCreator.handshakeSSLSocketChannel(clientSocket.getChannel(),
+          sslEngine, 0,
           ByteBuffer.allocate(sslEngine.getSession().getPacketBufferSize()),
           new BufferPool(mock(DMStats.class)));
 
@@ -184,43 +187,43 @@ public class SSLSocketHostNameVerificationIntegrationTest {
     } catch (SSLHandshakeException sslException) {
       if (doEndPointIdentification && !addCertificateSAN) {
         assertThat(sslException).hasRootCauseInstanceOf(CertificateException.class)
-            .hasStackTraceContaining("No name matching " + this.localHost.getHostName() + " found");
+            .hasStackTraceContaining("No name matching " + localHost.getHostName() + " found");
       } else {
         assertThat(sslException).doesNotHaveSameClassAs(new CertificateException(
-            "No name matching " + this.localHost.getHostName() + " found"));
+            "No name matching " + localHost.getHostName() + " found"));
         throw sslException;
       }
     }
   }
 
   private Thread startServerNIO(final ServerSocket serverSocket, int timeoutMillis) {
-    Thread serverThread = new Thread(new MyThreadGroup(this.testName.getMethodName()), () -> {
+    Thread serverThread = new Thread(new MyThreadGroup(testName.getMethodName()), () -> {
       NioSslEngine engine = null;
       Socket socket = null;
       try {
         socket = serverSocket.accept();
         SocketCreator sc = SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER);
-        final SSLEngine sslEngine = sc.createSSLEngine(this.localHost.getHostName(), 1234, false);
+        final SSLEngine sslEngine = sc.createSSLEngine(localHost.getHostName(), 1234, false);
         engine =
             sc.handshakeSSLSocketChannel(socket.getChannel(),
                 sslEngine,
                 timeoutMillis,
-                false,
                 ByteBuffer.allocate(sslEngine.getSession().getPacketBufferSize()),
                 new BufferPool(mock(DMStats.class)));
       } catch (Throwable throwable) {
         serverException = throwable;
       } finally {
-        if (engine != null && socket != null) {
+        if (engine != null) {
           final NioSslEngine nioSslEngine = engine;
           engine.close(socket.getChannel());
           assertThatThrownBy(() -> {
-            nioSslEngine.unwrap(ByteBuffer.wrap(new byte[0]));
-          })
-              .isInstanceOf(IOException.class);
+            try (final ByteBufferSharing unused =
+                nioSslEngine.unwrap(ByteBuffer.wrap(new byte[0]))) {
+            }
+          }).isInstanceOf(IOException.class);
         }
       }
-    }, this.testName.getMethodName() + "-server");
+    }, testName.getMethodName() + "-server");
 
     serverThread.start();
     return serverThread;

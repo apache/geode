@@ -44,8 +44,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.ManagementTest;
 
 /**
@@ -79,7 +79,7 @@ public class DistributedSystemMXBeanDistributedTest implements Serializable {
   public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   @Before
   public void setUp() throws Exception {
@@ -114,15 +114,18 @@ public class DistributedSystemMXBeanDistributedTest implements Serializable {
   public void getMemberCount() {
     // 1 manager, 3 members, 1 dunit locator
     managerVM.invoke(() -> {
-      await()
-          .untilAsserted(() -> assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(5));
+      await().untilAsserted(() -> {
+        assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(5);
+      });
     });
   }
 
   @Test
   public void showJVMMetrics() {
     managerVM.invoke(() -> {
-      await().until(() -> distributedSystemMXBean.getMemberCount() == 5);
+      await().untilAsserted(() -> {
+        assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(5);
+      });
 
       for (DistributedMember member : getOtherNormalMembers()) {
         assertThat(distributedSystemMXBean.showJVMMetrics(member.getName())).isNotNull();
@@ -133,7 +136,9 @@ public class DistributedSystemMXBeanDistributedTest implements Serializable {
   @Test
   public void showOSMetrics() {
     managerVM.invoke(() -> {
-      await().until(() -> distributedSystemMXBean.getMemberCount() == 5);
+      await().untilAsserted(() -> {
+        assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(5);
+      });
 
       Set<InternalDistributedMember> otherMembers = getOtherNormalMembers();
       for (DistributedMember member : otherMembers) {
@@ -147,15 +152,18 @@ public class DistributedSystemMXBeanDistributedTest implements Serializable {
     managerVM.invoke(() -> {
       distributedSystemMXBean.shutDownAllMembers();
 
-      await().untilAsserted(() -> assertThat(getOtherNormalMembers()).hasSize(0));
+      await().untilAsserted(() -> {
+        assertThat(getOtherNormalMembers()).hasSize(0);
+      });
     });
   }
 
   @Test
   public void listMemberObjectNames() {
     managerVM.invoke(() -> {
-      await().untilAsserted(
-          () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(4));
+      await().untilAsserted(() -> {
+        assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(4);
+      });
     });
   }
 
@@ -164,7 +172,9 @@ public class DistributedSystemMXBeanDistributedTest implements Serializable {
     managerVM.invoke(() -> {
       String memberName = distributedMember.getName();
 
-      await().until(() -> distributedSystemMXBean.fetchMemberObjectName(memberName) != null);
+      await().untilAsserted(() -> {
+        assertThat(distributedSystemMXBean.fetchMemberObjectName(memberName)).isNotNull();
+      });
 
       ObjectName memberMXBeanName = distributedSystemMXBean.fetchMemberObjectName(memberName);
       assertThat(memberMXBeanName).isEqualTo(getMemberMBeanName(memberName));

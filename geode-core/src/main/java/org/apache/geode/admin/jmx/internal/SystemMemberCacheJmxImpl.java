@@ -71,12 +71,12 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   /** Create and register the MBean to manage this resource */
   private void initializeMBean() throws org.apache.geode.admin.AdminException {
     this.mbeanName = new StringBuffer("GemFire.Cache:").append("name=")
-        .append(MBeanUtil.makeCompliantMBeanNameProperty(getName())).append(",id=").append(getId())
-        .append(",owner=").append(MBeanUtil.makeCompliantMBeanNameProperty(vm.getId().toString()))
+        .append(MBeanUtils.makeCompliantMBeanNameProperty(getName())).append(",id=").append(getId())
+        .append(",owner=").append(MBeanUtils.makeCompliantMBeanNameProperty(vm.getId().toString()))
         .append(",type=Cache").toString();
 
     this.objectName =
-        MBeanUtil.createMBean(this, addDynamicAttributes(MBeanUtil.lookupManagedBean(this)));
+        MBeanUtils.createMBean(this, addDynamicAttributes(MBeanUtils.lookupManagedBean(this)));
   }
 
   // -------------------------------------------------------------------------
@@ -203,7 +203,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
         region = (SystemMemberRegionJmxImpl) getRegion(path);
 
       } catch (AdminException e) {
-        MBeanUtil.logStackTrace(Level.WARN, e);
+        MBeanUtils.logStackTrace(Level.WARN, e);
         throw e;
       }
 
@@ -216,7 +216,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
         return ObjectName.getInstance(region.getMBeanName());
       }
     } catch (RuntimeException e) {
-      MBeanUtil.logStackTrace(Level.WARN, e);
+      MBeanUtils.logStackTrace(Level.WARN, e);
       throw e;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
@@ -230,7 +230,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      MBeanUtil.logStackTrace(Level.ERROR, e);
+      MBeanUtils.logStackTrace(Level.ERROR, e);
       throw e;
     }
   }
@@ -246,10 +246,10 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
       SystemMemberBridgeServerJmxImpl bridge = (SystemMemberBridgeServerJmxImpl) addCacheServer();
       return ObjectName.getInstance(bridge.getMBeanName());
     } catch (AdminException e) {
-      MBeanUtil.logStackTrace(Level.WARN, e);
+      MBeanUtils.logStackTrace(Level.WARN, e);
       throw e;
     } catch (RuntimeException e) {
-      MBeanUtil.logStackTrace(Level.WARN, e);
+      MBeanUtils.logStackTrace(Level.WARN, e);
       throw e;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
@@ -263,7 +263,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      MBeanUtil.logStackTrace(Level.ERROR, e);
+      MBeanUtils.logStackTrace(Level.ERROR, e);
       throw e;
     }
   }
@@ -286,10 +286,10 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
 
       return names;
     } catch (AdminException e) {
-      MBeanUtil.logStackTrace(Level.WARN, e);
+      MBeanUtils.logStackTrace(Level.WARN, e);
       throw e;
     } catch (RuntimeException e) {
-      MBeanUtil.logStackTrace(Level.WARN, e);
+      MBeanUtils.logStackTrace(Level.WARN, e);
       throw e;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
@@ -303,7 +303,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      MBeanUtil.logStackTrace(Level.ERROR, e);
+      MBeanUtils.logStackTrace(Level.ERROR, e);
       throw e;
     }
   }
@@ -369,7 +369,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
       Collection<SystemMemberRegionJmxImpl> values = managedRegionResourcesMap.values();
 
       for (SystemMemberRegionJmxImpl systemMemberRegionJmxImpl : values) {
-        MBeanUtil.unregisterMBean(systemMemberRegionJmxImpl);
+        MBeanUtils.unregisterMBean(systemMemberRegionJmxImpl);
       }
 
       this.managedRegionResourcesMap.clear();
@@ -379,7 +379,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
       Collection<SystemMemberBridgeServerJmxImpl> values = managedCacheServerResourcesMap.values();
 
       for (SystemMemberBridgeServerJmxImpl SystemMemberBridgeServerJmxImpl : values) {
-        MBeanUtil.unregisterMBean(SystemMemberBridgeServerJmxImpl);
+        MBeanUtils.unregisterMBean(SystemMemberBridgeServerJmxImpl);
       }
 
       this.managedCacheServerResourcesMap.clear();

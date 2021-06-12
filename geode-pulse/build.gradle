@@ -26,7 +26,7 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 jar.enabled = true
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
   compileOnly(platform(project(':boms:geode-all-bom')))
   providedCompile(platform(project(':boms:geode-all-bom')))
 
@@ -105,9 +105,6 @@ dependencies {
     exclude module: 'geode-core'
   }
   testImplementation('org.springframework:spring-test')
-  testImplementation('org.powermock:powermock-core')
-  testImplementation('org.powermock:powermock-module-junit4')
-  testImplementation('org.powermock:powermock-api-mockito2')
 
 
   integrationTestImplementation(project(':geode-core'))
@@ -120,17 +117,12 @@ dependencies {
 
   integrationTestImplementation(project(':geode-pulse'))
   integrationTestImplementation(project(':geode-pulse:geode-pulse-test'))
-  integrationTestImplementation('org.powermock:powermock-core')
-  integrationTestImplementation('org.powermock:powermock-module-junit4')
-  integrationTestImplementation('org.powermock:powermock-api-mockito2')
   integrationTestImplementation('org.springframework:spring-test')
   integrationTestImplementation('org.springframework:spring-webmvc')
   integrationTestImplementation('org.springframework.security:spring-security-test')
 
   integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.hamcrest:hamcrest-core')
-  integrationTestImplementation('org.hamcrest:hamcrest-library')
-  integrationTestImplementation('org.hamcrest:hamcrest-all')
+  integrationTestImplementation('org.hamcrest:hamcrest')
 
   uiTestRuntimeOnly(project(':geode-core'))
   uiTestImplementation(project(':geode-junit')) {

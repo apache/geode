@@ -92,11 +92,14 @@ public class ValidateDiskStoreCommand extends GfshCommand {
 
       validateDiskStoreProcess = procBuilder.redirectErrorStream(true).start();
       InputStream inputStream = validateDiskStoreProcess.getInputStream();
-      BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
-      String line;
-      while ((line = br.readLine()) != null) {
-        infoResult.addLine(line);
+      try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+          BufferedReader br = new BufferedReader(inputStreamReader)) {
+
+        String line;
+        while ((line = br.readLine()) != null) {
+          infoResult.addLine(line);
+        }
       }
 
       validateDiskStoreProcess.waitFor(2, TimeUnit.SECONDS);

@@ -76,8 +76,9 @@ public class CancellationRegistry {
 
     @Override
     public boolean equals(Object other) {
-      if (this == other)
+      if (this == other) {
         return true;
+      }
       if (other instanceof Key) {
         Key toTest = (Key) other;
         return (toTest.console.equals(this.console) && toTest.msgId == this.msgId);

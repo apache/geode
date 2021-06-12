@@ -63,6 +63,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_RE
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.internal.security.SecurableCommunicationChannel.ALL;
+import static org.apache.geode.internal.security.SecurableCommunicationChannel.CLUSTER;
 
 import java.io.File;
 import java.io.IOException;
@@ -1030,6 +1032,20 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     modifiable = false;
   }
 
+  /*
+   * When ssl-enabled-components specified CLUSTER or ALL, the slower receiver is not allowed.
+   * In legacy code, if cluster-ssl-enabled is true, the slower receiver is not allowed.
+   */
+  void validateSlowReceiversIncompatibleWithSSL(
+      SecurableCommunicationChannel[] sslEnabledComponents) {
+    if (getAsyncDistributionTimeout() > 0
+        && (getClusterSSLEnabled() || Arrays.stream(sslEnabledComponents)
+            .anyMatch(component -> component == ALL || component == CLUSTER))) {
+      throw new IllegalArgumentException(
+          "async-distribution-timeout greater than 0 is not allowed with cluster TLS/SSL.");
+    }
+  }
+
   private void validateSSLEnabledComponentsConfiguration() {
     Object value = null;
     try {
@@ -1049,6 +1065,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       }
     }
     SecurableCommunicationChannel[] sslEnabledComponents = (SecurableCommunicationChannel[]) value;
+
+    validateSlowReceiversIncompatibleWithSSL(sslEnabledComponents);
+
     for (SecurableCommunicationChannel securableCommunicationChannel : sslEnabledComponents) {
       if (!isAliasCorrectlyConfiguredForComponents(securableCommunicationChannel)) {
         throw new IllegalArgumentException(
@@ -1072,7 +1091,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         if (StringUtils.isEmpty(getSSLDefaultAlias())) {
           boolean correctAlias = true;
           correctAlias &=
-              isAliasCorrectlyConfiguredForComponents(SecurableCommunicationChannel.CLUSTER);
+              isAliasCorrectlyConfiguredForComponents(CLUSTER);
           correctAlias &=
               isAliasCorrectlyConfiguredForComponents(SecurableCommunicationChannel.GATEWAY);
           correctAlias &=

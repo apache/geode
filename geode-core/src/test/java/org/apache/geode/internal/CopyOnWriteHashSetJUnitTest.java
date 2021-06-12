@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 
@@ -41,6 +42,25 @@ public class CopyOnWriteHashSetJUnitTest {
     set.add("b");
 
     assertEquals(copy, snap);
+  }
+
+  @Test
+  public void testIteratorRemove() {
+    CopyOnWriteHashSet<String> startingCollection = new CopyOnWriteHashSet<String>();
+    startingCollection.addAll(Arrays.asList("a", "b", "c", "d"));
+
+    Iterator<String> iterator = startingCollection.iterator();
+    while (iterator.hasNext()) {
+      String element = iterator.next();
+
+      if (element.equals("b")) {
+        iterator.remove();
+      }
+    }
+
+    assertEquals(3, startingCollection.size());
+
+    Assertions.assertThat(startingCollection).containsExactly("a", "c", "d");
   }
 
   @Test

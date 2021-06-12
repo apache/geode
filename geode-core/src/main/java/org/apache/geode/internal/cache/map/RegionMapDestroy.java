@@ -366,11 +366,17 @@ public class RegionMapDestroy {
           retry = true;
           doContinue = true;
           return;
-        } else if (!isEviction) {
+        } else {
           try {
-            handleEntryNotFound();
+            if (!isEviction) {
+              handleEntryNotFound();
+            }
           } finally {
-            removeEntryOrLeaveTombstone();
+            if (isEviction && newRegionEntry.isTombstone()) {
+              return;
+            } else {
+              removeEntryOrLeaveTombstone();
+            }
           }
         }
       } // synchronized(newRegionEntry)

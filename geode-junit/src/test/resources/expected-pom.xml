@@ -52,7 +52,7 @@
       <scope>compile</scope>
       <exclusions>
         <exclusion>
-          <artifactId>hamcrest-core</artifactId>
+          <artifactId>hamcrest</artifactId>
           <groupId>*</groupId>
         </exclusion>
       </exclusions>
@@ -65,6 +65,11 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.github.classgraph</groupId>
+      <artifactId>classgraph</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -125,7 +130,7 @@
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-all</artifactId>
+      <artifactId>hamcrest</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>

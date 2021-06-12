@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.connectors.jdbc.internal.TableMetaData.ColumnMetaData;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.internal.lang.JavaWorkarounds;
+import org.apache.geode.internal.lang.utils.JavaWorkarounds;
 
 /**
  * Given a tableName this manager will determine which column should correspond to the Geode Region

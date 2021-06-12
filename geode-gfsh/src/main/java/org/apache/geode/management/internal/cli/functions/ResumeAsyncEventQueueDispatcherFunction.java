@@ -22,6 +22,13 @@ import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class ResumeAsyncEventQueueDispatcherFunction extends CliFunction {
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ResumeAsyncEventQueueDispatcherFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext context) {

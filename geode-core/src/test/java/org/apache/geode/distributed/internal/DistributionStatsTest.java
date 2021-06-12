@@ -64,7 +64,7 @@ public class DistributionStatsTest {
     distributionStats.incSerialQueueBytes(50000000);
     distributionStats.incSerialQueueBytes(20000000);
     assertThat(distributionStats.getInternalSerialQueueBytes()).isEqualTo(70000000);
-    verify(mockStats).incInt(DistributionStats.serialQueueBytesId, 50000000);
-    verify(mockStats).incInt(DistributionStats.serialQueueBytesId, 20000000);
+    verify(mockStats).incLong(DistributionStats.serialQueueBytesId, 50000000);
+    verify(mockStats).incLong(DistributionStats.serialQueueBytesId, 20000000);
   }
 }

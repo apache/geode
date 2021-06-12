@@ -50,8 +50,9 @@ public class Order implements DataSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
+    }
 
     if (obj instanceof Order) {
       Order other = (Order) obj;

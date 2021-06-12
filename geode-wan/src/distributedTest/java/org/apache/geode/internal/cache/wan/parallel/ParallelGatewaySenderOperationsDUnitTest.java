@@ -53,6 +53,7 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
@@ -63,7 +64,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
-import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.internal.offheap.OffHeapClearRequired;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -94,6 +95,9 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   @Before
   public void setUp() throws Exception {
     addIgnoredException("Broken pipe||Unexpected IOException");
+    addIgnoredException("Connection reset");
+    addIgnoredException("Connection refused");
+    addIgnoredException("could not get remote locator information");
   }
 
   @Test(timeout = 300_000)
@@ -800,6 +804,79 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   }
 
   @Test
+  public void testMultiSiteReplication() {
+    String site1to2SenderId = "site1to2-sender";
+    String site1to3SenderId = "site1to3-sender";
+    String site2to3SenderId = "site2to3-sender";
+    String regionName = testName.getMethodName();
+    int[] ports = getRandomAvailableTCPPorts(3);
+    int site1Port = ports[0];
+    int site2Port = ports[1];
+    int site3Port = ports[2];
+    Set<String> site1RemoteLocators =
+        Stream.of("localhost[" + site2Port + "]", "localhost[" + site3Port + "]")
+            .collect(Collectors.toSet());
+    Set<String> site2RemoteLocators =
+        Stream.of("localhost[" + site1Port + "]", "localhost[" + site3Port + "]")
+            .collect(Collectors.toSet());
+    Set<String> site3RemoteLocators =
+        Stream.of("localhost[" + site1Port + "]", "localhost[" + site2Port + "]")
+            .collect(Collectors.toSet());
+
+    // Start 3 sites.
+    vm0.invoke(() -> createLocator(1, site1Port,
+        Collections.singleton("localhost[" + site1Port + "]"), site1RemoteLocators));
+    vm1.invoke(() -> createLocator(2, site2Port,
+        Collections.singleton("localhost[" + site2Port + "]"), site2RemoteLocators));
+    vm2.invoke(() -> createLocator(3, site3Port,
+        Collections.singleton("localhost[" + site3Port + "]"), site3RemoteLocators));
+
+    // Create the cache on the 3 sites.
+    createCacheInVMs(site1Port, vm3);
+    createCacheInVMs(site2Port, vm4);
+    createCacheInVMs(site3Port, vm5);
+
+    // Create senders and partitioned region on site 1.
+    vm3.invoke(() -> {
+      createSender(site1to2SenderId, 2, true, 100, 20, false, false, null, false);
+      createSender(site1to3SenderId, 3, true, 100, 20, false, false, null, false);
+      waitForSenderRunningState(site1to2SenderId);
+      waitForSenderRunningState(site1to3SenderId);
+
+      createPartitionedRegion(regionName, String.join(",", site1to2SenderId, site1to3SenderId), 1,
+          113,
+          isOffHeap());
+    });
+
+    // Create receiver, sender and partitioned region on site 2.
+    vm4.invoke(() -> {
+      createReceiver();
+      createSender(site2to3SenderId, 3, true, 100, 20, false, false, null, false);
+      waitForSenderRunningState(site2to3SenderId);
+
+      createPartitionedRegion(regionName, String.join(",", site2to3SenderId), 1, 113,
+          isOffHeap());
+    });
+
+    // Create receiver and partitioned region on site 3.
+    vm5.invoke(() -> {
+      createReceiver();
+      createPartitionedRegion(regionName, null, 1, 113, isOffHeap());
+    });
+
+    // Do puts
+    vm3.invoke(() -> doPuts(regionName, 200));
+    validateRegionSizes(regionName, 200, vm3, vm4, vm5);
+
+    // Stop sender from site 1 to site 3.
+    vm3.invoke(() -> stopSender(site1to3SenderId));
+
+    // Do puts again
+    vm3.invoke(() -> doPuts(regionName, 1000));
+    validateRegionSizes(regionName, 1000, vm3, vm4, vm5);
+  }
+
+  @Test
   public void testParallelGatewaySenderConcurrentPutClearNoOffheapOrphans()
       throws Exception {
     MemberVM locator = clusterStartupRule.startLocatorVM(1, new Properties());
@@ -856,7 +933,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       // above.
       callables.add(Executors.callable(() -> {
         try {
-          OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+          OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
             @Override
             public void run() {
               // Wait for the cache writer to be invoked to release this countdown latch.
@@ -897,6 +974,217 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
           () -> 0 == ((MemoryAllocatorImpl) cache.getOffHeapStore()).getOrphans(cache).size());
     });
   }
+
+  @Test
+  public void testParallelGWSenderUpdateAttrWhileEntriesInQueue() throws Exception {
+    Integer[] locatorPorts = createLNAndNYLocators();
+    Integer lnPort = locatorPorts[0];
+    Integer nyPort = locatorPorts[1];
+
+    createCacheInVMs(nyPort, vm2, vm3);
+
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    vm4.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm5.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm6.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm7.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+
+    createPartitionedRegions(false);
+
+    vm4.invoke(() -> waitForSenderRunningState("ln"));
+    vm5.invoke(() -> waitForSenderRunningState("ln"));
+    vm6.invoke(() -> waitForSenderRunningState("ln"));
+    vm7.invoke(() -> waitForSenderRunningState("ln"));
+
+    vm4.invoke(() -> doPuts(getUniqueName() + "_PR", 1000));
+
+    updateBatchSize(50);
+    updateBatchTimeInterval(100);
+
+    createReceiverInVMs(vm2, vm3);
+
+    validateRegionSizes(getUniqueName() + "_PR", 1000, vm2, vm3);
+
+    checkBatchSize(50);
+    checkBatchTimeInterval(100);
+  }
+
+  @Test
+  public void testParallelGWSenderUpdateAttrWhilePutting() throws Exception {
+    Integer[] locatorPorts = createLNAndNYLocators();
+    Integer lnPort = locatorPorts[0];
+    Integer nyPort = locatorPorts[1];
+
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
+
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    vm4.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm5.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm6.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm7.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+
+    createPartitionedRegions(false);
+
+    vm4.invoke(() -> waitForSenderRunningState("ln"));
+    vm5.invoke(() -> waitForSenderRunningState("ln"));
+    vm6.invoke(() -> waitForSenderRunningState("ln"));
+    vm7.invoke(() -> waitForSenderRunningState("ln"));
+
+    AsyncInvocation async = vm4.invokeAsync(() -> doPuts(getUniqueName() + "_PR", 5000));
+
+    updateBatchSize(100);
+    updateBatchTimeInterval(150);
+
+    async.await();
+    validateRegionSizes(getUniqueName() + "_PR", 5000, vm2, vm3);
+
+    checkBatchSize(100);
+    checkBatchTimeInterval(150);
+  }
+
+  @Test
+  public void testParallelGWSenderUpdateAttrWhilePaused() throws Exception {
+    Integer[] locatorPorts = createLNAndNYLocators();
+    Integer lnPort = locatorPorts[0];
+    Integer nyPort = locatorPorts[1];
+
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
+
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    vm4.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm5.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm6.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm7.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+
+    createPartitionedRegions(false);
+
+    vm4.invoke(() -> waitForSenderRunningState("ln"));
+    vm5.invoke(() -> waitForSenderRunningState("ln"));
+    vm6.invoke(() -> waitForSenderRunningState("ln"));
+    vm7.invoke(() -> waitForSenderRunningState("ln"));
+
+    vm4.invoke(() -> pauseSender("ln"));
+    vm5.invoke(() -> pauseSender("ln"));
+    vm6.invoke(() -> pauseSender("ln"));
+    vm7.invoke(() -> pauseSender("ln"));
+
+    vm4.invoke(() -> doPuts(getUniqueName() + "_PR", 5000));
+
+    updateGroupTransactionEvents(true);
+    updateBatchTimeInterval(200);
+
+    validateRegionSizes(getUniqueName() + "_PR", 0, vm2, vm3);
+
+    checkGroupTransactionEvents(true);
+    checkBatchTimeInterval(200);
+
+    vm4.invoke(() -> resumeSender("ln"));
+    vm5.invoke(() -> resumeSender("ln"));
+    vm6.invoke(() -> resumeSender("ln"));
+    vm7.invoke(() -> resumeSender("ln"));
+
+    validateRegionSizes(getUniqueName() + "_PR", 5000, vm2, vm3);
+
+  }
+
+  @Test
+  public void testParallelGWSenderUpdateFiltersWhilePutting() throws Exception {
+    Integer[] locatorPorts = createLNAndNYLocators();
+    Integer lnPort = locatorPorts[0];
+    Integer nyPort = locatorPorts[1];
+
+    List<GatewayEventFilter> filters = new ArrayList<>();
+    filters.add(new MyGatewayEventFilter_AfterAck());
+    filters.add(new PDXGatewayEventFilter());
+
+    List<GatewayEventFilter> filters2 = new ArrayList<>();
+    filters.add(new MyGatewayEventFilter());
+    filters.add(new MyGatewayEventFilter_AfterAck());
+    filters.add(new PDXGatewayEventFilter());
+
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
+
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    vm4.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm5.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm6.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm7.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+
+    createPartitionedRegions(false);
+
+    vm4.invoke(() -> waitForSenderRunningState("ln"));
+    vm5.invoke(() -> waitForSenderRunningState("ln"));
+    vm6.invoke(() -> waitForSenderRunningState("ln"));
+    vm7.invoke(() -> waitForSenderRunningState("ln"));
+
+    AsyncInvocation async = vm4.invokeAsync(() -> doPuts(getUniqueName() + "_PR", 5000));
+    checkBatchSize(10);
+
+    updateBatchSize(100);
+    updateGatewayEventFilters(filters);
+    checkBatchSize(100);
+    updateGatewayEventFilters(filters2);
+
+    async.await();
+
+  }
+
+
+  @Test
+  public void testParallelGWSenderUpdateFiltersWhilePuttingOnOneDispatcThread() throws Exception {
+    Integer[] locatorPorts = createLNAndNYLocators();
+    Integer lnPort = locatorPorts[0];
+    Integer nyPort = locatorPorts[1];
+
+    List<GatewayEventFilter> filters = new ArrayList<>();
+    filters.add(new MyGatewayEventFilter_AfterAck());
+    filters.add(new PDXGatewayEventFilter());
+
+    List<GatewayEventFilter> filters2 = new ArrayList<>();
+    filters.add(new MyGatewayEventFilter());
+    filters.add(new MyGatewayEventFilter_AfterAck());
+    filters.add(new PDXGatewayEventFilter());
+
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
+
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+    vm4.invoke(() -> setNumDispatcherThreadsForTheRun(1));
+    vm5.invoke(() -> setNumDispatcherThreadsForTheRun(1));
+    vm6.invoke(() -> setNumDispatcherThreadsForTheRun(1));
+    vm7.invoke(() -> setNumDispatcherThreadsForTheRun(1));
+
+    vm4.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm5.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm6.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm7.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, false));
+
+    createPartitionedRegions(false);
+
+    vm4.invoke(() -> waitForSenderRunningState("ln"));
+    vm5.invoke(() -> waitForSenderRunningState("ln"));
+    vm6.invoke(() -> waitForSenderRunningState("ln"));
+    vm7.invoke(() -> waitForSenderRunningState("ln"));
+
+    AsyncInvocation async = vm4.invokeAsync(() -> doPuts(getUniqueName() + "_PR", 5000));
+    checkBatchSize(10);
+
+    updateBatchSize(100);
+    updateGatewayEventFilters(filters);
+    checkBatchSize(100);
+    updateGatewayEventFilters(filters2);
+
+    async.await();
+
+  }
+
 
   private void clearShadowBucketRegions(PartitionedRegion shadowRegion) {
     PartitionedRegionDataStore.BucketVisitor bucketVisitor =
@@ -948,6 +1236,268 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
     vm3.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+  }
+
+  private void updateBatchSize(int batchsize) {
+    vm4.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setBatchSize(batchsize);
+      if (paused) {
+        sender.resume();
+      }
+    });
+    vm5.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setBatchSize(batchsize);
+      if (paused) {
+        sender.resume();
+      }
+    });
+    vm6.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setBatchSize(batchsize);
+      if (paused) {
+        sender.resume();
+      }
+    });
+    vm7.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setBatchSize(batchsize);
+      if (paused) {
+        sender.resume();
+      }
+    });
+  }
+
+  private void updateBatchTimeInterval(int batchTimeInterval) {
+    vm4.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setBatchTimeInterval(batchTimeInterval);
+      if (paused) {
+        sender.resume();
+      }
+    });
+    vm5.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setBatchTimeInterval(batchTimeInterval);
+      if (paused) {
+        sender.resume();
+      }
+    });
+    vm6.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setBatchTimeInterval(batchTimeInterval);
+      if (paused) {
+        sender.resume();
+      }
+    });
+    vm7.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setBatchTimeInterval(batchTimeInterval);
+      if (paused) {
+        sender.resume();
+      }
+    });
+  }
+
+  private void updateGroupTransactionEvents(boolean groupTransactionEvents) {
+    vm4.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setGroupTransactionEvents(groupTransactionEvents);
+      if (paused) {
+        sender.resume();
+      }
+    });
+    vm5.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setGroupTransactionEvents(groupTransactionEvents);
+      if (paused) {
+        sender.resume();
+      }
+    });
+    vm6.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setGroupTransactionEvents(groupTransactionEvents);
+      if (paused) {
+        sender.resume();
+      }
+    });
+    vm7.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setGroupTransactionEvents(groupTransactionEvents);
+      if (paused) {
+        sender.resume();
+      }
+    });
+
+  }
+
+  private void updateGatewayEventFilters(List<GatewayEventFilter> filters) {
+    vm4.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setGatewayEventFilters(filters);
+      if (paused) {
+        sender.resume();
+      }
+    });
+    vm5.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setGatewayEventFilters(filters);
+      if (paused) {
+        sender.resume();
+      }
+    });
+    vm6.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setGatewayEventFilters(filters);
+      if (paused) {
+        sender.resume();
+      }
+    });
+    vm7.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      boolean paused = false;
+      if (sender.isRunning() && !sender.isPaused()) {
+        sender.pause();
+        paused = true;
+      }
+      sender.setGatewayEventFilters(filters);
+      if (paused) {
+        sender.resume();
+      }
+    });
+  }
+
+  private void checkBatchSize(int batchsize) {
+    vm4.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertThat(sender.getBatchSize()).isEqualTo(batchsize);
+    });
+    vm5.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertThat(sender.getBatchSize()).isEqualTo(batchsize);
+    });
+    vm6.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertThat(sender.getBatchSize()).isEqualTo(batchsize);
+    });
+    vm7.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertThat(sender.getBatchSize()).isEqualTo(batchsize);
+    });
+  }
+
+  private void checkBatchTimeInterval(int batchTimeInterval) {
+    vm4.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertThat(sender.getBatchTimeInterval()).isEqualTo(batchTimeInterval);
+    });
+    vm5.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertThat(sender.getBatchTimeInterval()).isEqualTo(batchTimeInterval);
+    });
+    vm6.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertThat(sender.getBatchTimeInterval()).isEqualTo(batchTimeInterval);
+    });
+    vm7.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertThat(sender.getBatchTimeInterval()).isEqualTo(batchTimeInterval);
+    });
+  }
+
+  private void checkGroupTransactionEvents(boolean groupTransactionEvents) {
+    vm4.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertThat(sender.mustGroupTransactionEvents()).isEqualTo(groupTransactionEvents);
+    });
+    vm5.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertThat(sender.mustGroupTransactionEvents()).isEqualTo(groupTransactionEvents);
+    });
+    vm6.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertThat(sender.mustGroupTransactionEvents()).isEqualTo(groupTransactionEvents);
+    });
+    vm7.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      assertThat(sender.mustGroupTransactionEvents()).isEqualTo(groupTransactionEvents);
+    });
   }
 
   private void stopSenders() {

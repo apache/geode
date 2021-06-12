@@ -16,6 +16,7 @@ package org.apache.geode.cache30;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
@@ -109,7 +110,6 @@ import org.apache.geode.cache.server.ServerLoadProbeAdapter;
 import org.apache.geode.cache.server.ServerMetrics;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.cache.util.TransactionListenerAdapter;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
@@ -122,6 +122,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.cache.partitioned.fixed.QuarterPartitionResolver;
+import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheTransactionManagerCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
@@ -531,9 +532,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     ClientSubscriptionConfig chaqf = server.getClientSubscriptionConfig();
     assertEquals("entry", chaqf.getEvictionPolicy());
     assertEquals(501, chaqf.getCapacity());
-    File curDir = new File(".").getAbsoluteFile();
+    File defaultDiskDir = DefaultDiskDirs.getDefaultDiskDirs()[0].getAbsoluteFile();
     File lockFile =
-        new File(curDir, "DRLK_IF" + GemFireCacheImpl.getDefaultDiskStoreName() + ".lk");
+        new File(defaultDiskDir, "DRLK_IF" + GemFireCacheImpl.getDefaultDiskStoreName() + ".lk");
     assertTrue(lockFile.exists());
   }
 
@@ -2432,7 +2433,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     addIgnoredException("Socket Closed");
     getSystem();
     VM vm0 = Host.getHost(0).getVM(0);
-    final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int port = getRandomAvailableTCPPort();
     vm0.invoke(new SerializableCallable("Create cache server") {
       @Override
       public Object call() throws IOException {

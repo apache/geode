@@ -106,7 +106,6 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.DiskWriteAttributesImpl;
@@ -115,6 +114,7 @@ import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.datasource.DataSourceCreateException;
 import org.apache.geode.internal.jndi.JNDIInvoker;
@@ -706,6 +706,17 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     } else {
       gatewaySenderFactory
           .setGroupTransactionEvents(Boolean.parseBoolean(groupTransactionEvents));
+    }
+
+    String enforceThreadsConnectSameReceiver = atts.getValue(ENFORCE_THREADS_CONNECT_SAME_RECEIVER);
+    if (enforceThreadsConnectSameReceiver == null) {
+      gatewaySenderFactory
+          .setEnforceThreadsConnectSameReceiver(
+              GatewaySender.DEFAULT_ENFORCE_THREADS_CONNECT_SAME_RECEIVER);
+    } else {
+      gatewaySenderFactory
+          .setEnforceThreadsConnectSameReceiver(
+              Boolean.parseBoolean(enforceThreadsConnectSameReceiver));
     }
   }
 
@@ -1844,8 +1855,9 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       String fromClause = atts.getValue(FROM_CLAUSE);
       String expression = atts.getValue(EXPRESSION);
       String importStr = null;
-      if (len == 3)
+      if (len == 3) {
         importStr = atts.getValue(IMPORTS);
+      }
       if (fromClause == null || expression == null) {
         throwExcep = true;
       } else {
@@ -3072,8 +3084,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       } else if (qName.equals(CONFIG_PROPERTY_NAME)) {
         String name = null;
         if (this.stack.peek() instanceof StringBuffer)
-          // Pop the config-property-name element value from the stack.
+        // Pop the config-property-name element value from the stack.
+        {
           name = ((StringBuffer) this.stack.pop()).toString();
+        }
         BindingCreation bc = (BindingCreation) this.stack.peek();
         List vsList = bc.getVendorSpecificList();
         ConfigProperty cp = (ConfigProperty) vsList.get(vsList.size() - 1);
@@ -3089,8 +3103,9 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       } else if (qName.equals(CONFIG_PROPERTY_VALUE)) {
         String value = null;
         // Pop the config-property-value element value from the stack.
-        if (this.stack.peek() instanceof StringBuffer)
+        if (this.stack.peek() instanceof StringBuffer) {
           value = ((StringBuffer) this.stack.pop()).toString();
+        }
         BindingCreation bc = (BindingCreation) this.stack.peek();
         List vsList = bc.getVendorSpecificList();
         ConfigProperty cp = (ConfigProperty) vsList.get(vsList.size() - 1);
@@ -3098,8 +3113,9 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         cp.setValue(value);
       } else if (qName.equals(CONFIG_PROPERTY_TYPE)) {
         String type = null;
-        if (this.stack.peek() instanceof StringBuffer)
+        if (this.stack.peek() instanceof StringBuffer) {
           type = ((StringBuffer) this.stack.pop()).toString();
+        }
         BindingCreation bc = (BindingCreation) this.stack.peek();
         List vsList = bc.getVendorSpecificList();
         ConfigProperty cp = (ConfigProperty) vsList.get(vsList.size() - 1);

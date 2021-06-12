@@ -14,5 +14,5 @@
 #permissions and limitations under the License.
 
 r301 %r{/releases/latest/javadoc/(.*)}, 'http://geode.apache.org/releases/latest/javadoc/$1'
-rewrite '/', '/docs/guide/114/about_geode.html'
-rewrite '/index.html', '/docs/guide/114/about_geode.html'
+rewrite '/', '/docs/guide/115/about_geode.html'
+rewrite '/index.html', '/docs/guide/115/about_geode.html'

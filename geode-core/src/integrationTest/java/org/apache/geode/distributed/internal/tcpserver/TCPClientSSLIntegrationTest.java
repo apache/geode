@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.security.SecurableCommunicationChannels.LOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -43,7 +44,6 @@ import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
@@ -128,7 +128,7 @@ public class TCPClientSSLIntegrationTest {
 
   private void startTcpServer(Properties sslProperties) throws IOException {
     localhost = InetAddress.getLocalHost();
-    port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    port = getRandomAvailableTCPPort();
 
     TcpHandler tcpHandler = Mockito.mock(TcpHandler.class);
     when(tcpHandler.processRequest(any())).thenReturn("Running!");

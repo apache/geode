@@ -163,8 +163,9 @@ public class ExecutionContext {
 
   /** @return the dependency set as a shortcut */
   public Set addDependencies(CompiledValue cv, Set<RuntimeIterator> set) {
-    if (set.isEmpty())
+    if (set.isEmpty()) {
       return getDependencySet(cv, true);
+    }
     Set<RuntimeIterator> ds = getDependencySet(cv, false);
     ds.addAll(set);
     return ds;
@@ -206,8 +207,9 @@ public class ExecutionContext {
   Set<RuntimeIterator> getDependencySet(CompiledValue cv, boolean readOnly) {
     Set<RuntimeIterator> set = dependencyGraph.get(cv);
     if (set == null) {
-      if (readOnly)
+      if (readOnly) {
         return Collections.emptySet();
+      }
       set = new HashSet<>(1);
       dependencyGraph.put(cv, set);
     }
@@ -229,9 +231,10 @@ public class ExecutionContext {
   }
 
   public Object getBindArgument(int index) {
-    if (index > bindArguments.length)
+    if (index > bindArguments.length) {
       throw new IllegalArgumentException(
           "Too few query parameters");
+    }
     return bindArguments[index - 1];
   }
 
@@ -245,16 +248,19 @@ public class ExecutionContext {
 
   public CompiledValue resolve(String name) throws TypeMismatchException, AmbiguousNameException {
     CompiledValue value = resolveAsVariable(name);
-    if (value != null)
+    if (value != null) {
       return value;
+    }
     // attribute name or operation name (no args) of a variable in the current scope when there is
     // no ambiguity, i.e. this property name belongs to only one variable in the scope
     value = resolveImplicitPath(name);
     if (value == null)
-      // cannot be resolved
+    // cannot be resolved
+    {
       throw new TypeMismatchException(
           String.format("The attribute or method name ' %s ' could not be resolved",
               name));
+    }
     return value;
   }
 
@@ -264,8 +270,9 @@ public class ExecutionContext {
     for (int i = scopes.size() - 1; i >= 0; i--) {
       QScope scope = scopes.get(i);
       value = scope.resolve(name);
-      if (value != null)
+      if (value != null) {
         return value;
+      }
     }
     return null;
   }

@@ -42,13 +42,15 @@ set -x
 year=$(date +%Y)
 for DIR in $@ ; do
     cd ${DIR}
-    sed \
-      -e "2s/ \(20[0-9][0-9]\) / \1-${year} /" \
-      -e "2s/-20[0-9][0-9] /-${year} /" \
-      -e "2s/${year}-${year}/${year}/" \
-      -i.bak NOTICE
-    rm -f NOTICE.bak
-    git add NOTICE
+    git grep -l '^Copyright.*Apache' | grep NOTICE | while read NOTICE ; do
+      sed \
+        -e "2s/ \(20[0-9][0-9]\) / \1-${year} /" \
+        -e "2s/-20[0-9][0-9] /-${year} /" \
+        -e "2s/${year}-${year}/${year}/" \
+        -i.bak $NOTICE
+      rm -f $NOTICE.bak
+      git add $NOTICE
+    done
     if [ $(git diff --staged | wc -l) -gt 0 ] ; then
       git diff --staged --color | cat
       git commit -a -m "Bumping copyright year to ${year}"

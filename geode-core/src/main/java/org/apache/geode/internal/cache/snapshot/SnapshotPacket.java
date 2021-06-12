@@ -25,6 +25,7 @@ import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.Token;
@@ -75,6 +76,10 @@ public class SnapshotPacket implements DataSerializableFixedID {
         } finally {
           OffHeapHelper.release(v);
         }
+      } else if (entry instanceof EntrySnapshot) {
+        EntrySnapshot entrySnapshot = (EntrySnapshot) entry;
+        Object entryValue = entrySnapshot.getValuePreferringCachedDeserializable();
+        value = convertToBytes(entryValue);
       } else {
         value = convertToBytes(entry.getValue());
       }

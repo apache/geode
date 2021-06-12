@@ -41,9 +41,9 @@ public class TomcatInstall extends ContainerInstall {
    */
   public enum TomcatVersion {
     TOMCAT6(6, "tomcat-6.0.37.zip"),
-    TOMCAT7(7, "tomcat-7.0.99.zip"),
-    TOMCAT8(8, "tomcat-8.5.50.zip"),
-    TOMCAT9(9, "tomcat-9.0.33.zip");
+    TOMCAT7(7, "tomcat-7.0.109.zip"),
+    TOMCAT8(8, "tomcat-8.5.66.zip"),
+    TOMCAT9(9, "tomcat-9.0.46.zip");
 
     private final int version;
 
@@ -89,25 +89,46 @@ public class TomcatInstall extends ContainerInstall {
   }
 
   /**
+   * This determines the setting for 'enableCommitValve' in Tomcat's context.xml when configuring
+   * the DeltaSessionManager.
+   */
+  public enum CommitValve {
+    ENABLED("true"),
+    DISABLED("false"),
+    DEFAULT(null);
+
+    private final String value;
+
+    CommitValve(String value) {
+      this.value = value;
+    }
+
+    public String getValue() {
+      return value;
+    }
+  }
+
+  /**
    * If you update this list method to return different dependencies, please also update the Tomcat
    * module documentation! The documentation can be found here:
    * geode-docs/tools_modules/http_session_mgmt/tomcat_installing_the_module.html.md.erb
    */
   private static final String[] tomcatRequiredJars =
       {"antlr", "commons-io", "commons-lang", "commons-validator", "fastutil", "geode-common",
-          "geode-core", "geode-log4j", "geode-logging", "geode-membership", "geode-management",
-          "geode-serialization",
-          "geode-tcp-server", "javax.transaction-api", "jgroups", "log4j-api", "log4j-core",
-          "log4j-jul", "micrometer", "shiro-core", "jetty-server", "jetty-util", "jetty-http",
-          "jetty-io"};
-
+          "geode-core", "geode-unsafe", "geode-deployment-legacy", "geode-log4j", "geode-logging",
+          "geode-membership", "geode-management", "geode-serialization", "geode-tcp-server",
+          "javax.transaction-api", "jgroups", "log4j-api", "log4j-core", "log4j-jul", "micrometer",
+          "shiro-core", "jetty-server", "jetty-util", "jetty-http", "jetty-io"};
   private final TomcatVersion version;
 
+  private final CommitValve commitValve;
+
   public TomcatInstall(String name, TomcatVersion version, ConnectionType connectionType,
-      IntSupplier portSupplier)
+      IntSupplier portSupplier,
+      CommitValve commitValve)
       throws Exception {
     this(name, version, connectionType, DEFAULT_MODULE_LOCATION, GEODE_BUILD_HOME_LIB,
-        portSupplier);
+        portSupplier, commitValve);
   }
 
   /**
@@ -120,12 +141,14 @@ public class TomcatInstall extends ContainerInstall {
    * skipping properties needed to speedup container startup.
    */
   public TomcatInstall(String name, TomcatVersion version, ConnectionType connType,
-      String modulesJarLocation, String extraJarsPath, IntSupplier portSupplier)
+      String modulesJarLocation, String extraJarsPath, IntSupplier portSupplier,
+      CommitValve commitValve)
       throws Exception {
     // Does download and install from URL
     super(name, version.getDownloadURL(), connType, "tomcat", modulesJarLocation, portSupplier);
 
     this.version = version;
+    this.commitValve = commitValve;
     modulesJarLocation = getModulePath() + "/lib/";
 
     // Install geode sessions into tomcat install
@@ -241,6 +264,10 @@ public class TomcatInstall extends ContainerInstall {
     return version.name() + "_" + getConnectionType().getName();
   }
 
+  public CommitValve getCommitValve() {
+    return commitValve;
+  }
+
   /**
    * Copies jars specified by {@link #tomcatRequiredJars} from the {@link #getModulePath()} and the
    * specified other directory passed to the function
@@ -315,4 +342,5 @@ public class TomcatInstall extends ContainerInstall {
     editPropertyFile(getHome() + "/conf/catalina.properties", version.jarSkipPropertyName(),
         jarsToSkip, true);
   }
+
 }

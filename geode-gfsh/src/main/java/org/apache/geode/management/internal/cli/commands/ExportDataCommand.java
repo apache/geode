@@ -43,6 +43,8 @@ public class ExportDataCommand extends GfshCommand {
   @CliCommand(value = CliStrings.EXPORT_DATA, help = CliStrings.EXPORT_DATA__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   public ResultModel exportData(
+      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
+          mandatory = true, help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId,
       @CliOption(key = CliStrings.EXPORT_DATA__REGION, mandatory = true,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.EXPORT_DATA__REGION__HELP) String regionName,
@@ -50,8 +52,6 @@ public class ExportDataCommand extends GfshCommand {
           help = CliStrings.EXPORT_DATA__FILE__HELP) String filePath,
       @CliOption(key = CliStrings.EXPORT_DATA__DIR,
           help = CliStrings.EXPORT_DATA__DIR__HELP) String dirPath,
-      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
-          mandatory = true, help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId,
       @CliOption(key = CliStrings.EXPORT_DATA__PARALLEL, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
           help = CliStrings.EXPORT_DATA__PARALLEL_HELP) boolean parallel) {

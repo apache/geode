@@ -21,7 +21,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  implementation(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-core'))
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
@@ -46,9 +46,7 @@ dependencies {
   distributedTestImplementation('mx4j:mx4j')
   distributedTestImplementation('org.assertj:assertj-core')
   distributedTestImplementation('org.awaitility:awaitility')
-  distributedTestImplementation('org.hamcrest:hamcrest-all')
-  distributedTestImplementation('org.hamcrest:hamcrest-core')
-  distributedTestImplementation('org.hamcrest:hamcrest-library')
+  distributedTestImplementation('org.hamcrest:hamcrest')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 
 
@@ -58,7 +56,7 @@ dependencies {
   upgradeTestImplementation('org.awaitility:awaitility')
   upgradeTestImplementation('org.mockito:mockito-core')
 
-  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }
 
 ext.moduleName = group + '.cq'

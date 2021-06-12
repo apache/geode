@@ -28,12 +28,13 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
 
 /**
@@ -52,9 +53,12 @@ public class LuceneGetPageFunction implements InternalFunction<Object> {
       RegionFunctionContext ctx = (RegionFunctionContext) context;
       Region region = PartitionRegionHelper.getLocalDataForContext(ctx);
       Set<?> keys = ctx.getFilter();
+      SecurityService securityService = ((InternalCache) ctx.getCache()).getSecurityService();
       List<PageEntry> results = new PageResults(keys.size());
+      Object principal = context.getPrincipal();
+
       for (Object key : keys) {
-        PageEntry entry = getEntry(region, key);
+        PageEntry entry = getEntry(region, key, securityService, principal);
         if (entry != null) {
           results.add(entry);
         }
@@ -66,15 +70,19 @@ public class LuceneGetPageFunction implements InternalFunction<Object> {
     }
   }
 
-  protected PageEntry getEntry(final Region region, final Object key) {
+  protected PageEntry getEntry(final Region region, final Object key,
+      SecurityService securityService, Object principal) {
     final EntrySnapshot entry = (EntrySnapshot) region.getEntry(key);
     if (entry == null) {
       return null;
     }
 
-    final Object value = entry.getRegionEntry().getValue(null);
+    Object value = entry.getRegionEntry().getValue(null);
     if (value == null || Token.isInvalidOrRemoved(value)) {
       return null;
+    } else if (securityService.needPostProcess()) {
+      value = securityService.postProcess(principal, region.getFullPath(), key, entry.getValue(),
+          false);
     }
 
     return new PageEntry(key, value);
@@ -93,6 +101,7 @@ public class LuceneGetPageFunction implements InternalFunction<Object> {
 
   @Override
   public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singletonList(ResourcePermissions.DATA_READ);
+    return Collections.singletonList(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, regionName));
   }
 }

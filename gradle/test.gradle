@@ -1,6 +1,7 @@
 import org.apache.geode.gradle.TestPropertiesWriter
-import org.apache.geode.gradle.RepeatTest
+
 import org.apache.geode.gradle.plugins.DependencyConstraints
+import org.apache.geode.gradle.testing.repeat.RepeatTest
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -40,49 +41,27 @@ test {
   }
 }
 
+
 apply plugin: 'nebula.facet'
 facets {
   integrationTest {
-    testTaskName = 'integrationTest'
     includeInCheckLifecycle = false
   }
   distributedTest {
-    testTaskName = 'distributedTest'
     includeInCheckLifecycle = false
   }
   performanceTest {
-    testTaskName = 'performanceTest'
     includeInCheckLifecycle = false
   }
   acceptanceTest {
-    testTaskName = 'acceptanceTest'
     includeInCheckLifecycle = false
   }
   uiTest {
-    testTaskName = 'uiTest'
     includeInCheckLifecycle = false
   }
   upgradeTest {
-    testTaskName = 'upgradeTest'
     includeInCheckLifecycle = false
   }
-}
-
-configurations {
-  testAnnotationProcessor.extendsFrom annotationProcessor
-  integrationTestAnnotationProcessor.extendsFrom annotationProcessor
-  distributedTestAnnotationProcessor.extendsFrom annotationProcessor
-  performanceTestAnnotationProcessor.extendsFrom annotationProcessor
-  acceptanceTestAnnotationProcessor.extendsFrom annotationProcessor
-  uiTestAnnotationProcessor.extendsFrom annotationProcessor
-  upgradeTestAnnotationProcessor.extendsFrom annotationProcessor
-  // Facets does not extend the new runtimeOnly configurations
-  integrationTestRuntimeOnly.extendsFrom(runtimeOnly)
-  distributedTestRuntimeOnly.extendsFrom(runtimeOnly)
-  performanceTestRuntimeOnly.extendsFrom(runtimeOnly)
-  acceptanceTestRuntimeOnly.extendsFrom(runtimeOnly)
-  uiTestRuntimeOnly.extendsFrom(runtimeOnly)
-  upgradeTestRuntimeOnly.extendsFrom(runtimeOnly)
 }
 
 dependencies {
@@ -96,7 +75,7 @@ dependencies {
     transitive = false
   }
 
-  testRuntime('cglib:cglib:' + DependencyConstraints.get('cglib.version')) {
+  testRuntimeOnly('cglib:cglib:' + DependencyConstraints.get('cglib.version')) {
     exclude module: 'org.apache.ant'
   }
 }
@@ -163,6 +142,7 @@ configure([integrationTest, distributedTest, performanceTest, acceptanceTest, ui
 
 configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
   times = Integer.parseInt(repeat)
+  forkEvery 1
   useJUnit {}
   outputs.upToDateWhen { false }
 
@@ -189,11 +169,18 @@ gradle.taskGraph.whenReady({ graph ->
       }
 
       maxHeapSize '768m'
-      jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
+      jvmArgs += ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
       if (project.hasProperty('testJVMVer') && testJVMVer.toInteger() >= 9) {
         jvmArgs += ["--add-opens", "java.xml/jdk.xml.internal=ALL-UNNAMED"]
         jvmArgs += ["--add-opens", "java.base/jdk.internal.module=ALL-UNNAMED"]
         jvmArgs += ["--add-opens", "java.base/java.lang.module=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.ref=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.reflect=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.loader=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.misc=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.util.jar=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "jdk.management/com.sun.management.internal=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.platform.cgroupv1=ALL-UNNAMED"]
       }
       if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
         executable = "${testJVM}/bin/java"
@@ -223,7 +210,7 @@ gradle.taskGraph.whenReady({ graph ->
 
       // The distributed tests seem to need to use /tmp directly,
       // so exclude them from using the supplied temp directory.
-      if (!test.name.contains("distributed")) {
+      if (!test.name.contains("distributed") && !test.name.contains("repeatDistributed")) {
         systemProperty 'java.io.tmpdir', System.getProperty('java.io.tmpdir')
       }
 
@@ -244,12 +231,17 @@ gradle.taskGraph.whenReady({ graph ->
       }
     }
   }
+  repeatAcceptanceTest.exclude acceptanceTest.excludes
+  repeatDistributedTest.exclude distributedTest.excludes
+  repeatIntegrationTest.exclude integrationTest.excludes
+  repeatUnitTest.exclude test.excludes
+  repeatUpgradeTest.exclude upgradeTest.excludes
 })
 
 acceptanceTest {
   // Acceptance tests may reach out and run a gfsh command from the assembled gfsh.
   // If the test JVM version is specified, we must have the correct JAVA_HOME set for gfsh to use.
-  // See also environment configuration for parallel testing in docker.gradle
+  // See also environment configuration for parallel testing in multi-process-test.gradle
   if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
     environment "JAVA_HOME", "${project.testJVM}"
   }

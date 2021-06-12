@@ -14,10 +14,13 @@
  */
 package org.apache.geode.management.internal.configuration.functions;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,12 +32,7 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
@@ -42,31 +40,27 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 
-@PowerMockIgnore("*.UnitTest")
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(InternalLocator.class)
 public class GetClusterConfigurationFunctionTest {
   private InternalLocator mockedLocator;
-  private FunctionContext mockedFunctionContext;
+  private FunctionContext<Object> mockedFunctionContext;
   private ResultSender<Object> mockedResultSender;
   private InternalConfigurationPersistenceService mockedConfigurationService;
   private GetClusterConfigurationFunction getClusterConfigurationFunction;
 
   @Before
   public void setUp() {
-    mockedResultSender = mock(ResultSender.class);
+    mockedResultSender = uncheckedCast(mock(ResultSender.class));
     mockedLocator = mock(InternalLocator.class);
-    mockedFunctionContext = mock(FunctionContext.class);
+    mockedFunctionContext = uncheckedCast(mock(FunctionContext.class));
     mockedConfigurationService = mock(InternalConfigurationPersistenceService.class);
-    getClusterConfigurationFunction = new GetClusterConfigurationFunction();
+    getClusterConfigurationFunction = spy(new GetClusterConfigurationFunction());
 
     when(mockedLocator.isSharedConfigurationEnabled()).thenReturn(true);
     when(mockedLocator.isSharedConfigurationRunning()).thenReturn(true);
     when(mockedFunctionContext.getResultSender()).thenReturn(mockedResultSender);
     when(mockedFunctionContext.getArguments()).thenReturn(Collections.emptySet());
 
-    PowerMockito.mockStatic(InternalLocator.class);
-    when(InternalLocator.getLocator()).thenReturn(mockedLocator);
+    doReturn(mockedLocator).when(getClusterConfigurationFunction).getInternalLocator();
   }
 
   @Test

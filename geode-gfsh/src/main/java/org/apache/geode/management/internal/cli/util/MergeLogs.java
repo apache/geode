@@ -78,12 +78,13 @@ public class MergeLogs {
 
       mergeProcess.waitFor();
 
-      InputStream inputStream = mergeProcess.getInputStream();
-      BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-      String line = null;
+      try (InputStream inputStream = mergeProcess.getInputStream();
+          BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+        String line = null;
 
-      while ((line = br.readLine()) != null) {
-        output.append(line).append(GfshParser.LINE_SEPARATOR);
+        while ((line = br.readLine()) != null) {
+          output.append(line).append(GfshParser.LINE_SEPARATOR);
+        }
       }
       mergeProcess.destroy();
     } catch (Exception e) {
@@ -127,6 +128,10 @@ public class MergeLogs {
           "FileNotFoundException in creating PrintWriter in MergeLogFiles" + e.getMessage());
     } catch (Exception e) {
       throw new Exception("Exception in creating PrintWriter in MergeLogFiles" + e.getMessage());
+    } finally {
+      if (mergedLog != null) {
+        mergedLog.close();
+      }
     }
 
     return mergedLogFile;

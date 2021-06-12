@@ -309,11 +309,11 @@ public class DeadlockDetector {
       ExitCode.DEPENDENCY_GRAPH_FAILURE.doSystemExit();
     }
 
-    ObjectInputStream ois =
-        new DDObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
-    DependencyGraph graph = (DependencyGraph) ois.readObject();
-
-    return graph;
+    try (FileInputStream fileInputStream = new FileInputStream(file);
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+        ObjectInputStream ois = new DDObjectInputStream(bufferedInputStream)) {
+      return (DependencyGraph) ois.readObject();
+    }
   }
 
   private static class DDObjectInputStream extends ObjectInputStream {

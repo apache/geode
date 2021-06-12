@@ -249,9 +249,9 @@ public class TXJUnitTest {
       cmtre.setUserAttribute("uaValue1");
       assertEquals("uaValue1", cmtre.getUserAttribute());
 
-      int txRollbackChanges = stats.getTxRollbackChanges();
-      int txCommitChanges = stats.getTxCommitChanges();
-      int txFailureChanges = stats.getTxFailureChanges();
+      long txRollbackChanges = stats.getTxRollbackChanges();
+      long txCommitChanges = stats.getTxCommitChanges();
+      long txFailureChanges = stats.getTxFailureChanges();
       this.txMgr.begin();
       Region.Entry txre = this.region.getEntry("uaKey");
       assertEquals(this.region, txre.getRegion());
@@ -301,9 +301,9 @@ public class TXJUnitTest {
     }
 
     {
-      int txRollbackChanges = stats.getTxRollbackChanges();
-      int txCommitChanges = stats.getTxCommitChanges();
-      int txFailureChanges = stats.getTxFailureChanges();
+      long txRollbackChanges = stats.getTxRollbackChanges();
+      long txCommitChanges = stats.getTxCommitChanges();
+      long txFailureChanges = stats.getTxFailureChanges();
       this.region.create("key1", "value1");
       this.txMgr.begin();
       this.region.invalidate("key1");
@@ -434,7 +434,7 @@ public class TXJUnitTest {
   @Test
   public void testTwoRegionTxs() throws CacheException {
     final CachePerfStats stats = this.cache.getCachePerfStats();
-    int txCommitChanges;
+    long txCommitChanges;
     TransactionId myTxId;
 
     AttributesFactory<String, String> attributesFactory = new AttributesFactory<>();
@@ -711,8 +711,9 @@ public class TXJUnitTest {
         assertEquals(true, ev.isCallbackArgumentAvailable());
         assertTrue(!ev.isOriginRemote());
         assertTrue(!ev.getOperation().isExpiration());
-        if (!isPR())
+        if (!isPR()) {
           assertTrue(!ev.getOperation().isDistributed());
+        }
       }
     }
     reg1.localDestroy("key1");
@@ -780,8 +781,9 @@ public class TXJUnitTest {
         assertEquals(true, ev.isCallbackArgumentAvailable());
         assertTrue(!ev.isOriginRemote());
         assertTrue(!ev.getOperation().isExpiration());
-        if (!isPR())
+        if (!isPR()) {
           assertTrue(!ev.getOperation().isDistributed());
+        }
       }
     }
     reg1.localDestroy("key1");
@@ -2741,7 +2743,7 @@ public class TXJUnitTest {
   }
 
   private void doNonTxInvalidateRegionOp(CachePerfStats stats) throws Exception {
-    int txRollbackChanges = stats.getTxRollbackChanges();
+    long txRollbackChanges = stats.getTxRollbackChanges();
     this.region.create("key1", "value1");
     this.region.create("key2", "value2");
     this.txMgr.begin();
@@ -2773,7 +2775,7 @@ public class TXJUnitTest {
   }
 
   private void doNonTxDestroyRegionOp(CachePerfStats stats) throws Exception {
-    int txRollbackChanges = stats.getTxRollbackChanges();
+    long txRollbackChanges = stats.getTxRollbackChanges();
     this.region.put("key1", "value1");
     this.region.put("key2", "value2");
     this.txMgr.begin();
@@ -3142,9 +3144,10 @@ public class TXJUnitTest {
       assertNotNull(event.getRegion().getCache().getCacheTransactionManager());
       assertEquals(this.getTXId(), event.getTransactionId());
 
-      if (!isPR())
+      if (!isPR()) {
         assertEquals("IsDistributed Assertion!", this.isDistributed(),
             event.getOperation().isDistributed());
+      }
       assertEquals(this.getKey(), event.getKey());
       assertSame(this.getCallBackArg(), event.getCallbackArgument());
       if (newValIdentCheck) {
@@ -3661,8 +3664,9 @@ public class TXJUnitTest {
     cbv.setTXId(txMgr.getTransactionId());
     cbv.setExpectedCount(appCallCount++);
     this.region.localDestroy(key1, callBackArg);
-    if (!isPR())
+    if (!isPR()) {
       vCw.localDestroyMakeup(1); // Account for cacheWriter not begin called
+    }
     assertTrue("Non-TX LocalDestroy Validation Assertion", cbv.passedValidation());
     cbv.suspendValidation(true);
     this.region.create(key1, value1);
@@ -3673,8 +3677,9 @@ public class TXJUnitTest {
     cbv.setTXId(txMgr.getTransactionId());
     cbv.setExpectedCount(appCallCount++);
     this.region.localDestroy(key1, callBackArg);
-    if (!isPR())
+    if (!isPR()) {
       vCw.localDestroyMakeup(1); // Account for cacheWriter not begin called
+    }
     this.txMgr.commit();
     assertTrue("TX LocalDestroy Validation Assertion", cbv.passedValidation());
 
@@ -4355,8 +4360,9 @@ public class TXJUnitTest {
       public void close() {}
     });
     LocalRegion reg1 = (LocalRegion) this.region;
-    if (isPR())
+    if (isPR()) {
       ((PartitionedRegion) reg1).setHaveCacheLoader();
+    }
     assertTrue(!reg1.containsKey("key1"));
     assertEquals("LV 1", reg1.get("key1"));
     assertTrue(reg1.containsKey("key1"));
@@ -4629,17 +4635,17 @@ public class TXJUnitTest {
       private long txSuccessLifeTime;
       private long txFailedLifeTime;
       private long txRollbackLifeTime;
-      private int txCommits;
-      private int txFailures;
-      private int txRollbacks;
+      private long txCommits;
+      private long txFailures;
+      private long txRollbacks;
       private long txCommitTime;
       private long txFailureTime;
       private long txRollbackTime;
-      private int txCommitChanges;
-      private int txFailureChanges;
-      private int txRollbackChanges;
+      private long txCommitChanges;
+      private long txFailureChanges;
+      private long txRollbackChanges;
 
-      private CachePerfStats stats;
+      private final CachePerfStats stats;
 
       private statsValidator(CachePerfStats stats) {
         this.stats = stats;
@@ -4672,15 +4678,15 @@ public class TXJUnitTest {
         this.txRollbackLifeTime = txRollbackLifeTime;
       }
 
-      private void setTxCommits(int txCommits) {
+      private void setTxCommits(long txCommits) {
         this.txCommits = txCommits;
       }
 
-      private void setTxFailures(int txFailures) {
+      private void setTxFailures(long txFailures) {
         this.txFailures = txFailures;
       }
 
-      private void setTxRollbacks(int txRollbacks) {
+      private void setTxRollbacks(long txRollbacks) {
         this.txRollbacks = txRollbacks;
       }
 
@@ -4696,15 +4702,15 @@ public class TXJUnitTest {
         this.txRollbackTime = txRollbackTime;
       }
 
-      private void setTxCommitChanges(int txCommitChanges) {
+      private void setTxCommitChanges(long txCommitChanges) {
         this.txCommitChanges = txCommitChanges;
       }
 
-      private void setTxFailureChanges(int txFailureChanges) {
+      private void setTxFailureChanges(long txFailureChanges) {
         this.txFailureChanges = txFailureChanges;
       }
 
-      private void setTxRollbackChanges(int txRollbackChanges) {
+      private void setTxRollbackChanges(long txRollbackChanges) {
         this.txRollbackChanges = txRollbackChanges;
       }
 
@@ -5780,7 +5786,7 @@ public class TXJUnitTest {
 
     { // distributed invalidate
       // first make sure invalidate is counted as a change
-      int txRollbackChanges = stats.getTxRollbackChanges();
+      long txRollbackChanges = stats.getTxRollbackChanges();
       this.region.create("key1", "value1");
       this.txMgr.begin();
       this.region.invalidate("key1");
@@ -5839,7 +5845,7 @@ public class TXJUnitTest {
 
     { // local invalidate
       // first make sure invalidate is counted as a change
-      int txRollbackChanges = stats.getTxRollbackChanges();
+      long txRollbackChanges = stats.getTxRollbackChanges();
       this.region.create("key1", "value1");
       this.txMgr.begin();
       this.region.localInvalidate("key1");
@@ -6312,7 +6318,7 @@ public class TXJUnitTest {
         public void run() {
           try {
             region.put("syncKey4", "syncVal4");
-            while (true)
+            while (true) {
               synchronized (signal) {
                 signal[0] = 1;
                 signal.notify();
@@ -6321,6 +6327,7 @@ public class TXJUnitTest {
                   break;
                 }
               }
+            }
           } catch (Exception error) {
             fail("Non-tx thread failure due to: " + error);
           }
@@ -6328,7 +6335,7 @@ public class TXJUnitTest {
       };
       t.start();
       try {
-        while (true)
+        while (true) {
           synchronized (signal) {
             if (signal[0] == 1) {
               signal[0] = 0;
@@ -6338,6 +6345,7 @@ public class TXJUnitTest {
               signal.wait();
             }
           }
+        }
       } catch (InterruptedException dangit) {
         fail("Tx thread waiting for non-tx thread failed due to : " + dangit);
       }

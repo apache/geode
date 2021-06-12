@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -37,7 +38,9 @@ import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
@@ -123,11 +126,11 @@ public class RebalanceOperationPerformer
       functionArgs[1] = setRegionName;
 
       functionArgs[2] = null;
-
+      Function function = getRebalanceFunction((InternalDistributedMember) member);
       List<String> resultList = null;
       try {
         resultList = (List<String>) ManagementUtils
-            .executeFunction(new RebalanceFunction(), functionArgs, Collections.singleton(member))
+            .executeFunction(function, functionArgs, Collections.singleton(member))
             .getResult();
       } catch (Exception ignored) {
 
@@ -136,7 +139,6 @@ public class RebalanceOperationPerformer
       RebalanceRegionResult result = new RebalanceRegionResultImpl();
       if (resultList != null && !resultList.isEmpty()) {
         List<String> rstList = Arrays.asList(resultList.get(0).split(","));
-
         result = toRebalanceRegionResult(rstList);
       }
 
@@ -375,7 +377,8 @@ public class RebalanceOperationPerformer
         if (memberPR.dsMemberList.size() > 1) {
           for (int i = 0; i < memberPR.dsMemberList.size(); i++) {
             DistributedMember dsMember = memberPR.dsMemberList.get(i);
-            RebalanceFunction rebalanceFunction = new RebalanceFunction();
+            Function rebalanceFunction = getRebalanceFunction(
+                (InternalDistributedMember) dsMember);
             Object[] functionArgs = new Object[3];
             functionArgs[0] = simulate;
             Set<String> regionSet = new HashSet<>();
@@ -445,6 +448,19 @@ public class RebalanceOperationPerformer
     return rebalanceResult;
   }
 
+  @NotNull
+  private Function getRebalanceFunction(InternalDistributedMember dsMember) {
+    Function rebalanceFunction;
+    if (dsMember.getVersion()
+        .isOlderThan(KnownVersion.GEODE_1_12_0)) {
+      rebalanceFunction =
+          new org.apache.geode.management.internal.cli.functions.RebalanceFunction();
+    } else {
+      rebalanceFunction = new RebalanceFunction();
+    }
+    return rebalanceFunction;
+  }
+
   private static RebalanceRegionResult toRebalanceRegionResult(List<String> rstList) {
     RebalanceRegionResultImpl result = new RebalanceRegionResultImpl();
     result.setBucketCreateBytes(Long.parseLong(rstList.get(0)));
@@ -456,8 +472,14 @@ public class RebalanceOperationPerformer
     result.setPrimaryTransferTimeInMilliseconds(Long.parseLong(rstList.get(6)));
     result.setPrimaryTransfersCompleted(Integer.parseInt(rstList.get(7)));
     result.setTimeInMilliseconds(Long.parseLong(rstList.get(8)));
-    result.setNumOfMembers(Integer.parseInt(rstList.get(9)));
-    result.setRegionName(rstList.get(10).replace(SEPARATOR, ""));
+    if (rstList.size() < 11) {
+      result.setNumOfMembers(-1);
+      result.setRegionName(rstList.get(9).replace(SEPARATOR, ""));
+    } else {
+      result.setNumOfMembers(Integer.parseInt(rstList.get(9)));
+      result.setRegionName(rstList.get(10).replace(SEPARATOR, ""));
+    }
+
 
     return result;
   }

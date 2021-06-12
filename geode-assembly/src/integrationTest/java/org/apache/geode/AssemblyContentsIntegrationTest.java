@@ -58,7 +58,7 @@ public class AssemblyContentsIntegrationTest {
   @Test
   public void verifyAssemblyContents() throws IOException {
     Collection<String> currentAssemblyContent = getAssemblyContent();
-    Files.write(Paths.get("assembly_content.txt"), currentAssemblyContent);
+    Files.write(Paths.get("..", "assembly_content.txt"), currentAssemblyContent);
 
     assertThat(currentAssemblyContent)
         .as("The assembly contents have changed. Verify dependencies and "

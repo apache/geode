@@ -227,8 +227,6 @@ Apache Geode bundles the following files under the BSD 3-Clause License:
     Marc Prud'hommeaux <mwp1@cornell.edu>
   - jQuery Sparklines v2.0 (http://omnipotent.net/jquery.sparkline/),
     Copyright (c) 2012 Splunk Inc.
-  - Protocol Buffers (https://github.com/google/protobuf), Copyright (c)
-    2014 Google Inc.
 
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
@@ -264,8 +262,6 @@ The CDDL Version 1.1 (https://javaee.github.io/glassfish/LICENSE)
 Apache Geode bundles the following files under the Common Development and
 Distribution License:
 
-  - activation v1.1.0
-    (https://www.oracle.com/java/technologies/java-beans-activation.html)
   - javax.activation v1.2.0
     (https://www.oracle.com/technetwork/java/javase/jaf-135115.html)
   - javax.mail v1.6.2 (http://www.oracle.com/)
@@ -1026,7 +1022,7 @@ The EDL 1.0 License (http://www.eclipse.org/org/documents/edl-v10.php)
 
 Apache Geode bundles the following file under the EDL 1.0 License:
 
-  - istack-commons-runtime v3.0.11
+  - istack-commons-runtime v4.0.1
 
 Eclipse Distribution License - v 1.0
 
@@ -1068,7 +1064,7 @@ Apache Geode bundles the following files under the MIT License:
 
   - Checker Qual v2.10.0 (https://checkerframework.org), Copyright (c)
     2004-present by the Checker Framework developers
-  - ClassGraph v4.8.52 (https://github.com/classgraph/classgraph), Copyright
+  - ClassGraph v4.8.108 (https://github.com/classgraph/classgraph), Copyright
     (c) 2019 Luke Hutchison
   - HTML5 Shiv vpre3.5 (https://github.com/aFarkas/html5shiv), Copyright
     (c) 2014 Alexander Farkas (aFarkas)

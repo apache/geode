@@ -89,9 +89,7 @@ public class CreateRegion extends BaseCommand {
 
     Region parentRegion = serverConnection.getCache().getRegion(parentRegionName);
     if (parentRegion == null) {
-      String reason =
-          String.format("%s was not found during subregion creation request",
-              parentRegionName);
+      String reason = " was not found during subregion creation request";
       writeRegionDestroyedEx(clientMessage, parentRegionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;

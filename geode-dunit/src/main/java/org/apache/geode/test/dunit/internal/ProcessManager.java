@@ -60,12 +60,12 @@ class ProcessManager implements ChildVMLauncher {
   }
 
   public synchronized void launchVM(int vmNum) throws IOException {
-    launchVM(VersionManager.CURRENT_VERSION, vmNum, false);
+    launchVM(VersionManager.CURRENT_VERSION, vmNum, false, 0);
   }
 
   @Override
-  public synchronized ProcessHolder launchVM(String version, int vmNum, boolean bouncedVM)
-      throws IOException {
+  public synchronized ProcessHolder launchVM(String version, int vmNum, boolean bouncedVM,
+      int remoteStubPort) throws IOException {
     if (bouncedVM) {
       processes.remove(vmNum);
     }
@@ -88,7 +88,7 @@ class ProcessManager implements ChildVMLauncher {
       workingDir.mkdirs();
     }
 
-    String[] cmd = buildJavaCommand(vmNum, namingPort, version);
+    String[] cmd = buildJavaCommand(vmNum, namingPort, version, remoteStubPort);
     System.out.println("Executing " + Arrays.toString(cmd));
 
     if (log4jConfig != null) {
@@ -139,26 +139,6 @@ class ProcessManager implements ChildVMLauncher {
       }
     }
     return false;
-  }
-
-  @Deprecated
-  public synchronized void bounce(String version, int vmNum, boolean force) {
-    if (!processes.containsKey(vmNum)) {
-      throw new IllegalStateException("No such process " + vmNum);
-    }
-    try {
-      ProcessHolder holder = processes.remove(vmNum);
-      if (force) {
-        holder.killForcibly();
-      } else {
-        holder.kill();
-      }
-      holder.waitFor();
-      System.out.println("Old process for vm_" + vmNum + " has exited");
-      launchVM(version, vmNum, true);
-    } catch (InterruptedException | IOException e) {
-      throw new RuntimeException("Unable to restart VM " + vmNum, e);
-    }
   }
 
   private void linkStreams(final String version, final int vmNum, final ProcessHolder holder,
@@ -246,7 +226,7 @@ class ProcessManager implements ChildVMLauncher {
     return classpath;
   }
 
-  private String[] buildJavaCommand(int vmNum, int namingPort, String version) {
+  private String[] buildJavaCommand(int vmNum, int namingPort, String version, int remoteStubPort) {
     String cmd = System.getProperty("java.home") + File.separator
         + "bin" + File.separator + "java";
     String dunitClasspath = System.getProperty("java.class.path");
@@ -280,6 +260,7 @@ class ProcessManager implements ChildVMLauncher {
     String jreLib = separator + "jre" + separator + "lib" + separator;
     classPath = removeFromPath(classPath, jreLib);
     cmds.add(classPath);
+    cmds.add("-D" + DUnitLauncher.REMOTE_STUB_PORT_PARAM + "=" + remoteStubPort);
     cmds.add("-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort);
     cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
     cmds.add("-D" + DUnitLauncher.VM_VERSION_PARAM + "=" + version);

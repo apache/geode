@@ -14,13 +14,14 @@
  */
 package org.apache.geode.test.dunit.examples;
 
+import static java.util.Arrays.asList;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
-import static org.apache.geode.test.dunit.VM.toArray;
+import static org.apache.geode.test.dunit.rules.DistributedRule.getLocators;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -32,7 +33,6 @@ import org.junit.Test;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedReference;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -48,11 +48,11 @@ public class DistributedReferenceServerLauncherExampleTest implements Serializab
 
   @Before
   public void setUp() {
-    String locators = DistributedTestUtils.getLocators();
+    String locators = getLocators();
 
-    for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+    for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
       vm.invoke(() -> {
-        String name = getClass().getSimpleName() + "-vm-" + getVMId();
+        String name = "server-" + getVMId();
         ServerLauncher serverLauncher = new ServerLauncher.Builder()
             .setWorkingDirectory(temporaryFolder.newFolder(name).getAbsolutePath())
             .setMemberName(name)
@@ -69,9 +69,9 @@ public class DistributedReferenceServerLauncherExampleTest implements Serializab
 
   @Test
   public void eachVmHasItsOwnLocatorLauncher() {
-    for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+    for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
       vm.invoke(() -> {
-        assertThat(serverLauncher.get()).isInstanceOf(ServerLauncher.class);
+        assertThat(serverLauncher.get()).isNotNull();
 
         InternalCache cache = (InternalCache) serverLauncher.get().getCache();
         InternalDistributedSystem system = cache.getInternalDistributedSystem();

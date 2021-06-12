@@ -71,7 +71,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
     if (threads < 1) {
       threads = Math.max((Runtime.getRuntime().availableProcessors() / 4), 1);
     }
-    return LoggingExecutors.newFixedThreadPool("LRUListWithAsyncSortingThread", true, threads);
+    return LoggingExecutors.newFixedThreadPool(threads, "LRUListWithAsyncSortingThread", true);
   }
 
   LRUListWithAsyncSorting(EvictionController controller) {

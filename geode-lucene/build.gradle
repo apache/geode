@@ -21,7 +21,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
 
   api(project(':geode-core'))
   api('org.apache.lucene:lucene-core')
@@ -51,17 +51,13 @@ dependencies {
   testImplementation('pl.pragmatists:JUnitParams')
   testImplementation('com.pholser:junit-quickcheck-core')
   testImplementation('com.carrotsearch.randomizedtesting:randomizedtesting-runner')
-  testImplementation('org.powermock:powermock-core')
-  testImplementation('org.powermock:powermock-module-junit4')
-  testImplementation('org.powermock:powermock-api-mockito2')
 
 
   distributedTestImplementation(project(':geode-junit'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(project(':geode-lucene:geode-lucene-test'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')
-  distributedTestImplementation('org.hamcrest:hamcrest-core')
-  distributedTestImplementation('org.hamcrest:hamcrest-library')
+  distributedTestImplementation('org.hamcrest:hamcrest')
 
 
   integrationTestImplementation(project(':geode-dunit'))
@@ -72,7 +68,7 @@ dependencies {
 
   upgradeTestImplementation(project(':geode-dunit'))
   upgradeTestImplementation('commons-io:commons-io')
-  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 
 
   performanceTestImplementation(project(':geode-junit'))

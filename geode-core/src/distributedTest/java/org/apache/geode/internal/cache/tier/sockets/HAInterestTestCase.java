@@ -20,6 +20,7 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.client.internal.RegisterInterestTracker.interestListIndex;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.cache.tier.InterestType.KEY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -51,7 +52,6 @@ import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
@@ -257,8 +257,9 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
       @Override
       public boolean done() {
         Entry re = r1.getEntry(k1);
-        if (re == null)
+        if (re == null) {
           return false;
+        }
         Object val = re.getValue();
         return client_k1.equals(val);
       }
@@ -274,8 +275,9 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
       @Override
       public boolean done() {
         Entry re = r1.getEntry(k2);
-        if (re == null)
+        if (re == null) {
           return false;
+        }
         Object val = re.getValue();
         return client_k2.equals(val);
       }
@@ -1015,7 +1017,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     cache.createRegion(REGION_NAME, factory.create());
 
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     server.setPort(port);
     server.setMaximumTimeBetweenPings(180000);
     // ensures updates to be sent instead of invalidations
@@ -1033,7 +1035,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     cache.createRegion(REGION_NAME, attrs);
 
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     server.setPort(port);
     // ensures updates to be sent instead of invalidations
     server.setNotifyBySubscription(true);

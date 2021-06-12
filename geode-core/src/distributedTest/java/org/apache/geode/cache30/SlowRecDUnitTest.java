@@ -604,7 +604,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // updates to a non-conflating are not.
     LogWriterUtils.getLogWriter().info("[testConflationSequence] conflate & no-conflate regions");
     forceQueuing(r);
-    final int initialAsyncSocketWrites = stats.getAsyncSocketWrites();
+    final long initialAsyncSocketWrites = stats.getAsyncSocketWrites();
 
     value = "count=" + count;
     lastValue = value;
@@ -1065,8 +1065,9 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     Object putKey = key1;
     boolean flag = true;
     for (int i = 0; i < 30; i++) {
-      if (i == 10)
+      if (i == 10) {
         putKey = key2;
+      }
       if (flag) {
         if (i == 6) {
           r1.invalidate(putKey, new Integer(i));
@@ -1228,7 +1229,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // set others before vm0 connects
     final Set others = dm.getOtherDistributionManagerIds();
     long initialQueuedMsgs = stats.getAsyncQueuedMsgs();
-    final int initialQueues = stats.getAsyncQueues();
+    final long initialQueues = stats.getAsyncQueues();
 
     // create receiver in vm0 with queuing enabled
     final Properties p = new Properties();

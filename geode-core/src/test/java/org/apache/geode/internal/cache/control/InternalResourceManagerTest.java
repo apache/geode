@@ -19,11 +19,13 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collection;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -31,16 +33,20 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.IntStream;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ErrorCollector;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class InternalResourceManagerTest {
 
@@ -50,6 +56,12 @@ public class InternalResourceManagerTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
+
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+
+  @Rule
+  public ErrorCollector errorCollector = new ErrorCollector();
 
   @Before
   public void setup() {
@@ -188,4 +200,73 @@ public class InternalResourceManagerTest {
 
     assertThat(withManyStartupTasks).isCompletedExceptionally();
   }
+
+  @Test
+  public void testConcurrentAddStartupTask() throws InterruptedException {
+    CompletableFuture task = new CompletableFuture<>();
+    final AtomicBoolean done = new AtomicBoolean(false);
+    IntStream.range(0, 100).forEach(i -> resourceManager.addStartupTask(task));
+
+    executorServiceRule.submit(() -> {
+      try {
+        Collection<CompletableFuture<Void>> startupTasks = resourceManager.getStartupTasks();
+        synchronized (startupTasks) {
+          for (CompletableFuture<Void> startupTask : startupTasks) {
+            Thread.sleep(100);
+          }
+        }
+        done.set(true);
+      } catch (Exception exception) {
+        fail("Exception:" + exception);
+        errorCollector.addError(exception);
+      }
+    });
+
+    executorServiceRule.submit(() -> {
+      try {
+        resourceManager.addStartupTask(task);
+      } catch (Exception exception) {
+        fail("Exception:" + exception);
+        errorCollector.addError(exception);
+      }
+    });
+
+    executorServiceRule.getExecutorService().awaitTermination(60, SECONDS);
+    assertThat(done.get()).isTrue();
+  }
+
+  @Test
+  public void testConcurrentAllOfStartupTasks() throws InterruptedException {
+    CompletableFuture task = new CompletableFuture<>();
+    final AtomicBoolean done = new AtomicBoolean(false);
+    IntStream.range(0, 100).forEach(i -> resourceManager.addStartupTask(task));
+
+    executorServiceRule.submit(() -> {
+      try {
+        Collection<CompletableFuture<Void>> startupTasks = resourceManager.getStartupTasks();
+        synchronized (startupTasks) {
+          for (CompletableFuture<Void> startupTask : startupTasks) {
+            Thread.sleep(100);
+          }
+        }
+        done.set(true);
+      } catch (Exception exception) {
+        fail("Exception:" + exception);
+        errorCollector.addError(exception);
+      }
+    });
+
+    executorServiceRule.submit(() -> {
+      try {
+        resourceManager.allOfStartupTasks();
+      } catch (Exception exception) {
+        fail("Exception:" + exception);
+        errorCollector.addError(exception);
+      }
+    });
+
+    executorServiceRule.getExecutorService().awaitTermination(60, SECONDS);
+    assertThat(done.get()).isTrue();
+  }
+
 }

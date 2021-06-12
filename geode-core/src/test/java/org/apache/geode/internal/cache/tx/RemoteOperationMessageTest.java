@@ -21,6 +21,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -29,6 +30,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.concurrent.ExecutorService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,6 +43,7 @@ import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -53,13 +57,10 @@ import org.apache.geode.test.fake.Fakes;
 
 
 public class RemoteOperationMessageTest {
-
   private TestableRemoteOperationMessage msg; // the class under test
 
-  private InternalDistributedMember recipient;
   private InternalDistributedMember sender;
   private final String regionPath = "regionPath";
-  private ReplyProcessor21 processor;
 
   private GemFireCacheImpl cache;
   private InternalDistributedSystem system;
@@ -77,13 +78,17 @@ public class RemoteOperationMessageTest {
     r = mock(LocalRegion.class);
     txMgr = mock(TXManagerImpl.class);
     tx = mock(TXStateProxyImpl.class);
+    OperationExecutors executors = mock(OperationExecutors.class);
+    ExecutorService executorService = mock(ExecutorService.class);
     when(cache.getRegionByPathForProcessing(regionPath)).thenReturn(r);
     when(cache.getTxManager()).thenReturn(txMgr);
+    when(dm.getExecutors()).thenReturn(executors);
+    when(executors.getWaitingThreadPool()).thenReturn(executorService);
 
     sender = mock(InternalDistributedMember.class);
 
-    recipient = mock(InternalDistributedMember.class);
-    processor = mock(ReplyProcessor21.class);
+    InternalDistributedMember recipient = mock(InternalDistributedMember.class);
+    ReplyProcessor21 processor = mock(ReplyProcessor21.class);
     // make it a spy to aid verification
     msg = spy(new TestableRemoteOperationMessage(recipient, regionPath, processor));
   }
@@ -93,7 +98,7 @@ public class RemoteOperationMessageTest {
     when(txMgr.masqueradeAs(msg)).thenReturn(null);
     msg.setSender(sender);
 
-    msg.process(dm);
+    msg.doRemoteOperation(dm, cache);
 
     verify(msg, times(1)).operateOnRegion(dm, r, startTime);
     verify(dm, times(1)).putOutgoing(any());
@@ -105,7 +110,7 @@ public class RemoteOperationMessageTest {
     when(tx.isInProgress()).thenReturn(true);
     msg.setSender(sender);
 
-    msg.process(dm);
+    msg.doRemoteOperation(dm, cache);
 
     verify(msg, times(1)).operateOnRegion(dm, r, startTime);
     verify(dm, times(1)).putOutgoing(any());
@@ -117,7 +122,7 @@ public class RemoteOperationMessageTest {
     when(tx.isInProgress()).thenReturn(false);
     msg.setSender(sender);
 
-    msg.process(dm);
+    msg.doRemoteOperation(dm, cache);
 
     verify(msg, times(0)).operateOnRegion(dm, r, startTime);
     // A reply is sent even though we do not call operationOnRegion
@@ -130,7 +135,7 @@ public class RemoteOperationMessageTest {
     when(tx.isInProgress()).thenReturn(false);
     msg.setSender(sender);
 
-    msg.process(dm);
+    msg.doRemoteOperation(dm, cache);
 
     verify(msg, times(1)).sendReply(
         eq(sender),
@@ -147,7 +152,7 @@ public class RemoteOperationMessageTest {
     when(txMgr.isClosed()).thenReturn(true);
     msg.setSender(sender);
 
-    msg.process(dm);
+    msg.doRemoteOperation(dm, cache);
 
     verify(msg, times(0)).operateOnRegion(dm, r, startTime);
     // If we do not respond what prevents the sender from waiting forever?
@@ -176,7 +181,7 @@ public class RemoteOperationMessageTest {
     when(cache.getCacheClosedException(any())).thenReturn(reasonCacheWasClosed);
     msg.setSender(sender);
 
-    msg.process(dm);
+    msg.doRemoteOperation(dm, cache);
     verify(msg, times(0)).operateOnRegion(dm, r, startTime);
     verify(dm, times(1)).putOutgoing(any());
     ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
@@ -192,7 +197,7 @@ public class RemoteOperationMessageTest {
     doNothing().when(msg).checkForSystemFailure();
     msg.setSender(sender);
 
-    msg.process(dm);
+    msg.doRemoteOperation(dm, cache);
     verify(dm, times(1)).putOutgoing(any());
     ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
     verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), eq(r),
@@ -208,7 +213,7 @@ public class RemoteOperationMessageTest {
     when(system.isDisconnecting()).thenReturn(false).thenReturn(true);
     msg.setSender(sender);
 
-    msg.process(dm);
+    msg.doRemoteOperation(dm, cache);
     verify(dm, times(1)).putOutgoing(any());
     ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
     verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), eq(r),
@@ -223,7 +228,7 @@ public class RemoteOperationMessageTest {
     when(msg.operateOnRegion(dm, r, startTime)).thenThrow(ex);
     msg.setSender(sender);
 
-    msg.process(dm);
+    msg.doRemoteOperation(dm, cache);
     verify(dm, times(1)).putOutgoing(any());
     ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
     verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), eq(r),
@@ -237,7 +242,7 @@ public class RemoteOperationMessageTest {
     when(cache.getRegionByPathForProcessing(regionPath)).thenReturn(null);
     msg.setSender(sender);
 
-    msg.process(dm);
+    msg.doRemoteOperation(dm, cache);
     verify(msg, never()).operateOnRegion(any(), any(), anyLong());
     verify(dm, times(1)).putOutgoing(any());
     ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
@@ -253,16 +258,16 @@ public class RemoteOperationMessageTest {
         .thenThrow(DistributedSystemDisconnectedException.class);
     msg.setSender(sender);
 
-    msg.process(dm);
+    msg.doRemoteOperation(dm, cache);
     verify(dm, never()).putOutgoing(any());
   }
 
   @Test
-  public void processWithOperateOnRegionReturningFalseDoesNotSendReply() throws Exception {
+  public void processWithOperateOnRegionReturningFalseDoesNotSendReply() {
     msg.setOperationOnRegionResult(false);
     msg.setSender(sender);
 
-    msg.process(dm);
+    msg.doRemoteOperation(dm, cache);
     verify(dm, never()).putOutgoing(any());
   }
 
@@ -273,7 +278,7 @@ public class RemoteOperationMessageTest {
     when(msg.operateOnRegion(dm, r, startTime)).thenThrow(theException);
     msg.setSender(sender);
 
-    msg.process(dm);
+    msg.doRemoteOperation(dm, cache);
     verify(dm, times(1)).putOutgoing(any());
     ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
     verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), eq(r),
@@ -288,7 +293,7 @@ public class RemoteOperationMessageTest {
     doThrow(new RuntimeException("SystemFailure")).when(msg).checkForSystemFailure();
     msg.setSender(sender);
 
-    assertThatThrownBy(() -> msg.process(dm)).isInstanceOf(RuntimeException.class)
+    assertThatThrownBy(() -> msg.doRemoteOperation(dm, cache)).isInstanceOf(RuntimeException.class)
         .hasMessage("SystemFailure");
     verify(dm, times(1)).putOutgoing(any());
     ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
@@ -298,11 +303,57 @@ public class RemoteOperationMessageTest {
         .hasMessageContaining("system failure");
   }
 
+
+  @Test
+  public void processInvokesDoRemoteOperationIfThreadOwnsResources() {
+    when(system.threadOwnsResources()).thenReturn(true);
+    doNothing().when(msg).doRemoteOperation(dm, cache);
+
+    msg.process(dm);
+
+    verify(msg).doRemoteOperation(dm, cache);
+    verify(msg, never()).isTransactional();
+  }
+
+  @Test
+  public void processInvokesDoRemoteOperationIfThreadDoesNotOwnResourcesAndNotTransactional() {
+    when(system.threadOwnsResources()).thenReturn(false);
+    doReturn(false).when(msg).isTransactional();
+    doNothing().when(msg).doRemoteOperation(dm, cache);
+
+    msg.process(dm);
+
+    verify(msg).doRemoteOperation(dm, cache);
+    verify(msg).isTransactional();
+  }
+
+  @Test
+  public void isTransactionalReturnsFalseIfTXUniqueIdIsNOTX() {
+    assertThat(msg.getTXUniqId()).isEqualTo(TXManagerImpl.NOTX);
+    assertThat(msg.isTransactional()).isFalse();
+  }
+
+  @Test
+  public void isTransactionalReturnsFalseIfCannotParticipateInTransaction() {
+    doReturn(1).when(msg).getTXUniqId();
+    doReturn(false).when(msg).canParticipateInTransaction();
+
+    assertThat(msg.isTransactional()).isFalse();
+  }
+
+  @Test
+  public void isTransactionalReturnsTrueIfHasTXUniqueIdAndCanParticipateInTransaction() {
+    doReturn(1).when(msg).getTXUniqId();
+
+    assertThat(msg.canParticipateInTransaction()).isTrue();
+    assertThat(msg.isTransactional()).isTrue();
+  }
+
   private static class TestableRemoteOperationMessage extends RemoteOperationMessage {
 
     private boolean operationOnRegionResult = true;
 
-    public TestableRemoteOperationMessage(InternalDistributedMember recipient, String regionPath,
+    TestableRemoteOperationMessage(InternalDistributedMember recipient, String regionPath,
         ReplyProcessor21 processor) {
       super(recipient, regionPath, processor);
     }
@@ -318,7 +369,7 @@ public class RemoteOperationMessageTest {
       return operationOnRegionResult;
     }
 
-    public void setOperationOnRegionResult(boolean v) {
+    void setOperationOnRegionResult(boolean v) {
       this.operationOnRegionResult = v;
     }
 

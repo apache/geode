@@ -37,6 +37,14 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 public class ExportDataFunction extends CliFunction<String[]> {
   private static final long serialVersionUID = 1L;
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ExportDataFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
+
   @Override
   public CliFunctionResult executeFunction(FunctionContext<String[]> context) throws Exception {
     final String[] args = context.getArguments();
@@ -57,9 +65,9 @@ public class ExportDataFunction extends CliFunction<String[]> {
       final File exportFile = new File(fileName);
       if (parallel) {
         SnapshotOptions<Object, Object> options = new SnapshotOptionsImpl<>().setParallelMode(true);
-        snapshotService.save(exportFile, SnapshotFormat.GEMFIRE, options);
+        snapshotService.save(exportFile, SnapshotFormat.GEODE, options);
       } else {
-        snapshotService.save(exportFile, SnapshotFormat.GEMFIRE);
+        snapshotService.save(exportFile, SnapshotFormat.GEODE);
       }
 
       String successMessage = CliStrings.format(CliStrings.EXPORT_DATA__SUCCESS__MESSAGE,
@@ -73,10 +81,4 @@ public class ExportDataFunction extends CliFunction<String[]> {
 
     return result;
   }
-
-  @Override
-  public String getId() {
-    return ExportDataFunction.class.getName();
-  }
-
 }

@@ -42,7 +42,7 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
       ClientProxyMembershipID bridgeContext,
       TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
-    DistributedMember originator = null;
+    DistributedMember originator;
     // txId should not be null even on localOrigin
     Assert.assertTrue(txId != null);
     originator = txId.getMemberId();
@@ -57,8 +57,6 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
         aCallbackArgument, txEntryState == null, originator);
     boolean returnedRetVal = false;
     try {
-
-
       if (bridgeContext != null) {
         retVal.setContext(bridgeContext);
       }
@@ -73,33 +71,7 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
 
       retVal.setTailKey(tailKey);
 
-      FilterRoutingInfo.FilterInfo localRouting = null;
-      boolean computeFilterInfo = false;
-      if (filterRoutingInfo == null) {
-        computeFilterInfo = true;
-      } else {
-        localRouting = filterRoutingInfo.getLocalFilterInfo();
-        if (localRouting != null) {
-          // routing was computed in this VM but may need to perform local interest processing
-          computeFilterInfo = !filterRoutingInfo.hasLocalInterestBeenComputed()
-              && !localRouting.filterProcessedLocally;
-        } else {
-          // routing was computed elsewhere and is in the "remote" routing table
-          localRouting = filterRoutingInfo.getFilterInfo(internalRegion.getMyId());
-        }
-        if (localRouting != null) {
-          if (!computeFilterInfo) {
-            retVal.setLocalFilterInfo(localRouting);
-          }
-        } else {
-          computeFilterInfo = true;
-        }
-      }
-      if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
-        TxCallbackEventFactoryImpl.logger.trace(
-            "createCBEvent filterRouting={} computeFilterInfo={} local routing={}",
-            filterRoutingInfo, computeFilterInfo, localRouting);
-      }
+      setLocalFilterInfo(internalRegion, filterRoutingInfo, retVal);
 
       if (internalRegion.isUsedForPartitionedRegionBucket()) {
         BucketRegion bucket = (BucketRegion) internalRegion;
@@ -109,32 +81,13 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
         } else {
           retVal.setInvokePRCallbacks(false);
         }
-
-        if (computeFilterInfo) {
-          if (bucket.getBucketAdvisor().isPrimary()) {
-            if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
-              TxCallbackEventFactoryImpl.logger
-                  .trace("createCBEvent computing routing for primary bucket");
-            }
-            FilterProfile fp =
-                ((BucketRegion) internalRegion).getPartitionedRegion().getFilterProfile();
-            if (fp != null) {
-              FilterRoutingInfo fri = fp.getFilterRoutingInfoPart2(filterRoutingInfo, retVal);
-              if (fri != null) {
-                retVal.setLocalFilterInfo(fri.getLocalFilterInfo());
-              }
-            }
-          }
-        }
-      } else if (computeFilterInfo) { // not a bucket
-        if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
-          TxCallbackEventFactoryImpl.logger.trace("createCBEvent computing routing for non-bucket");
-        }
-        FilterProfile fp = internalRegion.getFilterProfile();
-        if (fp != null) {
-          retVal.setLocalFilterInfo(fp.getLocalFilterRouting(retVal));
-        }
       }
+      // No need to computeFilterInfo for primary bucket, as it is done
+      // during attach filter info after applying to cache.
+      // For secondary buckets, filter routing is calculated in the "remote" routing table.
+      // For replicate region, filter routing should be computed after entry commit
+      // is applied to cache, as concurrent register interest could occur.
+      // That computation occurs in notifyBridgeClient when no local routing is set.
       retVal.setTransactionId(txId);
       returnedRetVal = true;
       return retVal;
@@ -142,6 +95,25 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
       if (!returnedRetVal) {
         retVal.release();
       }
+    }
+  }
+
+  void setLocalFilterInfo(InternalRegion internalRegion, FilterRoutingInfo filterRoutingInfo,
+      EntryEventImpl retVal) {
+    FilterRoutingInfo.FilterInfo localRouting = null;
+    if (filterRoutingInfo != null) {
+      // On tx host hosting the primary bucket, the filter routing is null now as it is
+      // calculated after tx is applied to cache.
+      // This can only occur on node hosting secondary bucket. Should use the routing
+      // computed on remote primary.
+      localRouting = filterRoutingInfo.getFilterInfo(internalRegion.getMyId());
+      if (localRouting != null) {
+        retVal.setLocalFilterInfo(localRouting);
+      }
+    }
+    if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
+      TxCallbackEventFactoryImpl.logger.trace(
+          "createCBEvent filterRouting={} local routing={}", filterRoutingInfo, localRouting);
     }
   }
 }

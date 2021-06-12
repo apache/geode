@@ -875,12 +875,15 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * Test hook - does this vector hold an entry for the given ID?
    */
   public boolean containsMember(T id) {
-    if (this.memberToVersion.containsKey(id))
+    if (this.memberToVersion.containsKey(id)) {
       return true;
-    if (this.memberToGCVersion.containsKey(id))
+    }
+    if (this.memberToGCVersion.containsKey(id)) {
       return true;
-    if (this.canonicalIds.containsKey(id))
+    }
+    if (this.canonicalIds.containsKey(id)) {
       return true;
+    }
     return false;
   }
 

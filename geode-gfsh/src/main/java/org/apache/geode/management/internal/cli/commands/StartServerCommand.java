@@ -14,6 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.cli.GfshCommand.EXPERIMENTAL;
+import static org.apache.geode.management.internal.cli.commands.StartMemberUtils.resolveWorkingDirectory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,7 +42,7 @@ import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -130,11 +133,13 @@ public class StartServerCommand extends OfflineGfshCommand {
       @CliOption(key = CliStrings.START_SERVER__MEMCACHED_BIND_ADDRESS,
           help = CliStrings.START_SERVER__MEMCACHED_BIND_ADDRESS__HELP) final String memcachedBindAddress,
       @CliOption(key = CliStrings.START_SERVER__REDIS_PORT,
-          help = CliStrings.START_SERVER__REDIS_PORT__HELP) final Integer redisPort,
+          help = EXPERIMENTAL + CliStrings.START_SERVER__REDIS_PORT__HELP) final Integer redisPort,
       @CliOption(key = CliStrings.START_SERVER__REDIS_BIND_ADDRESS,
-          help = CliStrings.START_SERVER__REDIS_BIND_ADDRESS__HELP) final String redisBindAddress,
+          help = EXPERIMENTAL
+              + CliStrings.START_SERVER__REDIS_BIND_ADDRESS__HELP) final String redisBindAddress,
       @CliOption(key = CliStrings.START_SERVER__REDIS_PASSWORD,
-          help = CliStrings.START_SERVER__REDIS_PASSWORD__HELP) final String redisPassword,
+          help = EXPERIMENTAL
+              + CliStrings.START_SERVER__REDIS_PASSWORD__HELP) final String redisPassword,
       @CliOption(key = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE,
           help = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE__HELP) final Integer messageTimeToLive,
       @CliOption(key = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE,
@@ -196,11 +201,11 @@ public class StartServerCommand extends OfflineGfshCommand {
       }
     }
 
-    workingDirectory = StartMemberUtils.resolveWorkingDir(
-        workingDirectory == null ? null : new File(workingDirectory), new File(memberName));
+    String resolvedWorkingDirectory = resolveWorkingDirectory(workingDirectory, memberName);
 
     return doStartServer(memberName, assignBuckets, bindAddress, cacheXmlPathname, classpath,
-        criticalHeapPercentage, criticalOffHeapPercentage, workingDirectory, disableDefaultServer,
+        criticalHeapPercentage, criticalOffHeapPercentage, resolvedWorkingDirectory,
+        disableDefaultServer,
         disableExitWhenOutOfMemory, enableTimeStatistics, evictionHeapPercentage,
         evictionOffHeapPercentage, force, group, hostNameForClients, jmxManagerHostnameForClients,
         includeSystemClasspath, initialHeap, jvmArgsOpts, locators, locatorWaitTime, lockMemory,
@@ -230,7 +235,7 @@ public class StartServerCommand extends OfflineGfshCommand {
       String httpServicePort, String httpServiceBindAddress, String userName, String passwordToUse,
       Boolean redirectOutput)
       throws MalformedObjectNameException, IOException, InterruptedException {
-    cacheXmlPathname = CliUtil.resolvePathname(cacheXmlPathname);
+    cacheXmlPathname = CliUtils.resolvePathname(cacheXmlPathname);
 
     if (StringUtils.isNotBlank(cacheXmlPathname)) {
       if (!IOUtils.isExistingPathname(cacheXmlPathname)) {
@@ -302,8 +307,9 @@ public class StartServerCommand extends OfflineGfshCommand {
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
 
-    // if redis-port, redis-bind-address, or redis-password are specified in the command line,
-    // REDIS_ENABLED should be set to true
+    // if compatible-with-redis-port, compatible-with-redis-bind-address, or
+    // compatible-with-redis-password are specified in the command line, REDIS_ENABLED should be set
+    // to true
     String stringRedisPort;
     stringRedisPort = redisPort == null ? "" : redisPort.toString();
 

@@ -33,8 +33,15 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  *
  */
 public class ImportDataFunction implements InternalFunction<Object[]> {
-
   private static final long serialVersionUID = 1L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ImportDataFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<Object[]> context) {
@@ -60,7 +67,7 @@ public class ImportDataFunction implements InternalFunction<Object[]> {
         options.invokeCallbacks(invokeCallbacks);
         options.setParallelMode(parallel);
         File importFile = new File(importFileName);
-        snapshotService.load(new File(importFileName), SnapshotFormat.GEMFIRE, options);
+        snapshotService.load(new File(importFileName), SnapshotFormat.GEODE, options);
         String successMessage = CliStrings.format(CliStrings.IMPORT_DATA__SUCCESS__MESSAGE,
             importFile.getCanonicalPath(), hostName, regionName);
         result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
@@ -77,10 +84,4 @@ public class ImportDataFunction implements InternalFunction<Object[]> {
 
     context.getResultSender().lastResult(result);
   }
-
-  @Override
-  public String getId() {
-    return ImportDataFunction.class.getName();
-  }
-
 }

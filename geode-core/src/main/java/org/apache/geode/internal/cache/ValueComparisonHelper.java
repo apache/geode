@@ -153,8 +153,7 @@ public class ValueComparisonHelper {
         }
         if (pdxSerializer != null || obj instanceof PdxSerializable) {
           // try to convert obj to a PdxInstance
-          HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
-          try {
+          try (HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
             if (InternalDataSerializer.autoSerialized(obj, hdos)
                 || InternalDataSerializer.writePdx(hdos, cache, obj, pdxSerializer)) {
               PdxInstance pi = InternalDataSerializer.readPdxInstance(hdos.toByteArray(), cache);

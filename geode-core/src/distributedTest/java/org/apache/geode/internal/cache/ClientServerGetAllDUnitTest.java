@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
@@ -48,7 +49,6 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.test.dunit.Assert;
@@ -79,7 +79,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
     final String regionName = getUniqueName();
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = getRandomAvailableTCPPort();
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
 
     createBridgeServer(server, regionName, serverPort, false, false);
@@ -112,10 +112,11 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
+          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY)) {
             assertEquals(key, value);
-          else
+          } else {
             assertEquals(null, value);
+          }
         }
 
         assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
@@ -164,10 +165,11 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
+          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY)) {
             assertEquals(key, value);
-          else
+          } else {
             assertEquals(null, value);
+          }
         }
 
         assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
@@ -429,7 +431,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
     final String regionName = getUniqueName();
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = getRandomAvailableTCPPort();
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
 
     createBridgeServer(server, regionName, serverPort, false, true);
@@ -462,10 +464,11 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
+          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY)) {
             assertEquals(key, value);
-          else
+          } else {
             assertEquals(null, value);
+          }
         }
 
         assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
@@ -540,10 +543,11 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
+          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY)) {
             assertEquals(key, value);
-          else
+          } else {
             assertEquals(null, value);
+          }
         }
         assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
       }
@@ -559,7 +563,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
     final String regionName = getUniqueName();
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = getRandomAvailableTCPPort();
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
 
     createBridgeServer(server, regionName, serverPort, false, false);
@@ -623,7 +627,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
     final String regionName = getUniqueName();
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = getRandomAvailableTCPPort();
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
     final int numLocalValues = 101;
 

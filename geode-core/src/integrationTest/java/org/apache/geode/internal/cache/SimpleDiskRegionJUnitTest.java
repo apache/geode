@@ -55,7 +55,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
   @Test
   public void testBasicClose() {
     {
-      deleteFiles();
+      forceDeleteFiles();
       try {
         region = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache, diskProps);
       } catch (Exception e) {
@@ -67,7 +67,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
       checkIfContainsFileWithExt("lk");
     }
     {
-      deleteFiles();
+      forceDeleteFiles();
       try {
         region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, diskProps);
       } catch (Exception e) {
@@ -79,7 +79,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
       checkIfContainsFileWithExt("lk");
     }
     {
-      deleteFiles();
+      forceDeleteFiles();
       try {
         region = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskProps);
       } catch (Exception e) {

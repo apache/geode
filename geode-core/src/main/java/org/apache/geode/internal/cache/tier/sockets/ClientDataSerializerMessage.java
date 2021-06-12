@@ -25,18 +25,17 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
   private byte[][] serializedDataSerializer;
 
-  private Class[][] supportedClasses;
+  private Class<?>[][] supportedClasses;
 
   public ClientDataSerializerMessage(EnumListenerEvent operation, byte[][] dataSerializer,
-      ClientProxyMembershipID memberId, EventID eventIdentifier, Class[][] supportedClasses) {
+      ClientProxyMembershipID memberId, EventID eventIdentifier, Class<?>[][] supportedClasses) {
     super(operation, memberId, eventIdentifier);
-    this.serializedDataSerializer = dataSerializer;
+    serializedDataSerializer = dataSerializer;
     this.supportedClasses = supportedClasses;
   }
 
@@ -65,34 +64,6 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
    */
   @Override
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
-    if (proxy.getVersion().isNotOlderThan(KnownVersion.GFE_6516)) {
-      return getGFE6516Message(proxy.getVersion());
-    } else if (proxy.getVersion().isNotOlderThan(KnownVersion.GFE_57)) {
-      return getGFEMessage(proxy.getVersion());
-    } else {
-      throw new IOException("Unsupported client version for server-to-client message creation: "
-          + proxy.getVersion());
-    }
-  }
-
-  protected Message getGFEMessage(KnownVersion clientVersion) {
-    Message message = null;
-    int dataSerializerLength = this.serializedDataSerializer.length;
-    message = new Message(dataSerializerLength + 1, clientVersion); // one for eventID
-    // Set message type
-    message.setMessageType(MessageType.REGISTER_DATASERIALIZERS);
-    for (int i = 0; i < dataSerializerLength - 1; i += 2) {
-      message.addBytesPart(this.serializedDataSerializer[i]);
-      message.addBytesPart(this.serializedDataSerializer[i + 1]);
-    }
-    message.setTransactionId(0);
-    message.addObjPart(this.getEventId());
-    return message;
-  }
-
-  protected Message getGFE6516Message(KnownVersion clientVersion) {
-    Message message = null;
-
     // The format:
     // part 0: serializer1 classname
     // part 1: serializer1 id
@@ -108,34 +79,32 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
     // ...
     // Last part: event ID
 
-    int dsLength = this.serializedDataSerializer.length; // multiple of 2
+    int dsLength = serializedDataSerializer.length; // multiple of 2
     assert (dsLength % 2) == 0;
-    int numOfDS = (this.supportedClasses != null) ? this.supportedClasses.length : 0;
+    int numOfDS = (supportedClasses != null) ? supportedClasses.length : 0;
     assert (dsLength / 2) == numOfDS;
 
     // Calculate total number of parts
     int numOfParts = dsLength + numOfDS;
     for (int i = 0; i < numOfDS; i++) {
-      if (this.supportedClasses[i] != null) {
-        numOfParts += this.supportedClasses[i].length;
+      if (supportedClasses[i] != null) {
+        numOfParts += supportedClasses[i].length;
       }
     }
     numOfParts += 1; // one for eventID
-    // this._logger.fine("Number of parts for ClientDataSerializerMessage: "
-    // + numOfParts + ", with eventID: " + this.getEventId());
 
-    message = new Message(numOfParts, clientVersion);
+    final Message message = new Message(numOfParts, proxy.getVersion());
     // Set message type
     message.setMessageType(MessageType.REGISTER_DATASERIALIZERS);
     for (int i = 0; i < dsLength; i = i + 2) {
-      message.addBytesPart(this.serializedDataSerializer[i]); // part 0
-      message.addBytesPart(this.serializedDataSerializer[i + 1]); // part 1
+      message.addBytesPart(serializedDataSerializer[i]); // part 0
+      message.addBytesPart(serializedDataSerializer[i + 1]); // part 1
 
-      int numOfClasses = this.supportedClasses[i / 2].length;
+      int numOfClasses = supportedClasses[i / 2].length;
       byte[][] classBytes = new byte[numOfClasses][];
       try {
         for (int j = 0; j < numOfClasses; j++) {
-          classBytes[j] = CacheServerHelper.serialize(this.supportedClasses[i / 2][j].getName());
+          classBytes[j] = CacheServerHelper.serialize(supportedClasses[i / 2][j].getName());
         }
       } catch (IOException ioe) {
         numOfClasses = 0;
@@ -147,7 +116,7 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
       }
     }
     message.setTransactionId(0);
-    message.addObjPart(this.getEventId()); // last part
+    message.addObjPart(getEventId()); // last part
     return message;
   }
 
@@ -167,10 +136,10 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
       SerializationContext context) throws IOException {
 
     out.writeByte(_operation.getEventCode());
-    int dataSerializerCount = this.serializedDataSerializer.length;
+    int dataSerializerCount = serializedDataSerializer.length;
     out.writeInt(dataSerializerCount);
-    for (int i = 0; i < dataSerializerCount; i++) {
-      DataSerializer.writeByteArray(this.serializedDataSerializer[i], out);
+    for (final byte[] bytes : serializedDataSerializer) {
+      DataSerializer.writeByteArray(bytes, out);
     }
     context.getSerializer().writeObject(_membershipId, out);
     context.getSerializer().writeObject(_eventIdentifier, out);
@@ -189,12 +158,12 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
     // Note: does not call super.fromData what a HACK
     _operation = EnumListenerEvent.getEnumListenerEvent(in.readByte());
     int dataSerializerCount = in.readInt();
-    this.serializedDataSerializer = new byte[dataSerializerCount][];
+    serializedDataSerializer = new byte[dataSerializerCount][];
     for (int i = 0; i < dataSerializerCount; i++) {
-      this.serializedDataSerializer[i] = DataSerializer.readByteArray(in);
+      serializedDataSerializer[i] = DataSerializer.readByteArray(in);
     }
     _membershipId = ClientProxyMembershipID.readCanonicalized(in);
-    _eventIdentifier = (EventID) context.getDeserializer().readObject(in);
+    _eventIdentifier = context.getDeserializer().readObject(in);
   }
 
   @Override
@@ -227,11 +196,9 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
 
   @Override
   public String toString() {
-    StringBuilder buffer = new StringBuilder();
-    buffer.append("ClientDataSerializerMessage[value=")
-        .append(Arrays.deepToString(this.serializedDataSerializer))
-        .append(";memberId=")
-        .append(getMembershipId()).append(";eventId=").append(getEventId()).append("]");
-    return buffer.toString();
+    return "ClientDataSerializerMessage[value="
+        + Arrays.deepToString(serializedDataSerializer)
+        + ";memberId="
+        + getMembershipId() + ";eventId=" + getEventId() + "]";
   }
 }

@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
-import junitparams.Parameters;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Before;
@@ -111,7 +110,6 @@ public class IndexRepositoryFactoryDistributedTest implements Serializable {
   }
 
   @Test
-  @Parameters()
   public void lockedBucketShouldPreventPrimaryFromMoving() {
     dataStore1.invoke(this::initDataStoreAndLuceneIndex);
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
@@ -174,12 +172,15 @@ public class IndexRepositoryFactoryDistributedTest implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       TestObject other = (TestObject) obj;
       if (text == null) {
         return other.text == null;

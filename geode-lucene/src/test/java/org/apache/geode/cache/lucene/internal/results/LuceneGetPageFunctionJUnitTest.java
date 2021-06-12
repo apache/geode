@@ -28,9 +28,12 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
+import org.apache.geode.internal.security.LegacySecurityService;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
@@ -51,6 +54,11 @@ public class LuceneGetPageFunctionJUnitTest {
     when(entry.getRegionEntry()).thenReturn(regionEntry);
     when(regionEntry.getValue(any())).thenReturn("value");
     when(context.getFilter()).thenReturn((Set) Collections.singleton("key"));
+    InternalCache cache = mock(InternalCache.class);
+    when(context.getCache()).thenReturn(cache);
+    SecurityService securityService = mock(LegacySecurityService.class);
+    when(cache.getSecurityService()).thenReturn(securityService);
+
     function.execute(context);
 
     PageResults expectedResults = new PageResults();

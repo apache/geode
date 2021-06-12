@@ -266,8 +266,9 @@ public class OSProcess {
     }
     // Add the actual command
     for (int i = 0; i < cmdarray.length; i++) {
-      if (i != 0)
+      if (i != 0) {
         sb.append(" ");
+      }
       if (cmdarray[i].length() != 0 && cmdarray[i].charAt(0) == '\"') {
         // The token has already been quoted, see bug 40835
         sb.append(cmdarray[i]);
@@ -402,24 +403,26 @@ public class OSProcess {
       if (pid > 0 && pid != myPid[0]) {
         return false;
       }
-      CharArrayWriter cw = new CharArrayWriter(50000);
-      PrintWriter sb = new PrintWriter(cw, true);
-      sb.append("\n******** full thread dump ********\n");
-      ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-      long[] threadIds = bean.getAllThreadIds();
-      ThreadInfo[] infos = bean.getThreadInfo(threadIds, true, true);
-      long thisThread = Thread.currentThread().getId();
-      for (int i = 0; i < infos.length; i++) {
-        if (i != thisThread && infos[i] != null) {
-          formatThreadInfo(infos[i], sb);
+      try (CharArrayWriter cw = new CharArrayWriter(50000)) {
+        PrintWriter sb = new PrintWriter(cw, true);
+        sb.append("\n******** full thread dump ********\n");
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        long[] threadIds = bean.getAllThreadIds();
+        ThreadInfo[] infos = bean.getThreadInfo(threadIds, true, true);
+        long thisThread = Thread.currentThread().getId();
+        for (int i = 0; i < infos.length; i++) {
+          if (i != thisThread && infos[i] != null) {
+            formatThreadInfo(infos[i], sb);
+          }
         }
+        sb.flush();
+        logger.warn(cw.toString());
       }
-      sb.flush();
-      logger.warn(cw.toString());
       return true;
     } else {
-      if (pid < 0)
+      if (pid < 0) {
         checkPid(pid);
+      }
       return _printStacks(pid);
     }
   }
@@ -627,8 +630,9 @@ public class OSProcess {
         done = reaperStarted;
         result = myPid[0];
       }
-      if (done)
+      if (done) {
         break;
+      }
 
       // wait for reaper thread to initialize myPid
       try {

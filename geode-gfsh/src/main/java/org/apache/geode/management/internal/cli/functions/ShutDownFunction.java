@@ -36,9 +36,15 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 public class ShutDownFunction implements InternalFunction<Void> {
   private static final Logger logger = LogService.getLogger();
-
-  public static final String ID = ShutDownFunction.class.getName();
   private static final long serialVersionUID = 1L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ShutDownFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<Void> context) {
@@ -83,12 +89,6 @@ public class ShutDownFunction implements InternalFunction<Void> {
     } finally {
       exec.shutdown();
     }
-  }
-
-  @Override
-  public String getId() {
-    return ShutDownFunction.ID;
-
   }
 
   @Override

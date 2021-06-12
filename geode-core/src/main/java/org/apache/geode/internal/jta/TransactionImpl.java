@@ -114,8 +114,9 @@ public class TransactionImpl implements Transaction {
       String exception =
           "TransactionImpl::setRollbackOnly: No global transaction exists.";
       LogWriter writer = TransactionUtils.getLogWriter();
-      if (writer.fineEnabled())
+      if (writer.fineEnabled()) {
         writer.fine(exception);
+      }
       throw new SystemException(exception);
     }
     gtx.setRollbackOnly();
@@ -142,8 +143,9 @@ public class TransactionImpl implements Transaction {
     String exception =
         "setTransactionTimeout is not supported.";
     LogWriter writer = TransactionUtils.getLogWriter();
-    if (writer.fineEnabled())
+    if (writer.fineEnabled()) {
       writer.fine(exception);
+    }
     throw new SystemException(exception);
   }
 
@@ -169,8 +171,9 @@ public class TransactionImpl implements Transaction {
       String exception =
           "TransactionImpl::enlistResource: No global transaction exists";
       LogWriter writer = TransactionUtils.getLogWriter();
-      if (writer.fineEnabled())
+      if (writer.fineEnabled()) {
         writer.fine(exception);
+      }
       throw new SystemException(exception);
     }
     return gtx.enlistResource(xaRes);
@@ -197,8 +200,9 @@ public class TransactionImpl implements Transaction {
       String exception =
           "TransactionImpl::delistResource: No global transaction exists";
       LogWriter writer = TransactionUtils.getLogWriter();
-      if (writer.fineEnabled())
+      if (writer.fineEnabled()) {
         writer.fine(exception);
+      }
       throw new SystemException(exception);
     }
     return gtx.delistResource(xaRes, flag);
@@ -221,9 +225,10 @@ public class TransactionImpl implements Transaction {
         writer.fine("registering JTA synchronization: " + synchronisation);
       }
     }
-    if (synchronisation == null)
+    if (synchronisation == null) {
       throw new SystemException(
           "TransactionImpl::registerSynchronization:Synchronization is null");
+    }
     gtx = tm.getGlobalTransaction();
     if (gtx == null) {
       throw new SystemException(
@@ -235,15 +240,17 @@ public class TransactionImpl implements Transaction {
         String exception =
             "TransactionImpl::registerSynchronization: Synchronization cannot be registered because the transaction has been marked for rollback";
         LogWriter writer = TransactionUtils.getLogWriter();
-        if (writer.fineEnabled())
+        if (writer.fineEnabled()) {
           writer.fine(exception);
+        }
         throw new RollbackException(exception);
       } else if (status != Status.STATUS_ACTIVE) {
         String exception =
             "TransactionImpl::registerSynchronization: Synchronization cannot be registered on a transaction which is not active";
         LogWriter writer = TransactionUtils.getLogWriter();
-        if (writer.fineEnabled())
+        if (writer.fineEnabled()) {
           writer.fine(exception);
+        }
         throw new IllegalStateException(exception);
       }
       syncList.add(synchronisation);

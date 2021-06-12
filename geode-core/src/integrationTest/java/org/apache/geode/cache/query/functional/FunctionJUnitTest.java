@@ -106,8 +106,9 @@ public class FunctionJUnitTest {
       Iterator iter = ((Collection) result).iterator();
       while (iter.hasNext()) {
         Portfolio p = (Portfolio) iter.next();
-        if (p.getP2() == null)
+        if (p.getP2() == null) {
           fail(query.getQueryString());
+        }
       }
     }
     Object testData[][] = {{"string", Boolean.TRUE}, {new Integer(0), Boolean.TRUE},
@@ -116,8 +117,9 @@ public class FunctionJUnitTest {
     for (int i = 0; i < testData.length; i++) {
       query = CacheUtils.getQueryService().newQuery("IS_DEFINED($1)");
       result = query.execute(testData[i]);
-      if (!result.equals(testData[i][1]))
+      if (!result.equals(testData[i][1])) {
         fail(query.getQueryString() + " for " + testData[i][0]);
+      }
     }
   }
 
@@ -131,8 +133,9 @@ public class FunctionJUnitTest {
       Iterator iter = ((Collection) result).iterator();
       while (iter.hasNext()) {
         Portfolio p = (Portfolio) iter.next();
-        if (p.getP2() != null)
+        if (p.getP2() != null) {
           fail(query.getQueryString());
+        }
       }
     }
     Object testData[][] = {{"string", Boolean.FALSE}, {new Integer(0), Boolean.FALSE},
@@ -141,8 +144,9 @@ public class FunctionJUnitTest {
     for (int i = 0; i < testData.length; i++) {
       query = CacheUtils.getQueryService().newQuery("IS_UNDEFINED($1)");
       result = query.execute(testData[i]);
-      if (!result.equals(testData[i][1]))
+      if (!result.equals(testData[i][1])) {
         fail(query.getQueryString() + " for " + testData[i][0]);
+      }
     }
   }
 
@@ -151,8 +155,9 @@ public class FunctionJUnitTest {
     Query query = CacheUtils.getQueryService()
         .newQuery("ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where ID =1).status");
     Object result = query.execute();
-    if (!result.equals("inactive"))
+    if (!result.equals("inactive")) {
       fail(query.getQueryString());
+    }
     try {
       query = CacheUtils.getQueryService()
           .newQuery(
@@ -168,13 +173,15 @@ public class FunctionJUnitTest {
   public void testNVL() throws Exception {
     Query query = CacheUtils.getQueryService().newQuery("nvl(NULL, 'foundNull')");
     Object result = query.execute();
-    if (!result.equals("foundNull"))
+    if (!result.equals("foundNull")) {
       fail(query.getQueryString());
+    }
 
     query = CacheUtils.getQueryService().newQuery("nvl('notNull', 'foundNull')");
     result = query.execute();
-    if (result.equals("foundNull"))
+    if (result.equals("foundNull")) {
       fail(query.getQueryString());
+    }
 
     query = CacheUtils.getQueryService().newQuery(
         "select distinct * from " + SEPARATOR
@@ -242,8 +249,9 @@ public class FunctionJUnitTest {
       query = qs.newQuery(queries[i]);
       result = query.execute();
       // CacheUtils.log(((Date)result));
-      if (!result.equals(date))
+      if (!result.equals(date)) {
         fail(query.getQueryString());
+      }
     }
 
     for (int i = 0; i < noCheckQueries.length; i++) {

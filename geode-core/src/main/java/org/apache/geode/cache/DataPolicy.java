@@ -314,8 +314,9 @@ public class DataPolicy implements java.io.Serializable {
       }
     }
 
-    if (valueIndex != -1)
+    if (valueIndex != -1) {
       return VALUES[valueIndex];
+    }
 
     return null;
   }

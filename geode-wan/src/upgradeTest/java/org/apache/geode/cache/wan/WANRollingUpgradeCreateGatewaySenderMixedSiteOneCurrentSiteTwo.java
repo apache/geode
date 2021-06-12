@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.wan;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
@@ -21,7 +23,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -49,15 +50,16 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
     VM site2Server1 = host.getVM(VersionManager.CURRENT_VERSION, 5);
     VM site2Server2 = host.getVM(VersionManager.CURRENT_VERSION, 6);
 
+    int[] locatorPorts = getRandomAvailableTCPPorts(2);
     // Get mixed site locator properties
     String hostName = NetworkUtils.getServerHostName(host);
-    final int site1LocatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int site1LocatorPort = locatorPorts[0];
     site1Locator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(site1LocatorPort));
     final String site1Locators = hostName + "[" + site1LocatorPort + "]";
     final int site1DistributedSystemId = 0;
 
     // Get current site locator properties
-    final int site2LocatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int site2LocatorPort = locatorPorts[1];
     site2Locator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(site2LocatorPort));
     final String site2Locators = hostName + "[" + site2LocatorPort + "]";
     final int site2DistributedSystemId = 1;
@@ -92,9 +94,9 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
     // Roll mixed site locator to current with jmx manager
     site1Locator.invoke(() -> stopLocator());
     VM site1RolledLocator = host.getVM(VersionManager.CURRENT_VERSION, site1Locator.getId());
-    int jmxManagerPort =
-        site1RolledLocator.invoke(() -> startLocatorWithJmxManager(site1LocatorPort,
-            site1DistributedSystemId, site1Locators, site2Locators));
+    int jmxManagerPort = getRandomAvailableTCPPort();
+    site1RolledLocator.invoke(startLocatorWithJmxManager(site1LocatorPort,
+        site1DistributedSystemId, site1Locators, site2Locators, jmxManagerPort));
 
     // Roll one mixed site server to current
     site1Server2.invoke(() -> closeCache());

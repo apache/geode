@@ -44,7 +44,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.datasource.PooledDataSourceFactory;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -281,37 +281,38 @@ public class DataSourceFactory {
       Map.Entry entry = (Map.Entry) entries.next();
       String name = (String) entry.getKey();
       final Object obj = entry.getValue();
-      if (name.equals("connection-url"))
+      if (name.equals("connection-url")) {
         configs.setURL((String) obj);
-      else if (name.equals("user-name"))
+      } else if (name.equals("user-name")) {
         configs.setUser((String) obj);
-      else if (name.equals("password"))
+      } else if (name.equals("password")) {
         configs.setPassword(PasswordUtil.decrypt((String) obj));
-      else if (name.equals("jdbc-driver-class"))
+      } else if (name.equals("jdbc-driver-class")) {
         configs.setJDBCDriver((String) obj);
-      else if (name.equals("init-pool-size"))
+      } else if (name.equals("init-pool-size")) {
         configs.setInitialPoolSize(Integer.parseInt((String) (obj == null
             ? String.valueOf(DataSourceResources.CONNECTION_POOL_DEFAULT_INIT_LIMIT) : obj)));
-      else if (name.equals("max-pool-size"))
+      } else if (name.equals("max-pool-size")) {
         configs.setMaxPoolSize(Integer.parseInt((String) (obj == null
             ? String.valueOf(DataSourceResources.CONNECTION_POOL_DEFAULT_MAX_LIMIT) : obj)));
-      else if (name.equals("idle-timeout-seconds"))
+      } else if (name.equals("idle-timeout-seconds")) {
         configs.setConnectionExpirationTime(Integer.parseInt((String) (obj == null
             ? String.valueOf(DataSourceResources.CONNECTION_POOL_DEFAULT_EXPIRATION_TIME) : obj)));
-      else if (name.equals("blocking-timeout-seconds"))
+      } else if (name.equals("blocking-timeout-seconds")) {
         configs.setConnectionTimeOut(Integer.parseInt((String) (obj == null
             ? String.valueOf(DataSourceResources.CONNECTION_POOL_DEFAULT_ACTIVE_TIME_OUT) : obj)));
-      else if (name.equals("login-timeout-seconds"))
+      } else if (name.equals("login-timeout-seconds")) {
         configs.setLoginTimeOut(Integer.parseInt((String) (obj == null
             ? String.valueOf(DataSourceResources.CONNECTION_POOL_DEFAULT_CLIENT_TIME_OUT) : obj)));
-      else if (name.equals("conn-pooled-datasource-class"))
+      } else if (name.equals("conn-pooled-datasource-class")) {
         configs.setConnectionPoolDSClass((String) obj);
-      else if (name.equals("xa-datasource-class"))
+      } else if (name.equals("xa-datasource-class")) {
         configs.setXADSClass((String) obj);
-      else if (name.equals("managed-conn-factory-class"))
+      } else if (name.equals("managed-conn-factory-class")) {
         configs.setMCFClass((String) obj);
-      else if (name.equals("transaction-type"))
+      } else if (name.equals("transaction-type")) {
         configs.setTransactionType((String) obj);
+      }
     }
 
     /*

@@ -127,6 +127,20 @@ public class IntegratedSecurityService implements SecurityService {
   }
 
   /**
+   * Returns the current principal if one exists or null.
+   *
+   * @return the principal
+   */
+  @Override
+  public Object getPrincipal() {
+    try {
+      return getSubject().getPrincipal();
+    } catch (Exception ex) {
+      return null;
+    }
+  }
+
+  /**
    * @return return a shiro subject
    */
   @Override

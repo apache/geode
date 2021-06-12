@@ -154,8 +154,9 @@ public class PdxString implements Comparable<PdxString>, Sendable {
         int i = this.offset;
         int j = o.offset;
         while (n-- != 0) {
-          if (bytes[i++] != o.bytes[j++])
+          if (bytes[i++] != o.bytes[j++]) {
             return false;
+          }
         }
         return true;
       }
@@ -184,7 +185,10 @@ public class PdxString implements Comparable<PdxString>, Sendable {
                                                                              // String bytes in
       // array. Counting on the readString() to read only String
       // bytes
-      s = DataSerializer.readString(new ByteBufferInputStream(stringByteBuffer));
+      try (ByteBufferInputStream byteBufferInputStream =
+          new ByteBufferInputStream(stringByteBuffer)) {
+        s = DataSerializer.readString(byteBufferInputStream);
+      }
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }

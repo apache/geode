@@ -36,7 +36,7 @@ public class GatewaySenderEventProcessorGroupJUnitTest {
   @Test
   public void testVerifyGroupName() {
     AbstractExecutor gatewaySenderEventProcessorGroup =
-        new GatewaySenderEventProcessorGroup(null);
+        new GatewaySenderEventProcessorGroup();
     assertTrue(gatewaySenderEventProcessorGroup.getGroupName().equals(GROUPNAME));
   }
 }

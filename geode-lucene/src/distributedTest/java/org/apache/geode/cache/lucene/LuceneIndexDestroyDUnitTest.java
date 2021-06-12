@@ -727,7 +727,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     Region region = getCache().getRegion(REGION_NAME);
     RegionSnapshotService service = region.getSnapshotService();
     service.save(getSnapshotFile(getDiskDirs()[0], regionType),
-        SnapshotOptions.SnapshotFormat.GEMFIRE);
+        SnapshotOptions.SnapshotFormat.GEODE);
   }
 
   private void importData(RegionTestableType regionType, int expectedRegionSize) throws Exception {
@@ -736,7 +736,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     SnapshotOptions options = service.createOptions();
     options.invokeCallbacks(true);
     service.load(getSnapshotFile(getDiskDirs()[0], regionType),
-        SnapshotOptions.SnapshotFormat.GEMFIRE, options);
+        SnapshotOptions.SnapshotFormat.GEODE, options);
     assertEquals(expectedRegionSize, region.size());
   }
 

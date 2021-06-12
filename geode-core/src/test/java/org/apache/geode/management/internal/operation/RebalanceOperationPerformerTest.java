@@ -36,6 +36,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
@@ -137,7 +138,8 @@ public class RebalanceOperationPerformerTest {
     List<Object> resultList = new ArrayList<>();
     resultList.add("0,1,2,3,4,5,6,7,8,9," + SEPARATOR + "region1");
     when(functionExecutor.execute(any(), any(), any())).thenReturn(resultList);
-
+    when(distributedMember1.getVersion()).thenReturn(KnownVersion.getCurrentVersion());
+    when(distributedMember2.getVersion()).thenReturn(KnownVersion.getCurrentVersion());
     RebalanceResult result =
         performer.executeRebalanceOnDS(managementService, cache, "true",
             Collections.emptyList(), functionExecutor);

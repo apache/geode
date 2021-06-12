@@ -48,7 +48,6 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
-import org.apache.geode.internal.cache.partitioned.fixed.FixedPartitioningTestBase.Months_Accessor;
 import org.apache.geode.internal.cache.partitioned.fixed.QuarterPartitionResolver;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -105,12 +104,15 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     future1.join(60 * 1000);
     future2.join(60 * 1000);
     future3.join(60 * 1000);
-    if (future1.exceptionOccurred())
+    if (future1.exceptionOccurred()) {
       throw future1.getException();
-    if (future2.exceptionOccurred())
+    }
+    if (future2.exceptionOccurred()) {
       throw future2.getException();
-    if (future3.exceptionOccurred())
+    }
+    if (future3.exceptionOccurred()) {
       throw future3.getException();
+    }
 
     SerializableRunnable checkAssignment = new SerializableRunnable("check assignment") {
       @Override
@@ -224,12 +226,15 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     future1.join();
     future2.join();
     future3.join();
-    if (future1.exceptionOccurred())
+    if (future1.exceptionOccurred()) {
       throw future1.getException();
-    if (future2.exceptionOccurred())
+    }
+    if (future2.exceptionOccurred()) {
       throw future2.getException();
-    if (future3.exceptionOccurred())
+    }
+    if (future3.exceptionOccurred()) {
       throw future3.getException();
+    }
 
     SerializableRunnable checkAssignment = new SerializableRunnable("check assignment") {
       @Override
@@ -784,6 +789,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     assertEquals(expectedSet, got);
   }
 
-
-
+  public enum Months_Accessor {
+    JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP
+  }
 }

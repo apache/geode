@@ -14,15 +14,24 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 
@@ -55,5 +64,24 @@ public class GfshCommandJUnitTest {
     doReturn(Collections.emptySet()).when(command).findMembersIncludingLocators(members, null);
     assertThatThrownBy(() -> command.getMembersIncludingLocators(members, null))
         .isInstanceOf(EntityNotFoundException.class);
+  }
+
+  @Test
+  public void findAllOtherLocators() throws Exception {
+    InternalCache cache = mock(InternalCache.class);
+    doReturn(cache).when(command).getCache();
+    DistributedMember member1 = mock(DistributedMember.class);
+    DistributedMember member2 = mock(DistributedMember.class);
+    when(member1.getId()).thenReturn("member1");
+    when(member2.getId()).thenReturn("member2");
+    DistributedSystem system = mock(DistributedSystem.class);
+    when(system.getDistributedMember()).thenReturn(member1);
+    when(cache.getDistributedSystem()).thenReturn(system);
+    Set<DistributedMember> members = new HashSet<>(asList(member1, member2));
+    doReturn(members).when(command).findAllLocators();
+
+    assertThat(command.findAllOtherLocators())
+        .extracting(DistributedMember::getId)
+        .containsExactly("member2");
   }
 }

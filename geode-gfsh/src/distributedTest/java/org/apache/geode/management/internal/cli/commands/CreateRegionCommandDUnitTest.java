@@ -326,7 +326,7 @@ public class CreateRegionCommandDUnitTest {
   @Test
   public void testCreateRegionFromTemplateFailsIfTemplateDoesNotExist() {
     gfsh.executeAndAssertThat(
-        "create region --template-region=" + SEPARATOR + "TEMPLATE --name=" + SEPARATOR + "TEST"
+        "create region --template-region=TEMPLATE --name=TEST"
             + TestCacheListener.class.getName())
         .statusIsError()
         .containsOutput("Template region " + SEPARATOR + "TEMPLATE does not exist");
@@ -334,62 +334,59 @@ public class CreateRegionCommandDUnitTest {
 
   @Test
   public void overrideListenerFromTemplate() {
+    String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat(
-        "create region --name=" + SEPARATOR + "TEMPLATE --type=PARTITION_REDUNDANT"
+        "create region --name=" + regionName + " --type=PARTITION_REDUNDANT"
             + " --cache-listener=" + TestCacheListener.class.getName())
         .statusIsSuccess();
 
     gfsh.executeAndAssertThat(
-        "create region --name=" + SEPARATOR + "COPY --template-region=" + SEPARATOR + "TEMPLATE"
+        "create region --name=" + regionName + "_COPY --template-region=" + regionName
             + " --cache-listener=" + AnotherTestCacheListener.class.getName())
         .statusIsSuccess();
 
     server1.getVM().invoke(() -> {
-      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion(SEPARATOR + "COPY");
+      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion(regionName + "_COPY");
 
       assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
           .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
               .containsExactly(AnotherTestCacheListener.class.getName());
     });
-
-    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "COPY").statusIsSuccess();
-    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "TEMPLATE").statusIsSuccess();
   }
 
 
   @Test
   public void cannotSetRegionExpirationForPartitionedTemplate() {
-    gfsh.executeAndAssertThat("create region --name=" + SEPARATOR + "TEMPLATE --type=PARTITION")
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=PARTITION")
         .statusIsSuccess();
 
     gfsh.executeAndAssertThat(
-        "create region --name=" + SEPARATOR + "COPY --template-region=" + SEPARATOR
-            + "TEMPLATE --enable-statistics=true --region-idle-time-expiration=1 --region-time-to-live-expiration=1")
+        "create region --name=" + regionName + "_COPY --template-region=" + regionName
+            + " --enable-statistics=true --region-idle-time-expiration=1 --region-time-to-live-expiration=1")
         .statusIsError()
         .containsOutput(
             "ExpirationAction INVALIDATE or LOCAL_INVALIDATE for region is not supported for Partitioned Region");
-
-    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "TEMPLATE").statusIsSuccess();
   }
 
   @Test
   public void cannotCreateTemplateWithInconsistentPersistence() {
+    String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat(
-        "create region --name=" + SEPARATOR + "TEMPLATE --type=PARTITION_PERSISTENT")
+        "create region --name=" + regionName + " --type=PARTITION_PERSISTENT")
         .statusIsSuccess();
 
     gfsh.executeAndAssertThat(
-        "create region --name=" + SEPARATOR + "COPY --template-region=" + SEPARATOR
-            + "TEMPLATE --enable-statistics=true --region-idle-time-expiration=1 --region-time-to-live-expiration=1")
+        "create region --name=" + regionName + "_COPY --template-region=" + regionName
+            + " --enable-statistics=true --region-idle-time-expiration=1 --region-time-to-live-expiration=1")
         .statusIsError()
         .containsOutput(
             "ExpirationAction INVALIDATE or LOCAL_INVALIDATE for region is not supported for Partitioned Region");
-
-    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "TEMPLATE").statusIsSuccess();
   }
 
   @Test
   public void ensureOverridingCallbacksFromTemplateDoNotRequireClassesOnLocator() throws Exception {
+    String regionName = testName.getMethodName();
     final File prJarFile = new File(tmpDir.getRoot(), "myCacheListener.jar");
     new JarBuilder().buildJar(prJarFile, getUniversalClassCode("MyCallback"),
         getUniversalClassCode("MyNewCallback"));
@@ -399,7 +396,7 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         String
             .format(
-                "create region --name=" + SEPARATOR + "TEMPLATE --type=PARTITION_REDUNDANT "
+                "create region --name=" + regionName + " --type=PARTITION_REDUNDANT "
                     + "--cache-listener=%1$s " + "--cache-loader=%1$s " + "--cache-writer=%1$s "
                     + "--compressor=%1$s " + "--key-constraint=%1$s " + "--value-constraint=%1$s",
                 myCallback))
@@ -407,14 +404,14 @@ public class CreateRegionCommandDUnitTest {
 
     String myNewCallback = "io.pivotal.MyNewCallback";
     gfsh.executeAndAssertThat(String
-        .format("create region --name=" + SEPARATOR + "COPY --template-region=" + SEPARATOR
-            + "TEMPLATE " + "--cache-listener=%1$s "
+        .format("create region --name=" + regionName + "_COPY --template-region=" + regionName
+            + " --cache-listener=%1$s "
             + "--cache-loader=%1$s " + "--cache-writer=%1$s " + "--compressor=%1$s "
             + "--key-constraint=%1$s " + "--value-constraint=%1$s", myNewCallback))
         .statusIsSuccess();
 
     server1.getVM().invoke(() -> {
-      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion(SEPARATOR + "COPY");
+      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion(regionName + "_COPY");
 
       assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
           .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
@@ -433,31 +430,29 @@ public class CreateRegionCommandDUnitTest {
 
       assertThat(copy.getAttributes().getValueConstraint().getName()).isEqualTo(myNewCallback);
     });
-
-    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "COPY").statusIsSuccess();
-    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "TEMPLATE").statusIsSuccess();
   }
 
   @Test
   public void ensureNewCallbacksFromTemplateDoNotRequireClassesOnLocator() throws Exception {
+    String regionName = testName.getMethodName();
     final File prJarFile = new File(tmpDir.getRoot(), "myCacheListener.jar");
     new JarBuilder().buildJar(prJarFile, getUniversalClassCode("MyNewCallback"));
     gfsh.executeAndAssertThat("deploy --jar=" + prJarFile.getAbsolutePath()).statusIsSuccess();
 
     gfsh.executeAndAssertThat(
-        "create region --name=" + SEPARATOR + "TEMPLATE --type=PARTITION_REDUNDANT")
+        "create region --name=" + regionName + " --type=PARTITION_REDUNDANT")
         .statusIsSuccess();
 
     String myNewCallback = "io.pivotal.MyNewCallback";
     gfsh.executeAndAssertThat(String
-        .format("create region --name=" + SEPARATOR + "COPY --template-region=" + SEPARATOR
-            + "TEMPLATE " + "--cache-listener=%1$s "
+        .format("create region --name=" + regionName + "_COPY --template-region=" + regionName
+            + " --cache-listener=%1$s "
             + "--cache-loader=%1$s " + "--cache-writer=%1$s " + "--compressor=%1$s "
             + "--key-constraint=%1$s " + "--value-constraint=%1$s", myNewCallback))
         .statusIsSuccess();
 
     server1.getVM().invoke(() -> {
-      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion(SEPARATOR + "COPY");
+      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion(regionName + "_COPY");
 
       assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
           .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
@@ -476,13 +471,11 @@ public class CreateRegionCommandDUnitTest {
 
       assertThat(copy.getAttributes().getValueConstraint().getName()).isEqualTo(myNewCallback);
     });
-
-    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "COPY").statusIsSuccess();
-    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "TEMPLATE").statusIsSuccess();
   }
 
   @Test
   public void ensureOriginalCallbacksFromTemplateDoNotRequireClassesOnLocator() throws Exception {
+    String regionName = testName.getMethodName();
     final File prJarFile = new File(tmpDir.getRoot(), "myCacheListener.jar");
     new JarBuilder().buildJar(prJarFile, getUniversalClassCode("MyCallback"));
     gfsh.executeAndAssertThat("deploy --jar=" + prJarFile.getAbsolutePath()).statusIsSuccess();
@@ -491,18 +484,18 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         String
             .format(
-                "create region --name=" + SEPARATOR + "TEMPLATE --type=PARTITION_REDUNDANT "
+                "create region --name=" + regionName + " --type=PARTITION_REDUNDANT "
                     + "--cache-listener=%1$s " + "--cache-loader=%1$s " + "--cache-writer=%1$s "
                     + "--compressor=%1$s " + "--key-constraint=%1$s " + "--value-constraint=%1$s",
                 myCallback))
         .statusIsSuccess();
 
     gfsh.executeAndAssertThat(
-        "create region --name=" + SEPARATOR + "COPY --template-region=" + SEPARATOR + "TEMPLATE")
+        "create region --name=" + regionName + "_COPY --template-region=" + regionName)
         .statusIsSuccess();
 
     server1.getVM().invoke(() -> {
-      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion(SEPARATOR + "COPY");
+      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion(regionName + "_COPY");
 
       assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
           .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
@@ -518,9 +511,6 @@ public class CreateRegionCommandDUnitTest {
 
       assertThat(copy.getAttributes().getValueConstraint().getName()).isEqualTo(myCallback);
     });
-
-    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "COPY").statusIsSuccess();
-    gfsh.executeAndAssertThat("destroy region --name=" + SEPARATOR + "TEMPLATE").statusIsSuccess();
   }
 
   @Test

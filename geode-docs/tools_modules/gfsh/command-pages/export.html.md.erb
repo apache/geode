@@ -185,7 +185,7 @@ Export logs to a given directory.
 
 All files that have logs in the specified time range will be exported. If no time range is specified, all logs will be exported.
 
-The `--dir` parameter specifies a local directory to which log files will be written. This is used only when you are exporting logs using an http connection.  If executed over http, the zip archive will be saved in the specified directory on the user's client machine. If not specified, logs are written to the location specified by the `user.dir` system property. When the command is executed over JMX, logs will be saved as `exportedLogs_xxx.zip` in the connected locator's working directory.
+The `--dir` parameter specifies a local directory to which log files will be written. This is used only when you are exporting logs using an http connection. If executed over http, the zip archive will be saved in the specified directory on the user's client machine. If not specified, logs are written to the location specified by the `user.dir` system property. When the command is executed over JMX, logs will be saved as `exportedLogs_xxx.zip` in the connected locator's working directory.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -208,8 +208,8 @@ export logs [--dir=value] [--groups=value(,value)*] [--members=value(,value)*]
 | <span class="keyword parmname">\\-\\-log-level</span>      | Minimum level of log entries to export. Valid values are: `OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`, and `ALL`. | `INFO`        |
 | <span class="keyword parmname">\\-\\-only-log-level</span> | Whether to only include only entries that exactly match the <span class="keyword parmname">\\-\\-log-level</span> specified.  | false         |
 | <span class="keyword parmname">&#8209;&#8209;merge&#8209;log</span>      | Whether to merge logs after exporting to the target directory (deprecated).                                                             | false         |
-| <span class="keyword parmname">\\-\\-start-time</span>     | Log entries that occurred after this time will be exported. Format: yyyy/MM/dd/HH/mm/ss/SSS/z OR yyyy/MM/dd                | no limit      |
-| <span class="keyword parmname">\\-\\-end-time</span>       | Log entries that occurred before this time will be exported. Format: yyyy/MM/dd/HH/mm/ss/SSS/z OR yyyy/MM/dd               | no limit      |
+| <span class="keyword parmname">\\-\\-start-time</span>     | Log entries that occurred after this time will be exported. Format: `yyyy/MM/dd/HH/mm/ss/SSS/z` OR `yyyy/MM/dd`. When using the `yyyy/MM/dd/HH/mm/ss/SSS/z` format, the time zone, denoted `z`, should be specified as either a 3-letter time zone such as `PST` or as an offset to GMT/UTC such as `GMT+08:00`.                | no limit      |
+| <span class="keyword parmname">\\-\\-end-time</span>       | Log entries that occurred before this time will be exported. Format: `yyyy/MM/dd/HH/mm/ss/SSS/z` OR `yyyy/MM/dd`. When using the `yyyy/MM/dd/HH/mm/ss/SSS/z` format, the time zone, denoted `z`, should be specified as either a 3-letter time zone such as `PST` or as an offset to GMT/UTC such as `GMT+08:00`. An end time specified by only a date implements a time of `00:00`. This exports logs written up until `23:59:59.999` on the date prior to the one specified.             | no limit      |
 | <span class="keyword parmname">\\-\\-logs-only</span>       | Whether to export only logs (not statistics)               | If parameter not specified: false. If parameter specified without a value: true      |
 | <span class="keyword parmname">\\-\\-stats-only</span>       | Whether to export only statistics (not logs)               | If parameter not specified: false. If parameter specified without a value: true      |
 | <span class="keyword parmname">\\-\\-file-size-limit</span>       | Limits total unzipped size of the exported files. Specify 0 (zero) for no limit. Value is in megabytes by default or [k,m,g,t] may be specified.              | If parameter not specified: 100m. If parameter specified without a value: 0      |
@@ -219,6 +219,13 @@ export logs [--dir=value] [--groups=value(,value)*] [--members=value(,value)*]
 ``` pre
 gfsh>export logs --dir=data/logs
 Logs exported to the connected member's file system: /my-locator/data/logs/exportedLogs_1489513007261.zip
+```
+
+``` pre
+gfsh>export logs --start-time=2020/12/14/12/00/00/000/GMT-08:00 --end-time=2020/12/27 --dir=data/logs
+Start time parsed as 2020-12-14T12:00 PST
+End time parsed as 2020-12-27T00:00 PST
+Logs exported to the connected member's file system: /my-locator/data/logs/exportedLogs_1608165308676.zip
 ```
 
 ``` pre
@@ -260,34 +267,36 @@ export offline-disk-store --name=value --disk-dirs=value(,value)* --dir=value
 
 ## <a id="topic_195D27B8B2B64A4E84CF2256636D54BD" class="no-quick-link"></a>export stack-traces
 
-Export the stack trace for a member or members.
+Export the stack trace for one or more cluster members (locators and servers).
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
 **Syntax:**
 
 ``` pre
-export stack-traces --file=value [--members=value(,value)*] [--groups=value(,value)*]
+export stack-traces [--members=value(,value)*] [--groups=value(,value)*]
+[--file=value] [--abort-if-file-exists(=value)?]
 ```
 
 **Export Stack-Traces Parameters:**
 
 | Name                                           | Description                                                     |
 |------------------------------------------------|-----------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-file</span>   | *Required.* Filename to which the stack-traces will be written. |
-| <span class="keyword parmname">\\-\\-members</span> | Name or ID of the member(s) whose log files will be exported.      |
-| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members whose log files will be exported.          |
+| <span class="keyword parmname">\\-\\-members</span> | Name or ID of the member(s) whose stack traces will be exported.      |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members whose stack traces will be exported.          |
+| <span class="keyword parmname">\\-\\-file</span>    | File name to which the stack traces will be written. When not specified, the file name will be the string "stacktrace_" followed by the current time in milliseconds. |
+| <span class="keyword parmname">\\-\\-abort-if-file-exists</span>   | When true, abort the command if the file already exists in the locator's directory. If this option is not specified, the default value is false. |
 
 **Example Commands:**
 
 ``` pre
-export stack-traces --file=stack.txt
+export stack-traces --file=stack.txt --abort-if-file-exists=true
 ```
 
 **Sample Output:**
 
 ``` pre
-gfsh>export stack-traces --file=stack.txt
-stack-trace(s) exported to file: C:\PivotalGemFire\Latest\locator1\stack.txt
-On host : GemFireStymon
+gfsh>export stack-traces
+stack-trace(s) exported to file: /data/stacktrace_1612316330340
+On host : cluster-locator-0.cluster-locator.system.svc.cluster.local
 ```

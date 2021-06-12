@@ -15,15 +15,13 @@
  * limitations under the License.
  */
 
-plugins {
-    id 'me.champeau.gradle.jmh' version '0.4.8'
-}
-
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply plugin: 'antlr'
+
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/pmd.gradle"
+apply from: "${project.projectDir}/../gradle/jmh.gradle"
 
 sourceSets {
     jca {
@@ -132,13 +130,13 @@ task raJar(type: Jar, dependsOn: classes) {
     description 'Assembles the jar archive that contains the JCA classes'
     from sourceSets.jca.output
     exclude 'org/apache/geode/ra/**'
-    archiveName 'ra.jar'
+    archiveFileName='ra.jar'
 }
 
 task jcaJar(type: Jar, dependsOn: raJar) {
     description 'Assembles the jar archive that contains the JCA bundle'
-    baseName 'geode-jca'
-    extension 'rar'
+    archiveBaseName='geode-jca'
+    archiveExtension='rar'
     metaInf { from 'src/jca/ra.xml' }
     from raJar.archivePath
 }
@@ -155,6 +153,12 @@ configurations {
     jmh {
         extendsFrom testImplementation
     }
+
+    raOutput
+}
+
+artifacts {
+    raOutput raJar
 }
 
 dependencies {
@@ -198,6 +202,8 @@ dependencies {
     // find bugs leaks in from spring, needed to remove warnings.
     compileOnly('com.google.code.findbugs:jsr305')
 
+    compileOnly('org.jetbrains:annotations')
+
     //Jgroups is a core component of our membership system.
     implementation('org.jgroups:jgroups')
 
@@ -213,8 +219,6 @@ dependencies {
     //Commons validator is used to validate inet addresses in membership
     implementation('commons-validator:commons-validator')
 
-    //javax.activation is runtime dependency for gfsh with java 11 (used by gfsh-over-http)
-    runtimeOnly('com.sun.activation:javax.activation')
 
     //jaxb is used by cluster configuration
     implementation('javax.xml.bind:jaxb-api')
@@ -228,6 +232,8 @@ dependencies {
     runtimeOnly('com.sun.istack:istack-commons-runtime') {
         exclude group: '*'
     }
+
+    runtimeOnly(project(':geode-deployment:geode-deployment-legacy'))
 
     //Commons lang is used in many different places in core
     implementation('org.apache.commons:commons-lang3')
@@ -319,7 +325,7 @@ dependencies {
     api(project(':geode-management'))
 
 
-    jcaCompile(sourceSets.main.output)
+    jcaImplementation(sourceSets.main.output)
 
     testImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'
@@ -329,40 +335,30 @@ dependencies {
     testImplementation('org.assertj:assertj-core')
     testImplementation('org.mockito:mockito-core')
     testImplementation('com.pholser:junit-quickcheck-core')
-    testImplementation('org.powermock:powermock-core')
-    testImplementation('org.powermock:powermock-module-junit4')
-    testImplementation('org.powermock:powermock-api-mockito2')
     testImplementation('pl.pragmatists:JUnitParams')
     testImplementation('com.tngtech.archunit:archunit-junit4')
+    testImplementation(project(path: ':geode-core', configuration: 'raOutput'))
 
     testImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
-    testRuntime('commons-collections:commons-collections')
-    testRuntime('commons-configuration:commons-configuration')
-    testRuntime('commons-io:commons-io')
-    testRuntime('commons-validator:commons-validator')
-    testRuntime('com.pholser:junit-quickcheck-generators')
+    testRuntimeOnly('commons-collections:commons-collections')
+    testRuntimeOnly('commons-configuration:commons-configuration')
+    testRuntimeOnly('commons-io:commons-io')
+    testRuntimeOnly('commons-validator:commons-validator')
+    testRuntimeOnly('com.pholser:junit-quickcheck-generators')
 
+    // Needed for JDK8, not JDK11, after nebula.facet v7.0.9
+    integrationTestImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
     integrationTestImplementation(project(':geode-gfsh'))
-    integrationTestImplementation(project(':geode-junit')) {
-        exclude module: 'geode-core'
-    }
-    integrationTestImplementation(project(':geode-dunit')) {
-        exclude module: 'geode-core'
-    }
-    integrationTestImplementation(project(':geode-log4j')) {
-        exclude module: 'geode-core'
-    }
+    integrationTestImplementation(project(':geode-junit'))
+    integrationTestImplementation(project(':geode-dunit'))
+    integrationTestImplementation(project(':geode-log4j'))
     integrationTestImplementation(project(':geode-concurrency-test'))
     integrationTestImplementation('org.apache.bcel:bcel')
     integrationTestImplementation('org.apache.logging.log4j:log4j-core')
-    integrationTestImplementation('org.powermock:powermock-core')
-    integrationTestImplementation('org.powermock:powermock-module-junit4')
-    integrationTestImplementation('org.powermock:powermock-api-mockito2')
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
-    integrationTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
     integrationTestRuntimeOnly('org.apache.derby:derby')
     integrationTestRuntimeOnly('xerces:xercesImpl')
@@ -382,7 +378,6 @@ dependencies {
     distributedTestImplementation('com.jayway.jsonpath:json-path-assert')
     distributedTestImplementation('net.openhft:compiler')
 
-    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
     distributedTestRuntimeOnly('org.apache.derby:derby')
 
 
@@ -390,7 +385,7 @@ dependencies {
         exclude module: 'geode-core'
     }
 
-    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
     upgradeTestRuntimeOnly(project(':geode-log4j'))
 
 
@@ -398,29 +393,8 @@ dependencies {
         exclude module: 'geode-core'
     }
     performanceTestImplementation(project(':geode-log4j'))
-}
 
-jmh {
-    duplicateClassesStrategy = 'warn'
-    include = project.hasProperty('jmh.include') ? project.getProperties().get('jmh.include') : '.*'
-    profilers = project.hasProperty('jmh.profilers') ? project.getProperties().get('jmh.profilers').tokenize() : []
-    threads = project.hasProperty('jmh.threads') ? project.getProperties().get('jmh.threads') : null
-}
-
-jmhJar {
-    inputs.files(project.sourceSets.main.output, project.sourceSets.test.output)
-    from {
-        [configurations.jmh, configurations.jmhRuntime, configurations.runtimeClasspath].collect {
-            it.asFileTree.collect {
-                it
-            }
-        }.flatten().unique().collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-    exclude(['META-INF/*.SF'])
-    exclude('META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat')
-    exclude('*.jar')
+    jmhImplementation('org.jctools:jctools-core:3.3.0')
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)

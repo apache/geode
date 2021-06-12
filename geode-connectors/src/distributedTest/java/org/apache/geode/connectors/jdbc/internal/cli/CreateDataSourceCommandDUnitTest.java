@@ -118,7 +118,7 @@ public class CreateDataSourceCommandDUnitTest {
         "Failed to connect to \"mySqlDataSource\"");
 
     // aquire the jar to be used
-    final String jdbcJarName = "mysql-connector-java-8.0.17.jar";
+    final String jdbcJarName = "mysql-connector-java-8.0.25.jar";
     final String jdbcDriverClassName = "com.mysql.cj.jdbc.Driver";
     File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
     assertThat(mySqlDriverFile).exists();
@@ -146,7 +146,6 @@ public class CreateDataSourceCommandDUnitTest {
         "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --url=\""
             + URL + "\" --jdbc-driver-class=" + jdbcDriverClassName)
         .statusIsError().doesNotContainOutput("No suitable driver");
-
   }
 
   private void verifyThatNonExistentClassCausesGfshToError() {

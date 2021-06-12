@@ -113,13 +113,17 @@ public class SocketCloserIntegrationTest {
    * Verify that requesting an asyncClose on an already closed socket is a noop.
    */
   @Test
-  public void testClosedSocket() throws Exception {
-    final AtomicBoolean runnableCalled = new AtomicBoolean();
+  public void testOpenSocketCloser() {
+    final AtomicBoolean beforeSocketCloseRunnableWasCalled = new AtomicBoolean();
+    final AtomicBoolean afterSocketCloseRunnableWasCalled = new AtomicBoolean();
 
-    Socket s = createClosableSocket();
-    s.close();
-    this.socketCloser.asyncClose(s, "A", () -> runnableCalled.set(true));
-    await().until(() -> !runnableCalled.get());
+    final Socket closableSocket = createClosableSocket();
+    this.socketCloser.asyncClose(closableSocket, "A",
+        () -> beforeSocketCloseRunnableWasCalled.set(true),
+        () -> afterSocketCloseRunnableWasCalled.set(true));
+    await().until(() -> beforeSocketCloseRunnableWasCalled.get());
+    await().until(() -> closableSocket.isClosed());
+    await().until(() -> afterSocketCloseRunnableWasCalled.get());
   }
 
   /**
@@ -127,12 +131,16 @@ public class SocketCloserIntegrationTest {
    */
   @Test
   public void testClosedSocketCloser() {
-    final AtomicBoolean runnableCalled = new AtomicBoolean();
+    final AtomicBoolean beforeSocketCloseRunnableWasCalled = new AtomicBoolean();
+    final AtomicBoolean afterSocketCloseRunnableWasCalled = new AtomicBoolean();
 
     final Socket closableSocket = createClosableSocket();
     this.socketCloser.close();
-    this.socketCloser.asyncClose(closableSocket, "A", () -> runnableCalled.set(true));
-    await()
-        .until(() -> runnableCalled.get() && closableSocket.isClosed());
+    this.socketCloser.asyncClose(closableSocket, "A",
+        () -> beforeSocketCloseRunnableWasCalled.set(true),
+        () -> afterSocketCloseRunnableWasCalled.set(true));
+    await().until(() -> beforeSocketCloseRunnableWasCalled.get());
+    await().until(() -> closableSocket.isClosed());
+    await().until(() -> afterSocketCloseRunnableWasCalled.get());
   }
 }

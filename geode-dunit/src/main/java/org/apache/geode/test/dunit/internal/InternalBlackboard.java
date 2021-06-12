@@ -17,61 +17,70 @@ package org.apache.geode.test.dunit.internal;
 import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * DUnitBlackboard provides mailboxes and synchronization gateways for distributed unit tests.
+ * InternalBlackboard provides mailboxes and synchronization gateways for distributed tests.
+ *
  * <p>
  * Tests may use the blackboard to pass objects and status between JVMs with mailboxes instead of
  * using static variables in classes. The caveat being that the objects will be serialized using
  * Java serialization.
+ *
  * <p>
  * Gates may be used to synchronize operations between unit test JVMs. Combined with Awaitility
  * these can be used to test for conditions being met, actions having happened, etc.
- * <p>
- * Look for references to the given methods in your IDE for examples.
  */
 public interface InternalBlackboard extends Remote, Serializable {
+
   /**
-   * resets the blackboard
+   * Resets the blackboard.
    */
   void initBlackboard() throws RemoteException;
 
   /**
-   * signals a boolean gate
+   * Signals a boolean gate.
    */
   void signalGate(String gateName) throws RemoteException;
 
   /**
-   * wait for a gate to be signaled
+   * Waits for a gate to be signaled.
    */
   void waitForGate(String gateName, long timeout, TimeUnit units)
       throws RemoteException, TimeoutException, InterruptedException;
 
   /**
-   * clears a gate
+   * Clears a gate.
    */
   void clearGate(String gateName) throws RemoteException;
 
   /**
-   * test to see if a gate has been signeled
+   * Checks to see if a gate has been signaled.
    */
   boolean isGateSignaled(String gateName) throws RemoteException;
 
   /**
-   * put an object into a mailbox slot. The object must be java-serializable
+   * Puts an object into a mailbox slot. The object must be java-serializable.
    */
-  void setMailbox(String boxName, Object value) throws RemoteException;
+  <T> void setMailbox(String boxName, T value) throws RemoteException;
 
   /**
-   * retrieve an object from a mailbox slot
+   * Retrieves an object from a mailbox slot.
    */
   <T> T getMailbox(String boxName) throws RemoteException;
 
   /**
-   * ping the blackboard to make sure it's there
+   * Pings the blackboard to make sure it's there.
    */
   void ping() throws RemoteException;
 
+  Map<String, Boolean> gates() throws RemoteException;
+
+  Map<String, Serializable> mailboxes() throws RemoteException;
+
+  void putGates(Map<String, Boolean> gates) throws RemoteException;
+
+  void putMailboxes(Map<String, Serializable> mailboxes) throws RemoteException;
 }

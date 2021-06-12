@@ -14,11 +14,13 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
@@ -26,34 +28,42 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
  * stats.
  */
 public class SerialQueuedExecutorWithDMStats extends ThreadPoolExecutor {
-  final PoolStatHelper stats;
-  private final ThreadsMonitoring threadMonitoring;
 
-  public SerialQueuedExecutorWithDMStats(BlockingQueue q, PoolStatHelper stats, ThreadFactory tf,
-      ThreadsMonitoring tMonitoring) {
-    super(1, 1, 60, TimeUnit.SECONDS, q, tf, new PooledExecutorWithDMStats.BlockHandler());
-    // allowCoreThreadTimeOut(true); // deadcoded for 1.5
-    this.stats = stats;
-    this.threadMonitoring = tMonitoring;
+  private final PoolStatHelper poolStatHelper;
+  private final ThreadsMonitoring threadsMonitoring;
+
+  public SerialQueuedExecutorWithDMStats(BlockingQueue<Runnable> workQueue,
+      ThreadFactory threadFactory, PoolStatHelper poolStatHelper,
+      ThreadsMonitoring threadsMonitoring) {
+    super(1, 1, 60, SECONDS, workQueue, threadFactory,
+        new PooledExecutorWithDMStats.BlockHandler());
+
+    this.poolStatHelper = poolStatHelper;
+    this.threadsMonitoring = threadsMonitoring;
   }
 
   @Override
   protected void beforeExecute(Thread t, Runnable r) {
-    if (this.stats != null) {
-      this.stats.startJob();
+    if (poolStatHelper != null) {
+      poolStatHelper.startJob();
     }
-    if (this.threadMonitoring != null) {
-      threadMonitoring.startMonitor(ThreadsMonitoring.Mode.SerialQueuedExecutor);
+    if (threadsMonitoring != null) {
+      threadsMonitoring.startMonitor(ThreadsMonitoring.Mode.SerialQueuedExecutor);
     }
   }
 
   @Override
-  protected void afterExecute(Runnable r, Throwable ex) {
-    if (this.stats != null) {
-      this.stats.endJob();
+  protected void afterExecute(Runnable r, Throwable t) {
+    if (poolStatHelper != null) {
+      poolStatHelper.endJob();
     }
-    if (this.threadMonitoring != null) {
-      threadMonitoring.endMonitor();
+    if (threadsMonitoring != null) {
+      threadsMonitoring.endMonitor();
     }
+  }
+
+  @VisibleForTesting
+  public PoolStatHelper getPoolStatHelper() {
+    return poolStatHelper;
   }
 }

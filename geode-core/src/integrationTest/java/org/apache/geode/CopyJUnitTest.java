@@ -184,15 +184,19 @@ public class CopyJUnitTest {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       ModifiableInteger other = (ModifiableInteger) obj;
-      if (v != other.v)
+      if (v != other.v) {
         return false;
+      }
       return true;
     }
   }
@@ -580,20 +584,26 @@ public class CopyJUnitTest {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       Complex1 other = (Complex1) obj;
       if (hashMap == null) {
-        if (other.hashMap != null)
+        if (other.hashMap != null) {
           return false;
-      } else if (!hashMap.equals(other.hashMap))
+        }
+      } else if (!hashMap.equals(other.hashMap)) {
         return false;
-      if (season != other.season)
+      }
+      if (season != other.season) {
         return false;
+      }
       return true;
     }
   }
@@ -616,25 +626,33 @@ public class CopyJUnitTest {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       Complex2 other = (Complex2) obj;
-      if (id != other.id)
+      if (id != other.id) {
         return false;
+      }
       if (innerList == null) {
-        if (other.innerList != null)
+        if (other.innerList != null) {
           return false;
-      } else if (!innerList.equals(other.innerList))
+        }
+      } else if (!innerList.equals(other.innerList)) {
         return false;
+      }
       if (str == null) {
-        if (other.str != null)
+        if (other.str != null) {
           return false;
-      } else if (!str.equals(other.str))
+        }
+      } else if (!str.equals(other.str)) {
         return false;
+      }
       return true;
     }
   }

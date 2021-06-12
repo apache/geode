@@ -64,25 +64,33 @@ public class ConfigurationChangeResult implements DataSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     ConfigurationChangeResult other = (ConfigurationChangeResult) obj;
     if (errorMessage == null) {
-      if (other.errorMessage != null)
+      if (other.errorMessage != null) {
         return false;
-    } else if (!errorMessage.equals(other.errorMessage))
+      }
+    } else if (!errorMessage.equals(other.errorMessage)) {
       return false;
+    }
     if (exception == null) {
-      if (other.exception != null)
+      if (other.exception != null) {
         return false;
-    } else if (!exception.equals(other.exception))
+      }
+    } else if (!exception.equals(other.exception)) {
       return false;
-    if (isSuccessful != other.isSuccessful)
+    }
+    if (isSuccessful != other.isSuccessful) {
       return false;
+    }
     return true;
   }
 

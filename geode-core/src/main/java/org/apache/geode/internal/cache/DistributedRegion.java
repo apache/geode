@@ -280,7 +280,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   protected EventTracker createEventTracker() {
-    EventTracker tracker = new DistributedEventTracker(cache, getCancelCriterion(), getName());
+    EventTracker tracker = new DistributedEventTracker(this);
     tracker.start();
     return tracker;
   }
@@ -614,8 +614,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (requiresReliabilityCheck && isMissingRequiredRoles) {
       if (getMembershipAttributes().getLossAction().isNoAccess()) {
         synchronized (missingRequiredRoles) {
-          if (!isMissingRequiredRoles)
+          if (!isMissingRequiredRoles) {
             return;
+          }
           Set<Role> roles = Collections.unmodifiableSet(new HashSet<>(missingRequiredRoles));
           throw new RegionAccessException(
               String.format(
@@ -640,8 +641,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       if (getMembershipAttributes().getLossAction().isNoAccess()
           || getMembershipAttributes().getLossAction().isLimitedAccess()) {
         synchronized (missingRequiredRoles) {
-          if (!isMissingRequiredRoles)
+          if (!isMissingRequiredRoles) {
             return;
+          }
           Set<Role> roles = Collections.unmodifiableSet(new HashSet<>(missingRequiredRoles));
           Assert.assertTrue(!roles.isEmpty());
           throw new RegionAccessException(
@@ -983,8 +985,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     try {
       validatedInvalidate(key, aCallbackArgument);
     } finally {
-      if (dlock != null)
+      if (dlock != null) {
         dlock.unlock();
+      }
     }
   }
 
@@ -1492,12 +1495,13 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
               // forcing state of loss because of bad GII
               isMissingRequiredRoles = true;
               getCachePerfStats().incReliableRegionsMissing(1);
-              if (getMembershipAttributes().getLossAction().isAllAccess())
+              if (getMembershipAttributes().getLossAction().isAllAccess()) {
                 getCachePerfStats().incReliableRegionsMissingFullAccess(1); // rahul
-              else if (getMembershipAttributes().getLossAction().isLimitedAccess())
+              } else if (getMembershipAttributes().getLossAction().isLimitedAccess()) {
                 getCachePerfStats().incReliableRegionsMissingLimitedAccess(1);
-              else if (getMembershipAttributes().getLossAction().isNoAccess())
+              } else if (getMembershipAttributes().getLossAction().isNoAccess()) {
                 getCachePerfStats().incReliableRegionsMissingNoAccess(1);
+              }
               // pur code to increment the stats.
               if (logger.isDebugEnabled()) {
                 logger.debug("GetInitialImage had missing required roles.");
@@ -1509,12 +1513,13 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
                 // all required roles are present so force resumption
                 isMissingRequiredRoles = false;
                 getCachePerfStats().incReliableRegionsMissing(-1);
-                if (getMembershipAttributes().getLossAction().isAllAccess())
+                if (getMembershipAttributes().getLossAction().isAllAccess()) {
                   getCachePerfStats().incReliableRegionsMissingFullAccess(-1); // rahul
-                else if (getMembershipAttributes().getLossAction().isLimitedAccess())
+                } else if (getMembershipAttributes().getLossAction().isLimitedAccess()) {
                   getCachePerfStats().incReliableRegionsMissingLimitedAccess(-1);
-                else if (getMembershipAttributes().getLossAction().isNoAccess())
+                } else if (getMembershipAttributes().getLossAction().isNoAccess()) {
                   getCachePerfStats().incReliableRegionsMissingNoAccess(-1);
+                }
                 // pur code to increment the stats.
                 boolean async = resumeReliability(null, null);
                 if (async) {
@@ -1539,12 +1544,13 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
                 // starting in state of loss...
                 isMissingRequiredRoles = true;
                 getCachePerfStats().incReliableRegionsMissing(1);
-                if (getMembershipAttributes().getLossAction().isAllAccess())
+                if (getMembershipAttributes().getLossAction().isAllAccess()) {
                   getCachePerfStats().incReliableRegionsMissingFullAccess(1); // rahul
-                else if (getMembershipAttributes().getLossAction().isLimitedAccess())
+                } else if (getMembershipAttributes().getLossAction().isLimitedAccess()) {
                   getCachePerfStats().incReliableRegionsMissingLimitedAccess(1);
-                else if (getMembershipAttributes().getLossAction().isNoAccess())
+                } else if (getMembershipAttributes().getLossAction().isNoAccess()) {
                   getCachePerfStats().incReliableRegionsMissingNoAccess(1);
+                }
 
                 if (logger.isDebugEnabled()) {
                   logger.debug("Initialization completed with missing required roles: {}",
@@ -1984,8 +1990,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     try {
       super.basicClear(regionEvent);
     } finally {
-      if (dlock != null)
+      if (dlock != null) {
         dlock.unlock();
+      }
     }
   }
 
@@ -2466,7 +2473,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     boolean getForRegisterInterest = clientEvent != null && clientEvent.getOperation() != null
         && clientEvent.getOperation().isGetForRegisterInterest();
     if (!getForRegisterInterest) {
-      SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+      SearchLoadAndWriteProcessor processor = getSearchLoadAndWriteProcessor();
       try {
         processor.initialize(this, keyInfo.getKey(), keyInfo.getCallbackArg());
         // processor fills in event
@@ -2504,7 +2511,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         final long start = getCachePerfStats().startCacheWriterCall();
         try {
           event.setOldValueFromRegion();
-          SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+          SearchLoadAndWriteProcessor processor = getSearchLoadAndWriteProcessor();
           try {
             processor.initialize(this, event.getKey(), null);
             processor.doNetWrite(event, netWriteRecipients, localWriter,
@@ -2533,7 +2540,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       if (localWriter != null || netWriteRecipients != null && !netWriteRecipients.isEmpty()) {
         final long start = getCachePerfStats().startCacheWriterCall();
         try {
-          SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+          SearchLoadAndWriteProcessor processor = getSearchLoadAndWriteProcessor();
           try {
             processor.initialize(this, "preDestroyRegion", null);
             processor.doNetWrite(event, netWriteRecipients, localWriter,
@@ -2708,7 +2715,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       final boolean isNewKey = event.getOperation().isCreate();
       final long start = getCachePerfStats().startCacheWriterCall();
       try {
-        SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+        SearchLoadAndWriteProcessor processor = getSearchLoadAndWriteProcessor();
         processor.initialize(this, "preUpdate", null);
         try {
           if (!isNewKey) {
@@ -2819,8 +2826,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    */
   private Lock getDistributedLockIfGlobal(Object key) throws TimeoutException {
     if (getScope().isGlobal()) {
-      if (isLockingSuspendedByCurrentThread())
+      if (isLockingSuspendedByCurrentThread()) {
         return null;
+      }
       long start = System.currentTimeMillis();
       long timeLeft = getCache().getLockTimeout();
       long lockTimeout = timeLeft;
@@ -3298,8 +3306,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    */
   private Lock getRegionDistributedLockIfGlobal() throws TimeoutException {
     if (getScope().isGlobal()) {
-      if (isLockingSuspendedByCurrentThread())
+      if (isLockingSuspendedByCurrentThread()) {
         return null;
+      }
       Lock dlock = getRegionDistributedLock();
       dlock.lock(); // caller is expected to use a try-finally to unlock
       return dlock;
@@ -3547,12 +3556,13 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
               if (members == null && missingRequiredRoles.isEmpty()) {
                 isMissingRequiredRoles = false;
                 getCachePerfStats().incReliableRegionsMissing(-1);
-                if (getMembershipAttributes().getLossAction().isAllAccess())
+                if (getMembershipAttributes().getLossAction().isAllAccess()) {
                   getCachePerfStats().incReliableRegionsMissingFullAccess(-1); // rahul
-                else if (getMembershipAttributes().getLossAction().isLimitedAccess())
+                } else if (getMembershipAttributes().getLossAction().isLimitedAccess()) {
                   getCachePerfStats().incReliableRegionsMissingLimitedAccess(-1);
-                else if (getMembershipAttributes().getLossAction().isNoAccess())
+                } else if (getMembershipAttributes().getLossAction().isNoAccess()) {
                   getCachePerfStats().incReliableRegionsMissingNoAccess(-1);
+                }
 
                 boolean async = resumeReliability(id, newlyAcquiredRoles);
                 if (async) {
@@ -3973,5 +3983,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   @VisibleForTesting
   public SenderIdMonitor getSenderIdMonitor() {
     return senderIdMonitor;
+  }
+
+  SearchLoadAndWriteProcessor getSearchLoadAndWriteProcessor() {
+    return SearchLoadAndWriteProcessor.getProcessor();
   }
 }

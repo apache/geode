@@ -42,7 +42,7 @@ public class CacheSnapshotJUnitTest extends SnapshotTestCase {
     }
 
     // save all regions
-    cache.getSnapshotService().save(getSnapshotDirectory(), SnapshotFormat.GEMFIRE);
+    cache.getSnapshotService().save(getSnapshotDirectory(), SnapshotFormat.GEODE);
 
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {
@@ -56,7 +56,7 @@ public class CacheSnapshotJUnitTest extends SnapshotTestCase {
     }
 
     // load all regions
-    cache.getSnapshotService().load(getSnapshotDirectory(), SnapshotFormat.GEMFIRE);
+    cache.getSnapshotService().load(getSnapshotDirectory(), SnapshotFormat.GEODE);
 
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {
@@ -88,7 +88,7 @@ public class CacheSnapshotJUnitTest extends SnapshotTestCase {
     // save even entries
     CacheSnapshotService css = cache.getSnapshotService();
     SnapshotOptions<Object, Object> options = css.createOptions().setFilter(even);
-    cache.getSnapshotService().save(getSnapshotDirectory(), SnapshotFormat.GEMFIRE, options);
+    cache.getSnapshotService().save(getSnapshotDirectory(), SnapshotFormat.GEODE, options);
 
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {
@@ -104,7 +104,7 @@ public class CacheSnapshotJUnitTest extends SnapshotTestCase {
         getSnapshotDirectory().listFiles(pathname -> pathname.getName().startsWith("snapshot-"));
 
     options = css.createOptions().setFilter(odd);
-    css.load(snapshots, SnapshotFormat.GEMFIRE, options);
+    css.load(snapshots, SnapshotFormat.GEODE, options);
 
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {

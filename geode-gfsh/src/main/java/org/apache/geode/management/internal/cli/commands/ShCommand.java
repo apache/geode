@@ -68,13 +68,14 @@ public class ShCommand extends OfflineGfshCommand {
     builder.redirectErrorStream();
     Process proc = builder.start();
 
-    BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+    try (InputStreamReader inputStreamReader = new InputStreamReader(proc.getInputStream());
+        BufferedReader input = new BufferedReader(inputStreamReader)) {
 
-    String lineRead;
-    while ((lineRead = input.readLine()) != null) {
-      result.addLine(lineRead);
+      String lineRead;
+      while ((lineRead = input.readLine()) != null) {
+        result.addLine(lineRead);
+      }
     }
-
     proc.getOutputStream().close();
 
     try {

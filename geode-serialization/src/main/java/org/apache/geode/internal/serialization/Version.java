@@ -65,6 +65,17 @@ public interface Version extends Comparable<Version> {
   boolean isNotOlderThan(Version version);
 
   /**
+   * Test if this version is newer than or equal to the given version. Synonym for
+   * {@link #isNotOlderThan(Version)}.
+   *
+   * @param version to compare to this version
+   * @return true if this is the same version or newer, otherwise false.
+   */
+  default boolean isNewerThanOrEqualTo(Version version) {
+    return isNotOlderThan(version);
+  }
+
+  /**
    * Test if this version is newer than given version.
    *
    * @param version to compare to this version

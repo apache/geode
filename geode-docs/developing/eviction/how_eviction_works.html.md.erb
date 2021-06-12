@@ -39,7 +39,7 @@ As a result, eviction may leave older entries for the region in the local data s
 <%=vars.product_name_long%> provides the following eviction actions:
 
 - **local destroy** - Removes the entry from the local cache, but does not distribute the removal operation to remote
-members.  This action can be applied to an entry in a partitioned region, but it not recommended
+members.  This action can be applied to an entry in a partitioned region, but is not recommended
 if redundancy is enabled (redundant-copies > 0), as it introduces inconsistencies between the
 redundant buckets.  When applied to an entry in a replicated region, <%=vars.product_name%> silently changes
 the region type to "preloaded" to accommodate the local modification.

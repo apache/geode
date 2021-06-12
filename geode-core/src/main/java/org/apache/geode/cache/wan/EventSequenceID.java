@@ -45,9 +45,8 @@ public class EventSequenceID {
   public EventSequenceID(byte[] membershipID, long threadID, long sequenceID) {
     // convert the byte array of membershipID to a readable string
     Object mbr;
-    try {
-      mbr = InternalDistributedMember
-          .readEssentialData(new ByteArrayDataInput(membershipID));
+    try (ByteArrayDataInput byteArrayDataInput = new ByteArrayDataInput(membershipID)) {
+      mbr = InternalDistributedMember.readEssentialData(byteArrayDataInput);
     } catch (Exception e) {
       mbr = Arrays.toString(membershipID); // punt and use the bytes
     }
@@ -69,8 +68,9 @@ public class EventSequenceID {
   }
 
   public boolean equals(Object obj) {
-    if (!(obj instanceof EventSequenceID))
+    if (!(obj instanceof EventSequenceID)) {
       return false;
+    }
 
     EventSequenceID obj2 = (EventSequenceID) obj;
     return (this.membershipID.equals(obj2.getMembershipID()) && this.threadID == obj2.getThreadID()

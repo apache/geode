@@ -41,6 +41,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.LOCATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Disconnect.disconnectFromDS;
@@ -99,8 +100,8 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.membership.utils.AvailablePort;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -116,8 +117,8 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -151,7 +152,7 @@ public class LocatorDUnitTest implements Serializable {
   public DistributedRule distributedRule = new DistributedRule(6);
 
   @Rule
-  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   @Before
   public void setUp() {
@@ -258,7 +259,7 @@ public class LocatorDUnitTest implements Serializable {
   @Test
   @Ignore("GEODE=7760 - test sometimes hangs due to product issue")
   public void testCrashLocatorMultipleTimes() throws Exception {
-    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    port1 = getRandomAvailableTCPPort();
     DistributedTestUtils.deleteLocatorStateFile(port1);
     File logFile = new File("");
     File stateFile = new File("locator" + port1 + "state.dat");
@@ -426,7 +427,7 @@ public class LocatorDUnitTest implements Serializable {
     properties.setProperty(SSL_KEYSTORE, getSingleKeyKeystore());
     properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    properties.setProperty(SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
+    properties.setProperty(SSL_PROTOCOLS, "TLSv1.2");
     properties.setProperty(SSL_TRUSTSTORE, getSingleKeyKeystore());
     properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
 
@@ -1001,8 +1002,8 @@ public class LocatorDUnitTest implements Serializable {
       // I guess it can throw this too...
 
     } catch (GemFireConfigException ex) {
-      String s = ex.getMessage();
-      assertThat(s.contains("Locator does not exist")).isTrue();
+      assertThat(ex.getCause().getMessage().contains("Could not contact any of the locators"))
+          .isTrue();
     }
   }
 

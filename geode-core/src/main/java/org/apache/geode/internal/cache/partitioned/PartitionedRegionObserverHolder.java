@@ -22,11 +22,8 @@ import org.apache.geode.cache.query.internal.Support;
  * This class is intended to hold a single 'observer' which will receive callbacks. There can be
  * only one such observer at a time. If no observer is needed, this member variable should point to
  * an object with 'do-nothing' methods, such as PartitionedRegionObserverAdapter.
- *
  */
-
 public class PartitionedRegionObserverHolder {
-
 
   /**
    * The default 'do-nothing' bridge observer *
@@ -56,5 +53,7 @@ public class PartitionedRegionObserverHolder {
     return _instance;
   }
 
-
+  public static void clear() {
+    _instance = NO_OBSERVER;
+  }
 }

@@ -33,6 +33,7 @@ This section discusses how transactions interact with other
 -  **[Mixing Transactions with Queries and Indexes](#transactions-queries)**
 -  **[Mixing Transactions with Eviction](#transactions-eviction)**
 -  **[Mixing Transactions with Expiration](#transactions-expiration)**
+-  **[Mixing Transactions with Non-transactional Operations](#transactions-nontransactions)**
 -  **[Changing the Handling of Dirty Reads](#transactions-dirty-reads)**
 
 ## <a id="colocate-PRs" class="no-quick-link"></a>Colocate Partitioned Regions
@@ -59,7 +60,7 @@ as the change will not be seen as part of the transactional state.
 There are two ways to work with a reference: make a copy,
 or configure the system to return copies instead of references.
 There is a performance penalty to having the system return copies.
-Both ways are detailed in [Safe Entry Modification](../../basic_config/data_entries_custom_classes/managing_data_entries.html#managing_data_entries__section_A0E0F889AC344EFA8DF304FD64418809).
+Both ways are detailed in [Copy on Read Behavior](../../basic_config/data_entries_custom_classes/copy_on_read.html).
 
 ## <a id="first-op-with-mixed-types" class="no-quick-link"></a>First Operation with Mixed Region Types
 
@@ -116,6 +117,21 @@ immediately after the commit.
 
 A transaction disables expiration on any region entries affected
 by the transaction.
+
+## <a id="transactions-nontransactions" class="no-quick-link"></a>Mixing Transactions with Non-transactional Operations
+
+For best performance, non-transactional operations do not acquire the exclusive locks used to check
+for conflicts in a transaction. A transaction operating on the same data as a non-transactional actor
+is unable to detect the conflict caused by a non-transactional operation.
+
+If using transactions, an application should adopt the policy of designating certain regions or sets of entries
+exclusively for transactional puts, updates, and deletions, so transactional entries will not be modified by non-transactional
+operations.
+
+If other, non-transactional sources update the keys the transaction is modifying, the changes may
+intermingle with the transaction’s changes. The other sources can include distributions from remote
+members, loading activities, and other direct cache modification calls from the same member. When
+this happens, after your commit finishes, the cache state may not be what you expected.
 
 ## <a id="transactions-dirty-reads" class="no-quick-link"></a>Changing the Handling of Dirty Reads
 

@@ -19,10 +19,10 @@ package org.apache.geode.management.internal.rest;
 import static java.nio.charset.Charset.defaultCharset;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,7 +39,7 @@ import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.dunit.VM;
@@ -60,6 +60,7 @@ public class ManagementRequestLoggingDistributedTest implements Serializable {
   private File locatorDir;
   private File serverDir;
   private int httpPort;
+  private int jmxManagerPort;
   private int locatorPort;
 
   private transient ClusterManagementService service;
@@ -79,7 +80,9 @@ public class ManagementRequestLoggingDistributedTest implements Serializable {
     serverName = "server1";
     locatorDir = temporaryFolder.newFolder(locatorName);
     serverDir = temporaryFolder.newFolder(serverName);
-    httpPort = getRandomAvailablePort(SOCKET);
+    int[] ports = getRandomAvailableTCPPorts(2);
+    httpPort = ports[0];
+    jmxManagerPort = ports[1];
 
     locatorPort = locatorVM.invoke(this::startLocator);
     serverVM.invoke(this::startServer);
@@ -142,6 +145,7 @@ public class ManagementRequestLoggingDistributedTest implements Serializable {
     builder.setWorkingDirectory(locatorDir.getAbsolutePath());
     builder.setPort(0);
     builder.set(HTTP_SERVICE_PORT, String.valueOf(httpPort));
+    builder.set(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
     builder.set(LOG_LEVEL, "debug");
 
     locatorLauncher = builder.build();

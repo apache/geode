@@ -238,156 +238,159 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
         }
       }
 
-      HeapDataOutputStream mos = new HeapDataOutputStream(
-          InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048, Versioning
-              .getKnownVersionOrDefault(recipient.getVersion(), KnownVersion.CURRENT));
-      Iterator<BucketRegion> mapsIterator = maps.iterator();
       BucketRegion map = null;
-      Iterator it = null;
-
-      boolean keepGoing = true;
       boolean lockAcquired = false;
-      boolean writeFooter = false;
-      boolean lastMsgSent = false;
-      boolean needToWriteBucketInfo = true;
-      int msgNum = 0;
+      try (HeapDataOutputStream mos =
+          new HeapDataOutputStream(InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048,
+              Versioning.getKnownVersionOrDefault(recipient.getVersion(), KnownVersion.CURRENT))) {
+        Iterator<BucketRegion> mapsIterator = maps.iterator();
+        Iterator it = null;
 
-      while (mapsIterator.hasNext()) {
-        if (map != null && lockAcquired) {
-          try {
-            map.releaseDestroyLock();
-            // instead take a bucketCreationLock.getWriteLock() or pr.BucketLock?
-          } catch (CancelException e) {
-          } finally {
-            lockAcquired = false;
-          }
-        }
-        map = mapsIterator.next();
-        if (map.isBucketDestroyed()) {
-          failedBuckets.add(map.getId());
-          continue;
-        }
-        try {
-          map.acquireDestroyLock();
-          lockAcquired = true;
-        } catch (CancelException e) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("sendReply: acquireDestroyLock failed due to cache closure, region = {}",
-                map.getFullPath());
-          }
-        }
+        boolean keepGoing = true;
+        boolean writeFooter = false;
+        boolean lastMsgSent = false;
+        boolean needToWriteBucketInfo = true;
+        int msgNum = 0;
 
-        try {
-          if (bucketKeys != null) {
-            it = bucketKeys.get(map.getId()).iterator();
-          } else { // bucketIds != null
-            if (regex == null) {
-              it = new HashSet(map.keySet(allowTombstones)).iterator();
-            } else {
-              it = map.getKeysWithInterest(InterestType.REGULAR_EXPRESSION, regex, allowTombstones)
-                  .iterator();
-            }
-          }
-
-          while (it.hasNext()) {
-            Object key = it.next();
-            VersionTagHolder clientEvent = new VersionTagHolder();
-            Object value = map.get(key, null, true, true, true, null, clientEvent, allowTombstones);
-
-            if (needToWriteBucketInfo) {
-              DataSerializer.writePrimitiveInt(map.getId(), mos);
-              needToWriteBucketInfo = false;
-              writeFooter = true;
-            }
-
-            int entrySize = mos.size();
-            DataSerializer.writeObject(key, mos);
-            VersionTag versionTag = clientEvent.getVersionTag();
-            if (versionTag != null) {
-              versionTag.replaceNullIDs(map.getVersionMember());
-            }
-            DataSerializer.writeObject(value, mos);
-            DataSerializer.writeObject(versionTag, mos);
-            entrySize = mos.size() - entrySize;
-
-            // If no more space OR no more entries in bucket, write end-of-bucket marker.
-            if ((mos.size() + entrySize) >= InitialImageOperation.CHUNK_SIZE_IN_BYTES
-                || !it.hasNext()) {
-
-              DataSerializer.writeObject(null, mos);
-              DataSerializer.writePrimitiveBoolean(it.hasNext(), mos);
-              needToWriteBucketInfo = true;
-              writeFooter = false; // Be safe
-            }
-
-            // If no more space in chunk, send it.
-            if ((mos.size() + entrySize) >= InitialImageOperation.CHUNK_SIZE_IN_BYTES) {
-
-              // Send as last message if no more data
-              boolean lastMsg = !(it.hasNext() || mapsIterator.hasNext());
-
-              ++msgNum;
-              FetchBulkEntriesReplyMessage reply =
-                  new FetchBulkEntriesReplyMessage(recipient, processorId, mos, msgNum, lastMsg);
-              if (lastMsg) {
-                reply.failedBucketIds = failedBuckets;
-              }
-              Set failures = dm.putOutgoing(reply);
-              keepGoing = (failures == null) || (failures.size() == 0);
-              if (lastMsg && keepGoing) {
-                lastMsgSent = true;
-              }
-              mos.reset();
-
-            } // else still enough space
-          } // while (for each key)
-
-          if (!keepGoing) {
-            throw new ForceReattemptException("Failed to send response");
-          }
-        } catch (IOException ioe) {
-          throw new ForceReattemptException(
-              "Unable to send response to fetch-entries request",
-              ioe);
-        } finally {
-          if (lockAcquired) {
+        while (mapsIterator.hasNext()) {
+          if (map != null && lockAcquired) {
             try {
               map.releaseDestroyLock();
+              // instead take a bucketCreationLock.getWriteLock() or pr.BucketLock?
             } catch (CancelException e) {
             } finally {
               lockAcquired = false;
             }
           }
-        }
-      } // while (for each map)
+          map = mapsIterator.next();
+          if (map.isBucketDestroyed()) {
+            failedBuckets.add(map.getId());
+            continue;
+          }
+          try {
+            map.acquireDestroyLock();
+            lockAcquired = true;
+          } catch (CancelException e) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("sendReply: acquireDestroyLock failed due to cache closure, region = {}",
+                  map.getFullPath());
+            }
+          }
 
-      if (!lastMsgSent) {
-        if (mos.size() == 0) {
           try {
-            DataSerializer.writePrimitiveInt(-1, mos);
+            if (bucketKeys != null) {
+              it = bucketKeys.get(map.getId()).iterator();
+            } else { // bucketIds != null
+              if (regex == null) {
+                it = new HashSet(map.keySet(allowTombstones)).iterator();
+              } else {
+                it =
+                    map.getKeysWithInterest(InterestType.REGULAR_EXPRESSION, regex, allowTombstones)
+                        .iterator();
+              }
+            }
+
+            while (it.hasNext()) {
+              Object key = it.next();
+              VersionTagHolder clientEvent = new VersionTagHolder();
+              Object value =
+                  map.get(key, null, true, true, true, null, clientEvent, allowTombstones);
+
+              if (needToWriteBucketInfo) {
+                DataSerializer.writePrimitiveInt(map.getId(), mos);
+                needToWriteBucketInfo = false;
+                writeFooter = true;
+              }
+
+              int entrySize = mos.size();
+              DataSerializer.writeObject(key, mos);
+              VersionTag versionTag = clientEvent.getVersionTag();
+              if (versionTag != null) {
+                versionTag.replaceNullIDs(map.getVersionMember());
+              }
+              DataSerializer.writeObject(value, mos);
+              DataSerializer.writeObject(versionTag, mos);
+              entrySize = mos.size() - entrySize;
+
+              // If no more space OR no more entries in bucket, write end-of-bucket marker.
+              if ((mos.size() + entrySize) >= InitialImageOperation.CHUNK_SIZE_IN_BYTES
+                  || !it.hasNext()) {
+
+                DataSerializer.writeObject(null, mos);
+                DataSerializer.writePrimitiveBoolean(it.hasNext(), mos);
+                needToWriteBucketInfo = true;
+                writeFooter = false; // Be safe
+              }
+
+              // If no more space in chunk, send it.
+              if ((mos.size() + entrySize) >= InitialImageOperation.CHUNK_SIZE_IN_BYTES) {
+
+                // Send as last message if no more data
+                boolean lastMsg = !(it.hasNext() || mapsIterator.hasNext());
+
+                ++msgNum;
+                FetchBulkEntriesReplyMessage reply =
+                    new FetchBulkEntriesReplyMessage(recipient, processorId, mos, msgNum, lastMsg);
+                if (lastMsg) {
+                  reply.failedBucketIds = failedBuckets;
+                }
+                Set failures = dm.putOutgoing(reply);
+                keepGoing = (failures == null) || (failures.size() == 0);
+                if (lastMsg && keepGoing) {
+                  lastMsgSent = true;
+                }
+                mos.reset();
+
+              } // else still enough space
+            } // while (for each key)
+
+            if (!keepGoing) {
+              throw new ForceReattemptException("Failed to send response");
+            }
           } catch (IOException ioe) {
             throw new ForceReattemptException(
                 "Unable to send response to fetch-entries request",
                 ioe);
+          } finally {
+            if (lockAcquired) {
+              try {
+                map.releaseDestroyLock();
+              } catch (CancelException e) {
+              } finally {
+                lockAcquired = false;
+              }
+            }
           }
-        } else if (writeFooter) {
-          try {
-            DataSerializer.writeObject(null, mos); // end of entries of current bucket in current
-                                                   // response
-            DataSerializer.writePrimitiveBoolean(false, mos); // no more entries of current bucket
-          } catch (IOException ioe) {
-            throw new ForceReattemptException(
-                "Unable to send response to fetch-entries request",
-                ioe);
+        } // while (for each map)
+
+        if (!lastMsgSent) {
+          if (mos.size() == 0) {
+            try {
+              DataSerializer.writePrimitiveInt(-1, mos);
+            } catch (IOException ioe) {
+              throw new ForceReattemptException(
+                  "Unable to send response to fetch-entries request",
+                  ioe);
+            }
+          } else if (writeFooter) {
+            try {
+              DataSerializer.writeObject(null, mos); // end of entries of current bucket in current
+              // response
+              DataSerializer.writePrimitiveBoolean(false, mos); // no more entries of current bucket
+            } catch (IOException ioe) {
+              throw new ForceReattemptException(
+                  "Unable to send response to fetch-entries request",
+                  ioe);
+            }
           }
-        }
-        ++msgNum;
-        FetchBulkEntriesReplyMessage reply =
-            new FetchBulkEntriesReplyMessage(recipient, processorId, mos, msgNum, true);
-        reply.failedBucketIds = failedBuckets;
-        Set failures = dm.putOutgoing(reply);
-        if (failures != null && failures.size() > 0) {
-          throw new ForceReattemptException("Failed to send response");
+          ++msgNum;
+          FetchBulkEntriesReplyMessage reply =
+              new FetchBulkEntriesReplyMessage(recipient, processorId, mos, msgNum, true);
+          reply.failedBucketIds = failedBuckets;
+          Set failures = dm.putOutgoing(reply);
+          if (failures != null && failures.size() > 0) {
+            throw new ForceReattemptException("Failed to send response");
+          }
         }
       }
 

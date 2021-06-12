@@ -2,7 +2,7 @@ HdrHistogram
 HikariCP
 LatencyUtils
 accessors-smart
-activation
+annotations
 antlr
 asm
 byte-buddy
@@ -23,6 +23,8 @@ commons-validator
 content-type
 error_prone_annotations
 failureaccess
+fastutil-core
+fastutil-extra
 fastutil
 findbugs-annotations
 geo
@@ -35,9 +37,7 @@ j2objc-annotations
 jackson-annotations
 jackson-core
 jackson-databind
-javax.activation
 javax.activation-api
-javax.mail
 javax.mail-api
 javax.resource-api
 javax.servlet-api
@@ -51,6 +51,7 @@ jetty-security
 jetty-server
 jetty-servlet
 jetty-util
+jetty-util-ajax
 jetty-webapp
 jetty-xml
 jgroups
@@ -61,6 +62,9 @@ jopt-simple
 json-path
 json-smart
 jsr
+kotlin-stdlib
+kotlin-stdlib-common
+kotlin-stdlib-jdk
 lang-tag
 listenablefuture
 log4j-api
@@ -81,7 +85,6 @@ mx4j-tools
 netty-all
 nimbus-jose-jwt
 oauth2-oidc-sdk
-protobuf-java
 ra.jar
 rmiio
 shiro-cache
@@ -109,6 +112,7 @@ spring-plugin-core
 spring-plugin-metadata
 spring-security-config
 spring-security-core
+spring-security-crypto
 spring-security-ldap
 spring-security-oauth2-client
 spring-security-oauth2-core

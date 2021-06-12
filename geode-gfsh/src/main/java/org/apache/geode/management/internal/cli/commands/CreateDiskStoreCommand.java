@@ -56,6 +56,8 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DISK)
   public ResultModel createDiskStore(
+      @CliOption(key = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, mandatory = true,
+          help = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE__HELP) String[] directoriesAndSizes,
       @CliOption(key = CliStrings.CREATE_DISK_STORE__NAME, mandatory = true,
           optionContext = ConverterHint.DISKSTORE,
           help = CliStrings.CREATE_DISK_STORE__NAME__HELP) String name,
@@ -79,8 +81,6 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.CREATE_DISK_STORE__WRITE_BUFFER_SIZE,
           unspecifiedDefaultValue = "32768",
           help = CliStrings.CREATE_DISK_STORE__WRITE_BUFFER_SIZE__HELP) int writeBufferSize,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, mandatory = true,
-          help = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE__HELP) String[] directoriesAndSizes,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.CREATE_DISK_STORE__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,

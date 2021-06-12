@@ -34,19 +34,30 @@ public class SerialAsyncEventQueueImplJUnitTest {
 
   @Before
   public void setUp() {
-    CacheFactory cf = new CacheFactory().set(MCAST_PORT, "0");
-    cache = (InternalCache) cf.create();
+    try {
+      cache = (InternalCache) CacheFactory.getAnyInstance();
+    } catch (Exception e) {
+      // ignore
+    }
+    if (null == cache) {
+      cache = (InternalCache) new CacheFactory().set(MCAST_PORT, "0").create();
+    }
   }
 
   @After
   public void tearDown() {
-    cache.close();
+    if (cache != null && !cache.isClosed()) {
+      cache.close();
+      cache = null;
+    }
   }
 
   @Test
   public void testStopClearsStats() {
+
     GatewaySenderAttributes attrs = new GatewaySenderAttributes();
-    attrs.id = AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX + "id";
+    String tempId = AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX + "id";
+    attrs.setId(tempId);
     SerialAsyncEventQueueImpl queue = new SerialAsyncEventQueueImpl(cache,
         cache.getInternalDistributedSystem().getStatisticsManager(), cache.getStatisticsClock(),
         attrs);
@@ -71,7 +82,8 @@ public class SerialAsyncEventQueueImplJUnitTest {
   @Test
   public void testStopStart() {
     GatewaySenderAttributes attrs = new GatewaySenderAttributes();
-    attrs.id = AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX + "id";
+    String tempId = AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX + "id";
+    attrs.setId(tempId);
     SerialAsyncEventQueueImpl queue = new SerialAsyncEventQueueImpl(cache,
         cache.getInternalDistributedSystem().getStatisticsManager(), cache.getStatisticsClock(),
         attrs);

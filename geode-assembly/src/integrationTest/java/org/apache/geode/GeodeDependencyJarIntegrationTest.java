@@ -58,7 +58,7 @@ public class GeodeDependencyJarIntegrationTest {
   @Test
   public void verifyManifestClassPath() throws IOException {
     List<String> currentClasspathElements = getManifestClassPath();
-    Files.write(Paths.get("dependency_classpath.txt"), currentClasspathElements);
+    Files.write(Paths.get("..", "dependency_classpath.txt"), currentClasspathElements);
 
     assertThat(getManifestClassPath())
         .describedAs("The geode-dependency jar's manifest classpath has changed. Verify "

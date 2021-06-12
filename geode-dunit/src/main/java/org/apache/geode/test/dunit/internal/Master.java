@@ -14,13 +14,10 @@
  */
 package org.apache.geode.test.dunit.internal;
 
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.version.VersionManager;
 
 public class Master extends UnicastRemoteObject implements MasterRemote {
   private static final long serialVersionUID = 1178600200232603119L;
@@ -49,26 +46,4 @@ public class Master extends UnicastRemoteObject implements MasterRemote {
     // do nothing
   }
 
-  @Override
-  public BounceResult bounce(int pid) {
-    return bounce(VersionManager.CURRENT_VERSION, pid, false);
-  }
-
-  @Override
-  public BounceResult bounce(String version, int pid, boolean force) {
-    processManager.bounce(version, pid, force);
-
-    try {
-      if (!processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT)) {
-        throw new RuntimeException(DUnitLauncher.STARTUP_TIMEOUT_MESSAGE);
-      }
-      RemoteDUnitVMIF remote =
-          (RemoteDUnitVMIF) registry.lookup(VM.getVMName(VersionManager.CURRENT_VERSION, pid));
-      return new BounceResult(pid, remote);
-    } catch (RemoteException | NotBoundException e) {
-      throw new RuntimeException("could not lookup name", e);
-    } catch (InterruptedException e) {
-      throw new RuntimeException("Failed waiting for VM", e);
-    }
-  }
 }

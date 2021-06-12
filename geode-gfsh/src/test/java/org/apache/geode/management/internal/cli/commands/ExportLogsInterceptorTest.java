@@ -14,6 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.FORMAT;
+import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.ONLY_DATE_FORMAT;
+import static org.apache.geode.management.internal.i18n.CliStrings.EXPORT_LOGS__ENDTIME;
+import static org.apache.geode.management.internal.i18n.CliStrings.EXPORT_LOGS__STARTTIME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -53,21 +57,87 @@ public class ExportLogsInterceptorTest {
   }
 
   @Test
-  public void testStartEnd() {
-    when(parseResult.getParamValueAsString("start-time")).thenReturn("2000/01/01");
-    when(parseResult.getParamValueAsString("end-time")).thenReturn("2000/01/02");
+  public void testStartEndFormat() {
+    // Correct date only format
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__STARTTIME)).thenReturn("2000/01/01");
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__ENDTIME)).thenReturn("2000/01/02");
     result = interceptor.preExecution(parseResult);
     assertThat(result.getInfoSection("info").getContent()).containsOnly("");
 
-    when(parseResult.getParamValueAsString("start-time")).thenReturn("2000/01/02");
-    when(parseResult.getParamValueAsString("end-time")).thenReturn("2000/01/01");
+    // Correct date and time format
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__STARTTIME))
+        .thenReturn("2000/01/01/00/00/00/001/PST");
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__ENDTIME))
+        .thenReturn("2000/01/02/00/00/00/001/GMT");
+    result = interceptor.preExecution(parseResult);
+    assertThat(result.getInfoSection("info").getContent()).containsOnly("");
+
+    // Incorrect date only format
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__STARTTIME)).thenReturn("2000/123/01");
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__ENDTIME)).thenReturn(null);
+    result = interceptor.preExecution(parseResult);
+    assertThat(result.getInfoSection("info").getContent())
+        .containsOnly("start-time had incorrect format. Valid formats are " + ONLY_DATE_FORMAT
+            + " and " + FORMAT);
+
+    // Incorrect date and time format
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__STARTTIME)).thenReturn(null);
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__ENDTIME))
+        .thenReturn("2000/01/02/00/00/00/001/0");
+    result = interceptor.preExecution(parseResult);
+    assertThat(result.getInfoSection("info").getContent()).containsOnly(
+        "end-time had incorrect format. Valid formats are " + ONLY_DATE_FORMAT + " and " + FORMAT);
+
+    // Empty string
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__STARTTIME)).thenReturn("");
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__ENDTIME)).thenReturn("");
+    result = interceptor.preExecution(parseResult);
+    assertThat(result.getInfoSection("info").getContent())
+        .containsOnly("start-time and end-time had incorrect format. Valid formats are "
+            + ONLY_DATE_FORMAT + " and " + FORMAT);
+  }
+
+  @Test
+  public void testStartEndParsing() {
+    // Parsable date only input
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__STARTTIME)).thenReturn("2000/01/01");
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__ENDTIME)).thenReturn("2000/01/02");
+    result = interceptor.preExecution(parseResult);
+    assertThat(result.getInfoSection("info").getContent()).containsOnly("");
+
+    // Parsable date and time input
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__STARTTIME))
+        .thenReturn("2000/01/01/00/00/00/001/PST");
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__ENDTIME))
+        .thenReturn("2000/01/02/00/00/00/001/GMT+01:00");
+    result = interceptor.preExecution(parseResult);
+    assertThat(result.getInfoSection("info").getContent()).containsOnly("");
+
+    // Non-parsable input
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__STARTTIME)).thenReturn(null);
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__ENDTIME))
+        .thenReturn("2000/01/02/00/00/00/001/NOT_A_TIMEZONE");
+    result = interceptor.preExecution(parseResult);
+    assertThat(result.getInfoSection("info").getContent())
+        .containsOnly("end-time could not be parsed to valid date/time.");
+  }
+
+  @Test
+  public void testStartEnd() {
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__STARTTIME)).thenReturn("2000/01/01");
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__ENDTIME)).thenReturn("2000/01/02");
+    result = interceptor.preExecution(parseResult);
+    assertThat(result.getInfoSection("info").getContent()).containsOnly("");
+
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__STARTTIME)).thenReturn("2000/01/02");
+    when(parseResult.getParamValueAsString(EXPORT_LOGS__ENDTIME)).thenReturn("2000/01/01");
     result = interceptor.preExecution(parseResult);
     assertThat(result.getInfoSection("info").getContent())
         .containsOnly("start-time has to be earlier than end-time.");
   }
 
   @Test
-  public void testInclideStats() {
+  public void testIncludeStats() {
     when(parseResult.getParamValue("logs-only")).thenReturn(true);
     when(parseResult.getParamValue("stats-only")).thenReturn(false);
     result = interceptor.preExecution(parseResult);

@@ -29,6 +29,7 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -634,11 +635,7 @@ public class AbstractRegionMapTest {
         anyBoolean(), anyBoolean());
     verify(arm._getOwner(), never()).basicDestroyPart3(any(), any(), anyBoolean(), anyBoolean(),
         anyBoolean(), any());
-    // This seems to be a bug. We should not leave an entry in the map
-    // added by the destroy call if destroy returns false.
-    assertThat(arm.getEntryMap().containsKey(event.getKey())).isTrue();
-    RegionEntry re = (RegionEntry) arm.getEntryMap().get(event.getKey());
-    assertThat(re.getValueAsToken()).isEqualTo(Token.REMOVED_PHASE1);
+    assertThat(arm.getEntryMap().containsKey(event.getKey())).isFalse();
   }
 
   @Test
@@ -1532,6 +1529,61 @@ public class AbstractRegionMapTest {
     verify(arm._getOwner()).lockWhenRegionIsInitializing();
     assertThat(arm._getOwner().lockWhenRegionIsInitializing()).isTrue();
     verify(arm._getOwner()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void isInTokenModeNeededReturnsFalseIfConcurrencyChecksEnabled() {
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(true, true,
+        mock(ConcurrentMapWithReusableEntries.class), mock(RegionEntryFactory.class),
+        mock(RegionEntry.class));
+
+    assertThat(arm.isInTokenModeNeeded(arm._getOwner(), true)).isFalse();
+  }
+
+  @Test
+  public void isInTokenModeNeededReturnsFalseIfInTokenModeIsFalse() {
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, true,
+        mock(ConcurrentMapWithReusableEntries.class), mock(RegionEntryFactory.class),
+        mock(RegionEntry.class));
+
+    assertThat(arm.isInTokenModeNeeded(arm._getOwner(), false)).isFalse();
+  }
+
+  @Test
+  public void isInTokenModeNeededReturnsTrueIfConcurrencyChecksNotEnabledAndInTokenMode() {
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, true,
+        mock(ConcurrentMapWithReusableEntries.class), mock(RegionEntryFactory.class),
+        mock(RegionEntry.class));
+
+    assertThat(arm.isInTokenModeNeeded(arm._getOwner(), true)).isTrue();
+  }
+
+  @Test
+  public void initialImagePut_lruEntryCreateInvoked() throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.isTombstone()).thenReturn(true);
+    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
+    TestableAbstractRegionMap armSpy = spy(arm);
+    armSpy.initialImagePut(KEY, 0, "value", true, true, null, null, false);
+    verify(armSpy).lruEntryCreate(entry);
+  }
+
+  @Test
+  public void initialImagePut_lruEntryUpdateInvoked() throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.isTombstone()).thenReturn(false);
+    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
+    TestableAbstractRegionMap armSpy = spy(arm);
+    armSpy.initialImagePut(KEY, 0, "value", true, true, null, null, false);
+    verify(armSpy).lruEntryUpdate(entry);
   }
 
   private static class TxNoRegionEntryTestableAbstractRegionMap

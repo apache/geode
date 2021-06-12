@@ -202,10 +202,12 @@ public class PutOp {
       getMessage().addStringPart(regionName, true);
       getMessage().addBytePart(op.ordinal);
       int flags = 0;
-      if (requireOldValue)
+      if (requireOldValue) {
         flags |= 0x01;
-      if (expectedOldValue != null)
+      }
+      if (expectedOldValue != null) {
         flags |= 0x02;
+      }
       getMessage().addIntPart(flags);
       if (expectedOldValue != null) {
         getMessage().addObjPart(expectedOldValue);
@@ -290,8 +292,9 @@ public class PutOp {
         if ((flags & HAS_OLD_VALUE_FLAG) != 0) {
           oldValue = msg.getPart(partIdx++).getObject();
           if ((flags & OLD_VALUE_IS_OBJECT_FLAG) != 0 && oldValue instanceof byte[]) {
-            ByteArrayDataInput din = new ByteArrayDataInput((byte[]) oldValue);
-            oldValue = DataSerializer.readObject(din);
+            try (ByteArrayDataInput din = new ByteArrayDataInput((byte[]) oldValue)) {
+              oldValue = DataSerializer.readObject(din);
+            }
           }
         }
         // if the server has versioning we will attach it to the client's event

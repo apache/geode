@@ -792,8 +792,9 @@ public class Oplog implements CompactableOplog, Flushable {
    * records are written to this oplog.
    */
   private boolean writeNewEntryBaseRecord(boolean async) throws IOException {
-    if (this.wroteNewEntryBase)
+    if (this.wroteNewEntryBase) {
       return false;
+    }
     this.wroteNewEntryBase = true;
     long newEntryBase = getOplogSet().getOplogEntryId();
 
@@ -1454,8 +1455,9 @@ public class Oplog implements CompactableOplog, Flushable {
     }
     lockCompactor();
     try {
-      if (this.haveRecoveredDrf && !getHasDeletes())
+      if (this.haveRecoveredDrf && !getHasDeletes()) {
         return 0L; // do this while holding lock
+      }
       if (!this.haveRecoveredDrf) {
         this.haveRecoveredDrf = true;
       }
@@ -1780,6 +1782,10 @@ public class Oplog implements CompactableOplog, Flushable {
           keyBytes = DataSerializer.readByteArray(dis);
         } // while
         setRecoverNewEntryId(oplogKeyIdHWM);
+        long tlc = totalLiveCount.get();
+        if (totalCount.get() == 0 && tlc > 0) {
+          totalCount.set(tlc);
+        }
       } catch (IOException ex) {
         try {
           fis.close();
@@ -1944,6 +1950,7 @@ public class Oplog implements CompactableOplog, Flushable {
         if (fis != null) {
           fis.close();
         }
+        hdos.close();
       }
       if (!foundDiskStoreRecord && recordCount > 0) {
         throw new DiskAccessException(
@@ -2203,8 +2210,9 @@ public class Oplog implements CompactableOplog, Flushable {
     this.kvMap = new OplogEntryIdMap();
     this.skippedKeyBytes = new OplogEntryIdMap();
     try {
-      if (this.haveRecoveredCrf && isDeleted())
+      if (this.haveRecoveredCrf && isDeleted()) {
         return 0; // do this check while holding lock
+      }
       if (!this.haveRecoveredCrf) {
         this.haveRecoveredCrf = true;
       }
@@ -2223,6 +2231,12 @@ public class Oplog implements CompactableOplog, Flushable {
       if (!isPhase2()) {
         if (getParent().isOfflineCompacting()) {
           getParent().incLiveEntryCount(getRecoveryMap().size());
+        }
+        long tc = totalCount.get();
+        long tlc = totalLiveCount.get();
+        if (getParent().isValidating() && tlc >= 0
+            && tc > tlc) {
+          getParent().incDeadRecordCount(tc - tlc);
         }
         getParent().incDeadRecordCount(getRecordsSkipped());
       }
@@ -5268,15 +5282,18 @@ public class Oplog implements CompactableOplog, Flushable {
   private boolean okToReopen;
 
   boolean closeRAF() {
-    if (this.beingRead)
+    if (this.beingRead) {
       return false;
+    }
     // No need to get the backup lock prior to synchronizing (correct lock order) since the
     // synchronized block does not attempt to get the backup lock (incorrect lock order)
     synchronized (this.lock/* crf */) {
-      if (this.beingRead)
+      if (this.beingRead) {
         return false;
-      if (!this.doneAppending)
+      }
+      if (!this.doneAppending) {
         return false;
+      }
       if (this.crf.RAFClosed) {
         return false;
       } else {
@@ -5425,8 +5442,9 @@ public class Oplog implements CompactableOplog, Flushable {
         bb = new BytesAndBits(DiskEntry.LOCAL_INVALID_BYTES, userBits);
       }
     } else {
-      if (offsetInOplog == -1)
+      if (offsetInOplog == -1) {
         return null;
+      }
       try {
         for (;;) {
           dr.getCancelCriterion().checkCancelInProgress(null);
@@ -5662,10 +5680,12 @@ public class Oplog implements CompactableOplog, Flushable {
         this.dirHolder.decrementTotalOplogSize(olf.currSize);
         olf.currSize = 0;
       }
-      if (olf.f == null)
+      if (olf.f == null) {
         return;
-      if (!olf.f.exists())
+      }
+      if (!olf.f.exists()) {
         return;
+      }
       assert olf.RAFClosed;
       if (olf.raf != null) {
         try {
@@ -5769,14 +5789,18 @@ public class Oplog implements CompactableOplog, Flushable {
   }
 
   boolean needsCompaction() {
-    if (!isCompactionPossible())
+    if (!isCompactionPossible()) {
       return false;
-    if (this.unrecoveredRegionCount.get() > 0)
+    }
+    if (this.unrecoveredRegionCount.get() > 0) {
       return false;
-    if (parent.getCompactionThreshold() == 100)
+    }
+    if (parent.getCompactionThreshold() == 100) {
       return true;
-    if (parent.getCompactionThreshold() == 0)
+    }
+    if (parent.getCompactionThreshold() == 0) {
       return false;
+    }
     // otherwise check if we have enough garbage to collect with a compact
     long rvHWMtmp = this.totalCount.get();
     if (rvHWMtmp > 0) {
@@ -5838,15 +5862,17 @@ public class Oplog implements CompactableOplog, Flushable {
   private static final ThreadLocal isCompactorThread = new ThreadLocal();
 
   boolean calledByCompactorThread() {
-    if (!this.compacting)
+    if (!this.compacting) {
       return false;
+    }
     Object v = isCompactorThread.get();
     return v != null && v == Boolean.TRUE;
   }
 
   void handleNoLiveValues() {
-    if (!this.doneAppending)
+    if (!this.doneAppending) {
       return;
+    }
     if (hasNoLiveValues()) {
       if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
         if (calledByCompactorThread()) {
@@ -5903,8 +5929,9 @@ public class Oplog implements CompactableOplog, Flushable {
   private boolean added = false;
 
   private synchronized void addToBeCompacted() {
-    if (this.added)
+    if (this.added) {
       return;
+    }
     this.added = true;
     getOplogSet().addToBeCompacted(this);
     if (logger.isDebugEnabled()) {
@@ -5982,8 +6009,9 @@ public class Oplog implements CompactableOplog, Flushable {
         int totalCount = 0;
         for (DiskRegionInfo dri : this.regionMap.values()) {
           final DiskRegionView dr = dri.getDiskRegion();
-          if (dr == null)
+          if (dr == null) {
             continue;
+          }
           boolean didCompact = false;
           while ((de = dri.getNextLiveEntry()) != null) {
             if (/*
@@ -6384,20 +6412,12 @@ public class Oplog implements CompactableOplog, Flushable {
    */
   public KnownVersion getProductVersionIfOld() {
     final KnownVersion version = this.gfversion;
-    if (version == null) {
-      // check for the case of diskstore upgrade from 6.6 to >= 7.0
-      if (getParent().isUpgradeVersionOnly()) {
-        // assume previous release version
-        return KnownVersion.GFE_66;
-      } else {
-        return null;
-      }
-    } else if (version == KnownVersion.CURRENT) {
+    if (version == KnownVersion.CURRENT) {
       return null;
-    } else {
-      // version changed so return that for VersionedDataStream
-      return version;
     }
+
+    // version changed so return that for VersionedDataStream
+    return version;
   }
 
   /**
@@ -6406,20 +6426,12 @@ public class Oplog implements CompactableOplog, Flushable {
    */
   public KnownVersion getDataVersionIfOld() {
     final KnownVersion version = this.dataVersion;
-    if (version == null) {
-      // check for the case of diskstore upgrade from 6.6 to >= 7.0
-      if (getParent().isUpgradeVersionOnly()) {
-        // assume previous release version
-        return KnownVersion.GFE_66;
-      } else {
-        return null;
-      }
-    } else if (version == KnownVersion.CURRENT) {
+    if (version == KnownVersion.CURRENT) {
       return null;
-    } else {
-      // version changed so return that for VersionedDataStream
-      return version;
     }
+
+    // version changed so return that for VersionedDataStream
+    return version;
   }
 
   public enum OPLOG_TYPE {
@@ -6821,8 +6833,9 @@ public class Oplog implements CompactableOplog, Flushable {
      * Returns the offset to the first byte of the value bytes.
      */
     public int getValueOffset() {
-      if (!this.needsValue)
+      if (!this.needsValue) {
         return 0;
+      }
       int result = this.deltaIdBytesLength
           // + 8 /* HACK DEBUG */
           + this.drIdLength + 1/* opcode */

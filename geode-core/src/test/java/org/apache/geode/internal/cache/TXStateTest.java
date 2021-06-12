@@ -19,9 +19,12 @@ import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabl
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -29,10 +32,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+
 import javax.transaction.Status;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.InOrder;
 
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -40,16 +48,22 @@ import org.apache.geode.cache.FailedSynchronizationException;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
+import org.apache.geode.cache.TransactionDataRebalancedException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 public class TXStateTest {
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
+
   private TXStateProxyImpl txStateProxy;
   private CommitConflictException exception;
   private TransactionDataNodeHasDepartedException transactionDataNodeHasDepartedException;
   private SingleThreadJTAExecutor executor;
   private InternalCache cache;
   private InternalDistributedSystem internalDistributedSystem;
+  private final EntryEventImpl event = mock(EntryEventImpl.class);
+  private final EventID eventID = mock(EventID.class);
 
   @Before
   public void setup() {
@@ -62,6 +76,7 @@ public class TXStateTest {
 
     when(txStateProxy.getTxMgr()).thenReturn(mock(TXManagerImpl.class));
     when(cache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
+    when(event.getEventId()).thenReturn(eventID);
   }
 
   @Test
@@ -81,6 +96,25 @@ public class TXStateTest {
 
     assertThatThrownBy(() -> txState.doAfterCompletionCommit())
         .isSameAs(transactionDataNodeHasDepartedException);
+  }
+
+  @Test
+  public void attachFilterProfileAfterApplyingChanges() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    doReturn(new ArrayList()).when(txState).generateEventOffsets();
+    doNothing().when(txState).attachFilterProfileInformation(any());
+    doNothing().when(txState).applyChanges(any());
+    TXCommitMessage txCommitMessage = mock(TXCommitMessage.class);
+    doReturn(txCommitMessage).when(txState).buildMessage();
+
+    txState.commit();
+
+    InOrder inOrder = inOrder(txState, txCommitMessage);
+    inOrder.verify(txState).applyChanges(any());
+    inOrder.verify(txState).attachFilterProfileInformation(any());
+    inOrder.verify(txState).buildMessage();
+    inOrder.verify(txCommitMessage).send(any());
+    inOrder.verify(txState).firePendingCallbacks();
   }
 
   @Test
@@ -298,4 +332,63 @@ public class TXStateTest {
     verify(regionState1).cleanup(region1);
   }
 
+  @Test
+  public void getRecordedResultsReturnsFalseIfRecordedFalse() {
+    TXState txState = spy(new TXState(txStateProxy, true, disabledClock()));
+    txState.recordEventAndResult(event, false);
+
+    assertThat(txState.getRecordedResult(event)).isFalse();
+  }
+
+  @Test
+  public void getRecordedResultsReturnsTrueIfRecordedTrue() {
+    TXState txState = spy(new TXState(txStateProxy, true, disabledClock()));
+    txState.recordEventAndResult(event, true);
+
+    assertThat(txState.getRecordedResult(event)).isTrue();
+  }
+
+  @Test
+  public void getRecordedResultOrExceptionThrowsIfRecordedException() {
+    expectedException.expect(TransactionDataRebalancedException.class);
+    TXState txState = spy(new TXState(txStateProxy, true, disabledClock()));
+    txState.recordEventAndResult(event, false);
+    txState.recordEventException(event, new TransactionDataRebalancedException(""));
+
+    txState.getRecordedResultOrException(event);
+  }
+
+  @Test
+  public void getRecordedResultOrExceptionReturnFalseIfRecordedFalse() {
+    TXState txState = spy(new TXState(txStateProxy, true, disabledClock()));
+    txState.recordEventAndResult(event, false);
+
+    assertThat(txState.getRecordedResultOrException(event)).isFalse();
+  }
+
+  @Test
+  public void getRecordedResultOrExceptionReturnTrueIfRecordedTrue() {
+    TXState txState = spy(new TXState(txStateProxy, true, disabledClock()));
+    txState.recordEventAndResult(event, true);
+
+    assertThat(txState.getRecordedResultOrException(event)).isTrue();
+  }
+
+  @Test
+  public void txPutEntryRecordExceptionIfFailedWithTransactionDataRebalancedException() {
+    expectedException.expect(TransactionDataRebalancedException.class);
+    TXState txState = spy(new TXState(txStateProxy, true, disabledClock()));
+    boolean ifNew = true;
+    boolean requireOldValue = false;
+    boolean checkResources = false;
+    TransactionDataRebalancedException exception = new TransactionDataRebalancedException("");
+    InternalRegion region = mock(InternalRegion.class);
+    when(event.getRegion()).thenReturn(region);
+    doThrow(exception).when(txState).txWriteEntry(region, event, ifNew, requireOldValue, null);
+
+    assertThat(txState.txPutEntry(event, ifNew, requireOldValue, checkResources, null)).isFalse();
+
+    verify(txState, never()).getRecordedResultOrException(event);
+    verify(txState).recordEventException(event, exception);
+  }
 }

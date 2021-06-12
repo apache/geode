@@ -22,25 +22,30 @@ import java.util.concurrent.atomic.AtomicInteger;
  * log uncaught exceptions. They will also always be daemon
  * and have unique names that contain the "baseName" passed
  * to the constructor.
+ *
  * <p>
  * What happens each time a thread is created can be customized
  * using the optional "threadInitializer".
+ *
  * <p>
  * What happens each time a thread is run can be customized
  * using the optional "commandWrapper".
  */
 public class LoggingThreadFactory implements ThreadFactory {
 
+  private final AtomicInteger threadCount = new AtomicInteger(1);
+
   private final String baseName;
   private final CommandWrapper commandWrapper;
   private final ThreadInitializer threadInitializer;
   private final boolean isDaemon;
-  private final AtomicInteger threadCount = new AtomicInteger(1);
 
+  @FunctionalInterface
   public interface ThreadInitializer {
     void initialize(Thread thread);
   }
 
+  @FunctionalInterface
   public interface CommandWrapper {
     /**
      * Invoke the current method passing it a runnable that it can
@@ -108,10 +113,6 @@ public class LoggingThreadFactory implements ThreadFactory {
     this(baseName, null, commandWrapper, true);
   }
 
-  private String getUniqueName() {
-    return baseName + threadCount.getAndIncrement();
-  }
-
   @Override
   public Thread newThread(Runnable runnable) {
     Runnable commandToRun;
@@ -125,5 +126,9 @@ public class LoggingThreadFactory implements ThreadFactory {
       threadInitializer.initialize(thread);
     }
     return thread;
+  }
+
+  private String getUniqueName() {
+    return baseName + threadCount.getAndIncrement();
   }
 }

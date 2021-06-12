@@ -84,13 +84,13 @@ public class ResourceManagerStats {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     type = f.createType("ResourceManagerStats", "Statistics about resource management",
         new StatisticDescriptor[] {
-            f.createIntGauge("rebalancesInProgress",
+            f.createLongGauge("rebalancesInProgress",
                 "Current number of cache rebalance operations being directed by this process.",
                 "operations"),
-            f.createIntCounter("rebalancesCompleted",
+            f.createLongCounter("rebalancesCompleted",
                 "Total number of cache rebalance operations directed by this process.",
                 "operations"),
-            f.createIntCounter("autoRebalanceAttempts",
+            f.createLongCounter("autoRebalanceAttempts",
                 "Total number of cache auto-rebalance attempts.", "operations"),
             f.createLongCounter("rebalanceTime",
                 "Total time spent directing cache rebalance operations.", "nanoseconds", false),
@@ -105,12 +105,12 @@ public class ResourceManagerStats {
                 "Total time spent directing cache restore redundancy operations.", "nanoseconds",
                 false),
 
-            f.createIntGauge("rebalanceBucketCreatesInProgress",
+            f.createLongGauge("rebalanceBucketCreatesInProgress",
                 "Current number of bucket create operations being directed for rebalancing.",
                 "operations"),
-            f.createIntCounter("rebalanceBucketCreatesCompleted",
+            f.createLongCounter("rebalanceBucketCreatesCompleted",
                 "Total number of bucket create operations directed for rebalancing.", "operations"),
-            f.createIntCounter("rebalanceBucketCreatesFailed",
+            f.createLongCounter("rebalanceBucketCreatesFailed",
                 "Total number of bucket create operations directed for rebalancing that failed.",
                 "operations"),
             f.createLongCounter("rebalanceBucketCreateTime",
@@ -120,12 +120,12 @@ public class ResourceManagerStats {
                 "Total bytes created while directing bucket create operations for rebalancing.",
                 "bytes", false),
 
-            f.createIntGauge("rebalanceBucketRemovesInProgress",
+            f.createLongGauge("rebalanceBucketRemovesInProgress",
                 "Current number of bucket remove operations being directed for rebalancing.",
                 "operations"),
-            f.createIntCounter("rebalanceBucketRemovesCompleted",
+            f.createLongCounter("rebalanceBucketRemovesCompleted",
                 "Total number of bucket remove operations directed for rebalancing.", "operations"),
-            f.createIntCounter("rebalanceBucketRemovesFailed",
+            f.createLongCounter("rebalanceBucketRemovesFailed",
                 "Total number of bucket remove operations directed for rebalancing that failed.",
                 "operations"),
             f.createLongCounter("rebalanceBucketRemovesTime",
@@ -136,13 +136,13 @@ public class ResourceManagerStats {
                 "bytes", false),
 
 
-            f.createIntGauge("rebalanceBucketTransfersInProgress",
+            f.createLongGauge("rebalanceBucketTransfersInProgress",
                 "Current number of bucket transfer operations being directed for rebalancing.",
                 "operations"),
-            f.createIntCounter("rebalanceBucketTransfersCompleted",
+            f.createLongCounter("rebalanceBucketTransfersCompleted",
                 "Total number of bucket transfer operations directed for rebalancing.",
                 "operations"),
-            f.createIntCounter("rebalanceBucketTransfersFailed",
+            f.createLongCounter("rebalanceBucketTransfersFailed",
                 "Total number of bucket transfer operations directed for rebalancing that failed.",
                 "operations"),
             f.createLongCounter("rebalanceBucketTransfersTime",
@@ -152,36 +152,36 @@ public class ResourceManagerStats {
                 "Total bytes transfered while directing bucket transfer operations for rebalancing.",
                 "bytes", false),
 
-            f.createIntGauge("rebalancePrimaryTransfersInProgress",
+            f.createLongGauge("rebalancePrimaryTransfersInProgress",
                 "Current number of primary transfer operations being directed for rebalancing.",
                 "operations"),
-            f.createIntCounter("rebalancePrimaryTransfersCompleted",
+            f.createLongCounter("rebalancePrimaryTransfersCompleted",
                 "Total number of primary transfer operations directed for rebalancing.",
                 "operations"),
-            f.createIntCounter("rebalancePrimaryTransfersFailed",
+            f.createLongCounter("rebalancePrimaryTransfersFailed",
                 "Total number of primary transfer operations directed for rebalancing that failed.",
                 "operations"),
             f.createLongCounter("rebalancePrimaryTransferTime",
                 "Total time spent directing primary transfer operations for rebalancing.",
                 "nanoseconds", false),
-            f.createIntCounter("rebalanceMembershipChanges",
+            f.createLongCounter("rebalanceMembershipChanges",
                 "The number of times that membership has changed during a rebalance", "events"),
 
-            f.createIntGauge("heapCriticalEvents",
+            f.createLongGauge("heapCriticalEvents",
                 "Total number of times the heap usage went over critical threshold.", "events"),
-            f.createIntGauge("offHeapCriticalEvents",
+            f.createLongGauge("offHeapCriticalEvents",
                 "Total number of times off-heap usage went over critical threshold.", "events"),
-            f.createIntGauge("heapSafeEvents",
+            f.createLongGauge("heapSafeEvents",
                 "Total number of times the heap usage fell below critical threshold.", "events"),
-            f.createIntGauge("offHeapSafeEvents",
+            f.createLongGauge("offHeapSafeEvents",
                 "Total number of times off-heap usage fell below critical threshold.", "events"),
-            f.createIntGauge("evictionStartEvents",
+            f.createLongGauge("evictionStartEvents",
                 "Total number of times heap usage went over eviction threshold.", "events"),
-            f.createIntGauge("offHeapEvictionStartEvents",
+            f.createLongGauge("offHeapEvictionStartEvents",
                 "Total number of times off-heap usage went over eviction threshold.", "events"),
-            f.createIntGauge("evictionStopEvents",
+            f.createLongGauge("evictionStopEvents",
                 "Total number of times heap usage fell below eviction threshold.", "events"),
-            f.createIntGauge("offHeapEvictionStopEvents",
+            f.createLongGauge("offHeapEvictionStopEvents",
                 "Total number of times off-heap usage fell below eviction threshold.", "events"),
             f.createLongGauge("criticalThreshold",
                 "The currently set heap critical threshold value in bytes", "bytes"),
@@ -193,14 +193,14 @@ public class ResourceManagerStats {
                 "The currently set off-heap eviction threshold value in bytes", "bytes"),
             f.createLongGauge("tenuredHeapUsed", "Total memory used in the tenured/old space",
                 "bytes"),
-            f.createIntCounter("resourceEventsDelivered",
+            f.createLongCounter("resourceEventsDelivered",
                 "Total number of resource events delivered to listeners", "events"),
-            f.createIntGauge("resourceEventQueueSize",
+            f.createLongGauge("resourceEventQueueSize",
                 "Pending events for thresholdEventProcessor thread", "events"),
-            f.createIntGauge("thresholdEventProcessorThreadJobs",
+            f.createLongGauge("thresholdEventProcessorThreadJobs",
                 "Number of jobs currently being processed by the thresholdEventProcessorThread",
                 "jobs"),
-            f.createIntGauge("numThreadsStuck",
+            f.createLongGauge("numThreadsStuck",
                 "Number of running threads that have not changed state within the thread-monitor-time-limit-ms interval.",
                 "stuck Threads")});
 
@@ -261,110 +261,110 @@ public class ResourceManagerStats {
   }
 
   public long startRebalance() {
-    this.stats.incInt(rebalancesInProgressId, 1);
+    this.stats.incLong(rebalancesInProgressId, 1L);
     return System.nanoTime();
   }
 
   public void incAutoRebalanceAttempts() {
-    this.stats.incInt(autoRebalanceAttemptsId, 1);
+    this.stats.incLong(autoRebalanceAttemptsId, 1L);
   }
 
   public void endRebalance(long start) {
     long elapsed = System.nanoTime() - start;
-    this.stats.incInt(rebalancesInProgressId, -1);
-    this.stats.incInt(rebalancesCompletedId, 1);
+    this.stats.incLong(rebalancesInProgressId, -1L);
+    this.stats.incLong(rebalancesCompletedId, 1L);
     this.stats.incLong(rebalanceTimeId, elapsed);
   }
 
   public long startRestoreRedundancy() {
-    this.stats.incLong(restoreRedundanciesInProgressId, 1);
+    this.stats.incLong(restoreRedundanciesInProgressId, 1L);
     return System.nanoTime();
   }
 
   public void endRestoreRedundancy(long start) {
     long elapsed = System.nanoTime() - start;
-    this.stats.incLong(restoreRedundanciesInProgressId, -1);
-    this.stats.incLong(restoreRedundanciesCompletedId, 1);
+    this.stats.incLong(restoreRedundanciesInProgressId, -1L);
+    this.stats.incLong(restoreRedundanciesCompletedId, 1L);
     this.stats.incLong(restoreRedundancyTimeId, elapsed);
   }
 
   public void startBucketCreate(int regions) {
-    this.stats.incInt(rebalanceBucketCreatesInProgressId, regions);
+    this.stats.incLong(rebalanceBucketCreatesInProgressId, regions);
   }
 
   public void endBucketCreate(int regions, boolean success, long bytes, long elapsed) {
-    this.stats.incInt(rebalanceBucketCreatesInProgressId, -regions);
+    this.stats.incLong(rebalanceBucketCreatesInProgressId, -regions);
     this.stats.incLong(rebalanceBucketCreateTimeId, elapsed);
     if (success) {
-      this.stats.incInt(rebalanceBucketCreatesCompletedId, regions);
+      this.stats.incLong(rebalanceBucketCreatesCompletedId, regions);
       this.stats.incLong(rebalanceBucketCreateBytesId, bytes);
     } else {
-      this.stats.incInt(rebalanceBucketCreatesFailedId, regions);
+      this.stats.incLong(rebalanceBucketCreatesFailedId, regions);
     }
   }
 
   public void startBucketRemove(int regions) {
-    this.stats.incInt(rebalanceBucketRemovesInProgressId, regions);
+    this.stats.incLong(rebalanceBucketRemovesInProgressId, regions);
   }
 
   public void endBucketRemove(int regions, boolean success, long bytes, long elapsed) {
-    this.stats.incInt(rebalanceBucketRemovesInProgressId, -regions);
+    this.stats.incLong(rebalanceBucketRemovesInProgressId, -regions);
     this.stats.incLong(rebalanceBucketRemovesTimeId, elapsed);
     if (success) {
-      this.stats.incInt(rebalanceBucketRemovesCompletedId, regions);
+      this.stats.incLong(rebalanceBucketRemovesCompletedId, regions);
       this.stats.incLong(rebalanceBucketRemovesBytesId, bytes);
     } else {
-      this.stats.incInt(rebalanceBucketRemovesFailedId, regions);
+      this.stats.incLong(rebalanceBucketRemovesFailedId, regions);
     }
   }
 
   public void startBucketTransfer(int regions) {
-    this.stats.incInt(rebalanceBucketTransfersInProgressId, regions);
+    this.stats.incLong(rebalanceBucketTransfersInProgressId, regions);
   }
 
   public void endBucketTransfer(int regions, boolean success, long bytes, long elapsed) {
-    this.stats.incInt(rebalanceBucketTransfersInProgressId, -regions);
+    this.stats.incLong(rebalanceBucketTransfersInProgressId, -regions);
     this.stats.incLong(rebalanceBucketTransfersTimeId, elapsed);
     if (success) {
-      this.stats.incInt(rebalanceBucketTransfersCompletedId, regions);
+      this.stats.incLong(rebalanceBucketTransfersCompletedId, regions);
       this.stats.incLong(rebalanceBucketTransfersBytesId, bytes);
     } else {
-      this.stats.incInt(rebalanceBucketTransfersFailedId, regions);
+      this.stats.incLong(rebalanceBucketTransfersFailedId, regions);
     }
   }
 
   public void startPrimaryTransfer(int regions) {
-    this.stats.incInt(rebalancePrimaryTransfersInProgressId, regions);
+    this.stats.incLong(rebalancePrimaryTransfersInProgressId, regions);
   }
 
   public void endPrimaryTransfer(int regions, boolean success, long elapsed) {
-    this.stats.incInt(rebalancePrimaryTransfersInProgressId, -regions);
+    this.stats.incLong(rebalancePrimaryTransfersInProgressId, -regions);
     this.stats.incLong(rebalancePrimaryTransferTimeId, elapsed);
     if (success) {
-      this.stats.incInt(rebalancePrimaryTransfersCompletedId, regions);
+      this.stats.incLong(rebalancePrimaryTransfersCompletedId, regions);
     } else {
-      this.stats.incInt(rebalancePrimaryTransfersFailedId, regions);
+      this.stats.incLong(rebalancePrimaryTransfersFailedId, regions);
     }
   }
 
-  public void incRebalanceMembershipChanges(int delta) {
-    this.stats.incInt(rebalanceMembershipChanges, 1);
+  public void incRebalanceMembershipChanges(long delta) {
+    this.stats.incLong(rebalanceMembershipChanges, 1L);
   }
 
-  public int getRebalanceMembershipChanges() {
-    return this.stats.getInt(rebalanceMembershipChanges);
+  public long getRebalanceMembershipChanges() {
+    return this.stats.getLong(rebalanceMembershipChanges);
   }
 
-  public int getRebalancesInProgress() {
-    return this.stats.getInt(rebalancesInProgressId);
+  public long getRebalancesInProgress() {
+    return this.stats.getLong(rebalancesInProgressId);
   }
 
-  public int getRebalancesCompleted() {
-    return this.stats.getInt(rebalancesCompletedId);
+  public long getRebalancesCompleted() {
+    return this.stats.getLong(rebalancesCompletedId);
   }
 
-  public int getAutoRebalanceAttempts() {
-    return this.stats.getInt(autoRebalanceAttemptsId);
+  public long getAutoRebalanceAttempts() {
+    return this.stats.getLong(autoRebalanceAttemptsId);
   }
 
   public long getRebalanceTime() {
@@ -383,16 +383,16 @@ public class ResourceManagerStats {
     return this.stats.getLong(restoreRedundancyTimeId);
   }
 
-  public int getRebalanceBucketCreatesInProgress() {
-    return this.stats.getInt(rebalanceBucketCreatesInProgressId);
+  public long getRebalanceBucketCreatesInProgress() {
+    return this.stats.getLong(rebalanceBucketCreatesInProgressId);
   }
 
-  public int getRebalanceBucketCreatesCompleted() {
-    return this.stats.getInt(rebalanceBucketCreatesCompletedId);
+  public long getRebalanceBucketCreatesCompleted() {
+    return this.stats.getLong(rebalanceBucketCreatesCompletedId);
   }
 
-  public int getRebalanceBucketCreatesFailed() {
-    return this.stats.getInt(rebalanceBucketCreatesFailedId);
+  public long getRebalanceBucketCreatesFailed() {
+    return this.stats.getLong(rebalanceBucketCreatesFailedId);
   }
 
   public long getRebalanceBucketCreateTime() {
@@ -403,16 +403,16 @@ public class ResourceManagerStats {
     return this.stats.getLong(rebalanceBucketCreateBytesId);
   }
 
-  public int getRebalanceBucketTransfersInProgress() {
-    return this.stats.getInt(rebalanceBucketTransfersInProgressId);
+  public long getRebalanceBucketTransfersInProgress() {
+    return this.stats.getLong(rebalanceBucketTransfersInProgressId);
   }
 
-  public int getRebalanceBucketTransfersCompleted() {
-    return this.stats.getInt(rebalanceBucketTransfersCompletedId);
+  public long getRebalanceBucketTransfersCompleted() {
+    return this.stats.getLong(rebalanceBucketTransfersCompletedId);
   }
 
-  public int getRebalanceBucketTransfersFailed() {
-    return this.stats.getInt(rebalanceBucketTransfersFailedId);
+  public long getRebalanceBucketTransfersFailed() {
+    return this.stats.getLong(rebalanceBucketTransfersFailedId);
   }
 
   public long getRebalanceBucketTransfersTime() {
@@ -423,16 +423,16 @@ public class ResourceManagerStats {
     return this.stats.getLong(rebalanceBucketTransfersBytesId);
   }
 
-  public int getRebalancePrimaryTransfersInProgress() {
-    return this.stats.getInt(rebalancePrimaryTransfersInProgressId);
+  public long getRebalancePrimaryTransfersInProgress() {
+    return this.stats.getLong(rebalancePrimaryTransfersInProgressId);
   }
 
-  public int getRebalancePrimaryTransfersCompleted() {
-    return this.stats.getInt(rebalancePrimaryTransfersCompletedId);
+  public long getRebalancePrimaryTransfersCompleted() {
+    return this.stats.getLong(rebalancePrimaryTransfersCompletedId);
   }
 
-  public int getRebalancePrimaryTransfersFailed() {
-    return this.stats.getInt(rebalancePrimaryTransfersFailedId);
+  public long getRebalancePrimaryTransfersFailed() {
+    return this.stats.getLong(rebalancePrimaryTransfersFailedId);
   }
 
   public long getRebalancePrimaryTransferTime() {
@@ -440,75 +440,75 @@ public class ResourceManagerStats {
   }
 
   public void incResourceEventsDelivered() {
-    this.stats.incInt(resourceEventsDeliveredId, 1);
+    this.stats.incLong(resourceEventsDeliveredId, 1L);
   }
 
-  public int getResourceEventsDelivered() {
-    return this.stats.getInt(resourceEventsDeliveredId);
+  public long getResourceEventsDelivered() {
+    return this.stats.getLong(resourceEventsDeliveredId);
   }
 
   public void incHeapCriticalEvents() {
-    this.stats.incInt(heapCriticalEventsId, 1);
+    this.stats.incLong(heapCriticalEventsId, 1L);
   }
 
-  public int getHeapCriticalEvents() {
-    return this.stats.getInt(heapCriticalEventsId);
+  public long getHeapCriticalEvents() {
+    return this.stats.getLong(heapCriticalEventsId);
   }
 
   public void incOffHeapCriticalEvents() {
-    this.stats.incInt(offHeapCriticalEventsId, 1);
+    this.stats.incLong(offHeapCriticalEventsId, 1L);
   }
 
-  public int getOffHeapCriticalEvents() {
-    return this.stats.getInt(offHeapCriticalEventsId);
+  public long getOffHeapCriticalEvents() {
+    return this.stats.getLong(offHeapCriticalEventsId);
   }
 
   public void incHeapSafeEvents() {
-    this.stats.incInt(heapSafeEventsId, 1);
+    this.stats.incLong(heapSafeEventsId, 1L);
   }
 
-  public int getHeapSafeEvents() {
-    return this.stats.getInt(heapSafeEventsId);
+  public long getHeapSafeEvents() {
+    return this.stats.getLong(heapSafeEventsId);
   }
 
   public void incOffHeapSafeEvents() {
-    this.stats.incInt(offHeapSafeEventsId, 1);
+    this.stats.incLong(offHeapSafeEventsId, 1L);
   }
 
-  public int getOffHeapSafeEvents() {
-    return this.stats.getInt(offHeapSafeEventsId);
+  public long getOffHeapSafeEvents() {
+    return this.stats.getLong(offHeapSafeEventsId);
   }
 
   public void incEvictionStartEvents() {
-    this.stats.incInt(evictionStartEventsId, 1);
+    this.stats.incLong(evictionStartEventsId, 1L);
   }
 
-  public int getEvictionStartEvents() {
-    return this.stats.getInt(evictionStartEventsId);
+  public long getEvictionStartEvents() {
+    return this.stats.getLong(evictionStartEventsId);
   }
 
   public void incOffHeapEvictionStartEvents() {
-    this.stats.incInt(offHeapEvictionStartEventsId, 1);
+    this.stats.incLong(offHeapEvictionStartEventsId, 1L);
   }
 
-  public int getOffHeapEvictionStartEvents() {
-    return this.stats.getInt(offHeapEvictionStartEventsId);
+  public long getOffHeapEvictionStartEvents() {
+    return this.stats.getLong(offHeapEvictionStartEventsId);
   }
 
   public void incEvictionStopEvents() {
-    this.stats.incInt(evictionStopEventsId, 1);
+    this.stats.incLong(evictionStopEventsId, 1L);
   }
 
-  public int getEvictionStopEvents() {
-    return this.stats.getInt(evictionStopEventsId);
+  public long getEvictionStopEvents() {
+    return this.stats.getLong(evictionStopEventsId);
   }
 
   public void incOffHeapEvictionStopEvents() {
-    this.stats.incInt(offHeapEvictionStopEventsId, 1);
+    this.stats.incLong(offHeapEvictionStopEventsId, 1L);
   }
 
-  public int getOffHeapEvictionStopEvents() {
-    return this.stats.getInt(offHeapEvictionStopEventsId);
+  public long getOffHeapEvictionStopEvents() {
+    return this.stats.getLong(offHeapEvictionStopEventsId);
   }
 
   public void changeCriticalThreshold(long newValue) {
@@ -551,20 +551,20 @@ public class ResourceManagerStats {
     return this.stats.getLong(tenuredHeapUsageId);
   }
 
-  public void incResourceEventQueueSize(int delta) {
-    this.stats.incInt(resourceEventQueueSizeId, delta);
+  public void incResourceEventQueueSize(long delta) {
+    this.stats.incLong(resourceEventQueueSizeId, delta);
   }
 
-  public int getResourceEventQueueSize() {
-    return this.stats.getInt(resourceEventQueueSizeId);
+  public long getResourceEventQueueSize() {
+    return this.stats.getLong(resourceEventQueueSizeId);
   }
 
-  public void incThresholdEventProcessorThreadJobs(int delta) {
-    this.stats.incInt(thresholdEventProcessorThreadJobsId, delta);
+  public void incThresholdEventProcessorThreadJobs(long delta) {
+    this.stats.incLong(thresholdEventProcessorThreadJobsId, delta);
   }
 
-  public int getThresholdEventProcessorThreadJobs() {
-    return this.stats.getInt(thresholdEventProcessorThreadJobsId);
+  public long getThresholdEventProcessorThreadJobs() {
+    return this.stats.getLong(thresholdEventProcessorThreadJobsId);
   }
 
   /**
@@ -575,16 +575,16 @@ public class ResourceManagerStats {
     return new QueueStatHelper() {
       @Override
       public void add() {
-        incResourceEventQueueSize(1);
+        incResourceEventQueueSize(1L);
       }
 
       @Override
       public void remove() {
-        incResourceEventQueueSize(-1);
+        incResourceEventQueueSize(-1L);
       }
 
       @Override
-      public void remove(int count) {
+      public void remove(long count) {
         incResourceEventQueueSize(-1 * count);
       }
     };
@@ -594,12 +594,12 @@ public class ResourceManagerStats {
     return new PoolStatHelper() {
       @Override
       public void endJob() {
-        incThresholdEventProcessorThreadJobs(-1);
+        incThresholdEventProcessorThreadJobs(-1L);
       }
 
       @Override
       public void startJob() {
-        incThresholdEventProcessorThreadJobs(1);
+        incThresholdEventProcessorThreadJobs(1L);
       }
     };
   }
@@ -607,14 +607,14 @@ public class ResourceManagerStats {
   /**
    * Returns the value of ThreadStuck (how many (if at all) stuck threads are in the system)
    */
-  public int getNumThreadStuck() {
-    return this.stats.getInt(numThreadsStuckId);
+  public long getNumThreadStuck() {
+    return this.stats.getLong(numThreadsStuckId);
   }
 
   /**
    * Sets the value of Thread Stuck
    */
-  public void setNumThreadStuck(int value) {
-    this.stats.setInt(numThreadsStuckId, value);
+  public void setNumThreadStuck(long value) {
+    this.stats.setLong(numThreadsStuckId, value);
   }
 }

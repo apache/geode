@@ -97,11 +97,40 @@ public class Endpoint {
 
   @Override
   public String toString() {
-    return location.toString();
+    return location.toString() + "," + getMemberId();
   }
 
   public DistributedMember getMemberId() {
     return memberId;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (!(obj instanceof Endpoint)) {
+      return false;
+    }
+    final Endpoint other = (Endpoint) obj;
+
+    if (!this.location.equals(other.getLocation())) {
+      return false;
+    }
+
+    return this.memberId.equals(other.getMemberId());
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result =
+        prime * result + location.hashCode() + memberId.hashCode();
+    return result;
   }
 
 

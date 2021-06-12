@@ -42,13 +42,16 @@ import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
  */
 public class ListDiskStoresFunction implements InternalFunction<Void> {
 
-  @SuppressWarnings("unused")
-  public void init(final Properties props) {}
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ListDiskStoresFunction";
 
   @Override
   public String getId() {
-    return getClass().getName();
+    return ID;
   }
+
+  @SuppressWarnings("unused")
+  public void init(final Properties props) {}
 
   @Override
   public void execute(final FunctionContext<Void> context) {

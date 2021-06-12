@@ -68,6 +68,10 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
 
   private long creationTime;
 
+  public AbstractSessionAttributes() {
+    lastAccessedTime = System.currentTimeMillis();
+  }
+
   /**
    * {@inheritDoc}
    */

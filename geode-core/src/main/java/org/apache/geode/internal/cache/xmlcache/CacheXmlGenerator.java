@@ -612,23 +612,27 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     AttributesImpl atts = new AttributesImpl();
     CacheConfig config = ((InternalCache) cache).getCacheConfig();
     if (config.pdxReadSerializedUserSet) {
-      if (generateDefaults() || cache.getPdxReadSerialized())
+      if (generateDefaults() || cache.getPdxReadSerialized()) {
         atts.addAttribute("", "", READ_SERIALIZED, "",
             Boolean.toString(cache.getPdxReadSerialized()));
+      }
     }
     if (config.pdxIgnoreUnreadFieldsUserSet) {
-      if (generateDefaults() || cache.getPdxIgnoreUnreadFields())
+      if (generateDefaults() || cache.getPdxIgnoreUnreadFields()) {
         atts.addAttribute("", "", IGNORE_UNREAD_FIELDS, "",
             Boolean.toString(cache.getPdxIgnoreUnreadFields()));
+      }
     }
     if (config.pdxPersistentUserSet) {
-      if (generateDefaults() || cache.getPdxPersistent())
+      if (generateDefaults() || cache.getPdxPersistent()) {
         atts.addAttribute("", "", PERSISTENT, "", Boolean.toString(cache.getPdxPersistent()));
+      }
     }
     if (config.pdxDiskStoreUserSet) {
       if (generateDefaults()
-          || cache.getPdxDiskStore() != null && !cache.getPdxDiskStore().equals(""))
+          || cache.getPdxDiskStore() != null && !cache.getPdxDiskStore().equals("")) {
         atts.addAttribute("", "", DISK_STORE_NAME, "", cache.getPdxDiskStore());
+      }
     }
     if (!generateDefaults() && cache.getPdxSerializer() == null && atts.getLength() == 0) {
       return;
@@ -758,31 +762,34 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     } else if (cache instanceof GemFireCacheImpl) {
       {
         int chp = (int) cache.getResourceManager().getCriticalHeapPercentage();
-        if (generateDefaults() || chp != MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE)
-
+        if (generateDefaults() || chp != MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE) {
           atts.addAttribute("", "", CRITICAL_HEAP_PERCENTAGE, "", String.valueOf(chp));
+        }
       }
       {
         int ehp = (int) cache.getResourceManager().getEvictionHeapPercentage();
-        if (generateDefaults() || ehp != MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE)
+        if (generateDefaults() || ehp != MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE) {
           atts.addAttribute("", "", EVICTION_HEAP_PERCENTAGE, "", String.valueOf(ehp));
+        }
       }
 
       if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
         {
           int chp = (int) cache.getResourceManager().getCriticalOffHeapPercentage();
-          if (generateDefaults() || chp != MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE)
-
+          if (generateDefaults() || chp != MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE) {
             atts.addAttribute("", "", CRITICAL_OFF_HEAP_PERCENTAGE, "", String.valueOf(chp));
+          }
         }
         {
           int ehp = (int) cache.getResourceManager().getEvictionOffHeapPercentage();
-          if (generateDefaults() || ehp != MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE)
+          if (generateDefaults() || ehp != MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE) {
             atts.addAttribute("", "", EVICTION_OFF_HEAP_PERCENTAGE, "", String.valueOf(ehp));
+          }
         }
       }
-      if (generateDefaults() || atts.getLength() > 0)
+      if (generateDefaults() || atts.getLength() > 0) {
         generateResourceManagerElement(atts);
+      }
     }
   }
 
@@ -898,44 +905,52 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     }
     AttributesImpl atts = new AttributesImpl();
     try {
-      if (generateDefaults() || bridge.getPort() != CacheServer.DEFAULT_PORT)
+      if (generateDefaults() || bridge.getPort() != CacheServer.DEFAULT_PORT) {
         atts.addAttribute("", "", PORT, "", String.valueOf(bridge.getPort()));
+      }
 
       if (version.compareTo(CacheXmlVersion.GEMFIRE_4_1) < 0) {
         return;
       }
       if (generateDefaults()
-          || bridge.getMaximumTimeBetweenPings() != CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS)
+          || bridge
+              .getMaximumTimeBetweenPings() != CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS) {
         atts.addAttribute("", "", MAXIMUM_TIME_BETWEEN_PINGS, "",
             String.valueOf(bridge.getMaximumTimeBetweenPings()));
+      }
 
       if (generateDefaults()
-          || bridge.getNotifyBySubscription() != CacheServer.DEFAULT_NOTIFY_BY_SUBSCRIPTION)
+          || bridge.getNotifyBySubscription() != CacheServer.DEFAULT_NOTIFY_BY_SUBSCRIPTION) {
         atts.addAttribute("", "", NOTIFY_BY_SUBSCRIPTION, "",
             String.valueOf(bridge.getNotifyBySubscription()));
+      }
 
       if (generateDefaults()
-          || bridge.getSocketBufferSize() != CacheServer.DEFAULT_SOCKET_BUFFER_SIZE)
+          || bridge.getSocketBufferSize() != CacheServer.DEFAULT_SOCKET_BUFFER_SIZE) {
         atts.addAttribute("", "", SOCKET_BUFFER_SIZE, "",
             String.valueOf(bridge.getSocketBufferSize()));
+      }
 
       if (version.compareTo(CacheXmlVersion.GEMFIRE_5_0) < 0) {
         return;
       }
 
-      if (generateDefaults() || bridge.getMaxConnections() != CacheServer.DEFAULT_MAX_CONNECTIONS)
+      if (generateDefaults() || bridge.getMaxConnections() != CacheServer.DEFAULT_MAX_CONNECTIONS) {
         atts.addAttribute("", "", MAX_CONNECTIONS, "", String.valueOf(bridge.getMaxConnections()));
+      }
 
       if (version.compareTo(CacheXmlVersion.GEMFIRE_5_1) < 0) {
         return;
       }
 
-      if (generateDefaults() || bridge.getMaxThreads() != CacheServer.DEFAULT_MAX_THREADS)
+      if (generateDefaults() || bridge.getMaxThreads() != CacheServer.DEFAULT_MAX_THREADS) {
         atts.addAttribute("", "", MAX_THREADS, "", String.valueOf(bridge.getMaxThreads()));
+      }
       if (generateDefaults()
-          || bridge.getMaximumMessageCount() != CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT)
+          || bridge.getMaximumMessageCount() != CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT) {
         atts.addAttribute("", "", MAXIMUM_MESSAGE_COUNT, "",
             String.valueOf(bridge.getMaximumMessageCount()));
+      }
 
       if (generateDefaults()
           || bridge.getMessageTimeToLive() != CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE) {
@@ -948,17 +963,20 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
 
       if (bridge.getBindAddress() != null) {
-        if (generateDefaults() || !CacheServer.DEFAULT_BIND_ADDRESS.equals(bridge.getBindAddress()))
+        if (generateDefaults()
+            || !CacheServer.DEFAULT_BIND_ADDRESS.equals(bridge.getBindAddress())) {
           atts.addAttribute("", "", BIND_ADDRESS, "", bridge.getBindAddress());
+        }
       }
 
       if (bridge.getHostnameForClients() != null && !bridge.getHostnameForClients().equals("")) {
         atts.addAttribute("", "", HOSTNAME_FOR_CLIENTS, "", bridge.getHostnameForClients());
       }
       if (generateDefaults()
-          || bridge.getLoadPollInterval() != CacheServer.DEFAULT_LOAD_POLL_INTERVAL)
+          || bridge.getLoadPollInterval() != CacheServer.DEFAULT_LOAD_POLL_INTERVAL) {
         atts.addAttribute("", "", LOAD_POLL_INTERVAL, "",
             String.valueOf(bridge.getLoadPollInterval()));
+      }
 
       if (version.compareTo(CacheXmlVersion.GEMFIRE_8_0) < 0) {
         return;
@@ -1017,66 +1035,75 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
       if ((!(ds instanceof DiskStoreAttributesCreation)
           || ((DiskStoreAttributesCreation) ds).hasAutoCompact())) {
-        if (generateDefaults() || ds.getAutoCompact() != DiskStoreFactory.DEFAULT_AUTO_COMPACT)
+        if (generateDefaults() || ds.getAutoCompact() != DiskStoreFactory.DEFAULT_AUTO_COMPACT) {
           atts.addAttribute("", "", AUTO_COMPACT, "", String.valueOf(ds.getAutoCompact()));
+        }
       }
 
       if ((!(ds instanceof DiskStoreAttributesCreation)
           || ((DiskStoreAttributesCreation) ds).hasAllowForceCompaction())) {
         if (generateDefaults()
-            || ds.getAllowForceCompaction() != DiskStoreFactory.DEFAULT_ALLOW_FORCE_COMPACTION)
+            || ds.getAllowForceCompaction() != DiskStoreFactory.DEFAULT_ALLOW_FORCE_COMPACTION) {
           atts.addAttribute("", "", ALLOW_FORCE_COMPACTION, "",
               String.valueOf(ds.getAllowForceCompaction()));
+        }
       }
 
       if ((!(ds instanceof DiskStoreAttributesCreation)
           || ((DiskStoreAttributesCreation) ds).hasCompactionThreshold())) {
         if (generateDefaults()
-            || ds.getCompactionThreshold() != DiskStoreFactory.DEFAULT_COMPACTION_THRESHOLD)
+            || ds.getCompactionThreshold() != DiskStoreFactory.DEFAULT_COMPACTION_THRESHOLD) {
           atts.addAttribute("", "", COMPACTION_THRESHOLD, "",
               String.valueOf(ds.getCompactionThreshold()));
+        }
       }
 
       if ((!(ds instanceof DiskStoreAttributesCreation)
           || ((DiskStoreAttributesCreation) ds).hasMaxOplogSize())) {
-        if (generateDefaults() || ds.getMaxOplogSize() != DiskStoreFactory.DEFAULT_MAX_OPLOG_SIZE)
+        if (generateDefaults() || ds.getMaxOplogSize() != DiskStoreFactory.DEFAULT_MAX_OPLOG_SIZE) {
           atts.addAttribute("", "", MAX_OPLOG_SIZE, "", String.valueOf(ds.getMaxOplogSize()));
+        }
       }
 
       if ((!(ds instanceof DiskStoreAttributesCreation)
           || ((DiskStoreAttributesCreation) ds).hasTimeInterval())) {
-        if (generateDefaults() || ds.getTimeInterval() != DiskStoreFactory.DEFAULT_TIME_INTERVAL)
+        if (generateDefaults() || ds.getTimeInterval() != DiskStoreFactory.DEFAULT_TIME_INTERVAL) {
           atts.addAttribute("", "", TIME_INTERVAL, "", String.valueOf(ds.getTimeInterval()));
+        }
       }
 
       if ((!(ds instanceof DiskStoreAttributesCreation)
           || ((DiskStoreAttributesCreation) ds).hasWriteBufferSize())) {
         if (generateDefaults()
-            || ds.getWriteBufferSize() != DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE)
+            || ds.getWriteBufferSize() != DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE) {
           atts.addAttribute("", "", WRITE_BUFFER_SIZE, "", String.valueOf(ds.getWriteBufferSize()));
+        }
       }
 
       if ((!(ds instanceof DiskStoreAttributesCreation)
           || ((DiskStoreAttributesCreation) ds).hasQueueSize())) {
-        if (generateDefaults() || ds.getQueueSize() != DiskStoreFactory.DEFAULT_QUEUE_SIZE)
+        if (generateDefaults() || ds.getQueueSize() != DiskStoreFactory.DEFAULT_QUEUE_SIZE) {
           atts.addAttribute("", "", QUEUE_SIZE, "", String.valueOf(ds.getQueueSize()));
+        }
       }
 
       if (version.compareTo(CacheXmlVersion.GEMFIRE_8_0) >= 0) {
         if ((!(ds instanceof DiskStoreAttributesCreation)
             || ((DiskStoreAttributesCreation) ds).hasDiskUsageWarningPercentage())) {
           if (generateDefaults() || ds
-              .getDiskUsageWarningPercentage() != DiskStoreFactory.DEFAULT_DISK_USAGE_WARNING_PERCENTAGE)
+              .getDiskUsageWarningPercentage() != DiskStoreFactory.DEFAULT_DISK_USAGE_WARNING_PERCENTAGE) {
             atts.addAttribute("", "", DISK_USAGE_WARNING_PERCENTAGE, "",
                 String.valueOf(ds.getDiskUsageWarningPercentage()));
+          }
         }
 
         if ((!(ds instanceof DiskStoreAttributesCreation)
             || ((DiskStoreAttributesCreation) ds).hasDiskUsageCriticalPercentage())) {
           if (generateDefaults() || ds
-              .getDiskUsageCriticalPercentage() != DiskStoreFactory.DEFAULT_DISK_USAGE_CRITICAL_PERCENTAGE)
+              .getDiskUsageCriticalPercentage() != DiskStoreFactory.DEFAULT_DISK_USAGE_CRITICAL_PERCENTAGE) {
             atts.addAttribute("", "", DISK_USAGE_CRITICAL_PERCENTAGE, "",
                 String.valueOf(ds.getDiskUsageCriticalPercentage()));
+          }
         }
       }
     } finally {
@@ -1149,70 +1176,90 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         }
       }
       if (generateDefaults()
-          || cp.getFreeConnectionTimeout() != PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT)
+          || cp.getFreeConnectionTimeout() != PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT) {
         atts.addAttribute("", "", FREE_CONNECTION_TIMEOUT, "",
             String.valueOf(cp.getFreeConnectionTimeout()));
+      }
       if (generateDefaults()
-          || cp.getServerConnectionTimeout() != PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT)
+          || cp.getServerConnectionTimeout() != PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT) {
         atts.addAttribute("", "", SERVER_CONNECTION_TIMEOUT, "",
             String.valueOf(cp.getServerConnectionTimeout()));
+      }
       if (generateDefaults()
-          || cp.getLoadConditioningInterval() != PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL)
+          || cp.getLoadConditioningInterval() != PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL) {
         atts.addAttribute("", "", LOAD_CONDITIONING_INTERVAL, "",
             String.valueOf(cp.getLoadConditioningInterval()));
-      if (generateDefaults() || cp.getMinConnections() != PoolFactory.DEFAULT_MIN_CONNECTIONS)
+      }
+      if (generateDefaults() || cp.getMinConnections() != PoolFactory.DEFAULT_MIN_CONNECTIONS) {
         atts.addAttribute("", "", MIN_CONNECTIONS, "", String.valueOf(cp.getMinConnections()));
-      if (generateDefaults() || cp.getMaxConnections() != PoolFactory.DEFAULT_MAX_CONNECTIONS)
+      }
+      if (generateDefaults() || cp.getMaxConnections() != PoolFactory.DEFAULT_MAX_CONNECTIONS) {
         atts.addAttribute("", "", MAX_CONNECTIONS, "", String.valueOf(cp.getMaxConnections()));
-      if (generateDefaults() || cp.getRetryAttempts() != PoolFactory.DEFAULT_RETRY_ATTEMPTS)
+      }
+      if (generateDefaults() || cp.getRetryAttempts() != PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
         atts.addAttribute("", "", RETRY_ATTEMPTS, "", String.valueOf(cp.getRetryAttempts()));
-      if (generateDefaults() || cp.getIdleTimeout() != PoolFactory.DEFAULT_IDLE_TIMEOUT)
+      }
+      if (generateDefaults() || cp.getIdleTimeout() != PoolFactory.DEFAULT_IDLE_TIMEOUT) {
         atts.addAttribute("", "", IDLE_TIMEOUT, "", String.valueOf(cp.getIdleTimeout()));
-      if (generateDefaults() || cp.getPingInterval() != PoolFactory.DEFAULT_PING_INTERVAL)
+      }
+      if (generateDefaults() || cp.getPingInterval() != PoolFactory.DEFAULT_PING_INTERVAL) {
         atts.addAttribute("", "", PING_INTERVAL, "", String.valueOf(cp.getPingInterval()));
-      if (generateDefaults() || cp.getStatisticInterval() != PoolFactory.DEFAULT_STATISTIC_INTERVAL)
+      }
+      if (generateDefaults()
+          || cp.getStatisticInterval() != PoolFactory.DEFAULT_STATISTIC_INTERVAL) {
         atts.addAttribute("", "", STATISTIC_INTERVAL, "",
             String.valueOf(cp.getStatisticInterval()));
+      }
       if (generateDefaults()
-          || cp.getSubscriptionAckInterval() != PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL)
+          || cp.getSubscriptionAckInterval() != PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL) {
         atts.addAttribute("", "", SUBSCRIPTION_ACK_INTERVAL, "",
             String.valueOf(cp.getSubscriptionAckInterval()));
+      }
       if (generateDefaults()
-          || cp.getSubscriptionEnabled() != PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED)
+          || cp.getSubscriptionEnabled() != PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED) {
         atts.addAttribute("", "", SUBSCRIPTION_ENABLED, "",
             String.valueOf(cp.getSubscriptionEnabled()));
+      }
       if (generateDefaults() || cp
-          .getSubscriptionMessageTrackingTimeout() != PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT)
+          .getSubscriptionMessageTrackingTimeout() != PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT) {
         atts.addAttribute("", "", SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT, "",
             String.valueOf(cp.getSubscriptionMessageTrackingTimeout()));
+      }
       if (generateDefaults()
-          || cp.getSubscriptionRedundancy() != PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY)
+          || cp.getSubscriptionRedundancy() != PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY) {
         atts.addAttribute("", "", SUBSCRIPTION_REDUNDANCY, "",
             String.valueOf(cp.getSubscriptionRedundancy()));
-      if (generateDefaults() || cp.getReadTimeout() != PoolFactory.DEFAULT_READ_TIMEOUT)
+      }
+      if (generateDefaults() || cp.getReadTimeout() != PoolFactory.DEFAULT_READ_TIMEOUT) {
         atts.addAttribute("", "", READ_TIMEOUT, "", String.valueOf(cp.getReadTimeout()));
+      }
       if (cp.getServerGroup() != null && !cp.getServerGroup().equals("")) {
         atts.addAttribute("", "", SERVER_GROUP, "", cp.getServerGroup());
       }
-      if (generateDefaults() || cp.getSocketBufferSize() != PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE)
-        atts.addAttribute("", "", SOCKET_BUFFER_SIZE, "", String.valueOf(cp.getSocketBufferSize()));
       if (generateDefaults()
-          || cp.getThreadLocalConnections() != PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS)
+          || cp.getSocketBufferSize() != PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE) {
+        atts.addAttribute("", "", SOCKET_BUFFER_SIZE, "", String.valueOf(cp.getSocketBufferSize()));
+      }
+      if (generateDefaults()
+          || cp.getThreadLocalConnections() != PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS) {
         atts.addAttribute("", "", THREAD_LOCAL_CONNECTIONS, "",
             String.valueOf(cp.getThreadLocalConnections()));
-
-      if (version.compareTo(CacheXmlVersion.GEMFIRE_6_1) > 0) {
-        if (generateDefaults()
-            || cp.getPRSingleHopEnabled() != PoolFactory.DEFAULT_PR_SINGLE_HOP_ENABLED)
-          atts.addAttribute("", "", PR_SINGLE_HOP_ENABLED, "",
-              String.valueOf(cp.getPRSingleHopEnabled()));
       }
 
       if (version.compareTo(CacheXmlVersion.GEMFIRE_6_1) > 0) {
         if (generateDefaults()
-            || cp.getMultiuserAuthentication() != PoolFactory.DEFAULT_MULTIUSER_AUTHENTICATION)
+            || cp.getPRSingleHopEnabled() != PoolFactory.DEFAULT_PR_SINGLE_HOP_ENABLED) {
+          atts.addAttribute("", "", PR_SINGLE_HOP_ENABLED, "",
+              String.valueOf(cp.getPRSingleHopEnabled()));
+        }
+      }
+
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_6_1) > 0) {
+        if (generateDefaults()
+            || cp.getMultiuserAuthentication() != PoolFactory.DEFAULT_MULTIUSER_AUTHENTICATION) {
           atts.addAttribute("", "", MULTIUSER_SECURE_MODE_ENABLED, "",
               String.valueOf(cp.getMultiuserAuthentication()));
+        }
       }
     } finally {
       handler.startElement("", CONNECTION_POOL, CONNECTION_POOL, atts);
@@ -1296,10 +1343,12 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       return;
     }
     AttributesImpl atts = new AttributesImpl();
-    if (!cfg.getPersistBackup())
+    if (!cfg.getPersistBackup()) {
       atts.addAttribute("", "", DISABLE_PERSIST_BACKUP, "", "true");
-    if (!cfg.getRegisterInterest())
+    }
+    if (!cfg.getRegisterInterest()) {
       atts.addAttribute("", "", DISABLE_REGISTER_INTEREST, "", "true");
+    }
     if (cfg.getPoolName() != null) {
       atts.addAttribute("", "", POOL_NAME, "", cfg.getPoolName());
     }
@@ -1324,64 +1373,80 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     atts.addAttribute("", "", REMOTE_DISTRIBUTED_SYSTEM_ID, "",
         String.valueOf(sender.getRemoteDSId()));
     // parallel
-    if (generateDefaults() || sender.isParallel() != GatewaySender.DEFAULT_IS_PARALLEL)
+    if (generateDefaults() || sender.isParallel() != GatewaySender.DEFAULT_IS_PARALLEL) {
       atts.addAttribute("", "", PARALLEL, "", String.valueOf(sender.isParallel()));
+    }
     // manual-start
-    if (generateDefaults() || sender.isManualStart() != GatewaySender.DEFAULT_MANUAL_START)
+    if (generateDefaults() || sender.isManualStart() != GatewaySender.DEFAULT_MANUAL_START) {
       atts.addAttribute("", "", MANUAL_START, "", String.valueOf(sender.isManualStart()));
+    }
     // socket-buffer-size
     if (generateDefaults()
-        || sender.getSocketBufferSize() != GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE)
+        || sender.getSocketBufferSize() != GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE) {
       atts.addAttribute("", "", SOCKET_BUFFER_SIZE, "",
           String.valueOf(sender.getSocketBufferSize()));
+    }
     // socket-read-timeout
     if (generateDefaults()
-        || sender.getSocketReadTimeout() != GatewaySender.DEFAULT_SOCKET_READ_TIMEOUT)
+        || sender.getSocketReadTimeout() != GatewaySender.DEFAULT_SOCKET_READ_TIMEOUT) {
       atts.addAttribute("", "", SOCKET_READ_TIMEOUT, "",
           String.valueOf(sender.getSocketReadTimeout()));
+    }
     // enable-batch-conflation
     if (generateDefaults()
-        || sender.isBatchConflationEnabled() != GatewaySender.DEFAULT_BATCH_CONFLATION)
+        || sender.isBatchConflationEnabled() != GatewaySender.DEFAULT_BATCH_CONFLATION) {
       atts.addAttribute("", "", ENABLE_BATCH_CONFLATION, "",
           String.valueOf(sender.isBatchConflationEnabled())); // Should we use ENABLE-CONFLATION
+    }
     // batch-size
-    if (generateDefaults() || sender.getBatchSize() != GatewaySender.DEFAULT_BATCH_SIZE)
+    if (generateDefaults() || sender.getBatchSize() != GatewaySender.DEFAULT_BATCH_SIZE) {
       atts.addAttribute("", "", BATCH_SIZE, "", String.valueOf(sender.getBatchSize()));
+    }
     // batch-time-interval
     if (generateDefaults()
-        || sender.getBatchTimeInterval() != GatewaySender.DEFAULT_BATCH_TIME_INTERVAL)
+        || sender.getBatchTimeInterval() != GatewaySender.DEFAULT_BATCH_TIME_INTERVAL) {
       atts.addAttribute("", "", BATCH_TIME_INTERVAL, "",
           String.valueOf(sender.getBatchTimeInterval()));
+    }
     // enable-persistence
     if (generateDefaults()
-        || sender.isPersistenceEnabled() != GatewaySender.DEFAULT_PERSISTENCE_ENABLED)
+        || sender.isPersistenceEnabled() != GatewaySender.DEFAULT_PERSISTENCE_ENABLED) {
       atts.addAttribute("", "", ENABLE_PERSISTENCE, "",
           String.valueOf(sender.isPersistenceEnabled()));
+    }
     // disk-store-name
     if (generateDefaults()
-        || sender.getDiskStoreName() != null && !sender.getDiskStoreName().equals(""))
+        || sender.getDiskStoreName() != null && !sender.getDiskStoreName().equals("")) {
       atts.addAttribute("", "", DISK_STORE_NAME, "", String.valueOf(sender.getDiskStoreName()));
+    }
     // disk-synchronous
-    if (generateDefaults() || sender.isDiskSynchronous() != GatewaySender.DEFAULT_DISK_SYNCHRONOUS)
+    if (generateDefaults()
+        || sender.isDiskSynchronous() != GatewaySender.DEFAULT_DISK_SYNCHRONOUS) {
       atts.addAttribute("", "", DISK_SYNCHRONOUS, "", String.valueOf(sender.isDiskSynchronous()));
+    }
     // maximum-queue-memory
     if (generateDefaults()
-        || sender.getMaximumQueueMemory() != GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY)
+        || sender.getMaximumQueueMemory() != GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY) {
       atts.addAttribute("", "", MAXIMUM_QUEUE_MEMORY, "",
           String.valueOf(sender.getMaximumQueueMemory()));
+    }
     // alert-threshold
-    if (generateDefaults() || sender.getAlertThreshold() != GatewaySender.DEFAULT_ALERT_THRESHOLD)
+    if (generateDefaults() || sender.getAlertThreshold() != GatewaySender.DEFAULT_ALERT_THRESHOLD) {
       atts.addAttribute("", "", ALERT_THRESHOLD, "", String.valueOf(sender.getAlertThreshold()));
+    }
 
     // dispatcher-threads
     if (generateDefaults()
-        || sender.getDispatcherThreads() != GatewaySender.DEFAULT_DISPATCHER_THREADS)
+        || sender.getDispatcherThreads() != GatewaySender.DEFAULT_DISPATCHER_THREADS) {
       atts.addAttribute("", "", DISPATCHER_THREADS, "",
           String.valueOf(sender.getDispatcherThreads()));
+    }
     // order-policy
     if (sender.getOrderPolicy() != null) {
-      if (generateDefaults() || !sender.getOrderPolicy().equals(GatewaySender.DEFAULT_ORDER_POLICY))
+      if (generateDefaults()
+          || !sender.getOrderPolicy().equals(GatewaySender.DEFAULT_ORDER_POLICY)) {
         atts.addAttribute("", "", ORDER_POLICY, "", String.valueOf(sender.getOrderPolicy()));
+      }
     }
 
     // group-transaction-events
@@ -1391,6 +1456,16 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
               .mustGroupTransactionEvents() != GatewaySender.DEFAULT_MUST_GROUP_TRANSACTION_EVENTS) {
         atts.addAttribute("", "", GROUP_TRANSACTION_EVENTS, "",
             String.valueOf(sender.mustGroupTransactionEvents()));
+      }
+    }
+
+    // enforce-threads-connect-same-receiver
+    if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
+      if (generateDefaults()
+          || sender
+              .getEnforceThreadsConnectSameReceiver() != GatewaySender.DEFAULT_ENFORCE_THREADS_CONNECT_SAME_RECEIVER) {
+        atts.addAttribute("", "", ENFORCE_THREADS_CONNECT_SAME_RECEIVER, "",
+            String.valueOf(sender.getEnforceThreadsConnectSameReceiver()));
       }
     }
 
@@ -1420,61 +1495,74 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       // id
       atts.addAttribute("", "", ID, "", asyncEventQueue.getId());
       // parallel
-      if (generateDefaults() || asyncEventQueue.isParallel() != GatewaySender.DEFAULT_IS_PARALLEL)
+      if (generateDefaults() || asyncEventQueue.isParallel() != GatewaySender.DEFAULT_IS_PARALLEL) {
         atts.addAttribute("", "", PARALLEL, "", String.valueOf(asyncEventQueue.isParallel()));
+      }
       // batch-size
-      if (generateDefaults() || asyncEventQueue.getBatchSize() != GatewaySender.DEFAULT_BATCH_SIZE)
+      if (generateDefaults()
+          || asyncEventQueue.getBatchSize() != GatewaySender.DEFAULT_BATCH_SIZE) {
         atts.addAttribute("", "", BATCH_SIZE, "", String.valueOf(asyncEventQueue.getBatchSize()));
+      }
       // batch-time-interval
       if (generateDefaults()
-          || asyncEventQueue.getBatchTimeInterval() != GatewaySender.DEFAULT_BATCH_TIME_INTERVAL)
+          || asyncEventQueue.getBatchTimeInterval() != GatewaySender.DEFAULT_BATCH_TIME_INTERVAL) {
         atts.addAttribute("", "", BATCH_TIME_INTERVAL, "",
             String.valueOf(asyncEventQueue.getBatchTimeInterval()));
+      }
       // enable-batch-conflation
       if (generateDefaults()
-          || asyncEventQueue.isBatchConflationEnabled() != GatewaySender.DEFAULT_BATCH_CONFLATION)
+          || asyncEventQueue.isBatchConflationEnabled() != GatewaySender.DEFAULT_BATCH_CONFLATION) {
         atts.addAttribute("", "", ENABLE_BATCH_CONFLATION, "",
             String.valueOf(asyncEventQueue.isBatchConflationEnabled()));
+      }
       // maximum-queue-memory
       if (generateDefaults()
-          || asyncEventQueue.getMaximumQueueMemory() != GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY)
+          || asyncEventQueue
+              .getMaximumQueueMemory() != GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY) {
         atts.addAttribute("", "", MAXIMUM_QUEUE_MEMORY, "",
             String.valueOf(asyncEventQueue.getMaximumQueueMemory()));
+      }
       // enable-persistence
       if (generateDefaults()
-          || asyncEventQueue.isPersistent() != GatewaySender.DEFAULT_PERSISTENCE_ENABLED)
+          || asyncEventQueue.isPersistent() != GatewaySender.DEFAULT_PERSISTENCE_ENABLED) {
         atts.addAttribute("", "", PERSISTENT, "", String.valueOf(asyncEventQueue.isPersistent()));
+      }
       if (asyncEventQueue.isPersistent()) {
         // disk-store-name
         if (generateDefaults() || (asyncEventQueue.getDiskStoreName() != null
-            && !asyncEventQueue.getDiskStoreName().equals("")))
+            && !asyncEventQueue.getDiskStoreName().equals(""))) {
           atts.addAttribute("", "", DISK_STORE_NAME, "",
               String.valueOf(asyncEventQueue.getDiskStoreName()));
+        }
       }
       // dispatcher-threads
       if (generateDefaults()
-          || asyncEventQueue.getDispatcherThreads() != GatewaySender.DEFAULT_DISPATCHER_THREADS)
+          || asyncEventQueue.getDispatcherThreads() != GatewaySender.DEFAULT_DISPATCHER_THREADS) {
         atts.addAttribute("", "", DISPATCHER_THREADS, "",
             String.valueOf(asyncEventQueue.getDispatcherThreads()));
+      }
       // order-policy
       if (asyncEventQueue.getOrderPolicy() != null) {
         if (generateDefaults()
-            || !asyncEventQueue.getOrderPolicy().equals(GatewaySender.DEFAULT_ORDER_POLICY))
+            || !asyncEventQueue.getOrderPolicy().equals(GatewaySender.DEFAULT_ORDER_POLICY)) {
           atts.addAttribute("", "", ORDER_POLICY, "",
               String.valueOf(asyncEventQueue.getOrderPolicy()));
+        }
       }
       // eviction and expiration events
       if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
         if (generateDefaults() || asyncEventQueue
-            .isForwardExpirationDestroy() != (GatewaySender.DEFAULT_FORWARD_EXPIRATION_DESTROY))
+            .isForwardExpirationDestroy() != (GatewaySender.DEFAULT_FORWARD_EXPIRATION_DESTROY)) {
           atts.addAttribute("", "", FORWARD_EXPIRATION_DESTROY, "",
               String.valueOf(asyncEventQueue.isForwardExpirationDestroy()));
+        }
       }
       // disk-synchronous
       if (generateDefaults()
-          || asyncEventQueue.isDiskSynchronous() != GatewaySender.DEFAULT_DISK_SYNCHRONOUS)
+          || asyncEventQueue.isDiskSynchronous() != GatewaySender.DEFAULT_DISK_SYNCHRONOUS) {
         atts.addAttribute("", "", DISK_SYNCHRONOUS, "",
             String.valueOf(asyncEventQueue.isDiskSynchronous()));
+      }
 
       // AsyncEventQueue element start
       handler.startElement("", ASYNC_EVENT_QUEUE, ASYNC_EVENT_QUEUE, atts);
@@ -1509,35 +1597,43 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       AttributesImpl atts = new AttributesImpl();
       try {
         // hostnameForSenders
-        if (generateDefaults() || receiver.getHostnameForSenders() != null)
+        if (generateDefaults() || receiver.getHostnameForSenders() != null) {
           atts.addAttribute("", "", HOSTNAME_FOR_SENDERS, "", receiver.getHostnameForSenders());
+        }
         // start port
-        if (generateDefaults() || receiver.getStartPort() != GatewayReceiver.DEFAULT_START_PORT)
+        if (generateDefaults() || receiver.getStartPort() != GatewayReceiver.DEFAULT_START_PORT) {
           atts.addAttribute("", "", START_PORT, "", String.valueOf(receiver.getStartPort()));
+        }
         // end port
-        if (generateDefaults() || receiver.getEndPort() != GatewayReceiver.DEFAULT_END_PORT)
+        if (generateDefaults() || receiver.getEndPort() != GatewayReceiver.DEFAULT_END_PORT) {
           atts.addAttribute("", "", END_PORT, "", String.valueOf(receiver.getEndPort()));
+        }
         // bind-address
         if (generateDefaults() || (receiver.getBindAddress() != null
-            && !receiver.getBindAddress().equals(GatewayReceiver.DEFAULT_BIND_ADDRESS)))
+            && !receiver.getBindAddress().equals(GatewayReceiver.DEFAULT_BIND_ADDRESS))) {
           atts.addAttribute("", "", BIND_ADDRESS, "", receiver.getBindAddress());
+        }
         // maximum-time-between-pings
         if (generateDefaults() || receiver
-            .getMaximumTimeBetweenPings() != GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS)
+            .getMaximumTimeBetweenPings() != GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS) {
           atts.addAttribute("", "", MAXIMUM_TIME_BETWEEN_PINGS, "",
               String.valueOf(receiver.getMaximumTimeBetweenPings()));
+        }
         // socket-buffer-size
         if (generateDefaults()
-            || receiver.getSocketBufferSize() != GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE)
+            || receiver.getSocketBufferSize() != GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE) {
           atts.addAttribute("", "", SOCKET_BUFFER_SIZE, "",
               String.valueOf(receiver.getSocketBufferSize()));
+        }
 
         if (version.compareTo(CacheXmlVersion.GEMFIRE_8_0) < 0) {
           return;
         }
         // manual-start
-        if (generateDefaults() || receiver.isManualStart() != GatewayReceiver.DEFAULT_MANUAL_START)
+        if (generateDefaults()
+            || receiver.isManualStart() != GatewayReceiver.DEFAULT_MANUAL_START) {
           atts.addAttribute("", "", MANUAL_START, "", String.valueOf(receiver.isManualStart()));
+        }
 
       } finally {
         handler.startElement("", GATEWAY_RECEIVER, GATEWAY_RECEIVER, atts);
@@ -1788,34 +1884,39 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
       if (!isPartitionedRegion) {
         // Partitioned Region don't support setting scope
-        if (generateDefaults() || !scope.equals(AbstractRegion.DEFAULT_SCOPE))
+        if (generateDefaults() || !scope.equals(AbstractRegion.DEFAULT_SCOPE)) {
           atts.addAttribute("", "", SCOPE, "", scopeString);
+        }
       }
     } // hasScope
 
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasEarlyAck())) {
-      if (generateDefaults() || attrs.getEarlyAck())
+      if (generateDefaults() || attrs.getEarlyAck()) {
         atts.addAttribute("", "", EARLY_ACK, "", String.valueOf(attrs.getEarlyAck()));
+      }
     }
 
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasMulticastEnabled())) {
-      if (generateDefaults() || attrs.getMulticastEnabled())
+      if (generateDefaults() || attrs.getMulticastEnabled()) {
         atts.addAttribute("", "", MULTICAST_ENABLED, "",
             String.valueOf(attrs.getMulticastEnabled()));
+      }
     }
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasPublisher())) {
-      if (generateDefaults() || attrs.getPublisher())
+      if (generateDefaults() || attrs.getPublisher()) {
         atts.addAttribute("", "", PUBLISHER, "", String.valueOf(attrs.getPublisher()));
+      }
     }
 
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasEnableAsyncConflation())) {
-      if (generateDefaults() || attrs.getEnableAsyncConflation())
+      if (generateDefaults() || attrs.getEnableAsyncConflation()) {
         atts.addAttribute("", "", ENABLE_ASYNC_CONFLATION, "",
             String.valueOf(attrs.getEnableAsyncConflation()));
+      }
     }
 
     if (version.compareTo(CacheXmlVersion.GEMFIRE_5_0) >= 0) {
@@ -1824,14 +1925,16 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           || ((RegionAttributesCreation) attrs).hasEnableSubscriptionConflation())) {
         if (version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
           // starting with 5.7 it is enable-subscription-conflation
-          if (generateDefaults() || attrs.getEnableSubscriptionConflation())
+          if (generateDefaults() || attrs.getEnableSubscriptionConflation()) {
             atts.addAttribute("", "", ENABLE_SUBSCRIPTION_CONFLATION, "",
                 String.valueOf(attrs.getEnableSubscriptionConflation()));
+          }
         } else {
           // before 5.7 it was enable-bridge-conflation
-          if (generateDefaults() || attrs.getEnableSubscriptionConflation())
+          if (generateDefaults() || attrs.getEnableSubscriptionConflation()) {
             atts.addAttribute("", "", ENABLE_BRIDGE_CONFLATION, "",
                 String.valueOf(attrs.getEnableSubscriptionConflation()));
+          }
         }
       }
 
@@ -1863,31 +1966,34 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
               String.format("Unknown data policy: %s", dp));
         }
 
-        if (generateDefaults() || !dp.equals(DataPolicy.DEFAULT))
+        if (generateDefaults() || !dp.equals(DataPolicy.DEFAULT)) {
           atts.addAttribute("", "", DATA_POLICY, "", dpString);
+        }
       } // hasDataPolicy
     } // GEMFIRE_5_0 >= 0
     else { // GEMFIRE_5_0 < 0
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasEnableSubscriptionConflation())) {
-        if (generateDefaults() || attrs.getEnableSubscriptionConflation())
+        if (generateDefaults() || attrs.getEnableSubscriptionConflation()) {
           atts.addAttribute("", "", "enable-conflation", "",
               String.valueOf(attrs.getEnableSubscriptionConflation()));
+        }
       }
 
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasMirrorType())) {
         String mirrorString;
         MirrorType mirror = attrs.getMirrorType();
-        if (mirror.equals(MirrorType.NONE))
+        if (mirror.equals(MirrorType.NONE)) {
           mirrorString = NONE;
-        else if (mirror.equals(MirrorType.KEYS))
+        } else if (mirror.equals(MirrorType.KEYS)) {
           mirrorString = KEYS;
-        else if (mirror.equals(MirrorType.KEYS_VALUES))
+        } else if (mirror.equals(MirrorType.KEYS_VALUES)) {
           mirrorString = KEYS_VALUES;
-        else
+        } else {
           throw new InternalGemFireException(
               String.format("Unknown mirror type: %s", mirror));
+        }
         atts.addAttribute("", "", MIRROR_TYPE, "", mirrorString);
       }
       if ((!(attrs instanceof RegionAttributesCreation)
@@ -1899,50 +2005,57 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasInitialCapacity())) {
-      if (generateDefaults() || attrs.getInitialCapacity() != 16)
+      if (generateDefaults() || attrs.getInitialCapacity() != 16) {
         atts.addAttribute("", "", INITIAL_CAPACITY, "", String.valueOf(attrs.getInitialCapacity()));
+      }
     }
 
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasLoadFactor())) {
-      if (generateDefaults() || attrs.getLoadFactor() != 0.75f)
+      if (generateDefaults() || attrs.getLoadFactor() != 0.75f) {
         atts.addAttribute("", "", LOAD_FACTOR, "", String.valueOf(attrs.getLoadFactor()));
+      }
     }
 
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasConcurrencyLevel())) {
-      if (generateDefaults() || attrs.getConcurrencyLevel() != 16)
+      if (generateDefaults() || attrs.getConcurrencyLevel() != 16) {
         atts.addAttribute("", "", CONCURRENCY_LEVEL, "",
             String.valueOf(attrs.getConcurrencyLevel()));
+      }
     }
 
     if (version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasConcurrencyChecksEnabled())) {
-        if (generateDefaults() || !attrs.getConcurrencyChecksEnabled())
+        if (generateDefaults() || !attrs.getConcurrencyChecksEnabled()) {
           atts.addAttribute("", "", CONCURRENCY_CHECKS_ENABLED, "",
               String.valueOf(attrs.getConcurrencyChecksEnabled()));
+        }
       }
     }
 
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasStatisticsEnabled())) {
-      if (generateDefaults() || attrs.getStatisticsEnabled())
+      if (generateDefaults() || attrs.getStatisticsEnabled()) {
         atts.addAttribute("", "", STATISTICS_ENABLED, "",
             String.valueOf(attrs.getStatisticsEnabled()));
+      }
     }
 
     if (!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasIgnoreJTA()) {
-      if (generateDefaults() || attrs.getIgnoreJTA())
+      if (generateDefaults() || attrs.getIgnoreJTA()) {
         atts.addAttribute("", "", IGNORE_JTA, "", String.valueOf(attrs.getIgnoreJTA()));
+      }
     }
 
     if (version.compareTo(CacheXmlVersion.GEMFIRE_4_0) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasIsLockGrantor())) {
-        if (generateDefaults() || attrs.isLockGrantor())
+        if (generateDefaults() || attrs.isLockGrantor()) {
           atts.addAttribute("", "", IS_LOCK_GRANTOR, "", String.valueOf(attrs.isLockGrantor()));
+        }
       }
     }
     if (version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
@@ -1952,8 +2065,9 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         if (cpVal == null) {
           cpVal = "";
         }
-        if (generateDefaults() || !cpVal.equals(""))
+        if (generateDefaults() || !cpVal.equals("")) {
           atts.addAttribute("", "", POOL_NAME, "", cpVal);
+        }
       }
     }
     if (version.compareTo(CacheXmlVersion.GEMFIRE_6_5) >= 0) {
@@ -1967,17 +2081,20 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasDiskSynchronous())) {
         if (generateDefaults()
-            || attrs.isDiskSynchronous() != AttributesFactory.DEFAULT_DISK_SYNCHRONOUS)
+            || attrs.isDiskSynchronous() != AttributesFactory.DEFAULT_DISK_SYNCHRONOUS) {
           atts.addAttribute("", "", DISK_SYNCHRONOUS, "",
               String.valueOf(attrs.isDiskSynchronous()));
+        }
       }
     }
-    if (version.compareTo(CacheXmlVersion.GEMFIRE_6_1) >= 0)
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_6_1) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasCloningEnabled())) {
-        if (generateDefaults() || attrs.getCloningEnabled())
+        if (generateDefaults() || attrs.getCloningEnabled()) {
           atts.addAttribute("", "", CLONING_ENABLED, "", String.valueOf(attrs.getCloningEnabled()));
+        }
       }
+    }
 
     if (version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
@@ -1992,8 +2109,9 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
             senderStringBuff.append(senderId);
           }
         }
-        if (generateDefaults() || senderStringBuff.length() > 0)
+        if (generateDefaults() || senderStringBuff.length() > 0) {
           atts.addAttribute("", "", GATEWAY_SENDER_IDS, "", senderStringBuff.toString());
+        }
       }
     }
 
@@ -2010,9 +2128,10 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
             asyncEventQueueStringBuff.append(asyncEventQueueId);
           }
         }
-        if (generateDefaults() || asyncEventQueueStringBuff.length() > 0)
+        if (generateDefaults() || asyncEventQueueStringBuff.length() > 0) {
           atts.addAttribute("", "", ASYNC_EVENT_QUEUE_IDS, "",
               asyncEventQueueStringBuff.toString());
+        }
       }
     }
 
@@ -2039,30 +2158,35 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasRegionTimeToLive())) {
-      if (generateDefaults() || !attrs.getRegionTimeToLive().equals(ExpirationAttributes.DEFAULT))
+      if (generateDefaults() || !attrs.getRegionTimeToLive().equals(ExpirationAttributes.DEFAULT)) {
         generate(REGION_TIME_TO_LIVE, attrs.getRegionTimeToLive(), null);
+      }
     }
 
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasRegionIdleTimeout())) {
-      if (generateDefaults() || !attrs.getRegionIdleTimeout().equals(ExpirationAttributes.DEFAULT))
+      if (generateDefaults()
+          || !attrs.getRegionIdleTimeout().equals(ExpirationAttributes.DEFAULT)) {
         generate(REGION_IDLE_TIME, attrs.getRegionIdleTimeout(), null);
+      }
     }
 
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasEntryTimeToLive()
         || ((RegionAttributesCreation) attrs).hasCustomEntryTimeToLive())) {
       if (generateDefaults() || !attrs.getEntryTimeToLive().equals(ExpirationAttributes.DEFAULT)
-          || attrs.getCustomEntryTimeToLive() != null)
+          || attrs.getCustomEntryTimeToLive() != null) {
         generate(ENTRY_TIME_TO_LIVE, attrs.getEntryTimeToLive(), attrs.getCustomEntryTimeToLive());
+      }
     }
 
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasEntryIdleTimeout()
         || ((RegionAttributesCreation) attrs).hasCustomEntryIdleTimeout())) {
       if (generateDefaults() || !attrs.getEntryIdleTimeout().equals(ExpirationAttributes.DEFAULT)
-          || attrs.getCustomEntryIdleTimeout() != null)
+          || attrs.getCustomEntryIdleTimeout() != null) {
         generate(ENTRY_IDLE_TIME, attrs.getEntryIdleTimeout(), attrs.getCustomEntryIdleTimeout());
+      }
     }
 
     if (attrs.getDiskStoreName() == null
@@ -2116,8 +2240,9 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           || ((RegionAttributesCreation) attrs).hasSubscriptionAttributes())) {
         SubscriptionAttributes sa = attrs.getSubscriptionAttributes();
         if (sa != null) {
-          if (generateDefaults() || !sa.equals(new SubscriptionAttributes()))
+          if (generateDefaults() || !sa.equals(new SubscriptionAttributes())) {
             generate(sa);
+          }
         }
       }
     }
@@ -2317,35 +2442,42 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   private void generate(PartitionAttributes<?, ?> pa) throws SAXException {
     AttributesImpl atts = new AttributesImpl();
 
-    if (generateDefaults() || pa.getRedundantCopies() != 0)
+    if (generateDefaults() || pa.getRedundantCopies() != 0) {
       atts.addAttribute("", "", PARTITION_REDUNDANT_COPIES, "",
           String.valueOf(pa.getRedundantCopies()));
+    }
 
     if (version.compareTo(CacheXmlVersion.GEMFIRE_5_1) >= 0) {
       if (generateDefaults()
-          || pa.getLocalMaxMemory() != ((PartitionAttributesImpl) pa).getLocalMaxMemoryDefault())
+          || pa.getLocalMaxMemory() != ((PartitionAttributesImpl) pa).getLocalMaxMemoryDefault()) {
         atts.addAttribute("", "", LOCAL_MAX_MEMORY, "", String.valueOf(pa.getLocalMaxMemory()));
+      }
       if (generateDefaults()
-          || pa.getTotalMaxMemory() != PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT)
+          || pa.getTotalMaxMemory() != PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT) {
         atts.addAttribute("", "", TOTAL_MAX_MEMORY, "", String.valueOf(pa.getTotalMaxMemory()));
+      }
       if (generateDefaults()
-          || pa.getTotalNumBuckets() != PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT)
+          || pa.getTotalNumBuckets() != PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT) {
         atts.addAttribute("", "", TOTAL_NUM_BUCKETS, "", String.valueOf(pa.getTotalNumBuckets()));
+      }
     } // GEMFIRE_5_1
 
     if (version.compareTo(CacheXmlVersion.GEMFIRE_5_8) >= 0) {
-      if (pa.getColocatedWith() != null)
+      if (pa.getColocatedWith() != null) {
         atts.addAttribute("", "", PARTITION_COLOCATED_WITH, "", pa.getColocatedWith());
+      }
 
     }
     if (version.compareTo(CacheXmlVersion.GEMFIRE_6_0) >= 0) {
       if (generateDefaults()
-          || pa.getRecoveryDelay() != PartitionAttributesFactory.RECOVERY_DELAY_DEFAULT)
+          || pa.getRecoveryDelay() != PartitionAttributesFactory.RECOVERY_DELAY_DEFAULT) {
         atts.addAttribute("", "", RECOVERY_DELAY, "", String.valueOf(pa.getRecoveryDelay()));
+      }
       if (generateDefaults() || pa
-          .getStartupRecoveryDelay() != PartitionAttributesFactory.STARTUP_RECOVERY_DELAY_DEFAULT)
+          .getStartupRecoveryDelay() != PartitionAttributesFactory.STARTUP_RECOVERY_DELAY_DEFAULT) {
         atts.addAttribute("", "", STARTUP_RECOVERY_DELAY, "",
             String.valueOf(pa.getStartupRecoveryDelay()));
+      }
     }
 
     if (!generateDefaults() && atts.getLength() == 0 && pa.getPartitionResolver() == null
@@ -2394,8 +2526,9 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * Generate XML for partition-resolver element in PartitionedRegion Attributes
    */
   private void generate(PartitionResolver rr) throws SAXException {
-    if (rr == null)
+    if (rr == null) {
       return;
+    }
 
     handler.startElement("", CacheXml.PARTITION_RESOLVER, CacheXml.PARTITION_RESOLVER, EMPTY);
 
@@ -2416,8 +2549,9 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * Generate XML for partition-listener element in PartitionedRegion Attributes
    */
   private void generate(PartitionListener pl) throws SAXException {
-    if (pl == null)
+    if (pl == null) {
       return;
+    }
 
     handler.startElement("", CacheXml.PARTITION_LISTENER, CacheXml.PARTITION_LISTENER, EMPTY);
 

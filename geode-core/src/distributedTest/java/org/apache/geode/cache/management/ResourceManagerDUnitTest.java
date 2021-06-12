@@ -108,7 +108,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     InternalResourceManager internalManager = (InternalResourceManager) manager;
     // verify that addResourceListener works
     internalManager.addResourceListener(listener);
-    Set<ResourceListener> listeners =
+    Set<ResourceListener<?>> listeners =
         internalManager.getResourceListeners(ResourceType.HEAP_MEMORY);
     assertNotNull(listeners);
     assertEquals(1 + SYSTEM_LISTENERS, listeners.size());
@@ -1689,8 +1689,9 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    if (true)
+    if (true) {
       return;
+    }
 
     // initiate moveBucket to move from otherVM to newVM
 

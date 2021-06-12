@@ -81,8 +81,9 @@ public class Value1 implements Serializable {
     if (other instanceof Value1) {
       Value1 v = (Value1) other;
       return v.employeeId == employeeId;
-    } else
+    } else {
       return false;
+    }
   }
 
   public int hashCode() {

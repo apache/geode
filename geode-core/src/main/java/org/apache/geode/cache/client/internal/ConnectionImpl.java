@@ -110,6 +110,7 @@ public class ConnectionImpl implements Connection {
       commBufferForAsyncRead = ServerConnection.allocateCommBuffer(socketBufferSize, theSocket);
     }
     theSocket.setSoTimeout(readTimeout);
+
     endpoint = endpointManager.referenceEndpoint(location, status.getMemberId());
     connectFinished = true;
     endpoint.getStats().incConnections(1);
@@ -282,7 +283,11 @@ public class ConnectionImpl implements Connection {
     synchronized (this) {
       result = op.attempt(this);
     }
-    endpoint.updateLastExecute();
+    // Do not call endpoint.updateLastExecute here because it should have been
+    // called on the final destination endpoint inside LiverServerPinger
+    if (!(op instanceof PingOp.PingOpImpl)) {
+      endpoint.updateLastExecute();
+    }
     return result;
 
   }

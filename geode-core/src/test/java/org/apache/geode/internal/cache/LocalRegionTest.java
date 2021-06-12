@@ -56,7 +56,11 @@ import org.apache.geode.internal.cache.AbstractRegion.PoolFinder;
 import org.apache.geode.internal.cache.LocalRegion.RegionMapConstructor;
 import org.apache.geode.internal.cache.LocalRegion.ServerRegionProxyConstructor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.util.concurrent.FutureResult;
+import org.apache.geode.pdx.PdxInstance;
 
 public class LocalRegionTest {
   private EntryEventFactory entryEventFactory;
@@ -221,5 +225,69 @@ public class LocalRegionTest {
     Map<String, String> result = region.getAll(Arrays.asList("key1", "key2"));
     assertThat(result.get("key1")).isNull();
     assertThat(result.get("key2")).isEqualTo("value2");
+  }
+
+  @Test
+  public void initializeStatsInvokesDiskRegionStatsMethods() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+
+    // Mock DiskRegion and DiskRegionStats
+    DiskRegion dr = mock(DiskRegion.class);
+    when(region.getDiskRegion()).thenReturn(dr);
+    DiskRegionStats drs = mock(DiskRegionStats.class);
+    when(dr.getStats()).thenReturn(drs);
+
+    // Invoke initializeStats
+    int numEntriesInVM = 100;
+    long numOverflowOnDisk = 200l;
+    long numOverflowBytesOnDisk = 300l;
+    region.initializeStats(numEntriesInVM, numOverflowOnDisk, numOverflowBytesOnDisk);
+
+    // Verify the DiskRegionStats methods were invoked
+    verify(drs).incNumEntriesInVM(numEntriesInVM);
+    verify(drs).incNumOverflowOnDisk(numOverflowOnDisk);
+    verify(drs).incNumOverflowBytesOnDisk(numOverflowBytesOnDisk);
+  }
+
+  @Test
+  public void forPdxInstanceByPassTheFutureInLocalRegionOptimizedGetObject() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+    KeyInfo keyInfo = mock(KeyInfo.class);
+    Object key = new Object();
+    Object result = new Object();
+    when(keyInfo.getKey()).thenReturn(key);
+    FutureResult thisFuture = new FutureResult(mock(CancelCriterion.class));
+    thisFuture.set(new Object[] {result, mock(VersionTag.class)});
+    region.getGetFutures().put(key, thisFuture);
+    // For non-PdxInstance, use the value in the Future
+    Object object = region.optimizedGetObject(keyInfo, true, true,
+        new Object(), true, true,
+        mock(ClientProxyMembershipID.class), mock(EntryEventImpl.class),
+        true);
+    assertThat(object).isSameAs(result);
+
+    // For PdxInstance, return a new reference by getObject(), bypassing the Future
+    result = mock(PdxInstance.class);
+    thisFuture.set(new Object[] {result, mock(VersionTag.class)});
+    Object newResult = new Object();
+    Object localValue = new Object();
+    ClientProxyMembershipID requestingClient = mock(ClientProxyMembershipID.class);
+    EntryEventImpl clientEvent = mock(EntryEventImpl.class);
+    when(region.getObject(keyInfo, true, true,
+        localValue, true, true,
+        requestingClient, clientEvent,
+        true)).thenReturn(newResult);
+    object = region.optimizedGetObject(keyInfo, true, true,
+        localValue, true, true,
+        requestingClient, clientEvent,
+        true);
+    assertThat(object).isNotSameAs(result);
+    assertThat(object).isSameAs(newResult);
   }
 }

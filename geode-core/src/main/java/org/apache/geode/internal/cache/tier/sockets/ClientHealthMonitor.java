@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -45,8 +46,7 @@ import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
-import org.apache.geode.internal.lang.JavaWorkarounds;
-import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.lang.utils.JavaWorkarounds;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -65,7 +65,13 @@ public class ClientHealthMonitor {
   /**
    * The map of known clients and last time seen.
    */
-  private ConcurrentMap<ClientProxyMembershipID, AtomicLong> clientHeartbeats =
+  private final ConcurrentMap<ClientProxyMembershipID, AtomicLong> clientHeartbeats =
+      new ConcurrentHashMap<>();
+
+  /**
+   * The map of known clients and maximum time between pings.
+   */
+  private final ConcurrentMap<ClientProxyMembershipID, Integer> clientMaximumTimeBetweenPings =
       new ConcurrentHashMap<>();
 
   /**
@@ -121,22 +127,18 @@ public class ClientHealthMonitor {
       new HashMap<>();
 
   /**
-   * Gives, version-wise, the number of clients connected to the cache servers in this cache, which
+   * Gives the number of clients connected to the cache servers in this cache, which
    * are capable of processing received deltas.
-   *
-   * NOTE: It does not necessarily give the actual number of clients per version connected to the
-   * cache servers in this cache.
    *
    * @see CacheClientNotifier#addClientProxy(CacheClientProxy)
    */
-  AtomicIntegerArray numOfClientsPerVersion =
-      new AtomicIntegerArray(KnownVersion.HIGHEST_VERSION + 1);
+  AtomicInteger numberOfClientsWithConflationOff = new AtomicInteger(0);
 
   public long getMonitorInterval() {
     return monitorInterval;
   }
 
-  private long monitorInterval;
+  private final long monitorInterval;
 
   /**
    * Factory method to construct or return the singleton <code>ClientHealthMonitor</code> instance.
@@ -166,10 +168,12 @@ public class ClientHealthMonitor {
    */
   public static synchronized void shutdownInstance() {
     refCount--;
-    if (instance == null)
+    if (instance == null) {
       return;
-    if (refCount > 0)
+    }
+    if (refCount > 0) {
       return;
+    }
     instance.shutdown();
 
     boolean interrupted = false; // Don't clear, let join fail if already interrupted
@@ -191,12 +195,19 @@ public class ClientHealthMonitor {
     refCount = 0;
   }
 
+  public void registerClient(ClientProxyMembershipID proxyID) {
+    registerClient(proxyID, maximumTimeBetweenPings);
+  }
+
   /**
    * Registers a new client to be monitored.
    *
    * @param proxyID The id of the client to be registered
    */
-  public void registerClient(ClientProxyMembershipID proxyID) {
+  public void registerClient(ClientProxyMembershipID proxyID, int maximumTimeBetweenPings) {
+    if (!clientMaximumTimeBetweenPings.containsKey(proxyID)) {
+      clientMaximumTimeBetweenPings.putIfAbsent(proxyID, maximumTimeBetweenPings);
+    }
     if (!clientHeartbeats.containsKey(proxyID)) {
       if (null == clientHeartbeats.putIfAbsent(proxyID,
           new AtomicLong(System.currentTimeMillis()))) {
@@ -233,6 +244,7 @@ public class ClientHealthMonitor {
       }
       expireTXStates(proxyID);
     }
+    clientMaximumTimeBetweenPings.remove(proxyID);
   }
 
   /**
@@ -349,7 +361,7 @@ public class ClientHealthMonitor {
 
     AtomicLong heartbeat = clientHeartbeats.get(proxyID);
     if (null == heartbeat) {
-      registerClient(proxyID);
+      registerClient(proxyID, getMaximumTimeBetweenPings(proxyID));
     } else {
       heartbeat.set(System.currentTimeMillis());
     }
@@ -365,7 +377,7 @@ public class ClientHealthMonitor {
    *        ConnectionProxies may be from same client member or different. If it is null this would
    *        mean to fetch the Connections of all the ConnectionProxy objects.
    */
-  public Map<String, Object[]> getConnectedClients(Set filterProxies) {
+  public Map<String, Object[]> getConnectedClients(Set<ClientProxyMembershipID> filterProxies) {
     Map<String, Object[]> map = new HashMap<>(); // KEY=proxyID, VALUE=connectionCount (Integer)
     synchronized (proxyIdConnections) {
       for (Map.Entry<ClientProxyMembershipID, ServerConnectionCollection> entry : proxyIdConnections
@@ -581,6 +593,7 @@ public class ClientHealthMonitor {
    *
    * @param cache The GemFire <code>Cache</code>
    * @param maximumTimeBetweenPings The maximum time allowed between pings before determining the
+   *        client has died and interrupting its sockets
    */
   protected static synchronized void createInstance(InternalCache cache,
       int maximumTimeBetweenPings, CacheClientNotifierStats stats) {
@@ -597,6 +610,7 @@ public class ClientHealthMonitor {
    *
    * @param cache The GemFire <code>Cache</code>
    * @param maximumTimeBetweenPings The maximum time allowed between pings before determining the
+   *        client has died and interrupting its sockets
    */
   private ClientHealthMonitor(InternalCache cache, int maximumTimeBetweenPings,
       CacheClientNotifierStats stats) {
@@ -648,16 +662,12 @@ public class ClientHealthMonitor {
     return cleanupTable;
   }
 
-  private int getNumberOfClientsAtOrAboveVersion(KnownVersion version) {
-    int number = 0;
-    for (int i = version.ordinal(); i < numOfClientsPerVersion.length(); i++) {
-      number += numOfClientsPerVersion.get(i);
-    }
-    return number;
+  public boolean hasDeltaClients() {
+    return numberOfClientsWithConflationOff.get() > 0;
   }
 
-  public boolean hasDeltaClients() {
-    return getNumberOfClientsAtOrAboveVersion(KnownVersion.GFE_61) > 0;
+  private int getMaximumTimeBetweenPings(ClientProxyMembershipID proxyID) {
+    return clientMaximumTimeBetweenPings.getOrDefault(proxyID, maximumTimeBetweenPings);
   }
 
   /**
@@ -786,8 +796,9 @@ public class ClientHealthMonitor {
                     (currentTime - latestHeartbeat), proxyID);
               }
 
+              int maximumTimeBetweenPingsForClient = getMaximumTimeBetweenPings(proxyID);
               if (checkHeartbeat.timedOut(currentTime, latestHeartbeat,
-                  _maximumTimeBetweenPings)) {
+                  maximumTimeBetweenPingsForClient)) {
                 // This client has been idle for too long. Determine whether
                 // any of its ServerConnection threads are currently processing
                 // a message. If so, let it go. If not, disconnect it.
@@ -795,7 +806,8 @@ public class ClientHealthMonitor {
                   if (cleanupClientThreads(proxyID, true)) {
                     logger.warn(
                         "Monitoring client with member id {}. It had been {} ms since the latest heartbeat. Max interval is {}. Terminated client.",
-                        entry.getKey(), currentTime - latestHeartbeat, _maximumTimeBetweenPings);
+                        entry.getKey(), currentTime - latestHeartbeat,
+                        maximumTimeBetweenPingsForClient);
                   }
                 } else {
                   if (logger.isDebugEnabled()) {

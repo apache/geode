@@ -79,6 +79,13 @@ INSTANCE_NAME_STRING="${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-build${JAVA_BUILD
 
 INSTANCE_NAME="heavy-lifter-$(uuidgen -n @dns -s -N "${INSTANCE_NAME_STRING}")"
 echo "Hashed ${INSTANCE_NAME_STRING} (${#INSTANCE_NAME_STRING} chars) -> ${INSTANCE_NAME} (${#INSTANCE_NAME} chars)"
+IMAGE_SELF_LINK=$(cat builder-image/output.json | jq -r '.selfLink')
+IMAGE_NAME=$(cat builder-image/output.json | jq -r '.name')
+
+if [[ -z "${IMAGE_NAME}" ]]; then
+  echo "Unable to determine proper heavy lifter image to use. Aborting!"
+  exit 1
+fi
 
 MY_NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
 MY_ZONE=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google")
@@ -125,8 +132,8 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create 
   --min-cpu-platform=Intel\ Skylake \
   --network="${GCP_NETWORK}" \
   --subnet="${GCP_SUBNETWORK}" \
-  --image-family="${IMAGE_FAMILY_NAME}" \
-  --boot-disk-size=100GB \
+  --image="${IMAGE_NAME}" \
+  --boot-disk-size="${DISK}" \
   --boot-disk-type=pd-ssd \
   --labels="${LABELS}" \
   --tags="heavy-lifter" \
@@ -191,7 +198,12 @@ else
 
   winrm -hostname ${INSTANCE_IP_ADDRESS} -username geode -password "${PASSWORD}" \
     -https -insecure -port 5986 \
-    "powershell -command \"&{ mkdir c:\users\geode\.ssh -force; set-content -path c:\users\geode\.ssh\authorized_keys -encoding utf8 -value '${KEY}' }\""
+    "powershell -command \"&{\
+      \$authPath = (Join-Path \$env:ProgramData -ChildPath 'ssh') \
+    ; \$authFile = (Join-Path \$authPath 'administrators_authorized_keys') \
+    ; mkdir \$authPath -force\
+    ; add-content -path \$authFile -encoding utf8 -value '${KEY}'\
+    ; icacls \$authFile /inheritance:r /grant 'SYSTEM:(F)' /grant 'BUILTIN\Administrators:(F)' }\""
 
   if [[ ${USE_SCRATCH_SSD} == "true" ]]; then
     set +e

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -30,7 +32,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PutAllPartialResultException;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -62,17 +63,8 @@ public class RemoveAll extends BaseCommand {
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long startp) throws IOException, InterruptedException {
     long start = startp; // copy this since we need to modify it
-    Part regionNamePart = null, numberOfKeysPart = null, keyPart = null;
-    String regionName = null;
-    int numberOfKeys = 0;
-    Object key = null;
-    Part eventPart = null;
-    boolean replyWithMetaData = false;
-    VersionedObjectList response = null;
 
-    StringBuilder errMessage = new StringBuilder();
-    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
-    CacheServerStats stats = serverConnection.getCacheServerStats();
+    final CacheServerStats stats = serverConnection.getCacheServerStats();
 
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
@@ -82,12 +74,16 @@ public class RemoveAll extends BaseCommand {
       stats.incReadRemoveAllRequestTime(start - oldStart);
     }
 
+    final String regionName;
+    VersionedObjectList response;
+    boolean replyWithMetaData = false;
     try {
       // Retrieve the data from the message parts
       // part 0: region name
-      regionNamePart = clientMessage.getPart(0);
+      Part regionNamePart = clientMessage.getPart(0);
       regionName = regionNamePart.getCachedString();
 
+      StringBuilder errMessage = new StringBuilder();
       if (regionName == null) {
         String txt =
             "The input region name for the removeAll request is null";
@@ -108,7 +104,7 @@ public class RemoveAll extends BaseCommand {
       }
 
       // part 1: eventID
-      eventPart = clientMessage.getPart(1);
+      Part eventPart = clientMessage.getPart(1);
       ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
       long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
       long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
@@ -126,8 +122,8 @@ public class RemoveAll extends BaseCommand {
       Object callbackArg = clientMessage.getPart(3).getObject();
 
       // part 4: number of keys
-      numberOfKeysPart = clientMessage.getPart(4);
-      numberOfKeys = numberOfKeysPart.getInt();
+      final Part numberOfKeysPart = clientMessage.getPart(4);
+      final int numberOfKeys = numberOfKeysPart.getInt();
 
       if (logger.isDebugEnabled()) {
         StringBuilder buffer = new StringBuilder();
@@ -137,10 +133,11 @@ public class RemoveAll extends BaseCommand {
             .append(numberOfKeys).append(" keys.");
         logger.debug(buffer);
       }
-      ArrayList<Object> keys = new ArrayList<Object>(numberOfKeys);
-      ArrayList<VersionTag> retryVersions = new ArrayList<VersionTag>(numberOfKeys);
+      final ArrayList<Object> keys = new ArrayList<>(numberOfKeys);
+      final ArrayList<VersionTag<?>> retryVersions = new ArrayList<>(numberOfKeys);
+      Object key;
       for (int i = 0; i < numberOfKeys; i++) {
-        keyPart = clientMessage.getPart(5 + i);
+        final Part keyPart = clientMessage.getPart(5 + i);
         key = keyPart.getStringOrObject();
         if (key == null) {
           String txt =
@@ -169,7 +166,7 @@ public class RemoveAll extends BaseCommand {
                 entryEventId.getSequenceID());
           }
 
-          VersionTag tag = findVersionTagsForRetriedBulkOp(region, entryEventId);
+          VersionTag<?> tag = findVersionTagsForRetriedBulkOp(region, entryEventId);
           retryVersions.add(tag);
           // FIND THE VERSION TAG FOR THIS KEY - but how? all we have is the
           // removeAll eventId, not individual eventIds for entries, right?
@@ -199,8 +196,9 @@ public class RemoveAll extends BaseCommand {
         }
       }
 
-      response = region.basicBridgeRemoveAll(keys, retryVersions, serverConnection.getProxyID(),
-          eventId, callbackArg);
+      response = region.basicBridgeRemoveAll(keys, uncheckedCast(retryVersions),
+          serverConnection.getProxyID(),
+          eventId, callbackArg, clientMessage.isRetry());
       if (!region.getConcurrencyChecksEnabled() || clientIsEmpty || !clientHasCCEnabled) {
         // the client only needs this if versioning is being used and the client
         // has storage
@@ -221,16 +219,8 @@ public class RemoveAll extends BaseCommand {
           replyWithMetaData = true;
         }
       }
-    } catch (RegionDestroyedException rde) {
+    } catch (RegionDestroyedException | ResourceException | PutAllPartialResultException rde) {
       writeChunkedException(clientMessage, rde, serverConnection);
-      serverConnection.setAsTrue(RESPONDED);
-      return;
-    } catch (ResourceException re) {
-      writeChunkedException(clientMessage, re, serverConnection);
-      serverConnection.setAsTrue(RESPONDED);
-      return;
-    } catch (PutAllPartialResultException pre) {
-      writeChunkedException(clientMessage, pre, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (Exception ce) {
@@ -315,12 +305,6 @@ public class RemoveAll extends BaseCommand {
     if (logger.isTraceEnabled()) {
       logger.trace("{}: rpl tx: {}", servConn.getName(), origMsg.getTransactionId());
     }
-  }
-
-  @Override
-  protected void writeReplyWithRefreshMetadata(Message origMsg, ServerConnection serverConnection,
-      PartitionedRegion pr, byte nwHop) throws IOException {
-    throw new UnsupportedOperationException();
   }
 
   private void writeReplyWithRefreshMetadata(Message origMsg, VersionedObjectList response,

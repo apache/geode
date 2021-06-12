@@ -2580,10 +2580,12 @@ public class QueryTestUtils implements Serializable {
     int j = 0;
     for (int i = 0; i < qarr.length; i++) {
       query = queries.get(qarr[i]);
-      if (query.indexOf("distinct") > -1)
+      if (query.indexOf("distinct") > -1) {
         query = query.replace("distinct", "");
-      if (query.indexOf("DISTINCT") > -1)
+      }
+      if (query.indexOf("DISTINCT") > -1) {
         query = query.replace("DISTINCT", "");
+      }
 
       // hydra.getLogWriter().info("\nExecuting query: " + query);
       try {

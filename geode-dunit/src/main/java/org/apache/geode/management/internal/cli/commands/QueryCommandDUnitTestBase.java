@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -53,7 +54,6 @@ import org.apache.geode.management.internal.cli.dto.Value1;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -121,17 +121,13 @@ public class QueryCommandDUnitTestBase {
 
   @Test
   public void testWithUnsetGfshEnvironmentVariables() {
-    IgnoredException ex =
-        addIgnoredException(QueryInvalidException.class.getSimpleName(), locator.getVM());
-    try {
-      String query =
-          "query --query=\"select ID , status , createTime , pk, floatMinValue from ${UNSET_REGION} where ID <= ${UNSET_PORTFOLIO_ID}"
-              + " and status=${UNSET_STATUS}" + "\" --interactive=false";
-      gfsh.executeAndAssertThat(query).statusIsError()
-          .containsOutput(String.format("Syntax error in query: %s", ""));
-    } finally {
-      ex.remove();
-    }
+    addIgnoredException(QueryInvalidException.class.getSimpleName(), locator.getVM());
+    String query =
+        "query --query=\"select ID , status , createTime , pk, floatMinValue from ${UNSET_REGION} "
+            + "where ID <= ${UNSET_PORTFOLIO_ID}"
+            + " and status=${UNSET_STATUS}" + "\" --interactive=false";
+    gfsh.executeAndAssertThat(query).statusIsError()
+        .containsOutput(String.format("Syntax error in query: %s", ""));
   }
 
   @Test
@@ -144,6 +140,18 @@ public class QueryCommandDUnitTestBase {
     CommandResult commandResult = gfsh.executeCommand(query);
     validateSelectResult(commandResult, true, (randomInteger + 1),
         new String[] {"ID", "status", "createTime", "pk", "floatMinValue"});
+  }
+
+  @Test
+  public void testSimpleQueryWithEscapingCharacter() {
+    server1.invoke(() -> prepareDataForRegionWithSpecialCharacters(DATA_PAR_REGION_NAME_PATH));
+    String query = "query --query=\"select * from " + DATA_PAR_REGION_NAME_PATH
+        + " e where e LIKE 'value\\$'\"";
+    String query1 = "query --query=\"select * from " + DATA_PAR_REGION_NAME_PATH
+        + " e where e LIKE 'value\\%'\"";
+
+    gfsh.executeAndAssertThat(query).statusIsSuccess().containsOutput("value$");
+    gfsh.executeAndAssertThat(query1).statusIsSuccess().containsOutput("value%");
   }
 
   @Test
@@ -169,6 +177,21 @@ public class QueryCommandDUnitTestBase {
   }
 
   @Test
+  public void testSimpleQueryWithUUID() {
+    server1.invoke(() -> prepareDataForRegionWithUUID(DATA_PAR_REGION_NAME_PATH));
+    String uuidKey = String.valueOf(new UUID(1, 1));
+    String query = "query --query=\"select key from " + DATA_PAR_REGION_NAME_PATH
+        + ".entries\"";
+    String query1 = "query --query=\"select key,value from " + DATA_PAR_REGION_NAME_PATH
+        + ".entries\"";
+
+    gfsh.executeAndAssertThat(query).statusIsSuccess()
+        .containsOutput(uuidKey);
+    gfsh.executeAndAssertThat(query1).statusIsSuccess()
+        .containsOutput(uuidKey, "value");
+  }
+
+  @Test
   public void testQueryEvictedDataDeserializable() {
     server1.invoke(() -> setupReplicatedRegionWithEviction(DATA_REGION_WITH_EVICTION_NAME));
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_WITH_EVICTION_NAME_PATH, 1);
@@ -182,9 +205,7 @@ public class QueryCommandDUnitTestBase {
 
   @Test
   public void testQueryEvictedDataNotDeserializable() {
-    IgnoredException ex =
-        addIgnoredException(Exception.class.getSimpleName(), locator.getVM());
-
+    addIgnoredException(Exception.class.getSimpleName(), server1.getVM());
     server1.invoke(() -> setupReplicatedRegionWithEviction(DATA_REGION_WITH_EVICTION_NAME));
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_WITH_EVICTION_NAME_PATH, 1);
     server1
@@ -196,8 +217,6 @@ public class QueryCommandDUnitTestBase {
     validateSelectResult(commandResult, Boolean.FALSE, -1, new String[] {"Value"});
     assertThat(commandResult.asString())
         .contains("An IOException was thrown while deserializing");
-
-    ex.remove();
   }
 
   private static void prepareDataForRegion(String regionPath) {
@@ -207,6 +226,21 @@ public class QueryCommandDUnitTestBase {
     for (int j = 0; j < 10; j++) {
       dataRegion.put(new Integer(j), new Portfolio(j));
     }
+  }
+
+  private static void prepareDataForRegionWithSpecialCharacters(String regionPath) {
+    InternalCache cache = ClusterStartupRule.getCache();
+    Region<Integer, String> dataRegion = cache.getRegion(regionPath);
+
+    dataRegion.put(1, "value$");
+    dataRegion.put(2, "value%");
+  }
+
+  private static void prepareDataForRegionWithUUID(String regionPath) {
+    InternalCache cache = ClusterStartupRule.getCache();
+    Region<UUID, String> dataRegion = cache.getRegion(regionPath);
+
+    dataRegion.put(new UUID(1, 1), "value");
   }
 
   private static void prepareNotDeserializableDataForRegion(String regionPath) {

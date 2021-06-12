@@ -37,7 +37,7 @@ import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -90,8 +90,9 @@ public class LuceneCreateIndexFunction implements InternalFunction {
           indexFactory.addField(field);
         }
       } else {
-        if (analyzerName.length != fields.length)
+        if (analyzerName.length != fields.length) {
           throw new Exception("Mismatch in lengths of fields and analyzers");
+        }
         for (int i = 0; i < fields.length; i++) {
           Analyzer analyzer = toAnalyzer(analyzerName[i]);
           indexFactory.addField(fields[i], analyzer);
@@ -134,22 +135,23 @@ public class LuceneCreateIndexFunction implements InternalFunction {
     }
     Class<? extends LuceneSerializer> clazz =
         ManagementUtils.forName(serializerName, LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER);
-    return CliUtil.newInstance(clazz, LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER);
+    return CliUtils.newInstance(clazz, LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER);
   }
 
   private Analyzer toAnalyzer(String className) {
-    if (className == null)
+    if (className == null) {
       className = StandardAnalyzer.class.getCanonicalName();
-    else {
+    } else {
       String trimmedClassName = StringUtils.trim(className);
-      if (trimmedClassName.equals("") || trimmedClassName.equals("DEFAULT"))
+      if (trimmedClassName.equals("") || trimmedClassName.equals("DEFAULT")) {
         className = StandardAnalyzer.class.getCanonicalName();
-      else
+      } else {
         className = trimmedClassName;
+      }
     }
 
     Class<? extends Analyzer> clazz =
         ManagementUtils.forName(className, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
-    return CliUtil.newInstance(clazz, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
+    return CliUtils.newInstance(clazz, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
   }
 }

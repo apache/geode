@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.WanTest;
 
@@ -36,8 +37,8 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelPropagationLoopBack() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // create receiver on site1 and site2
     createCacheInVMs(lnPort, vm2, vm4, vm5);
@@ -137,9 +138,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
   @Test
   public void testParallelPropagationLoopBack3Sites() {
     // Create locators
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
-    Integer tkPort = (Integer) vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer tkPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
 
     // create cache and receivers on all the 3 sites
     createCacheInVMs(lnPort, vm3, vm6);
@@ -226,9 +227,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    */
   @Test
   public void testParallelPropagationLoopBack3SitesNtoNTopologyPutFromOneDS() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
-    Integer tkPort = (Integer) vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer tkPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
 
     createCacheInVMs(lnPort, vm3, vm6);
     createCacheInVMs(nyPort, vm4, vm7);
@@ -369,9 +370,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    * Start the sender, make sure the events in tmpDroppedEvents are sent to LN finally
    */
   @Test
-  public void unstartedSenderShouldNotAddReceivedEventsIntoTmpDropped() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
+  public void unstartedSenderShouldNotAddReceivedEventsIntoTmpDropped() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
 
     // create receiver on site-ln and site-ny
     createCacheInVMs(lnPort, vm2, vm4);
@@ -379,60 +380,301 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm3, vm5);
     createReceiverInVMs(vm3, vm5);
 
-    // create senders on site-ln, Note: sender-id is its destination, i.e. ny
+    // create senders on site-ny, Note: sender-id is its destination, i.e. ny
     vm2.invoke(() -> WANTestBase.createSender("ny", 1, true, 100, 10, false, false, null, true));
     vm4.invoke(() -> WANTestBase.createSender("ny", 1, true, 100, 10, false, false, null, true));
 
-    // create senders on site-ny, Note: sender-id is its destination, i.e. ln
+    // create senders on site-ln, Note: sender-id is its destination, i.e. ln
     vm3.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
     vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
 
-    // create PR on site-ln
+    // create PR on site-ny
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ny", 1, 100,
         isOffHeap()));
     vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ny", 1, 100,
         isOffHeap()));
 
-    // create PR on site-ny
+    // create PR on site-ln
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
         isOffHeap()));
     vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
         isOffHeap()));
 
-    // start sender on site-ln
+    // start sender on site-ny
     startSenderInVMs("ny", vm2, vm4);
-    // Do 100 puts on site-ln
-    vm2.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 100));
 
-    // verify site-ny received the 100 events
+    // do 100 puts on site-ln
+    vm3.invoke(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 0, 100));
+
+    // verify site-ny have 100 entries
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
     vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
 
-    // verify tmpDroppedEvents should be 0 at site-ny
-    vm3.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 0));
-    vm5.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 0));
-
-    // do next 100 puts on site-ny
-    vm3.invoke(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 100, 200));
-
-    // verify site-ny have 200 entries
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 200));
-    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 200));
-
-    // verify tmpDroppedEvents should be 100 at site-ny, because the sender is not started yet
+    // verify tmpDroppedEvents should be 100 at site-ln, because the sender is not started yet
     vm3.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 100));
     vm5.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 100));
 
     // verify site-ln has not received the events from site-ny yet
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
-    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 0));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 0));
 
-    // start sender on site-ny
+    // start sender on site-ln
     startSenderInVMsAsync("ln", vm3, vm5);
 
     // verify tmpDroppedEvents should be 0 now at site-ny
     vm3.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 0));
     vm5.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 0));
+
+    vm3.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
+    vm5.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
   }
 
+  /**
+   * Test that gateway sender's secondary queues do not keep dropped events
+   * by the primary gateway sender received while it was starting but was not
+   * started yet, after the primary finishes starting.
+   * Site-LN: dsid=2: senderId="ny": vm2, vm4
+   * Site-NY: dsid=1: senderId="ln": vm3, vm6
+   * NY site's sender's manual-start=true
+   * LN site's sender's manual-start=true
+   *
+   * put some events from LN and start the sender in NY simultaneously
+   * Make sure there are no events in tmpDroppedEvents and the queues are drained.
+   */
+  @Test
+  public void startedSenderReceivingEventsWhileStartingShouldDrainQueues()
+      throws Exception {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
+
+    createCacheInVMs(lnPort, vm2, vm4);
+    createReceiverInVMs(vm2, vm4);
+    createCacheInVMs(nyPort, vm3, vm5);
+    createReceiverInVMs(vm3, vm5);
+
+    vm2.invoke(() -> WANTestBase.createSender("ny", 1, true, 100, 10, false, false, null, true));
+    vm4.invoke(() -> WANTestBase.createSender("ny", 1, true, 100, 10, false, false, null, true));
+
+    vm3.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ny", 1, 100,
+        isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ny", 1, 100,
+        isOffHeap()));
+
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
+        isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
+        isOffHeap()));
+
+    AsyncInvocation<Void> inv =
+        vm2.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
+    startSenderInVMsAsync("ny", vm2, vm4);
+    inv.await();
+
+    vm2.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
+    vm4.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
+
+    vm2.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ny"));
+    vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ny"));
+  }
+
+  /**
+   * Test that gateway sender's secondary queues do not keep dropped events
+   * by the primary gateway sender received while it was stopping after it is started again.
+   * Site-LN: dsid=2: senderId="ny": vm2, vm4
+   * Site-NY: dsid=1: senderId="ln": vm3, vm6
+   * NY site's sender's manual-start=false
+   * LN site's sender's manual-start=false
+   *
+   * put some events from LN and stop the sender in NY simultaneously
+   * Start the sender in NY.
+   * Make sure there are no events in tmpDroppedEvents and the queues are drained.
+   */
+  @Test
+  public void startedSenderReceivingEventsWhileStoppingShouldDrainQueues()
+      throws Exception {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
+
+    createCacheInVMs(lnPort, vm2, vm4);
+    createReceiverInVMs(vm2, vm4);
+    createCacheInVMs(nyPort, vm3, vm5);
+    createReceiverInVMs(vm3, vm5);
+
+    vm2.invoke(() -> WANTestBase.createSender("ny", 1, true, 100, 10, false, false, null, false));
+    vm4.invoke(() -> WANTestBase.createSender("ny", 1, true, 100, 10, false, false, null, false));
+
+    vm3.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, false));
+
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ny", 1, 100,
+        isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ny", 1, 100,
+        isOffHeap()));
+
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
+        isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
+        isOffHeap()));
+
+    AsyncInvocation<Void> inv =
+        vm2.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
+    stopSenderInVMsAsync("ny", vm2, vm4);
+    inv.await();
+
+    startSenderInVMsAsync("ny", vm2, vm4);
+
+    vm2.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
+    vm4.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
+
+    vm2.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ny"));
+    vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ny"));
+  }
+
+  /**
+   * Test that a stopped gateway sender receiving events
+   * does not store them in tmpDroppedEvents but after started
+   * does not leave any event in the
+   * gateway sender's secondary queues.
+   * Site-LN: dsid=2: senderId="ny": vm2, vm4
+   * Site-NY: dsid=1: senderId="ln": vm3, vm6
+   * NY site's sender's manual-start=false
+   * LN site's sender's manual-start=false
+   *
+   * put some events from LN and stop the sender in NY simultaneously
+   * Start the sender in NY.
+   * Make sure there are no events in tmpDroppedEvents and the queues are drained.
+   */
+  @Test
+  public void stoppedSenderShouldNotAddEventsToTmpDroppedEventsButStillDrainQueuesWhenStarted() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
+
+    createCacheInVMs(lnPort, vm2, vm4);
+    createReceiverInVMs(vm2, vm4);
+    createCacheInVMs(nyPort, vm3, vm5);
+    createReceiverInVMs(vm3, vm5);
+
+    vm2.invoke(() -> WANTestBase.createSender("ny", 1, true, 100, 10, false, false, null, false));
+    vm4.invoke(() -> WANTestBase.createSender("ny", 1, true, 100, 10, false, false, null, false));
+
+    vm3.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, false));
+
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ny", 1, 100,
+        isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ny", 1, 100,
+        isOffHeap()));
+
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
+        isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
+        isOffHeap()));
+
+    stopSenderInVMsAsync("ny", vm2, vm4);
+
+    vm2.invoke(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 0, 100));
+
+    // verify tmpDroppedEvents is 0 at site-ny
+    vm2.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
+    vm4.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
+
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 0));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 0));
+
+
+    startSenderInVMsAsync("ny", vm2, vm4);
+
+    vm2.invoke(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 100, 1000));
+
+    vm2.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
+    vm4.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
+
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 900));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 900));
+
+    // verify the secondary's queues are drained at site-ny
+    vm2.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ny"));
+    vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ny"));
+  }
+
+  /**
+   * Test that a stopped primary gateway sender receiving events
+   * does not store them in tmpDroppedEvents but after started
+   * does not leave any event in the
+   * gateway sender's secondary queues.
+   * Site-LN: dsid=2: senderId="ny": vm2, vm4
+   * Site-NY: dsid=1: senderId="ln": vm3, vm6
+   * NY site's sender's manual-start=false
+   * LN site's sender's manual-start=false
+   *
+   * put some events from LN and stop one instance of the sender in NY simultaneously
+   * Start the stopped instance of the sender in NY.
+   * Make sure there are no events in tmpDroppedEvents and the queues are drained.
+   */
+  @Test
+  public void stoppedPrimarySenderShouldNotAddEventsToTmpDroppedEventsButStillDrainQueuesWhenStarted() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
+
+    createCacheInVMs(lnPort, vm2, vm4);
+    createReceiverInVMs(vm2, vm4);
+    createCacheInVMs(nyPort, vm3, vm5);
+    createReceiverInVMs(vm3, vm5);
+
+    vm2.invoke(() -> WANTestBase.createSender("ny", 1, true, 100, 10, false, false, null, false));
+    vm4.invoke(() -> WANTestBase.createSender("ny", 1, true, 100, 10, false, false, null, false));
+
+    vm3.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, false));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, false));
+
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ny", 1, 100,
+        isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ny", 1, 100,
+        isOffHeap()));
+
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
+        isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
+        isOffHeap()));
+
+    stopSenderInVMsAsync("ny", vm2);
+
+    vm2.invoke(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 0, 100));
+
+    // verify tmpDroppedEvents is 0 at site-ny
+    vm2.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
+    vm4.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
+
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 50));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 50));
+
+    startSenderInVMsAsync("ny", vm2);
+
+    vm2.invoke(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 100, 1000));
+
+    vm2.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
+    vm4.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ny", 0));
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
+
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 950));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 950));
+
+    // verify the secondary's queues are drained at site-ny
+    vm2.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ny"));
+    vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ny"));
+  }
 }

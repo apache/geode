@@ -232,6 +232,15 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
               "Cannot create Gateway Sender %s with isDiskSynchronous %s because another cache has the same Gateway Sender defined with isDiskSynchronous %s",
               sp.Id, sp.isDiskSynchronous, sender.isDiskSynchronous()));
     }
+    if (sp.getDistributedMember().getVersion().isNotOlderThan(KnownVersion.GEODE_1_14_0)) {
+      if (sp.enforceThreadsConnectSameReceiver != sender.getEnforceThreadsConnectSameReceiver()) {
+        throw new IllegalStateException(
+            String.format(
+                "Cannot create Gateway Sender %s with enforceThreadsConnectSameReceiver %s because another cache has the same Gateway Sender defined with enforceThreadsConnectSameReceiver %s",
+                sp.Id, sp.enforceThreadsConnectSameReceiver,
+                sender.getEnforceThreadsConnectSameReceiver()));
+      }
+    }
   }
 
   /**
@@ -532,6 +541,8 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
 
     public ServerLocation serverLocation;
 
+    public boolean enforceThreadsConnectSameReceiver = false;
+
     public GatewaySenderProfile(InternalDistributedMember memberId, int version) {
       super(memberId, version);
     }
@@ -540,6 +551,12 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
 
     @Override
     public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      fromDataPre_GEODE_1_14_0_0(in, context);
+      this.enforceThreadsConnectSameReceiver = in.readBoolean();
+    }
+
+    public void fromDataPre_GEODE_1_14_0_0(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.Id = DataSerializer.readString(in);
@@ -582,6 +599,12 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
 
     @Override
     public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      toDataPre_GEODE_1_14_0_0(out, context);
+      out.writeBoolean(enforceThreadsConnectSameReceiver);
+    }
+
+    public void toDataPre_GEODE_1_14_0_0(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
       DataSerializer.writeString(Id, out);
@@ -663,17 +686,19 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       DataSerializer.writeArrayList(senderEventListenerClassNames, out);
       out.writeBoolean(isDiskSynchronous);
       // out.writeInt(dispatcherThreads);
-      if (isParallel)
+      if (isParallel) {
         out.writeInt(1);// it was 1 on previous version of gemfire
-      else if (orderPolicy == null)
+      } else if (orderPolicy == null) {
         out.writeInt(1);// it was 1 on previous version of gemfire
-      else
+      } else {
         out.writeInt(dispatcherThreads);
+      }
 
-      if (isParallel)
+      if (isParallel) {
         DataSerializer.writeObject(null, out);
-      else
+      } else {
         DataSerializer.writeObject(orderPolicy, out);
+      }
 
       boolean serverLocationFound = (this.serverLocation != null);
       DataSerializer.writePrimitiveBoolean(serverLocationFound, out);
@@ -684,7 +709,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
 
     @Immutable
     private static final KnownVersion[] serializationVersions =
-        new KnownVersion[] {KnownVersion.GFE_80};
+        new KnownVersion[] {KnownVersion.GFE_80, KnownVersion.GEODE_1_14_0};
 
     @Override
     public KnownVersion[] getSerializationVersions() {

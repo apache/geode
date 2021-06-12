@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedMember;
@@ -750,7 +751,7 @@ public class StateFlushOperation {
     int originalCount;
 
     /** whether the target member has left the distributed system */
-    boolean targetMemberHasLeft;
+    volatile boolean targetMemberHasLeft;
 
     public StateFlushReplyProcessor(DistributionManager manager, Set initMembers,
         DistributedMember target) {
@@ -772,6 +773,9 @@ public class StateFlushOperation {
     @Override
     public void memberDeparted(DistributionManager distributionManager,
         final InternalDistributedMember id, final boolean crashed) {
+      if (id.equals(targetMember)) {
+        targetMemberHasLeft = true;
+      }
       super.memberDeparted(distributionManager, id, crashed);
     }
 
@@ -781,6 +785,11 @@ public class StateFlushOperation {
       if (!activeMembers.contains(this.targetMember)) {
         targetMemberHasLeft = true;
       }
+    }
+
+    @VisibleForTesting
+    public boolean getTargetMemberHasLeft() {
+      return targetMemberHasLeft;
     }
 
     @Override

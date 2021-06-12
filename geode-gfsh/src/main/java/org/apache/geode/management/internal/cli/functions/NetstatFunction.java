@@ -37,8 +37,8 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.CliUtil.DeflaterInflaterData;
+import org.apache.geode.management.internal.cli.CliUtils;
+import org.apache.geode.management.internal.cli.CliUtils.DeflaterInflaterData;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
@@ -55,10 +55,16 @@ public class NetstatFunction implements InternalFunction<NetstatFunction.Netstat
   @Immutable
   public static final NetstatFunction INSTANCE = new NetstatFunction();
 
-  private static final String ID = NetstatFunction.class.getName();
-
   private static final String NETSTAT_COMMAND = "netstat";
   private static final String LSOF_COMMAND = "lsof";
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.NetstatFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public boolean hasResult() {
@@ -85,7 +91,7 @@ public class NetstatFunction implements InternalFunction<NetstatFunction.Netstat
     addMemberHostHeader(netstatInfo, "{0}", host, lineSeparator);
 
     NetstatFunctionResult result = new NetstatFunctionResult(host, netstatInfo.toString(),
-        CliUtil.compressBytes(netstatOutput.getBytes()));
+        CliUtils.compressBytes(netstatOutput.getBytes()));
 
     context.getResultSender().lastResult(result);
   }
@@ -128,25 +134,27 @@ public class NetstatFunction implements InternalFunction<NetstatFunction.Netstat
     }
 
     ProcessBuilder processBuilder = new ProcessBuilder(cmdOptionsList);
+    Process netstat = null;
+    InputStreamReader inputStreamReader = null;
+    BufferedReader breader = null;
     try {
-      Process netstat = processBuilder.start();
+      netstat = processBuilder.start();
 
       InputStream is = netstat.getInputStream();
-      BufferedReader breader = new BufferedReader(new InputStreamReader(is));
+      inputStreamReader = new InputStreamReader(is);
+      breader = new BufferedReader(inputStreamReader);
       String line;
 
       while ((line = breader.readLine()) != null) {
         netstatInfo.append(line).append(lineSeparator);
       }
-
-      // TODO: move to finally-block
-      netstat.destroy();
     } catch (IOException e) {
       // TODO: change this to keep the full stack trace
       netstatInfo.append(CliStrings.format(CliStrings.NETSTAT__MSG__COULD_NOT_EXECUTE_0_REASON_1,
           NETSTAT_COMMAND, e.getMessage()));
     } finally {
       netstatInfo.append(lineSeparator); // additional new line
+      releaseResources(netstat, inputStreamReader, breader);
     }
   }
 
@@ -162,17 +170,19 @@ public class NetstatFunction implements InternalFunction<NetstatFunction.Netstat
       cmdOptionsList.add("-P");
 
       ProcessBuilder procBuilder = new ProcessBuilder(cmdOptionsList);
+
+      Process lsof = null;
+      InputStreamReader reader = null;
+      BufferedReader breader = null;
       try {
-        Process lsof = procBuilder.start();
-        InputStreamReader reader = new InputStreamReader(lsof.getInputStream());
-        BufferedReader breader = new BufferedReader(reader);
+        lsof = procBuilder.start();
+        reader = new InputStreamReader(lsof.getInputStream());
+        breader = new BufferedReader(reader);
         String line;
 
         while ((line = breader.readLine()) != null) {
           existingNetstatInfo.append(line).append(lineSeparator);
         }
-        // TODO: move this to finally-block
-        lsof.destroy();
       } catch (IOException e) {
         // TODO: change this to keep the full stack trace
         String message = e.getMessage();
@@ -186,11 +196,31 @@ public class NetstatFunction implements InternalFunction<NetstatFunction.Netstat
                   LSOF_COMMAND, e.getMessage()));
         }
       } finally {
+        releaseResources(lsof, reader, breader);
         existingNetstatInfo.append(lineSeparator); // additional new line
       }
     } else {
       existingNetstatInfo.append(CliStrings.NETSTAT__MSG__NOT_AVAILABLE_FOR_WINDOWS)
           .append(lineSeparator);
+    }
+  }
+
+  private static void releaseResources(Process netstat, InputStreamReader inputStreamReader,
+      BufferedReader breader) {
+    if (breader != null) {
+      try {
+        breader.close();
+      } catch (IOException ignore) {
+      }
+    }
+    if (inputStreamReader != null) {
+      try {
+        inputStreamReader.close();
+      } catch (IOException ignore) {
+      }
+    }
+    if (netstat != null) {
+      netstat.destroy();
     }
   }
 
@@ -204,11 +234,6 @@ public class NetstatFunction implements InternalFunction<NetstatFunction.Netstat
     }
 
     return netstatInfo.toString();
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 
   @Override

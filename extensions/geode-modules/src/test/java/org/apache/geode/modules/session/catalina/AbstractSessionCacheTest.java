@@ -18,6 +18,7 @@ package org.apache.geode.modules.session.catalina;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -51,7 +52,8 @@ public abstract class AbstractSessionCacheTest {
 
 
   protected SessionManager sessionManager = mock(SessionManager.class);
-  protected Region<String, HttpSession> sessionRegion = uncheckedCast(mock(Region.class));
+  protected Region<String, HttpSession> sessionRegion =
+      uncheckedCast(mock(Region.class, RETURNS_DEEP_STUBS));
   protected DistributedSystem distributedSystem = mock(DistributedSystem.class);
   protected Log logger = mock(Log.class);
   protected Execution<Object, Object, List<Object>> emptyExecution =

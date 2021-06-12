@@ -20,6 +20,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.AbstractSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -96,12 +97,14 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   private volatile int numDataStores = 0;
   protected volatile ProxyBucketRegion[] buckets;
 
-  private Queue<QueuedBucketProfile> preInitQueue;
+  @VisibleForTesting
+  protected Queue<QueuedBucketProfile> preInitQueue;
   private final Object preInitQueueMonitor = new Object();
 
   private ConcurrentHashMap<Integer, Set<ServerBucketProfile>> clientBucketProfilesMap;
 
-  private RegionAdvisor(PartitionedRegion region) {
+  @VisibleForTesting
+  protected RegionAdvisor(PartitionedRegion region) {
     super(region);
     synchronized (preInitQueueMonitor) {
       preInitQueue = new ConcurrentLinkedQueue<>();
@@ -539,8 +542,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     @Override
     protected int getIntInfo() {
       int s = super.getIntInfo();
-      if (requiresNotification)
+      if (requiresNotification) {
         s |= REQUIRES_NOTIFICATION_MASK;
+      }
       return s;
     }
 
@@ -644,8 +648,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       String regionName = getPartitionedRegion().getFullPath();
       do {
         Region pr = getPartitionedRegion().getCache().getRegion(regionName);
-        if (pr == null || pr.isDestroyed())
+        if (pr == null || pr.isDestroyed()) {
           break;
+        }
         Set members = adviseNotAtShutDownAllStatus(status);
         memberNum = members.size();
         if (memberNum > 0) {
@@ -974,10 +979,15 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @return array of serial numbers for buckets created locally
    */
   public int[] getBucketSerials() {
+    int[] result;
     if (buckets == null) {
-      return new int[0];
+      PartitionedRegion p = getPartitionedRegion();
+      int numBuckets = p.getAttributes().getPartitionAttributes().getTotalNumBuckets();
+      result = new int[numBuckets];
+      Arrays.fill(result, ILLEGAL_SERIAL);
+      return result;
     }
-    int[] result = new int[buckets.length];
+    result = new int[buckets.length];
 
     for (int i = 0; i < result.length; i++) {
       ProxyBucketRegion pbr = buckets[i];
@@ -1567,8 +1577,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     public BucketProfileAndId(Profile bp, int id) {
       this.id = id;
       this.bp = (BucketProfile) bp;
-      if (bp instanceof ServerBucketProfile)
+      if (bp instanceof ServerBucketProfile) {
         isServerBucketProfile = true;
+      }
     }
 
     public BucketProfileAndId() {}
@@ -1585,10 +1596,11 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       id = in.readInt();
       isServerBucketProfile = in.readBoolean();
-      if (isServerBucketProfile)
+      if (isServerBucketProfile) {
         bp = new ServerBucketProfile();
-      else
+      } else {
         bp = new BucketProfile();
+      }
 
       InternalDataSerializer.invokeFromData(bp, in);
     }

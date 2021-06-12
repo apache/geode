@@ -19,9 +19,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Objects;
-
-import org.apache.commons.validator.routines.InetAddressValidator;
 
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -33,6 +30,9 @@ import org.apache.geode.internal.serialization.StaticSerialization;
  * HostAndPort is a holder of a host name/address and a port. It is the primary
  * way to specify a connection endpoint in the socket-creator methods.
  * <p>
+ * This class preserves the hostName string passed in to its constructor that takes a
+ * hostName string and will respond with that string when asked for a hostName.
+ * <p>
  * Note: This class is serializable for testing. A number of client/server and WAN tests
  * transmit PoolAttributes between unit test JVMs using RMI. PoolAttributes are
  * Externalizable for this purpose and use Geode serialization to transmit HostAndPort
@@ -43,73 +43,20 @@ import org.apache.geode.internal.serialization.StaticSerialization;
  * @see ClientSocketCreator
  * @see AdvancedSocketCreator
  * @see TcpClient
+ * @see HostAddress
  */
-public class HostAndPort implements DataSerializableFixedID {
-
-  private InetSocketAddress socketInetAddress;
+public class HostAndPort extends InetSocketWrapper implements DataSerializableFixedID {
 
   public HostAndPort() {
     // serialization constructor
   }
 
   public HostAndPort(String hostName, int port) {
-    if (hostName == null) {
-      socketInetAddress = new InetSocketAddress(port);
-    } else if (InetAddressValidator.getInstance().isValid(hostName)) {
-      // numeric address - use as-is
-      socketInetAddress = new InetSocketAddress(hostName, port);
-    } else {
-      // non-numeric address - resolve hostname when needed
-      socketInetAddress = InetSocketAddress.createUnresolved(hostName, port);
-    }
-  }
-
-  /**
-   * Returns an InetSocketAddress for this host and port. An attempt is made to resolve the
-   * host name but if resolution fails an unresolved InetSocketAddress is returned. This return
-   * value will not hold an InetAddress, so calling getAddress() on it will return null.
-   */
-  public InetSocketAddress getSocketInetAddress() {
-    if (socketInetAddress.isUnresolved()) {
-      // note that this leaves the InetAddress null if the hostname isn't resolvable
-      return new InetSocketAddress(socketInetAddress.getHostString(), socketInetAddress.getPort());
-    } else {
-      return this.socketInetAddress;
-    }
-  }
-
-  public String getHostName() {
-    return socketInetAddress.getHostString();
+    super(hostName, port);
   }
 
   public int getPort() {
-    return socketInetAddress.getPort();
-  }
-
-  @Override
-  public int hashCode() {
-    return socketInetAddress.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    HostAndPort that = (HostAndPort) o;
-    return Objects.equals(socketInetAddress, that.socketInetAddress);
-  }
-
-  @Override
-  public String toString() {
-    return getClass().getSimpleName() + "[" + socketInetAddress + "]";
-  }
-
-  public InetAddress getAddress() {
-    return getSocketInetAddress().getAddress();
+    return inetSocketAddress.getPort();
   }
 
   @Override
@@ -119,13 +66,13 @@ public class HostAndPort implements DataSerializableFixedID {
 
   @Override
   public void toData(DataOutput out, SerializationContext context) throws IOException {
-    if (socketInetAddress.isUnresolved()) {
+    if (inetSocketAddress.isUnresolved()) {
       out.writeByte(0);
       StaticSerialization.writeString(getHostName(), out);
       out.writeInt(getPort());
     } else {
       out.writeByte(1);
-      StaticSerialization.writeInetAddress(socketInetAddress.getAddress(), out);
+      StaticSerialization.writeInetAddress(inetSocketAddress.getAddress(), out);
       out.writeInt(getPort());
     }
   }
@@ -133,20 +80,20 @@ public class HostAndPort implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    InetAddress address = null;
+    InetAddress address;
     byte flags = in.readByte();
     if ((flags & 1) == 0) {
       String hostName = StaticSerialization.readString(in);
       int port = in.readInt();
       if (hostName == null || hostName.isEmpty()) {
-        socketInetAddress = new InetSocketAddress(port);
+        inetSocketAddress = new InetSocketAddress(port);
       } else {
-        socketInetAddress = InetSocketAddress.createUnresolved(hostName, port);
+        inetSocketAddress = InetSocketAddress.createUnresolved(hostName, port);
       }
     } else {
       address = StaticSerialization.readInetAddress(in);
       int port = in.readInt();
-      socketInetAddress = new InetSocketAddress(address, port);
+      inetSocketAddress = new InetSocketAddress(address, port);
     }
   }
 
@@ -154,6 +101,4 @@ public class HostAndPort implements DataSerializableFixedID {
   public KnownVersion[] getSerializationVersions() {
     return null;
   }
-
-
 }

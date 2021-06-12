@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.ha;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -43,7 +44,6 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -131,8 +131,9 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (waitFlag)
+        if (waitFlag) {
           fail("test failed");
+        }
       }
     });
 
@@ -140,8 +141,9 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
     client1.invoke(new CacheSerializableRunnable("validateDuplicates") {
       @Override
       public void run2() throws CacheException {
-        if (!isEventDuplicate)
+        if (!isEventDuplicate) {
           fail(" Not all duplicates received");
+        }
 
       }
     });
@@ -230,7 +232,7 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
     cache.createRegion(REGION_NAME, attrs);
     server = (CacheServerImpl) cache.addCacheServer();
     assertNotNull(server);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
@@ -288,8 +290,9 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
     @Override
     public void afterUpdate(EntryEvent event) {
       Object value = storeEvents.get(event.getKey());
-      if (value == null)
+      if (value == null) {
         isEventDuplicate = false;
+      }
       synchronized (dummyObj) {
         try {
           put_counter++;

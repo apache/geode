@@ -15,6 +15,7 @@
 package org.apache.geode.launchers;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,7 +34,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class ServerStartupRedundancyRecoveryNotificationTest {
@@ -44,10 +44,8 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
 
   @Rule
   public GfshRule gfshRule = new GfshRule();
-
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
   @Rule
   public TestName testName = new TestName();
 
@@ -62,10 +60,11 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
   @Before
   public void redundantRegionThatRequiresRedundancyRecovery() throws IOException {
     locatorFolder = temporaryFolder.newFolder(LOCATOR_NAME).toPath().toAbsolutePath();
-    server1Folder = temporaryFolder.newFolder(SERVER_1_NAME).toPath().toAbsolutePath();
+    server1Folder = temporaryFolder.newFolder(SERVER_1_NAME + "_before").toPath()
+        .toAbsolutePath();
     server2Folder = temporaryFolder.newFolder(SERVER_2_NAME).toPath().toAbsolutePath();
 
-    locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    locatorPort = getRandomAvailableTCPPort();
 
     String startLocatorCommand = String.join(" ",
         "start locator",
@@ -133,12 +132,13 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
   public void startupReportsOnlineOnlyAfterRedundancyRestored() throws IOException {
     String connectCommand = "connect --locator=localhost[" + locatorPort + "]";
     server1Folder =
-        temporaryFolder.newFolder(SERVER_1_NAME + "secondfolder").toPath().toAbsolutePath();
+        temporaryFolder.newFolder(SERVER_1_NAME + "_test").toPath().toAbsolutePath();
     startServer1Command = String.join(" ",
         "start server",
         "--name=" + SERVER_1_NAME,
         "--dir=" + server1Folder,
-        "--locators=localhost[" + locatorPort + "]");
+        "--locators=localhost[" + locatorPort + "]",
+        "--disable-default-server");
 
     gfshRule.execute(connectCommand, startServer1Command);
 

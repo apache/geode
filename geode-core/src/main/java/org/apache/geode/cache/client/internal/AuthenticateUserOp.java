@@ -181,8 +181,9 @@ public class AuthenticateUserOp {
         } else {
           cnx.getServer().setRequiresCredentials(true);
           byte[] decrypted = ((ConnectionImpl) cnx).decryptBytes(bytes);
-          ByteArrayDataInput dis = new ByteArrayDataInput(decrypted);
-          userId = dis.readLong();
+          try (ByteArrayDataInput dis = new ByteArrayDataInput(decrypted)) {
+            userId = dis.readLong();
+          }
         }
         if (needsServerLocation) {
           return new Object[] {cnx.getServer(), userId};

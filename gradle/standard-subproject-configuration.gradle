@@ -19,7 +19,7 @@ apply from: "${rootDir}/${scriptDir}/java.gradle"
 apply from: "${rootDir}/${scriptDir}/dependency-resolution.gradle"
 apply from: "${rootDir}/${scriptDir}/test.gradle"
 apply from: "${rootDir}/${scriptDir}/code-analysis.gradle"
-apply from: "${rootDir}/${scriptDir}/docker.gradle"
+apply from: "${rootDir}/${scriptDir}/multi-process-test.gradle"
 apply from: "${rootDir}/${scriptDir}/spotless.gradle"
 apply from: "${rootDir}/${scriptDir}/ide.gradle"
 apply plugin: 'com.github.ben-manes.versions'

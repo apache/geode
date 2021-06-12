@@ -18,21 +18,19 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import com.google.common.collect.Sets;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Level;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -50,127 +48,146 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({GfshTest.class, LoggingTest.class})
 public class LogExporterIntegrationTest {
-
-  private final LogFilter filter = new LogFilter(Level.INFO, null, null);
-
-  private LogExporter logExporter;
-  private Properties properties;
-
   @Rule
   public ServerStarterRule server = new ServerStarterRule();
 
+  private final LogFilter filter = new LogFilter(Level.INFO, null, null);
+
+  public Path serverFilesDir;
+
   @Before
-  public void before() {
-    properties = new Properties();
-    // make sure the server's working dir has no log files or stats file to begin with, since in
-    // some tests we are asserting on the # of log files and stats files created by the server
-    File workingDir = server.getWorkingDir();
-    Arrays.stream(workingDir.listFiles())
-        .filter(f -> (f.getName().endsWith(".log") || f.getName().endsWith(".gfs")))
-        .forEach(FileUtils::deleteQuietly);
+  public void createServerFilesDir() throws IOException {
+    // Name the directory after this test instance and the Gradle test worker, to ensure that tests
+    // running in parallel use different directories.
+    String testRunnerID = System.getProperty("org.gradle.test.worker", "standalone");
+    int testInstanceID = System.identityHashCode(this);
+    String className = getClass().getSimpleName();
+    String dirName = String.format("%s-%x-%s", className, testInstanceID, testRunnerID);
+    serverFilesDir = Files.createDirectories(Paths.get(dirName)).normalize().toAbsolutePath();
+  }
+
+  @After
+  public void deleteServerFilesDir() {
+    FileUtils.deleteQuietly(serverFilesDir.toFile());
   }
 
   @Test
   public void serverStartedWithWrongSuffix() throws Exception {
-    properties.setProperty(LOG_FILE, new File("test.txt").getAbsolutePath());
-    properties.setProperty(STATISTIC_ARCHIVE_FILE, "archive.archive");
-    server.withProperties(properties).startServer();
-    File serverWorkingDir = server.getWorkingDir();
+    String logFileNameWithWrongSuffix = "test.txt";
+    String statsFileNameWithWrongSuffix = "archive.archive";
 
-    logExporter = new LogExporter(filter, new File(serverWorkingDir, "test.log"),
-        new File(serverWorkingDir, "stats.gfs"));
-    List<Path> logFiles = logExporter.findLogFiles(serverWorkingDir.toPath());
-    assertThat(logFiles).isEmpty();
+    Path logFile = serverFilesDir.resolve(logFileNameWithWrongSuffix);
+    Path statsFile = serverFilesDir.resolve(statsFileNameWithWrongSuffix);
 
-    List<Path> statsFiles = logExporter.findStatFiles(serverWorkingDir.toPath());
-    assertThat(statsFiles).isEmpty();
+    server.withProperty(LOG_FILE, logFile.toString())
+        .withProperty(STATISTIC_ARCHIVE_FILE, statsFile.toString())
+        .startServer();
+
+    LogExporter logExporter = new LogExporter(filter, null, null);
+    List<Path> logFiles = logExporter.findLogFiles(serverFilesDir);
+
+    assertThat(logFiles)
+        .as("log files")
+        .isEmpty();
+
+    List<Path> statsFiles = logExporter.findStatFiles(serverFilesDir);
+    assertThat(statsFiles)
+        .as("stat files")
+        .isEmpty();
   }
 
   @Test
   public void serverStartedWithCorrectSuffix() throws Exception {
-    // ("relative log file is problematic in the test environment")
-    properties.setProperty(LOG_FILE, new File("test.log").getAbsolutePath());
-    properties.setProperty(STATISTIC_ARCHIVE_FILE, "archive.gfs");
-    server.withProperties(properties).startServer();
-    File serverWorkingDir = server.getWorkingDir();
+    String logFileName = "test.log";
+    String statsFileName = "archive.gfs";
+    Path logFile = serverFilesDir.resolve(logFileName);
+    Path statsFile = serverFilesDir.resolve(statsFileName);
 
-    logExporter = new LogExporter(filter, new File(serverWorkingDir, "test.log"),
-        new File(serverWorkingDir, "archive.gfs"));
-    List<Path> logFiles = logExporter.findLogFiles(serverWorkingDir.toPath());
-    assertThat(logFiles).hasSize(1);
-    assertThat(logFiles.get(0)).hasFileName("test.log");
+    server.withProperty(LOG_FILE, logFile.toString())
+        .withProperty(STATISTIC_ARCHIVE_FILE, statsFile.toString())
+        .startServer();
 
-    List<Path> statsFiles = logExporter.findStatFiles(serverWorkingDir.toPath());
-    assertThat(statsFiles).hasSize(1);
-    assertThat(statsFiles.get(0)).hasFileName("archive.gfs");
+    LogExporter logExporter = new LogExporter(filter, null, null);
+    List<Path> logFiles = logExporter.findLogFiles(serverFilesDir);
+
+    assertThat(logFiles)
+        .as("log files")
+        .hasSize(1);
+    assertThat(logFiles.get(0)).hasFileName(logFileName);
+
+    List<Path> statsFiles = logExporter.findStatFiles(serverFilesDir);
+    assertThat(statsFiles)
+        .as("stat files")
+        .hasSize(1);
+    assertThat(statsFiles.get(0)).hasFileName(statsFileName);
   }
 
   @Test
   @Ignore("GEODE-2574: fix .gz suffix")
   public void serverStartedWithGZSuffix() throws Exception {
-    properties.setProperty(LOG_FILE, "test.log.gz");
-    properties.setProperty(STATISTIC_ARCHIVE_FILE, "archive.gfs.gz");
-    server.withProperties(properties).startServer();
-    File serverWorkingDir = server.getWorkingDir();
+    Path gzLogFile = serverFilesDir.resolve("test.log.gz");
+    Path gzStatsFile = serverFilesDir.resolve("archive.gfs.gz");
 
-    logExporter = new LogExporter(filter, new File(serverWorkingDir, "test.log"),
-        new File(serverWorkingDir, "stats.gfs"));
-    List<Path> logFiles = logExporter.findLogFiles(serverWorkingDir.toPath());
-    assertThat(logFiles).hasSize(1);
+    server.withProperty(LOG_FILE, gzLogFile.toString())
+        .withProperty(STATISTIC_ARCHIVE_FILE, gzStatsFile.toString())
+        .startServer();
 
-    List<Path> statsFiles = logExporter.findStatFiles(serverWorkingDir.toPath());
-    assertThat(statsFiles).hasSize(1);
+    LogExporter logExporter = new LogExporter(filter, null, null);
+    List<Path> logFiles = logExporter.findLogFiles(serverFilesDir);
+
+    assertThat(logFiles)
+        .as("log files")
+        .hasSize(1);
+
+    List<Path> statsFiles = logExporter.findStatFiles(serverFilesDir);
+    assertThat(statsFiles)
+        .as("stats files")
+        .hasSize(1);
   }
 
   @Test
   public void testNoStatsFile() throws Throwable {
-    Path logsFile = Files.createTempFile("server", ".log");
-    properties.setProperty(LOG_FILE, logsFile.toString());
-    server.withProperties(properties).startServer();
+    Path logFile = serverFilesDir.resolve("server.log");
+
+    server.withProperty(LOG_FILE, logFile.toString())
+        .startServer();
 
     verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
   }
 
   @Test
-  public void testWithRelativeStatsFile() throws Throwable {
-    Path logsFile = Files.createTempFile("server", ".log");
-    // Path statsFile = Files.createTempFile("stats", ".gfs");
-    properties.setProperty(LOG_FILE, logsFile.toString());
-    properties.setProperty(STATISTIC_ARCHIVE_FILE, "stats.gfs");
-    server.withProperties(properties).startServer();
+  public void testWithRelativeFilePaths() throws Throwable {
+    Path serverWorkingDir = server.getWorkingDir().toPath().normalize().toAbsolutePath();
+    Path relativeLogFile = serverWorkingDir.relativize(serverFilesDir.resolve("server.log"));
+    Path relativeStatsFile = serverWorkingDir.relativize(serverFilesDir.resolve("stats.gfs"));
+
+    server.withProperty(LOG_FILE, relativeLogFile.toString())
+        .withProperty(STATISTIC_ARCHIVE_FILE, relativeStatsFile.toString())
+        .startServer();
 
     verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
   }
 
   @Test
-  public void testWithRelativeLogsFile() throws Throwable {
-    Path statsFile = Files.createTempFile("stats", ".gfs");
-    properties.setProperty(LOG_FILE, "sever.log");
-    properties.setProperty(STATISTIC_ARCHIVE_FILE, statsFile.toString());
-    server.withProperties(properties).startServer();
+  public void testWithAbsoluteFilePaths() throws Exception {
+    String logFileName = "server.log";
+    String statsFileName = "stats.gfs";
+    Path absoluteLogFile = serverFilesDir.resolve("logs").resolve(logFileName).toAbsolutePath();
+    Path absoluteStatsFile =
+        serverFilesDir.resolve("stats").resolve(statsFileName).toAbsolutePath();
+    Files.createDirectories(absoluteLogFile.getParent());
+    Files.createDirectories(absoluteLogFile.getParent());
 
-    verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
-  }
+    server.withProperty(LOG_FILE, absoluteLogFile.toString())
+        .withProperty(STATISTIC_ARCHIVE_FILE, absoluteStatsFile.toString())
+        .startServer();
 
-  @Test
-  public void testWithAbsoluteLogsStatsFile() throws Exception {
-    File logsDir = Files.createTempDirectory("logs").toFile();
-    File statsDir = Files.createTempDirectory("stats").toFile();
+    LogExporter logExporter =
+        new LogExporter(filter, absoluteLogFile.toFile(), absoluteStatsFile.toFile());
+    String exportedZip = logExporter.export().toString();
 
-    File logFile = new File(logsDir, "server.log");
-    File statsFile = new File(statsDir, "stats.gfs");
-
-    properties.setProperty(LOG_FILE, logFile.getAbsolutePath());
-    properties.setProperty(STATISTIC_ARCHIVE_FILE, statsFile.getAbsolutePath());
-
-    server.withProperties(properties).startServer();
-
-    logExporter = new LogExporter(filter, logFile, statsFile);
-    Path exportedZip = logExporter.export();
-    Set<String> actualFiles = getZipEntries(exportedZip.toString());
-    Set<String> expectedFiles = Sets.newHashSet("server.log", "stats.gfs");
-
-    assertThat(actualFiles).isEqualTo(expectedFiles);
+    assertThat(zipEntriesIn(exportedZip))
+        .containsExactlyInAnyOrder(logFileName, statsFileName);
   }
 
   private static void verifyExportLogsFunctionDoesNotBlowUp(Cache cache) throws Throwable {
@@ -186,7 +203,7 @@ public class LogExporterIntegrationTest {
     }
   }
 
-  private static Set<String> getZipEntries(String zipFilePath) throws IOException {
+  private static Set<String> zipEntriesIn(String zipFilePath) throws IOException {
     return new ZipFile(zipFilePath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
   }
 

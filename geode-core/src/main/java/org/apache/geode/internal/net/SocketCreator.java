@@ -15,8 +15,10 @@
 package org.apache.geode.internal.net;
 
 
+import static org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedKeyManager.newFileWatchingKeyManager;
+import static org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedTrustManager.newFileWatchingTrustManager;
+
 import java.io.Console;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
@@ -29,14 +31,6 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,7 +39,6 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SNIHostName;
 import javax.net.ssl.SNIServerName;
 import javax.net.ssl.SSLContext;
@@ -58,16 +51,13 @@ import javax.net.ssl.SSLProtocolException;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.StandardConstants;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509ExtendedKeyManager;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.DeprecatedButRequiredForBackwardsCompatibilityTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -77,12 +67,11 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.tcpserver.AdvancedSocketCreatorImpl;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
 import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.util.ArgumentRedactor;
-import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.net.SSLParameterExtension;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -155,8 +144,10 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * This method has migrated to LocalHostUtil but is kept in place here for
    * backward-compatibility testing.
    *
-   * @deprecated use LocalHostUtil.getLocalHost()
+   * @deprecated use {@link LocalHostUtil#getLocalHost()}
    */
+  @DeprecatedButRequiredForBackwardsCompatibilityTesting
+  @Deprecated
   public static InetAddress getLocalHost() throws UnknownHostException {
     return LocalHostUtil.getLocalHost();
   }
@@ -264,17 +255,24 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * @return new SSLContext configured using the given protocols & properties
    *
    * @throws GeneralSecurityException if security information can not be found
-   * @throws IOException if information can not be loaded
    */
-  private SSLContext createAndConfigureSSLContext() throws GeneralSecurityException, IOException {
+  private SSLContext createAndConfigureSSLContext() throws GeneralSecurityException {
 
     if (sslConfig.useDefaultSSLContext()) {
       return SSLContext.getDefault();
     }
 
     SSLContext newSSLContext = SSLUtil.getSSLContextInstance(sslConfig);
-    KeyManager[] keyManagers = getKeyManagers();
-    TrustManager[] trustManagers = getTrustManagers();
+
+    KeyManager[] keyManagers = null;
+    if (sslConfig.getKeystore() != null) {
+      keyManagers = new KeyManager[] {newFileWatchingKeyManager(sslConfig)};
+    }
+
+    TrustManager[] trustManagers = null;
+    if (sslConfig.getTruststore() != null) {
+      trustManagers = new TrustManager[] {newFileWatchingTrustManager(sslConfig)};
+    }
 
     newSSLContext.init(keyManagers, trustManagers, null /* use the default secure random */);
     return newSSLContext;
@@ -323,104 +321,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
   }
 
-  private TrustManager[] getTrustManagers()
-      throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-    TrustManager[] trustManagers;
-
-    String trustStoreType = sslConfig.getTruststoreType();
-    if (StringUtils.isEmpty(trustStoreType)) {
-      trustStoreType = KeyStore.getDefaultType();
-    }
-
-    KeyStore ts = KeyStore.getInstance(trustStoreType);
-    String trustStorePath = sslConfig.getTruststore();
-    FileInputStream fis = new FileInputStream(trustStorePath);
-    String passwordString = sslConfig.getTruststorePassword();
-    char[] password = null;
-    if (passwordString != null) {
-      if (passwordString.trim().equals("")) {
-        if (!StringUtils.isEmpty(passwordString)) {
-          String toDecrypt = "encrypted(" + passwordString + ")";
-          passwordString = PasswordUtil.decrypt(toDecrypt);
-          password = passwordString.toCharArray();
-        }
-      } else {
-        password = passwordString.toCharArray();
-      }
-    }
-    ts.load(fis, password);
-
-    // default algorithm can be changed by setting property "ssl.TrustManagerFactory.algorithm" in
-    // security properties
-    TrustManagerFactory tmf =
-        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-    tmf.init(ts);
-    trustManagers = tmf.getTrustManagers();
-    // follow the security tip in java doc
-    if (password != null) {
-      java.util.Arrays.fill(password, ' ');
-    }
-
-    return trustManagers;
-  }
-
-  private KeyManager[] getKeyManagers() throws KeyStoreException, IOException,
-      NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
-    if (sslConfig.getKeystore() == null) {
-      return null;
-    }
-
-    KeyManager[] keyManagers;
-    String keyStoreType = sslConfig.getKeystoreType();
-    if (StringUtils.isEmpty(keyStoreType)) {
-      keyStoreType = KeyStore.getDefaultType();
-    }
-    KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-    String keyStoreFilePath = sslConfig.getKeystore();
-    if (StringUtils.isEmpty(keyStoreFilePath)) {
-      keyStoreFilePath =
-          System.getProperty("user.home") + System.getProperty("file.separator") + ".keystore";
-    }
-
-
-    FileInputStream fileInputStream = new FileInputStream(keyStoreFilePath);
-    String passwordString = sslConfig.getKeystorePassword();
-    char[] password = null;
-    if (passwordString != null) {
-      if (passwordString.trim().equals("")) {
-        String encryptedPass = System.getenv("javax.net.ssl.keyStorePassword");
-        if (!StringUtils.isEmpty(encryptedPass)) {
-          String toDecrypt = "encrypted(" + encryptedPass + ")";
-          passwordString = PasswordUtil.decrypt(toDecrypt);
-          password = passwordString.toCharArray();
-        }
-      } else {
-        password = passwordString.toCharArray();
-      }
-    }
-    keyStore.load(fileInputStream, password);
-    // default algorithm can be changed by setting property "ssl.KeyManagerFactory.algorithm" in
-    // security properties
-    KeyManagerFactory keyManagerFactory =
-        KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-    keyManagerFactory.init(keyStore, password);
-    keyManagers = keyManagerFactory.getKeyManagers();
-    // follow the security tip in java doc
-    if (password != null) {
-      java.util.Arrays.fill(password, ' ');
-    }
-
-    KeyManager[] extendedKeyManagers = new KeyManager[keyManagers.length];
-
-    for (int i = 0; i < keyManagers.length; i++)
-
-    {
-      extendedKeyManagers[i] = new ExtendedAliasKeyManager(keyManagers[i], sslConfig.getAlias());
-    }
-
-    return extendedKeyManagers;
-  }
-
   /**
    * context for SSL socket factories
    */
@@ -438,100 +338,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
 
   public SSLConfig getSslConfig() {
     return sslConfig;
-  }
-
-  /**
-   * ExtendedAliasKeyManager supports use of certificate aliases in distributed system
-   * properties.
-   */
-  private static class ExtendedAliasKeyManager extends X509ExtendedKeyManager {
-
-    private final X509ExtendedKeyManager delegate;
-
-    private final String keyAlias;
-
-    /**
-     * Constructor.
-     *
-     * @param mgr The X509KeyManager used as a delegate
-     * @param keyAlias The alias name of the server's keypair and supporting certificate chain
-     */
-    ExtendedAliasKeyManager(KeyManager mgr, String keyAlias) {
-      this.delegate = (X509ExtendedKeyManager) mgr;
-      this.keyAlias = keyAlias;
-    }
-
-
-    @Override
-    public String[] getClientAliases(final String s, final Principal[] principals) {
-      return delegate.getClientAliases(s, principals);
-    }
-
-    @Override
-    public String chooseClientAlias(final String[] strings, final Principal[] principals,
-        final Socket socket) {
-      if (!StringUtils.isEmpty(this.keyAlias)) {
-        return keyAlias;
-      }
-      return delegate.chooseClientAlias(strings, principals, socket);
-    }
-
-    @Override
-    public String[] getServerAliases(final String s, final Principal[] principals) {
-      return delegate.getServerAliases(s, principals);
-    }
-
-    @Override
-    public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
-      if (!StringUtils.isEmpty(this.keyAlias)) {
-        PrivateKey key = this.delegate.getPrivateKey(this.keyAlias);
-        return getKeyAlias(keyType, key);
-      }
-      return this.delegate.chooseServerAlias(keyType, issuers, socket);
-
-    }
-
-    @Override
-    public X509Certificate[] getCertificateChain(final String s) {
-      if (!StringUtils.isEmpty(this.keyAlias)) {
-        return delegate.getCertificateChain(keyAlias);
-      }
-      return delegate.getCertificateChain(s);
-    }
-
-    @Override
-    public PrivateKey getPrivateKey(final String alias) {
-      return delegate.getPrivateKey(alias);
-    }
-
-    @Override
-    public String chooseEngineClientAlias(String[] keyTypes, Principal[] principals,
-        SSLEngine sslEngine) {
-      return delegate.chooseEngineClientAlias(keyTypes, principals, sslEngine);
-    }
-
-    @Override
-    public String chooseEngineServerAlias(final String keyType, final Principal[] principals,
-        final SSLEngine sslEngine) {
-      if (!StringUtils.isEmpty(this.keyAlias)) {
-        PrivateKey key = this.delegate.getPrivateKey(this.keyAlias);
-        return getKeyAlias(keyType, key);
-      }
-      return this.delegate.chooseEngineServerAlias(keyType, principals, sslEngine);
-
-    }
-
-    private String getKeyAlias(final String keyType, final PrivateKey key) {
-      if (key != null) {
-        if (key.getAlgorithm().equals(keyType)) {
-          return this.keyAlias;
-        } else {
-          return null;
-        }
-      } else {
-        return null;
-      }
-    }
   }
 
   /**
@@ -601,14 +407,13 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * @param socketChannel the socket's NIO channel
    * @param engine the sslEngine (see createSSLEngine)
    * @param timeout handshake timeout in milliseconds. No timeout if <= 0
-   * @param clientSocket set to true if you initiated the connect(), false if you accepted it
    * @param peerNetBuffer the buffer to use in reading data fron socketChannel. This should also be
    *        used in subsequent I/O operations
    * @return The SSLEngine to be used in processing data for sending/receiving from the channel
    */
-  public NioSslEngine handshakeSSLSocketChannel(SocketChannel socketChannel, SSLEngine engine,
+  public NioSslEngine handshakeSSLSocketChannel(SocketChannel socketChannel,
+      SSLEngine engine,
       int timeout,
-      boolean clientSocket,
       ByteBuffer peerNetBuffer,
       BufferPool bufferPool)
       throws IOException {
@@ -833,17 +638,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
 
     String hostName = addr.getHostName();
-    if (this.sslConfig.doEndpointIdentification()
-        && InetAddressValidator.getInstance().isValid(hostName)) {
-      // endpoint validation typically uses a hostname in the sniServer parameter that the handshake
-      // will compare against the subject alternative addresses in the server's certificate. Here
-      // we attempt to get a hostname instead of the proffered numeric address
-      try {
-        hostName = InetAddress.getByName(hostName).getCanonicalHostName();
-      } catch (UnknownHostException e) {
-        // ignore - we'll see what happens with endpoint validation using a numeric address...
-      }
-    }
     serverNames.add(new SNIHostName(hostName));
     modifiedParams.setServerNames(serverNames);
     return true;

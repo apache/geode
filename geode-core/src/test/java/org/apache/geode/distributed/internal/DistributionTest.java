@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.internal.DistributionImpl.EMPTY_MEMBER_ARRAY;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -41,11 +42,15 @@ import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -80,7 +85,6 @@ public class DistributionTest {
     membership = mock(Membership.class);
     distribution = new DistributionImpl(clusterDistributionManager,
         remoteTransportConfig, internalDistributedSystem, membership);
-
 
     Random r = new Random();
     mockMembers = new InternalDistributedMember[5];
@@ -203,5 +207,25 @@ public class DistributionTest {
     m.setRecipient(mockMembers[0]);
     distribution.send(emptyList, m);
     verify(membership, never()).send(any(), any());
+  }
+
+  @Test
+  public void testExceptionNestedOnStartConfigError() throws Exception {
+    Throwable exception = new MembershipConfigurationException("Test exception");
+    doThrow(exception).when(membership).start();
+
+    assertThatThrownBy(() -> distribution.start())
+        .isInstanceOf(GemFireConfigException.class)
+        .hasCause(exception);
+  }
+
+  @Test
+  public void testExceptionNestedOnStartStartupError() throws Exception {
+    Throwable exception = new MemberStartupException("Test exception");
+    doThrow(exception).when(membership).start();
+
+    assertThatThrownBy(() -> distribution.start())
+        .isInstanceOf(SystemConnectException.class)
+        .hasCause(exception);
   }
 }

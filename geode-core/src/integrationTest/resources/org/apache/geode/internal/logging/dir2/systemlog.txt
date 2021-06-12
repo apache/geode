@@ -69,7 +69,7 @@ Class Path:
   /var/vcap/data/gemfire-build/gemfire-test/resources/test/../../classes/hydraClasses
   /var/vcap/data/gemfire-build/lib/geode-dependencies.jar
   /var/vcap/data/gemfire-build/gemfire-test/resources/test/../../hydraAdditionalJars/android-json-0.0.20131108.vaadin1.jar
-  /var/vcap/data/gemfire-build/gemfire-test/resources/test/../../hydraAdditionalJars/awaitility-4.0.2.jar
+  /var/vcap/data/gemfire-build/gemfire-test/resources/test/../../hydraAdditionalJars/awaitility-4.1.0.jar
   /var/vcap/data/gemfire-build/gemfire-test/resources/test/../../hydraAdditionalJars/hamcrest-2.1.jar
 Library Path:
   /var/vcap/data/gemfire-build/lib

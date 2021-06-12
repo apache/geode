@@ -17,8 +17,6 @@ package org.apache.geode.rest.internal.web.controllers.support;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.util.StringUtils;
-
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -29,7 +27,7 @@ public class RestServersResultCollector<String, Object> implements ResultCollect
 
   @Override
   public void addResult(DistributedMember memberID, String result) {
-    if (!StringUtils.isEmpty(result)) {
+    if (result != null && result.toString().length() > 0) {
       resultList.add(result);
     }
   }

@@ -46,9 +46,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
@@ -67,6 +67,11 @@ public class ManagementUtils {
   public static Set<DistributedMember> getAllNormalMembers(InternalCache cache) {
     return new HashSet<DistributedMember>(
         cache.getDistributionManager().getNormalDistributionManagerIds());
+  }
+
+  public static Set<DistributedMember> getAllLocators(InternalCache cache) {
+    return new HashSet<DistributedMember>(
+        cache.getDistributionManager().getLocatorDistributionManagerIds());
   }
 
   /**

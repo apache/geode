@@ -42,20 +42,37 @@ function changes_for_path() {
       echo "Could not determine merge base. Exiting..."
       exit 1
     fi
-    git diff --name-only ${mergeBase} -- $path
+    git diff --name-only --diff-filter=ACMR ${mergeBase} -- $path
   popd >> /dev/null
 }
 
-UNIT_TEST_CHANGES=$(changes_for_path '*/src/test/java') || exit $?
-INTEGRATION_TEST_CHANGES=$(changes_for_path '*/src/integrationTest/java') || exit $?
-DISTRIBUTED_TEST_CHANGES=$(changes_for_path '*/src/distributedTest/java') || exit $?
-ACCEPTANCE_TEST_CHANGES=$(changes_for_path '*/src/acceptanceTest/java') || exit $?
-UPGRADE_TEST_CHANGES=$(changes_for_path '*/src/upgradeTest/java') || exit $?
+function save_classpath() {
+  echo "Building and saving classpath"
+  pushd geode >> /dev/null
+    BUILD_LOG=/tmp/classpath-build.log
+    # Do this twice since devBuild still dumps a warning string to stdout.
+    ./gradlew --console=plain -q compileTestJava compileIntegrationTestJava compileDistributedTestJava devBuild >${BUILD_LOG} 2>&1 || (cat ${BUILD_LOG}; false)
+    ./gradlew --console=plain -q printTestClasspath 2>/dev/null >/tmp/classpath.txt
+  popd >> /dev/null
+}
+
+function create_gradle_test_targets() {
+  echo $(${JAVA_HOME}/bin/java -cp $(cat /tmp/classpath.txt) org.apache.geode.test.util.StressNewTestHelper $@)
+}
+
+UNIT_TEST_CHANGES=$(changes_for_path ':(glob)**/src/test/java/**') || exit $?
+INTEGRATION_TEST_CHANGES=$(changes_for_path ':(glob)**/src/integrationTest/java/**') || exit $?
+DISTRIBUTED_TEST_CHANGES=$(changes_for_path ':(glob)**/src/distributedTest/java/**') || exit $?
+ACCEPTANCE_TEST_CHANGES=$(changes_for_path ':(glob)**/src/acceptanceTest/java/**') || exit $?
+UPGRADE_TEST_CHANGES=$(changes_for_path ':(glob)**/src/upgradeTest/java/**') || exit $?
 
 CHANGED_FILES_ARRAY=( $UNIT_TEST_CHANGES $INTEGRATION_TEST_CHANGES $DISTRIBUTED_TEST_CHANGES $ACCEPTANCE_TEST_CHANGES $UPGRADE_TEST_CHANGES )
 NUM_CHANGED_FILES=${#CHANGED_FILES_ARRAY[@]}
 
-echo "${NUM_CHANGED_FILES} changed tests"
+echo "${NUM_CHANGED_FILES} changed test files"
+for T in ${CHANGED_FILES_ARRAY[@]}; do
+  echo "  ${T}"
+done
 
 if [[  "${NUM_CHANGED_FILES}" -eq 0 ]]
 then
@@ -63,36 +80,22 @@ then
   exit 0
 fi
 
-if [[ "${NUM_CHANGED_FILES}" -gt 25 ]]
+save_classpath
+
+TEST_TARGETS=$(create_gradle_test_targets ${CHANGED_FILES_ARRAY[@]})
+TEST_COUNT=$(echo ${TEST_TARGETS} | sed -e 's/.*testCount=\([0-9]*\).*/\1/g')
+
+if [[ "${NUM_CHANGED_FILES}" -ne "${TEST_COUNT}" ]]
 then
-  echo "${NUM_CHANGED_FILES} is too many changed tests to stress test. Allowing this job to pass without stress testing."
-  exit 0
+  echo ""
+  echo "${TEST_COUNT} test files considered for stress test after pre-processing the initial set"
 fi
 
-TEST_TARGETS=""
-
-function append_to_test_targets() {
-  local target="$1"
-  local files="$2"
-  if [[ -n "$files" ]]
-  then
-    TEST_TARGETS="$TEST_TARGETS $target"
-    for FILENAME in $files
-    do
-      SHORT_NAME=$(basename $FILENAME)
-      SHORT_NAME="${SHORT_NAME%.java}"
-      TEST_TARGETS="$TEST_TARGETS --tests $SHORT_NAME"
-    done
-  fi
-}
-
-append_to_test_targets "repeatUnitTest" "$UNIT_TEST_CHANGES"
-append_to_test_targets "repeatIntegrationTest" "$INTEGRATION_TEST_CHANGES"
-append_to_test_targets "repeatDistributedTest" "$DISTRIBUTED_TEST_CHANGES"
-append_to_test_targets "repeatUpgradeTest" "$UPGRADE_TEST_CHANGES"
-
-# Acceptance tests cannot currently run in parallel, so do not stress these tests
-#append_to_test_targets "repeatAcceptanceTest" "$ACCEPTANCE_TEST_CHANGES"
+if [[ "${TEST_COUNT}" -gt 35 ]]
+then
+  echo "${TEST_COUNT} is too many changed tests to stress test. Allowing this job to pass without stress testing."
+  exit 0
+fi
 
 export GRADLE_TASK="compileTestJava compileIntegrationTestJava compileDistributedTestJava $TEST_TARGETS"
 export GRADLE_TASK_OPTIONS="-Prepeat=50 -PfailOnNoMatchingTests=false"

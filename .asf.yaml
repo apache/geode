@@ -7,8 +7,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+github:
+  description: "Apache Geode"
+  homepage: https://geode.apache.org/
+  labels:
+    - geode
+    - datagrid
+    - apache
+  features:
+    # To enable wiki for documentation
+    wiki: false
+    # To enable issue management
+    issues: false
+    # To enable projects for project management boards
+    projects: true
+
+  enabled_merge_buttons:
+    # enable squash button:
+    squash:  true
+    # enable merge button:
+    merge:  true
+    # enable rebase button:
+    rebase:  true
+
+  protected_branches:
+    develop:
+      required_status_checks:
+        # strict means "Require branches to be up to date before merging".
+        strict: false
+        # contexts are the names of checks that must pass
+        contexts:
+          - concourse-ci/api-check-test-openjdk11
+          - concourse-ci/build
+          - concourse-ci/unit-test-openjdk11
+          - concourse-ci/unit-test-openjdk8
+
+      required_pull_request_reviews:
+        dismiss_stale_reviews: false
+        require_code_owner_reviews: true
+        required_approving_review_count: 1
+
+      required_signatures: false
+
 notifications:
     commits: commits@geode.apache.org
     issues: issues@geode.apache.org
     pullrequests: notifications@geode.apache.org
-    jira_options: link label comment
+    jira_options: link label

@@ -90,7 +90,6 @@ import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
-import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.control.ResourceListener;
@@ -728,16 +727,19 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
               if (owners.contains(server1Id)) {
                 keyFoundOnSickMember = true;
                 try {
-                  if (useTx)
+                  if (useTx) {
                     getCache().getCacheTransactionManager().begin();
+                  }
                   pr.getCache().getLogger().fine("SWAP:putting in tx:" + useTx);
                   pr.put(key, "value");
-                  if (useTx)
+                  if (useTx) {
                     getCache().getCacheTransactionManager().commit();
+                  }
                 } catch (LowMemoryException ex) {
                   caughtException = true;
-                  if (useTx)
+                  if (useTx) {
                     getCache().getCacheTransactionManager().rollback();
+                  }
                 }
               } else {
                 // puts on healthy member should continue
@@ -1588,12 +1590,12 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         WaitCriterion wc = null;
-        Set<ResourceListener> listeners = getGemfireCache().getInternalResourceManager()
+        Set<ResourceListener<?>> listeners = getGemfireCache().getInternalResourceManager()
             .getResourceListeners(ResourceType.HEAP_MEMORY);
         TestMemoryThresholdListener tmp_listener = null;
-        Iterator<ResourceListener> it = listeners.iterator();
+        Iterator<ResourceListener<?>> it = listeners.iterator();
         while (it.hasNext()) {
-          ResourceListener<MemoryEvent> l = it.next();
+          ResourceListener<?> l = it.next();
           if (l instanceof TestMemoryThresholdListener) {
             tmp_listener = (TestMemoryThresholdListener) l;
             break;
@@ -1747,10 +1749,10 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
       // Reset CRITICAL_UP by informing all that heap usage is now 1 byte (0 would disable).
       irm.getHeapMonitor().updateStateAndSendEvent(1, "test");
-      Set<ResourceListener> listeners = irm.getResourceListeners(ResourceType.HEAP_MEMORY);
-      Iterator<ResourceListener> it = listeners.iterator();
+      Set<ResourceListener<?>> listeners = irm.getResourceListeners(ResourceType.HEAP_MEMORY);
+      Iterator<ResourceListener<?>> it = listeners.iterator();
       while (it.hasNext()) {
-        ResourceListener<MemoryEvent> l = it.next();
+        ResourceListener<?> l = it.next();
         if (l instanceof TestMemoryThresholdListener) {
           ((TestMemoryThresholdListener) l).resetThresholdCalls();
         }

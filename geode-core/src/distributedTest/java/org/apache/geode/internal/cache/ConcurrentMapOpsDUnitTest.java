@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWOR
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -62,7 +63,6 @@ import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -172,7 +172,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         } else {
           getCache().createRegionFactory(RegionShortcut.PARTITION).create(PR_REG_NAME);
         }
-        int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+        int port = getRandomAvailableTCPPort();
         CacheServer s = getCache().addCacheServer();
         s.setPort(port);
         s.start();
@@ -1456,8 +1456,9 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public boolean equals(Object obj) {
-      if (!(obj instanceof CustomerDelta))
+      if (!(obj instanceof CustomerDelta)) {
         return false;
+      }
       CustomerDelta other = (CustomerDelta) obj;
       return this.name.equals(other.name) && this.address.equals(other.address);
     }

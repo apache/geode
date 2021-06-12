@@ -20,11 +20,12 @@ set -e
 usage() {
     echo "Usage: set_versions.sh -v version_number [-s]"
     echo "  -v   The #.#.# version number for the next release"
-    echo "  -s   append -build.0 to version number"
+    echo "  -s   configure examples to use latest snapshot instead of release"
     exit 1
 }
 
 FULL_VERSION=""
+
 
 while getopts ":v:snw:" opt; do
   case ${opt} in
@@ -32,7 +33,7 @@ while getopts ":v:snw:" opt; do
       VERSION=$OPTARG
       ;;
     s )
-      BUILDSUFFIX="-build.0"
+      EXAMPLES_USE_SNAPSHOTS=true
       ;;
     n )
       NOPUSH=true
@@ -56,9 +57,10 @@ if ! [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     exit 1
 fi
 
+BUILDSUFFIX="-build.0"
 VERSION_MM=${VERSION%.*}
 
-if [ -n "${BUILDSUFFIX}" ] ; then
+if [ "${EXAMPLES_USE_SNAPSHOTS}" = "true" ] ; then
   GEODEFOREXAMPLES="${VERSION_MM}.+"
 else
   GEODEFOREXAMPLES="${VERSION}"
@@ -103,14 +105,14 @@ fi
 function failMsg2 {
   errln=$1
   echo "ERROR: set_versions script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 74-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 76-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg2 $LINENO' ERR
 
 
 echo ""
 echo "============================================================"
-echo "Setting Geode versions and updating expected pom"
+echo "Setting Geode versions"
 echo "============================================================"
 set -x
 cd ${GEODE}
@@ -119,12 +121,23 @@ set +x
 #version = 1.13.0-build.0
 sed -e "s/^version =.*/version = ${VERSION}${BUILDSUFFIX}/" -i.bak gradle.properties
 
-rm gradle.properties.bak
+#  product_version: '1.13'
+sed -E \
+    -e "s#product_version: '[0-9.]+'#product_version: '${VERSION_MM}'#" \
+    -i.bak geode-book/config.yml
+
+#git clone -b branch --depth 1 https://github.com/apache/geode.git geode
+sed -e "s#clone -b [ds][evlopurt/0-9.]*#clone -b support/${VERSION_MM}#" \
+    -i.bak \
+    ci/docker/cache_dependencies.sh \
+    ci/images/google-geode-builder/scripts/cache_dependencies.sh
+
+rm -f gradle.properties.bak geode-book/config.yml.bak ci/docker/cache_dependencies.sh.bak ci/images/google-geode-builder/scripts/cache_dependencies.sh.bak
 set -x
-git add gradle.properties
+git add gradle.properties geode-book/config.yml
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
-  git commit -m "Bumping version to ${VERSION}${BUILDSUFFIX}"
+  git commit -m "Bumping version to ${VERSION}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x
@@ -150,7 +163,7 @@ set -x
 git add .
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
-  git commit -m "Bumping version to ${VERSION}${BUILDSUFFIX}"
+  git commit -m "Bumping version to ${VERSION}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x
@@ -158,6 +171,6 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Done setting support versions!"
+echo 'Done setting support versions!'
 echo "============================================================"
 cd ${GEODE}/../..

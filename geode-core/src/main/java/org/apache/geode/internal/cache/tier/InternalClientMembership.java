@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,6 +39,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
@@ -255,8 +258,9 @@ public class InternalClientMembership {
    */
   public static Map getStatusForAllClientsIgnoreSubscriptionStatus() {
     Map result = new HashMap();
-    if (ClientHealthMonitor.getInstance() != null)
+    if (ClientHealthMonitor.getInstance() != null) {
       result = ClientHealthMonitor.getInstance().getStatusForAllClients();
+    }
 
     return result;
   }
@@ -279,8 +283,9 @@ public class InternalClientMembership {
     }
 
     // Fill in the missing info, if HealthMonitor started
-    if (ClientHealthMonitor.getInstance() != null)
+    if (ClientHealthMonitor.getInstance() != null) {
       ClientHealthMonitor.getInstance().fillInClientInfo(allClients);
+    }
 
     return allClients;
   }
@@ -314,11 +319,11 @@ public class InternalClientMembership {
     Iterator pools = poolMap.values().iterator();
     while (pools.hasNext()) {
       PoolImpl pi = (PoolImpl) pools.next();
-      Map/* <ServerLocation,Endpoint> */ eps = pi.getEndpointMap();
+      Map/* <ServerLocationAndMemberId,Endpoint> */ eps = pi.getEndpointMap();
       Iterator it = eps.entrySet().iterator();
       while (it.hasNext()) {
         Map.Entry entry = (Map.Entry) it.next();
-        ServerLocation loc = (ServerLocation) entry.getKey();
+        ServerLocation loc = ((ServerLocationAndMemberId) entry.getKey()).getServerLocation();
         org.apache.geode.cache.client.internal.Endpoint ep =
             (org.apache.geode.cache.client.internal.Endpoint) entry.getValue();
         String server = loc.getHostName() + "[" + loc.getPort() + "]";
@@ -533,7 +538,8 @@ public class InternalClientMembership {
     // protected by calling method synchronized on systems
     if (executor == null) {
       executor =
-          LoggingExecutors.newFixedThreadPoolWithTimeout("ClientMembership Event Invoker", 1, 15);
+          LoggingExecutors.newFixedThreadPoolWithTimeout(1, 15, SECONDS,
+              "ClientMembership Event Invoker");
     }
   }
 

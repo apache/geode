@@ -1,0 +1,88 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# This file follows the same format as CODEOWNERS, but adds you as
+# an optional reviewer rather than a required code owner reviewer.
+# Draft PRs are ignored until ~15 minutes after Ready For Review.
+# CODEWATCHERS is a bot; the bot owner will appear as the requestor.
+# You must be a Geode committer to use CODEWATCHERS.
+
+
+#-----------------------------------------------------------------
+# CODEOWNERS and .asf.yml
+#-----------------------------------------------------------------
+CODEOWNERS                                                        @onichols-pivotal @rhoughton-pivot
+CODEWATCHERS                                                      @onichols-pivotal @rhoughton-pivot
+.asf.yaml                                                         @onichols-pivotal @rhoughton-pivot
+
+
+#-----------------------------------------------------------------
+# Documentation
+#-----------------------------------------------------------------
+dev-tools/docker/docs/**                                          @alb3rtobr
+geode-book/**                                                     @davebarnes97 @alb3rtobr
+geode-docs/**                                                     @davebarnes97 @alb3rtobr
+geode-book/config.yml                                             @onichols-pivotal @alb3rtobr
+geode-book/redirects.rb                                           @onichols-pivotal
+LICENSE                                                           @metatype
+NOTICE                                                            @metatype
+
+#-----------------------------------------------------------------
+# Jar Deployment
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/**/classloader/**                  @kohlmu-pivotal
+geode-core/**/org/apache/geode/**/deployment/**                   @kohlmu-pivotal
+geode-deployment/**                                               @kohlmu-pivotal
+geode-core/**/org/apache/geode/cache/internal/execute/*           @kohlmu-pivotal
+
+#-----------------------------------------------------------------
+# Client/server messaging and cache operations
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/cache/client/**                    @albertogpz
+geode-core/**/org/apache/geode/cache/server/**                    @albertogpz
+geode-core/**/org/apache/geode/internal/cache/tier/**             @albertogpz
+
+#-----------------------------------------------------------------
+# WAN messaging and queues
+#-----------------------------------------------------------------
+geode-wan/**                                                      @albertogpz @alb3rtobr
+geode-core/**/org/apache/geode/cache/asyncqueue/**                @albertogpz @alb3rtobr
+geode-core/**/org/apache/geode/cache/wan/**                       @albertogpz @alb3rtobr
+geode-core/**/org/apache/geode/internal/cache/wan/**              @albertogpz @alb3rtobr
+
+#-----------------------------------------------------------------
+# Metrics & Statistics
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/statistics/**             @mkevo
+geode-core/**/org/apache/geode/internal/stats50/**                @mkevo
+geode-core/**/org/apache/geode/metrics/**                         @mkevo
+
+#-----------------------------------------------------------------
+# Querying
+#-----------------------------------------------------------------
+geode-cq/**                                                       @mkevo
+geode-core/**/org/apache/geode/cache/query/**                     @mkevo
+
+#-----------------------------------------------------------------
+# Misc
+#-----------------------------------------------------------------
+geode-core/**/org/apache/geode/internal/cache/properties.md       @alb3rtobr
+
+#-----------------------------------------------------------------
+# Build and tooling
+#-----------------------------------------------------------------
+dev-tools/release/**                                              @demery-pivotal

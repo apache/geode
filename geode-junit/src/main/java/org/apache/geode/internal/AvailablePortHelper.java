@@ -15,14 +15,14 @@
 package org.apache.geode.internal;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
-import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
-import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
-import static org.apache.geode.internal.AvailablePort.MULTICAST;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getAddress;
-import static org.apache.geode.internal.AvailablePort.isPortAvailable;
-import static org.apache.geode.internal.AvailablePort.isPortKeepable;
+import static org.apache.geode.distributed.internal.membership.api.MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.internal.membership.utils.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
+import static org.apache.geode.internal.membership.utils.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
+import static org.apache.geode.internal.membership.utils.AvailablePort.MULTICAST;
+import static org.apache.geode.internal.membership.utils.AvailablePort.SOCKET;
+import static org.apache.geode.internal.membership.utils.AvailablePort.getAddress;
+import static org.apache.geode.internal.membership.utils.AvailablePort.isPortAvailable;
+import static org.apache.geode.internal.membership.utils.AvailablePort.isPortKeepable;
 
 import java.util.List;
 import java.util.Random;
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.apache.geode.internal.AvailablePort.Keeper;
+import org.apache.geode.internal.membership.utils.AvailablePort.Keeper;
 
 /**
  * Methods for acquiring one or more available ports. Despite "random" in the names, these methods

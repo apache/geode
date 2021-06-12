@@ -86,8 +86,12 @@ public class LuceneFunctionSecurityTest {
     for (Function function : functions) {
       Collection<ResourcePermission> permissions = function
           .getRequiredPermissions(REGION_NAME);
-      if (permissions.contains(ResourcePermissions.DATA_READ)) {
-        functionsWithDataRead.add(function);
+      for (ResourcePermission permission : permissions) {
+        if (permission.getResource().equals(ResourcePermission.Resource.DATA)
+            && permission.getOperation().equals(ResourcePermission.Operation.READ)) {
+          functionsWithDataRead.add(function);
+          break;
+        }
       }
     }
   }

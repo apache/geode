@@ -78,7 +78,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.lang.JavaWorkarounds;
+import org.apache.geode.internal.lang.utils.JavaWorkarounds;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -1212,8 +1212,9 @@ public class CqServiceImpl implements CqService {
       CacheProfile cf;
       if (i < 0) {
         cf = (CacheProfile) localProfile;
-        if (cf == null)
+        if (cf == null) {
           continue;
+        }
       } else {
         cf = (CacheProfile) profiles[i];
       }
@@ -1279,8 +1280,9 @@ public class CqServiceImpl implements CqService {
       CacheProfile cf;
       if (i < 0) {
         cf = (CacheProfile) localProfile;
-        if (cf == null)
+        if (cf == null) {
           continue;
+        }
       } else {
         cf = (CacheProfile) profiles[i];
       }

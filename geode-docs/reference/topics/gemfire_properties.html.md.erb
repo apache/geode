@@ -117,7 +117,7 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr>
 <td>cluster-configuration-dir</td>
-<td>This property specifies the directory in which the cluster configuration related disk-store and artifacts are stored. This property is only applicable to dedicated locators that have &quot;enable-cluster-configuration&quot; set to true.</td>
+<td><b>Deprecated.</b> Use the gfsh import/export cluster-configuration command instead. This property specifies the directory in which the cluster configuration related disk-store and artifacts are stored. This property is only applicable to dedicated locators that have &quot;enable-cluster-configuration&quot; set to true.</td>
 <td>L</td>
 <td><em>not set</em></td>
 </tr>
@@ -129,9 +129,9 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr>
 <td>conserve-sockets</td>
-<td>Specifies whether sockets are shared by the system member’s threads. If true, threads share, and a minimum number of sockets are used to connect to the cluster. If false, every application thread has its own sockets for distribution purposes. You can override this setting for individual threads inside your application. Where possible, it is better to set conserve-sockets to true and enable the use of specific extra sockets in the application code if needed. WAN deployments increase the messaging demands on a <%=vars.product_name%> system. To avoid hangs related to WAN messaging, always set <code class="ph codeph">conserve-sockets=false</code> for <%=vars.product_name%> members that participate in a WAN deployment.</td>
+<td>Specifies whether sockets are shared by the system member’s threads. If true, threads share, and a minimum number of sockets are used to connect to the cluster. If false, every application thread has its own sockets for distribution purposes. You can override this setting for individual threads inside your application. WAN deployments increase the messaging demands on a <%=vars.product_name%> system. To avoid hangs related to WAN messaging, always use the default setting of <code class="ph codeph">conserve-sockets=false</code> for <%=vars.product_name%> members that participate in a WAN deployment.</td>
 <td>S, L</td>
-<td>true</td>
+<td>false</td>
 </tr>
 <tr>
 <td>delta-propagation</td>
@@ -387,18 +387,18 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <tr>
 <td>mcast-port</td>
 <td>Port used, along with the mcast-address, for multicast communication with other members of the cluster. If zero, multicast is disabled.
+Valid values are in the range 0..65535.
 <div class="note note">
 <strong>Note:</strong>
 <p>Select different multicast addresses and ports for different clusters. Do not just use different addresses. Some operating systems may not keep communication separate between systems that use unique addresses but the same port number.</p>
 </div>
-<p>Valid values are in the range 0..65535.</p>
 <div class="note note">
 <strong>Note:</strong>
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div>
-<p>If you have values specified for the <code class="ph codeph">locators</code> property, the <code class="ph codeph">mcast-port</code> property defaults to 0.</p></td>
+</td>
 <td>S, L</td>
-<td>10334</td>
+<td>0</td>
 </tr>
 <tr>
 <td>mcast-recv-buffer-size</td>
@@ -487,28 +487,28 @@ off-heap-memory-size=120g</code></pre></td>
 <td><em>not set</em></td>
 </tr>
 <tr>
-<td>redis-bind-address</td>
-<td>Specifies the address on which the Redis API for <%=vars.product_name%> is listening. If set to the empty string or this property is not
+<td>compatible-with-redis-bind-address</td>
+<td>Specifies the address on which the <%=vars.product_name%> APIs compatible with Redis is listening. If set to the empty string or this property is not
 specified, the server listens on all local addresses.
 <td>S</td>
 <td><code>""</code></td>
 </tr>
 <tr>
-<td>redis-enabled</td>
-<td>When the default value of false, the Redis API for <%=vars.product_name%> is not available.  Set
-to true to enable the Redis API for <%=vars.product_name%>.</td>
+<td>compatible-with-redis-enabled</td>
+<td>When the default value of false, the <%=vars.product_name%> APIs compatible with Redis are not available.  Set
+to true to enable the <%=vars.product_name%> APIs compatible with Redis.</td>
 <td>S</td>
 <td>false</td>
 </tr>
 <tr>
-<td>redis-password</td>
+<td>compatible-with-redis-password</td>
 <td>Specifies the password that the server uses when a client attempts to authenticate.</td>
 <td>S</td>
 <td>no password set</td>
 </tr>
 <tr>
-<td>redis-port</td>
-<td>Specifies the port on which the server listens for Redis API for <%=vars.product_name%> connections. A value of 0 selects a random port.</td>
+<td>compatible-with-redis-port</td>
+<td>Specifies the port on which the server listens for <%=vars.product_name%> APIs compatible with Redis connections. A value of 0 selects a random port.</td>
 <td>S</td>
 <td>6379</td>
 </tr>
@@ -568,7 +568,7 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 </tr>
 <tr>
 <td>security-client-auth-init</td>
-<td>Used for authentication. Static creation method returning an <code class="ph codeph">AuthInitialize</code> object, which obtains credentials for peers in a cluster. The obtained credentials should be acceptable to the <code class="ph codeph">Authenticator</code> specified through the security-peer-authenticator property on the peers.</td>
+<td>Used for authentication. Defines the fully-qualified static method that instantiates and returns the <code class="ph codeph">AuthInitialize</code> object. <code class="ph codeph">AuthInitialize</code> is responsible for producing the necessary credentials for client authentication.</td>
 <td>S, L</td>
 <td><em>not set</em></td>
 </tr>
@@ -606,7 +606,7 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 </tr>
 <tr>
 <td>security-peer-auth-init</td>
-<td><b>Deprecated.</b> Used with authentication. Static creation method returning an <code class="ph codeph">AuthInitialize</code> object, which obtains credentials for peers in a cluster. The obtained credentials should be acceptable to the <code class="ph codeph">Authenticator</code> specified through the security-peer-authenticator property on the peers.</td>
+<td>Used for authentication. Defines the fully-qualified static method that instantiates and returns the <code class="ph codeph">AuthInitialize</code> object. <code class="ph codeph">AuthInitialize</code> is responsible for producing the necessary credentials for peer authentication.</td>
 <td>S, L</td>
 <td><em>not set</em></td>
 </tr>

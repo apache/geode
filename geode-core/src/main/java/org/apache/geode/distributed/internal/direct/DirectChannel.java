@@ -49,6 +49,7 @@ import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.tcp.BaseMsgStreamer;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.Connection;
@@ -71,6 +72,8 @@ public class DirectChannel {
   /** this is the conduit used for communications */
   private final transient TCPConduit conduit;
   private final ClusterDistributionManager dm;
+  private final DMStats stats;
+  private final BufferPool bufferPool;
 
   private volatile boolean disconnected = true;
 
@@ -112,6 +115,8 @@ public class DirectChannel {
       throws ConnectionException {
     this.receiver = listener;
     this.dm = dm;
+    this.stats = dm.getStats();
+    this.bufferPool = new BufferPool(stats);
 
     DistributionConfig dc = dm.getConfig();
     this.address = initAddress(dc);
@@ -137,7 +142,7 @@ public class DirectChannel {
       props.setProperty("membership_port_range_start", "" + range[0]);
       props.setProperty("membership_port_range_end", "" + range[1]);
 
-      this.conduit = new TCPConduit(mgr, port, address, isBindAddress, this, props);
+      this.conduit = new TCPConduit(mgr, port, address, isBindAddress, this, bufferPool, props);
       disconnected = false;
       disconnectCompleted = false;
       logger.info("GemFire P2P Listener started on {}",
@@ -184,6 +189,13 @@ public class DirectChannel {
 
 
   /**
+   * Returns the buffer pool used for direct-memory byte buffers in this DirectChannel
+   */
+  public BufferPool getBufferPool() {
+    return bufferPool;
+  }
+
+  /**
    * Sends a msg to a list of destinations. This code does some special optimizations to stream
    * large messages
    *
@@ -199,7 +211,7 @@ public class DirectChannel {
       InternalDistributedMember[] p_destinations,
       final DistributionMessage msg, long ackWaitThreshold, long ackSAThreshold)
       throws ConnectExceptions, NotSerializableException {
-    InternalDistributedMember destinations[] = p_destinations;
+    InternalDistributedMember[] destinations = p_destinations;
 
     // Collects connect exceptions that happened during previous attempts to send.
     // These represent members we are not able to distribute to.
@@ -264,7 +276,7 @@ public class DirectChannel {
           retryInfo = null;
           retry = true;
         }
-        final List cons = new ArrayList(destinations.length);
+        final List<Connection> cons = new ArrayList<>(destinations.length);
         ConnectExceptions ce = getConnections(mgr, msg, destinations, orderedMsg, retry, ackTimeout,
             ackSDTimeout, cons);
 
@@ -287,15 +299,15 @@ public class DirectChannel {
           return bytesWritten;
         }
 
-        if (retry && logger.isDebugEnabled()) {
-          logger.debug("Retrying send ({}{}) to {} peers ({}) via tcp/ip",
-              msg, cons.size(), cons);
+        if (logger.isDebugEnabled()) {
+          logger.debug("{} on these {} connections: {}",
+              (retry ? "Retrying send" : "Sending"), cons.size(), cons);
         }
         DMStats stats = getDMStats();
         List<?> sentCons; // used for cons we sent to this time
 
         final BaseMsgStreamer ms =
-            MsgStreamer.create(cons, msg, directReply, stats, getConduit().getBufferPool());
+            MsgStreamer.create(cons, msg, directReply, stats, bufferPool);
         try {
           startTime = 0;
           if (ackTimeout > 0) {
@@ -439,8 +451,9 @@ public class DirectChannel {
         if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
           logger.trace(LogMarker.DM_VERBOSE, "Not a member: {}", destination);
         }
-        if (ce == null)
+        if (ce == null) {
           ce = new ConnectExceptions();
+        }
         ce.addFailure(destination, new ShunnedMemberException(
             String.format("Member is being shunned: %s", destination)));
       } else {
@@ -459,8 +472,9 @@ public class DirectChannel {
             directMessage.registerProcessor();
           }
         } catch (IOException ex) {
-          if (ce == null)
+          if (ce == null) {
             ce = new ConnectExceptions();
+          }
           ce.addFailure(destination, ex);
         }
       }
@@ -520,11 +534,7 @@ public class DirectChannel {
    * Returns null if no stats available.
    */
   public DMStats getDMStats() {
-    if (dm != null) {
-      return dm.getStats(); // fix for bug#34004
-    } else {
-      return null;
-    }
+    return stats;
   }
 
   /**
@@ -724,8 +734,9 @@ public class DirectChannel {
    */
   public void waitForChannelState(DistributedMember member, Map channelState)
       throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     TCPConduit tc = this.conduit;
     if (tc != null) {
       tc.waitForThreadOwnedOrderedConnectionState(member, channelState);

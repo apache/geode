@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.beans;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -209,23 +210,34 @@ public class QueryDataFunction implements Function, InternalEntity {
    */
   protected static String applyLimitClause(final String query, int limit,
       final int queryResultSetLimit) {
+    String[] lines = query.split(System.lineSeparator());
+    List<String> queryStrings = new ArrayList();
+    for (String line : lines) {
+      // remove the comments
+      if (!line.startsWith("--") && line.length() > 0) {
+        queryStrings.add(line);
+      }
+    }
+    if (queryStrings.isEmpty()) {
+      throw new IllegalArgumentException("invalid query: " + query);
+    }
 
-    Matcher matcher = SELECT_EXPR_PATTERN.matcher(query);
+    String queryString = String.join(" ", queryStrings);
+
+    Matcher matcher = SELECT_EXPR_PATTERN.matcher(queryString);
 
     if (matcher.matches()) {
-      Matcher limit_matcher = SELECT_WITH_LIMIT_EXPR_PATTERN.matcher(query);
+      Matcher limit_matcher = SELECT_WITH_LIMIT_EXPR_PATTERN.matcher(queryString);
       boolean queryAlreadyHasLimitClause = limit_matcher.matches();
 
       if (!queryAlreadyHasLimitClause) {
         if (limit == 0) {
           limit = queryResultSetLimit;
         }
-        String result = query;
-        result += " LIMIT " + limit;
-        return result;
+        return queryString + " LIMIT " + limit;
       }
     }
-    return query;
+    return queryString;
   }
 
 

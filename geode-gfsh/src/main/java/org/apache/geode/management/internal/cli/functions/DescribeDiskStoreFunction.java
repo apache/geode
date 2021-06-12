@@ -54,16 +54,19 @@ public class DescribeDiskStoreFunction implements InternalFunction<String> {
 
   private static final Logger logger = LogService.getLogger();
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.DescribeDiskStoreFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
+
   protected static void assertState(final boolean condition, final String message,
       final Object... args) {
     if (!condition) {
       throw new IllegalStateException(String.format(message, args));
     }
-  }
-
-  @Override
-  public String getId() {
-    return getClass().getName();
   }
 
   @SuppressWarnings("unused")

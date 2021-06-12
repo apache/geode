@@ -144,7 +144,7 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
           }
           if (ep != null) {
             // if sender is being shutdown, the ep could be null
-            boolean removed = ep.basicHandlePrimaryDestroy(ev.getEventId());
+            boolean removed = ep.basicHandlePrimaryDestroy(ev.getEventId(), true);
             if (removed) {
               if (isDebugEnabled) {
                 logger.debug("Removed a dropped event {} from unprocessedEvents.",
@@ -179,8 +179,9 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
         evReturned = true;
         return ev;
       } finally {
-        if (!evReturned)
+        if (!evReturned) {
           ev.release();
+        }
       }
     }
 

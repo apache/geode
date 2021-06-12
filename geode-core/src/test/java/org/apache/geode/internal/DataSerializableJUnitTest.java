@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -2246,6 +2246,10 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testSupportedClasses() throws Exception {
+    assertThat(Class_testSupportedClasses2.wasInvoked).isFalse();
+    assertThat(Class_testSupportedClasses2.toDataInvoked).isFalse();
+    assertThat(Class_testSupportedClasses2.fromDataInvoked).isFalse();
+
     DataSerializer ds1 = DataSerializer.register(Class_testSupportedClasses1.class);
     int id = ds1.getId();
 
@@ -2255,17 +2259,21 @@ public class DataSerializableJUnitTest implements Serializable {
     try {
       Object o = new NonDataSerializable(new Random());
       DataSerializer.writeObject(o, getDataOutput());
-      assertTrue(Class_testSupportedClasses2.wasInvoked);
-      assertTrue(Class_testSupportedClasses2.toDataInvoked);
-      assertFalse(Class_testSupportedClasses2.fromDataInvoked);
+      assertThat(Class_testSupportedClasses2.wasInvoked).isTrue();
+      assertThat(Class_testSupportedClasses2.toDataInvoked).isTrue();
+      assertThat(Class_testSupportedClasses2.fromDataInvoked).isFalse();
 
       Object o2 = DataSerializer.readObject(getDataInput());
-      assertTrue(Class_testSupportedClasses2.fromDataInvoked);
-      assertEquals(o, o2);
+      assertThat(Class_testSupportedClasses2.fromDataInvoked).isTrue();
+      assertThat(o).isEqualTo(o2);
     } finally {
       InternalDataSerializer.unregister(id);
       InternalDataSerializer.unregister(id2);
     }
+
+    Class_testSupportedClasses2.wasInvoked = false;
+    Class_testSupportedClasses2.toDataInvoked = false;
+    Class_testSupportedClasses2.fromDataInvoked = false;
   }
 
   /**
@@ -2273,22 +2281,30 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testUDDS2() throws Exception {
+    assertThat(Class_testSupportedClasses3.wasInvoked).isFalse();
+    assertThat(Class_testSupportedClasses3.toDataInvoked).isFalse();
+    assertThat(Class_testSupportedClasses3.fromDataInvoked).isFalse();
+
     DataSerializer ds2 = DataSerializer.register(Class_testSupportedClasses3.class);
     int id2 = ds2.getId();
 
     try {
       Object o = new NonDataSerializable(new Random());
       DataSerializer.writeObject(o, getDataOutput());
-      assertTrue(Class_testSupportedClasses3.wasInvoked);
-      assertTrue(Class_testSupportedClasses3.toDataInvoked);
-      assertFalse(Class_testSupportedClasses3.fromDataInvoked);
+      assertThat(Class_testSupportedClasses3.wasInvoked).isTrue();
+      assertThat(Class_testSupportedClasses3.toDataInvoked).isTrue();
+      assertThat(Class_testSupportedClasses3.fromDataInvoked).isFalse();
 
       Object o2 = DataSerializer.readObject(getDataInput());
-      assertTrue(Class_testSupportedClasses3.fromDataInvoked);
-      assertEquals(o, o2);
+      assertThat(Class_testSupportedClasses3.fromDataInvoked).isTrue();
+      assertThat(o).isEqualTo(o2);
     } finally {
       InternalDataSerializer.unregister(id2);
     }
+
+    Class_testSupportedClasses3.wasInvoked = false;
+    Class_testSupportedClasses3.toDataInvoked = false;
+    Class_testSupportedClasses3.fromDataInvoked = false;
   }
 
   /**
@@ -2296,22 +2312,30 @@ public class DataSerializableJUnitTest implements Serializable {
    */
   @Test
   public void testUDDS4() throws Exception {
+    assertThat(Class_testSupportedClasses4.wasInvoked).isFalse();
+    assertThat(Class_testSupportedClasses4.toDataInvoked).isFalse();
+    assertThat(Class_testSupportedClasses4.fromDataInvoked).isFalse();
+
     DataSerializer ds2 = DataSerializer.register(Class_testSupportedClasses4.class);
     int id2 = ds2.getId();
 
     try {
       Object o = new NonDataSerializable(new Random());
       DataSerializer.writeObject(o, getDataOutput());
-      assertTrue(Class_testSupportedClasses4.wasInvoked);
-      assertTrue(Class_testSupportedClasses4.toDataInvoked);
-      assertFalse(Class_testSupportedClasses4.fromDataInvoked);
+      assertThat(Class_testSupportedClasses4.wasInvoked).isTrue();
+      assertThat(Class_testSupportedClasses4.toDataInvoked).isTrue();
+      assertThat(Class_testSupportedClasses4.fromDataInvoked).isFalse();
 
       Object o2 = DataSerializer.readObject(getDataInput());
       assertTrue(Class_testSupportedClasses4.fromDataInvoked);
-      assertEquals(o, o2);
+      assertThat(o).isEqualTo(o2);
     } finally {
       InternalDataSerializer.unregister(id2);
     }
+
+    Class_testSupportedClasses4.wasInvoked = false;
+    Class_testSupportedClasses4.toDataInvoked = false;
+    Class_testSupportedClasses4.fromDataInvoked = false;
   }
 
   private static class Class_testSupportedClasses1 extends DataSerializerImpl {
@@ -3272,15 +3296,19 @@ public class DataSerializableJUnitTest implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
         return false;
+      }
       SerializableIntWrapper other = (SerializableIntWrapper) obj;
-      if (data != other.data)
+      if (data != other.data) {
         return false;
+      }
       return true;
     }
   }
@@ -3543,26 +3571,20 @@ public class DataSerializableJUnitTest implements Serializable {
 
   @Test
   public void testObjectEnum() throws Exception {
-    final String propName = "DataSerializer.DEBUG";
-    System.setProperty(propName, "true");
-    try {
-      DAY_OF_WEEK e = DAY_OF_WEEK.SUN;
-      MONTH m = MONTH.FEB;
-      DataOutputStream out = getDataOutput();
-      DataSerializer.writeObject(e, out);
-      DataSerializer.writeObject(m, out);
-      out.flush();
+    DAY_OF_WEEK e = DAY_OF_WEEK.SUN;
+    MONTH m = MONTH.FEB;
+    DataOutputStream out = getDataOutput();
+    DataSerializer.writeObject(e, out);
+    DataSerializer.writeObject(m, out);
+    out.flush();
 
-      DataInput in = getDataInput();
-      DAY_OF_WEEK e2 = (DAY_OF_WEEK) DataSerializer.readObject(in);
-      MONTH m2 = (MONTH) DataSerializer.readObject(in);
-      assertEquals(e, e2);
-      assertEquals(m, m2);
-      // Make sure there's nothing left in the stream
-      assertEquals(0, in.skipBytes(1));
-    } finally {
-      System.getProperties().remove(propName);
-    }
+    DataInput in = getDataInput();
+    DAY_OF_WEEK e2 = (DAY_OF_WEEK) DataSerializer.readObject(in);
+    MONTH m2 = (MONTH) DataSerializer.readObject(in);
+    assertEquals(e, e2);
+    assertEquals(m, m2);
+    // Make sure there's nothing left in the stream
+    assertEquals(0, in.skipBytes(1));
   }
 
   /**

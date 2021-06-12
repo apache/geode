@@ -25,6 +25,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
 
 /**
@@ -51,16 +52,32 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
 
   private final boolean isPossibleDuplicate;
 
-  public RegionFunctionContextImpl(final Cache cache, final String functionId, final Region dataSet,
-      final Object args, final Set<?> routingObjects,
+  private final Object principal;
+
+  public RegionFunctionContextImpl(final Cache cache, final String functionId,
+      final Region<?, ?> dataSet, final Object args, final Set<?> routingObjects,
       final Map<String, LocalDataSet> colocatedLocalDataMap, int[] localBucketArray,
       ResultSender<?> resultSender, boolean isPossibleDuplicate) {
+    this(cache, functionId, dataSet, args, routingObjects, colocatedLocalDataMap, localBucketArray,
+        resultSender, isPossibleDuplicate, null);
+  }
+
+  public RegionFunctionContextImpl(final Cache cache, final String functionId,
+      final Region<?, ?> dataSet, final Object args, final Set<?> routingObjects,
+      final Map<String, LocalDataSet> colocatedLocalDataMap, int[] localBucketArray,
+      ResultSender<?> resultSender, boolean isPossibleDuplicate, Object principal) {
     super(cache, functionId, args, resultSender);
     this.dataSet = dataSet;
     this.filter = routingObjects;
     this.colocatedLocalDataMap = colocatedLocalDataMap;
     this.localBucketArray = localBucketArray;
     this.isPossibleDuplicate = isPossibleDuplicate;
+
+    if (principal == null) {
+      this.principal = ((InternalCache) cache).getSecurityService().getPrincipal();
+    } else {
+      this.principal = principal;
+    }
     setFunctionContexts();
   }
 
@@ -107,6 +124,8 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
     buf.append(this.filter);
     buf.append(";args=");
     buf.append(getArguments());
+    buf.append(";principal=");
+    buf.append(getPrincipal());
     buf.append(']');
     return buf.toString();
   }
@@ -143,5 +162,10 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
       return null;
     }
     return this.localBucketArray;
+  }
+
+  @Override
+  public Object getPrincipal() {
+    return principal;
   }
 }

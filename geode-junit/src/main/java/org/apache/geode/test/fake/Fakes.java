@@ -64,7 +64,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  * <pre>
  * cache = Fakes.cache(); Mockito.when(cache.getName()).thenReturn(...)
  *
- * <pre>
+ * </pre>
  *
  * Please help extend this class by adding other commonly used objects to this collection of fakes.
  */

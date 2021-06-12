@@ -25,6 +25,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.cache.tier.sockets.CommBufferPool;
 import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.net.SocketCloser;
 
 /**
  * Defines the message listener/acceptor interface which is the GemFire cache server. Multiple
@@ -105,4 +106,8 @@ public interface Acceptor extends CommBufferPool {
   void unregisterServerConnection(ServerConnection serverConnection);
 
   void decClientServerConnectionCount();
+
+  int getMaximumTimeBetweenPings();
+
+  SocketCloser getSocketCloser();
 }

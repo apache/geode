@@ -45,7 +45,7 @@ import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ClusterManagementServiceTransport;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
 
@@ -142,7 +142,8 @@ public class RebalanceIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(
-            jsonPath("$.result[0].statusCode", Matchers.isOneOf("IN_PROGRESS", "ERROR", "OK")))
+            jsonPath("$.result[0].statusCode",
+                Matchers.is(Matchers.oneOf("IN_PROGRESS", "ERROR", "OK"))))
         .andExpect(jsonPath("$.result[0].links.self", Matchers.containsString("rebalances/")))
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")));
   }

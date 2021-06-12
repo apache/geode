@@ -12,9 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.util.Collection;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,12 +22,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
 import org.apache.geode.internal.cache.InternalCacheEvent;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -37,15 +39,25 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 public class ClientRegistrationEventQueueManager {
   private static final Logger logger = LogService.getLogger();
+
   private final Set<ClientRegistrationEventQueue> registeringProxyEventQueues =
       ConcurrentHashMap.newKeySet();
 
   void add(final InternalCacheEvent event,
+      final ClientUpdateMessageImpl clientMessage,
       final Conflatable conflatable,
       final Set<ClientProxyMembershipID> originalFilterClientIDs,
       final CacheClientNotifier cacheClientNotifier) {
-    if (registeringProxyEventQueues.isEmpty())
+    if (registeringProxyEventQueues.isEmpty()) {
       return;
+    }
+
+    if (originalFilterClientIDs.isEmpty()
+        && event.getOperation().isEntry()
+        && !(clientMessage instanceof ClientTombstoneMessage)) {
+      EntryEventImpl entryEvent = (EntryEventImpl) event;
+      entryEvent.exportNewValue(clientMessage);
+    }
 
     ClientRegistrationEvent clientRegistrationEvent =
         new ClientRegistrationEvent(event, conflatable);
@@ -109,12 +121,10 @@ public class ClientRegistrationEventQueueManager {
             + " without synchronization");
       }
 
-      CacheClientProxy cacheClientProxy = cacheClientNotifier
-          .getClientProxy(clientProxyMembershipID);
+      CacheClientProxy cacheClientProxy =
+          cacheClientNotifier.getClientProxy(clientProxyMembershipID);
 
-      drainEventsReceivedWhileRegisteringClient(
-          cacheClientProxy,
-          clientRegistrationEventQueue,
+      drainEventsReceivedWhileRegisteringClient(cacheClientProxy, clientRegistrationEventQueue,
           cacheClientNotifier);
 
       // Prevents additional events from being added to the queue while we process and remove it
@@ -126,9 +136,7 @@ public class ClientRegistrationEventQueueManager {
             + " with synchronization");
       }
 
-      drainEventsReceivedWhileRegisteringClient(
-          cacheClientProxy,
-          clientRegistrationEventQueue,
+      drainEventsReceivedWhileRegisteringClient(cacheClientProxy, clientRegistrationEventQueue,
           cacheClientNotifier);
     } finally {
       // The queue must be removed before attempting to release the drain lock
@@ -169,7 +177,7 @@ public class ClientRegistrationEventQueueManager {
         // and local filter info in order to do so. If any of these are null, then there is
         // no need to proceed as the client is not interested.
         FilterProfile filterProfile =
-            ((LocalRegion) internalCacheEvent.getRegion()).getFilterProfile();
+            ((InternalRegion) internalCacheEvent.getRegion()).getFilterProfile();
 
         if (filterProfile != null) {
           FilterRoutingInfo filterRoutingInfo =
@@ -217,10 +225,11 @@ public class ClientRegistrationEventQueueManager {
    * is interested in the event so we should deliver it.
    */
   private boolean eventNotInOriginalFilterClientIDs(final ClientProxyMembershipID proxyID,
-      final Set<ClientProxyMembershipID> newFilterClientIDs,
-      final Set<ClientProxyMembershipID> originalFilterClientIDs) {
+      final Collection<ClientProxyMembershipID> newFilterClientIDs,
+      final Collection<ClientProxyMembershipID> originalFilterClientIDs) {
     return originalFilterClientIDs == null
-        || (!originalFilterClientIDs.contains(proxyID) && newFilterClientIDs.contains(proxyID));
+        || !originalFilterClientIDs.contains(proxyID)
+            && newFilterClientIDs.contains(proxyID);
   }
 
   /**
@@ -230,7 +239,7 @@ public class ClientRegistrationEventQueueManager {
    *
    * @param event The InternalCacheEvent whose value will be copied to the heap if need be
    */
-  private void copyOffHeapToHeapForRegistrationQueue(final InternalCacheEvent event) {
+  private void copyOffHeapToHeapForRegistrationQueue(final CacheEvent event) {
     if (event.getOperation().isEntry()) {
       EntryEventImpl entryEvent = ((EntryEventImpl) event);
       entryEvent.copyOffHeapToHeap();
@@ -245,8 +254,8 @@ public class ClientRegistrationEventQueueManager {
     while ((queuedEvent = registrationEventQueue.poll()) != null) {
       InternalCacheEvent internalCacheEvent = queuedEvent.internalCacheEvent;
       Conflatable conflatable = queuedEvent.conflatable;
-      processEventAndDeliverConflatable(cacheClientProxy,
-          cacheClientNotifier, internalCacheEvent, conflatable, null);
+      processEventAndDeliverConflatable(cacheClientProxy, cacheClientNotifier, internalCacheEvent,
+          conflatable, null);
     }
   }
 
@@ -258,29 +267,49 @@ public class ClientRegistrationEventQueueManager {
    * info and determine if the client which was registering does have a CQ that matches or
    * has registered interest in the key.
    */
-  private class ClientRegistrationEvent {
+  @VisibleForTesting
+  static class ClientRegistrationEvent {
+
     private final Conflatable conflatable;
     private final InternalCacheEvent internalCacheEvent;
 
-    ClientRegistrationEvent(final InternalCacheEvent internalCacheEvent,
+    private ClientRegistrationEvent(final InternalCacheEvent internalCacheEvent,
         final Conflatable conflatable) {
       this.conflatable = conflatable;
       this.internalCacheEvent = internalCacheEvent;
     }
+
+    @Override
+    public String toString() {
+      return "ClientRegistrationEvent{" +
+          "conflatable=" + conflatable +
+          ", internalCacheEvent=" + internalCacheEvent +
+          '}';
+    }
   }
 
-  class ClientRegistrationEventQueue {
+  static class ClientRegistrationEventQueue {
+
     private final ClientProxyMembershipID clientProxyMembershipID;
     private final Queue<ClientRegistrationEvent> eventQueue;
     private final ReentrantReadWriteLock eventAddDrainLock;
 
-    ClientRegistrationEventQueue(
+    private ClientRegistrationEventQueue(
         final ClientProxyMembershipID clientProxyMembershipID,
         final Queue<ClientRegistrationEvent> eventQueue,
         final ReentrantReadWriteLock eventAddDrainLock) {
       this.clientProxyMembershipID = clientProxyMembershipID;
       this.eventQueue = eventQueue;
       this.eventAddDrainLock = eventAddDrainLock;
+    }
+
+    @Override
+    public String toString() {
+      return "ClientRegistrationEventQueue{" +
+          "clientProxyMembershipID=" + clientProxyMembershipID +
+          ", eventQueue=" + eventQueue +
+          ", eventAddDrainLock=" + eventAddDrainLock +
+          '}';
     }
 
     public ClientProxyMembershipID getClientProxyMembershipID() {

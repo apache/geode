@@ -21,7 +21,8 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
+  compileOnly(platform(project(':boms:geode-all-bom')))
 
 
   implementation(project(':geode-logging'))
@@ -29,9 +30,10 @@ dependencies {
   implementation(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
   implementation(project(':geode-core'))
+  implementation('org.apache.commons:commons-lang3')
 
-  compileOnly('org.apache.logging.log4j:log4j-api:2.13.1')
-  
+  compileOnly('org.apache.logging.log4j:log4j-api')
+
   testImplementation(project(':geode-junit'))
   testImplementation('org.assertj:assertj-core')
   testImplementation('junit:junit')
@@ -49,10 +51,9 @@ dependencies {
   distributedTestImplementation('mx4j:mx4j')
   distributedTestImplementation('org.awaitility:awaitility')
   distributedTestImplementation('junit:junit')
-  distributedTestImplementation('org.hamcrest:hamcrest-core')
-  distributedTestImplementation('org.hamcrest:hamcrest-library')
+  distributedTestImplementation('org.hamcrest:hamcrest')
   distributedTestImplementation('org.mockito:mockito-core')
-  distributedTestImplementation('org.hamcrest:hamcrest-all')
+  distributedTestImplementation('org.hamcrest:hamcrest')
   distributedTestImplementation('org.apache.commons:commons-lang3')
   distributedTestImplementation('commons-io:commons-io')
   distributedTestImplementation('org.assertj:assertj-core')
@@ -68,5 +69,5 @@ dependencies {
   upgradeTestImplementation('junit:junit')
   upgradeTestImplementation('xml-apis:xml-apis:2.0.2')
 
-  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }

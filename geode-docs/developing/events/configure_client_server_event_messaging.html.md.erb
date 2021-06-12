@@ -72,10 +72,3 @@ To receive entry events in the client from the server:
     4.  To have events enqueued for your clients during client downtime, configure durable client/server messaging.
     5.  Write any continuous queries (CQs) that you want to run to receive continuously streaming updates to client queries. CQ events do not update the client cache. If you have dependencies between CQs and/or interest registrations, so that you want the two types of subscription events to arrive as closely together on the client, use a single server pool for everything. Using different pools can lead to time differences in the delivery of events because the pools might use different servers to process and deliver the event messages.
 
--   **[Configuring Highly Available Servers](configuring_highly_available_servers.html)**
-
--   **[Implementing Durable Client/Server Messaging](implementing_durable_client_server_messaging.html)**
-
--   **[Tuning Client/Server Event Messaging](tune_client_server_event_messaging.html)**
-
-

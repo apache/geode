@@ -59,23 +59,10 @@ public class ClientMarkerMessageImpl implements ClientMessage {
 
   @Override
   public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
-    KnownVersion clientVersion = proxy.getVersion();
-    Message message = null;
-    if (clientVersion.isNotOlderThan(KnownVersion.GFE_57)) {
-      message = getGFEMessage();
-    } else {
-      throw new IOException(
-          "Unsupported client version for server-to-client message creation: " + clientVersion);
-    }
-
-    return message;
-  }
-
-  protected Message getGFEMessage() throws IOException {
     Message message = new Message(1, KnownVersion.CURRENT);
     message.setMessageType(MessageType.CLIENT_MARKER);
     message.setTransactionId(0);
-    message.addObjPart(this.eventId);
+    message.addObjPart(eventId);
     return message;
   }
 
@@ -87,7 +74,7 @@ public class ClientMarkerMessageImpl implements ClientMessage {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeObject(this.eventId, out);
+    DataSerializer.writeObject(eventId, out);
   }
 
   @Override
@@ -98,12 +85,12 @@ public class ClientMarkerMessageImpl implements ClientMessage {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.eventId = (EventID) DataSerializer.readObject(in);
+    eventId = DataSerializer.readObject(in);
   }
 
   @Override
   public EventID getEventId() {
-    return this.eventId;
+    return eventId;
   }
 
   @Override
@@ -126,9 +113,7 @@ public class ClientMarkerMessageImpl implements ClientMessage {
   }
 
   @Override
-  public void setLatestValue(Object value) {
-    return;
-  }
+  public void setLatestValue(Object value) {}
 
   @Override
   public KnownVersion[] getSerializationVersions() {

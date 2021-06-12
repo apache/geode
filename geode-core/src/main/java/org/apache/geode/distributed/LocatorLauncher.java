@@ -60,6 +60,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
@@ -94,7 +95,7 @@ import org.apache.geode.management.internal.util.JsonUtil;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
- * The LocatorLauncher class is a launcher for a GemFire Locator.
+ * The LocatorLauncher class is a launcher for a Geode Locator.
  *
  * @see org.apache.geode.distributed.AbstractLauncher
  * @see org.apache.geode.distributed.ServerLauncher
@@ -114,16 +115,16 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   static {
     final Map<String, String> help = new HashMap<>();
     help.put("launcher",
-        "A GemFire launcher used to start, stop and determine a Locator's status.");
+        "A Geode launcher used to start, stop and determine a Locator's status.");
     help.put(Command.START.getName(), String.format(
-        "Starts a Locator running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Locator must be given a member name in the GemFire cluster.  The default bind-address and port may be overridden using the corresponding command-line options.",
+        "Starts a Locator running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Locator must be given a member name in the Geode cluster.  The default bind-address and port may be overridden using the corresponding command-line options.",
         String.valueOf(getDefaultLocatorPort())));
     help.put(Command.STATUS.getName(),
         "Displays the status of a Locator given any combination of the bind-address[port], member name/ID, PID, or the directory in which the Locator is running.");
     help.put(Command.STOP.getName(),
         "Stops a running Locator given a member name/ID, PID, or the directory in which the Locator is running.");
     help.put(Command.VERSION.getName(),
-        "Displays GemFire product version information.");
+        "Displays Geode product version information.");
     help.put("bind-address",
         "Specifies the IP address on which to bind, or on which the Locator is bound, listening for client requests.  Defaults to all IP addresses available to the localhost.");
     help.put("debug", "Displays verbose information during the invocation of the launcher.");
@@ -134,16 +135,16 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     help.put("force",
         "Enables any existing Locator PID file to be overwritten on start.  The default is to throw an error if a PID file already exists and --force is not specified.");
     help.put("help",
-        "Causes GemFire to print out information instead of performing the command. This option is supported by all commands.");
+        "Causes Geode to print out information instead of performing the command. This option is supported by all commands.");
     help.put("hostname-for-clients",
         "An option to specify the hostname or IP address to send to clients so they can connect to this Locator. The default is to use the IP address to which the Locator is bound.");
-    help.put("member", "Identifies the Locator by member name or ID in the GemFire cluster.");
+    help.put("member", "Identifies the Locator by member name or ID in the Geode cluster.");
     help.put("pid", "Indicates the OS process ID of the running Locator.");
     help.put("port", String.format(
         "Specifies the port on which the Locator is listening for client requests. Defaults to %s.",
         String.valueOf(getDefaultLocatorPort())));
     help.put("redirect-output",
-        "An option to cause the Locator to redirect standard out and standard error to the GemFire log file.");
+        "An option to cause the Locator to redirect standard out and standard error to the Geode log file.");
 
     helpMap = Collections.unmodifiableMap(help);
   }
@@ -187,7 +188,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   private final boolean portSpecified;
   private final boolean workingDirectorySpecified;
 
-  private final InetAddress bindAddress;
+  private final HostAddress bindAddress;
 
   private final Integer pid;
   private final Integer port;
@@ -208,9 +209,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   private final transient LocatorControllerParameters controllerParameters;
 
   /**
-   * Launches a GemFire Locator from the command-line configured with the given arguments.
+   * Launches a Geode Locator from the command-line configured with the given arguments.
    *
-   * @param args the command-line arguments used to configure the GemFire Locator at runtime.
+   * @param args the command-line arguments used to configure the Geode Locator at runtime.
    */
   public static void main(final String... args) {
     try {
@@ -226,10 +227,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Gets the instance of the LocatorLauncher used to launch the GemFire Locator, or null if this VM
-   * does not have an instance of LocatorLauncher indicating no GemFire Locator is running.
+   * Gets the instance of the LocatorLauncher used to launch the Geode Locator, or null if this VM
+   * does not have an instance of LocatorLauncher indicating no Geode Locator is running.
    *
-   * @return the instance of LocatorLauncher used to launcher a GemFire Locator in this VM.
+   * @return the instance of LocatorLauncher used to launcher a Geode Locator in this VM.
    */
   public static LocatorLauncher getInstance() {
     return INSTANCE.get();
@@ -259,7 +260,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     this.command = builder.getCommand();
     this.help = Boolean.TRUE.equals(builder.getHelp());
     this.bindAddressSpecified = builder.isBindAddressSpecified();
-    this.bindAddress = builder.getBindAddress();
+    this.bindAddress = builder.getHostAddress();
     setDebug(Boolean.TRUE.equals(builder.getDebug()));
     this.deletePidFileOnStop = Boolean.TRUE.equals(builder.getDeletePidFileOnStop());
     this.distributedSystemProperties = builder.getDistributedSystemProperties();
@@ -297,19 +298,31 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   @Deprecated
   public static LocatorStatusResponse statusLocator(int port, InetAddress bindAddress)
       throws IOException {
-    return statusLocator(port, bindAddress, new Properties());
+    return statusLocator(port, bindAddress == null ? null : bindAddress.getCanonicalHostName(),
+        new Properties());
+  }
+
+  /**
+   * Returns the status of the locator on the given host & port. If you have endpoint
+   * identification enabled the preferred method is statusForLocator(int, String), which
+   * lets you specify the locator's name that the locator has stored in its TLS certificate
+   */
+  public LocatorStatusResponse statusForLocator(int port, InetAddress bindAddress)
+      throws IOException {
+    return statusLocator(port, bindAddress == null ? null : bindAddress.getCanonicalHostName(),
+        getProperties());
   }
 
   /**
    * Returns the status of the locator on the given host & port
    */
-  public LocatorStatusResponse statusForLocator(int port, InetAddress bindAddress)
+  public LocatorStatusResponse statusForLocator(int port, String hostname)
       throws IOException {
-    return statusLocator(port, bindAddress, getProperties());
+    return statusLocator(port, hostname, getProperties());
   }
 
   private static LocatorStatusResponse statusLocator(
-      final int port, InetAddress bindAddress,
+      final int port, String bindAddress,
       final Properties properties)
       throws IOException {
 
@@ -328,7 +341,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
           TcpSocketFactory.DEFAULT);
 
       return (LocatorStatusResponse) client.requestToServer(
-          new HostAndPort(bindAddress == null ? null : bindAddress.getCanonicalHostName(), port),
+          new HostAndPort(bindAddress == null ? HostUtils.getLocalHost() : bindAddress, port),
           new LocatorStatusRequest(), timeout, true);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
@@ -429,7 +442,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see java.net.InetAddress
    */
   public InetAddress getBindAddress() {
-    return this.bindAddress;
+    return bindAddress == null ? null : bindAddress.getAddress();
   }
 
   /**
@@ -448,10 +461,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   protected String getBindAddressAsString() {
     try {
-      if (getBindAddress() != null) {
-        return getBindAddress().getCanonicalHostName();
+      if (bindAddress != null) {
+        return bindAddress.getHostName();
       }
-
       return LocalHostUtil.getCanonicalLocalHostName();
     } catch (UnknownHostException handled) {
       // Returning localhost/127.0.0.1 implies the bindAddress was null and no IP address for
@@ -481,10 +493,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Gets the name of this member (this Locator) in the GemFire distributed system and determined by
-   * the 'name' GemFire property.
+   * Gets the name of this member (this Locator) in the Geode distributed system and determined by
+   * the 'name' Geode property.
    *
-   * @return a String indicating the name of the member (this Locator) in the GemFire distributed
+   * @return a String indicating the name of the member (this Locator) in the Geode distributed
    *         system.
    */
   @Override
@@ -530,9 +542,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Gets the GemFire Distributed System (cluster) Properties.
+   * Gets the Geode Distributed System (cluster) Properties.
    *
-   * @return a Properties object containing the configuration settings for the GemFire Distributed
+   * @return a Properties object containing the configuration settings for the Geode Distributed
    *         System (cluster).
    * @see java.util.Properties
    */
@@ -541,9 +553,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Gets the name for a GemFire Locator.
+   * Gets the name for a Geode Locator.
    *
-   * @return a String indicating the name for a GemFire Locator.
+   * @return a String indicating the name for a Geode Locator.
    */
   @Override
   public String getServiceName() {
@@ -650,9 +662,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Determines whether a GemFire Locator can be started with this instance of LocatorLauncher.
+   * Determines whether a Geode Locator can be started with this instance of LocatorLauncher.
    *
-   * @return a boolean indicating whether a GemFire Locator can be started with this instance of
+   * @return a boolean indicating whether a Geode Locator can be started with this instance of
    *         LocatorLauncher, which is true if the LocatorLauncher has not already started a Locator
    *         or a Locator is not already running.
    * @see #start()
@@ -714,7 +726,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
         try {
           this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
-              getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients(),
+              bindAddress, true, getDistributedSystemProperties(),
+              getHostnameForClients(),
               Paths.get(workingDirectory));
         } finally {
           ProcessLauncherContext.remove();
@@ -860,7 +873,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     while (System.currentTimeMillis() < endTimeInMilliseconds) {
       try {
-        LocatorStatusResponse response = statusForLocator(getPort(), getBindAddress());
+        LocatorStatusResponse response = statusForLocator(getPort(), getBindAddressString());
         return new LocatorState(this, Status.ONLINE, response);
       } catch (Exception handled) {
         timedWait(interval, timeUnit);
@@ -892,7 +905,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * If either the 'dir' or the 'pid' command-line option were specified, then an attempt is made to
    * determine the Locator's status by using the dir or pid to correctly identify the Locator's
    * MemberMXBean registered in the MBeanServer of the Locator's JVM, and invoking the 'status'
-   * operation. The same behavior occurs if the caller specified the Locator's GemFire member name
+   * operation. The same behavior occurs if the caller specified the Locator's Geode member name
    * or ID.
    *
    * However, if 'dir' or 'pid' were not specified, then determining the Locator's status defaults
@@ -916,7 +929,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     // if this instance is starting then return local status
     if (this.starting.get()) {
       debug(
-          "Getting status from the LocatorLauncher instance that actually launched the GemFire Locator.%n");
+          "Getting status from the LocatorLauncher instance that actually launched the Geode Locator.%n");
       return new LocatorState(this, Status.STARTING);
     }
     // if this instance is running then return local status
@@ -951,7 +964,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   private LocatorState statusInProcess() {
     if (this.starting.get()) {
       debug(
-          "Getting status from the LocatorLauncher instance that actually launched the GemFire Locator.%n");
+          "Getting status from the LocatorLauncher instance that actually launched the Geode Locator.%n");
       return new LocatorState(this, Status.STARTING);
     } else {
       debug("Getting Locator status using host (%1$s) and port (%2$s)%n", getBindAddressAsString(),
@@ -985,7 +998,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   private LocatorState statusWithPort() {
     try {
-      LocatorStatusResponse response = statusForLocator(getPort(), getBindAddress());
+      LocatorStatusResponse response = statusForLocator(getPort(), getBindAddressString());
       return new LocatorState(this, Status.ONLINE, response);
     } catch (Exception handled) {
       return createNoResponseState(handled,
@@ -1048,7 +1061,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Stop shuts the running Locator down. Using the API, the Locator is requested to stop by calling
    * the Locator object's 'stop' method. Internally, this method is no different than using the
-   * LocatorLauncher class from the command-line or from within GemFire shell (Gfsh). In every
+   * LocatorLauncher class from the command-line or from within Geode shell (Gfsh). In every
    * single case, stop sends a TCP/IP 'shutdown' request on the configured address/port to which the
    * Locator is bound and listening.
    *
@@ -1186,6 +1199,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     return overriddenDefaults;
   }
 
+  public String getBindAddressString() {
+    return bindAddress == null ? null : bindAddress.getHostName();
+  }
+
   private class LocatorControllerParameters implements ProcessControllerParameters {
     @Override
     public File getPidFile() {
@@ -1260,7 +1277,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     private Boolean loadSharedConfigFromDir;
     private Command command;
 
-    private InetAddress bindAddress;
+    private HostAddress bindAddress;
 
     private Integer pid;
     private Integer port;
@@ -1391,12 +1408,12 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Iterates the list of arguments in search of the Locator's GemFire member name. If the
+     * Iterates the list of arguments in search of the Locator's Geode member name. If the
      * argument does not start with '-' or is not the name of a Locator launcher command, then the
-     * value is presumed to be the member name for the Locator in GemFire.
+     * value is presumed to be the member name for the Locator in Geode.
      *
      * @param args the array of arguments from which to search for the Locator's member name in
-     *        GemFire.
+     *        Geode.
      * @see org.apache.geode.distributed.LocatorLauncher.Command#isCommand(String)
      * @see #parseArguments(String...)
      */
@@ -1485,9 +1502,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Gets the GemFire Distributed System (cluster) Properties configuration.
+     * Gets the Geode Distributed System (cluster) Properties configuration.
      *
-     * @return a Properties object containing configuration settings for the GemFire Distributed
+     * @return a Properties object containing configuration settings for the Geode Distributed
      *         System (cluster).
      * @see java.util.Properties
      */
@@ -1571,14 +1588,18 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see java.net.InetAddress
      */
     public InetAddress getBindAddress() {
-      return this.bindAddress;
+      return bindAddress == null ? null : bindAddress.getAddress();
+    }
+
+    HostAddress getHostAddress() {
+      return bindAddress;
     }
 
     /**
      * Sets the IP address as an java.net.InetAddress to which the Locator has bound itself
      * listening for client requests.
      *
-     * @param bindAddress the InetAddress with the IP address or hostname on which the Locator is
+     * @param addressString the InetAddress with the IP address or hostname on which the Locator is
      *        bound and listening.
      * @return this Builder instance.
      * @throws IllegalArgumentException wrapping the UnknownHostException if the IP address or
@@ -1586,24 +1607,23 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #getBindAddress()
      * @see java.net.InetAddress
      */
-    public Builder setBindAddress(final String bindAddress) {
-      if (isBlank(bindAddress)) {
+    public Builder setBindAddress(final String addressString) {
+      if (isBlank(addressString)) {
         this.bindAddress = null;
         return this;
       } else {
         try {
-          InetAddress address = InetAddress.getByName(bindAddress);
+          InetAddress address = InetAddress.getByName(addressString);
           if (LocalHostUtil.isLocalHost(address)) {
-            this.bindAddress = address;
+            this.bindAddress = new HostAddress(addressString);
             return this;
           } else {
             throw new IllegalArgumentException(
-                bindAddress + " is not an address for this machine.");
+                addressString + " is not an address for this machine.");
           }
         } catch (UnknownHostException e) {
-          throw new IllegalArgumentException(
-              String.format("The hostname/IP address to which the %s will be bound is unknown.",
-                  "Locator"),
+          throw new IllegalArgumentException("The hostname/IP address (" + addressString
+              + ") to which the Locator will be bound is unknown.",
               e);
         }
       }
@@ -1640,9 +1660,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Gets the member name of this Locator in GemFire.
+     * Gets the member name of this Locator in Geode.
      *
-     * @return a String indicating the member name of this Locator in GemFire.
+     * @return a String indicating the member name of this Locator in Geode.
      * @see #setMemberName(String)
      */
     public String getMemberName() {
@@ -1650,9 +1670,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Sets the member name of the Locator in GemFire.
+     * Sets the member name of the Locator in Geode.
      *
-     * @param memberName a String indicating the member name of this Locator in GemFire.
+     * @param memberName a String indicating the member name of this Locator in Geode.
      * @return this Builder instance.
      * @throws IllegalArgumentException if the member name is invalid.
      * @see #getMemberName()
@@ -1814,11 +1834,11 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Sets a GemFire Distributed System Property.
+     * Sets a Geode Distributed System Property.
      *
-     * @param propertyName a String indicating the name of the GemFire Distributed System property
+     * @param propertyName a String indicating the name of the Geode Distributed System property
      *        as described in {@link ConfigurationProperties}
-     * @param propertyValue a String value for the GemFire Distributed System property.
+     * @param propertyValue a String value for the Geode Distributed System property.
      * @return this Builder instance.
      */
     public Builder set(final String propertyName, final String propertyValue) {
@@ -1827,9 +1847,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * add the properties in the Gemfire Distributed System Property
+     * add the properties in the Geode Distributed System Property
      *
-     * @param properties a property object that holds one or more Gemfire Distributed System
+     * @param properties a property object that holds one or more Geode Distributed System
      *        properties as described in {@link ConfigurationProperties}
      * @return this Builder instance
      * @since Geode 1.12
@@ -1842,7 +1862,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Validates the configuration settings and properties of this Builder, ensuring that all
      * invariants have been met. Currently, the only invariant constraining the Builder is that the
-     * user must specify the member name for the Locator in the GemFire distributed system as a
+     * user must specify the member name for the Locator in the Geode distributed system as a
      * command-line argument, or by setting the memberName property programmatically using the
      * corresponding setter method. If the member name is not given, then the user must have
      * specified the pathname to the gemfire.properties file before validate is called. It is then
@@ -1908,7 +1928,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Validates the Builder configuration settings and then constructs an instance of the
-     * LocatorLauncher class to invoke operations on a GemFire Locator.
+     * LocatorLauncher class to invoke operations on a Geode Locator.
      *
      * @return a newly constructed instance of LocatorLauncher configured with this Builder.
      * @see #validate()
@@ -2130,11 +2150,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     private static String getBindAddressAsString(LocatorLauncher launcher) {
       if (InternalLocator.hasLocator()) {
         final InternalLocator locator = InternalLocator.getLocator();
-        final InetAddress bindAddress = locator.getBindAddress();
-        if (bindAddress != null) {
-          if (isNotBlank(bindAddress.getHostAddress())) {
-            return bindAddress.getHostAddress();
-          }
+        String bindAddress = locator.getBindAddressString();
+        if (bindAddress != null && !bindAddress.isEmpty()) {
+          return bindAddress;
         }
       }
       return launcher.getBindAddressAsString();

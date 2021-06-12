@@ -156,26 +156,27 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
 
   private static int sizeType(Class<?> t) {
 
-    if (t == Boolean.TYPE)
+    if (t == Boolean.TYPE) {
       return 1;
-    else if (t == Byte.TYPE)
+    } else if (t == Byte.TYPE) {
       return 1;
-    else if (t == Character.TYPE)
+    } else if (t == Character.TYPE) {
       return 2;
-    else if (t == Short.TYPE)
+    } else if (t == Short.TYPE) {
       return 2;
-    else if (t == Integer.TYPE)
+    } else if (t == Integer.TYPE) {
       return 4;
-    else if (t == Long.TYPE)
+    } else if (t == Long.TYPE) {
       return 8;
-    else if (t == Float.TYPE)
+    } else if (t == Float.TYPE) {
       return 4;
-    else if (t == Double.TYPE)
+    } else if (t == Double.TYPE) {
       return 8;
-    else if (t == Void.TYPE)
+    } else if (t == Void.TYPE) {
       return 0;
-    else
+    } else {
       return REFERENCE_SIZE;
+    }
   }
 
 

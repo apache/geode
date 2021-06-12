@@ -37,6 +37,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -70,7 +71,6 @@ import org.junit.rules.ExpectedException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -629,7 +629,7 @@ public class InternalDistributedSystemJUnitTest {
   @Test
   public void testStartLocator() {
     Properties props = new Properties();
-    int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int unusedPort = getRandomAvailableTCPPort();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(START_LOCATOR, "localhost[" + unusedPort + "],server=false,peer=true");
     deleteStateFile(unusedPort);

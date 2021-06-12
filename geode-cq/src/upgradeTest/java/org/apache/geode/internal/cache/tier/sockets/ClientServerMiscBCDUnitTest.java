@@ -15,12 +15,15 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,8 +47,11 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -79,9 +85,49 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
   void createClientCacheAndVerifyPingIntervalIsSet(String host, int port) throws Exception {
     // this functionality was introduced in 1.5. If we let the test run in older
     // clients it will throw a NoSuchMethodError
-    if (VersionManager.getInstance().getCurrentVersionOrdinal() >= 80 /* GEODE_1_5_0 */) {
+    if (VersionManager.getInstance().getCurrentVersionOrdinal() >= 80 /*
+                                                                       * KnownVersion.GEODE_1_5_0
+                                                                       * .ordinal()
+                                                                       */) {
       super.createClientCacheAndVerifyPingIntervalIsSet(host, port);
     }
+  }
+
+  /**
+   * A client should advertise its protocol version, which may not be the same
+   * as its product version.
+   */
+  @Test
+  public void testClientProtocolVersion() {
+    int serverPort = initServerCache(true);
+    VM client1 = Host.getHost(0).getVM(testVersion, 1);
+    String hostname = NetworkUtils.getServerHostName();
+    short ordinal = client1.invoke("create client1 cache", () -> {
+      createClientCache(hostname, serverPort);
+      populateCache();
+      registerInterest();
+      InternalDistributedMember distributedMember = (InternalDistributedMember) static_cache
+          .getDistributedSystem().getDistributedMember();
+      // older versions of Geode have a different Version class so we have to use reflection here
+      try {
+        Method getter = InternalDistributedMember.class.getMethod("getVersionObject");
+        Object versionObject = getter.invoke(distributedMember);
+        Method getOrdinal = versionObject.getClass().getMethod("ordinal");
+        return (Short) getOrdinal.invoke(versionObject);
+      } catch (NoSuchMethodException ignore) {
+      }
+      // newer versions can be accessed directly
+      return distributedMember.getVersionOrdinal();
+    });
+    short protocolOrdinal = server1.invoke("fetch client's protocol version",
+        () -> CacheClientNotifier.getInstance().getClientProxies()
+            .iterator().next().getVersion().ordinal());
+    KnownVersion clientProductVersion = Versioning.getKnownVersionOrDefault(
+        Versioning.getVersion(ordinal), null);
+    KnownVersion clientProtocolVersion = Versioning.getKnownVersionOrDefault(
+        Versioning.getVersion(protocolOrdinal), null);
+    assertThat(clientProductVersion.getClientServerProtocolVersion())
+        .isEqualTo(clientProtocolVersion);
   }
 
   @Test
@@ -145,7 +191,8 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
 
     int server2Port = initServerCache2();
 
-    int server3Port = server3.invoke(() -> createServerCache(true, getMaxThreads(), false));
+    int server3Port = getRandomAvailableTCPPort();
+    server3.invoke(() -> createServerCache(true, getMaxThreads(), false, server3Port));
 
     System.out.println("old server is vm 2 and new server is vm 3");
     System.out

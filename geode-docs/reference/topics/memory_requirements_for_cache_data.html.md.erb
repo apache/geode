@@ -224,16 +224,16 @@ A note of caution-- if the domain object contains many domain objects as member 
 
 Servers always maintain two outgoing connections to each of their peers. So for each peer a server has, there are four total connections: two going out to the peer and two coming in from the peer.
 
-The server threads that service client requests also communicate with peers to distribute events and forward client requests. If the server's <%=vars.product_name%> connection property *conserve-sockets* is set to true (the default), these threads use the already-established peer connections for this communication.
+The server threads that service client requests also communicate with peers to distribute events and forward client requests. If the server's <%=vars.product_name%> connection property *conserve-sockets* is set to true, these threads use the already-established peer connections for this communication.
 
-If *conserve-sockets* is false, each thread that services clients establishes two of its own individual connections to its server peers, one to send, and one to receive. Each socket uses a file descriptor, so the number of available sockets is governed by two operating system settings:
+If *conserve-sockets* is false (the default), each thread that services clients establishes two of its own individual connections to its server peers, one to send, and one to receive. Each socket uses a file descriptor, so the number of available sockets is governed by two operating system settings:
 
 -   maximum open files allowed on the system as a whole
 -   maximum open files allowed for each session
 
 In servers with many threads servicing clients, if *conserve-sockets* is set to false, the demand for connections can easily overrun the number of available sockets. Even with *conserve-sockets* set to false, you can cap the number of these connections by setting the server's *max-threads* parameter.
 
-Since each client connection takes one server socket on a thread to handle the connection, and since that server acts as a proxy on partitioned regions to get results, or execute the function service on behalf of the client, for partitioned regions, if conserve sockets is set to false, this also results in a new socket on the server being opened to each peer. Thus N sockets are opened, where N is the number of peers. Large number of clients simultaneously connecting to a large set of peers with a partitioned region with conserve sockets set to false can cause a huge amount of memory to be consumed by socket. Set conserve-sockets to true in these instances.
+Since each client connection takes one server socket on a thread to handle the connection, and since that server acts as a proxy on partitioned regions to get results, or execute the function service on behalf of the client, for partitioned regions, if conserve-sockets is set to false, this also results in a new socket on the server being opened to each peer. Thus N sockets are opened, where N is the number of peers. Large number of clients simultaneously connecting to a large set of peers with a partitioned region with conserve sockets set to false can cause a large amount of memory to be consumed by sockets.
 
 **Note:**
 There is also JVM overhead for the thread stack for each client connection being processed, set at 256KB or 512KB for most JVMs . On some JVMs you can reduce it to 128KB. You can use the <%=vars.product_name%> `max-threads` property or the <%=vars.product_name%> `max-connections` property to limit the number of client threads and thus both thread overhead and socket overhead.
@@ -262,15 +262,15 @@ The following table lists the memory requirements based on connections.
 <td>= (lesser of max-threads property on server or max-connections)* (socket buffer size +thread overhead for the JVM )</td>
 </tr>
 <tr>
-<td>Per member of the cluster if conserve sockets is set to true</td>
+<td>Per member of the cluster if conserve-sockets is set to true</td>
 <td>4* number of peers</td>
 </tr>
 <tr>
-<td>Per member, if conserve sockets is set to false</td>
+<td>Per member, if conserve-sockets is set to false</td>
 <td>4 * number of peers hosting that region* number of threads</td>
 </tr>
 <tr>
-<td>If member hosts a Partitioned Region, If conserve sockets set to false and it is a Server (this is cumulative with the above)</td>
+<td>If member hosts a Partitioned Region, If conserve-sockets set to false and it is a Server (this is cumulative with the above)</td>
 <td><p>=&lt; max-threads * 2 * number of peers</p>
 <div class="note note">
 <b>Note:</b>

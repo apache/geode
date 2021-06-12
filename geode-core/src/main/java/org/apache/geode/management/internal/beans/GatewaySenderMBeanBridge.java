@@ -89,6 +89,11 @@ public class GatewaySenderMBeanBridge {
     }
   }
 
+  public void clearOverflowStatistics() {
+    overflowMonitor.stopListener();
+    overflowMonitor.clearCounters();
+  }
+
   public void stopMonitor() {
     monitor.stopListener();
   }
@@ -248,9 +253,17 @@ public class GatewaySenderMBeanBridge {
 
   /** Statistics Related Attributes **/
 
+  public int getTotalBatchesDistributed() {
+    return getStatistic(StatsKey.GATEWAYSENDER_BATCHES_DISTRIBUTED).intValue();
+  }
 
   public int getTotalBatchesRedistributed() {
     return getStatistic(StatsKey.GATEWAYSENDER_TOTAL_BATCHES_REDISTRIBUTED).intValue();
+  }
+
+  public int getTotalBatchesWithIncompleteTransactions() {
+    return getStatistic(StatsKey.GATEWAYSENDER_TOTAL_BATCHES_WITH_INCOMPLETE_TRANSACTIONS)
+        .intValue();
   }
 
   public int getTotalEventsConflated() {
@@ -291,6 +304,12 @@ public class GatewaySenderMBeanBridge {
         .longValue();
   }
 
+  public long getTotalQueueSizeBytesInUse() {
+    return overflowMonitor.getStatistic(StatsKey.GATEWAYSENDER_BYTES_IN_MEMORY)
+        .longValue();
+  }
+
+
   private Number getStatistic(String statName) {
     if (monitor != null) {
       return monitor.getStatistic(statName);
@@ -318,10 +337,20 @@ public class GatewaySenderMBeanBridge {
         }
       }
     } else {
-      ConcurrentSerialGatewaySenderEventProcessor cProc =
-          (ConcurrentSerialGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
-              .getEventProcessor();
-      for (SerialGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
+      if (getDispatcherThreads() > 1) {
+        ConcurrentSerialGatewaySenderEventProcessor cProc =
+            (ConcurrentSerialGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
+                .getEventProcessor();
+        for (SerialGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
+          if (lProc.getDispatcher() != null && lProc.getDispatcher().isConnectedToRemote()) {
+            this.dispatcher = lProc.getDispatcher();
+            return true;
+          }
+        }
+      } else {
+        SerialGatewaySenderEventProcessor lProc =
+            (SerialGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
+                .getEventProcessor();
         if (lProc.getDispatcher() != null && lProc.getDispatcher().isConnectedToRemote()) {
           this.dispatcher = lProc.getDispatcher();
           return true;

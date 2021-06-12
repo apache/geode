@@ -29,9 +29,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionAttributes;
@@ -43,10 +45,11 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.cache.wan.parallel.BucketRegionQueueUnavailableException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.concurrent.Atomics;
-import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.internal.offheap.OffHeapClearRequired;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -67,6 +70,8 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * the events that are to be sent to remote site. It is cleared when the queue is cleared.
    */
   private final BlockingDeque<Object> eventSeqNumDeque = new LinkedBlockingDeque<Object>();
+
+  private final List<Object> markAsDuplicate = new ArrayList<Object>();
 
   private long lastKeyRecovered;
 
@@ -202,13 +207,12 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public void beforeAcquiringPrimaryState() {
-    Iterator<Object> itr = eventSeqNumDeque.iterator();
-    markEventsAsDuplicate(itr);
+    markAsDuplicate.addAll(eventSeqNumDeque);
   }
 
   @Override
   public void closeEntries() {
-    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
       @Override
       public void run() {
         BucketRegionQueue.super.closeEntries();
@@ -216,18 +220,20 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     });
     this.indexes.clear();
     this.eventSeqNumDeque.clear();
+    this.markAsDuplicate.clear();
   }
 
   @Override
   public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
     final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
-    OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
+    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
       @Override
       public void run() {
         result.set(BucketRegionQueue.super.clearEntries(rvv));
       }
     });
     this.eventSeqNumDeque.clear();
+    this.markAsDuplicate.clear();
     return result.get();
   }
 
@@ -243,6 +249,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     try {
       this.indexes.clear();
       this.eventSeqNumDeque.clear();
+      this.markAsDuplicate.clear();
     } finally {
       getInitializationLock().writeLock().unlock();
     }
@@ -251,11 +258,11 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   @Override
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModificaiton)
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModification)
       throws TimeoutException, CacheWriterException {
     try {
       boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
-          lastModified, overwriteDestroyed, invokeCallbacks, throwConcurrentModificaiton);
+          lastModified, overwriteDestroyed, invokeCallbacks, throwConcurrentModification);
 
       if (success) {
         if (getPartitionedRegion().getColocatedWith() == null) {
@@ -309,8 +316,9 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         }
         AbstractGatewaySenderEventProcessor ep =
             region.getParallelGatewaySender().getEventProcessor();
-        if (ep == null)
+        if (ep == null) {
           return;
+        }
         ConcurrentParallelGatewaySenderQueue queue =
             (ConcurrentParallelGatewaySenderQueue) ep.getQueue();
         // Give the actual conflation work to another thread.
@@ -422,8 +430,18 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       }
       key = this.eventSeqNumDeque.peekFirst();
       if (key != null) {
+        boolean setDuplicate = markAsDuplicate.remove(key);
+
         object = optimalGet(key);
-        if (object == null && !this.getPartitionedRegion().isConflationEnabled()) {
+        if (object != null) {
+          if (setDuplicate) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("BucketRegionQueue: mark event {} as possible duplicate due to" +
+                  " change of primary bucket.", object);
+            }
+            ((GatewaySenderEventImpl) object).setPossibleDuplicate(true);
+          }
+        } else if (!this.getPartitionedRegion().isConflationEnabled()) {
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "The value against key {} in the bucket region queue with id {} is NULL for the GatewaySender {}",
@@ -453,26 +471,51 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * If a matching object also fulfills the endPredicate then the method
    * stops looking for more matching objects.
    */
-  public List<Object> getElementsMatching(Predicate matchingPredicate, Predicate endPredicate) {
+  public List<Object> getElementsMatching(Predicate<InternalGatewayQueueEvent> matchingPredicate,
+      Predicate<InternalGatewayQueueEvent> endPredicate) {
     getInitializationLock().readLock().lock();
     try {
       if (this.getPartitionedRegion().isDestroyed()) {
         throw new BucketRegionQueueUnavailableException();
       }
-      List<Object> elementsMatching = new ArrayList<Object>();
+      List<Object> elementsMatching = new ArrayList<>();
       Iterator<Object> it = this.eventSeqNumDeque.iterator();
       while (it.hasNext()) {
         Object key = it.next();
-        Object object = optimalGet(key);
-        if (matchingPredicate.test(object)) {
-          elementsMatching.add(object);
+        Object event = optimalGet(key);
+        if (!(event instanceof InternalGatewayQueueEvent)) {
+          continue;
+        }
+        if (matchingPredicate.test((InternalGatewayQueueEvent) event)) {
+          elementsMatching.add(event);
           this.eventSeqNumDeque.remove(key);
-          if (endPredicate.test(object)) {
+          if (endPredicate.test((InternalGatewayQueueEvent) event)) {
             break;
           }
         }
       }
       return elementsMatching;
+    } finally {
+      getInitializationLock().readLock().unlock();
+    }
+  }
+
+  public boolean hasEventsMatching(Predicate<InternalGatewayQueueEvent> matchingPredicate) {
+    getInitializationLock().readLock().lock();
+    try {
+      if (this.getPartitionedRegion().isDestroyed()) {
+        throw new BucketRegionQueueUnavailableException();
+      }
+      for (Object o : eventSeqNumDeque) {
+        Object event = optimalGet(o);
+        if (!(event instanceof InternalGatewayQueueEvent)) {
+          continue;
+        }
+        if (matchingPredicate.test((InternalGatewayQueueEvent) event)) {
+          return true;
+        }
+      }
+      return false;
     } finally {
       getInitializationLock().readLock().unlock();
     }
@@ -640,6 +683,23 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   public boolean isReadyForPeek() {
     return !this.getPartitionedRegion().isDestroyed() && !this.isEmpty()
         && !this.eventSeqNumDeque.isEmpty() && getBucketAdvisor().isPrimary();
+  }
+
+  @VisibleForTesting
+  List<Object> getHelperQueueList() {
+    getInitializationLock().readLock().lock();
+    try {
+      if (this.getPartitionedRegion().isDestroyed()) {
+        throw new BucketRegionQueueUnavailableException();
+      }
+      return eventSeqNumDeque.stream()
+          .map(this::optimalGet)
+          .filter(o -> o instanceof InternalGatewayQueueEvent)
+          .collect(Collectors.toList());
+
+    } finally {
+      getInitializationLock().readLock().unlock();
+    }
   }
 
 }

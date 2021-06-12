@@ -21,21 +21,23 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
 
+  testImplementation(project(':geode-common'))
   compileOnly(project(':geode-core'))
+  compileOnly(project(':geode-membership'))
   compileOnly(project(':geode-logging'))
   compileOnly(project(':geode-serialization'))
   compileOnly(project(':geode-unsafe'))
   compileOnly(project(':geode-gfsh'))
 
   api('junit:junit') {
-    exclude module: 'hamcrest-core'
+    exclude module: 'hamcrest'
   }
   api('org.assertj:assertj-core')
   api('org.mockito:mockito-core')
 
-
+  api('io.github.classgraph:classgraph')
   api('com.fasterxml.jackson.core:jackson-annotations')
   api('com.fasterxml.jackson.core:jackson-databind')
   api('com.github.stefanbirkner:system-rules') {
@@ -50,14 +52,13 @@ dependencies {
   
   api('org.awaitility:awaitility')
   api('org.bouncycastle:bcpkix-jdk15on')
-  api('org.hamcrest:hamcrest-all')
+  api('org.hamcrest:hamcrest')
   api('io.micrometer:micrometer-core')
   
   api('org.skyscreamer:jsonassert')
 
   testImplementation('pl.pragmatists:JUnitParams')
 
-  testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
 test {

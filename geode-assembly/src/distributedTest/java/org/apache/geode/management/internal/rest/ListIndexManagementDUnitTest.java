@@ -35,7 +35,7 @@ import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.EntityGroupInfo;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
 import org.apache.geode.management.configuration.Region;
@@ -185,7 +185,8 @@ public class ListIndexManagementDUnitTest {
   public void getIndex_fails_when_region_name_is_missing_from_filter() {
     indexConfig.setName("index1");
     assertThatThrownBy(() -> cms.get(indexConfig))
-        .hasMessageContaining("Error while extracting response for type");
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Unable to construct the URI with the current configuration");
   }
 
   @Test

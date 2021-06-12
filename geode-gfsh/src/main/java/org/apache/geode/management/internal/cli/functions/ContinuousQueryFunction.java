@@ -32,8 +32,13 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
  */
 public class ContinuousQueryFunction implements InternalFunction<String> {
   private static final long serialVersionUID = 1L;
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ContinuousQueryFunction";
 
-  public static final String ID = ContinuousQueryFunction.class.getName();
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<String> context) {
@@ -96,11 +101,6 @@ public class ContinuousQueryFunction implements InternalFunction<String> {
           .lastResult("Exception in ContinuousQueryFunction =" + e.getMessage());
     }
     context.getResultSender().lastResult(null);
-  }
-
-  @Override
-  public String getId() {
-    return ContinuousQueryFunction.ID;
   }
 
   @Override

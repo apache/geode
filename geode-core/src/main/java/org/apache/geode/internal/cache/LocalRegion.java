@@ -151,12 +151,11 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
@@ -1450,8 +1449,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return result;
   }
 
-
-  private Object getObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
+  @VisibleForTesting
+  Object getObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
       Object localValue, boolean disableCopyOnRead, boolean preferCD,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) {
@@ -1490,10 +1489,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return result;
   }
 
+  @VisibleForTesting
+  Map getGetFutures() {
+    return this.getFutures;
+  }
+
   /**
    * optimized to only allow one thread to do a search/load, other threads wait on a future
    */
-  private Object optimizedGetObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
+  @VisibleForTesting
+  Object optimizedGetObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
       Object localValue, boolean disableCopyOnRead, boolean preferCD,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) {
@@ -1506,9 +1511,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         Object[] valueAndVersion = (Object[]) otherFuture.get();
         if (valueAndVersion != null) {
           result = valueAndVersion[0];
-          if (clientEvent != null) {
-            clientEvent.setVersionTag((VersionTag) valueAndVersion[1]);
-          }
+
           if (!preferCD && result instanceof CachedDeserializable) {
             CachedDeserializable cd = (CachedDeserializable) result;
             if (!disableCopyOnRead && (isCopyOnRead() || isProxy())) {
@@ -1520,12 +1523,19 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           } else if (!disableCopyOnRead) {
             result = conditionalCopy(result);
           }
-          // what was a miss is now a hit
-          if (isCreate) {
-            RegionEntry regionEntry = basicGetEntry(keyInfo.getKey());
-            updateStatsForGet(regionEntry, true);
+          // GEODE-8671: for PdxInstance, we need a new reference of it. Don't use the value from
+          // the Future.
+          if (!(result instanceof PdxInstance)) {
+            if (clientEvent != null) {
+              clientEvent.setVersionTag((VersionTag) valueAndVersion[1]);
+            }
+            // what was a miss is now a hit
+            if (isCreate) {
+              RegionEntry regionEntry = basicGetEntry(keyInfo.getKey());
+              updateStatsForGet(regionEntry, true);
+            }
+            return result;
           }
-          return result;
         }
       } catch (InterruptedException ignore) {
         Thread.currentThread().interrupt();
@@ -1727,17 +1737,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           extractDelta = true;
         }
         if (extractDelta && ((Delta) value).hasDelta()) {
-          HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
-          long start = DistributionStats.getStatTime();
-          try {
-            ((Delta) value).toDelta(hdos);
-          } catch (RuntimeException re) {
-            throw re;
-          } catch (Exception e) {
-            throw new DeltaSerializationException("Caught exception while sending delta", e);
+          try (HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
+            try {
+              ((Delta) value).toDelta(hdos);
+            } catch (RuntimeException re) {
+              throw re;
+            } catch (Exception e) {
+              throw new DeltaSerializationException("Caught exception while sending delta", e);
+            }
+            event.setDeltaBytes(hdos.toByteArray());
           }
-          event.setDeltaBytes(hdos.toByteArray());
-          getCachePerfStats().endDeltaPrepared(start);
         }
       }
     } catch (RuntimeException re) {
@@ -4156,7 +4165,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private void clearViaFilterClass(String key) {
     InterestFilter filter;
     try {
-      Class filterClass = ClassLoadUtil.classFromName(key);
+      Class filterClass = ClassLoadUtils.classFromName(key);
       filter = (InterestFilter) filterClass.newInstance();
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(
@@ -6074,7 +6083,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
 
       InternalCacheEvent ice = (InternalCacheEvent) event;
-      if (!isUsedForPartitionedRegionBucket()) {
+      if (!(this instanceof PartitionedRegion || isUsedForPartitionedRegionBucket())) {
+        // Do not generate local filter routing if partitioned region.
         generateLocalFilterRouting(ice);
       }
 
@@ -8607,6 +8617,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     cmnClearRegion(rEvent, false/* cacheWrite */, false/* useRVV */);
   }
 
+  @Override
   public void handleInterestEvent(InterestRegistrationEvent event) {
     throw new UnsupportedOperationException(
         "Region interest registration is only supported for PartitionedRegions");
@@ -8795,9 +8806,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *        retried client event, we need to make sure we send the original version tag along with
    *        the event.
    * @param callbackArg callback argument from client
+   * @param isRetry whether this is a client retry
    */
   public VersionedObjectList basicBridgePutAll(Map map, Map<Object, VersionTag> retryVersions,
-      ClientProxyMembershipID memberId, EventID eventId, boolean skipCallbacks, Object callbackArg)
+      ClientProxyMembershipID memberId, EventID eventId, boolean skipCallbacks, Object callbackArg,
+      boolean isRetry)
       throws TimeoutException, CacheWriterException {
 
     long startPut = getStatisticsClock().getTime();
@@ -8810,6 +8823,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     try {
       event.setContext(memberId);
+      event.setPossibleDuplicate(isRetry);
       DistributedPutAllOperation putAllOp = new DistributedPutAllOperation(event, map.size(), true);
       try {
         VersionedObjectList result = basicPutAll(map, putAllOp, retryVersions);
@@ -8831,10 +8845,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *        keys slot will be non-null in this collection. Note that keys and retryVersions are
    *        parallel lists.
    * @param callbackArg callback argument from client
+   * @param isRetry whether this is a client retry
    */
   public VersionedObjectList basicBridgeRemoveAll(List<Object> keys,
       ArrayList<VersionTag> retryVersions, ClientProxyMembershipID memberId, EventID eventId,
-      Object callbackArg) throws TimeoutException, CacheWriterException {
+      Object callbackArg, boolean isRetry) throws TimeoutException, CacheWriterException {
 
     long startOp = getStatisticsClock().getTime();
 
@@ -8846,6 +8861,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     try {
       event.setContext(memberId);
+      event.setPossibleDuplicate(isRetry);
       DistributedRemoveAllOperation removeAllOp =
           new DistributedRemoveAllOperation(event, keys.size(), true);
       try {
@@ -9490,6 +9506,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (tagHolder != null) {
         event.setVersionTag(tagHolder.getVersionTag());
         event.setFromServer(tagHolder.isFromServer());
+        event.setPossibleDuplicate(tagHolder.isPossibleDuplicate());
       }
       if (generateEventID()) {
         event.setEventId(new EventID(putallOp.getBaseEvent().getEventId(), offset));
@@ -9526,6 +9543,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (tagHolder != null) {
         event.setVersionTag(tagHolder.getVersionTag());
         event.setFromServer(tagHolder.isFromServer());
+        event.setPossibleDuplicate(tagHolder.isPossibleDuplicate());
       }
       if (generateEventID()) {
         event.setEventId(new EventID(op.getBaseEvent().getEventId(), offset));
@@ -10207,6 +10225,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       long numOverflowBytesOnDisk) {
     getDiskRegion().getStats().incNumEntriesInVM(numEntriesInVM);
     getDiskRegion().getStats().incNumOverflowOnDisk(numOverflowOnDisk);
+    getDiskRegion().getStats().incNumOverflowBytesOnDisk(numOverflowBytesOnDisk);
   }
 
   /**

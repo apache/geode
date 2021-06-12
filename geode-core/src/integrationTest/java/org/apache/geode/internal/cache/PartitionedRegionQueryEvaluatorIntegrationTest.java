@@ -91,8 +91,9 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
     ArrayList buckList = new ArrayList();
     for (Iterator itr = n2bMap.entrySet().iterator(); itr.hasNext();) {
       Map.Entry entry = (Map.Entry) itr.next();
-      if (entry.getValue() != null)
+      if (entry.getValue() != null) {
         buckList.addAll((List) entry.getValue());
+      }
     }
     // checking size of the two lists
     assertEquals("Unexpected number of buckets", totalNoOfBuckets, buckList.size());

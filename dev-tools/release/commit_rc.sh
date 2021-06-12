@@ -109,7 +109,7 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Restoring -build suffix to version"
+echo "Keeping -build.0 suffix"
 echo "============================================================"
 cd ${GEODE}/../..
 set -x
@@ -135,7 +135,7 @@ echo "============================================================"
 echo "Done publishing the release candidate!  Next steps:"
 echo "============================================================"
 cd ${GEODE}/../..
-echo "1. ${0%/*}/deploy_rc_pipeline.sh -v ${VERSION_MM}"
+echo "1. In a separate terminal window, ${0%/*}/deploy_rc_pipeline.sh -v ${VERSION_MM}"
 echo "2. Monitor https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-rc until all green"
 echo "3. Send the following email to announce the RC:"
 echo "To: dev@geode.apache.org"

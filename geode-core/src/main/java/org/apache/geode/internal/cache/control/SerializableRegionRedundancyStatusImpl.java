@@ -56,7 +56,9 @@ public class SerializableRegionRedundancyStatusImpl extends
     int minRedundancy = Integer.MAX_VALUE;
     for (int i = 0; i < numBuckets; i++) {
       int bucketRedundancy = region.getRegionAdvisor().getBucketRedundancy(i);
-      if (bucketRedundancy < minRedundancy) {
+      // Only consider redundancy for buckets that exist. Buckets that have not been created yet
+      // have a redundancy value of -1
+      if (bucketRedundancy != -1 && bucketRedundancy < minRedundancy) {
         minRedundancy = bucketRedundancy;
       }
     }

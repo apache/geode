@@ -28,19 +28,9 @@ import org.apache.geode.internal.statistics.StatisticsClock;
  *
  * @since GemFire 7.0
  */
-public abstract class Manager {
+public abstract class Manager implements ManagerLifecycle {
 
   protected final InternalCacheForClientAccess cache;
-
-  /**
-   * depicts whether this node is a Managing node or not
-   */
-  protected volatile boolean running;
-
-  /**
-   * depicts whether this node is a Managing node or not
-   */
-  protected volatile boolean stopCacheOps;
 
   /**
    * This is a single window to manipulate region resources for management
@@ -56,20 +46,21 @@ public abstract class Manager {
 
   protected final StatisticsClock statisticsClock;
 
-  public Manager(ManagementResourceRepo repo, InternalDistributedSystem system,
-      InternalCache cache, StatisticsFactory statisticsFactory, StatisticsClock statisticsClock) {
+  /**
+   * True if this node is a Geode JMX manager.
+   */
+  protected volatile boolean running;
+
+  protected volatile boolean stopCacheOps;
+
+  Manager(ManagementResourceRepo repo, InternalDistributedSystem system, InternalCache cache,
+      StatisticsFactory statisticsFactory, StatisticsClock statisticsClock) {
     this.repo = repo;
     this.cache = cache.getCacheForProcessingClientRequests();
     this.system = system;
     this.statisticsFactory = statisticsFactory;
     this.statisticsClock = statisticsClock;
   }
-
-  public abstract boolean isRunning();
-
-  public abstract void startManager();
-
-  public abstract void stopManager();
 
   @VisibleForTesting
   public ManagementResourceRepo getManagementResourceRepo() {

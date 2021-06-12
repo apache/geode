@@ -45,6 +45,10 @@ public class CommandResult implements Result {
     return result;
   }
 
+  public String getType() {
+    return "model";
+  }
+
   @Override
   public Status getStatus() {
     return result.getStatus();
@@ -74,7 +78,7 @@ public class CommandResult implements Result {
   private void buildCommandOutput() {
     commandOutputIndex = 0;
     commandOutput = new ArrayList<>();
-    TableBuilder.Table resultTable = TableBuilder.newTable();
+    Table resultTable = new TableBuilder().newTable();
 
     addSpacedRowInTable(resultTable, result.getHeader());
 
@@ -103,48 +107,44 @@ public class CommandResult implements Result {
     commandOutput.addAll(resultTable.buildTableList());
   }
 
-  private void addSpacedRowInTable(TableBuilder.Table resultTable, String row) {
+  private void addSpacedRowInTable(Table resultTable, String row) {
     if (StringUtils.isNotBlank(row)) {
       resultTable.newRow().newLeftCol(row);
     }
   }
 
-  private void addRowInRowGroup(TableBuilder.RowGroup rowGroup, String row) {
+  private void addRowInRowGroup(RowGroup rowGroup, String row) {
     if (StringUtils.isNotBlank(row)) {
       rowGroup.newRow().newLeftCol(row);
     }
   }
 
-  public String getType() {
-    return "model";
-  }
-
-  private void buildTabularCommandOutput(TableBuilder.Table resultTable, TabularResultModel model) {
+  private void buildTabularCommandOutput(Table resultTable, TabularResultModel model) {
     addSpacedRowInTable(resultTable, model.getHeader());
 
     resultTable.setColumnSeparator("   ");
     resultTable.setTabularResult(true);
 
-    TableBuilder.RowGroup rowGroup = resultTable.newRowGroup();
+    RowGroup rowGroup = resultTable.newRowGroup();
     buildTable(rowGroup, model);
 
     addSpacedRowInTable(resultTable, model.getFooter());
   }
 
-  private void buildTable(TableBuilder.RowGroup rowGroup, TabularResultModel model) {
-    TableBuilder.Row headerRow = rowGroup.newRow();
+  private void buildTable(RowGroup rowGroup, TabularResultModel model) {
+    Row headerRow = rowGroup.newRow();
     rowGroup.setColumnSeparator(" | ");
     rowGroup.newRowSeparator('-', false);
 
     Map<String, List<String>> rows = model.getContent();
     if (!rows.isEmpty()) {
       // build table header first
-      rows.keySet().forEach(c -> headerRow.newCenterCol(c));
+      rows.keySet().forEach(headerRow::newCenterCol);
 
       // each row should have the same number of entries, so just look at the first one
       int rowCount = rows.values().iterator().next().size();
       for (int i = 0; i < rowCount; i++) {
-        TableBuilder.Row oneRow = rowGroup.newRow();
+        Row oneRow = rowGroup.newRow();
         for (String column : rows.keySet()) {
           oneRow.newLeftCol(rows.get(column).get(i));
         }
@@ -152,15 +152,15 @@ public class CommandResult implements Result {
     }
   }
 
-  private void buildData(TableBuilder.Table resultTable, DataResultModel section) {
-    TableBuilder.RowGroup rowGroup = resultTable.newRowGroup();
+  private void buildData(Table resultTable, DataResultModel section) {
+    RowGroup rowGroup = resultTable.newRowGroup();
     rowGroup.setColumnSeparator(" : ");
 
     addRowInRowGroup(rowGroup, section.getHeader());
 
     // finally process map values
     for (Map.Entry<String, String> entry : section.getContent().entrySet()) {
-      TableBuilder.Row newRow = rowGroup.newRow();
+      Row newRow = rowGroup.newRow();
       String key = entry.getKey();
       String[] values = entry.getValue().split(GfshParser.LINE_SEPARATOR);
       if (values.length == 1) {
@@ -181,22 +181,13 @@ public class CommandResult implements Result {
     addRowInRowGroup(rowGroup, section.getFooter());
   }
 
-  private void buildInfoOrErrorCommandOutput(TableBuilder.Table resultTable,
-      InfoResultModel model) {
-    TableBuilder.RowGroup rowGroup = resultTable.newRowGroup();
+  private void buildInfoOrErrorCommandOutput(Table resultTable, InfoResultModel model) {
+    RowGroup rowGroup = resultTable.newRowGroup();
 
     addRowInRowGroup(rowGroup, model.getHeader());
 
     model.getContent().forEach(c -> rowGroup.newRow().newLeftCol(c));
 
     addRowInRowGroup(rowGroup, model.getFooter());
-  }
-
-  public static CommandResult createInfo(String info) {
-    return new CommandResult(new ResultModel().createInfo(info));
-  }
-
-  public static CommandResult createError(String info) {
-    return new CommandResult(new ResultModel().createError(info));
   }
 }

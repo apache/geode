@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -45,7 +46,6 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.execute.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Order;
@@ -73,7 +73,7 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         createRegion(accessor, 0, null);
         if (startServer) {
-          int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+          int port = getRandomAvailableTCPPort();
           CacheServer s = getCache().addCacheServer();
           s.setPort(port);
           s.start();
@@ -200,8 +200,9 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
+      }
       if (obj instanceof Customer) {
         Customer other = (Customer) obj;
         return this.id == other.id && this.name.equals(other.name);

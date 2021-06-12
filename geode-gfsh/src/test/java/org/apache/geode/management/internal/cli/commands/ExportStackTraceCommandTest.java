@@ -59,7 +59,7 @@ public class ExportStackTraceCommandTest {
 
   @Test
   public void noMemberFound() {
-    doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
+    doReturn(Collections.emptySet()).when(command).findMembersIncludingLocators(any(), any());
     gfsh.executeAndAssertThat(command, "export stack-traces").statusIsError()
         .containsOutput("No Members Found");
   }
@@ -72,7 +72,7 @@ public class ExportStackTraceCommandTest {
         .statusIsError().containsOutput("already present");
 
     // try again without the flag, the command should continue after the check
-    doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
+    doReturn(Collections.emptySet()).when(command).findMembersIncludingLocators(any(), any());
     gfsh.executeAndAssertThat(command, "export stack-traces --file=" + file.getAbsolutePath())
         .statusIsError().containsOutput("No Members Found");
   }

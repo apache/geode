@@ -31,8 +31,6 @@ import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * FunctionContext for remote/target nodes
- *
- *
  */
 public class FunctionRemoteContext implements DataSerializable {
 
@@ -50,16 +48,19 @@ public class FunctionRemoteContext implements DataSerializable {
 
   private Function function;
 
+  private Object principal;
+
   public FunctionRemoteContext() {}
 
   public FunctionRemoteContext(final Function function, Object object, Set filter,
-      int[] bucketArray, boolean isReExecute, boolean isFnSerializationReqd) {
+      int[] bucketArray, boolean isReExecute, boolean isFnSerializationReqd, Object principal) {
     this.function = function;
     this.args = object;
     this.filter = filter;
     this.bucketArray = bucketArray;
     this.isReExecute = isReExecute;
     this.isFnSerializationReqd = isFnSerializationReqd;
+    this.principal = principal;
   }
 
   @Override
@@ -84,6 +85,15 @@ public class FunctionRemoteContext implements DataSerializable {
       this.bucketArray = BucketSetHelper.fromSet(bucketSet);
     }
     this.isReExecute = DataSerializer.readBoolean(in);
+
+    KnownVersion dataStreamVersion = StaticSerialization.getVersionForDataStream(in);
+    if (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_14_0)
+        || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_12_1)
+            && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_13_0))
+        || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_13_1)
+            && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_14_0))) {
+      this.principal = DataSerializer.readObject(in);
+    }
   }
 
   @Override
@@ -103,6 +113,15 @@ public class FunctionRemoteContext implements DataSerializable {
       DataSerializer.writeHashSet((HashSet) bucketSet, out);
     }
     DataSerializer.writeBoolean(this.isReExecute, out);
+
+    KnownVersion dataStreamVersion = StaticSerialization.getVersionForDataStream(out);
+    if (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_14_0)
+        || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_12_1)
+            && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_13_0))
+        || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_13_1)
+            && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_14_0))) {
+      DataSerializer.writeObject(this.principal, out);
+    }
   }
 
   public Set getFilter() {
@@ -127,6 +146,10 @@ public class FunctionRemoteContext implements DataSerializable {
 
   public String getFunctionId() {
     return functionId;
+  }
+
+  public Object getPrincipal() {
+    return principal;
   }
 
   @Override

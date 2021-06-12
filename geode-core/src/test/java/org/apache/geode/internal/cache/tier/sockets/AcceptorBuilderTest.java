@@ -190,18 +190,6 @@ public class AcceptorBuilderTest {
   }
 
   @Test
-  public void forServerSetsServerConnectionFactoryFromServer() {
-    InternalCacheServer server = mock(InternalCacheServer.class);
-    ServerConnectionFactory serverConnectionFactory = mock(ServerConnectionFactory.class);
-    when(server.getServerConnectionFactory()).thenReturn(serverConnectionFactory);
-    AcceptorBuilder builder = new AcceptorBuilder();
-
-    builder.forServer(server);
-
-    assertThat(builder.getServerConnectionFactory()).isEqualTo(serverConnectionFactory);
-  }
-
-  @Test
   public void forServerSetsTimeLimitMillisFromServer() {
     InternalCacheServer server = mock(InternalCacheServer.class);
     long timeLimitMillis = Long.MAX_VALUE - 1;

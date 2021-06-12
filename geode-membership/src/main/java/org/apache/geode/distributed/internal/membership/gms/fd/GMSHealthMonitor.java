@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.jgroups.util.UUID;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
@@ -70,7 +71,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequ
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
-import org.apache.geode.internal.lang.JavaWorkarounds;
+import org.apache.geode.internal.lang.utils.JavaWorkarounds;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -130,7 +131,11 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   public static final long MEMBER_SUSPECT_COLLECTION_INTERVAL =
       Long.getLong("geode.suspect-member-collection-interval", 200);
 
-  private volatile long currentTimeStamp;
+  /**
+   * A millisecond clock reading used to mark the last time a peer made contact.
+   */
+  @VisibleForTesting
+  volatile long currentTimeStamp;
 
   /**
    * this member's ID
@@ -152,7 +157,8 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   /**
    * Members undergoing final checks
    */
-  private final List<ID> membersInFinalCheck =
+  @VisibleForTesting
+  final List<ID> membersInFinalCheck =
       Collections.synchronizedList(new ArrayList<>(30));
 
   /**
@@ -206,7 +212,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
    * /**
    * this class is to avoid garbage
    */
-  private static class TimeStamp {
+  static class TimeStamp {
 
     private volatile long timeStamp;
 
@@ -257,6 +263,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
           return;
         }
 
+        // TODO - why are we taking two clock readings and setting currentTimeStamp twice?
         long currentTime = System.currentTimeMillis();
         // this is the start of interval to record member activity
         GMSHealthMonitor.this.currentTimeStamp = currentTime;
@@ -339,11 +346,10 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
 
     @Override
     public void run() {
-      try {
+      try (DataInputStream in = new DataInputStream(socket.getInputStream())) {
         socket.setTcpNoDelay(true);
-        DataInputStream in = new DataInputStream(socket.getInputStream());
         OutputStream out = socket.getOutputStream();
-        @SuppressWarnings("UnusedAssignment")
+        @SuppressWarnings("UnusedVariable")
         short version = in.readShort();
         int vmViewId = in.readInt();
         long uuidLSBs = in.readLong();
@@ -583,6 +589,9 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
         // this is expected if it is a connection-timeout or other failure
         // to connect
       } catch (IllegalStateException e) {
+        // This is expected if ConnectTimeoutTask is scheduled on a timer that was already
+        // cancelled.
+        // Once a timer has been terminated, no more tasks may be scheduled on it.
         if (!isStopping) {
           logger.trace("Unexpected exception", e);
         }
@@ -661,7 +670,13 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   @Override
   public boolean checkIfAvailable(ID mbr, String reason,
       boolean initiateRemoval) {
-    if (membersInFinalCheck.contains(mbr)) {
+    return checkIfAvailable(mbr, reason, initiateRemoval, true);
+  }
+
+  @Override
+  public boolean checkIfAvailable(ID mbr, String reason,
+      boolean initiateRemoval, boolean assumeMembersInFinalCheckAreAvailable) {
+    if (assumeMembersInFinalCheckAreAvailable && membersInFinalCheck.contains(mbr)) {
       return true; // status unknown for now but someone is checking
     }
     return inlineCheckIfAvailable(localAddress, currentView, initiateRemoval,
@@ -670,7 +685,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
 
   @Override
   public void start() throws MemberStartupException {
-    scheduler = LoggingExecutors.newScheduledThreadPool("Geode Failure Detection Scheduler", 1);
+    scheduler = LoggingExecutors.newScheduledThreadPool(1, "Geode Failure Detection Scheduler");
     checkExecutor = LoggingExecutors.newCachedThreadPool("Geode Failure Detection thread ", true);
     Monitor m = this.new Monitor(memberTimeout);
     monitorInterval = memberTimeout / LOGICAL_INTERVAL;
@@ -743,82 +758,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
    * process
    */
   private void startHeartbeatThread() {
-    checkExecutor.execute(new Runnable() {
-      @Override
-      public void run() {
-        Thread.currentThread().setName("Geode Heartbeat Sender");
-        sendPeriodicHeartbeats();
-      }
-
-      private void sendPeriodicHeartbeats() {
-        while (!isStopping && !services.getCancelCriterion().isCancelInProgress()) {
-          try {
-            Thread.sleep(memberTimeout / LOGICAL_INTERVAL);
-          } catch (InterruptedException e) {
-            return;
-          }
-          GMSMembershipView<ID> v = currentView;
-          if (v != null) {
-            List<ID> mbrs = v.getMembers();
-            int index = mbrs.indexOf(localAddress);
-            if (index < 0 || mbrs.size() < 2) {
-              continue;
-            }
-            if (!playingDead) {
-              sendHeartbeats(mbrs, index);
-            }
-          }
-        }
-      }
-
-      private void sendHeartbeats(List<ID> mbrs, int startIndex) {
-        ID coordinator = currentView.getCoordinator();
-        if (coordinator != null && !coordinator.equals(localAddress)) {
-          HeartbeatMessage<ID> message = new HeartbeatMessage<>(-1);
-          message.setRecipient(coordinator);
-          try {
-            if (isStopping) {
-              return;
-            }
-            services.getMessenger().sendUnreliably(message);
-            GMSHealthMonitor.this.stats.incHeartbeatsSent();
-          } catch (MembershipClosedException e) {
-            return;
-          }
-        }
-
-        int index = startIndex;
-        int numSent = 0;
-        for (;;) {
-          index--;
-          if (index < 0) {
-            index = mbrs.size() - 1;
-          }
-          ID mbr = mbrs.get(index);
-          if (mbr.equals(localAddress)) {
-            break;
-          }
-          if (mbr.equals(coordinator)) {
-            continue;
-          }
-          if (isStopping) {
-            return;
-          }
-          HeartbeatMessage<ID> message = new HeartbeatMessage<>(-1);
-          message.setRecipient(mbr);
-          try {
-            services.getMessenger().sendUnreliably(message);
-            GMSHealthMonitor.this.stats.incHeartbeatsSent();
-            numSent++;
-            if (numSent >= NUM_HEARTBEATS) {
-              break;
-            }
-          } catch (MembershipClosedException e) {
-            return;
-          }
-        }
-      } // for (;;)
-    });
+    checkExecutor.execute(new Heart());
   }
 
   @Override
@@ -1240,7 +1180,11 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     if (isStopping) {
       return;
     }
-    contactedBy(m.getSuspect());
+    // if we're currently processing a final-check for this member don't artificially update the
+    // timestamp of the member or the final-check will be invalid
+    if (!membersInFinalCheck.contains(m.getSuspect())) {
+      contactedBy(m.getSuspect());
+    }
   }
 
 
@@ -1518,5 +1462,118 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
 
   public MembershipStatistics getStats() {
     return this.stats;
+  }
+
+  @FunctionalInterface
+  interface Sleeper {
+    void sleep(long millis) throws InterruptedException;
+  }
+
+  @FunctionalInterface
+  interface NanoTimer {
+    long nanoTime();
+  }
+
+  @FunctionalInterface
+  interface Warner {
+    void warn(String message);
+  }
+
+  class Heart implements Runnable {
+
+    // If we sleep longer than this number of periods then log a warning
+    public static final int OVERSLEEP_WARNING_THRESHOLD_PERIODS = 2;
+    public final long sleepPeriodMillis = memberTimeout / LOGICAL_INTERVAL;
+    public final long sleepPeriodNanos =
+        TimeUnit.NANOSECONDS.convert(sleepPeriodMillis, TimeUnit.MILLISECONDS);
+    public final long sleepLimitNanos = OVERSLEEP_WARNING_THRESHOLD_PERIODS * sleepPeriodNanos;
+
+    @Override
+    public void run() {
+      Thread.currentThread().setName("Geode Heartbeat Sender");
+      sendPeriodicHeartbeats(Thread::sleep, System::nanoTime, logger::warn);
+    }
+
+    @VisibleForTesting
+    void sendPeriodicHeartbeats(final Sleeper sleeper,
+        final NanoTimer nanoTimer,
+        final Warner warner) {
+      while (!isStopping && !services.getCancelCriterion().isCancelInProgress()) {
+        try {
+          final long timeBeforeSleep = nanoTimer.nanoTime();
+          sleeper.sleep(sleepPeriodMillis);
+          final long timeAfterSleep = nanoTimer.nanoTime();
+          final long asleepNanos = timeAfterSleep - timeBeforeSleep;
+          if (asleepNanos > sleepLimitNanos) {
+            warner.warn(
+                String.format(
+                    "Failure detection heartbeat-generation thread overslept by more than a full period. Asleep time: %,d nanoseconds. Period: %,d nanoseconds.",
+                    asleepNanos, sleepPeriodNanos));
+          }
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return;
+        }
+        GMSMembershipView<ID> v = currentView;
+        if (v != null) {
+          List<ID> mbrs = v.getMembers();
+          int index = mbrs.indexOf(localAddress);
+          if (index < 0 || mbrs.size() < 2) {
+            continue;
+          }
+          if (!playingDead) {
+            sendHeartbeats(mbrs, index);
+          }
+        }
+      }
+    }
+
+    private void sendHeartbeats(List<ID> mbrs, int startIndex) {
+      ID coordinator = currentView.getCoordinator();
+      if (coordinator != null && !coordinator.equals(localAddress)) {
+        HeartbeatMessage<ID> message = new HeartbeatMessage<>(-1);
+        message.setRecipient(coordinator);
+        try {
+          if (isStopping) {
+            return;
+          }
+          services.getMessenger().sendUnreliably(message);
+          GMSHealthMonitor.this.stats.incHeartbeatsSent();
+        } catch (MembershipClosedException e) {
+          return;
+        }
+      }
+
+      int index = startIndex;
+      int numSent = 0;
+      for (;;) {
+        index--;
+        if (index < 0) {
+          index = mbrs.size() - 1;
+        }
+        ID mbr = mbrs.get(index);
+        if (mbr.equals(localAddress)) {
+          break;
+        }
+        if (mbr.equals(coordinator)) {
+          continue;
+        }
+        if (isStopping) {
+          return;
+        }
+        HeartbeatMessage<ID> message = new HeartbeatMessage<>(-1);
+        message.setRecipient(mbr);
+        try {
+          services.getMessenger().sendUnreliably(message);
+          GMSHealthMonitor.this.stats.incHeartbeatsSent();
+          numSent++;
+          if (numSent >= NUM_HEARTBEATS) {
+            break;
+          }
+        } catch (MembershipClosedException e) {
+          return;
+        }
+      }
+    } // for (;;)
   }
 }

@@ -387,7 +387,7 @@ public class CacheManagementDUnitTest implements Serializable {
 
       for (DistributedMember member : otherMembers) {
         Set<ObjectName> proxyNames =
-            service.getFederatingManager().getProxyFactory().findAllProxies(member);
+            service.getFederatingManager().proxyFactory().findAllProxies(member);
         assertThat(proxyNames).isEmpty();
 
         ObjectName proxyMBeanName = service.getMemberMBeanName(member);

@@ -300,7 +300,7 @@ If the specified directory does not exist, the command will create the directory
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-compaction-threshold</span></td>
-<td>Percentage of garbage allowed before the disk store is eligible for compaction.</td>
+<td>Percentage of non-garbage remaining, below which the disk store is eligible for compaction.</td>
 <td>50</td>
 </tr>
 <tr>
@@ -423,13 +423,13 @@ if this option is specified and cluster configuration is enabled.
 <tr>
 <td><span class="keyword parmname">\-\-start-port</span></td>
 <td><p>Starting port number to use when specifying the range of possible port numbers this gateway receiver will use to connects to gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
-<p>The <code class="ph codeph">STARTPORT</code> value is inclusive while the <code class="ph codeph">ENDPORT</code> value is exclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPORT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
+<p>The <code class="ph codeph">start-port</code> and <code class="ph codeph">end-port</code> values are inclusive. For example, if you specify <code class="ph codeph">start-port=&quot;50510&quot;</code> and <code class="ph codeph">end-port=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50520.</p></td>
 <td>5000</td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-end-port</span></td>
 <td><p>Defines the upper bound port number to use when specifying the range of possible port numbers this gateway receiver will use to for connections from gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
-<p>The <code class="ph codeph">ENDPORT</code> value is exclusive while the <code class="ph codeph">STARTPORT</code> value is inclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPORT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
+<p>The <code class="ph codeph">end-port</code> and <code class="ph codeph">start-port</code> values are inclusive. For example, if you specify <code class="ph codeph">start-port=&quot;50510&quot;</code> and <code class="ph codeph">end-port=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50520.</p></td>
 <td>5500</td>
 </tr>
 <tr>
@@ -636,8 +636,14 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 <td><span class="keyword parmname">\-\-group-transaction-events</span></td>
 <td>Boolean value to ensure that all the events of a transaction are sent in the same batch, i.e., they are never spread across different batches.
 <p>Only allowed to be set on gateway senders with the <code class="ph codeph">parallel</code> attribute set to false and <code class="ph codeph">dispatcher-threads</code> attribute equal to 1, or on gateway senders with the <code class="ph codeph">parallel</code> attribute set to true. Also, the  <code class="ph codeph">enable-batch-conflation</code> attribute of the gateway sender must be set to false.</p>
-<p><b>Note:</b> In order to work for a transaction, the regions to which the transaction events belong must be replicated by the same set of senders with this flag enabled.</p></td>
+<p><b>Note:</b> In order to work for a transaction, the regions to which the transaction events belong must be replicated by the same set of senders with this flag enabled.</p>
+<p><b>Note:</b> If the above condition is not fulfilled or under very high load traffic conditions, it may not be guaranteed that all the events for a transaction will be sent in the same batch, even if <code class="ph codeph">group-transaction-events</code> is enabled. The number of batches sent with incomplete transactions can be retrieved from the <code class="ph codeph">GatewaySenderMXBean</code> bean.</p></td>
+<td>false</td>
 </td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-enforce-threads-connect-same-receiver</span></td>
+<td>This parameter applies only to serial gateway senders. If true, receiver member id is checked by all dispatcher threads when the connection is established to ensure they connect to the same receiver. Instead of starting all dispatcher threads in parallel, one thread is started first, and after that the rest are started in parallel.</td>
 <td>false</td>
 </tr>
 </tbody>

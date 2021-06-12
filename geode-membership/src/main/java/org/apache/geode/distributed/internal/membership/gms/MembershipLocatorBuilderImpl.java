@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
@@ -27,6 +26,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorBuilder;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
 import org.apache.geode.distributed.internal.membership.gms.locator.MembershipLocatorImpl;
+import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.ProtocolChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
@@ -37,7 +37,7 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
     MembershipLocatorBuilder<ID> {
   private final DSFIDSerializer serializer;
   private int port = 0;
-  private InetAddress bindAddress = null;
+  private HostAddress bindAddress = null;
   private ProtocolChecker protocolChecker = (socket, input, firstByte) -> false;
   private TcpHandler fallbackHandler = new TcpHandlerNoOp();
   private MembershipLocatorStatistics locatorStats = new MembershipLocatorStatisticsNoOp();
@@ -65,7 +65,7 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
   }
 
   @Override
-  public MembershipLocatorBuilder<ID> setBindAddress(InetAddress bindAddress) {
+  public MembershipLocatorBuilder<ID> setBindAddress(HostAddress bindAddress) {
     this.bindAddress = bindAddress;
     return this;
   }

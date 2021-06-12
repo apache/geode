@@ -464,7 +464,8 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
   }
 
   @Override
-  public void notifyListeners(final Set<ResourceListener> listeners, final ResourceEvent event) {
+  public void notifyListeners(final Set<ResourceListener<?>> listeners,
+      final ResourceEvent event) {
     for (ResourceListener listener : listeners) {
       try {
         listener.onEvent(event);

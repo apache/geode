@@ -17,6 +17,8 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -33,12 +35,12 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.ClientSideHandshakeImpl;
 import org.apache.geode.cache.client.internal.ConnectionFactoryImpl;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.tier.ConnectionProxy;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -121,7 +123,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
     factory.setDataPolicy(DataPolicy.REPLICATE);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
@@ -156,13 +158,17 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
    */
   @Test
   public void testHigherVersionedClient() {
-    Integer port1 = ((Integer) server1
+    Integer port1 = (server1
         .invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.createServerCache()));
 
     client1.invoke(
         () -> BackwardCompatibilityHigherVersionClientDUnitTest.setHandshakeVersionForTesting());
-    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port1));
+
+    assertThatThrownBy(() -> client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port1)))
+            .getCause().isInstanceOf(ServerRefusedConnectionException.class)
+            .hasMessageContaining("refused connection: Peer or client version with ordinal");
+
     client1.invoke(
         () -> BackwardCompatibilityHigherVersionClientDUnitTest.verifyConnectionToServerFailed());
   }

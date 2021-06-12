@@ -37,7 +37,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.DiskDir;
 import org.apache.geode.management.configuration.DiskStore;
 import org.apache.geode.management.configuration.Index;
@@ -122,7 +122,7 @@ public class JQFilterVerificationDUnitTest {
         getJqResponse(uri, apiWithJQFilters.remove(uri).get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
-    Assertions.assertThat(response.getOutput()).contains("\"name\": \"locator-0\"");
+    Assertions.assertThat(response.getOutput()).contains("\"name\":\"locator-0\"");
   }
 
   @Test
@@ -132,7 +132,7 @@ public class JQFilterVerificationDUnitTest {
         apiWithJQFilters.remove("/v1/members/{id}").get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
-    Assertions.assertThat(response.getOutput()).contains("\"name\": \"locator-0\"");
+    Assertions.assertThat(response.getOutput()).contains("\"name\":\"locator-0\"");
   }
 
   @Test
@@ -142,7 +142,7 @@ public class JQFilterVerificationDUnitTest {
         getJqResponse(uri, apiWithJQFilters.remove(uri).get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
-    Assertions.assertThat(response.getOutput()).contains("\"name\": \"regionA\"");
+    Assertions.assertThat(response.getOutput()).contains("\"name\":\"regionA\"");
   }
 
   JqResponse getJqResponse(String uri, String jqFilter) throws IOException {
@@ -159,7 +159,7 @@ public class JQFilterVerificationDUnitTest {
         apiWithJQFilters.remove("/v1/regions/{id}").get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
-    Assertions.assertThat(response.getOutput()).contains("\"name\": \"regionA\"");
+    Assertions.assertThat(response.getOutput()).contains("\"name\":\"regionA\"");
   }
 
   @Test
@@ -169,7 +169,7 @@ public class JQFilterVerificationDUnitTest {
         getJqResponse(uri, apiWithJQFilters.remove(uri).get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
-    Assertions.assertThat(response.getOutput()).contains("\"name\": \"index1\"");
+    Assertions.assertThat(response.getOutput()).contains("\"name\":\"index1\"");
   }
 
   @Test
@@ -179,7 +179,7 @@ public class JQFilterVerificationDUnitTest {
         .remove("/v1/regions/{regionName}/indexes").get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
-    Assertions.assertThat(response.getOutput()).contains("\"name\": \"index1\"");
+    Assertions.assertThat(response.getOutput()).contains("\"name\":\"index1\"");
   }
 
   @Test
@@ -189,7 +189,7 @@ public class JQFilterVerificationDUnitTest {
         .remove("/v1/regions/{regionName}/indexes/{id}").get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
-    Assertions.assertThat(response.getOutput()).contains("\"name\": \"index1\"");
+    Assertions.assertThat(response.getOutput()).contains("\"name\":\"index1\"");
   }
 
   @Test
@@ -199,8 +199,8 @@ public class JQFilterVerificationDUnitTest {
         getJqResponse(uri, apiWithJQFilters.remove(uri).get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
-    Assertions.assertThat(response.getOutput()).contains("\"Member\": \"server-1\"");
-    Assertions.assertThat(response.getOutput()).contains("\"Disk Store Name\": \"diskstore1\"");
+    Assertions.assertThat(response.getOutput()).contains("\"Member\":\"server-1\"");
+    Assertions.assertThat(response.getOutput()).contains("\"Disk Store Name\":\"diskstore1\"");
   }
 
   @Test
@@ -212,7 +212,7 @@ public class JQFilterVerificationDUnitTest {
     response.getErrors().forEach(System.out::println);
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
-    Assertions.assertThat(response.getOutput()).contains("\"Member\": \"server-1\"");
-    Assertions.assertThat(response.getOutput()).contains("\"Disk Store Name\": \"diskstore1\"");
+    Assertions.assertThat(response.getOutput()).contains("\"Member\":\"server-1\"");
+    Assertions.assertThat(response.getOutput()).contains("\"Disk Store Name\":\"diskstore1\"");
   }
 }

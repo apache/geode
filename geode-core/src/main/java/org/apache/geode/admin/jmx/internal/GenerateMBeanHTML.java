@@ -33,8 +33,8 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ExitCode;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 
 /**
  * A tool that reads the XML description of MBeans used with the Jakarta Commons Modeler and
@@ -491,7 +491,11 @@ public class GenerateMBeanHTML extends DefaultHandler {
     }
 
     File htmlFile = new File(htmlFileName);
-    convert(new FileInputStream(xmlFile), new PrintWriter(new FileWriter(htmlFile), true));
+    try (FileInputStream fileInputStream = new FileInputStream(xmlFile);
+        FileWriter fileWriter = new FileWriter(htmlFile);
+        PrintWriter printWriter = new PrintWriter(fileWriter, true)) {
+      convert(fileInputStream, printWriter);
+    }
   }
 
 }

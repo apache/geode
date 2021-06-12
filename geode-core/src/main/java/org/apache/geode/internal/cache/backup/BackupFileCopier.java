@@ -31,15 +31,14 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
+import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.configuration.Deployment;
 
 class BackupFileCopier {
   private static final Logger logger = LogService.getLogger();
@@ -49,12 +48,15 @@ class BackupFileCopier {
 
   private final InternalCache cache;
   private final TemporaryBackupFiles temporaryFiles;
+  private final JarDeploymentService jarDeploymentService;
   private final BackupDefinition backupDefinition = new BackupDefinition();
   private final Path userDirectory;
   private final Path configDirectory;
 
-  BackupFileCopier(InternalCache cache, TemporaryBackupFiles temporaryFiles) {
+  BackupFileCopier(InternalCache cache, JarDeploymentService jarDeploymentService,
+      TemporaryBackupFiles temporaryFiles) {
     this.cache = cache;
+    this.jarDeploymentService = jarDeploymentService;
     this.temporaryFiles = temporaryFiles;
     userDirectory = temporaryFiles.getDirectory().resolve(USER_FILES);
     configDirectory = temporaryFiles.getDirectory().resolve(CONFIG_DIRECTORY);
@@ -119,26 +121,14 @@ class BackupFileCopier {
   Set<File> copyDeployedJars() throws IOException {
     ensureExistence(userDirectory);
     Set<File> userJars = new HashSet<>();
-    JarDeployer deployer = null;
-    try {
-      // Suspend any user deployed jar file updates during this backup.
-      deployer = getJarDeployer();
-      deployer.suspendAll();
-
-      List<DeployedJar> jarList = deployer.findDeployedJars();
-      for (DeployedJar jar : jarList) {
-        File source = new File(jar.getFileCanonicalPath());
-        String sourceFileName = source.getName();
-        Path destination = userDirectory.resolve(sourceFileName);
-        Files.copy(source.toPath(), destination, StandardCopyOption.COPY_ATTRIBUTES);
-        backupDefinition.addDeployedJarToBackup(destination, source.toPath());
-        userJars.add(source);
-      }
-    } finally {
-      // Re-enable user deployed jar file updates.
-      if (deployer != null) {
-        deployer.resumeAll();
-      }
+    List<Deployment> deployments = jarDeploymentService.listDeployed();
+    for (Deployment deployment : deployments) {
+      File source = deployment.getFile();
+      String sourceFileName = source.getName();
+      Path destination = userDirectory.resolve(sourceFileName);
+      Files.copy(source.toPath(), destination, StandardCopyOption.COPY_ATTRIBUTES);
+      backupDefinition.addDeployedJarToBackup(destination, source.toPath());
+      userJars.add(source);
     }
     return userJars;
   }
@@ -182,10 +172,6 @@ class BackupFileCopier {
     }
 
     backupDefinition.addOplogFileToBackup(diskStore, tempDiskDir.resolve(file.getName()));
-  }
-
-  JarDeployer getJarDeployer() {
-    return ClassPathLoader.getLatest().getJarDeployer();
   }
 
   void createLink(Path link, Path existing) throws IOException {

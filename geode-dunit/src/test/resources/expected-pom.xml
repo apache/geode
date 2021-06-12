@@ -201,7 +201,7 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>hamcrest-core</artifactId>
+          <artifactId>hamcrest</artifactId>
           <groupId>*</groupId>
         </exclusion>
       </exclusions>

@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.execute;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -48,7 +49,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.functions.TestFunction;
@@ -323,7 +323,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     ArrayList commonAttributes =
         createCommonServerAttributes("TestPartitionedRegion", null, 1, null);
 
-    final int portLocator = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int portLocator = getRandomAvailableTCPPort();
     final String hostLocator = NetworkUtils.getServerHostName(server1.getHost());
     final String locator = hostLocator + "[" + portLocator + "]";
 
@@ -363,7 +363,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     ArrayList commonAttributes =
         createCommonServerAttributes("TestPartitionedRegion", null, 0, null);
 
-    final int portLocator = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int portLocator = getRandomAvailableTCPPort();
     final String hostLocator = NetworkUtils.getServerHostName(server1.getHost());
     final String locator = hostLocator + "[" + portLocator + "]";
 
@@ -419,7 +419,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     cache = CacheFactory.create(ds);
 
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     server.setPort(port);
     server.setHostnameForClients("localhost");
     try {

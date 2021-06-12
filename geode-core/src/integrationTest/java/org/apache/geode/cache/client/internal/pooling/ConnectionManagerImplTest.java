@@ -490,4 +490,35 @@ public class ConnectionManagerImplTest {
 
     connectionManager.close(false);
   }
+
+  @Test
+  public void exchangeNotIncrementConnectionCountWhenUnableToCreateConnection() {
+    Set<ServerLocation> excluded = Collections.emptySet();
+
+    ServerLocation serverLocation1 = mock(ServerLocation.class);
+    Connection connection1 = mock(Connection.class);
+    when(connectionFactory.createClientToServerConnection(serverLocation1, false))
+        .thenReturn(connection1);
+
+    ServerLocation serverLocation2 = mock(ServerLocation.class);
+    Endpoint endpoint2 = mock(Endpoint.class);
+    Connection connection2 = mock(Connection.class);
+    when(connectionFactory.createClientToServerConnection(eq(Collections.EMPTY_SET)))
+        .thenReturn(null);
+    when(connection2.getServer()).thenReturn(serverLocation2);
+    when(connection2.getEndpoint()).thenReturn(endpoint2);
+    when(endpoint2.getLocation()).thenReturn(serverLocation2);
+
+    connectionManager = createDefaultConnectionManager();
+    connectionManager.start(backgroundProcessor);
+
+    Connection heldConnection = connectionManager.borrowConnection(serverLocation1, timeout, false);
+    assertThatThrownBy(() -> connectionManager.exchangeConnection(heldConnection, excluded))
+        .isInstanceOf(NoAvailableServersException.class);
+
+    assertThat(connectionManager.getConnectionCount()).isEqualTo(1);
+    verify(connectionFactory, times(1)).createClientToServerConnection(Collections.EMPTY_SET);
+
+    connectionManager.close(false);
+  }
 }

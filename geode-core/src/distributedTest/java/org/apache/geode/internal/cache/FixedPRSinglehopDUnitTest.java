@@ -20,6 +20,7 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -52,7 +53,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.partitioned.fixed.QuarterPartitionResolver;
 import org.apache.geode.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
@@ -274,7 +274,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     VM server3 = host.getVM(2);
     VM server4 = host.getVM(3);
     Boolean simpleFPR = false;
-    final int portLocator = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int portLocator = getRandomAvailableTCPPort();
     final String hostLocator = NetworkUtils.getServerHostName(server1.getHost());
     final String locator = hostLocator + "[" + portLocator + "]";
     server3.invoke(() -> FixedPRSinglehopDUnitTest.startLocatorInVM(portLocator));
@@ -366,7 +366,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     server.setPort(port);
     server.setHostnameForClients("localhost");
     try {
@@ -408,7 +408,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     cache = new CacheFactory(props).create(ds);
 
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     server.setPort(port);
     server.setHostnameForClients("localhost");
     try {

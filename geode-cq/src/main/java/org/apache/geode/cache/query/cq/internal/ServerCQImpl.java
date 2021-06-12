@@ -65,7 +65,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
   private ClientProxyMembershipID clientProxyId = null;
 
-  private CacheClientNotifier ccn = null;
+  private CacheClientNotifier cacheClientNotifier = null;
 
   private String serverCqName;
 
@@ -103,15 +103,16 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   }
 
   @Override
-  public void registerCq(ClientProxyMembershipID p_clientProxyId, CacheClientNotifier p_ccn,
+  public void registerCq(ClientProxyMembershipID p_clientProxyId,
+      CacheClientNotifier p_cacheClientNotifier,
       int p_cqState) throws CqException, RegionNotFoundException {
 
     CacheClientProxy clientProxy = null;
     this.clientProxyId = p_clientProxyId;
 
-    if (p_ccn != null) {
-      this.ccn = p_ccn;
-      clientProxy = p_ccn.getClientProxy(p_clientProxyId, true);
+    if (p_cacheClientNotifier != null) {
+      this.cacheClientNotifier = p_cacheClientNotifier;
+      clientProxy = p_cacheClientNotifier.getClientProxy(p_clientProxyId, true);
     }
 
     validateCq();
@@ -203,7 +204,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     this.updateCqCreateStats();
 
     // Initialize the state of CQ.
-    if (this.cqState.getState() != p_cqState) {
+    if (this.cqState.getState() != p_cqState || cacheClientNotifier == null) {
       setCqState(p_cqState);
     }
 
@@ -231,7 +232,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       }
     }
 
-    if (p_ccn != null) {
+    if (p_cacheClientNotifier != null) {
       try {
         cqService.addToCqMap(this);
       } catch (CqExistsException cqe) {
@@ -388,8 +389,9 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       this.cqState.setState(CqStateImpl.CLOSED);
       cqService.stats().incCqsClosed();
       cqService.stats().decCqsOnClient();
-      if (this.stats != null)
+      if (this.stats != null) {
         this.stats.close();
+      }
     }
 
     if (isDebugEnabled) {
@@ -407,7 +409,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    *
    */
   public CacheClientNotifier getCacheClientNotifier() {
-    return this.ccn;
+    return this.cacheClientNotifier;
   }
 
   /**
@@ -419,7 +421,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     try {
       if (this.cqBaseRegion != null && !this.cqBaseRegion.isDestroyed()) {
         this.cqBaseRegion.getFilterProfile().closeCq(this);
-        CacheClientProxy clientProxy = ccn.getClientProxy(clientProxyId);
+        CacheClientProxy clientProxy = cacheClientNotifier.getClientProxy(clientProxyId);
         clientProxy.decCqCount();
         if (clientProxy.hasNoCq()) {
           cqService.stats().decClientsWithCqs();

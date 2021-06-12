@@ -59,6 +59,14 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
   public ResultModel createGatewaySender(
 
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ID,
+          mandatory = true,
+          help = CliStrings.CREATE_GATEWAYSENDER__ID__HELP) String id,
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID,
+          mandatory = true,
+          help = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID__HELP) Integer remoteDistributedSystemId,
+
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
@@ -67,13 +75,6 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.CREATE_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ID,
-          mandatory = true,
-          help = CliStrings.CREATE_GATEWAYSENDER__ID__HELP) String id,
-
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID,
-          mandatory = true,
-          help = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID__HELP) Integer remoteDistributedSystemId,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
           specifiedDefaultValue = "true",
@@ -137,14 +138,20 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           help = CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP) String[] gatewayEventFilters,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER,
-          help = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER__HELP) String[] gatewayTransportFilter) {
+          help = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER__HELP) String[] gatewayTransportFilter,
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER,
+          specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "false",
+          help = CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER__HELP) Boolean enforceThreadsConnectSameReceiver) {
 
     CacheConfig.GatewaySender configuration =
         buildConfiguration(id, remoteDistributedSystemId, parallel, manualStart,
             socketBufferSize, socketReadTimeout, enableBatchConflation, batchSize,
             batchTimeInterval, enablePersistence, diskStoreName, diskSynchronous, maxQueueMemory,
             alertThreshold, dispatcherThreads, orderPolicy == null ? null : orderPolicy.name(),
-            gatewayEventFilters, gatewayTransportFilter, groupTransactionEvents);
+            gatewayEventFilters, gatewayTransportFilter, groupTransactionEvents,
+            enforceThreadsConnectSameReceiver);
 
     GatewaySenderFunctionArgs gatewaySenderFunctionArgs =
         new GatewaySenderFunctionArgs(configuration);
@@ -228,7 +235,8 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       String orderPolicy,
       String[] gatewayEventFilters,
       String[] gatewayTransportFilters,
-      Boolean groupTransactionEvents) {
+      Boolean groupTransactionEvents,
+      Boolean enforceThreadsConnectSameReceiver) {
     CacheConfig.GatewaySender sender = new CacheConfig.GatewaySender();
     sender.setId(id);
     sender.setRemoteDistributedSystemId(int2string(remoteDSId));
@@ -253,7 +261,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
     if (gatewayTransportFilters != null) {
       sender.getGatewayTransportFilters().addAll(stringsToDeclarableTypes(gatewayTransportFilters));
     }
-
+    sender.setEnforceThreadsConnectSameReceiver(enforceThreadsConnectSameReceiver);
     return sender;
   }
 
@@ -284,6 +292,10 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       Boolean batchConflationEnabled =
           (Boolean) parseResult
               .getParamValue(CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION);
+      Boolean enforceThreadsConnectSameReceiver =
+          (Boolean) parseResult
+              .getParamValue(
+                  CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER);
 
       if (dispatcherThreads != null && dispatcherThreads > 1 && orderPolicy == null) {
         return ResultModel.createError(
@@ -304,6 +316,14 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       if (groupTransactionEvents && batchConflationEnabled) {
         return ResultModel.createError(
             "Gateway Sender cannot be created with both --group-transaction-events and --enable-batch-conflation.");
+      }
+
+      if (parallel && enforceThreadsConnectSameReceiver) {
+        return ResultModel
+            .createError(
+                "Option --" + CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER
+                    + " only applies to serial gateway senders.");
+
       }
 
       return ResultModel.createInfo("");

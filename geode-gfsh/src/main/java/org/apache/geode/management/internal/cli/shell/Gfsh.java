@@ -56,7 +56,7 @@ import org.apache.geode.internal.util.SunAPINotFoundException;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
@@ -477,15 +477,17 @@ public class Gfsh extends JLineShell {
   }
 
   public String readPassword(String textToPrompt) {
-    if (isHeadlessMode && isQuietMode())
+    if (isHeadlessMode && isQuietMode()) {
       return null;
+    }
 
     return readWithMask(textToPrompt, '*');
   }
 
   public String readText(String textToPrompt) {
-    if (isHeadlessMode && isQuietMode())
+    if (isHeadlessMode && isQuietMode()) {
       return null;
+    }
 
     return interact(textToPrompt);
 
@@ -707,7 +709,7 @@ public class Gfsh extends JLineShell {
         if (useExternalViewer(commandResult)) {
           // - Save file and pass to less so that viewer can scroll through
           // results
-          CliUtil.runLessCommandAsExternalViewer(commandResult);
+          CliUtils.runLessCommandAsExternalViewer(commandResult);
         } else {
           if (!isScriptRunning) {
             // Normal Command
@@ -742,8 +744,9 @@ public class Gfsh extends JLineShell {
       CommandResult commandResult = (CommandResult) result;
       resultTypeTL.set(commandResult.getType().equals("info"));
       return flag && !commandResult.getType().equals("info");
-    } else
+    } else {
       return false;
+    }
   }
 
   private boolean isUnix() {

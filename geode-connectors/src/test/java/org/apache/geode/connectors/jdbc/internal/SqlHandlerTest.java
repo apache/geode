@@ -40,9 +40,7 @@ import javax.sql.DataSource;
 import junitparams.JUnitParamsRunner;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.InternalGemFireException;
@@ -65,9 +63,6 @@ public class SqlHandlerTest {
   private static final String REGION_NAME = "testRegion";
   private static final String TABLE_NAME = "testTable";
   private static final String KEY_COLUMN = "keyColumn";
-
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
 
   private DataSource dataSource;
   private JdbcConnectorService connectorService;
@@ -163,29 +158,27 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void readThrowsIfNoKeyProvided() throws Exception {
-    thrown.expect(IllegalArgumentException.class);
-    handler.read(region, null);
+  public void readThrowsIfNoKeyProvided() {
+    assertThatThrownBy(() -> handler.read(region, null))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   public void constructorThrowsIfNoMapping() {
-    thrown.expect(JdbcConnectorException.class);
-    thrown.expectMessage(
-        "JDBC mapping for region regionWithNoMapping not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
-
-    new SqlHandler(cache, "regionWithNoMapping", tableMetaDataManager, connectorService,
-        dataSourceFactory);
+    assertThatThrownBy(
+        () -> new SqlHandler(cache, "regionWithNoMapping", tableMetaDataManager, connectorService,
+            dataSourceFactory)).isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
+                "JDBC mapping for region regionWithNoMapping not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
   }
 
   @Test
   public void constructorThrowsIfNoConnectionConfig() {
     when(regionMapping.getDataSourceName()).thenReturn("bogus data source name");
-    thrown.expect(JdbcConnectorException.class);
-    thrown.expectMessage(
-        "JDBC data-source named \"bogus data source name\" not found. Create it with gfsh 'create data-source --pooled --name=bogus data source name'.");
 
-    new SqlHandler(cache, REGION_NAME, tableMetaDataManager, connectorService, dataSourceFactory);
+    assertThatThrownBy(() -> new SqlHandler(cache, REGION_NAME, tableMetaDataManager,
+        connectorService,
+        dataSourceFactory)).isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
+            "JDBC data-source named \"bogus data source name\" not found. Create it with gfsh 'create data-source --pooled --name=bogus data source name'.");
   }
 
   @Test
@@ -202,14 +195,13 @@ public class SqlHandlerTest {
   public void throwsExceptionIfQueryFails() throws Exception {
     when(statement.executeQuery()).thenThrow(SQLException.class);
 
-    thrown.expect(SQLException.class);
-    handler.read(region, new Object());
+    assertThatThrownBy(() -> handler.read(region, new Object())).isInstanceOf(SQLException.class);
   }
 
   @Test
-  public void writeThrowsExceptionIfValueIsNullAndNotDoingDestroy() throws Exception {
-    thrown.expect(IllegalArgumentException.class);
-    handler.write(region, Operation.UPDATE, new Object(), null);
+  public void writeThrowsExceptionIfValueIsNullAndNotDoingDestroy() {
+    assertThatThrownBy(() -> handler.write(region, Operation.UPDATE, new Object(), null))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
@@ -533,14 +525,14 @@ public class SqlHandlerTest {
   public void destroyThrowExceptionWhenFail() throws Exception {
     when(statement.executeUpdate()).thenThrow(SQLException.class);
 
-    thrown.expect(SQLException.class);
-    handler.write(region, Operation.DESTROY, new Object(), value);
+    assertThatThrownBy(() -> handler.write(region, Operation.DESTROY, new Object(), value))
+        .isInstanceOf(SQLException.class);
   }
 
   @Test
   public void writesWithUnsupportedOperationThrows() throws Exception {
-    thrown.expect(InternalGemFireException.class);
-    handler.write(region, Operation.INVALIDATE, new Object(), value);
+    assertThatThrownBy(() -> handler.write(region, Operation.INVALIDATE, new Object(), value))
+        .isInstanceOf(InternalGemFireException.class);
   }
 
   @Test
@@ -629,9 +621,9 @@ public class SqlHandlerTest {
     when(insertStatement.executeUpdate()).thenThrow(SQLException.class);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(insertStatement);
     when(value.getFieldNames()).thenReturn(Collections.emptyList());
-    thrown.expect(SQLException.class);
 
-    handler.write(region, Operation.UPDATE, new Object(), value);
+    assertThatThrownBy(() -> handler.write(region, Operation.UPDATE, new Object(), value))
+        .isInstanceOf(SQLException.class);
 
     verify(statement).close();
     verify(insertStatement).close();
@@ -644,9 +636,9 @@ public class SqlHandlerTest {
     when(updateStatement.executeUpdate()).thenReturn(0);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(updateStatement);
     when(value.getFieldNames()).thenReturn(Collections.emptyList());
-    thrown.expect(SQLException.class);
 
-    handler.write(region, Operation.CREATE, new Object(), value);
+    assertThatThrownBy(() -> handler.write(region, Operation.CREATE, new Object(), value))
+        .isInstanceOf(SQLException.class);
 
     verify(statement).close();
     verify(updateStatement).close();
@@ -731,11 +723,11 @@ public class SqlHandlerTest {
     when(tableMetaDataView.getColumnDataType("fieldTwo")).thenReturn(JDBCType.VARCHAR);
     when(regionMapping.getIds()).thenReturn("fieldOne,fieldTwo");
     createSqlHandler();
-    thrown.expect(JdbcConnectorException.class);
-    thrown.expectMessage(
-        "The key \"" + compositeKey + "\" should have 2 fields but has 1 fields.");
 
-    handler.getEntryColumnData(tableMetaDataView, compositeKey, value, Operation.GET);
+    assertThatThrownBy(
+        () -> handler.getEntryColumnData(tableMetaDataView, compositeKey, value, Operation.GET))
+            .isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
+                "The key \"" + compositeKey + "\" should have 2 fields but has 1 fields.");
   }
 
   @Test
@@ -772,11 +764,11 @@ public class SqlHandlerTest {
     when(tableMetaDataView.getColumnDataType("fieldTwoWrong")).thenReturn(JDBCType.VARCHAR);
     when(regionMapping.getIds()).thenReturn("fieldOne,fieldTwo");
     createSqlHandler();
-    thrown.expect(JdbcConnectorException.class);
-    thrown.expectMessage("The key \"" + compositeKey
-        + "\" has the field \"fieldTwoWrong\" which does not match any of the key columns: [fieldOne, fieldTwo]");
 
-    handler.getEntryColumnData(tableMetaDataView, compositeKey, value, Operation.GET);
+    assertThatThrownBy(() -> handler.getEntryColumnData(tableMetaDataView, compositeKey, value,
+        Operation.GET)).isInstanceOf(JdbcConnectorException.class).hasMessageContaining("The key \""
+            + compositeKey
+            + "\" has the field \"fieldTwoWrong\" which does not match any of the key columns: [fieldOne, fieldTwo]");
   }
 
   @Test
@@ -813,11 +805,12 @@ public class SqlHandlerTest {
     when(tableMetaDataView.getColumnDataType("fieldTwoWrong")).thenReturn(JDBCType.VARCHAR);
     when(regionMapping.getIds()).thenReturn("fieldOne,fieldTwo");
     createSqlHandler();
-    thrown.expect(JdbcConnectorException.class);
-    thrown.expectMessage("The key \"" + compositeKey
-        + "\" has the field \"fieldTwoUnknown\" which does not match any of the key columns: [fieldOne, fieldTwo]");
 
-    handler.getEntryColumnData(tableMetaDataView, compositeKey, value, Operation.GET);
+    assertThatThrownBy(
+        () -> handler.getEntryColumnData(tableMetaDataView, compositeKey, value, Operation.GET))
+            .isInstanceOf(JdbcConnectorException.class)
+            .hasMessageContaining("The key \"" + compositeKey
+                + "\" has the field \"fieldTwoUnknown\" which does not match any of the key columns: [fieldOne, fieldTwo]");
   }
 
   @Test
@@ -1020,11 +1013,10 @@ public class SqlHandlerTest {
   public void getEntryColumnDataWhenMultipleIdColumnsGivenNonPdxInstanceFails() {
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     Object nonCompositeKey = Integer.valueOf(123);
-    thrown.expect(JdbcConnectorException.class);
-    thrown.expectMessage(
-        "The key \"123\" of class \"java.lang.Integer\" must be a PdxInstance because multiple columns are configured as ids.");
 
-    handler.getEntryColumnData(tableMetaDataView, nonCompositeKey, value, Operation.DESTROY);
+    assertThatThrownBy(() -> handler.getEntryColumnData(tableMetaDataView, nonCompositeKey, value,
+        Operation.DESTROY)).isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
+            "The key \"123\" of class \"java.lang.Integer\" must be a PdxInstance because multiple columns are configured as ids.");
   }
 
   @Test
@@ -1033,12 +1025,11 @@ public class SqlHandlerTest {
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     PdxInstance nonCompositeKey = mock(PdxInstance.class);
     when(nonCompositeKey.isDeserializable()).thenReturn(true);
-    thrown.expect(JdbcConnectorException.class);
-    thrown.expectMessage(
-        "The key \"" + nonCompositeKey
-            + "\" must be a PdxInstance created with PdxInstanceFactory.neverDeserialize");
 
-    handler.getEntryColumnData(tableMetaDataView, nonCompositeKey, value, Operation.DESTROY);
+    assertThatThrownBy(() -> handler.getEntryColumnData(tableMetaDataView, nonCompositeKey, value,
+        Operation.DESTROY)).isInstanceOf(JdbcConnectorException.class)
+            .hasMessageContaining("The key \"" + nonCompositeKey
+                + "\" must be a PdxInstance created with PdxInstanceFactory.neverDeserialize");
   }
 
   @Test

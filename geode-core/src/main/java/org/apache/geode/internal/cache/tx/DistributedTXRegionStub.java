@@ -21,6 +21,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.TransactionException;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -28,6 +29,7 @@ import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.TXStateStub;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -51,8 +53,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) {
     try {
-      RemoteOperationResponse response = RemoteDestroyMessage.send(state.getTarget(),
-          event.getRegion(), event, expectedOldValue, true, false);
+      RemoteOperationResponse response = sendRemoteDestroyMessage(event, expectedOldValue);
       response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
@@ -64,13 +65,19 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     }
   }
 
+  RemoteOperationResponse sendRemoteDestroyMessage(EntryEventImpl event, Object expectedOldValue)
+      throws RemoteOperationException {
+    return RemoteDestroyMessage.send(state.getTarget(), event.getRegion(), event, expectedOldValue,
+        true, false);
+  }
+
 
   @Override
   public Entry getEntry(KeyInfo keyInfo, boolean allowTombstone) {
     try {
       // TODO change RemoteFetchEntryMessage to allow tombstones to be returned
-      RemoteFetchEntryMessage.FetchEntryResponse res = RemoteFetchEntryMessage
-          .send((InternalDistributedMember) state.getTarget(), region, keyInfo.getKey());
+      RemoteFetchEntryMessage.FetchEntryResponse res = sendRemoteFetchEntryMessage(
+          (InternalDistributedMember) state.getTarget(), region, keyInfo.getKey());
       return res.waitForResponse();
     } catch (EntryNotFoundException enfe) {
       return null;
@@ -86,12 +93,17 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     }
   }
 
+  RemoteFetchEntryMessage.FetchEntryResponse sendRemoteFetchEntryMessage(
+      InternalDistributedMember recipient, LocalRegion region, Object key)
+      throws RemoteOperationException {
+    return RemoteFetchEntryMessage.send(recipient, region, key);
+  }
+
   @Override
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
     try {
-      RemoteOperationResponse response =
-          RemoteInvalidateMessage.send(state.getTarget(), event.getRegion(), event, true, false);
+      RemoteOperationResponse response = sendRemoteInvalidateMessage(state.getTarget(), event);
       response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
@@ -103,12 +115,17 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     }
   }
 
+  RemoteOperationResponse sendRemoteInvalidateMessage(DistributedMember recipient,
+      EntryEventImpl event) throws RemoteOperationException {
+    return RemoteInvalidateMessage.send(recipient, event.getRegion(), event, true, false);
+  }
+
 
   @Override
   public boolean containsKey(KeyInfo keyInfo) {
     try {
-      RemoteContainsKeyValueResponse response = RemoteContainsKeyValueMessage
-          .send((InternalDistributedMember) state.getTarget(), region, keyInfo.getKey(), false);
+      RemoteContainsKeyValueResponse response = sendRemoteContainsKeyValueMessage(
+          (InternalDistributedMember) state.getTarget(), keyInfo.getKey(), false);
       return response.waitForContainsResult();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
@@ -119,13 +136,12 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       throw new TransactionDataNodeHasDepartedException(roe);
     }
   }
-
 
   @Override
   public boolean containsValueForKey(KeyInfo keyInfo) {
     try {
-      RemoteContainsKeyValueResponse response = RemoteContainsKeyValueMessage
-          .send((InternalDistributedMember) state.getTarget(), region, keyInfo.getKey(), true);
+      RemoteContainsKeyValueResponse response = sendRemoteContainsKeyValueMessage(
+          (InternalDistributedMember) state.getTarget(), keyInfo.getKey(), true);
       return response.waitForContainsResult();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
@@ -137,18 +153,22 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     }
   }
 
+  RemoteContainsKeyValueResponse sendRemoteContainsKeyValueMessage(
+      InternalDistributedMember recipient, Object key, boolean valueCheck)
+      throws RemoteOperationException {
+    return RemoteContainsKeyValueMessage.send(recipient, region, key, valueCheck);
+  }
 
   @Override
   public Object findObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
       Object value, boolean preferCD, ClientProxyMembershipID requestingClient,
       EntryEventImpl clientEvent) {
-    Object retVal = null;
+    Object retVal;
     final Object key = keyInfo.getKey();
     final Object callbackArgument = keyInfo.getCallbackArg();
     try {
-      RemoteGetMessage.RemoteGetResponse response =
-          RemoteGetMessage.send((InternalDistributedMember) state.getTarget(), region, key,
-              callbackArgument, requestingClient);
+      RemoteGetMessage.RemoteGetResponse response = sendRemoteGetMessage(
+          (InternalDistributedMember) state.getTarget(), key, callbackArgument, requestingClient);
       retVal = response.waitForResponse(preferCD);
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
@@ -159,6 +179,12 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       throw new TransactionDataNodeHasDepartedException(roe);
     }
     return retVal;
+  }
+
+  RemoteGetMessage.RemoteGetResponse sendRemoteGetMessage(InternalDistributedMember recipient,
+      final Object key, final Object callbackArgument, ClientProxyMembershipID requestingClient)
+      throws RemoteOperationException {
+    return RemoteGetMessage.send(recipient, region, key, callbackArgument, requestingClient);
   }
 
 
@@ -172,11 +198,11 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
-    boolean retVal = false;
+    boolean retVal;
     final InternalRegion r = event.getRegion();
 
     try {
-      RemotePutResponse response = RemotePutMessage.txSend(state.getTarget(), r, event,
+      RemotePutResponse response = txSendRemotePutMessage(state.getTarget(), r, event,
           lastModified, ifNew, ifOld, expectedOldValue, requireOldValue);
       PutResult result = response.waitForResult();
       event.setOldValue(result.oldValue, true/* force */);
@@ -194,13 +220,20 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     return retVal;
   }
 
+  RemotePutResponse txSendRemotePutMessage(DistributedMember recipient, InternalRegion r,
+      EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue) throws RemoteOperationException {
+    return RemotePutMessage.txSend(recipient, r, event, lastModified, ifNew, ifOld,
+        expectedOldValue, requireOldValue);
+  }
+
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
       InternalRegion region) {
     try {
       RemotePutAllMessage.PutAllResponse response =
-          RemotePutAllMessage.send(state.getTarget(), putallOp.getBaseEvent(),
-              putallOp.getPutAllEntryData(), putallOp.getPutAllEntryData().length, true, false);
+          sendRemotePutAllMessage(state.getTarget(), putallOp.getBaseEvent(),
+              putallOp.getPutAllEntryData(), putallOp.getPutAllEntryData().length);
       response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
@@ -212,13 +245,21 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     }
   }
 
+  RemotePutAllMessage.PutAllResponse sendRemotePutAllMessage(DistributedMember recipient,
+      EntryEventImpl event, DistributedPutAllOperation.PutAllEntryData[] putAllData,
+      int putAllDataCount) throws RemoteOperationException {
+    return RemotePutAllMessage.send(recipient, event,
+        putAllData, putAllDataCount, true, false);
+
+  }
+
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
       InternalRegion region) {
     try {
       RemoteRemoveAllMessage.RemoveAllResponse response =
-          RemoteRemoveAllMessage.send(state.getTarget(), op.getBaseEvent(),
-              op.getRemoveAllEntryData(), op.getRemoveAllEntryData().length, true, false);
+          sendRemoteRemoveAllMessage(state.getTarget(), op.getBaseEvent(),
+              op.getRemoveAllEntryData(), op.getRemoveAllEntryData().length);
       response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
@@ -228,6 +269,14 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     } catch (RemoteOperationException roe) {
       throw new TransactionDataNodeHasDepartedException(roe);
     }
+  }
+
+  RemoteRemoveAllMessage.RemoveAllResponse sendRemoteRemoveAllMessage(DistributedMember recipient,
+      EntryEventImpl event, DistributedRemoveAllOperation.RemoveAllEntryData[] removeAllData,
+      int removeAllDataCount) throws RemoteOperationException {
+    return RemoteRemoveAllMessage.send(recipient, event, removeAllData, removeAllDataCount, true,
+        false);
+
   }
 
   @Override

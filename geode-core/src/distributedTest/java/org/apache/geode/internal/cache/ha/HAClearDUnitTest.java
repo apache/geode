@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.ha;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -41,7 +42,6 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheObserverAdapter;
 import org.apache.geode.internal.cache.CacheObserverHolder;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -148,8 +148,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotClearCallback)
+        if (!gotClearCallback) {
           fail("test failed");
+        }
         gotClearCallback = false;
       }
     });
@@ -168,8 +169,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotClearCallback)
+        if (!gotClearCallback) {
           fail("test failed");
+        }
         gotClearCallback = false;
       }
     });
@@ -214,8 +216,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotClearCallback)
+        if (!gotClearCallback) {
           fail("test failed");
+        }
         gotClearCallback = false;
       }
     });
@@ -234,8 +237,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotClearCallback)
+        if (!gotClearCallback) {
           fail("test failed");
+        }
         gotClearCallback = false;
       }
     });
@@ -302,8 +306,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotDestroyRegionCallback)
+        if (!gotDestroyRegionCallback) {
           fail("test failed");
+        }
         gotDestroyRegionCallback = false;
       }
     });
@@ -322,8 +327,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotDestroyRegionCallback)
+        if (!gotDestroyRegionCallback) {
           fail("test failed");
+        }
         gotDestroyRegionCallback = false;
       }
     });
@@ -370,8 +376,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotDestroyRegionCallback)
+        if (!gotDestroyRegionCallback) {
           fail("test failed");
+        }
         gotDestroyRegionCallback = false;
       }
     });
@@ -389,8 +396,9 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        if (!gotDestroyRegionCallback)
+        if (!gotDestroyRegionCallback) {
           fail("test failed");
+        }
         gotDestroyRegionCallback = false;
       }
     });
@@ -539,7 +547,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     cache.createRegion(REGION_NAME, attrs);
     server = (CacheServerImpl) cache.addCacheServer();
     assertNotNull(server);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     server.setPort(port);
     server.start();
     return new Integer(server.getPort());

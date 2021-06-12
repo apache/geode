@@ -63,6 +63,9 @@ public class GatewaySenderStats {
   protected static final String BATCHES_DISTRIBUTED = "batchesDistributed";
   /** Name of the batches redistributed statistic */
   protected static final String BATCHES_REDISTRIBUTED = "batchesRedistributed";
+  /** Name of the batches redistributed statistic */
+  protected static final String BATCHES_WITH_INCOMPLETE_TRANSACTIONS =
+      "batchesWithIncompleteTransactions";
   /** Name of the batches resized statistic */
   protected static final String BATCHES_RESIZED = "batchesResized";
   /** Name of the unprocessed events added by primary statistic */
@@ -125,6 +128,8 @@ public class GatewaySenderStats {
   private static final int batchesDistributedId;
   /** Id of the batches redistributed statistic */
   private static final int batchesRedistributedId;
+  /** Id of the batches with incomplete transactions statistic */
+  private static final int batchesWithIncompleteTransactionsId;
   /** Id of the batches resized statistic */
   private static final int batchesResizedId;
   /** Id of the unprocessed events added by primary statistic */
@@ -184,6 +189,7 @@ public class GatewaySenderStats {
     batchDistributionTimeId = type.nameToId(BATCH_DISTRIBUTION_TIME);
     batchesDistributedId = type.nameToId(BATCHES_DISTRIBUTED);
     batchesRedistributedId = type.nameToId(BATCHES_REDISTRIBUTED);
+    batchesWithIncompleteTransactionsId = type.nameToId(BATCHES_WITH_INCOMPLETE_TRANSACTIONS);
     batchesResizedId = type.nameToId(BATCHES_RESIZED);
     unprocessedTokensAddedByPrimaryId = type.nameToId(UNPROCESSED_TOKENS_ADDED_BY_PRIMARY);
     unprocessedEventsAddedBySecondaryId = type.nameToId(UNPROCESSED_EVENTS_ADDED_BY_SECONDARY);
@@ -239,6 +245,9 @@ public class GatewaySenderStats {
                 "Number of batches of events removed from the event queue and sent.", "operations"),
             f.createIntCounter(BATCHES_REDISTRIBUTED,
                 "Number of batches of events removed from the event queue and resent.",
+                "operations", false),
+            f.createLongCounter(BATCHES_WITH_INCOMPLETE_TRANSACTIONS,
+                "Number of batches of events sent with incomplete transactions.",
                 "operations", false),
             f.createIntCounter(BATCHES_RESIZED,
                 "Number of batches that were resized because they were too large", "operations",
@@ -461,27 +470,36 @@ public class GatewaySenderStats {
   }
 
   /**
-   * Returns the current value of the batchesDistributed" stat.
+   * Returns the current value of the "batchesDistributed" stat.
    *
-   * @return the current value of the batchesDistributed" stat
+   * @return the current value of the "batchesDistributed" stat
    */
   public int getBatchesDistributed() {
     return this.stats.getInt(batchesDistributedId);
   }
 
   /**
-   * Returns the current value of the batchesRedistributed" stat.
+   * Returns the current value of the "batchesRedistributed" stat.
    *
-   * @return the current value of the batchesRedistributed" stat
+   * @return the current value of the "batchesRedistributed" stat
    */
   public int getBatchesRedistributed() {
     return this.stats.getInt(batchesRedistributedId);
   }
 
   /**
-   * Returns the current value of the batchesResized" stat.
+   * Returns the current value of the "batchesWithIncompleteTransactions" stat.
    *
-   * @return the current value of the batchesResized" stat
+   * @return the current value of the "batchesWithIncompleteTransactions" stat
+   */
+  public long getBatchesWithIncompleteTransactions() {
+    return this.stats.getLong(batchesWithIncompleteTransactionsId);
+  }
+
+  /**
+   * Returns the current value of the "batchesResized" stat.
+   *
+   * @return the current value of the "batchesResized" stat
    */
   public int getBatchesResized() {
     return this.stats.getInt(batchesResizedId);
@@ -492,6 +510,13 @@ public class GatewaySenderStats {
    */
   public void incBatchesRedistributed() {
     this.stats.incInt(batchesRedistributedId, 1);
+  }
+
+  /**
+   * Increments the value of the "batchesWithIncompleteTransactions" stat by 1.
+   */
+  public void incBatchesWithIncompleteTransactions() {
+    this.stats.incLong(batchesWithIncompleteTransactionsId, 1);
   }
 
   /**

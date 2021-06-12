@@ -19,9 +19,11 @@ import static org.apache.commons.io.FileUtils.ONE_MB;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -37,7 +39,6 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
@@ -46,16 +47,19 @@ import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.domain.DeploymentInfo;
 import org.apache.geode.management.internal.cli.functions.DeployFunction;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.management.internal.cli.util.DeploymentInfoTableUtil;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.management.internal.util.ManagementUtils;
+import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.security.ResourcePermission;
 
 public class DeployCommand extends GfshCommand {
@@ -81,7 +85,9 @@ public class DeployCommand extends GfshCommand {
       @CliOption(key = {CliStrings.JAR, CliStrings.JARS}, optionContext = ConverterHint.JARFILES,
           help = CliStrings.DEPLOY__JAR__HELP) String[] jars,
       @CliOption(key = {CliStrings.DEPLOY__DIR}, optionContext = ConverterHint.JARDIR,
-          help = CliStrings.DEPLOY__DIR__HELP) String dir)
+          help = CliStrings.DEPLOY__DIR__HELP) String dir,
+      @CliOption(key = CliStrings.DEPLOYMENT__NAME, help = CliStrings.DEPLOYMENT__NAME__HELP,
+          specifiedDefaultValue = "") String deploymentName)
       throws IOException {
 
     ResultModel result = new ResultModel();
@@ -94,79 +100,91 @@ public class DeployCommand extends GfshCommand {
     Set<DistributedMember> targetMembers;
     targetMembers = findMembers(groups, null);
 
-    List<List<Object>> results = new ArrayList<>();
+    List<List<Object>> results = new LinkedList<>();
     ManagementAgent agent = ((SystemManagementService) getManagementService()).getManagementAgent();
     RemoteStreamExporter exporter = agent.getRemoteStreamExporter();
 
-    for (DistributedMember member : targetMembers) {
-      List<RemoteInputStream> remoteStreams = new ArrayList<>();
-      List<String> jarNames = new ArrayList<>();
-      for (String jarFullPath : jarFullPaths) {
-        remoteStreams
-            .add(exporter.export(new SimpleRemoteInputStream(new FileInputStream(jarFullPath))));
-        jarNames.add(FilenameUtils.getName(jarFullPath));
-      }
-
-      // this deploys the jars to all the matching servers
-      ResultCollector<?, ?> resultCollector =
-          executeFunction(this.deployFunction, new Object[] {jarNames, remoteStreams}, member);
-
-      @SuppressWarnings("unchecked")
-      final List<List<Object>> resultCollectorResult =
-          (List<List<Object>>) resultCollector.getResult();
-      results.add(resultCollectorResult.get(0));
-
-      for (RemoteInputStream ris : remoteStreams) {
-        try {
-          ris.close(true);
-        } catch (IOException ex) {
-          // Ignored. the stream may have already been closed.
-        }
-      }
-    }
+    results = deployJars(deploymentName, jarFullPaths, targetMembers, results, exporter);
 
     List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(results);
 
-    createDeployedJarTable(result, deployResult, cleanedResults);
+    List<DeploymentInfo> deploymentInfos =
+        DeploymentInfoTableUtil.getDeploymentInfoFromFunctionResults(cleanedResults);
+    DeploymentInfoTableUtil.writeDeploymentInfoToTable(
+        new String[] {"Member", "Deployment Name", "JAR", "JAR Location"}, deployResult,
+        deploymentInfos);
 
     if (result.getStatus() == Result.Status.OK) {
       InternalConfigurationPersistenceService sc = getConfigurationPersistenceService();
       if (sc == null) {
         result.addInfo().addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
       } else {
-        sc.addJarsToThisLocator(jarFullPaths, groups);
+        sc.addJarsToThisLocator(deploymentName, jarFullPaths, groups);
       }
     }
     return result;
   }
 
-  @SuppressWarnings("deprecation")
-  private void createDeployedJarTable(ResultModel result, TabularResultModel deployResult,
-      List<CliFunctionResult> cleanedResults) {
-    deployResult.setColumnHeader("Member", "Deployed JAR", "Deployed JAR Location");
-    for (CliFunctionResult cliResult : cleanedResults) {
-      if (cliResult.getThrowable() != null) {
-        deployResult.addRow(cliResult.getMemberIdOrName(), "",
-            "ERROR: " + cliResult.getThrowable().getClass().getName() + ": "
-                + cliResult.getThrowable().getMessage());
-        result.setStatus(Result.Status.ERROR);
-      } else {
-        String[] strings = (String[]) cliResult.getSerializables();
-        for (int i = 0; i < strings.length - 1; i += 2) {
-          deployResult.addRow(cliResult.getMemberIdOrName(), strings[i], strings[i + 1]);
+  private List<List<Object>> deployJars(String deploymentName, List<String> jarFullPaths,
+      Set<DistributedMember> targetMembers, List<List<Object>> results,
+      RemoteStreamExporter exporter)
+      throws FileNotFoundException, java.rmi.RemoteException {
+    for (DistributedMember member : targetMembers) {
+      List<RemoteInputStream> remoteStreams = new ArrayList<>();
+      List<String> jarNames = new ArrayList<>();
+      try {
+        for (String jarFullPath : jarFullPaths) {
+          FileInputStream fileInputStream = null;
+          try {
+            fileInputStream = new FileInputStream(jarFullPath);
+            remoteStreams.add(exporter.export(new SimpleRemoteInputStream(fileInputStream)));
+            jarNames.add(FilenameUtils.getName(jarFullPath));
+          } catch (Exception ex) {
+            if (fileInputStream != null) {
+              try {
+                fileInputStream.close();
+              } catch (IOException ignore) {
+              }
+            }
+            throw ex;
+          }
+        }
+
+        // this deploys the jars to all the matching servers
+        ResultCollector<?, ?> resultCollector =
+            executeFunction(this.deployFunction,
+                new Object[] {jarNames, remoteStreams, deploymentName}, member);
+
+        @SuppressWarnings("unchecked")
+        final List<List<Object>> resultCollectorResult =
+            (List<List<Object>>) resultCollector.getResult();
+        results.add(resultCollectorResult.get(0));
+      } finally {
+        for (RemoteInputStream ris : remoteStreams) {
+          try {
+            ris.close(true);
+          } catch (IOException ex) {
+            // Ignored. the stream may have already been closed.
+          }
         }
       }
     }
+    return results;
   }
 
   private void verifyJarContent(List<String> jarNames) {
     for (String jarName : jarNames) {
       File jar = new File(jarName);
-      if (!DeployedJar.hasValidJarContent(jar)) {
+      if (!JarFileUtils.hasValidJarContent(jar)) {
         throw new IllegalArgumentException(
             "File does not contain valid JAR content: " + jar.getName());
       }
     }
+  }
+
+  @Override
+  public boolean affectsClusterConfiguration() {
+    return true;
   }
 
   /**
@@ -226,10 +244,5 @@ public class DeployCommand extends GfshCommand {
 
       return result;
     }
-  }
-
-  @Override
-  public boolean affectsClusterConfiguration() {
-    return true;
   }
 }

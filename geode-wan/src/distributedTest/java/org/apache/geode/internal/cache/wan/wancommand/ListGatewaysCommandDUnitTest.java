@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.GatewayReceiverMXBean;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -448,6 +449,35 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
         .hasColumns().contains("GatewaySender Id", "Member");
     commandAssert.hasTableSection("gatewayReceivers")
         .hasRowSize(expectedGwReceiverSectionSize).hasColumns().contains("Port", "Member");
+  }
+
+  @Test
+  public void testListGatewaysWithOneDispatcherThread() {
+    String command = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER)
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln_Serial")
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2")
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS, "1")
+        .getCommandString();
+
+    int lnPort = locatorSite1.getPort();
+
+    // setup servers in Site #1 (London)
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
+    server3 = clusterStartupRule.startServerVM(5, lnPort);
+
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+
+    gfsh.executeAndAssertThat(CliStrings.LIST_GATEWAY).statusIsSuccess()
+        .hasTableSection("gatewaySenders")
+        .hasRowSize(3).hasColumn("Status").contains("Running, not Connected");
+
+    gfsh.executeAndAssertThat(
+        CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY)
+        .statusIsSuccess()
+        .hasNoSection("gatewayReceivers")
+        .hasTableSection("gatewaySenders")
+        .hasRowSize(3).hasColumn("Status").contains("Running, not Connected");
   }
 
   void setupClusters() {

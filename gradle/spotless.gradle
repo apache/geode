@@ -29,7 +29,7 @@ logger.debug("Using partial md5 (${thisFileIntegerHash}) of file ${thisFile} as 
 project.ext.set("spotless-file-hash", thisFileIntegerHash)
 
 
-apply plugin: "com.diffplug.gradle.spotless"
+apply plugin: "com.diffplug.spotless"
 spotless {
   lineEndings = 'unix'
   java {

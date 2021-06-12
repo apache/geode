@@ -16,9 +16,7 @@ package org.apache.geode.distributed.internal;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -89,8 +87,6 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
   private final String hostName;
   private final String memberName;
 
-  private ProductUseLog productUseLog;
-
   private volatile long lastLogTime;
 
   ServerLocator() throws IOException {
@@ -108,15 +104,15 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     return loadSnapshot;
   }
 
-  public ServerLocator(int port, InetAddress bindAddress, String hostNameForClients, File logFile,
-      ProductUseLog productUseLogWriter, String memberName, InternalDistributedSystem ds,
+  public ServerLocator(int port, String bindAddress, String hostNameForClients, File logFile,
+      String memberName, InternalDistributedSystem ds,
       LocatorStats stats) throws IOException {
     this.port = port;
 
-    if (bindAddress == null) {
+    if (bindAddress == null || bindAddress.isEmpty()) {
       this.hostName = LocalHostUtil.getCanonicalLocalHostName();
     } else {
-      this.hostName = bindAddress.getHostAddress();
+      this.hostName = bindAddress;
     }
 
     if (hostNameForClients != null && !hostNameForClients.equals("")) {
@@ -127,8 +123,6 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
 
     this.logFile = logFile != null ? logFile.getCanonicalPath() : null;
     this.memberName = memberName;
-    this.productUseLog = productUseLogWriter;
-
     this.ds = ds;
     this.advisor = ControllerAdvisor.createControllerAdvisor(this); // escapes constructor but
                                                                     // allows field to be final
@@ -452,51 +446,6 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     }
     loadSnapshot.updateLoad(location, memberId, load, clientIds);
     this.stats.incServerLoadUpdates();
-    logServers();
-  }
-
-  private void logServers() {
-    if (productUseLog != null) {
-      Map<ServerLocation, ServerLoad> loadMap = getLoadMap();
-      if (loadMap.size() == 0) {
-        return;
-      }
-
-      long now = System.currentTimeMillis();
-      long lastLogTime = this.lastLogTime;
-      if (now < lastLogTime + SERVER_LOAD_LOG_INTERVAL) {
-        return;
-      }
-      this.lastLogTime = now;
-
-      float queues = 0f;
-      int connections = 0;
-      for (ServerLoad l : loadMap.values()) {
-        queues += l.getSubscriptionConnectionLoad();
-        connections = (int) Math.ceil(l.getConnectionLoad() / l.getLoadPerConnection());
-      }
-
-      Set<DistributedMember> servers;
-      synchronized (ownerMap) {
-        servers = new HashSet<>(ownerMap.values());
-      }
-
-      StringBuilder sb = new StringBuilder(1000);
-      sb.append("server count: ").append(servers.size()).append(" connected client count: ")
-          .append(connections).append(" client subscription queue count: ").append(queues)
-          .append(System.lineSeparator()).append("current servers : ");
-
-      String[] ids = new String[servers.size()];
-      int i = 0;
-      for (DistributedMember id : servers) {
-        ids[i++] = id.toString();
-      }
-      Arrays.sort(ids);
-      for (i = 0; i < ids.length; i++) {
-        sb.append(ids[i]).append(' ');
-      }
-      productUseLog.log(sb.toString());
-    }
   }
 
   /**

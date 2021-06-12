@@ -97,6 +97,7 @@ echo "Cloning repositories..."
 echo "============================================================"
 set -x
 git clone --single-branch --branch develop git@github.com:apache/geode.git
+#(cd geode; git reset --hard $desired_sha) #uncomment if latest commit is not the desired branchpoint
 git clone --single-branch --branch develop git@github.com:apache/geode.git geode-develop
 git clone --single-branch --branch develop git@github.com:apache/geode-examples.git
 git clone --single-branch --branch develop git@github.com:apache/geode-examples.git geode-examples-develop
@@ -108,7 +109,7 @@ set +x
 function failMsg2 {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 70-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 83-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg2 $LINENO' ERR
 
@@ -128,7 +129,7 @@ echo "============================================================"
 for DIR in ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
-    if ! [ git push --dry-run 2>&1 | grep -q 'Everything up-to-date' ] ; then
+    if ! git push --dry-run 2>&1 | grep -q 'Everything up-to-date' ; then
       git push -u origin
     fi
     set +x
@@ -167,42 +168,39 @@ sed -e "s/^  initial_version:[^-]*\(-[^.0-9]*\)[.0-9]*/  initial_version: ${NEWV
 
 VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/KnownVersion.java
 [ -r $VER ] || VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/Version.java
-#add the new ordinal and Version constants and set them as current&highest
+#add the new ordinal and KnownVersion constants and set them as current&highest
 CURORD=$(cat $VER | awk '/private static final short GEODE_.*_ORDINAL/{print $NF}' | tr -d ';' | sort -n | tail -1)
-NEWORD=$(( CURORD + 5 ))
+NEWORD=$(( CURORD + 10 ))
 sed -e "s#/. NOTE: when adding a new version#private static final short GEODE_${NEWMAJOR}_${NEWMINOR}_0_ORDINAL = ${NEWORD};\\
 \\
   @Immutable\\
-  public static final Version GEODE_${NEWMAJOR}_${NEWMINOR}_0 =\\
-      new Version("'"'"GEODE"'"'", "'"'"${NEWMAJOR}.${NEWMINOR}.0"'"'", (byte) ${NEWMAJOR}, (byte) ${NEWMINOR}, (byte) 0, (byte) 0, GEODE_${NEWMAJOR}_${NEWMINOR}_0_ORDINAL);\\
+  public static final KnownVersion GEODE_${NEWMAJOR}_${NEWMINOR}_0 =\\
+      new KnownVersion("'"'"GEODE"'"'", "'"'"${NEWMAJOR}.${NEWMINOR}.0"'"'", (byte) ${NEWMAJOR}, (byte) ${NEWMINOR}, (byte) 0, (byte) 0,\\
+          GEODE_${NEWMAJOR}_${NEWMINOR}_0_ORDINAL);\\
 \\
   /* NOTE: when adding a new version#" \
-  -e "/public static final Version CURRENT/s#GEODE[0-9_]*#GEODE_${NEWMAJOR}_${NEWMINOR}_0#" \
+  -e "/public static final KnownVersion CURRENT/s#GEODE[0-9_]*#GEODE_${NEWMAJOR}_${NEWMINOR}_0#" \
   -e "/public static final int HIGHEST_VERSION/s# = [0-9]*# = ${NEWORD}#" \
   -i.bak $VER
-
-COM=geode-core/src/main/java/org/apache/geode/internal/cache/tier/sockets/CommandInitializer.java
-#add to list of all commands
-sed -e "s#return Collections.unmodifiableMap(allCommands#allCommands.put(Version.GEODE_${NEWMAJOR}_${NEWMINOR}_0, geode18Commands);\\
-    return Collections.unmodifiableMap(allCommands#" \
-  -i.bak $COM
 
 #  directory: docs/guide/113
 #  product_version: '1.13'
 #  product_version_nodot: '113'
 #  product_version_geode: '1.13'
+#  product_version_old_minor: '1.12'
 sed -E \
     -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_MM_NODOT}#" \
     -e "s#product_version: '[0-9.]+'#product_version: '${NEWVERSION_MM}'#" \
     -e "s#version_nodot: '[0-9]+'#version_nodot: '${NEWVERSION_MM_NODOT}'#" \
     -e "s#product_version_geode: '[0-9.]+'#product_version_geode: '${NEWVERSION_MM}'#" \
+    -e "s#product_version_old_minor: '[0-9.]+'#product_version_old_minor: '${VERSION_MM}'#" \
     -i.bak geode-book/config.yml
 
 #rewrite '/', '/docs/guide/113/about_geode.html'
 #rewrite '/index.html', '/docs/guide/113/about_geode.html'
 sed -E -e "s#docs/guide/[0-9]+#docs/guide/${NEWVERSION_MM_NODOT}#" -i.bak geode-book/redirects.rb
 
-rm gradle.properties.bak ci/pipelines/shared/jinja.variables.yml.bak geode-book/config.yml.bak geode-book/redirects.rb.bak $VER.bak* $COM.bak*
+rm gradle.properties.bak ci/pipelines/shared/jinja.variables.yml.bak geode-book/config.yml.bak geode-book/redirects.rb.bak $VER.bak*
 set -x
 git add .
 git diff --staged --color | cat
@@ -234,6 +232,26 @@ set -x
 git add gradle.properties
 git diff --staged --color | cat
 git commit -m "pair develop examples with ${NEWVERSION} now that support/${VERSION_MM} has been created"
+git push -u origin
+set +x
+
+
+echo ""
+echo "============================================================"
+echo "Removing CODEOWNERS and duplicate scripts from support/${VERSION_MM}"
+echo "============================================================"
+set -x
+cd ${GEODE}/dev-tools/release
+git pull -r
+git rm *.sh
+cat << EOF > README.md
+See [Releasing Apache Geode](https://cwiki.apache.org/confluence/display/GEODE/Releasing+Apache+Geode)
+EOF
+git add README.md
+cd ${GEODE}
+[ ! -r CODEOWNERS ] || git rm CODEOWNERS
+[ ! -r CODEWATCHERS ] || git rm CODEWATCHERS
+git commit -m "remove outdated copies of release scripts to ensure they are not run by accident + remove CODEOWNERS to avoid confusion"
 git push -u origin
 set +x
 

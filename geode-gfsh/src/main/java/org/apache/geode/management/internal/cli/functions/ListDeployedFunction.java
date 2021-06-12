@@ -14,28 +14,34 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.configuration.Deployment;
+import org.apache.geode.management.internal.cli.domain.DeploymentInfo;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class ListDeployedFunction implements InternalFunction<Void> {
   private static final Logger logger = LogService.getLogger();
 
-  public static final String ID = ListDeployedFunction.class.getName();
-
   private static final long serialVersionUID = 1L;
+
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ListDeployedFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
 
   @Override
   public void execute(FunctionContext<Void> context) {
@@ -44,7 +50,8 @@ public class ListDeployedFunction implements InternalFunction<Void> {
 
     try {
       InternalCache cache = (InternalCache) context.getCache();
-      final JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
+      final JarDeploymentService jarDeploymentService =
+          ClassPathLoader.getLatest().getJarDeploymentService();
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
@@ -54,10 +61,10 @@ public class ListDeployedFunction implements InternalFunction<Void> {
         memberId = member.getName();
       }
 
-      final List<DeployedJar> jarClassLoaders = jarDeployer.findDeployedJars();
-      final Map<String, String> jars = new HashMap<>();
-      for (DeployedJar jarClassLoader : jarClassLoaders) {
-        jars.put(jarClassLoader.getDeployedFileName(), jarClassLoader.getFileCanonicalPath());
+      final List<Deployment> deployments = jarDeploymentService.listDeployed();
+      final List<DeploymentInfo> jars = new LinkedList<>();
+      for (Deployment deployment : deployments) {
+        jars.add(new DeploymentInfo(memberId, deployment));
       }
 
       CliFunctionResult result = new CliFunctionResult(memberId, jars, null);
@@ -68,11 +75,6 @@ public class ListDeployedFunction implements InternalFunction<Void> {
       CliFunctionResult result = new CliFunctionResult(memberId, false, cce.getMessage());
       context.getResultSender().lastResult(result);
     }
-  }
-
-  @Override
-  public String getId() {
-    return ID;
   }
 
   @Override

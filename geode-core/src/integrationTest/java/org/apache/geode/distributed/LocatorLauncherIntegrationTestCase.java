@@ -15,7 +15,6 @@
 package org.apache.geode.distributed;
 
 import static org.apache.geode.distributed.AbstractLauncher.Status.STOPPED;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.InternalConfigurationPersistenceService.CLUSTER_CONFIG_DISK_DIR_PREFIX;
@@ -120,7 +119,6 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
     return new Builder()
         .setMemberName(getUniqueName())
         .setWorkingDirectory(getWorkingDirectoryPath())
-        .set(CLUSTER_CONFIGURATION_DIR, getClusterConfigDirectoryPath())
         .set(DISABLE_AUTO_RECONNECT, "true");
   }
 

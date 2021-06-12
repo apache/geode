@@ -60,7 +60,7 @@ import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
@@ -311,7 +311,7 @@ public class FilterProfile implements DataSerializableFixedID {
     Class filterClass;
     InterestFilter filter;
     try {
-      filterClass = ClassLoadUtil.classFromName((String) interest);
+      filterClass = ClassLoadUtils.classFromName((String) interest);
       filter = (InterestFilter) filterClass.newInstance();
     } catch (ClassNotFoundException cnfe) {
       throw new RuntimeException(String.format("Class %s not found in classpath.",
@@ -1085,12 +1085,12 @@ public class FilterProfile implements DataSerializableFixedID {
     FilterRoutingInfo frInfo = null;
     // bug #50809 - local routing for transactional ops must be done here
     // because the event isn't available later and we lose the old value for the entry
-    boolean processLocalProfile = false;
+
+    boolean processLocalProfile =
+        event.getOperation().isEntry() && ((EntryEvent) event).getTransactionId() != null;
 
     CqService cqService = getCqService(event.getRegion());
     if (cqService.isRunning()) {
-      processLocalProfile =
-          event.getOperation().isEntry() && ((EntryEvent) event).getTransactionId() != null;
       frInfo = new FilterRoutingInfo();
       fillInCQRoutingInfo(event, processLocalProfile, peerProfiles, frInfo);
     }
@@ -1297,7 +1297,6 @@ public class FilterProfile implements DataSerializableFixedID {
    */
   public FilterRoutingInfo fillInInterestRoutingInfo(CacheEvent event, Profile[] profiles,
       FilterRoutingInfo filterRoutingInfo, Set cacheOpRecipients) {
-
     Set clientsInv = Collections.emptySet();
     Set clients = Collections.emptySet();
 
@@ -1331,8 +1330,9 @@ public class FilterProfile implements DataSerializableFixedID {
         // can be used to detect the change and the receiver can recompute
         // the routing.
         if (!pf.isLocalProfile() && cacheOpRecipients.contains(cf.getDistributedMember())) {
-          if (frInfo == null)
+          if (frInfo == null) {
             frInfo = new FilterRoutingInfo();
+          }
           frInfo.addInterestedClients(cf.getDistributedMember(), Collections.emptySet(),
               Collections.emptySet(), false);
         }
@@ -1363,8 +1363,9 @@ public class FilterProfile implements DataSerializableFixedID {
           logger.debug("Setting local interested clients={} and clientsInv={}", clients,
               clientsInv);
         }
-        if (frInfo == null)
+        if (frInfo == null) {
           frInfo = new FilterRoutingInfo();
+        }
         frInfo.setLocalInterestedClients(clients, clientsInv);
       } else {
         if (cacheOpRecipients.contains(cf.getDistributedMember()) || // always send a routing with
@@ -1375,8 +1376,9 @@ public class FilterProfile implements DataSerializableFixedID {
             logger.debug("Adding interested clients={} and clientsIn={} to {}", clients, clientsInv,
                 filterRoutingInfo);
           }
-          if (frInfo == null)
+          if (frInfo == null) {
             frInfo = new FilterRoutingInfo();
+          }
           frInfo.addInterestedClients(cf.getDistributedMember(), clients, clientsInv,
               this.clientMap.hasLongID);
         }
@@ -1410,8 +1412,9 @@ public class FilterProfile implements DataSerializableFixedID {
         Set keys = (Set) entry.getValue();
         if (keys.contains(event.getKey())) {
           Object clientID = entry.getKey();
-          if (result == null)
+          if (result == null) {
             result = new HashSet();
+          }
           result.add(clientID);
           if (logger.isDebugEnabled()) {
             logger.debug("client {} matched for key list (size {})", clientID,
@@ -1428,8 +1431,9 @@ public class FilterProfile implements DataSerializableFixedID {
         for (Pattern keyPattern : interestList.values()) {
           if (keyPattern.matcher(stringKey).matches()) {
             Object clientID = entry.getKey();
-            if (result == null)
+            if (result == null) {
               result = new HashSet();
+            }
             result.add(clientID);
             if (logger.isDebugEnabled()) {
               logger.debug("client {} matched for pattern ({})", clientID, pats.get(clientID));
@@ -1462,8 +1466,9 @@ public class FilterProfile implements DataSerializableFixedID {
               || (op.isDestroy() && filter.notifyOnDestroy(iev))
               || (op.isInvalidate() && filter.notifyOnInvalidate(iev))) {
             Object clientID = entry.getKey();
-            if (result == null)
+            if (result == null) {
               result = new HashSet();
+            }
             result.add(clientID);
             if (logger.isDebugEnabled()) {
               logger.debug("client {} matched for filter ({})", clientID,
@@ -1884,6 +1889,7 @@ public class FilterProfile implements DataSerializableFixedID {
             if (logger.isDebugEnabled()) {
               logger.debug("Processing the filter profile request for : {}", this);
             }
+            fp.region = (LocalRegion) r;
             processRequest(fp);
           }
         }
@@ -2114,6 +2120,16 @@ public class FilterProfile implements DataSerializableFixedID {
       if (mappedId != null) {
         this.wireIDs.remove(mappedId);
       }
+    }
+
+    @Override
+    public String toString() {
+      return "IDMap{" +
+          "nextID=" + nextID +
+          ", realIDs=" + realIDs +
+          ", wireIDs=" + wireIDs +
+          ", hasLongID=" + hasLongID +
+          '}';
     }
   }
 

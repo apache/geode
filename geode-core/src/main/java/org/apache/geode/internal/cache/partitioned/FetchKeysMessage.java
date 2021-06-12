@@ -370,41 +370,41 @@ public class FetchKeysMessage extends PartitionMessage {
       boolean sentLastChunk = false;
 
       // always write at least one chunk
-      final HeapDataOutputStream mos = new HeapDataOutputStream(
+      try (HeapDataOutputStream mos = new HeapDataOutputStream(
           InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048, Versioning
-              .getKnownVersionOrDefault(recipient.getVersion(), KnownVersion.CURRENT));
-      do {
-        mos.reset();
+              .getKnownVersionOrDefault(recipient.getVersion(), KnownVersion.CURRENT))) {
+        do {
+          mos.reset();
 
-        int avgItemSize = 0;
-        int itemCount = 0;
+          int avgItemSize = 0;
+          int itemCount = 0;
 
-        while ((mos.size() + avgItemSize) < InitialImageOperation.CHUNK_SIZE_IN_BYTES
-            && it.hasNext()) {
-          Object key = it.next();
-          DataSerializer.writeObject(key, mos);
+          while ((mos.size() + avgItemSize) < InitialImageOperation.CHUNK_SIZE_IN_BYTES
+              && it.hasNext()) {
+            Object key = it.next();
+            DataSerializer.writeObject(key, mos);
 
-          // Note we track the itemCount so we can compute avgItemSize
-          itemCount++;
-          // Note we track avgItemSize to help us not to always go one item
-          // past the max chunk size. When we go past it causes us to grow
-          // the ByteBuffer that the chunk is stored in resulting in a copy
-          // of the data.
-          avgItemSize = mos.size() / itemCount;
+            // Note we track the itemCount so we can compute avgItemSize
+            itemCount++;
+            // Note we track avgItemSize to help us not to always go one item
+            // past the max chunk size. When we go past it causes us to grow
+            // the ByteBuffer that the chunk is stored in resulting in a copy
+            // of the data.
+            avgItemSize = mos.size() / itemCount;
 
-        }
+          }
 
-        // Write "end of chunk" entry to indicate end of chunk
-        DataSerializer.writeObject((Object) null, mos);
+          // Write "end of chunk" entry to indicate end of chunk
+          DataSerializer.writeObject((Object) null, mos);
 
-        // send 1 for last message if no more data
-        int lastMsg = it.hasNext() ? 0 : 1;
-        keepGoing = proc.executeWith(mos, lastMsg);
-        sentLastChunk = lastMsg == 1 && keepGoing;
+          // send 1 for last message if no more data
+          int lastMsg = it.hasNext() ? 0 : 1;
+          keepGoing = proc.executeWith(mos, lastMsg);
+          sentLastChunk = lastMsg == 1 && keepGoing;
 
-        // if this region is destroyed while we are sending data, then abort.
-      } while (keepGoing && it.hasNext());
-
+          // if this region is destroyed while we are sending data, then abort.
+        } while (keepGoing && it.hasNext());
+      }
       // return false if we were told to abort
       return sentLastChunk;
     }

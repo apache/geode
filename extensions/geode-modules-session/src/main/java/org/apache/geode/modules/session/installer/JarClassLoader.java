@@ -49,13 +49,14 @@ public class JarClassLoader extends URLClassLoader {
   }
 
   private void addJarResource(File file) throws IOException {
-    JarFile jarFile = new JarFile(file);
-    addURL(file.toURL());
-    Enumeration<JarEntry> jarEntries = jarFile.entries();
-    while (jarEntries.hasMoreElements()) {
-      JarEntry jarEntry = jarEntries.nextElement();
-      if (!jarEntry.isDirectory() && isJar(jarEntry.getName())) {
-        addJarResource(jarEntryAsFile(jarFile, jarEntry));
+    try (JarFile jarFile = new JarFile(file)) {
+      addURL(file.toURL());
+      Enumeration<JarEntry> jarEntries = jarFile.entries();
+      while (jarEntries.hasMoreElements()) {
+        JarEntry jarEntry = jarEntries.nextElement();
+        if (!jarEntry.isDirectory() && isJar(jarEntry.getName())) {
+          addJarResource(jarEntryAsFile(jarFile, jarEntry));
+        }
       }
     }
   }

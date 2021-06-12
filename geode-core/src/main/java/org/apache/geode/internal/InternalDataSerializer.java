@@ -104,6 +104,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientDataSerializerMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.BasicSerializable;
@@ -403,10 +404,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
    */
   public static Collection<String> loadClassNames(URL sanctionedSerializables) throws IOException {
     ArrayList<String> result = new ArrayList<>(1000);
-    InputStream inputStream = sanctionedSerializables.openStream();
-    InputStreamReader reader = new InputStreamReader(inputStream);
-    BufferedReader in = new BufferedReader(reader);
-    try {
+    try (InputStream inputStream = sanctionedSerializables.openStream();
+        InputStreamReader reader = new InputStreamReader(inputStream);
+        BufferedReader in = new BufferedReader(reader)) {
       String line;
       while ((line = in.readLine()) != null) {
         line = line.trim();
@@ -415,8 +415,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
           result.add(line.substring(0, line.indexOf(',')));
         }
       }
-    } finally {
-      inputStream.close();
     }
     // logger.info("loaded {} class names from {}", result.size(), sanctionedSerializables);
     return result;
@@ -2894,24 +2892,26 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
         return new PdxInstanceImpl(pdxType, in, len);
       } else if (type == DSCODE.PDX_ENUM.toByte()) {
-        PdxInputStream in = new PdxInputStream(dataBytes);
-        in.readByte(); // throw away the type byte
-        int dsId = in.readByte();
-        int tmp = readArrayLength(in);
-        int enumId = dsId << 24 | tmp & 0xFFFFFF;
-        TypeRegistry tr = internalCache.getPdxRegistry();
-        EnumInfo ei = tr.getEnumInfoById(enumId);
-        if (ei == null) {
-          throw new IllegalStateException("Unknown pdx enum id=" + enumId);
+        try (PdxInputStream in = new PdxInputStream(dataBytes)) {
+          in.readByte(); // throw away the type byte
+          int dsId = in.readByte();
+          int tmp = readArrayLength(in);
+          int enumId = dsId << 24 | tmp & 0xFFFFFF;
+          TypeRegistry tr = internalCache.getPdxRegistry();
+          EnumInfo ei = tr.getEnumInfoById(enumId);
+          if (ei == null) {
+            throw new IllegalStateException("Unknown pdx enum id=" + enumId);
+          }
+          return ei.getPdxInstance(enumId);
         }
-        return ei.getPdxInstance(enumId);
       } else if (type == DSCODE.PDX_INLINE_ENUM.toByte()) {
-        PdxInputStream in = new PdxInputStream(dataBytes);
-        in.readByte(); // throw away the type byte
-        String className = DataSerializer.readString(in);
-        String enumName = DataSerializer.readString(in);
-        int enumOrdinal = InternalDataSerializer.readArrayLength(in);
-        return new PdxInstanceEnum(className, enumName, enumOrdinal);
+        try (PdxInputStream in = new PdxInputStream(dataBytes)) {
+          in.readByte(); // throw away the type byte
+          String className = DataSerializer.readString(in);
+          String enumName = DataSerializer.readString(in);
+          int enumOrdinal = InternalDataSerializer.readArrayLength(in);
+          return new PdxInstanceEnum(className, enumName, enumOrdinal);
+        }
       }
     } catch (IOException ignore) {
     }

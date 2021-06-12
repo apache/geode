@@ -62,7 +62,6 @@ public class AcceptorImplTest {
   private InternalCache cache;
   private CacheClientNotifier cacheClientNotifier;
   private ClientHealthMonitor clientHealthMonitor;
-  private ServerConnectionFactory serverConnectionFactory;
   private SecurityService securityService;
   private SocketCreator socketCreator;
   private StatisticsManager statisticsManager;
@@ -73,7 +72,6 @@ public class AcceptorImplTest {
     cache = mock(InternalCache.class);
     cacheClientNotifier = mock(CacheClientNotifier.class);
     clientHealthMonitor = mock(ClientHealthMonitor.class);
-    serverConnectionFactory = mock(ServerConnectionFactory.class);
     socketCreator = mock(SocketCreator.class);
     securityService = mock(SecurityService.class);
     system = mock(InternalDistributedSystem.class);
@@ -96,7 +94,7 @@ public class AcceptorImplTest {
     Acceptor acceptor = new AcceptorImpl(0, null, false, DEFAULT_SOCKET_BUFFER_SIZE,
         DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache, MINIMUM_MAX_CONNECTIONS, 0,
         CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
-        null, DEFAULT_TCP_NO_DELAY, serverConnectionFactory, 1000, securityService,
+        null, DEFAULT_TCP_NO_DELAY, 1000, securityService,
         () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, false, emptyList(), disabledClock());
 
@@ -114,7 +112,7 @@ public class AcceptorImplTest {
     Acceptor acceptor = new AcceptorImpl(0, null, false, DEFAULT_SOCKET_BUFFER_SIZE,
         DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache, MINIMUM_MAX_CONNECTIONS, 0,
         CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
-        null, DEFAULT_TCP_NO_DELAY, serverConnectionFactory, 1000, securityService,
+        null, DEFAULT_TCP_NO_DELAY, 1000, securityService,
         () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, true, emptyList(), disabledClock());
 

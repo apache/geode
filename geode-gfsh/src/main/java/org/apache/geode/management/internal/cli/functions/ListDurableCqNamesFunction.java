@@ -25,7 +25,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
@@ -45,16 +45,19 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 public class ListDurableCqNamesFunction implements InternalFunction<String> {
   private static final long serialVersionUID = 1L;
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.ListDurableCqNamesFunction";
+
   @Override
   public String getId() {
-    return ListDurableCqNamesFunction.class.getName();
+    return ID;
   }
 
   @Override
   public void execute(final FunctionContext<String> context) {
     final Cache cache = context.getCache();
     final DistributedMember member = cache.getDistributedSystem().getDistributedMember();
-    String memberNameOrId = CliUtil.getMemberNameOrId(member);
+    String memberNameOrId = CliUtils.getMemberNameOrId(member);
 
     String durableClientId = context.getArguments();
 

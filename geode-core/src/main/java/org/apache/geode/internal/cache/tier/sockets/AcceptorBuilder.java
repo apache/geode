@@ -49,7 +49,6 @@ public class AcceptorBuilder implements AcceptorFactory {
   private int messageTimeToLive;
   private ConnectionListener connectionListener;
   private boolean tcpNoDelay;
-  private ServerConnectionFactory serverConnectionFactory;
   private long timeLimitMillis;
   private SecurityService securityService;
   private StatisticsClock statisticsClock;
@@ -78,7 +77,6 @@ public class AcceptorBuilder implements AcceptorFactory {
     messageTimeToLive = server.getMessageTimeToLive();
     connectionListener = server.getConnectionListener();
     tcpNoDelay = server.getTcpNoDelay();
-    serverConnectionFactory = server.getServerConnectionFactory();
     timeLimitMillis = server.getTimeLimitMillis();
     securityService = server.getSecurityService();
     statisticsClock = server.getStatisticsClock();
@@ -227,16 +225,6 @@ public class AcceptorBuilder implements AcceptorFactory {
   }
 
   /**
-   * Sets {@code serverConnectionFactory}. Must be invoked after or instead of
-   * {@link #forServer(InternalCacheServer)}.
-   */
-  @VisibleForTesting
-  AcceptorBuilder setServerConnectionFactory(ServerConnectionFactory serverConnectionFactory) {
-    this.serverConnectionFactory = serverConnectionFactory;
-    return this;
-  }
-
-  /**
    * Sets {@code timeLimitMillis}. Must be invoked after or instead of
    * {@link #forServer(InternalCacheServer)}.
    */
@@ -303,7 +291,7 @@ public class AcceptorBuilder implements AcceptorFactory {
     return new AcceptorImpl(port, bindAddress, notifyBySubscription, socketBufferSize,
         maximumTimeBetweenPings, cache, maxConnections, maxThreads, maximumMessageCount,
         messageTimeToLive, connectionListener, overflowAttributes, tcpNoDelay,
-        serverConnectionFactory, timeLimitMillis, securityService, socketCreatorSupplier,
+        timeLimitMillis, securityService, socketCreatorSupplier,
         cacheClientNotifierProvider, clientHealthMonitorProvider, isGatewayReceiver,
         gatewayTransportFilters, statisticsClock);
   }
@@ -366,11 +354,6 @@ public class AcceptorBuilder implements AcceptorFactory {
   @VisibleForTesting
   boolean isTcpNoDelay() {
     return tcpNoDelay;
-  }
-
-  @VisibleForTesting
-  ServerConnectionFactory getServerConnectionFactory() {
-    return serverConnectionFactory;
   }
 
   @VisibleForTesting

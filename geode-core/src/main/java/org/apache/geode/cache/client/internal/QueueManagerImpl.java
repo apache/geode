@@ -42,6 +42,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.client.internal.RegisterInterestTracker.RegionInterestEntry;
 import org.apache.geode.cache.client.internal.ServerDenyList.DenyListListener;
@@ -284,7 +285,7 @@ public class QueueManagerImpl implements QueueManager {
       // We don't want primary recovery (and therefore user threads) to wait for
       // things like pinging connections for health checks.
       final String name = "queueTimer-" + this.pool.getName();
-      this.recoveryThread = LoggingExecutors.newScheduledThreadPool(name, 1, false);
+      this.recoveryThread = LoggingExecutors.newScheduledThreadPool(1, name, false);
 
       getState().start(background, getPool().getSubscriptionAckInterval());
 
@@ -393,8 +394,9 @@ public class QueueManagerImpl implements QueueManager {
     QueueConnectionImpl deadConnection;
 
     synchronized (lock) {
-      if (shuttingDown)
+      if (shuttingDown) {
         return;
+      }
       // if same client updater then only remove as we don't know whether it has created new
       // updater/connection on same endpoint or not..
       deadConnection = queueConnections.getConnection(endpoint);
@@ -451,7 +453,8 @@ public class QueueManagerImpl implements QueueManager {
       Connection connection = null;
       try {
         connection = factory.createClientToServerConnection(server, true);
-      } catch (GemFireSecurityException | GemFireConfigException e) {
+      } catch (GemFireSecurityException | GemFireConfigException
+          | ServerRefusedConnectionException e) {
         throw e;
       } catch (Exception e) {
         if (isDebugEnabled) {
@@ -984,8 +987,9 @@ public class QueueManagerImpl implements QueueManager {
     boolean isBadConnection;
     synchronized (lock) {
       ClientUpdater cu = connection.getUpdater();
-      if (cu == null || (!cu.isAlive()) || (!cu.isProcessing()))
+      if (cu == null || (!cu.isAlive()) || (!cu.isProcessing())) {
         return false;// don't add
+      }
       // now still CCU can died but then it will execute Checkendpoint with lock it will remove
       // connection connection and it will reschedule it.
       if (connection.getEndpoint().isClosed() || shuttingDown
@@ -1112,7 +1116,8 @@ public class QueueManagerImpl implements QueueManager {
             .set(((DefaultQueryService) this.pool.getQueryService()).getUserAttributes(name));
       }
       try {
-        if (((CqStateImpl) cqi.getState()).getState() != CqStateImpl.INIT) {
+        if (((CqStateImpl) cqi.getState()).getState() != CqStateImpl.INIT
+            && cqi.isDurable() == isDurable) {
           cqi.createOn(recoveredConnection, isDurable);
         }
       } finally {

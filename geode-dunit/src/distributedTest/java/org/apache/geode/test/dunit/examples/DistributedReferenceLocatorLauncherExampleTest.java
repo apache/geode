@@ -14,15 +14,15 @@
  */
 package org.apache.geode.test.dunit.examples;
 
+import static java.util.Arrays.asList;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.test.dunit.DistributedTestUtils.getLocatorPort;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
-import static org.apache.geode.test.dunit.VM.toArray;
+import static org.apache.geode.test.dunit.rules.DistributedRule.getLocatorPort;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -62,10 +62,10 @@ public class DistributedReferenceLocatorLauncherExampleTest implements Serializa
         .append(hostName).append('[').append(randomPorts[4]).append(']');
 
     int index = 0;
-    for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+    for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
       int whichPort = index++;
       vm.invoke(() -> {
-        String name = getClass().getSimpleName() + "-vm-" + getVMId();
+        String name = "locator-" + getVMId();
         LocatorLauncher locatorLauncher = new LocatorLauncher.Builder()
             .setWorkingDirectory(temporaryFolder.newFolder(name).getAbsolutePath())
             .setMemberName(name)
@@ -82,9 +82,9 @@ public class DistributedReferenceLocatorLauncherExampleTest implements Serializa
 
   @Test
   public void eachVmHasItsOwnLocatorLauncher() {
-    for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
+    for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
       vm.invoke(() -> {
-        assertThat(locatorLauncher.get()).isInstanceOf(LocatorLauncher.class);
+        assertThat(locatorLauncher.get()).isNotNull();
 
         InternalCache cache = (InternalCache) locatorLauncher.get().getCache();
         InternalDistributedSystem system = cache.getInternalDistributedSystem();

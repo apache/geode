@@ -29,6 +29,7 @@ import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -106,7 +107,8 @@ class BackupTask {
     try {
       Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
       temporaryFiles = TemporaryBackupFiles.create();
-      fileCopier = new BackupFileCopier(cache, temporaryFiles);
+      fileCopier = new BackupFileCopier(cache,
+          ClassPathLoader.getLatest().getJarDeploymentService(), temporaryFiles);
 
       Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStores = startDiskStoreBackups(diskStores);
 

@@ -91,7 +91,7 @@ public class ExportStackTraceCommand extends GfshCommand {
     }
 
     Map<String, byte[]> dumps = new HashMap<>();
-    Set<DistributedMember> targetMembers = getMembers(group, memberNameOrId);
+    Set<DistributedMember> targetMembers = getMembersIncludingLocators(group, memberNameOrId);
 
     ResultModel result = new ResultModel();
     InfoResultModel resultData = result.addInfo();

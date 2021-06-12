@@ -51,7 +51,7 @@ if [ -z "${NEW_VERSION}" ] ; then
     usage
 fi
 
-WORKSPACE=$(PWD)/license_tmp
+WORKSPACE=$(pwd)/license_tmp
 DOWNLOAD=${WORKSPACE}/download
 EXTRACT=${WORKSPACE}/extracted
 mkdir -p ${DOWNLOAD}
@@ -181,7 +181,7 @@ if [ $sizes -gt 1 ] ; then
   (cd $NEW_DIR; find * -name '*LICENSE' | xargs wc -c | grep -v total | sort)
   result=1
 else
-  echo "All Good!"
+  echo 'All Good!'
 fi
 
 function isApache2() {
@@ -290,7 +290,7 @@ for REPORT in report1 report2 ; do
   echo $(wc -l < apache-$REPORT) "deps are licensed under Apache 2.0 (no need to mention individually)"
   rm apache-$REPORT
   if [ $(wc -l < missing-$REPORT) -eq 0 ] ; then
-    echo "All Good!"
+    echo 'All Good!'
   else
     cat missing-$REPORT
     rm missing-$REPORT
@@ -310,7 +310,7 @@ function checkMissing() {
     fi
   done
   if [ $(wc -l < missing) -eq 0 ] ; then
-    echo "All Good!"
+    echo 'All Good!'
     rm missing
   else
     cat missing
@@ -329,12 +329,12 @@ if [ "${licFromWs}" = "true" ] ; then
     echo "(diff $SLICENSE $BLICENSE)"
     result=1
   else
-    echo "All Good!"
+    echo 'All Good!'
   fi
 
   banner "Checking that binary license is correct"
   if diff -q ${BLICENSE} ${NEW_DIR}/LICENSE ; then
-    echo "All Good!"
+    echo 'All Good!'
   else
     echo "Incorrect LICENSE in binary distribution"
     echo "Expected:" $(wc -c ${BLICENSE})
@@ -344,7 +344,7 @@ if [ "${licFromWs}" = "true" ] ; then
   if ! [ "$SKIP_SRC_LICENSE" = "true" ] ; then
     banner "Checking that source license is correct"
     if diff -q ${SLICENSE} ${NEW_SRC_DIR}/LICENSE ; then
-      echo "All Good!"
+      echo 'All Good!'
     else
       echo "Incorrect LICENSE in source distribution"
       echo "Expected:" $(wc -c ${SLICENSE})

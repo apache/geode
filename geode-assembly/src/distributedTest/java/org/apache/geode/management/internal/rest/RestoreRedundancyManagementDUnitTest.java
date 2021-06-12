@@ -19,9 +19,6 @@ package org.apache.geode.management.internal.rest;
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +28,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +40,7 @@ import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.operation.RestoreRedundancyRequest;
 import org.apache.geode.management.runtime.RegionRedundancyStatus;
 import org.apache.geode.management.runtime.RestoreRedundancyResults;
@@ -312,8 +308,8 @@ public class RestoreRedundancyManagementDUnitTest {
     Cache cache = Objects.requireNonNull(ClusterStartupRule.getCache());
 
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
-    Assert.assertThat(region.getRedundancyProvider().isRedundancyImpaired(),
-        is(!shouldBeSatisfied));
+    assertThat(region.getRedundancyProvider().isRedundancyImpaired())
+        .isNotEqualTo(shouldBeSatisfied);
   }
 
   private static void assertPrimariesBalanced(String regionName, int numberOfServers,
@@ -335,11 +331,11 @@ public class RestoreRedundancyManagementDUnitTest {
         + ", but expectedPrimaries:actualPrimaries = "
         + expectedPrimaries + ":" + primariesOnServer;
     if (shouldBeBalanced) {
-      Assert.assertThat(message, Math.abs(primariesOnServer - expectedPrimaries),
-          is(lessThanOrEqualTo(2)));
+      assertThat(Math.abs(primariesOnServer - expectedPrimaries)).as(message)
+          .isLessThanOrEqualTo(2);
     } else {
-      Assert.assertThat("Primaries should not be balanced for region " + regionName,
-          Math.abs(primariesOnServer - expectedPrimaries), is(not(lessThanOrEqualTo(2))));
+      assertThat(Math.abs(primariesOnServer - expectedPrimaries))
+          .as("Primaries should not be balanced for region " + regionName).isGreaterThan(2);
     }
   }
 }

@@ -99,5 +99,9 @@ public class PingOp {
     protected void endAttempt(ConnectionStats stats, long start) {
       stats.endPing(start, hasTimedOut(), hasFailed());
     }
+
+    public DistributedMember getServerID() {
+      return serverID;
+    }
   }
 }

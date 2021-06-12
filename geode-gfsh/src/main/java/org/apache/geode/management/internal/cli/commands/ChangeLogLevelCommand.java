@@ -52,13 +52,13 @@ public class ChangeLogLevelCommand extends GfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.WRITE)
   public ResultModel changeLogLevel(
+      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL,
+          optionContext = ConverterHint.LOG_LEVEL, mandatory = true, unspecifiedDefaultValue = "",
+          help = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL__HELP) String logLevel,
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.CHANGE_LOGLEVEL__MEMBER__HELP) String[] memberIds,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, unspecifiedDefaultValue = "",
-          help = CliStrings.CHANGE_LOGLEVEL__GROUPS__HELP) String[] grps,
-      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL,
-          optionContext = ConverterHint.LOG_LEVEL, mandatory = true, unspecifiedDefaultValue = "",
-          help = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL__HELP) String logLevel) {
+          help = CliStrings.CHANGE_LOGLEVEL__GROUPS__HELP) String[] grps) {
 
     if ((memberIds == null || memberIds.length == 0) && (grps == null || grps.length == 0)) {
       return ResultModel.createError(CliStrings.CHANGE_LOGLEVEL__MSG__SPECIFY_GRP_OR_MEMBER);

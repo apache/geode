@@ -36,7 +36,7 @@ public class Versioning {
    *         {@link UnknownVersion}.
    */
   public static Version getVersion(final short ordinal) {
-    final KnownVersion knownVersion = KnownVersion.getKnownVersionOrDefault(ordinal, null);
+    final KnownVersion knownVersion = KnownVersion.getKnownVersion(ordinal);
     if (knownVersion == null) {
       return new UnknownVersion(ordinal);
     } else {

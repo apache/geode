@@ -41,12 +41,12 @@ public interface ThrottledMemQueueStatHelper extends QueueStatHelper {
    *
    * @param amount number of bytes added to the queue
    */
-  void addMem(int amount);
+  void addMem(long amount);
 
   /**
    * Decrements the amount of memory consumed by queue contents.
    *
    * @param amount number of bytes removed from the queue
    */
-  void removeMem(int amount);
+  void removeMem(long amount);
 }

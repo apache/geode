@@ -14,12 +14,15 @@
  */
 package org.apache.geode.logging.internal.executors;
 
+import static java.lang.Integer.MAX_VALUE;
+import static java.util.concurrent.ForkJoinPool.defaultForkJoinWorkerThreadFactory;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -31,84 +34,83 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class LoggingExecutors {
-  public static ScheduledExecutorService newScheduledThreadPool(String threadName, int poolSize,
-      boolean executeDelayedTasks) {
-    ScheduledThreadPoolExecutor result =
-        new ScheduledThreadPoolExecutor(poolSize, new LoggingThreadFactory(threadName));
-    result.setExecuteExistingDelayedTasksAfterShutdownPolicy(executeDelayedTasks);
-    return result;
+
+  public static ExecutorService newCachedThreadPool(String threadName, boolean isDaemon) {
+    ThreadFactory threadFactory = new LoggingThreadFactory(threadName, isDaemon);
+    SynchronousQueue<Runnable> workQueue = new SynchronousQueue<>();
+    return new ThreadPoolExecutor(0, MAX_VALUE, 60, SECONDS, workQueue, threadFactory);
   }
 
-  public static ExecutorService newFixedThreadPoolWithFeedSize(String threadName,
-      int poolSize, int feedSize) {
-    LinkedBlockingQueue<Runnable> feed = new LinkedBlockingQueue<>(feedSize);
-    RejectedExecutionHandler rejectionHandler = new ThreadPoolExecutor.CallerRunsPolicy();
+  public static ThreadPoolExecutor newFixedThreadPool(int poolSize, long keepAliveTime,
+      TimeUnit unit, BlockingQueue<Runnable> workQueue, String threadName, boolean isDaemon) {
+    ThreadFactory threadFactory = new LoggingThreadFactory(threadName, isDaemon);
+    return new ThreadPoolExecutor(poolSize, poolSize, keepAliveTime, unit, workQueue,
+        threadFactory);
+  }
+
+  private static ThreadPoolExecutor newFixedThreadPool(int poolSize, long keepAliveTime,
+      TimeUnit unit, String threadName, boolean isDaemon) {
+    BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>();
+    return newFixedThreadPool(poolSize, keepAliveTime, unit, workQueue, threadName, isDaemon);
+  }
+
+  public static ExecutorService newFixedThreadPool(int poolSize, String threadName,
+      boolean isDaemon) {
+    return newFixedThreadPool(poolSize, 0, SECONDS, threadName, isDaemon);
+  }
+
+  public static ExecutorService newFixedThreadPoolWithFeedSize(int poolSize, int workQueueSize,
+      String threadName) {
+    LinkedBlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>(workQueueSize);
     ThreadFactory threadFactory = new LoggingThreadFactory(threadName);
-    ThreadPoolExecutor executor = new ThreadPoolExecutor(poolSize, poolSize, 10, SECONDS, feed,
-        threadFactory, rejectionHandler);
+    RejectedExecutionHandler rejectedExecutionHandler = new ThreadPoolExecutor.CallerRunsPolicy();
+    ThreadPoolExecutor executor = new ThreadPoolExecutor(poolSize, poolSize, 10, SECONDS, workQueue,
+        threadFactory, rejectedExecutionHandler);
     executor.allowCoreThreadTimeOut(true);
     return executor;
   }
 
+  public static ExecutorService newFixedThreadPoolWithTimeout(int poolSize, int keepAliveTime,
+      TimeUnit unit, String threadName) {
+    return newFixedThreadPool(poolSize, keepAliveTime, unit, threadName, true);
+  }
+
+  public static ScheduledExecutorService newScheduledThreadPool(int poolSize, String threadName) {
+    return newScheduledThreadPool(poolSize, threadName, true);
+  }
+
+  public static ScheduledExecutorService newScheduledThreadPool(int poolSize, String threadName,
+      boolean executeDelayedTasks) {
+    LoggingThreadFactory threadFactory = new LoggingThreadFactory(threadName);
+    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(poolSize, threadFactory);
+    executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(executeDelayedTasks);
+    return executor;
+  }
+
   public static ExecutorService newSingleThreadExecutor(String threadName, boolean isDaemon) {
+    LinkedBlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>();
     ThreadFactory threadFactory = new LoggingThreadFactory(threadName, isDaemon);
-    return new ThreadPoolExecutor(1, 1, 0L, SECONDS,
-        new LinkedBlockingQueue<Runnable>(),
-        threadFactory);
+    return new ThreadPoolExecutor(1, 1, 0, SECONDS, workQueue, threadFactory);
   }
 
-  public static ExecutorService newCachedThreadPool(String threadName, boolean isDaemon) {
-    ThreadFactory threadFactory = new LoggingThreadFactory(threadName, isDaemon);
-    return new ThreadPoolExecutor(0, Integer.MAX_VALUE,
-        60L, TimeUnit.SECONDS,
-        new SynchronousQueue<Runnable>(),
-        threadFactory);
+  public static ScheduledExecutorService newSingleThreadScheduledExecutor(String threadName) {
+    return newScheduledThreadPool(1, threadName);
   }
 
-  public static ExecutorService newWorkStealingPool(String threadName, int maxParallelThreads) {
-    final ForkJoinPool.ForkJoinWorkerThreadFactory factory = pool -> {
-      ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
-      LoggingUncaughtExceptionHandler.setOnThread(worker);
-      worker.setName(threadName + worker.getPoolIndex());
-      return worker;
-    };
-    return new ForkJoinPool(maxParallelThreads, factory, null, true);
-  }
-
+  /**
+   * Used for P2P Reader Threads in ConnectionTable
+   */
   public static Executor newThreadOnEachExecute(String threadName) {
     return command -> new LoggingThread(threadName, command).start();
   }
 
-  public static ScheduledExecutorService newScheduledThreadPool(String threadName, int poolSize) {
-    return newScheduledThreadPool(threadName, poolSize, true);
-  }
-
-  public static ScheduledExecutorService newSingleThreadScheduledExecutor(String threadName) {
-    return newScheduledThreadPool(threadName, 1);
-  }
-
-  public static ThreadPoolExecutor newFixedThreadPool(String threadName, boolean isDaemon,
-      int poolSize, long keepAliveSeconds,
-      BlockingQueue<Runnable> feed) {
-    ThreadFactory threadFactory = new LoggingThreadFactory(threadName, isDaemon);
-    return new ThreadPoolExecutor(poolSize, poolSize,
-        keepAliveSeconds, SECONDS,
-        feed, threadFactory);
-  }
-
-  private static ThreadPoolExecutor newFixedThreadPool(String threadName, boolean isDaemon,
-      long keepAliveSeconds, int poolSize) {
-    LinkedBlockingQueue<Runnable> feed = new LinkedBlockingQueue<>();
-    return newFixedThreadPool(threadName, isDaemon, poolSize, keepAliveSeconds, feed);
-  }
-
-  public static ExecutorService newFixedThreadPool(String threadName, boolean isDaemon,
-      int poolSize) {
-    return newFixedThreadPool(threadName, isDaemon, 0L, poolSize);
-  }
-
-  public static ExecutorService newFixedThreadPoolWithTimeout(String threadName, int poolSize,
-      int keepAliveSeconds) {
-    return newFixedThreadPool(threadName, true, keepAliveSeconds, poolSize);
+  public static ExecutorService newWorkStealingPool(String threadName, int maximumParallelThreads) {
+    ForkJoinWorkerThreadFactory factory = pool -> {
+      ForkJoinWorkerThread worker = defaultForkJoinWorkerThreadFactory.newThread(pool);
+      LoggingUncaughtExceptionHandler.setOnThread(worker);
+      worker.setName(threadName + worker.getPoolIndex());
+      return worker;
+    };
+    return new ForkJoinPool(maximumParallelThreads, factory, null, true);
   }
 }

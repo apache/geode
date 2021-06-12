@@ -510,18 +510,18 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
   public boolean checkMyStateOnMembers(Set<InternalDistributedMember> replicates)
       throws ReplyException {
     PersistentStateQueryResults remoteStates = getMyStateOnMembers(replicates);
+    Set<InternalDistributedMember> copyOfReplicates = null;
 
     persistenceAdvisorObserver.observe(regionPath);
 
     boolean equal = false;
+    PersistentMemberID myId = getPersistentID();
     for (Map.Entry<InternalDistributedMember, PersistentMemberState> entry : remoteStates
         .getStateOnPeers().entrySet()) {
       InternalDistributedMember member = entry.getKey();
       PersistentMemberID remoteId = remoteStates.getPersistentIds().get(member);
 
-      PersistentMemberID myId = getPersistentID();
       PersistentMemberState stateOnPeer = entry.getValue();
-
       if (PersistentMemberState.REVOKED.equals(stateOnPeer)) {
         throw new RevokedPersistentDataException(
             String.format(
@@ -533,7 +533,19 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         String message = String.format(
             "Region %s remote member %s with persistent data %s was not part of the same distributed system as the local data from %s",
             regionPath, member, remoteId, myId);
-        throw new ConflictingPersistentDataException(message);
+        // Conceptually the removed member due to not knowing current member, should be equal to
+        // existing replicates.
+        // It can still be used as GII provider candidate. Use a copyOfReplicates to avoid modifying
+        // the replicates.
+        if (copyOfReplicates == null) {
+          copyOfReplicates = new HashSet<>(replicates);
+        }
+        copyOfReplicates.remove(member);
+        if (copyOfReplicates.isEmpty()) {
+          throw new ConflictingPersistentDataException(message);
+        } else {
+          logger.info(message);
+        }
       }
 
       if (myId != null && stateOnPeer == PersistentMemberState.EQUAL) {

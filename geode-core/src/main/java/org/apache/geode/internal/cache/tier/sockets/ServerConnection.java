@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode.ServerConnectionExecutor;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -65,6 +66,8 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.command.Default;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
@@ -84,7 +87,7 @@ import org.apache.geode.security.NotAuthorizedException;
  *
  * @since GemFire 2.0.2
  */
-public abstract class ServerConnection implements Runnable {
+public class ServerConnection implements Runnable {
 
   protected static final Logger logger = LogService.getLogger();
 
@@ -105,7 +108,7 @@ public abstract class ServerConnection implements Runnable {
   public static boolean allowInternalMessagesWithoutCredentials =
       !Boolean.getBoolean(DISALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME);
 
-  private Map commands;
+  private Map<Integer, Command> commands;
 
   protected final SecurityService securityService;
 
@@ -121,6 +124,21 @@ public abstract class ServerConnection implements Runnable {
   private ServerConnectionCollection serverConnectionCollection;
 
   private final ProcessingMessageTimer processingMessageTimer = new ProcessingMessageTimer();
+
+  /**
+   * Set to false once handshake has been done
+   */
+  private boolean doHandshake = true;
+
+  private final ThreadsMonitoring threadMonitoring;
+  /**
+   * The threadMonitorExecutor for this server connection.
+   * This will be null if acceptor is a selector.
+   * When a selector is used, the thread pool that is used to process client requests
+   * will automatically register with the thread monitor the thread that is processing
+   * the request. So no need to create a threadMonitorExecutor.
+   */
+  private AbstractExecutor threadMonitorExecutor;
 
   public static ByteBuffer allocateCommBuffer(int size, Socket sock) {
     // I expect that size will almost always be the same value
@@ -304,6 +322,8 @@ public abstract class ServerConnection implements Runnable {
         logger.debug("While creating server connection", e);
       }
     }
+    threadMonitoring = getCache().getInternalDistributedSystem().getDM().getThreadMonitoring();
+    initStreams(socket, socketBufferSize, stats);
   }
 
   public Acceptor getAcceptor() {
@@ -362,8 +382,7 @@ public abstract class ServerConnection implements Runnable {
 
         setHandshake(readHandshake);
         setProxyId(readHandshake.getMembershipId());
-        if (readHandshake.getVersion().isOlderThan(KnownVersion.GFE_65)
-            || getCommunicationMode().isWAN()) {
+        if (getCommunicationMode().isWAN()) {
           try {
             setAuthAttributes();
 
@@ -443,7 +462,7 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
-  protected Map getCommands() {
+  protected Map<Integer, Command> getCommands() {
     return commands;
   }
 
@@ -634,7 +653,7 @@ public abstract class ServerConnection implements Runnable {
         chmRegistered = true;
       }
       if (registerClient) {
-        chm.registerClient(proxyId);
+        chm.registerClient(proxyId, acceptor.getMaximumTimeBetweenPings());
       }
       serverConnectionCollection = chm.addConnection(proxyId, this);
       acceptor.getConnectionListener().connectionOpened(registerClient, communicationMode);
@@ -661,7 +680,19 @@ public abstract class ServerConnection implements Runnable {
     return doHandShake(endpointType, queueSize) && handshakeAccepted();
   }
 
-  protected abstract boolean doHandShake(byte epType, int qSize);
+  protected boolean doHandShake(byte endpointType, int queueSize) {
+    try {
+      handshake.handshakeWithClient(theSocket.getOutputStream(), theSocket.getInputStream(),
+          endpointType, queueSize, communicationMode, principal);
+    } catch (IOException ioe) {
+      if (!crHelper.isShutdown() && !isTerminated()) {
+        logger.warn("{}: Handshake accept failed on socket {}: {}", name, theSocket, ioe);
+      }
+      cleanup();
+      return false;
+    }
+    return true;
+  }
 
   private boolean handshakeAccepted() {
     if (logger.isDebugEnabled()) {
@@ -779,6 +810,7 @@ public abstract class ServerConnection implements Runnable {
     }
 
     ThreadState threadState = null;
+    resumeThreadMonitoring();
     try {
       if (message != null) {
         // Since this thread is not interrupted when the cache server is shutdown, test again after
@@ -840,7 +872,7 @@ public abstract class ServerConnection implements Runnable {
           } else {
             logger.warn(
                 "Failed to bind the subject of uniqueId {} for message {} with {} : Possible re-authentication required",
-                uniqueId, messageType, this.getName());
+                uniqueId, messageType, getName());
             throw new AuthenticationRequiredException("Failed to find the authenticated user.");
           }
         }
@@ -848,6 +880,7 @@ public abstract class ServerConnection implements Runnable {
         command.execute(message, this, securityService);
       }
     } finally {
+      suspendThreadMonitoring();
       // Keep track of the fact that a message is no longer being
       // processed.
       serverConnectionCollection.connectionsProcessing.decrementAndGet();
@@ -856,6 +889,18 @@ public abstract class ServerConnection implements Runnable {
       if (threadState != null) {
         threadState.clear();
       }
+    }
+  }
+
+  private void suspendThreadMonitoring() {
+    if (threadMonitorExecutor != null) {
+      threadMonitorExecutor.suspendMonitoring();
+    }
+  }
+
+  private void resumeThreadMonitoring() {
+    if (threadMonitorExecutor != null) {
+      threadMonitorExecutor.resumeMonitoring();
     }
   }
 
@@ -968,7 +1013,15 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
-  protected abstract void doOneMessage();
+  protected void doOneMessage() {
+    if (doHandshake) {
+      doHandshake();
+      doHandshake = false;
+    } else {
+      resetTransientData();
+      doNormalMessage();
+    }
+  }
 
   private void initializeClientUserAuths() {
     clientUserAuths = getClientUserAuths(proxyId);
@@ -986,13 +1039,19 @@ public abstract class ServerConnection implements Runnable {
   }
 
   void initializeCommands() {
-    // The commands are cached here, but are just referencing the ones
-    // stored in the CommandInitializer
-    commands = CommandInitializer.getCommands(this);
+    // The commands are cached here, but are just referencing the ones stored in the
+    // CommandInitializer
+    KnownVersion clientVersion = getClientVersion();
+    // WAN uses KnownVersion.CURRENT, but that might not have a command table, so we look
+    // for one that does
+    if (!clientVersion.hasClientServerProtocolChange()) {
+      clientVersion = clientVersion.getClientServerProtocolVersion();
+    }
+    commands = CommandInitializer.getDefaultInstance().get(clientVersion);
   }
 
   private Command getCommand(Integer messageType) {
-    return (Command) commands.get(messageType);
+    return commands.get(messageType);
   }
 
   public void removeUserAuth(Message message, boolean keepAlive) {
@@ -1070,8 +1129,10 @@ public abstract class ServerConnection implements Runnable {
 
       credBytes = handshake.getEncryptor().decryptBytes(credBytes);
 
-      ByteArrayDataInput dinp = new ByteArrayDataInput(credBytes);
-      Properties credentials = DataSerializer.readProperties(dinp);
+      Properties credentials;
+      try (ByteArrayDataInput dinp = new ByteArrayDataInput(credBytes)) {
+        credentials = DataSerializer.readProperties(dinp);
+      }
 
       // When here, security is enforced on server, if login returns a subject, then it's the newly
       // integrated security, otherwise, do it the old way.
@@ -1125,7 +1186,6 @@ public abstract class ServerConnection implements Runnable {
   public Part updateAndGetSecurityPart() {
     // need to take care all message types here
     if (AcceptorImpl.isAuthenticationRequired()
-        && handshake.getVersion().isNotOlderThan(KnownVersion.GFE_65)
         && !communicationMode.isWAN() && !requestMessage.getAndResetIsMetaRegion()
         && !isInternalMessage(requestMessage, allowInternalMessagesWithoutCredentials)) {
       setSecurityPart();
@@ -1206,6 +1266,9 @@ public abstract class ServerConnection implements Runnable {
         }
       }
     } else {
+      threadMonitorExecutor = threadMonitoring.createAbstractExecutor(ServerConnectionExecutor);
+      suspendThreadMonitoring();
+      threadMonitoring.register(threadMonitorExecutor);
       try {
         while (processMessages && !crHelper.isShutdown()) {
           try {
@@ -1218,6 +1281,7 @@ public abstract class ServerConnection implements Runnable {
           }
         }
       } finally {
+        threadMonitoring.unregister(threadMonitorExecutor);
         try {
           unsetRequestSpecificTimeout();
           handleTermination();
@@ -1412,11 +1476,22 @@ public abstract class ServerConnection implements Runnable {
       getAcceptor().decClientServerConnectionCount();
     }
 
-    try {
-      theSocket.close();
-    } catch (Exception ignored) {
+    if (!theSocket.isClosed()) {
+      // Here we direct closing of sockets to one of two executors. Use of an executor
+      // keeps us from causing an explosion of new threads when a server is shut down.
+      // Background threads are used in case the close() operation on the socket hangs.
+      final String closerName =
+          communicationMode.isWAN() ? "WANSocketCloser" : "CacheServerSocketCloser";
+      acceptor.getSocketCloser().asyncClose(theSocket, closerName, () -> {
+      },
+          () -> cleanupAfterSocketClose());
+      return true;
     }
+    cleanupAfterSocketClose();
+    return true;
+  }
 
+  protected void cleanupAfterSocketClose() {
     try {
       if (postAuthzRequest != null) {
         postAuthzRequest.close();
@@ -1437,7 +1512,6 @@ public abstract class ServerConnection implements Runnable {
     }
     releaseCommBuffer();
     processMessages = false;
-    return true;
   }
 
   private void releaseCommBuffer() {
@@ -1664,7 +1738,7 @@ public abstract class ServerConnection implements Runnable {
   public long getUniqueId() {
     long uniqueId;
 
-    if (handshake.getVersion().isOlderThan(KnownVersion.GFE_65) || communicationMode.isWAN()) {
+    if (communicationMode.isWAN()) {
       uniqueId = userAuthId;
     } else if (requestMessage.isSecureMode()) {
       uniqueId = messageIdExtractor.getUniqueIdFromMessage(requestMessage,
@@ -1697,7 +1771,7 @@ public abstract class ServerConnection implements Runnable {
       if (isTerminated()) {
         throw new IOException("Server connection is terminated.");
       }
-      logger.debug("Unexpected exception {}", npe);
+      logger.debug("Unexpected exception {}", npe.toString());
     }
     if (uaa == null) {
       throw new AuthenticationRequiredException("User authorization attributes not found.");
@@ -1800,9 +1874,10 @@ public abstract class ServerConnection implements Runnable {
     AuthorizeRequest authzRequest = null;
 
     if (authzFactoryName != null && !authzFactoryName.isEmpty()) {
-      if (securityLogWriter.fineEnabled())
+      if (securityLogWriter.fineEnabled()) {
         securityLogWriter.fine(
             getName() + ": Setting pre-process authorization callback to: " + authzFactoryName);
+      }
       if (principal == null) {
         if (securityLogWriter.warningEnabled()) {
           securityLogWriter.warning(
@@ -1815,9 +1890,10 @@ public abstract class ServerConnection implements Runnable {
     }
     AuthorizeRequestPP postAuthzRequest = null;
     if (postAuthzFactoryName != null && !postAuthzFactoryName.isEmpty()) {
-      if (securityLogWriter.fineEnabled())
+      if (securityLogWriter.fineEnabled()) {
         securityLogWriter.fine(getName() + ": Setting post-process authorization callback to: "
             + postAuthzFactoryName);
+      }
       if (principal == null) {
         if (securityLogWriter.warningEnabled()) {
           securityLogWriter.warning(

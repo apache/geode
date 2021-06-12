@@ -23,8 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWOR
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.RESTRICT_MEMBERSHIP_PORT_RANGE;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
@@ -1151,7 +1150,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     String name = this.getUniqueName();
-    int[] ports = new int[] {getRandomAvailablePort(SOCKET)};
+    int[] ports = getRandomAvailableTCPPorts(1);
     assertThat(ports[0] != 0).isTrue();
 
     // create BridgeServer in controller vm...
@@ -1400,7 +1399,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     String name = getUniqueName();
-    int[] ports = new int[] {getRandomAvailablePort(SOCKET)};
+    int[] ports = getRandomAvailableTCPPorts(1);
     assertThat(ports[0] != 0).isTrue();
 
     Properties config = new Properties();

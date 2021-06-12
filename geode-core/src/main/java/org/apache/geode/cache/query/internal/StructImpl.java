@@ -123,15 +123,19 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof Struct))
+    if (!(obj instanceof Struct)) {
       return false;
+    }
     Struct s = (Struct) obj;
-    if (!Arrays.equals(getFieldTypes(), s.getStructType().getFieldTypes()))
+    if (!Arrays.equals(getFieldTypes(), s.getStructType().getFieldTypes())) {
       return false;
-    if (!Arrays.equals(getFieldNames(), s.getStructType().getFieldNames()))
+    }
+    if (!Arrays.equals(getFieldNames(), s.getStructType().getFieldNames())) {
       return false;
-    if (!Arrays.equals(getFieldValues(), s.getFieldValues()))
+    }
+    if (!Arrays.equals(getFieldValues(), s.getFieldValues())) {
       return false;
+    }
     return true;
   }
 
@@ -153,8 +157,9 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
     StringBuffer buf = new StringBuffer();
     buf.append("struct(");
     for (int i = 0; i < locValues.length; i++) {
-      if (i > 0)
+      if (i > 0) {
         buf.append(",");
+      }
       buf.append(names[i]);
       buf.append(":");
       buf.append(locValues[i]);

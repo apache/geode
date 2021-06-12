@@ -58,6 +58,11 @@ resources:
     branch: support/<VERSION_MM>
     tag_filter: rel/v<VERSION_MM>.*.RC*
     uri: https://github.com/apache/geode.git
+- name: geode-develop
+  type: git
+  source:
+    branch: develop
+    uri: https://github.com/apache/geode.git
 - name: geode-examples
   type: git
   source:
@@ -84,10 +89,11 @@ resources:
 jobs:
   - name: build-geode-from-tag
     serial: true
+    public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -105,6 +111,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
@@ -113,14 +121,15 @@ jobs:
               ./gradlew test installDist
               gfsh=geode-assembly/build/install/apache-geode/bin/gfsh
               $gfsh version --full | grep "^Source-Revision: ${SHA}$"
-              $gfsh version --full | grep "^Product-Version: ${VERSION}$"
+              $gfsh version --full | grep "^Product-Version: ${VERSION}-build"
               ! $gfsh version --full | grep Oracle
   - name: build-geode-from-src-tgz
     serial: true
+    public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -138,6 +147,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
@@ -148,14 +159,15 @@ jobs:
               ./gradlew test installDist
               gfsh=geode-assembly/build/install/apache-geode/bin/gfsh
               $gfsh version --full | grep "^Source-Revision: ${SHA}$"
-              $gfsh version --full | grep "^Product-Version: ${VERSION}$"
+              $gfsh version --full | grep "^Product-Version: ${VERSION}-build"
               ! $gfsh version --full | grep Oracle
   - name: run-gfsh-from-tgz
     serial: true
+    public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -173,6 +185,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends git
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
@@ -186,10 +200,11 @@ jobs:
               ! $gfsh version --full | grep Oracle
   - name: run-geode-examples-jdk11
     serial: true
+    public: true
     plan:
-      - aggregate:
-          - get: geode-examples
-            trigger: true
+      - in_parallel:
+        - get: geode-examples
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -207,15 +222,18 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip
               cd geode-examples
               java -version
               ./gradlew runAll
   - name: run-geode-examples-from-src-tgz-jdk8
     serial: true
+    public: true
     plan:
-      - aggregate:
-          - get: geode-examples
-            trigger: true
+      - in_parallel:
+        - get: geode-examples
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -233,20 +251,29 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode-examples && git describe --tags | sed -e 's#^rel/v##' -e 's#-.*##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
-              STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
-              curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
+              if [ "${FULL_VERSION}" = "${VERSION}" ] ; then
+                GRADLE_ARGS=""
+                curl -L -s https://downloads.apache.org/geode/${VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
+              else
+                STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
+                GRADLE_ARGS="-PgeodeReleaseUrl=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION} -PgeodeRepositoryUrl=${STAGING_MAVEN}"
+                curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
+              fi
               tar xzf src.tgz
               cd apache-geode-examples-${VERSION}-src
               java -version
-              ./gradlew -PgeodeReleaseUrl=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION} -PgeodeRepositoryUrl=${STAGING_MAVEN} build runAll
+              ./gradlew ${GRADLE_ARGS} build runAll
   - name: build-geode-native-from-tag
     serial: true
+    public: true
     plan:
-      - aggregate:
-          - get: geode-native
-            trigger: true
+      - in_parallel:
+        - get: geode-native
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -264,6 +291,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends git
               FULL_VERSION=$(cd geode-native && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               #use geode from binary dist
@@ -285,11 +314,12 @@ jobs:
               cmake --build . --target install -- -j 4
   - name: build-geode-native-from-src-tgz
     serial: true
+    public: true
     plan:
-      - aggregate:
-          - get: geode-native
-            trigger: true
-          - get: geode
+      - in_parallel:
+        - get: geode-native
+          trigger: true
+        - get: geode
       - task: validate
         timeout: 1h
         config:
@@ -308,6 +338,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode-native && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               # build geode from source
@@ -332,12 +364,13 @@ jobs:
               cmake --build . --target install -- -j 4
   - name: upthewaterspout
     serial: true
+    public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
-          - get: upthewaterspout-tests
-          - get: geode-examples
+      - in_parallel:
+        - get: geode
+          trigger: true
+        - get: upthewaterspout-tests
+        - get: geode-examples
       - task: validate
         timeout: 1h
         config:
@@ -357,6 +390,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git gpg
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
@@ -367,6 +402,7 @@ jobs:
               ./gradlew build -PmavenURL=${STAGING_MAVEN} -PdownloadURL=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/ -Pversion=${FULL_VERSION}
   - name: benchmarks-test
     serial: true
+    public: true
     plan:
       - get: geode-benchmarks
         trigger: true
@@ -387,6 +423,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git keychain
               FULL_VERSION=$(cd geode-benchmarks && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-benchmarks-${VERSION}-src.tgz > src.tgz
@@ -400,13 +438,15 @@ jobs:
               apt-get install openssh-server --no-install-recommends -y
               echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
               service ssh start
+              echo 'tasks.withType(JavaCompile) { options.encoding = "UTF-8" }' >> geode-benchmarks/build.gradle
               ./gradlew build test
   - name: verify-expected-files-and-keys
     serial: true
+    public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -424,6 +464,8 @@ jobs:
             - -ec
             - |
               set -ex
+              apt update -q
+              apt install -qq -y --no-install-recommends git gpg
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
@@ -466,6 +508,7 @@ jobs:
                 grep "Copyright" "${tld}/NOTICE"
                 grep -q "Copyright.*${year}.*Apache Software Foundation" "${tld}/NOTICE"
                 #check that the declared license is of the correct type
+                tar xzf $file "${tld}/LICENSE"
                 head -1 "${tld}/LICENSE" | grep -q "Apache License"
               }
               verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}-src 10000000 30000000
@@ -492,10 +535,11 @@ jobs:
               fi
   - name: verify-no-binaries
     serial: true
+    public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -513,6 +557,8 @@ jobs:
             - -ec
             - |
               set -e
+              apt update -q
+              apt install -qq -y --no-install-recommends git
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               url=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}
@@ -539,10 +585,12 @@ jobs:
               fi
   - name: verify-license
     serial: true
+    public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
+        - get: geode-develop
       - task: validate
         timeout: 1h
         config:
@@ -553,6 +601,7 @@ jobs:
               tag: 8
           inputs:
             - name: geode
+            - name: geode-develop
           platform: linux
           run:
             path: /bin/bash
@@ -560,10 +609,13 @@ jobs:
             - -ec
             - |
               set -e
+              apt update -q
+              apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
-              geode/dev-tools/release/license_review.sh -v $FULL_VERSION
+              ./geode-develop/dev-tools/release/license_review.sh -v $FULL_VERSION
 EOF
 fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
 fly -t concourse.apachegeode-ci.info-main set-pipeline -p apache-support-${VERSION_MM//./-}-rc -c $PIPEYML
 fly -t concourse.apachegeode-ci.info-main unpause-pipeline -p apache-support-${VERSION_MM//./-}-rc
+fly -t concourse.apachegeode-ci.info-main expose-pipeline -p apache-support-${VERSION_MM//./-}-rc
 rm $PIPEYML

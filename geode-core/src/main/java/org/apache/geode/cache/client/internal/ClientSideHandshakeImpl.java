@@ -25,8 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -95,13 +93,13 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       InternalDistributedSystem distributedSystem, SecurityService securityService,
       boolean multiuserSecureMode) {
     this.multiuserSecureMode = multiuserSecureMode;
-    this.id = proxyId;
-    this.system = distributedSystem;
+    id = proxyId;
+    system = distributedSystem;
     this.securityService = securityService;
-    this.replyCode = REPLY_OK;
+    replyCode = REPLY_OK;
     setOverrides();
-    this.credentials = null;
-    this.encryptor = new EncryptorImpl(distributedSystem.getSecurityLogWriter());
+    credentials = null;
+    encryptor = new EncryptorImpl(distributedSystem.getSecurityLogWriter());
   }
 
   /**
@@ -109,8 +107,8 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
    */
   public ClientSideHandshakeImpl(ClientSideHandshakeImpl handshake) {
     super(handshake);
-    this.multiuserSecureMode = handshake.multiuserSecureMode;
-    this.replyCode = handshake.getReplyCode();
+    multiuserSecureMode = handshake.multiuserSecureMode;
+    replyCode = handshake.getReplyCode();
   }
 
   public static void setVersionForTesting(short ver) {
@@ -125,23 +123,15 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   }
 
   private void setOverrides() {
-    this.clientConflation = determineClientConflation();
-
-    // As of May 2009 ( GFE 6.0 ):
-    // Note that this.clientVersion is used by server side for accepting
-    // handshakes.
-    // Client side handshake code uses this.currentClientVersion which can be
-    // set via tests.
-    if (currentClientVersion.isNotOlderThan(KnownVersion.GFE_603)) {
-      this.overrides = new byte[] {this.clientConflation};
-    }
+    clientConflation = determineClientConflation();
+    overrides = new byte[] {clientConflation};
   }
 
   // used by the client side
   private byte determineClientConflation() {
     byte result = CONFLATION_DEFAULT;
 
-    String clientConflationValue = this.system.getProperties().getProperty(CONFLATE_EVENTS);
+    String clientConflationValue = system.getProperties().getProperty(CONFLATE_EVENTS);
     if (DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_ON
         .equalsIgnoreCase(clientConflationValue)) {
       result = CONFLATION_ON;
@@ -171,7 +161,6 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       CommunicationMode communicationMode) throws IOException, AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException {
     try {
-      ServerQueueStatus serverQStatus = null;
       Socket sock = conn.getSocket();
       DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
       final InputStream in = sock.getInputStream();
@@ -179,22 +168,22 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       InternalDistributedMember member = getIDForSocket(sock);
       // if running in a loner system, use the new port number in the ID to
       // help differentiate from other clients
-      DistributionManager dm = ((InternalDistributedSystem) this.system).getDistributionManager();
-      InternalDistributedMember idm = dm.getDistributionManagerId();
+      DistributionManager dm = ((InternalDistributedSystem) system).getDistributionManager();
+      final InternalDistributedMember idm = dm.getDistributionManagerId();
       synchronized (idm) {
         if (idm.getMembershipPort() == 0 && dm instanceof LonerDistributionManager) {
           int port = sock.getLocalPort();
           ((LonerDistributionManager) dm).updateLonerPort(port);
-          this.id.updateID(dm.getDistributionManagerId());
+          id.updateID(dm.getDistributionManagerId());
         }
       }
       if (communicationMode.isWAN()) {
-        this.credentials = getCredentials(member);
+        credentials = getCredentials(member);
       }
       byte intermediateAcceptanceCode = write(dos, dis, communicationMode, REPLY_OK,
-          this.clientReadTimeout, null, this.credentials, member, false);
+          clientReadTimeout, null, credentials, member, false);
 
-      String authInit = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
+      String authInit = system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
       if (!communicationMode.isWAN()
           && intermediateAcceptanceCode != REPLY_AUTH_NOT_REQUIRED
           && (StringUtils.isNotBlank(authInit) || multiuserSecureMode)) {
@@ -228,28 +217,24 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
 
       // No need to check for return value since DataInputStream already throws
       // EOFException in case of EOF
-      byte endpointType = dis.readByte();
-      int queueSize = dis.readInt();
+      final byte endpointType = dis.readByte();
+      final int queueSize = dis.readInt();
 
       member = readServerMember(dis);
 
-      serverQStatus = new ServerQueueStatus(endpointType, queueSize, member);
+      final ServerQueueStatus serverQStatus =
+          new ServerQueueStatus(endpointType, queueSize, member);
 
       // Read the message (if any)
       readMessage(dis, dos, acceptanceCode, member);
 
       // Read delta-propagation property value from server.
-      // [sumedh] Static variable below? Client can connect to different
-      // DSes with different values of this. It shoule be a member variable.
-      if (!communicationMode.isWAN() && currentClientVersion.isNotOlderThan(KnownVersion.GFE_61)) {
+      if (!communicationMode.isWAN()) {
         ((InternalDistributedSystem) system).setDeltaEnabledOnServer(dis.readBoolean());
       }
 
       // validate that the remote side has a different distributed system id.
-      if (communicationMode.isWAN()
-          && KnownVersion.GFE_66
-              .compareTo(Versioning.getVersion(conn.getWanSiteVersion())) <= 0
-          && currentClientVersion.isNotOlderThan(KnownVersion.GFE_66)) {
+      if (communicationMode.isWAN()) {
         int remoteDistributedSystemId = in.read();
         int localDistributedSystemId =
             ((InternalDistributedSystem) system).getDistributionManager().getDistributedSystemId();
@@ -271,7 +256,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
 
       return serverQStatus;
     } catch (IOException ex) {
-      CancelCriterion stopper = this.system.getCancelCriterion();
+      CancelCriterion stopper = system.getCancelCriterion();
       stopper.checkCancelInProgress(null);
       throw ex;
     }
@@ -301,22 +286,21 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   public ServerQueueStatus handshakeWithSubscriptionFeed(Socket sock, boolean isPrimary)
       throws IOException, AuthenticationRequiredException, AuthenticationFailedException,
       ServerRefusedConnectionException, ClassNotFoundException {
-    ServerQueueStatus serverQueueStatus = null;
     try {
-      DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+      final DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
       final InputStream in = sock.getInputStream();
-      DataInputStream dis = new DataInputStream(in);
-      DistributedMember member = getIDForSocket(sock);
-      if (!this.multiuserSecureMode) {
-        this.credentials = getCredentials(member);
+      final DataInputStream dis = new DataInputStream(in);
+      final DistributedMember member = getIDForSocket(sock);
+      if (!multiuserSecureMode) {
+        credentials = getCredentials(member);
       }
-      CommunicationMode mode = isPrimary ? CommunicationMode.PrimaryServerToClient
+      final CommunicationMode mode = isPrimary ? CommunicationMode.PrimaryServerToClient
           : CommunicationMode.SecondaryServerToClient;
-      write(dos, dis, mode, REPLY_OK, 0, new ArrayList(), this.credentials, member, true);
+      write(dos, dis, mode, REPLY_OK, 0, new ArrayList<>(), credentials, member, true);
 
       // Wait here for a reply before continuing. This ensures that the client
       // updater is registered with the server before continuing.
-      byte acceptanceCode = dis.readByte();
+      final byte acceptanceCode = dis.readByte();
       if (acceptanceCode == (byte) 21 && !(sock instanceof SSLSocket)) {
         // This is likely the case of server setup with SSL and client not using
         // SSL
@@ -324,58 +308,44 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
             "Server expecting SSL connection");
       }
 
-      byte endpointType = dis.readByte();
-      int queueSize = dis.readInt();
+      final byte endpointType = dis.readByte();
+      final int queueSize = dis.readInt();
 
       // Read the message (if any)
       readMessage(dis, dos, acceptanceCode, member);
 
-      // [sumedh] nothing more to be done for older clients used in tests
-      // there is a difference in serializer map registration for >= 6.5.1.6
-      // clients but that is not used in tests
-      if (currentClientVersion.isOlderThan(KnownVersion.GFE_61)) {
-        return new ServerQueueStatus(endpointType, queueSize, member);
-      }
-      HashMap instantiatorMap = DataSerializer.readHashMap(dis);
-      for (Iterator itr = instantiatorMap.entrySet().iterator(); itr.hasNext();) {
-        Map.Entry instantiator = (Map.Entry) itr.next();
-        Integer id = (Integer) instantiator.getKey();
-        ArrayList instantiatorArguments = (ArrayList) instantiator.getValue();
-        InternalInstantiator.register((String) instantiatorArguments.get(0),
-            (String) instantiatorArguments.get(1), id, false);
+      final Map<Integer, List<String>> instantiatorMap = DataSerializer.readHashMap(dis);
+      for (final Map.Entry<Integer, List<String>> entry : instantiatorMap.entrySet()) {
+        final Integer id = entry.getKey();
+        final List<String> instantiatorArguments = entry.getValue();
+        InternalInstantiator.register(instantiatorArguments.get(0), instantiatorArguments.get(1),
+            id, false);
       }
 
-      HashMap dataSerializersMap = DataSerializer.readHashMap(dis);
-      for (Iterator itr = dataSerializersMap.entrySet().iterator(); itr.hasNext();) {
-        Map.Entry dataSerializer = (Map.Entry) itr.next();
-        Integer id = (Integer) dataSerializer.getKey();
-        InternalDataSerializer.register((String) dataSerializer.getValue(), false, null, null, id);
+      final Map<Integer, String> dataSerializersMap = DataSerializer.readHashMap(dis);
+      for (final Map.Entry<Integer, String> entry : dataSerializersMap.entrySet()) {
+        InternalDataSerializer.register(entry.getValue(), false, null, null, entry.getKey());
       }
-      Map<Integer, List<String>> dsToSupportedClassNames = DataSerializer.readHashMap(dis);
+      final Map<Integer, List<String>> dsToSupportedClassNames = DataSerializer.readHashMap(dis);
       InternalDataSerializer.updateSupportedClassesMap(dsToSupportedClassNames);
 
       // the server's ping interval is only sent to subscription feeds so we can't read it as
       // part of a "standard" server response along with the other status data.
-      int pingInterval = dis.readInt();
-      serverQueueStatus = new ServerQueueStatus(endpointType, queueSize, member, pingInterval);
+      final int pingInterval = dis.readInt();
+      return new ServerQueueStatus(endpointType, queueSize, member, pingInterval);
 
-    } catch (IOException ex) {
-      CancelCriterion stopper = this.system.getCancelCriterion();
-      stopper.checkCancelInProgress(null);
-      throw ex;
-    } catch (ClassNotFoundException ex) {
-      CancelCriterion stopper = this.system.getCancelCriterion();
+    } catch (IOException | ClassNotFoundException ex) {
+      CancelCriterion stopper = system.getCancelCriterion();
       stopper.checkCancelInProgress(null);
       throw ex;
     }
-    return serverQueueStatus;
   }
 
   /**
    * client-to-server handshake. Nothing is sent to the server prior to invoking this method.
    */
   private byte write(DataOutputStream dos, DataInputStream dis, CommunicationMode communicationMode,
-      int replyCode, int readTimeout, List ports, Properties p_credentials,
+      int replyCode, int readTimeout, List<String> ports, Properties p_credentials,
       DistributedMember member, boolean isCallbackConnection) throws IOException {
     HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT);
     byte acceptanceCode = -1;
@@ -385,14 +355,17 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         // for testing
         VersioningIO.writeOrdinal(hdos, overrideClientVersion, true);
       } else {
-        VersioningIO.writeOrdinal(hdos, currentClientVersion.ordinal(), true);
+        VersioningIO.writeOrdinal(hdos,
+            communicationMode.isWAN() ? KnownVersion.CURRENT_ORDINAL
+                : currentClientVersion.ordinal(),
+            true);
       }
 
       hdos.writeByte(replyCode);
       if (ports != null) {
         hdos.writeInt(ports.size());
-        for (int i = 0; i < ports.size(); i++) {
-          hdos.writeInt(Integer.parseInt((String) ports.get(i)));
+        for (String port : ports) {
+          hdos.writeInt(Integer.parseInt(port));
         }
       } else {
         hdos.writeInt(readTimeout);
@@ -400,25 +373,16 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // we do not know the receiver's version at this point, but the on-wire
       // form of InternalDistributedMember changed in 9.0, so we must serialize
       // it using the previous version
-      DataOutput idOut = new VersionedDataOutputStream(hdos, KnownVersion.GFE_82);
-      DataSerializer.writeObject(this.id, idOut);
+      DataOutput idOut = new VersionedDataOutputStream(hdos, KnownVersion.GFE_81);
+      DataSerializer.writeObject(id, idOut);
 
-      if (currentClientVersion.isNotOlderThan(KnownVersion.GFE_603)) {
-        byte[] overrides = getOverrides();
-        for (int bytes = 0; bytes < overrides.length; bytes++) {
-          hdos.writeByte(overrides[bytes]);
-        }
-      } else {
-        // write the client conflation setting byte
-        if (setClientConflationForTesting) {
-          hdos.writeByte(clientConflationForTesting);
-        } else {
-          hdos.writeByte(this.clientConflation);
-        }
+      byte[] overrides = getOverrides();
+      for (final byte override : overrides) {
+        hdos.writeByte(override);
       }
 
       if (isCallbackConnection || communicationMode.isWAN()) {
-        if (isCallbackConnection && this.multiuserSecureMode && !communicationMode.isWAN()) {
+        if (isCallbackConnection && multiuserSecureMode && !communicationMode.isWAN()) {
           hdos.writeByte(SECURITY_MULTIUSER_NOTIFICATIONCHANNEL);
           hdos.flush();
           dos.write(hdos.toByteArray());
@@ -427,7 +391,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
           writeCredentials(dos, dis, p_credentials, ports != null, member, hdos);
         }
       } else {
-        String authInitMethod = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
+        String authInitMethod = system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
         acceptanceCode = writeCredential(dos, dis, authInitMethod, ports != null, member, hdos);
       }
     } finally {
@@ -441,7 +405,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       boolean isNotification, DistributedMember member, HeapDataOutputStream heapdos)
       throws IOException, GemFireSecurityException {
 
-    if (!this.multiuserSecureMode && (authInit == null || authInit.length() == 0)) {
+    if (!multiuserSecureMode && (authInit == null || authInit.length() == 0)) {
       // No credentials indicator
       heapdos.writeByte(CREDENTIALS_NONE);
       heapdos.flush();

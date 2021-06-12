@@ -37,7 +37,7 @@ Compact a disk store on all members with that disk store.
 
 This command uses the compaction threshold that each member has configured for its disk stores. The disk store must have the `allow-force-compaction` property set to `true`.
 
-See [Running Compaction on Disk Store Log Files](../../../managing/disk_storage/compacting_disk_stores.html#compacting_disk_stores) for more information.
+See [Running Compaction on Disk Store Log Files](../../../managing/disk_storage/compacting_disk_stores.html) for more information.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -47,14 +47,12 @@ See [Running Compaction on Disk Store Log Files](../../../managing/disk_storage/
 compact disk-store --name=value [--groups=value(,value)*]
 ```
 
-<a id="topic_F113C95C076F424E9AA8AC4F1F6324CC__table_7039256EA2014AE5BFAB63697FF35AB6"></a>
+**Parameters, compact disk-store**
 
 | Name                                          | Description                                                                                                                  |
 |-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-name</span>  | *Required.* Name of the disk store to be compacted.                                                                          |
 | <span class="keyword parmname">\\-\\-groups</span> | Group(s) of members that perform disk compaction. If no group is specified, then the disk store is compacted by all members. |
-
-<span class="tablecap">Table 1. Compact Disk-Store Parameters</span>
 
 **Example Commands:**
 
@@ -79,7 +77,7 @@ Compact an offline disk store.
 
 If the disk store is large, you may need to allocate additional memory to the process by using the `--J=-XmxNNNm` parameter.
 
-See [Running Compaction on Disk Store Log Files](../../../managing/disk_storage/compacting_disk_stores.html#compacting_disk_stores) for more information.
+See [Running Compaction on Disk Store Log Files](../../../managing/disk_storage/compacting_disk_stores.html) for more information.
 
 **Note:**
 Do not perform offline compaction on the baseline directory of an incremental backup.
@@ -93,7 +91,7 @@ compact offline-disk-store --name=value --disk-dirs=value(,value)*
 [--max-oplog-size=value] [--J=value(,value)*]
 ```
 
-<a id="topic_9CCFCB2FA2154E16BD775439C8ABC8FB__table_BDB9B26709D841F08BCD75087AF596D8"></a>
+**Parameters, compact offline-disk-store**
 
 | Name                                                   | Description                                                                                                                   | Default Value |
 |--------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|---------------|
@@ -101,8 +99,6 @@ compact offline-disk-store --name=value --disk-dirs=value(,value)*
 | <span class="keyword parmname">\\-\\-disk-dirs</span>      | *Required.* One or more directories where data for the disk store was previously written. Separate directories with commas.   |               |
 | <span class="keyword parmname">\\-\\-max-oplog-size</span> | Maximum size (in megabytes) of the oplogs created by compaction.                                                              | -1            |
 | <span class="keyword parmname">\\-\\-J</span>              | Arguments passed to the Java Virtual Machine performing the compact operation on the disk store. For example: `-J=-Xmx1024m`. |               |
-
-<span class="tablecap">Table 2. Compact Offline-Disk-Store Parameters</span>
 
 **Example Commands:**
 

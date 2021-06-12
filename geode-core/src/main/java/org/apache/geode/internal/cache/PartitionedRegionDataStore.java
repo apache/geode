@@ -734,13 +734,15 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     }
     ea = this.partitionedRegion.getAttributes().getRegionIdleTimeout();
     if (ea != null) {
-      if (ea.getAction() != ExpirationAction.DESTROY)
+      if (ea.getAction() != ExpirationAction.DESTROY) {
         factory.setRegionIdleTimeout(ea);
+      }
     }
     ea = this.partitionedRegion.getAttributes().getRegionTimeToLive();
     if (ea != null) {
-      if (ea.getAction() != ExpirationAction.DESTROY)
+      if (ea.getAction() != ExpirationAction.DESTROY) {
         factory.setRegionTimeToLive(ea);
+      }
     }
     CustomExpiry ce = this.partitionedRegion.getAttributes().getCustomEntryIdleTimeout();
     if (ce != null) {
@@ -2604,14 +2606,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * <i>Test Method</i> Return the list of all the bucket names in this data store.
    *
    */
-  public List getLocalBucketsListTestOnly() {
-    final List bucketList = new ArrayList();
-    visitBuckets(new BucketVisitor() {
-      @Override
-      public void visit(Integer bucketId, Region r) {
-        bucketList.add(bucketId);
-      }
-    });
+  public List<Integer> getLocalBucketsListTestOnly() {
+    final List<Integer> bucketList = new ArrayList<>();
+    visitBuckets((bucketId, r) -> bucketList.add(bucketId));
     return bucketList;
   }
 
@@ -2635,16 +2632,13 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * <i>Test Method</i> Return the list of all the non primary bucket ids in this data store.
    *
    */
-  public List getLocalNonPrimaryBucketsListTestOnly() {
-    final List nonPrimaryBucketList = new ArrayList();
-    visitBuckets(new BucketVisitor() {
-      @Override
-      public void visit(Integer bucketId, Region r) {
-        BucketRegion br = (BucketRegion) r;
-        BucketAdvisor ba = (BucketAdvisor) br.getDistributionAdvisor();
-        if (!ba.isPrimary()) {
-          nonPrimaryBucketList.add(bucketId);
-        }
+  public List<Integer> getLocalNonPrimaryBucketsListTestOnly() {
+    final List<Integer> nonPrimaryBucketList = new ArrayList<>();
+    visitBuckets((bucketId, r) -> {
+      BucketRegion br = (BucketRegion) r;
+      BucketAdvisor ba = (BucketAdvisor) br.getDistributionAdvisor();
+      if (!ba.isPrimary()) {
+        nonPrimaryBucketList.add(bucketId);
       }
     });
     return nonPrimaryBucketList;
@@ -2969,7 +2963,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   public void executeOnDataStore(final Set localKeys, final Function function, final Object object,
       final int prid, final int[] bucketArray, final boolean isReExecute,
       final PartitionedRegionFunctionStreamingMessage msg, long time, ServerConnection servConn,
-      int transactionID) {
+      int transactionID, Object principal) {
 
     if (!areAllBucketsHosted(bucketArray)) {
       throw new BucketMovedException(
@@ -2984,7 +2978,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         new RegionFunctionContextImpl(getPartitionedRegion().getCache(), function.getId(),
             this.partitionedRegion, object, localKeys, ColocationHelper
                 .constructAndGetAllColocatedLocalDataSet(this.partitionedRegion, bucketArray),
-            bucketArray, resultSender, isReExecute);
+            bucketArray, resultSender, isReExecute, principal);
 
     FunctionStats stats = FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem());
     long start = stats.startFunctionExecution(function.hasResult());

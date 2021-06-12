@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -44,7 +45,6 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
@@ -348,10 +348,11 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     try {
       CqQuery cq1 = cqService.newCq(name, Cquery, cqa);
       assertTrue("newCq() state mismatch", cq1.getState().isStopped());
-      if (cqWithIR)
+      if (cqWithIR) {
         cq1.executeWithInitialResults();
-      else
+      } else {
         cq1.execute();
+      }
     } catch (Exception ex) {
       fail("Failed to create CQ " + cqName1, ex);
     }
@@ -384,10 +385,11 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     try {
       CqQuery cq1 = cqService.newCq(name, Cquery, cqa);
       assertTrue("newCq() state mismatch", cq1.getState().isStopped());
-      if (cqWithIR)
+      if (cqWithIR) {
         cq1.executeWithInitialResults();
-      else
+      } else {
         cq1.execute();
+      }
     } catch (Exception ex) {
       fail("Failed to create CQ " + cqName1, ex);
     }
@@ -479,7 +481,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     cache.createRegion(REGION_NAME2, attrs);
 
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int port = getRandomAvailableTCPPort();
     server.setPort(port);
     // ensures updates to be sent instead of invalidations
     server.setNotifyBySubscription(true);

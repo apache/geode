@@ -43,6 +43,14 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class GetMemberConfigInformationFunction extends CliFunction<Boolean> {
   private static final long serialVersionUID = 1L;
 
+  private static final String ID =
+      "org.apache.geode.management.internal.cli.functions.GetMemberConfigInformationFunction";
+
+  @Override
+  public String getId() {
+    return ID;
+  }
+
 
   @Override
   @SuppressWarnings("deprecation")
@@ -61,8 +69,9 @@ public class GetMemberConfigInformationFunction extends CliFunction<Boolean> {
     memberConfigInfo
         .setGfePropsSetUsingApi(distConfigImpl.getConfigPropsFromSource(ConfigSource.api()));
 
-    if (!hideDefaults)
+    if (!hideDefaults) {
       memberConfigInfo.setGfePropsSetWithDefaults(distConfigImpl.getConfigPropsFromSource(null));
+    }
 
     memberConfigInfo.setGfePropsSetFromFile(distConfigImpl.getConfigPropsDefinedUsingFiles());
 
@@ -96,7 +105,7 @@ public class GetMemberConfigInformationFunction extends CliFunction<Boolean> {
     List<Map<String, String>> cacheServerAttributesList = new ArrayList<>();
     List<CacheServer> cacheServers = cache.getCacheServers();
 
-    if (cacheServers != null)
+    if (cacheServers != null) {
       for (CacheServer cacheServer : cacheServers) {
         Map<String, String> cacheServerAttributes = new HashMap<>();
 
@@ -120,11 +129,13 @@ public class GetMemberConfigInformationFunction extends CliFunction<Boolean> {
             Long.toString(cacheServer.getLoadPollInterval()));
         cacheServerAttributes.put("tcp-no-delay", Boolean.toString(cacheServer.getTcpNoDelay()));
 
-        if (hideDefaults)
+        if (hideDefaults) {
           removeDefaults(cacheServerAttributes, getCacheServerAttributesDefaultValues());
+        }
 
         cacheServerAttributesList.add(cacheServerAttributes);
       }
+    }
 
     memberConfigInfo.setCacheServerAttributes(cacheServerAttributesList);
 
