@@ -92,7 +92,7 @@ public class ConfigurationTest {
     configuration.putDeployment(new Deployment(updatedAbcJarName, null, null));
 
     String defJarName = "def-1.0.jar";
-    Deployment deployment3 = new Deployment(defJarName, defJarName, null, null);
+    Deployment deployment3 = new Deployment(defJarName, null, null);
     configuration.putDeployment(deployment3);
 
     assertThat(configuration.getJarNames())

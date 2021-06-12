@@ -36,7 +36,7 @@ public interface ClasspathService {
 
   void init(boolean excludeTCCL, JarDeploymentService jarDeploymentService);
 
-  void chainClassloader(File jar, String deploymentName);
+  void chainClassloader(File jar);
 
   void unloadClassloaderForArtifact(String artifactId);
 

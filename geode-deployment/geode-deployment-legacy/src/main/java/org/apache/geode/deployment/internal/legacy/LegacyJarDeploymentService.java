@@ -25,7 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -39,6 +38,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
+import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.services.result.impl.Failure;
@@ -62,8 +62,7 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
   @Override
   public synchronized ServiceResult<Deployment> deploy(Deployment deployment) {
     try {
-      DeployedJar deployedJar =
-          jarDeployer.deploy(deployment.getDeploymentName(), deployment.getFile());
+      DeployedJar deployedJar = jarDeployer.deploy(deployment.getFile());
       // This means that the jars are already deployed, so we call it a Success.
       if (deployedJar == null) {
         logger.info("Jar already been deployed: {}", deployment);
@@ -74,14 +73,13 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
         logger.debug("Adding Deployment: {} with DeployedJar: {}", deployment, deployedJar);
         Deployment deploymentCopy = new Deployment(deployment, deployedJar.getFile());
         deploymentCopy.setDeployedTime(Instant.now().toString());
-        deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
+        deployments.put(JarFileUtils.getArtifactId(deploymentCopy.getFileName()), deploymentCopy);
         logger.debug("Deployments List size after add: {}", deployments.size());
         logger.debug("Deployment copy to return: {}", deploymentCopy);
         try {
-          functionToFileTracker.registerFunctionsFromFile(deploymentCopy.getDeploymentName(),
-              deploymentCopy.getFile());
+          functionToFileTracker.registerFunctionsFromFile(deploymentCopy.getFile());
         } catch (ClassNotFoundException | IOException e) {
-          jarDeployer.undeploy(deployment.getDeploymentName());
+          jarDeployer.undeploy(JarFileUtils.getArtifactId(deployment.getFileName()));
           return Failure.of(e);
         }
         return Success.of(deploymentCopy);
@@ -99,58 +97,32 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
   }
 
   @Override
-  public synchronized ServiceResult<Deployment> undeployByDeploymentName(String deploymentName) {
+  public synchronized ServiceResult<Deployment> undeployByFileName(String fileName) {
     try {
       logger.debug("Deployments List size before undeploy: {}", deployments.size());
-      logger.debug("Deployment name being undeployed: {}", deploymentName);
+      logger.debug("File being undeployed: {}", fileName);
 
-      Deployment removedDeployment = deployments.remove(deploymentName);
-      logger.debug("Removed Deployment: {}", removedDeployment);
+      jarDeployer.deleteAllVersionsOfJar(fileName);
 
-      if (removedDeployment == null) {
-        return Failure.of("No deployment found for name: " + deploymentName);
+      String artifactId = JarFileUtils.getArtifactId(fileName);
+
+      Deployment deployment = deployments.get(artifactId);
+      if (deployment == null || !deployment.getFileName().equals(fileName)) {
+        return Failure.of(fileName + " not deployed");
       }
+
+      Deployment removedDeployment = deployments.remove(artifactId);
+      logger.debug("Removed Deployment: {}", removedDeployment);
       logger.debug("Deployments List size after remove: {}", deployments.size());
-      String undeployedPath = jarDeployer.undeploy(removedDeployment.getDeploymentName());
+      String undeployedPath =
+          jarDeployer.undeploy(JarFileUtils.getArtifactId(removedDeployment.getFileName()));
       logger.debug("Jar at path: {} removed by JarDeployer", undeployedPath);
-      functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment.getDeploymentName());
+      functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment.getFileName());
       return Success.of(removedDeployment);
     } catch (IOException e) {
       return Failure.of(e);
     } finally {
       flushCaches();
-    }
-  }
-
-  /**
-   * Removes jars from the system by their file name.
-   *
-   * @param fileName the name of a jar that has previously been deployed.
-   * @return a {@link ServiceResult} containing a {@link Deployment} representing the removed jar
-   *         when successful and an error message if the file could not be found or undeployed.
-   */
-  @Override
-  public synchronized ServiceResult<Deployment> undeployByFileName(String fileName) {
-    logger.debug("Undeploying file: {}", fileName);
-    for (Deployment deployment : listDeployed()) {
-      logger.debug("Checking deployment for file: {}", deployment);
-      logger.debug("Deployment: {} contains file: {}", deployment.getDeploymentName(),
-          deployment.getFileName().equals(fileName));
-    }
-    List<String> deploymentNamesFromFileName =
-        listDeployed().stream()
-            .filter(deployment -> deployment.getFileName().equals(fileName))
-            .map(Deployment::getDeploymentName)
-            .collect(Collectors.toList());
-    jarDeployer.deleteAllVersionsOfJar(fileName);
-    logger.debug("Deployments found for file: {}",
-        Arrays.toString(deploymentNamesFromFileName.toArray()));
-    if (deploymentNamesFromFileName.size() > 1) {
-      return Failure.of("There are multiple deployments with file: " + fileName);
-    } else if (deploymentNamesFromFileName.isEmpty()) {
-      return Failure.of(fileName + " not deployed");
-    } else {
-      return undeployByDeploymentName(deploymentNamesFromFileName.get(0));
     }
   }
 
@@ -160,13 +132,14 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
   }
 
   @Override
-  public ServiceResult<Deployment> getDeployed(String deploymentName) {
-    logger.debug("Looking up Deployment for name: {}", deploymentName);
+  public ServiceResult<Deployment> getDeployed(String fileName) {
+    logger.debug("Looking up Deployment for name: {}", fileName);
     logger.debug("Deployments keySet: {}", Arrays.toString(deployments.keySet().toArray()));
-    if (deployments.containsKey(deploymentName)) {
-      return Success.of(deployments.get(deploymentName));
+    String artifactId = JarFileUtils.getArtifactId(fileName);
+    if (deployments.containsKey(artifactId)) {
+      return Success.of(deployments.get(artifactId));
     } else {
-      return Failure.of(deploymentName + " is not deployed.");
+      return Failure.of(fileName + " is not deployed.");
     }
   }
 
@@ -194,11 +167,10 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
         logger.debug("Deploying DeployedJar: {} from working directory", deployedJar);
         Deployment deployment = createDeployment(deployedJar);
         deploymentList.add(deployment);
-        deployments.put(deployment.getDeploymentName(), deployment);
+        deployments.put(JarFileUtils.toArtifactId(deployment.getFileName()), deployment);
       }
       for (Deployment deployment : deploymentList) {
-        functionToFileTracker.registerFunctionsFromFile(deployment.getDeploymentName(),
-            deployment.getFile());
+        functionToFileTracker.registerFunctionsFromFile(deployment.getFile());
       }
     } catch (ClassNotFoundException | IOException e) {
       logger.error(e);
@@ -210,12 +182,12 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
 
   @Override
   public void close() {
-    String[] deploymentNames = deployments.keySet().toArray(new String[] {});
-    logger
-        .debug("Closing LegacyJarDeploymentService. The following Deployments will be removed: {}",
-            Arrays.toString(deploymentNames));
-    for (String deploymentName : deploymentNames) {
-      undeployByDeploymentName(deploymentName);
+    String[] jarNames = deployments.keySet().toArray(new String[] {});
+    logger.debug(
+        "Closing LegacyJarDeploymentService. The following Deployments will be removed: {}",
+        Arrays.toString(jarNames));
+    for (String jarName : jarNames) {
+      undeployByFileName(jarName);
     }
   }
 

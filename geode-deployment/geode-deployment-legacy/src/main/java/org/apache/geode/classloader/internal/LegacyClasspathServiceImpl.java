@@ -42,6 +42,7 @@ import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
+import org.apache.geode.management.internal.utils.JarFileUtils;
 
 /**
  * This implementation of {@link ClasspathService} will be used by {@link ClassPathLoader} when the
@@ -67,10 +68,11 @@ public class LegacyClasspathServiceImpl implements ClasspathService {
     rebuildClassLoaderForDeployedJars();
   }
 
-  public synchronized void chainClassloader(File jar, String deploymentName) {
+  public synchronized void chainClassloader(File jar) {
     try {
       leafLoader = new DeployJarChildFirstClassLoader(artifactIdsToClassLoader,
-          new URL[] {jar.toURI().toURL()}, deploymentName, getLeafLoader());
+          new URL[] {jar.toURI().toURL()}, JarFileUtils.toArtifactId(jar.getName()),
+          getLeafLoader());
     } catch (MalformedURLException e) {
       e.printStackTrace();
     }
@@ -249,7 +251,7 @@ public class LegacyClasspathServiceImpl implements ClasspathService {
     leafLoader = null;
     List<Deployment> deployments = jarDeploymentService.listDeployed();
     for (Deployment deployment : deployments) {
-      chainClassloader(deployment.getFile(), deployment.getDeploymentName());
+      chainClassloader(deployment.getFile());
     }
   }
 

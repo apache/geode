@@ -380,9 +380,9 @@ public class IncrementalBackupIntegrationTest {
     // Remove the "dummy" jar from the VM.
     for (Deployment deployment : ClassPathLoader.getLatest().getJarDeploymentService()
         .listDeployed()) {
-      if (deployment.getDeploymentName().startsWith(jarName)) {
+      if (deployment.getFileName().startsWith(jarName)) {
         ClassPathLoader.getLatest().getJarDeploymentService()
-            .undeployByDeploymentName(deployment.getDeploymentName());
+            .undeployByFileName(deployment.getFileName());
       }
     }
 

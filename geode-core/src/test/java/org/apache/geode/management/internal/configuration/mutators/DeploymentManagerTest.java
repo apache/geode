@@ -141,7 +141,7 @@ public class DeploymentManagerTest {
       return deployment;
     }, name -> {
       Deployment deployment = new Deployment();
-      deployment.setDeploymentName(name);
+      deployment.setFileName(name);
       return deployment;
     });
   }

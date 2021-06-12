@@ -22,29 +22,23 @@ import org.apache.geode.management.configuration.Deployment;
 
 public class DeploymentInfo implements Serializable {
   private final String memberName;
-  private final String deploymentName;
   private final String fileName;
   private final String additionalDeploymentInfo;
 
-  public DeploymentInfo(String memberName, String deploymentName, String fileName,
+  public DeploymentInfo(String memberName, String fileName,
       String additionalDeploymentInfo) {
     this.memberName = memberName;
-    this.deploymentName = deploymentName;
     this.fileName = fileName;
     this.additionalDeploymentInfo = additionalDeploymentInfo;
   }
 
   public DeploymentInfo(String memberName, Deployment deployment) {
-    this(memberName, deployment.getDeploymentName(), deployment.getFileName(),
+    this(memberName, deployment.getFileName(),
         deployment.getFilePath());
   }
 
   public String getMemberName() {
     return memberName;
-  }
-
-  public String getDeploymentName() {
-    return deploymentName;
   }
 
   public String getFileName() {
@@ -59,7 +53,6 @@ public class DeploymentInfo implements Serializable {
   public String toString() {
     return "DeploymentInfo{" +
         "memberName='" + memberName + '\'' +
-        ", deploymentName='" + deploymentName + '\'' +
         ", fileName='" + fileName + '\'' +
         ", additionalDeploymentInfo='" + additionalDeploymentInfo + '\'' +
         '}';

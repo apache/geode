@@ -67,7 +67,7 @@ public class DeploymentManagementController extends AbstractManagementController
       @RequestParam(required = false) String group) {
     Deployment deployment = new Deployment();
     if (StringUtils.isNotBlank(id)) {
-      deployment.setDeploymentName(id);
+      deployment.setFileName(id);
     }
     if (StringUtils.isNotBlank(group)) {
       deployment.setGroup(group);
@@ -82,7 +82,7 @@ public class DeploymentManagementController extends AbstractManagementController
       @PathVariable(name = "id") String id) {
     Deployment deployment = new Deployment();
     if (StringUtils.isNotBlank(id)) {
-      deployment.setDeploymentName(id);
+      deployment.setFileName(id);
     }
     return clusterManagementService.get(deployment);
   }

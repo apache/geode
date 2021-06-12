@@ -47,8 +47,7 @@ public class DeploymentValidator implements ConfigurationValidator<Deployment> {
 
     if (!invalidFileNames.isEmpty()) {
       throw new IllegalArgumentException(
-          "Some files in deployment: " + config.getDeploymentName()
-              + " do not contain valid JAR contents: " + invalidFileNames);
+          "File does not contain valid JAR content: " + config.getFileName());
     }
   }
 }
