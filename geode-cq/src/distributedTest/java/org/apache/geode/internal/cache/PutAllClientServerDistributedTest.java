@@ -2533,6 +2533,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
     // do some putAll to get ClientMetaData for future putAll
     client1.invoke(() -> doPutAll(getClientCache().getRegion(regionName), "key-", ONE_HUNDRED));
+    await().until(() -> myRegion.size() == ONE_HUNDRED);
 
     // register interest and add listener
     Counter clientCounter = new Counter("client");
