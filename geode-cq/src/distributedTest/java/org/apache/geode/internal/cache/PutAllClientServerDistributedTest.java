@@ -2569,11 +2569,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
       doPutAll(region, keyPrefix, ONE_HUNDRED); // fails in GEODE-7812
     });
 
-    client1.invoke(() -> await()
-        .untilAsserted(() -> assertThat(clientCounter.getCreates()).isEqualTo(ONE_HUNDRED)));
-
     await().untilAsserted(() -> assertThat(clientCounter.getCreates()).isEqualTo(ONE_HUNDRED));
-
     assertThat(clientCounter.getUpdates()).isZero();
 
     // server1 and server2 will closeCache after created 10 keys
