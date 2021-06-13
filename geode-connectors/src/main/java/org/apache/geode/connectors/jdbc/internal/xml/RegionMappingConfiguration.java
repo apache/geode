@@ -17,11 +17,8 @@ package org.apache.geode.connectors.jdbc.internal.xml;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
-import java.sql.JDBCType;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -36,16 +33,15 @@ import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
-import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxOutputStream;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
@@ -79,7 +75,7 @@ public class RegionMappingConfiguration implements Extension<Region<?, ?>> {
       Class<?> pdxClazz = loadPdxClass(mapping.getPdxName());
       PdxType pdxType = getPdxTypeForClass(internalCache, pdxClazz);
 
-      List<FieldMapping> fieldMappings = createDefaultFieldMapping(pdxType);
+      List<FieldMapping> fieldMappings = createDefaultFieldMapping(service, pdxType);
       fieldMappings.forEach(fieldMapping -> {
         mapping.addFieldMapping(fieldMapping);
       });
@@ -97,7 +93,8 @@ public class RegionMappingConfiguration implements Extension<Region<?, ?>> {
     }
   }
 
-  protected List<FieldMapping> createDefaultFieldMapping(PdxType pdxType) {
+  List<FieldMapping> createDefaultFieldMapping(JdbcConnectorService service,
+      PdxType pdxType) {
     DataSource dataSource = getDataSource(mapping.getDataSourceName());
     if (dataSource == null) {
       throw new JdbcConnectorException("No datasource \"" + mapping.getDataSourceName()
@@ -106,66 +103,10 @@ public class RegionMappingConfiguration implements Extension<Region<?, ?>> {
     TableMetaDataManager manager = getTableMetaDataManager();
     try (Connection connection = dataSource.getConnection()) {
       TableMetaDataView tableMetaData = manager.getTableMetaDataView(connection, mapping);
-      return createDefaultFieldMapping(pdxType, tableMetaData);
+      return service.createFieldMappingUsingPdx(pdxType, tableMetaData);
     } catch (SQLException e) {
       throw JdbcConnectorException.createException(e);
     }
-  }
-
-  private List<FieldMapping> createDefaultFieldMapping(PdxType pdxType,
-      TableMetaDataView tableMetaDataView) {
-
-    // TODO the table name returned in tableMetaData may be different than
-    // the table name specified on the command line at this point.
-    // Do we want to update the region mapping to hold the "real" table name
-    List<FieldMapping> fieldMappings = new ArrayList<>();
-    Set<String> columnNames = tableMetaDataView.getColumnNames();
-    if (columnNames.size() != pdxType.getFieldCount()) {
-      throw new JdbcConnectorException(
-          "The table and pdx class must have the same number of columns/fields. But the table has "
-              + columnNames.size()
-              + " columns and the pdx class has " + pdxType.getFieldCount() + " fields.");
-    }
-    List<PdxField> pdxFields = pdxType.getFields();
-    for (String jdbcName : columnNames) {
-      boolean isNullable = tableMetaDataView.isColumnNullable(jdbcName);
-      JDBCType jdbcType = tableMetaDataView.getColumnDataType(jdbcName);
-      FieldMapping fieldMapping =
-          createFieldMapping(jdbcName, jdbcType.getName(), isNullable, pdxFields);
-      fieldMappings.add(fieldMapping);
-    }
-    return fieldMappings;
-  }
-
-  private FieldMapping createFieldMapping(String jdbcName, String jdbcType, boolean jdbcNullable,
-      List<PdxField> pdxFields) {
-    String pdxName = null;
-    String pdxType = null;
-    for (PdxField pdxField : pdxFields) {
-      if (pdxField.getFieldName().equals(jdbcName)) {
-        pdxName = pdxField.getFieldName();
-        pdxType = pdxField.getFieldType().name();
-        break;
-      }
-    }
-    if (pdxName == null) {
-      // look for one inexact match
-      for (PdxField pdxField : pdxFields) {
-        if (pdxField.getFieldName().equalsIgnoreCase(jdbcName)) {
-          if (pdxName != null) {
-            throw new JdbcConnectorException(
-                "More than one PDX field name matched the column name \"" + jdbcName + "\"");
-          }
-          pdxName = pdxField.getFieldName();
-          pdxType = pdxField.getFieldType().name();
-        }
-      }
-    }
-    if (pdxName == null) {
-      throw new JdbcConnectorException(
-          "No PDX field name matched the column name \"" + jdbcName + "\"");
-    }
-    return new FieldMapping(pdxName, pdxType, jdbcName, jdbcType, jdbcNullable);
   }
 
   protected PdxType getPdxTypeForClass(Cache cache, Class<?> clazz) {

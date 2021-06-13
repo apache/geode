@@ -28,6 +28,7 @@ import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +43,9 @@ import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
+import org.apache.geode.pdx.FieldType;
+import org.apache.geode.pdx.internal.PdxField;
+import org.apache.geode.pdx.internal.PdxType;
 
 public class JdbcConnectorServiceTest {
 
@@ -63,6 +67,7 @@ public class JdbcConnectorServiceTest {
 
   TableMetaDataView view = mock(TableMetaDataView.class);
   TableMetaDataManager manager = mock(TableMetaDataManager.class);
+  PdxType pdxType = mock(PdxType.class);
   InternalCache cache = mock(InternalCache.class);
   DataSource dataSource = mock(DataSource.class);
   Connection connection = mock(Connection.class);
@@ -78,6 +83,16 @@ public class JdbcConnectorServiceTest {
     when(mapping.getFieldMappings()).thenReturn(fieldMappings);
     when(mapping.getIds()).thenReturn(KEY_COLUMN_NAME);
     when(mapping.getSpecifiedIds()).thenReturn(true);
+
+    when(pdxType.getFieldCount()).thenReturn(2);
+    PdxField field1 = mock(PdxField.class);
+    when(field1.getFieldName()).thenReturn("id");
+    when(field1.getFieldType()).thenReturn(FieldType.INT);
+    PdxField field2 = mock(PdxField.class);
+    when(field2.getFieldName()).thenReturn("name");
+    when(field2.getFieldType()).thenReturn(FieldType.STRING);
+    List<PdxField> pdxFields = Arrays.asList(field1, field2);
+    when(pdxType.getFields()).thenReturn(pdxFields);
 
     when(dataSource.getConnection()).thenReturn(connection);
     when(manager.getTableMetaDataView(connection, mapping)).thenReturn(view);
@@ -215,5 +230,88 @@ public class JdbcConnectorServiceTest {
     when(mapping.getSpecifiedIds()).thenReturn(false);
     when(mapping.getIds()).thenReturn(KEY_COLUMN_NAME + "," + COMPOSITE_KEY_COLUMN_NAME);
     service.validateMapping(mapping);
+  }
+
+  @Test
+  public void createFieldMappingUsingPdxSucceedsWithExactMatchPdxFields() {
+    List<FieldMapping> fieldsMappings = service.createFieldMappingUsingPdx(pdxType, view);
+
+    assertThat(fieldsMappings).hasSize(2);
+    assertThat(fieldsMappings).contains(
+        new FieldMapping("id", FieldType.INT.name(), "id", JDBCType.INTEGER.name(), false));
+    assertThat(fieldsMappings).contains(
+        new FieldMapping("name", FieldType.STRING.name(), "name", JDBCType.VARCHAR.name(), true));
+  }
+
+  @Test
+  public void createFieldMappingUsingPdxSucceedsWithIgnoreCaseMatchPdxFields() {
+    when(pdxType.getFieldCount()).thenReturn(2);
+    PdxField field1 = mock(PdxField.class);
+    when(field1.getFieldName()).thenReturn("ID");
+    when(field1.getFieldType()).thenReturn(FieldType.INT);
+    PdxField field2 = mock(PdxField.class);
+    when(field2.getFieldName()).thenReturn("NAME");
+    when(field2.getFieldType()).thenReturn(FieldType.STRING);
+    List<PdxField> pdxFields = Arrays.asList(field1, field2);
+    when(pdxType.getFields()).thenReturn(pdxFields);
+
+    List<FieldMapping> fieldsMappings = service.createFieldMappingUsingPdx(pdxType, view);
+
+    assertThat(fieldsMappings).hasSize(2);
+    assertThat(fieldsMappings).contains(
+        new FieldMapping("ID", FieldType.INT.name(), "id", JDBCType.INTEGER.name(), false));
+    assertThat(fieldsMappings).contains(
+        new FieldMapping("NAME", FieldType.STRING.name(), "name", JDBCType.VARCHAR.name(), true));
+  }
+
+  @Test
+  public void createFieldMappingUsingPdxThrowsExceptionWhenGivenUnMatchPdxFieldName() {
+    when(pdxType.getFieldCount()).thenReturn(2);
+    PdxField field1 = mock(PdxField.class);
+    when(field1.getFieldName()).thenReturn("id");
+    when(field1.getFieldType()).thenReturn(FieldType.INT);
+    PdxField field2 = mock(PdxField.class);
+    when(field2.getFieldName()).thenReturn("nameString");
+    when(field2.getFieldType()).thenReturn(FieldType.STRING);
+    List<PdxField> pdxFields = Arrays.asList(field1, field2);
+    when(pdxType.getFields()).thenReturn(pdxFields);
+
+    Throwable throwable = catchThrowable(() -> service.createFieldMappingUsingPdx(pdxType, view));
+
+    assertThat(throwable).isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
+        String.format("No PDX field name matched the column name \"%s\"",
+            VALUE_COLUMN_NAME));
+  }
+
+  @Test
+  public void createFieldMappingUsingPdxThrowsExceptionWhenGivenDuplicatePdxFieldName() {
+    when(pdxType.getFieldCount()).thenReturn(2);
+    PdxField field1 = mock(PdxField.class);
+    when(field1.getFieldName()).thenReturn("id");
+    when(field1.getFieldType()).thenReturn(FieldType.INT);
+    PdxField field2 = mock(PdxField.class);
+    when(field2.getFieldName()).thenReturn("NAME");
+    when(field2.getFieldType()).thenReturn(FieldType.STRING);
+    PdxField field3 = mock(PdxField.class);
+    when(field3.getFieldName()).thenReturn("Name");
+    when(field3.getFieldType()).thenReturn(FieldType.STRING);
+    List<PdxField> pdxFields = Arrays.asList(field2, field3, field1);
+    when(pdxType.getFields()).thenReturn(pdxFields);
+
+    Throwable throwable = catchThrowable(() -> service.createFieldMappingUsingPdx(pdxType, view));
+
+    assertThat(throwable).isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
+        String.format("More than one PDX field name matched the column name \"%s\"",
+            VALUE_COLUMN_NAME));
+  }
+
+  @Test
+  public void createFieldMappingUsingPdxThrowsExceptionWhenGivenExistingPdxTypeWithWrongNumberOfFields() {
+    doReturn(3).when(pdxType).getFieldCount();
+    Throwable throwable = catchThrowable(() -> service.createFieldMappingUsingPdx(pdxType, view));
+    assertThat(throwable).isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
+        String.format(
+            "The table and pdx class must have the same number of columns/fields. But the table has %d columns and the pdx class has %d fields.",
+            view.getColumnNames().size(), pdxType.getFieldCount()));
   }
 }

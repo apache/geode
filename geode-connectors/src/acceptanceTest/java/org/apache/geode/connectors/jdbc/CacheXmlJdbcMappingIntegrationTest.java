@@ -46,11 +46,12 @@ import org.apache.geode.pdx.internal.AutoSerializableManager;
 public class CacheXmlJdbcMappingIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      CacheXmlJdbcMappingIntegrationTest.class.getResource("mysql.yml");
-  protected static final String DATA_SOURCE_NAME = "TestDataSource";
-  protected static final String DB_NAME = "test";
-  protected static final String REGION_TABLE_NAME = "employees";
-  protected static final String REGION_NAME = "Region1";
+      CacheXmlJdbcMappingIntegrationTest.class.getResource("/mysql.yml");
+
+  private static final String DATA_SOURCE_NAME = "TestDataSource";
+  private static final String DB_NAME = "test";
+  private static final String REGION_TABLE_NAME = "employees";
+  private static final String REGION_NAME = "Region1";
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -61,7 +62,7 @@ public class CacheXmlJdbcMappingIntegrationTest {
 
   @ClassRule
   public static DatabaseConnectionRule dbRule = new MySqlConnectionRule.Builder()
-      .file(COMPOSE_RESOURCE_PATH.getPath()).serviceName("db").port(3306).database(DB_NAME).build();
+      .file(COMPOSE_RESOURCE_PATH.getPath()).build();
 
   @Before
   public void setUp() throws Exception {

@@ -43,6 +43,8 @@ import org.junit.Test;
 
 import org.apache.geode.SerializationException;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorServiceImpl;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
@@ -72,13 +74,14 @@ public class RegionMappingConfigurationTest {
 
   private RegionMappingConfiguration config;
 
-  TableMetaDataView view = mock(TableMetaDataView.class);
-  TableMetaDataManager manager = mock(TableMetaDataManager.class);
-  InternalCache cache = mock(InternalCache.class);
-  DataSource dataSource = mock(DataSource.class);
-  Connection connection = mock(Connection.class);
-  PdxType pdxType = mock(PdxType.class);
-  TypeRegistry typeRegistry = mock(TypeRegistry.class);
+  private JdbcConnectorService service;
+  private TableMetaDataView view = mock(TableMetaDataView.class);
+  private TableMetaDataManager manager = mock(TableMetaDataManager.class);
+  private InternalCache cache = mock(InternalCache.class);
+  private DataSource dataSource = mock(DataSource.class);
+  private Connection connection = mock(Connection.class);
+  private PdxType pdxType = mock(PdxType.class);
+  private TypeRegistry typeRegistry = mock(TypeRegistry.class);
 
   public static class PdxClassDummy {
   }
@@ -91,6 +94,9 @@ public class RegionMappingConfigurationTest {
   @Before
   public void setUp() throws Exception {
     mapping = mock(RegionMapping.class);
+
+    service = spy(JdbcConnectorServiceImpl.class);
+    when(cache.getService(JdbcConnectorService.class)).thenReturn(service);
 
     when(cache.getExtensionPoint()).thenReturn(mock(ExtensionPoint.class));
     when(mapping.getRegionName()).thenReturn(TEST_REGION_NAME);
@@ -137,7 +143,7 @@ public class RegionMappingConfigurationTest {
 
   @Test
   public void createDefaultFieldMappingSucceedsWithExactMatchPdxFields() {
-    List<FieldMapping> fieldsMappings = config.createDefaultFieldMapping(pdxType);
+    List<FieldMapping> fieldsMappings = config.createDefaultFieldMapping(service, pdxType);
 
     assertThat(fieldsMappings).hasSize(2);
     assertThat(fieldsMappings).contains(
@@ -158,7 +164,7 @@ public class RegionMappingConfigurationTest {
     List<PdxField> pdxFields = Arrays.asList(field1, field2);
     when(pdxType.getFields()).thenReturn(pdxFields);
 
-    List<FieldMapping> fieldsMappings = config.createDefaultFieldMapping(pdxType);
+    List<FieldMapping> fieldsMappings = config.createDefaultFieldMapping(service, pdxType);
 
     assertThat(fieldsMappings).hasSize(2);
     assertThat(fieldsMappings).contains(
@@ -179,7 +185,7 @@ public class RegionMappingConfigurationTest {
     List<PdxField> pdxFields = Arrays.asList(field1, field2);
     when(pdxType.getFields()).thenReturn(pdxFields);
 
-    Throwable throwable = catchThrowable(() -> config.createDefaultFieldMapping(pdxType));
+    Throwable throwable = catchThrowable(() -> config.createDefaultFieldMapping(service, pdxType));
 
     assertThat(throwable).isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
         String.format("No PDX field name matched the column name \"%s\"",
@@ -201,7 +207,7 @@ public class RegionMappingConfigurationTest {
     List<PdxField> pdxFields = Arrays.asList(field2, field3, field1);
     when(pdxType.getFields()).thenReturn(pdxFields);
 
-    Throwable throwable = catchThrowable(() -> config.createDefaultFieldMapping(pdxType));
+    Throwable throwable = catchThrowable(() -> config.createDefaultFieldMapping(service, pdxType));
 
     assertThat(throwable).isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
         String.format("More than one PDX field name matched the column name \"%s\"",
@@ -211,7 +217,7 @@ public class RegionMappingConfigurationTest {
   @Test
   public void createDefaultFieldMappingThrowsExceptionWhenDataSourceDoesNotExist() {
     doReturn(null).when(config).getDataSource(DATA_SOURCE_NAME);
-    Throwable throwable = catchThrowable(() -> config.createDefaultFieldMapping(pdxType));
+    Throwable throwable = catchThrowable(() -> config.createDefaultFieldMapping(service, pdxType));
     assertThat(throwable).isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
         String.format("No datasource \"%s\" found when creating default field mapping",
             mapping.getDataSourceName()));
@@ -221,7 +227,7 @@ public class RegionMappingConfigurationTest {
   public void createDefaultFieldMappingThrowsExceptionWhenGetConnectionHasSqlException()
       throws SQLException {
     when(dataSource.getConnection()).thenThrow(SQLException.class);
-    Throwable throwable = catchThrowable(() -> config.createDefaultFieldMapping(pdxType));
+    Throwable throwable = catchThrowable(() -> config.createDefaultFieldMapping(service, pdxType));
     assertThat(throwable).isInstanceOf(JdbcConnectorException.class);
     verify(connection, never()).close();
   }
@@ -229,7 +235,7 @@ public class RegionMappingConfigurationTest {
   @Test
   public void createDefaultFieldMappingThrowsExceptionWhenGivenExistingPdxTypeWithWrongNumberOfFields() {
     doReturn(3).when(pdxType).getFieldCount();
-    Throwable throwable = catchThrowable(() -> config.createDefaultFieldMapping(pdxType));
+    Throwable throwable = catchThrowable(() -> config.createDefaultFieldMapping(service, pdxType));
     assertThat(throwable).isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
         String.format(
             "The table and pdx class must have the same number of columns/fields. But the table has %d columns and the pdx class has %d fields.",
