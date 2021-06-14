@@ -79,10 +79,14 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRol
       invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut.name()), server2, server3);
       invokeRunnableInVMs(invokeCreateClientRegion(regionName, ClientRegionShortcut.PROXY), client);
       int expectedRegionSize = 10;
-      putSerializableObjectAndVerifyLuceneQueryResult(client, regionName, expectedRegionSize, 0, 10,
+      putSerializableObjectAndVerifyLuceneQueryResult(client, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 0, 10,
           server3);
       expectedRegionSize += 10;
-      putSerializableObjectAndVerifyLuceneQueryResult(server3, regionName, expectedRegionSize, 10,
+      putSerializableObjectAndVerifyLuceneQueryResult(server3, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 10,
           20, server2);
       locator = rollLocatorToCurrent(locator, hostName, locatorPorts[0], getTestMethodName(),
           locatorString);
@@ -91,27 +95,40 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRol
           shortcut.name(), regionName, locatorPorts, reindex);
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[1]), server3);
       expectedRegionSize += 10;
-      putSerializableObject(client, regionName, 20, 30);
+      putSerializableObjectAndVerifyLuceneQueryResult(client, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 20,
+          30, server3, server2);
       expectedRegionSize += 10;
-      putSerializableObject(server3, regionName, 30, 40);
-
+      putSerializableObjectAndVerifyLuceneQueryResult(server3, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 30,
+          40, server2);
       server2 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server2, regionType, null,
           shortcut.name(), regionName, locatorPorts, reindex);
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[0]), server2);
       expectedRegionSize += 10;
-      putSerializableObjectAndVerifyLuceneQueryResult(client, regionName, expectedRegionSize, 40,
+      putSerializableObjectAndVerifyLuceneQueryResult(client, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 40,
           50, server2, server3);
       expectedRegionSize += 10;
-      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 50,
+      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 50,
           60, server3);
 
       client = rollClientToCurrentAndCreateRegion(client, ClientRegionShortcut.PROXY, regionName,
           hostNames, locatorPorts, false, singleHopEnabled);
       expectedRegionSize += 10;
-      putSerializableObjectAndVerifyLuceneQueryResult(client, regionName, expectedRegionSize, 60,
+      putSerializableObjectAndVerifyLuceneQueryResult(client, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 60,
           70, server2, server3);
       expectedRegionSize += 10;
-      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 70,
+      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 70,
           80, server3);
 
     } finally {

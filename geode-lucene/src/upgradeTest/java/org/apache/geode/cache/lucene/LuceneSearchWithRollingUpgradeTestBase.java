@@ -69,7 +69,6 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.version.VersionManager;
 
 public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4DistributedTestCase {
-
   protected File[] testingDirs = new File[3];
 
   protected static String INDEX_NAME = "index";
@@ -225,12 +224,33 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
 
 
   void putSerializableObjectAndVerifyLuceneQueryResult(VM putter, String regionName,
+      boolean luceneVersionMismatch,
       int expectedRegionSize, int start, int end, VM... vms) throws Exception {
     // do puts
     putSerializableObject(putter, regionName, start, end);
 
     // verify present in others
-    verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, vms);
+
+    if (!luceneVersionMismatch) {
+      verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, vms);
+    }
+  }
+
+  public boolean hasLuceneVersionMismatch(Host host) {
+    for (VM vm : host.getAllVMs()) {
+      int currentVersionOrdinal = 0;
+      for (KnownVersion productVersion : KnownVersion.getAllVersions()) {
+        if (vm.getVersion().equals(productVersion.getName())) {
+          currentVersionOrdinal = productVersion.ordinal();
+        } else if (vm.getVersion().equals(VersionManager.CURRENT_VERSION)) {
+          currentVersionOrdinal = KnownVersion.CURRENT_ORDINAL;
+        }
+      }
+      if (currentVersionOrdinal < KnownVersion.GEODE_1_15_0.ordinal()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   void putSerializableObject(VM putter, String regionName, int start, int end)

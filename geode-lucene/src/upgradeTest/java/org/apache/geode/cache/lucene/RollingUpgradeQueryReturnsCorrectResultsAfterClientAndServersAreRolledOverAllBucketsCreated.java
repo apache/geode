@@ -16,8 +16,8 @@ package org.apache.geode.cache.lucene;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
@@ -32,28 +32,24 @@ import org.apache.geode.test.dunit.VM;
 public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRolledOverAllBucketsCreated
     extends LuceneSearchWithRollingUpgradeDUnit {
 
-  @Ignore
   @Test
   public void test()
       throws Exception {
-    // This test verifies the upgrade from lucene 6 to 7 doesn't cause any issues. Without any
-    // changes to accomodate this upgrade, this test will fail with an IndexFormatTooNewException.
-    //
     // The main sequence in this test that causes the failure is:
     //
-    // - start two servers with old version using Lucene 6
-    // - roll one server to new version server using Lucene 7
+    // - start two servers with old version
+    // - roll one server to new version server
     // - do puts into primary buckets in new server which creates entries in the fileAndChunk region
-    // with Lucene 7 format
     // - stop the new version server which causes the old version server to become primary for those
     // buckets
-    // - do a query which causes the IndexFormatTooNewException to be thrown
+    // - do a query which should pass
     final Host host = Host.getHost(0);
     VM locator = host.getVM(oldVersion, 0);
     VM server1 = host.getVM(oldVersion, 1);
     VM server2 = host.getVM(oldVersion, 2);
     VM client = host.getVM(oldVersion, 3);
 
+    assumeFalse(hasLuceneVersionMismatch(host));
     final String regionName = "aRegion";
     String regionType = "partitionedRedundant";
     RegionShortcut shortcut = RegionShortcut.PARTITION_REDUNDANT;

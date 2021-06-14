@@ -85,17 +85,35 @@ public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServe
       server1 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server1, regionType, null,
           shortcut.name(), regionName, locatorPorts, reindex);
       expectedRegionSize += 10;
-      putSerializableObject(server2, regionName, 15, 25);
+      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 15,
+          25, server2);
+      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 15,
+          25, server1);
       expectedRegionSize += 5;
-      putSerializableObject(server1, regionName, 20, 30);
+      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 20,
+          30, server2);
+      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 20,
+          30, server1);
 
       server2 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server2, regionType, null,
           shortcut.name(), regionName, locatorPorts, reindex);
       expectedRegionSize += 5;
-      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 25,
+      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 25,
           35, server1, server2);
       expectedRegionSize += 5;
-      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize, 30,
+      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName,
+          hasLuceneVersionMismatch(host),
+          expectedRegionSize, 30,
           40, server1, server2);
 
     } finally {
@@ -103,5 +121,6 @@ public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServe
       invokeRunnableInVMs(true, invokeCloseCache(), server1, server2);
     }
   }
+
 
 }
