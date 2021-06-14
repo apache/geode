@@ -112,6 +112,8 @@ public class DistributionStats implements DMStats {
   private static final int sharedUnorderedSenderConnectionsId;
   private static final int threadOrderedSenderConnectionsId;
   private static final int threadUnorderedSenderConnectionsId;
+  static final int senderCreateTimeId;
+  static final int senderCreatesInProgressId;
 
   private static final int syncSocketWritesInProgressId;
   private static final int syncSocketWriteTimeId;
@@ -443,6 +445,11 @@ public class DistributionStats implements DMStats {
     final String udpFinalCheckResponsesReceivedDesc =
         "UDP final check responses that this member has received.";
 
+    final String senderCreatesDesc =
+        "Total amount of time, in nanoseconds, spent creating a sender.";
+    final String senderCreatesInProgressDesc =
+        "Current number of sender creations in progress.";
+
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
 
     type = f.createType(statName, statDescription, new StatisticDescriptor[] {
@@ -515,6 +522,8 @@ public class DistributionStats implements DMStats {
         f.createIntCounter("failedConnects", failedConnectsDesc, "connects"),
         f.createIntCounter("reconnectAttempts", reconnectAttemptsDesc, "connects"),
         f.createIntCounter("senderTimeouts", lostConnectionLeaseDesc, "expirations"),
+        f.createLongCounter("senderCreateTime", senderCreatesDesc, "nanoseconds"),
+        f.createLongGauge("senderCreatesInProgress", senderCreatesInProgressDesc, "operations"),
 
         f.createIntGauge("syncSocketWritesInProgress",
             "Current number of synchronous/blocking socket write calls in progress.", "writes"),
@@ -796,6 +805,8 @@ public class DistributionStats implements DMStats {
     sharedUnorderedSenderConnectionsId = type.nameToId("sendersSU");
     threadOrderedSenderConnectionsId = type.nameToId("sendersTO");
     threadUnorderedSenderConnectionsId = type.nameToId("sendersTU");
+    senderCreateTimeId = type.nameToId("senderCreateTime");
+    senderCreatesInProgressId = type.nameToId("senderCreatesInProgress");
 
     syncSocketWritesInProgressId = type.nameToId("syncSocketWritesInProgress");
     syncSocketWriteTimeId = type.nameToId("syncSocketWriteTime");
@@ -1658,7 +1669,13 @@ public class DistributionStats implements DMStats {
   }
 
   @Override
-  public void incSenders(boolean shared, boolean preserveOrder) {
+  public long startSenderCreate() {
+    stats.incLong(senderCreatesInProgressId, 1);
+    return getTime();
+  }
+
+  @Override
+  public void incSenders(boolean shared, boolean preserveOrder, long start) {
     if (shared) {
       if (preserveOrder) {
         stats.incInt(sharedOrderedSenderConnectionsId, 1);
@@ -1672,6 +1689,10 @@ public class DistributionStats implements DMStats {
         stats.incInt(threadUnorderedSenderConnectionsId, 1);
       }
     }
+    if (enableClockStats) {
+      stats.incLong(senderCreateTimeId, getTime() - start);
+    }
+    stats.incLong(senderCreatesInProgressId, -1);
   }
 
   @Override

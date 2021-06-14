@@ -275,9 +275,10 @@ public class ConnectionTable {
     // handle new pending connection
     Connection con = null;
     try {
+      long senderCreateStartTime = owner.getStats().startSenderCreate();
       con = Connection.createSender(owner.getMembership(), this, preserveOrder, id,
           sharedResource, startTime, ackThreshold, ackSAThreshold);
-      owner.getStats().incSenders(sharedResource, preserveOrder);
+      owner.getStats().incSenders(sharedResource, preserveOrder, senderCreateStartTime);
     } finally {
       // our connection failed to notify anyone waiting for our pending con
       if (con == null) {
@@ -440,12 +441,13 @@ public class ConnectionTable {
     }
 
     // OK, we have to create a new connection.
+    long senderCreateStartTime = owner.getStats().startSenderCreate();
     result = Connection.createSender(owner.getMembership(), this, true, id, false, startTime,
         ackTimeout, ackSATimeout);
+    owner.getStats().incSenders(false, true, senderCreateStartTime);
     if (logger.isDebugEnabled()) {
       logger.debug("ConnectionTable: created an ordered connection: {}", result);
     }
-    owner.getStats().incSenders(false, true);
 
     // Update the list of connections owned by this thread....
 
