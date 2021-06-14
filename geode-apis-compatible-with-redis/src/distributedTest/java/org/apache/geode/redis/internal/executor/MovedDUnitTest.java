@@ -23,6 +23,7 @@ import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -46,6 +47,7 @@ public class MovedDUnitTest {
   private static Jedis jedis1;
   private static Jedis jedis2;
   private static RedisAdvancedClusterCommands<String, String> lettuce;
+  private static RedisClusterClient clusterClient;
   private static MemberVM locator;
   private static int redisServerPort1;
   private static final int ENTRIES = 200;
@@ -61,9 +63,7 @@ public class MovedDUnitTest {
 
     jedis1 = new Jedis(BIND_ADDRESS, redisServerPort1, REDIS_CLIENT_TIMEOUT);
     jedis2 = new Jedis(BIND_ADDRESS, redisServerPort2, REDIS_CLIENT_TIMEOUT);
-
-    RedisClusterClient clusterClient =
-        RedisClusterClient.create("redis://localhost:" + redisServerPort1);
+    clusterClient = RedisClusterClient.create("redis://localhost:" + redisServerPort1);
 
     ClusterTopologyRefreshOptions refreshOptions =
         ClusterTopologyRefreshOptions.builder()
@@ -77,6 +77,11 @@ public class MovedDUnitTest {
         .build());
 
     lettuce = clusterClient.connect().sync();
+  }
+
+  @AfterClass
+  public static void cleanup() {
+    clusterClient.shutdown();
   }
 
   @Before
