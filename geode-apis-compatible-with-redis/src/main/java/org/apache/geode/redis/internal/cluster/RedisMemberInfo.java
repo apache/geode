@@ -28,6 +28,9 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class RedisMemberInfo implements DataSerializableFixedID, Serializable {
+
+  private static final long serialVersionUID = -10228877687322470L;
+
   private DistributedMember member;
   private String hostAddress;
   private int redisPort;

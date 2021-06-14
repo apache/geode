@@ -33,7 +33,6 @@ import io.lettuce.core.ScanCursor;
 import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
-import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -57,7 +56,6 @@ public class HScanDunitTest {
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
   private static RedisAdvancedClusterCommands<String, String> commands;
-  private static StatefulRedisClusterConnection<String, String> connection;
 
   private static MemberVM locator;
   private static MemberVM server1;

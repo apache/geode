@@ -43,7 +43,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
-@SuppressWarnings("unchecked")
 public class DeltaDUnitTest {
 
   @ClassRule

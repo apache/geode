@@ -240,6 +240,7 @@ public class Coder {
     buffer.writeBytes(errorAr);
     buffer.writeBytes(bCRLF);
     return buffer;
+    return getErrorResponse0(buffer, WRONGTYPE, error);
   }
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, int integer) {
