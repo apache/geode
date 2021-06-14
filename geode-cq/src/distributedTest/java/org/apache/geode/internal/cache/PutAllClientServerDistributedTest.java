@@ -2486,6 +2486,109 @@ public class PutAllClientServerDistributedTest implements Serializable {
   }
 
   /**
+   * The purpose of this test is to validate that when two servers of three in a cluster configured
+   * with a client doing singlehop, that the client which registered interest gets afterCreate
+   * messages for each
+   * entry in the putall.
+   * Further, we also check that the region size is correct on the remaining server.
+   *
+   * When the client has finished registerInterest to build the subscription queue, the servers
+   * should guarantee all the afterCreate events arrive.
+   *
+   */
+  @Test
+  public void testEventIdOutOfOrderInPartitionRegionSingleHopFromClientRegisteredInterest() {
+    VM server3 = client2;
+
+    int serverPort1 = server1.invoke(() -> new ServerBuilder()
+        .regionShortcut(PARTITION)
+        .create());
+
+    int serverPort2 = server2.invoke(() -> new ServerBuilder()
+        .regionShortcut(PARTITION)
+        .create());
+
+    int serverPort3 = server3.invoke(() -> new ServerBuilder()
+        .regionShortcut(PARTITION)
+        .create());
+
+    client1.invoke(() -> new ClientBuilder()
+        .prSingleHopEnabled(true)
+        .serverPorts(serverPort1, serverPort2, serverPort3)
+        .subscriptionAckInterval()
+        .subscriptionEnabled(true)
+        .subscriptionRedundancy()
+        .create());
+
+    new ClientBuilder()
+        .prSingleHopEnabled(true)
+        .serverPorts(serverPort1, serverPort2, serverPort3)
+        .subscriptionAckInterval()
+        .subscriptionEnabled(true)
+        .subscriptionRedundancy()
+        .create();
+
+    Region<String, TickerData> myRegion = getClientCache().getRegion(regionName);
+    myRegion.registerInterest("ALL_KEYS");
+
+    // do some putAll to get ClientMetaData for future putAll
+    client1.invoke(() -> doPutAll(getClientCache().getRegion(regionName), "key-", ONE_HUNDRED));
+    await().until(() -> myRegion.size() == ONE_HUNDRED);
+
+    // register interest and add listener
+    Counter clientCounter = new Counter("client");
+    myRegion.getAttributesMutator().addCacheListener(new CountingCacheListener<>(clientCounter));
+
+    // server1 and server2 will closeCache after created 10 keys
+    // server1 add slow listener
+    server1.invoke(() -> {
+      Region<String, TickerData> region = getCache().getRegion(regionName);
+      region.getAttributesMutator()
+          .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
+              creates -> closeCacheConditionally(creates, 10))));
+    });
+
+    // server2 add slow listener
+    server2.invoke(() -> {
+      Region<String, TickerData> region = getCache().getRegion(regionName);
+      region.getAttributesMutator()
+          .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
+              creates -> closeCacheConditionally(creates, 20))));
+    });
+
+    // server3 add slow listener
+    server3.invoke(() -> {
+      COUNTER.set(new Counter("server3"));
+      Region<String, TickerData> region = getCache().getRegion(regionName);
+      region.getAttributesMutator()
+          .addCacheListener(new SlowCountingCacheListener<>(COUNTER.get()));
+    });
+
+    // client1 add listener and putAll
+    client1.invoke(() -> {
+      Region<String, TickerData> region = getClientCache().getRegion(regionName);
+      doPutAll(region, keyPrefix, ONE_HUNDRED); // fails in GEODE-7812
+    });
+
+    await().untilAsserted(() -> assertThat(clientCounter.getCreates()).isEqualTo(ONE_HUNDRED));
+    assertThat(clientCounter.getUpdates()).isZero();
+
+    // server1 and server2 will closeCache after created 10 keys
+    // server3 print counter
+    server3.invoke(() -> {
+      Region<String, TickerData> region = getCache().getRegion(regionName);
+
+      assertThat(region.size())
+          .describedAs("Should have 100 entries plus 3 to 4 buckets worth of entries")
+          .isIn(ONE_HUNDRED + 3 * (ONE_HUNDRED) / 10, ONE_HUNDRED + 4 * (ONE_HUNDRED) / 10);
+      assertThat(COUNTER.get().getUpdates()).isZero();
+      verifyPutAll(region, keyPrefix);
+
+    });
+
+  }
+
+  /**
    * Tests while putAll to 2 distributed servers, one server failed over Add a listener to slow down
    * the processing of putAll
    */
