@@ -539,7 +539,12 @@ public class LonerDistributionManager implements DistributionManager {
     public void incLostLease() {}
 
     @Override
-    public void incSenders(boolean shared, boolean preserveOrder) {}
+    public long startSenderCreate() {
+      return 0L;
+    }
+
+    @Override
+    public void incSenders(boolean shared, boolean preserveOrder, long start) {}
 
     @Override
     public void decSenders(boolean shared, boolean preserveOrder) {}

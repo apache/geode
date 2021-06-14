@@ -263,7 +263,7 @@ public interface DMStats extends MembershipStatistics {
   /**
    * @since GemFire 4.1
    */
-  void incSenders(boolean shared, boolean preserveOrder);
+  void incSenders(boolean shared, boolean preserveOrder, long start);
 
   /**
    * @since GemFire 4.1
@@ -560,4 +560,5 @@ public interface DMStats extends MembershipStatistics {
 
   long getUdpFinalCheckResponsesReceived();
 
+  long startSenderCreate();
 }
