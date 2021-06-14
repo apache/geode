@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -22,7 +23,6 @@ import static org.mockito.Mockito.verify;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import org.apache.geode.Statistics;
 
@@ -47,8 +47,8 @@ public class DistributionStatsTest {
   public void endReplyWait() {
     distributionStats.endReplyWait(12000000, 12);
 
-    verify(mockStats).incLong(eq(DistributionStats.replyWaitTimeId), Mockito.anyLong());
-    verify(mockStats).incLong(eq(DistributionStats.replyWaitMaxTimeId), Mockito.anyLong());
+    verify(mockStats).incLong(eq(DistributionStats.replyWaitTimeId), anyLong());
+    verify(mockStats).incLong(eq(DistributionStats.replyWaitMaxTimeId), anyLong());
   }
 
   @Test
@@ -66,5 +66,15 @@ public class DistributionStatsTest {
     assertThat(distributionStats.getInternalSerialQueueBytes()).isEqualTo(70000000);
     verify(mockStats).incLong(DistributionStats.serialQueueBytesId, 50000000);
     verify(mockStats).incLong(DistributionStats.serialQueueBytesId, 20000000);
+  }
+
+  @Test
+  public void startSenderCreate() {
+    long startTime = distributionStats.startSenderCreate();
+    verify(mockStats).incLong(DistributionStats.senderCreatesInProgressId, 1);
+    assertThat(startTime).isNotEqualTo(0);
+    distributionStats.incSenders(false, true, startTime);
+    verify(mockStats).incLong(DistributionStats.senderCreatesInProgressId, -1);
+    verify(mockStats).incLong(eq(DistributionStats.senderCreateTimeId), anyLong());
   }
 }
