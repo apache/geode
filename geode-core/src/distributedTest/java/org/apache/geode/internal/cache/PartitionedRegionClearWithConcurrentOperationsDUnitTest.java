@@ -19,12 +19,12 @@ import static org.apache.geode.cache.partition.PartitionRegionHelper.assignBucke
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.internal.util.ArrayUtils.asList;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.test.dunit.AsyncInvocation.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.rules.DistributedRule.getLocators;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -135,7 +135,7 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
         getVM(coordinatorVM.getVmId()).invokeAsync(() -> executeClears(ofMillis(1000))));
 
     // Let asyncInvocations finish.
-    await(asyncInvocations);
+    awaitAsyncInvocations(asyncInvocations);
 
     // Assert Region Buckets are consistent.
     accessor.invoke(() -> await().untilAsserted(this::validatePartitionedRegionConsistency));
@@ -168,7 +168,7 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
         getVM(coordinatorVM.getVmId()).invokeAsync(() -> executeClears(ofMillis(500))));
 
     // Let asyncInvocations finish.
-    await(asyncInvocations);
+    awaitAsyncInvocations(asyncInvocations);
 
     // Assert Region Buckets are consistent.
     accessor.invoke(() -> await().untilAsserted(this::validatePartitionedRegionConsistency));
@@ -252,7 +252,7 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
     });
 
     // Let asyncInvocations finish.
-    await(asyncInvocations);
+    awaitAsyncInvocations(asyncInvocations);
 
     // Assert Region Buckets are consistent.
     accessor.invoke(() -> await().untilAsserted(this::validatePartitionedRegionConsistency));
@@ -295,7 +295,7 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
     });
 
     // Let asyncInvocations finish.
-    await(asyncInvocations);
+    awaitAsyncInvocations(asyncInvocations);
   }
 
   /**
@@ -331,7 +331,7 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
     });
 
     // Let asyncInvocations finish.
-    await(asyncInvocations);
+    awaitAsyncInvocations(asyncInvocations);
 
     // Assert Region Buckets are consistent.
     accessor.invoke(() -> await().untilAsserted(this::validatePartitionedRegionConsistency));
@@ -366,7 +366,7 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
     });
 
     // Let asyncInvocations finish.
-    await(asyncInvocations);
+    awaitAsyncInvocations(asyncInvocations);
   }
 
   private void createAccessor(RegionShortcut regionShortcut) {
@@ -602,6 +602,21 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
     system.stopReconnectingNoDisconnect();
     MembershipManagerHelper.crashDistributedSystem(system);
     await().untilAsserted(() -> assertThat(system.isDisconnected()).isTrue());
+  }
+
+  private static void awaitAsyncInvocations(Iterable<AsyncInvocation<Void>> asyncInvocations) {
+    for (AsyncInvocation<?> asyncInvocation : asyncInvocations) {
+      Throwable thrown = catchThrowableOfType(() -> asyncInvocation.await(), AssertionError.class);
+      if (thrown != null) {
+        assertThat(thrown)
+            .as("Throwable thrown from " + asyncInvocation)
+            .isInstanceOf(AssertionError.class)
+            .getCause()
+            .isInstanceOf(DistributedSystemDisconnectedException.class)
+            .getCause()
+            .isInstanceOf(ForcedDisconnectException.class);
+      }
+    }
   }
 
   private enum TestVM {
