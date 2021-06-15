@@ -37,13 +37,11 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
@@ -228,11 +226,19 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       return null;
     }
 
-    if (cause instanceof RedisDataMovedException) {
-      response = RedisResponse.moved(cause.getMessage());
-    } else if (cause instanceof NumberFormatException) {
-      response = RedisResponse.error(cause.getMessage());
-    } else if (cause instanceof ArithmeticException) {
+    if (cause instanceof FunctionException
+        && !(cause instanceof FunctionInvocationTargetException)) {
+      Throwable th = getInitialCause((FunctionException) cause);
+      if (th != null) {
+        cause = th;
+      }
+    }
+
+    if (cause instanceof IllegalStateException
+        || cause instanceof RedisParametersMismatchException
+        || cause instanceof RedisException
+        || cause instanceof NumberFormatException
+        || cause instanceof ArithmeticException) {
       response = RedisResponse.error(cause.getMessage());
     } else if (cause instanceof RedisDataTypeMismatchException) {
       response = RedisResponse.wrongType(cause.getMessage());
@@ -244,20 +250,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
           RedisResponse.error(RedisConstants.PARSING_EXCEPTION_MESSAGE + ": " + cause.getMessage());
     } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException) {
       response = RedisResponse.error(RedisConstants.SERVER_ERROR_SHUTDOWN);
-    } else if (cause instanceof IllegalStateException
-        || cause instanceof RedisParametersMismatchException) {
-      response = RedisResponse.error(cause.getMessage());
-    } else if (cause instanceof FunctionInvocationTargetException
-        || cause instanceof DistributedSystemDisconnectedException
-        || cause instanceof ForcedDisconnectException) {
-      // This indicates a member departed or got disconnected
-      logger.warn(
-          "Closing client connection because one of the servers doing this operation departed.");
-      channelInactive(ctx);
-      response = null;
     } else {
       if (logger.isErrorEnabled()) {
-        logger.error("GeodeRedisServer-Unexpected error handler for " + ctx.channel(), cause);
+        logger.error("GeodeRedisServer-Unexpected error handler for {}", ctx.channel(), cause);
       }
       response = RedisResponse.error(RedisConstants.SERVER_ERROR_MESSAGE);
     }

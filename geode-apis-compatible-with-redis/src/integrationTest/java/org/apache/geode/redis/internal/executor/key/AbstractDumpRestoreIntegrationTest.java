@@ -20,6 +20,7 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADD
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -139,7 +140,7 @@ public abstract class AbstractDumpRestoreIntegrationTest implements RedisIntegra
 
     assertThat(response).isEqualTo(STRING_VALUE);
     assertThat(lettuce.pttl("restored"))
-        .isLessThan(2000)
+        .isLessThanOrEqualTo(2000)
         .isGreaterThan(0);
   }
 
@@ -163,7 +164,19 @@ public abstract class AbstractDumpRestoreIntegrationTest implements RedisIntegra
     String response = lettuce.get("restored");
 
     assertThat(response).isEqualTo(STRING_VALUE);
-    assertThat(lettuce.ttl("restored")).isGreaterThan(1);
+    assertThat(lettuce.ttl("restored"))
+        .isLessThanOrEqualTo(10)
+        .isGreaterThan(1);
+  }
+
+  @Test
+  public void restore_withAbsTTL_inThePast() {
+    long absttl = System.currentTimeMillis() - 10000;
+    lettuce.restore("restored", RESTORE_BYTES, new RestoreArgs().ttl(absttl).absttl());
+
+    String response = lettuce.get("restored");
+
+    assertThat(response).isNull();
   }
 
   @Test
@@ -225,17 +238,20 @@ public abstract class AbstractDumpRestoreIntegrationTest implements RedisIntegra
 
   @Test
   public void dumpAndRestoreSortedSet() {
-    Set<String> smembers = new HashSet<>();
+    List<String> members = new ArrayList<>();
+    List<Double> scores = new ArrayList<>();
     for (int i = 0; i < 100; i++) {
-      lettuce.sadd("set", "member-" + i);
-      smembers.add("member-" + i);
+      lettuce.zadd("sorted-set", i, "member-" + i);
+      members.add("member-" + i);
+      scores.add((double) i);
     }
-    byte[] dump = lettuce.dump("set");
+    byte[] dump = lettuce.dump("sorted-set");
 
     lettuce.restore("restored", 0, dump);
-    Set<String> result = lettuce.smembers("restored");
 
-    assertThat(result).containsExactlyInAnyOrderElementsOf(smembers);
+    for (int i = 0; i < 100; i++) {
+      assertThat(lettuce.zscore("sorted-set", "member-" + i)).isEqualTo(i);
+    }
   }
 
 }

@@ -22,7 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
-import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
@@ -97,12 +96,12 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
-  public byte[] dump() throws IOException {
+  public byte[] dump() {
     return new byte[0];
   }
 
   @Override
-  public RedisData restore(byte[] data, boolean replaceExisting) throws Exception {
+  public RedisData restore(byte[] data, boolean replaceExisting) {
     Object obj;
 
     try {

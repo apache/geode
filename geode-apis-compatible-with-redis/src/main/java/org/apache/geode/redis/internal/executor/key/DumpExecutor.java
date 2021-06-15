@@ -25,8 +25,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class DumpExecutor extends AbstractExecutor {
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context)
-      throws Exception {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<RedisKey> commandElems = command.getProcessedCommandKeys();
 
     byte[] rawData = context.getKeyCommands().dump(commandElems.get(1));

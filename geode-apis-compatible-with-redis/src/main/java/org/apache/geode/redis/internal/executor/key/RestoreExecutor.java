@@ -36,8 +36,7 @@ public class RestoreExecutor extends AbstractExecutor {
   private static final int TTL_INDEX = 2;
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context)
-      throws Exception {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisKey key = command.getKey();
 
