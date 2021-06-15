@@ -62,34 +62,34 @@ public class LatestLastAccessTimeMessage<K> extends PooledDistributionMessage
 
   @Override
   protected void process(ClusterDistributionManager dm) {
-    final InternalCache cache = dm.getCache();
-    if (cache == null) {
-      sendReply(dm, 0);
-      return;
-    }
-    final InternalDistributedRegion region =
-        (InternalDistributedRegion) cache.getRegion(this.regionName);
-    if (region == null) {
-      sendReply(dm, 0);
-      return;
-    }
-    final RegionEntry entry = region.getRegionEntry(this.key);
-    if (entry == null) {
-      sendReply(dm, 0);
-      return;
-    }
     long lastAccessed = 0L;
-    // noinspection SynchronizationOnLocalVariableOrMethodParameter
-    synchronized (entry) {
-      if (!entry.isInvalidOrRemoved()) {
-        try {
-          lastAccessed = entry.getLastAccessed();
-        } catch (InternalStatisticsDisabledException ignored) {
-          // last access time is not available
+    try {
+      final InternalCache cache = dm.getCache();
+      if (cache == null) {
+        return;
+      }
+      final InternalDistributedRegion region =
+          (InternalDistributedRegion) cache.getRegion(this.regionName);
+      if (region == null) {
+        return;
+      }
+      final RegionEntry entry = region.getRegionEntry(this.key);
+      if (entry == null) {
+        return;
+      }
+      // noinspection SynchronizationOnLocalVariableOrMethodParameter
+      synchronized (entry) {
+        if (!entry.isInvalidOrRemoved()) {
+          try {
+            lastAccessed = entry.getLastAccessed();
+          } catch (InternalStatisticsDisabledException ignored) {
+            // last access time is not available
+          }
         }
       }
+    } finally {
+      sendReply(dm, lastAccessed);
     }
-    sendReply(dm, lastAccessed);
   }
 
   @VisibleForTesting
