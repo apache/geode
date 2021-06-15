@@ -151,9 +151,9 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     destroysByRegion = new HashMap<>();
   }
 
-  private void feed(boolean isClient) {
+  private void putRecords(boolean isClient, int numEntries) {
     Region<Object, Object> region = getRegion(isClient);
-    IntStream.range(0, NUM_ENTRIES).forEach(i -> region.put(i, "value" + i));
+    IntStream.range(0, numEntries).forEach(i -> region.put(i, "value" + i));
   }
 
   private void verifyServerRegionSize(int expectedNum) {
@@ -236,7 +236,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     client1.invoke(this::initClientCache);
     client2.invoke(this::initClientCache);
 
-    accessor.invoke(() -> feed(false));
+    accessor.invoke(() -> putRecords(false, NUM_ENTRIES));
     verifyServerRegionSize(NUM_ENTRIES);
     dataStore3.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
@@ -267,7 +267,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     client1.invoke(this::initClientCache);
     client2.invoke(this::initClientCache);
 
-    accessor.invoke(() -> feed(false));
+    accessor.invoke(() -> putRecords(false, NUM_ENTRIES));
     verifyServerRegionSize(NUM_ENTRIES);
     dataStore1.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
@@ -298,7 +298,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     client1.invoke(this::initClientCache);
     client2.invoke(this::initClientCache);
 
-    accessor.invoke(() -> feed(false));
+    accessor.invoke(() -> putRecords(false, NUM_ENTRIES));
     verifyServerRegionSize(NUM_ENTRIES);
     accessor.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
@@ -329,7 +329,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     client1.invoke(this::initClientCache);
     client2.invoke(this::initClientCache);
 
-    accessor.invoke(() -> feed(false));
+    accessor.invoke(() -> putRecords(false, NUM_ENTRIES));
     verifyServerRegionSize(NUM_ENTRIES);
     accessor.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
@@ -370,7 +370,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
       }
     });
 
-    accessor.invoke(() -> feed(false));
+    accessor.invoke(() -> putRecords(false, NUM_ENTRIES));
     verifyServerRegionSize(NUM_ENTRIES);
     dataStore1.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
@@ -394,7 +394,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     client1.invoke(this::initClientCache);
     client2.invoke(this::initClientCache);
 
-    client1.invoke(() -> feed(true));
+    client1.invoke(() -> putRecords(true, NUM_ENTRIES));
     verifyClientRegionSize(NUM_ENTRIES);
     verifyServerRegionSize(NUM_ENTRIES);
 
@@ -422,20 +422,25 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
         .isEqualTo(0);
   }
 
+
   @Test
   public void testClearTime() {
     configureServers(false, true);
     client1.invoke(this::initClientCache);
     client2.invoke(this::initClientCache);
+    final int LOTS_OF_RECORDS = 100000;
+    accessor.invoke(() -> putRecords(false, LOTS_OF_RECORDS));
+    verifyServerRegionSize(LOTS_OF_RECORDS);
 
-    accessor.invoke(() -> feed(false));
-    verifyServerRegionSize(NUM_ENTRIES);
     dataStore1.invoke(() -> {
       PartitionedRegion partitionedRegion = (PartitionedRegion) getRegion(false);
       assertThat(partitionedRegion.getCachePerfStats().getClearTime()).isEqualTo(0L);
+      verifyServerRegionSize(LOTS_OF_RECORDS);
     });
+
     dataStore1.invoke(() -> getRegion(false).clear());
     verifyServerRegionSize(0);
+
     dataStore1.invoke(() -> {
       PartitionedRegion partitionedRegion = (PartitionedRegion) getRegion(false);
       assertThat(partitionedRegion.getCachePerfStats().getClearTime()).isGreaterThan(0L);
@@ -448,7 +453,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     client1.invoke(this::initClientCache);
     client2.invoke(this::initClientCache);
 
-    accessor.invoke(() -> feed(false));
+    accessor.invoke(() -> putRecords(false, NUM_ENTRIES));
     verifyServerRegionSize(NUM_ENTRIES);
     dataStore1.invoke(() -> {
       PartitionedRegion partitionedRegion = (PartitionedRegion) getRegion(false);

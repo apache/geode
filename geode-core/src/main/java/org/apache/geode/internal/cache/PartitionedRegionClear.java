@@ -47,7 +47,7 @@ public class PartitionedRegionClear {
   private static final Logger logger = LogService.getLogger();
 
   protected static final String CLEAR_OPERATION = "_clearOperation";
-  public static final long RETRY_TIME = TimeUnit.MINUTES.toMillis(2);
+  private static final long RETRY_TIME = TimeUnit.MINUTES.toMillis(2);
   private final PartitionedRegion partitionedRegion;
 
   private final DistributedLockService distributedLockService;

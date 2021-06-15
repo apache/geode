@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.IntStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
@@ -47,6 +49,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -56,6 +59,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 public class PartitionedRegionStatsJUnitTest {
   private static final File DISK_DIR = new File("PRStatsTest");
+  public static final int NUMBER_OF_BUCKETS = 13;
   Logger logger = null;
 
   @Before
@@ -69,12 +73,11 @@ public class PartitionedRegionStatsJUnitTest {
     FileUtils.deleteDirectory(DISK_DIR);
   }
 
-  private PartitionedRegion createPR(String name, int lmax) {
+  private PartitionedRegion createPRWithCache(String name, int lmax, Cache cache) {
     PartitionAttributesFactory<Object, Object> paf = new PartitionAttributesFactory<>();
-    paf.setLocalMaxMemory(lmax).setRedundantCopies(0).setTotalNumBuckets(13); // set low to
-                                                                              // reduce
-                                                                              // logging
-    Cache cache = PartitionedRegionTestHelper.createCache();
+    paf.setLocalMaxMemory(lmax).setRedundantCopies(0).setTotalNumBuckets(NUMBER_OF_BUCKETS); // set low to
+    // reduce
+    // logging
     PartitionedRegion pr;
     try {
       RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
@@ -84,6 +87,15 @@ public class PartitionedRegionStatsJUnitTest {
       pr = (PartitionedRegion) cache.getRegion(name);
     }
     return pr;
+  }
+
+  private PartitionedRegion createPR(String name, int lmax) {
+    PartitionAttributesFactory<Object, Object> paf = new PartitionAttributesFactory<>();
+    paf.setLocalMaxMemory(lmax).setRedundantCopies(0).setTotalNumBuckets(13); // set low to
+                                                                              // reduce
+                                                                              // logging
+    Cache cache = PartitionedRegionTestHelper.createCache();
+    return createPRWithCache(name, lmax, cache);
   }
 
   private PartitionedRegion createPRWithEviction(String name, int lmax,
@@ -555,28 +567,51 @@ public class PartitionedRegionStatsJUnitTest {
     assertThat(pr.getPrStats().getBucketClearTime()).isGreaterThanOrEqualTo(137L);
   }
 
+  private void putRecords(PartitionedRegion pr) {
+    IntStream.range(0, 1000).forEach(i -> pr.put(i, i));
+  }
+
+
   @Test
   public void testFullPartitionedRegionClearTimeStat() {
     String regionName = "testStats";
-    int localMaxMemory = 100;
-    PartitionedRegion pr = createPR(regionName + 1, localMaxMemory);
+    final int localMaxMemory = 700;
+    final int LOTS_OF_RECORDS = 1000;
+    AtomicLong fakeTime = new AtomicLong(System.nanoTime());
 
-    for (long i = 0L; i < 10000; i++) {
-      try {
-        pr.put(i, i);
-      } catch (PartitionedRegionStorageException ex) {
-        this.logger.warn(ex);
+    // If one optimizes the code and converts to a lambda spy will fail
+    @SuppressWarnings({"Anonymous2MethodRef", "Convert2Lambda"})
+    StatisticsClock statisticsClock = spy(new StatisticsClock() {
+      @Override
+      public long getTime() {
+        return fakeTime.getAndIncrement();
       }
-    }
+    });
+    InternalCache cache = PartitionedRegionTestHelper.createCache();
+    when(cache.getStatisticsClock()).thenReturn(statisticsClock);
+    PartitionedRegion pr = spy(createPR(regionName + 1, localMaxMemory));
+    when(pr.getStatisticsClock()).thenReturn(statisticsClock);
 
-    assertThat(pr.size()).isEqualTo(10000);
+    putRecords(pr);
+
+    assertThat(pr.size()).isEqualTo(LOTS_OF_RECORDS);
+
     assertThat(pr.getPrStats().getBucketClearCount()).isEqualTo(0L);
 
     assertThat(pr.getPrStats().getBucketClearTime()).isEqualTo(0L);
-    pr.clear();
-    assertThat(pr.getPrStats().getBucketClearCount()).isGreaterThan(0L);
 
-    assertThat(pr.getPrStats().getBucketClearTime()).isGreaterThan(0L);
+
+    pr.clear();
+
+    // We know the clock should be called 7189 times if everything is working as expected
+    verify(statisticsClock, times(7189)).getTime();
+
+    assertThat(pr.getPrStats().getBucketClearCount()).isGreaterThan(0L);
+    assertThat(pr.getPrStats().getBucketClearTime())
+        .describedAs(
+            "Bucket Clear Time should be the number of buckets "
+                + "because of the fake clock that just increments")
+        .isEqualTo(NUMBER_OF_BUCKETS);
   }
 
   @Test

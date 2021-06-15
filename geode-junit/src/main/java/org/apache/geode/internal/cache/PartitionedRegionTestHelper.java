@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.mockito.Mockito.spy;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -205,9 +206,9 @@ public class PartitionedRegionTestHelper
       dsp.setProperty(ENABLE_TIME_STATISTICS, "true");
       CacheFactory cacheFactory = new CacheFactory(dsp);
       try {
-        cache = (InternalCache) cacheFactory.create();
+        cache = spy((InternalCache) cacheFactory.create());
       } catch (CacheExistsException | RegionExistsException exp) {
-        cache = (InternalCache) cacheFactory.create(); // hmm not happy here.
+        cache = spy((InternalCache) cacheFactory.create()); // hmm not happy here.
       }
     }
     return cache;

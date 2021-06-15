@@ -1012,9 +1012,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       // Create the CacheStatistics
       statisticsClock = StatisticsClockFactory.clock(system.getConfig().getEnableTimeStatistics());
       cachePerfStats = cachePerfStatsFactory.create(
-          internalDistributedSystem.getStatisticsManager(), statisticsClock);
+          internalDistributedSystem.getStatisticsManager(), getStatisticsClock());
 
-      transactionManager = txManagerImplFactory.create(cachePerfStats, this, statisticsClock);
+      transactionManager = txManagerImplFactory.create(cachePerfStats, this, getStatisticsClock());
       dm.addMembershipListener(transactionManager);
 
       creationDate = new Date();
@@ -2102,7 +2102,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     synchronized (heapEvictorLock) {
       stopper.checkCancelInProgress(null);
       if (heapEvictor == null) {
-        heapEvictor = heapEvictorFactory.create(this, statisticsClock);
+        heapEvictor = heapEvictorFactory.create(this, getStatisticsClock());
       }
       return heapEvictor;
     }
@@ -2114,7 +2114,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     synchronized (offHeapEvictorLock) {
       stopper.checkCancelInProgress(null);
       if (offHeapEvictor == null) {
-        offHeapEvictor = new OffHeapEvictor(this, statisticsClock);
+        offHeapEvictor = new OffHeapEvictor(this, getStatisticsClock());
       }
       return offHeapEvictor;
     }
@@ -3057,7 +3057,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
               region = internalRegionArgs.getInternalMetaRegion();
             } else if (isPartitionedRegion) {
               region = new PartitionedRegion(name, attrs, null, this, internalRegionArgs,
-                  statisticsClock, ColocationLoggerFactory.create());
+                  getStatisticsClock(), ColocationLoggerFactory.create());
             } else {
               // Abstract region depends on the default pool existing so lazily initialize it
               // if necessary.
@@ -3066,10 +3066,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
               }
               if (attrs.getScope().isLocal()) {
                 region =
-                    new LocalRegion(name, attrs, null, this, internalRegionArgs, statisticsClock);
+                    new LocalRegion(name, attrs, null, this, internalRegionArgs,
+                        getStatisticsClock());
               } else {
                 region = new DistributedRegion(name, attrs, null, this, internalRegionArgs,
-                    statisticsClock);
+                    getStatisticsClock());
               }
             }
 

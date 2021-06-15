@@ -1213,10 +1213,10 @@ public class PartitionedRegionStats {
   }
 
   public void endBucketClear(long start) {
-    long delta = clock.getTime() - start;
     stats.incLong(bucketClearsId, 1);
     stats.incLong(bucketClearsInProgressId, -1L);
     if (clock.isEnabled()) {
+      long delta = clock.getTime() - start;
       stats.incLong(bucketClearTimeId, delta);
     }
   }
