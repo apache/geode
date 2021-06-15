@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -74,6 +75,16 @@ public class LatestLastAccessTimeMessageTest {
 
     lastAccessTimeMessage.process(dm);
 
+    verify(lastAccessTimeMessage).sendReply(dm, 0);
+  }
+
+  @Test
+  public void replyIsSentEvenIfThereIsAnException() {
+    setupMessage();
+    when(dm.getCache()).thenThrow(new RuntimeException());
+    assertThatThrownBy(() -> {
+      lastAccessTimeMessage.process(dm);
+    }).isExactlyInstanceOf(RuntimeException.class);
     verify(lastAccessTimeMessage).sendReply(dm, 0);
   }
 
