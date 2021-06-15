@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.geode.SerializationException;
@@ -31,6 +32,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.pdx.PdxSerializationException;
 
 /**
  * Does a region query on a server
@@ -120,7 +122,11 @@ public class QueryOp {
           queryResult = resultPart.getObject();
         } catch (Exception e) {
           String s = "While deserializing " + getOpName() + " result";
-          exceptionRef[0] = new SerializationException(s, e);
+          if (e instanceof PdxSerializationException) {
+            exceptionRef[0] = new IOException(s, e);
+          } else {
+            exceptionRef[0] = new SerializationException(s, e);
+          }
           return;
         }
         if (queryResult instanceof Throwable) {

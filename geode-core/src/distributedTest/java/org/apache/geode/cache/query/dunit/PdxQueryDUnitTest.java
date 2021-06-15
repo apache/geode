@@ -113,7 +113,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       public void run2() throws CacheException {
         configAndStartBridgeServer();
         Region region = getRootRegion().getSubregion(regionName);
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
 
         // Execute query with different type of Results.
         QueryService qs = getCache().getQueryService();
@@ -140,7 +140,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         }
         // Pdx objects for local queries now get deserialized when results are iterated.
         // So the deserialized objects are no longer cached in VMCachedDeserializable.
-        assertEquals(numberOfEntries * 2, TestObject.numInstance);
+        assertEquals(numberOfEntries * 2, TestObject.numInstance.get());
       }
     });
 
@@ -188,7 +188,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         configAndStartBridgeServer();
         Region region = getRootRegion().getSubregion(regionName);
         System.out.println("##### Region size is: " + region.size());
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -232,7 +232,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -280,7 +280,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         configAndStartBridgeServer();
         Region region = getRootRegion().getSubregion(regionName);
         System.out.println("##### Region size is: " + region.size());
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -328,7 +328,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -380,7 +380,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         configAndStartBridgeServer();
         Region region = getRootRegion().getSubregion(regionName);
         System.out.println("##### Region size is: " + region.size());
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
 
       }
     });
@@ -426,7 +426,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -550,7 +550,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           }
 
         }
-        assertEquals(2 * numberOfEntries, TestObject.numInstance);
+        assertEquals(2 * numberOfEntries, TestObject.numInstance.get());
       }
     };
 
@@ -561,7 +561,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -856,7 +856,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           Assert.fail("Failed executing " + queryStr, e);
         }
 
-        assertEquals(numberOfEntries, TestObject.numInstance);
+        assertEquals(numberOfEntries, TestObject.numInstance.get());
       }
     };
 
@@ -867,7 +867,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -1149,7 +1149,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           }
 
         }
-        assertEquals(2 * (numberOfEntries + 5), (TestObject.numInstance + TestObject2.numInstance));
+        assertEquals(2 * (numberOfEntries + 5),
+            (TestObject.numInstance.get() + TestObject2.numInstance.get()));
       }
     };
 
@@ -1160,7 +1161,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -1246,7 +1247,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
             Assert.fail("Failed executing " + queryString[i], e);
           }
         }
-        assertEquals(numberOfEntries, TestObject.numInstance);
+        assertEquals(numberOfEntries, TestObject.numInstance.get());
       }
     });
 
@@ -1254,7 +1255,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(numberOfEntries, TestObject.numInstance);
+        assertEquals(numberOfEntries, TestObject.numInstance.get());
       }
     });
 
@@ -1263,7 +1264,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -1272,7 +1273,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm2.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -1302,7 +1303,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
             }
           }
         }
-        if (TestObject.numInstance <= 0) {
+        if (TestObject.numInstance.get() <= 0) {
           fail("Expected TestObject instance to be >= 0.");
         }
       }
@@ -1313,7 +1314,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm2.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -1623,7 +1624,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         } catch (Exception ex) {
           fail("Unable to create index. " + ex.getMessage());
         }
-        assertEquals(numberOfEntries, TestObject.numInstance);
+        assertEquals(numberOfEntries, TestObject.numInstance.get());
       }
     });
 
@@ -1643,7 +1644,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         } catch (Exception ex) {
           fail("Unable to create index. " + ex.getMessage());
         }
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -1683,14 +1684,14 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(numberOfEntries, TestObject.numInstance);
+        assertEquals(numberOfEntries, TestObject.numInstance.get());
       }
     });
 
     vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -1731,7 +1732,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           }
 
         }
-        assertEquals(4 * numberOfEntries, TestObject.numInstance);
+        assertEquals(4 * numberOfEntries, TestObject.numInstance.get());
 
         for (int i = 3; i < queryString.length; i++) {
           try {
@@ -1763,7 +1764,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(numberOfEntries, TestObject.numInstance);
+        assertEquals(numberOfEntries, TestObject.numInstance.get());
       }
     });
 
@@ -1772,7 +1773,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -1892,7 +1893,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -1920,7 +1921,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     vm1.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(0, TestObject.numInstance);
+        assertEquals(0, TestObject.numInstance.get());
       }
     });
 
@@ -2560,14 +2561,14 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       vm1.invoke(new CacheSerializableRunnable("validate") {
         @Override
         public void run2() throws CacheException {
-          assertEquals(testObjectCnt, TestObject.numInstance);
+          assertEquals(testObjectCnt, TestObject.numInstance.get());
           assertEquals(positionObjectCnt, PositionPdx.numInstance);
-          assertEquals(testObjCnt, TestObject2.numInstance);
+          assertEquals(testObjCnt, TestObject2.numInstance.get());
 
           // Reset the instances
-          TestObject.numInstance = 0;
+          TestObject.numInstance.set(0);
           PositionPdx.numInstance = 0;
-          TestObject2.numInstance = 0;
+          TestObject2.numInstance.set(0);
         }
       });
     }
