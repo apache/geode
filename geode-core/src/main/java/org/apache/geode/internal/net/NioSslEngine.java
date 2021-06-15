@@ -89,8 +89,7 @@ public class NioSslEngine implements NioFilter {
    * state. It may throw other IOExceptions caused by I/O operations
    */
   public boolean handshake(SocketChannel socketChannel, int timeout,
-      ByteBuffer peerNetData)
-      throws IOException, InterruptedException {
+      ByteBuffer peerNetData) throws IOException {
 
     if (peerNetData.capacity() < engine.getSession().getPacketBufferSize()) {
       throw new IllegalArgumentException(String.format("Provided buffer is too small to perform "
@@ -152,7 +151,7 @@ public class NioSslEngine implements NioFilter {
             // if we're not finished, there's nothing to process and no data was read let's hang out
             // for a little
             if (peerAppData.remaining() == 0 && dataRead == 0 && status == NEED_UNWRAP) {
-              Thread.sleep(10);
+              Thread.yield();
             }
 
             if (engineResult.getStatus() == BUFFER_OVERFLOW) {
@@ -203,7 +202,7 @@ public class NioSslEngine implements NioFilter {
           logger.info("handshake terminated with illegal state due to {}", status);
           throw new IllegalStateException("Unknown SSL Handshake state: " + status);
       }
-      Thread.sleep(10);
+      Thread.yield();
     }
     if (status != FINISHED) {
       logger.info("handshake terminated with exception due to {}", status);
