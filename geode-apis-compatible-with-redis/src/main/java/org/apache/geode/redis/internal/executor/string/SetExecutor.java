@@ -60,51 +60,51 @@ public class SetExecutor extends AbstractExecutor {
   private SetOptions parseOptionalParameters(List<byte[]> optionalParameters)
       throws IllegalArgumentException {
 
-    SetOptionsCollector options = new SetOptionsCollector();
+    SetExecutorState executorState = new SetExecutorState();
 
     // Iterate the list in reverse order to allow similar error reporting behaviour to native redis
     for (int index = optionalParameters.size() - 1; index >= 0; --index) {
       if (equalsIgnoreCaseBytes(optionalParameters.get(index), bXX)) {
-        handleXX(options);
+        handleXX(executorState);
       } else if (equalsIgnoreCaseBytes(optionalParameters.get(index), bNX)) {
-        handleNX(options);
+        handleNX(executorState);
       } else {
         // Yhe only valid possibility now is that the parameter is a number preceded by either EX or
         // PX
-        handleNumber(options, optionalParameters, index);
+        handleNumber(executorState, optionalParameters, index);
         // If the above method doesn't throw, we successfully parsed a pair of parameters, so skip
         // the next parameter
         --index;
       }
     }
 
-    if ((options.foundPX || options.foundEX) && options.expirationMillis <= 0) {
+    if ((executorState.foundPX || executorState.foundEX) && executorState.expirationMillis <= 0) {
       throw new IllegalArgumentException(ERROR_INVALID_EXPIRE_TIME);
     }
 
-    return new SetOptions(options.existsOption, options.expirationMillis, false);
+    return new SetOptions(executorState.existsOption, executorState.expirationMillis, false);
   }
 
-  private void handleXX(SetOptionsCollector options) {
-    if (options.foundNX) {
+  private void handleXX(SetExecutorState executorState) {
+    if (executorState.foundNX) {
       throw new IllegalArgumentException(ERROR_SYNTAX);
     } else {
-      options.existsOption = BaseSetOptions.Exists.XX;
-      options.foundXX = true;
+      executorState.existsOption = BaseSetOptions.Exists.XX;
+      executorState.foundXX = true;
     }
   }
 
-  private void handleNX(SetOptionsCollector options) {
-    if (options.foundXX) {
+  private void handleNX(SetExecutorState executorState) {
+    if (executorState.foundXX) {
       throw new IllegalArgumentException(ERROR_SYNTAX);
     } else {
-      options.existsOption = BaseSetOptions.Exists.NX;
-      options.foundNX = true;
+      executorState.existsOption = BaseSetOptions.Exists.NX;
+      executorState.foundNX = true;
     }
   }
 
-  private void handleNumber(SetOptionsCollector options, List<byte[]> parameters, int index) {
-    doBasicValidation(options, index);
+  private void handleNumber(SetExecutorState executorState, List<byte[]> parameters, int index) {
+    doBasicValidation(executorState, index);
 
     byte[] previousParameter = parameters.get(index - 1);
     throwIfNotExpirationParameter(previousParameter);
@@ -117,20 +117,20 @@ public class SetExecutor extends AbstractExecutor {
     }
 
     if (equalsIgnoreCaseBytes(previousParameter, bEX)) {
-      handleEX(options, expiration);
+      handleEX(executorState, expiration);
     } else {
-      handlePX(options, expiration);
+      handlePX(executorState, expiration);
     }
   }
 
-  private void doBasicValidation(SetOptionsCollector options, int index) {
+  private void doBasicValidation(SetExecutorState executorState, int index) {
     // The first optional parameter cannot be a number
     if (index == 0) {
       throw new IllegalArgumentException(ERROR_SYNTAX);
     }
 
     // We already found and set an expiration value
-    if (options.expirationMillis != 0) {
+    if (executorState.expirationMillis != 0) {
       throw new IllegalArgumentException(ERROR_SYNTAX);
     }
   }
@@ -143,20 +143,20 @@ public class SetExecutor extends AbstractExecutor {
     }
   }
 
-  private void handleEX(SetOptionsCollector options, long expiration) {
-    if (options.foundPX) {
+  private void handleEX(SetExecutorState executorState, long expiration) {
+    if (executorState.foundPX) {
       throw new IllegalArgumentException(ERROR_SYNTAX);
     }
-    options.expirationMillis = SECONDS.toMillis(expiration);
-    options.foundEX = true;
+    executorState.expirationMillis = SECONDS.toMillis(expiration);
+    executorState.foundEX = true;
   }
 
-  private void handlePX(SetOptionsCollector options, long expiration) {
-    if (options.foundEX) {
+  private void handlePX(SetExecutorState executorState, long expiration) {
+    if (executorState.foundEX) {
       throw new IllegalArgumentException(ERROR_SYNTAX);
     }
-    options.expirationMillis = expiration;
-    options.foundPX = true;
+    executorState.expirationMillis = expiration;
+    executorState.foundPX = true;
   }
 
   private RedisResponse doSet(RedisKey key, byte[] value, RedisStringCommands redisStringCommands,
@@ -171,7 +171,7 @@ public class SetExecutor extends AbstractExecutor {
     }
   }
 
-  private static class SetOptionsCollector {
+  private static class SetExecutorState {
     SetOptions.Exists existsOption = SetOptions.Exists.NONE;
     long expirationMillis = 0L;
     boolean foundXX = false;

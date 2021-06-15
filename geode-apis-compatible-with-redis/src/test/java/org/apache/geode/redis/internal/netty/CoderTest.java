@@ -14,11 +14,13 @@
  */
 package org.apache.geode.redis.internal.netty;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.isNegativeInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.isPositiveInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import junitparams.JUnitParamsRunner;
@@ -36,6 +38,17 @@ public class CoderTest {
     assertThat(equalsIgnoreCaseBytes(string1Bytes, string2Bytes))
         .as("Comparing equality of " + string1 + " and " + string2)
         .isEqualTo(string1.equalsIgnoreCase(string2));
+  }
+
+  @Test
+  @Parameters({"abc", "AbC", "ABC", "%abc", "123abc!@#"})
+  public void toUpperCaseBytes_matchesStringToUpperCase(String string) {
+    byte[] uppercase = toUpperCaseBytes(stringToBytes(string));
+    assertThat(uppercase)
+        .withFailMessage("Comparing toUpperCase for " + string
+            + ".\nExpected: " + bytesToString(uppercase)
+            + "\nActual: " + string.toUpperCase())
+        .isEqualTo(stringToBytes(string.toUpperCase()));
   }
 
   @Test

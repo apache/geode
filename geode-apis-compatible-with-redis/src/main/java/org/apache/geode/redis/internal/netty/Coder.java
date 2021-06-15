@@ -390,6 +390,25 @@ public class Coder {
     return true;
   }
 
+  /**
+   * Transforms a byte array representing a String into a byte array representing the uppercase
+   * version of that String.
+   *
+   * @param bytes the byte array representing a String to be transformed
+   * @return a byte array representing the result of calling String.toUpperCase() on the input
+   *         String
+   */
+  public static byte[] toUpperCaseBytes(byte[] bytes) {
+    if (bytes == null) {
+      return null;
+    }
+    byte[] uppercase = new byte[bytes.length];
+    for (int i = 0; i < bytes.length; ++i) {
+      uppercase[i] = toUpperCase(bytes[i]);
+    }
+    return uppercase;
+  }
+
   private static byte toUpperCase(byte b) {
     return isLowerCase(b) ? (byte) (b - CHARSET_CASE_OFFSET) : b;
   }

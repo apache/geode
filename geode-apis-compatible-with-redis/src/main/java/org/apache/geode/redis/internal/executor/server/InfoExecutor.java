@@ -15,7 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bALL;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCLIENTS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCLUSTER;
@@ -28,6 +28,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSERVER;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSTATS;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -62,24 +63,24 @@ public class InfoExecutor extends AbstractExecutor {
   }
 
   private String getSpecifiedSection(ExecutionHandlerContext context, List<byte[]> commands) {
-    byte[] bytes = commands.get(1);
-    if (equalsIgnoreCaseBytes(bytes, bSERVER)) {
+    byte[] bytes = toUpperCaseBytes(commands.get(1));
+    if (Arrays.equals(bytes, bSERVER)) {
       return getServerSection(context);
-    } else if (equalsIgnoreCaseBytes(bytes, bCLUSTER)) {
+    } else if (Arrays.equals(bytes, bCLUSTER)) {
       return getClusterSection();
-    } else if (equalsIgnoreCaseBytes(bytes, bPERSISTENCE)) {
+    } else if (Arrays.equals(bytes, bPERSISTENCE)) {
       return getPersistenceSection();
-    } else if (equalsIgnoreCaseBytes(bytes, bREPLICATION)) {
+    } else if (Arrays.equals(bytes, bREPLICATION)) {
       return getReplicationSection();
-    } else if (equalsIgnoreCaseBytes(bytes, bSTATS)) {
+    } else if (Arrays.equals(bytes, bSTATS)) {
       return getStatsSection(context);
-    } else if (equalsIgnoreCaseBytes(bytes, bCLIENTS)) {
+    } else if (Arrays.equals(bytes, bCLIENTS)) {
       return getClientsSection(context);
-    } else if (equalsIgnoreCaseBytes(bytes, bMEMORY)) {
+    } else if (Arrays.equals(bytes, bMEMORY)) {
       return getMemorySection(context);
-    } else if (equalsIgnoreCaseBytes(bytes, bKEYSPACE)) {
+    } else if (Arrays.equals(bytes, bKEYSPACE)) {
       return getKeyspaceSection(context);
-    } else if (equalsIgnoreCaseBytes(bytes, bDEFAULT) || equalsIgnoreCaseBytes(bytes, bALL)) {
+    } else if (Arrays.equals(bytes, bDEFAULT) || Arrays.equals(bytes, bALL)) {
       return getAllSections(context);
     } else {
       return "";

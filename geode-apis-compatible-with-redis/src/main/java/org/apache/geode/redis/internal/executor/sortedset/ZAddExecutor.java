@@ -19,14 +19,15 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_F
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_ZADD_OPTION_TOO_MANY_INCR_PAIR;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
-import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
+import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCH;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINCR;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNX;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bXX;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -75,17 +76,17 @@ public class ZAddExecutor extends AbstractExecutor {
     int optionsFoundCount = 0;
 
     while (commandIterator.hasNext() && !scoreFound) {
-      byte[] subCommand = commandIterator.next();
-      if (equalsIgnoreCaseBytes(subCommand, bNX)) {
+      byte[] subCommand = toUpperCaseBytes(commandIterator.next());
+      if (Arrays.equals(subCommand, bNX)) {
         executorState.nxFound = true;
         optionsFoundCount++;
-      } else if (equalsIgnoreCaseBytes(subCommand, bXX)) {
+      } else if (Arrays.equals(subCommand, bXX)) {
         executorState.xxFound = true;
         optionsFoundCount++;
-      } else if (equalsIgnoreCaseBytes(subCommand, bCH)) {
+      } else if (Arrays.equals(subCommand, bCH)) {
         executorState.chFound = true;
         optionsFoundCount++;
-      } else if (equalsIgnoreCaseBytes(subCommand, bINCR)) {
+      } else if (Arrays.equals(subCommand, bINCR)) {
         executorState.incrFound = true;
         optionsFoundCount++;
       } else if (isInfinity(subCommand)) {
