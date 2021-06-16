@@ -1426,7 +1426,7 @@ public class CliStrings {
   public static final String EXPORT_DATA__SUCCESS__MESSAGE =
       "Data successfully exported from region : {0} to file : {1} on host : {2}";
 
-  /* 'replicate region' command */
+  /* 'wan-copy region' command */
   public static final String WAN_COPY_REGION = "wan-copy region";
   public static final String WAN_COPY_REGION__HELP =
       "Copy a region with a senderId via WAN replication";
@@ -1435,16 +1435,16 @@ public class CliStrings {
       "Region from which data will be exported.";
   public static final String WAN_COPY_REGION__SENDERID = "sender-id";
   public static final String WAN_COPY_REGION__SENDERID__HELP =
-      "senderId to use to copy the region.";
+      "Sender Id to use to copy the region.";
   public static final String WAN_COPY_REGION__MAXRATE = "max-rate";
   public static final String WAN_COPY_REGION__MAXRATE__HELP =
-      "maximum rate for copying in events per second.";
+      "Maximum rate for copying in events per second.";
   public static final String WAN_COPY_REGION__BATCHSIZE = "batch-size";
   public static final String WAN_COPY_REGION__BATCHSIZE__HELP =
-      "size for batches of events to be copied.";
+      "Size for batches of events to be copied.";
   public static final String WAN_COPY_REGION__CANCEL = "cancel";
   public static final String WAN_COPY_REGION__CANCEL__HELP =
-      "cancel an ongoing wan-copy region command";
+      "Cancel an ongoing wan-copy region command";
   public static final String WAN_COPY_REGION__MSG__REGION__NOT__FOUND = "Region {0} not found";
   public static final String WAN_COPY_REGION__MSG__REGION__NOT__USING_SENDER =
       "Region {0} is not configured to use sender {1}";
