@@ -75,10 +75,8 @@ public class PartitionedRegionStatsJUnitTest {
 
   private PartitionedRegion createPRWithCache(String name, int lmax, Cache cache) {
     PartitionAttributesFactory<Object, Object> paf = new PartitionAttributesFactory<>();
-
     // set low to reduce logging
     paf.setLocalMaxMemory(lmax).setRedundantCopies(0).setTotalNumBuckets(NUMBER_OF_BUCKETS);
-
     PartitionedRegion pr;
     try {
       RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
@@ -92,9 +90,9 @@ public class PartitionedRegionStatsJUnitTest {
 
   private PartitionedRegion createPR(String name, int lmax) {
     PartitionAttributesFactory<Object, Object> paf = new PartitionAttributesFactory<>();
-    paf.setLocalMaxMemory(lmax).setRedundantCopies(0).setTotalNumBuckets(13); // set low to
-                                                                              // reduce
-                                                                              // logging
+    // set low to reduce logging
+    paf.setLocalMaxMemory(lmax).setRedundantCopies(0).setTotalNumBuckets(NUMBER_OF_BUCKETS);
+
     Cache cache = PartitionedRegionTestHelper.createCache();
     return createPRWithCache(name, lmax, cache);
   }
@@ -103,9 +101,8 @@ public class PartitionedRegionStatsJUnitTest {
       boolean diskSync,
       boolean persistent) {
     PartitionAttributesFactory<Object, Object> paf = new PartitionAttributesFactory<>();
-    paf.setLocalMaxMemory(lmax).setRedundantCopies(0).setTotalNumBuckets(13); // set low to
-                                                                              // reduce
-                                                                              // logging
+    paf.setLocalMaxMemory(lmax).setRedundantCopies(0).setTotalNumBuckets(NUMBER_OF_BUCKETS);
+
     Cache cache = PartitionedRegionTestHelper.createCache();
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
     regionFactory.setPartitionAttributes(paf.create());
