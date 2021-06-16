@@ -18,6 +18,7 @@ import static org.apache.geode.internal.Assert.fail;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -224,23 +225,15 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
         new int[] {port0, port1}, true);
 
     client.invoke(() -> {
-      try {
-        TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization = true;
-        QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
-        logger.info("### Executing Query on server: " + queryString[1]);
-        Query query = remoteQueryService.newQuery(queryString[1]);
-        SelectResults<TestObjectThrowsPdxSerializationException> selectResults =
-            uncheckedCast(query.execute());
-        fail("Expect ServerConnectivityException");
-        assertThat(selectResults.size()).isEqualTo(0);
-      } catch (ServerConnectivityException sce) {
-        logger.info("Expect ServerConnectivityException after tried 2 servers");
-      } finally {
-        assertThat(TestObjectThrowsPdxSerializationException.numInstance.get()).isEqualTo(2);
-        assertThat(TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization)
-            .isFalse();
-        TestObjectThrowsPdxSerializationException.numInstance.set(0);
-      }
+      TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization = true;
+      QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
+      logger.info("### Executing Query on server: " + queryString[1]);
+      Query query = remoteQueryService.newQuery(queryString[1]);
+      assertThatThrownBy(query::execute).isInstanceOf(ServerConnectivityException.class);
+      assertThat(TestObjectThrowsPdxSerializationException.numInstance.get()).isEqualTo(2);
+      assertThat(TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization)
+          .isFalse();
+      TestObjectThrowsPdxSerializationException.numInstance.set(0);
     });
   }
 
