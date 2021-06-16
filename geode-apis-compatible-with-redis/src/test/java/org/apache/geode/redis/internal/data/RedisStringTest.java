@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.RedisString.BASE_REDIS_STRING_OVERHEAD;
+import static org.apache.geode.redis.internal.netty.Coder.longToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -146,7 +147,7 @@ public class RedisStringTest {
   @Test
   public void incrErrorsWhenValueOverflows() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = stringToBytes(String.valueOf(Long.MAX_VALUE));
+    byte[] bytes = longToBytes(Long.MAX_VALUE);
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.incr(region, null)).isInstanceOf(ArithmeticException.class);
   }
@@ -172,7 +173,7 @@ public class RedisStringTest {
   @Test
   public void incrbyErrorsWhenValueOverflows() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = stringToBytes(String.valueOf(Long.MAX_VALUE));
+    byte[] bytes = longToBytes(Long.MAX_VALUE);
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.incrby(region, null, 2L))
         .isInstanceOf(ArithmeticException.class);
@@ -216,7 +217,7 @@ public class RedisStringTest {
   @Test
   public void decrThrowsArithmeticExceptionWhenDecrementingMin() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = stringToBytes(String.valueOf(Long.MIN_VALUE));
+    byte[] bytes = longToBytes(Long.MIN_VALUE);
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.decr(region, null)).isInstanceOf(ArithmeticException.class);
   }
@@ -242,7 +243,7 @@ public class RedisStringTest {
   @Test
   public void decrbyThrowsArithmeticExceptionWhenDecrementingMin() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = stringToBytes(String.valueOf(Long.MIN_VALUE));
+    byte[] bytes = longToBytes(Long.MIN_VALUE);
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.decrby(region, null, 2))
         .isInstanceOf(ArithmeticException.class);

@@ -41,7 +41,7 @@ public class CoderTest {
   }
 
   @Test
-  @Parameters({"abc", "AbC", "ABC", "%abc", "123abc!@#"})
+  @Parameters({"abc", "AbC", "ABC", "%abc", "123abc!@#", "+inf", "-INF"})
   public void toUpperCaseBytes_matchesStringToUpperCase(String string) {
     byte[] uppercase = toUpperCaseBytes(stringToBytes(string));
     assertThat(uppercase)
@@ -74,6 +74,8 @@ public class CoderTest {
         new Object[] {"abc", "abcd"},
         new Object[] {"%abc", "%abc"},
         new Object[] {"%abc", "abc%"},
+        new Object[] {"+inf", "+INF"},
+        new Object[] {"-INF", "+INF"},
         new Object[] {"123abc!@#", "123ABC!@#"},
         new Object[] {"123abc!@#", "#@!cba321"},
         new Object[] {"abc", null}

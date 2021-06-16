@@ -481,51 +481,51 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
     SoftAssertions soft = new SoftAssertions();
 
     soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET))
-        .as("invalid options #1")
+        .as("no key")
         .isInstanceOf(JedisDataException.class);
 
     soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, "EX", "0"))
-        .as("invalid options #2")
+        .as("no value")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
     soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "EX", "a"))
-        .as("invalid options #3")
+        .as("non-integer expiration value")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("value is not an integer");
 
     soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "PX", "1", "EX", "0"))
-        .as("invalid options #4")
+        .as("both PX and EX provided")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
     soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "PX", "1", "XX", "0"))
-        .as("invalid options #5")
+        .as("extra integer option as last option")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
     soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "PX", "XX", "0"))
-        .as("invalid options #6")
+        .as("expiration option used with no integer value")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
     soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "1", "PX", "1"))
-        .as("invalid options #7")
+        .as("extra integer option as first option")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
     soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "NX", "XX"))
-        .as("invalid options #8")
+        .as("both NX and XX provided")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
     soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "NX", "a"))
-        .as("invalid options #9")
+        .as("invalid option after valid option")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
     soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "blah"))
-        .as("invalid options #10")
+        .as("invalid option")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 

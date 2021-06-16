@@ -35,8 +35,8 @@ public class Command {
 
   private final List<byte[]> commandElems;
   private final RedisCommandType commandType;
-  private String key;
-  private byte[] bytes;
+  private String keyString;
+  private byte[] keyBytes;
 
   /**
    * Constructor used to create a static marker Command for shutting down executors.
@@ -118,10 +118,10 @@ public class Command {
    */
   public byte[] getBytesKey() {
     if (this.commandElems.size() > 1) {
-      if (this.bytes == null) {
-        this.bytes = this.commandElems.get(1);
+      if (this.keyBytes == null) {
+        this.keyBytes = this.commandElems.get(1);
       }
-      return this.bytes;
+      return this.keyBytes;
     } else {
       return null;
     }
@@ -136,13 +136,13 @@ public class Command {
    */
   public String getStringKey() {
     if (this.commandElems.size() > 1) {
-      if (this.bytes == null) {
-        this.bytes = this.commandElems.get(1);
-        this.key = bytesToString(this.bytes);
-      } else if (this.key == null) {
-        this.key = bytesToString(this.bytes);
+      if (this.keyBytes == null) {
+        this.keyBytes = this.commandElems.get(1);
+        this.keyString = bytesToString(this.keyBytes);
+      } else if (this.keyString == null) {
+        this.keyString = bytesToString(this.keyBytes);
       }
-      return this.key;
+      return this.keyString;
     } else {
       return null;
     }
@@ -150,10 +150,10 @@ public class Command {
 
   public RedisKey getKey() {
     if (this.commandElems.size() > 1) {
-      if (this.bytes == null) {
-        this.bytes = this.commandElems.get(1);
+      if (this.keyBytes == null) {
+        this.keyBytes = this.commandElems.get(1);
       }
-      return new RedisKey(this.bytes);
+      return new RedisKey(this.keyBytes);
     } else {
       return null;
     }
@@ -207,16 +207,6 @@ public class Command {
     result = String.format("wrong number of arguments for '%s' command",
         getCommandType().toString().toLowerCase());
     return result;
-  }
-
-  private long asyncStartTime;
-
-  public void setAsyncStartTime(long start) {
-    asyncStartTime = start;
-  }
-
-  public long getAsyncStartTime() {
-    return asyncStartTime;
   }
 
   private ChannelHandlerContext channelHandlerContext;

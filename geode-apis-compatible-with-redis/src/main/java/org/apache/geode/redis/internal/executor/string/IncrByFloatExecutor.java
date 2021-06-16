@@ -18,7 +18,6 @@ import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -33,9 +32,6 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class IncrByFloatExecutor extends AbstractExecutor {
 
   private static final int INCREMENT_INDEX = 2;
-
-  private static final Pattern invalidArgs =
-      Pattern.compile("[+-]?(inf|infinity)", Pattern.CASE_INSENSITIVE);
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import static org.apache.geode.redis.internal.netty.Coder.intToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,7 +43,7 @@ public class SScanIntegrationTest extends AbstractSScanIntegrationTest {
     List<byte[]> memberList = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
       jedis.sadd("a", String.valueOf(i));
-      memberList.add(stringToBytes(String.valueOf(i)));
+      memberList.add(intToBytes(i));
     }
 
     ScanParams scanParams = new ScanParams();

@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.io.DataInput;
@@ -314,7 +315,7 @@ public class RedisHash extends AbstractRedisData {
 
     long value;
     try {
-      value = Long.parseLong(bytesToString(oldValue));
+      value = bytesToLong(oldValue);
     } catch (NumberFormatException ex) {
       throw new NumberFormatException(ERROR_NOT_INTEGER);
     }

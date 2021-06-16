@@ -16,6 +16,7 @@
 package org.apache.geode.redis;
 
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.intToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -123,7 +124,7 @@ public class RedisCommandArgumentsTestHelper {
     }
 
     for (int i = 0; i < numArgs; i++) {
-      args[i] = stringToBytes(String.valueOf(i));
+      args[i] = intToBytes(i);
     }
 
     return args;

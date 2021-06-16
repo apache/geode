@@ -187,7 +187,7 @@ public class StringBytesGlossary {
 
   // ********** Miscellaneous constants for convenience **********
   /**
-   * byte value of the number 1
+   * byte value of the number 0
    */
   public static final byte NUMBER_0_BYTE = 48; // '0'
 
