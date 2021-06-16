@@ -216,7 +216,8 @@ public class JsonWriter {
       writeObjectArrayAsJson(generator, (Object[]) value, pdxField);
     } else {
       throw new IllegalStateException(
-          "PdxInstance returns unknwon pdxfield " + pdxField + " for type " + value);
+          "PdxInstance returns unsupported type " + value.getClass()
+              + " for field " + pf + " = " + value);
     }
   }
 

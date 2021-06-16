@@ -135,17 +135,16 @@ public class PdxToJSON {
       jg.writeString(value.toString());
     } else if (value.getClass().equals(PdxInstanceEnumInfo.class)) {
       jg.writeString(value.toString());
+    } else if (value instanceof PdxInstance) {
+      getJSONString(jg, (PdxInstance) value);
+    } else if (value instanceof Collection) {
+      getJSONStringFromCollection(jg, (Collection<?>) value, pf);
+    } else if (value instanceof Map) {
+      getJSONStringFromMap(jg, (Map) value, pf);
     } else {
-      if (value instanceof PdxInstance) {
-        getJSONString(jg, (PdxInstance) value);
-      } else if (value instanceof Collection) {
-        getJSONStringFromCollection(jg, (Collection<?>) value, pf);
-      } else if (value instanceof Map) {
-        getJSONStringFromMap(jg, (Map) value, pf);
-      } else {
-        throw new IllegalStateException(
-            "PdxInstance returns unknwon pdxfield " + pf + " for type " + value);
-      }
+      throw new IllegalStateException(
+          "PdxInstance returns unsupported type " + value.getClass()
+              + " for field " + pf + " = " + value);
     }
   }
 
@@ -226,7 +225,8 @@ public class PdxToJSON {
       jg.writeEndArray();
     } else {
       throw new IllegalStateException(
-          "PdxInstance returns unknown pdxfield " + pf + " for type " + value);
+          "PdxInstance returns unsupported type " + value.getClass()
+              + " for field " + pf + " = " + value);
     }
   }
 
