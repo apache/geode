@@ -14,11 +14,13 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.internal.Assert.fail;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -32,6 +34,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.Query;
@@ -54,8 +57,8 @@ import org.apache.geode.test.version.VersionManager;
 @Category({OQLQueryTest.class})
 public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
   public static final Logger logger = LogService.getLogger();
-
   static final int numberOfEntries = 100;
+  final String poolName = "testClientServerQueryPool";
   final String hostName = NetworkUtils.getServerHostName();
   private VM server0;
   private VM server1;
@@ -122,14 +125,11 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
       logger.info("### Executing Query on server: " + queryString[1] + ": from client region: "
           + region.getFullPath());
       final int size = 100;
-      int[] array = new int[size];
-      for (int i = 0; i < size; i++) {
-        array[i] = i;
-      }
-      Arrays.stream(array).parallel().forEach(a -> {
+      IntStream.range(0, size).parallel().forEach(a -> {
         try {
-          SelectResults<TestPdxSerializable> selectResults = region.query(queryString[1]);
-          assertEquals(numberOfEntries, selectResults.size());
+          SelectResults<TestObjectThrowsPdxSerializationException> selectResults =
+              region.query(queryString[1]);
+          assertThat(selectResults.size()).isEqualTo(numberOfEntries);
         } catch (FunctionDomainException | TypeMismatchException | NameResolutionException
             | QueryInvocationTargetException e) {
           e.printStackTrace();
@@ -151,8 +151,8 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
     });
 
     // Create client pool.
-    final String poolName = "testClientServerQueryPool";
-    createPool(client, poolName, new String[] {hostName}, new int[] {port1, port2, port0}, true);
+    createPool(client, poolName, new String[] {hostName, hostName, hostName},
+        new int[] {port0, port1, port2}, true);
 
     final int size = 100;
     AsyncInvocation[] asyncInvocationArray = new AsyncInvocation[size];
@@ -162,8 +162,9 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
             QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
             logger.info("### Executing Query on server: " + queryString[1]);
             Query query = remoteQueryService.newQuery(queryString[1]);
-            SelectResults<TestPdxSerializable> selectResults = (SelectResults) query.execute();
-            assertEquals(numberOfEntries, selectResults.size());
+            SelectResults<TestObjectThrowsPdxSerializationException> selectResults =
+                (SelectResults) query.execute();
+            assertThat(selectResults.size()).isEqualTo(numberOfEntries);
           });
     }
 
@@ -176,45 +177,78 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
   }
 
   @Test
-  public void testRetryWithPdxSerializationException()
-      throws CacheException, InterruptedException {
+  public void testRetrySucceedWithPdxSerializationException() throws CacheException {
     // create pdx instance at servers
     server0.invoke(() -> {
       Region<Object, Object> region = getRootRegion().getSubregion(regionName);
       for (int i = 0; i < numberOfEntries; i++) {
-        region.put("key-" + i, new TestPdxSerializable());
+        region.put("key-" + i, new TestObjectThrowsPdxSerializationException());
       }
     });
 
-    // Create client pool.
-    final String poolName = "testClientServerQueryPool";
+    // Create client pool with 3 servers
     createPool(client, poolName, new String[] {hostName, hostName, hostName},
         new int[] {port0, port1, port2}, true);
 
-    try {
-      client.invoke(() -> {
-        TestPdxSerializable.throwExceptionOnDeserialization = true;
+    client.invoke(() -> {
+      try {
+        TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization = true;
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
         logger.info("### Executing Query on server: " + queryString[1]);
         Query query = remoteQueryService.newQuery(queryString[1]);
-        SelectResults<TestPdxSerializable> selectResults = (SelectResults) query.execute();
-        assertEquals(numberOfEntries, selectResults.size());
-      });
-    } finally {
-      client.invoke(() -> {
-        assertEquals(false, TestPdxSerializable.throwExceptionOnDeserialization);
-        // the failed try will increment numInstance once
-        assertEquals(numberOfEntries + 1, TestPdxSerializable.numInstance.get());
-        TestPdxSerializable.numInstance.set(0);
-      });
-    }
+        SelectResults<TestObjectThrowsPdxSerializationException> selectResults =
+            (SelectResults) query.execute();
+        assertThat(selectResults.size()).isEqualTo(numberOfEntries);
+        // the 2 failed try incremented numInstance
+        assertThat(numberOfEntries + 2)
+            .isEqualTo(TestObjectThrowsPdxSerializationException.numInstance.get());
+      } finally {
+        assertThat(TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization)
+            .isFalse();
+        TestObjectThrowsPdxSerializationException.numInstance.set(0);
+      }
+    });
   }
 
-  public static class TestPdxSerializable implements PdxSerializable {
+  @Test
+  public void testRetryFailedWithServerConnectivityException() throws CacheException {
+    // create pdx instance at servers
+    server0.invoke(() -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(regionName);
+      for (int i = 0; i < numberOfEntries; i++) {
+        region.put("key-" + i, new TestObjectThrowsPdxSerializationException());
+      }
+    });
+
+    // Create client pool with only 2 servers to test that retry will not run forever
+    createPool(client, poolName, new String[] {hostName, hostName},
+        new int[] {port0, port1}, true);
+
+    client.invoke(() -> {
+      try {
+        TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization = true;
+        QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
+        logger.info("### Executing Query on server: " + queryString[1]);
+        Query query = remoteQueryService.newQuery(queryString[1]);
+        SelectResults<TestObjectThrowsPdxSerializationException> selectResults =
+            (SelectResults) query.execute();
+        fail("Expect ServerConnectivityException");
+      } catch (ServerConnectivityException sce) {
+        logger.info("Expect ServerConnectivityException after tried 2 servers");
+      } finally {
+        assertThat(TestObjectThrowsPdxSerializationException.numInstance.get()).isEqualTo(2);
+        assertThat(TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization)
+            .isFalse();
+        TestObjectThrowsPdxSerializationException.numInstance.set(0);
+      }
+    });
+  }
+
+  public static class TestObjectThrowsPdxSerializationException implements PdxSerializable {
     private static boolean throwExceptionOnDeserialization = false;
     public static AtomicInteger numInstance = new AtomicInteger();
 
-    public TestPdxSerializable() {
+    public TestObjectThrowsPdxSerializationException() {
       numInstance.incrementAndGet();
     }
 
@@ -224,7 +258,10 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
     @Override
     public void fromData(PdxReader reader) {
       if (throwExceptionOnDeserialization) {
-        throwExceptionOnDeserialization = false;
+        if (numInstance.get() >= 2) {
+          // after retried 2 servers, let the retrying to 3rd server succeed
+          throwExceptionOnDeserialization = false;
+        }
         throw new PdxSerializationException("Deserialization should not be happening in this VM");
       }
     }
