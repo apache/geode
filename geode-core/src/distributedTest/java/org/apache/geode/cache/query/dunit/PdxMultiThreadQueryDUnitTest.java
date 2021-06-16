@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.internal.Assert.fail;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -50,6 +51,7 @@ import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.version.VersionManager;
@@ -83,14 +85,12 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
 
     // Start servers
     for (VM vm : Arrays.asList(server0, server1, server2)) {
-      vm.invoke(() -> {
-        configAndStartBridgeServer();
-      });
+      vm.invoke((SerializableRunnableIF) this::configAndStartBridgeServer);
     }
 
-    port0 = server0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    port1 = server1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    port2 = server2.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    port0 = server0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    port1 = server1.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    port2 = server2.invoke(PdxQueryDUnitTest::getCacheServerPort);
   }
 
   @After
@@ -163,7 +163,7 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
             logger.info("### Executing Query on server: " + queryString[1]);
             Query query = remoteQueryService.newQuery(queryString[1]);
             SelectResults<TestObjectThrowsPdxSerializationException> selectResults =
-                (SelectResults) query.execute();
+                uncheckedCast(query.execute());
             assertThat(selectResults.size()).isEqualTo(numberOfEntries);
           });
     }
@@ -171,9 +171,8 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
     for (int i = 0; i < size; i++) {
       asyncInvocationArray[i].await();
     }
-    client.invoke(() -> {
-      await().until(() -> TestObject.numInstance.get() == size * numberOfEntries);
-    });
+    client
+        .invoke(() -> await().until(() -> TestObject.numInstance.get() == size * numberOfEntries));
   }
 
   @Test
@@ -197,7 +196,7 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
         logger.info("### Executing Query on server: " + queryString[1]);
         Query query = remoteQueryService.newQuery(queryString[1]);
         SelectResults<TestObjectThrowsPdxSerializationException> selectResults =
-            (SelectResults) query.execute();
+            uncheckedCast(query.execute());
         assertThat(selectResults.size()).isEqualTo(numberOfEntries);
         // the 2 failed try incremented numInstance
         assertThat(numberOfEntries + 2)
@@ -231,8 +230,9 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
         logger.info("### Executing Query on server: " + queryString[1]);
         Query query = remoteQueryService.newQuery(queryString[1]);
         SelectResults<TestObjectThrowsPdxSerializationException> selectResults =
-            (SelectResults) query.execute();
+            uncheckedCast(query.execute());
         fail("Expect ServerConnectivityException");
+        assertThat(selectResults.size()).isEqualTo(0);
       } catch (ServerConnectivityException sce) {
         logger.info("Expect ServerConnectivityException after tried 2 servers");
       } finally {
@@ -259,7 +259,7 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
     public void fromData(PdxReader reader) {
       if (throwExceptionOnDeserialization) {
         if (numInstance.get() >= 2) {
-          // after retried 2 servers, let the retrying to 3rd server succeed
+          // after retried 2 servers, let the retry to 3rd server succeed
           throwExceptionOnDeserialization = false;
         }
         throw new PdxSerializationException("Deserialization should not be happening in this VM");
