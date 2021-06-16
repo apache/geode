@@ -123,6 +123,12 @@ public class QueryOp {
         } catch (Exception e) {
           String s = "While deserializing " + getOpName() + " result";
           if (e instanceof PdxSerializationException) {
+            // IOException will allow the client to retry next server in the connection pool until
+            // exhaust all the servers (so it will not retry forever).
+            // The byte array of the pdxInstance is always the same at the server. Other clients can
+            // deserialize it correctly. Even this client can get the pdxInstance before and after
+            // the
+            // PdxSerializationException, so retry is a feasible solution.
             exceptionRef[0] = new IOException(s, e);
           } else {
             exceptionRef[0] = new SerializationException(s, e);

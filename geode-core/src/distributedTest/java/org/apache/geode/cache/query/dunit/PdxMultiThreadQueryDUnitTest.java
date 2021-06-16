@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -54,49 +56,67 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
   public static final Logger logger = LogService.getLogger();
 
   static final int numberOfEntries = 100;
+  final String hostName = NetworkUtils.getServerHostName();
+  private VM server0;
+  private VM server1;
+  private VM server2;
+  private VM client;
+  private int port0;
+  private int port1;
+  private int port2;
 
   public PdxMultiThreadQueryDUnitTest() {
     super();
   }
 
-  @Test
-  public void testClientServerQuery() throws CacheException {
+  @Before
+  public void startUpServersAndClient() {
     final Host host = Host.getHost(0);
-    final String hostName = NetworkUtils.getServerHostName();
 
-    VM vm0 = host.getVM(VersionManager.CURRENT_VERSION, 0);
-    VM vm1 = host.getVM(VersionManager.CURRENT_VERSION, 1);
-    VM vm2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
-    VM vm3 = host.getVM(VersionManager.CURRENT_VERSION, 3);
+    server0 = host.getVM(VersionManager.CURRENT_VERSION, 0);
+    server1 = host.getVM(VersionManager.CURRENT_VERSION, 1);
+    server2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
+    client = host.getVM(VersionManager.CURRENT_VERSION, 3);
 
     // Start servers
-    for (VM vm : Arrays.asList(vm0, vm1, vm2)) {
+    for (VM vm : Arrays.asList(server0, server1, server2)) {
       vm.invoke(() -> {
         configAndStartBridgeServer();
       });
     }
 
+    port0 = server0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    port1 = server1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    port2 = server2.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+  }
+
+  @After
+  public void closeServersAndClient() {
+    closeClient(client);
+    closeClient(server2);
+    closeClient(server1);
+    closeClient(server0);
+  }
+
+  @Test
+  public void testClientServerQuery() throws CacheException {
     // create pdx instance at servers
-    vm0.invoke(() -> {
-      Region region = getRootRegion().getSubregion(regionName);
+    server0.invoke(() -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(regionName);
       for (int i = 0; i < numberOfEntries; i++) {
         region.put("key-" + i, new TestObject(i, "vmware"));
       }
     });
 
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port2 = vm2.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-
     // Create client region
-    vm3.invoke(() -> {
+    client.invoke(() -> {
       ClientCacheFactory cf = new ClientCacheFactory();
       cf.addPoolServer(hostName, port1);
       cf.addPoolServer(hostName, port2);
       cf.addPoolServer(hostName, port0);
       cf.setPdxReadSerialized(false);
       ClientCache clientCache = getClientCache(cf);
-      Region region =
+      Region<Object, Object> region =
           clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(regionName);
 
       logger.info("### Executing Query on server: " + queryString[1] + ": from client region: "
@@ -108,145 +128,86 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
       }
       Arrays.stream(array).parallel().forEach(a -> {
         try {
-          SelectResults rs2 = region.query(queryString[1]);
-          assertEquals(numberOfEntries, rs2.size());
-        } catch (FunctionDomainException e) {
-          e.printStackTrace();
-        } catch (TypeMismatchException e) {
-          e.printStackTrace();
-        } catch (NameResolutionException e) {
-          e.printStackTrace();
-        } catch (QueryInvocationTargetException e) {
+          SelectResults<TestPdxSerializable> selectResults = region.query(queryString[1]);
+          assertEquals(numberOfEntries, selectResults.size());
+        } catch (FunctionDomainException | TypeMismatchException | NameResolutionException
+            | QueryInvocationTargetException e) {
           e.printStackTrace();
         }
       });
       await().until(() -> TestObject.numInstance.get() == size * numberOfEntries);
     });
-
-    this.closeClient(vm3);
-    this.closeClient(vm2);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
   }
 
   @Test
   public void testClientServerQueryUsingRemoteQueryService()
       throws CacheException, InterruptedException {
-    final Host host = Host.getHost(0);
-    final String hostName = NetworkUtils.getServerHostName();
-
-    VM vm0 = host.getVM(VersionManager.CURRENT_VERSION, 0);
-    VM vm1 = host.getVM(VersionManager.CURRENT_VERSION, 1);
-    VM vm2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
-    VM vm3 = host.getVM(VersionManager.CURRENT_VERSION, 3);
-
-    // Start servers
-    for (VM vm : Arrays.asList(vm0, vm1, vm2)) {
-      vm.invoke(() -> {
-        configAndStartBridgeServer();
-      });
-    }
-
     // create pdx instance at servers
-    vm0.invoke(() -> {
-      Region region = getRootRegion().getSubregion(regionName);
+    server0.invoke(() -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(regionName);
       for (int i = 0; i < numberOfEntries; i++) {
         region.put("key-" + i, new TestObject(i, "vmware"));
       }
     });
 
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port2 = vm2.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-
     // Create client pool.
     final String poolName = "testClientServerQueryPool";
-    createPool(vm3, poolName, new String[] {hostName}, new int[] {port1, port2, port0}, true);
+    createPool(client, poolName, new String[] {hostName}, new int[] {port1, port2, port0}, true);
 
     final int size = 100;
     AsyncInvocation[] asyncInvocationArray = new AsyncInvocation[size];
     for (int i = 0; i < size; i++) {
       asyncInvocationArray[i] =
-          vm3.invokeAsync(() -> {
-            ClientCache clientCache = getClientCache();
+          client.invokeAsync(() -> {
             QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
             logger.info("### Executing Query on server: " + queryString[1]);
             Query query = remoteQueryService.newQuery(queryString[1]);
-            SelectResults rs2 = (SelectResults) query.execute();
-            assertEquals(numberOfEntries, rs2.size());
+            SelectResults<TestPdxSerializable> selectResults = (SelectResults) query.execute();
+            assertEquals(numberOfEntries, selectResults.size());
           });
     }
 
     for (int i = 0; i < size; i++) {
       asyncInvocationArray[i].await();
     }
-    vm3.invoke(() -> {
+    client.invoke(() -> {
       await().until(() -> TestObject.numInstance.get() == size * numberOfEntries);
     });
-
-    this.closeClient(vm3);
-    this.closeClient(vm2);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
   }
 
   @Test
   public void testRetryWithPdxSerializationException()
       throws CacheException, InterruptedException {
-    final Host host = Host.getHost(0);
-    final String hostName = NetworkUtils.getServerHostName();
-
-    VM vm0 = host.getVM(VersionManager.CURRENT_VERSION, 0);
-    VM vm1 = host.getVM(VersionManager.CURRENT_VERSION, 1);
-    VM vm2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
-    VM vm3 = host.getVM(VersionManager.CURRENT_VERSION, 3);
-
-    // Start servers
-    for (VM vm : Arrays.asList(vm0, vm1, vm2)) {
-      vm.invoke(() -> {
-        configAndStartBridgeServer();
-      });
-    }
-
     // create pdx instance at servers
-    vm0.invoke(() -> {
-      Region region = getRootRegion().getSubregion(regionName);
+    server0.invoke(() -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(regionName);
       for (int i = 0; i < numberOfEntries; i++) {
         region.put("key-" + i, new TestPdxSerializable());
       }
     });
 
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port2 = vm2.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-
     // Create client pool.
     final String poolName = "testClientServerQueryPool";
-    createPool(vm3, poolName, new String[] {hostName, hostName, hostName},
+    createPool(client, poolName, new String[] {hostName, hostName, hostName},
         new int[] {port0, port1, port2}, true);
 
     try {
-      vm3.invoke(() -> {
+      client.invoke(() -> {
         TestPdxSerializable.throwExceptionOnDeserialization = true;
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
         logger.info("### Executing Query on server: " + queryString[1]);
         Query query = remoteQueryService.newQuery(queryString[1]);
-        SelectResults rs2 = (SelectResults) query.execute();
-        assertEquals(numberOfEntries, rs2.size());
+        SelectResults<TestPdxSerializable> selectResults = (SelectResults) query.execute();
+        assertEquals(numberOfEntries, selectResults.size());
       });
     } finally {
-      vm3.invoke(() -> {
+      client.invoke(() -> {
         assertEquals(false, TestPdxSerializable.throwExceptionOnDeserialization);
         // the failed try will increment numInstance once
         assertEquals(numberOfEntries + 1, TestPdxSerializable.numInstance.get());
         TestPdxSerializable.numInstance.set(0);
       });
     }
-
-    this.closeClient(vm3);
-    this.closeClient(vm2);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
   }
 
   public static class TestPdxSerializable implements PdxSerializable {
