@@ -132,7 +132,7 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
           assertThat(selectResults.size()).isEqualTo(numberOfEntries);
         } catch (FunctionDomainException | TypeMismatchException | NameResolutionException
             | QueryInvocationTargetException e) {
-          e.printStackTrace();
+          fail("Unexpected query exception:" + e.getMessage());
         }
       });
       await().until(() -> TestObject.numInstance.get() == size * numberOfEntries);
