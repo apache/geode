@@ -96,7 +96,26 @@ public interface PubSub {
    */
   List<byte[]> findSubscriptionNames(Client client);
 
+  /**
+   * Return a list of all subscribed channel names (not including subscribed patterns).
+   */
   List<byte[]> findChannelNames();
 
+  /**
+   * Return a list of all subscribed channels that match a pattern. This pattern is only applied to
+   * channel names and not to actual subscribed patterns. For example, given that the following
+   * subscriptions exist: "foo", "foobar" and "fo*" then calling this method with {@code f*} will
+   * return {@code foo} and {@code foobar}.
+   *
+   * @param pattern the glob pattern to search for
+   */
   List<byte[]> findChannelNames(byte[] pattern);
+
+  /**
+   * Return a list consisting of pairs {@code channelName, subscriptionCount}.
+   *
+   * @param names a list of the names to consider. This should not include any patterns.
+   */
+  List<Object> findNumberOfSubscribersPerChannel(List<byte[]> names);
+
 }

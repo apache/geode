@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
@@ -62,8 +63,8 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
 
   @Before
   public void setUp() {
-    subscriber = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
-    publisher = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
+    subscriber = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
+    publisher = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After

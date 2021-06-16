@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
@@ -74,17 +73,28 @@ public class Subscriptions {
         .collect(Collectors.toList());
   }
 
+  /**
+   * Return a list of all subscribed channel names (not including subscribed patterns).
+   */
   public List<byte[]> findChannelNames() {
-
-    ObjectOpenCustomHashSet<byte[]> hashSet =
+    ObjectOpenCustomHashSet<byte[]> channelNames =
         new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
 
-    findChannels()
-        .forEach(channel -> hashSet.add(channel.getSubscriptionName()));
+    subscriptions.stream()
+        .filter(s -> s instanceof ChannelSubscription)
+        .forEach(channel -> channelNames.add(channel.getSubscriptionName()));
 
-    return new ArrayList<>(hashSet);
+    return new ArrayList<>(channelNames);
   }
 
+  /**
+   * Return a list of all subscribed channels that match a pattern. This pattern is only applied to
+   * channel names and not to actual subscribed patterns. For example, given that the following
+   * subscriptions exist: "foo", "foobar" and "fo*" then calling this method with {@code f*} will
+   * return {@code foo} and {@code foobar}.
+   *
+   * @param pattern the glob pattern to search for
+   */
   public List<byte[]> findChannelNames(byte[] pattern) {
 
     GlobPattern globPattern = new GlobPattern(bytesToString(pattern));
@@ -95,10 +105,25 @@ public class Subscriptions {
         .collect(Collectors.toList());
   }
 
-  private Stream<ChannelSubscription> findChannels() {
-    return subscriptions.stream()
-        .filter(subscription -> subscription instanceof ChannelSubscription)
-        .map(subscription -> (ChannelSubscription) subscription);
+  /**
+   * Return a list consisting of pairs {@code channelName, subscriptionCount}.
+   *
+   * @param names a list of the names to consider. This should not include any patterns.
+   */
+  public List<Object> findNumberOfSubscribersPerChannel(List<byte[]> names) {
+    List<Object> result = new ArrayList<>();
+
+    names.forEach(name -> {
+      Long subscriptionCount = findSubscriptions(name)
+          .stream()
+          .filter(subscription -> subscription instanceof ChannelSubscription)
+          .count();
+
+      result.add(name);
+      result.add(subscriptionCount);
+    });
+
+    return result;
   }
 
   /**
