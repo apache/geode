@@ -334,6 +334,7 @@ dependencies {
   testImplementation('org.apache.bcel:bcel')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
+  testImplementation('org.mockito:mockito-junit-jupiter')
   testImplementation('com.pholser:junit-quickcheck-core')
   testImplementation('pl.pragmatists:JUnitParams')
   testImplementation('com.tngtech.archunit:archunit-junit4')

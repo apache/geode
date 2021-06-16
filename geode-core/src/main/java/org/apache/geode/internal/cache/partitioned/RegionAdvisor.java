@@ -103,6 +103,12 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
   private ConcurrentHashMap<Integer, Set<ServerBucketProfile>> clientBucketProfilesMap;
 
+  public static RegionAdvisor createRegionAdvisor(PartitionedRegion region) {
+    RegionAdvisor advisor = new RegionAdvisor(region);
+    advisor.initialize();
+    return advisor;
+  }
+
   @VisibleForTesting
   protected RegionAdvisor(PartitionedRegion region) {
     super(region);
@@ -110,12 +116,6 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       preInitQueue = new ConcurrentLinkedQueue<>();
     }
     clientBucketProfilesMap = new ConcurrentHashMap<>();
-  }
-
-  public static RegionAdvisor createRegionAdvisor(PartitionedRegion region) {
-    RegionAdvisor advisor = new RegionAdvisor(region);
-    advisor.initialize();
-    return advisor;
   }
 
   public PartitionedRegionStats getPartitionedRegionStats() {

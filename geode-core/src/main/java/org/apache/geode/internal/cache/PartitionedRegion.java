@@ -71,7 +71,6 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.InterestPolicy;
@@ -183,6 +182,7 @@ import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSende
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage;
 import org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage.ContainsKeyValueResponse;
+import org.apache.geode.internal.cache.partitioned.DefaultPartitionMessageDistribution;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage.DestroyResponse;
 import org.apache.geode.internal.cache.partitioned.DumpAllPRConfigMessage;
@@ -214,15 +214,16 @@ import org.apache.geode.internal.cache.partitioned.PRSanityCheckMessage;
 import org.apache.geode.internal.cache.partitioned.PRUpdateEntryVersionMessage;
 import org.apache.geode.internal.cache.partitioned.PRUpdateEntryVersionMessage.UpdateEntryVersionResponse;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage.PartitionResponse;
+import org.apache.geode.internal.cache.partitioned.PartitionMessageDistribution;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserver;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverHolder;
 import org.apache.geode.internal.cache.partitioned.PutAllPRMessage;
-import org.apache.geode.internal.cache.partitioned.PutMessage;
-import org.apache.geode.internal.cache.partitioned.PutMessage.PutResult;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisorFactory;
 import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.partitioned.RemoveIndexesMessage;
+import org.apache.geode.internal.cache.partitioned.RetryTimeKeeper;
 import org.apache.geode.internal.cache.partitioned.SizeMessage;
 import org.apache.geode.internal.cache.partitioned.SizeMessage.SizeResponse;
 import org.apache.geode.internal.cache.partitioned.colocation.ColocationLogger;
@@ -318,6 +319,7 @@ public class PartitionedRegion extends LocalRegion
       return i;
     }
   };
+  private final PartitionedRegionDataStoreFactory dataStoreFactory;
 
   /**
    * Global Region for storing PR config ( PRName->PRConfig). This region would be used to resolve
@@ -449,6 +451,8 @@ public class PartitionedRegion extends LocalRegion
   private volatile int shutDownAllStatus = RUNNING_MODE;
 
   private final long birthTime = System.currentTimeMillis();
+  private final PartitionMessageDistribution distribution;
+  private final RetryTimeKeeper.Factory timeKeeperFactory;
 
   public void setShutDownAllStatus(int newStatus) {
     this.shutDownAllStatus = newStatus;
@@ -776,20 +780,63 @@ public class PartitionedRegion extends LocalRegion
    * storage enabled. A PartitionedRegion can be created by a factory method of RegionFactory.java
    * and also by invoking Cache.createRegion(). (Cache.xml etc to be added)
    */
-  public PartitionedRegion(String regionName,
+  public PartitionedRegion(
+      String regionName,
       RegionAttributes regionAttributes,
       LocalRegion parentRegion,
       InternalCache cache,
       InternalRegionArguments internalRegionArgs,
       StatisticsClock statisticsClock,
       ColocationLoggerFactory colocationLoggerFactory) {
-    super(regionName, regionAttributes, parentRegion, cache, internalRegionArgs,
-        new PartitionedRegionDataView(), statisticsClock);
+    this(
+        regionName,
+        regionAttributes,
+        parentRegion,
+        cache,
+        internalRegionArgs,
+        statisticsClock,
+        colocationLoggerFactory,
+        RegionAdvisor::createRegionAdvisor,
+        new PartitionedRegionDataView(),
+        new Node(cache.getDistributionManager().getId(), SERIAL_NUMBER_GENERATOR.getAndIncrement()),
+        cache.getInternalDistributedSystem(),
+        name -> new PartitionedRegionStats(cache.getInternalDistributedSystem(), name,
+            statisticsClock),
+        SenderIdMonitor::createSenderIdMonitor,
+        partitionedRegion -> new PRHARedundancyProvider(partitionedRegion,
+            cache.getInternalResourceManager()),
+        partitionedRegion -> new PartitionedRegionDataStore(partitionedRegion, statisticsClock),
+        new DefaultPartitionMessageDistribution(),
+        RetryTimeKeeper::new);
+  }
 
+  public PartitionedRegion(
+      String regionName,
+      RegionAttributes regionAttributes,
+      LocalRegion parentRegion,
+      InternalCache cache,
+      InternalRegionArguments internalRegionArgs,
+      StatisticsClock statisticsClock,
+      ColocationLoggerFactory colocationLoggerFactory,
+      RegionAdvisorFactory regionAdvisorFactory,
+      InternalDataView partitionedRegionDataView,
+      Node node,
+      InternalDistributedSystem system,
+      PartitionedRegionStatsFactory partitionedRegionStatsFactory,
+      SenderIdMonitorFactory senderIdMonitorFactory,
+      PRHARedundancyProviderFactory redundancyProviderFactory,
+      PartitionedRegionDataStoreFactory dataStoreFactory,
+      PartitionMessageDistribution distribution,
+      RetryTimeKeeper.Factory timeKeeperFactory) {
+    super(regionName, regionAttributes, parentRegion, cache, internalRegionArgs,
+        partitionedRegionDataView, statisticsClock);
+
+    this.distribution = distribution;
+    this.dataStoreFactory = dataStoreFactory;
     this.colocationLoggerFactory = colocationLoggerFactory;
-    this.node = initializeNode();
-    this.prStats = new PartitionedRegionStats(cache.getDistributedSystem(), getFullPath(),
-        statisticsClock);
+    this.node = node;
+    this.prStats = partitionedRegionStatsFactory.create(getFullPath());
+    this.timeKeeperFactory = timeKeeperFactory;
     this.regionIdentifier = getFullPath().replace(Region.SEPARATOR_CHAR, '#');
 
     if (logger.isDebugEnabled()) {
@@ -800,7 +847,7 @@ public class PartitionedRegion extends LocalRegion
     // up upon
     // distributed system disconnect even this (or other) PRs are destroyed
     // (which prevents pridmap cleanup).
-    cache.getInternalDistributedSystem().addDisconnectListener(dsPRIdCleanUpListener);
+    system.addDisconnectListener(dsPRIdCleanUpListener);
 
     this.partitionAttributes = regionAttributes.getPartitionAttributes();
     this.localMaxMemory = this.partitionAttributes.getLocalMaxMemory();
@@ -810,15 +857,12 @@ public class PartitionedRegion extends LocalRegion
     this.prStats.incTotalNumBuckets(this.totalNumberOfBuckets);
 
     // Warning: potential early escape of instance
-    this.distAdvisor = RegionAdvisor.createRegionAdvisor(this);
-    senderIdMonitor = createSenderIdMonitor();
+    this.distAdvisor = regionAdvisorFactory.create(this);
     // Warning: potential early escape of instance
-    this.redundancyProvider = new PRHARedundancyProvider(this, cache.getInternalResourceManager());
+    senderIdMonitor = senderIdMonitorFactory.create(this, this.distAdvisor);
+    // Warning: potential early escape of instance
+    this.redundancyProvider = redundancyProviderFactory.create(this);
 
-    // localCacheEnabled = ra.getPartitionAttributes().isLocalCacheEnabled();
-    // This is to make sure that local-cache get and put works properly.
-    // getScope is overridden to return the correct scope.
-    // this.scope = Scope.LOCAL;
     this.redundantCopies = regionAttributes.getPartitionAttributes().getRedundantCopies();
     this.redundancyTracker = new PartitionedRegionRedundancyTracker(this.totalNumberOfBuckets,
         this.redundantCopies, this.prStats, getFullPath());
@@ -1041,7 +1085,7 @@ public class PartitionedRegion extends LocalRegion
     // If localMaxMemory is set to 0, do not initialize Data Store.
     final boolean storesData = this.localMaxMemory > 0;
     if (storesData) {
-      initializeDataStore(this.getAttributes());
+      this.dataStore = dataStoreFactory.create(this);
     }
 
     // register this PartitionedRegion, Create a PartitionRegionConfig and bind
@@ -1230,13 +1274,6 @@ public class PartitionedRegion extends LocalRegion
   }
 
   /**
-   * Initializes the Node for this Map.
-   */
-  private Node initializeNode() {
-    return new Node(getDistributionManager().getId(), SERIAL_NUMBER_GENERATOR.getAndIncrement());
-  }
-
-  /**
    * receive notification that a cache server or wan gateway has been created that requires
    * notification of cache events from this region
    */
@@ -1329,10 +1366,6 @@ public class PartitionedRegion extends LocalRegion
     updateSenderIdMonitor();
   }
 
-  private SenderIdMonitor createSenderIdMonitor() {
-    return SenderIdMonitor.createSenderIdMonitor(this, this.distAdvisor);
-  }
-
   private void updateSenderIdMonitor() {
     this.senderIdMonitor.update();
   }
@@ -1363,18 +1396,6 @@ public class PartitionedRegion extends LocalRegion
           callback, true, profile.peerMemberId);
       dispatchListenerEvent(EnumListenerEvent.AFTER_REMOTE_REGION_CREATE, event);
     }
-  }
-
-  /**
-   * This method initializes the partitionedRegionDataStore for this PR.
-   *
-   * @param ra Region attributes
-   */
-  private void initializeDataStore(RegionAttributes ra) {
-
-    this.dataStore =
-        PartitionedRegionDataStore.createDataStore(cache, this, ra.getPartitionAttributes(),
-            getStatisticsClock());
   }
 
   protected DistributedLockService getPartitionedRegionLockService() {
@@ -3049,10 +3070,11 @@ public class PartitionedRegion extends LocalRegion
           long start = this.prStats.startPutRemote();
           try {
             if (ifNew) {
-              result = createRemotely(currentTarget, bucketId, event, requireOldValue);
+              result = distribution.createRemotely(
+                  this, prStats, currentTarget, event, requireOldValue);
             } else {
-              result = putRemotely(currentTarget, event, ifNew, ifOld, expectedOldValue,
-                  requireOldValue);
+              result = distribution.putRemotely(this, prStats, currentTarget, event, ifNew, ifOld,
+                  expectedOldValue, requireOldValue);
               if (!requireOldValue) {
                 // make sure old value is set to NOT_AVAILABLE token
                 event.oldValueNotAvailable();
@@ -3095,7 +3117,7 @@ public class PartitionedRegion extends LocalRegion
         checkReadiness();
         InternalDistributedMember lastTarget = currentTarget;
         if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(this.retryTimeout);
+          retryTime = timeKeeperFactory.create(this.retryTimeout);
         }
         currentTarget = getNodeForBucketWrite(bucketId, retryTime);
         if (lastTarget.equals(currentTarget)) {
@@ -3113,7 +3135,7 @@ public class PartitionedRegion extends LocalRegion
         }
         getRegionAdvisor().notPrimary(bucketId, currentTarget);
         if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(this.retryTimeout);
+          retryTime = timeKeeperFactory.create(this.retryTimeout);
         }
         currentTarget = getNodeForBucketWrite(bucketId, retryTime);
       }
@@ -3245,7 +3267,7 @@ public class PartitionedRegion extends LocalRegion
       }
 
       if (localSnoozer == null) {
-        localSnoozer = new RetryTimeKeeper(this.retryTimeout);
+        localSnoozer = timeKeeperFactory.create(this.retryTimeout);
       }
 
       if (!localSnoozer.overMaximum()) {
@@ -3411,38 +3433,8 @@ public class PartitionedRegion extends LocalRegion
   public boolean putRemotely(final DistributedMember recipient, final EntryEventImpl event,
       boolean ifNew, boolean ifOld, Object expectedOldValue, boolean requireOldValue)
       throws PrimaryBucketException, ForceReattemptException {
-    // boolean forceAck = basicGetWriter() != null
-    // || getDistributionAdvisor().adviseNetWrite().size() > 0;
-    long eventTime = event.getEventTime(0L);
-    PutMessage.PutResponse response = (PutMessage.PutResponse) PutMessage.send(recipient, this,
-        event, eventTime, ifNew, ifOld, expectedOldValue, requireOldValue);
-    PutResult pr = null;
-    if (response != null) {
-      this.prStats.incPartitionMessagesSent();
-      try {
-        pr = response.waitForResult();
-        event.setOperation(pr.op);
-        event.setVersionTag(pr.versionTag);
-        if (requireOldValue) {
-          event.setOldValue(pr.oldValue, true);
-        }
-        return pr.returnValue;
-      } catch (RegionDestroyedException rde) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("putRemotely: caught RegionDestroyedException", rde);
-        }
-        throw new RegionDestroyedException(toString(), getFullPath());
-      } catch (TransactionException te) {
-        throw te;
-      } catch (CacheException ce) {
-        // Fix for bug 36014
-        throw new PartitionedRegionDistributionException(
-            String.format("Putting entry on %s failed",
-                recipient),
-            ce);
-      }
-    }
-    return true;// ???:ezoerner:20080728 why return true if response was null?
+    return distribution.putRemotely(this, prStats, recipient, event, ifNew, ifOld, expectedOldValue,
+        requireOldValue);
   }
 
   /**
@@ -3657,7 +3649,7 @@ public class PartitionedRegion extends LocalRegion
 
     while (!execution.getFailedNodes().isEmpty()) {
       Set memberKeySet = memberToBuckets.keySet();
-      RetryTimeKeeper retryTime = new RetryTimeKeeper(this.retryTimeout);
+      RetryTimeKeeper retryTime = timeKeeperFactory.create(this.retryTimeout);
       Iterator iterator = memberKeySet.iterator();
 
       boolean hasRemovedNode = false;
@@ -3822,7 +3814,7 @@ public class PartitionedRegion extends LocalRegion
           execution.getArguments(), targetNode);
     }
     while (!execution.getFailedNodes().isEmpty()) {
-      RetryTimeKeeper retryTime = new RetryTimeKeeper(this.retryTimeout);
+      RetryTimeKeeper retryTime = timeKeeperFactory.create(this.retryTimeout);
       if (execution.getFailedNodes().contains(targetNode.getId())) {
         /*
          * if (retryTime.overMaximum()) { PRHARedundancyProvider.timedOut(this, null, null,
@@ -3936,7 +3928,7 @@ public class PartitionedRegion extends LocalRegion
     execution = (PartitionedRegionFunctionExecutor) execution.withFilter(new HashSet());
     while (!execution.getFailedNodes().isEmpty()) {
       Set memberKeySet = memberToBuckets.keySet();
-      RetryTimeKeeper retryTime = new RetryTimeKeeper(this.retryTimeout);
+      RetryTimeKeeper retryTime = timeKeeperFactory.create(this.retryTimeout);
       Iterator iterator = memberKeySet.iterator();
       boolean hasRemovedNode = false;
 
@@ -4029,7 +4021,7 @@ public class PartitionedRegion extends LocalRegion
 
     while (!execution.getFailedNodes().isEmpty()) {
       Set memberKeySet = memberToBuckets.keySet();
-      RetryTimeKeeper retryTime = new RetryTimeKeeper(this.retryTimeout);
+      RetryTimeKeeper retryTime = timeKeeperFactory.create(this.retryTimeout);
 
       Iterator iterator = memberKeySet.iterator();
 
@@ -4117,7 +4109,7 @@ public class PartitionedRegion extends LocalRegion
       if (retryNode == null) {
         checkReadiness();
         if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(this.retryTimeout);
+          retryTime = timeKeeperFactory.create(this.retryTimeout);
         }
         retryNode = getNodeForBucketReadOrLoad(bucketId);
 
@@ -4188,7 +4180,7 @@ public class PartitionedRegion extends LocalRegion
           retryNode = getNodeForBucketReadOrLoad(bucketId);
           if (lastNode.equals(retryNode)) {
             if (retryTime == null) {
-              retryTime = new RetryTimeKeeper(this.retryTimeout);
+              retryTime = timeKeeperFactory.create(this.retryTimeout);
             }
             if (retryTime.overMaximum()) {
               break;
@@ -4486,7 +4478,7 @@ public class PartitionedRegion extends LocalRegion
 
       if (nod == null) {
         if (snoozer == null) {
-          snoozer = new RetryTimeKeeper(this.retryTimeout);
+          snoozer = timeKeeperFactory.create(this.retryTimeout);
         }
         nod = getOrCreateNodeForBucketRead(bucketNum);
 
@@ -4520,7 +4512,7 @@ public class PartitionedRegion extends LocalRegion
         }
         checkReadiness();
         if (snoozer == null) {
-          snoozer = new RetryTimeKeeper(this.retryTimeout);
+          snoozer = timeKeeperFactory.create(this.retryTimeout);
         }
         InternalDistributedMember oldNode = nod;
         nod = getNodeForBucketRead(buck);
@@ -4575,7 +4567,7 @@ public class PartitionedRegion extends LocalRegion
       fetchRemoteEntries(nodeToBuckets, failures, values, servConn);
       if (!failures.isEmpty()) {
         if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(this.retryTimeout);
+          retryTime = timeKeeperFactory.create(this.retryTimeout);
         }
         if (!waitForFetchRemoteEntriesRetry(retryTime)) {
           break;
@@ -4646,7 +4638,7 @@ public class PartitionedRegion extends LocalRegion
       fetchAllRemoteEntries(nodeToBuckets, failures, regex, values, servConn);
       if (!failures.isEmpty()) {
         if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(this.retryTimeout);
+          retryTime = timeKeeperFactory.create(this.retryTimeout);
         }
         if (!waitForFetchRemoteEntriesRetry(retryTime)) {
           break;
@@ -5281,7 +5273,7 @@ public class PartitionedRegion extends LocalRegion
         checkReadiness();
 
         if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(this.retryTimeout);
+          retryTime = timeKeeperFactory.create(this.retryTimeout);
         }
         if (retryTime.overMaximum()) {
           // if (this.getNodeList(bucketId) == null
@@ -5355,7 +5347,7 @@ public class PartitionedRegion extends LocalRegion
         checkReadiness();
         InternalDistributedMember lastNode = currentTarget;
         if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(this.retryTimeout);
+          retryTime = timeKeeperFactory.create(this.retryTimeout);
         }
         currentTarget = getOrCreateNodeForBucketWrite(bucketId, retryTime);
         event.setPossibleDuplicate(true);
@@ -5373,7 +5365,7 @@ public class PartitionedRegion extends LocalRegion
         }
         getRegionAdvisor().notPrimary(bucketId, currentTarget);
         if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(this.retryTimeout);
+          retryTime = timeKeeperFactory.create(this.retryTimeout);
         }
         currentTarget = getOrCreateNodeForBucketWrite(bucketId, retryTime);
       }
@@ -5762,7 +5754,7 @@ public class PartitionedRegion extends LocalRegion
       if (retryNode == null) {
         checkReadiness();
         if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(this.retryTimeout);
+          retryTime = timeKeeperFactory.create(this.retryTimeout);
         }
         try {
           retryNode = getOrCreateNodeForBucketWrite(bucketId, retryTime);
@@ -5813,7 +5805,7 @@ public class PartitionedRegion extends LocalRegion
         retryNode = getOrCreateNodeForBucketWrite(bucketId, retryTime);
         if (lastNode.equals(retryNode)) {
           if (retryTime == null) {
-            retryTime = new RetryTimeKeeper(this.retryTimeout);
+            retryTime = timeKeeperFactory.create(this.retryTimeout);
           }
           if (retryTime.overMaximum()) {
             break;
@@ -5896,56 +5888,6 @@ public class PartitionedRegion extends LocalRegion
    */
   private int calcRetry() {
     return (this.retryTimeout / PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION) + 1;
-  }
-
-  /**
-   * Creates the key/value pair into the remote target that is managing the key's bucket.
-   *
-   * @param recipient member id of the recipient of the operation
-   * @param bucketId the id of the bucket that the key hashed to
-   * @param event the event prompting this request
-   * @throws PrimaryBucketException if the bucket on that node is not the primary copy
-   * @throws ForceReattemptException if the peer is no longer available
-   */
-  private boolean createRemotely(DistributedMember recipient, Integer bucketId,
-      EntryEventImpl event, boolean requireOldValue)
-      throws PrimaryBucketException, ForceReattemptException {
-    boolean ret = false;
-    long eventTime = event.getEventTime(0L);
-    PutMessage.PutResponse reply = (PutMessage.PutResponse) PutMessage.send(recipient, this, event,
-        eventTime, true, false, null, // expectedOldValue
-        requireOldValue);
-    PutResult pr = null;
-    if (reply != null) {
-      this.prStats.incPartitionMessagesSent();
-      try {
-        pr = reply.waitForResult();
-        event.setOperation(pr.op);
-        event.setVersionTag(pr.versionTag);
-        if (requireOldValue) {
-          event.setOldValue(pr.oldValue, true);
-        }
-        ret = pr.returnValue;
-      } catch (EntryExistsException ignore) {
-        // This might not be necessary and is here for safety sake
-        ret = false;
-      } catch (TransactionDataNotColocatedException tdnce) {
-        throw tdnce;
-      } catch (TransactionDataRebalancedException e) {
-        throw e;
-      } catch (CacheException ce) {
-        throw new PartitionedRegionException(
-            String.format("Create of entry on %s failed",
-                recipient),
-            ce);
-      } catch (RegionDestroyedException rde) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("createRemotely: caught exception", rde);
-        }
-        throw new RegionDestroyedException(toString(), getFullPath());
-      }
-    }
-    return ret;
   }
 
   // ////////////////////////////////
@@ -6389,7 +6331,7 @@ public class PartitionedRegion extends LocalRegion
       if (retryNode == null) {
         checkReadiness();
         if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(this.retryTimeout);
+          retryTime = timeKeeperFactory.create(this.retryTimeout);
         }
         if (retryTime.overMaximum()) {
           break;
@@ -6435,7 +6377,7 @@ public class PartitionedRegion extends LocalRegion
         retryNode = getOrCreateNodeForBucketRead(bucketIdInt);
         if (lastNode.equals(retryNode)) {
           if (retryTime == null) {
-            retryTime = new RetryTimeKeeper(this.retryTimeout);
+            retryTime = timeKeeperFactory.create(this.retryTimeout);
           }
           if (retryTime.overMaximum()) {
             break;
@@ -8077,67 +8019,6 @@ public class PartitionedRegion extends LocalRegion
     return (DistributionAdvisee) basicGetParentRegion();
   }
 
-  /**
-   * A Simple class used to track retry time for Region operations Does not provide any
-   * synchronization or concurrent safety
-   */
-  public static class RetryTimeKeeper {
-    private long totalTimeInRetry;
-
-    private final long maxTimeInRetry;
-
-    public RetryTimeKeeper(int maxTime) {
-      this.maxTimeInRetry = maxTime;
-    }
-
-    /**
-     * wait for {@link PartitionedRegionHelper#DEFAULT_WAIT_PER_RETRY_ITERATION}, updating the total
-     * wait time. Use this method when the same node has been selected for consecutive attempts with
-     * an operation.
-     */
-    public void waitToRetryNode() {
-      this.waitForBucketsRecovery();
-    }
-
-    /**
-     * Wait for {@link PartitionedRegionHelper#DEFAULT_WAIT_PER_RETRY_ITERATION} time and update the
-     * total wait time.
-     */
-    public void waitForBucketsRecovery() {
-      /*
-       * Unfortunately, due to interrupts plus the vagaries of thread scheduling, we can't assume
-       * that our sleep is for exactly the amount of time that we specify. Thus, we need to measure
-       * the before/after times and increment the counter accordingly.
-       */
-      long start = System.currentTimeMillis();
-      boolean interrupted = Thread.interrupted();
-      try {
-        Thread.sleep(PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION);
-      } catch (InterruptedException ignore) {
-        interrupted = true;
-      } finally {
-        if (interrupted) {
-          Thread.currentThread().interrupt();
-        }
-      }
-      long delta = System.currentTimeMillis() - start;
-      if (delta < 1) {
-        // I don't think this can happen, but I want to guarantee that
-        // this thing will eventually time out.
-        delta = 1;
-      }
-      this.totalTimeInRetry += delta;
-    }
-
-    public boolean overMaximum() {
-      return this.totalTimeInRetry > this.maxTimeInRetry;
-    }
-
-    public long getRetryTime() {
-      return this.totalTimeInRetry;
-    }
-  }
-
   public String getBucketName(int bucketId) {
     return PartitionedRegionHelper.getBucketName(getFullPath(), bucketId);
   }
@@ -8196,7 +8077,7 @@ public class PartitionedRegion extends LocalRegion
     for (int bucket = 0; bucket < totalBuckets; bucket++) {
       Set bucketSet = null;
       int lbucket = bucket;
-      final RetryTimeKeeper retryTime = new RetryTimeKeeper(Integer.MAX_VALUE);
+      final RetryTimeKeeper retryTime = timeKeeperFactory.create(Integer.MAX_VALUE);
       InternalDistributedMember bucketNode = getOrCreateNodeForBucketRead(lbucket);
       for (int count = 0; count <= retryAttempts; count++) {
         if (logger.isDebugEnabled()) {
@@ -9902,7 +9783,7 @@ public class PartitionedRegion extends LocalRegion
       if (retryNode == null) {
         checkReadiness();
         if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(this.retryTimeout);
+          retryTime = timeKeeperFactory.create(this.retryTimeout);
         }
         try {
           retryNode = getOrCreateNodeForBucketWrite(bucketId, retryTime);
@@ -9954,7 +9835,7 @@ public class PartitionedRegion extends LocalRegion
         retryNode = getOrCreateNodeForBucketWrite(bucketId, retryTime);
         if (lastNode.equals(retryNode)) {
           if (retryTime == null) {
-            retryTime = new RetryTimeKeeper(this.retryTimeout);
+            retryTime = timeKeeperFactory.create(this.retryTimeout);
           }
           if (retryTime.overMaximum()) {
             break;
