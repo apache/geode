@@ -328,19 +328,24 @@ public class RedisHashTest {
     initialData.add(stringToBytes(initialValue));
 
     hash.hset(region, key, initialData, false);
-    RedisHash expectedRedisHash = new RedisHash(new ArrayList<>(initialData));
+    hash.clearDelta();
+
+    long initialSize = sizer.sizeof(hash);
 
     List<byte[]> finalData = new ArrayList<>();
     finalData.add(stringToBytes(field));
     finalData.add(stringToBytes(finalValue));
 
     hash.hset(region, key, finalData, false);
+    hash.clearDelta();
 
-    long expectedUpdatedRedisHashSize = expectedRedisHash.getSizeInBytes()
-        + (elementSizer.sizeof(Coder.stringToBytes(finalValue))
-            - elementSizer.sizeof(Coder.stringToBytes(initialValue)));
+    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
 
-    assertThat(hash.getSizeInBytes()).isEqualTo(expectedUpdatedRedisHashSize);
+    long expectedSizeChange = elementSizer.sizeof(Coder.stringToBytes(finalValue))
+        - elementSizer.sizeof(Coder.stringToBytes(initialValue));
+    long actualSizeChange = hash.getSizeInBytes() - initialSize;
+
+    assertThat(actualSizeChange).isEqualTo(expectedSizeChange);
   }
 
   /******* put if absent *******/
@@ -449,13 +454,17 @@ public class RedisHashTest {
     dataToRemove.add(field1);
 
     RedisHash redisHash = new RedisHash(data);
+    redisHash.clearDelta();
+
     int initialSize = redisHash.getSizeInBytes();
 
     redisHash.hdel(region, key, dataToRemove);
+    redisHash.clearDelta();
 
-    long expectedSize = initialSize - (elementSizer.sizeof(field1) + elementSizer.sizeof(value1));
+    int finalSize = redisHash.getSizeInBytes();
+    assertThat(finalSize).isLessThan(initialSize);
 
-    assertThat(redisHash.getSizeInBytes()).isEqualTo(expectedSize);
+    assertThat(finalSize).isEqualTo(sizer.sizeof(redisHash));
   }
 
   /************* Helper Methods *************/
