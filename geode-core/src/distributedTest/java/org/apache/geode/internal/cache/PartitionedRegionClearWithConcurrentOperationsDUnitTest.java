@@ -610,7 +610,6 @@ public class PartitionedRegionClearWithConcurrentOperationsDUnitTest implements 
       if (thrown != null) {
         assertThat(thrown)
             .as("Throwable thrown from " + asyncInvocation)
-            .isInstanceOf(AssertionError.class)
             .getCause()
             .isInstanceOf(DistributedSystemDisconnectedException.class)
             .getCause()
