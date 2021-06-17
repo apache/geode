@@ -388,8 +388,8 @@ public class DistributionImpl implements Distribution {
 
         if (!membership.hasMember(member) || (th instanceof ShunnedMemberException)) {
           if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Failed to send message <%s> to member <%s> view, %s",
-                content, member, membership.getView()), th);
+            logger.debug(String.format("Failed to send message <%s> to member <%s> no longer in view",
+                content.getShortClassName(), member), th);
           }
           continue;
         }
