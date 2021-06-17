@@ -15,7 +15,11 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.ClassRule;
+import org.junit.Test;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
@@ -27,6 +31,20 @@ public class DumpRestoreIntegrationTest extends AbstractDumpRestoreIntegrationTe
   @Override
   public int getPort() {
     return server.getPort();
+  }
+
+  @Test
+  public void restoreWithIdletime_isNotSupported() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand("key", Protocol.Command.RESTORE, "key", "0", "", "IDLETIME", "1"))
+            .hasMessageContaining("ERR syntax error");
+  }
+
+  @Test
+  public void restoreWithFreq_isNotSupported() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand("key", Protocol.Command.RESTORE, "key", "0", "", "FREQ", "1"))
+            .hasMessageContaining("ERR syntax error");
   }
 
 }

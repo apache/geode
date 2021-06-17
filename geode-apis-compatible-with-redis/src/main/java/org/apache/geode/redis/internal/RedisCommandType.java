@@ -145,6 +145,7 @@ public enum RedisCommandType {
   /*************** Keys ******************/
 
   DEL(new DelExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
+  DUMP(new DumpExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   EXISTS(new ExistsExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   EXPIRE(new ExpireExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   EXPIREAT(new ExpireAtExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
@@ -154,6 +155,7 @@ public enum RedisCommandType {
   PEXPIREAT(new PExpireAtExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   PTTL(new PTTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   RENAME(new RenameExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  RESTORE(new RestoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
   TTL(new TTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   TYPE(new TypeExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
 
@@ -242,8 +244,6 @@ public enum RedisCommandType {
 
   /*************** Keys ******************/
 
-  DUMP(new DumpExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
-  RESTORE(new RestoreExecutor(), UNSUPPORTED, new MinimumParameterRequirements(4)),
   SCAN(new ScanExecutor(), UNSUPPORTED,
       new EvenParameterRequirements(ERROR_SYNTAX).and(new MinimumParameterRequirements(2))),
   UNLINK(new DelExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),

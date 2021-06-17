@@ -51,7 +51,7 @@ import org.apache.geode.redis.internal.data.RedisString;
 public abstract class AbstractDumpRestoreIntegrationTest implements RedisIntegrationTest {
 
   private RedisAdvancedClusterCommands<String, String> lettuce;
-  private JedisCluster jedis;
+  protected JedisCluster jedis;
   private static String STRING_VALUE;
   private static byte[] RESTORE_BYTES;
 
@@ -113,6 +113,13 @@ public abstract class AbstractDumpRestoreIntegrationTest implements RedisIntegra
   public void restoreFails_whenTTLisNegative() {
     assertThatThrownBy(() -> lettuce.restore("restored", -1, RESTORE_BYTES))
         .hasMessage("ERR Invalid TTL value, must be >= 0");
+  }
+
+  @Test
+  public void restoreFails_whenTTLisNotANumber() {
+    assertThatThrownBy(() -> jedis.sendCommand("restored".getBytes(), Protocol.Command.RESTORE,
+        "restored".getBytes(), "not-an-integer".getBytes(), RESTORE_BYTES))
+            .hasMessage("ERR value is not an integer or out of range");
   }
 
   @Test
