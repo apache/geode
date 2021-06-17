@@ -1866,8 +1866,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
     // Search through the set of all members
     for (InternalDistributedMember member : allMembers) {
-
-      Set<InetAddress> equivalentAddresses = dm.getEquivalents(member.getInetAddress());
+      Set<InetAddress> equivalentAddresses = dm.getEquivalents(address);
       // Check to see if the passed in address is matches one of the addresses on
       // the given member.
       if (address.equals(member.getInetAddress()) || equivalentAddresses.contains(address)) {
