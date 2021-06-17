@@ -15,6 +15,8 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +30,6 @@ import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -38,7 +39,7 @@ public class KeysExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    String glob = Coder.bytesToString(commandElems.get(1));
+    String glob = bytesToString(commandElems.get(1));
     Set<RedisKey> allKeys = getDataRegion(context).keySet();
     List<RedisKey> matchingKeys = new ArrayList<>();
 

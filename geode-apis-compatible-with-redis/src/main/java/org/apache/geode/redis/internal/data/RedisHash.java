@@ -18,6 +18,8 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -287,7 +289,7 @@ public class RedisHash extends AbstractRedisData {
   private void addIfMatching(Pattern matchPattern, List<byte[]> resultList, byte[] key,
       byte[] value) {
     if (matchPattern != null) {
-      if (matchPattern.matcher(Coder.bytesToString(key)).matches()) {
+      if (matchPattern.matcher(bytesToString(key)).matches()) {
         resultList.add(key);
         resultList.add(value);
       }
@@ -313,7 +315,7 @@ public class RedisHash extends AbstractRedisData {
 
     long value;
     try {
-      value = Long.parseLong(Coder.bytesToString(oldValue));
+      value = bytesToLong(oldValue);
     } catch (NumberFormatException ex) {
       throw new NumberFormatException(ERROR_NOT_INTEGER);
     }
@@ -346,7 +348,7 @@ public class RedisHash extends AbstractRedisData {
       return increment.stripTrailingZeros();
     }
 
-    String valueS = Coder.bytesToString(oldValue);
+    String valueS = bytesToString(oldValue);
     if (valueS.contains(" ")) {
       throw new NumberFormatException("hash value is not a float");
     }

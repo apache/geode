@@ -18,6 +18,10 @@ package org.apache.geode.redis.internal.executor.key;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCOUNT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMATCH;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -64,12 +68,11 @@ public class ScanExecutor extends AbstractScanExecutor {
 
     for (int i = 2; i < commandElems.size(); i = i + 2) {
       byte[] commandElemBytes = commandElems.get(i);
-      String keyword = Coder.bytesToString(commandElemBytes);
-      if (keyword.equalsIgnoreCase("MATCH")) {
+      if (equalsIgnoreCaseBytes(commandElemBytes, bMATCH)) {
         commandElemBytes = commandElems.get(i + 1);
-        globPattern = Coder.bytesToString(commandElemBytes);
+        globPattern = bytesToString(commandElemBytes);
 
-      } else if (keyword.equalsIgnoreCase("COUNT")) {
+      } else if (equalsIgnoreCaseBytes(commandElemBytes, bCOUNT)) {
         commandElemBytes = commandElems.get(i + 1);
         try {
           count = Coder.bytesToInt(commandElemBytes);

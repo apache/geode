@@ -17,6 +17,8 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.RedisString.BASE_REDIS_STRING_OVERHEAD;
+import static org.apache.geode.redis.internal.netty.Coder.longToBytes;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -137,7 +139,7 @@ public class RedisStringTest {
   @Test
   public void incrThrowsArithmeticErrorWhenNotALong() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = "10 1".getBytes();
+    byte[] bytes = stringToBytes("10 1");
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.incr(region, null)).isInstanceOf(NumberFormatException.class);
   }
@@ -145,7 +147,7 @@ public class RedisStringTest {
   @Test
   public void incrErrorsWhenValueOverflows() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = String.valueOf(Long.MAX_VALUE).getBytes();
+    byte[] bytes = longToBytes(Long.MAX_VALUE);
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.incr(region, null)).isInstanceOf(ArithmeticException.class);
   }
@@ -153,16 +155,16 @@ public class RedisStringTest {
   @Test
   public void incrIncrementsValueAtGivenKey() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = "10".getBytes();
+    byte[] bytes = stringToBytes("10");
     RedisString string = new RedisString(bytes);
     string.incr(region, null);
-    assertThat(string.get()).isEqualTo("11".getBytes());
+    assertThat(string.get()).isEqualTo(stringToBytes("11"));
   }
 
   @Test
   public void incrbyThrowsNumberFormatExceptionWhenNotALong() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = "10 1".getBytes();
+    byte[] bytes = stringToBytes("10 1");
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.incrby(region, null, 2L))
         .isInstanceOf(NumberFormatException.class);
@@ -171,7 +173,7 @@ public class RedisStringTest {
   @Test
   public void incrbyErrorsWhenValueOverflows() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = String.valueOf(Long.MAX_VALUE).getBytes();
+    byte[] bytes = longToBytes(Long.MAX_VALUE);
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.incrby(region, null, 2L))
         .isInstanceOf(ArithmeticException.class);
@@ -180,16 +182,16 @@ public class RedisStringTest {
   @Test
   public void incrbyIncrementsValueByGivenLong() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = "10".getBytes();
+    byte[] bytes = stringToBytes("10");
     RedisString string = new RedisString(bytes);
     string.incrby(region, null, 2L);
-    assertThat(string.get()).isEqualTo("12".getBytes());
+    assertThat(string.get()).isEqualTo(stringToBytes("12"));
   }
 
   @Test
   public void incrbyfloatThrowsArithmeticErrorWhenNotADouble() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = "10 1".getBytes();
+    byte[] bytes = stringToBytes("10 1");
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.incrbyfloat(region, null, new BigDecimal("1.1")))
         .isInstanceOf(NumberFormatException.class);
@@ -198,10 +200,10 @@ public class RedisStringTest {
   @Test
   public void incrbyfloatIncrementsValueByGivenFloat() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = "10".getBytes();
+    byte[] bytes = stringToBytes("10");
     RedisString string = new RedisString(bytes);
     string.incrbyfloat(region, null, new BigDecimal("2.20"));
-    assertThat(string.get()).isEqualTo("12.20".getBytes());
+    assertThat(string.get()).isEqualTo(stringToBytes("12.20"));
   }
 
   @Test
@@ -215,7 +217,7 @@ public class RedisStringTest {
   @Test
   public void decrThrowsArithmeticExceptionWhenDecrementingMin() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = String.valueOf(Long.MIN_VALUE).getBytes();
+    byte[] bytes = longToBytes(Long.MIN_VALUE);
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.decr(region, null)).isInstanceOf(ArithmeticException.class);
   }
@@ -223,10 +225,10 @@ public class RedisStringTest {
   @Test
   public void decrDecrementsValue() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = "10".getBytes();
+    byte[] bytes = stringToBytes("10");
     RedisString string = new RedisString(bytes);
     string.decr(region, null);
-    assertThat(string.get()).isEqualTo("9".getBytes());
+    assertThat(string.get()).isEqualTo(stringToBytes("9"));
   }
 
   @Test
@@ -241,7 +243,7 @@ public class RedisStringTest {
   @Test
   public void decrbyThrowsArithmeticExceptionWhenDecrementingMin() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = String.valueOf(Long.MIN_VALUE).getBytes();
+    byte[] bytes = longToBytes(Long.MIN_VALUE);
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.decrby(region, null, 2))
         .isInstanceOf(ArithmeticException.class);
@@ -250,10 +252,10 @@ public class RedisStringTest {
   @Test
   public void decrbyDecrementsValue() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = "10".getBytes();
+    byte[] bytes = stringToBytes("10");
     RedisString string = new RedisString(bytes);
     string.decrby(region, null, 2);
-    assertThat(string.get()).isEqualTo("8".getBytes());
+    assertThat(string.get()).isEqualTo(stringToBytes("8"));
   }
 
   @Test
@@ -328,7 +330,7 @@ public class RedisStringTest {
   @Test
   public void should_calculateSize_equalToROSSize_ofLargeStrings() {
     String javaString = makeStringOfSpecifiedSize(10_000);
-    RedisString string = new RedisString(javaString.getBytes());
+    RedisString string = new RedisString(stringToBytes(javaString));
 
     int actual = string.getSizeInBytes();
     int expected = reflectionObjectSizer.sizeof(string);
@@ -341,7 +343,7 @@ public class RedisStringTest {
     String javaString;
     for (int i = 0; i < 512; i += 8) {
       javaString = makeStringOfSpecifiedSize(i);
-      RedisString string = new RedisString(javaString.getBytes());
+      RedisString string = new RedisString(stringToBytes(javaString));
 
       int expected = reflectionObjectSizer.sizeof(string);
       int actual = string.getSizeInBytes();
@@ -355,11 +357,11 @@ public class RedisStringTest {
   public void changingStringValue_toShorterString_shouldDecreaseSizeInBytes() {
     String baseString = "baseString";
     String stringToRemove = "asdf";
-    RedisString string = new RedisString((baseString + stringToRemove).getBytes());
+    RedisString string = new RedisString(stringToBytes((baseString + stringToRemove)));
 
     int initialSize = string.getSizeInBytes();
 
-    string.set(baseString.getBytes());
+    string.set(stringToBytes(baseString));
 
     int finalSize = string.getSizeInBytes();
 
@@ -369,12 +371,12 @@ public class RedisStringTest {
   @Test
   public void changingStringValue_toLongerString_shouldIncreaseSizeInBytes() {
     String baseString = "baseString";
-    RedisString string = new RedisString(baseString.getBytes());
+    RedisString string = new RedisString(stringToBytes(baseString));
 
     int initialSize = string.getSizeInBytes();
 
     String addedString = "asdf";
-    string.set((baseString + addedString).getBytes());
+    string.set(stringToBytes((baseString + addedString)));
 
     int finalSize = string.getSizeInBytes();
 
@@ -384,9 +386,9 @@ public class RedisStringTest {
   @Test
   public void changingStringValue_toEmptyString_shouldDecreaseSizeInBytes_toBaseSize() {
     String baseString = "baseString";
-    RedisString string = new RedisString((baseString + "asdf").getBytes());
+    RedisString string = new RedisString(stringToBytes((baseString + "asdf")));
 
-    string.set("".getBytes());
+    string.set(stringToBytes(""));
 
     int finalSize = string.getSizeInBytes();
 
@@ -400,7 +402,7 @@ public class RedisStringTest {
   // carefully consider that increase before changing the constant.
   @Test
   public void overheadConstants_shouldMatchCalculatedValue() {
-    RedisString redisString = new RedisString("".getBytes());
+    RedisString redisString = new RedisString(stringToBytes(""));
     int calculatedSize = reflectionObjectSizer.sizeof(redisString);
 
     assertThat(BASE_REDIS_STRING_OVERHEAD).isEqualTo(calculatedSize);

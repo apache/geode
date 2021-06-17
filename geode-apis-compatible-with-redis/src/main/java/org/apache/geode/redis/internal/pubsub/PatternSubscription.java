@@ -16,6 +16,9 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -57,11 +60,11 @@ class PatternSubscription extends AbstractSubscription {
 
   @Override
   public boolean matches(byte[] channel) {
-    return pattern.matches(new String(channel));
+    return pattern.matches(bytesToString(channel));
   }
 
   @Override
   public byte[] getSubscriptionName() {
-    return pattern.globPattern().getBytes();
+    return stringToBytes(pattern.globPattern());
   }
 }

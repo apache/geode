@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.pubsub.Subscription.Type.PATTERN;
 
 import java.util.ArrayList;
@@ -59,7 +60,7 @@ public class PunsubscribeExecutor extends AbstractExecutor {
     } else {
       for (byte[] pattern : patternNames) {
         long subscriptionCount =
-            context.getPubSub().punsubscribe(new GlobPattern(new String(pattern)),
+            context.getPubSub().punsubscribe(new GlobPattern(bytesToString(pattern)),
                 context.getClient());
         response.add(createItem(pattern, subscriptionCount));
       }

@@ -37,13 +37,13 @@ public class RenameExecutor extends AbstractExecutor {
     RedisKeyCommands redisKeyCommands = context.getKeyCommands();
 
     if (key.equals(newKey)) {
-      return RedisResponse.string("OK");
+      return RedisResponse.ok();
     }
 
     if (!redisKeyCommands.rename(key, newKey)) {
       return RedisResponse.error(ERROR_NO_SUCH_KEY);
     }
 
-    return RedisResponse.string("OK");
+    return RedisResponse.ok();
   }
 }

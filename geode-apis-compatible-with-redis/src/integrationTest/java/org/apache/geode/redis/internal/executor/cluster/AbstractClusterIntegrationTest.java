@@ -52,5 +52,9 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
         () -> jedis.getConnectionFromSlot(0).sendCommand(Protocol.Command.CLUSTER, "SLOTS", "1"))
             .hasMessage(
                 "ERR Unknown subcommand or wrong number of arguments for 'SLOTS'. Try CLUSTER HELP.");
+    assertThatThrownBy(
+        () -> jedis.getConnectionFromSlot(0).sendCommand(Protocol.Command.CLUSTER, "NOTACOMMAND"))
+            .hasMessage(
+                "ERR Unknown subcommand or wrong number of arguments for 'NOTACOMMAND'. Try CLUSTER HELP.");
   }
 }

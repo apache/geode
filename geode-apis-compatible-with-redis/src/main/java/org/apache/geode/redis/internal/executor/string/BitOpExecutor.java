@@ -35,6 +35,8 @@ public class BitOpExecutor extends AbstractExecutor {
       ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
+    // TODO: When BitOp becomes a supported command, replace this String conversion with byte[]
+    // comparison and a class similar to ZAddOptions which should be passed into the bitop() methods
     String operation = command.getStringKey().toUpperCase();
     if (!operation.equals("AND")
         && !operation.equals("OR")

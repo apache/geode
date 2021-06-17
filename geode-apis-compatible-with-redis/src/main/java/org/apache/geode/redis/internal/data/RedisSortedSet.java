@@ -20,6 +20,7 @@ import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -323,7 +324,7 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   private double processByteArrayAsDouble(byte[] value) {
-    String stringValue = Coder.bytesToString(value).toLowerCase();
+    String stringValue = bytesToString(value).toLowerCase();
     double processedDouble;
     switch (stringValue) {
       case "inf":

@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 import static java.lang.Math.round;
 import static org.apache.geode.redis.internal.data.RedisHash.BASE_REDIS_HASH_OVERHEAD;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.Offset.offset;
@@ -121,8 +122,8 @@ public class RedisHashTest {
   public void hset_stores_delta_that_is_stable() throws IOException {
     Region<RedisKey, RedisData> region = Mockito.mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
-    byte[] k3 = Coder.stringToBytes("k3");
-    byte[] v3 = Coder.stringToBytes("v3");
+    byte[] k3 = stringToBytes("k3");
+    byte[] v3 = stringToBytes("v3");
     ArrayList<byte[]> adds = new ArrayList<>();
     adds.add(k3);
     adds.add(v3);
@@ -143,7 +144,7 @@ public class RedisHashTest {
   public void hdel_stores_delta_that_is_stable() throws IOException {
     Region<RedisKey, RedisData> region = mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
-    byte[] k1 = Coder.stringToBytes("k1");
+    byte[] k1 = stringToBytes("k1");
     ArrayList<byte[]> removes = new ArrayList<>();
     removes.add(k1);
     o1.hdel(region, null, removes);
@@ -257,8 +258,8 @@ public class RedisHashTest {
   @Test
   public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithSingleValue() {
     ArrayList<byte[]> data = new ArrayList<>();
-    data.add("field".getBytes());
-    data.add("valuethatisverylonggggggggg".getBytes());
+    data.add(stringToBytes("field"));
+    data.add(stringToBytes("valuethatisverylonggggggggg"));
 
     RedisHash redisHash = new RedisHash(data);
 
@@ -290,8 +291,8 @@ public class RedisHashTest {
 
     ArrayList<byte[]> elements = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
-      elements.add(Coder.stringToBytes(baseField + i));
-      elements.add(Coder.stringToBytes(baseValue + i));
+      elements.add(stringToBytes(baseField + i));
+      elements.add(stringToBytes(baseValue + i));
     }
     RedisHash hash = new RedisHash(elements);
 
@@ -306,7 +307,7 @@ public class RedisHashTest {
   @SuppressWarnings("unchecked")
   @Test
   public void hsetShould_calculateSize_equalToSizeCalculatedInConstructor_forMultipleEntries() {
-    final RedisKey key = new RedisKey("key".getBytes());
+    final RedisKey key = new RedisKey(stringToBytes("key"));
     final String baseField = "field";
     final String baseValue = "value";
 
@@ -317,8 +318,8 @@ public class RedisHashTest {
     RedisHash hash = new RedisHash(Collections.emptyList());
     List<byte[]> data = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
-      data.add(Coder.stringToBytes((baseField + i)));
-      data.add(Coder.stringToBytes((baseValue + i)));
+      data.add(stringToBytes((baseField + i)));
+      data.add(stringToBytes((baseValue + i)));
     }
 
     hash.hset(region, key, data, false);
@@ -329,7 +330,7 @@ public class RedisHashTest {
 
   @Test
   public void hsetShould_calculateSizeDifference_whenUpdatingExistingEntry_newIsShorterThanOld() {
-    final RedisKey key = new RedisKey("key".getBytes());
+    final RedisKey key = new RedisKey(stringToBytes("key"));
     final String field = "field";
     final String initialValue = "initialValue";
     final String finalValue = "finalValue";
@@ -339,7 +340,7 @@ public class RedisHashTest {
 
   @Test
   public void hsetShould_calculateSizeDifference_whenUpdatingExistingEntry_oldIsShorterThanNew() {
-    final RedisKey key = new RedisKey("key".getBytes());
+    final RedisKey key = new RedisKey(stringToBytes("key"));
     final String field = "field";
     final String initialValue = "initialValue";
     final String finalValue = "longerfinalValue";
@@ -349,7 +350,7 @@ public class RedisHashTest {
 
   @Test
   public void hsetShould_calculateSizeDifference_whenUpdatingExistingEntry_valuesAreSameLength() {
-    final RedisKey key = new RedisKey("key".getBytes());
+    final RedisKey key = new RedisKey(stringToBytes("key"));
     final String field = "field";
     final String initialValue = "initialValue";
     final String finalValue = "finalValueee";
@@ -365,20 +366,20 @@ public class RedisHashTest {
 
     RedisHash hash = new RedisHash(Collections.emptyList());
     List<byte[]> initialData = new ArrayList<>();
-    initialData.add(Coder.stringToBytes(field));
-    initialData.add(Coder.stringToBytes(initialValue));
+    initialData.add(stringToBytes(field));
+    initialData.add(stringToBytes(initialValue));
 
     hash.hset(region, key, initialData, false);
     RedisHash expectedRedisHash = new RedisHash(new ArrayList<>(initialData));
 
     List<byte[]> finalData = new ArrayList<>();
-    finalData.add(Coder.stringToBytes(field));
-    finalData.add(Coder.stringToBytes(finalValue));
+    finalData.add(stringToBytes(field));
+    finalData.add(stringToBytes(finalValue));
 
     hash.hset(region, key, finalData, false);
 
     int expectedUpdatedRedisHashSize = expectedRedisHash.getSizeInBytes()
-        + (Coder.stringToBytes(finalValue).length - Coder.stringToBytes(initialValue).length);
+        + (stringToBytes(finalValue).length - stringToBytes(initialValue).length);
 
     assertThat(hash.getSizeInBytes()).isEqualTo(expectedUpdatedRedisHashSize);
   }
@@ -386,7 +387,7 @@ public class RedisHashTest {
   /******* put if absent *******/
   @Test
   public void putIfAbsentShould_calculateSizeEqualToSizeCalculatedInConstructor_forMultipleUniqueEntries() {
-    final RedisKey key = new RedisKey("key".getBytes());
+    final RedisKey key = new RedisKey(stringToBytes("key"));
     final String baseField = "field";
     final String baseValue = "value";
 
@@ -397,8 +398,8 @@ public class RedisHashTest {
     RedisHash hash = new RedisHash(Collections.emptyList());
     List<byte[]> data = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
-      data.add(Coder.stringToBytes((baseField + i)));
-      data.add(Coder.stringToBytes((baseValue + i)));
+      data.add(stringToBytes((baseField + i)));
+      data.add(stringToBytes((baseValue + i)));
     }
 
     hash.hset(region, key, data, true);
@@ -410,7 +411,7 @@ public class RedisHashTest {
 
   @Test
   public void putIfAbsentShould_notChangeSize_whenSameDataIsSetTwice() {
-    final RedisKey key = new RedisKey("key".getBytes());
+    final RedisKey key = new RedisKey(stringToBytes("key"));
     final String baseField = "field";
     final String baseValue = "value";
 
@@ -421,8 +422,8 @@ public class RedisHashTest {
     RedisHash hash = new RedisHash(Collections.emptyList());
     List<byte[]> data = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
-      data.add(Coder.stringToBytes((baseField + i)));
-      data.add(Coder.stringToBytes((baseValue + i)));
+      data.add(stringToBytes((baseField + i)));
+      data.add(stringToBytes((baseValue + i)));
     }
 
     hash.hset(region, key, data, true);
@@ -436,7 +437,7 @@ public class RedisHashTest {
 
   @Test
   public void putIfAbsent_shouldNotChangeSize_whenPuttingToExistingFields() {
-    final RedisKey key = new RedisKey("key".getBytes());
+    final RedisKey key = new RedisKey(stringToBytes("key"));
     final String baseField = "field";
     final String initialBaseValue = "value";
     final String finalBaseValue = "longerValue";
@@ -448,8 +449,8 @@ public class RedisHashTest {
     RedisHash hash = new RedisHash(Collections.emptyList());
     List<byte[]> initialData = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
-      initialData.add(Coder.stringToBytes((baseField + i)));
-      initialData.add(Coder.stringToBytes((initialBaseValue + i)));
+      initialData.add(stringToBytes((baseField + i)));
+      initialData.add(stringToBytes((initialBaseValue + i)));
     }
 
     hash.hset(region, key, initialData, true);
@@ -458,8 +459,8 @@ public class RedisHashTest {
 
     List<byte[]> finalData = new ArrayList<>();
     for (int i = 0; i < 10_000; i++) {
-      finalData.add(Coder.stringToBytes((baseField + i)));
-      finalData.add(Coder.stringToBytes((finalBaseValue + i)));
+      finalData.add(stringToBytes((baseField + i)));
+      finalData.add(stringToBytes((finalBaseValue + i)));
     }
 
     hash.hset(region, key, finalData, true);
@@ -470,7 +471,7 @@ public class RedisHashTest {
   /******* remove *******/
   @Test
   public void sizeShouldDecrease_whenValueIsRemoved() {
-    final RedisKey key = new RedisKey("key".getBytes());
+    final RedisKey key = new RedisKey(stringToBytes("key"));
     final String baseField = "field";
     final String baseValue = "value";
     final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
@@ -479,10 +480,10 @@ public class RedisHashTest {
 
     List<byte[]> data = new ArrayList<>();
     List<byte[]> dataToRemove = new ArrayList<>();
-    byte[] field1 = Coder.stringToBytes((baseField + 1));
-    byte[] value1 = Coder.stringToBytes((baseValue + 1));
-    byte[] field2 = Coder.stringToBytes((baseField + 2));
-    byte[] value2 = Coder.stringToBytes((baseValue + 2));
+    byte[] field1 = stringToBytes((baseField + 1));
+    byte[] value1 = stringToBytes((baseValue + 1));
+    byte[] field2 = stringToBytes((baseField + 2));
+    byte[] value2 = stringToBytes((baseValue + 2));
     data.add(field1);
     data.add(value1);
     data.add(field2);
@@ -502,7 +503,7 @@ public class RedisHashTest {
 
   @Test
   public void dataStoreBytesInUse_shouldReturnToHashOverhead_whenAllFieldsAreRemoved() {
-    final RedisKey key = new RedisKey("key".getBytes());
+    final RedisKey key = new RedisKey(stringToBytes("key"));
     final String baseField = "field";
     final String baseValue = "value";
     final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
@@ -514,8 +515,8 @@ public class RedisHashTest {
 
     List<byte[]> data = new ArrayList<>();
     for (int i = 0; i < 100; i++) {
-      data.add(Coder.stringToBytes((baseField + i)));
-      data.add(Coder.stringToBytes((baseValue + i)));
+      data.add(stringToBytes((baseField + i)));
+      data.add(stringToBytes((baseValue + i)));
     }
 
     hash.hset(region, key, data, false);
@@ -524,7 +525,7 @@ public class RedisHashTest {
 
     for (int i = 0; i < 100; i++) {
       List<byte[]> toRm = new ArrayList<>();
-      toRm.add(Coder.stringToBytes((baseField + i)));
+      toRm.add(stringToBytes((baseField + i)));
       hash.hdel(region, key, toRm);
     }
 
@@ -555,6 +556,6 @@ public class RedisHashTest {
   }
 
   private byte[] toBytes(String str) {
-    return Coder.stringToBytes(str);
+    return stringToBytes(str);
   }
 }

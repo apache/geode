@@ -34,8 +34,6 @@ public class SetEXExecutor extends AbstractExecutor {
   private static final String ERROR_SECONDS_NOT_LEGAL =
       "invalid expire time in setex";
 
-  private static final String SUCCESS = "OK";
-
   private static final int VALUE_INDEX = 3;
 
   @Override
@@ -66,7 +64,7 @@ public class SetEXExecutor extends AbstractExecutor {
 
     stringCommands.set(key, value, setOptions);
 
-    return RedisResponse.string(SUCCESS);
+    return RedisResponse.ok();
   }
 
   protected boolean timeUnitMillis() {

@@ -30,8 +30,7 @@ import org.apache.geode.redis.internal.pubsub.SubscribeResult;
 public class PsubscribeExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     context.eventLoopReady();
 

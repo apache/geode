@@ -18,14 +18,21 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_ZADD_OPTION_TOO_MANY_INCR_PAIR;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
+import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCH;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINCR;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNX;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bXX;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -69,39 +76,28 @@ public class ZAddExecutor extends AbstractExecutor {
     int optionsFoundCount = 0;
 
     while (commandIterator.hasNext() && !scoreFound) {
-      String subCommandString = Coder.bytesToString(commandIterator.next()).toLowerCase();
-      switch (subCommandString) {
-        case "nx":
-          executorState.nxFound = true;
-          optionsFoundCount++;
-          break;
-        case "xx":
-          executorState.xxFound = true;
-          optionsFoundCount++;
-          break;
-        case "ch":
-          executorState.chFound = true;
-          optionsFoundCount++;
-          break;
-        case "inf":
-        case "+inf":
-        case "-inf":
-        case "infinity":
-        case "+infinity":
-        case "-infinity":
-          scoreFound = true;
-          break;
-        case "incr":
-          executorState.incrFound = true;
-          optionsFoundCount++;
-          break;
-        default:
-          try {
-            Double.valueOf(subCommandString);
-          } catch (NumberFormatException nfe) {
-            executorState.exceptionMessage = ERROR_NOT_A_VALID_FLOAT;
-          }
-          scoreFound = true;
+      byte[] subCommand = toUpperCaseBytes(commandIterator.next());
+      if (Arrays.equals(subCommand, bNX)) {
+        executorState.nxFound = true;
+        optionsFoundCount++;
+      } else if (Arrays.equals(subCommand, bXX)) {
+        executorState.xxFound = true;
+        optionsFoundCount++;
+      } else if (Arrays.equals(subCommand, bCH)) {
+        executorState.chFound = true;
+        optionsFoundCount++;
+      } else if (Arrays.equals(subCommand, bINCR)) {
+        executorState.incrFound = true;
+        optionsFoundCount++;
+      } else if (isInfinity(subCommand)) {
+        scoreFound = true;
+      } else {
+        try {
+          Double.valueOf(bytesToString(subCommand));
+        } catch (NumberFormatException nfe) {
+          executorState.exceptionMessage = ERROR_NOT_A_VALID_FLOAT;
+        }
+        scoreFound = true;
       }
     }
     if ((command.getProcessedCommand().size() - optionsFoundCount - 2) % 2 != 0) {

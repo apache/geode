@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
@@ -31,9 +32,6 @@ public class ZScoreExecutor extends AbstractExecutor {
     byte[] score =
         redisSortedSetCommands.zscore(command.getKey(), commandElements.get(2));
 
-    if (score == null) {
-      return RedisResponse.nil();
-    }
-    return RedisResponse.bulkString(new String(score));
+    return RedisResponse.bulkString(score);
   }
 }

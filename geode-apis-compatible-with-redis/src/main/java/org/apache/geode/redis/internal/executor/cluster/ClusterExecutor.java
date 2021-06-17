@@ -18,6 +18,11 @@ package org.apache.geode.redis.internal.executor.cluster;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_CLUSTER_SUBCOMMAND;
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINFO;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNODES;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSLOTS;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,19 +50,17 @@ public class ClusterExecutor extends AbstractExecutor {
       throws Exception {
 
     List<byte[]> args = command.getProcessedCommand();
-    String subCommand = new String(args.get(1));
+    byte[] bytes = args.get(1);
 
-    switch (subCommand.toLowerCase()) {
-      case "info":
-        return getInfo(context);
-      case "nodes":
-        return getNodes(context);
-      case "slots":
-        return getSlots(context);
-      default: {
-        return RedisResponse.error(
-            String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, subCommand));
-      }
+    if (equalsIgnoreCaseBytes(bytes, bINFO)) {
+      return getInfo(context);
+    } else if (equalsIgnoreCaseBytes(bytes, bNODES)) {
+      return getNodes(context);
+    } else if (equalsIgnoreCaseBytes(bytes, bSLOTS)) {
+      return getSlots(context);
+    } else {
+      return RedisResponse.error(
+          String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, bytesToString(bytes)));
     }
   }
 
@@ -165,4 +168,5 @@ public class ClusterExecutor extends AbstractExecutor {
 
     return info.getPartitionMemberInfo();
   }
+
 }

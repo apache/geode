@@ -15,6 +15,10 @@
  */
 package org.apache.geode.redis.internal.executor.connection;
 
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPING_RESPONSE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPING_RESPONSE_LOWERCASE;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,8 +28,6 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class PingExecutor extends AbstractExecutor {
-
-  private final String PING_RESPONSE = "PONG";
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
@@ -39,7 +41,7 @@ public class PingExecutor extends AbstractExecutor {
       if (commandElems.size() > 1) {
         result = commandElems.get(1);
       } else {
-        result = PING_RESPONSE.getBytes();
+        result = bPING_RESPONSE;
       }
       redisResponse = RedisResponse.string(result);
     } else {
@@ -48,10 +50,9 @@ public class PingExecutor extends AbstractExecutor {
       if (commandElems.size() > 1) {
         result = commandElems.get(1);
       } else {
-        result = "".getBytes();
+        result = stringToBytes("");
       }
-      redisResponse =
-          RedisResponse.array(Arrays.asList(PING_RESPONSE.toLowerCase().getBytes(), result));
+      redisResponse = RedisResponse.array(Arrays.asList(bPING_RESPONSE_LOWERCASE, result));
     }
 
     return redisResponse;

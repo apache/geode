@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -47,7 +48,8 @@ public class PubSubImplJUnitTest {
     when(deadClient.isDead()).thenReturn(true);
 
     ChannelSubscription subscription =
-        spy(new ChannelSubscription(deadClient, "sally".getBytes(), mockContext, subscriptions));
+        spy(new ChannelSubscription(deadClient, stringToBytes("sally"), mockContext,
+            subscriptions));
     subscription.readyToPublish();
 
     subscriptions.add(subscription);
@@ -55,7 +57,8 @@ public class PubSubImplJUnitTest {
     PubSubImpl subject = new PubSubImpl(subscriptions);
 
     Long numberOfSubscriptions =
-        subject.publishMessageToSubscribers("sally".getBytes(), "message".getBytes());
+        subject.publishMessageToSubscribers(stringToBytes("sally"),
+            stringToBytes("message"));
 
     assertThat(numberOfSubscriptions).isEqualTo(0);
     assertThat(subscriptions.findSubscriptions(deadClient)).isEmpty();
