@@ -62,12 +62,12 @@ public class NioSslEngine implements NioFilter {
   /**
    * holds bytes wrapped by the SSLEngine; a.k.a. myNetData
    */
-  private final ByteBufferVendor outputBufferVendor;
+  private final ByteBufferVendor outputSharing;
 
   /**
    * holds the last unwrapped data from a peer; a.k.a. peerAppData
    */
-  private final ByteBufferVendor inputBufferVendor;
+  private final ByteBufferVendor inputSharing;
 
   NioSslEngine(SSLEngine engine, BufferPool bufferPool) {
     SSLSession session = engine.getSession();
@@ -76,10 +76,10 @@ public class NioSslEngine implements NioFilter {
     closed = false;
     this.engine = engine;
     this.bufferPool = bufferPool;
-    outputBufferVendor =
+    outputSharing =
         new ByteBufferVendor(bufferPool.acquireDirectSenderBuffer(packetBufferSize),
             TRACKED_SENDER, bufferPool);
-    inputBufferVendor =
+    inputSharing =
         new ByteBufferVendor(bufferPool.acquireNonDirectReceiveBuffer(appBufferSize),
             TRACKED_RECEIVER, bufferPool);
   }
@@ -98,7 +98,7 @@ public class NioSslEngine implements NioFilter {
           peerNetData.capacity(), engine.getSession().getPacketBufferSize()));
     }
 
-    final ByteBuffer handshakeBuffer = peerNetData;
+    ByteBuffer handshakeBuffer = peerNetData;
     handshakeBuffer.clear();
 
     ByteBuffer myAppData = ByteBuffer.wrap(new byte[0]);
@@ -135,7 +135,7 @@ public class NioSslEngine implements NioFilter {
 
       switch (status) {
         case NEED_UNWRAP:
-          try (final ByteBufferSharing inputSharing = inputBufferVendor.open()) {
+          try (final ByteBufferSharing inputSharing = shareInputBuffer()) {
             final ByteBuffer peerAppData = inputSharing.getBuffer();
 
             // Receive handshaking data from peer
@@ -162,7 +162,7 @@ public class NioSslEngine implements NioFilter {
           }
 
         case NEED_WRAP:
-          try (final ByteBufferSharing outputSharing = outputBufferVendor.open()) {
+          try (final ByteBufferSharing outputSharing = shareOutputBuffer()) {
             final ByteBuffer myNetData = outputSharing.getBuffer();
 
             // Empty the local network packet buffer.
@@ -231,7 +231,7 @@ public class NioSslEngine implements NioFilter {
 
   @Override
   public ByteBufferSharing wrap(ByteBuffer appData) throws IOException {
-    try (final ByteBufferSharing outputSharing = outputBufferVendor.open()) {
+    try (final ByteBufferSharing outputSharing = shareOutputBuffer()) {
 
       ByteBuffer myNetData = outputSharing.getBuffer();
 
@@ -260,13 +260,13 @@ public class NioSslEngine implements NioFilter {
 
       myNetData.flip();
 
-      return outputBufferVendor.open();
+      return shareOutputBuffer();
     }
   }
 
   @Override
   public ByteBufferSharing unwrap(ByteBuffer wrappedBuffer) throws IOException {
-    try (final ByteBufferSharing inputSharing = inputBufferVendor.open()) {
+    try (final ByteBufferSharing inputSharing = shareInputBuffer()) {
 
       ByteBuffer peerAppData = inputSharing.getBuffer();
 
@@ -292,7 +292,7 @@ public class NioSslEngine implements NioFilter {
             // partial data - need to read more. When this happens the SSLEngine will not have
             // changed the buffer position
             wrappedBuffer.compact();
-            return inputBufferVendor.open();
+            return shareInputBuffer();
           case OK:
             break;
           default:// if there is data in the decrypted buffer return it. Otherwise signal that we're
@@ -305,7 +305,7 @@ public class NioSslEngine implements NioFilter {
         }
       }
       wrappedBuffer.clear();
-      return inputBufferVendor.open();
+      return shareInputBuffer();
     }
   }
 
@@ -325,7 +325,7 @@ public class NioSslEngine implements NioFilter {
   @Override
   public ByteBufferSharing readAtLeast(SocketChannel channel, int bytes,
       ByteBuffer wrappedBuffer) throws IOException {
-    try (final ByteBufferSharing inputSharing = inputBufferVendor.open()) {
+    try (final ByteBufferSharing inputSharing = shareInputBuffer()) {
 
       ByteBuffer peerAppData = inputSharing.getBuffer();
 
@@ -355,13 +355,13 @@ public class NioSslEngine implements NioFilter {
           }
         }
       }
-      return inputBufferVendor.open();
+      return shareInputBuffer();
     }
   }
 
   @Override
   public ByteBufferSharing getUnwrappedBuffer() throws IOException {
-    return inputBufferVendor.open();
+    return shareInputBuffer();
   }
 
   @Override
@@ -377,8 +377,8 @@ public class NioSslEngine implements NioFilter {
       return;
     }
     closed = true;
-    inputBufferVendor.destruct();
-    try (final ByteBufferSharing outputSharing = outputBufferVendor.open(1, TimeUnit.MINUTES)) {
+    inputSharing.destruct();
+    try (final ByteBufferSharing outputSharing = shareOutputBuffer(1, TimeUnit.MINUTES)) {
       final ByteBuffer myNetData = outputSharing.getBuffer();
 
       if (!engine.isOutboundDone()) {
@@ -412,7 +412,7 @@ public class NioSslEngine implements NioFilter {
         engine.closeOutbound();
       }
     } finally {
-      outputBufferVendor.destruct();
+      outputSharing.destruct();
     }
   }
 
@@ -422,12 +422,16 @@ public class NioSslEngine implements NioFilter {
   }
 
   @VisibleForTesting
-  public ByteBufferVendor getOutputBufferVendorForTestingOnly() throws IOException {
-    return outputBufferVendor;
+  public ByteBufferSharing shareOutputBuffer() throws IOException {
+    return outputSharing.open();
   }
 
-  @VisibleForTesting
-  public ByteBufferVendor getInputBufferVendorForTestingOnly() throws IOException {
-    return inputBufferVendor;
+  private ByteBufferSharing shareOutputBuffer(final long time, final TimeUnit unit)
+      throws OpenAttemptTimedOut, IOException {
+    return outputSharing.open(time, unit);
+  }
+
+  public ByteBufferSharing shareInputBuffer() throws IOException {
+    return inputSharing.open();
   }
 }
