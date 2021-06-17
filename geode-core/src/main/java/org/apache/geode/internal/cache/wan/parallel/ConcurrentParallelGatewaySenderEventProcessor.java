@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
@@ -48,7 +47,6 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
-import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -134,22 +132,22 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   }
 
   @Override
-  public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue)
+  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue)
       throws IOException, CacheException {
-    return enqueueEvent(operation, event, substituteValue, false, null);
+    enqueueEvent(operation, event, substituteValue, false);
   }
 
   @Override
-  public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      boolean isLastEventInTransaction, Predicate<InternalGatewayQueueEvent> condition)
-      throws IOException, CacheException {
+  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
+      boolean isLastEventInTransaction) throws IOException, CacheException {
+    Region region = event.getRegion();
+    // int bucketId = PartitionedRegionHelper.getHashKey((EntryOperation)event);
     int bucketId = ((EntryEventImpl) event).getEventId().getBucketID();
     if (bucketId < 0) {
-      return true;
+      return;
     }
     int pId = bucketId % this.nDispatcher;
-    return this.processors[pId].enqueueEvent(operation, event, substituteValue,
-        isLastEventInTransaction, condition);
+    this.processors[pId].enqueueEvent(operation, event, substituteValue, isLastEventInTransaction);
   }
 
   @Override
@@ -351,10 +349,9 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   }
 
   @Override
-  protected boolean enqueueEvent(GatewayQueueEvent event,
-      Predicate<InternalGatewayQueueEvent> condition) {
+  protected void enqueueEvent(GatewayQueueEvent event) {
     int pId = ((GatewaySenderEventImpl) event).getBucketId() % this.nDispatcher;
-    return this.processors[pId].enqueueEvent(event, condition);
+    this.processors[pId].enqueueEvent(event);
   }
 
   private ThreadsMonitoring getThreadMonitorObj() {

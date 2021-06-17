@@ -109,7 +109,6 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
   @Override
   public void stop() {
-    preStop();
     this.getLifeCycleLock().writeLock().lock();
     try {
       if (!this.isRunning()) {
@@ -139,7 +138,6 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       // Keep the eventProcessor around so we can ask it for the regionQueues later.
       // Tests expect to be able to do this.
     } finally {
-      postStop();
       this.getLifeCycleLock().writeLock().unlock();
     }
   }

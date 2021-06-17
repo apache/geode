@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
@@ -37,7 +36,6 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -99,10 +97,10 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
   }
 
   @Override
-  public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      boolean isLastEventInTransaction, Predicate<InternalGatewayQueueEvent> condition)
+  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
+      boolean isLastEventInTransaction)
       throws IOException, CacheException {
-    GatewaySenderEventImpl gatewayQueueEvent;
+    GatewaySenderEventImpl gatewayQueueEvent = null;
     Region region = event.getRegion();
 
     if (!(region instanceof DistributedRegion) && ((EntryEventImpl) event).getTailKey() == -1) {
@@ -115,7 +113,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
             "ParallelGatewaySenderEventProcessor not enqueing the following event since tailKey is not set. {}",
             event);
       }
-      return true;
+      return;
     }
 
     // TODO: Looks like for PDX region bucket id is set to -1.
@@ -127,23 +125,16 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
         new GatewaySenderEventImpl(operation, event, substituteValue, true, eventID.getBucketID(),
             isLastEventInTransaction);
 
-    return enqueueEvent(gatewayQueueEvent, condition);
+    enqueueEvent(gatewayQueueEvent);
   }
 
   @Override
-  protected boolean enqueueEvent(GatewayQueueEvent gatewayQueueEvent,
-      Predicate<InternalGatewayQueueEvent> condition) {
+  protected void enqueueEvent(GatewayQueueEvent gatewayQueueEvent) {
     boolean queuedEvent = false;
     try {
       if (getSender().beforeEnqueue(gatewayQueueEvent)) {
         long start = getSender().getStatistics().startTime();
         try {
-          if (condition != null &&
-              !((ParallelGatewaySenderQueue) this.queue).hasEventsMatching(
-                  (GatewaySenderEventImpl) gatewayQueueEvent,
-                  condition)) {
-            return false;
-          }
           queuedEvent = this.queue.put(gatewayQueueEvent);
         } catch (InterruptedException e) {
           e.printStackTrace();
@@ -161,7 +152,6 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
         ((GatewaySenderEventImpl) gatewayQueueEvent).release();
       }
     }
-    return true;
   }
 
   @Override
