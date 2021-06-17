@@ -224,14 +224,14 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
 
 
   void putSerializableObjectAndVerifyLuceneQueryResult(VM putter, String regionName,
-      boolean luceneVersionMismatch,
+      boolean skipVerification,
       int expectedRegionSize, int start, int end, VM... vms) throws Exception {
     // do puts
     putSerializableObject(putter, regionName, start, end);
 
     // verify present in others
 
-    if (!luceneVersionMismatch) {
+    if (!skipVerification) {
       verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, vms);
     }
   }
