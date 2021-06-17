@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.WriteAbortedException;
+import java.io.NotSerializableException;
 
 import org.junit.Test;
 
@@ -38,7 +38,7 @@ public class ReplyMessageTest {
     final ReplyMessage newReplyMessage = new ReplyMessage();
     InternalDataSerializer.getDSFIDSerializer().invokeFromData(newReplyMessage, dataInputStream);
     assertThat(newReplyMessage.getException()).hasCauseInstanceOf(
-        WriteAbortedException.class);
+        NotSerializableException.class);
   }
 
 }
