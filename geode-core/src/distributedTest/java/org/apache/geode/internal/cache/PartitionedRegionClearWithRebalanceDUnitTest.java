@@ -458,9 +458,11 @@ public class PartitionedRegionClearWithRebalanceDUnitTest implements Serializabl
         blackboard.waitForGate(CLEAR_HAS_BEGUN, getTimeout().toMillis(), MILLISECONDS);
       }
       RebalanceOperation op = rebalance.start();
-      await().untilAsserted(() -> assertThat(cacheRule.getCache()
-          .getInternalResourceManager().getStats().getRebalanceBucketCreatesCompleted())
-              .isGreaterThan(0));
+      await().untilAsserted(() -> {
+        assertThat(cacheRule.getCache()
+            .getInternalResourceManager().getStats().getRebalanceBucketCreatesCompleted())
+                .isGreaterThan(0);
+      });
       blackboard.signalGate(REBALANCE_HAS_BEGUN);
       op.getResults();
     });
@@ -487,8 +489,9 @@ public class PartitionedRegionClearWithRebalanceDUnitTest implements Serializabl
     MembershipManagerHelper.crashDistributedSystem(
         InternalDistributedSystem.getConnectedInstance());
 
-    await().untilAsserted(
-        () -> assertThat(InternalDistributedSystem.getConnectedInstance()).isNull());
+    await().untilAsserted(() -> {
+      assertThat(InternalDistributedSystem.getConnectedInstance()).isNull();
+    });
   }
 
   private void waitForSilenceOnRegion(String regionName) {
@@ -508,23 +511,27 @@ public class PartitionedRegionClearWithRebalanceDUnitTest implements Serializabl
 
   private void assertRegionIsEmpty(Iterable<VM> vms, String regionName) {
     vms.forEach(vm -> vm.invoke(() -> {
-      waitForSilenceOnRegion(regionName);
+      // waitForSilenceOnRegion(regionName);
       PartitionedRegion region = (PartitionedRegion) cacheRule.getCache().getRegion(regionName);
 
-      assertThat(region.getLocalSize())
-          .as("Region local size should be 0 for region " + regionName)
-          .isEqualTo(0);
+      await().untilAsserted(() -> {
+        assertThat(region.getLocalSize())
+            .as("Region local size should be 0 for region " + regionName)
+            .isEqualTo(0);
+      });
     }));
   }
 
   private void assertRegionIsNotEmpty(Iterable<VM> vms, String regionName) {
     vms.forEach(vm -> vm.invoke(() -> {
-      waitForSilenceOnRegion(regionName);
+      // waitForSilenceOnRegion(regionName);
       Region<?, ?> region = cacheRule.getCache().getRegion(regionName);
 
-      assertThat(region.size())
-          .as("Region size should be " + ENTRIES + " for region " + regionName)
-          .isEqualTo(ENTRIES);
+      await().untilAsserted(() -> {
+        assertThat(region.size())
+            .as("Region size should be " + ENTRIES + " for region " + regionName)
+            .isEqualTo(ENTRIES);
+      });
     }));
   }
 
