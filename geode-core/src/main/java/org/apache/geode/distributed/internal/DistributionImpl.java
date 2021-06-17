@@ -393,15 +393,12 @@ public class DistributionImpl implements Distribution {
           }
           continue;
         }
-
         logger
             .fatal(String.format("Failed to send message <%s> to member <%s> view, %s",
                 // TODO - This used to be services.getJoinLeave().getView(), which is a different
                 // view object. Is it ok to log membershipManager.getView here?
                 new Object[] {content, member, membership.getView()}),
                 th);
-
-        // Assert.assertTrue(false, "messaging contract failure");
       }
       return new HashSet<>(members);
     } // catch ConnectionExceptions
