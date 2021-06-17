@@ -134,6 +134,15 @@ public class TXCommitMessage extends PooledDistributionMessage
       new HashMap<>();
 
   /**
+   * Member that the current transaction will be distributed to.
+   * Currently this is any other member who has this region defined.
+   */
+  private final transient Map<RegionCommit, Set<InternalDistributedMember>> transactionMembers =
+      new HashMap<>();
+
+
+
+  /**
    * Set of all caching exceptions produced while processing this tx
    */
   private transient Set processingExceptions = Collections.emptySet();
@@ -205,6 +214,11 @@ public class TXCommitMessage extends PooledDistributionMessage
   Map<RegionCommit, Set<InternalDistributedMember>> getNotificationOnlyMembers() {
     return this.notificationOnlyMembers;
   }
+
+  Map<RegionCommit, Set<InternalDistributedMember>> getTransactionMembers() {
+    return this.transactionMembers;
+  }
+
 
   /**
    * Return the TXCommitMessage we have already received that is associated with id. Note because of
@@ -403,13 +417,19 @@ public class TXCommitMessage extends PooledDistributionMessage
               }
             } else {
               HashSet tempNotificationOnlyMembers = new HashSet();
+              HashSet tempTransactionMembers = new HashSet();
               if (!rcl.isEmpty() && !getNotificationOnlyMembers().isEmpty()) {
                 for (RegionCommit rc : rcl) {
                   Set getNOM = getNotificationOnlyMembers().get(rc);
+                  Set getTM = getTransactionMembers().get(rc);
                   if (getNOM != null && !getNOM.isEmpty()) {
                     tempNotificationOnlyMembers.addAll(getNOM);
                   }
+                  if (getTM != null && !getTM.isEmpty()) {
+                    tempTransactionMembers.addAll(getTM);
+                  }
                 }
+                tempNotificationOnlyMembers.removeAll(tempTransactionMembers);
               }
 
               if (tempNotificationOnlyMembers.isEmpty()) {

@@ -330,6 +330,13 @@ public class TXRegionState {
           msg.addViewVersion(dr, dr.getDistributionAdvisor().startOperation());
           newMemberSet.addAll(dr.getCacheDistributionAdvisor().adviseTX());
           redundantMemberSet.addAll(dr.getCacheDistributionAdvisor().adviseTX());
+          if (!redundantMemberSet.isEmpty()) {
+            if (msg.getTransactionMembers().get(regionCommit) == null) {
+              msg.getTransactionMembers().put(regionCommit, redundantMemberSet);
+            } else {
+              msg.getTransactionMembers().get(regionCommit).addAll(redundantMemberSet);
+            }
+          }
         }
 
         while (it.hasNext()) {
