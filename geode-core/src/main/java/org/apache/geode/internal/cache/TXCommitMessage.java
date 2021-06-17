@@ -128,9 +128,10 @@ public class TXCommitMessage extends PooledDistributionMessage
   private transient boolean hasReliableRegions = false;
 
   /**
-   * Member that requires notification only message.
+   * Members that requires notification only message per RegionCommit.
    */
-  private transient Set<InternalDistributedMember> notificationOnlyMembers = Collections.emptySet();
+  private final transient Map<RegionCommit, Set<InternalDistributedMember>> notificationOnlyMembers =
+      new HashMap<>();
 
   /**
    * Set of all caching exceptions produced while processing this tx
@@ -201,11 +202,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         this.farsideBaseSequenceId + eventOffset);
   }
 
-  public void setNotificationOnlyMembers(Set<InternalDistributedMember> members) {
-    this.notificationOnlyMembers = members;
-  }
-
-  public Set<InternalDistributedMember> getNotificationOnlyMembers() {
+  Map<RegionCommit, Set<InternalDistributedMember>> getNotificationOnlyMembers() {
     return this.notificationOnlyMembers;
   }
 
@@ -218,11 +215,12 @@ public class TXCommitMessage extends PooledDistributionMessage
     return map.waitForMessage(id, dm);
   }
 
-  void startRegion(InternalRegion r, int maxSize) {
+  RegionCommit startRegion(InternalRegion r, int maxSize) {
     this.currentRegion = new RegionCommit(this, r, maxSize);
     if (r.requiresReliabilityCheck()) {
       this.hasReliableRegions = true;
     }
+    return this.currentRegion;
   }
 
   void finishRegion(Set<InternalDistributedMember> s) {
@@ -404,15 +402,25 @@ public class TXCommitMessage extends PooledDistributionMessage
                 setRecipientsSendData(Collections.singleton(indivRecip.next()), processor, rcl);
               }
             } else {
-              if (this.notificationOnlyMembers.isEmpty()) {
+              HashSet tempNotificationOnlyMembers = new HashSet();
+              if (!rcl.isEmpty() && !getNotificationOnlyMembers().isEmpty()) {
+                for (RegionCommit rc : rcl) {
+                  Set getNOM = getNotificationOnlyMembers().get(rc);
+                  if (getNOM != null && !getNOM.isEmpty()) {
+                    tempNotificationOnlyMembers.addAll(getNOM);
+                  }
+                }
+              }
+
+              if (tempNotificationOnlyMembers.isEmpty()) {
                 // Run in normal mode sending to multiple recipients in one shot
                 setRecipientsSendData(recipients, processor, rcl);
               } else {
-                recipients.removeAll(this.notificationOnlyMembers);
+                recipients.removeAll(tempNotificationOnlyMembers);
                 setRecipientsSendData(recipients, processor, rcl);
 
                 this.txState.setTailKeyOnEntries(-1L);
-                setRecipientsSendData(notificationOnlyMembers, processor, rcl);
+                setRecipientsSendData(tempNotificationOnlyMembers, processor, rcl);
               }
             }
           }
