@@ -217,7 +217,7 @@ public class JsonWriter {
     } else {
       throw new IllegalStateException(
           "PdxInstance returns unsupported type " + value.getClass()
-              + " for field " + pf + " = " + value);
+              + " for field " + pdxField + " = " + value);
     }
   }
 
