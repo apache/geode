@@ -42,7 +42,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.net.BufferPool.BufferType;
-import org.apache.geode.internal.net.ByteBufferVendor.OpenAttemptTimedOut;
+import org.apache.geode.internal.net.ByteBufferSharingImpl.OpenAttemptTimedOut;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
@@ -62,12 +62,12 @@ public class NioSslEngine implements NioFilter {
   /**
    * holds bytes wrapped by the SSLEngine; a.k.a. myNetData
    */
-  private final ByteBufferVendor outputSharing;
+  private final ByteBufferSharingImpl outputSharing;
 
   /**
    * holds the last unwrapped data from a peer; a.k.a. peerAppData
    */
-  private final ByteBufferVendor inputSharing;
+  private final ByteBufferSharingImpl inputSharing;
 
   NioSslEngine(SSLEngine engine, BufferPool bufferPool) {
     SSLSession session = engine.getSession();
@@ -77,10 +77,10 @@ public class NioSslEngine implements NioFilter {
     this.engine = engine;
     this.bufferPool = bufferPool;
     outputSharing =
-        new ByteBufferVendor(bufferPool.acquireDirectSenderBuffer(packetBufferSize),
+        new ByteBufferSharingImpl(bufferPool.acquireDirectSenderBuffer(packetBufferSize),
             TRACKED_SENDER, bufferPool);
     inputSharing =
-        new ByteBufferVendor(bufferPool.acquireNonDirectReceiveBuffer(appBufferSize),
+        new ByteBufferSharingImpl(bufferPool.acquireNonDirectReceiveBuffer(appBufferSize),
             TRACKED_RECEIVER, bufferPool);
   }
 

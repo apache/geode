@@ -488,7 +488,7 @@ public class NioSslEngineTest {
     unwrappedBuffer.position(7).limit(preexistingBytes + 7); // 7 bytes of message header - ignored
 
     try (final ByteBufferSharing inputSharing = nioSslEngine.shareInputBuffer()) {
-      final ByteBufferVendor inputSharingImpl = (ByteBufferVendor) inputSharing;
+      final ByteBufferSharingImpl inputSharingImpl = (ByteBufferSharingImpl) inputSharing;
       inputSharingImpl.setBufferForTestingOnly(unwrappedBuffer);
     }
 
@@ -545,7 +545,7 @@ public class NioSslEngineTest {
     ByteBuffer unwrappedBuffer = ByteBuffer.allocate(initialUnwrappedBufferSize);
     unwrappedBuffer.position(7).limit(preexistingBytes + 7); // 7 bytes of message header - ignored
     try (final ByteBufferSharing inputSharing = nioSslEngine.shareInputBuffer()) {
-      final ByteBufferVendor inputSharingImpl = (ByteBufferVendor) inputSharing;
+      final ByteBufferSharingImpl inputSharingImpl = (ByteBufferSharingImpl) inputSharing;
       inputSharingImpl.setBufferForTestingOnly(unwrappedBuffer);
     }
 
