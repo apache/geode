@@ -18,15 +18,15 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_RESTORE_KEY_EXISTS;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
@@ -36,6 +36,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RedisRestoreKeyExistsException;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
@@ -49,6 +50,7 @@ public abstract class AbstractRedisData implements RedisData {
   private static final BucketRegion.PrimaryMoveReadLockAcquired primaryMoveReadLockAcquired =
       new BucketRegion.PrimaryMoveReadLockAcquired();
 
+  private static final Logger logger = LogService.getLogger();
   public static final long NO_EXPIRATION = -1L;
 
   /**
@@ -223,10 +225,7 @@ public abstract class AbstractRedisData implements RedisData {
       throw new RedisRestoreKeyExistsException(ERROR_RESTORE_KEY_EXISTS);
     }
 
-    ByteArrayInputStream bais = new ByteArrayInputStream(data);
-    Object obj = DataSerializer.readObject(new DataInputStream(bais));
-
-    return (RedisData) obj;
+    return restore(data);
   }
 
   private <T> ArrayList<T> readArrayList(DataInput in) throws IOException {

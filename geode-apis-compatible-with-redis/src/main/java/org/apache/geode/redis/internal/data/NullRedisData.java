@@ -16,20 +16,15 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_RESTORE_INVALID_PAYLOAD;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.RegionProvider;
 
 /**
@@ -97,21 +92,12 @@ public class NullRedisData implements RedisData {
 
   @Override
   public byte[] dump() {
-    return new byte[0];
+    return null;
   }
 
   @Override
-  public RedisData restore(byte[] data, boolean replaceExisting) {
-    Object obj;
-
-    try {
-      ByteArrayInputStream bais = new ByteArrayInputStream(data);
-      obj = DataSerializer.readObject(new DataInputStream(bais));
-    } catch (Exception ex) {
-      throw new RedisException(ERROR_RESTORE_INVALID_PAYLOAD, ex);
-    }
-
-    return (RedisData) obj;
+  public RedisData restore(byte[] data, boolean replaceExisting) throws Exception {
+    return restore(data);
   }
 
   @Override

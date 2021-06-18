@@ -17,16 +17,22 @@
 package org.apache.geode.redis.internal.data;
 
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_RESTORE_INVALID_PAYLOAD;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.size.Sizeable;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public interface RedisData extends Delta, DataSerializableFixedID, Sizeable {
-
 
   /**
    * Returns true if this instance does not exist.
@@ -68,5 +74,19 @@ public interface RedisData extends Delta, DataSerializableFixedID, Sizeable {
   byte[] dump() throws IOException;
 
   RedisData restore(byte[] data, boolean replaceExisting) throws Exception;
+
+  default RedisData restore(byte[] data) throws Exception {
+    Object obj;
+
+    try {
+      ByteArrayInputStream bais = new ByteArrayInputStream(data);
+      obj = DataSerializer.readObject(new DataInputStream(bais));
+    } catch (Exception ex) {
+      LogService.getLogger().warn("Exception restoring data", ex);
+      throw new RedisException(ERROR_RESTORE_INVALID_PAYLOAD, ex);
+    }
+
+    return (RedisData) obj;
+  }
 
 }

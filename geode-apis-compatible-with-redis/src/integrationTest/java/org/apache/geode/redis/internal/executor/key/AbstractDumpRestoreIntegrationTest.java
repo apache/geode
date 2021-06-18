@@ -129,6 +129,11 @@ public abstract class AbstractDumpRestoreIntegrationTest implements RedisIntegra
   }
 
   @Test
+  public void dumpReturnsNull_whenKeyDoesNotExist() {
+    assertThat(jedis.dump("unknown")).isNull();
+  }
+
+  @Test
   public void dumpAndRestoreString() {
     lettuce.set("dumped", STRING_VALUE);
 
@@ -177,9 +182,20 @@ public abstract class AbstractDumpRestoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void restore_withAbsTTL_inThePast() {
+  public void restore_withAbsTTL_inThePast_notReplacing() {
     long absttl = System.currentTimeMillis() - 10000;
     lettuce.restore("restored", RESTORE_BYTES, new RestoreArgs().ttl(absttl).absttl());
+
+    String response = lettuce.get("restored");
+
+    assertThat(response).isNull();
+  }
+
+  @Test
+  public void restore_withAbsTTL_inThePast_andReplacing() {
+    lettuce.set("restored", "already exists");
+    long absttl = System.currentTimeMillis() - 10000;
+    lettuce.restore("restored", RESTORE_BYTES, new RestoreArgs().ttl(absttl).absttl().replace());
 
     String response = lettuce.get("restored");
 

@@ -101,7 +101,15 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
 
   @Override
   public byte[] dump(RedisKey key) {
-    return stripedExecute(key, () -> getRedisData(key).dump());
+    byte[] dumpBytes = stripedExecute(key, () -> getRedisData(key).dump());
+
+    if (dumpBytes == null) {
+      getRegionProvider().getRedisStats().incKeyspaceMisses();
+    } else {
+      getRegionProvider().getRedisStats().incKeyspaceHits();
+    }
+
+    return dumpBytes;
   }
 
   @Override

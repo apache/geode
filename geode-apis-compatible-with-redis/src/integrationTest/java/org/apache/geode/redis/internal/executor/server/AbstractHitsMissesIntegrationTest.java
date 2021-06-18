@@ -27,14 +27,18 @@ import java.util.function.Consumer;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.RedisTestHelper;
 import org.apache.geode.redis.internal.PassiveExpirationManager;
+import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrationTest {
@@ -44,8 +48,15 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   protected Jedis jedis;
 
+  @BeforeClass
+  public static void classSetup() {
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REDIS_HASH_ID,
+        RedisHash.class);
+  }
+
   @Before
-  public void classSetup() {
+  public void setup() {
     jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
 
     jedis.set("string", "yarn");
@@ -100,6 +111,51 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testDel() {
     runCommandAndAssertNoStatUpdates("string", k -> jedis.del(k));
+  }
+
+  @Test
+  public void testExpire() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expire(k, 5));
+  }
+
+  @Test
+  public void testPassiveExpiration() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> {
+      jedis.expire(k, 1);
+      GeodeAwaitility.await().atMost(Duration.ofMinutes(PassiveExpirationManager.INTERVAL * 2))
+          .until(() -> jedis.keys("hash").isEmpty());
+    });
+  }
+
+  @Test
+  public void testExpireAt() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expireAt(k, 2145916800));
+  }
+
+  @Test
+  public void testPExpire() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.pexpire(k, 1024));
+  }
+
+  @Test
+  public void testPExpireAt() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.pexpireAt(k, 1608247597));
+  }
+
+  @Test
+  public void testPersist() {
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.persist(k));
+  }
+
+  @Test
+  public void testDump() {
+    runCommandAndAssertHitsAndMisses("hash", (k) -> jedis.dump(k));
+  }
+
+  @Test
+  public void testRestore() {
+    byte[] data = jedis.dump("hash");
+    runCommandAndAssertNoStatUpdates("hash-2", (k) -> jedis.restore(k, 0, data));
   }
 
   /************* String related commands *************/
@@ -293,41 +349,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testHsetnx() {
     runCommandAndAssertNoStatUpdates("hash", (k, f, v) -> jedis.hsetnx(k, f, v));
-  }
-
-  /************* Key related commands *************/
-  @Test
-  public void testExpire() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expire(k, 5L));
-  }
-
-  @Test
-  public void testPassiveExpiration() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> {
-      jedis.expire(k, 1L);
-      GeodeAwaitility.await().atMost(Duration.ofMinutes(PassiveExpirationManager.INTERVAL * 2))
-          .until(() -> jedis.keys("hash").isEmpty());
-    });
-  }
-
-  @Test
-  public void testExpireAt() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expireAt(k, 2145916800));
-  }
-
-  @Test
-  public void testPExpire() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.pexpire(k, 1024));
-  }
-
-  @Test
-  public void testPExpireAt() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.pexpireAt(k, 1608247597));
-  }
-
-  @Test
-  public void testPersist() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.persist(k));
   }
 
   /**********************************************
