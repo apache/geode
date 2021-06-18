@@ -33,6 +33,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_A;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_Z;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMOVED;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNIL;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INFINITY;
@@ -225,22 +226,16 @@ public class Coder {
     return getErrorResponse0(buffer, bOOM, error);
   }
 
+  public static ByteBuf getWrongTypeResponse(ByteBuf buffer, String error) {
+    return getErrorResponse0(buffer, bWRONGTYPE, error);
+  }
+
   public static ByteBuf getCustomErrorResponse(ByteBuf buffer, String error) {
     byte[] errorAr = stringToBytes(error);
     buffer.writeByte(ERROR_ID);
     buffer.writeBytes(errorAr);
     buffer.writeBytes(bCRLF);
     return buffer;
-  }
-
-  public static ByteBuf getWrongTypeResponse(ByteBuf buffer, String error) {
-    byte[] errorAr = stringToBytes(error);
-    buffer.writeByte(ERROR_ID);
-    buffer.writeBytes(bWRONGTYPE);
-    buffer.writeBytes(errorAr);
-    buffer.writeBytes(bCRLF);
-    return buffer;
-    return getErrorResponse0(buffer, WRONGTYPE, error);
   }
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, int integer) {

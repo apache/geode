@@ -90,6 +90,9 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bWRONGTYPE = stringToBytes("WRONGTYPE ");
 
+  @MakeImmutable
+  public static final byte[] bMOVED = stringToBytes("MOVED ");
+
   // ********** Redis Command constants **********
 
   // ClusterExecutor
