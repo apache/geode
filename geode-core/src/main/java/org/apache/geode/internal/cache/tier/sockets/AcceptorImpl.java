@@ -1444,11 +1444,10 @@ public class AcceptorImpl implements Acceptor, Runnable {
       if (isSelector()) {
         if (socketCreator.forCluster().useSSL()) {
           ioFilter = createNIOSSLEngine(socket.getChannel());
-          communicationMode = getCommunicationModeForSSLSelector(socket, ioFilter);
         } else {
           ioFilter = new NioPlainEngine(bufferPool);
-          communicationMode = getCommunicationModeForSelector(socket);
         }
+        communicationMode = getCommunicationModeForSelector(socket, ioFilter);
       } else {
         ioFilter = null;
         communicationMode = getCommunicationModeForNonSelector(socket);
@@ -1633,43 +1632,12 @@ public class AcceptorImpl implements Acceptor, Runnable {
     return CommunicationMode.fromModeNumber(communicationModeByte);
   }
 
-  private CommunicationMode getCommunicationModeForSelector(Socket socket) throws IOException {
-    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1);
-    final SocketChannel socketChannel = socket.getChannel();
-    socketChannel.configureBlocking(false);
-    // try to read the byte first in non-blocking mode
-    int res = socketChannel.read(byteBuffer);
-    socketChannel.configureBlocking(true);
-    if (res < 0) {
-      throw new EOFException();
-    }
-    if (res == 0) {
-      // now do a blocking read so setup a timer to close the socket if the
-      // the read takes too long
-      SystemTimer.SystemTimerTask timerTask = new SystemTimer.SystemTimerTask() {
-        @Override
-        public void run2() {
-          logger.warn("Cache server: timed out waiting for handshake from {}",
-              socket.getRemoteSocketAddress());
-          closeSocket(socket);
-        }
-      };
-      hsTimer.schedule(timerTask, acceptTimeout);
-      res = socketChannel.read(byteBuffer);
-      if (!timerTask.cancel() || res <= 0) {
-        throw new EOFException();
-      }
-    }
-    return CommunicationMode.fromModeNumber(byteBuffer.get(0));
-  }
-
-  private CommunicationMode getCommunicationModeForSSLSelector(Socket socket,
+  private CommunicationMode getCommunicationModeForSelector(Socket socket,
       NioFilter ioFilter)
       throws IOException {
 
-    NioSslEngine sslengine = (NioSslEngine) ioFilter;
     final SocketChannel socketChannel = socket.getChannel();
-    ByteBuffer inbuffer = sslengine.getHandshakeBuffer();
+    ByteBuffer inbuffer = ioFilter.getCommunicationModeInputBuffer();
 
     if (inbuffer.position() == 0) {
       socketChannel.configureBlocking(false);
@@ -1698,15 +1666,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
     }
 
     inbuffer.flip();
-    byte modeNumber = 0;
-    try (final ByteBufferSharing sharedBuffer = sslengine.unwrap(inbuffer)) {
-      final ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
-      bufferPool.releaseReceiveBuffer(inbuffer);
-      unwrapbuff.flip();
-      modeNumber = unwrapbuff.get();
-    }
-
-    return CommunicationMode.fromModeNumber(modeNumber);
+    return CommunicationMode.fromModeNumber(ioFilter.getCommunicationMode(inbuffer));
 
   }
 

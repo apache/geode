@@ -141,7 +141,6 @@ public class NioPlainEngine implements NioFilter {
     return shareBuffer(unwrappedBuffer);
   }
 
-
   private ByteBufferSharingNoOp shareBuffer(final ByteBuffer wrappedBuffer) {
     return new ByteBufferSharingNoOp(wrappedBuffer);
   }
@@ -161,5 +160,11 @@ public class NioPlainEngine implements NioFilter {
     lastProcessedPosition = 0;
   }
 
+  public ByteBuffer getCommunicationModeInputBuffer() {
+    return ByteBuffer.allocateDirect(1);
+  }
 
+  public byte getCommunicationMode(ByteBuffer wrappedBuffer) throws IOException {
+    return wrappedBuffer.get();
+  }
 }

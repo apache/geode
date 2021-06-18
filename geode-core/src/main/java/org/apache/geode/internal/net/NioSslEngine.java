@@ -444,7 +444,8 @@ public class NioSslEngine implements NioFilter {
     return inputBufferVendor;
   }
 
-  public ByteBuffer getHandshakeBuffer() {
+  @Override
+  public ByteBuffer getCommunicationModeInputBuffer() {
     return handshakeBuffer;
   }
 
@@ -477,5 +478,15 @@ public class NioSslEngine implements NioFilter {
       doneReading(unwrapbuff);
     }
   }
+
+  @Override
+  public byte getCommunicationMode(ByteBuffer wrappedBuffer) throws IOException {
+    try (final ByteBufferSharing sharedBuffer = unwrap(wrappedBuffer)) {
+      final ByteBuffer unwrapbuff = sharedBuffer.getBuffer();
+      bufferPool.releaseReceiveBuffer(wrappedBuffer);
+      unwrapbuff.flip();
+      return unwrapbuff.get();
+    }
+  };
 
 }

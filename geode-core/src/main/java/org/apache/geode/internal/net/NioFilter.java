@@ -116,4 +116,7 @@ public interface NioFilter {
 
   void initReadBuffer() throws IOException;
 
+  ByteBuffer getCommunicationModeInputBuffer();
+
+  byte getCommunicationMode(ByteBuffer wrappedBuffer) throws IOException;
 }
