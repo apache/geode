@@ -321,9 +321,9 @@ public class TXRegionState {
 
         TXCommitMessage.RegionCommit regionCommit = msg.startRegion(r, entryMods.size());
         Iterator it = this.entryMods.entrySet().iterator();
-        Set<InternalDistributedMember> newMemberSet = new HashSet<InternalDistributedMember>();
+        Set<InternalDistributedMember> newMemberSet = new HashSet();
         Set<InternalDistributedMember> redundantMemberSet =
-            new HashSet<InternalDistributedMember>();
+            new HashSet();
 
         if (r.getScope().isDistributed()) {
           DistributedRegion dr = (DistributedRegion) r;
@@ -345,7 +345,10 @@ public class TXRegionState {
           TXEntryState txes = (TXEntryState) me.getValue();
           txes.buildMessage(r, eKey, msg, this.otherMembers);
           if (txes.getFilterRoutingInfo() != null) {
-            HashSet tempSet = new HashSet(txes.getAdjunctRecipients());
+            Set<InternalDistributedMember> tempSet = new HashSet();
+            if (txes.getAdjunctRecipients() != null) {
+              tempSet.addAll(txes.getAdjunctRecipients());
+            }
             // exclude members that actually host targeted bucket from notification only list
             tempSet.removeAll(redundantMemberSet);
             if (!tempSet.isEmpty()) {
