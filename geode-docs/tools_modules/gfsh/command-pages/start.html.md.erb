@@ -120,7 +120,7 @@ start gateway-sender --id=value [--groups=value(,value)*] [--members=value(,valu
 |--------------|----------------|---------------|
 | \\-\\-id           | *Required.* ID of the GatewaySender.                      | |
 | \\-\\-groups       | Group(s) of members on which to start the Gateway Sender. | |
-| \\-\\-members      | Member(s) on which to start the Gateway Sender. | |
+| &#8209;&#8209;members      | Member(s) on which to start the Gateway Sender. | |
 | \\-\\-clean-queues | Option to clean existing queue at start of the Gateway Sender. This option is only applicable for Gateway Senders with enabled persistence. | false |
 
 **Example Commands:**
@@ -178,7 +178,7 @@ start jconsole [--interval=<seconds>] [--notile] [--version]
 |------------------|----------------|---------------|
 | \\-\\-interval   | Set the update interval to n seconds (default is 4 seconds). (Equivalent to JConsole's `-interval=n`) | 4 |
 | \\-\\-notile     | Whether to initially tile windows for two or more connections. This parameter is passed as `-notile` to JConsole. | false |
-| \\-\\-pluginpath | Directories or JAR files which are searched for JConsole plugins. The path should contain a provider-configuration file named:`META-INF/services/com.sun.tools.jconsole.JConsolePlugin` containing one line for each plugin specifying the fully qualified class name of the class implementing the `com.sun.tools.jconsole.JConsolePlugin` class. | |
+| &#8209;&#8209;pluginpath | Directories or JAR files which are searched for JConsole plugins. The path should contain a provider-configuration file named:`META-INF/services/com.sun.tools.jconsole.JConsolePlugin` containing one line for each plugin specifying the fully qualified class name of the class implementing the `com.sun.tools.jconsole.JConsolePlugin` class. | |
 | \\-\\-version    | Display the JConsole version information. This parameter is passed as `-version` to JConsole. | false |
 | \\-\\-J          | Arguments passed to the JVM on which JConsole runs | |
 
@@ -402,8 +402,8 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 | \\-\\-log-level                       | Sets the level of output logged to the Cache Server log file. Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF. | |
 | \\-\\-mcast-address                   | The IP address or hostname used to bind the UDP socket for multi-cast networking so the Cache Server can locate other members in the <%=vars.product_name%> cluster. If mcast-port is zero, then mcast-address is ignored. | |
 | \\-\\-mcast-port                      | Sets the port used for multi-cast networking so the Cache Server can locate other members of the <%=vars.product_name%> cluster. A zero value disables mcast. | |
-| \\-\\-memcached-port                  | If specified and is non-zero, sets the port number for an embedded Gemcached server and starts the Gemcached server. | |
-| \\-\\-memcached-protocol              | Sets the protocol used by an embedded Gemcached server. Valid values are `BINARY` and `ASCII`. If you omit this property, the ASCII protocol is used. | |
+| &#8209;&#8209;memcached-port                  | If specified and is non-zero, sets the port number for an embedded Gemcached server and starts the Gemcached server. | |
+| &#8209;&#8209;memcached-protocol              | Sets the protocol used by an embedded Gemcached server. Valid values are `BINARY` and `ASCII`. If you omit this property, the ASCII protocol is used. | |
 | \\-\\-server-bind-address             | Overrides the `bind-address` on which this server will listen for client connections. Set this option in a multi-homed server environment to distinguish communications from clients. Setting a value of the empty string (&quot;&quot;) uses the value of `bind-address`. | value of `bind-address` |
 | \\-\\-server-port                     | Port the Server will listen on for client connections. | 40404 |
 | \\-\\-spring-xml-location             | Specifies the location of a Spring XML configuration file(s) for bootstrapping and configuring a <%=vars.product_name%> Server. This configuration file can exist on the CLASSPATH (default) or any location supported by Spring's Resource(Loader) location specifiers (for example, classpath:, file:, etc).<br/>ResourceLoader is described in the <a href="http://docs.spring.io/spring/docs/4.0.9.RELEASE/spring-framework-reference/htmlsingle/#resources-resourceloader">Spring documentation</a>. | |
