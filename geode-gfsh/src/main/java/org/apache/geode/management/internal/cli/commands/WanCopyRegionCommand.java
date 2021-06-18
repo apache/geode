@@ -58,9 +58,10 @@ public class WanCopyRegionCommand extends GfshCommand {
 
     authorize(Resource.DATA, Operation.WRITE, regionName);
     final Object[] args = {regionName, senderId, isCancel, maxRate, batchSize};
-    ResultCollector<?, ?> rc =
+    ResultCollector<?, ?> resultCollector =
         executeFunction(wanCopyRegionFunction, args, getAllNormalMembers());
-    final List<CliFunctionResult> cliFunctionResults = getCliFunctionResults((List) rc.getResult());
+    final List<CliFunctionResult> cliFunctionResults =
+        getCliFunctionResults((List) resultCollector.getResult());
     return ResultModel.createMemberStatusResult(cliFunctionResults, false, false);
   }
 

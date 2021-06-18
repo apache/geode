@@ -15,19 +15,21 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -99,23 +101,29 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
   private static final int MAX_BATCH_SEND_RETRIES = 1;
 
-  private Clock clock = Clock.systemDefaultZone();
-  private ThreadSleeper threadSleeper = new ThreadSleeper();
+  private static final int THREAD_POOL_SIZE = 10;
 
-  static class ThreadSleeper implements Serializable {
-    void millis(long millis) throws InterruptedException {
-      Thread.sleep(millis);
-    }
+  private final Clock clock;
+  private final ThreadSleeper threadSleeper;
+
+  private static final ExecutorService executor = LoggingExecutors
+      .newFixedThreadPool(THREAD_POOL_SIZE, "wanCopyRegionFunctionThread_", true);
+
+  /**
+   * Contains the ongoing executions of this function
+   */
+  private static final Map<String, Future> executions = new ConcurrentHashMap<>();
+
+  private volatile int batchId = 0;
+
+  public WanCopyRegionFunction() {
+    this(Clock.systemDefaultZone(), new ThreadSleeper());
   }
 
   @VisibleForTesting
-  public void setClock(Clock clock) {
+  WanCopyRegionFunction(Clock clock, ThreadSleeper threadSleeper) {
     this.clock = clock;
-  }
-
-  @VisibleForTesting
-  public void setThreadSleeper(ThreadSleeper ts) {
-    this.threadSleeper = ts;
+    this.threadSleeper = threadSleeper;
   }
 
   @Override
@@ -146,11 +154,15 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     long maxRate = (Long) args[3];
     int batchSize = (Integer) args[4];
 
-    final InternalCache cache = (InternalCache) context.getCache();
+    if (regionName.endsWith("*") && senderId.equals("*") && isCancel) {
+      return cancelAllWanCopyRegion(context);
+    }
 
     if (isCancel) {
       return cancelWanCopyRegion(context, regionName, senderId);
     }
+
+    final InternalCache cache = (InternalCache) context.getCache();
 
     final Region region = cache.getRegion(regionName);
     if (region == null) {
@@ -184,14 +196,10 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     try {
       return executeWanCopyRegionFunctionInNewThread(context, region, regionName, sender, maxRate,
           batchSize);
-    } catch (InterruptedException e) {
+    } catch (InterruptedException | CancellationException e) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-          CliStrings.WAN_COPY_REGION__MSG__EXECUTION__CANCELED);
+          CliStrings.WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED);
     } catch (ExecutionException e) {
-      Writer buffer = new StringWriter();
-      PrintWriter pw = new PrintWriter(buffer);
-      e.printStackTrace(pw);
-      logger.error("Exception when running wan-copy region command: {}", buffer.toString());
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__EXECUTION__FAILED, e.getMessage()));
     }
@@ -200,14 +208,24 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   private CliFunctionResult executeWanCopyRegionFunctionInNewThread(
       FunctionContext<Object[]> context,
       Region region, String regionName, GatewaySender sender, long maxRate, int batchSize)
-      throws InterruptedException, ExecutionException {
-    ExecutorService executor = LoggingExecutors
-        .newSingleThreadExecutor(getFunctionThreadName(regionName,
-            sender.getId()), true);
+      throws InterruptedException, ExecutionException, CancellationException {
+    String executionName = getExecutionName(regionName, sender.getId());
     Callable<CliFunctionResult> callable =
         new wanCopyRegionCallable(context, region, sender, maxRate, batchSize);
-    Future<CliFunctionResult> future = executor.submit(callable);
-    return future.get();
+    FutureTask<CliFunctionResult> future = new FutureTask<>(callable);
+
+    if (executions.putIfAbsent(executionName, future) != null) {
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+          CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND,
+              regionName, sender.getId()));
+    }
+
+    try {
+      executor.execute(future);
+      return future.get();
+    } finally {
+      executions.remove(executionName);
+    }
   }
 
   class wanCopyRegionCallable implements Callable<CliFunctionResult> {
@@ -235,87 +253,35 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
   @VisibleForTesting
   CliFunctionResult wanCopyRegion(FunctionContext<Object[]> context, Region region,
-      GatewaySender sender, long maxRate, int batchSize) {
-    Connection connection = null;
-    PoolImpl senderPool = null;
+      GatewaySender sender, long maxRate, int batchSize) throws InterruptedException {
+    ConnectionState connectionState = new ConnectionState();
     int copiedEntries = 0;
+    final InternalCache cache = (InternalCache) context.getCache();
+    Iterator<?> entriesIter = getEntries(region, sender).iterator();
+    final long startTime = clock.millis();
 
     try {
-      final long startTime = clock.millis();
-      int batchId = 0;
-      final InternalCache cache = (InternalCache) context.getCache();
-      GatewaySenderEventDispatcher dispatcher =
-          ((AbstractGatewaySender) sender).getEventProcessor().getDispatcher();
-      Iterator<?> entriesIter = getEntries(region, sender).iterator();
       while (entriesIter.hasNext()) {
         List<GatewayQueueEvent> batch =
             createBatch((InternalRegion) region, sender, batchSize, cache, entriesIter);
         if (batch.size() == 0) {
           continue;
         }
-        if (senderPool == null) {
-          senderPool = ((AbstractGatewaySender) sender).getProxy();
-          if (senderPool == null) {
-            return new CliFunctionResult(context.getMemberName(),
-                CliFunctionResult.StatusState.ERROR,
-                CliStrings.WAN_COPY_REGION__MSG__NO__CONNECTION__POOL);
-          }
-          connection = senderPool.acquireConnection();
-          if (connection.getWanSiteVersion() < KnownVersion.GEODE_1_15_0.ordinal()) {
-            return new CliFunctionResult(context.getMemberName(),
-                CliFunctionResult.StatusState.ERROR,
-                CliStrings.WAN_COPY_REGION__MSG__COMMAND__NOT__SUPPORTED__AT__REMOTE__SITE);
-          }
+        Optional<CliFunctionResult> connectionError =
+            connectionState.connectIfNeeded(context, sender);
+        if (connectionError.isPresent()) {
+          return connectionError.get();
         }
-        int retries = 0;
-        while (true) {
-          try {
-            dispatcher.sendBatch(batch, connection, senderPool, batchId++, true);
-            copiedEntries += batch.size();
-            break;
-          } catch (BatchException70 e) {
-            return new CliFunctionResult(context.getMemberName(),
-                CliFunctionResult.StatusState.ERROR,
-                CliStrings.format(
-                    CliStrings.WAN_COPY_REGION__MSG__ERROR__AFTER__HAVING__COPIED,
-                    e.getMessage(), copiedEntries));
-          } catch (ConnectionDestroyedException | ServerConnectivityException e) {
-            ((PooledConnection) connection).setShouldDestroy();
-            senderPool.returnConnection(connection);
-            connection = null;
-            if (retries++ >= MAX_BATCH_SEND_RETRIES) {
-              return new CliFunctionResult(context.getMemberName(),
-                  CliFunctionResult.StatusState.ERROR,
-                  CliStrings.format(
-                      CliStrings.WAN_COPY_REGION__MSG__ERROR__AFTER__HAVING__COPIED,
-                      "Connection error", copiedEntries));
-            }
-            logger.error("Exception {} in sendBatch. Retrying", e.getClass().getName());
-            try {
-              connection = senderPool.acquireConnection();
-            } catch (NoAvailableServersException | AllConnectionsInUseException e1) {
-              return new CliFunctionResult(context.getMemberName(),
-                  CliFunctionResult.StatusState.ERROR,
-                  CliStrings.format(
-                      CliStrings.WAN_COPY_REGION__MSG__NO__CONNECTION,
-                      copiedEntries));
-            }
-          }
+        Optional<CliFunctionResult> error =
+            sendBatch(context, sender, batch, connectionState, copiedEntries);
+        if (error.isPresent()) {
+          return error.get();
         }
-        try {
-          doPostSendBatchActions(startTime, copiedEntries, maxRate);
-        } catch (InterruptedException e) {
-          return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
-              CliStrings.format(
-                  CliStrings.WAN_COPY_REGION__MSG__CANCELED__AFTER__HAVING__COPIED,
-                  copiedEntries));
-        }
+        copiedEntries += batch.size();
+        doPostSendBatchActions(startTime, copiedEntries, maxRate);
       }
     } finally {
-      if (senderPool != null && connection != null) {
-        ((PooledConnection) connection).setShouldDestroy();
-        senderPool.returnConnection(connection);
-      }
+      connectionState.close();
     }
 
     if (region.isDestroyed()) {
@@ -331,10 +297,39 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
             copiedEntries));
   }
 
+  private Optional<CliFunctionResult> sendBatch(FunctionContext<Object[]> context,
+      GatewaySender sender, List<GatewayQueueEvent> batch,
+      ConnectionState connectionState, int copiedEntries) {
+    GatewaySenderEventDispatcher dispatcher =
+        ((AbstractGatewaySender) sender).getEventProcessor().getDispatcher();
+    int retries = 0;
+
+    while (true) {
+      try {
+        dispatcher.sendBatch(batch, connectionState.getConnection(),
+            connectionState.getSenderPool(), getAndIncrementBatchId(), true);
+        return Optional.empty();
+      } catch (BatchException70 e) {
+        return Optional.of(new CliFunctionResult(context.getMemberName(),
+            CliFunctionResult.StatusState.ERROR,
+            CliStrings.format(
+                CliStrings.WAN_COPY_REGION__MSG__ERROR__AFTER__HAVING__COPIED,
+                e.getMessage(), copiedEntries)));
+      } catch (ConnectionDestroyedException | ServerConnectivityException e) {
+        Optional<CliFunctionResult> error =
+            connectionState.reconnect(context, retries++, copiedEntries, e);
+        if (error.isPresent()) {
+          return error;
+        }
+      }
+    }
+  }
+
   List<GatewayQueueEvent> createBatch(InternalRegion region, GatewaySender sender,
       int batchSize, InternalCache cache, Iterator<?> iter) {
     int batchIndex = 0;
     List<GatewayQueueEvent> batch = new ArrayList<>();
+
     while (iter.hasNext() && batchIndex < batchSize) {
       GatewayQueueEvent event =
           createGatewaySenderEvent(cache, region, sender, (Region.Entry) iter.next());
@@ -371,32 +366,36 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
       return new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE_WITH_GENERATE_CALLBACKS,
           event, null, true);
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Error when creating event in wan-copy: {}", e);
       return null;
     }
   }
 
   final CliFunctionResult cancelWanCopyRegion(FunctionContext<Object[]> context,
       String regionName, String senderId) {
-    boolean found = false;
-    String threadBaseName = getFunctionThreadName(regionName, senderId);
-    for (Thread t : Thread.getAllStackTraces().keySet()) {
-      if (t.getName().startsWith(threadBaseName)) {
-        found = true;
-        t.interrupt();
-      }
+    Future execution = executions.remove(getExecutionName(regionName, senderId));
+    if (execution == null) {
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+          CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND,
+              regionName, senderId));
     }
-    if (found) {
-      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
-          CliStrings.WAN_COPY_REGION__MSG__EXECUTION__CANCELED);
-    }
-    return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-        CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND,
-            regionName, senderId));
+    execution.cancel(true);
+    return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+        CliStrings.WAN_COPY_REGION__MSG__EXECUTION__CANCELED);
   }
 
-  public static String getFunctionThreadName(String regionName, String senderId) {
-    return "wanCopyRegionFunctionThread_" + regionName + "_" + senderId;
+  final CliFunctionResult cancelAllWanCopyRegion(FunctionContext<Object[]> context) {
+    String executionsString = executions.keySet().toString();
+    for (Future execution : executions.values()) {
+      execution.cancel(true);
+    }
+    executions.clear();
+    return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+        CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__EXECUTIONS__CANCELED, executionsString));
+  }
+
+  public static String getExecutionName(String regionName, String senderId) {
+    return "(" + regionName + "," + senderId + ")";
   }
 
   /**
@@ -410,15 +409,23 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
    */
   void doPostSendBatchActions(long startTime, int copiedEntries, long maxRate)
       throws InterruptedException {
-    if (Thread.currentThread().isInterrupted()) {
-      throw new InterruptedException();
-    }
     long sleepMs = getTimeToSleep(startTime, copiedEntries, maxRate);
     if (sleepMs > 0) {
       logger.info("{}: Sleeping for {} ms to accommodate to requested maxRate",
-          this.getClass().getName(), sleepMs);
+          this.getClass().getSimpleName(), sleepMs);
       threadSleeper.millis(sleepMs);
+    } else {
+      if (Thread.currentThread().isInterrupted()) {
+        throw new InterruptedException();
+      }
     }
+  }
+
+  private int getAndIncrementBatchId() {
+    if (batchId + 1 == Integer.MAX_VALUE) {
+      batchId = 0;
+    }
+    return batchId++;
   }
 
   @VisibleForTesting
@@ -476,5 +483,75 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     }
     event.setNewEventId(cache.getInternalDistributedSystem());
     return event;
+  }
+
+  static class ConnectionState {
+    private volatile Connection connection = null;
+    private volatile PoolImpl senderPool = null;
+
+    public Connection getConnection() {
+      return connection;
+    }
+
+    public PoolImpl getSenderPool() {
+      return senderPool;
+    }
+
+    public Optional<CliFunctionResult> connectIfNeeded(FunctionContext<Object[]> context,
+        GatewaySender sender) {
+      if (senderPool == null) {
+        senderPool = ((AbstractGatewaySender) sender).getProxy();
+        if (senderPool == null) {
+          return Optional.of(new CliFunctionResult(context.getMemberName(),
+              CliFunctionResult.StatusState.ERROR,
+              CliStrings.WAN_COPY_REGION__MSG__NO__CONNECTION__POOL));
+        }
+        connection = senderPool.acquireConnection();
+        if (connection.getWanSiteVersion() < KnownVersion.GEODE_1_15_0.ordinal()) {
+          return Optional.of(new CliFunctionResult(context.getMemberName(),
+              CliFunctionResult.StatusState.ERROR,
+              CliStrings.WAN_COPY_REGION__MSG__COMMAND__NOT__SUPPORTED__AT__REMOTE__SITE));
+        }
+      }
+      return Optional.empty();
+    }
+
+    public Optional<CliFunctionResult> reconnect(FunctionContext<Object[]> context, int retries,
+        int copiedEntries, Exception e) {
+      ((PooledConnection) connection).setShouldDestroy();
+      senderPool.returnConnection(connection);
+      connection = null;
+      if (retries++ >= MAX_BATCH_SEND_RETRIES) {
+        return Optional.of(new CliFunctionResult(context.getMemberName(),
+            CliFunctionResult.StatusState.ERROR,
+            CliStrings.format(
+                CliStrings.WAN_COPY_REGION__MSG__ERROR__AFTER__HAVING__COPIED,
+                "Connection error", copiedEntries)));
+      }
+      logger.error("Exception {} in sendBatch. Retrying", e.getClass().getName());
+      try {
+        connection = senderPool.acquireConnection();
+      } catch (NoAvailableServersException | AllConnectionsInUseException e1) {
+        return Optional.of(new CliFunctionResult(context.getMemberName(),
+            CliFunctionResult.StatusState.ERROR,
+            CliStrings.format(
+                CliStrings.WAN_COPY_REGION__MSG__NO__CONNECTION,
+                copiedEntries)));
+      }
+      return Optional.empty();
+    }
+
+    void close() {
+      if (senderPool != null && connection != null) {
+        ((PooledConnection) connection).setShouldDestroy();
+        senderPool.returnConnection(connection);
+      }
+    }
+  }
+
+  static class ThreadSleeper implements Serializable {
+    void millis(long millis) throws InterruptedException {
+      Thread.sleep(millis);
+    }
   }
 }

@@ -21,9 +21,13 @@ import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGI
 import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__BATCHSIZE;
 import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__CANCEL;
 import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MAXRATE;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__CANCELED__AFTER__HAVING__COPIED;
+import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED;
+import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__COPIED__ENTRIES;
 import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__EXECUTION__CANCELED;
 import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND;
+import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__REGION__NOT__FOUND;
+import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__SENDER__NOT__FOUND;
+import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY;
 import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__REGION;
 import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__SENDERID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,7 +109,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     CommandResultAssert command =
         verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
     String message =
-        CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__REGION__NOT__FOUND,
+        CliStrings.format(WAN_COPY_REGION__MSG__REGION__NOT__FOUND,
             Region.SEPARATOR + regionName);
     command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
         .containsExactly(message, message, message);
@@ -140,7 +144,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     CommandResultAssert command =
         verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
     String message =
-        CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__SENDER__NOT__FOUND, senderIdInA);
+        CliStrings.format(WAN_COPY_REGION__MSG__SENDER__NOT__FOUND, senderIdInA);
     command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
         .containsExactly(message, message, message);
   }
@@ -354,15 +358,33 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     testSenderOrReceiverGoesDownDuringExecution(false, false, Gateway.RECEIVER, false);
   }
 
+  @Test
+  public void testDetectOngoingExecution_WithReplicatedRegionAndSerialGatewaySender()
+      throws Exception {
+    testDetectOngoingExecution(false, false);
+  }
+
+  @Test
+  public void testDetectOngoingExecution_WithPartitionedRegionAndSerialGatewaySender()
+      throws Exception {
+    testDetectOngoingExecution(false, true);
+  }
+
+  @Test
+  public void testDetectOngoingExecution_WithPartitionedRegionAndParallelGatewaySender()
+      throws Exception {
+    testDetectOngoingExecution(true, true);
+  }
+
   private void addIgnoredExceptionsForSenderInUseWentDown() {
     IgnoredException.addIgnoredException(
         "Exception org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException in sendBatch. Retrying");
     IgnoredException.addIgnoredException(
         "Exception org.apache.geode.cache.client.ServerConnectivityException in sendBatch. Retrying");
     IgnoredException.addIgnoredException("DistributedSystemDisconnectedException");
-
+    IgnoredException.addIgnoredException("org.apache.geode.distributed.PoolCancelledException");
     IgnoredException.addIgnoredException(
-        "Exception when running wan-copy region command: java.util.concurrent.ExecutionException: org.apache.geode.distributed.PoolCancelledException");
+        "Exception when running wan-copy region command: ");
     IgnoredException.addIgnoredException(
         "Exception when running wan-copy region command: java.util.concurrent.ExecutionException: org.apache.geode.cache.EntryDestroyedException");
   }
@@ -493,6 +515,123 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
       stopReceiverAndVerifyResult(useParallel, stopPrimarySender, entries, regionName, server1InB,
           server2InB, server3InB, wanCopyCommandFuture);
     }
+  }
+
+  public void testDetectOngoingExecution(boolean useParallel,
+      boolean usePartitionedRegion)
+      throws Exception {
+
+    final int wanCopyRegionBatchSize = 10;
+    final int entries = 1000;
+
+    final String regionName = getRegionName(usePartitionedRegion);
+
+    // Site A
+    VM locatorInA = vm0;
+    VM server1InA = vm1;
+    VM server2InA = vm2;
+    VM server3InA = vm3;
+    List<VM> serversInA = Arrays.asList(server1InA, server2InA, server3InA);
+    final String senderIdInA = "B";
+
+    // Site B
+    VM locatorInB = vm4;
+    VM server1InB = vm5;
+    VM server2InB = vm6;
+    VM server3InB = vm7;
+    List<VM> serversInB = Arrays.asList(server1InB, server2InB, server3InB);
+    VM client = vm8;
+
+    int locatorAPort = create2WanSitesAndClient(locatorInA, serversInA, senderIdInA, locatorInB,
+        serversInB, client, usePartitionedRegion, regionName);
+
+    // Put entries
+    client.invoke(() -> WANTestBase.doClientPutsFrom(regionName, 0, entries));
+    for (VM member : serversInA) {
+      member.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
+    }
+
+    // Create senders and receivers with replication as follows: "A" -> "B"
+    if (useParallel) {
+      createReceiverInVMs(server1InB, server2InB, server3InB);
+      createSenders(useParallel, serversInA, null, senderIdInA, null);
+    } else {
+      // Senders will connect to receiver in server1InB
+      server1InB.invoke(WANTestBase::createReceiver);
+      createSenders(useParallel, serversInA, null, senderIdInA, null);
+      createReceiverInVMs(server2InB, server3InB);
+    }
+
+    CountDownLatch wanCopyCommandStartLatch = new CountDownLatch(1);
+
+    FutureTask<CommandResultAssert> wanCopyCommandFuture =
+        new FutureTask<>(() -> {
+          String command = new CommandStringBuilder(WAN_COPY_REGION)
+              .addOption(WAN_COPY_REGION__REGION, regionName)
+              .addOption(WAN_COPY_REGION__SENDERID, senderIdInA)
+              .addOption(WAN_COPY_REGION__BATCHSIZE, String.valueOf(wanCopyRegionBatchSize))
+              .addOption(WAN_COPY_REGION__MAXRATE, "5")
+              .getCommandString();
+          GfshCommandRule gfsh = new GfshCommandRule();
+          try {
+            gfsh.connectAndVerify(locatorAPort, GfshCommandRule.PortType.locator);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+          wanCopyCommandStartLatch.countDown();
+          return gfsh.executeAndAssertThat(command);
+        });
+    LoggingExecutors.newSingleThreadExecutor(getTestMethodName(), true)
+        .submit(wanCopyCommandFuture);
+
+    // Wait for the wan-copy command to start
+    wanCopyCommandStartLatch.await();
+    Thread.sleep(1000);
+
+    // Execute again the same wan-copy region command
+    GfshCommandRule gfsh = new GfshCommandRule();
+    gfsh.connectAndVerify(locatorAPort, GfshCommandRule.PortType.locator);
+    String commandString = new CommandStringBuilder(WAN_COPY_REGION)
+        .addOption(WAN_COPY_REGION__REGION, regionName)
+        .addOption(WAN_COPY_REGION__SENDERID, senderIdInA)
+        .addOption(WAN_COPY_REGION__BATCHSIZE, String.valueOf(wanCopyRegionBatchSize))
+        .getCommandString();
+
+    // Check command status and output
+    if (useParallel) {
+      CommandResultAssert command =
+          verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
+      Condition<String> exceptionError =
+          new Condition<>(s -> s.startsWith("There is already a command running for"),
+              "Already running command");
+      command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+          .asList().haveExactly(3, exceptionError);
+    } else {
+      CommandResultAssert command =
+          verifyStatusIsErrorInOneServer(gfsh.executeAndAssertThat(commandString));
+      Condition<String> exceptionError =
+          new Condition<>(s -> s.startsWith("There is already a command running for"),
+              "Already running command");
+      Condition<String> senderNotPrimary = new Condition<>(
+          s -> s.equals(CliStrings
+              .format(CliStrings.WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY,
+                  senderIdInA)),
+          "sender not primary");
+      command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+          .asList().haveExactly(1, exceptionError).haveExactly(2, senderNotPrimary);
+    }
+
+    // cancel command
+    GfshCommandRule gfsh1 = new GfshCommandRule();
+    gfsh.connectAndVerify(locatorAPort, GfshCommandRule.PortType.locator);
+    String commandString1 = new CommandStringBuilder(WAN_COPY_REGION)
+        .addOption(WAN_COPY_REGION__REGION, regionName)
+        .addOption(WAN_COPY_REGION__SENDERID, senderIdInA)
+        .addOption(WAN_COPY_REGION__BATCHSIZE, String.valueOf(wanCopyRegionBatchSize))
+        .addOption(WAN_COPY_REGION__CANCEL)
+        .getCommandString();
+    gfsh.executeAndAssertThat(commandString1);
+    wanCopyCommandFuture.get();
   }
 
   private void stopReceiverAndVerifyResult(boolean useParallel, boolean stopPrimarySender,
@@ -710,14 +849,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     CommandResultAssert command =
         verifyStatusIsOk(gfsh.executeAndAssertThat(commandString));
     if (isPartitionedRegion && isParallelGatewaySender) {
-      String msg1 = CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__COPIED__ENTRIES, 33);
-      String msg2 = CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__COPIED__ENTRIES, 34);
+      String msg1 = CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES, 33);
+      String msg2 = CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES, 34);
       command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
           .containsExactlyInAnyOrder(msg1, msg1, msg2);
     } else {
-      String msg1 = CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__COPIED__ENTRIES, 100);
+      String msg1 = CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES, 100);
       String msg2 = CliStrings
-          .format(CliStrings.WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY, senderIdInA);
+          .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY, senderIdInA);
       command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
           .containsExactlyInAnyOrder(msg1, msg2, msg2);
     }
@@ -739,6 +878,8 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     // Check that entries are not copied in "C" (generateCallbacks is false)
     serverInC.invoke(() -> WANTestBase.validateRegionSize(regionName, 0));
   }
+
+
 
   /**
    * Scenario with 2 WAN sites: "A" and "B".
@@ -924,7 +1065,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
             e.printStackTrace();
           }
           wanCopyCommandStartLatch.countDown();
-          return gfsh.executeAndAssertThat(command).statusIsSuccess();
+          return gfsh.executeAndAssertThat(command).statusIsError();
         });
     LoggingExecutors.newSingleThreadExecutor(getTestMethodName(), true)
         .submit(wanCopyCommandFuture);
@@ -960,18 +1101,17 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check wan-copy region command output
     CommandResultAssert wanCopyCommandResult = wanCopyCommandFuture.get();
-    verifyStatusIsOk(wanCopyCommandResult);
     if (isPartitionedRegion && isParallelGatewaySender) {
-      String msg = CliStrings.format(WAN_COPY_REGION__MSG__CANCELED__AFTER__HAVING__COPIED,
-          wanCopyRegionBatchSize);
+      verifyStatusIsError(wanCopyCommandResult);
+      String msg = WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED;
       wanCopyCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
           .containsExactly(msg, msg, msg);
     } else {
+      verifyStatusIsErrorInOneServer(wanCopyCommandResult);
       String msg1 =
-          CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__CANCELED__AFTER__HAVING__COPIED,
-              wanCopyRegionBatchSize);
+          WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED;
       String msg2 = CliStrings
-          .format(CliStrings.WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY, senderIdInA);
+          .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY, senderIdInA);
       wanCopyCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
           .containsExactlyInAnyOrder(msg1, msg2, msg2);
     }

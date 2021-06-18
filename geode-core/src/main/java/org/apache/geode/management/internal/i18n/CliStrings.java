@@ -1454,9 +1454,10 @@ public class CliStrings {
   public static final String WAN_COPY_REGION__MSG__SENDER__NOT__RUNNING =
       "Sender {0} is not running";
   public static final String WAN_COPY_REGION__MSG__EXECUTION__CANCELED = "Execution canceled";
+  public static final String WAN_COPY_REGION__MSG__EXECUTIONS__CANCELED =
+      "Executions canceled: {0}";
   public static final String WAN_COPY_REGION__MSG__EXECUTION__FAILED =
       "Execution failed. Error: {0}";
-  public static final String WAN_COPY_REGION__MSG__ENTRIES__COPIED = "Entries copied: {0}";
   public static final String WAN_COPY_REGION__MSG__NO__CONNECTION__POOL =
       "No connection pool available towards receiver";
   public static final String WAN_COPY_REGION__MSG__COMMAND__NOT__SUPPORTED__AT__REMOTE__SITE =
@@ -1465,11 +1466,14 @@ public class CliStrings {
       "No connection available towards receiver after having copied {0} entries";
   public static final String WAN_COPY_REGION__MSG__ERROR__AFTER__HAVING__COPIED =
       "Error ({0}) in operation after having copied {1} entries";
-  public static final String WAN_COPY_REGION__MSG__CANCELED__AFTER__HAVING__COPIED =
-      "Operation canceled after having copied {0} entries";
+  public static final String WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED =
+      "Operation canceled before having copied all entries";
   public static final String WAN_COPY_REGION__MSG__COPIED__ENTRIES = "Entries copied: {0}";
   public static final String WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND =
       "No running command to be canceled for region {0} and sender {1}";
+  public static final String WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND =
+      "There is already a command running for region {0} and sender {1}";
+
 
   /* export logs command */
   public static final String EXPORT_LOGS = "export logs";

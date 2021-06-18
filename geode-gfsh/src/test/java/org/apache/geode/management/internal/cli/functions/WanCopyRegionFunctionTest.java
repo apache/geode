@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -39,6 +40,7 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.NoAvailableServersException;
@@ -72,17 +74,14 @@ public class WanCopyRegionFunctionTest {
   private Connection connectionMock;
   private GatewaySenderEventDispatcher dispatcherMock;
 
-  @SuppressWarnings("unchecked")
-  private final FunctionContext<Object[]> contextMock = mock(FunctionContext.class);
+  private final FunctionContext<Object[]> contextMock = uncheckedCast(mock(FunctionContext.class));
 
-  @SuppressWarnings("unchecked")
-  private final Region<Object, Object> regionMock = mock(InternalRegion.class, RETURNS_DEEP_STUBS);
+  private final Region<Object, Object> regionMock =
+      uncheckedCast(mock(InternalRegion.class, RETURNS_DEEP_STUBS));
 
-  @SuppressWarnings("unchecked")
-  private final Region.Entry<String, String> entryMock = mock(Region.Entry.class);
+  private final Region.Entry<String, String> entryMock = uncheckedCast(mock(Region.Entry.class));
 
-  @SuppressWarnings("unchecked")
-  private final Region.Entry<String, String> entryMock2 = mock(Region.Entry.class);
+  private final Region.Entry<String, String> entryMock2 = uncheckedCast(mock(Region.Entry.class));
 
   @Before
   public void setUp() throws InterruptedException {
@@ -96,9 +95,7 @@ public class WanCopyRegionFunctionTest {
     connectionMock = mock(PooledConnection.class);
     when(connectionMock.getWanSiteVersion()).thenReturn(KnownVersion.GEODE_1_15_0.ordinal());
     dispatcherMock = mock(GatewaySenderEventDispatcher.class);
-    rrf = new WanCopyRegionFunction();
-    rrf.setClock(clockMock);
-    rrf.setThreadSleeper(threadSleeperMock);
+    rrf = new WanCopyRegionFunction(clockMock, threadSleeperMock);
     startTime = System.currentTimeMillis();
   }
 
@@ -122,8 +119,23 @@ public class WanCopyRegionFunctionTest {
   }
 
   @Test
-  public void doPostSendBatchActions_ThrowInterruptedIfInterrupted() {
-    long maxRate = 100;
+  public void doPostSendBatchActions_ThrowInterruptedIfInterruptedTimeToSleepNotZero()
+      throws InterruptedException {
+    long maxRate = 1;
+    long elapsedTime = 20L;
+    when(clockMock.millis()).thenAnswer((Answer) invocation -> {
+      Thread.currentThread().sleep(1000L);
+      return startTime + elapsedTime;
+    });
+    Thread.currentThread().interrupt();
+    assertThatThrownBy(
+        () -> rrf.doPostSendBatchActions(startTime, entries, maxRate))
+            .isInstanceOf(InterruptedException.class);
+  }
+
+  @Test
+  public void doPostSendBatchActions_ThrowInterruptedIfInterruptedTimeToSleepIsZero() {
+    long maxRate = 0;
     Thread.currentThread().interrupt();
     assertThatThrownBy(
         () -> rrf.doPostSendBatchActions(startTime, entries, maxRate))
@@ -185,7 +197,8 @@ public class WanCopyRegionFunctionTest {
   }
 
   @Test
-  public void wanCopyRegion_verifyErrorWhenRemoteSiteDoesNotSupportCommand() {
+  public void wanCopyRegion_verifyErrorWhenRemoteSiteDoesNotSupportCommand()
+      throws InterruptedException {
     WanCopyRegionFunction rrfSpy = spy(rrf);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     PooledConnection oldWanSiteConn = mock(PooledConnection.class);
@@ -211,7 +224,8 @@ public class WanCopyRegionFunctionTest {
 
 
   @Test
-  public void wanCopyRegion_verifyErrorWhenNoPoolAvailableAndEntriesInRegion() {
+  public void wanCopyRegion_verifyErrorWhenNoPoolAvailableAndEntriesInRegion()
+      throws InterruptedException {
     WanCopyRegionFunction rrfSpy = spy(rrf);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(null);
     when(poolMock.acquireConnection()).thenThrow(NoAvailableServersException.class)
@@ -233,7 +247,8 @@ public class WanCopyRegionFunctionTest {
   }
 
   @Test
-  public void wanCopyRegion_verifySuccessWhenNoPoolAvailableAndNoEntriesInRegion() {
+  public void wanCopyRegion_verifySuccessWhenNoPoolAvailableAndNoEntriesInRegion()
+      throws InterruptedException {
     WanCopyRegionFunction rrfSpy = spy(rrf);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(null);
     when(poolMock.acquireConnection()).thenThrow(NoAvailableServersException.class)
@@ -289,7 +304,8 @@ public class WanCopyRegionFunctionTest {
   }
 
   @Test
-  public void wanCopyRegion_verifySuccessWhenNoConnectionAvailableAtStartAndNoEntriesInRegion() {
+  public void wanCopyRegion_verifySuccessWhenNoConnectionAvailableAtStartAndNoEntriesInRegion()
+      throws InterruptedException {
     WanCopyRegionFunction rrfSpy = spy(rrf);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenThrow(NoAvailableServersException.class)
@@ -308,7 +324,7 @@ public class WanCopyRegionFunctionTest {
 
   @Test
   public void wanCopyRegion_verifyErrorWhenNoConnectionAvailableAfterCopyingSomeEntries()
-      throws BatchException70 {
+      throws BatchException70, InterruptedException {
     WanCopyRegionFunction rrfSpy = spy(rrf);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock)
@@ -334,7 +350,7 @@ public class WanCopyRegionFunctionTest {
   }
 
   @Test
-  public void wanCopyRegion_verifySuccess() throws BatchException70 {
+  public void wanCopyRegion_verifySuccess() throws BatchException70, InterruptedException {
     WanCopyRegionFunction rrfSpy = spy(rrf);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
@@ -357,7 +373,7 @@ public class WanCopyRegionFunctionTest {
 
   @Test
   public void wanCopyRegion_verifySuccessWithRetryWhenConnectionDestroyed()
-      throws BatchException70 {
+      throws BatchException70, InterruptedException {
 
     WanCopyRegionFunction rrfSpy = spy(rrf);
     ConnectionDestroyedException exceptionWhenSendingBatch =
@@ -383,7 +399,8 @@ public class WanCopyRegionFunctionTest {
   }
 
   @Test
-  public void wanCopyRegion_verifyErrorWhenConnectionDestroyedTwice() throws BatchException70 {
+  public void wanCopyRegion_verifyErrorWhenConnectionDestroyedTwice()
+      throws BatchException70, InterruptedException {
     WanCopyRegionFunction rrfSpy = spy(rrf);
     ConnectionDestroyedException exceptionWhenSendingBatch =
         new ConnectionDestroyedException("My connection exception", new Exception());
@@ -409,7 +426,7 @@ public class WanCopyRegionFunctionTest {
 
   @Test
   public void wanCopyRegion_verifySuccessWithRetryWhenServerConnectivityException()
-      throws BatchException70 {
+      throws BatchException70, InterruptedException {
 
     WanCopyRegionFunction rrfSpy = spy(rrf);
     ServerConnectivityException exceptionWhenSendingBatch =
@@ -436,7 +453,7 @@ public class WanCopyRegionFunctionTest {
 
   @Test
   public void wanCopyRegion_verifyErrorWhenServerConnectivityExceptionTwice()
-      throws BatchException70 {
+      throws BatchException70, InterruptedException {
     WanCopyRegionFunction rrfSpy = spy(rrf);
     ServerConnectivityException exceptionWhenSendingBatch =
         new ServerConnectivityException("My connection exception", new Exception());
@@ -462,7 +479,7 @@ public class WanCopyRegionFunctionTest {
 
   @Test
   public void wanCopyRegion_verifyErrorWhenBatchExceptionWhileSendingBatch()
-      throws BatchException70 {
+      throws BatchException70, InterruptedException {
 
     WanCopyRegionFunction rrfSpy = spy(rrf);
     BatchException70 exceptionWhenSendingBatch =

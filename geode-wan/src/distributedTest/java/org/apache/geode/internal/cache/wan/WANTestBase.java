@@ -2227,6 +2227,19 @@ public class WANTestBase extends DistributedTestCase {
     assertNotNull(region);
   }
 
+  public static void createClientWithLocatorAndRegions(int port0, String host,
+      ClientRegionShortcut regionType, List<String> regions) {
+    ClientCache cache = new ClientCacheFactory().addPoolLocator(host, port0).create();
+
+    for (String regionName : regions) {
+      Region region =
+          cache.createClientRegionFactory(regionType)
+              .create(regionName);
+
+      assertNotNull(region);
+    }
+  }
+
 
   public static void createClientWithLocator(int port0, String host, String regionName) {
     createClientWithLocator(port0, host);
