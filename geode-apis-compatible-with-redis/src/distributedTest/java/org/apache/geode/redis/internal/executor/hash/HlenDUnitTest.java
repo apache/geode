@@ -45,34 +45,30 @@ public class HlenDUnitTest {
   private static final int HASH_SIZE = 5000;
   private static final int BIG_HASH_SIZE = 50000;
   private static final int NUM_ITERATIONS = 50000;
-  private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
   private static RedisAdvancedClusterCommands<String, String> lettuce;
+  private static RedisClusterClient clusterClient;
 
   @BeforeClass
   public static void classSetup() {
-    locator = cluster.startLocatorVM(0);
+    MemberVM locator = cluster.startLocatorVM(0);
 
-    server1 = cluster.startRedisVM(1, locator.getPort());
-    server2 = cluster.startRedisVM(2, locator.getPort());
+    cluster.startRedisVM(1, locator.getPort());
+    cluster.startRedisVM(2, locator.getPort());
 
     int redisServerPort1 = cluster.getRedisPort(1);
-    RedisClusterClient clusterClient =
-        RedisClusterClient.create("redis://localhost:" + redisServerPort1);
+    clusterClient = RedisClusterClient.create("redis://localhost:" + redisServerPort1);
 
     lettuce = clusterClient.connect().sync();
+  }
+
+  @AfterClass
+  public static void cleanup() {
+    clusterClient.shutdown();
   }
 
   @Before
   public void testSetup() {
     cluster.flushAll();
-  }
-
-  @AfterClass
-  public static void tearDown() throws Exception {
-    server1.stop();
-    server2.stop();
   }
 
   @Test

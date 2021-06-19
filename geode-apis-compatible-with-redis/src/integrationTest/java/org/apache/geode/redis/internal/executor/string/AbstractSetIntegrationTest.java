@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.string;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_EXPIRE_TIME;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static redis.clients.jedis.Protocol.Command.SET;
@@ -39,7 +40,6 @@ import redis.clients.jedis.params.SetParams;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest {
 
@@ -47,8 +47,6 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
   private final String key = "key";
   private final String value = "value";
   private static final int ITERATION_COUNT = 4000;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {

@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
@@ -42,8 +43,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   private static final String MISSES = "keyspace_misses";
 
   protected Jedis jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void classSetup() {

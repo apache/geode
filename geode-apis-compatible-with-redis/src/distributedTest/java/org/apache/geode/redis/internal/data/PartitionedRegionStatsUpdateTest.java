@@ -17,8 +17,11 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -27,7 +30,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
@@ -41,8 +43,6 @@ public class PartitionedRegionStatsUpdateTest {
 
   private static JedisCluster jedis;
 
-  private static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static final String LOCAL_HOST = "127.0.0.1";
   private static final String STRING_KEY = "{user1}string key";
   private static final String SET_KEY = "{user1}set key";
   private static final String HASH_KEY = "{user1}hash key";
@@ -58,7 +58,12 @@ public class PartitionedRegionStatsUpdateTest {
     server2 = clusterStartUpRule.startRedisVM(2, locatorPort);
 
     int redisServerPort1 = clusterStartUpRule.getRedisPort(1);
-    jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort1), JEDIS_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
+  }
+
+  @AfterClass
+  public static void cleanup() {
+    jedis.close();
   }
 
   @Before

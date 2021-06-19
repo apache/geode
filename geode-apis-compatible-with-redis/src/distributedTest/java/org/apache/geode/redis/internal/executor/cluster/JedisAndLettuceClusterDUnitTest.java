@@ -82,5 +82,4 @@ public class JedisAndLettuceClusterDUnitTest {
     clusterClient.shutdown();
   }
 
-
 }

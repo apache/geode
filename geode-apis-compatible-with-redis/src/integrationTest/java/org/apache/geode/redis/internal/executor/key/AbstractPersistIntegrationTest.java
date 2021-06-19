@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,13 +30,10 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.params.SetParams;
 
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractPersistIntegrationTest implements RedisIntegrationTest {
 
   private JedisCluster jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {

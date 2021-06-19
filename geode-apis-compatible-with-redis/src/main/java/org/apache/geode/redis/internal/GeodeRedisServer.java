@@ -33,6 +33,7 @@ import org.apache.geode.redis.internal.cluster.RedisMemberInfoRetrievalFunction;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.NettyRedisServer;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.pubsub.PubSubImpl;
@@ -158,6 +159,6 @@ public class GeodeRedisServer {
 
   @VisibleForTesting
   public RedisMemberInfo getMemberInfo(String key) throws InterruptedException {
-    return regionProvider.getSlotAdvisor().getMemberInfo(new RedisKey(key.getBytes()));
+    return regionProvider.getSlotAdvisor().getMemberInfo(new RedisKey(Coder.stringToBytes(key)));
   }
 }

@@ -15,15 +15,13 @@
 
 package org.apache.geode.redis;
 
-import redis.clients.jedis.Jedis;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
+import redis.clients.jedis.Jedis;
 
 public interface RedisIntegrationTest {
 
   int getPort();
-
-  int REDIS_CLIENT_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   default void flushAll() {
     ClusterNodes nodes;

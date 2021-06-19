@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import io.lettuce.core.RedisException;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -49,6 +50,7 @@ public class HdelDUnitTest {
   private static MemberVM server1;
   private static MemberVM server2;
   private static RedisAdvancedClusterCommands<String, String> lettuce;
+  private static RedisClusterClient clusterClient;
 
   @BeforeClass
   public static void classSetup() {
@@ -58,10 +60,14 @@ public class HdelDUnitTest {
     server2 = cluster.startRedisVM(2, locator.getPort());
 
     int redisServerPort1 = cluster.getRedisPort(1);
-    RedisClusterClient clusterClient =
-        RedisClusterClient.create("redis://localhost:" + redisServerPort1);
+    clusterClient = RedisClusterClient.create("redis://localhost:" + redisServerPort1);
 
     lettuce = clusterClient.connect().sync();
+  }
+
+  @AfterClass
+  public static void cleanup() {
+    clusterClient.shutdown();
   }
 
   @Before

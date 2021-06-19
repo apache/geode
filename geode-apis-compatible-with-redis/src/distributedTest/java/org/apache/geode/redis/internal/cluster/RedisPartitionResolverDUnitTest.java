@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -62,6 +63,11 @@ public class RedisPartitionResolverDUnitTest {
 
     int redisServerPort1 = cluster.getRedisPort(1);
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
+  }
+
+  @AfterClass
+  public static void cleanup() {
+    jedis.close();
   }
 
   @Before

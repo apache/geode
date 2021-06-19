@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
@@ -27,7 +28,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
@@ -49,13 +49,14 @@ public class MovedDUnitTest {
   private static RedisAdvancedClusterCommands<String, String> lettuce;
   private static RedisClusterClient clusterClient;
   private static MemberVM locator;
+  private static MemberVM server1;
   private static int redisServerPort1;
   private static final int ENTRIES = 200;
 
   @BeforeClass
   public static void classSetup() {
     locator = clusterStartUp.startLocatorVM(0);
-    clusterStartUp.startRedisVM(1, locator.getPort());
+    server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     clusterStartUp.startRedisVM(2, locator.getPort());
 
     redisServerPort1 = clusterStartUp.getRedisPort(1);
@@ -82,6 +83,8 @@ public class MovedDUnitTest {
   @AfterClass
   public static void cleanup() {
     clusterClient.shutdown();
+    jedis1.close();
+    jedis2.close();
   }
 
   @Before
@@ -129,20 +132,24 @@ public class MovedDUnitTest {
   }
 
   @Test
-  @Ignore("GEODE-9368")
-  public void movedResponseFollowsFailedServer() throws Exception {
-    MemberVM server3 = clusterStartUp.startRedisVM(3, locator.getPort());
-
-    rebalanceAllRegions(server3);
+  public void failedServerProducesMovedResponseAfterRestart() {
+    clusterStartUp.startRedisVM(3, locator.getPort());
+    rebalanceAllRegions(server1);
 
     for (int i = 0; i < ENTRIES; i++) {
       lettuce.set("key-" + i, "value-" + i);
     }
 
     clusterStartUp.crashVM(3);
+    rebalanceAllRegions(server1);
+    clusterStartUp.startRedisVM(3, locator.getPort());
 
+    Jedis jedis3 = new Jedis(BIND_ADDRESS, clusterStartUp.getRedisPort(3), REDIS_CLIENT_TIMEOUT);
     for (int i = 0; i < ENTRIES; i++) {
-      assertThat(lettuce.get("key-" + i)).isEqualTo("value-" + i);
+      String key = "key-" + i;
+      assertThatThrownBy(() -> jedis3.get(key))
+          .as("Key '" + key + "' did not produce MOVED response")
+          .hasMessageContaining("MOVED");
     }
   }
 

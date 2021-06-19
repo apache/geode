@@ -56,11 +56,9 @@ public class HScanDunitTest {
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
   private static RedisAdvancedClusterCommands<String, String> commands;
+  private static RedisClusterClient clusterClient;
 
   private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
-  private static MemberVM server3;
 
   static final String HASH_KEY = "key";
   static final String BASE_FIELD = "baseField_";
@@ -73,13 +71,12 @@ public class HScanDunitTest {
 
     // note: due to rules around member weighting in split-brain scenarios,
     // vm1 (server1) should not be crashed or it will cause additional (unrelated) failures
-    server1 = redisClusterStartupRule.startRedisVM(1, locatorPort);
-    server2 = redisClusterStartupRule.startServerVM(2, locatorPort);
-    server3 = redisClusterStartupRule.startServerVM(3, locatorPort);
+    redisClusterStartupRule.startRedisVM(1, locatorPort);
+    redisClusterStartupRule.startRedisVM(2, locatorPort);
+    redisClusterStartupRule.startRedisVM(3, locatorPort);
 
     int redisServerPort1 = redisClusterStartupRule.getRedisPort(1);
-    RedisClusterClient clusterClient =
-        RedisClusterClient.create("redis://localhost:" + redisServerPort1);
+    clusterClient = RedisClusterClient.create("redis://localhost:" + redisServerPort1);
 
     ClusterTopologyRefreshOptions refreshOptions =
         ClusterTopologyRefreshOptions.builder()
@@ -97,11 +94,7 @@ public class HScanDunitTest {
 
   @AfterClass
   public static void tearDown() {
-    commands.quit();
-
-    server1.stop();
-    server2.stop();
-    server3.stop();
+    clusterClient.shutdown();
   }
 
   @Test

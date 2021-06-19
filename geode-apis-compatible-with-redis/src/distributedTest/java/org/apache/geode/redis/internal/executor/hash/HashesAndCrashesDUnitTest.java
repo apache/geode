@@ -31,6 +31,7 @@ import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.apache.logging.log4j.Logger;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -60,6 +61,7 @@ public class HashesAndCrashesDUnitTest {
   private static MemberVM server3;
 
   private static RedisAdvancedClusterCommands<String, String> commands;
+  private static RedisClusterClient clusterClient;
 
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
@@ -73,7 +75,7 @@ public class HashesAndCrashesDUnitTest {
     server3 = clusterStartUp.startRedisVM(3, locator.getPort());
 
     int redisPort1 = clusterStartUp.getRedisPort(1);
-    RedisClusterClient clusterClient = RedisClusterClient.create("redis://localhost:" + redisPort1);
+    clusterClient = RedisClusterClient.create("redis://localhost:" + redisPort1);
 
     ClusterTopologyRefreshOptions refreshOptions =
         ClusterTopologyRefreshOptions.builder()
@@ -86,6 +88,11 @@ public class HashesAndCrashesDUnitTest {
         .build());
 
     commands = clusterClient.connect().sync();
+  }
+
+  @AfterClass
+  public static void cleanup() {
+    clusterClient.shutdown();
   }
 
   @Test

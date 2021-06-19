@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -39,6 +40,7 @@ public class HSetNXDunitTest {
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
   private static RedisAdvancedClusterCommands<String, String> lettuce;
+  private static RedisClusterClient clusterClient;
 
   @BeforeClass
   public static void classSetup() {
@@ -48,10 +50,14 @@ public class HSetNXDunitTest {
     cluster.startRedisVM(2, locator.getPort());
 
     int redisServerPort1 = cluster.getRedisPort(1);
-    RedisClusterClient clusterClient =
-        RedisClusterClient.create("redis://localhost:" + redisServerPort1);
+    clusterClient = RedisClusterClient.create("redis://localhost:" + redisServerPort1);
 
     lettuce = clusterClient.connect().sync();
+  }
+
+  @AfterClass
+  public static void cleanup() {
+    clusterClient.shutdown();
   }
 
   @Before
