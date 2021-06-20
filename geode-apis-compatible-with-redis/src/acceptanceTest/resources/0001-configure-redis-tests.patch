@@ -268,7 +268,7 @@ index de24eabed..533eca9ac 100644
 +#    }
  }
 diff --git a/tests/unit/pubsub.tcl b/tests/unit/pubsub.tcl
-index 9c7a43bf0..b81618fe3 100644
+index 9c7a43bf0..16173b654 100644
 --- a/tests/unit/pubsub.tcl
 +++ b/tests/unit/pubsub.tcl
 @@ -107,6 +107,7 @@ start_server {tags {"pubsub"}} {
@@ -287,19 +287,6 @@ index 9c7a43bf0..b81618fe3 100644
          assert_equal 0 [r publish chan1.hi hello]
          assert_equal 0 [r publish chan2.hi hello]
          assert_equal 0 [r publish chan3.hi hello]
-@@ -196,9 +198,9 @@ start_server {tags {"pubsub"}} {
-         $rd1 close
-     }
- 
--    test "NUMSUB returns numbers, not strings (#1561)" {
--        r pubsub numsub abc def
--    } {abc 0 def 0}
-+#    test "NUMSUB returns numbers, not strings (#1561)" {
-+#        r pubsub numsub abc def
-+#    } {abc 0 def 0}
- 
-     test "Mix SUBSCRIBE and PSUBSCRIBE" {
-         set rd1 [redis_deferring_client]
 @@ -223,168 +225,168 @@ start_server {tags {"pubsub"}} {
          concat $reply1 $reply2
      } {punsubscribe {} 0 unsubscribe {} 0}
