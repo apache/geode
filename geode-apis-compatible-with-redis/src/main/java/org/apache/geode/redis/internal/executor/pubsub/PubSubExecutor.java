@@ -18,8 +18,10 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_PUBSUB_SUBCOMMAND;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCHANNELS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNUMSUB;
 
 import java.util.List;
 
@@ -41,12 +43,13 @@ public class PubSubExecutor implements Executor {
       }
       List<byte[]> channelsResponse = doChannels(command.getProcessedCommand(), context);
       return RedisResponse.array(channelsResponse);
-    } else if (equalsIgnoreCaseBytes(subCommand, "numsub".getBytes())) {
+    } else if (equalsIgnoreCaseBytes(subCommand, bNUMSUB)) {
       List<Object> numSubresponse = doNumsub(command.getProcessedCommand(), context);
       return RedisResponse.array(numSubresponse);
     }
 
-    return RedisResponse.error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, subCommand));
+    return RedisResponse
+        .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, bytesToString(subCommand)));
   }
 
   private List<byte[]> doChannels(List<byte[]> processedCommand, ExecutionHandlerContext context) {

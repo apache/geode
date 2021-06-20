@@ -20,9 +20,8 @@ package org.apache.geode.redis.internal.executor.pubsub;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtMostNArgsForSubCommand;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_PUBSUB_SUBCOMMAND;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
-import static org.apache.geode.redis.internal.executor.pubsub.AbstractPubSubIntegrationTest.JEDIS_TIMEOUT;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -31,8 +30,8 @@ import static redis.clients.jedis.Protocol.PUBSUB_NUMSUB;
 
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.junit.After;
@@ -67,6 +66,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   public void teardown() {
     if (mockSubscriber.getSubscribedChannels() > 0) {
       mockSubscriber.unsubscribe();
+    }
+    if (mockSubscriber.getSubscribedChannels() > 0) {
       mockSubscriber.punsubscribe();
     }
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
@@ -223,8 +224,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1
         && fooAndBarSubscriber.getSubscribedChannels() == 2);
 
-    HashMap<String, String> result =
-        (HashMap<String, String>) introspector.pubsubNumSub("foo", "bar");
+    Map<String, String> result = introspector.pubsubNumSub("foo", "bar");
 
     assertThat(result.containsKey("foo")).isTrue();
     assertThat(result.containsKey("bar")).isTrue();
@@ -242,23 +242,47 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     executor.submit(() -> subscriber.subscribe(mockSubscriber, "foo"));
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
-    HashMap<String, String> result =
-        (HashMap<String, String>) introspector.pubsubNumSub("bar");
+    Map<String, String> result = introspector.pubsubNumSub("bar");
 
     assertThat(result.containsKey("bar")).isTrue();
     assertThat(result.get("bar")).isEqualTo("0");
   }
 
   @Test
-  public void numsub_shouldReturnPatternWithZero_whenCalledWithPatternWithNoChannelSubscribers() {
+  public void numsub_shouldReturnZero_whenCalledWithPatternWithNoChannelSubscribers() {
     executor.submit(() -> subscriber.psubscribe(mockSubscriber, "f*"));
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
-    HashMap<String, String> result = (HashMap<String, String>) introspector.pubsubNumSub("f*");
+    Map<String, String> result = introspector.pubsubNumSub("f*");
 
     assertThat(result.containsKey("f*")).isTrue();
     assertThat(result.get("f*")).isEqualTo("0");
     mockSubscriber.punsubscribe();
+  }
+
+  @Test
+  public void numsub_shouldReturnSubscriberCount_whenCalledWithPatternAndSubscribersExist() {
+    Jedis subscriber2 = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
+    MockSubscriber fooSubscriber = new MockSubscriber();
+
+    executor.submit(() -> subscriber.psubscribe(mockSubscriber, "f*"));
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    executor.submit(() -> subscriber2.subscribe(fooSubscriber, "foo"));
+    waitFor(() -> fooSubscriber.getSubscribedChannels() == 1);
+
+    Map<String, String> result = introspector.pubsubNumSub("f*");
+
+    assertThat(result.containsKey("foo")).isFalse();
+    assertThat(result.containsKey("f*")).isTrue();
+    assertThat(result.get("f*")).isEqualTo("0");
+
+    result = introspector.pubsubNumSub("foo");
+
+    assertThat(result.containsKey("foo")).isTrue();
+    assertThat(result.containsKey("f*")).isFalse();
+    assertThat(result.get("foo")).isEqualTo("1");
+
+    fooSubscriber.unsubscribe();
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {
