@@ -22,6 +22,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_F
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
+import static org.apache.geode.redis.internal.netty.Coder.isNaN;
 import static org.apache.geode.redis.internal.netty.Coder.isNegativeInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.isPositiveInfinity;
 
@@ -366,6 +367,9 @@ public class RedisSortedSet extends AbstractRedisData {
     }
     if (isNegativeInfinity(value)) {
       return NEGATIVE_INFINITY;
+    }
+    if (isNaN(value)) {
+      throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
     }
 
     try {

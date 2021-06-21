@@ -165,6 +165,7 @@ public class StringBytesGlossary {
   public static final String INFINITY = "Infinity";
   public static final String N_INF = "-inf";
   public static final String N_INFINITY = "-Infinity";
+  public static final String NaN = "NaN";
 
   @MakeImmutable
   public static final byte[] bP_INF = stringToBytes(P_INF);
@@ -184,6 +185,8 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bN_INFINITY = stringToBytes(N_INFINITY);
 
+  @MakeImmutable
+  public static final byte[] bNaN = stringToBytes(NaN);
 
   // ********** Miscellaneous constants for convenience **********
   /**

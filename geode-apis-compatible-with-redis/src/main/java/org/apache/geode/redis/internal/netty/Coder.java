@@ -33,6 +33,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCA
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNIL;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INFINITY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOK;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOOM;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
@@ -419,6 +420,14 @@ public class Coder {
 
   public static boolean isInfinity(byte[] bytes) {
     return isPositiveInfinity(bytes) || isNegativeInfinity(bytes);
+  }
+
+  // Checks if the given byte array is equivalent to the String "NaN", ignoring case.
+  public static boolean isNaN(byte[] bytes) {
+    if (bytes == null) {
+      return false;
+    }
+    return equalsIgnoreCaseBytes(bytes, bNaN);
   }
 
   // Checks if the given byte array is equivalent to the Strings "INF", "INFINITY", "+INF" or
