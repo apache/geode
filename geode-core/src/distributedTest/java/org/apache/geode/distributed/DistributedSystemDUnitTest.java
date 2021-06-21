@@ -39,9 +39,6 @@ import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -58,7 +55,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.DataSerializable;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SerializationException;
 import org.apache.geode.SystemConnectException;
@@ -66,7 +62,6 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.Distribution;
@@ -459,30 +454,6 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     @Override
     public String toString() {
       return "FakeMessage(blocking=" + (this.blocked != null) + ")";
-    }
-  }
-
-  /**
-   * A function that cannot be deserialized, used for failure handling
-   */
-  public static class FailDeserializationFunction
-      implements org.apache.geode.cache.execute.Function,
-      DataSerializable {
-    @Override
-    public void execute(FunctionContext context) {
-
-    }
-
-
-    @Override
-    public void toData(DataOutput out) throws IOException {
-
-    }
-
-    @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      throw new ClassNotFoundException("Fake class not found");
-
     }
   }
 }

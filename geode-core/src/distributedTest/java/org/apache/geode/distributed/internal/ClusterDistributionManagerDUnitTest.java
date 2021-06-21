@@ -69,7 +69,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystemDUnitTest;
+import org.apache.geode.distributed.FailDeserializationFunction;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
@@ -482,12 +482,14 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
               // if MemberJoinedEvent is triggered before the new view is installed,
               // the test will throw an exception
               FunctionService.onMember(id)
-                  .execute(new DistributedSystemDUnitTest.FailDeserializationFunction());
+                  .execute(new FailDeserializationFunction());
             }
           }
         }));
     // trigger MemberJoinedEvent
-    vm2.invoke("join the cluster", () -> getSystem().getDistributedMember());
+    DistributedMember member =
+        vm2.invoke("join the cluster", () -> getSystem().getDistributedMember());
+    assertThat(member).isNotNull();
   }
 
   private CacheListener<String, String> getSleepingListener(final boolean playDead) {
