@@ -360,7 +360,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
-  private double processByteArrayAsDouble(byte[] value) {
+  private static double processByteArrayAsDouble(byte[] value) {
     String stringValue = bytesToString(value).toLowerCase();
     double processedDouble;
     switch (stringValue) {
