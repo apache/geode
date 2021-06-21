@@ -92,11 +92,7 @@ public class ZAddExecutor extends AbstractExecutor {
       } else if (isInfinity(subCommand)) {
         scoreFound = true;
       } else {
-        try {
-          Double.valueOf(bytesToString(subCommand));
-        } catch (NumberFormatException nfe) {
-          executorState.exceptionMessage = ERROR_NOT_A_VALID_FLOAT;
-        }
+        // assume it's a double; if not, this will throw exception later
         scoreFound = true;
       }
     }

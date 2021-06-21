@@ -20,7 +20,10 @@ import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
+import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
+import static org.apache.geode.redis.internal.netty.Coder.isNegativeInfinity;
+import static org.apache.geode.redis.internal.netty.Coder.isPositiveInfinity;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -48,7 +51,6 @@ import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
-import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSet extends AbstractRedisData {
   private Object2ObjectOpenCustomHashMap<byte[], OrderedSetEntry> members;
@@ -77,7 +79,6 @@ public class RedisSortedSet extends AbstractRedisData {
 
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
-      score = Coder.doubleToBytes(processByteArrayAsDouble(score));
       byte[] member = iterator.next();
       memberAdd(member, score);
     }
@@ -216,8 +217,7 @@ public class RedisSortedSet extends AbstractRedisData {
     int initialSize = getSortedSetSize();
     int changesCount = 0;
     while (iterator.hasNext()) {
-      byte[] score =
-          Coder.doubleToBytes(processByteArrayAsDouble(iterator.next()));
+      byte[] score = iterator.next();
       byte[] member = iterator.next();
       if (options.isNX() && members.containsKey(member)) {
         continue;
@@ -273,14 +273,14 @@ public class RedisSortedSet extends AbstractRedisData {
     double incr = processByteArrayAsDouble(increment);
 
     if (byteScore != null) {
-      incr += Coder.bytesToDouble(byteScore);
+      incr += bytesToDouble(byteScore);
 
       if (Double.isNaN(incr)) {
         throw new NumberFormatException(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
       }
     }
 
-    byte[] byteIncr = Coder.doubleToBytes(incr);
+    byte[] byteIncr = doubleToBytes(incr);
     memberAdd(member, byteIncr);
 
     AddsDeltaInfo deltaInfo = new AddsDeltaInfo(new ArrayList<>());
@@ -361,33 +361,22 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   private static double processByteArrayAsDouble(byte[] value) {
-    String stringValue = bytesToString(value).toLowerCase();
-    double processedDouble;
-    switch (stringValue) {
-      case "inf":
-      case "+inf":
-      case "infinity":
-      case "+infinity":
-        processedDouble = POSITIVE_INFINITY;
-        break;
-      case "-inf":
-      case "-infinity":
-        processedDouble = NEGATIVE_INFINITY;
-        break;
-      default:
-        try {
-          processedDouble = Double.parseDouble(stringValue);
-        } catch (NumberFormatException nfe) {
-          throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
-        }
-        break;
+    if (isPositiveInfinity(value)) {
+      return POSITIVE_INFINITY;
     }
-    return processedDouble;
+    if (isNegativeInfinity(value)) {
+      return NEGATIVE_INFINITY;
+    }
+
+    try {
+      return bytesToDouble(value);
+    } catch (NumberFormatException nfe) {
+      throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
+    }
   }
 
   @VisibleForTesting
   public static int javaImplementationOfAnsiCMemCmp(byte[] array1, byte[] array2) {
-    // Scores equal, try lexical ordering
     int shortestLength = Math.min(array1.length, array2.length);
     for (int i = 0; i < shortestLength; i++) {
       int localComp = Byte.toUnsignedInt(array1[i]) - Byte.toUnsignedInt(array2[i]);
@@ -398,9 +387,9 @@ public class RedisSortedSet extends AbstractRedisData {
     // shorter array whose items are all equal to the first items of a longer array is
     // considered 'less than'
     if (array1.length < array2.length) {
-      return -1; // member < other
+      return -1; // array1 < array2
     } else if (array1.length > array2.length) {
-      return 1; // other < member
+      return 1; // array2 < array1
     }
     return 0; // totally equal - should never happen, because you can't have two members
     // with same name...
@@ -419,6 +408,7 @@ public class RedisSortedSet extends AbstractRedisData {
     public int compareTo(OrderedSetEntry o) {
       int comparison = score.compareTo(o.score);
       if (comparison == 0) {
+        // Scores equal, try lexical ordering
         return javaImplementationOfAnsiCMemCmp(member, o.member);
       }
       return comparison;
