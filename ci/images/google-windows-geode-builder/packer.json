@@ -135,6 +135,9 @@
         "ps -Name java -ErrorAction ignore",
 
         "write-output '>>>>>>>>>> Final cleanup <<<<<<<<<<'",
+        "pushd geode",
+        ".\\gradlew.bat --no-daemon clean",
+        "popd",
         "rm -force -recurse geode"
       ]
     },
