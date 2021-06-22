@@ -320,9 +320,9 @@ public class TXRegionState {
       if (!r.getScope().isLocal() && !this.entryMods.isEmpty()) {
 
         TXCommitMessage.RegionCommit regionCommit = msg.startRegion(r, entryMods.size());
-        Set<InternalDistributedMember> newMemberSet = new HashSet<InternalDistributedMember>();
+        Set<InternalDistributedMember> newMemberSet = new HashSet<>();
         Set<InternalDistributedMember> redundantMemberSet =
-            new HashSet<InternalDistributedMember>();
+            new HashSet<>();
 
         if (r.getScope().isDistributed()) {
           DistributedRegion dr = (DistributedRegion) r;
@@ -347,7 +347,7 @@ public class TXRegionState {
           TXEntryState txes = (TXEntryState) me.getValue();
           txes.buildMessage(r, eKey, msg, this.otherMembers);
           if (txes.getFilterRoutingInfo() != null) {
-            Set<InternalDistributedMember> tempSet = new HashSet<InternalDistributedMember>();
+            Set<InternalDistributedMember> tempSet = new HashSet<>();
             if (txes.getAdjunctRecipients() != null) {
               tempSet.addAll(txes.getAdjunctRecipients());
               tempSet.removeAll(redundantMemberSet);
