@@ -53,8 +53,8 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     jedis.set("int", "5");
     jedis.sadd("set", "cotton");
     jedis.hset("hash", "green", "eggs");
+    jedis.zadd("sortedSet", -2.0, "almonds");
     jedis.mset("mapKey1", "fox", "mapKey2", "box");
-    jedis.zadd("sortedSet", 1.0, "member");
   }
 
   @After
@@ -193,6 +193,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testZcard() {
     runCommandAndAssertHitsAndMisses("sortedSet", k -> jedis.zcard(k));
+  }
+
+  @Test
+  public void testZrank() {
+    runCommandAndAssertHitsAndMisses("sortedSet", (k, m) -> jedis.zrank(k, m));
   }
 
   /************* Set related commands *************/

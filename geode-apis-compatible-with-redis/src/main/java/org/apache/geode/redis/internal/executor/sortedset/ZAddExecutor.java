@@ -15,10 +15,8 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_ZADD_OPTION_TOO_MANY_INCR_PAIR;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCH;
@@ -92,11 +90,7 @@ public class ZAddExecutor extends AbstractExecutor {
       } else if (isInfinity(subCommand)) {
         scoreFound = true;
       } else {
-        try {
-          Double.valueOf(bytesToString(subCommand));
-        } catch (NumberFormatException nfe) {
-          executorState.exceptionMessage = ERROR_NOT_A_VALID_FLOAT;
-        }
+        // assume it's a double; if not, this will throw exception later
         scoreFound = true;
       }
     }

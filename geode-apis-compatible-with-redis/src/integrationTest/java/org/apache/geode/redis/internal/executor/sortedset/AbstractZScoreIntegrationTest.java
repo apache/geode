@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import org.junit.After;
@@ -25,16 +26,13 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractZScoreIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -44,23 +42,23 @@ public abstract class AbstractZScoreIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void zscoreErrors_givenWrongNumberOfArguments() {
+  public void shouldError_givenWrongNumberOfArguments() {
     assertExactNumberOfArgs(jedis, Protocol.Command.ZSCORE, 2);
   }
 
   @Test
-  public void zscoreReturnsNil_givenNonexistentKey() {
+  public void shouldReturnNil_givenNonexistentKey() {
     assertThat(jedis.zscore("fakeKey", "fakeMember")).isEqualTo(null);
   }
 
   @Test
-  public void zscoreReturnsNil_givenNonexistentMember() {
+  public void shouldReturnNil_givenNonexistentMember() {
     jedis.zadd("key", 1.0, "member");
     assertThat(jedis.zscore("key", "fakeMember")).isEqualTo(null);
   }
 
   @Test
-  public void zscoreReturnsScore_givenExistingKeyAndMember() {
+  public void shouldReturnScore_givenExistingKeyAndMember() {
     jedis.zadd("key", 1.0, "member");
     assertThat(jedis.zscore("key", "member")).isEqualTo(1.0);
   }

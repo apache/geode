@@ -15,6 +15,9 @@
  */
 package org.apache.geode.redis.internal.netty;
 
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.NaN;
+import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
@@ -33,6 +36,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCA
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNIL;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INFINITY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOK;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOOM;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
@@ -343,6 +347,15 @@ public class Coder {
    * @throws NumberFormatException if bytes to string does not yield a convertible double
    */
   public static double bytesToDouble(byte[] bytes) {
+    if (isPositiveInfinity(bytes)) {
+      return POSITIVE_INFINITY;
+    }
+    if (isNegativeInfinity(bytes)) {
+      return NEGATIVE_INFINITY;
+    }
+    if (isNaN(bytes)) {
+      return NaN;
+    }
     return stringToDouble(bytesToString(bytes));
   }
 
@@ -421,12 +434,14 @@ public class Coder {
     return isPositiveInfinity(bytes) || isNegativeInfinity(bytes);
   }
 
+  // Checks if the given byte array is equivalent to the String "NaN", ignoring case.
+  public static boolean isNaN(byte[] bytes) {
+    return equalsIgnoreCaseBytes(bytes, bNaN);
+  }
+
   // Checks if the given byte array is equivalent to the Strings "INF", "INFINITY", "+INF" or
   // "+INFINITY", ignoring case.
   public static boolean isPositiveInfinity(byte[] bytes) {
-    if (bytes == null) {
-      return false;
-    }
     return equalsIgnoreCaseBytes(bytes, bINF)
         || equalsIgnoreCaseBytes(bytes, bP_INF)
         || equalsIgnoreCaseBytes(bytes, bINFINITY)
@@ -436,9 +451,6 @@ public class Coder {
   // Checks if the given byte array is equivalent to the Strings "-INF" or "-INFINITY", ignoring
   // case.
   public static boolean isNegativeInfinity(byte[] bytes) {
-    if (bytes == null) {
-      return false;
-    }
     return equalsIgnoreCaseBytes(bytes, bN_INF)
         || equalsIgnoreCaseBytes(bytes, bN_INFINITY);
   }

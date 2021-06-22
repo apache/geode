@@ -80,4 +80,10 @@ class NullRedisSortedSet extends RedisSortedSet {
 
     return increment;
   }
+
+  @Override
+  int zrank(byte[] member) {
+    return -1;
+  }
+
 }

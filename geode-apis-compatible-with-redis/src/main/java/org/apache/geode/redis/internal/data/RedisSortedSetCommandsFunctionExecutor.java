@@ -61,4 +61,9 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   public long zcard(RedisKey key) {
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zcard());
   }
+
+  @Override
+  public int zrank(RedisKey key, byte[] member) {
+    return stripedExecute(key, () -> getRedisSortedSet(key, true).zrank(member));
+  }
 }

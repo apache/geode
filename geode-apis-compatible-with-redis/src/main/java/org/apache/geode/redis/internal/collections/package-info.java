@@ -12,24 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.apache.geode.redis.internal.executor.sortedset;
-
-import java.util.List;
-
-import org.apache.geode.redis.internal.data.RedisKey;
-
-public interface RedisSortedSetCommands {
-
-  Object zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd, ZAddOptions options);
-
-  byte[] zscore(RedisKey key, byte[] member);
-
-  int zrank(RedisKey key, byte[] member);
-
-  long zrem(RedisKey key, List<byte[]> membersToRemove);
-
-  long zcard(RedisKey key);
-
-  byte[] zincrby(RedisKey key, byte[] increment, byte[] member);
-}
+/**
+ * OrderedStatisticsTree implementation copied from
+ * the MIT licensed code at:
+ *
+ * https://github.com/coderodde/OrderStatisticTree
+ * at revision 3f962ee2194c8d704188432ff4102292806b65c7
+ *
+ */
+package org.apache.geode.redis.internal.collections;
