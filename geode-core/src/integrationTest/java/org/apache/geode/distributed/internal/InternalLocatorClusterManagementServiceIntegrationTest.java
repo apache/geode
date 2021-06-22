@@ -28,7 +28,6 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
