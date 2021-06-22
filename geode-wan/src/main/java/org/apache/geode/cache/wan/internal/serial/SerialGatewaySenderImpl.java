@@ -134,7 +134,6 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
     if (logger.isDebugEnabled()) {
       logger.debug("Stopping Gateway Sender : {}", this);
     }
-    preStop();
     this.getLifeCycleLock().writeLock().lock();
     try {
       // Stop the dispatcher
@@ -150,7 +149,6 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
       clearTempEventsAfterSenderStopped();
     } finally {
-      postStop();
       this.getLifeCycleLock().writeLock().unlock();
     }
 

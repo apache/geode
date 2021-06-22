@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
 import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
-import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
 
 import java.util.ArrayList;
 import java.util.Deque;
@@ -75,7 +74,6 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.offheap.OffHeapClearRequired;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -501,15 +499,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
           retries++ == GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
         break;
       }
-      try {
-        Thread.sleep(GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
     }
     if (incompleteTransactionIdsInBatch.size() > 0) {
-      logger.warn("Not able to retrieve all events for transactions: {} after {} retries of {}ms",
-          incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
+      logger.warn("Not able to retrieve all events for transactions: {} after {} retries",
+          incompleteTransactionIdsInBatch, retries);
       stats.incBatchesWithIncompleteTransactions();
     }
   }
@@ -840,9 +833,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   private List<KeyAndEventPair> peekEventsWithTransactionId(TransactionId transactionId,
       long lastKey) {
-    Predicate<InternalGatewayQueueEvent> hasTransactionIdPredicate =
+    Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
         x -> transactionId.equals(x.getTransactionId());
-    Predicate<InternalGatewayQueueEvent> isLastEventInTransactionPredicate =
+    Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
         x -> x.isLastEventInTransaction();
 
     return getElementsMatching(hasTransactionIdPredicate, isLastEventInTransactionPredicate,
@@ -854,10 +847,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * If a matching object also fulfills the endPredicate then the method
    * stops looking for more matching objects.
    */
-  List<KeyAndEventPair> getElementsMatching(Predicate<InternalGatewayQueueEvent> condition,
-      Predicate<InternalGatewayQueueEvent> stopCondition,
+  List<KeyAndEventPair> getElementsMatching(Predicate<GatewaySenderEventImpl> condition,
+      Predicate<GatewaySenderEventImpl> stopCondition,
       long lastKey) {
-    InternalGatewayQueueEvent event;
+    GatewaySenderEventImpl event;
     List<KeyAndEventPair> elementsMatching = new ArrayList<>();
 
     long currentKey = lastKey;
@@ -866,13 +859,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       if (extraPeekedIds.contains(currentKey)) {
         continue;
       }
-      event = (InternalGatewayQueueEvent) optimalGet(currentKey);
+      event = (GatewaySenderEventImpl) optimalGet(currentKey);
       if (event == null) {
         continue;
       }
 
       if (condition.test(event)) {
-        elementsMatching.add(new KeyAndEventPair(currentKey, (GatewaySenderEventImpl) event));
+        elementsMatching.add(new KeyAndEventPair(currentKey, event));
 
         if (stopCondition.test(event)) {
           break;
@@ -881,25 +874,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
 
     return elementsMatching;
-  }
-
-  public boolean hasEventsMatching(Predicate<InternalGatewayQueueEvent> condition) {
-    InternalGatewayQueueEvent event;
-    long currentKey = getHeadKey();
-    if (currentKey == getTailKey()) {
-      return false;
-    }
-    while ((currentKey = inc(currentKey)) != getTailKey()) {
-      event = (InternalGatewayQueueEvent) optimalGet(currentKey);
-
-      if (event == null) {
-        continue;
-      }
-      if (condition.test(event)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
