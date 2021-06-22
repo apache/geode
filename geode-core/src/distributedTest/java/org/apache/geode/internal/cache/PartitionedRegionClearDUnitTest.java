@@ -422,31 +422,6 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
         .isEqualTo(0);
   }
 
-
-  @Test
-  public void testClearTime() {
-    configureServers(false, true);
-    client1.invoke(this::initClientCache);
-    client2.invoke(this::initClientCache);
-    final int LOTS_OF_RECORDS = 100000;
-    accessor.invoke(() -> putRecords(false, LOTS_OF_RECORDS));
-    verifyServerRegionSize(LOTS_OF_RECORDS);
-
-    dataStore1.invoke(() -> {
-      PartitionedRegion partitionedRegion = (PartitionedRegion) getRegion(false);
-      assertThat(partitionedRegion.getCachePerfStats().getClearTime()).isEqualTo(0L);
-      verifyServerRegionSize(LOTS_OF_RECORDS);
-    });
-
-    dataStore1.invoke(() -> getRegion(false).clear());
-    verifyServerRegionSize(0);
-
-    dataStore1.invoke(() -> {
-      PartitionedRegion partitionedRegion = (PartitionedRegion) getRegion(false);
-      assertThat(partitionedRegion.getCachePerfStats().getClearTime()).isGreaterThan(0L);
-    });
-  }
-
   @Test
   public void testClearCount() {
     configureServers(false, true);

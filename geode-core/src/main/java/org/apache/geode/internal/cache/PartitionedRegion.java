@@ -10160,9 +10160,8 @@ public class PartitionedRegion extends LocalRegion
   @Override
   void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
     // Synchronized to avoid other threads invoking clear on this vm/node.
-    long startTime = 0L;
+    final long startTime = startClear();
     try {
-      startTime = startClear();
       synchronized (clearLock) {
         partitionedRegionClear.doClear(regionEvent, cacheWrite);
       }

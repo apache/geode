@@ -8630,9 +8630,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   void basicLocalClear(RegionEventImpl rEvent) {
     getDataView().checkSupportsRegionClear();
-    final long startTime = startClear();
-    cmnClearRegion(rEvent, false/* cacheWrite */, false/* useRVV */);
-    endClear(startTime);
+    final long startTime = startClear();;
+    try {
+      cmnClearRegion(rEvent, false/* cacheWrite */, false/* useRVV */);
+    } finally {
+      endClear(startTime);
+    }
   }
 
   @Override
