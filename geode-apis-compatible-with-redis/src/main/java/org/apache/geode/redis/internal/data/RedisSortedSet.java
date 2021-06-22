@@ -16,15 +16,10 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
-import static org.apache.geode.redis.internal.netty.Coder.isNaN;
-import static org.apache.geode.redis.internal.netty.Coder.isNegativeInfinity;
-import static org.apache.geode.redis.internal.netty.Coder.isPositiveInfinity;
 
 import java.io.DataInput;
 import java.io.DataOutput;
