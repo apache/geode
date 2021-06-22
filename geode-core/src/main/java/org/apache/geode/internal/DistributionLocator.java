@@ -18,6 +18,7 @@ package org.apache.geode.internal;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
@@ -25,7 +26,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -109,7 +109,9 @@ public class DistributionLocator {
     SystemFailure.loadEmergencyClasses();
 
     final int port = parsePort(args[0]);
-    HostAddress hostAddress = null;
+    InetAddress address = null;
+    boolean peerLocator = true;
+    boolean serverLocator = true;
     String hostnameForClients = null;
     try {
       if (args.length > 1 && !args[1].equals("")) {
@@ -119,37 +121,43 @@ public class DistributionLocator {
                   args[1]));
           ExitCode.FATAL.doSystemExit();
         }
-        hostAddress = new HostAddress(args[1]);
-        // do a look-up to ensure that the name can be resolved to an address
-        InetAddress.getByName(args[1]);
+        address = InetAddress.getByName(args[1]);
       } else {
         // address = null; // was InetAddress.getLocalHost(); (redundant assignment)
+      }
+      if (args.length > 2) {
+        peerLocator = "true".equalsIgnoreCase(args[2]);
+      }
+      if (args.length > 3) {
+        serverLocator = "true".equalsIgnoreCase(args[3]);
       }
       if (args.length > 4) {
         hostnameForClients = args[4];
       }
 
-      final InetAddress inetAddress = hostAddress == null ? null : hostAddress.getAddress();
       if (!Boolean.getBoolean(InternalDistributedSystem.DISABLE_SHUTDOWN_HOOK_PROPERTY)) {
+        final InetAddress faddress = address;
         Runtime.getRuntime()
             .addShutdownHook(new LoggingThread("LocatorShutdownThread", false, () -> {
               try {
-                DistributionLocator.shutdown(port, inetAddress);
+                DistributionLocator.shutdown(port, faddress);
               } catch (IOException e) {
                 e.printStackTrace();
               }
             }));
       }
 
-      lockFile = ManagerInfo.setLocatorStarting(directory, port, inetAddress);
+      lockFile = ManagerInfo.setLocatorStarting(directory, port, address);
       lockFile.deleteOnExit();
 
-      InetAddress address = hostAddress == null ? null : hostAddress.getAddress();
       try {
+
         InternalLocator locator = InternalLocator.startLocator(port, new File(DEFAULT_LOG_FILE),
-            null, null, hostAddress, true, null, hostnameForClients);
+            null, null, address, true, (Properties) null, hostnameForClients);
+
         ManagerInfo.setLocatorStarted(directory, port, address);
         locator.waitToStop();
+
       } finally {
         shutdown(port, address);
       }
@@ -160,7 +168,7 @@ public class DistributionLocator {
 
     } catch (java.net.BindException ex) {
       logger.fatal("Could not bind locator to {}[{}]",
-          new Object[] {hostAddress, port});
+          new Object[] {address, port});
       ExitCode.FATAL.doSystemExit();
 
     } catch (Exception ex) {

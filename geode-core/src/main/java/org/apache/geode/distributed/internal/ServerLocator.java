@@ -16,6 +16,7 @@ package org.apache.geode.distributed.internal;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -107,15 +108,15 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     return loadSnapshot;
   }
 
-  public ServerLocator(int port, String bindAddress, String hostNameForClients, File logFile,
+  public ServerLocator(int port, InetAddress bindAddress, String hostNameForClients, File logFile,
       ProductUseLog productUseLogWriter, String memberName, InternalDistributedSystem ds,
       LocatorStats stats) throws IOException {
     this.port = port;
 
-    if (bindAddress == null || bindAddress.isEmpty()) {
+    if (bindAddress == null) {
       this.hostName = LocalHostUtil.getCanonicalLocalHostName();
     } else {
-      this.hostName = bindAddress;
+      this.hostName = bindAddress.getHostAddress();
     }
 
     if (hostNameForClients != null && !hostNameForClients.equals("")) {

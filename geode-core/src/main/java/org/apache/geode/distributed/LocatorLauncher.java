@@ -60,7 +60,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
@@ -188,7 +187,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   private final boolean portSpecified;
   private final boolean workingDirectorySpecified;
 
-  private final HostAddress bindAddress;
+  private final InetAddress bindAddress;
 
   private final Integer pid;
   private final Integer port;
@@ -260,7 +259,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     this.command = builder.getCommand();
     this.help = Boolean.TRUE.equals(builder.getHelp());
     this.bindAddressSpecified = builder.isBindAddressSpecified();
-    this.bindAddress = builder.getHostAddress();
+    this.bindAddress = builder.getBindAddress();
     setDebug(Boolean.TRUE.equals(builder.getDebug()));
     this.deletePidFileOnStop = Boolean.TRUE.equals(builder.getDeletePidFileOnStop());
     this.distributedSystemProperties = builder.getDistributedSystemProperties();
@@ -298,31 +297,19 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   @Deprecated
   public static LocatorStatusResponse statusLocator(int port, InetAddress bindAddress)
       throws IOException {
-    return statusLocator(port, bindAddress == null ? null : bindAddress.getCanonicalHostName(),
-        new Properties());
-  }
-
-  /**
-   * Returns the status of the locator on the given host & port. If you have endpoint
-   * identification enabled the preferred method is statusForLocator(int, String), which
-   * lets you specify the locator's name that the locator has stored in its TLS certificate
-   */
-  public LocatorStatusResponse statusForLocator(int port, InetAddress bindAddress)
-      throws IOException {
-    return statusLocator(port, bindAddress == null ? null : bindAddress.getCanonicalHostName(),
-        getProperties());
+    return statusLocator(port, bindAddress, new Properties());
   }
 
   /**
    * Returns the status of the locator on the given host & port
    */
-  public LocatorStatusResponse statusForLocator(int port, String hostname)
+  public LocatorStatusResponse statusForLocator(int port, InetAddress bindAddress)
       throws IOException {
-    return statusLocator(port, hostname, getProperties());
+    return statusLocator(port, bindAddress, getProperties());
   }
 
   private static LocatorStatusResponse statusLocator(
-      final int port, String bindAddress,
+      final int port, InetAddress bindAddress,
       final Properties properties)
       throws IOException {
 
@@ -341,7 +328,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
           TcpSocketFactory.DEFAULT);
 
       return (LocatorStatusResponse) client.requestToServer(
-          new HostAndPort(bindAddress == null ? HostUtils.getLocalHost() : bindAddress, port),
+          new HostAndPort(bindAddress == null ? null : bindAddress.getCanonicalHostName(), port),
           new LocatorStatusRequest(), timeout, true);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
@@ -442,7 +429,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see java.net.InetAddress
    */
   public InetAddress getBindAddress() {
-    return bindAddress == null ? null : bindAddress.getAddress();
+    return this.bindAddress;
   }
 
   /**
@@ -461,9 +448,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   protected String getBindAddressAsString() {
     try {
-      if (bindAddress != null) {
-        return bindAddress.getHostName();
+      if (getBindAddress() != null) {
+        return getBindAddress().getCanonicalHostName();
       }
+
       return LocalHostUtil.getCanonicalLocalHostName();
     } catch (UnknownHostException handled) {
       // Returning localhost/127.0.0.1 implies the bindAddress was null and no IP address for
@@ -726,8 +714,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
         try {
           this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
-              bindAddress, true, getDistributedSystemProperties(),
-              getHostnameForClients(),
+              getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients(),
               Paths.get(workingDirectory));
         } finally {
           ProcessLauncherContext.remove();
@@ -873,7 +860,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     while (System.currentTimeMillis() < endTimeInMilliseconds) {
       try {
-        LocatorStatusResponse response = statusForLocator(getPort(), getBindAddressString());
+        LocatorStatusResponse response = statusForLocator(getPort(), getBindAddress());
         return new LocatorState(this, Status.ONLINE, response);
       } catch (Exception handled) {
         timedWait(interval, timeUnit);
@@ -998,7 +985,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   private LocatorState statusWithPort() {
     try {
-      LocatorStatusResponse response = statusForLocator(getPort(), getBindAddressString());
+      LocatorStatusResponse response = statusForLocator(getPort(), getBindAddress());
       return new LocatorState(this, Status.ONLINE, response);
     } catch (Exception handled) {
       return createNoResponseState(handled,
@@ -1199,10 +1186,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     return overriddenDefaults;
   }
 
-  public String getBindAddressString() {
-    return bindAddress == null ? null : bindAddress.getHostName();
-  }
-
   private class LocatorControllerParameters implements ProcessControllerParameters {
     @Override
     public File getPidFile() {
@@ -1277,7 +1260,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     private Boolean loadSharedConfigFromDir;
     private Command command;
 
-    private HostAddress bindAddress;
+    private InetAddress bindAddress;
 
     private Integer pid;
     private Integer port;
@@ -1588,18 +1571,14 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see java.net.InetAddress
      */
     public InetAddress getBindAddress() {
-      return bindAddress == null ? null : bindAddress.getAddress();
-    }
-
-    HostAddress getHostAddress() {
-      return bindAddress;
+      return this.bindAddress;
     }
 
     /**
      * Sets the IP address as an java.net.InetAddress to which the Locator has bound itself
      * listening for client requests.
      *
-     * @param addressString the InetAddress with the IP address or hostname on which the Locator is
+     * @param bindAddress the InetAddress with the IP address or hostname on which the Locator is
      *        bound and listening.
      * @return this Builder instance.
      * @throws IllegalArgumentException wrapping the UnknownHostException if the IP address or
@@ -1607,23 +1586,24 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #getBindAddress()
      * @see java.net.InetAddress
      */
-    public Builder setBindAddress(final String addressString) {
-      if (isBlank(addressString)) {
+    public Builder setBindAddress(final String bindAddress) {
+      if (isBlank(bindAddress)) {
         this.bindAddress = null;
         return this;
       } else {
         try {
-          InetAddress address = InetAddress.getByName(addressString);
+          InetAddress address = InetAddress.getByName(bindAddress);
           if (LocalHostUtil.isLocalHost(address)) {
-            this.bindAddress = new HostAddress(addressString);
+            this.bindAddress = address;
             return this;
           } else {
             throw new IllegalArgumentException(
-                addressString + " is not an address for this machine.");
+                bindAddress + " is not an address for this machine.");
           }
         } catch (UnknownHostException e) {
-          throw new IllegalArgumentException("The hostname/IP address (" + addressString
-              + ") to which the Locator will be bound is unknown.",
+          throw new IllegalArgumentException(
+              String.format("The hostname/IP address to which the %s will be bound is unknown.",
+                  "Locator"),
               e);
         }
       }
@@ -2150,9 +2130,11 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     private static String getBindAddressAsString(LocatorLauncher launcher) {
       if (InternalLocator.hasLocator()) {
         final InternalLocator locator = InternalLocator.getLocator();
-        String bindAddress = locator.getBindAddressString();
-        if (bindAddress != null && !bindAddress.isEmpty()) {
-          return bindAddress;
+        final InetAddress bindAddress = locator.getBindAddress();
+        if (bindAddress != null) {
+          if (isNotBlank(bindAddress.getHostAddress())) {
+            return bindAddress.getHostAddress();
+          }
         }
       }
       return launcher.getBindAddressAsString();

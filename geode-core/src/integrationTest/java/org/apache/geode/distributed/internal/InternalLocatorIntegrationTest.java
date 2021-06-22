@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.Properties;
 
@@ -36,7 +37,6 @@ import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.LoggingSession;
@@ -58,7 +58,7 @@ public class InternalLocatorIntegrationTest {
   private InternalLogWriter logWriter;
   @Mock
   private InternalLogWriter securityLogWriter;
-  private HostAddress bindAddress;
+  private InetAddress bindAddress;
   private String hostnameForClients;
   @Mock
   private Properties distributedSystemProperties;
@@ -98,9 +98,7 @@ public class InternalLocatorIntegrationTest {
     assertThatCode(() -> {
       internalLocator =
           new InternalLocator(port, loggingSession, logFile, logWriter, securityLogWriter,
-              bindAddress,
-              hostnameForClients,
-              distributedSystemProperties, distributionConfig,
+              bindAddress, hostnameForClients, distributedSystemProperties, distributionConfig,
               workingDirectory);
     }).doesNotThrowAnyException();
   }

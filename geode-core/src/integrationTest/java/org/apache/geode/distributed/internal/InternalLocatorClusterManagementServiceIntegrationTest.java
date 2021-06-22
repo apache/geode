@@ -28,12 +28,10 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.internal.HttpService;
-import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalRegionFactory;
@@ -45,40 +43,11 @@ import org.apache.geode.management.internal.BaseManagementService;
 public class InternalLocatorClusterManagementServiceIntegrationTest {
 
   private InternalLocator internalLocator; // the instance under test
-  private DistributionConfigImpl distributionConfig;
-  private InternalCacheForClientAccess cache;
-  private BaseManagementService managementService;
-  private AgentUtil agentUtil;
-  private HttpService httpService;
-
-  @Before
-  public void setup() throws URISyntaxException {
-    distributionConfig = mock(DistributionConfigImpl.class);
-    cache = mock(InternalCacheForClientAccess.class);
-    managementService = mock(BaseManagementService.class);
-    agentUtil = mock(AgentUtil.class);
-    httpService = mock(HttpService.class);
-    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
-    LoggingSession loggingSession = mock(LoggingSession.class);
-    URI uri = new URI("file", "/management.war", null);
-
-    when(distributionConfig.getJmxManager()).thenReturn(true);
-    when(distributionConfig.getJmxManagerPort())
-        .thenReturn(AvailablePortHelper.getRandomAvailableTCPPort());
-    when(distributionConfig.getLocators()).thenReturn("");
-    when(distributionConfig.getSecurableCommunicationChannels())
-        .thenReturn(new SecurableCommunicationChannel[] {});
-    when(distributionConfig.getSecurityAuthTokenEnabledComponents()).thenReturn(new String[] {});
-    when(cache.createInternalRegionFactory(RegionShortcut.REPLICATE)).thenReturn(regionFactory);
-    when(cache.getOptionalService(HttpService.class))
-        .thenReturn(Optional.of(httpService));
-    when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
-    when(agentUtil.findWarLocation("geode-web-management")).thenReturn(uri);
-    BaseManagementService.setManagementService(cache, managementService);
-
-    internalLocator = new InternalLocator(0, loggingSession, null, null, null, (HostAddress) null,
-        null, null, distributionConfig, null);
-  }
+  private DistributionConfigImpl distributionConfig = mock(DistributionConfigImpl.class);
+  private InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
+  private BaseManagementService managementService = mock(BaseManagementService.class);
+  private AgentUtil agentUtil = mock(AgentUtil.class);
+  private HttpService httpService = mock(HttpService.class);
 
   @After
   public void tearDown() {
