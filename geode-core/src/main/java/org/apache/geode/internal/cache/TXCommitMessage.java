@@ -416,8 +416,10 @@ public class TXCommitMessage extends PooledDistributionMessage
                 setRecipientsSendData(Collections.singleton(indivRecip.next()), processor, rcl);
               }
             } else {
-              Set<InternalDistributedMember> tempNotificationOnlyMembers = new HashSet();
-              Set<InternalDistributedMember> tempTransactionMembers = new HashSet();
+              Set<InternalDistributedMember> tempNotificationOnlyMembers =
+                  new HashSet<InternalDistributedMember>();
+              Set<InternalDistributedMember> tempTransactionMembers =
+                  new HashSet<InternalDistributedMember>();
               if (!rcl.isEmpty() && !getNotificationOnlyMembers().isEmpty()) {
                 for (RegionCommit rc : rcl) {
                   Set<InternalDistributedMember> getNOM = getNotificationOnlyMembers().get(rc);
