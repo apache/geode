@@ -15,6 +15,9 @@
  */
 package org.apache.geode.redis.internal.netty;
 
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.POSITIVE_INFINITY;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
@@ -344,6 +347,15 @@ public class Coder {
    * @throws NumberFormatException if bytes to string does not yield a convertible double
    */
   public static double bytesToDouble(byte[] bytes) {
+    if (isPositiveInfinity(bytes)) {
+      return POSITIVE_INFINITY;
+    }
+    if (isNegativeInfinity(bytes)) {
+      return NEGATIVE_INFINITY;
+    }
+    if (isNaN(bytes)) {
+      throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
+    }
     return stringToDouble(bytesToString(bytes));
   }
 
@@ -424,18 +436,12 @@ public class Coder {
 
   // Checks if the given byte array is equivalent to the String "NaN", ignoring case.
   public static boolean isNaN(byte[] bytes) {
-    if (bytes == null) {
-      return false;
-    }
     return equalsIgnoreCaseBytes(bytes, bNaN);
   }
 
   // Checks if the given byte array is equivalent to the Strings "INF", "INFINITY", "+INF" or
   // "+INFINITY", ignoring case.
   public static boolean isPositiveInfinity(byte[] bytes) {
-    if (bytes == null) {
-      return false;
-    }
     return equalsIgnoreCaseBytes(bytes, bINF)
         || equalsIgnoreCaseBytes(bytes, bP_INF)
         || equalsIgnoreCaseBytes(bytes, bINFINITY)
@@ -445,9 +451,6 @@ public class Coder {
   // Checks if the given byte array is equivalent to the Strings "-INF" or "-INFINITY", ignoring
   // case.
   public static boolean isNegativeInfinity(byte[] bytes) {
-    if (bytes == null) {
-      return false;
-    }
     return equalsIgnoreCaseBytes(bytes, bN_INF)
         || equalsIgnoreCaseBytes(bytes, bN_INFINITY);
   }

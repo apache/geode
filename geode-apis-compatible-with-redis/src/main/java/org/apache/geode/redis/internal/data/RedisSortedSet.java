@@ -362,16 +362,6 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   private static double processByteArrayAsDouble(byte[] value) {
-    if (isPositiveInfinity(value)) {
-      return POSITIVE_INFINITY;
-    }
-    if (isNegativeInfinity(value)) {
-      return NEGATIVE_INFINITY;
-    }
-    if (isNaN(value)) {
-      throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
-    }
-
     try {
       return bytesToDouble(value);
     } catch (NumberFormatException nfe) {

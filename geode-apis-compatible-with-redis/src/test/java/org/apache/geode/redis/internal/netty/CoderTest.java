@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.netty;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
+import static org.apache.geode.redis.internal.netty.Coder.isNaN;
 import static org.apache.geode.redis.internal.netty.Coder.isNegativeInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.isPositiveInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
@@ -54,11 +55,12 @@ public class CoderTest {
   @Test
   @Parameters(method = "infinityStrings")
   public void isInfinity_returnsCorrectly(String string, boolean isPositiveInfinity,
-      boolean isNegativeInfinity) {
+      boolean isNegativeInfinity, boolean isNaN) {
     byte[] bytes = stringToBytes(string);
     assertThat(isInfinity(bytes)).isEqualTo(isPositiveInfinity || isNegativeInfinity);
     assertThat(isPositiveInfinity(bytes)).isEqualTo(isPositiveInfinity);
     assertThat(isNegativeInfinity(bytes)).isEqualTo(isNegativeInfinity);
+    assertThat(isNaN(bytes)).isEqualTo(isNaN);
   }
 
   @SuppressWarnings("unused")
@@ -84,20 +86,20 @@ public class CoderTest {
 
   @SuppressWarnings("unused")
   private Object[] infinityStrings() {
-    // string, isPositiveInfinity, isNegativeInfinity
+    // string, isPositiveInfinity, isNegativeInfinity, isNaN
     return new Object[] {
-        new Object[] {"inf", true, false},
-        new Object[] {"+inf", true, false},
-        new Object[] {"Infinity", true, false},
-        new Object[] {"+Infinity", true, false},
-        new Object[] {"-inf", false, true},
-        new Object[] {"-Infinity", false, true},
-        new Object[] {"infinite", false, false},
-        new Object[] {"+infinityty", false, false},
-        new Object[] {"+-inf", false, false},
-        new Object[] {"notEvenClose", false, false},
-        new Object[] {"NaN", false, false},
-        new Object[] {null, false, false}
+        new Object[] {"inf", true, false, false},
+        new Object[] {"+inf", true, false, false},
+        new Object[] {"Infinity", true, false, false},
+        new Object[] {"+Infinity", true, false, false},
+        new Object[] {"-inf", false, true, false},
+        new Object[] {"-Infinity", false, true, false},
+        new Object[] {"infinite", false, false, false},
+        new Object[] {"+infinityty", false, false, false},
+        new Object[] {"+-inf", false, false, false},
+        new Object[] {"notEvenClose", false, false, false},
+        new Object[] {"NaN", false, false, true},
+        new Object[] {null, false, false, false}
     };
   }
 }
