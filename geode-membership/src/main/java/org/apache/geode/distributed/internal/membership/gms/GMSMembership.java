@@ -571,7 +571,12 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         this.isJoining = true; // added for bug #44373
 
         // connect
-        services.getJoinLeave().join();
+        boolean ok = services.getJoinLeave().join();
+
+        if (!ok) {
+          throw new MembershipConfigurationException("Unable to join the distributed system.  "
+              + "Operation either timed out, was stopped or Locator does not exist.");
+        }
 
         MembershipView<ID> initialView = createGeodeView(services.getJoinLeave().getView());
         latestView = new MembershipView<>(initialView, initialView.getViewId());
