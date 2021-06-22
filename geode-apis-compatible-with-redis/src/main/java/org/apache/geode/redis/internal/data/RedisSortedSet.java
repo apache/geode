@@ -358,7 +358,11 @@ public class RedisSortedSet extends AbstractRedisData {
 
   private static double processByteArrayAsDouble(byte[] value) {
     try {
-      return bytesToDouble(value);
+      double doubleValue = bytesToDouble(value);
+      if (Double.isNaN(doubleValue)) {
+        throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
+      }
+      return doubleValue;
     } catch (NumberFormatException nfe) {
       throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
     }

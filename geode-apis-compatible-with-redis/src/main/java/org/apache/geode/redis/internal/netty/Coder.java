@@ -16,8 +16,8 @@
 package org.apache.geode.redis.internal.netty;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.NaN;
 import static java.lang.Double.POSITIVE_INFINITY;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
@@ -354,7 +354,7 @@ public class Coder {
       return NEGATIVE_INFINITY;
     }
     if (isNaN(bytes)) {
-      throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
+      return NaN;
     }
     return stringToDouble(bytesToString(bytes));
   }
