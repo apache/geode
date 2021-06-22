@@ -30,7 +30,7 @@ import it.unimi.dsi.fastutil.Hash;
 import org.junit.runner.RunWith;
 
 @RunWith(JUnitQuickcheck.class)
-public class Object2ObjectOpenCustomHashMapWithCursorQuickCheckTest {
+public class SizeableObject2ObjectOpenCustomHashMapWithCursorQuickCheckTest {
 
   private static final Hash.Strategy<Integer> NATURAL_HASH = new Hash.Strategy<Integer>() {
     @Override
@@ -50,8 +50,8 @@ public class Object2ObjectOpenCustomHashMapWithCursorQuickCheckTest {
       @Size(min = 2, max = 500) Set<@InRange(minInt = 0, maxInt = 500) Integer> initialData,
       @Size(max = 500) Set<@InRange(minInt = 0, maxInt = 1000) Integer> dataToAdd,
       @Size(max = 500) Set<@InRange(minInt = 0, maxInt = 500) Integer> keysToRemove) {
-    Object2ObjectOpenCustomHashMapWithCursor<Integer, Integer> map =
-        new Object2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
+    SizeableObject2ObjectOpenCustomHashMapWithCursor<Integer, Integer> map =
+        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
     initialData.forEach(i -> map.put(i, i));
 
     HashMap<Integer, Integer> scanned = new HashMap<>();
@@ -72,8 +72,8 @@ public class Object2ObjectOpenCustomHashMapWithCursorQuickCheckTest {
   @Property
   public void scanWithNoModificationsDoesNotReturnDuplicates(
       @Size(min = 2, max = 500) Set<@InRange(minInt = 0, maxInt = 500) Integer> initialData) {
-    Object2ObjectOpenCustomHashMapWithCursor<Integer, Integer> map =
-        new Object2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
+    SizeableObject2ObjectOpenCustomHashMapWithCursor<Integer, Integer> map =
+        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
     initialData.forEach(i -> map.put(i, i));
 
     List<Integer> scanned = new ArrayList<>();
