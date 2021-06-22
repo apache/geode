@@ -79,7 +79,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.api.MembershipInformation;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
-import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
@@ -915,9 +914,8 @@ public class InternalDistributedSystem extends DistributedSystem
     try {
       startedLocator =
           InternalLocator.createLocator(locId.getPort(), NullLoggingSession.create(), null,
-              logWriter, securityLogWriter, new HostAddress(locId.getHost()),
-              locId.getHostnameForClients(), originalConfig.toProperties(),
-              false);
+              logWriter, securityLogWriter, locId.getHost().getAddress(),
+              locId.getHostnameForClients(), originalConfig.toProperties(), false);
 
       // if locator is started this way, cluster config is not enabled, set the flag correctly
       startedLocator.getConfig().setEnableClusterConfiguration(false);

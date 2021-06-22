@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -315,9 +316,9 @@ public class StartLocatorCommand extends OfflineGfshCommand {
 
     infoResult.addLine(locatorState.toString());
     String locatorHostName;
-    String bindAddr = locatorLauncher.getBindAddressString();
+    InetAddress bindAddr = locatorLauncher.getBindAddress();
     if (bindAddr != null) {
-      locatorHostName = bindAddr;
+      locatorHostName = bindAddr.getCanonicalHostName();
     } else {
       locatorHostName = StringUtils.defaultIfBlank(locatorLauncher.getHostnameForClients(),
           HostUtils.getLocalHost());
@@ -482,8 +483,8 @@ public class StartLocatorCommand extends OfflineGfshCommand {
       commandLine.add(launcher.getMemberName());
     }
 
-    if (launcher.getBindAddressString() != null) {
-      commandLine.add("--bind-address=" + launcher.getBindAddressString());
+    if (launcher.getBindAddress() != null) {
+      commandLine.add("--bind-address=" + launcher.getBindAddress().getHostAddress());
     }
 
     if (launcher.isDebugging() || isDebugging()) {

@@ -22,8 +22,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -81,11 +79,7 @@ public class StartLocatorCommandIntegrationTest {
 
   @Test
   public void startWithBindAddress() throws Exception {
-    final Process mockProcess = mock(Process.class);
-    doReturn(mock(InputStream.class)).when(mockProcess).getInputStream();
-    doReturn(mock(InputStream.class)).when(mockProcess).getErrorStream();
-    doReturn(mock(OutputStream.class)).when(mockProcess).getOutputStream();
-    doReturn(mockProcess).when(spy).getProcess(any(), any());
+    doReturn(mock(Process.class)).when(spy).getProcess(any(), any());
     commandRule.executeAndAssertThat(spy, "start locator --bind-address=127.0.0.1");
 
     ArgumentCaptor<String[]> commandLines = ArgumentCaptor.forClass(String[].class);
