@@ -45,10 +45,7 @@ public class CreateDiskStoreCommandTest {
   @Before
   public void before() throws Exception {
     command = spy(CreateDiskStoreCommand.class);
-  }
 
-  @Test
-  public void dirWithRelativePath() throws Exception {
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(any(),
         any());
     doReturn(Collections.singletonList(mock(CliFunctionResult.class))).when(command)
@@ -56,6 +53,10 @@ public class CreateDiskStoreCommandTest {
     doReturn(Pair.of(Boolean.TRUE, null)).when(command).validateDiskstoreAttributes(any(),
         any());
     doReturn(true).when(command).waitForDiskStoreMBeanCreation(any(), any());
+  }
+
+  @Test
+  public void dirWithRelativePath() throws Exception {
     ResultModel resultModel =
         gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=./data/persist")
             .getResultModel();
@@ -67,13 +68,6 @@ public class CreateDiskStoreCommandTest {
 
   @Test
   public void dirWithAbsolutePath() throws Exception {
-    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(any(),
-        any());
-    doReturn(Collections.singletonList(mock(CliFunctionResult.class))).when(command)
-        .executeAndGetFunctionResult(any(), any(), any());
-    doReturn(Pair.of(Boolean.TRUE, null)).when(command).validateDiskstoreAttributes(any(),
-        any());
-    doReturn(true).when(command).waitForDiskStoreMBeanCreation(any(), any());
     ResultModel resultModel =
         gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=/data/persist")
             .getResultModel();
@@ -81,5 +75,52 @@ public class CreateDiskStoreCommandTest {
 
     DiskDirType diskDirType = diskStoreType.getDiskDirs().get(0);
     assertThat(diskDirType.getContent().replace('\\', '/')).isEqualTo("/data/persist");
+  }
+
+  @Test
+  public void dirIsCreatedWithExpectedSpecifiedSize() throws Exception {
+    ResultModel resultModel =
+        gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=/data/persist#32768")
+            .getResultModel();
+    DiskStoreType diskStoreType = (DiskStoreType) resultModel.getConfigObject();
+
+    DiskDirType diskDirType = diskStoreType.getDiskDirs().get(0);
+    assertThat(diskDirType.getDirSize()).isEqualTo("32768");
+  }
+
+  @Test
+  public void dirIsCreatedWithExpectedDefaultSize() {
+    ResultModel resultModel =
+        gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=/data/persist")
+            .getResultModel();
+    DiskStoreType diskStoreType = (DiskStoreType) resultModel.getConfigObject();
+
+    DiskDirType diskDirType = diskStoreType.getDiskDirs().get(0);
+    assertThat(diskDirType.getDirSize()).isEqualTo(String.valueOf(Integer.MAX_VALUE));
+  }
+
+  @Test
+  public void commandFailsIfDirSizeIsOverTheMaximum() {
+    long invalidValue = Long.valueOf(Integer.MAX_VALUE) + 1;
+    gfsh.executeAndAssertThat(command,
+        "create disk-store --name=ds1 --dir=/data/persist#" + invalidValue)
+        .statusIsError()
+        .containsOutput("Directory size (2147483648) is over the maximum allowed value");
+  }
+
+  @Test
+  public void commandFailsIfDirSizeIsNegative() {
+    gfsh.executeAndAssertThat(command,
+        "create disk-store --name=ds1 --dir=/data/persist#-1024")
+        .statusIsError()
+        .containsOutput("Directory size cannot be negative (-1024)");
+  }
+
+  @Test
+  public void commandFailsIfDirSizeIsNotANumber() {
+    gfsh.executeAndAssertThat(command,
+        "create disk-store --name=ds1 --dir=/data/persist#123ABC")
+        .statusIsError()
+        .containsOutput("Incorrect directory size specified (123ABC)");
   }
 }

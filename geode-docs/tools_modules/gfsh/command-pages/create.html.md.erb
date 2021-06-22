@@ -286,7 +286,7 @@ create disk-store --name=value --dir=value(,value)* [--allow-force-compaction(=v
 <pre class="pre codeblock"><code>--dir=/data/ds1 
 --dir=/data/ds2#5000</code></pre>
 If the specified directory does not exist, the command will create the directory for you.</td>
-<td> </td>
+<td>If the maximum directory size in megabytes is not specified, it will be set to `2147483647` (the value of `Integer.MAX_VALUE`)</td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-allow-force-compaction</span></td>

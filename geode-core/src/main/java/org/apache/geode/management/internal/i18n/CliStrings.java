@@ -774,6 +774,12 @@ public class CliStrings {
       "Critical percentage for disk volume usage.";
   public static final String CREATE_DISK_STORE__ERROR_WHILE_CREATING_REASON_0 =
       "An error occurred while creating the disk store: \"{0}\"";
+  public static final String CREATE_DISK_STORE__DIR_SIZE_TOO_BIG_ERROR =
+      "Directory size (%s) is over the maximum allowed value.";
+  public static final String CREATE_DISK_STORE__DIR_SIZE_IS_NEGATIVE =
+      "Directory size cannot be negative (%s)";
+  public static final String CREATE_DISK_STORE__DIR_SIZE_NOT_A_NUMBER =
+      "Incorrect directory size specified (%s)";
 
   /* create index */
   public static final String CREATE_INDEX = "create index";
