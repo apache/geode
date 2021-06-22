@@ -31,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
@@ -47,6 +46,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.tcpserver.HostAddress;
@@ -72,9 +72,7 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
   static Properties dsProperties;
 
   @Rule
-  public transient DistributedRule distributedRule =
-      DistributedRule.builder().withVMCount(NUM_VMS).build();
-
+  public DistributedRule distributedRule = DistributedRule.builder().withVMCount(NUM_VMS).build();
   @Rule
   public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -98,7 +96,7 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
           dsProperties = null;
           Properties props = getDistributedSystemProperties();
           locator = InternalLocator.startLocator(locatorPorts[locatorNumber], new File(""),
-              null, null, LocalHostUtil.getLocalHost(), true,
+              null, null, new HostAddress(LocalHostUtil.getLocalHost()), true,
               props, null, Paths.get(workingDir));
           system = locator.getDistributedSystem();
           cache = ((InternalLocator) locator).getCache();
@@ -117,8 +115,10 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
       VM.getVM(i).invoke(() -> {
         InternalLocator locator = InternalLocator.getLocator();
         if (locator != null) {
-          if (cache != null && cache.isReconnecting()) {
-            cache.stopReconnecting();
+          InternalConfigurationPersistenceService sharedConfig =
+              locator.getConfigurationPersistenceService();
+          if (sharedConfig != null) {
+            sharedConfig.destroySharedConfiguration();
           }
           locator.stop();
         }
@@ -133,7 +133,7 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
     });
   }
 
-  public Properties getDistributedSystemProperties() throws UnknownHostException {
+  public Properties getDistributedSystemProperties() {
     dsProperties = new Properties();
     dsProperties.put(MAX_WAIT_TIME_RECONNECT, "" + (5000 * NUM_VMS));
     dsProperties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
@@ -142,13 +142,12 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
     dsProperties.put(USE_CLUSTER_CONFIGURATION, "true");
     dsProperties.put(HTTP_SERVICE_PORT, "0");
     StringBuilder stringBuilder = new StringBuilder();
-    final String localHostName = LocalHostUtil.getLocalHostName();
-    stringBuilder.append(localHostName + "[")
+    stringBuilder.append("localHost[")
         .append(locatorPorts[0])
         .append(']');
     for (int i = 1; i < NUM_LOCATORS; i++) {
-      stringBuilder.append("," + localHostName + "[")
-          .append(locatorPorts[i])
+      stringBuilder.append(",localHost[")
+          .append(locatorPorts[0])
           .append(']');
     }
     dsProperties.put(LOCATORS, stringBuilder.toString());
