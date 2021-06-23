@@ -347,17 +347,18 @@ public class TXRegionState {
           TXEntryState txes = (TXEntryState) me.getValue();
           txes.buildMessage(r, eKey, msg, this.otherMembers);
           if (txes.getFilterRoutingInfo() != null) {
-            Set<InternalDistributedMember> tempSet = new HashSet<>();
+            Set<InternalDistributedMember> tempNotificationOnlyMembers = new HashSet<>();
             if (txes.getAdjunctRecipients() != null) {
-              tempSet.addAll(txes.getAdjunctRecipients());
-              tempSet.removeAll(redundantMemberSet);
+              tempNotificationOnlyMembers.addAll(txes.getAdjunctRecipients());
+              tempNotificationOnlyMembers.removeAll(redundantMemberSet);
 
               // exclude members that actually host targeted bucket from notification only list
-              if (!tempSet.isEmpty()) {
+              if (!tempNotificationOnlyMembers.isEmpty()) {
                 if (msg.getNotificationOnlyMembers().get(regionCommit) == null) {
-                  msg.getNotificationOnlyMembers().put(regionCommit, tempSet);
+                  msg.getNotificationOnlyMembers().put(regionCommit, tempNotificationOnlyMembers);
                 } else {
-                  msg.getNotificationOnlyMembers().get(regionCommit).addAll(tempSet);
+                  msg.getNotificationOnlyMembers().get(regionCommit)
+                      .addAll(tempNotificationOnlyMembers);
                 }
               }
             }

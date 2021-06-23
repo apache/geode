@@ -245,6 +245,10 @@ public class TXEntryState implements Releasable {
    */
   private long tailKey = -1;
 
+
+  // backup of current tailKey value
+  private transient long backupTailKey = -1;
+
   /**
    * versionTag that is fetched from remote members, if this member's data policy is not REPLICATE
    */
@@ -2049,6 +2053,14 @@ public class TXEntryState implements Releasable {
 
   public void setTailKey(long tailKey) {
     this.tailKey = tailKey;
+  }
+
+  public void backupTailKey() {
+    this.backupTailKey = tailKey;
+  }
+
+  public void restoreTailKey() {
+    this.tailKey = backupTailKey;
   }
 
   public void close() {

@@ -398,8 +398,17 @@ public class TXCommitMessage extends PooledDistributionMessage
         processor.enableSevereAlertProcessing();
       }
       {
+
+        if (distMap.size() > 1 && !getNotificationOnlyMembers().isEmpty()) {
+          this.txState.backupTailKeyOnEntries();
+        }
+        boolean restoreTailKey = false;
         Iterator it = distMap.entrySet().iterator();
         while (it.hasNext()) {
+          if (restoreTailKey) {
+            this.txState.restoreTailKeyOnEntries();
+            restoreTailKey = false;
+          }
           Map.Entry me = (Map.Entry) it.next();
           RegionCommitList rcl = (RegionCommitList) me.getKey();
           HashSet recipients = (HashSet) me.getValue();
@@ -443,6 +452,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
                 this.txState.setTailKeyOnEntries(-1L);
                 setRecipientsSendData(tempNotificationOnlyMembers, processor, rcl);
+                restoreTailKey = true;
               }
             }
           }

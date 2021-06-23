@@ -1035,6 +1035,20 @@ public class TXState implements TXStateInterface {
     }
   }
 
+  public void backupTailKeyOnEntries() {
+    List<TXEntryStateWithRegionAndKey> entries = getSortedEntries();
+    for (TXEntryStateWithRegionAndKey o : entries) {
+      o.es.backupTailKey();
+    }
+  }
+
+  public void restoreTailKeyOnEntries() {
+    List<TXEntryStateWithRegionAndKey> entries = getSortedEntries();
+    for (TXEntryStateWithRegionAndKey o : entries) {
+      o.es.restoreTailKey();
+    }
+  }
+
   /**
    * Used to keep track of the region and key associated with a TXEntryState. Also used to sort the
    * entries into the order in which they will be applied.
