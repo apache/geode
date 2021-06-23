@@ -17,20 +17,14 @@
 package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import it.unimi.dsi.fastutil.bytes.ByteArrays;
-import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
-
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.RegionProvider;
 
 class NullRedisSet extends RedisSet {
 

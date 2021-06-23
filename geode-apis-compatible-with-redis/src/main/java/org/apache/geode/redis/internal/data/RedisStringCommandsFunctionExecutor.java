@@ -15,9 +15,10 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_STRING;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.RegionProvider;
@@ -58,8 +59,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
 
   @Override
   public boolean set(RedisKey key, byte[] value, SetOptions options) {
-    return stripedExecute(key,
-        () -> NULL_REDIS_STRING.set(getRegionProvider(), key, value, options));
+    return stripedExecute(key, () -> set(getRegionProvider(), key, value, options));
   }
 
   @Override
@@ -91,7 +91,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
 
   @Override
   public int bitop(String operation, RedisKey key, List<RedisKey> sources) {
-    return NULL_REDIS_STRING.bitop(getRegionProvider(), operation, key, sources);
+    return bitop(getRegionProvider(), operation, key, sources);
   }
 
   @Override
@@ -144,4 +144,152 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
         () -> getRedisString(key, false).setbit(getRegion(), key, value, byteIndex, bitIndex));
   }
 
+  private boolean set(RegionProvider regionProvider, RedisKey key, byte[] value,
+      SetOptions options) {
+    if (options != null) {
+      if (options.isNX()) {
+        return setnx(regionProvider, key, value, options);
+      }
+
+      if (options.isXX() && regionProvider.getRedisData(key).isNull()) {
+        return false;
+      }
+    }
+
+    RedisString redisString = setRedisString(regionProvider, key, value);
+    redisString.handleSetExpiration(options);
+    return true;
+  }
+
+  private boolean setnx(RegionProvider regionProvider, RedisKey key, byte[] value,
+      SetOptions options) {
+    if (regionProvider.getRedisData(key).exists()) {
+      return false;
+    }
+    RedisString redisString = new RedisString(value);
+    redisString.handleSetExpiration(options);
+    regionProvider.getDataRegion().put(key, redisString);
+    return true;
+  }
+
+  private int bitop(RegionProvider regionProvider, String operation, RedisKey key,
+      List<RedisKey> sources) {
+    List<byte[]> sourceValues = new ArrayList<>();
+    int selfIndex = -1;
+    // Read all the source values, except for self, before locking the stripe.
+    for (RedisKey sourceKey : sources) {
+      if (sourceKey.equals(key)) {
+        // get self later after the stripe is locked
+        selfIndex = sourceValues.size();
+        sourceValues.add(null);
+      } else {
+        sourceValues.add(regionProvider.getStringCommands().get(sourceKey));
+      }
+    }
+    int indexOfSelf = selfIndex;
+    return regionProvider.execute(key,
+        () -> doBitOp(regionProvider, operation, key, indexOfSelf, sourceValues));
+  }
+
+  private enum BitOp {
+    AND, OR, XOR
+  }
+
+  private int doBitOp(RegionProvider regionProvider, String operation, RedisKey key, int selfIndex,
+      List<byte[]> sourceValues) {
+    if (selfIndex != -1) {
+      RedisString redisString =
+          regionProvider.getTypedRedisData(RedisDataType.REDIS_STRING, key, true);
+      if (!redisString.isNull()) {
+        sourceValues.set(selfIndex, redisString.getValue());
+      }
+    }
+    int maxLength = 0;
+    for (byte[] sourceValue : sourceValues) {
+      if (sourceValue != null && maxLength < sourceValue.length) {
+        maxLength = sourceValue.length;
+      }
+    }
+    byte[] newValue;
+    switch (operation) {
+      case "AND":
+        newValue = doBitOp(BitOp.AND, sourceValues, maxLength);
+        break;
+      case "OR":
+        newValue = doBitOp(BitOp.OR, sourceValues, maxLength);
+        break;
+      case "XOR":
+        newValue = doBitOp(BitOp.XOR, sourceValues, maxLength);
+        break;
+      default: // NOT
+        newValue = not(sourceValues.get(0), maxLength);
+        break;
+    }
+    if (newValue.length == 0) {
+      regionProvider.getDataRegion().remove(key);
+    } else {
+      setRedisString(regionProvider, key, newValue);
+    }
+    return newValue.length;
+  }
+
+  private byte[] doBitOp(BitOp bitOp, List<byte[]> sourceValues, int max) {
+    byte[] dest = new byte[max];
+    for (int i = 0; i < max; i++) {
+      byte b = 0;
+      boolean firstByte = true;
+      for (byte[] sourceValue : sourceValues) {
+        byte sourceByte = 0;
+        if (sourceValue != null && i < sourceValue.length) {
+          sourceByte = sourceValue[i];
+        }
+        if (firstByte) {
+          b = sourceByte;
+          firstByte = false;
+        } else {
+          switch (bitOp) {
+            case AND:
+              b &= sourceByte;
+              break;
+            case OR:
+              b |= sourceByte;
+              break;
+            case XOR:
+              b ^= sourceByte;
+              break;
+          }
+        }
+      }
+      dest[i] = b;
+    }
+    return dest;
+  }
+
+  private byte[] not(byte[] sourceValue, int max) {
+    byte[] dest = new byte[max];
+    if (sourceValue == null) {
+      for (int i = 0; i < max; i++) {
+        dest[i] = ~0;
+      }
+    } else {
+      for (int i = 0; i < max; i++) {
+        dest[i] = (byte) (~sourceValue[i] & 0xFF);
+      }
+    }
+    return dest;
+  }
+
+  private RedisString setRedisString(RegionProvider regionProvider, RedisKey key, byte[] value) {
+    RedisString result;
+    RedisData redisData = regionProvider.getRedisData(key);
+
+    if (redisData.isNull() || redisData.getType() != REDIS_STRING) {
+      result = new RedisString(value);
+    } else {
+      result = (RedisString) redisData;
+      result.set(value);
+    }
+    regionProvider.getDataRegion().put(key, result);
+    return result;
+  }
 }

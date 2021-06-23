@@ -16,17 +16,12 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMBER_1_BYTE;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
 /**
