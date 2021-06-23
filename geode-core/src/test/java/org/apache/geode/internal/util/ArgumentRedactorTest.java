@@ -12,22 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.util;
 
+import static java.util.Arrays.asList;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.internal.util.ArgumentRedactor.REDACTED;
 import static org.apache.geode.internal.util.ArgumentRedactor.isTaboo;
 import static org.apache.geode.internal.util.ArgumentRedactor.redact;
 import static org.apache.geode.internal.util.ArgumentRedactor.redactEachInList;
-import static org.apache.geode.internal.util.ArgumentRedactor.redacted;
+import static org.apache.geode.internal.util.ArgumentRedactorRegex.getRegex;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -35,44 +35,56 @@ import org.junit.Test;
 import org.apache.geode.internal.logging.Banner;
 
 public class ArgumentRedactorTest {
+
   private static final String someProperty = "redactorTest.someProperty";
   private static final String somePasswordProperty = "redactorTest.aPassword";
   private static final String someOtherPasswordProperty =
       "redactorTest.aPassword-withCharactersAfterward";
 
   @Test
+  public void printActualRegexString() {
+    System.out.println("Regex: " + getRegex());
+  }
+
+  @Test
   public void theseLinesShouldRedact() {
     String argumentThatShouldBeRedacted = "__this_should_be_redacted__";
     List<String> someTabooOptions =
-        Arrays.asList("-Dgemfire.password=" + argumentThatShouldBeRedacted,
+        asList("-Dgemfire.password=" + argumentThatShouldBeRedacted,
             "--password=" + argumentThatShouldBeRedacted,
             "--J=-Dgemfire.some.very.qualified.item.password=" + argumentThatShouldBeRedacted,
             "--J=-Dsysprop-secret.information=" + argumentThatShouldBeRedacted);
 
     List<String> fullyRedacted = redactEachInList(someTabooOptions);
-    assertThat(fullyRedacted).doesNotContainAnyElementsOf(someTabooOptions);
+
+    assertThat(fullyRedacted)
+        .doesNotContainAnyElementsOf(someTabooOptions);
   }
 
   @Test
   public void redactorWillIdentifySampleTabooProperties() {
-    List<String> shouldBeRedacted = Arrays.asList("gemfire.security-password", "password",
+    List<String> shouldBeRedacted = asList("gemfire.security-password", "password",
         "other-password-option", CLUSTER_SSL_TRUSTSTORE_PASSWORD, GATEWAY_SSL_TRUSTSTORE_PASSWORD,
         SERVER_SSL_KEYSTORE_PASSWORD, "security-username", "security-manager",
         "security-important-property", "javax.net.ssl.keyStorePassword",
         "javax.net.ssl.some.security.item", "javax.net.ssl.keyStoreType", "sysprop-secret-prop");
+
     for (String option : shouldBeRedacted) {
       assertThat(isTaboo(option))
-          .describedAs("This option should be identified as taboo: " + option).isTrue();
+          .describedAs("This option should be identified as taboo: " + option)
+          .isTrue();
     }
   }
 
   @Test
   public void redactorWillAllowSampleMiscProperties() {
-    List<String> shouldNotBeRedacted = Arrays.asList("gemfire.security-manager",
+    List<String> shouldNotBeRedacted = asList("gemfire.security-manager",
         CLUSTER_SSL_ENABLED, CONSERVE_SOCKETS, "username", "just-an-option");
+
     for (String option : shouldNotBeRedacted) {
       assertThat(isTaboo(option))
-          .describedAs("This option should not be identified as taboo: " + option).isFalse();
+          .describedAs("This option should not be identified as taboo: " + option)
+          .isFalse();
     }
   }
 
@@ -85,7 +97,9 @@ public class ArgumentRedactorTest {
     argList.add("--geode-password= confidential");
     argList.add("--some-other-password =shhhh");
     argList.add("--justapassword =failed");
+
     String redacted = redact(argList);
+
     assertThat(redacted).contains("--gemfire.security-password=********");
     assertThat(redacted).contains("--login-password=********");
     assertThat(redacted).contains("--gemfire-password = ********");
@@ -103,7 +117,9 @@ public class ArgumentRedactorTest {
     argList.add("--geode-password= confidential");
     argList.add("--some-other-password =shhhh");
     argList.add("--justapassword =failed");
+
     List<String> redacted = redactEachInList(argList);
+
     assertThat(redacted).contains("--gemfire.security-password=********");
     assertThat(redacted).contains("--login-password=********");
     assertThat(redacted).contains("--gemfire-password = ********");
@@ -111,7 +127,6 @@ public class ArgumentRedactorTest {
     assertThat(redacted).contains("--some-other-password =********");
     assertThat(redacted).contains("--justapassword =********");
   }
-
 
   @Test
   public void argListOfMiscOptionsDoNotRedact() {
@@ -123,7 +138,9 @@ public class ArgumentRedactorTest {
     argList.add("--login-name=admin");
     argList.add("--myArg --myArg2 --myArg3=-arg4");
     argList.add("--myArg --myArg2 --myArg3=\"-arg4\"");
+
     String redacted = redact(argList);
+
     assertThat(redacted).contains("--gemfire.security-properties=./security.properties");
     assertThat(redacted).contains("--gemfire.sys.security-option=someArg");
     assertThat(redacted).contains("--gemfire.use-cluster-configuration=true");
@@ -226,7 +243,7 @@ public class ArgumentRedactorTest {
     String password = "gibberish";
     String value = redact(prefix + password);
 
-    assertThat(value).isEqualTo(prefix + redacted);
+    assertThat(value).isEqualTo(prefix + REDACTED);
   }
 
   @Test
@@ -235,12 +252,33 @@ public class ArgumentRedactorTest {
     String password = "gibberish";
     String value = redact(prefix + password);
 
-    assertThat(value).isEqualTo(prefix + redacted);
+    assertThat(value).isEqualTo(prefix + REDACTED);
   }
 
   @Test
-  public void testArgBeginningWithMinus() {
+  public void redactsArgumentBeginningWithHyphen() {
     String argBeginningWithMinus = "-Dgemfire.ssl-keystore-password=-supersecret";
+    String redacted = redact(argBeginningWithMinus);
+    assertThat(redacted).isEqualTo("-Dgemfire.ssl-keystore-password=********");
+  }
+
+  @Test
+  public void redactsArgumentEndingWithHyphen() {
+    String argBeginningWithMinus = "-Dgemfire.ssl-keystore-password=supersecret-";
+    String redacted = redact(argBeginningWithMinus);
+    assertThat(redacted).isEqualTo("-Dgemfire.ssl-keystore-password=********");
+  }
+
+  @Test
+  public void redactsArgumentContainingHyphen() {
+    String argBeginningWithMinus = "-Dgemfire.ssl-keystore-password=super-secret";
+    String redacted = redact(argBeginningWithMinus);
+    assertThat(redacted).isEqualTo("-Dgemfire.ssl-keystore-password=********");
+  }
+
+  @Test
+  public void redactsArgumentContainingMultipleHyphen() {
+    String argBeginningWithMinus = "-Dgemfire.ssl-keystore-password=this-is-super-secret";
     String redacted = redact(argBeginningWithMinus);
     assertThat(redacted).isEqualTo("-Dgemfire.ssl-keystore-password=********");
   }
