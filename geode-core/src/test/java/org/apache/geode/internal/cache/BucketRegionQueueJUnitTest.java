@@ -38,7 +38,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderHelper;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
@@ -169,9 +168,9 @@ public class BucketRegionQueueJUnitTest {
     this.bucketRegionQueue.addToQueue(7L, event6);
     this.bucketRegionQueue.addToQueue(8L, event7);
 
-    Predicate<InternalGatewayQueueEvent> hasTransactionIdPredicate =
+    Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
         ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx1);
-    Predicate<InternalGatewayQueueEvent> isLastEventInTransactionPredicate =
+    Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
         ParallelGatewaySenderQueue.getIsLastEventInTransactionPredicate();
     List<Object> objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);

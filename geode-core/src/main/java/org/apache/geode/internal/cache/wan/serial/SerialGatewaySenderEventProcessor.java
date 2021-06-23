@@ -25,7 +25,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -54,7 +53,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.internal.cache.wan.InternalGatewayQueueEvent;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -397,9 +395,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * Add the input object to the event queue
    */
   @Override
-  public boolean enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
-      boolean isLastEventInTransaction, Predicate<InternalGatewayQueueEvent> condition)
-      throws IOException, CacheException {
+  public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue,
+      boolean isLastEventInTransaction) throws IOException, CacheException {
     // There is a case where the event is serialized for processing. The
     // region is not
     // serialized along with the event since it is a transient field. I
@@ -408,12 +405,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     // name is
     // used in the sendBatch method, and it can't be null. See EntryEventImpl
     // for details.
-    GatewaySenderEventImpl senderEvent;
-
-    if (condition != null &&
-        !((SerialGatewaySenderQueue) queue).hasEventsMatching(condition)) {
-      return false;
-    }
+    GatewaySenderEventImpl senderEvent = null;
 
     boolean isPrimary = sender.isPrimary();
     if (!isPrimary) {
@@ -468,7 +460,6 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         }
       }
     }
-    return true;
   }
 
   private boolean queuePrimaryEvent(GatewaySenderEventImpl gatewayEvent)
@@ -881,8 +872,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   }
 
   @Override
-  protected boolean enqueueEvent(GatewayQueueEvent event,
-      Predicate<InternalGatewayQueueEvent> condition) {
+  protected void enqueueEvent(GatewayQueueEvent event) {
     // @TODO This API hasn't been implemented yet
     throw new UnsupportedOperationException();
   }
