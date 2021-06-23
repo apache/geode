@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.collections;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -23,6 +24,7 @@ import java.util.TreeSet;
  * Only for testing and performance comparisons.
  */
 class IndexibleTreeSet<E> extends TreeSet<E> implements OrderStatisticsSet<E> {
+
   private static final long serialVersionUID = 521865987126101683L;
 
   @Override
@@ -46,5 +48,14 @@ class IndexibleTreeSet<E> extends TreeSet<E> implements OrderStatisticsSet<E> {
   @Override
   public int indexOf(E element) {
     return headSet(element).size();
+  }
+
+  @Override
+  public ArrayList<E> getIndexRange(int min, int max) {
+    return null;
+  }
+
+  public int findMin(E element) {
+    return 0;
   }
 }

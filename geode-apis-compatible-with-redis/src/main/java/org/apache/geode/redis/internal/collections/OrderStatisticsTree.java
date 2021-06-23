@@ -28,6 +28,7 @@ package org.apache.geode.redis.internal.collections;
 
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -48,7 +49,6 @@ import org.apache.geode.annotations.VisibleForTesting;
  */
 public class OrderStatisticsTree<E extends Comparable<? super E>>
     implements OrderStatisticsSet<E> {
-
   private Node<E> root;
   private int size;
   private int modCount;
@@ -203,6 +203,57 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
 
     fixAfterModification(newNode, true);
     return true;
+  }
+
+  public ArrayList<E> getIndexRange(int min, int max) {
+    ArrayList<E> entryList = new ArrayList<>();
+    Node<E> current = getNode(min);
+    for (int i = min; current != null && i <= max; i++) {
+      entryList.add(current.key);
+      current = successorOf(current);
+    }
+    return entryList;
+  }
+
+  public Iterator<E> iterator(int index) {
+    Node<E> node = getNode(index);
+    return new TreeIterator(node);
+  }
+
+  private Node<E> getNode(int index) {
+    checkIndex(index);
+    Node<E> node = root;
+
+    while (true) {
+      if (index > node.count) {
+        index -= node.count + 1;
+        node = node.right;
+      } else if (index < node.count) {
+        node = node.left;
+      } else {
+        return node;
+      }
+    }
+  }
+
+  private Node<E> findMinNode(E o) {
+    Node<E> x = root;
+    int cmp;
+
+    while ((cmp = o.compareTo(x.key)) != 0) {
+      if (cmp < 0) {
+        if (x.left == null) {
+          break;
+        }
+        x = x.left;
+      } else {
+        if (x.right == null) {
+          break;
+        }
+        x = x.right;
+      }
+    }
+    return x;
   }
 
   @Override
@@ -466,6 +517,14 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     return node;
   }
 
+  private Node<E> maximumNode(Node<E> node) {
+    while (node.right != null) {
+      node = node.right;
+    }
+
+    return node;
+  }
+
   private int height(Node<E> node) {
     return node == null ? -1 : node.height;
   }
@@ -714,6 +773,14 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
         nextNode = null;
       } else {
         nextNode = minimumNode(root);
+      }
+    }
+
+    public TreeIterator(Node<E> node) {
+      if (root == null) {
+        nextNode = null;
+      } else {
+        nextNode = node;
       }
     }
 

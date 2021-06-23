@@ -26,6 +26,7 @@
 
 package org.apache.geode.redis.internal.collections;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 /**
@@ -59,4 +60,13 @@ public interface OrderStatisticsSet<T> extends Set<T> {
    *         in this set.
    */
   int indexOf(T element);
+
+  /**
+   * Returns a range of <code>elements</code> between min and max.
+   *
+   * @param min the minimum element.
+   * @param max the maximum element.
+   * @return an ArrayList of <code>elements</code>.
+   */
+  ArrayList<T> getIndexRange(int min, int max);
 }

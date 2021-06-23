@@ -86,4 +86,9 @@ class NullRedisSortedSet extends RedisSortedSet {
     return -1;
   }
 
+  @Override
+  List<byte[]> zrange(byte[] min, byte[] max,
+      boolean withScores) {
+    return null;
+  }
 }

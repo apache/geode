@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.data;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToInt;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
 
 import java.io.DataInput;
@@ -312,6 +313,41 @@ public class RedisSortedSet extends AbstractRedisData {
     return membersRemoved;
   }
 
+  List<byte[]> zrange(byte[] min, byte[] max,
+      boolean withScores) {
+    ArrayList<byte[]> result = new ArrayList<>();
+    int start = getBoundedStartIndex(bytesToInt(min), getSortedSetSize());
+    int end = getBoundedEndIndex(bytesToInt(max), getSortedSetSize());
+    if (start > end || start == getSortedSetSize()) {
+      return result;
+    }
+
+    ArrayList<OrderedSetEntry> entries = scoreSet.getIndexRange(start, end);
+    entries.forEach(entry -> {
+      result.add(entry.member);
+      if (withScores) {
+        result.add(entry.scoreBytes);
+      }
+    });
+    return result;
+  }
+
+  private int getBoundedStartIndex(int index, int size) {
+    if (index >= 0L) {
+      return Math.min(index, size);
+    } else {
+      return Math.max(index + size, 0);
+    }
+  }
+
+  private int getBoundedEndIndex(long index, int size) {
+    if (index >= 0L) {
+      return (int) Math.min(index, size);
+    } else {
+      return (int) Math.max(index + size, -1);
+    }
+  }
+
   synchronized byte[] memberRemove(byte[] member) {
     byte[] oldValue = null;
     OrderedSetEntry orderedSetEntry = members.remove(member);
@@ -389,6 +425,8 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   static class OrderedSetEntry implements Comparable<OrderedSetEntry> {
+    public static final byte[] MAX_BYTES = "RaAdIsH_SeCrEt_MaX_ByTeS_VaL".getBytes();
+
     private final byte[] member;
     private final byte[] scoreBytes;
     private final Double score;
@@ -397,11 +435,19 @@ public class RedisSortedSet extends AbstractRedisData {
       return scoreBytes;
     }
 
+    public byte[] getMember() {
+      return member;
+    }
+
     @Override
     public int compareTo(OrderedSetEntry o) {
       int comparison = score.compareTo(o.score);
       if (comparison == 0) {
-        // Scores equal, try lexical ordering
+        // MAX_BYTES always bigger than actual entry
+        if (member.equals(MAX_BYTES)) {
+          return -1;
+        }
+        // Scores equal, not MAX, try lexical ordering
         return javaImplementationOfAnsiCMemCmp(member, o.member);
       }
       return comparison;
