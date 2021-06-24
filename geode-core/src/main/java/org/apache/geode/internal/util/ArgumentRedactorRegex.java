@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.util;
 
-import static org.apache.geode.internal.util.ArgumentRedactorRegex.Boundary.SPACE_OR_EQUALS;
 import static org.apache.geode.internal.util.ArgumentRedactorRegex.Group.ARGUMENT;
 import static org.apache.geode.internal.util.ArgumentRedactorRegex.Group.ASSIGNMENT;
 import static org.apache.geode.internal.util.ArgumentRedactorRegex.Group.OPTION;
@@ -61,10 +60,11 @@ import java.util.regex.Pattern;
  */
 public class ArgumentRedactorRegex {
 
+  private static final String REGEX =
+      "" + PREFIX + OPTION + Boundary.SPACE_OR_EQUALS + ASSIGNMENT +
+          Boundary.NEGATIVE_TO_PREVENT_NEXT_OPTION_AS_THIS_ARGUMENT + ARGUMENT;
   // private static final String REGEX = "" + PREFIX + OPTION + SPACE_OR_EQUALS + ASSIGNMENT +
-  // NEGATIVE_TO_PREVENT_NEXT_OPTION_AS_THIS_ARGUMENT + ARGUMENT;
-  private static final String REGEX = "" + PREFIX + OPTION + SPACE_OR_EQUALS + ASSIGNMENT +
-      ARGUMENT;
+  // ARGUMENT;
 
   private static final Pattern PATTERN = Pattern.compile(REGEX);
 
@@ -89,8 +89,10 @@ public class ArgumentRedactorRegex {
   public enum Group {
     PREFIX(1, "prefix",
         "(?<prefix>" + beginningOfLineOrSpace + optionalTwoDashesJEquals + oneOrTwoDashes + ")"),
-    OPTION(2, "option", "(?<option>" + noSpaces + ")"),
-    ASSIGNMENT(3, "assignment", "(?<assignment>" + equalsWithOptionalSpaces + ")"),
+    OPTION(2, "option",
+        "(?<option>" + noSpaces + ")"),
+    ASSIGNMENT(3, "assignment",
+        "(?<assignment>" + equalsWithOptionalSpaces + ")"),
     ARGUMENT(4, "argument",
         "(?<argument>(?:" + anythingBetweenQuotes + "|" + noSpacesWithoutQuotes + "))");
     // ARGUMENT(4, "argument", "(?<argument>" + anythingBetweenQuotes + ")");

@@ -456,6 +456,15 @@ public class ArgumentRedactorRegexTest {
   }
 
   @Test
+  public void argumentRegexGroupCapturesArgumentContainingSymbols() {
+    String argument = "'s#kr!\"t";
+    Matcher matcher = Pattern.compile(Group.ARGUMENT.getRegex()).matcher(argument);
+    assertThat(matcher.matches()).isTrue();
+
+    assertThat(matcher.group()).isEqualTo("'s#kr!\"t");
+  }
+
+  @Test
   public void findsMultiplePairs() {
     String input = "-DmyArg -Duser-password=foo --classpath=.";
     Matcher matcher = getPattern().matcher(input);
