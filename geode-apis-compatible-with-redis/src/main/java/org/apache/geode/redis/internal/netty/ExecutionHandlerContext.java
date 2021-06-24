@@ -230,6 +230,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         || cause instanceof NumberFormatException
         || cause instanceof ArithmeticException) {
       response = RedisResponse.error(cause.getMessage());
+    } else if (cause instanceof RedisDataMovedException) {
+      response = RedisResponse.moved(cause.getMessage());
     } else if (cause instanceof RedisDataTypeMismatchException) {
       response = RedisResponse.wrongType(cause.getMessage());
     } else if (cause instanceof LowMemoryException) {
