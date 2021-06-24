@@ -15,27 +15,21 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
-import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
-import io.lettuce.core.resource.ClientResources;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
-import org.apache.geode.redis.session.springRedisTestApplication.config.DUnitSocketAddressResolver;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -51,58 +45,30 @@ public class HlenDUnitTest {
   private static final int HASH_SIZE = 5000;
   private static final int BIG_HASH_SIZE = 50000;
   private static final int NUM_ITERATIONS = 50000;
-  private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
-  private static int[] redisPorts;
   private static RedisAdvancedClusterCommands<String, String> lettuce;
-  private static StatefulRedisClusterConnection<String, String> connection;
-  private static ClientResources resources;
+  private static RedisClusterClient clusterClient;
 
   @BeforeClass
   public static void classSetup() {
-    redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    MemberVM locator = cluster.startLocatorVM(0);
 
-    String redisPort1 = String.valueOf(redisPorts[0]);
-    String redisPort2 = String.valueOf(redisPorts[1]);
+    cluster.startRedisVM(1, locator.getPort());
+    cluster.startRedisVM(2, locator.getPort());
 
-    locator = cluster.startLocatorVM(0);
+    int redisServerPort1 = cluster.getRedisPort(1);
+    clusterClient = RedisClusterClient.create("redis://localhost:" + redisServerPort1);
 
-    server1 = startRedisVM(1, redisPorts[0]);
-    server2 = startRedisVM(2, redisPorts[1]);
-
-    DUnitSocketAddressResolver dnsResolver =
-        new DUnitSocketAddressResolver(new String[] {redisPort2, redisPort1});
-
-    resources = ClientResources.builder().socketAddressResolver(dnsResolver).build();
-
-    RedisClusterClient redisClient = RedisClusterClient.create(resources, "redis://localhost");
-    redisClient.setOptions(ClusterClientOptions.builder().autoReconnect(true).build());
-
-    connection = redisClient.connect();
-    lettuce = connection.sync();
+    lettuce = clusterClient.connect().sync();
   }
 
-  private static MemberVM startRedisVM(int vmID, int redisPort) {
-    int locatorPort = locator.getPort();
-
-    return cluster.startRedisVM(vmID, (x) -> x
-        .withConnectionToLocator(locatorPort)
-        .withProperty(REDIS_PORT, "" + redisPort));
+  @AfterClass
+  public static void cleanup() {
+    clusterClient.shutdown();
   }
 
   @Before
   public void testSetup() {
     cluster.flushAll();
-  }
-
-  @AfterClass
-  public static void tearDown() throws Exception {
-    resources.shutdown().get();
-    connection.close();
-
-    server1.stop();
-    server2.stop();
   }
 
   @Test

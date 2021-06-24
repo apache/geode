@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -26,13 +27,10 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractSetEXIntegrationTest implements RedisIntegrationTest {
 
   private JedisCluster jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
@@ -47,7 +45,7 @@ public abstract class AbstractSetEXIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void testSetEX() {
-    jedis.setex("key", 20, "value");
+    jedis.setex("key", 20L, "value");
 
     assertThat(jedis.ttl("key")).isGreaterThanOrEqualTo(15);
   }
@@ -66,7 +64,7 @@ public abstract class AbstractSetEXIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void testSetEXWithIllegalSeconds() {
-    assertThatThrownBy(() -> jedis.setex("key", -1, "value"))
+    assertThatThrownBy(() -> jedis.setex("key", -1L, "value"))
         .hasMessage("ERR invalid expire time in setex");
   }
 }

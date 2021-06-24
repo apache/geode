@@ -63,8 +63,6 @@ public class ClusterSlotsAndNodesDUnitTest {
   private static Jedis jedis1;
   private static Jedis jedis2;
   private static JedisCluster jedisCluster;
-  private static int redisServerPort1;
-  private static int redisServerPort2;
 
   @BeforeClass
   public static void classSetup() {
@@ -75,8 +73,8 @@ public class ClusterSlotsAndNodesDUnitTest {
 
   @Before
   public void setup() {
-    redisServerPort1 = cluster.getRedisPort(1);
-    redisServerPort2 = cluster.getRedisPort(2);
+    int redisServerPort1 = cluster.getRedisPort(1);
+    int redisServerPort2 = cluster.getRedisPort(2);
     jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
     jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
 
@@ -201,6 +199,8 @@ public class ClusterSlotsAndNodesDUnitTest {
     List<ClusterNode> nodes = ClusterNodes.parseClusterSlots(slots).getNodes();
 
     assertThat(nodes).as("incorrect number of nodes").hasSize(2);
+    assertThat(nodes.get(0).slots.size() + nodes.get(1).slots.size())
+        .isEqualTo(REDIS_REGION_BUCKETS);
     assertThat(nodes.get(0).slots.size()).isCloseTo(REDIS_REGION_BUCKETS / 2, Offset.offset(2));
 
     String info = jedis1.clusterInfo();

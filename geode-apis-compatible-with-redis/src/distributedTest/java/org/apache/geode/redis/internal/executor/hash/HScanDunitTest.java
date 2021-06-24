@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
-import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -32,27 +31,24 @@ import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.RedisException;
 import io.lettuce.core.ScanCursor;
 import io.lettuce.core.cluster.ClusterClientOptions;
+import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
-import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
-import io.lettuce.core.resource.ClientResources;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.session.springRedisTestApplication.config.DUnitSocketAddressResolver;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
+@Ignore("GEODE-9368")
 public class HScanDunitTest {
 
   @ClassRule
@@ -62,66 +58,45 @@ public class HScanDunitTest {
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
   private static RedisAdvancedClusterCommands<String, String> commands;
-  private RedisClusterClient redisClient;
-  private StatefulRedisClusterConnection<String, String> connection;
+  private static RedisClusterClient clusterClient;
 
   private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
-  private static MemberVM server3;
 
   static final String HASH_KEY = "key";
   static final String BASE_FIELD = "baseField_";
   static final Map<String, String> INITIAL_DATA_SET = makeEntrySet(1000);
 
-  static int[] redisPorts;
-
   @BeforeClass
   public static void classSetup() {
     locator = redisClusterStartupRule.startLocatorVM(0);
     int locatorPort = locator.getPort();
-    redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
 
     // note: due to rules around member weighting in split-brain scenarios,
     // vm1 (server1) should not be crashed or it will cause additional (unrelated) failures
-    String redisPort1 = redisPorts[0] + "";
-    server1 = redisClusterStartupRule.startRedisVM(1, redisPort1, locatorPort);
+    redisClusterStartupRule.startRedisVM(1, locatorPort);
+    redisClusterStartupRule.startRedisVM(2, locatorPort);
+    redisClusterStartupRule.startRedisVM(3, locatorPort);
 
-    String redisPort2 = redisPorts[1] + "";
-    server2 = redisClusterStartupRule.startServerVM(2, redisPort2, locatorPort);
+    int redisServerPort1 = redisClusterStartupRule.getRedisPort(1);
+    clusterClient = RedisClusterClient.create("redis://localhost:" + redisServerPort1);
 
-    String redisPort3 = redisPorts[2] + "";
-    server3 = redisClusterStartupRule.startServerVM(3, redisPort3, locatorPort);
-  }
+    ClusterTopologyRefreshOptions refreshOptions =
+        ClusterTopologyRefreshOptions.builder()
+            .enableAllAdaptiveRefreshTriggers()
+            .build();
 
-  @Before
-  public void testSetup() {
-    addIgnoredException(FunctionException.class);
-    String redisPort1 = "" + redisPorts[0];
-    DUnitSocketAddressResolver dnsResolver =
-        new DUnitSocketAddressResolver(new String[] {redisPort1});
-
-    ClientResources resources = ClientResources.builder()
-        .socketAddressResolver(dnsResolver)
-        .build();
-
-    redisClient = RedisClusterClient.create(resources, "redis://localhost");
-    redisClient.setOptions(ClusterClientOptions.builder()
-        .autoReconnect(true)
+    clusterClient.setOptions(ClusterClientOptions.builder()
+        .topologyRefreshOptions(refreshOptions)
+        .validateClusterNodeMembership(false)
         .build());
 
-    connection = redisClient.connect();
-    commands = connection.sync();
+    commands = clusterClient.connect().sync();
     commands.hset(HASH_KEY, INITIAL_DATA_SET);
   }
 
   @AfterClass
   public static void tearDown() {
-    commands.quit();
-
-    server1.stop();
-    server2.stop();
-    server3.stop();
+    clusterClient.shutdown();
   }
 
   @Test
@@ -184,12 +159,10 @@ public class HScanDunitTest {
 
     int vmToCrashToggle = 3;
     MemberVM vm;
-    int redisPort;
 
     do {
-      redisPort = redisPorts[vmToCrashToggle - 1];
       redisClusterStartupRule.crashVM(vmToCrashToggle);
-      vm = redisClusterStartupRule.startServerVM(vmToCrashToggle, redisPort, locator.getPort());
+      vm = redisClusterStartupRule.startRedisVM(vmToCrashToggle, locator.getPort());
       rebalanceAllRegions(vm);
       numberOfTimesServersCrashed.incrementAndGet();
       vmToCrashToggle = (vmToCrashToggle == 2) ? 3 : 2;

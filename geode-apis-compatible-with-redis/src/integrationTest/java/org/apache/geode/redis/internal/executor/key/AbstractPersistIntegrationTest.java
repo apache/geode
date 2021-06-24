@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,13 +30,10 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.params.SetParams;
 
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractPersistIntegrationTest implements RedisIntegrationTest {
 
   private JedisCluster jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
@@ -58,7 +56,7 @@ public abstract class AbstractPersistIntegrationTest implements RedisIntegration
     String stringKey = "stringKey";
     String stringValue = "stringValue";
     jedis.set(stringKey, stringValue);
-    jedis.expire(stringKey, 20);
+    jedis.expire(stringKey, 20L);
 
     assertThat(jedis.persist(stringKey)).isEqualTo(1L);
     assertThat(jedis.ttl(stringKey)).isEqualTo(-1L);
@@ -75,7 +73,7 @@ public abstract class AbstractPersistIntegrationTest implements RedisIntegration
     String setMember = "setValue";
 
     jedis.sadd(setKey, setMember);
-    jedis.expire(setKey, 20);
+    jedis.expire(setKey, 20L);
 
     assertThat(jedis.persist(setKey)).isEqualTo(1L);
     assertThat(jedis.ttl(setKey)).isEqualTo(-1L);
@@ -88,7 +86,7 @@ public abstract class AbstractPersistIntegrationTest implements RedisIntegration
     String hashValue = "hashValue";
 
     jedis.hset(hashKey, hashField, hashValue);
-    jedis.expire(hashKey, 20);
+    jedis.expire(hashKey, 20L);
 
     assertThat(jedis.persist(hashKey)).isEqualTo(1L);
     assertThat(jedis.ttl(hashKey)).isEqualTo(-1L);
@@ -101,7 +99,7 @@ public abstract class AbstractPersistIntegrationTest implements RedisIntegration
     String bitMapValue = "0";
 
     jedis.setbit(bitMapKey, offset, bitMapValue);
-    jedis.expire(bitMapKey, 20);
+    jedis.expire(bitMapKey, 20L);
 
     assertThat(jedis.persist(bitMapKey)).isEqualTo(1L);
     assertThat(jedis.ttl(bitMapKey)).isEqualTo(-1L);
@@ -132,7 +130,7 @@ public abstract class AbstractPersistIntegrationTest implements RedisIntegration
   private void setKeysWithExpiration(JedisCluster jedis, int iterationCount) {
     for (int i = 0; i < iterationCount; i++) {
       SetParams setParams = new SetParams();
-      setParams.ex(600);
+      setParams.ex(600L);
 
       jedis.set("key" + i, "value" + i, setParams);
     }

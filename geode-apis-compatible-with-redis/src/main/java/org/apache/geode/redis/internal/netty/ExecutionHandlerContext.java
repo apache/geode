@@ -50,6 +50,7 @@ import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMism
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.data.RedisDataMovedException;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
@@ -226,15 +227,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       return null;
     }
 
-    if (cause instanceof FunctionException
-        && !(cause instanceof FunctionInvocationTargetException)) {
-      Throwable th = getInitialCause((FunctionException) cause);
-      if (th != null) {
-        cause = th;
-      }
-    }
-
-    if (cause instanceof NumberFormatException) {
+    if (cause instanceof RedisDataMovedException) {
+      response = RedisResponse.moved(cause.getMessage());
+    } else if (cause instanceof NumberFormatException) {
       response = RedisResponse.error(cause.getMessage());
     } else if (cause instanceof ArithmeticException) {
       response = RedisResponse.error(cause.getMessage());
@@ -336,7 +331,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         channelInactive(command.getChannelHandlerContext());
       }
     } catch (Exception e) {
-      logger.warn("Execution of Redis command {} failed: {}", command, e);
+      if (!(e instanceof RedisDataMovedException)) {
+        logger.warn("Execution of Redis command {} failed: {}", command, e);
+      }
       throw e;
     }
   }

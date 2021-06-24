@@ -16,118 +16,101 @@
 
 package org.apache.geode.redis.internal.executor;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
-import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 
+import io.lettuce.core.cluster.ClusterClientOptions;
+import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
+import io.lettuce.core.cluster.RedisClusterClient;
+import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.GeodeRedisService;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
-import org.apache.geode.test.junit.rules.GfshCommandRule;
 
+@Ignore("GEODE-9368")
 public class CrashAndNoRepeatDUnitTest {
 
   private static final Logger logger = LogService.getLogger();
 
   @ClassRule
-  public static ClusterStartupRule clusterStartUp = new ClusterStartupRule(4);
-
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
+  public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule();
 
   private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
-
-  private static int[] redisPorts = new int[3];
-  private static final String LOCAL_HOST = "127.0.0.1";
-  private static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static RedisClusterClient clusterClient;
+  private static RedisAdvancedClusterCommands<String, String> lettuce;
 
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
   @BeforeClass
   public static void classSetup() throws Exception {
-    String logLevel = "info";
-
     locator = clusterStartUp.startLocatorVM(0);
-    int locatorPort = locator.getPort();
+    server1 = clusterStartUp.startRedisVM(1, locator.getPort());
+    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
+    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
 
-    server1 = clusterStartUp.startServerVM(1,
-        x -> x.withProperty(REDIS_PORT, "0")
-            .withProperty(REDIS_ENABLED, "true")
-            .withProperty(LOG_LEVEL, logLevel)
-            .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
-            .withConnectionToLocator(locatorPort));
-    redisPorts[0] = getPort(server1);
+    server1.invoke("Set logging level to DEBUG", () -> {
+      Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
+      Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
+      FastLogger.setDelegating(true);
+    });
 
-    server2 = clusterStartUp.startServerVM(2,
-        x -> x.withProperty(REDIS_PORT, "0")
-            .withProperty(REDIS_ENABLED, "true")
-            .withProperty(LOG_LEVEL, logLevel)
-            .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
-            .withConnectionToLocator(locatorPort));
-    redisPorts[1] = getPort(server2);
+    server2.invoke("Set logging level to DEBUG", () -> {
+      Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
+      Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
+      FastLogger.setDelegating(true);
+    });
 
-    server3 = clusterStartUp.startServerVM(3,
-        x -> x.withProperty(REDIS_PORT, "0")
-            .withProperty(REDIS_ENABLED, "true")
-            .withProperty(LOG_LEVEL, logLevel)
-            .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
-            .withConnectionToLocator(locatorPort));
-    redisPorts[2] = getPort(server3);
+    server3.invoke("Set logging level to DEBUG", () -> {
+      Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
+      Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
+      FastLogger.setDelegating(true);
+    });
 
-    gfsh.connectAndVerify(locator);
+    int redisServerPort1 = clusterStartUp.getRedisPort(1);
+    clusterClient = RedisClusterClient.create("redis://localhost:" + redisServerPort1);
+
+    ClusterTopologyRefreshOptions refreshOptions =
+        ClusterTopologyRefreshOptions.builder()
+            .enableAllAdaptiveRefreshTriggers()
+            .refreshTriggersReconnectAttempts(1)
+            .build();
+
+    clusterClient.setOptions(ClusterClientOptions.builder()
+        .topologyRefreshOptions(refreshOptions)
+        .validateClusterNodeMembership(false)
+        .build());
+
+    lettuce = clusterClient.connect().sync();
   }
 
-  private static int getPort(MemberVM vm) {
-    return vm.invoke(() -> ClusterStartupRule.getCache()
-        .getService(GeodeRedisService.class)
-        .getPort());
-  }
-
-  private synchronized Jedis connect(AtomicReference<Jedis> jedisRef) {
-    jedisRef.set(new Jedis(LOCAL_HOST, redisPorts[0], JEDIS_TIMEOUT));
-    return jedisRef.get();
-  }
-
-  private MemberVM startRedisVM(int vmID, int redisPort) {
-    int locatorPort = locator.getPort();
-    return clusterStartUp.startServerVM(vmID,
-        x -> x.withProperty(REDIS_PORT, redisPort + "")
-            .withProperty(REDIS_ENABLED, "true")
-            .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
-            .withConnectionToLocator(locatorPort));
+  @AfterClass
+  public static void cleanup() {
+    clusterClient.shutdown();
   }
 
   @Test
@@ -147,19 +130,19 @@ public class CrashAndNoRepeatDUnitTest {
 
     future4.get();
     clusterStartUp.crashVM(2);
-    server2 = startRedisVM(2, redisPorts[1]);
+    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
     rebalanceAllRegions(server2);
 
     clusterStartUp.crashVM(3);
-    server3 = startRedisVM(3, redisPorts[2]);
+    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
     rebalanceAllRegions(server3);
 
     clusterStartUp.crashVM(2);
-    server2 = startRedisVM(2, redisPorts[1]);
+    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
     rebalanceAllRegions(server2);
 
     clusterStartUp.crashVM(3);
-    server3 = startRedisVM(3, redisPorts[2]);
+    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
     rebalanceAllRegions(server3);
 
     running1.set(false);
@@ -176,10 +159,11 @@ public class CrashAndNoRepeatDUnitTest {
     AtomicBoolean running3 = new AtomicBoolean(true);
     AtomicBoolean running4 = new AtomicBoolean(false);
 
-    Runnable task1 = () -> renamePerformAndVerify(1, 20000, running1);
-    Runnable task2 = () -> renamePerformAndVerify(2, 20000, running2);
-    Runnable task3 = () -> renamePerformAndVerify(3, 20000, running3);
-    Runnable task4 = () -> renamePerformAndVerify(4, 1000, running4);
+    AtomicReference<String> phase = new AtomicReference<>("STARTUP");
+    Runnable task1 = () -> renamePerformAndVerify(1, 20000, running1, phase);
+    Runnable task2 = () -> renamePerformAndVerify(2, 20000, running2, phase);
+    Runnable task3 = () -> renamePerformAndVerify(3, 20000, running3, phase);
+    Runnable task4 = () -> renamePerformAndVerify(4, 1000, running4, phase);
 
     Future<Void> future1 = executor.runAsync(task1);
     Future<Void> future2 = executor.runAsync(task2);
@@ -187,20 +171,32 @@ public class CrashAndNoRepeatDUnitTest {
     Future<Void> future4 = executor.runAsync(task4);
 
     future4.get();
+    phase.set("CRASH 1 SERVER2");
     clusterStartUp.crashVM(2);
-    server2 = startRedisVM(2, redisPorts[1]);
+    phase.set("RESTART 1 SERVER2");
+    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
+    phase.set("REBALANCE 1 SERVER2");
     rebalanceAllRegions(server2);
 
+    phase.set("CRASH 2 SERVER3");
     clusterStartUp.crashVM(3);
-    server3 = startRedisVM(3, redisPorts[2]);
+    phase.set("RESTART 2 SERVER3");
+    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
+    phase.set("REBALANCE 2 SERVER3");
     rebalanceAllRegions(server3);
 
+    phase.set("CRASH 3 SERVER2");
     clusterStartUp.crashVM(2);
-    server2 = startRedisVM(2, redisPorts[1]);
+    phase.set("RESTART 3 SERVER2");
+    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
+    phase.set("REBALANCE 3 SERVER2");
     rebalanceAllRegions(server2);
 
+    phase.set("CRASH 4 SERVER3");
     clusterStartUp.crashVM(3);
-    server3 = startRedisVM(3, redisPorts[2]);
+    phase.set("RESTART 4 SERVER3");
+    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
+    phase.set("REBALANCE 4 SERVER3");
     rebalanceAllRegions(server3);
 
     running1.set(false);
@@ -212,88 +208,43 @@ public class CrashAndNoRepeatDUnitTest {
     future3.get();
   }
 
-  private <T> T doWithRetry(Supplier<T> supplier) {
-    while (true) {
-      try {
-        return supplier.get();
-      } catch (JedisConnectionException ex) {
-        if (!ex.getMessage().contains("Unexpected end of stream.")) {
-          throw ex;
-        }
-      }
-    }
-  }
-
-  private void renamePerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
-    final AtomicReference<Jedis> jedisRef = new AtomicReference<>();
-    connect(jedisRef);
-    String newKey = null;
+  private void renamePerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning,
+      AtomicReference<String> phase) {
+    String newKey;
     String baseKey = "rename-key-" + index;
-    jedisRef.get().set(baseKey + "-0", "value");
+    lettuce.set(baseKey + "-0", "value");
     int iterationCount = 0;
 
     while (iterationCount < minimumIterations || isRunning.get()) {
       String oldKey = baseKey + "-" + iterationCount;
       newKey = baseKey + "-" + (iterationCount + 1);
+      // This try/catch is left for debugging and should be removed as part of GEODE-9368
       try {
-        jedisRef.get().rename(oldKey, newKey);
-        iterationCount += 1;
-      } catch (JedisConnectionException | JedisDataException ex) {
-        if (ex.getMessage().contains("Unexpected end of stream.")) {
-          if (!doWithRetry(() -> connect(jedisRef).exists(oldKey))) {
-            iterationCount += 1;
-          }
-        } else if (ex.getMessage().contains("no such key")) {
-          if (!doWithRetry(() -> connect(jedisRef).exists(oldKey))) {
-            iterationCount += 1;
-          }
-        } else {
-          throw ex;
-        }
+        lettuce.rename(oldKey, newKey);
+        assertThat(lettuce.exists(newKey)).as("key " + newKey + " should exist").isEqualTo(1);
+      } catch (Exception exception) {
+        System.err.println("---||| Exception on key " + newKey + " during phase: " + phase.get());
+        exception.printStackTrace();
+        isRunning.set(false);
+        throw exception;
       }
+      iterationCount += 1;
     }
 
-    assertThat(jedisRef.get().keys(baseKey + "-*").size()).isEqualTo(1);
-    assertThat(jedisRef.get().exists(newKey)).isTrue();
-
     logger.info("--->>> RENAME test ran {} iterations", iterationCount);
-    jedisRef.get().disconnect();
   }
 
   private void appendPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
     String key = "append-key-" + index;
     int iterationCount = 0;
-    final AtomicReference<Jedis> jedisRef = new AtomicReference<>();
-    connect(jedisRef);
 
     while (iterationCount < minimumIterations || isRunning.get()) {
       String appendString = "-" + key + "-" + iterationCount + "-";
-      try {
-        jedisRef.get().append(key, appendString);
-        iterationCount += 1;
-      } catch (JedisConnectionException ex) {
-        if (ex.getMessage().contains("Unexpected end of stream.")) {
-          if (!doWithRetry(() -> connect(jedisRef).get(key)).endsWith(appendString)) {
-            // give some time for the in-flight op to be done
-            try {
-              Thread.sleep(1000);
-            } catch (InterruptedException e) {
-              Thread.interrupted();
-            }
-          }
-          if (doWithRetry(() -> connect(jedisRef).get(key)).endsWith(appendString)) {
-            iterationCount += 1;
-          } else {
-            LogService.getLogger().info("--->>> iterationCount not updated - will retry: "
-                + appendString);
-          }
-        } else {
-          throw ex;
-        }
-      }
+      lettuce.append(key, appendString);
+      iterationCount += 1;
     }
 
-    String storedString = jedisRef.get().get(key);
+    String storedString = lettuce.get(key);
     int idx = 0;
     for (int i = 0; i < iterationCount; i++) {
       String expectedValue = "-" + key + "-" + i + "-";
@@ -308,7 +259,6 @@ public class CrashAndNoRepeatDUnitTest {
     }
 
     logger.info("--->>> APPEND test ran {} iterations", iterationCount);
-    jedisRef.get().disconnect();
   }
 
   private static void rebalanceAllRegions(MemberVM vm) {

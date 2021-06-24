@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
+import static org.apache.geode.redis.internal.executor.pubsub.AbstractSubscriptionsIntegrationTest.REDIS_CLIENT_TIMEOUT;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;

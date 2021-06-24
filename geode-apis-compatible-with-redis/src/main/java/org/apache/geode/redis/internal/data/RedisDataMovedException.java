@@ -13,29 +13,17 @@
  * the License.
  */
 
-package org.apache.geode.redis;
+package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
+public class RedisDataMovedException extends RuntimeException {
 
-import redis.clients.jedis.Jedis;
+  private static final long serialVersionUID = 8138174496239512955L;
 
-public interface RedisIntegrationTest {
+  public RedisDataMovedException() {
+    super();
+  }
 
-  int getPort();
-
-  default void flushAll() {
-    ClusterNodes nodes;
-    try (Jedis jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT)) {
-      nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes());
-    }
-
-    for (ClusterNode node : nodes.getNodes()) {
-      if (!node.primary) {
-        continue;
-      }
-      try (Jedis jedis = new Jedis(node.ipAddress, (int) node.port, REDIS_CLIENT_TIMEOUT)) {
-        jedis.flushAll();
-      }
-    }
+  public RedisDataMovedException(Integer slot, String host, Integer port) {
+    super(String.format("%d %s:%d", slot, host, port));
   }
 }

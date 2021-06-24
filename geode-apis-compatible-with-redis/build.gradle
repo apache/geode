@@ -55,6 +55,7 @@ dependencies {
   commonTestImplementation(project(':geode-dunit'))
   commonTestImplementation('org.testcontainers:testcontainers')
   commonTestImplementation('redis.clients:jedis')
+  commonTestImplementation('org.apache.logging.log4j:log4j-core')
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))

@@ -38,6 +38,6 @@ public abstract class AbstractExecutor implements Executor {
   }
 
   protected Region<RedisKey, RedisData> getDataRegion(ExecutionHandlerContext context) {
-    return context.getRegionProvider().getDataRegion();
+    return context.getRegionProvider().getLocalDataRegion();
   }
 }

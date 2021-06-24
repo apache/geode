@@ -16,11 +16,6 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
-import static org.apache.geode.redis.internal.GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM;
-import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -32,50 +27,41 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.RedisException;
 import io.lettuce.core.cluster.ClusterClientOptions;
+import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
-import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
-import io.lettuce.core.resource.ClientResources;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.session.springRedisTestApplication.config.DUnitSocketAddressResolver;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
-import org.apache.geode.test.junit.rules.GfshCommandRule;
 
+@Ignore("GEODE-9378")
 public class HashesAndCrashesDUnitTest {
 
   private static final Logger logger = LogService.getLogger();
 
   @ClassRule
-  public static ClusterStartupRule clusterStartUp = new ClusterStartupRule(4);
-
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
+  public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule();
 
   private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
 
-  private static int[] redisPorts;
-
-  private RedisClusterClient redisClient;
-  private StatefulRedisClusterConnection<String, String> connection;
-  private RedisAdvancedClusterCommands<String, String> commands;
+  private static RedisAdvancedClusterCommands<String, String> commands;
+  private static RedisClusterClient clusterClient;
 
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
@@ -84,72 +70,29 @@ public class HashesAndCrashesDUnitTest {
   public static void classSetup() throws Exception {
     locator = clusterStartUp.startLocatorVM(0);
 
-    int locatorPort = locator.getPort();
+    server1 = clusterStartUp.startRedisVM(1, locator.getPort());
+    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
+    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
 
-    redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    int redisPort1 = clusterStartUp.getRedisPort(1);
+    clusterClient = RedisClusterClient.create("redis://localhost:" + redisPort1);
 
-    String redisPort1 = redisPorts[0] + "";
-    server1 = clusterStartUp.startServerVM(1,
-        x -> x.withProperty(REDIS_PORT, redisPort1)
-            .withProperty(REDIS_ENABLED, "true")
-            .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
-            .withConnectionToLocator(locatorPort));
+    ClusterTopologyRefreshOptions refreshOptions =
+        ClusterTopologyRefreshOptions.builder()
+            .enableAllAdaptiveRefreshTriggers()
+            .build();
 
-    String redisPort2 = redisPorts[1] + "";
-    server2 = clusterStartUp.startServerVM(2,
-        x -> x.withProperty(REDIS_PORT, redisPort2)
-            .withProperty(REDIS_ENABLED, "true")
-            .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
-            .withConnectionToLocator(locatorPort));
-
-    String redisPort3 = redisPorts[2] + "";
-    server3 = clusterStartUp.startServerVM(3,
-        x -> x.withProperty(REDIS_PORT, redisPort3)
-            .withProperty(REDIS_ENABLED, "true")
-            .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
-            .withConnectionToLocator(locatorPort));
-
-    gfsh.connectAndVerify(locator);
-
-  }
-
-  @Before
-  public void before() {
-    addIgnoredException(FunctionException.class);
-    String redisPort1 = "" + redisPorts[0];
-
-    DUnitSocketAddressResolver dnsResolver =
-        new DUnitSocketAddressResolver(new String[] {redisPort1});
-
-    ClientResources resources = ClientResources.builder()
-        .socketAddressResolver(dnsResolver)
-        .build();
-
-    redisClient = RedisClusterClient.create(resources, "redis://localhost");
-    redisClient.setOptions(ClusterClientOptions.builder()
-        .autoReconnect(true)
+    clusterClient.setOptions(ClusterClientOptions.builder()
+        .topologyRefreshOptions(refreshOptions)
+        .validateClusterNodeMembership(false)
         .build());
-    connection = redisClient.connect();
-    commands = connection.sync();
+
+    commands = clusterClient.connect().sync();
   }
 
-  @After
-  public void after() {
-    connection.close();
-    redisClient.shutdown();
-  }
-
-  private MemberVM startRedisVM(int vmID, int redisPort) {
-    int locatorPort = locator.getPort();
-    return clusterStartUp.startServerVM(vmID,
-        x -> x.withProperty(REDIS_PORT, redisPort + "")
-            .withProperty(REDIS_ENABLED, "true")
-            .withProperty(REDIS_BIND_ADDRESS, "localhost")
-            .withSystemProperty(ENABLE_UNSUPPORTED_COMMANDS_PARAM, "true")
-            .withConnectionToLocator(locatorPort));
+  @AfterClass
+  public static void cleanup() {
+    clusterClient.shutdown();
   }
 
   @Test
@@ -210,19 +153,19 @@ public class HashesAndCrashesDUnitTest {
 
     future4.get();
     clusterStartUp.crashVM(2);
-    server2 = startRedisVM(2, redisPorts[1]);
+    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
     rebalanceAllRegions(server2);
 
     clusterStartUp.crashVM(3);
-    server3 = startRedisVM(3, redisPorts[2]);
+    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
     rebalanceAllRegions(server3);
 
     clusterStartUp.crashVM(2);
-    server2 = startRedisVM(2, redisPorts[1]);
+    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
     rebalanceAllRegions(server2);
 
     clusterStartUp.crashVM(3);
-    server3 = startRedisVM(3, redisPorts[2]);
+    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
     rebalanceAllRegions(server3);
 
     running1.set(false);

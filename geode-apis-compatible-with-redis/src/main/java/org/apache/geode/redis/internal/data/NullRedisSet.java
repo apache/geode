@@ -109,13 +109,12 @@ class NullRedisSet extends RedisSet {
   private int doSetOpWhileLocked(SetOp setOp, RegionProvider regionProvider,
       RedisKey destination,
       List<Set<byte[]>> nonDestinationSets) {
-    Set<byte[]> result =
-        computeSetOp(setOp, nonDestinationSets, regionProvider, destination);
+    Set<byte[]> result = computeSetOp(setOp, nonDestinationSets, regionProvider, destination);
     if (result.isEmpty()) {
-      regionProvider.getDataRegion().remove(destination);
+      regionProvider.getLocalDataRegion().remove(destination);
       return 0;
     } else {
-      regionProvider.getDataRegion().put(destination, new RedisSet(result));
+      regionProvider.getLocalDataRegion().put(destination, new RedisSet(result));
       return result.size();
     }
   }
