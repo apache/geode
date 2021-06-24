@@ -45,7 +45,8 @@ public class BadCacheLoaderDUnitTest implements Serializable {
   @Rule
   public DistributedRule distributedRule = new DistributedRule(2);
 
-  CacheRule cacheRule = CacheRule.builder().build();
+  @Rule
+  public CacheRule cacheRule = CacheRule.builder().build();
 
   /**
    * Ensure that a cache loader throwing an exception that is not serializable is handled
@@ -61,40 +62,34 @@ public class BadCacheLoaderDUnitTest implements Serializable {
         NotSerializableTestException.class.getName());
 
     cacheLoaderVM.invoke("create a region with a bad cache loader",
-        createRegionWithBadCacheLoader(properties));
+        () -> createRegionWithBadCacheLoader(properties));
 
     Assertions.assertThatThrownBy(() -> fetchingVM.invoke("fetch something from the cache",
-        fetchValueCausingCacheLoad(properties)))
+        () -> fetchValueCausingCacheLoad(properties)))
         .hasCauseInstanceOf(InternalGemFireException.class)
         .hasRootCauseInstanceOf(NotSerializableException.class)
         .hasRootCauseMessage("java.lang.Object");
   }
 
-  @NotNull
-  private SerializableRunnableIF fetchValueCausingCacheLoad(Properties properties) {
-    return () -> {
-      final Cache cache = cacheRule.getOrCreateCache(properties);
-      final Region<String, Object> testRegion =
-          cache.<String, Object>createRegionFactory(RegionShortcut.PARTITION)
-              .setCacheLoader(helper -> new Object())
-              .create(TEST_REGION);
-      testRegion.getAttributesMutator().setCacheLoader(helper -> "should not be invoked");
-      testRegion.get(TEST_KEY);
-    };
+  private void fetchValueCausingCacheLoad(Properties properties) {
+    final Cache cache = cacheRule.getOrCreateCache(properties);
+    final Region<String, Object> testRegion =
+        cache.<String, Object>createRegionFactory(RegionShortcut.PARTITION)
+            .setCacheLoader(helper -> new Object())
+            .create(TEST_REGION);
+    testRegion.getAttributesMutator().setCacheLoader(helper -> "should not be invoked");
+    testRegion.get(TEST_KEY);
   }
 
-  @NotNull
-  private SerializableRunnableIF createRegionWithBadCacheLoader(Properties properties) {
-    return () -> {
-      final Cache cache = cacheRule.getOrCreateCache(properties);
-      final Region<String, Object> testRegion =
-          cache.<String, Object>createRegionFactory(RegionShortcut.PARTITION)
-              .setCacheLoader(helper -> {
-                throw new NotSerializableTestException();
-              })
-              .create(TEST_REGION);
-      testRegion.put(TEST_KEY, TEST_VALUE);
-      testRegion.destroy(TEST_KEY);
-    };
+  private void createRegionWithBadCacheLoader(Properties properties) {
+    final Cache cache = cacheRule.getOrCreateCache(properties);
+    final Region<String, Object> testRegion =
+        cache.<String, Object>createRegionFactory(RegionShortcut.PARTITION)
+            .setCacheLoader(helper -> {
+              throw new NotSerializableTestException();
+            })
+            .create(TEST_REGION);
+    testRegion.put(TEST_KEY, TEST_VALUE);
+    testRegion.destroy(TEST_KEY);
   }
 }
