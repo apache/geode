@@ -114,4 +114,8 @@ public interface PubSub {
    */
   List<Object> findNumberOfSubscribersPerChannel(List<byte[]> names);
 
+  /**
+   * Return a count of all pattern subscriptions including duplicates.
+   */
+  Long findNumberOfSubscribedPatterns();
 }

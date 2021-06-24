@@ -127,6 +127,15 @@ public class Subscriptions {
   }
 
   /**
+   * Return a count of all pattern subscriptions including duplicates.
+   */
+  public long findNumberOfPatternSubscriptions() {
+    return subscriptions.stream()
+        .filter(subscription -> subscription instanceof PatternSubscription)
+        .count();
+  }
+
+  /**
    * Add a new subscription
    */
   @VisibleForTesting

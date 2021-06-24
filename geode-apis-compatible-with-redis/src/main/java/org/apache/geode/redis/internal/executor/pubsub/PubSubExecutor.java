@@ -21,6 +21,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_PUBSU
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCHANNELS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNUMPAT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNUMSUB;
 
 import java.util.List;
@@ -34,18 +35,23 @@ public class PubSubExecutor implements Executor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    byte[] subCommand = command.getProcessedCommand().get(1);
+    List<byte[]> commands = command.getProcessedCommand();
+    byte[] subCommand = commands.get(1);
 
     if (equalsIgnoreCaseBytes(subCommand, bCHANNELS)) {
-      if (command.getProcessedCommand().size() > 3) {
+      if (commands.size() > 3) {
         return RedisResponse
             .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, new String(subCommand)));
       }
-      List<byte[]> channelsResponse = doChannels(command.getProcessedCommand(), context);
+      List<byte[]> channelsResponse = doChannels(commands, context);
       return RedisResponse.array(channelsResponse);
     } else if (equalsIgnoreCaseBytes(subCommand, bNUMSUB)) {
-      List<Object> numSubresponse = doNumsub(command.getProcessedCommand(), context);
+      List<Object> numSubresponse = context.getPubSub()
+          .findNumberOfSubscribersPerChannel(commands.subList(2, commands.size()));
       return RedisResponse.array(numSubresponse);
+    } else if (equalsIgnoreCaseBytes(subCommand, bNUMPAT)) {
+      Long numPatResponse = context.getPubSub().findNumberOfSubscribedPatterns();
+      return RedisResponse.integer(numPatResponse);
     }
 
     return RedisResponse
@@ -62,11 +68,6 @@ public class PubSubExecutor implements Executor {
     }
 
     return response;
-  }
-
-  private List<Object> doNumsub(List<byte[]> processedCommand, ExecutionHandlerContext context) {
-    return context.getPubSub()
-        .findNumberOfSubscribersPerChannel(processedCommand.subList(2, processedCommand.size()));
   }
 
 }

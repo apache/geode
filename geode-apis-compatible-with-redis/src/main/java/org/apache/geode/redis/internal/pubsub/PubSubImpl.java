@@ -156,6 +156,11 @@ public class PubSubImpl implements PubSub {
         .collect(Collectors.toList());
   }
 
+  @Override
+  public Long findNumberOfSubscribedPatterns() {
+    return subscriptions.findNumberOfPatternSubscriptions();
+  }
+
   @VisibleForTesting
   long publishMessageToSubscribers(byte[] channel, byte[] message) {
     List<Subscription> foundSubscriptions = subscriptions
