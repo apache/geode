@@ -441,6 +441,7 @@ public class TXCommitMessage extends PooledDistributionMessage
                   }
                 }
                 tempNotificationOnlyMembers.removeAll(tempTransactionMembers);
+                tempNotificationOnlyMembers.retainAll(recipients);
               }
 
               if (tempNotificationOnlyMembers.isEmpty()) {
