@@ -32,6 +32,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -141,6 +142,8 @@ public class QueryOp {
             // get a correct one from query response message. Even this client can get it correctly
             // before and after the PdxSerializationException.
             exceptionRef[0] = new IOException(s, e);
+            LogService.getLogger().warn(
+                "Encountered unexpected PdxSerializationException, retrying on another server");
           } else {
             exceptionRef[0] = new SerializationException(s, e);
           }
