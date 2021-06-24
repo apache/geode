@@ -115,13 +115,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testExpire() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expire(k, 5));
+    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expire(k, 5L));
   }
 
   @Test
   public void testPassiveExpiration() {
     runCommandAndAssertNoStatUpdates("hash", (k) -> {
-      jedis.expire(k, 1);
+      jedis.expire(k, 1L);
       GeodeAwaitility.await().atMost(Duration.ofMinutes(PassiveExpirationManager.INTERVAL * 2))
           .until(() -> jedis.keys("hash").isEmpty());
     });
@@ -155,7 +155,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testRestore() {
     byte[] data = jedis.dump("hash");
-    runCommandAndAssertNoStatUpdates("hash-2", (k) -> jedis.restore(k, 0, data));
+    runCommandAndAssertNoStatUpdates("hash-2", (k) -> jedis.restore(k, 0L, data));
   }
 
   /************* String related commands *************/
