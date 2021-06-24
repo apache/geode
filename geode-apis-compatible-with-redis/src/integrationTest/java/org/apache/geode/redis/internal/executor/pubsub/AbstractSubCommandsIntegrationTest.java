@@ -20,20 +20,23 @@ package org.apache.geode.redis.internal.executor.pubsub;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtMostNArgsForSubCommand;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_PUBSUB_SUBCOMMAND;
-import static org.apache.geode.redis.internal.executor.pubsub.AbstractPubSubIntegrationTest.JEDIS_TIMEOUT;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static redis.clients.jedis.Protocol.PUBSUB_CHANNELS;
+import static redis.clients.jedis.Protocol.PUBSUB_NUMSUB;
 
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
@@ -41,8 +44,13 @@ import redis.clients.jedis.Protocol;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegrationTest {
+
+  @ClassRule
+  public static ExecutorServiceRule executor = new ExecutorServiceRule();
+
   private Jedis subscriber;
   private Jedis introspector;
   private MockSubscriber mockSubscriber;
@@ -50,14 +58,17 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   @Before
   public void setup() {
     mockSubscriber = new MockSubscriber();
-    subscriber = new Jedis("localhost", getPort());
-    introspector = new Jedis("localhost", getPort());
+    subscriber = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
+    introspector = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void teardown() {
     if (mockSubscriber.getSubscribedChannels() > 0) {
       mockSubscriber.unsubscribe();
+    }
+    if (mockSubscriber.getSubscribedChannels() > 0) {
+      mockSubscriber.punsubscribe();
     }
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
   }
@@ -68,6 +79,16 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   }
 
   @Test
+  public void pubsub_shouldReturnError_givenUnknownSubcommand() {
+    String expected = String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, "nonesuch");
+
+    assertThatThrownBy(() -> introspector.sendCommand(Protocol.Command.PUBSUB, "nonesuch"))
+        .hasMessageContaining(expected);
+  }
+
+  /** -- CHANNELS-- **/
+
+  @Test
   public void channels_shouldError_givenTooManyArguments() {
     assertAtMostNArgsForSubCommand(introspector,
         Protocol.Command.PUBSUB,
@@ -76,11 +97,18 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void pubsub_shouldReturnError_givenUnknownSubcommand() {
-    String expected = String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, "nonesuch");
+  public void channels_shouldNotError_givenMixedCaseArguments() {
+    List<byte[]> expectedChannels = new ArrayList<>();
+    expectedChannels.add(stringToBytes("foo"));
+    expectedChannels.add(stringToBytes("bar"));
 
-    assertThatThrownBy(() -> introspector.sendCommand(Protocol.Command.PUBSUB, "nonesuch"))
-        .hasMessageContaining(expected);
+    executor.submit(() -> subscriber.subscribe(mockSubscriber, "foo", "bar"));
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
+
+    List<byte[]> result =
+        uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, "cHaNNEls"));
+
+    assertThat(result).containsExactlyInAnyOrderElementsOf(expectedChannels);
   }
 
   @Test
@@ -88,11 +116,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     List<byte[]> expectedChannels = new ArrayList<>();
     expectedChannels.add(stringToBytes("foo"));
     expectedChannels.add(stringToBytes("bar"));
-    Runnable runnable =
-        () -> subscriber.subscribe(mockSubscriber, "foo", "bar");
-    Thread subscriberThread = new Thread(runnable);
 
-    subscriberThread.start();
+    executor.submit(() -> subscriber.subscribe(mockSubscriber, "foo", "bar"));
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
 
     List<byte[]> result =
@@ -103,12 +128,9 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
 
   @Test
   public void channels_shouldNeverReturnPsubscribedChannels_givenNoActiveChannelSubscribers() {
-
-    Runnable runnable = () -> subscriber.psubscribe(mockSubscriber, "f*");
-    Thread patternSubscriberThread = new Thread(runnable);
-
-    patternSubscriberThread.start();
+    executor.submit(() -> subscriber.psubscribe(mockSubscriber, "f*"));
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
     List<String> result = introspector.pubsubChannels("f*");
 
     assertThat(result).isEmpty();
@@ -119,16 +141,12 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
 
   @Test
   public void channels_shouldReturnListOfMatchingChannels_withActiveChannelSubscribers_whenCalledWithPattern() {
-
     List<String> expectedChannels = new ArrayList<>();
     expectedChannels.add("foo");
 
-    Runnable runnable =
-        () -> subscriber.subscribe(mockSubscriber, "foo", "bar");
-
-    Thread subscriberThread = new Thread(runnable);
-    subscriberThread.start();
+    executor.submit(() -> subscriber.subscribe(mockSubscriber, "foo", "bar"));
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
+
     List<String> result = introspector.pubsubChannels("fo*");
 
     assertThat(result).containsExactlyInAnyOrderElementsOf(expectedChannels);
@@ -145,13 +163,12 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   public void channels_shouldOnlyReturnChannelsWithActiveSubscribers() {
     List<byte[]> expectedChannels = new ArrayList<>();
     expectedChannels.add(stringToBytes("bar"));
-    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "foo", "bar");
-    Thread subscriberThread = new Thread(runnable);
 
-    subscriberThread.start();
+    executor.submit(() -> subscriber.subscribe(mockSubscriber, "foo", "bar"));
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
     mockSubscriber.unsubscribe("foo");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
     List<byte[]> result =
         uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, PUBSUB_CHANNELS));
 
@@ -160,27 +177,20 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
 
   @Test
   public void channels_shouldNotReturnDuplicates_givenMultipleSubscribersToSameChannel_whenCalledWithoutPattern() {
-
-    Jedis subscriber2 = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
+    Jedis subscriber2 = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
 
     MockSubscriber mockSubscriber2 = new MockSubscriber();
     List<byte[]> expectedChannels = new ArrayList<>();
     expectedChannels.add(stringToBytes("foo"));
 
-    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "foo");
-    Thread subscriber1Thread = new Thread(runnable);
-    subscriber1Thread.start();
-
-    Runnable runnable2 = () -> subscriber2.subscribe(mockSubscriber2, "foo");
-    Thread subscriber2Thread = new Thread(runnable2);
-    subscriber2Thread.start();
+    executor.submit(() -> subscriber.subscribe(mockSubscriber, "foo"));
+    executor.submit(() -> subscriber2.subscribe(mockSubscriber2, "foo"));
 
     waitFor(() -> (mockSubscriber.getSubscribedChannels() == 1)
         && (mockSubscriber2.getSubscribedChannels() == 1));
 
     List<byte[]> result =
-        uncheckedCast(introspector
-            .sendCommand(Protocol.Command.PUBSUB, PUBSUB_CHANNELS));
+        uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, PUBSUB_CHANNELS));
 
     assertThat(result).containsExactlyInAnyOrderElementsOf(expectedChannels);
     assertThat(result.size()).isEqualTo(1);
@@ -189,6 +199,90 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     waitFor(() -> mockSubscriber2.getSubscribedChannels() == 0);
 
     subscriber2.close();
+  }
+
+  /** -- NUMSUB-- **/
+
+  @Test
+  public void numsub_shouldReturnEmptyList_whenCalledWithOutChannelNames() {
+    executor.submit(() -> subscriber.subscribe(mockSubscriber, "foo"));
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    List<Object> result =
+        uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, PUBSUB_NUMSUB));
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  public void numsub_shouldReturnListOfChannelsWithSubscriberCount_whenCalledWithActiveChannels() {
+    Jedis subscriber2 = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
+    MockSubscriber fooAndBarSubscriber = new MockSubscriber();
+
+    executor.submit(() -> subscriber.subscribe(mockSubscriber, "foo"));
+    executor.submit(() -> subscriber2.subscribe(fooAndBarSubscriber, "foo", "bar"));
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1
+        && fooAndBarSubscriber.getSubscribedChannels() == 2);
+
+    Map<String, String> result = introspector.pubsubNumSub("foo", "bar");
+
+    assertThat(result.containsKey("foo")).isTrue();
+    assertThat(result.containsKey("bar")).isTrue();
+    assertThat(result.get("foo")).isEqualTo("2");
+    assertThat(result.get("bar")).isEqualTo("1");
+
+    fooAndBarSubscriber.unsubscribe();
+
+    waitFor(() -> fooAndBarSubscriber.getSubscribedChannels() == 0);
+    subscriber2.close();
+  }
+
+  @Test
+  public void numsub_shouldReturnChannelNameWithZero_whenCalledWithChannelWithNoSubscribers() {
+    executor.submit(() -> subscriber.subscribe(mockSubscriber, "foo"));
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    Map<String, String> result = introspector.pubsubNumSub("bar");
+
+    assertThat(result.containsKey("bar")).isTrue();
+    assertThat(result.get("bar")).isEqualTo("0");
+  }
+
+  @Test
+  public void numsub_shouldReturnZero_whenCalledWithPatternWithNoChannelSubscribers() {
+    executor.submit(() -> subscriber.psubscribe(mockSubscriber, "f*"));
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    Map<String, String> result = introspector.pubsubNumSub("f*");
+
+    assertThat(result.containsKey("f*")).isTrue();
+    assertThat(result.get("f*")).isEqualTo("0");
+    mockSubscriber.punsubscribe();
+  }
+
+  @Test
+  public void numsub_shouldReturnSubscriberCount_whenCalledWithPatternAndSubscribersExist() {
+    Jedis subscriber2 = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
+    MockSubscriber fooSubscriber = new MockSubscriber();
+
+    executor.submit(() -> subscriber.psubscribe(mockSubscriber, "f*"));
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    executor.submit(() -> subscriber2.subscribe(fooSubscriber, "foo"));
+    waitFor(() -> fooSubscriber.getSubscribedChannels() == 1);
+
+    Map<String, String> result = introspector.pubsubNumSub("f*");
+
+    assertThat(result.containsKey("foo")).isFalse();
+    assertThat(result.containsKey("f*")).isTrue();
+    assertThat(result.get("f*")).isEqualTo("0");
+
+    result = introspector.pubsubNumSub("foo");
+
+    assertThat(result.containsKey("foo")).isTrue();
+    assertThat(result.containsKey("f*")).isFalse();
+    assertThat(result.get("foo")).isEqualTo("1");
+
+    fooSubscriber.unsubscribe();
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {

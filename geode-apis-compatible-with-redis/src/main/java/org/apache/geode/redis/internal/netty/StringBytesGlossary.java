@@ -109,6 +109,8 @@ public class StringBytesGlossary {
   // PubSubExecutor
   @MakeImmutable
   public static final byte[] bCHANNELS = stringToBytes("CHANNELS");
+  @MakeImmutable
+  public static final byte[] bNUMSUB = stringToBytes("NUMSUB");
 
   // InfoExecutor
   @MakeImmutable
