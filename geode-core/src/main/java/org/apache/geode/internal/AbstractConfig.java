@@ -384,7 +384,7 @@ public abstract class AbstractConfig implements Config {
         attributeValueToPrint = getAttribute(name);
       } else if (sourceIsSecured) {
         // Never show secure sources
-        attributeValueToPrint = ArgumentRedactor.redacted;
+        attributeValueToPrint = ArgumentRedactor.REDACTED;
       } else {
         // Otherwise, redact based on the key string
         attributeValueToPrint =
