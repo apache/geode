@@ -39,8 +39,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
-import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.GeodeRedisServer;
@@ -226,14 +224,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       return null;
     }
 
-    if (cause instanceof FunctionException
-        && !(cause instanceof FunctionInvocationTargetException)) {
-      Throwable th = getInitialCause((FunctionException) cause);
-      if (th != null) {
-        cause = th;
-      }
-    }
-
     if (cause instanceof IllegalStateException
         || cause instanceof RedisParametersMismatchException
         || cause instanceof RedisException
@@ -258,16 +248,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
 
     return response;
-  }
-
-  private static Throwable getInitialCause(FunctionException ex) {
-    Throwable result = ex.getRootCause();
-    if (result == null) {
-      if (!ex.getExceptions().isEmpty()) {
-        result = ex.getExceptions().get(0);
-      }
-    }
-    return result;
   }
 
   @Override
