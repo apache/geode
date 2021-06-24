@@ -16,15 +16,18 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
+import static java.util.Collections.emptySet;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.RegionProvider;
@@ -50,17 +53,17 @@ public class RedisSetCommandsFunctionExecutor extends RedisDataCommandsFunctionE
 
   @Override
   public int sunionstore(RedisKey destination, List<RedisKey> setKeys) {
-    return NULL_REDIS_SET.sunionstore(getRegionProvider(), destination, setKeys);
+    return sunionstore(getRegionProvider(), destination, setKeys);
   }
 
   @Override
   public int sinterstore(RedisKey destination, List<RedisKey> setKeys) {
-    return NULL_REDIS_SET.sinterstore(getRegionProvider(), destination, setKeys);
+    return sinterstore(getRegionProvider(), destination, setKeys);
   }
 
   @Override
   public int sdiffstore(RedisKey destination, List<RedisKey> setKeys) {
-    return NULL_REDIS_SET.sdiffstore(getRegionProvider(), destination, setKeys);
+    return sdiffstore(getRegionProvider(), destination, setKeys);
   }
 
   @Override
@@ -106,4 +109,95 @@ public class RedisSetCommandsFunctionExecutor extends RedisDataCommandsFunctionE
     return stripedExecute(key, () -> getRedisSet(key, true).sscan(matchPattern, count, cursor));
   }
 
+  private enum SetOp {
+    UNION, INTERSECTION, DIFF
+  }
+
+  private int sunionstore(RegionProvider regionProvider, RedisKey destination,
+      List<RedisKey> setKeys) {
+    return doSetOp(SetOp.UNION, regionProvider, destination, setKeys);
+  }
+
+  private int sinterstore(RegionProvider regionProvider, RedisKey destination,
+      List<RedisKey> setKeys) {
+    return doSetOp(SetOp.INTERSECTION, regionProvider, destination, setKeys);
+  }
+
+  private int sdiffstore(RegionProvider regionProvider, RedisKey destination,
+      List<RedisKey> setKeys) {
+    return doSetOp(SetOp.DIFF, regionProvider, destination, setKeys);
+  }
+
+  private int doSetOp(SetOp setOp, RegionProvider regionProvider, RedisKey destination,
+      List<RedisKey> setKeys) {
+    List<Set<byte[]>> nonDestinationSets = fetchSets(regionProvider, setKeys, destination);
+    return regionProvider.execute(destination,
+        () -> doSetOpWhileLocked(setOp, regionProvider, destination, nonDestinationSets));
+  }
+
+  private int doSetOpWhileLocked(SetOp setOp, RegionProvider regionProvider,
+      RedisKey destination,
+      List<Set<byte[]>> nonDestinationSets) {
+    Set<byte[]> result =
+        computeSetOp(setOp, nonDestinationSets, regionProvider, destination);
+    if (result.isEmpty()) {
+      regionProvider.getDataRegion().remove(destination);
+      return 0;
+    } else {
+      regionProvider.getDataRegion().put(destination, new RedisSet(result));
+      return result.size();
+    }
+  }
+
+  private Set<byte[]> computeSetOp(SetOp setOp, List<Set<byte[]>> nonDestinationSets,
+      RegionProvider regionProvider, RedisKey destination) {
+    ObjectOpenCustomHashSet<byte[]> result = null;
+    if (nonDestinationSets.isEmpty()) {
+      return emptySet();
+    }
+    for (Set<byte[]> set : nonDestinationSets) {
+      if (set == null) {
+        RedisSet redisSet =
+            regionProvider.getTypedRedisData(RedisDataType.REDIS_SET, destination, false);
+        set = redisSet.smembers();
+      }
+      if (result == null) {
+        result = new ObjectOpenCustomHashSet<>(set, ByteArrays.HASH_STRATEGY);
+      } else {
+        switch (setOp) {
+          case UNION:
+            result.addAll(set);
+            break;
+          case INTERSECTION:
+            set = new ObjectOpenCustomHashSet<>(set, ByteArrays.HASH_STRATEGY);
+            result.retainAll(set);
+            break;
+          case DIFF:
+            set = new ObjectOpenCustomHashSet<>(set, ByteArrays.HASH_STRATEGY);
+            result.removeAll(set);
+            break;
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Gets the set data for the given keys, excluding the destination if it was in setKeys.
+   * The result will have an element for each corresponding key and a null element if
+   * the corresponding key is the destination.
+   * This is all done outside the striped executor to prevent a deadlock.
+   */
+  private List<Set<byte[]>> fetchSets(RegionProvider regionProvider, List<RedisKey> setKeys,
+      RedisKey destination) {
+    List<Set<byte[]>> result = new ArrayList<>(setKeys.size());
+    for (RedisKey key : setKeys) {
+      if (key.equals(destination)) {
+        result.add(null);
+      } else {
+        result.add(regionProvider.getSetCommands().internalsmembers(key));
+      }
+    }
+    return result;
+  }
 }

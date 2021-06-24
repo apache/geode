@@ -3,3 +3,5 @@ org/apache/geode/redis/internal/collections/SizeableObject2ObjectOpenCustomHashM
 org/apache/geode/redis/internal/collections/SizeableObjectOpenCustomHashSet
 org/apache/geode/redis/internal/collections/IndexibleTreeSet
 org/apache/geode/redis/internal/data/RedisDataMovedException
+org/apache/geode/redis/internal/data/RedisSetCommandsFunctionExecutor$SetOp
+org/apache/geode/redis/internal/data/RedisStringCommandsFunctionExecutor$BitOp
