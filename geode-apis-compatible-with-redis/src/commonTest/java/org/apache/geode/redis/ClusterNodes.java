@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis;
 
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,9 +41,9 @@ public class ClusterNodes {
       long slotEnd = (long) firstLevel.get(1);
 
       List<Object> primary = (List<Object>) firstLevel.get(2);
-      String primaryIp = bytesToString((byte[]) primary.get(0));
+      String primaryIp = new String((byte[]) primary.get(0));
       long primaryPort = (long) primary.get(1);
-      String primaryGUID = primary.size() > 2 ? bytesToString((byte[]) primary.get(2)) : "";
+      String primaryGUID = primary.size() > 2 ? new String((byte[]) primary.get(2)) : "";
 
       result.addSlot(primaryGUID, primaryIp, primaryPort, slotStart, slotEnd);
     }

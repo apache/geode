@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
-import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -110,7 +109,7 @@ public abstract class AbstractDelIntegrationTest implements RedisIntegrationTest
   public void testDel_withBinaryKey() {
     byte[] key = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-    jedis.set(key, stringToBytes("foo"));
+    jedis.set(key, "foo".getBytes());
     jedis.del(key);
 
     assertThat(jedis.get(key)).isNull();

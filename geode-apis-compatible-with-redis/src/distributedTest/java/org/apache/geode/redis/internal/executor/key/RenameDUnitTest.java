@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal.executor.key;
 
 
-import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -120,7 +119,7 @@ public class RenameDUnitTest {
   private Set<String> getKeysOnSameRandomStripe(int numKeysNeeded) {
     Random random = new Random();
     String key1 = "{rename}keyz" + random.nextInt();
-    RedisKey key1RedisKey = new RedisKey(stringToBytes(key1));
+    RedisKey key1RedisKey = new RedisKey(key1.getBytes());
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     Set<String> keys = new HashSet<>();
     keys.add(key1);
@@ -128,7 +127,7 @@ public class RenameDUnitTest {
     do {
       String key2 = "{rename}key" + random.nextInt();
       if (stripedExecutor.compareStripes(key1RedisKey,
-          new RedisKey(stringToBytes(key2))) == 0) {
+          new RedisKey(key2.getBytes())) == 0) {
         keys.add(key2);
       }
     } while (keys.size() < numKeysNeeded);

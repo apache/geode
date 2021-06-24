@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.set;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -257,7 +256,7 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
 
       byte[] inputBuffer = new byte[1024];
       int n = redisSocket.getInputStream().read(inputBuffer);
-      String result = bytesToString(Arrays.copyOfRange(inputBuffer, 0, n));
+      String result = new String(Arrays.copyOfRange(inputBuffer, 0, n));
 
       assertThat(result).isEqualTo("$3\r\none\r\n");
     }

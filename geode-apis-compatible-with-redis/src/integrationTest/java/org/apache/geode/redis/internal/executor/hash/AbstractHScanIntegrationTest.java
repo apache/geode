@@ -20,8 +20,6 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
-import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -232,7 +230,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     scanParams.match("\\p");
 
     ScanResult<Map.Entry<byte[], byte[]>> result =
-        jedis.hscan(stringToBytes("a"), stringToBytes("0"), scanParams);
+        jedis.hscan("a".getBytes(), "0".getBytes(), scanParams);
 
     assertThat(result.getResult()).isEmpty();
   }
@@ -287,10 +285,10 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
           "COUNT", "1");
 
       allEntries.addAll((List<byte[]>) result.get(1));
-      cursor = bytesToString((byte[]) result.get(0));
-    } while (!Arrays.equals((byte[]) result.get(0), stringToBytes("0")));
+      cursor = new String((byte[]) result.get(0));
+    } while (!Arrays.equals((byte[]) result.get(0), "0".getBytes()));
 
-    assertThat((byte[]) result.get(0)).isEqualTo(stringToBytes("0"));
+    assertThat((byte[]) result.get(0)).isEqualTo("0".getBytes());
   }
 
   @Test
@@ -308,7 +306,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     String cursor = "0";
 
     do {
-      result = jedis.hscan(stringToBytes("colors"), stringToBytes(cursor), scanParams);
+      result = jedis.hscan("colors".getBytes(), cursor.getBytes(), scanParams);
       allEntries.addAll(result.getResult());
       cursor = result.getCursor();
     } while (!result.isCompleteIteration());
@@ -319,17 +317,17 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
   @Test
   public void givenMatch_returnsAllMatchingEntries() {
     Map<byte[], byte[]> entryMap = new HashMap<>();
-    byte[] field3 = stringToBytes("3");
-    entryMap.put(stringToBytes("1"), stringToBytes("yellow"));
-    entryMap.put(stringToBytes("12"), stringToBytes("green"));
-    entryMap.put(field3, stringToBytes("grey"));
-    jedis.hmset(stringToBytes("colors"), entryMap);
+    byte[] field3 = "3".getBytes();
+    entryMap.put("1".getBytes(), "yellow".getBytes());
+    entryMap.put("12".getBytes(), "green".getBytes());
+    entryMap.put(field3, "grey".getBytes());
+    jedis.hmset("colors".getBytes(), entryMap);
 
     ScanParams scanParams = new ScanParams();
     scanParams.match("1*");
 
     ScanResult<Map.Entry<byte[], byte[]>> result =
-        jedis.hscan(stringToBytes("colors"), stringToBytes("0"), scanParams);
+        jedis.hscan("colors".getBytes(), "0".getBytes(), scanParams);
 
     entryMap.remove(field3);
     assertThat(result.isCompleteIteration()).isTrue();
@@ -357,25 +355,25 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hmset("colors", entryMap);
 
     List<Object> result =
-        (List<Object>) jedis.sendCommand(stringToBytes("colors"), Protocol.Command.HSCAN,
-            stringToBytes("colors"), stringToBytes("0"), stringToBytes("MATCH"),
-            stringToBytes("3*"),
-            stringToBytes("MATCH"), stringToBytes("1*"));
+        (List<Object>) jedis.sendCommand("colors".getBytes(), Protocol.Command.HSCAN,
+            "colors".getBytes(), "0".getBytes(), "MATCH".getBytes(),
+            "3*".getBytes(),
+            "MATCH".getBytes(), "1*".getBytes());
 
-    assertThat((byte[]) result.get(0)).isEqualTo(stringToBytes("0"));
+    assertThat((byte[]) result.get(0)).isEqualTo("0".getBytes());
     assertThat((List<Object>) result.get(1)).containsAll(
-        Arrays.asList(stringToBytes("1"), stringToBytes("yellow"),
-            stringToBytes("12"), stringToBytes("green")));
+        Arrays.asList("1".getBytes(), "yellow".getBytes(),
+            "12".getBytes(), "green".getBytes()));
   }
 
   @Test
   public void givenMatchAndCount_returnsAllMatchingKeys() {
     Map<byte[], byte[]> entryMap = new HashMap<>();
-    byte[] field3 = stringToBytes("3");
-    entryMap.put(stringToBytes("1"), stringToBytes("yellow"));
-    entryMap.put(stringToBytes("12"), stringToBytes("green"));
-    entryMap.put(field3, stringToBytes("orange"));
-    jedis.hmset(stringToBytes("colors"), entryMap);
+    byte[] field3 = "3".getBytes();
+    entryMap.put("1".getBytes(), "yellow".getBytes());
+    entryMap.put("12".getBytes(), "green".getBytes());
+    entryMap.put(field3, "orange".getBytes());
+    jedis.hmset("colors".getBytes(), entryMap);
 
     ScanParams scanParams = new ScanParams();
     scanParams.count(1);
@@ -385,7 +383,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     String cursor = "0";
 
     do {
-      result = jedis.hscan(stringToBytes("colors"), stringToBytes(cursor), scanParams);
+      result = jedis.hscan("colors".getBytes(), cursor.getBytes(), scanParams);
       allEntries.addAll(result.getResult());
       cursor = result.getCursor();
     } while (!result.isCompleteIteration());
@@ -412,21 +410,21 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
 
     do {
       result =
-          (List<Object>) jedis.sendCommand(stringToBytes("colors"), Protocol.Command.HSCAN,
-              stringToBytes("colors"), stringToBytes(cursor),
-              stringToBytes("COUNT"), stringToBytes("37"),
-              stringToBytes("MATCH"), stringToBytes("3*"), stringToBytes("COUNT"),
-              stringToBytes("2"),
-              stringToBytes("COUNT"), stringToBytes("1"), stringToBytes("MATCH"),
-              stringToBytes("1*"));
+          (List<Object>) jedis.sendCommand("colors".getBytes(), Protocol.Command.HSCAN,
+              "colors".getBytes(), cursor.getBytes(),
+              "COUNT".getBytes(), "37".getBytes(),
+              "MATCH".getBytes(), "3*".getBytes(), "COUNT".getBytes(),
+              "2".getBytes(),
+              "COUNT".getBytes(), "1".getBytes(), "MATCH".getBytes(),
+              "1*".getBytes());
       allEntries.addAll((List<byte[]>) result.get(1));
-      cursor = bytesToString((byte[]) result.get(0));
-    } while (!Arrays.equals((byte[]) result.get(0), stringToBytes("0")));
+      cursor = new String((byte[]) result.get(0));
+    } while (!Arrays.equals((byte[]) result.get(0), "0".getBytes()));
 
-    assertThat((byte[]) result.get(0)).isEqualTo(stringToBytes("0"));
-    assertThat(allEntries).containsExactlyInAnyOrder(stringToBytes("1"),
-        stringToBytes("yellow"),
-        stringToBytes("12"), stringToBytes("green"));
+    assertThat((byte[]) result.get(0)).isEqualTo("0".getBytes());
+    assertThat(allEntries).containsExactlyInAnyOrder("1".getBytes(),
+        "yellow".getBytes(),
+        "12".getBytes(), "green".getBytes());
   }
 
   @Test

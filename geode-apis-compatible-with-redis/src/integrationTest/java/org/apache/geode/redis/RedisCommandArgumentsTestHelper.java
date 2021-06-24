@@ -15,9 +15,6 @@
 
 package org.apache.geode.redis;
 
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
-import static org.apache.geode.redis.internal.netty.Coder.intToBytes;
-import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.function.BiFunction;
@@ -35,7 +32,7 @@ public class RedisCommandArgumentsTestHelper {
   public static void assertExactNumberOfArgs(JedisCluster jedis,
       Protocol.Command command, int numArgs) {
     assertExactNumberOfArgs0(
-        (cmd, args) -> jedis.sendCommand(stringToBytes("key"), cmd, args), command,
+        (cmd, args) -> jedis.sendCommand("key".getBytes(), cmd, args), command,
         numArgs);
   }
 
@@ -59,7 +56,7 @@ public class RedisCommandArgumentsTestHelper {
 
   public static void assertAtLeastNArgs(JedisCluster jedis, Protocol.Command command,
       int minNumArgs) {
-    assertAtLeastNArgs0((cmd, args) -> jedis.sendCommand(stringToBytes("key"), cmd, args),
+    assertAtLeastNArgs0((cmd, args) -> jedis.sendCommand("key".getBytes(), cmd, args),
         command,
         minNumArgs);
   }
@@ -87,7 +84,7 @@ public class RedisCommandArgumentsTestHelper {
 
   public static void assertAtMostNArgs(JedisCluster jedis, Protocol.Command command,
       int maxNumArgs) {
-    assertAtMostNArgs0((cmd, args) -> jedis.sendCommand(stringToBytes("key"), cmd, args),
+    assertAtMostNArgs0((cmd, args) -> jedis.sendCommand("key".getBytes(), cmd, args),
         command,
         maxNumArgs);
   }
@@ -112,7 +109,7 @@ public class RedisCommandArgumentsTestHelper {
 
       assertThatThrownBy(() -> runMe.apply(command, args))
           .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for '"
-              + bytesToString(firstParameter));
+              + new String(firstParameter));
     }
   }
 
@@ -124,7 +121,7 @@ public class RedisCommandArgumentsTestHelper {
     }
 
     for (int i = 0; i < numArgs; i++) {
-      args[i] = intToBytes(i);
+      args[i] = String.valueOf(i).getBytes();
     }
 
     return args;

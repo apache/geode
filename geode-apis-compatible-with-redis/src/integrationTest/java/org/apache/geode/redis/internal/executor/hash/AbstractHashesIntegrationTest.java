@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
-import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -887,8 +886,8 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
       blob[i] = (byte) i;
     }
 
-    jedis.hset(stringToBytes("key"), blob, blob);
-    Map<byte[], byte[]> result = jedis.hgetAll(stringToBytes("key"));
+    jedis.hset("key".getBytes(), blob, blob);
+    Map<byte[], byte[]> result = jedis.hgetAll("key".getBytes());
 
     assertThat(result.keySet()).containsExactly(blob);
     assertThat(result.values()).containsExactly(blob);
