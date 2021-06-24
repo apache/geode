@@ -22,7 +22,7 @@ apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 
 jbossModulesExtension {
   assemblyProject = true
-  facetsToAssemble = ["main"]
+  facetsToAssemble = ["main", "distributedTest"]
 }
 
 import org.apache.geode.gradle.plugins.DependencyConstraints
@@ -651,6 +651,60 @@ distributions {
           tasks.getByName('combineModuleDescriptors').getOutputs().files.each { directory ->
             with copySpec {
             into("moduleDescriptors/main/${directory.name}")
+            from directory
+          }
+        }
+      }
+    }
+  }
+  distributedTest {
+    distributionBaseName = 'apache-geode-distributed-testing'
+    contents {
+      duplicatesStrategy 'exclude'
+      exclude '*.asc'
+
+      exclude '*.asc'
+      exclude '*-sources.jar'
+      exclude '*-javadoc.jar'
+
+      with copySpec {
+        into('lib')
+        from {
+          dependentProjectNames.collect {
+            [
+                    project(':'.concat(it)).configurations.distributedTestRuntimeClasspath,
+            ]
+          }.flatten()
+        }
+
+        from project(':frameworks:geode-extensions').tasks.named('jar')
+        from project(':frameworks:geode-custom-jar-deployments').tasks.named('jar')
+        from project(':geode-deployment:geode-deployment-jboss-modules').tasks.named('jar')
+        from project(':geode-deployment:geode-jboss-extensions').tasks.named('jar')
+
+        from configurations.jbossDependency
+      }
+
+//      with copySpec {
+//        into('tools/Modules')
+//
+//        from { project(':extensions:geode-modules-assembly').distTcServer }
+//        from { project(':extensions:geode-modules-assembly').distTcServer30 }
+//        from { project(':extensions:geode-modules-assembly').distTomcat }
+//        from { project(':extensions:geode-modules-assembly').distAppServer }
+//      }
+
+      with copySpec {
+        into('moduleDescriptors/distributedTest/external-library-dependencies')
+        afterEvaluate {
+          from tasks.named("distributedTestCombineLibraryModuleDescriptors")
+        }
+      }
+
+      project.afterEvaluate {
+        tasks.getByName('distributedTestCombineModuleDescriptors').getOutputs().files.each { directory ->
+          with copySpec {
+            into("moduleDescriptors/distributedTest/${directory.name}")
             from directory
           }
         }

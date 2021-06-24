@@ -16,15 +16,6 @@
  */
 apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 
-jbossModulesExtension {
-  geodeConfigurations {
-    main {
-      outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
-      jbossJdkModules = [ "java.se","jdk.unsupported" ]
-    }
-  }
-}
-
 configurations {
   distributedTestApi
 }

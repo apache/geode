@@ -154,7 +154,7 @@ configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repe
 }
 
 tasks.named("distributedTest").configure {
-  dependsOn(':geode-assembly:installDist')
+  dependsOn(':geode-assembly:distributedTestInstallDist')
 }
 
 // apply common test configuration

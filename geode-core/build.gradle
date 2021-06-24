@@ -406,13 +406,3 @@ distributedTest {
 }
 
 rootProject.generate.dependsOn(generateGrammarSource)
-
-jbossModulesExtension {
-    geodeConfigurations {
-        main {
-            outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
-            jbossJdkModules = [ "java.se","jdk.unsupported" ]
-            mainClass = "org.apache.geode.distributed.ServerLauncher"
-        }
-    }
-}

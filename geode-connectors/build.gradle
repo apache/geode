@@ -22,15 +22,6 @@ evaluationDependsOn(":geode-core")
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
-jbossModulesExtension {
-  geodeConfigurations {
-    main {
-      outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
-      jbossJdkModules = [ "java.se","jdk.unsupported" ]
-    }
-  }
-}
-
 configurations {
   //Configuration used to download mysql jar
   jdbcTestingJars

@@ -30,15 +30,6 @@ facets {
   }
 }
 
-jbossModulesExtension {
-  geodeConfigurations {
-    main {
-      outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
-      jbossJdkModules = [ "java.se","jdk.unsupported" ]
-    }
-  }
-}
-
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-serialization'))

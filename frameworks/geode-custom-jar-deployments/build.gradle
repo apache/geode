@@ -25,7 +25,6 @@ dependencies {
 jbossModulesExtension {
   geodeConfigurations {
     main {
-      outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
       jbossJdkModules = [ "java.se","jdk.unsupported", "jdk.scripting.nashorn", "java.desktop" ]
     }
   }

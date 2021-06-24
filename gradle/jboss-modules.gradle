@@ -6,5 +6,8 @@ jbossModulesExtension {
             outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
             jbossJdkModules = [ "java.se","jdk.unsupported"]
         }
+        distributedTest {
+            assembleFromSource = true
+        }
     }
 }
