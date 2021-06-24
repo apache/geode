@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.SerializationException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
@@ -37,6 +38,7 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.Query;
@@ -56,6 +58,7 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({OQLQueryTest.class})
 public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
@@ -191,6 +194,8 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
         new int[] {port0, port1, port2}, true);
 
     client.invoke(() -> {
+      System.setProperty(
+          GeodeGlossary.GEMFIRE_PREFIX + "enableQueryRetryOnPdxSerializationException", "true");
       try {
         TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization = true;
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
@@ -206,6 +211,78 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
         assertThat(TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization)
             .isFalse();
         TestObjectThrowsPdxSerializationException.numInstance.set(0);
+        System.setProperty(
+            GeodeGlossary.GEMFIRE_PREFIX + "enableQueryRetryOnPdxSerializationException", "false");
+      }
+    });
+  }
+
+  @Test
+  public void testRetryNotEnabledBySystemProperty() throws CacheException {
+    // create pdx instance at servers
+    server0.invoke(() -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(regionName);
+      for (int i = 0; i < numberOfEntries; i++) {
+        region.put("key-" + i, new TestObjectThrowsPdxSerializationException());
+      }
+    });
+
+    // Create client pool with only 2 servers to test that retry will not run forever
+    createPool(client, poolName, new String[] {hostName, hostName},
+        new int[] {port0, port1}, true);
+
+    client.invoke(() -> {
+      try {
+        // If the client did not explicitly specify GeodeGlossary.GEMFIRE_PREFIX +
+        // "enableQueryRetryOnPdxSerializationException" to true, retry will not be enabled
+        TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization = true;
+        QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
+        logger.info("### Executing Query on server: " + queryString[1]);
+        Query query = remoteQueryService.newQuery(queryString[1]);
+        assertThatThrownBy(query::execute).isInstanceOf(ServerOperationException.class)
+            .hasCauseInstanceOf(SerializationException.class);
+        assertThat(TestObjectThrowsPdxSerializationException.numInstance.get()).isEqualTo(1);
+        assertThat(TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization)
+            .isTrue();
+      } finally {
+        TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization = false;
+        TestObjectThrowsPdxSerializationException.numInstance.set(0);
+      }
+    });
+  }
+
+  @Test
+  public void testNotToRetryOnRegularSerializationException() throws CacheException {
+    // create pdx instance at servers
+    server0.invoke(() -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(regionName);
+      for (int i = 0; i < numberOfEntries; i++) {
+        region.put("key-" + i, new TestObjectThrowsSerializationException());
+      }
+    });
+
+    // Create client pool with only 2 servers to test that retry will not run forever
+    createPool(client, poolName, new String[] {hostName, hostName},
+        new int[] {port0, port1}, true);
+
+    client.invoke(() -> {
+      try {
+        System.setProperty(
+            GeodeGlossary.GEMFIRE_PREFIX + "enableQueryRetryOnPdxSerializationException", "true");
+        TestObjectThrowsSerializationException.throwExceptionOnDeserialization = true;
+        QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
+        logger.info("### Executing Query on server: " + queryString[1]);
+        Query query = remoteQueryService.newQuery(queryString[1]);
+        assertThatThrownBy(query::execute).isInstanceOf(ServerOperationException.class)
+            .hasCauseInstanceOf(SerializationException.class);
+        assertThat(TestObjectThrowsSerializationException.numInstance.get()).isEqualTo(1);
+        assertThat(TestObjectThrowsSerializationException.throwExceptionOnDeserialization)
+            .isTrue();
+      } finally {
+        TestObjectThrowsSerializationException.throwExceptionOnDeserialization = false;
+        TestObjectThrowsSerializationException.numInstance.set(0);
+        System.setProperty(
+            GeodeGlossary.GEMFIRE_PREFIX + "enableQueryRetryOnPdxSerializationException", "false");
       }
     });
   }
@@ -225,15 +302,22 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
         new int[] {port0, port1}, true);
 
     client.invoke(() -> {
-      TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization = true;
-      QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
-      logger.info("### Executing Query on server: " + queryString[1]);
-      Query query = remoteQueryService.newQuery(queryString[1]);
-      assertThatThrownBy(query::execute).isInstanceOf(ServerConnectivityException.class);
-      assertThat(TestObjectThrowsPdxSerializationException.numInstance.get()).isEqualTo(2);
-      assertThat(TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization)
-          .isFalse();
-      TestObjectThrowsPdxSerializationException.numInstance.set(0);
+      try {
+        System.setProperty(
+            GeodeGlossary.GEMFIRE_PREFIX + "enableQueryRetryOnPdxSerializationException", "true");
+        TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization = true;
+        QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
+        logger.info("### Executing Query on server: " + queryString[1]);
+        Query query = remoteQueryService.newQuery(queryString[1]);
+        assertThatThrownBy(query::execute).isInstanceOf(ServerConnectivityException.class);
+        assertThat(TestObjectThrowsPdxSerializationException.numInstance.get()).isEqualTo(2);
+        assertThat(TestObjectThrowsPdxSerializationException.throwExceptionOnDeserialization)
+            .isFalse();
+      } finally {
+        TestObjectThrowsPdxSerializationException.numInstance.set(0);
+        System.setProperty(
+            GeodeGlossary.GEMFIRE_PREFIX + "enableQueryRetryOnPdxSerializationException", "false");
+      }
     });
   }
 
@@ -255,7 +339,30 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
           // after retried 2 servers, let the retry to 3rd server succeed
           throwExceptionOnDeserialization = false;
         }
-        throw new PdxSerializationException("Deserialization should not be happening in this VM");
+        throw new PdxSerializationException("Deserialization is expected to fail in this VM");
+      }
+    }
+  }
+
+  public static class TestObjectThrowsSerializationException implements PdxSerializable {
+    private static boolean throwExceptionOnDeserialization = false;
+    public static AtomicInteger numInstance = new AtomicInteger();
+
+    public TestObjectThrowsSerializationException() {
+      numInstance.incrementAndGet();
+    }
+
+    @Override
+    public void toData(PdxWriter writer) {}
+
+    @Override
+    public void fromData(PdxReader reader) {
+      if (throwExceptionOnDeserialization) {
+        if (numInstance.get() >= 2) {
+          // after retried 2 servers, let the retry to 3rd server succeed
+          throwExceptionOnDeserialization = false;
+        }
+        throw new SerializationException("Deserialization is expected to fail in this VM");
       }
     }
   }

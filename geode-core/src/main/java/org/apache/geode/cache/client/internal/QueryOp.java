@@ -33,6 +33,7 @@ import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.pdx.PdxSerializationException;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Does a region query on a server
@@ -122,7 +123,18 @@ public class QueryOp {
           queryResult = resultPart.getObject();
         } catch (Exception e) {
           String s = "While deserializing " + getOpName() + " result";
-          if (e instanceof PdxSerializationException) {
+
+          // Enable the workaround to convert PdxSerializationException into IOException to retry.
+          // It only worked when the client is configured to connect to more than one cache server
+          // AND the pool's "retry-attempts" is -1 (the default which means try each server) or > 0.
+          // It is possible that if application closed the current connection and got a new
+          // connection to the same server and retried the query to it, that it would also
+          // workaround this issue and it would not have the limitations of needing multiple servers
+          // and would not depend on the retry-attempts configuration.
+          boolean enableQueryRetryOnPdxSerializationException = Boolean.getBoolean(
+              GeodeGlossary.GEMFIRE_PREFIX + "enableQueryRetryOnPdxSerializationException");
+          if (e instanceof PdxSerializationException
+              && enableQueryRetryOnPdxSerializationException) {
             // IOException will allow the client to retry next server in the connection pool until
             // exhausted all the servers (so it will not retry forever). Why retry:
             // The byte array of the pdxInstance is always the same at the server. Other clients can
