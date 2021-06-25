@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.rest.internal.web.util;
+package org.apache.geode.pdx.internal.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
@@ -23,17 +23,30 @@ import java.util.Date;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.pdx.PdxInstance;
 
-@Category({RestAPITest.class})
-public class JsonWriterTest {
+public class PdxToJSONTest {
+
   @Test
-  public void testWwriteArrayAsJson() throws IOException {
+  public void testWriteValueAsJsonException() throws IOException {
+    PdxToJSON p2j = new PdxToJSON(mock(PdxInstance.class));
     Date value = new Date();
     try {
-      JsonWriter.writeArrayAsJson(mock(JsonGenerator.class), value, "myDate");
+      p2j.writeValue(mock(JsonGenerator.class), value, "myDate");
+      fail("should not succeed");
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage()).contains("The pdx field myDate has a value " + value
+          + " whose type " + value.getClass() + " can not be converted to JSON.");
+    }
+  }
+
+  @Test
+  public void testGetJSONStringFromArray() throws IOException {
+    PdxToJSON p2j = new PdxToJSON(mock(PdxInstance.class));
+    Date value = new Date();
+    try {
+      p2j.getJSONStringFromArray(mock(JsonGenerator.class), value, "myDate");
       fail("should not succeed");
     } catch (IllegalStateException e) {
       assertThat(e.getMessage())
@@ -43,7 +56,7 @@ public class JsonWriterTest {
 
     Date values[] = new Date[2];
     try {
-      JsonWriter.writeArrayAsJson(mock(JsonGenerator.class), values, "myDates");
+      p2j.getJSONStringFromArray(mock(JsonGenerator.class), values, "myDates");
       fail("should not succeed");
     } catch (IllegalStateException e) {
       assertThat(e.getMessage()).contains("The pdx field myDates is an array whose component type "

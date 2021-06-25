@@ -213,11 +213,16 @@ public class JsonWriter {
     } else if (value.getClass().equals(String[].class)) {
       writeStringArrayAsJson(generator, (String[]) value);
     } else if (value.getClass().equals(Object[].class)) {
-      writeObjectArrayAsJson(generator, (Object[]) value, pdxField);
+      writeObjectArrdyAsJson(generator, (Object[]) value, pdxField);
+    } else if (value.getClass().isArray()) {
+      throw new IllegalStateException(
+          "The pdx field " + pdxField + " is an array whose component type "
+              + value.getClass().getComponentType()
+              + " can not be converted to JSON.");
     } else {
       throw new IllegalStateException(
-          "PdxInstance returns unsupported type " + value.getClass()
-              + " for field " + pdxField + " = " + value);
+          "Expected an array for pdx field " + pdxField + ", but got an object of type "
+              + value.getClass());
     }
   }
 

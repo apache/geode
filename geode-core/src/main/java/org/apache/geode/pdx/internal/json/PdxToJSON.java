@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -94,7 +95,8 @@ public class PdxToJSON {
     return (pdxObj != null ? JSONFormatter.toJSON(pdxObj) : null);
   }
 
-  private void writeValue(JsonGenerator jg, Object value, String pf)
+  @VisibleForTesting
+  protected void writeValue(JsonGenerator jg, Object value, String pf)
       throws JsonGenerationException, IOException {
 
     if (value == null) {
@@ -143,8 +145,8 @@ public class PdxToJSON {
       getJSONStringFromMap(jg, (Map) value, pf);
     } else {
       throw new IllegalStateException(
-          "PdxInstance returns unsupported type " + value.getClass()
-              + " for field " + pf + " = " + value);
+          "The pdx field " + pf + " has a value " + value + " whose type " + value.getClass()
+              + " can not be converted to JSON.");
     }
   }
 
@@ -179,7 +181,8 @@ public class PdxToJSON {
     return null;
   }
 
-  private void getJSONStringFromArray(JsonGenerator jg, Object value, String pf)
+  @VisibleForTesting
+  protected void getJSONStringFromArray(JsonGenerator jg, Object value, String pf)
       throws JsonGenerationException, IOException {
 
     if (value.getClass().getName().equals("[Z")) {
@@ -223,10 +226,15 @@ public class PdxToJSON {
         writeValue(jg, obj, pf);
       }
       jg.writeEndArray();
+    } else if (value.getClass().isArray()) {
+      throw new IllegalStateException(
+          "The pdx field " + pf + " is an array whose component type "
+              + value.getClass().getComponentType()
+              + " can not be converted to JSON.");
     } else {
       throw new IllegalStateException(
-          "PdxInstance returns unsupported type " + value.getClass()
-              + " for field " + pf + " = " + value);
+          "Expected an array for pdx field " + pf + ", but got an object of type "
+              + value.getClass());
     }
   }
 
