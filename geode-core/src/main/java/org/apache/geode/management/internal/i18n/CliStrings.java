@@ -1459,11 +1459,11 @@ public class CliStrings {
   public static final String WAN_COPY_REGION__MSG__EXECUTION__FAILED =
       "Execution failed. Error: {0}";
   public static final String WAN_COPY_REGION__MSG__NO__CONNECTION__POOL =
-      "No connection pool available towards receiver";
+      "No connection pool available to receiver";
   public static final String WAN_COPY_REGION__MSG__COMMAND__NOT__SUPPORTED__AT__REMOTE__SITE =
       "Command not supported at remote site.";
   public static final String WAN_COPY_REGION__MSG__NO__CONNECTION =
-      "No connection available towards receiver after having copied {0} entries";
+      "No connection available to receiver after having copied {0} entries";
   public static final String WAN_COPY_REGION__MSG__ERROR__AFTER__HAVING__COPIED =
       "Error ({0}) in operation after having copied {1} entries";
   public static final String WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED =

@@ -35,6 +35,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -203,7 +204,6 @@ public class WanCopyRegionFunctionTest {
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     PooledConnection oldWanSiteConn = mock(PooledConnection.class);
     when(oldWanSiteConn.getWanSiteVersion()).thenReturn(KnownVersion.GEODE_1_14_0.ordinal());
-    when(oldWanSiteConn.setShouldDestroy()).thenReturn(true);
     when(poolMock.acquireConnection()).thenReturn(oldWanSiteConn);
 
     when(contextMock.getCache()).thenReturn(internalCacheMock);
@@ -243,7 +243,7 @@ public class WanCopyRegionFunctionTest {
         rrfSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage())
-        .isEqualTo("No connection pool available towards receiver");
+        .isEqualTo("No connection pool available to receiver");
   }
 
   @Test
@@ -346,7 +346,7 @@ public class WanCopyRegionFunctionTest {
         rrfSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 1);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage())
-        .isEqualTo("No connection available towards receiver after having copied 1 entries");
+        .isEqualTo("No connection available to receiver after having copied 1 entries");
   }
 
   @Test
@@ -483,7 +483,9 @@ public class WanCopyRegionFunctionTest {
 
     WanCopyRegionFunction rrfSpy = spy(rrf);
     BatchException70 exceptionWhenSendingBatch =
-        new BatchException70("My batch exception", new Exception(), 0, 0);
+        new BatchException70("My batch exception", new Exception("test exception"), 0, 0);
+    BatchException70 topLevelException =
+        new BatchException70(Collections.singletonList(exceptionWhenSendingBatch));
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
@@ -494,14 +496,15 @@ public class WanCopyRegionFunctionTest {
     doReturn(entries).when(rrfSpy).getEntries(regionMock, gatewaySenderMock);
     doReturn(mock(GatewayQueueEvent.class)).when(rrfSpy).createGatewaySenderEvent(any(), any(),
         any(), any());
-    doThrow(exceptionWhenSendingBatch).when(dispatcherMock).sendBatch(anyList(), any(), any(),
+    doThrow(topLevelException).when(dispatcherMock).sendBatch(anyList(), any(), any(),
         anyInt(), anyBoolean());
 
     CliFunctionResult result =
         rrfSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage())
-        .isEqualTo("Error (My batch exception) in operation after having copied 0 entries");
+        .isEqualTo(
+            "Error (java.lang.Exception: test exception) in operation after having copied 0 entries");
   }
 
   @Test

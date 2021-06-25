@@ -45,7 +45,6 @@ import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
-import org.apache.geode.cache.client.internal.pooling.PooledConnection;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
@@ -314,7 +313,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
             CliFunctionResult.StatusState.ERROR,
             CliStrings.format(
                 CliStrings.WAN_COPY_REGION__MSG__ERROR__AFTER__HAVING__COPIED,
-                e.getMessage(), copiedEntries)));
+                e.getExceptions().get(0).getCause(), copiedEntries)));
       } catch (ConnectionDestroyedException | ServerConnectivityException e) {
         Optional<CliFunctionResult> error =
             connectionState.reconnect(context, retries++, copiedEntries, e);
@@ -518,9 +517,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
     public Optional<CliFunctionResult> reconnect(FunctionContext<Object[]> context, int retries,
         int copiedEntries, Exception e) {
-      ((PooledConnection) connection).setShouldDestroy();
-      senderPool.returnConnection(connection);
-      connection = null;
+      close();
       if (retries++ >= MAX_BATCH_SEND_RETRIES) {
         return Optional.of(new CliFunctionResult(context.getMemberName(),
             CliFunctionResult.StatusState.ERROR,
@@ -543,9 +540,14 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
     void close() {
       if (senderPool != null && connection != null) {
-        ((PooledConnection) connection).setShouldDestroy();
+        try {
+          connection.close(false);
+        } catch (Exception e) {
+          logger.error("Error closing the connection used to wan-copy region entries");
+        }
         senderPool.returnConnection(connection);
       }
+      connection = null;
     }
   }
 
