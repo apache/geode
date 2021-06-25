@@ -284,7 +284,7 @@ geode-assembly/**/resources/**                                    @boglesby @kir
 #-----------------------------------------------------------------
 # Redis API
 #-----------------------------------------------------------------
-geode-apis-compatible-with-redis/**                               @sabbey37 @jdeppe-pivotal @nonbinaryprogrammer @ringles @upthewaterspout @DonalEvans
+geode-apis-compatible-with-redis/**                               @jdeppe-pivotal @nonbinaryprogrammer @ringles @upthewaterspout @DonalEvans
 
 #-----------------------------------------------------------------
 # Build and tooling
