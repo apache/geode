@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_RESTORE_KEY_EXISTS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRADISH_DUMP_HEADER;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -35,6 +36,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RedisRestoreKeyExistsException;
@@ -215,7 +217,11 @@ public abstract class AbstractRedisData implements RedisData {
   @Override
   public byte[] dump() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataSerializer.writeObject(this, new DataOutputStream(baos));
+    baos.write(bRADISH_DUMP_HEADER);
+    DataOutputStream outputStream = new DataOutputStream(baos);
+    outputStream.writeShort(KnownVersion.CURRENT.ordinal());
+
+    DataSerializer.writeObject(this, outputStream);
     return baos.toByteArray();
   }
 

@@ -15,7 +15,12 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRADISH_DUMP_HEADER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -45,6 +50,18 @@ public class DumpRestoreIntegrationTest extends AbstractDumpRestoreIntegrationTe
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.RESTORE, "key", "0", "", "FREQ", "1"))
             .hasMessageContaining("ERR syntax error");
+  }
+
+  @Test
+  public void restoreWithUnknownVersion_isNotSupported() throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(bRADISH_DUMP_HEADER.length + 2);
+    DataOutputStream output = new DataOutputStream(baos);
+    output.write(bRADISH_DUMP_HEADER);
+    output.writeShort(0);
+
+    assertThatThrownBy(
+        () -> jedis.restore("key", 0L, baos.toByteArray()))
+            .hasMessageContaining("ERR DUMP payload version or checksum are wrong");
   }
 
 }

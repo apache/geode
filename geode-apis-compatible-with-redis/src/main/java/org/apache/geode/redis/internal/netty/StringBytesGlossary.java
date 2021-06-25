@@ -224,4 +224,7 @@ public class StringBytesGlossary {
 
   @MakeImmutable
   public static final byte[] bPING_RESPONSE_LOWERCASE = stringToBytes(PING_RESPONSE.toLowerCase());
+
+  @MakeImmutable
+  public static final byte[] bRADISH_DUMP_HEADER = stringToBytes("RADISH");
 }
