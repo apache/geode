@@ -153,9 +153,9 @@ configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repe
   }
 }
 
-//tasks.named("distributedTest").configure {
-//  dependsOn(':geode-assembly:distributedTestInstallDist')
-//}
+tasks.named("distributedTest").configure {
+  dependsOn(':geode-assembly:installDistributedTestDist')
+}
 
 // apply common test configuration
 gradle.taskGraph.whenReady({ graph ->
@@ -258,7 +258,7 @@ upgradeTest {
 
 distributedTest {
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
-  environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/distributedTesting"
+  environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/install/apache-geode-distributed-testing"
   environment 'CLASSLOADER_ISOLATED' , 'true'
 }
 

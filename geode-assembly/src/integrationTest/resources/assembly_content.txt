@@ -1074,8 +1074,6 @@ moduleDescriptors/main/external-library-dependencies/1.15.0-build.0/module.xml
 moduleDescriptors/main/external-library-dependencies/main/module.xml
 moduleDescriptors/main/geode-apis-compatible-with-redis/0.0.0/module.xml
 moduleDescriptors/main/geode-apis-compatible-with-redis/main/module.xml
-moduleDescriptors/main/geode-assembly/0.0.0/module.xml
-moduleDescriptors/main/geode-assembly/main/module.xml
 moduleDescriptors/main/geode-common/0.0.0/module.xml
 moduleDescriptors/main/geode-common/main/module.xml
 moduleDescriptors/main/geode-connectors/0.0.0/module.xml

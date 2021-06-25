@@ -103,10 +103,14 @@ class ProcessManager implements ChildVMLauncher {
     // TODO - delete directory contents, preferably with commons io FileUtils
     try {
       String[] envp = null;
+      ProcessBuilder processBuilder = new ProcessBuilder();
       if (!VersionManager.isCurrentVersion(version)) {
         envp = new String[] {"GEODE_HOME=" + versionManager.getInstall(version)};
+        processBuilder.environment().put("GEODE_HOME", versionManager.getInstall(version));
       }
-      Process process = Runtime.getRuntime().exec(cmd, envp, workingDir);
+      Process process = processBuilder.command(cmd).directory(workingDir).inheritIO().start();// Runtime.getRuntime().exec(cmd,
+                                                                                              // envp,
+                                                                                              // workingDir);
       pendingVMs++;
       ProcessHolder holder = new ProcessHolder(process);
       processes.put(vmNum, holder);
@@ -233,7 +237,6 @@ class ProcessManager implements ChildVMLauncher {
 
   private String[] buildJavaCommand(int vmNum, int namingPort, String version, int remoteStubPort,
       boolean classLoaderIsolated) {
-    boolean modular = classLoaderIsolated;// vmNum > 0;
     String cmd = System.getProperty("java.home") + File.separator
         + "bin" + File.separator + "java";
     String dunitClasspath = System.getProperty("java.class.path");
@@ -265,7 +268,7 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add(cmd);
     String jreLib = separator + "jre" + separator + "lib" + separator;
     classPath = removeFromPath(classPath, jreLib);
-    if (modular) {
+    if (classLoaderIsolated) {
       cmds.add("-Djboss.modules.system.pkgs=javax.management,java.lang.management");
     } else {
       classPath = removeJbossFromPath(classPath);
@@ -306,7 +309,7 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add("-XX:MetaspaceSize=512m");
     cmds.add("-XX:SoftRefLRUPolicyMSPerMB=1");
     cmds.add(agent);
-    // if (modular) {
+    // if (classLoaderIsolated) {
     // cmds.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + (5005 + vmNum));
     // }
     if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
@@ -318,7 +321,7 @@ class ProcessManager implements ChildVMLauncher {
       cmds.add("--add-opens=java.base/jdk.internal.module=ALL-UNNAMED");
       cmds.add("--add-opens=java.base/java.lang.module=ALL-UNNAMED");
     }
-    if (modular) {
+    if (classLoaderIsolated) {
       cmds.add(
           "-Dboot.module.loader=org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader");
       // classPath = removeModulesFromPath(classPath, "geode-dunit", "");
@@ -330,7 +333,7 @@ class ProcessManager implements ChildVMLauncher {
       cmds.add("org.jboss.modules.Main");
       cmds.add("-mp");
       cmds.add(GEODE_DISTRIBUTED_TEST_HOME + File.separator + "moduleDescriptors" + File.separator
-          + "main");
+          + "distributedTest");
       cmds.add("geode-dunit:" + GemFireVersion.getGemFireVersion());
     } else {
       cmds.add(ChildVM.class.getName());

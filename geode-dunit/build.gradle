@@ -24,7 +24,6 @@ configurations {
   distributedTestJbossModular
 }
 
-
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
@@ -88,5 +87,13 @@ dependencies {
 distributedTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
+}
+
+jbossModulesExtension {
+  geodeConfigurations {
+    distributedTest {
+      mainClass = "org.apache.geode.test.dunit.internal.ChildVM"
+    }
+  }
 }
 

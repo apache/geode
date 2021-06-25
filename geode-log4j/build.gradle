@@ -30,7 +30,7 @@ dependencies {
 
     api('org.apache.logging.log4j:log4j-core') {
         exclude module: 'log4j-api'
-        ext.embed =true
+        ext.embed = true
     }
 
     //This routes slf4j logs to log4j. Shiro and micrometer use slf4j

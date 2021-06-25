@@ -17,7 +17,6 @@
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
-apply from: "${rootDir}/${scriptDir}/module-descriptors-linking.gradle"
 apply from: "${rootDir}/${scriptDir}/jboss-modules-distributedTest.gradle"
 
 jbossModulesExtension {
@@ -50,11 +49,14 @@ def dependentProjectNames = [
         ':geode-apis-compatible-with-redis',
         ':geode-serialization',
         ':geode-tcp-server',
+        ':geode-deployment:geode-deployment-legacy',
         ':geode-wan'
 ]
 
 // These other dependencies are explicitly referenced throughout other copySpec
 def otherDependentProjectNames = [
+        ':geode-deployment:geode-deployment-jboss-modules',
+        ':geode-deployment:geode-jboss-extensions',
         ':extensions:geode-modules',
         ':extensions:geode-modules-assembly',
         ':extensions:geode-modules-session',
@@ -664,13 +666,13 @@ distributions {
       exclude '*.asc'
 
       exclude '*.asc'
-      exclude '*-sources.jar'
+//      exclude '*-sources.jar'
       exclude '*-javadoc.jar'
 
       with copySpec {
         into('lib')
         from {
-          dependentProjectNames.collect {
+          ([':geode-assembly'] + dependentProjectNames + otherDependentProjectNames).collect {
             [
                     project(':'.concat(it)).configurations.distributedTestRuntimeClasspath,
             ]
