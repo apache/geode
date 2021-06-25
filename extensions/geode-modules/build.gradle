@@ -18,6 +18,7 @@
 import org.apache.geode.gradle.plugins.DependencyConstraints
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+apply from: "${rootDir}/${scriptDir}/jboss-modules-distributedTest.gradle"
 apply from: "${rootDir}/${scriptDir}/publish-java.gradle"
 
 evaluationDependsOn(":geode-core")

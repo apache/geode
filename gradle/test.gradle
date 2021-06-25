@@ -153,9 +153,9 @@ configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repe
   }
 }
 
-tasks.named("distributedTest").configure {
-  dependsOn(':geode-assembly:distributedTestInstallDist')
-}
+//tasks.named("distributedTest").configure {
+//  dependsOn(':geode-assembly:distributedTestInstallDist')
+//}
 
 // apply common test configuration
 gradle.taskGraph.whenReady({ graph ->
