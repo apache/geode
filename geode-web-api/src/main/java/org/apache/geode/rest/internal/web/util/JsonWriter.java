@@ -213,7 +213,7 @@ public class JsonWriter {
     } else if (value.getClass().equals(String[].class)) {
       writeStringArrayAsJson(generator, (String[]) value);
     } else if (value.getClass().equals(Object[].class)) {
-      writeObjectArrdyAsJson(generator, (Object[]) value, pdxField);
+      writeObjectArrayAsJson(generator, (Object[]) value, pdxField);
     } else if (value.getClass().isArray()) {
       throw new IllegalStateException(
           "The pdx field " + pdxField + " is an array whose component type "
