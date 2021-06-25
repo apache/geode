@@ -42,7 +42,6 @@ import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -101,11 +100,11 @@ public class ZAddIncrOptionDUnitTest {
   private void doZAddIncr(int i, double increment, double total, boolean isConcurrentExecution) {
     Object result =
         jedis.sendCommand(sortedSetKey, Protocol.Command.ZADD, sortedSetKey, "INCR",
-            Coder.doubleToString(increment), baseMemberName + i);
+            String.valueOf(increment), baseMemberName + i);
     if (isConcurrentExecution) {
-      assertThat(Coder.bytesToDouble((byte[]) result)).isIn(increment, total);
+      assertThat(Double.parseDouble(new String((byte[]) result))).isIn(increment, total);
     } else {
-      assertThat(Coder.bytesToDouble((byte[]) result)).isEqualTo(total);
+      assertThat(Double.parseDouble(new String((byte[]) result))).isEqualTo(total);
     }
   }
 
@@ -193,7 +192,7 @@ public class ZAddIncrOptionDUnitTest {
   }
 
   private static boolean isPrimaryForKey() {
-    int bucketId = getBucketId(new RedisKey(Coder.stringToBytes(sortedSetKey)));
+    int bucketId = getBucketId(new RedisKey(sortedSetKey.getBytes()));
     return isPrimaryForBucket(bucketId);
   }
 

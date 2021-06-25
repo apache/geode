@@ -14,8 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import static org.apache.geode.redis.internal.netty.Coder.intToBytes;
-import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -43,16 +41,16 @@ public class SScanIntegrationTest extends AbstractSScanIntegrationTest {
     List<byte[]> memberList = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
       jedis.sadd("a", String.valueOf(i));
-      memberList.add(intToBytes(i));
+      memberList.add(String.valueOf(i).getBytes());
     }
 
     ScanParams scanParams = new ScanParams();
     scanParams.count(5);
     ScanResult<byte[]> result =
-        jedis.sscan(stringToBytes("a"), stringToBytes("0"), scanParams);
+        jedis.sscan("a".getBytes(), "0".getBytes(), scanParams);
     assertThat(result.isCompleteIteration()).isFalse();
 
-    result = jedis.sscan(stringToBytes("a"), stringToBytes("100"));
+    result = jedis.sscan("a".getBytes(), "100".getBytes());
 
     assertThat(result.getResult()).containsExactlyInAnyOrderElementsOf(memberList);
   }

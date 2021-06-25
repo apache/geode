@@ -38,7 +38,6 @@ import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
-import org.apache.geode.redis.internal.netty.Coder;
 
 public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTest {
   public static final String KEY = "key";
@@ -111,8 +110,8 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     List<byte[]> memberList = new ArrayList<>();
     for (String memberName : map.keySet()) {
       long rank = jedis.zrank(KEY, memberName);
-      rankMap.put(rank, Coder.stringToBytes(memberName));
-      memberList.add(Coder.stringToBytes(memberName));
+      rankMap.put(rank, memberName.getBytes());
+      memberList.add(memberName.getBytes());
     }
 
     memberList.sort(new ByteArrayComparator());
@@ -233,7 +232,7 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     Set<String> memberSet = new HashSet<>();
     while (memberSet.size() < ENTRY_COUNT) {
       random.nextBytes(memberNameArray);
-      String memberName = Coder.bytesToString(memberNameArray);
+      String memberName = new String(memberNameArray);
       memberSet.add(memberName);
     }
     return memberSet;
