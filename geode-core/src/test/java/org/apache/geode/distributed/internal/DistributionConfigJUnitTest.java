@@ -146,8 +146,8 @@ public class DistributionConfigJUnitTest {
   public void testAttributeDesc() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
     for (String attName : attNames) {
-      assertThat(AbstractDistributionConfig.dcAttDescriptions.containsKey(attName))
-          .as("Does not contain description for attribute " + attName).isTrue();
+      assertThat(AbstractDistributionConfig.dcAttDescriptions).containsKey(attName)
+          .as("Does not contain description for attribute " + attName);
     }
     List<String> attList = Arrays.asList(attNames);
     for (Object attName : AbstractDistributionConfig.dcAttDescriptions.keySet()) {
