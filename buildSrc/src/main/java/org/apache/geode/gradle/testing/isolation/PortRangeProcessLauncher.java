@@ -37,9 +37,14 @@ public class PortRangeProcessLauncher extends AdjustableProcessLauncher {
     List<String> command = processBuilder.command();
     String workerName = command.get(command.size() - 1);
     PortRangeContext context = acquireContext(workerName);
-    context.configure(processBuilder);
-    Process process = super.start(processBuilder);
-    return new CompletableProcess(workerName, process, () -> releaseContext(workerName, context));
+    try {
+      context.configure(processBuilder);
+      Process process = super.start(processBuilder);
+      return new CompletableProcess(workerName, process, () -> releaseContext(workerName, context));
+    } catch(Throwable e) {
+      releaseContext(workerName, context);
+      throw e;
+    }
   }
 
   private static synchronized void initializeContexts(int numberOfContexts) {
@@ -51,12 +56,14 @@ public class PortRangeProcessLauncher extends AdjustableProcessLauncher {
 
   private static synchronized PortRangeContext acquireContext(String owner) {
     PortRangeContext context = availableContexts.remove(0);
-    LOGGER.debug("{} acquired {} ({} available contexts)", owner, context, availableContexts.size());
+    LOGGER
+      .debug("{} acquired {} ({} available contexts)", owner, context, availableContexts.size());
     return context;
   }
 
   private static synchronized void releaseContext(String owner, PortRangeContext context) {
     availableContexts.add(context);
-    LOGGER.debug("{} released {} ({} available contexts)", owner, context, availableContexts.size());
+    LOGGER
+      .debug("{} released {} ({} available contexts)", owner, context, availableContexts.size());
   }
 }
