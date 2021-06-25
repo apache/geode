@@ -571,9 +571,7 @@ public class Message {
       // Keep track of the fact that we are making progress.
       this.serverConnection.updateProcessingMessage();
       if (this.ioFilter == null) {
-        if (this.serverConnection.getIOFilter() != null) {
-          setIOFilter(this.serverConnection.getIOFilter());
-        }
+        setIOFilter(this.serverConnection.getIOFilter());
       }
     }
     if (this.socket == null) {
@@ -662,7 +660,7 @@ public class Message {
     final ByteBuffer cb = getCommBuffer();
     if (this.socketChannel != null) {
       cb.flip();
-      writeToSC(cb);
+      writeToSocketChannel(cb);
     } else {
       this.outputStream.write(cb.array(), 0, cb.position());
     }
@@ -672,7 +670,7 @@ public class Message {
     cb.clear();
   }
 
-  private void writeToSC(ByteBuffer cb) throws IOException {
+  private void writeToSocketChannel(ByteBuffer cb) throws IOException {
     if (this.ioFilter == null) {
       while (cb.remaining() > 0) {
         this.socketChannel.write(cb);
@@ -1193,9 +1191,7 @@ public class Message {
   void setComms(ServerConnection sc, Socket socket, ByteBuffer bb, MessageStats msgStats)
       throws IOException {
     this.serverConnection = sc;
-    if (sc.getIOFilter() != null) {
-      setIOFilter(sc.getIOFilter());
-    }
+    setIOFilter(sc.getIOFilter());
     setComms(socket, bb, msgStats);
   }
 
@@ -1288,9 +1284,7 @@ public class Message {
   public void receive(ServerConnection sc, int maxMessageLength, Semaphore dataLimiter,
       Semaphore msgLimiter) throws IOException {
     this.serverConnection = sc;
-    if (sc.getIOFilter() != null) {
-      setIOFilter(sc.getIOFilter());
-    }
+    setIOFilter(sc.getIOFilter());
     this.maxIncomingMessageLength = maxMessageLength;
     this.dataLimiter = dataLimiter;
     this.messageLimiter = msgLimiter;
@@ -1298,7 +1292,9 @@ public class Message {
   }
 
   public void setIOFilter(NioFilter ioFilter) {
-    this.ioFilter = ioFilter;
+    if (ioFilter != null) {
+      this.ioFilter = ioFilter;
+    }
   }
 
   private void readUnwrappedPayloadFields(int numParts, int readSecurePart, int bytesRemaining)

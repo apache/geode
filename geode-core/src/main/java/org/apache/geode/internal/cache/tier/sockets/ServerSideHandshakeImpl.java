@@ -52,7 +52,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
   private final KnownVersion clientVersion;
 
   private final byte replyCode;
-  private ServerConnection connection;
+  private final ServerConnection connection;
 
   @Override
   protected byte getReplyCode() {

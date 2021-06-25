@@ -1312,7 +1312,7 @@ public class ServerConnection implements Runnable {
   }
 
   void registerWithSelector2(Selector s) throws ClosedChannelException {
-    if ((getIOFilter() != null) && (getIOFilter() instanceof NioSslEngine)) {
+    if (getIOFilter() instanceof NioSslEngine) {
       getSelectableChannel().register(s, SelectionKey.OP_WRITE | SelectionKey.OP_READ, this);
     } else {
       getSelectableChannel().register(s, SelectionKey.OP_READ, this);
