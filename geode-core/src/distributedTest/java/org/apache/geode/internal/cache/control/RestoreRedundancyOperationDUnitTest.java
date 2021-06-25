@@ -20,6 +20,7 @@ import static org.apache.geode.management.runtime.RegionRedundancyStatus.Redunda
 import static org.apache.geode.management.runtime.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
 import static org.apache.geode.management.runtime.RestoreRedundancyResults.Status.FAILURE;
 import static org.apache.geode.management.runtime.RestoreRedundancyResults.Status.SUCCESS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -105,9 +106,11 @@ public class RestoreRedundancyOperationDUnitTest {
       ResourceManagerStats stats = Objects.requireNonNull(ClusterStartupRule.getCache())
           .getInternalResourceManager().getStats();
 
-      assertThat(stats.getRestoreRedundanciesInProgress()).isEqualTo(0L);
-      assertThat(stats.getRestoreRedundanciesCompleted()).isEqualTo(1L);
-      assertThat(stats.getRestoreRedundancyTime()).isGreaterThan(0L);
+      await()
+          .untilAsserted(() -> assertThat(stats.getRestoreRedundanciesInProgress()).isEqualTo(0L));
+      await()
+          .untilAsserted(() -> assertThat(stats.getRestoreRedundanciesCompleted()).isEqualTo(1L));
+      await().untilAsserted(() -> assertThat(stats.getRestoreRedundancyTime()).isGreaterThan(0L));
     });
   }
 
