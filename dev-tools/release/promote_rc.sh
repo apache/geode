@@ -207,6 +207,7 @@ set +x
 sed -e "s/^ENV GEODE_GPG.*/ENV GEODE_GPG ${SIGNING_KEY}/" \
     -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
     -e "s/^ENV GEODE_SHA256.*/ENV GEODE_SHA256 ${GEODE_SHA}/" \
+    -e "s/ha.pool.sks-keyservers.net/keyserver.ubuntu.com/" \
     -i.bak Dockerfile
 rm Dockerfile.bak
 set -x
