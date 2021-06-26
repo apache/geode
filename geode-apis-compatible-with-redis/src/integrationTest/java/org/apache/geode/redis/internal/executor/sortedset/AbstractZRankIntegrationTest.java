@@ -232,6 +232,12 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
     Set<String> memberSet = new HashSet<>();
     while (memberSet.size() < ENTRY_COUNT) {
       random.nextBytes(memberNameArray);
+      // Ensure all byte values are positive as negative values can cause issues in Windows tests
+      for (int i = 0; i < memberNameArray.length; ++i) {
+        if (memberNameArray[i] < 0) {
+          memberNameArray[i] = (byte) -memberNameArray[i];
+        }
+      }
       String memberName = new String(memberNameArray);
       memberSet.add(memberName);
     }
