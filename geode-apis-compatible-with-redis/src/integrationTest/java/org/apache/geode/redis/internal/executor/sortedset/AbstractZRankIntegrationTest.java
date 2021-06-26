@@ -228,11 +228,15 @@ public abstract class AbstractZRankIntegrationTest implements RedisIntegrationTe
   }
 
   private Set<String> initializeSetWithRandomMemberValues() {
-    byte[] memberNameArray = new byte[6];
+    int leftLimit = 32; // first non-control UTF-8 character (space)
+    int rightLimit = 126; // last non-control UTF-8 character (~) before range would include control
+                          // characters
     Set<String> memberSet = new HashSet<>();
     while (memberSet.size() < ENTRY_COUNT) {
-      random.nextBytes(memberNameArray);
-      String memberName = new String(memberNameArray);
+      String memberName = random.ints(leftLimit, rightLimit + 1)
+          .limit(6)
+          .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+          .toString();
       memberSet.add(memberName);
     }
     return memberSet;
