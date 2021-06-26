@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import static org.apache.geode.redis.internal.executor.pubsub.AbstractSubscriptionsIntegrationTest.REDIS_CLIENT_TIMEOUT;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -77,7 +78,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   @SuppressWarnings("unchecked")
   public void punsubscribe_whenNonexistent() {
     assertThat((List<Object>) subscriber.sendCommand(Protocol.Command.PUNSUBSCRIBE, "Nonexistent"))
-        .containsExactly("punsubscribe".getBytes(), "Nonexistent".getBytes(),
+        .containsExactly(stringToBytes("punsubscribe"), stringToBytes("Nonexistent"),
             0L);
   }
 
@@ -85,14 +86,14 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   @SuppressWarnings("unchecked")
   public void unsubscribe_whenNoSubscriptionsExist_shouldNotHang() {
     assertThat((List<Object>) subscriber.sendCommand(Protocol.Command.UNSUBSCRIBE))
-        .containsExactly("unsubscribe".getBytes(), null, 0L);
+        .containsExactly(stringToBytes("unsubscribe"), null, 0L);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void punsubscribe_whenNoSubscriptionsExist_shouldNotHang() {
     assertThat((List<Object>) subscriber.sendCommand(Protocol.Command.PUNSUBSCRIBE))
-        .containsExactly("punsubscribe".getBytes(), null, 0L);
+        .containsExactly(stringToBytes("punsubscribe"), null, 0L);
   }
 
   @Test
@@ -293,17 +294,17 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     MockBinarySubscriber mockSubscriber = new MockBinarySubscriber();
 
     Runnable runnable = () -> {
-      subscriber.subscribe(mockSubscriber, "salutations".getBytes());
+      subscriber.subscribe(mockSubscriber, stringToBytes("salutations"));
     };
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
-    Long result = publisher.publish("salutations".getBytes(), expectedMessage);
+    Long result = publisher.publish(stringToBytes("salutations"), expectedMessage);
     assertThat(result).isEqualTo(1);
 
-    mockSubscriber.unsubscribe("salutations".getBytes());
+    mockSubscriber.unsubscribe(stringToBytes("salutations"));
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
 

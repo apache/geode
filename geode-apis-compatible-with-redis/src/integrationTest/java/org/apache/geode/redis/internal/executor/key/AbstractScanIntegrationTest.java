@@ -18,6 +18,8 @@ package org.apache.geode.redis.internal.executor.key;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -176,12 +178,12 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
           (List<Object>) jedis.sendCommand("user1", Protocol.Command.SCAN, cursor, "COUNT", "2",
               "COUNT", "1");
       allKeysFromScan.addAll((List<byte[]>) result.get(1));
-      cursor = new String((byte[]) result.get(0));
-    } while (!Arrays.equals((byte[]) result.get(0), "0".getBytes()));
+      cursor = bytesToString((byte[]) result.get(0));
+    } while (!Arrays.equals((byte[]) result.get(0), stringToBytes("0")));
 
-    assertThat((byte[]) result.get(0)).isEqualTo("0".getBytes());
-    assertThat(allKeysFromScan).containsExactlyInAnyOrder("{user1}a".getBytes(),
-        "{user1}b".getBytes(), "{user1}c".getBytes());
+    assertThat((byte[]) result.get(0)).isEqualTo(stringToBytes("0"));
+    assertThat(allKeysFromScan).containsExactlyInAnyOrder(stringToBytes("{user1}a"),
+        stringToBytes("{user1}b"), stringToBytes("{user1}c"));
   }
 
   @Test
@@ -209,8 +211,8 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
         (List<Object>) jedis.sendCommand("user1", Protocol.Command.SCAN, "0", "MATCH", "{user1}b*",
             "MATCH", "{user1}a*");
 
-    assertThat((byte[]) result.get(0)).isEqualTo("0".getBytes());
-    assertThat((List<byte[]>) result.get(1)).containsExactly("{user1}a".getBytes());
+    assertThat((byte[]) result.get(0)).isEqualTo(stringToBytes("0"));
+    assertThat((List<byte[]>) result.get(1)).containsExactly(stringToBytes("{user1}a"));
   }
 
   @Test
@@ -252,12 +254,12 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
           (List<Object>) jedis.sendCommand("{user1}", Protocol.Command.SCAN, cursor, "COUNT", "37",
               "MATCH", "{user1}b*", "COUNT", "2", "COUNT", "1", "MATCH", "{user1}a*");
       allKeysFromScan.addAll((List<byte[]>) result.get(1));
-      cursor = new String((byte[]) result.get(0));
-    } while (!Arrays.equals((byte[]) result.get(0), "0".getBytes()));
+      cursor = bytesToString((byte[]) result.get(0));
+    } while (!Arrays.equals((byte[]) result.get(0), stringToBytes("0")));
 
-    assertThat((byte[]) result.get(0)).isEqualTo("0".getBytes());
-    assertThat(allKeysFromScan).containsExactlyInAnyOrder("{user1}a".getBytes(),
-        "{user1}aardvark".getBytes());
+    assertThat((byte[]) result.get(0)).isEqualTo(stringToBytes("0"));
+    assertThat(allKeysFromScan).containsExactlyInAnyOrder(stringToBytes("{user1}a"),
+        stringToBytes("{user1}aardvark"));
   }
 
   @Test

@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -95,7 +96,7 @@ public class SubscriptionsIntegrationTest {
 
     new ConcurrentLoopingThreads(ITERATIONS,
         i -> subscriptions.add(new DummySubscription()),
-        i -> subscriptions.findSubscriptions("channel".getBytes()))
+        i -> subscriptions.findSubscriptions(stringToBytes("channel")))
             .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS);
@@ -113,7 +114,7 @@ public class SubscriptionsIntegrationTest {
       Client client = new Client(channel);
       clients.add(client);
       subscriptions
-          .add(new ChannelSubscription(client, "channel".getBytes(), context,
+          .add(new ChannelSubscription(client, stringToBytes("channel"), context,
               subscriptions));
     }
 
@@ -138,13 +139,13 @@ public class SubscriptionsIntegrationTest {
 
       clients.add(client);
       subscriptions
-          .add(new ChannelSubscription(client, "channel".getBytes(), context,
+          .add(new ChannelSubscription(client, stringToBytes("channel"), context,
               subscriptions));
     }
 
     new ConcurrentLoopingThreads(1,
-        i -> clients.forEach(c -> subscriptions.remove("channel".getBytes(), c)),
-        i -> clients.forEach(c -> subscriptions.remove("channel".getBytes(), c)))
+        i -> clients.forEach(c -> subscriptions.remove(stringToBytes("channel"), c)),
+        i -> clients.forEach(c -> subscriptions.remove(stringToBytes("channel"), c)))
             .run();
 
     assertThat(subscriptions.size()).isEqualTo(0);

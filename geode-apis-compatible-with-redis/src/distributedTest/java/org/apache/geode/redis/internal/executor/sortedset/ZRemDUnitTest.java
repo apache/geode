@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -220,7 +221,7 @@ public class ZRemDUnitTest {
   }
 
   private static boolean isPrimaryForKey() {
-    int bucketId = getBucketId(new RedisKey(sortedSetKey.getBytes()));
+    int bucketId = getBucketId(new RedisKey(stringToBytes(sortedSetKey)));
     return isPrimaryForBucket(bucketId);
   }
 

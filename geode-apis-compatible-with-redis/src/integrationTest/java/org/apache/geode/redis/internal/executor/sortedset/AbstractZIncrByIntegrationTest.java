@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.sortedset;
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,8 +42,8 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
   JedisCluster jedis;
   final String STRING_KEY = "key";
   final String STRING_MEMBER = "member";
-  final byte[] KEY = STRING_KEY.getBytes();
-  final byte[] MEMBER = STRING_MEMBER.getBytes();
+  final byte[] KEY = stringToBytes(STRING_KEY);
+  final byte[] MEMBER = stringToBytes(STRING_MEMBER);
 
   @Before
   public void setUp() {
@@ -142,7 +143,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
   @Test
   public void memberShouldBeCreatedWhenItDoesNotExist_withIncrementOfPositiveInfinity() {
     final double increment = POSITIVE_INFINITY;
-    jedis.zadd(KEY, 0.0, "something".getBytes()); // init the key but not the member
+    jedis.zadd(KEY, 0.0, stringToBytes("something")); // init the key but not the member
 
     assertKeyIsCreatedWithIncrementOf(increment);
   }
@@ -150,7 +151,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
   @Test
   public void memberShouldBeCreatedWhenItDoesNotExist_withIncrementOfNegativeInfinity() {
     final double increment = NEGATIVE_INFINITY;
-    jedis.zadd(KEY, 0.0, "something".getBytes()); // init the key but not the member
+    jedis.zadd(KEY, 0.0, stringToBytes("something")); // init the key but not the member
 
     assertKeyIsCreatedWithIncrementOf(increment);
   }
@@ -226,7 +227,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
   @Test
   public void shouldCreateNewMember_whenIncrementedMemberDoesNotExist() {
     final double increment = 1.5;
-    jedis.zadd(KEY, increment, "something".getBytes());
+    jedis.zadd(KEY, increment, stringToBytes("something"));
 
     assertThat(jedis.zincrby(KEY, increment, MEMBER)).isEqualTo(increment);
     assertThat(jedis.zscore(KEY, MEMBER)).isEqualTo(increment);
