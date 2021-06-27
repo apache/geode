@@ -15,6 +15,10 @@
 package org.apache.geode.redis.internal.executor.key;
 
 
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,8 +38,11 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.exceptions.JedisMovedDataException;
 
+import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
@@ -113,6 +120,33 @@ public class RenameDUnitTest {
       doConcurrentRenames(listOfKeys.subList(index, index + 2),
           listOfKeys.subList(index + 2, index + 4), listOfKeys.subList(index + 4, index + 6),
           listOfKeys.subList(index + 6, index + 8));
+    }
+  }
+
+  @Test
+  public void testRenameWithKeysOnDifferentServers_shouldReturnMovedError() {
+    int port1 = clusterStartUp.getRedisPort(1);
+    int port2 = clusterStartUp.getRedisPort(2);
+    Jedis jedis = new Jedis(BIND_ADDRESS, port1, REDIS_CLIENT_TIMEOUT);
+
+    String srcKey = getKeyOnServer("key-", port1);
+    String dstKey = getKeyOnServer("key-", port2);
+
+    jedis.set(srcKey, "Fancy that");
+
+    assertThatThrownBy(() -> jedis.rename(srcKey, dstKey))
+        .isInstanceOf(JedisMovedDataException.class);
+  }
+
+  private String getKeyOnServer(String keyPrefix, int port) {
+    int i = 0;
+    while (true) {
+      String key = keyPrefix + i;
+      RedisMemberInfo memberInfo = clusterStartUp.getMemberInfo(key);
+      if (memberInfo.getRedisPort() == port) {
+        return key;
+      }
+      i++;
     }
   }
 

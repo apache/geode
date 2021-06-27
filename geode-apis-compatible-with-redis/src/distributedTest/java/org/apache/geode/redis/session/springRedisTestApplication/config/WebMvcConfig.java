@@ -54,6 +54,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     return LettuceClientConfiguration.builder()
         .clientOptions(ClusterClientOptions.builder()
             .topologyRefreshOptions(refreshOptions)
+            .validateClusterNodeMembership(false)
             .build())
         .build();
   }

@@ -50,7 +50,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.internal.AvailablePortHelper;
@@ -102,8 +101,8 @@ public abstract class SessionDUnitTest {
 
   protected static void setupRetry() {
     RetryConfig config = RetryConfig.custom()
-        .maxAttempts(20)
-        .retryExceptions(HttpServerErrorException.InternalServerError.class)
+        .maxAttempts(1)
+        // .retryExceptions(HttpServerErrorException.InternalServerError.class)
         .build();
     RetryRegistry registry = RetryRegistry.of(config);
     retry = registry.retry("sessions");
@@ -140,7 +139,7 @@ public abstract class SessionDUnitTest {
 
     redisClient.setOptions(ClusterClientOptions.builder()
         .topologyRefreshOptions(refreshOptions)
-        .autoReconnect(true)
+        .validateClusterNodeMembership(false)
         .build());
     connection = redisClient.connect();
     commands = connection.sync();
