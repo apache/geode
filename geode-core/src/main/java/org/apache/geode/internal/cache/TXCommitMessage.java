@@ -733,7 +733,9 @@ public class TXCommitMessage extends PooledDistributionMessage
     try {
       lastTransactionEvent = getLastTransactionEvent(callbacks);
     } catch (ServiceConfigurationError ex) {
-      logger.error(ex.getMessage());
+      if (!ex.getMessage().startsWith(TXLastEventInTransactionUtils.NO_INFORMATION_FOR_SENDER_ID)) {
+        logger.error(ex.getMessage());
+      }
       isConfigError = true;
     }
 

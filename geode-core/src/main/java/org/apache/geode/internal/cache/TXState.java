@@ -248,7 +248,9 @@ public class TXState implements TXStateInterface {
       lastTransactionEvent =
           TXLastEventInTransactionUtils.getLastTransactionEvent(getPendingCallbacks(), getCache());
     } catch (ServiceConfigurationError ex) {
-      logger.error(ex.getMessage());
+      if (!ex.getMessage().startsWith(TXLastEventInTransactionUtils.NO_INFORMATION_FOR_SENDER_ID)) {
+        logger.error(ex.getMessage());
+      }
       isConfigError = true;
     }
 
