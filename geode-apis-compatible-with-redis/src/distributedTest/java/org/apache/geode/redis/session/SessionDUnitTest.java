@@ -16,9 +16,7 @@
 package org.apache.geode.redis.session;
 
 
-
 import java.net.HttpCookie;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -34,10 +32,7 @@ import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -50,10 +45,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -101,8 +96,8 @@ public abstract class SessionDUnitTest {
 
   protected static void setupRetry() {
     RetryConfig config = RetryConfig.custom()
-        .maxAttempts(1)
-        // .retryExceptions(HttpServerErrorException.InternalServerError.class)
+        .maxAttempts(20)
+        .retryExceptions(HttpServerErrorException.InternalServerError.class)
         .build();
     RetryRegistry registry = RetryRegistry.of(config);
     retry = registry.retry("sessions");
@@ -134,7 +129,6 @@ public abstract class SessionDUnitTest {
     ClusterTopologyRefreshOptions refreshOptions =
         ClusterTopologyRefreshOptions.builder()
             .enableAllAdaptiveRefreshTriggers()
-            .enablePeriodicRefresh(Duration.ofSeconds(5))
             .build();
 
     redisClient.setOptions(ClusterClientOptions.builder()
@@ -176,12 +170,7 @@ public abstract class SessionDUnitTest {
 
   protected static void startRedisServer(int server) {
     cluster.startRedisVM(server, cluster.getMember(LOCATOR).getPort());
-
-    cluster.getVM(server).invoke("Set logging level to DEBUG", () -> {
-      Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
-      Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
-      FastLogger.setDelegating(true);
-    });
+    cluster.enableDebugLogging(server);
   }
 
   protected static void startSpringApp(int sessionApp, long sessionTimeout, int... serverPorts) {
