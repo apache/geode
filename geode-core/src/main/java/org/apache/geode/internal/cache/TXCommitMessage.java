@@ -1244,8 +1244,7 @@ public class TXCommitMessage extends PooledDistributionMessage
          */
         long tailKey = entryOp.tailKey;
         if (entryOp.filterRoutingInfo != null) {
-          if (entryOp.filterRoutingInfo.getMembers()
-              .contains(this.internalRegion.getDistributionManager().getId())) {
+          if (entryOp.filterRoutingInfo.getMembers().contains(this.internalRegion.getMyId())) {
             tailKey = -1;
           }
         }
