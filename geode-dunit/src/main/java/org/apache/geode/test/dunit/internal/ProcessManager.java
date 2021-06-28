@@ -108,9 +108,7 @@ class ProcessManager implements ChildVMLauncher {
         envp = new String[] {"GEODE_HOME=" + versionManager.getInstall(version)};
         processBuilder.environment().put("GEODE_HOME", versionManager.getInstall(version));
       }
-      Process process = processBuilder.command(cmd).directory(workingDir).inheritIO().start();// Runtime.getRuntime().exec(cmd,
-                                                                                              // envp,
-                                                                                              // workingDir);
+      Process process = Runtime.getRuntime().exec(cmd, envp, workingDir);
       pendingVMs++;
       ProcessHolder holder = new ProcessHolder(process);
       processes.put(vmNum, holder);

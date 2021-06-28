@@ -18,6 +18,8 @@
 
 plugins {
   id 'java'
+  id 'java-gradle-plugin'
+  id 'groovy'
 }
 
 repositories {
@@ -39,7 +41,19 @@ dependencies {
   implementation('me.champeau.gradle:japicmp-gradle-plugin:0.2.9')
   implementation('junit:junit:4.13.2')
 
+  implementation("org.codehaus.groovy:groovy-all:3.0.8")
+
+
   testAnnotationProcessor(this.project)
+}
+
+gradlePlugin {
+  plugins {
+    jbossmodules {
+      id = "geode.jboss-modules-plugin"
+      implementationClass = "org.apache.geode.gradle.jboss.modules.plugins.GeodeJBossModulesGeneratorPlugin"
+    }
+  }
 }
 
 sourceSets {
