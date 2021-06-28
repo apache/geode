@@ -24,7 +24,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewaySender;
 
 public class TXLastEventInTransactionUtils {
-  public static final String NO_INFORMATION_FOR_SENDER_ID = "No information for senderId: ";
+  static final String NO_INFORMATION_FOR_SENDER_ID = "No information for senderId: ";
 
 
   /**
