@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
-import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
+import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
 
 import java.util.ArrayList;
 import java.util.Deque;
@@ -120,10 +120,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   /**
    * Contains the set of peekedIds that were peeked to complete a transaction
-   * inside a batch when groupTransactionEvents is set and that have
-   * been sent in a batch but have not yet been removed.
+   * inside a batch when groupTransactionEvents is set and whose event has been
+   * removed from the queue because an ack has been received from the receiver.
+   * Elements from this set are deleted when the event with the previous id
+   * is removed.
    */
-  private final Set<Long> extraPeekedIdsSentNotRemoved = ConcurrentHashMap.newKeySet();
+  private final Set<Long> extraPeekedIdsRemovedButPreviousIdNotRemoved =
+      ConcurrentHashMap.newKeySet();
 
   /**
    * The name of the <code>Region</code> backing this queue
@@ -311,50 +314,26 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
     Long key = peekedIds.remove();
     boolean isExtraPeeked = extraPeekedIds.remove(key);
-    try {
-      // Increment the head key
-      if (!isExtraPeeked) {
-        updateHeadKey(key.longValue());
-      }
-      removeIndex(key);
-      // Remove the entry at that key with a callback arg signifying it is
-      // a WAN queue so that AbstractRegionEntry.destroy can get the value
-      // even if it has been evicted to disk. In the normal case, the
-      // AbstractRegionEntry.destroy only gets the value in the VM.
-      this.region.localDestroy(key, WAN_QUEUE_TOKEN);
-      this.stats.decQueueSize();
-
-    } catch (EntryNotFoundException ok) {
-      // this is acceptable because the conflation can remove entries
-      // out from underneath us.
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "{}: Did not destroy entry at {} it was not there. It should have been removed by conflation.",
-            this, key);
-      }
-    }
-
     boolean wasEmpty = this.lastDispatchedKey == this.lastDestroyedKey;
+
     if (!isExtraPeeked) {
-      this.lastDispatchedKey = key;
-      // Remove also the extraPeekedIds right after this one so that
-      // they do not stay in the secondary's queue forever
-      long tmpKey = key;
-      while (extraPeekedIdsSentNotRemoved.contains(tmpKey = inc(tmpKey))) {
-        extraPeekedIdsSentNotRemoved.remove(tmpKey);
-        this.lastDispatchedKey = tmpKey;
-        updateHeadKey(tmpKey);
-      }
+      updateHeadKey(key);
+      lastDispatchedKey = key;
     } else {
-      extraPeekedIdsSentNotRemoved.add(key);
-      // Remove if previous key was already dispatched so that it does
-      // not stay in the secondary's queue forever
-      long tmpKey = dec(key);
-      if (this.lastDispatchedKey == tmpKey) {
-        this.lastDispatchedKey = key;
-        updateHeadKey(key);
-      }
+      extraPeekedIdsRemovedButPreviousIdNotRemoved.add(key);
     }
+    removeKey(key);
+
+    // Update head key and lastDispatchedKey with those extraPeekedIds removed
+    // that are consecutive to lastDispatchedKey so that they are not returned
+    // later by peekAhead given that they were already sent.
+    long tmpKey = lastDispatchedKey;
+    while (extraPeekedIdsRemovedButPreviousIdNotRemoved.contains(tmpKey = inc(tmpKey))) {
+      extraPeekedIdsRemovedButPreviousIdNotRemoved.remove(tmpKey);
+      updateHeadKey(tmpKey);
+      lastDispatchedKey = tmpKey;
+    }
+
     if (wasEmpty) {
       synchronized (this) {
         notifyAll();
@@ -365,6 +344,26 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       logger.debug(
           "{}: Destroyed entry at key {} setting the lastDispatched Key to {}. The last destroyed entry was {}",
           this, key, this.lastDispatchedKey, this.lastDestroyedKey);
+    }
+  }
+
+  private void removeKey(Long key) {
+    removeIndex(key);
+    // Remove the entry at that key with a callback arg signifying it is
+    // a WAN queue so that AbstractRegionEntry.destroy can get the value
+    // even if it has been evicted to disk. In the normal case, the
+    // AbstractRegionEntry.destroy only gets the value in the VM.
+    try {
+      this.region.localDestroy(key, WAN_QUEUE_TOKEN);
+      this.stats.decQueueSize();
+    } catch (EntryNotFoundException ok) {
+      // this is acceptable because the conflation can remove entries
+      // out from underneath us.
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "{}: Did not destroy entry at {} it was not there. It should have been removed by conflation.",
+            this, key);
+      }
     }
   }
 
@@ -496,13 +495,19 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         }
       }
       if (incompleteTransactionIdsInBatch.size() == 0 ||
-          retries++ == GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
+          retries >= sender.getRetriesToGetTransactionEventsFromQueue()) {
         break;
+      }
+      retries++;
+      try {
+        Thread.sleep(GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
       }
     }
     if (incompleteTransactionIdsInBatch.size() > 0) {
-      logger.warn("Not able to retrieve all events for transactions: {} after {} retries",
-          incompleteTransactionIdsInBatch, retries);
+      logger.warn("Not able to retrieve all events for transactions: {} after {} retries of {}ms",
+          incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
     }
   }

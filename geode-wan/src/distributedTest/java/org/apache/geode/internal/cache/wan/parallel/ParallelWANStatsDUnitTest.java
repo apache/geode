@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -388,6 +389,145 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     assertEquals(2, v4List.get(4) + v5List.get(4) + v6List.get(4) + v7List.get(4));
     // batches redistributed:
     assertEquals(0, v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5));
+  }
+
+  @Test
+  public void testPRParallelPropagationWithGroupTransactionEventsWithoutBatchRedistributionSeveralClientsSendsBatchesWithCompleteTransactions() {
+    testPRParallelPropagationWithGroupTransactionEventsSeveralClientsSendsBatchesWithCompleteTransactions(
+        false);
+  }
+
+  @Test
+  public void testPRParallelPropagationWithGroupTransactionEventsWithBatchRedistributionSeveralClientsWithSendsBatchesWithCompleteTransactions() {
+    testPRParallelPropagationWithGroupTransactionEventsSeveralClientsSendsBatchesWithCompleteTransactions(
+        true);
+  }
+
+  public void testPRParallelPropagationWithGroupTransactionEventsSeveralClientsSendsBatchesWithCompleteTransactions(
+      boolean isBatchesRedistributed) {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2);
+
+    if (!isBatchesRedistributed) {
+      createReceiverInVMs(vm2);
+    }
+
+    createSenders(lnPort, true);
+
+    createReceiverCustomerOrderShipmentPR(vm2);
+
+    createSenderCustomerOrderShipmentPRs(vm4);
+    createSenderCustomerOrderShipmentPRs(vm5);
+    createSenderCustomerOrderShipmentPRs(vm6);
+    createSenderCustomerOrderShipmentPRs(vm7);
+
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
+    int customers = 4;
+    int transactions = 300;
+    // batchSize is 10. Each transaction will contain 1 order + 3 shipments = 4 events.
+    // As a result, all batches will contain extra events to complete the
+    // transactions it will deliver.
+    int shipmentsPerTransaction = 3;
+
+    final List<Map<Object, Object>> customerData = new ArrayList<>(customers);
+    for (int intCustId = 0; intCustId < customers; intCustId++) {
+      final Map<Object, Object> custKeyValue = new HashMap<>();
+      CustId custId = new CustId(intCustId);
+      custKeyValue.put(custId, new Customer());
+      customerData.add(new HashMap());
+      vm4.invoke(() -> WANTestBase.putGivenKeyValue(customerRegionName, custKeyValue));
+
+      for (int i = 0; i < transactions; i++) {
+        OrderId orderId = new OrderId(i, custId);
+        customerData.get(intCustId).put(orderId, new Order());
+        for (int j = 0; j < shipmentsPerTransaction; j++) {
+          customerData.get(intCustId).put(new ShipmentId(i + j, orderId), new Shipment());
+        }
+      }
+    }
+
+    List<AsyncInvocation> asyncInvocations = new ArrayList<>(customers);
+
+    int eventsPerTransaction = shipmentsPerTransaction + 1;
+    for (int i = 0; i < customers; i++) {
+      final int intCustId = i;
+      AsyncInvocation asyncInvocation =
+          vm4.invokeAsync(() -> WANTestBase.doOrderAndShipmentPutsInsideTransactions(
+              customerData.get(intCustId),
+              eventsPerTransaction));
+      asyncInvocations.add(asyncInvocation);
+    }
+
+    try {
+      for (AsyncInvocation asyncInvocation : asyncInvocations) {
+        asyncInvocation.await();
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    int entries = (1 + (transactions * eventsPerTransaction)) * customers;
+
+    vm4.invoke(() -> WANTestBase.validateRegionSize(customerRegionName, customers));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, transactions * customers));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(shipmentRegionName,
+        transactions * shipmentsPerTransaction * customers));
+
+    if (isBatchesRedistributed) {
+      // wait for batches to be redistributed and then start the receiver
+      vm4.invoke(() -> await()
+          .until(() -> WANTestBase.getSenderStats("ln", -1).get(5) > 0));
+      createReceiverInVMs(vm2);
+    }
+
+    // Check that all entries have been written in the receiver
+    vm2.invoke(
+        () -> WANTestBase.validateRegionSize(customerRegionName, customers));
+    vm2.invoke(
+        () -> WANTestBase.validateRegionSize(orderRegionName, transactions * customers));
+    vm2.invoke(
+        () -> WANTestBase.validateRegionSize(shipmentRegionName,
+            shipmentsPerTransaction * transactions * customers));
+
+    checkQueuesAndOnlyCompleteTransactionsAreReplicated(entries, isBatchesRedistributed);
+  }
+
+  private void checkQueuesAndOnlyCompleteTransactionsAreReplicated(int entries,
+      boolean isBatchesRedistributed) {
+    ArrayList<Integer> v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    ArrayList<Integer> v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    ArrayList<Integer> v6List =
+        (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    ArrayList<Integer> v7List =
+        (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+
+    // eventsReceived:
+    assertThat(v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)).isEqualTo(entries);
+    // events queued:
+    assertThat(v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)).isEqualTo(entries);
+    // events distributed:
+    assertThat(v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)).isEqualTo(entries);
+    // batches redistributed:
+    int batchesRedistributed = v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5);
+    if (isBatchesRedistributed) {
+      assertThat(batchesRedistributed).isGreaterThan(0);
+    } else {
+      assertThat(batchesRedistributed).isEqualTo(0);
+    }
+    // events not queued conflated:
+    assertThat(v4List.get(7) + v5List.get(7) + v6List.get(7) + v7List.get(7)).isEqualTo(0);
+    // batches with incomplete transactions
+    assertThat(v4List.get(13) + v5List.get(13) + v6List.get(13) + v7List.get(7)).isEqualTo(0);
+
+    vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
+    vm5.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
+    vm6.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
+    vm7.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
   }
 
   @Test
@@ -1125,7 +1265,6 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     // Verify the conflation indexes size stat
     verifyConflationIndexesSize(senderId, 0, vm1);
   }
-
 
   @Test
   public void testPartitionedRegionParallelPropagation_RestartSenders_NoRedundancy() {
