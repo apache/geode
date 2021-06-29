@@ -2308,7 +2308,7 @@ public class WANTestBase extends DistributedTestCase {
     IgnoredException exp2 =
         IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
     try {
-      Region r = cache.getRegion(SEPARATOR + regionName);
+      Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
       for (long i = 0; i < numPuts; i++) {
         cache.getCacheTransactionManager().begin();
