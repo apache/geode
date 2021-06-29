@@ -280,10 +280,10 @@ public class Coder {
 
   public static String doubleToString(double d) {
     if (d == Double.POSITIVE_INFINITY) {
-      return "Infinity";
+      return "inf";
     }
     if (d == Double.NEGATIVE_INFINITY) {
-      return "-Infinity";
+      return "-inf";
     }
 
     String stringValue = String.valueOf(d);

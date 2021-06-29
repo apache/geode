@@ -14,7 +14,9 @@
  */
 package org.apache.geode.redis.internal.netty;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.doubleToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.isNaN;
@@ -63,6 +65,13 @@ public class CoderTest {
     assertThat(isNaN(bytes)).isEqualTo(isNaN);
   }
 
+  @Test
+  @Parameters(method = "infinityReturnStrings")
+  public void doubleToString_processesLikeRedis(String inputString, String expectedString) {
+    byte[] bytes = stringToBytes(inputString);
+    assertThat(doubleToString(bytesToDouble(bytes))).isEqualTo(expectedString);
+  }
+
   @SuppressWarnings("unused")
   private Object[] stringPairs() {
     // string1, string2
@@ -102,4 +111,18 @@ public class CoderTest {
         new Object[] {null, false, false, false}
     };
   }
+
+  @SuppressWarnings("unused")
+  private Object[] infinityReturnStrings() {
+    // string, expectedString
+    return new Object[] {
+        new Object[] {"inf", "inf"},
+        new Object[] {"+inf", "inf"},
+        new Object[] {"Infinity", "inf"},
+        new Object[] {"+Infinity", "inf"},
+        new Object[] {"-inf", "-inf"},
+        new Object[] {"-Infinity", "-inf"},
+    };
+  }
+
 }
