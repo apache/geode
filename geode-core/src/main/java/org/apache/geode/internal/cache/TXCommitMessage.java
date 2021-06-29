@@ -738,7 +738,8 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     for (EntryEventImpl ee : callbacks) {
-      boolean isLastTransactionEvent = isConfigError || ee.equals(lastTransactionEvent);
+      boolean isLastTransactionEvent =
+          isConfigError || lastTransactionEvent == null || ee.equals(lastTransactionEvent);
       try {
         if (ee.getOperation().isDestroy()) {
           ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true,
