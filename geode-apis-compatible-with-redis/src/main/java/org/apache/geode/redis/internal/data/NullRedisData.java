@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+
 import java.io.DataInput;
 import java.io.DataOutput;
 
@@ -87,6 +88,16 @@ public class NullRedisData implements RedisData {
   @Override
   public boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey) {
     return false;
+  }
+
+  @Override
+  public byte[] dump() {
+    return null;
+  }
+
+  @Override
+  public RedisData restore(byte[] data, boolean replaceExisting) throws Exception {
+    return restore(data);
   }
 
   @Override

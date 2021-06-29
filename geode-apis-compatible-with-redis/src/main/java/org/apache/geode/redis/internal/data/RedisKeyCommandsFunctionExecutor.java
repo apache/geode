@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
+import org.apache.geode.redis.internal.executor.key.RestoreOptions;
 
 public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor implements
     RedisKeyCommands {
@@ -96,6 +97,40 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
   @Override
   public String internalType(RedisKey key) {
     return stripedExecute(key, () -> getRedisData(key).type());
+  }
+
+  @Override
+  public byte[] dump(RedisKey key) {
+    byte[] dumpBytes = stripedExecute(key, () -> getRedisData(key).dump());
+
+    if (dumpBytes == null) {
+      getRegionProvider().getRedisStats().incKeyspaceMisses();
+    } else {
+      getRegionProvider().getRedisStats().incKeyspaceHits();
+    }
+
+    return dumpBytes;
+  }
+
+  @Override
+  public void restore(RedisKey key, long ttl, byte[] data, RestoreOptions options) {
+    long expireAt;
+    if (ttl == 0) {
+      expireAt = AbstractRedisData.NO_EXPIRATION;
+    } else {
+      if (options.isAbsttl()) {
+        expireAt = ttl;
+      } else {
+        expireAt = System.currentTimeMillis() + ttl;
+      }
+    }
+
+    stripedExecute(key, () -> {
+      RedisData value = getRedisData(key).restore(data, options.isReplace());
+      ((AbstractRedisData) value).setExpirationTimestampNoDelta(expireAt);
+      getRegion().put(key, value);
+      return null;
+    });
   }
 
   @Override

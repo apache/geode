@@ -55,6 +55,7 @@ import org.apache.geode.redis.internal.executor.hash.HSetNXExecutor;
 import org.apache.geode.redis.internal.executor.hash.HStrLenExecutor;
 import org.apache.geode.redis.internal.executor.hash.HValsExecutor;
 import org.apache.geode.redis.internal.executor.key.DelExecutor;
+import org.apache.geode.redis.internal.executor.key.DumpExecutor;
 import org.apache.geode.redis.internal.executor.key.ExistsExecutor;
 import org.apache.geode.redis.internal.executor.key.ExpireAtExecutor;
 import org.apache.geode.redis.internal.executor.key.ExpireExecutor;
@@ -64,6 +65,7 @@ import org.apache.geode.redis.internal.executor.key.PExpireExecutor;
 import org.apache.geode.redis.internal.executor.key.PTTLExecutor;
 import org.apache.geode.redis.internal.executor.key.PersistExecutor;
 import org.apache.geode.redis.internal.executor.key.RenameExecutor;
+import org.apache.geode.redis.internal.executor.key.RestoreExecutor;
 import org.apache.geode.redis.internal.executor.key.ScanExecutor;
 import org.apache.geode.redis.internal.executor.key.TTLExecutor;
 import org.apache.geode.redis.internal.executor.key.TypeExecutor;
@@ -143,6 +145,7 @@ public enum RedisCommandType {
   /*************** Keys ******************/
 
   DEL(new DelExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
+  DUMP(new DumpExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   EXISTS(new ExistsExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   EXPIRE(new ExpireExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   EXPIREAT(new ExpireAtExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
@@ -152,6 +155,7 @@ public enum RedisCommandType {
   PEXPIREAT(new PExpireAtExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   PTTL(new PTTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   RENAME(new RenameExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  RESTORE(new RestoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
   TTL(new TTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   TYPE(new TypeExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
 

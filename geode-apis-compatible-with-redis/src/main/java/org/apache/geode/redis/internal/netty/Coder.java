@@ -25,6 +25,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INTEGER_
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SIMPLE_STRING_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bBUSYKEY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCRLF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bEMPTY_ARRAY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bEMPTY_STRING;
@@ -228,6 +229,15 @@ public class Coder {
 
   public static ByteBuf getWrongTypeResponse(ByteBuf buffer, String error) {
     return getErrorResponse0(buffer, bWRONGTYPE, error);
+  }
+
+  public static ByteBuf getBusyKeyResponse(ByteBuf buffer, String error) {
+    byte[] errorAr = stringToBytes(error);
+    buffer.writeByte(ERROR_ID);
+    buffer.writeBytes(bBUSYKEY);
+    buffer.writeBytes(errorAr);
+    buffer.writeBytes(bCRLF);
+    return buffer;
   }
 
   public static ByteBuf getCustomErrorResponse(ByteBuf buffer, String error) {

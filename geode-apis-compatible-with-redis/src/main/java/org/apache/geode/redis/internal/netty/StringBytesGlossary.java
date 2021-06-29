@@ -93,6 +93,9 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bMOVED = stringToBytes("MOVED ");
 
+  @MakeImmutable
+  public static final byte[] bBUSYKEY = stringToBytes("BUSYKEY ");
+
   // ********** Redis Command constants **********
 
   // ClusterExecutor
@@ -163,6 +166,12 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bPX = stringToBytes("PX");
 
+  // RestoreExecutor
+  @MakeImmutable
+  public static final byte[] bREPLACE = stringToBytes("REPLACE");
+  @MakeImmutable
+  public static final byte[] bABSTTL = stringToBytes("ABSTTL");
+
   // ********** Constants for Double Infinity comparisons **********
   public static final String P_INF = "+inf";
   public static final String INF = "inf";
@@ -215,4 +224,7 @@ public class StringBytesGlossary {
 
   @MakeImmutable
   public static final byte[] bPING_RESPONSE_LOWERCASE = stringToBytes(PING_RESPONSE.toLowerCase());
+
+  @MakeImmutable
+  public static final byte[] bRADISH_DUMP_HEADER = stringToBytes("RADISH");
 }

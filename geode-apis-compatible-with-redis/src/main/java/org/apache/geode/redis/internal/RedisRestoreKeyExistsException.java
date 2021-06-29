@@ -11,33 +11,22 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
+package org.apache.geode.redis.internal;
 
-package org.apache.geode.redis.internal.executor.key;
+/**
+ * An exception thrown when the key being restored already exists.
+ */
+public class RedisRestoreKeyExistsException extends RuntimeException {
 
-import org.apache.geode.redis.internal.data.RedisKey;
+  private static final long serialVersionUID = -7022501593522613782L;
 
-public interface RedisKeyCommands {
-  boolean del(RedisKey key);
+  public RedisRestoreKeyExistsException() {
+    super();
+  }
 
-  boolean exists(RedisKey key);
+  public RedisRestoreKeyExistsException(String message) {
+    super(message);
+  }
 
-  boolean rename(RedisKey oldKey, RedisKey newKey);
-
-  long pttl(RedisKey key);
-
-  long internalPttl(RedisKey key);
-
-  int pexpireat(RedisKey key, long timestamp);
-
-  int persist(RedisKey key);
-
-  String type(RedisKey key);
-
-  String internalType(RedisKey key);
-
-  byte[] dump(RedisKey key);
-
-  void restore(RedisKey key, long ttl, byte[] data, RestoreOptions options);
 }

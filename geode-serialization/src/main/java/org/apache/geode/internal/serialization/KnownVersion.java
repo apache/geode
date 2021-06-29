@@ -362,7 +362,7 @@ public class KnownVersion extends AbstractVersion {
   /**
    * @return KnownVersion for ordinal if known, otherwise null.
    */
-  static KnownVersion getKnownVersion(final short ordinal) {
+  public static KnownVersion getKnownVersion(final short ordinal) {
     if (ordinal == TOKEN_ORDINAL) {
       return TOKEN;
     }

@@ -16,11 +16,18 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_RESTORE_KEY_EXISTS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRADISH_DUMP_HEADER;
+
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
@@ -29,7 +36,10 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.RedisRestoreKeyExistsException;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.AppendDeltaInfo;
@@ -42,12 +52,9 @@ public abstract class AbstractRedisData implements RedisData {
   private static final BucketRegion.PrimaryMoveReadLockAcquired primaryMoveReadLockAcquired =
       new BucketRegion.PrimaryMoveReadLockAcquired();
 
-  @Override
-  public String toString() {
-    return "expirationTimestamp=" + expirationTimestamp;
-  }
+  private static final Logger logger = LogService.getLogger();
+  public static final long NO_EXPIRATION = -1L;
 
-  private static final long NO_EXPIRATION = -1L;
   /**
    * The timestamp at which this instance should expire.
    * NO_EXPIRATION means it never expires.
@@ -207,6 +214,26 @@ public abstract class AbstractRedisData implements RedisData {
     this.deltaInfo = null;
   }
 
+  @Override
+  public byte[] dump() throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    baos.write(bRADISH_DUMP_HEADER);
+    DataOutputStream outputStream = new DataOutputStream(baos);
+    outputStream.writeShort(KnownVersion.CURRENT.ordinal());
+
+    DataSerializer.writeObject(this, outputStream);
+    return baos.toByteArray();
+  }
+
+  @Override
+  public RedisData restore(byte[] data, boolean replaceExisting) throws Exception {
+    if (!replaceExisting) {
+      throw new RedisRestoreKeyExistsException(ERROR_RESTORE_KEY_EXISTS);
+    }
+
+    return restore(data);
+  }
+
   private <T> ArrayList<T> readArrayList(DataInput in) throws IOException {
     try {
       return DataSerializer.readArrayList(in);
@@ -247,4 +274,10 @@ public abstract class AbstractRedisData implements RedisData {
   public int hashCode() {
     return Objects.hash(getExpirationTimestamp());
   }
+
+  @Override
+  public String toString() {
+    return "expirationTimestamp=" + expirationTimestamp;
+  }
+
 }
