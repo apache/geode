@@ -110,7 +110,7 @@ public class TXLastEventInTransactionUtils {
       throws ServiceConfigurationError {
     GatewaySender sender = cache.getGatewaySender(senderId);
     if (sender == null) {
-      throw new ServiceConfigurationError("No information for sender id: " + senderId);
+      throw new ServiceConfigurationError("No information for senderId: " + senderId);
     }
     return sender.mustGroupTransactionEvents();
   }
