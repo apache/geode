@@ -253,7 +253,8 @@ public class TXState implements TXStateInterface {
     }
 
     for (EntryEventImpl ee : getPendingCallbacks()) {
-      boolean isLastTransactionEvent = isConfigError || ee.equals(lastTransactionEvent);
+      boolean isLastTransactionEvent =
+          isConfigError || lastTransactionEvent == null || ee.equals(lastTransactionEvent);
       if (ee.getOperation().isDestroy()) {
         ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true,
             isLastTransactionEvent);
