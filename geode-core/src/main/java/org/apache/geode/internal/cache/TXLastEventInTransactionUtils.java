@@ -24,9 +24,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewaySender;
 
 public class TXLastEventInTransactionUtils {
-  static final String NO_INFORMATION_FOR_SENDER_ID = "No information for senderId: ";
-
-
   /**
    * @param callbacks list of events belonging to a transaction
    *
@@ -75,10 +72,7 @@ public class TXLastEventInTransactionUtils {
       Cache cache) throws ServiceConfigurationError {
     for (String senderId : getSenderIdsForEvents(callbacks)) {
       GatewaySender sender = cache.getGatewaySender(senderId);
-      if (sender == null) {
-        throw new ServiceConfigurationError(NO_INFORMATION_FOR_SENDER_ID + senderId);
-      }
-      if (sender.mustGroupTransactionEvents()) {
+      if (sender != null && sender.mustGroupTransactionEvents()) {
         return false;
       }
     }
@@ -109,9 +103,6 @@ public class TXLastEventInTransactionUtils {
   private static boolean doesSenderGroupTransactionEvents(Cache cache, String senderId)
       throws ServiceConfigurationError {
     GatewaySender sender = cache.getGatewaySender(senderId);
-    if (sender == null) {
-      throw new ServiceConfigurationError(NO_INFORMATION_FOR_SENDER_ID + senderId);
-    }
-    return sender.mustGroupTransactionEvents();
+    return sender != null && sender.mustGroupTransactionEvents();
   }
 }

@@ -79,7 +79,7 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
   }
 
   @Test
-  public void testPartitionedSerialPropagationWithTransaction() {
+  public void testPartitionedSerialPropagationWithTXWhenSendersNotConfiguredOnAllServers() {
 
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
