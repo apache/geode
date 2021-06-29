@@ -274,10 +274,12 @@ org/apache/geode/distributed/internal/locks/NonGrantorDestroyedProcessor$NonGran
 fromData,17
 toData,17
 
-org/apache/geode/distributed/internal/membership/InternalDistributedMember,4
+org/apache/geode/distributed/internal/membership/InternalDistributedMember,6
 fromData,17
+fromDataPre_GEODE_1_15_0_0,17
 fromDataPre_GFE_9_0_0_0,17
 toData,12
+toDataPre_GEODE_1_15_0_0,12
 toDataPre_GFE_9_0_0_0,12
 
 org/apache/geode/distributed/internal/streaming/StreamingOperation$RequestStreamingMessage,2

@@ -166,7 +166,12 @@ public interface MemberIdentifier extends DataSerializableFixedID {
 
   void readExternal(ObjectInput in) throws IOException, ClassNotFoundException;
 
+  void toDataPre_GEODE_1_15_0_0(DataOutput out, SerializationContext context) throws IOException;
+
   void toDataPre_GFE_9_0_0_0(DataOutput out, SerializationContext context) throws IOException;
+
+  void fromDataPre_GEODE_1_15_0_0(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException;
 
   void fromDataPre_GFE_9_0_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException;

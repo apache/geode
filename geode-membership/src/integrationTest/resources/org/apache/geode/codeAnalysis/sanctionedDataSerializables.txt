@@ -2,10 +2,12 @@ org/apache/geode/distributed/internal/membership/gms/GMSMembershipView,2
 fromData,121
 toData,72
 
-org/apache/geode/distributed/internal/membership/gms/MemberIdentifierImpl,4
-fromData,39
-fromDataPre_GFE_9_0_0_0,308
+org/apache/geode/distributed/internal/membership/gms/MemberIdentifierImpl,6
+fromData,42
+fromDataPre_GEODE_1_15_0_0,20
+fromDataPre_GFE_9_0_0_0,10
 toData,35
+toDataPre_GEODE_1_15_0_0,17
 toDataPre_GFE_9_0_0_0,280
 
 org/apache/geode/distributed/internal/membership/gms/locator/FindCoordinatorRequest,2

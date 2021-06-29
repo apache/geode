@@ -456,6 +456,12 @@ public class InternalDistributedMember
   }
 
   @Override
+  public void toDataPre_GEODE_1_15_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
+    memberIdentifier.toDataPre_GEODE_1_15_0_0(out, context);
+  }
+
+  @Override
   public void toData(DataOutput out,
       SerializationContext context)
       throws IOException {
@@ -466,6 +472,13 @@ public class InternalDistributedMember
       SerializationContext context)
       throws IOException {
     memberIdentifier.toDataPre_GFE_9_0_0_0(out, context);
+  }
+
+  @Override
+  public void fromDataPre_GEODE_1_15_0_0(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    memberIdentifier.fromDataPre_GEODE_1_15_0_0(in, context);
+    durableClientAttributes = null;
   }
 
   @Override

@@ -80,32 +80,41 @@ public class RollingUpgradeWithGfshDUnitTest {
     int locator2JmxPort = portSupplier.getAvailablePort();
     int server1Port = portSupplier.getAvailablePort();
     int server2Port = portSupplier.getAvailablePort();
+    final String hostname = "localhost";
 
     GfshExecution startupExecution =
-        GfshScript.of(startLocatorCommand("loc1", locatorPort, locatorJmxPort, 0, -1))
-            .and(startLocatorCommand("loc2", locator2Port, locator2JmxPort, 0, locatorPort))
-            .and(startServerCommand("server1", server1Port, locatorPort))
-            .and(startServerCommand("server2", server2Port, locatorPort))
+        GfshScript.of(startLocatorCommand("loc1", hostname, locatorPort, locatorJmxPort, 0,
+            -1))
+            .and(startLocatorCommand("loc2", hostname, locator2Port, locator2JmxPort, 0,
+                locatorPort))
+            .and(startServerCommand("server1", hostname, server1Port, locatorPort))
+            .and(startServerCommand("server2", hostname, server2Port, locatorPort))
             .and(deployDirCommand())
             .execute(oldGfsh);
 
     // doing rolling upgrades
     oldGfsh.stopLocator(startupExecution, "loc1");
-    GfshScript.of(startLocatorCommand("loc1", locatorPort, locatorJmxPort, 0, locator2Port))
+    GfshScript
+        .of(startLocatorCommand("loc1", hostname, locatorPort, locatorJmxPort, 0,
+            locator2Port))
         .execute(currentGfsh);
     verifyListDeployed(locatorPort);
 
     oldGfsh.stopLocator(startupExecution, "loc2");
-    GfshScript.of(startLocatorCommand("loc2", locator2Port, locator2JmxPort, 0, locatorPort))
+    GfshScript
+        .of(startLocatorCommand("loc2", hostname, locator2Port, locator2JmxPort, 0,
+            locatorPort))
         .execute(currentGfsh);
     verifyListDeployed(locator2Port);
 
     // make sure servers can do rolling upgrade too
     oldGfsh.stopServer(startupExecution, "server1");
-    GfshScript.of(startServerCommand("server1", server1Port, locatorPort)).execute(currentGfsh);
+    GfshScript.of(startServerCommand("server1", hostname, server1Port, locatorPort))
+        .execute(currentGfsh);
 
     oldGfsh.stopServer(startupExecution, "server2");
-    GfshScript.of(startServerCommand("server2", server2Port, locatorPort)).execute(currentGfsh);
+    GfshScript.of(startServerCommand("server2", hostname, server2Port, locatorPort))
+        .execute(currentGfsh);
   }
 
   private void verifyListDeployed(int locatorPort) {

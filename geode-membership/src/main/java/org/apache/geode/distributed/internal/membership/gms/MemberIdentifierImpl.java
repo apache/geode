@@ -58,8 +58,8 @@ import org.apache.geode.internal.serialization.VersioningIO;
 public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableFixedID {
   /** The versions in which this message was modified */
   @Immutable
-  private static final KnownVersion[] dsfidVersions = new KnownVersion[] {KnownVersion.GFE_90};
-
+  private static final KnownVersion[] dsfidVersions =
+      new KnownVersion[] {KnownVersion.GFE_90, KnownVersion.GEODE_1_15_0};
   private MemberData memberData; // the underlying member object
 
   public MemberIdentifierImpl() {}
@@ -325,7 +325,6 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     if (this == obj) {
       return true;
     }
-    // GemStone fix for 29125
     if (!(obj instanceof MemberIdentifierImpl)) {
       return false;
     }
@@ -631,12 +630,21 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     }
   }
 
+  /**
+   * This method doesn't convert memberData's hostname back to an IP address
+   * (see {@link MemberIdentifier#fromDataPre_GEODE_1_15_0_0}). Pre Geode 1.15
+   * member may store an IP address instead of its hostname to achieve better performance
+   * in case of a network partition which is not a significant concern here because these
+   * members will be upgraded.
+   */
+  public void toDataPre_GEODE_1_15_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
+    toDataPre_GFE_9_0_0_0(out, context);
+    memberData.writeAdditionalData(out);
+  }
+
   public void toDataPre_GFE_9_0_0_0(DataOutput out, SerializationContext context)
       throws IOException {
-    // Assert.assertTrue(vmKind > 0);
-    // NOTE: If you change the serialized format of this class
-    // then bump Connection.HANDSHAKE_VERSION since an
-    // instance of this class is sent during Connection handshake.
     StaticSerialization.writeInetAddress(getInetAddress(), out);
     out.writeInt(getMembershipPort());
 
@@ -681,9 +689,9 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
   }
 
   @Override
-  public void fromData(DataInput in,
-      DeserializationContext context) throws IOException, ClassNotFoundException {
-    fromDataPre_GFE_9_0_0_0(in, context);
+  public void fromData(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    readMemberData(in);
     // just in case this is just a non-versioned read
     // from a file we ought to check the version
     if (memberData.getVersionOrdinal() >= KnownVersion.GFE_90.ordinal()) {
@@ -693,10 +701,43 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
         // nope - it's from a pre-GEODE client or WAN site
       }
     }
+    convertIpToHostnameIfNeeded();
+  }
+
+  public void fromDataPre_GEODE_1_15_0_0(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    readMemberData(in);
+    memberData.readAdditionalData(in);
+    convertIpToHostnameIfNeeded();
   }
 
   public void fromDataPre_GFE_9_0_0_0(DataInput in, DeserializationContext context)
       throws IOException {
+    readMemberData(in);
+    convertIpToHostnameIfNeeded();
+  }
+
+  /**
+   * In older versions of Geode {@link MemberData#getHostName()} can return an IP address
+   * if network partition is enabled. Also, older versions of Geode don't use bind-address for
+   * SNI endpoint identification and do a reverse lookup to find the fully qualified hostname.
+   * This can become a problem if TLS certificate doesn't have the fully qualified name in it
+   * as a Subject Alternate Name, therefore this behavior was changed to preserve the bind-address.
+   *
+   * During a rolling upgrade, we need to ensure that {@link MemberData#getHostName()} returns
+   * a hostname because it might be later used for SNI endpoint identification.
+   */
+  private void convertIpToHostnameIfNeeded() {
+    if (memberData.isNetworkPartitionDetectionEnabled()) {
+      final InetAddressValidator inetAddressValidator = InetAddressValidator.getInstance();
+      final boolean isIpAddress = inetAddressValidator.isValid(memberData.getHostName());
+      if (isIpAddress) {
+        memberData.setHostName(getHost());
+      }
+    }
+  }
+
+  private void readMemberData(DataInput in) throws IOException {
     InetAddress inetAddr = StaticSerialization.readInetAddress(in);
     int port = in.readInt();
 
@@ -832,6 +873,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
    * Set the membership port. This is done in loner systems using client/server connection
    * information to help form a unique ID
    */
+  @Override
   public void setPort(int p) {
     assert memberData.getVmKind() == MemberIdentifier.LONER_DM_TYPE;
     memberData.setPort(p);
@@ -848,18 +890,22 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     return memberData.getHostName();
   }
 
+  @Override
   public String getHost() {
     return memberData.getInetAddress().getCanonicalHostName();
   }
 
+  @Override
   public int getProcessId() {
     return memberData.getProcessId();
   }
 
+  @Override
   public String getId() {
     return toString();
   }
 
+  @Override
   public String getUniqueId() {
     StringBuilder sb = new StringBuilder();
     addFixedToString(sb, false);
@@ -873,6 +919,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     return sb.toString();
   }
 
+  @Override
   public void setVersionForTest(Version v) {
     memberData.setVersion(v);
     cachedToString = null;
@@ -889,6 +936,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
   }
 
   @VisibleForTesting
+  @Override
   public void setUniqueTag(String tag) {
     memberData.setUniqueTag(tag);
   }
