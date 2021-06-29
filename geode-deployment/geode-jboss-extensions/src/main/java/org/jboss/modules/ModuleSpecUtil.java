@@ -70,8 +70,7 @@ public class ModuleSpecUtil {
    * @return a {@link ModuleSpec} which a classpath dependency.
    */
   public static ModuleSpec addSystemClasspathDependency(ModuleSpec moduleSpec) {
-    if (moduleSpec instanceof ConcreteModuleSpec
-        && moduleSpec.getName().contains("geode-deployment-jboss-modules")) {
+    if (moduleSpec instanceof ConcreteModuleSpec) {
       return createBuilder(moduleSpec).addDependency(new LocalDependencySpecBuilder()
           .setImportFilter(PathFilters.acceptAll())
           .setExport(true)

@@ -20,7 +20,7 @@ jbossModulesExtension {
   geodeConfigurations {
     distributedTest {
       outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
-      jbossJdkModules = [ "java.base","jdk.unsupported"]
+      jbossJdkModules = [ "java.se","jdk.unsupported"]
       assembleFromSource = true
     }
   }
