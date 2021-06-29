@@ -88,7 +88,7 @@ public class GfshRule extends ExternalResource {
       gfshExecutions
           .forEach(GfshExecution::killProcess);
     } finally {
-      temporaryFolder.delete();
+//      temporaryFolder.delete();
     }
   }
 
@@ -226,7 +226,7 @@ public class GfshRule extends ExternalResource {
   public static String startServerCommand(String name, int port, int connectedLocatorPort) {
     String command = "start server --name=" + name
         + " --server-port=" + port
-        + " --locators=localhost[" + connectedLocatorPort + "]";
+        + " --locators=bburcham-a01.vmware.com[" + connectedLocatorPort + "]";
     return command;
   }
 
@@ -236,7 +236,7 @@ public class GfshRule extends ExternalResource {
         + " --port=" + port
         + " --http-service-port=" + httpPort;
     if (connectedLocatorPort > 0) {
-      command += " --locators=localhost[" + connectedLocatorPort + "]";
+      command += " --locators=bburcham-a01.vmware.com[" + connectedLocatorPort + "]";
     }
     command += " --J=-Dgemfire.jmx-manager-port=" + jmxPort;
     return command;

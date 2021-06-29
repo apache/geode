@@ -37,7 +37,7 @@ import org.springframework.http.ResponseEntity;
 import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
-public class ShellCommandsControllerProcessCommandTest {
+  public class ShellCommandsControllerProcessCommandTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
