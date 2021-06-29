@@ -37,3 +37,12 @@ dependencies {
   jmhTestImplementation('junit:junit')
   jmhTestImplementation('org.assertj:assertj-core')
 }
+
+jbossModulesExtension {
+  geodeConfigurations {
+    main {
+      mainClass = "org.apache.geode.distributed.ServerLauncher"
+      jbossJdkModules = [ "java.base", "java.naming"]
+    }
+  }
+}

@@ -43,6 +43,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -385,8 +386,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       Source src = new SAXSource(this, new InputSource());
       Result res = new StreamResult(pw);
 
-      TransformerFactory xFactory = TransformerFactory.newInstance();
-      Transformer xform = xFactory.newTransformer();
+      Transformer xform = TransformerFactory.newInstance().newTransformer();
       xform.setOutputProperty(OutputKeys.METHOD, "xml");
       xform.setOutputProperty(OutputKeys.INDENT, "yes");
       if (!useSchema) {

@@ -119,3 +119,12 @@ dependencies {
 }
 
 integrationTest.forkEvery 0
+
+jbossModulesExtension {
+  geodeConfigurations {
+    main {
+      mainClass = "org.apache.geode.distributed.ServerLauncher"
+      jbossJdkModules = [ "java.base","java.sql"]
+    }
+  }
+}

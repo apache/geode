@@ -247,12 +247,8 @@ dependencies {
     //micrometer is used for micrometer based metrics from geode geode
     api('io.micrometer:micrometer-core')
 
-
     //FastUtil contains optimized collections that are used in multiple places in core
-    implementation('it.unimi.dsi:fastutil'){
-        ext.set('embed.children', ['fastutil-core', 'fastutil-extra'])
-    }
-
+    implementation('it.unimi.dsi:fastutil')
 
     //Mail API is used by the deprecated admin API
     implementation('javax.mail:javax.mail-api') {
@@ -360,7 +356,6 @@ dependencies {
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
-
     integrationTestRuntimeOnly('org.apache.derby:derby')
     integrationTestRuntimeOnly('xerces:xercesImpl')
     integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
@@ -411,6 +406,7 @@ jbossModulesExtension {
     geodeConfigurations {
         main {
             mainClass = "org.apache.geode.distributed.ServerLauncher"
+            jbossJdkModules = [ "java.base","jdk.unsupported", "java.naming", "java.xml"]
         }
     }
 }

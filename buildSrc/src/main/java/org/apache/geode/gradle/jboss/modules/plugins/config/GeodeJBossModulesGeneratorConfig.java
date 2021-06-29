@@ -45,8 +45,8 @@ public class GeodeJBossModulesGeneratorConfig {
         this(name);
         this.mainClass = mainClass;
         this.outputRoot = outputRoot;
-        this.jbossJdkModules = Arrays.asList("java.se","jdk.unsupported", "jdk.scripting.nashorn",
-            "java.desktop");
+        this.jbossJdkModules = Arrays.asList("java.base","jdk.unsupported", "jdk.scripting.nashorn",
+            "java.desktop","java.logging","java.rmi");
     }
 
     public boolean shouldAssembleFromSource() {
