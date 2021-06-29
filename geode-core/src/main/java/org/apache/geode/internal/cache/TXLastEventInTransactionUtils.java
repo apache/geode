@@ -20,10 +20,16 @@ import java.util.ServiceConfigurationError;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class TXLastEventInTransactionUtils {
+
+  private static final Logger logger = LogService.getLogger();
+
   /**
    * @param callbacks list of events belonging to a transaction
    *
@@ -103,6 +109,9 @@ public class TXLastEventInTransactionUtils {
   private static boolean doesSenderGroupTransactionEvents(Cache cache, String senderId)
       throws ServiceConfigurationError {
     GatewaySender sender = cache.getGatewaySender(senderId);
-    return sender != null && sender.mustGroupTransactionEvents();
+    if (sender == null) {
+      throw new ServiceConfigurationError("No information for sender id: " + senderId);
+    }
+    return sender.mustGroupTransactionEvents();
   }
 }
