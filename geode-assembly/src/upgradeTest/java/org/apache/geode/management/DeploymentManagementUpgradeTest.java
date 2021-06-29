@@ -89,13 +89,13 @@ public class DeploymentManagementUpgradeTest {
     int locatorPort = ports[1];
     int jmxPort = ports[2];
     GfshExecution execute =
-        GfshScript.of(startLocatorCommand("test", locatorPort, jmxPort, httpPort, 0))
+        GfshScript.of(startLocatorCommand("test", "localhost", locatorPort, jmxPort, httpPort, 0))
             .and("deploy --jar=" + clusterJar.getAbsolutePath())
             .and("shutdown --include-locators")
             .execute(oldGfsh);
 
     // use the latest gfsh to start the locator in the same working dir
-    GfshScript.of(startLocatorCommand("test", locatorPort, jmxPort, httpPort, 0))
+    GfshScript.of(startLocatorCommand("test", "localhost", locatorPort, jmxPort, httpPort, 0))
         .execute(gfsh, execute.getWorkingDir());
 
     ClusterManagementService cms = new ClusterManagementServiceBuilder()

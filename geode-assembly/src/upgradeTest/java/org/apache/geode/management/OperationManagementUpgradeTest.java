@@ -84,16 +84,19 @@ public class OperationManagementUpgradeTest {
     int jmxPort2 = ports[4];
     int httpPort2 = ports[5];
     int serverPort = ports[6];
+    final String hostname = "localhost";
     GfshExecution execute =
-        GfshScript.of(startLocatorCommand("locator1", locatorPort1, jmxPort1, httpPort1, 0))
-            .and(startLocatorCommand("locator2", locatorPort2, jmxPort2, httpPort2, locatorPort1))
-            .and(startServerCommand("server", serverPort, locatorPort1))
+        GfshScript
+            .of(startLocatorCommand("locator1", hostname, locatorPort1, jmxPort1, httpPort1, 0))
+            .and(startLocatorCommand("locator2", hostname, locatorPort2, jmxPort2, httpPort2,
+                locatorPort1))
+            .and(startServerCommand("server", hostname, serverPort, locatorPort1))
             .execute(oldGfsh);
 
     String operationId = vm.invoke(() -> {
       // start a cms client that connects to locator1's http port
       ClusterManagementService cms = new ClusterManagementServiceBuilder()
-          .setHost("localhost")
+          .setHost(hostname)
           .setPort(httpPort1)
           .build();
 
@@ -107,12 +110,13 @@ public class OperationManagementUpgradeTest {
     // stop locator1
     oldGfsh.stopLocator(execute, "locator1");
     // use new gfsh to start locator1, make sure new locator can start
-    GfshScript.of(startLocatorCommand("locator1", locatorPort1, jmxPort1, httpPort1, locatorPort2))
+    GfshScript.of(startLocatorCommand("locator1", hostname, locatorPort1, jmxPort1, httpPort1,
+        locatorPort2))
         .execute(gfsh, execute.getWorkingDir());
 
     // use the new cms client
     ClusterManagementService cms = new ClusterManagementServiceBuilder()
-        .setHost("localhost")
+        .setHost(hostname)
         .setPort(httpPort1)
         .build();
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> operationResult =

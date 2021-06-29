@@ -29,10 +29,12 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedChannelException;
@@ -50,6 +52,7 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
+import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
@@ -1745,12 +1748,7 @@ public class Connection implements Runnable {
   private void createIoFilter(SocketChannel channel, boolean clientSocket) throws IOException {
     if (getConduit().useSSL() && channel != null) {
       InetSocketAddress address = (InetSocketAddress) channel.getRemoteAddress();
-      String hostName;
-      if (remoteAddr != null) {
-        hostName = remoteAddr.getHostName();
-      } else {
-        hostName = SocketCreator.getHostName(address.getAddress());
-      }
+      String hostName = determineHostName(address);
       SSLEngine engine =
           getConduit().getSocketCreator().createSSLEngine(hostName,
               address.getPort(), clientSocket);
@@ -1796,6 +1794,54 @@ public class Connection implements Runnable {
 
       ioFilter = new NioPlainEngine(getBufferPool());
     }
+  }
+
+  private String determineHostName(InetSocketAddress address) {
+    final String hostName;
+    if (remoteAddr != null) {
+      if (remoteAddr.getVersion().isOlderThan(KnownVersion.GEODE_1_15_0)) {
+        // preserve old behavior for backward compatibility
+        hostName = determineHostnameForOlderMember(address);
+      } else {
+        hostName = remoteAddr.getHostName();
+      }
+    } else {
+      hostName = SocketCreator.getHostName(address.getAddress());
+    }
+    return hostName;
+  }
+
+  /**
+   * In older versions of Geode {@link InetSocketAddress#getHostString()} can return an IP address
+   * if
+   * network partition detection is enabled. If SSL endpoint identification is enabled,
+   * those product versions supply the result of a reverse lookup to the TLS handshake API.
+   * Endpoint identification will fail if e.g. the lookup returned a fully-qualified name but
+   * the certificate had just a (non-fully-qualified) hostname in a Subject Alternate Name field.
+   *
+   * In version 1.15.0 member identifiers were changed so that if a bind address is specified,
+   * that exact string will be carried as the host name. That gives the administrator better control
+   * over endpoint identification. When upgrading from earlier versions we convert any IP numbers
+   * to hostnames via reverse lookup here.
+   */
+  private String determineHostnameForOlderMember(InetSocketAddress address) {
+    final String hostString = address.getHostString();
+    if (owner.getDM().getConfig().getSSLEndPointIdentificationEnabled()) {
+      return convertIpToHostnameIfNeeded(hostString);
+    }
+    return hostString;
+  }
+
+  private String convertIpToHostnameIfNeeded(String hostString) {
+    if (InetAddressValidator.getInstance().isValid(hostString)) {
+      // attempt to get a hostname instead of the proffered numeric address
+      try {
+        return InetAddress.getByName(hostString).getCanonicalHostName();
+      } catch (UnknownHostException e) {
+        // ignore - we'll see what happens with endpoint validation using a numeric address
+      }
+    }
+    return hostString;
   }
 
   /**
