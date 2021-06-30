@@ -19,7 +19,6 @@ package org.apache.geode.redis.internal.data;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToInt;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
 
 import java.io.DataInput;
@@ -313,11 +312,10 @@ public class RedisSortedSet extends AbstractRedisData {
     return membersRemoved;
   }
 
-  List<byte[]> zrange(byte[] min, byte[] max,
-      boolean withScores) {
+  List<byte[]> zrange(int min, int max, boolean withScores) {
     ArrayList<byte[]> result = new ArrayList<>();
-    int start = getBoundedStartIndex(bytesToInt(min), getSortedSetSize());
-    int end = getBoundedEndIndex(bytesToInt(max), getSortedSetSize());
+    int start = getBoundedStartIndex(min, getSortedSetSize());
+    int end = getBoundedEndIndex(max, getSortedSetSize());
     if (start > end || start == getSortedSetSize()) {
       return result;
     }

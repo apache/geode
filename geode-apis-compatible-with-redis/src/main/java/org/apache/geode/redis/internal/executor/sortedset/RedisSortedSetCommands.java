@@ -23,7 +23,7 @@ public interface RedisSortedSetCommands {
 
   Object zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd, ZAddOptions options);
 
-  List<byte[]> zrange(RedisKey key, byte[] min, byte[] max, boolean withScores);
+  List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores);
 
   byte[] zscore(RedisKey key, byte[] member);
 

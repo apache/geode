@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,14 +31,7 @@ import org.apache.geode.redis.internal.RedisConstants;
 
 public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private final String member = "member";
-  private final String incrOption = "INCR";
-  private final double initial = 355.681000005;
-  private final double increment = 9554257.921450001;
-  private final double expected = initial + increment;
-
   private static final String SORTED_SET_KEY = "ss_key";
-  private static final int INITIAL_MEMBER_COUNT = 5;
 
   @Before
   public void setUp() {
@@ -60,11 +54,26 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
   }
 
   @Test
+  public void shouldError_givenNonIntegerRangeValues() {
+    jedis.zadd(SORTED_SET_KEY, 1.0, "member");
+    assertThatThrownBy(
+        () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY,
+            "NOT_AN_INT", "2"))
+                .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, "1",
+            "ALSO_NOT_AN_INT"))
+                .hasMessageContaining(ERROR_NOT_INTEGER);
+  }
+
+  @Test
   public void shouldReturnSyntaxError_givenWrongWithscoresFlag() {
-    jedis.zadd(SORTED_SET_KEY, 1.0, member);
+    jedis.zadd(SORTED_SET_KEY, 1.0, "member");
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, "1", "2",
-            "WITHSCOREZ"))
+            "WITSCOREZ"))
                 .hasMessageContaining(ERROR_SYNTAX);
   }
+
+
 }

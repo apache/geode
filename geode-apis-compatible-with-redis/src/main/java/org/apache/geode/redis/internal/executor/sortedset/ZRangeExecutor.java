@@ -14,7 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToInt;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 
 import java.util.List;
@@ -29,11 +31,16 @@ public class ZRangeExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     boolean withScores = false;
+    int min, max;
     RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
     List<byte[]> commandElements = command.getProcessedCommand();
 
-    byte[] min = commandElements.get(1);
-    byte[] max = commandElements.get(2);
+    try {
+      min = bytesToInt(commandElements.get(1));
+      max = bytesToInt(commandElements.get(2));
+    } catch (NumberFormatException nfe) {
+      return RedisResponse.error(ERROR_NOT_INTEGER);
+    }
     if (commandElements.size() == 5) {
       if (equalsIgnoreCaseBytes(commandElements.get(3), "WITHSCORES".getBytes())) {
         withScores = true;

@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.data;
 
 import static java.lang.Math.round;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.BASE_REDIS_SORTED_SET_OVERHEAD;
-import static org.apache.geode.redis.internal.netty.Coder.intToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -313,57 +312,57 @@ public class RedisSortedSetTest {
 
   @Test
   public void zrange_ShouldReturnEmptyList_GivenInvalidRanges() {
-    Collection<byte[]> rangeList = rangeSortedSet.zrange(intToBytes(5), intToBytes(0), false);
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(5, 0, false);
     assertThat(rangeList).isEmpty();
-    rangeList = rangeSortedSet.zrange(intToBytes(13), intToBytes(15), false);
+    rangeList = rangeSortedSet.zrange(13, 15, false);
     assertThat(rangeList).isEmpty();
-    rangeList = rangeSortedSet.zrange(intToBytes(17), intToBytes(-2), false);
+    rangeList = rangeSortedSet.zrange(17, -2, false);
     assertThat(rangeList).isEmpty();
-    rangeList = rangeSortedSet.zrange(intToBytes(12), intToBytes(12), false);
+    rangeList = rangeSortedSet.zrange(12, 12, false);
     assertThat(rangeList).isEmpty();
   }
 
 
   @Test
   public void zrange_ShouldReturnSimpleRanges() {
-    Collection<byte[]> rangeList = rangeSortedSet.zrange(intToBytes(0), intToBytes(5), false);
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(0, 5, false);
     assertThat(rangeList).hasSize(6);
     assertThat(rangeList)
         .containsExactly("member1".getBytes(), "member2".getBytes(), "member3".getBytes(),
             "member4".getBytes(), "member5".getBytes(), "member6".getBytes());
 
-    rangeList = rangeSortedSet.zrange(intToBytes(5), intToBytes(10), false);
+    rangeList = rangeSortedSet.zrange(5, 10, false);
     assertThat(rangeList).hasSize(6);
     assertThat(rangeList)
         .containsExactly("member6".getBytes(), "member7".getBytes(), "member8".getBytes(),
             "member9".getBytes(), "member10".getBytes(), "member11".getBytes());
 
-    rangeList = rangeSortedSet.zrange(intToBytes(10), intToBytes(13), false);
+    rangeList = rangeSortedSet.zrange(10, 13, false);
     assertThat(rangeList).hasSize(2);
     assertThat(rangeList).containsExactly("member11".getBytes(), "member12".getBytes());
   }
 
   @Test
   public void zrange_ShouldReturnRanges_SpecifiedWithNegativeOffsets() {
-    Collection<byte[]> rangeList = rangeSortedSet.zrange(intToBytes(-2), intToBytes(12), false);
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(-2, 12, false);
     assertThat(rangeList).hasSize(2);
     assertThat(rangeList).containsExactly("member11".getBytes(), "member12".getBytes());
 
-    rangeList = rangeSortedSet.zrange(intToBytes(-6), intToBytes(-1), false);
+    rangeList = rangeSortedSet.zrange(-6, -1, false);
     assertThat(rangeList).hasSize(6);
     assertThat(rangeList)
         .containsExactly("member7".getBytes(), "member8".getBytes(),
             "member9".getBytes(), "member10".getBytes(), "member11".getBytes(),
             "member12".getBytes());
 
-    rangeList = rangeSortedSet.zrange(intToBytes(-11), intToBytes(-5), false);
+    rangeList = rangeSortedSet.zrange(-11, -5, false);
     assertThat(rangeList).hasSize(7);
     assertThat(rangeList)
         .containsExactly("member2".getBytes(), "member3".getBytes(),
             "member4".getBytes(), "member5".getBytes(), "member6".getBytes(),
             "member7".getBytes(), "member8".getBytes());
 
-    rangeList = rangeSortedSet.zrange(intToBytes(-12), intToBytes(-11), false);
+    rangeList = rangeSortedSet.zrange(-12, -11, false);
     assertThat(rangeList).hasSize(2);
     assertThat(rangeList)
         .containsExactly("member1".getBytes(), "member2".getBytes());
@@ -371,7 +370,7 @@ public class RedisSortedSetTest {
 
   @Test
   public void zrange_shouldAlsoReturnScores_whenWithScoresSpecified() {
-    Collection<byte[]> rangeList = rangeSortedSet.zrange(intToBytes(0), intToBytes(5), true);
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(0, 5, true);
     assertThat(rangeList).hasSize(12);
     assertThat(rangeList).containsExactly("member1".getBytes(), "1.0".getBytes(),
         "member2".getBytes(), "1.1".getBytes(), "member3".getBytes(), "1.2".getBytes(),
