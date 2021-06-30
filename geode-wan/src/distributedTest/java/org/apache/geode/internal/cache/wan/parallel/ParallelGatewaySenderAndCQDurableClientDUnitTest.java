@@ -38,12 +38,14 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -62,7 +64,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Serializable {
 
   @Rule
-  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(9);
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(7);
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -110,16 +112,16 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
     startDurableClient();
     createDurableCQs(REGION_CQ);
 
-    verifyGatewaySenderState(true, false);
+    verifyGatewaySenderIsRunningAndNotPaused();
 
     // Do some puts and check that data has been enqueued
     Set<String> keysQueue =
         clientSite2.invoke(() -> doPutsInRangeTransactionSingleKey(0, 30, REGION_NAME));
     server1Site2.invoke(() -> checkQueueSize("ln", keysQueue.size()));
 
-    server1Site2.invoke(() -> validateBucketToTempQueueMap("ln", true));
-    server2Site2.invoke(() -> validateBucketToTempQueueMap("ln", true));
-    server3Site2.invoke(() -> validateBucketToTempQueueMap("ln", true));
+    server1Site2.invoke(() -> validateBucketToTempQueueMapIsEmpty("ln"));
+    server2Site2.invoke(() -> validateBucketToTempQueueMapIsEmpty("ln"));
+    server3Site2.invoke(() -> validateBucketToTempQueueMapIsEmpty("ln"));
 
     // Check that durable client has received all events
     checkCqEvents(keysQueue.size());
@@ -131,16 +133,16 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
     startDurableClient();
     createDurableCQs(REGION_CQ, COLO_REGION_CQ);
 
-    verifyGatewaySenderState(true, false);
+    verifyGatewaySenderIsRunningAndNotPaused();
 
     // Do some puts and check that data has been enqueued
     Set<String> keysQueue =
         clientSite2.invoke(() -> doPutsInRangeTransactionWithTwoPutOperation(0, 30));
     server1Site2.invoke(() -> checkQueueSize("ln", keysQueue.size() * 2));
 
-    server1Site2.invoke(() -> validateBucketToTempQueueMap("ln", true));
-    server2Site2.invoke(() -> validateBucketToTempQueueMap("ln", true));
-    server3Site2.invoke(() -> validateBucketToTempQueueMap("ln", true));
+    server1Site2.invoke(() -> validateBucketToTempQueueMapIsEmpty("ln"));
+    server2Site2.invoke(() -> validateBucketToTempQueueMapIsEmpty("ln"));
+    server3Site2.invoke(() -> validateBucketToTempQueueMapIsEmpty("ln"));
 
     // Check that durable client has received all events
     checkCqEvents(keysQueue.size() * 2);
@@ -154,20 +156,19 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
   @Test
   public void testSubscriptionQueueWanTrafficWhileRebalanced() throws Exception {
     configureSites("3", false);
-    verifyGatewaySenderState(true, false);
+    verifyGatewaySenderIsRunningAndNotPaused();
 
     List<MemberVM> allMembers = new ArrayList<>();
     allMembers.add(server1Site2);
     allMembers.add(server2Site2);
     allMembers.add(server3Site2);
 
-    // Do some puts so that all bucket are created
-    Set<String> keysQueue = clientSite2.invoke(() -> doPutsInRange(0, 100));
-    server1Site2.invoke(() -> checkQueueSize("ln", keysQueue.size()));
+    server1Site2.invoke(() -> PartitionRegionHelper.assignBucketsToPartitions(
+        Objects.requireNonNull(ClusterStartupRule.getCache()).getRegion(REGION_NAME)));
 
     // check that bucketToTempQueueMap is empty on all members
     for (MemberVM member : allMembers) {
-      member.invoke(() -> validateBucketToTempQueueMap("ln", true));
+      member.invoke(() -> validateBucketToTempQueueMapIsEmpty("ln"));
     }
 
     // Choose server with bucket to be stopped
@@ -179,7 +180,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
     allMembers.remove(serverToStop);
 
     startDurableClient();
-    createDurableCQs("SELECT * FROM " + Region.SEPARATOR + REGION_NAME);
+    createDurableCQs(REGION_CQ);
 
     // configure hook on running members
     for (MemberVM member : allMembers) {
@@ -193,7 +194,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
 
     for (MemberVM member : allMembers) {
       // All members after redundancy is recovered should have empty temporary queue
-      member.invoke(() -> validateBucketToTempQueueMap("ln", true));
+      member.invoke(() -> validateBucketToTempQueueMapIsEmpty("ln"));
       // If hook has been triggered on member, then check if member temporarily queued
       // events while getting initial image from primary server
       if (member.invoke(ParallelGatewaySenderAndCQDurableClientDUnitTest::isHookTriggered)) {
@@ -224,7 +225,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
 
       @Override
       public void run() {
-        doPutsInServer();
+        doPutsInServerTransaction();
         ParallelGatewaySenderAndCQDurableClientDUnitTest.IS_HOOK_TRIGGERED = true;
         if (sizeOfBucketToTempQueueMap("ln") != 0) {
           ParallelGatewaySenderAndCQDurableClientDUnitTest.IS_TEMP_QUEUE_USED = true;
@@ -259,7 +260,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
     int locatorPort = locatorSite2.getPort();
     clientSite2DurableSubscription = clusterStartupRule.startClientVM(7, ccf -> ccf
         .withPoolSubscription(true).withLocatorConnection(locatorPort).withCacheSetup(c -> c
-            .set("durable-client-id", DURABLE_CLIENT_ID)));
+            .set(ConfigurationProperties.DURABLE_CLIENT_ID, DURABLE_CLIENT_ID)));
   }
 
   private void createDurableCQs(String... queries) {
@@ -299,17 +300,14 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
    * Checks that the bucketToTempQueueMap for a partitioned region
    * that holds events for buckets that are not available locally, is empty.
    */
-  public static void validateBucketToTempQueueMap(String senderId, boolean shouldBeEmpty) {
+  public static void validateBucketToTempQueueMapIsEmpty(String senderId) {
     final int finalSize = sizeOfBucketToTempQueueMap(senderId);
-    if (shouldBeEmpty) {
-      assertThat(finalSize).isEqualTo(0);
-    } else {
-      assertThat(finalSize).isNotEqualTo(0);
-    }
+    assertThat(finalSize).isEqualTo(0);
   }
 
   public static int sizeOfBucketToTempQueueMap(String senderId) {
-    GatewaySender sender = getGatewaySender(senderId);
+    GatewaySender sender =
+        Objects.requireNonNull(ClusterStartupRule.getCache()).getGatewaySender(senderId);
     int size = 0;
     Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
     for (RegionQueue queue : queues) {
@@ -325,19 +323,6 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
       }
     }
     return size;
-  }
-
-  private static GatewaySender getGatewaySender(String senderId) {
-    Set<GatewaySender> senders =
-        Objects.requireNonNull(ClusterStartupRule.getCache()).getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
-    return sender;
   }
 
   void configureSites(String totalBucketNum, boolean addColocatedRegion)
@@ -414,16 +399,16 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
     gfsh.connectAndVerify(locator);
   }
 
-  void verifyGatewaySenderState(boolean isRunning, boolean isPaused) {
+  void verifyGatewaySenderIsRunningAndNotPaused() {
     locatorSite2.invoke(
-        () -> validateGatewaySenderMXBeanProxy(getMember(server1Site2.getVM()), "ln", isRunning,
-            isPaused));
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1Site2.getVM()), "ln", true,
+            false));
     locatorSite2.invoke(
-        () -> validateGatewaySenderMXBeanProxy(getMember(server2Site2.getVM()), "ln", isRunning,
-            isPaused));
-    server1Site2.invoke(() -> verifySenderState("ln", isRunning, isPaused));
-    server2Site2.invoke(() -> verifySenderState("ln", isRunning, isPaused));
-    server3Site2.invoke(() -> verifySenderState("ln", isRunning, isPaused));
+        () -> validateGatewaySenderMXBeanProxy(getMember(server2Site2.getVM()), "ln", true,
+            false));
+    server1Site2.invoke(() -> verifySenderState("ln", true, false));
+    server2Site2.invoke(() -> verifySenderState("ln", true, false));
+    server3Site2.invoke(() -> verifySenderState("ln", true, false));
   }
 
   Set<String> doPutsInRangeTransactionSingleKey(int start, int stop, String regionName) {
@@ -463,19 +448,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
     return keys;
   }
 
-  Set<String> doPutsInRange(int start, int stop) {
-    Region<String, String> region =
-        ClusterStartupRule.clientCacheRule.getCache().getRegion(REGION_NAME);
-    Set<String> keys = new HashSet<>();
-
-    for (int i = start; i < stop; i++) {
-      region.put(i + "key", i + "value");
-      keys.add(i + "key");
-    }
-    return keys;
-  }
-
-  void doPutsInServer() {
+  void doPutsInServerTransaction() {
     Region<String, String> region =
         Objects.requireNonNull(ClusterStartupRule.getCache()).getRegion(REGION_NAME);
 
