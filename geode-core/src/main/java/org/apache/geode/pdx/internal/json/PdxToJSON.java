@@ -185,7 +185,11 @@ public class PdxToJSON {
   protected void getJSONStringFromArray(JsonGenerator jg, Object value, String pf)
       throws JsonGenerationException, IOException {
 
-    if (value.getClass().getName().equals("[Z")) {
+    if (!value.getClass().isArray()) {
+      throw new IllegalStateException(
+          "Expected an array for pdx field " + pf + ", but got an object of type "
+              + value.getClass());
+    } else if (value.getClass().getName().equals("[Z")) {
       JsonHelper.getJsonFromPrimitiveBoolArray(jg, (boolean[]) value, pf);
     } else if (value.getClass().getName().equals("[B")) {
       JsonHelper.getJsonFromPrimitiveByteArray(jg, (byte[]) value, pf);
@@ -226,15 +230,11 @@ public class PdxToJSON {
         writeValue(jg, obj, pf);
       }
       jg.writeEndArray();
-    } else if (value.getClass().isArray()) {
+    } else {
       throw new IllegalStateException(
           "The pdx field " + pf + " is an array whose component type "
               + value.getClass().getComponentType()
               + " can not be converted to JSON.");
-    } else {
-      throw new IllegalStateException(
-          "Expected an array for pdx field " + pf + ", but got an object of type "
-              + value.getClass());
     }
   }
 

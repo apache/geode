@@ -14,8 +14,7 @@
  */
 package org.apache.geode.pdx.internal.json;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.fail;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -32,36 +31,29 @@ public class PdxToJSONTest {
   public void testWriteValueAsJsonException() throws IOException {
     PdxToJSON p2j = new PdxToJSON(mock(PdxInstance.class));
     Date value = new Date();
-    try {
-      p2j.writeValue(mock(JsonGenerator.class), value, "myDate");
-      fail("should not succeed");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("The pdx field myDate has a value " + value
-          + " whose type " + value.getClass() + " can not be converted to JSON.");
-    }
+    assertThatThrownBy(
+        () -> p2j.writeValue(mock(JsonGenerator.class), value, "myDate"))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("The pdx field myDate has a value " + value
+                + " whose type " + value.getClass() + " can not be converted to JSON.");
   }
 
   @Test
   public void testGetJSONStringFromArray() throws IOException {
     PdxToJSON p2j = new PdxToJSON(mock(PdxInstance.class));
     Date value = new Date();
-    try {
-      p2j.getJSONStringFromArray(mock(JsonGenerator.class), value, "myDate");
-      fail("should not succeed");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage())
-          .contains("Expected an array for pdx field myDate, but got an object of type "
-              + value.getClass());
-    }
+    assertThatThrownBy(
+        () -> p2j.getJSONStringFromArray(mock(JsonGenerator.class), value, "myDate"))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Expected an array for pdx field myDate, but got an object of type "
+                + value.getClass());
 
     Date values[] = new Date[2];
-    try {
-      p2j.getJSONStringFromArray(mock(JsonGenerator.class), values, "myDates");
-      fail("should not succeed");
-    } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).contains("The pdx field myDates is an array whose component type "
-          + values.getClass().getComponentType()
-          + " can not be converted to JSON.");
-    }
+    assertThatThrownBy(
+        () -> p2j.getJSONStringFromArray(mock(JsonGenerator.class), values, "myDates"))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("The pdx field myDates is an array whose component type "
+                + values.getClass().getComponentType()
+                + " can not be converted to JSON.");
   }
 }
