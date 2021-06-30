@@ -285,9 +285,59 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     fooSubscriber.unsubscribe();
   }
 
+  /** -- NUMPAT-- **/
+
+  @Test
+  public void numpat_shouldReturnCountOfAllPatternSubscriptions_includingDuplicates() {
+    Jedis subscriber2 = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
+    MockSubscriber mockSubscriber2 = new MockSubscriber();
+
+    executor.submit(() -> subscriber.psubscribe(mockSubscriber, "f*"));
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    executor.submit(() -> subscriber2.psubscribe(mockSubscriber2, "f*"));
+    waitFor(() -> mockSubscriber2.getSubscribedChannels() == 1);
+
+    Long result = introspector.pubsubNumPat();
+
+    assertThat(result).isEqualTo(2);
+
+    mockSubscriber2.punsubscribe();
+  }
+
+  @Test
+  public void numpat_shouldNotIncludeChannelSubscriptions_forDifferentClient() {
+    Jedis patternSubscriberJedis = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
+    MockSubscriber patternSubscriber = new MockSubscriber();
+
+    executor.submit(() -> patternSubscriberJedis.subscribe(patternSubscriber, "f*"));
+    executor.submit(() -> subscriber.psubscribe(mockSubscriber, "foo"));
+
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1
+        && patternSubscriber.getSubscribedChannels() == 1);
+
+    Long result = introspector.pubsubNumPat();
+
+    assertThat(result).isEqualTo(1);
+
+    patternSubscriber.unsubscribe();
+  }
+
+  @Test
+  public void numpat_shouldNotIncludeChannelSubscriptions_forSameClient() {
+    executor.submit(() -> subscriber.psubscribe(mockSubscriber, "f*"));
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    mockSubscriber.subscribe("foo");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
+
+    Long result = introspector.pubsubNumPat();
+
+    assertThat(result).isEqualTo(1);
+  }
+
   private void waitFor(Callable<Boolean> booleanCallable) {
     GeodeAwaitility.await()
         .ignoreExceptionsInstanceOf(SocketException.class)
         .until(booleanCallable);
   }
+
 }
