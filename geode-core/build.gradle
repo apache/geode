@@ -320,9 +320,6 @@ dependencies {
     //copied into it, so it is an API dependency
     api(project(':geode-management'))
 
-    jbossModular(project(':frameworks:geode-custom-jar-deployments'))
-    jbossModular(project(':frameworks:geode-extensions'))
-
     jcaImplementation(sourceSets.main.output)
 
     testImplementation(project(':geode-junit')) {

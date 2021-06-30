@@ -30,6 +30,7 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.modules.ModuleSpecUtils;
+import org.jboss.modules.filter.PathFilter;
 
 import org.apache.geode.deployment.internal.modules.extensions.Extension;
 
@@ -87,20 +88,21 @@ public class GeodeCompositeModuleFinder implements ModuleFinder {
   }
 
   /**
-   * Add a module dependency on module represented by moduleToDependOn to the module represented by
+   * Add module dependencies on modules represented by modulesToDependOn to the module represented
+   * by
    * moduleName. The module you are trying to add the dependency to must have been loaded by
    * findModule before adding a dependency to it.
    *
    * @param moduleName the module to add a dependency to.
-   * @param moduleToDependOn the module to add the dependency on.
+   * @param modulesToDependOn the modules to add the dependency on.
    */
-  public void addDependencyToModule(String moduleName, String moduleToDependOn) {
-    if (moduleToDependOn == null) {
-      throw new IllegalArgumentException("Module to depend on cannot be null");
+  public void addDependencyToModule(String moduleName, String... modulesToDependOn) {
+    if (modulesToDependOn == null) {
+      throw new IllegalArgumentException("Modules to depend on cannot be null");
     }
     ModuleSpec moduleSpec = getConcreteModuleSpec(moduleName);
     if (moduleSpec != null) {
-      moduleSpec = ModuleSpecUtils.addModuleDependencyToSpec(moduleSpec, moduleToDependOn);
+      moduleSpec = ModuleSpecUtils.addModuleDependencyToSpec(moduleSpec, modulesToDependOn);
       moduleSpecs.put(moduleSpec.getName(), moduleSpec);
     } else {
       throw new IllegalArgumentException("No such module: " + moduleName);
@@ -134,21 +136,23 @@ public class GeodeCompositeModuleFinder implements ModuleFinder {
    * Excludes the given paths of a specified module dependency from a specified module.
    *
    * @param moduleToPutExcludeFilterOn the module that will have the filter put on its dependency.
-   * @param moduleToExcludeFrom the module dependency to exclude things from.
-   * @param restrictPaths paths to exclude from the moduleToExcludeFrom.
-   * @param restrictPathsAndChildren paths to exclude the children of from the
-   *        moduleToExcludeFrom.
+   * @param extensionsToExcludeFrom the extensions to exclude things from, using its provided
+   *        {@link PathFilter}.
    */
   public void addExcludeFilterToModule(String moduleToPutExcludeFilterOn,
-                                       Extension extensionToExcludeFrom) {
+      Extension... extensionsToExcludeFrom) {
     ModuleSpec moduleSpec = getConcreteModuleSpec(moduleToPutExcludeFilterOn);
-    if (moduleSpec != null) {
-      moduleSpec = ModuleSpecUtils.addExcludeFilter(moduleSpec, extensionToExcludeFrom.getName(),
-          extensionToExcludeFrom.getPathFilter());
-      moduleSpecs.put(moduleSpec.getName(), moduleSpec);
-    } else {
+    if (moduleSpec == null) {
       throw new RuntimeException("No such module: " + moduleToPutExcludeFilterOn);
     }
+    if (extensionsToExcludeFrom == null) {
+      throw new RuntimeException("Extensions to exclude from cannot be null");
+    }
+    for (Extension extension : extensionsToExcludeFrom) {
+      moduleSpec = ModuleSpecUtils.addExcludeFilter(moduleSpec, extension.getName(),
+          extension.getPathFilter());
+    }
+    moduleSpecs.put(moduleSpec.getName(), moduleSpec);
   }
 
   private ModuleSpec getConcreteModuleSpec(String moduleName) {

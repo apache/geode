@@ -42,11 +42,11 @@ public abstract class AbstractDockerizedAcceptanceTest {
   @ClassRule
   public static TemporaryFolder stagingTempDir = new TemporaryFolder();
 
-  private static final String LOCATOR_START_COMMAND =
+  public static final String LOCATOR_START_COMMAND =
       "start locator --name=locator1 --port=10334 --J=-Dgemfire.enable-network-partition-detection=false";
-  private static final String SERVER1_START_COMMAND =
+  public static final String SERVER1_START_COMMAND =
       "start server --name=server1 --locators=localhost[10334] --server-port=40404 --http-service-port=9090 --start-rest-api ";
-  private static final String SERVER2_START_COMMAND =
+  public static final String SERVER2_START_COMMAND =
       "start server --name=server2 --locators=localhost[10334] --server-port=40405 --http-service-port=9091 --start-rest-api ";
   private static final String GFSH_PATH = "/geode/bin/gfsh";
 

@@ -49,7 +49,7 @@ public class GeodeJBossDeploymentService implements DeploymentService {
     }
     try {
       geodeModuleLoader.registerModule(moduleName, filePath, moduleDependencyNames);
-      geodeModuleLoader.registerModuleAsDependencyOfModule(applicationName, moduleName);
+      geodeModuleLoader.registerModulesAsDependencyOfModule(applicationName, moduleName);
     } catch (ModuleLoadException e) {
       throw new RuntimeException(e);
     }
@@ -57,8 +57,9 @@ public class GeodeJBossDeploymentService implements DeploymentService {
   }
 
   public boolean registerModule(String moduleName, String filePath,
-                                List<String> moduleDependencyNames) {
-    return registerModule(moduleName, customJarDeploymentModuleName, filePath, moduleDependencyNames);
+      List<String> moduleDependencyNames) {
+    return registerModule(moduleName, customJarDeploymentModuleName, filePath,
+        moduleDependencyNames);
   }
 
   public boolean unregisterModule(String moduleName) {
@@ -71,6 +72,21 @@ public class GeodeJBossDeploymentService implements DeploymentService {
       throw new RuntimeException(e);
     }
     return true;
+  }
+
+  @Override
+  public boolean registerApplication(String applicationName) {
+    return geodeModuleLoader.registerApplication(applicationName);
+  }
+
+  @Override
+  public boolean registerGeodeExtension(String extensionName, List<String> moduleDependencies) {
+    return geodeModuleLoader.registerGeodeExtension(extensionName, moduleDependencies);
+  }
+
+  @Override
+  public boolean unregisterExtension(String extensionName) {
+    return geodeModuleLoader.unregisterExtension(extensionName);
   }
 
   private void validate(String moduleName, String filePath) {

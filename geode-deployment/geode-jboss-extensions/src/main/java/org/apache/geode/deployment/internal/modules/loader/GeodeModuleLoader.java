@@ -18,6 +18,7 @@ package org.apache.geode.deployment.internal.modules.loader;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jboss.modules.AliasModuleSpec;
 import org.jboss.modules.ConcreteModuleSpec;
@@ -29,9 +30,11 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 
+import org.apache.geode.deployment.internal.modules.extensions.Extension;
 import org.apache.geode.deployment.internal.modules.extensions.ExtensionContainer;
 import org.apache.geode.deployment.internal.modules.finder.GeodeCompositeModuleFinder;
 import org.apache.geode.deployment.internal.modules.finder.GeodeDelegatingLocalModuleFinder;
+import org.apache.geode.deployment.internal.modules.finder.GeodeExtensionModuleFinder;
 import org.apache.geode.deployment.internal.modules.finder.GeodeJarModuleFinder;
 
 /**
@@ -43,10 +46,11 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
   private final GeodeCompositeModuleFinder compositeModuleFinder;
   private static final ModuleLoader JDK_MODULE_LOADER =
       new ModuleLoader(JDKModuleFinder.getInstance());
-  private static final String
-      EXTERNAL_LIBRARY_DEPENDENCIES_MODULE_NAME = "external-library-dependencies";
+  private static final String EXTERNAL_LIBRARY_DEPENDENCIES_MODULE_NAME =
+      "external-library-dependencies";
   private static final String CUSTOM_JAR_DEPLOYMENT_MODULE_NAME = "geode-custom-jar-deployments";
   private static final String CORE_MODULE_NAME = "geode-core";
+  private static final String GEODE_EXTENSIONS_MODULE_NAME = "geode-extensions";
   private final ExtensionContainer extensionContainer;
 
   public GeodeModuleLoader(GeodeCompositeModuleFinder compositeModuleFinder) {
@@ -55,6 +59,7 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
         new GeodeDelegatingLocalModuleFinder());
     this.compositeModuleFinder = compositeModuleFinder;
     this.extensionContainer = new ExtensionContainer(this);
+    extensionContainer.initialize();
   }
 
   public GeodeModuleLoader() {
@@ -101,8 +106,14 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
         && findModule(CUSTOM_JAR_DEPLOYMENT_MODULE_NAME) != null) {
       Module coreModule = super.preloadModule(name);
 
+      // TODO: we need to care about Dunit here.
+      String[] extensionNames =
+          extensionContainer.getAllExtensions().stream().map(Extension::getName)
+              .collect(Collectors.toList()).toArray(new String[] {});
+      registerModulesAsDependencyOfModule(name, extensionNames);
+
       compositeModuleFinder.addExcludeFilterToModule(name,
-          extensionContainer.getExtensionByName(CUSTOM_JAR_DEPLOYMENT_MODULE_NAME));
+          extensionContainer.getApplications().toArray(new Extension[] {}));
 
       unloadModuleLocal(name, coreModule);
     }
@@ -114,9 +125,35 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
 
   }
 
-  public void registerModuleAsDependencyOfModule(String moduleName, String moduleToDependOn)
+  public boolean registerApplication(String applicationName) {
+    if (!extensionContainer.registerApplication(applicationName)) {
+      return false;
+    }
+    try {
+      registerModulesAsDependencyOfModule(CORE_MODULE_NAME, applicationName);
+    } catch (ModuleLoadException e) {
+      e.printStackTrace();
+      return false;
+    }
+    return true;
+  }
+
+  public boolean registerGeodeExtension(String extensionName, List<String> moduleDependencies) {
+    if (!extensionContainer.registerGeodeExtension(extensionName, moduleDependencies)) {
+      return false;
+    }
+    try {
+      registerModulesAsDependencyOfModule(CORE_MODULE_NAME, extensionName);
+    } catch (ModuleLoadException e) {
+      e.printStackTrace();
+      return false;
+    }
+    return true;
+  }
+
+  public void registerModulesAsDependencyOfModule(String moduleName, String... modulesToDependOn)
       throws ModuleLoadException {
-    compositeModuleFinder.addDependencyToModule(moduleName, moduleToDependOn);
+    compositeModuleFinder.addDependencyToModule(moduleName, modulesToDependOn);
     relinkModule(moduleName);
     relinkModule(CORE_MODULE_NAME);
   }
@@ -141,4 +178,15 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
     }
   }
 
+  public void registerExtensionModule(Extension extension) throws ModuleLoadException {
+    if (findLoadedModuleLocal(extension.getName()) != null) {
+      unregisterModule(extension.getName());
+    }
+    compositeModuleFinder.addModuleFinder(extension.getName(),
+        new GeodeExtensionModuleFinder(extension));
+  }
+
+  public boolean unregisterExtension(String extensionName) {
+    return extensionContainer.unregisterExtension(extensionName);
+  }
 }

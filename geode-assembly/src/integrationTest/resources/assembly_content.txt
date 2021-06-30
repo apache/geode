@@ -985,11 +985,9 @@ lib/geode-common-0.0.0.jar
 lib/geode-connectors-0.0.0.jar
 lib/geode-core-0.0.0.jar
 lib/geode-cq-0.0.0.jar
-lib/geode-custom-jar-deployments-0.0.0.jar
 lib/geode-dependencies.jar
 lib/geode-deployment-jboss-modules-0.0.0.jar
 lib/geode-deployment-legacy-0.0.0.jar
-lib/geode-extensions-0.0.0.jar
 lib/geode-gfsh-0.0.0.jar
 lib/geode-http-service-0.0.0.jar
 lib/geode-jboss-extensions-0.0.0.jar
@@ -1082,12 +1080,8 @@ moduleDescriptors/main/geode-core/0.0.0/module.xml
 moduleDescriptors/main/geode-core/main/module.xml
 moduleDescriptors/main/geode-cq/0.0.0/module.xml
 moduleDescriptors/main/geode-cq/main/module.xml
-moduleDescriptors/main/geode-custom-jar-deployments/0.0.0/module.xml
-moduleDescriptors/main/geode-custom-jar-deployments/main/module.xml
 moduleDescriptors/main/geode-deployment-jboss-modules/0.0.0/module.xml
 moduleDescriptors/main/geode-deployment-jboss-modules/main/module.xml
-moduleDescriptors/main/geode-extensions/0.0.0/module.xml
-moduleDescriptors/main/geode-extensions/main/module.xml
 moduleDescriptors/main/geode-gfsh/0.0.0/module.xml
 moduleDescriptors/main/geode-gfsh/main/module.xml
 moduleDescriptors/main/geode-http-service/0.0.0/module.xml

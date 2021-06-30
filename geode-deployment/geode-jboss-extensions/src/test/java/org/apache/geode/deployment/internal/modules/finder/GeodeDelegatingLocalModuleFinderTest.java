@@ -50,7 +50,7 @@ public class GeodeDelegatingLocalModuleFinderTest {
     assertThat(moduleSpec).isNotNull();
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpec;
     assertThat(concreteModuleSpec.getName()).isEqualTo("my-module");
-    assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(1);
+    assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(2);
   }
 
   @Test

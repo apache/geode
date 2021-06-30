@@ -18,6 +18,9 @@ package org.apache.geode.deployment.internal.modules.service;
 
 import java.util.List;
 
+import org.apache.geode.deployment.internal.modules.extensions.Application;
+import org.apache.geode.deployment.internal.modules.extensions.GeodeExtension;
+
 /**
  * This interface will be implemented to register and unregister jars with the JBoss modular system.
  */
@@ -34,10 +37,47 @@ public interface DeploymentService {
   boolean registerModule(String moduleName, String filePath, List<String> moduleDependencyNames);
 
   /**
+   * Registers a new module with the modular system, associating it with the given application.
+   *
+   * @param moduleName the name of the module.
+   * @param applicationName name of the {@link Application} to associate the module with.
+   * @param filePath path to the file to load as a module.
+   * @param moduleDependencyNames existing modules that this module will depend on.
+   * @return true if the module was registered, false otherwise.
+   */
+  boolean registerModule(String moduleName, String applicationName, String filePath,
+      List<String> moduleDependencyNames);
+
+  /**
    * Unregisters a module from te modular system.
    *
    * @param moduleName name of the module to unregister.
    * @return true if the module was unregistered, false if it was not found or could not be removed.
    */
   boolean unregisterModule(String moduleName);
+
+  /**
+   * Registers an {@link Application}.
+   *
+   * @param applicationName name of the {@link Application} to register.
+   * @return true if the {@link Application} was registered, false if it was not.
+   */
+  boolean registerApplication(String applicationName);
+
+  /**
+   * Registers an {@link Application}.
+   *
+   * @param extensionName name of the {@link GeodeExtension} to register.
+   * @return true if the {@link GeodeExtension} was registered, false if it was not.
+   */
+  boolean registerGeodeExtension(String extensionName, List<String> moduleDependencies);
+
+  /**
+   * Unregisters a module from te modular system.
+   *
+   * @param extensionName name of the extension to unregister.
+   * @return true if the extension was unregistered, false if it was not found or could not be
+   *         removed.
+   */
+  boolean unregisterExtension(String extensionName);
 }

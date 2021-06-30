@@ -129,11 +129,15 @@ public class ModuleSpecUtils {
    * Adds a dependency on dependencyName to the given {@link ModuleSpec}
    *
    * @param moduleSpec the {@link ModuleSpec} to add the dependency to.
-   * @param dependencyName the name of the module to depend on.
+   * @param dependencyNames the names of the modules to depend on.
    * @return a {@link ModuleSpec} that is dependent on the specified module.
    */
-  public static ModuleSpec addModuleDependencyToSpec(ModuleSpec moduleSpec, String dependencyName) {
+  public static ModuleSpec addModuleDependencyToSpec(ModuleSpec moduleSpec,
+      String... dependencyNames) {
     validate(moduleSpec);
+    if (dependencyNames == null) {
+      throw new IllegalArgumentException("Dependency names cannot be null");
+    }
 
     final MultiplePathFilterBuilder exportBuilder = PathFilters.multiplePathFilterBuilder(true);
     exportBuilder.addFilter(PathFilters.getMetaInfServicesFilter(), true);
@@ -141,11 +145,13 @@ public class ModuleSpecUtils {
     exportBuilder.addFilter(PathFilters.getMetaInfFilter(), true);
 
     ModuleSpec.Builder builder = createBuilder(moduleSpec);
-    builder.addDependency(new ModuleDependencySpecBuilder()
-        .setName(dependencyName)
-        .setImportFilter(PathFilters.getDefaultImportFilterWithServices())
-        .setExportFilter(exportBuilder.create())
-        .build());
+    for (String dependencyName : dependencyNames) {
+      builder.addDependency(new ModuleDependencySpecBuilder()
+          .setName(dependencyName)
+          .setImportFilter(PathFilters.getDefaultImportFilterWithServices())
+          .setExportFilter(exportBuilder.create())
+          .build());
+    }
 
     return builder.create();
   }
@@ -154,12 +160,12 @@ public class ModuleSpecUtils {
    * Excludes the given paths from being imported from the given module.
    *
    * @param moduleSpec the {@link ModuleSpec} to add the filter to.
-   * @param pathsToExclude paths to be excluded from the given module.
-   * @param pathsToExcludeChildrenOf paths whose children should be excluded from the given module.
+   * @param pathFilter {@link PathFilter} representing the paths to exclude.
    * @param moduleToPutExcludeOn name of the module to exclude the paths from.
    * @return a {@link ModuleSpec} which will exclude the given paths from the given module.
    */
-  public static ModuleSpec addExcludeFilter(ModuleSpec moduleSpec, String moduleToPutExcludeOn, PathFilter pathFilter) {
+  public static ModuleSpec addExcludeFilter(ModuleSpec moduleSpec, String moduleToPutExcludeOn,
+      PathFilter pathFilter) {
     validate(moduleSpec);
     if (moduleToPutExcludeOn == null) {
       throw new IllegalArgumentException("Module to exclude from cannot be null");

@@ -28,7 +28,6 @@ import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.internal.OperationFuture;
 import org.junit.Test;
 
-
 public class MemcachedAcceptanceTest extends AbstractDockerizedAcceptanceTest {
   public MemcachedAcceptanceTest(String launchCommand) throws IOException, InterruptedException {
     launch(launchCommand);

@@ -32,7 +32,6 @@ dependencies {
   jbossModular(project(path: ':geode-web-management', configuration: 'war'))
   jbossModular(project(path: ':geode-web', configuration: 'war'))
   jbossModular(project(':geode-web-management'))
-  jbossModular(project(':frameworks:geode-extensions'))
   jbossModular(project(':geode-deployment:geode-deployment-jboss-modules'))
   jbossModular('org.jboss.modules:jboss-modules')
 
