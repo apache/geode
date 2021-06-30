@@ -423,8 +423,6 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   static class OrderedSetEntry implements Comparable<OrderedSetEntry> {
-    public static final byte[] MAX_BYTES = "RaAdIsH_SeCrEt_MaX_ByTeS_VaL".getBytes();
-
     private final byte[] member;
     private final byte[] scoreBytes;
     private final Double score;
@@ -441,11 +439,7 @@ public class RedisSortedSet extends AbstractRedisData {
     public int compareTo(OrderedSetEntry o) {
       int comparison = score.compareTo(o.score);
       if (comparison == 0) {
-        // MAX_BYTES always bigger than actual entry
-        if (member.equals(MAX_BYTES)) {
-          return -1;
-        }
-        // Scores equal, not MAX, try lexical ordering
+        // Scores equal, try lexical ordering
         return javaImplementationOfAnsiCMemCmp(member, o.member);
       }
       return comparison;

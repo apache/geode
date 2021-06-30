@@ -82,7 +82,7 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void shouldReturnSyntaxError_givenWrongWithscoresFlag() {
+  public void shouldReturnSyntaxError_givenWrongWithScoresFlag() {
     jedis.zadd(SORTED_SET_KEY, 1.0, "member");
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, "1", "2",
@@ -115,7 +115,7 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
 
   @Test
   public void shouldAlsoReturnScores_whenWithScoresSpecified() {
-    Set<Tuple> expected = new LinkedHashSet<Tuple>();
+    Set<Tuple> expected = new LinkedHashSet<>();
     for (int i = 0; i < members.size(); i++) {
       expected.add(new Tuple(members.get(i), scores.get(i)));
     }
