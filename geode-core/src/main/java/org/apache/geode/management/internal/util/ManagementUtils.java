@@ -38,6 +38,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
@@ -162,14 +163,20 @@ public class ManagementUtils {
     Set<Region<?, ?>> rootRegions = cache.rootRegions();
 
     for (Region<?, ?> rootRegion : rootRegions) {
-      regionNames.add(rootRegion.getFullPath().substring(1));
+      try {
+        Set<Region<?, ?>> subRegions = rootRegion.subregions(true);
 
-      Set<Region<?, ?>> subRegions = rootRegion.subregions(true);
+        for (Region<?, ?> subRegion : subRegions) {
+          regionNames.add(subRegion.getFullPath().substring(1));
+        }
 
-      for (Region<?, ?> subRegion : subRegions) {
-        regionNames.add(subRegion.getFullPath().substring(1));
+      } catch (RegionDestroyedException ignored) {
+        continue;
       }
+
+      regionNames.add(rootRegion.getFullPath().substring(1));
     }
+
     return regionNames;
   }
 

@@ -16,16 +16,24 @@
 package org.apache.geode.management.internal.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 
 
 public class ManagementUtilsTest {
@@ -50,5 +58,21 @@ public class ManagementUtilsTest {
     assertThat(filePaths).hasSize(2);
     assertThat(new File(filePaths.get(0))).hasContent("file1-content");
     assertThat(new File(filePaths.get(1))).hasContent("file2-content");
+  }
+
+  @Test
+  public void regionDestroyedWhileGettingRegionNames() {
+    Cache cache = mock(Cache.class);
+
+    Region<?, ?> regionDestroyed = mock(Region.class);
+    Region<?, ?> regionNotDestroyed = mock(Region.class);
+    List<Region<?, ?>> rootRegions = Arrays.asList(regionDestroyed, regionNotDestroyed);
+
+    when(cache.rootRegions()).thenReturn(new HashSet<>(rootRegions));
+    when(regionDestroyed.subregions(anyBoolean())).thenThrow(new RegionDestroyedException("", ""));
+    when(regionDestroyed.getFullPath()).thenReturn("/regionDestroyed");
+    when(regionNotDestroyed.getFullPath()).thenReturn("/regionNotDestroyed");
+
+    assertThat(ManagementUtils.getAllRegionNames(cache)).containsExactly("regionNotDestroyed");
   }
 }
