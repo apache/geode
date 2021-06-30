@@ -293,12 +293,12 @@ geode-apis-compatible-with-redis/**                               @jdeppe-pivota
 *gradle*                                                          @rhoughton-pivot @onichols-pivotal
 buildSrc/**                                                       @rhoughton-pivot @jdeppe-pivotal
 buildSrc/**/DependencyConstraints.groovy                          @onichols-pivotal @dickcav @rhoughton-pivot
-ci/**                                                             @onichols-pivotal @dickcav @rhoughton-pivot
-ci/scripts/**                                                     @onichols-pivotal @dickcav @rhoughton-pivot
-ci/scripts/repeat-new-tests.sh                                    @onichols-pivotal @dickcav @rhoughton-pivot @upthewaterspout @jdeppe-pivotal
+ci/**                                                             @onichols-pivotal @dickcav @rhoughton-pivot @smgoller
+ci/scripts/**                                                     @onichols-pivotal @dickcav @rhoughton-pivot @smgoller
+ci/scripts/repeat-new-tests.sh                                    @onichols-pivotal @dickcav @rhoughton-pivot @smgoller @upthewaterspout @jdeppe-pivotal
 dev-tools/dependencies/**                                         @onichols-pivotal @dickcav
 dev-tools/release/**                                              @onichols-pivotal @dickcav
-docker/**                                                         @onichols-pivotal @dickcav
+docker/**                                                         @onichols-pivotal @dickcav @smgoller
 geode-management/src/test/script/update-management-wiki.sh        @onichols-pivotal @dickcav
 #boms/**
 static-analysis/**                                                @rhoughton-pivot @onichols-pivotal
