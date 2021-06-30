@@ -49,8 +49,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import org.apache.geode.internal.UniquePortSupplier;
-import org.apache.geode.internal.admin.remote.AlertLevelChangeMessage;
-import org.apache.geode.logging.internal.log4j.LogLevel;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
@@ -88,7 +86,7 @@ public class RollingUpgradeWithGfshDUnitTest {
   @Rule
   public GfshRule currentGfsh;
 
-//  @Rule
+  // @Rule
   public TemporaryFolder tempFolder = new TemporaryFolder();
 
   @Before
@@ -110,10 +108,10 @@ public class RollingUpgradeWithGfshDUnitTest {
         "foo-truststore.jks");
 
     /*
-     We must use absolute paths for truststore and keystore in properties file and
-     since we don't know those at coding-time, we must generate the file.
-     Since GfshRule provides no way to pass along Properties object to start server etc,
-     we must write the properties to an actual file.
+     * We must use absolute paths for truststore and keystore in properties file and
+     * since we don't know those at coding-time, we must generate the file.
+     * Since GfshRule provides no way to pass along Properties object to start server etc,
+     * we must write the properties to an actual file.
      */
     Properties properties = new Properties();
 
@@ -121,10 +119,10 @@ public class RollingUpgradeWithGfshDUnitTest {
     properties.setProperty(SECURITY_PEER_VERIFY_MEMBER_TIMEOUT, "1000");
 
     properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "false");
-//    properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    // properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
     properties.setProperty(SSL_ENABLED_COMPONENTS, "cluster,server");
     properties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
-//    properties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "false");
+    // properties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "false");
     properties.setProperty(SSL_KEYSTORE_TYPE, "jks");
     properties.setProperty(SSL_TRUSTSTORE_TYPE, "jks");
 
@@ -137,14 +135,13 @@ public class RollingUpgradeWithGfshDUnitTest {
     properties.setProperty(BIND_ADDRESS, "bburcham-a01.vmware.com");
 
     propertiesFile = tempFolder.newFile("gemfire.properties");
-    final FileOutputStream
-        fileOutputStream =
+    final FileOutputStream fileOutputStream =
         new FileOutputStream(propertiesFile.getAbsolutePath());
-    properties.store(fileOutputStream,"");
+    properties.store(fileOutputStream, "");
 
-//    propertiesFile = createFileFromResource(
-//        getResource("gemfire.properties"), tempFolder.getRoot(),
-//        "gemfire.properties");
+    // propertiesFile = createFileFromResource(
+    // getResource("gemfire.properties"), tempFolder.getRoot(),
+    // "gemfire.properties");
   }
 
   public RollingUpgradeWithGfshDUnitTest(String version) throws IOException {
@@ -191,20 +188,23 @@ public class RollingUpgradeWithGfshDUnitTest {
 
     // make sure servers can do rolling upgrade too
     oldGfsh.stopServer(startupExecution, "server1");
-    GfshScript.of(startServerCommandWithConfig("server1", server1Port, locatorPort)).execute(currentGfsh, tempFolder.getRoot());
+    GfshScript.of(startServerCommandWithConfig("server1", server1Port, locatorPort))
+        .execute(currentGfsh, tempFolder.getRoot());
 
     causeP2PTraffic(locatorPort);
 
     oldGfsh.stopServer(startupExecution, "server2");
-    GfshScript.of(startServerCommandWithConfig("server2", server2Port, locatorPort)).execute(currentGfsh, tempFolder.getRoot());
+    GfshScript.of(startServerCommandWithConfig("server2", server2Port, locatorPort))
+        .execute(currentGfsh, tempFolder.getRoot());
 
     causeP2PTraffic(locatorPort);
 
   }
 
   private void verifyListDeployed(int locatorPort) {
-    GfshExecution list_deployed = GfshScript.of("connect --locator=bburcham-a01.vmware.com[" + locatorPort + "]")
-        .and("list deployed").execute(currentGfsh, tempFolder.getRoot());
+    GfshExecution list_deployed =
+        GfshScript.of("connect --locator=bburcham-a01.vmware.com[" + locatorPort + "]")
+            .and("list deployed").execute(currentGfsh, tempFolder.getRoot());
     assertThat(list_deployed.getOutputText()).contains("DeployCommandsDUnit1.jar")
         .contains("server1").contains("server2");
     GfshScript.of("disconnect").execute(currentGfsh, tempFolder.getRoot());
@@ -221,13 +221,13 @@ public class RollingUpgradeWithGfshDUnitTest {
   }
 
   private String startServerCommandWithConfig(final String server, final int serverPort,
-                                              final int locatorPort) {
+      final int locatorPort) {
     return startServerCommand(server, serverPort, locatorPort) + propertiesFileParameter();
   }
 
   private String startLocatorCommandWithConfig(final String name, final int locatorPort,
-                                               final int locatorJmxPort,
-                                               final int connectedLocatorPort) {
+      final int locatorJmxPort,
+      final int connectedLocatorPort) {
     return startLocatorCommand(name, locatorPort, locatorJmxPort, 0, connectedLocatorPort) +
         propertiesFileParameter();
   }
@@ -238,10 +238,11 @@ public class RollingUpgradeWithGfshDUnitTest {
   }
 
   private void initializeRegion(int locatorPort) {
-    GfshExecution getResponse = GfshScript.of("connect --locator=bburcham-a01.vmware.com[" + locatorPort + "]")
-        .and("create region --name=region1 --type=REPLICATE")
-        .and("list regions")
-        .execute(currentGfsh, tempFolder.getRoot());
+    GfshExecution getResponse =
+        GfshScript.of("connect --locator=bburcham-a01.vmware.com[" + locatorPort + "]")
+            .and("create region --name=region1 --type=REPLICATE")
+            .and("list regions")
+            .execute(currentGfsh, tempFolder.getRoot());
 
     assertThat(getResponse.getOutputText()).contains("region1");
 
@@ -249,10 +250,11 @@ public class RollingUpgradeWithGfshDUnitTest {
   }
 
   private void causeP2PTraffic(int locatorPort) {
-    GfshExecution getResponse = GfshScript.of("connect --locator=bburcham-a01.vmware.com[" + locatorPort + "]")
-        .and("put --key='123abc' --value='Hello World!!' --region=region1")
-        .and("get --key='123abc' --region=region1")
-        .execute(currentGfsh, tempFolder.getRoot());
+    GfshExecution getResponse =
+        GfshScript.of("connect --locator=bburcham-a01.vmware.com[" + locatorPort + "]")
+            .and("put --key='123abc' --value='Hello World!!' --region=region1")
+            .and("get --key='123abc' --region=region1")
+            .execute(currentGfsh, tempFolder.getRoot());
 
     assertThat(getResponse.getOutputText()).contains("Hello World!!");
 

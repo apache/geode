@@ -88,7 +88,7 @@ public class GfshRule extends ExternalResource {
       gfshExecutions
           .forEach(GfshExecution::killProcess);
     } finally {
-//      temporaryFolder.delete();
+      // temporaryFolder.delete();
     }
   }
 
