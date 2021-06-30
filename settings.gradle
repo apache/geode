@@ -87,7 +87,8 @@ include 'static-analysis:pmd-rules'
  '1.11.0',
  '1.12.0',
  '1.12.1',
- '1.12.2'].each {
+ '1.12.2',
+ '1.12.3'].each {
   include 'geode-old-versions:'.concat(it)
 }
 
