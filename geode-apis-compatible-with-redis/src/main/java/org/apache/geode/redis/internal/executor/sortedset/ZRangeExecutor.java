@@ -36,13 +36,13 @@ public class ZRangeExecutor extends AbstractExecutor {
     List<byte[]> commandElements = command.getProcessedCommand();
 
     try {
-      min = bytesToInt(commandElements.get(1));
-      max = bytesToInt(commandElements.get(2));
+      min = bytesToInt(commandElements.get(2));
+      max = bytesToInt(commandElements.get(3));
     } catch (NumberFormatException nfe) {
       return RedisResponse.error(ERROR_NOT_INTEGER);
     }
     if (commandElements.size() == 5) {
-      if (equalsIgnoreCaseBytes(commandElements.get(3), "WITHSCORES".getBytes())) {
+      if (equalsIgnoreCaseBytes(commandElements.get(4), "WITHSCORES".getBytes())) {
         withScores = true;
       } else {
         return RedisResponse.error(ERROR_SYNTAX);
