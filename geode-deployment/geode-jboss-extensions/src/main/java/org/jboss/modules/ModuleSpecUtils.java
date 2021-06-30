@@ -30,7 +30,7 @@ import org.jboss.modules.filter.PathFilters;
 /**
  * A set of utilities that simplify working with {@link ModuleSpec}s.
  */
-public class ModuleSpecUtil {
+public class ModuleSpecUtils {
 
   /**
    * Creates a {@link ModuleSpec.Builder} given for a module of the given name.
@@ -159,16 +159,11 @@ public class ModuleSpecUtil {
    * @param moduleToPutExcludeOn name of the module to exclude the paths from.
    * @return a {@link ModuleSpec} which will exclude the given paths from the given module.
    */
-  public static ModuleSpec addExcludeFilter(ModuleSpec moduleSpec, List<String> pathsToExclude,
-      List<String> pathsToExcludeChildrenOf,
-      String moduleToPutExcludeOn) {
+  public static ModuleSpec addExcludeFilter(ModuleSpec moduleSpec, String moduleToPutExcludeOn, PathFilter pathFilter) {
     validate(moduleSpec);
     if (moduleToPutExcludeOn == null) {
       throw new IllegalArgumentException("Module to exclude from cannot be null");
     }
-
-    ModuleSpec.Builder builder =
-        createBuilderAndRemoveDependencies(moduleSpec, moduleToPutExcludeOn);
 
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpec;
     Optional<ModuleDependencySpec> dependencySpecOptional =
@@ -180,24 +175,13 @@ public class ModuleSpecUtil {
       return moduleSpec;
     }
 
-    MultiplePathFilterBuilder pathFilterBuilder = PathFilters.multiplePathFilterBuilder(true);
-
-    if (pathsToExclude != null) {
-      for (String path : pathsToExclude) {
-        pathFilterBuilder.addFilter(PathFilters.is(path), false);
-      }
-    }
-
-    if (pathsToExcludeChildrenOf != null) {
-      for (String path : pathsToExcludeChildrenOf) {
-        pathFilterBuilder.addFilter(PathFilters.isOrIsChildOf(path), false);
-      }
-    }
+    ModuleSpec.Builder builder =
+        createBuilderAndRemoveDependencies(moduleSpec, moduleToPutExcludeOn);
 
     builder.addDependency(new ModuleDependencySpecBuilder()
         .setName(moduleToPutExcludeOn)
-        .setImportFilter(pathFilterBuilder.create())
-        .setExportFilter(pathFilterBuilder.create())
+        .setImportFilter(pathFilter)
+        .setExportFilter(pathFilter)
         .build());
 
     return builder.create();

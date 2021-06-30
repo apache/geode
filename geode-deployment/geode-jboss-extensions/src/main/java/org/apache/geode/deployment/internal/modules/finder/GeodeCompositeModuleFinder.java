@@ -29,7 +29,9 @@ import org.jboss.modules.ModuleFinder;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
-import org.jboss.modules.ModuleSpecUtil;
+import org.jboss.modules.ModuleSpecUtils;
+
+import org.apache.geode.deployment.internal.modules.extensions.Extension;
 
 /**
  * This {@link ModuleFinder} will hold multiple other {@link ModuleFinder}s, mostly {@link
@@ -98,7 +100,7 @@ public class GeodeCompositeModuleFinder implements ModuleFinder {
     }
     ModuleSpec moduleSpec = getConcreteModuleSpec(moduleName);
     if (moduleSpec != null) {
-      moduleSpec = ModuleSpecUtil.addModuleDependencyToSpec(moduleSpec, moduleToDependOn);
+      moduleSpec = ModuleSpecUtils.addModuleDependencyToSpec(moduleSpec, moduleToDependOn);
       moduleSpecs.put(moduleSpec.getName(), moduleSpec);
     } else {
       throw new IllegalArgumentException("No such module: " + moduleName);
@@ -121,7 +123,7 @@ public class GeodeCompositeModuleFinder implements ModuleFinder {
     for (String moduleName : modulesThatDependOn) {
       ModuleSpec moduleSpec = getConcreteModuleSpec(moduleName);
       if (moduleSpec != null) {
-        moduleSpec = ModuleSpecUtil.removeDependencyFromSpec(moduleSpec, moduleDependencyToRemove);
+        moduleSpec = ModuleSpecUtils.removeDependencyFromSpec(moduleSpec, moduleDependencyToRemove);
         moduleSpecs.put(moduleSpec.getName(), moduleSpec);
       }
     }
@@ -138,12 +140,11 @@ public class GeodeCompositeModuleFinder implements ModuleFinder {
    *        moduleToExcludeFrom.
    */
   public void addExcludeFilterToModule(String moduleToPutExcludeFilterOn,
-      String moduleToExcludeFrom, List<String> restrictPaths,
-      List<String> restrictPathsAndChildren) {
+                                       Extension extensionToExcludeFrom) {
     ModuleSpec moduleSpec = getConcreteModuleSpec(moduleToPutExcludeFilterOn);
     if (moduleSpec != null) {
-      moduleSpec = ModuleSpecUtil.addExcludeFilter(moduleSpec, restrictPaths,
-          restrictPathsAndChildren, moduleToExcludeFrom);
+      moduleSpec = ModuleSpecUtils.addExcludeFilter(moduleSpec, extensionToExcludeFrom.getName(),
+          extensionToExcludeFrom.getPathFilter());
       moduleSpecs.put(moduleSpec.getName(), moduleSpec);
     } else {
       throw new RuntimeException("No such module: " + moduleToPutExcludeFilterOn);
@@ -176,7 +177,7 @@ public class GeodeCompositeModuleFinder implements ModuleFinder {
     for (Map.Entry<String, ModuleSpec> entry : moduleSpecsToCheck.entrySet()) {
       modulesToCheckClone.remove(entry.getKey());
       Boolean dependentsToExport =
-          ModuleSpecUtil.moduleExportsModuleDependency(entry.getValue(), moduleName);
+          ModuleSpecUtils.moduleExportsModuleDependency(entry.getValue(), moduleName);
       if (dependentsToExport != null) {
         dependentModuleNames.add(entry.getKey());
         if (dependentsToExport) {

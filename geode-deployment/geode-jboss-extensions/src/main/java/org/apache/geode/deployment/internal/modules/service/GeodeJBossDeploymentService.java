@@ -41,7 +41,7 @@ public class GeodeJBossDeploymentService implements DeploymentService {
     this.geodeModuleLoader = geodeModuleLoader;
   }
 
-  public boolean registerModule(String moduleName, String filePath,
+  public boolean registerModule(String moduleName, String applicationName, String filePath,
       List<String> moduleDependencyNames) {
     validate(moduleName, filePath);
     if (moduleDependencyNames == null) {
@@ -49,12 +49,16 @@ public class GeodeJBossDeploymentService implements DeploymentService {
     }
     try {
       geodeModuleLoader.registerModule(moduleName, filePath, moduleDependencyNames);
-      geodeModuleLoader.registerModuleAsDependencyOfModule(
-          customJarDeploymentModuleName, moduleName);
+      geodeModuleLoader.registerModuleAsDependencyOfModule(applicationName, moduleName);
     } catch (ModuleLoadException e) {
       throw new RuntimeException(e);
     }
     return true;
+  }
+
+  public boolean registerModule(String moduleName, String filePath,
+                                List<String> moduleDependencyNames) {
+    return registerModule(moduleName, customJarDeploymentModuleName, filePath, moduleDependencyNames);
   }
 
   public boolean unregisterModule(String moduleName) {

@@ -21,7 +21,7 @@ import org.jboss.modules.ModuleFinder;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
-import org.jboss.modules.ModuleSpecUtil;
+import org.jboss.modules.ModuleSpecUtils;
 
 /**
  * This {@link ModuleLoader} is responsible for loading the Geode modules from module.xml files. It
@@ -48,6 +48,6 @@ public class GeodeDelegatingLocalModuleFinder implements ModuleFinder {
   public ModuleSpec findModule(String name, ModuleLoader delegateLoader)
       throws ModuleLoadException {
     ModuleSpec moduleSpec = moduleFinder.findModule(name, delegateLoader);
-    return ModuleSpecUtil.addSystemClasspathDependency(moduleSpec);
+    return ModuleSpecUtils.addSystemClasspathDependency(moduleSpec);
   }
 }
