@@ -33,10 +33,10 @@ ENV GEODE_HOME /geode
 ENV PATH $PATH:$GEODE_HOME/bin
 
 # https://geode.apache.org/releases/
-ENV GEODE_VERSION 1.12.2
+ENV GEODE_VERSION 1.12.3
 # Binaries TGZ SHA-256
 # https://dist.apache.org/repos/dist/release/geode/VERSION/apache-geode-VERSION.tgz.sha256
-ENV GEODE_SHA256 89e09286eee965e18d2e1e967098bb05b5970c13e95f8fdd73c1c7f3136d8fce
+ENV GEODE_SHA256 c8a59fa33a505f4dead5e687234cbaf91a19865ccd59f087da08042c8195302d
 
 # http://apache.org/dyn/closer.cgi/geode/1.3.0/apache-geode-1.3.0.tgz
 
@@ -64,7 +64,7 @@ RUN set -eux; \
 	[ -s "apache-geode-$GEODE_VERSION.tgz.asc" ]; \
 	echo "$GEODE_SHA256 *apache-geode-$GEODE_VERSION.tgz" | sha256sum -c -; \
 	export GNUPGHOME="$(mktemp -d)"; \
-	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GEODE_GPG"; \
+	gpg --keyserver keyserver.ubuntu.com --recv-keys "$GEODE_GPG"; \
 	gpg --batch --verify "apache-geode-$GEODE_VERSION.tgz.asc" "apache-geode-$GEODE_VERSION.tgz"; \
 	rm -rf "$GNUPGHOME"; \
 	mkdir /geode; \
