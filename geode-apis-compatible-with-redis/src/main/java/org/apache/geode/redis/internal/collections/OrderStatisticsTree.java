@@ -215,11 +215,6 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     return entryList;
   }
 
-  public Iterator<E> iterator(int index) {
-    Node<E> node = getNode(index);
-    return new TreeIterator(node);
-  }
-
   private Node<E> getNode(int index) {
     checkIndex(index);
     Node<E> node = root;
@@ -234,26 +229,6 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
         return node;
       }
     }
-  }
-
-  private Node<E> findMinNode(E o) {
-    Node<E> x = root;
-    int cmp;
-
-    while ((cmp = o.compareTo(x.key)) != 0) {
-      if (cmp < 0) {
-        if (x.left == null) {
-          break;
-        }
-        x = x.left;
-      } else {
-        if (x.right == null) {
-          break;
-        }
-        x = x.right;
-      }
-    }
-    return x;
   }
 
   @Override
@@ -773,14 +748,6 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
         nextNode = null;
       } else {
         nextNode = minimumNode(root);
-      }
-    }
-
-    public TreeIterator(Node<E> node) {
-      if (root == null) {
-        nextNode = null;
-      } else {
-        nextNode = node;
       }
     }
 
