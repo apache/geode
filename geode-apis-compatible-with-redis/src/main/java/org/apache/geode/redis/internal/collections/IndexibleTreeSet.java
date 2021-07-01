@@ -54,8 +54,4 @@ class IndexibleTreeSet<E> extends TreeSet<E> implements OrderStatisticsSet<E> {
   public ArrayList<E> getIndexRange(int min, int max) {
     return null;
   }
-
-  public int findMin(E element) {
-    return 0;
-  }
 }
