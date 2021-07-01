@@ -31,7 +31,6 @@ import java.util.Properties;
 
 import com.palantir.docker.compose.DockerComposeRule;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -61,7 +60,7 @@ import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 public class DualServerSNIAcceptanceTest {
 
   private static final URL DOCKER_COMPOSE_PATH =
-      DualServerSNIAcceptanceTest.class.getResource("dual-server-docker-compose.yml");
+      SingleServerSNIAcceptanceTest.class.getResource("docker-compose.yml");
 
   // Docker compose does not work on windows in CI. Ignore this test on windows
   // Using a RuleChain to make sure we ignore the test before the rule comes into play
@@ -75,17 +74,8 @@ public class DualServerSNIAcceptanceTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    docker.get().exec(options("-T"), "locator-maeve",
-        arguments("gfsh", "run", "--file=/geode/scripts/locator-maeve.gfsh"));
-
-    docker.get().exec(options("-T"), "server-dolores",
-        arguments("gfsh", "run", "--file=/geode/scripts/server-dolores.gfsh"));
-
-    docker.get().exec(options("-T"), "server-clementine",
-        arguments("gfsh", "run", "--file=/geode/scripts/server-clementine.gfsh"));
-
-    docker.get().exec(options("-T"), "locator-maeve",
-        arguments("gfsh", "run", "--file=/geode/scripts/create-regions.gfsh"));
+    docker.get().exec(options("-T"), "geode",
+        arguments("gfsh", "run", "--file=/geode/scripts/geode-starter-2.gfsh"));
 
     final String trustStorePath =
         createTempFileFromResource(SingleServerSNIAcceptanceTest.class,
@@ -105,18 +95,6 @@ public class DualServerSNIAcceptanceTest {
   @After
   public void after() {
     ensureCacheClosed();
-  }
-
-  @AfterClass
-  public static void afterClass() throws Exception {
-    // if you need to capture logs for one of the processes use this pattern:
-    // try {
-    // String output =
-    // docker.get().exec(options("-T"), "locator-maeve",
-    // arguments("cat", "locator-maeve/locator-maeve.log"));
-    // System.out.println("Locator log file--------------------------------\n" + output);
-    // } catch (Throwable ignore) {
-    // }
   }
 
   @Test
