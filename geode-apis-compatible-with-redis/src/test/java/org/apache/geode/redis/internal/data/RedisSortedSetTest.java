@@ -322,7 +322,6 @@ public class RedisSortedSetTest {
     assertThat(rangeList).isEmpty();
   }
 
-
   @Test
   public void zrange_ShouldReturnSimpleRanges() {
     Collection<byte[]> rangeList = rangeSortedSet.zrange(0, 5, false);
@@ -371,6 +370,16 @@ public class RedisSortedSetTest {
   @Test
   public void zrange_shouldAlsoReturnScores_whenWithScoresSpecified() {
     Collection<byte[]> rangeList = rangeSortedSet.zrange(0, 5, true);
+    assertThat(rangeList).hasSize(12);
+    assertThat(rangeList).containsExactly("member1".getBytes(), "1.0".getBytes(),
+        "member2".getBytes(), "1.1".getBytes(), "member3".getBytes(), "1.2".getBytes(),
+        "member4".getBytes(), "1.3".getBytes(), "member5".getBytes(), "1.4".getBytes(),
+        "member6".getBytes(), "1.5".getBytes());
+  }
+
+  @Test
+  public void scoreSet_shouldNotRetainOldEntries_whenEntriesUpdated() {
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(0, 100, false);
     assertThat(rangeList).hasSize(12);
     assertThat(rangeList).containsExactly("member1".getBytes(), "1.0".getBytes(),
         "member2".getBytes(), "1.1".getBytes(), "member3".getBytes(), "1.2".getBytes(),

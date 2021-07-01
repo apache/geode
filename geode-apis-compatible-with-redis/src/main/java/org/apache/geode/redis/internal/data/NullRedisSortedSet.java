@@ -42,7 +42,7 @@ class NullRedisSortedSet extends RedisSortedSet {
       if (options.isINCR()) {
         return null;
       }
-      return 0L;
+      return 0;
     }
 
     if (options.isINCR()) {

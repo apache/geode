@@ -82,12 +82,19 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void shouldReturnSyntaxError_givenWrongWithScoresFlag() {
+  public void shouldReturnSyntaxError_givenInvalidWithScoresFlag() {
     jedis.zadd(SORTED_SET_KEY, 1.0, "member");
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, "1", "2",
             "WITSCOREZ"))
                 .hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
+  public void shouldNotRetainOldEntries_whenEntryUpdated() {
+    jedis.zadd(SORTED_SET_KEY, 2.0, "mem4");
+    assertThat(jedis.zcard(SORTED_SET_KEY)).isEqualTo(members.size());
+    assertThat(jedis.zrange(SORTED_SET_KEY, 0, 100).size()).isEqualTo(members.size());
   }
 
   @Test

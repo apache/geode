@@ -171,11 +171,13 @@ public class RedisSortedSet extends AbstractRedisData {
     byte[] oldScore = null;
 
     OrderedSetEntry newEntry = new OrderedSetEntry(memberToAdd, scoreToAdd);
-    scoreSet.add(newEntry);
     OrderedSetEntry orderedSetEntry = members.put(memberToAdd, newEntry);
     if (orderedSetEntry == null) {
+      scoreSet.add(newEntry);
       sizeInBytes += calculateSizeOfFieldValuePair(memberToAdd, scoreToAdd);
     } else {
+      scoreSet.remove(orderedSetEntry);
+      scoreSet.add(newEntry);
       oldScore = orderedSetEntry.getScoreBytes();
       sizeInBytes += scoreToAdd.length - oldScore.length;
     }
@@ -350,6 +352,7 @@ public class RedisSortedSet extends AbstractRedisData {
     byte[] oldValue = null;
     OrderedSetEntry orderedSetEntry = members.remove(member);
     if (orderedSetEntry != null) {
+      scoreSet.remove(orderedSetEntry);
       oldValue = orderedSetEntry.getScoreBytes();
       sizeInBytes -= calculateSizeOfFieldValuePair(member, oldValue);
     }
