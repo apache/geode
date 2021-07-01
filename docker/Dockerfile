@@ -63,7 +63,7 @@ RUN set -eux; \
 	[ -s "apache-geode-$GEODE_VERSION.tgz.asc" ]; \
 	echo "$GEODE_SHA256 *apache-geode-$GEODE_VERSION.tgz" | sha256sum -c -; \
 	export GNUPGHOME="$(mktemp -d)"; \
-	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GEODE_GPG"; \
+	gpg --keyserver keyserver.ubuntu.com --recv-keys "$GEODE_GPG"; \
 	gpg --batch --verify "apache-geode-$GEODE_VERSION.tgz.asc" "apache-geode-$GEODE_VERSION.tgz"; \
 	rm -rf "$GNUPGHOME"; \
 	mkdir /geode; \
