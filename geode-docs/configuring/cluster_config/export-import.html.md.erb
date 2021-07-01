@@ -21,12 +21,12 @@ limitations under the License.
 
 The cluster configuration service exports and imports configurations created using `gfsh` for an entire <%=vars.product_name_long%> cluster.
 
-The cluster configuration service saves the cluster configuration as you create regions, disk-stores and other objects using `gfsh` commands. You can export this configuration as well as any jar files that contain application files to a zip file and then import this configuration to create a new cluster.
+The cluster configuration service saves the cluster configuration as you create regions, disk-stores and other objects using `gfsh` commands. You can export this configuration as well as any jar files that contain application files to a ZIP archive and then import this configuration to create a new cluster.
 
 ## Exporting a Cluster Configuration
 
 Issue the `gfsh` `export cluster-configuration` command to save the configuration data for your
-cluster in a zip file. This zip file contains subdirectories for cluster-level configurations and a
+cluster in a ZIP archive. This ZIP file contains subdirectories for cluster-level configurations and a
 directory for each group specified in the cluster. The contents of these directories are described
 in [Cluster Configuration Files and Troubleshooting](gfsh_config_troubleshooting.html#concept_ylt_2cb_y4).
 
@@ -44,7 +44,8 @@ See [export cluster-configuration](../../tools_modules/gfsh/command-pages/export
 ## Importing a Cluster Configuration
 
 Use the `gfsh` `import cluster-configuration` command to configure a new cluster based on a configuration exported from another system.
-You can import a cluster configuration only into a new cluster, that is, when:
+You can import a cluster configuration only into a new cluster, or into a running cluster that has not yet been configured and contains no defined regions.
+That is, when:
 
 - There are no running cache servers
 
@@ -63,5 +64,5 @@ To import a cluster configuration, start one or more locators and then run the `
 import cluster-configuration --zip-file-name=/home/username/configs/myClusterConfig.zip
 ```
 
-See [import cluster-configuration](../../tools_modules/gfsh/command-pages/import.html#topic_vnv_grz_ck).
+See [import cluster-configuration](../../tools_modules/gfsh/command-pages/import.html#import-cluster-config).
 
