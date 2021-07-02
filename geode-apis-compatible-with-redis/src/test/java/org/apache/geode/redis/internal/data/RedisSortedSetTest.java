@@ -381,10 +381,10 @@ public class RedisSortedSetTest {
   public void scoreSet_shouldNotRetainOldEntries_whenEntriesUpdated() {
     Collection<byte[]> rangeList = rangeSortedSet.zrange(0, 100, false);
     assertThat(rangeList).hasSize(12);
-    assertThat(rangeList).containsExactly("member1".getBytes(), "member2".getBytes(), "member3".getBytes(),
-        "member4".getBytes(), "member5".getBytes(), "member6".getBytes(),
-        "member7".getBytes(), "member8".getBytes(), "member9".getBytes(),
-        "member10".getBytes(), "member11".getBytes(), "member12".getBytes());
+    assertThat(rangeList).containsExactly("member1".getBytes(), "member2".getBytes(),
+        "member3".getBytes(), "member4".getBytes(), "member5".getBytes(),
+        "member6".getBytes(), "member7".getBytes(), "member8".getBytes(),
+        "member9".getBytes(), "member10".getBytes(), "member11".getBytes(), "member12".getBytes());
   }
 
   private RedisSortedSet createRedisSortedSet(String... membersAndScores) {
