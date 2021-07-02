@@ -184,6 +184,22 @@ public class RedisSortedSet extends AbstractRedisData {
     return oldScore;
   }
 
+  synchronized byte[] memberRemove(byte[] member) {
+    byte[] oldValue = null;
+    OrderedSetEntry orderedSetEntry = members.remove(member);
+    if (orderedSetEntry != null) {
+      scoreSet.remove(orderedSetEntry);
+      oldValue = orderedSetEntry.getScoreBytes();
+      sizeInBytes -= calculateSizeOfFieldValuePair(member, oldValue);
+    }
+
+    if (members.isEmpty()) {
+      sizeInBytes = BASE_REDIS_SORTED_SET_OVERHEAD;
+    }
+
+    return oldValue;
+  }
+
   private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
     Iterator<byte[]> iterator = addsDeltaInfo.getAdds().iterator();
     while (iterator.hasNext()) {
@@ -239,26 +255,8 @@ public class RedisSortedSet extends AbstractRedisData {
     return getSortedSetSize() - initialSize + changesCount;
   }
 
-  private byte[] zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
-      List<byte[]> membersToAdd, ZAddOptions options) {
-    // for zadd incr option, only one incrementing element pair is allowed to get here.
-    byte[] increment = membersToAdd.get(0);
-    byte[] member = membersToAdd.get(1);
-    if (options.isNX() && members.containsKey(member)) {
-      return null;
-    }
-    if (options.isXX() && !members.containsKey(member)) {
-      return null;
-    }
-    return zincrby(region, key, increment, member);
-  }
-
-  byte[] zscore(byte[] member) {
-    OrderedSetEntry orderedSetEntry = members.get(member);
-    if (orderedSetEntry != null) {
-      return orderedSetEntry.getScoreBytes();
-    }
-    return null;
+  long zcard() {
+    return members.size();
   }
 
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
@@ -290,7 +288,26 @@ public class RedisSortedSet extends AbstractRedisData {
     return byteIncr;
   }
 
-  int zrank(byte[] member) {
+  List<byte[]> zrange(int min, int max, boolean withScores) {
+    ArrayList<byte[]> result = new ArrayList<>();
+    int start = getBoundedStartIndex(min, getSortedSetSize());
+    int end = getBoundedEndIndex(max, getSortedSetSize());
+    if (start > end || start == getSortedSetSize()) {
+      return result;
+    }
+
+    Iterator<OrderedSetEntry> entryIterator = scoreSet.getIndexRange(start, end);
+    while (entryIterator.hasNext()) {
+      OrderedSetEntry entry = entryIterator.next();
+      result.add(entry.member);
+      if (withScores) {
+        result.add(entry.scoreBytes);
+      }
+    }
+    return result;
+  }
+
+  long zrank(byte[] member) {
     OrderedSetEntry orderedSetEntry = members.get(member);
     if (orderedSetEntry == null) {
       return -1;
@@ -314,23 +331,34 @@ public class RedisSortedSet extends AbstractRedisData {
     return membersRemoved;
   }
 
-  List<byte[]> zrange(int min, int max, boolean withScores) {
-    ArrayList<byte[]> result = new ArrayList<>();
-    int start = getBoundedStartIndex(min, getSortedSetSize());
-    int end = getBoundedEndIndex(max, getSortedSetSize());
-    if (start > end || start == getSortedSetSize()) {
-      return result;
+  long zrevrank(byte[] member) {
+    OrderedSetEntry orderedSetEntry = members.get(member);
+    if (orderedSetEntry == null) {
+      return -1;
     }
+    return scoreSet.size() - scoreSet.indexOf(orderedSetEntry) - 1;
+  }
 
-    Iterator<OrderedSetEntry> entryIterator = scoreSet.getIndexRange(start, end);
-    while (entryIterator.hasNext()) {
-      OrderedSetEntry entry = entryIterator.next();
-      result.add(entry.member);
-      if (withScores) {
-        result.add(entry.scoreBytes);
-      }
+  byte[] zscore(byte[] member) {
+    OrderedSetEntry orderedSetEntry = members.get(member);
+    if (orderedSetEntry != null) {
+      return orderedSetEntry.getScoreBytes();
     }
-    return result;
+    return null;
+  }
+
+  private byte[] zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
+      List<byte[]> membersToAdd, ZAddOptions options) {
+    // for zadd incr option, only one incrementing element pair is allowed to get here.
+    byte[] increment = membersToAdd.get(0);
+    byte[] member = membersToAdd.get(1);
+    if (options.isNX() && members.containsKey(member)) {
+      return null;
+    }
+    if (options.isXX() && !members.containsKey(member)) {
+      return null;
+    }
+    return zincrby(region, key, increment, member);
   }
 
   private int getBoundedStartIndex(int index, int size) {
@@ -347,26 +375,6 @@ public class RedisSortedSet extends AbstractRedisData {
     } else {
       return (int) Math.max(index + size, -1);
     }
-  }
-
-  synchronized byte[] memberRemove(byte[] member) {
-    byte[] oldValue = null;
-    OrderedSetEntry orderedSetEntry = members.remove(member);
-    if (orderedSetEntry != null) {
-      scoreSet.remove(orderedSetEntry);
-      oldValue = orderedSetEntry.getScoreBytes();
-      sizeInBytes -= calculateSizeOfFieldValuePair(member, oldValue);
-    }
-
-    if (members.isEmpty()) {
-      sizeInBytes = BASE_REDIS_SORTED_SET_OVERHEAD;
-    }
-
-    return oldValue;
-  }
-
-  long zcard() {
-    return members.size();
   }
 
   @Override

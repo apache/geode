@@ -93,6 +93,7 @@ public class SupportedCommandsJUnitTest {
       "ZRANGE",
       "ZRANK",
       "ZREM",
+      "ZREVRANK",
       "ZSCORE"
   };
 

@@ -55,19 +55,6 @@ class NullRedisSortedSet extends RedisSortedSet {
     return sortedSet.getSortedSetSize();
   }
 
-  private Object zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
-      List<byte[]> membersToAdd) {
-    // for zadd incr option, only one incrementing element pair is allowed to get here.
-    byte[] increment = membersToAdd.get(0);
-    byte[] member = membersToAdd.get(1);
-    return zincrby(region, key, increment, member);
-  }
-
-  @Override
-  byte[] zscore(byte[] member) {
-    return null;
-  }
-
   @Override
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
@@ -82,13 +69,20 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  int zrank(byte[] member) {
-    return -1;
+  List<byte[]> zrange(int min, int max, boolean withScores) {
+    return null;
   }
 
   @Override
-  List<byte[]> zrange(int min, int max,
-      boolean withScores) {
+  byte[] zscore(byte[] member) {
     return null;
+  }
+
+  private Object zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
+                          List<byte[]> membersToAdd) {
+    // for zadd incr option, only one incrementing element pair is allowed to get here.
+    byte[] increment = membersToAdd.get(0);
+    byte[] member = membersToAdd.get(1);
+    return zincrby(region, key, increment, member);
   }
 }

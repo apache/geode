@@ -23,15 +23,17 @@ public interface RedisSortedSetCommands {
 
   Object zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd, ZAddOptions options);
 
-  List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores);
-
-  byte[] zscore(RedisKey key, byte[] member);
-
-  int zrank(RedisKey key, byte[] member);
-
-  long zrem(RedisKey key, List<byte[]> membersToRemove);
-
   long zcard(RedisKey key);
 
   byte[] zincrby(RedisKey key, byte[] increment, byte[] member);
+
+  List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores);
+
+  long zrank(RedisKey key, byte[] member);
+
+  long zrem(RedisKey key, List<byte[]> membersToRemove);
+
+  long zrevrank(RedisKey key, byte[] member);
+
+  byte[] zscore(RedisKey key, byte[] member);
 }

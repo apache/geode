@@ -231,13 +231,18 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testZcard() {
+    runCommandAndAssertHitsAndMisses("sortedSet", k -> jedis.zcard(k));
+  }
+
+  @Test
   public void testZIncrBy() {
     runCommandAndAssertNoStatUpdates("key", (k, m) -> jedis.zincrby(k, 100.0, m));
   }
 
   @Test
-  public void testZscore() {
-    runCommandAndAssertHitsAndMisses("sortedSet", (k, v) -> jedis.zscore(k, v));
+  public void testZrank() {
+    runCommandAndAssertHitsAndMisses("sortedSet", (k, m) -> jedis.zrank(k, m));
   }
 
   @Test
@@ -246,13 +251,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
-  public void testZcard() {
-    runCommandAndAssertHitsAndMisses("sortedSet", k -> jedis.zcard(k));
+  public void testZrevrank() {
+    runCommandAndAssertHitsAndMisses("sortedSet", (k, m) -> jedis.zrevrank(k, m));
   }
 
   @Test
-  public void testZrank() {
-    runCommandAndAssertHitsAndMisses("sortedSet", (k, m) -> jedis.zrank(k, m));
+  public void testZscore() {
+    runCommandAndAssertHitsAndMisses("sortedSet", (k, v) -> jedis.zscore(k, v));
   }
 
   /************* Set related commands *************/
@@ -403,8 +408,8 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testBitpos() {
     Map<String, String> info = RedisTestHelper.getInfo(jedis);
-    Long currentHits = Long.parseLong(info.get(HITS));
-    Long currentMisses = Long.parseLong(info.get(MISSES));
+    long currentHits = Long.parseLong(info.get(HITS));
+    long currentMisses = Long.parseLong(info.get(MISSES));
 
     jedis.bitpos("string", true);
     info = RedisTestHelper.getInfo(jedis);
@@ -422,8 +427,8 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testBitop() {
     Map<String, String> info = RedisTestHelper.getInfo(jedis);
-    Long currentHits = Long.parseLong(info.get(HITS));
-    Long currentMisses = Long.parseLong(info.get(MISSES));
+    long currentHits = Long.parseLong(info.get(HITS));
+    long currentMisses = Long.parseLong(info.get(MISSES));
 
     jedis.bitop(BitOP.OR, "dest", "string", "string", "dest");
     info = RedisTestHelper.getInfo(jedis);
@@ -514,8 +519,8 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   /************* Helper Methods *************/
   private void runCommandAndAssertHitsAndMisses(String key, Consumer<String> command) {
     Map<String, String> info = RedisTestHelper.getInfo(jedis);
-    Long currentHits = Long.parseLong(info.get(HITS));
-    Long currentMisses = Long.parseLong(info.get(MISSES));
+    long currentHits = Long.parseLong(info.get(HITS));
+    long currentMisses = Long.parseLong(info.get(MISSES));
 
     command.accept(key);
     info = RedisTestHelper.getInfo(jedis);
@@ -532,8 +537,8 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   private void runCommandAndAssertHitsAndMisses(String key, BiConsumer<String, String> command) {
     Map<String, String> info = RedisTestHelper.getInfo(jedis);
-    Long currentHits = Long.parseLong(info.get(HITS));
-    Long currentMisses = Long.parseLong(info.get(MISSES));
+    long currentHits = Long.parseLong(info.get(HITS));
+    long currentMisses = Long.parseLong(info.get(MISSES));
 
     command.accept(key, "42");
     info = RedisTestHelper.getInfo(jedis);
@@ -551,8 +556,8 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   private void runCommandAndAssertHitsAndMisses(String key1, String key2,
       BiConsumer<String, String> command) {
     Map<String, String> info = RedisTestHelper.getInfo(jedis);
-    Long currentHits = Long.parseLong(info.get(HITS));
-    Long currentMisses = Long.parseLong(info.get(MISSES));
+    long currentHits = Long.parseLong(info.get(HITS));
+    long currentMisses = Long.parseLong(info.get(MISSES));
 
     command.accept(key1, key2);
     info = RedisTestHelper.getInfo(jedis);
@@ -564,8 +569,8 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   private void runDiffCommandAndAssertHitsAndMisses(String key,
       BiConsumer<String, String> command) {
     Map<String, String> info = RedisTestHelper.getInfo(jedis);
-    Long currentHits = Long.parseLong(info.get(HITS));
-    Long currentMisses = Long.parseLong(info.get(MISSES));
+    long currentHits = Long.parseLong(info.get(HITS));
+    long currentMisses = Long.parseLong(info.get(MISSES));
 
     command.accept(key, key);
     info = RedisTestHelper.getInfo(jedis);
