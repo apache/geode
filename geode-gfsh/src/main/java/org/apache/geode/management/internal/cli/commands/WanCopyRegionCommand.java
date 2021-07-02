@@ -42,7 +42,7 @@ public class WanCopyRegionCommand extends GfshCommand {
       @CliOption(key = CliStrings.WAN_COPY_REGION__REGION, mandatory = true,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.WAN_COPY_REGION__REGION__HELP) String regionName,
-      @CliOption(key = CliStrings.WAN_COPY_REGION__SENDERID,
+      @CliOption(key = CliStrings.WAN_COPY_REGION__SENDERID, mandatory = true,
           optionContext = ConverterHint.GATEWAY_SENDER_ID,
           help = CliStrings.WAN_COPY_REGION__SENDERID__HELP) String senderId,
       @CliOption(key = CliStrings.WAN_COPY_REGION__MAXRATE,
@@ -60,12 +60,13 @@ public class WanCopyRegionCommand extends GfshCommand {
     final Object[] args = {regionName, senderId, isCancel, maxRate, batchSize};
     ResultCollector<?, ?> resultCollector =
         executeFunction(wanCopyRegionFunction, args, getAllNormalMembers());
+    @SuppressWarnings("unchecked")
     final List<CliFunctionResult> cliFunctionResults =
-        getCliFunctionResults((List) resultCollector.getResult());
+        getCliFunctionResults((List<CliFunctionResult>) resultCollector.getResult());
     return ResultModel.createMemberStatusResult(cliFunctionResults, false, false);
   }
 
-  private List<CliFunctionResult> getCliFunctionResults(List resultsObjects) {
+  private List<CliFunctionResult> getCliFunctionResults(List<CliFunctionResult> resultsObjects) {
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
     for (Object r : resultsObjects) {
       if (r instanceof FunctionInvocationTargetException) {

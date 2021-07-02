@@ -983,7 +983,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   }
 
   @Override
-  public void sendBatch(List<GatewayQueueEvent> events, Connection connection,
+  public void sendBatch(List<GatewayQueueEvent<?, ?>> events, Connection connection,
       ExecutablePool senderPool, int batchId, boolean removeFromQueueOnException)
       throws BatchException70 {
     GatewaySenderBatchOp.executeOn(connection, senderPool, events, batchId,

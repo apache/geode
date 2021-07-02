@@ -623,14 +623,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // cancel command
     GfshCommandRule gfsh1 = new GfshCommandRule();
-    gfsh.connectAndVerify(locatorAPort, GfshCommandRule.PortType.locator);
+    gfsh1.connectAndVerify(locatorAPort, GfshCommandRule.PortType.locator);
     String commandString1 = new CommandStringBuilder(WAN_COPY_REGION)
         .addOption(WAN_COPY_REGION__REGION, regionName)
         .addOption(WAN_COPY_REGION__SENDERID, senderIdInA)
         .addOption(WAN_COPY_REGION__BATCHSIZE, String.valueOf(wanCopyRegionBatchSize))
         .addOption(WAN_COPY_REGION__CANCEL)
         .getCommandString();
-    gfsh.executeAndAssertThat(commandString1);
+    gfsh1.executeAndAssertThat(commandString1);
     wanCopyCommandFuture.get();
   }
 
@@ -1201,19 +1201,19 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   }
 
   public static void removeEntry(String regionName, long key) {
-    Region r = ClientCacheFactory.getAnyInstance().getRegion(SEPARATOR + regionName);
+    Region<?, ?> r = ClientCacheFactory.getAnyInstance().getRegion(SEPARATOR + regionName);
     assertNotNull(r);
     r.remove(key);
   }
 
   public void sendRandomOpsFromClient(String regionName, Set<Long> keySet, int iterations) {
-    Region r = ClientCacheFactory.getAnyInstance().getRegion(SEPARATOR + regionName);
+    Region<Long, Integer> r = ClientCacheFactory.getAnyInstance().getRegion(SEPARATOR + regionName);
     assertNotNull(r);
     int min = 0;
     int max = 1000;
     for (int i = 0; i < iterations; i++) {
       for (Long key : keySet) {
-        long longKey = key.longValue();
+        long longKey = key;
         int value = (int) (Math.random() * (max - min + 1) + min);
         if (value < 50) {
           r.remove(longKey);
@@ -1261,7 +1261,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     return command;
   }
 
-  public CommandResultAssert verifyStatusIsOkInOneServer(
+  public void verifyStatusIsOkInOneServer(
       CommandResultAssert command) {
     command.statusIsError();
     command.hasTableSection().hasColumns().hasSize(3);
@@ -1271,7 +1271,6 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .hasSize(3);
     command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
         .containsExactlyInAnyOrder("OK", "ERROR", "ERROR");
-    return command;
   }
 
   public void createServersAndRegions(int locatorPort, List<VM> servers,

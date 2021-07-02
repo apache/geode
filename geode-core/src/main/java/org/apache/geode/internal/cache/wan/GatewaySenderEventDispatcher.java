@@ -36,7 +36,8 @@ public interface GatewaySenderEventDispatcher {
 
   void shutDownAckReaderConnection();
 
-  void sendBatch(List<GatewayQueueEvent> events, Connection connection, ExecutablePool senderPool,
+  void sendBatch(List<GatewayQueueEvent<?, ?>> events, Connection connection,
+      ExecutablePool senderPool,
       int batchId, boolean removeFromQueueOnException)
       throws BatchException70;
 }

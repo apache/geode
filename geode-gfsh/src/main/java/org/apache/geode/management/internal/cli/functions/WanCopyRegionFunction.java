@@ -111,7 +111,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   /**
    * Contains the ongoing executions of this function
    */
-  private static final Map<String, Future> executions = new ConcurrentHashMap<>();
+  private static final Map<String, Future<?>> executions = new ConcurrentHashMap<>();
 
   private volatile int batchId = 0;
 
@@ -163,7 +163,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
     final InternalCache cache = (InternalCache) context.getCache();
 
-    final Region region = cache.getRegion(regionName);
+    final Region<?, ?> region = cache.getRegion(regionName);
     if (region == null) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__REGION__NOT__FOUND, regionName));
@@ -206,11 +206,11 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
   private CliFunctionResult executeWanCopyRegionFunctionInNewThread(
       FunctionContext<Object[]> context,
-      Region region, String regionName, GatewaySender sender, long maxRate, int batchSize)
+      Region<?, ?> region, String regionName, GatewaySender sender, long maxRate, int batchSize)
       throws InterruptedException, ExecutionException, CancellationException {
     String executionName = getExecutionName(regionName, sender.getId());
     Callable<CliFunctionResult> callable =
-        new wanCopyRegionCallable(context, region, sender, maxRate, batchSize);
+        new WanCopyRegionCallable(this, context, region, sender, maxRate, batchSize);
     FutureTask<CliFunctionResult> future = new FutureTask<>(callable);
 
     if (executions.putIfAbsent(executionName, future) != null) {
@@ -227,16 +227,19 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     }
   }
 
-  class wanCopyRegionCallable implements Callable<CliFunctionResult> {
+  static class WanCopyRegionCallable implements Callable<CliFunctionResult> {
     private final FunctionContext<Object[]> context;
-    private final Region region;
+    private final Region<?, ?> region;
     private final GatewaySender sender;
     private final long maxRate;
     private final int batchSize;
+    private final WanCopyRegionFunction function;
 
-    public wanCopyRegionCallable(final FunctionContext<Object[]> context, final Region region,
+    public WanCopyRegionCallable(final WanCopyRegionFunction function,
+        final FunctionContext<Object[]> context, final Region<?, ?> region,
         final GatewaySender sender, final long maxRate,
         final int batchSize) {
+      this.function = function;
       this.context = context;
       this.region = region;
       this.sender = sender;
@@ -246,12 +249,12 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
     @Override
     public CliFunctionResult call() throws Exception {
-      return wanCopyRegion(context, region, sender, maxRate, batchSize);
+      return function.wanCopyRegion(context, region, sender, maxRate, batchSize);
     }
   }
 
   @VisibleForTesting
-  CliFunctionResult wanCopyRegion(FunctionContext<Object[]> context, Region region,
+  CliFunctionResult wanCopyRegion(FunctionContext<Object[]> context, Region<?, ?> region,
       GatewaySender sender, long maxRate, int batchSize) throws InterruptedException {
     ConnectionState connectionState = new ConnectionState();
     int copiedEntries = 0;
@@ -261,7 +264,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
     try {
       while (entriesIter.hasNext()) {
-        List<GatewayQueueEvent> batch =
+        List<GatewayQueueEvent<?, ?>> batch =
             createBatch((InternalRegion) region, sender, batchSize, cache, entriesIter);
         if (batch.size() == 0) {
           continue;
@@ -297,7 +300,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   }
 
   private Optional<CliFunctionResult> sendBatch(FunctionContext<Object[]> context,
-      GatewaySender sender, List<GatewayQueueEvent> batch,
+      GatewaySender sender, List<GatewayQueueEvent<?, ?>> batch,
       ConnectionState connectionState, int copiedEntries) {
     GatewaySenderEventDispatcher dispatcher =
         ((AbstractGatewaySender) sender).getEventProcessor().getDispatcher();
@@ -324,14 +327,14 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     }
   }
 
-  List<GatewayQueueEvent> createBatch(InternalRegion region, GatewaySender sender,
+  List<GatewayQueueEvent<?, ?>> createBatch(InternalRegion region, GatewaySender sender,
       int batchSize, InternalCache cache, Iterator<?> iter) {
     int batchIndex = 0;
-    List<GatewayQueueEvent> batch = new ArrayList<>();
+    List<GatewayQueueEvent<?, ?>> batch = new ArrayList<>();
 
     while (iter.hasNext() && batchIndex < batchSize) {
-      GatewayQueueEvent event =
-          createGatewaySenderEvent(cache, region, sender, (Region.Entry) iter.next());
+      GatewayQueueEvent<?, ?> event =
+          createGatewaySenderEvent(cache, region, sender, (Region.Entry<?, ?>) iter.next());
       if (event != null) {
         batch.add(event);
         batchIndex++;
@@ -340,7 +343,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     return batch;
   }
 
-  Set<?> getEntries(Region region, GatewaySender sender) {
+  Set<?> getEntries(Region<?, ?> region, GatewaySender sender) {
     if (region instanceof PartitionedRegion && sender.isParallel()) {
       return ((PartitionedRegion) region).getDataStore().getAllLocalBucketRegions()
           .stream()
@@ -350,8 +353,8 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   }
 
   @VisibleForTesting
-  GatewayQueueEvent createGatewaySenderEvent(InternalCache cache,
-      InternalRegion region, GatewaySender sender, Region.Entry entry) {
+  GatewayQueueEvent<?, ?> createGatewaySenderEvent(InternalCache cache,
+      InternalRegion region, GatewaySender sender, Region.Entry<?, ?> entry) {
     final EntryEventImpl event;
     if (region instanceof PartitionedRegion) {
       event = createEventForPartitionedRegion(sender, cache, region, entry);
@@ -365,14 +368,14 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
       return new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE_WITH_GENERATE_CALLBACKS,
           event, null, true);
     } catch (IOException e) {
-      logger.error("Error when creating event in wan-copy: {}", e);
+      logger.error("Error when creating event in wan-copy: {}", e.getMessage());
       return null;
     }
   }
 
   final CliFunctionResult cancelWanCopyRegion(FunctionContext<Object[]> context,
       String regionName, String senderId) {
-    Future execution = executions.remove(getExecutionName(regionName, senderId));
+    Future<?> execution = executions.remove(getExecutionName(regionName, senderId));
     if (execution == null) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND,
@@ -385,7 +388,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
   final CliFunctionResult cancelAllWanCopyRegion(FunctionContext<Object[]> context) {
     String executionsString = executions.keySet().toString();
-    for (Future execution : executions.values()) {
+    for (Future<?> execution : executions.values()) {
       execution.cancel(true);
     }
     executions.clear();
@@ -441,13 +444,13 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   }
 
   private EntryEventImpl createEventForReplicatedRegion(InternalCache cache, InternalRegion region,
-      Region.Entry entry) {
+      Region.Entry<?, ?> entry) {
     return createEvent(cache, region, entry);
   }
 
   private EntryEventImpl createEventForPartitionedRegion(GatewaySender sender, InternalCache cache,
       InternalRegion region,
-      Region.Entry entry) {
+      Region.Entry<?, ?> entry) {
     EntryEventImpl event = createEvent(cache, region, entry);
     if (event == null) {
       return null;
@@ -465,7 +468,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   }
 
   private EntryEventImpl createEvent(InternalCache cache, InternalRegion region,
-      Region.Entry entry) {
+      Region.Entry<?, ?> entry) {
     EntryEventImpl event;
     try {
       event = new DefaultEntryEventFactory().create(region, Operation.UPDATE,
@@ -518,7 +521,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     public Optional<CliFunctionResult> reconnect(FunctionContext<Object[]> context, int retries,
         int copiedEntries, Exception e) {
       close();
-      if (retries++ >= MAX_BATCH_SEND_RETRIES) {
+      if (retries >= MAX_BATCH_SEND_RETRIES) {
         return Optional.of(new CliFunctionResult(context.getMemberName(),
             CliFunctionResult.StatusState.ERROR,
             CliStrings.format(

@@ -603,7 +603,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForWanCopyRegionWithSpace() {
     String buffer = "wan-copy region ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getCandidates()).hasSize(2);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--region");
   }
 

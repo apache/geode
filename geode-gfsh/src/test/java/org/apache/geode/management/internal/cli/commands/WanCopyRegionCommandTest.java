@@ -30,14 +30,14 @@ public class WanCopyRegionCommandTest {
   @Test
   public void gfshParserReturnsNullIfMandatoryOptionsNotSpecified() {
     assertThat(gfsh.parse("wan-copy region")).isNull();
-    assertThat(gfsh.parse("wan-copy region --senderId=ln")).isNull();
-    assertThat(gfsh.parse("wan-copy region --batchSize=10")).isNull();
+    assertThat(gfsh.parse("wan-copy region --region=myregion")).isNull();
+    assertThat(gfsh.parse("wan-copy region --sender-id=ln")).isNull();
+    assertThat(gfsh.parse("wan-copy region --batch-size=10")).isNull();
   }
 
   @Test
   public void verifyDefaultValues() {
-    GfshParseResult result = gfsh.parse("wan-copy region --region=myregion");
-    assertThat(result.getParamValueAsString(CliStrings.WAN_COPY_REGION__SENDERID)).isNull();
+    GfshParseResult result = gfsh.parse("wan-copy region --region=myregion --sender-id=ln");
     assertThat(result.getParamValueAsString(CliStrings.WAN_COPY_REGION__MAXRATE)).isEqualTo("0");
     assertThat(result.getParamValueAsString(CliStrings.WAN_COPY_REGION__BATCHSIZE))
         .isEqualTo("1000");

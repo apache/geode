@@ -120,12 +120,11 @@ public class WanCopyRegionFunctionTest {
   }
 
   @Test
-  public void doPostSendBatchActions_ThrowInterruptedIfInterruptedTimeToSleepNotZero()
-      throws InterruptedException {
+  public void doPostSendBatchActions_ThrowInterruptedIfInterruptedTimeToSleepNotZero() {
     long maxRate = 1;
     long elapsedTime = 20L;
-    when(clockMock.millis()).thenAnswer((Answer) invocation -> {
-      Thread.currentThread().sleep(1000L);
+    when(clockMock.millis()).thenAnswer((Answer<?>) invocation -> {
+      Thread.sleep(1000L);
       return startTime + elapsedTime;
     });
     Thread.currentThread().interrupt();
