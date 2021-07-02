@@ -56,6 +56,7 @@ failCount=0
 --single unit/expire \
 --single unit/type/hash \
 --single unit/type/string \
+--single unit/type/zset \
 --single unit/quit \
 --single unit/pubsub \
 --single unit/dump
