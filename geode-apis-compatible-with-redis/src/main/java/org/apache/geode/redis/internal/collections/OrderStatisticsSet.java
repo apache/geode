@@ -53,20 +53,20 @@ public interface OrderStatisticsSet<T> extends Set<T> {
   T get(int index);
 
   /**
-   * Returns the index of <code>element</code> in the sorted set.
+   * Returns the index of <code>element</code> in the sorted set. If the element is not present in
+   * the set, returns the index it would have if it was present
    *
    * @param element the query element.
-   * @return the index of the query element or -1 if there is no such element
-   *         in this set.
+   * @return the index of the query element.
    */
   int indexOf(T element);
 
   /**
-   * Returns a range of <code>elements</code> between min and max.
+   * Returns an iterator over a range of <code>elements</code> between min and max.
    *
    * @param min the minimum element.
    * @param max the maximum element.
-   * @return an ArrayList of <code>elements</code>.
+   * @return an Iterator of <code>elements</code>.
    */
   Iterator<T> getIndexRange(int min, int max);
 }

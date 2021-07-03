@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.netty;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 
 import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.redis.internal.data.RedisSortedSet;
 
 /**
  * Important note
@@ -219,6 +220,9 @@ public class StringBytesGlossary {
 
   public static final byte bLOWERCASE_Z = 122; // z
 
+  public static final byte bLEFT_PAREN = 40; // (
+
+
   public static final String PING_RESPONSE = "PONG";
 
   @MakeImmutable
@@ -229,4 +233,17 @@ public class StringBytesGlossary {
 
   @MakeImmutable
   public static final byte[] bRADISH_DUMP_HEADER = stringToBytes("RADISH");
+
+  /**
+   * These member names will always be evaluated to be "greater than" or "less than" any other when
+   * using the {@link RedisSortedSet.OrderedSetEntry#compareTo(RedisSortedSet.OrderedSetEntry)}
+   * method, so the rank of an entry using these names will be less than or greater than all other
+   * members with the same score.
+   * These values should always be compared using {@code ==} rather than {@code Array.equals()} so
+   * that we can differentiate between the use of these constants and a value potentially entered by
+   * the user, which while equal in content, will not share the same memory address.
+   */
+  public static final byte[] bGREATEST_MEMBER_NAME = new byte[] {-1};
+
+  public static final byte[] bLEAST_MEMBER_NAME = new byte[] {-2};
 }

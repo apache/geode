@@ -18,10 +18,13 @@ package org.apache.geode.redis.internal.data;
 
 import static java.lang.Math.round;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.BASE_REDIS_SORTED_SET_OVERHEAD;
+import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.in;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -58,6 +61,16 @@ import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSetTest {
   private final ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
+
+  private final String member1 = "member1";
+  private final String member2 = "member2";
+  private final String score1 = "5.55555";
+  private final String score2 = "209030.31";
+  private final RedisSortedSet rangeSortedSet =
+      createRedisSortedSet(
+          "1.0", member1, "1.1", member2, "1.2", "member3", "1.3", "member4",
+          "1.4", "member5", "1.5", "member6", "1.6", "member7", "1.7", "member8",
+          "1.8", "member9", "1.9", "member10", "2.0", "member11", "2.1", "member12");
 
   @BeforeClass
   public static void beforeClass() {
@@ -243,11 +256,6 @@ public class RedisSortedSetTest {
     assertThat(actual).isCloseTo(expected, offset);
   }
 
-  private final String member1 = "member1";
-  private final String member2 = "member2";
-  private final String score1 = "5.55555";
-  private final String score2 = "209030.31";
-
   @Test
   public void zremCanRemoveMembersToBeRemoved() {
     String member3 = "member3";
@@ -303,12 +311,6 @@ public class RedisSortedSetTest {
     offset = Offset.offset((int) round(expected * 0.03));
     assertThat(actual).isCloseTo(expected, offset);
   }
-
-  RedisSortedSet rangeSortedSet =
-      createRedisSortedSet(
-          "1.0", member1, "1.1", member2, "1.2", "member3", "1.3", "member4",
-          "1.4", "member5", "1.5", "member6", "1.6", "member7", "1.7", "member8",
-          "1.8", "member9", "1.9", "member10", "2.0", "member11", "2.1", "member12");
 
   @Test
   public void zrange_ShouldReturnEmptyList_GivenInvalidRanges() {
@@ -385,6 +387,121 @@ public class RedisSortedSetTest {
         "member3".getBytes(), "member4".getBytes(), "member5".getBytes(),
         "member6".getBytes(), "member7".getBytes(), "member8".getBytes(),
         "member9".getBytes(), "member10".getBytes(), "member11".getBytes(), "member12".getBytes());
+  }
+
+  @Test
+  public void orderedSetEntryCompareTo_returnsCorrectly_givenDifferentScores() {
+    byte[] memberName = stringToBytes("member");
+
+    RedisSortedSet.OrderedSetEntry negativeInf =
+        new RedisSortedSet.OrderedSetEntry(memberName, doubleToBytes(Double.NEGATIVE_INFINITY));
+    RedisSortedSet.OrderedSetEntry negativeOne =
+        new RedisSortedSet.OrderedSetEntry(memberName, doubleToBytes(-1.0));
+    RedisSortedSet.OrderedSetEntry zero =
+        new RedisSortedSet.OrderedSetEntry(memberName, doubleToBytes(0.0));
+    RedisSortedSet.OrderedSetEntry one =
+        new RedisSortedSet.OrderedSetEntry(memberName, doubleToBytes(1.0));
+    RedisSortedSet.OrderedSetEntry positiveInf =
+        new RedisSortedSet.OrderedSetEntry(memberName, doubleToBytes(Double.POSITIVE_INFINITY));
+
+    assertThat(negativeInf.compareTo(negativeOne)).isEqualTo(-1);
+    assertThat(negativeOne.compareTo(zero)).isEqualTo(-1);
+    assertThat(zero.compareTo(one)).isEqualTo(-1);
+    assertThat(one.compareTo(positiveInf)).isEqualTo(-1);
+
+    assertThat(positiveInf.compareTo(one)).isEqualTo(1);
+    assertThat(one.compareTo(zero)).isEqualTo(1);
+    assertThat(zero.compareTo(negativeOne)).isEqualTo(1);
+    assertThat(negativeOne.compareTo(negativeInf)).isEqualTo(1);
+  }
+
+  @Test
+  public void orderedSetEntryCompareTo_throws_givenBothArraysAreGreatestOrLeastMemberNameAndScoresAreEqual() {
+    byte[] score = doubleToBytes(1.0);
+
+    RedisSortedSet.OrderedSetEntry greatest1 =
+        new RedisSortedSet.OrderedSetEntry(bGREATEST_MEMBER_NAME, score);
+    RedisSortedSet.OrderedSetEntry greatest2 =
+        new RedisSortedSet.OrderedSetEntry(bGREATEST_MEMBER_NAME, score);
+
+    // noinspection ResultOfMethodCallIgnored
+    assertThatThrownBy(() -> greatest1.compareTo(greatest2))
+        .isInstanceOf(IllegalStateException.class);
+
+    RedisSortedSet.OrderedSetEntry least1 =
+        new RedisSortedSet.OrderedSetEntry(bLEAST_MEMBER_NAME, score);
+    RedisSortedSet.OrderedSetEntry least2 =
+        new RedisSortedSet.OrderedSetEntry(bLEAST_MEMBER_NAME, score);
+
+    // noinspection ResultOfMethodCallIgnored
+    assertThatThrownBy(() -> least1.compareTo(least2)).isInstanceOf(IllegalStateException.class);
+  }
+
+  @Test
+  public void orderedSetEntryCompareTo_handlesDummyMemberNames_givenScoresAreEqual() {
+    byte[] score = doubleToBytes(1.0);
+
+    RedisSortedSet.OrderedSetEntry greatest =
+        new RedisSortedSet.OrderedSetEntry(bGREATEST_MEMBER_NAME, score);
+    RedisSortedSet.OrderedSetEntry least =
+        new RedisSortedSet.OrderedSetEntry(bLEAST_MEMBER_NAME, score);
+    RedisSortedSet.OrderedSetEntry middle =
+        new RedisSortedSet.OrderedSetEntry(stringToBytes("middle"), score);
+
+    // greatest > least
+    assertThat(greatest.compareTo(least)).isEqualTo(1);
+    // least < greatest
+    assertThat(least.compareTo(greatest)).isEqualTo(-1);
+    // greatest > middle
+    assertThat(greatest.compareTo(middle)).isEqualTo(1);
+    // middle < greatest
+    assertThat(middle.compareTo(greatest)).isEqualTo(-1);
+    // least < middle
+    assertThat(least.compareTo(middle)).isEqualTo(-1);
+    // middle > least
+    assertThat(middle.compareTo(least)).isEqualTo(1);
+  }
+
+  @Test
+  public void orderedSetEntryCompareTo_handlesDummyMemberNameEquivalents_givenScoresAreEqual() {
+    byte[] score = doubleToBytes(1.0);
+
+    RedisSortedSet.OrderedSetEntry greatest =
+        new RedisSortedSet.OrderedSetEntry(bGREATEST_MEMBER_NAME, score);
+    RedisSortedSet.OrderedSetEntry greatestEquivalent =
+        new RedisSortedSet.OrderedSetEntry(bGREATEST_MEMBER_NAME.clone(), score);
+
+    RedisSortedSet.OrderedSetEntry least =
+        new RedisSortedSet.OrderedSetEntry(bLEAST_MEMBER_NAME, score);
+    RedisSortedSet.OrderedSetEntry leastEquivalent =
+        new RedisSortedSet.OrderedSetEntry(bLEAST_MEMBER_NAME.clone(), score);
+
+    // bGREATEST_MEMBER_NAME > an array with contents equal to bGREATEST_MEMBER_NAME
+    assertThat(greatest.compareTo(greatestEquivalent)).isEqualTo(1);
+
+    // an array with contents equal to bGREATEST_MEMBER_NAME < bGREATEST_MEMBER_NAME
+    assertThat(greatestEquivalent.compareTo(greatest)).isEqualTo(-1);
+
+    // bLEAST_MEMBER_NAME < an array with contents equal to bLEAST_MEMBER_NAME
+    assertThat(least.compareTo(leastEquivalent)).isEqualTo(-1);
+
+    // an array with contents equal to bLEAST_MEMBER_NAME > bLEAST_MEMBER_NAME
+    assertThat(leastEquivalent.compareTo(least)).isEqualTo(1);
+  }
+
+  @Test
+  public void dummyOrderedSetEntryConstructor_setsAppropriateMemberName() {
+    RedisSortedSet.OrderedSetEntry entry = new RedisSortedSet.OrderedSetEntry(1, false, false);
+    assertThat(entry.getMember()).isSameAs(bGREATEST_MEMBER_NAME);
+
+    entry = new RedisSortedSet.OrderedSetEntry(1, true, false);
+    assertThat(entry.getMember()).isSameAs(bLEAST_MEMBER_NAME);
+
+    entry = new RedisSortedSet.OrderedSetEntry(1, false, true);
+    assertThat(entry.getMember()).isSameAs(bLEAST_MEMBER_NAME);
+
+    entry = new RedisSortedSet.OrderedSetEntry(1, true, true);
+    assertThat(entry.getMember()).isSameAs(bGREATEST_MEMBER_NAME);
   }
 
   private RedisSortedSet createRedisSortedSet(String... membersAndScores) {

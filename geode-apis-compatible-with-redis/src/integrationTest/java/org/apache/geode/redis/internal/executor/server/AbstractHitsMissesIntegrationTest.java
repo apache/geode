@@ -45,6 +45,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   private static final String HITS = "keyspace_hits";
   private static final String MISSES = "keyspace_misses";
+  public static final String STRING_KEY = "string";
+  public static final String STRING_INT_KEY = "int";
+  public static final String SET_KEY = "set";
+  public static final String HASH_KEY = "hash";
+  public static final String SORTED_SET_KEY = "sortedSet";
+  public static final String MAP_KEY_1 = "mapKey1";
+  public static final String MAP_KEY_2 = "mapKey2";
 
   protected Jedis jedis;
 
@@ -59,12 +66,12 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   public void setup() {
     jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
 
-    jedis.set("string", "yarn");
-    jedis.set("int", "5");
-    jedis.sadd("set", "cotton");
-    jedis.hset("hash", "green", "eggs");
-    jedis.zadd("sortedSet", -2.0, "almonds");
-    jedis.mset("mapKey1", "fox", "mapKey2", "box");
+    jedis.set(STRING_KEY, "yarn");
+    jedis.set(STRING_INT_KEY, "5");
+    jedis.sadd(SET_KEY, "cotton");
+    jedis.hset(HASH_KEY, "green", "eggs");
+    jedis.zadd(SORTED_SET_KEY, -2.0, "almonds");
+    jedis.mset(MAP_KEY_1, "fox", MAP_KEY_2, "box");
   }
 
   @After
@@ -85,154 +92,160 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testExists() {
-    runCommandAndAssertHitsAndMisses("string", k -> jedis.exists(k));
+    runCommandAndAssertHitsAndMisses(STRING_KEY, k -> jedis.exists(k));
   }
 
   @Test
   public void testType() {
-    runCommandAndAssertHitsAndMisses("string", k -> jedis.type(k));
+    runCommandAndAssertHitsAndMisses(STRING_KEY, k -> jedis.type(k));
   }
 
   @Test
   public void testTtl() {
-    runCommandAndAssertHitsAndMisses("string", k -> jedis.ttl(k));
+    runCommandAndAssertHitsAndMisses(STRING_KEY, k -> jedis.ttl(k));
   }
 
   @Test
   public void testPttl() {
-    runCommandAndAssertHitsAndMisses("string", k -> jedis.pttl(k));
+    runCommandAndAssertHitsAndMisses(STRING_KEY, k -> jedis.pttl(k));
   }
 
   @Test
   public void testRename() {
-    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.rename(k, v));
+    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.rename(k, v));
   }
 
   @Test
   public void testDel() {
-    runCommandAndAssertNoStatUpdates("string", k -> jedis.del(k));
+    runCommandAndAssertNoStatUpdates(STRING_KEY, k -> jedis.del(k));
   }
 
   @Test
   public void testExpire() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expire(k, 5L));
+    runCommandAndAssertNoStatUpdates(HASH_KEY, (k) -> jedis.expire(k, 5L));
   }
 
   @Test
   public void testPassiveExpiration() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> {
+    runCommandAndAssertNoStatUpdates(HASH_KEY, (k) -> {
       jedis.expire(k, 1L);
       GeodeAwaitility.await().atMost(Duration.ofMinutes(PassiveExpirationManager.INTERVAL * 2))
-          .until(() -> jedis.keys("hash").isEmpty());
+          .until(() -> jedis.keys(HASH_KEY).isEmpty());
     });
   }
 
   @Test
   public void testExpireAt() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.expireAt(k, 2145916800));
+    runCommandAndAssertNoStatUpdates(HASH_KEY, (k) -> jedis.expireAt(k, 2145916800));
   }
 
   @Test
   public void testPExpire() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.pexpire(k, 1024));
+    runCommandAndAssertNoStatUpdates(HASH_KEY, (k) -> jedis.pexpire(k, 1024));
   }
 
   @Test
   public void testPExpireAt() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.pexpireAt(k, 1608247597));
+    runCommandAndAssertNoStatUpdates(HASH_KEY, (k) -> jedis.pexpireAt(k, 1608247597));
   }
 
   @Test
   public void testPersist() {
-    runCommandAndAssertNoStatUpdates("hash", (k) -> jedis.persist(k));
+    runCommandAndAssertNoStatUpdates(HASH_KEY, (k) -> jedis.persist(k));
   }
 
   @Test
   public void testDump() {
-    runCommandAndAssertHitsAndMisses("hash", (k) -> jedis.dump(k));
+    runCommandAndAssertHitsAndMisses(HASH_KEY, (k) -> jedis.dump(k));
   }
 
   @Test
   public void testRestore() {
-    byte[] data = jedis.dump("hash");
+    byte[] data = jedis.dump(HASH_KEY);
     runCommandAndAssertNoStatUpdates("hash-2", (k) -> jedis.restore(k, 0L, data));
   }
 
   /************* String related commands *************/
   @Test
   public void testGet() {
-    runCommandAndAssertHitsAndMisses("string", k -> jedis.get(k));
+    runCommandAndAssertHitsAndMisses(STRING_KEY, k -> jedis.get(k));
   }
 
   @Test
   public void testAppend() {
-    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.append(k, v));
+    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.append(k, v));
   }
 
   @Test
   public void testSet() {
-    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.set(k, v));
+    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.set(k, v));
   }
 
   @Test
   public void testSet_wrongType() {
-    runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.set(k, v));
+    runCommandAndAssertNoStatUpdates(SET_KEY, (k, v) -> jedis.set(k, v));
   }
 
   @Test
   public void testStrlen() {
-    runCommandAndAssertHitsAndMisses("string", k -> jedis.strlen(k));
+    runCommandAndAssertHitsAndMisses(STRING_KEY, k -> jedis.strlen(k));
   }
 
   @Test
   public void testDecr() {
-    runCommandAndAssertNoStatUpdates("int", k -> jedis.decr(k));
+    runCommandAndAssertNoStatUpdates(STRING_INT_KEY, k -> jedis.decr(k));
   }
 
   @Test
   public void testDecrby() {
-    runCommandAndAssertNoStatUpdates("int", k -> jedis.decrBy(k, 1));
+    runCommandAndAssertNoStatUpdates(STRING_INT_KEY, k -> jedis.decrBy(k, 1));
   }
 
   @Test
   public void testGetrange() {
-    runCommandAndAssertHitsAndMisses("string", k -> jedis.getrange(k, 1L, 2L));
+    runCommandAndAssertHitsAndMisses(STRING_KEY, k -> jedis.getrange(k, 1L, 2L));
   }
 
   @Test
   public void testIncr() {
-    runCommandAndAssertNoStatUpdates("int", k -> jedis.incr(k));
+    runCommandAndAssertNoStatUpdates(STRING_INT_KEY, k -> jedis.incr(k));
   }
 
   @Test
   public void testIncrby() {
-    runCommandAndAssertNoStatUpdates("int", k -> jedis.incrBy(k, 1L));
+    runCommandAndAssertNoStatUpdates(STRING_INT_KEY, k -> jedis.incrBy(k, 1L));
   }
 
   @Test
   public void testIncrbyfloat() {
-    runCommandAndAssertNoStatUpdates("int", k -> jedis.incrByFloat(k, 1.0));
+    runCommandAndAssertNoStatUpdates(STRING_INT_KEY, k -> jedis.incrByFloat(k, 1.0));
   }
 
   @Test
   public void testMget() {
-    runCommandAndAssertHitsAndMisses("mapKey1", "mapKey2", (k1, k2) -> jedis.mget(k1, k2));
+    runCommandAndAssertHitsAndMisses(MAP_KEY_1, MAP_KEY_2, (k1, k2) -> jedis.mget(k1, k2));
   }
 
   @Test
   public void testSetnx() {
-    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.setnx(k, v));
+    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.setnx(k, v));
   }
 
   /************* SortedSet related commands *************/
   @Test
   public void testZadd() {
-    runCommandAndAssertNoStatUpdates("sortedSet", (k, v) -> jedis.zadd(k, 1.0, v));
+    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY, (k, v) -> jedis.zadd(k, 1.0, v));
   }
 
   @Test
   public void testZcard() {
-    runCommandAndAssertHitsAndMisses("sortedSet", k -> jedis.zcard(k));
+    runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zcard(k));
+  }
+
+  @Test
+  public void testZcount() {
+    runCountCommandAndAssertHitsAndMisses(SORTED_SET_KEY,
+        (k, min, max) -> jedis.zcount(k, min, max));
   }
 
   @Test
@@ -242,49 +255,49 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testZrank() {
-    runCommandAndAssertHitsAndMisses("sortedSet", (k, m) -> jedis.zrank(k, m));
+    runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, (k, m) -> jedis.zrank(k, m));
   }
 
   @Test
   public void testZrem() {
-    runCommandAndAssertNoStatUpdates("sortedSet", (k, v) -> jedis.zrem(k, v));
+    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY, (k, v) -> jedis.zrem(k, v));
   }
 
   @Test
   public void testZrevrank() {
-    runCommandAndAssertHitsAndMisses("sortedSet", (k, m) -> jedis.zrevrank(k, m));
+    runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, (k, m) -> jedis.zrevrank(k, m));
   }
 
   @Test
   public void testZscore() {
-    runCommandAndAssertHitsAndMisses("sortedSet", (k, v) -> jedis.zscore(k, v));
+    runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, (k, v) -> jedis.zscore(k, v));
   }
 
   /************* Set related commands *************/
   @Test
   public void testSadd() {
-    runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.sadd(k, v));
+    runCommandAndAssertNoStatUpdates(SET_KEY, (k, v) -> jedis.sadd(k, v));
   }
 
   @Test
   public void testSrem() {
-    runCommandAndAssertNoStatUpdates("set", (k, v) -> jedis.srem(k, v));
+    runCommandAndAssertNoStatUpdates(SET_KEY, (k, v) -> jedis.srem(k, v));
   }
 
   @Test
   public void testSmembers() {
-    runCommandAndAssertHitsAndMisses("set", k -> jedis.smembers(k));
+    runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.smembers(k));
   }
 
   /************* Hash related commands *************/
   @Test
   public void testHset() {
-    runCommandAndAssertNoStatUpdates("hash", (k, v, s) -> jedis.hset(k, v, s));
+    runCommandAndAssertNoStatUpdates(HASH_KEY, (k, v, s) -> jedis.hset(k, v, s));
   }
 
   @Test
   public void testHgetall() {
-    runCommandAndAssertHitsAndMisses("hash", k -> jedis.hgetAll(k));
+    runCommandAndAssertHitsAndMisses(HASH_KEY, k -> jedis.hgetAll(k));
   }
 
   @Test
@@ -298,62 +311,62 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testHdel() {
-    runCommandAndAssertNoStatUpdates("hash", (k, v) -> jedis.hdel(k, v));
+    runCommandAndAssertNoStatUpdates(HASH_KEY, (k, v) -> jedis.hdel(k, v));
   }
 
   @Test
   public void testHget() {
-    runCommandAndAssertHitsAndMisses("hash", (k, v) -> jedis.hget(k, v));
+    runCommandAndAssertHitsAndMisses(HASH_KEY, (k, v) -> jedis.hget(k, v));
   }
 
   @Test
   public void testHkeys() {
-    runCommandAndAssertHitsAndMisses("hash", k -> jedis.hkeys(k));
+    runCommandAndAssertHitsAndMisses(HASH_KEY, k -> jedis.hkeys(k));
   }
 
   @Test
   public void testHlen() {
-    runCommandAndAssertHitsAndMisses("hash", k -> jedis.hlen(k));
+    runCommandAndAssertHitsAndMisses(HASH_KEY, k -> jedis.hlen(k));
   }
 
   @Test
   public void testHvals() {
-    runCommandAndAssertHitsAndMisses("hash", k -> jedis.hvals(k));
+    runCommandAndAssertHitsAndMisses(HASH_KEY, k -> jedis.hvals(k));
   }
 
   @Test
   public void testHmget() {
-    runCommandAndAssertHitsAndMisses("hash", (k, v) -> jedis.hmget(k, v));
+    runCommandAndAssertHitsAndMisses(HASH_KEY, (k, v) -> jedis.hmget(k, v));
   }
 
   @Test
   public void testHexists() {
-    runCommandAndAssertHitsAndMisses("hash", (k, v) -> jedis.hexists(k, v));
+    runCommandAndAssertHitsAndMisses(HASH_KEY, (k, v) -> jedis.hexists(k, v));
   }
 
   @Test
   public void testHstrlen() {
-    runCommandAndAssertHitsAndMisses("hash", (k, v) -> jedis.hstrlen(k, v));
+    runCommandAndAssertHitsAndMisses(HASH_KEY, (k, v) -> jedis.hstrlen(k, v));
   }
 
   @Test
   public void testHscan() {
-    runCommandAndAssertHitsAndMisses("hash", (k, v) -> jedis.hscan(k, v));
+    runCommandAndAssertHitsAndMisses(HASH_KEY, (k, v) -> jedis.hscan(k, v));
   }
 
   @Test
   public void testHincrby() {
-    runCommandAndAssertNoStatUpdates("hash", (k, f) -> jedis.hincrBy(k, f, 1L));
+    runCommandAndAssertNoStatUpdates(HASH_KEY, (k, f) -> jedis.hincrBy(k, f, 1L));
   }
 
   @Test
   public void testHincrbyfloat() {
-    runCommandAndAssertNoStatUpdates("hash", (k, f) -> jedis.hincrByFloat(k, f, 1.0));
+    runCommandAndAssertNoStatUpdates(HASH_KEY, (k, f) -> jedis.hincrByFloat(k, f, 1.0));
   }
 
   @Test
   public void testHsetnx() {
-    runCommandAndAssertNoStatUpdates("hash", (k, f, v) -> jedis.hsetnx(k, f, v));
+    runCommandAndAssertNoStatUpdates(HASH_KEY, (k, f, v) -> jedis.hsetnx(k, f, v));
   }
 
   /**********************************************
@@ -368,41 +381,41 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testUnlink() {
-    runCommandAndAssertNoStatUpdates("string", k -> jedis.unlink(k));
+    runCommandAndAssertNoStatUpdates(STRING_KEY, k -> jedis.unlink(k));
   }
 
   /************* String related commands *************/
   @Test
   public void testGetset() {
-    runCommandAndAssertHitsAndMisses("string", (k, v) -> jedis.getSet(k, v));
+    runCommandAndAssertHitsAndMisses(STRING_KEY, (k, v) -> jedis.getSet(k, v));
   }
 
   @Test
   public void testMset() {
-    runCommandAndAssertNoStatUpdates("mapKey1", (k, v) -> jedis.mset(k, v));
+    runCommandAndAssertNoStatUpdates(MAP_KEY_1, (k, v) -> jedis.mset(k, v));
   }
 
   // todo updates stats when it shouldn't. not implemented in the function executor
   @Ignore
   @Test
   public void testMsetnx() {
-    runCommandAndAssertNoStatUpdates("mapKey1", (k, v) -> jedis.msetnx(k, v));
+    runCommandAndAssertNoStatUpdates(MAP_KEY_1, (k, v) -> jedis.msetnx(k, v));
   }
 
   @Test
   public void testSetex() {
-    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.setex(k, 200L, v));
+    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.setex(k, 200L, v));
   }
 
   @Test
   public void testSetrange() {
-    runCommandAndAssertNoStatUpdates("string", (k, v) -> jedis.setrange(k, 1L, v));
+    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.setrange(k, 1L, v));
   }
 
   /************* Bit related commands *************/
   @Test
   public void testBitcount() {
-    runCommandAndAssertHitsAndMisses("string", k -> jedis.bitcount(k));
+    runCommandAndAssertHitsAndMisses(STRING_KEY, k -> jedis.bitcount(k));
   }
 
   @Test
@@ -411,7 +424,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     long currentHits = Long.parseLong(info.get(HITS));
     long currentMisses = Long.parseLong(info.get(MISSES));
 
-    jedis.bitpos("string", true);
+    jedis.bitpos(STRING_KEY, true);
     info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
@@ -430,13 +443,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     long currentHits = Long.parseLong(info.get(HITS));
     long currentMisses = Long.parseLong(info.get(MISSES));
 
-    jedis.bitop(BitOP.OR, "dest", "string", "string", "dest");
+    jedis.bitop(BitOP.OR, "dest", STRING_KEY, STRING_KEY, "dest");
     info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 2));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
 
-    jedis.bitop(BitOP.OR, "dest", "string", "missed");
+    jedis.bitop(BitOP.OR, "dest", STRING_KEY, "missed");
     info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 2 + 1));
@@ -445,12 +458,12 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testGetbit() {
-    runCommandAndAssertHitsAndMisses("string", k -> jedis.getbit(k, 1));
+    runCommandAndAssertHitsAndMisses(STRING_KEY, k -> jedis.getbit(k, 1));
   }
 
   @Test
   public void testSetbit() {
-    runCommandAndAssertNoStatUpdates("int", (k, v) -> jedis.setbit(k, 0L, "1"));
+    runCommandAndAssertNoStatUpdates(STRING_INT_KEY, (k, v) -> jedis.setbit(k, 0L, "1"));
   }
 
   /************* Set related commands *************/
@@ -458,62 +471,62 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   // or not. In Redis 6.x SPOP does not update any stats.
   @Test
   public void testSpop() {
-    runCommandAndAssertNoStatUpdates("set", k -> jedis.spop(k));
+    runCommandAndAssertNoStatUpdates(SET_KEY, k -> jedis.spop(k));
   }
 
   @Test
   public void testSismember() {
-    runCommandAndAssertHitsAndMisses("set", (k, v) -> jedis.sismember(k, v));
+    runCommandAndAssertHitsAndMisses(SET_KEY, (k, v) -> jedis.sismember(k, v));
   }
 
   @Test
   public void testSrandmember() {
-    runCommandAndAssertHitsAndMisses("set", k -> jedis.srandmember(k));
+    runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.srandmember(k));
   }
 
   @Test
   public void testScard() {
-    runCommandAndAssertHitsAndMisses("set", k -> jedis.scard(k));
+    runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.scard(k));
   }
 
   @Test
   public void testSscan() {
-    runCommandAndAssertHitsAndMisses("set", (k, v) -> jedis.sscan(k, v));
+    runCommandAndAssertHitsAndMisses(SET_KEY, (k, v) -> jedis.sscan(k, v));
   }
 
   @Test
   public void testSdiff() {
-    runDiffCommandAndAssertHitsAndMisses("set", (k, v) -> jedis.sdiff(k, v));
+    runDiffCommandAndAssertHitsAndMisses(SET_KEY, (k, v) -> jedis.sdiff(k, v));
   }
 
   @Test
   public void testSdiffstore() {
-    runDiffStoreCommandAndAssertNoStatUpdates("set", (k, v, s) -> jedis.sdiffstore(k, v, s));
+    runDiffStoreCommandAndAssertNoStatUpdates(SET_KEY, (k, v, s) -> jedis.sdiffstore(k, v, s));
   }
 
   @Test
   public void testSinter() {
-    runDiffCommandAndAssertHitsAndMisses("set", (k, v) -> jedis.sinter(k, v));
+    runDiffCommandAndAssertHitsAndMisses(SET_KEY, (k, v) -> jedis.sinter(k, v));
   }
 
   @Test
   public void testSinterstore() {
-    runDiffStoreCommandAndAssertNoStatUpdates("set", (k, v, s) -> jedis.sinterstore(k, v, s));
+    runDiffStoreCommandAndAssertNoStatUpdates(SET_KEY, (k, v, s) -> jedis.sinterstore(k, v, s));
   }
 
   @Test
   public void testSunion() {
-    runDiffCommandAndAssertHitsAndMisses("set", (k, v) -> jedis.sunion(k, v));
+    runDiffCommandAndAssertHitsAndMisses(SET_KEY, (k, v) -> jedis.sunion(k, v));
   }
 
   @Test
   public void testSunionstore() {
-    runDiffStoreCommandAndAssertNoStatUpdates("set", (k, v, s) -> jedis.sunionstore(k, v, s));
+    runDiffStoreCommandAndAssertNoStatUpdates(SET_KEY, (k, v, s) -> jedis.sunionstore(k, v, s));
   }
 
   @Test
   public void testSmove() {
-    runCommandAndAssertNoStatUpdates("set", (k, d, m) -> jedis.smove(k, d, m));
+    runCommandAndAssertNoStatUpdates(SET_KEY, (k, d, m) -> jedis.smove(k, d, m));
   }
 
   /************* Helper Methods *************/
@@ -547,6 +560,25 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
 
     command.accept("missed", "42");
+    info = RedisTestHelper.getInfo(jedis);
+
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
+  }
+
+  private void runCountCommandAndAssertHitsAndMisses(String key,
+      TriConsumer<String, String, String> command) {
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
+    long currentHits = Long.parseLong(info.get(HITS));
+    long currentMisses = Long.parseLong(info.get(MISSES));
+
+    command.accept(key, "-inf", "+inf");
+    info = RedisTestHelper.getInfo(jedis);
+
+    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
+    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
+
+    command.accept("missed", "-inf", "+inf");
     info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));

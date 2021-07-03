@@ -262,19 +262,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
 
   @Override
   public E get(int index) {
-    checkIndex(index);
-    Node<E> node = root;
-
-    while (true) {
-      if (index > node.count) {
-        index -= node.count + 1;
-        node = node.right;
-      } else if (index < node.count) {
-        node = node.left;
-      } else {
-        return node.key;
-      }
-    }
+    return getNode(index).key;
   }
 
   @Override
@@ -291,14 +279,16 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     while (true) {
       if ((cmp = element.compareTo(node.key)) < 0) {
         if (node.left == null) {
-          return -1;
+          return rank;
         }
 
         rank -= (node.count - node.left.count);
         node = node.left;
       } else if (cmp > 0) {
         if (node.right == null) {
-          return -1;
+          // Add 1 because if the element we're testing is greater than the current node but not
+          // present in the set, its rank would be one higher if it were present
+          return rank + 1;
         }
 
         rank += 1 + node.right.count;

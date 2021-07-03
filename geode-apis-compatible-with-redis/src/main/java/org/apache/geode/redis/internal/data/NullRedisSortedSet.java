@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
 class NullRedisSortedSet extends RedisSortedSet {
@@ -53,6 +54,11 @@ class NullRedisSortedSet extends RedisSortedSet {
     region.create(key, sortedSet);
 
     return sortedSet.getSortedSetSize();
+  }
+
+  @Override
+  long zcount(SortedSetRangeOptions rangeOptions) {
+    return 0;
   }
 
   @Override

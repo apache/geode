@@ -20,6 +20,8 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_F
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -46,6 +48,7 @@ import org.apache.geode.redis.internal.collections.OrderStatisticsTree;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
 public class RedisSortedSet extends AbstractRedisData {
@@ -259,6 +262,18 @@ public class RedisSortedSet extends AbstractRedisData {
     return members.size();
   }
 
+  long zcount(SortedSetRangeOptions rangeOptions) {
+    OrderedSetEntry minEntry =
+        new OrderedSetEntry(rangeOptions.getMinDouble(), rangeOptions.isMinExclusive(), true);
+    long minRank = scoreSet.indexOf(minEntry);
+
+    OrderedSetEntry maxEntry =
+        new OrderedSetEntry(rangeOptions.getMaxDouble(), rangeOptions.isMaxExclusive(), false);
+    long maxRank = scoreSet.indexOf(maxEntry);
+
+    return maxRank - minRank;
+  }
+
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
     byte[] byteScore = null;
@@ -289,7 +304,7 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   List<byte[]> zrange(int min, int max, boolean withScores) {
-    ArrayList<byte[]> result = new ArrayList<>();
+    List<byte[]> result = new ArrayList<>();
     int start = getBoundedStartIndex(min, getSortedSetSize());
     int end = getBoundedEndIndex(max, getSortedSetSize());
     if (start > end || start == getSortedSetSize()) {
@@ -362,7 +377,7 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   private int getBoundedStartIndex(int index, int size) {
-    if (index >= 0L) {
+    if (index >= 0) {
       return Math.min(index, size);
     } else {
       return Math.max(index + size, 0);
@@ -370,7 +385,7 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   private int getBoundedEndIndex(long index, int size) {
-    if (index >= 0L) {
+    if (index >= 0) {
       return (int) Math.min(index, size);
     } else {
       return (int) Math.max(index + size, -1);
@@ -414,6 +429,28 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
+  // Comparison to allow the use of bLEAST_MEMBER_NAME and bGREATEST_MEMBER_NAME to always be less
+  // than or greater than respectively any other byte array representing a member name. The use of
+  // "==" is important as it allows us to differentiate between the constant byte arrays defined
+  // in StringBytesGlossary and user-supplied member names which may be equal in content but have
+  // a different memory address.
+  private static int checkDummyMemberNames(byte[] array1, byte[] array2) {
+    if ((array1 == bLEAST_MEMBER_NAME && array2 == bLEAST_MEMBER_NAME)
+        || (array1 == bGREATEST_MEMBER_NAME && array2 == bGREATEST_MEMBER_NAME)) {
+      throw new IllegalStateException(
+          "Arrays cannot both be least member name or greatest member name");
+    }
+    if (array2 == bLEAST_MEMBER_NAME || array1 == bGREATEST_MEMBER_NAME) {
+      return 1; // array2 < array1
+    } else if (array1 == bLEAST_MEMBER_NAME || array2 == bGREATEST_MEMBER_NAME) {
+      return -1; // array1 < array2
+    } else {
+      // Neither of the input arrays are using bLEAST_MEMBER_NAME or bGREATEST_MEMBER_NAME, so real
+      // lexicographical comparison is needed
+      return 0;
+    }
+  }
+
   @VisibleForTesting
   public static int javaImplementationOfAnsiCMemCmp(byte[] array1, byte[] array2) {
     int shortestLength = Math.min(array1.length, array2.length);
@@ -451,8 +488,12 @@ public class RedisSortedSet extends AbstractRedisData {
     public int compareTo(OrderedSetEntry o) {
       int comparison = score.compareTo(o.score);
       if (comparison == 0) {
-        // Scores equal, try lexical ordering
-        return javaImplementationOfAnsiCMemCmp(member, o.member);
+        // Scores equal, try lexical ordering, but first check if the entry is using the
+        // bLEAST_MEMBER_NAME or bGREATEST_MEMBER_NAME values
+        comparison = checkDummyMemberNames(member, o.member);
+        if (comparison == 0) {
+          return javaImplementationOfAnsiCMemCmp(member, o.member);
+        }
       }
       return comparison;
     }
@@ -461,6 +502,20 @@ public class RedisSortedSet extends AbstractRedisData {
       this.member = member;
       this.scoreBytes = score;
       this.score = processByteArrayAsDouble(score);
+    }
+
+    // Dummy entry used to find the rank of an element with the given score for inclusive or
+    // exclusive ranges
+    OrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
+      if (isExclusive && isMinimum || !isExclusive && !isMinimum) {
+        // For use in (this < other) and (this >= other) comparisons
+        this.member = bGREATEST_MEMBER_NAME;
+      } else {
+        // For use in (this <= other) and (this > other) comparisons
+        this.member = bLEAST_MEMBER_NAME;
+      }
+      this.scoreBytes = new byte[] {};
+      this.score = score;
     }
   }
 }
