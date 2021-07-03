@@ -155,7 +155,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.iq80.snappy', name: 'snappy', version: '0.4')
         api(group: 'org.jboss.modules', name: 'jboss-modules', version: get('jboss-modules.version'))
         api(group: 'org.jgroups', name: 'jgroups', version: get('jgroups.version'))
-        api(group: 'org.mockito', name: 'mockito-core', version: '3.11.0')
+        api(group: 'org.mockito', name: 'mockito-core', version: '3.11.2')
         api(group: 'org.mortbay.jetty', name: 'servlet-api', version: '3.0.20100224')
         api(group: 'org.openjdk.jmh', name: 'jmh-core', version: '1.32')
         api(group: 'org.postgresql', name: 'postgresql', version: '42.2.8')
