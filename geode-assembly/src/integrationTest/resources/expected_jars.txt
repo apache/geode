@@ -2,7 +2,6 @@ HdrHistogram
 HikariCP
 LatencyUtils
 accessors-smart
-annotations
 antlr
 asm
 byte-buddy
@@ -62,9 +61,6 @@ jopt-simple
 json-path
 json-smart
 jsr
-kotlin-stdlib
-kotlin-stdlib-common
-kotlin-stdlib-jdk
 lang-tag
 listenablefuture
 log4j-api
