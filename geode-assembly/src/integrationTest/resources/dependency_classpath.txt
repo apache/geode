@@ -42,7 +42,7 @@ commons-collections-3.2.2.jar
 commons-io-2.8.0.jar
 commons-logging-1.2.jar
 classgraph-4.8.108.jar
-micrometer-core-1.7.0.jar
+micrometer-core-1.7.1.jar
 swagger-annotations-1.6.2.jar
 fastutil-core-8.5.4.jar
 fastutil-extra-8.5.4.jar
