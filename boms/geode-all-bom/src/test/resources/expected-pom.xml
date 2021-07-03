@@ -190,7 +190,7 @@
       <dependency>
         <groupId>io.github.resilience4j</groupId>
         <artifactId>resilience4j-retry</artifactId>
-        <version>1.7.0</version>
+        <version>1.7.1</version>
       </dependency>
       <dependency>
         <groupId>io.lettuce</groupId>
@@ -200,7 +200,7 @@
       <dependency>
         <groupId>io.micrometer</groupId>
         <artifactId>micrometer-core</artifactId>
-        <version>1.7.0</version>
+        <version>1.7.1</version>
       </dependency>
       <dependency>
         <groupId>io.netty</groupId>
