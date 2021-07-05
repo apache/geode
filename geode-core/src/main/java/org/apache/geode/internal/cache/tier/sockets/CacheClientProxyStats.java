@@ -135,7 +135,7 @@ public class CacheClientProxyStats implements MessageStats {
         f.createLongCounter(CQ_COUNT, "Number of CQs on the client.", "operations"),
         f.createLongCounter("sentBytes", "Total number of bytes sent to client.", "bytes"),
         f.createLongGauge(MESSAGES_WAITING_TO_QUEUE,
-            "Threads currently adding a message to the queue. Consistently high values indicate that the queue is full and adds are being delayed",
+            "Threads currently adding a message to the queue. Consistently high values indicate that the queue is full and adds are being delayed.",
             "threads"),
     });
 
