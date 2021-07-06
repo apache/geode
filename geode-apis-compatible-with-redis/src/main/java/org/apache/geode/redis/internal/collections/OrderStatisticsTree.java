@@ -28,7 +28,6 @@ package org.apache.geode.redis.internal.collections;
 
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -205,14 +204,8 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     return true;
   }
 
-  public ArrayList<E> getIndexRange(int min, int max) {
-    ArrayList<E> entryList = new ArrayList<>();
-    Node<E> current = getNode(min);
-    for (int i = min; current != null && i <= max; i++) {
-      entryList.add(current.key);
-      current = successorOf(current);
-    }
-    return entryList;
+  public Iterator<E> getIndexRange(int min, int max) {
+    return new TreeIterator(getNode(min), max - min);
   }
 
   private Node<E> getNode(int index) {
@@ -742,6 +735,8 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     private Node<E> previousNode;
     private Node<E> nextNode;
     private int expectedModCount = modCount;
+    private int limitIndex = Integer.MAX_VALUE;
+    private int indexCount = 0;
 
     TreeIterator() {
       if (root == null) {
@@ -751,14 +746,19 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
       }
     }
 
+    TreeIterator(Node<E> startNode, int maxIndex) {
+      nextNode = startNode;
+      limitIndex = maxIndex;
+    }
+
     @Override
     public boolean hasNext() {
-      return nextNode != null;
+      return indexCount <= limitIndex && nextNode != null;
     }
 
     @Override
     public E next() {
-      if (nextNode == null) {
+      if (nextNode == null || indexCount > limitIndex) {
         throw new NoSuchElementException("Iteration exceeded.");
       }
 
@@ -766,6 +766,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
       E datum = nextNode.key;
       previousNode = nextNode;
       nextNode = successorOf(nextNode);
+      indexCount++;
       return datum;
     }
 

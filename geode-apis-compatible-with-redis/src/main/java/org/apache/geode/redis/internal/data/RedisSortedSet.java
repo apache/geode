@@ -322,13 +322,14 @@ public class RedisSortedSet extends AbstractRedisData {
       return result;
     }
 
-    ArrayList<OrderedSetEntry> entries = scoreSet.getIndexRange(start, end);
-    entries.forEach(entry -> {
+    Iterator<OrderedSetEntry> entryIterator = scoreSet.getIndexRange(start, end);
+    while (entryIterator.hasNext()) {
+      OrderedSetEntry entry = entryIterator.next();
       result.add(entry.member);
       if (withScores) {
         result.add(entry.scoreBytes);
       }
-    });
+    }
     return result;
   }
 

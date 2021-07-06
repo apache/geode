@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.collections;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -51,7 +50,7 @@ class IndexibleTreeSet<E> extends TreeSet<E> implements OrderStatisticsSet<E> {
   }
 
   @Override
-  public ArrayList<E> getIndexRange(int min, int max) {
+  public Iterator<E> getIndexRange(int min, int max) {
     return null;
   }
 }
