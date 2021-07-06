@@ -117,8 +117,10 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
   @Test
   public void shouldReturnRanges_SpecifiedWithNegativeOffsets() {
     assertThat(jedis.zrange(SORTED_SET_KEY, -5, -1)).containsExactlyElementsOf(members);
-    assertThat(jedis.zrange(SORTED_SET_KEY, -2, -1)).containsExactlyElementsOf(members.subList(3, 5));
-    assertThat(jedis.zrange(SORTED_SET_KEY, -8, -3)).containsExactlyElementsOf(members.subList(0, 3));
+    assertThat(jedis.zrange(SORTED_SET_KEY, -2, -1))
+        .containsExactlyElementsOf(members.subList(3, 5));
+    assertThat(jedis.zrange(SORTED_SET_KEY, -8, -3))
+        .containsExactlyElementsOf(members.subList(0, 3));
   }
 
   @Test
