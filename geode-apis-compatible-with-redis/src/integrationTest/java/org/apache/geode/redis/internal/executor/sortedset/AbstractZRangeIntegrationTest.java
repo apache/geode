@@ -108,17 +108,17 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
 
   @Test
   public void shouldReturnSimpleRanges() {
-    assertThat(jedis.zrange(SORTED_SET_KEY, 0, 5)).containsAll(members);
-    assertThat(jedis.zrange(SORTED_SET_KEY, 0, 10)).containsAll(members);
-    assertThat(jedis.zrange(SORTED_SET_KEY, 3, 4)).containsAll(members.subList(3, 4));
-    assertThat(jedis.zrange(SORTED_SET_KEY, 0, 2)).containsAll(members.subList(0, 2));
+    assertThat(jedis.zrange(SORTED_SET_KEY, 0, 5)).containsExactlyElementsOf(members);
+    assertThat(jedis.zrange(SORTED_SET_KEY, 0, 10)).containsExactlyElementsOf(members);
+    assertThat(jedis.zrange(SORTED_SET_KEY, 3, 4)).containsExactlyElementsOf(members.subList(3, 5));
+    assertThat(jedis.zrange(SORTED_SET_KEY, 0, 2)).containsExactlyElementsOf(members.subList(0, 3));
   }
 
   @Test
   public void shouldReturnRanges_SpecifiedWithNegativeOffsets() {
-    assertThat(jedis.zrange(SORTED_SET_KEY, -5, -1)).containsAll(members);
-    assertThat(jedis.zrange(SORTED_SET_KEY, -2, -1)).containsAll(members.subList(3, 4));
-    assertThat(jedis.zrange(SORTED_SET_KEY, -8, -3)).containsAll(members.subList(0, 2));
+    assertThat(jedis.zrange(SORTED_SET_KEY, -5, -1)).containsExactlyElementsOf(members);
+    assertThat(jedis.zrange(SORTED_SET_KEY, -2, -1)).containsExactlyElementsOf(members.subList(3, 5));
+    assertThat(jedis.zrange(SORTED_SET_KEY, -8, -3)).containsExactlyElementsOf(members.subList(0, 3));
   }
 
   @Test
@@ -128,6 +128,15 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
       expected.add(new Tuple(members.get(i), scores.get(i)));
     }
     assertThat(jedis.zrangeWithScores(SORTED_SET_KEY, 0, 5)).isEqualTo(expected);
+  }
+
+  @Test
+  public void shouldDoCorrectLexicalOrdering() {
+    members = new ArrayList<>(Arrays.asList("mem5", "mem4", "mem3", "mem2", "mem1"));
+    scores = new ArrayList<>(Arrays.asList(1d, 1d, 1d, 1d, 1d));
+    createRedisSortedSet("key", members, scores);
+
+    assertThat(jedis.zrange("key", 0, 5)).containsExactly("mem1", "mem2", "mem3", "mem4", "mem5");
   }
 
   private void createRedisSortedSet(String setName, List<String> members, List<Double> scores) {
