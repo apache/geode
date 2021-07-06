@@ -43,7 +43,6 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -53,6 +52,7 @@ import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySen
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.serial.ConcurrentSerialGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderEventProcessor;
+import org.apache.geode.internal.membership.utils.AvailablePort;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClientVM;
