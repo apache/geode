@@ -17,7 +17,6 @@ package org.apache.geode.cache.lucene;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
@@ -32,7 +31,6 @@ public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServe
     extends LuceneSearchWithRollingUpgradeDUnit {
 
   // 2 locator, 2 servers
-  @Ignore
   @Test
   public void luceneQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServersAreRolled()
       throws Exception {
@@ -123,6 +121,5 @@ public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServe
       invokeRunnableInVMs(true, invokeCloseCache(), server1, server2);
     }
   }
-
 
 }

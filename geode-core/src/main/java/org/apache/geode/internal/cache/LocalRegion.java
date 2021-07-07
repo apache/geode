@@ -7488,9 +7488,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   DiskStoreImpl findDiskStore(RegionAttributes regionAttributes,
       InternalRegionArguments internalRegionArgs) {
     // validate that persistent type registry is persistent
-
-
-
     if (getAttributes().getDataPolicy().withPersistence()) {
       getCache().getPdxRegistry().creatingPersistentRegion();
     }

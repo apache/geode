@@ -175,5 +175,4 @@ public class LuceneServiceImplJUnitTest {
     protected void validateAllMembersAreTheSameVersion(PartitionedRegion region) {}
 
   }
-
 }

@@ -1130,7 +1130,6 @@ public class CacheCreation implements InternalCache {
     this.queryConfigurationServiceCreation = queryConfigurationServiceCreation;
   }
 
-
   @Override
   public JSONFormatter getJsonFormatter() {
     return new JSONFormatter();
