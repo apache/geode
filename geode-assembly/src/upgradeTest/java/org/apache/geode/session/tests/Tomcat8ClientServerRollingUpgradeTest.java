@@ -100,7 +100,7 @@ public class Tomcat8ClientServerRollingUpgradeTest {
   }
 
   protected void startServer(String name, String classPath, int locatorPort, GfshRule gfsh,
-      String serverDir) throws Exception {
+      String serverDir) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
     command.addOption(CliStrings.START_SERVER__NAME, name);
     command.addOption(CliStrings.START_SERVER__SERVER_PORT, "0");
@@ -110,10 +110,10 @@ public class Tomcat8ClientServerRollingUpgradeTest {
     gfsh.execute(GfshScript.of(command.toString()).expectExitCode(0));
   }
 
-  protected void startLocator(String name, String classPath, int port, GfshRule gfsh,
-      String locatorDir) throws Exception {
+  protected void startLocator(String classPath, int port, GfshRule gfsh,
+      String locatorDir) {
     CommandStringBuilder locStarter = new CommandStringBuilder(CliStrings.START_LOCATOR);
-    locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, name);
+    locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, "loc");
     locStarter.addOption(CliStrings.START_LOCATOR__CLASSPATH, classPath);
     locStarter.addOption(CliStrings.START_LOCATOR__PORT, Integer.toString(port));
     locStarter.addOption(CliStrings.START_LOCATOR__DIR, locatorDir);
@@ -129,17 +129,22 @@ public class Tomcat8ClientServerRollingUpgradeTest {
     String installLocation = versionManager.getInstall(oldVersion);
     File oldBuild = new File(installLocation);
     File oldModules = new File(installLocation + "/tools/Modules/");
-
+    TomcatInstall.TomcatVersion tomcatVersion = TomcatInstall.TomcatVersion.TOMCAT8_5_66;
+    if (TestVersion.compare(oldVersion, "1.13.2") > 0 ||
+        (TestVersion.compare(oldVersion, "1.13.0") < 0
+            && TestVersion.compare(oldVersion, "1.12.1") > 0)) {
+      tomcatVersion = TomcatInstall.TomcatVersion.TOMCAT8_RECENT;
+    }
 
     tomcat8AndOldModules =
-        new TomcatInstall("Tomcat8AndOldModules", TomcatInstall.TomcatVersion.TOMCAT8,
+        new TomcatInstall("Tomcat8AndOldModules", tomcatVersion,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             oldModules.getAbsolutePath(),
             oldBuild.getAbsolutePath() + "/lib",
             portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
     tomcat8AndCurrentModules =
-        new TomcatInstall("Tomcat8AndCurrentModules", TomcatInstall.TomcatVersion.TOMCAT8,
+        new TomcatInstall("Tomcat8AndCurrentModules", tomcatVersion,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
@@ -195,7 +200,7 @@ public class Tomcat8ClientServerRollingUpgradeTest {
   @Test
   public void canDoARollingUpgradeOfGeodeServersWithSessionModules() throws Exception {
 
-    startLocator("loc", classPathTomcat8AndOldModules, locatorPort, oldGfsh, locatorDir);
+    startLocator(classPathTomcat8AndOldModules, locatorPort, oldGfsh, locatorDir);
     startServer("server1", classPathTomcat8AndOldModules, locatorPort, oldGfsh, server1Dir);
     startServer("server2", classPathTomcat8AndOldModules, locatorPort, oldGfsh, server2Dir);
     createRegion(oldGfsh);
@@ -211,7 +216,7 @@ public class Tomcat8ClientServerRollingUpgradeTest {
 
     // Upgrade the geode locator
     stopLocator(oldGfsh, locatorDir);
-    startLocator("loc", classPathTomcat8AndCurrentModules, locatorPort, currentGfsh, locatorDir);
+    startLocator(classPathTomcat8AndCurrentModules, locatorPort, currentGfsh, locatorDir);
 
     // Upgrade a server
     stopServer(oldGfsh, server1Dir);
