@@ -40,15 +40,8 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
         () -> getRedisSortedSet(key, false).zadd(getRegion(), key, scoresAndMembersToAdd, options));
   }
 
-  @Override
-  public List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores) {
-    return stripedExecute(key,
-        () -> getRedisSortedSet(key, false).zrange(min, max, withScores));
-  }
-
-  @Override
-  public byte[] zscore(RedisKey key, byte[] member) {
-    return stripedExecute(key, () -> getRedisSortedSet(key, true).zscore(member));
+  public long zcard(RedisKey key) {
+    return stripedExecute(key, () -> getRedisSortedSet(key, true).zcard());
   }
 
   @Override
@@ -58,18 +51,29 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
+  public List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores) {
+    return stripedExecute(key,
+        () -> getRedisSortedSet(key, false).zrange(min, max, withScores));
+  }
+
+  @Override
+  public long zrank(RedisKey key, byte[] member) {
+    return stripedExecute(key, () -> getRedisSortedSet(key, true).zrank(member));
+  }
+
+  @Override
   public long zrem(RedisKey key, List<byte[]> membersToRemove) {
     return stripedExecute(key,
         () -> getRedisSortedSet(key, false).zrem(getRegion(), key, membersToRemove));
   }
 
   @Override
-  public long zcard(RedisKey key) {
-    return stripedExecute(key, () -> getRedisSortedSet(key, true).zcard());
+  public long zrevrank(RedisKey key, byte[] member) {
+    return stripedExecute(key, () -> getRedisSortedSet(key, true).zrevrank(member));
   }
 
   @Override
-  public int zrank(RedisKey key, byte[] member) {
-    return stripedExecute(key, () -> getRedisSortedSet(key, true).zrank(member));
+  public byte[] zscore(RedisKey key, byte[] member) {
+    return stripedExecute(key, () -> getRedisSortedSet(key, true).zscore(member));
   }
 }

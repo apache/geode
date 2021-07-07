@@ -21,14 +21,14 @@ import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZRankExecutor extends AbstractExecutor {
+public class ZRevRankExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
 
     List<byte[]> commandElements = command.getProcessedCommand();
 
-    long rank = redisSortedSetCommands.zrank(command.getKey(), commandElements.get(2));
+    long rank = redisSortedSetCommands.zrevrank(command.getKey(), commandElements.get(2));
 
     if (rank == -1) {
       return RedisResponse.nil();
