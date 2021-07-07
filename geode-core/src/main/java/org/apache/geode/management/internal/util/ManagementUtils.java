@@ -34,11 +34,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
@@ -51,6 +51,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
@@ -58,6 +59,9 @@ import org.apache.geode.management.internal.exceptions.UserErrorException;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
 public class ManagementUtils {
+
+  private static final Logger logger = LogService.getLogger();
+
   @Immutable
   public static final FileFilter JAR_FILE_FILTER = new CustomFileFilter(".jar");
 
@@ -170,7 +174,9 @@ public class ManagementUtils {
           regionNames.add(subRegion.getFullPath().substring(1));
         }
 
-      } catch (RegionDestroyedException ignored) {
+      } catch (Exception e) {
+        logger.debug("Cannot get subregions of " + rootRegion.getFullPath()
+            + ". Omitting from the set of region names.", e);
         continue;
       }
 

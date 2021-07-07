@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -61,7 +62,26 @@ public class ManagementUtilsTest {
   }
 
   @Test
-  public void regionDestroyedWhileGettingRegionNames() {
+  public void getAllRegionNamesWithSubregions() {
+    Cache cache = mock(Cache.class);
+
+    Region<?, ?> regionWithSubregion = mock(Region.class);
+    Region<?, ?> regionWithoutSubregions = mock(Region.class);
+    Region<?, ?> subregion = mock(Region.class);
+    List<Region<?, ?>> rootRegions = Arrays.asList(regionWithSubregion, regionWithoutSubregions);
+
+    when(cache.rootRegions()).thenReturn(new HashSet<>(rootRegions));
+    when(regionWithSubregion.subregions(anyBoolean())).thenReturn(Collections.singleton(subregion));
+    when(regionWithSubregion.getFullPath()).thenReturn("/regionWithSubregion");
+    when(regionWithoutSubregions.getFullPath()).thenReturn("/regionWithoutSubregion");
+    when(subregion.getFullPath()).thenReturn("/subregion");
+
+    assertThat(ManagementUtils.getAllRegionNames(cache))
+        .containsExactlyInAnyOrder("regionWithSubregion", "regionWithoutSubregion", "subregion");
+  }
+
+  @Test
+  public void exceptionGettingSubregions() {
     Cache cache = mock(Cache.class);
 
     Region<?, ?> regionDestroyed = mock(Region.class);
