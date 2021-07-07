@@ -15,11 +15,13 @@
  */
 package org.apache.geode.redis.internal.data;
 
+import org.apache.geode.redis.internal.RedisException;
+
 /**
  * This exception is for the case that a client attempts to operate on a data structure of one
  * {@link org.apache.geode.redis.internal.data.RedisDataType} with a command that is of another type
  */
-public class RedisDataTypeMismatchException extends RuntimeException {
+public class RedisDataTypeMismatchException extends RedisException {
 
   private static final long serialVersionUID = -2451663685348513870L;
 

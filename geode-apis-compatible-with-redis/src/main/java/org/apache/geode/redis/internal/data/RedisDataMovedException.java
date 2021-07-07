@@ -15,7 +15,9 @@
 
 package org.apache.geode.redis.internal.data;
 
-public class RedisDataMovedException extends RuntimeException {
+import org.apache.geode.redis.internal.RedisException;
+
+public class RedisDataMovedException extends RedisException {
 
   private static final long serialVersionUID = 8138174496239512955L;
 

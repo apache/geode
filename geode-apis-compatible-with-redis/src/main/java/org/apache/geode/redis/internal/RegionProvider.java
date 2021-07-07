@@ -42,6 +42,9 @@ import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PrimaryBucketLockException;
+import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.data.NullRedisDataStructures;
@@ -84,6 +87,7 @@ public class RegionProvider {
   private static final Map<RedisDataType, RedisData> NULL_TYPES = new HashMap<>();
 
   private final Region<RedisKey, RedisData> dataRegion;
+  private final PartitionedRegion partitionedRegion;
   private final RedisHashCommandsFunctionExecutor hashCommands;
   private final RedisSetCommandsFunctionExecutor setCommands;
   private final RedisStringCommandsFunctionExecutor stringCommands;
@@ -118,6 +122,7 @@ public class RegionProvider {
     redisDataRegionFactory.setPartitionAttributes(attributesFactory.create());
 
     dataRegion = redisDataRegionFactory.create(REDIS_DATA_REGION);
+    partitionedRegion = (PartitionedRegion) dataRegion;
 
     stringCommands = new RedisStringCommandsFunctionExecutor(this);
     setCommands = new RedisSetCommandsFunctionExecutor(this);
@@ -145,7 +150,16 @@ public class RegionProvider {
   }
 
   public <T> T execute(Object key, Callable<T> callable) {
-    return stripedExecutor.execute(key, callable);
+    try {
+      return partitionedRegion.computeWithPrimaryLocked(key,
+          () -> stripedExecutor.execute(key, callable));
+    } catch (PrimaryBucketLockException | BucketMovedException ex) {
+      throw createRedisDataMovedException((RedisKey) key);
+    } catch (RedisException bex) {
+      throw bex;
+    } catch (Exception ex) {
+      throw new RedisException(ex);
+    }
   }
 
   public RedisData getRedisData(RedisKey key) {
@@ -161,10 +175,7 @@ public class RegionProvider {
       }
     } else {
       if (!getSlotAdvisor().isLocal(key)) {
-        RedisMemberInfo memberInfo = getRedisMemberInfo(key);
-        Integer slot = key.getCrc16() & (REDIS_SLOTS - 1);
-        throw new RedisDataMovedException(slot, memberInfo.getHostAddress(),
-            memberInfo.getRedisPort());
+        throw createRedisDataMovedException(key);
       }
     }
     if (result == null) {
@@ -172,6 +183,13 @@ public class RegionProvider {
     } else {
       return result;
     }
+  }
+
+  private RedisDataMovedException createRedisDataMovedException(RedisKey key) {
+    RedisMemberInfo memberInfo = getRedisMemberInfo(key);
+    Integer slot = key.getCrc16() & (REDIS_SLOTS - 1);
+    return new RedisDataMovedException(slot, memberInfo.getHostAddress(),
+        memberInfo.getRedisPort());
   }
 
   private RedisMemberInfo getRedisMemberInfo(RedisKey key) {

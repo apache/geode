@@ -609,7 +609,7 @@ public class PartitionedRegion extends LocalRegion
     return redundancyTracker;
   }
 
-  public void computeWithPrimaryLocked(Object key, Runnable r) throws PrimaryBucketLockException {
+  public <T> T computeWithPrimaryLocked(Object key, Callable<T> callable) throws Exception {
     int bucketId = PartitionedRegionHelper.getHashKey(this, null, key, null, null);
 
     BucketRegion br;
@@ -626,7 +626,7 @@ public class PartitionedRegion extends LocalRegion
     }
 
     try {
-      r.run();
+      return callable.call();
     } finally {
       br.doUnlockForPrimary();
     }

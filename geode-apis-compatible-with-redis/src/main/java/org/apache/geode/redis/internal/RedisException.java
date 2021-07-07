@@ -30,6 +30,10 @@ public class RedisException extends RuntimeException {
     super(message);
   }
 
+  public RedisException(Throwable throwable) {
+    super(throwable);
+  }
+
   public RedisException(String message, Throwable throwable) {
     super(message, throwable);
   }
