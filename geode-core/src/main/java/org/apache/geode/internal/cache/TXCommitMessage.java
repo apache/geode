@@ -1294,14 +1294,21 @@ public class TXCommitMessage extends PooledDistributionMessage
         /*
          * This happens when we don't have the bucket and are getting adjunct notification
          */
+        long tailKey = entryOp.tailKey;
+        if (entryOp.filterRoutingInfo != null) {
+          if (entryOp.filterRoutingInfo.getMembers().contains(this.internalRegion.getMyId())) {
+            tailKey = -1;
+          }
+        }
+
         // No need to release because it is added to pendingCallbacks and they will be released
         // later
         EntryEventImpl eei =
             txCallbackEventFactory.createCallbackEvent(this.internalRegion, entryOp.op,
                 entryOp.key,
-                entryOp.value, this.msg.txIdent, txEvent, getEventId(entryOp), entryOp.callbackArg,
-                entryOp.filterRoutingInfo, this.msg.bridgeContext, null, entryOp.versionTag,
-                entryOp.tailKey);
+                entryOp.value, msg.txIdent, txEvent, getEventId(entryOp), entryOp.callbackArg,
+                entryOp.filterRoutingInfo, msg.bridgeContext, null, entryOp.versionTag, tailKey);
+
         if (entryOp.filterRoutingInfo != null) {
           eei.setLocalFilterInfo(
               entryOp.filterRoutingInfo.getFilterInfo(this.internalRegion.getCache().getMyId()));
