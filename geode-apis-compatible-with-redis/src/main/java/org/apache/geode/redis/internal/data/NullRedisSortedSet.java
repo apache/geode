@@ -79,7 +79,7 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   private Object zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
-                          List<byte[]> membersToAdd) {
+      List<byte[]> membersToAdd) {
     // for zadd incr option, only one incrementing element pair is allowed to get here.
     byte[] increment = membersToAdd.get(0);
     byte[] member = membersToAdd.get(1);
