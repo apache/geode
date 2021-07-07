@@ -21,6 +21,7 @@ import static org.apache.geode.redis.internal.data.RedisSortedSet.BASE_REDIS_SOR
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -300,6 +302,89 @@ public class RedisSortedSetTest {
     actual = sortedSet.getSizeInBytes();
     offset = Offset.offset((int) round(expected * 0.03));
     assertThat(actual).isCloseTo(expected, offset);
+  }
+
+  RedisSortedSet rangeSortedSet =
+      createRedisSortedSet(
+          "1.0", member1, "1.1", member2, "1.2", "member3", "1.3", "member4",
+          "1.4", "member5", "1.5", "member6", "1.6", "member7", "1.7", "member8",
+          "1.8", "member9", "1.9", "member10", "2.0", "member11", "2.1", "member12");
+
+  @Test
+  public void zrange_ShouldReturnEmptyList_GivenInvalidRanges() {
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(5, 0, false);
+    assertThat(rangeList).isEmpty();
+    rangeList = rangeSortedSet.zrange(13, 15, false);
+    assertThat(rangeList).isEmpty();
+    rangeList = rangeSortedSet.zrange(17, -2, false);
+    assertThat(rangeList).isEmpty();
+    rangeList = rangeSortedSet.zrange(12, 12, false);
+    assertThat(rangeList).isEmpty();
+  }
+
+  @Test
+  public void zrange_ShouldReturnSimpleRanges() {
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(0, 5, false);
+    assertThat(rangeList).hasSize(6);
+    assertThat(rangeList)
+        .containsExactly("member1".getBytes(), "member2".getBytes(), "member3".getBytes(),
+            "member4".getBytes(), "member5".getBytes(), "member6".getBytes());
+
+    rangeList = rangeSortedSet.zrange(5, 10, false);
+    assertThat(rangeList).hasSize(6);
+    assertThat(rangeList)
+        .containsExactly("member6".getBytes(), "member7".getBytes(), "member8".getBytes(),
+            "member9".getBytes(), "member10".getBytes(), "member11".getBytes());
+
+    rangeList = rangeSortedSet.zrange(10, 13, false);
+    assertThat(rangeList).hasSize(2);
+    assertThat(rangeList).containsExactly("member11".getBytes(), "member12".getBytes());
+  }
+
+  @Test
+  public void zrange_ShouldReturnRanges_SpecifiedWithNegativeOffsets() {
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(-2, 12, false);
+    assertThat(rangeList).hasSize(2);
+    assertThat(rangeList).containsExactly("member11".getBytes(), "member12".getBytes());
+
+    rangeList = rangeSortedSet.zrange(-6, -1, false);
+    assertThat(rangeList).hasSize(6);
+    assertThat(rangeList)
+        .containsExactly("member7".getBytes(), "member8".getBytes(),
+            "member9".getBytes(), "member10".getBytes(), "member11".getBytes(),
+            "member12".getBytes());
+
+    rangeList = rangeSortedSet.zrange(-11, -5, false);
+    assertThat(rangeList).hasSize(7);
+    assertThat(rangeList)
+        .containsExactly("member2".getBytes(), "member3".getBytes(),
+            "member4".getBytes(), "member5".getBytes(), "member6".getBytes(),
+            "member7".getBytes(), "member8".getBytes());
+
+    rangeList = rangeSortedSet.zrange(-12, -11, false);
+    assertThat(rangeList).hasSize(2);
+    assertThat(rangeList)
+        .containsExactly("member1".getBytes(), "member2".getBytes());
+  }
+
+  @Test
+  public void zrange_shouldAlsoReturnScores_whenWithScoresSpecified() {
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(0, 5, true);
+    assertThat(rangeList).hasSize(12);
+    assertThat(rangeList).containsExactly("member1".getBytes(), "1.0".getBytes(),
+        "member2".getBytes(), "1.1".getBytes(), "member3".getBytes(), "1.2".getBytes(),
+        "member4".getBytes(), "1.3".getBytes(), "member5".getBytes(), "1.4".getBytes(),
+        "member6".getBytes(), "1.5".getBytes());
+  }
+
+  @Test
+  public void scoreSet_shouldNotRetainOldEntries_whenEntriesUpdated() {
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(0, 100, false);
+    assertThat(rangeList).hasSize(12);
+    assertThat(rangeList).containsExactly("member1".getBytes(), "member2".getBytes(),
+        "member3".getBytes(), "member4".getBytes(), "member5".getBytes(),
+        "member6".getBytes(), "member7".getBytes(), "member8".getBytes(),
+        "member9".getBytes(), "member10".getBytes(), "member11".getBytes(), "member12".getBytes());
   }
 
   private RedisSortedSet createRedisSortedSet(String... membersAndScores) {

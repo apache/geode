@@ -28,6 +28,7 @@ package org.apache.geode.redis.internal.collections;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -568,5 +569,43 @@ public class OrderStatisticsTreeTest {
     assertThat(array1after).isSameAs(array1before);
     assertThat(array2after).isSameAs(array2before);
     assertThat(array2after).isEqualTo(array1after);
+  }
+
+  @Test
+  public void testGetIndexRange() {
+    for (int i = 0; i < 100; ++i) {
+      tree.add(i);
+    }
+
+    ArrayList<Integer> subSet = new ArrayList<>();
+    Iterator<Integer> subIterator = tree.getIndexRange(0, 9);
+    while (subIterator.hasNext()) {
+      subSet.add(subIterator.next());
+    }
+    assertThat(subSet.size()).isEqualTo(10);
+    assertThat(subSet).containsExactly(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+    subSet.clear();
+    subIterator = tree.getIndexRange(95, 110);
+    while (subIterator.hasNext()) {
+      subSet.add(subIterator.next());
+    }
+    assertThat(subSet.size()).isEqualTo(5);
+    assertThat(subSet).containsExactly(95, 96, 97, 98, 99);
+
+    subSet.clear();
+    subIterator = tree.getIndexRange(45, 55);
+    while (subIterator.hasNext()) {
+      subSet.add(subIterator.next());
+    }
+    assertThat(subSet.size()).isEqualTo(11);
+    assertThat(subSet).containsExactly(45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55);
+
+    subSet.clear();
+    subIterator = tree.getIndexRange(10, 0);
+    while (subIterator.hasNext()) {
+      subSet.add(subIterator.next());
+    }
+    assertThat(subSet.size()).isEqualTo(0);
   }
 }

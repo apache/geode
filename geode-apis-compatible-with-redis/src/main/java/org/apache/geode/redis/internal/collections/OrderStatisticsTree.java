@@ -48,7 +48,6 @@ import org.apache.geode.annotations.VisibleForTesting;
  */
 public class OrderStatisticsTree<E extends Comparable<? super E>>
     implements OrderStatisticsSet<E> {
-
   private Node<E> root;
   private int size;
   private int modCount;
@@ -203,6 +202,26 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
 
     fixAfterModification(newNode, true);
     return true;
+  }
+
+  public Iterator<E> getIndexRange(int min, int max) {
+    return new TreeIterator(getNode(min), max - min);
+  }
+
+  private Node<E> getNode(int index) {
+    checkIndex(index);
+    Node<E> node = root;
+
+    while (true) {
+      if (index > node.count) {
+        index -= node.count + 1;
+        node = node.right;
+      } else if (index < node.count) {
+        node = node.left;
+      } else {
+        return node;
+      }
+    }
   }
 
   @Override
@@ -466,6 +485,14 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     return node;
   }
 
+  private Node<E> maximumNode(Node<E> node) {
+    while (node.right != null) {
+      node = node.right;
+    }
+
+    return node;
+  }
+
   private int height(Node<E> node) {
     return node == null ? -1 : node.height;
   }
@@ -708,6 +735,8 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     private Node<E> previousNode;
     private Node<E> nextNode;
     private int expectedModCount = modCount;
+    private int limitIndex = Integer.MAX_VALUE;
+    private int indexCount = 0;
 
     TreeIterator() {
       if (root == null) {
@@ -717,14 +746,19 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
       }
     }
 
+    TreeIterator(Node<E> startNode, int maxIndex) {
+      nextNode = startNode;
+      limitIndex = maxIndex;
+    }
+
     @Override
     public boolean hasNext() {
-      return nextNode != null;
+      return indexCount <= limitIndex && nextNode != null;
     }
 
     @Override
     public E next() {
-      if (nextNode == null) {
+      if (nextNode == null || indexCount > limitIndex) {
         throw new NoSuchElementException("Iteration exceeded.");
       }
 
@@ -732,6 +766,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
       E datum = nextNode.key;
       previousNode = nextNode;
       nextNode = successorOf(nextNode);
+      indexCount++;
       return datum;
     }
 

@@ -42,7 +42,7 @@ class NullRedisSortedSet extends RedisSortedSet {
       if (options.isINCR()) {
         return null;
       }
-      return 0L;
+      return 0;
     }
 
     if (options.isINCR()) {
@@ -86,4 +86,9 @@ class NullRedisSortedSet extends RedisSortedSet {
     return -1;
   }
 
+  @Override
+  List<byte[]> zrange(int min, int max,
+      boolean withScores) {
+    return null;
+  }
 }

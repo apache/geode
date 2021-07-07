@@ -171,11 +171,13 @@ public class RedisSortedSet extends AbstractRedisData {
     byte[] oldScore = null;
 
     OrderedSetEntry newEntry = new OrderedSetEntry(memberToAdd, scoreToAdd);
-    scoreSet.add(newEntry);
     OrderedSetEntry orderedSetEntry = members.put(memberToAdd, newEntry);
     if (orderedSetEntry == null) {
+      scoreSet.add(newEntry);
       sizeInBytes += calculateSizeOfFieldValuePair(memberToAdd, scoreToAdd);
     } else {
+      scoreSet.remove(orderedSetEntry);
+      scoreSet.add(newEntry);
       oldScore = orderedSetEntry.getScoreBytes();
       sizeInBytes += scoreToAdd.length - oldScore.length;
     }
@@ -312,10 +314,46 @@ public class RedisSortedSet extends AbstractRedisData {
     return membersRemoved;
   }
 
+  List<byte[]> zrange(int min, int max, boolean withScores) {
+    ArrayList<byte[]> result = new ArrayList<>();
+    int start = getBoundedStartIndex(min, getSortedSetSize());
+    int end = getBoundedEndIndex(max, getSortedSetSize());
+    if (start > end || start == getSortedSetSize()) {
+      return result;
+    }
+
+    Iterator<OrderedSetEntry> entryIterator = scoreSet.getIndexRange(start, end);
+    while (entryIterator.hasNext()) {
+      OrderedSetEntry entry = entryIterator.next();
+      result.add(entry.member);
+      if (withScores) {
+        result.add(entry.scoreBytes);
+      }
+    }
+    return result;
+  }
+
+  private int getBoundedStartIndex(int index, int size) {
+    if (index >= 0L) {
+      return Math.min(index, size);
+    } else {
+      return Math.max(index + size, 0);
+    }
+  }
+
+  private int getBoundedEndIndex(long index, int size) {
+    if (index >= 0L) {
+      return (int) Math.min(index, size);
+    } else {
+      return (int) Math.max(index + size, -1);
+    }
+  }
+
   synchronized byte[] memberRemove(byte[] member) {
     byte[] oldValue = null;
     OrderedSetEntry orderedSetEntry = members.remove(member);
     if (orderedSetEntry != null) {
+      scoreSet.remove(orderedSetEntry);
       oldValue = orderedSetEntry.getScoreBytes();
       sizeInBytes -= calculateSizeOfFieldValuePair(member, oldValue);
     }
@@ -395,6 +433,10 @@ public class RedisSortedSet extends AbstractRedisData {
 
     public byte[] getScoreBytes() {
       return scoreBytes;
+    }
+
+    public byte[] getMember() {
+      return member;
     }
 
     @Override

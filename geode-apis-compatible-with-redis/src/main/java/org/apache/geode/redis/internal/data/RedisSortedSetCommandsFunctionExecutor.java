@@ -41,6 +41,12 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
+  public List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores) {
+    return stripedExecute(key,
+        () -> getRedisSortedSet(key, false).zrange(min, max, withScores));
+  }
+
+  @Override
   public byte[] zscore(RedisKey key, byte[] member) {
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zscore(member));
   }

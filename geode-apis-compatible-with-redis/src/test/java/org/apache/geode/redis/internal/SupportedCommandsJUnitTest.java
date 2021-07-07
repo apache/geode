@@ -90,6 +90,7 @@ public class SupportedCommandsJUnitTest {
       "ZADD",
       "ZINCRBY",
       "ZCARD",
+      "ZRANGE",
       "ZRANK",
       "ZREM",
       "ZSCORE"

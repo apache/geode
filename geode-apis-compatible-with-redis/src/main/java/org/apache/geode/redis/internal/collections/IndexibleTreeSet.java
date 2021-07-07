@@ -23,6 +23,7 @@ import java.util.TreeSet;
  * Only for testing and performance comparisons.
  */
 class IndexibleTreeSet<E> extends TreeSet<E> implements OrderStatisticsSet<E> {
+
   private static final long serialVersionUID = 521865987126101683L;
 
   @Override
@@ -46,5 +47,10 @@ class IndexibleTreeSet<E> extends TreeSet<E> implements OrderStatisticsSet<E> {
   @Override
   public int indexOf(E element) {
     return headSet(element).size();
+  }
+
+  @Override
+  public Iterator<E> getIndexRange(int min, int max) {
+    return null;
   }
 }
