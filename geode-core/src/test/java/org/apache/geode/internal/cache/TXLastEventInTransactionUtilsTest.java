@@ -126,7 +126,7 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event2);
 
     EntryEventImpl lastTransactionEvent =
-        TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache);
+        TXLastEventInTransactionUtils.getLastTransactionEventInGroupedTxForWANSender(events, cache);
 
     assertEquals(null, lastTransactionEvent);
   }
@@ -141,7 +141,7 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event2);
 
     EntryEventImpl lastTransactionEvent =
-        TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache);
+        TXLastEventInTransactionUtils.getLastTransactionEventInGroupedTxForWANSender(events, cache);
 
     assertEquals(event2, lastTransactionEvent);
   }
@@ -156,7 +156,7 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event2);
 
     EntryEventImpl lastTransactionEvent =
-        TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache);
+        TXLastEventInTransactionUtils.getLastTransactionEventInGroupedTxForWANSender(events, cache);
 
     assertEquals(event2, lastTransactionEvent);
   }
@@ -170,9 +170,10 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event1);
     events.add(event2);
 
-    assertThatThrownBy(() -> TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache))
-        .isInstanceOf(ServiceConfigurationError.class)
-        .hasMessageContaining("Not all events go to the same senders that group transactions");
+    assertThatThrownBy(() -> TXLastEventInTransactionUtils
+        .getLastTransactionEventInGroupedTxForWANSender(events, cache))
+            .isInstanceOf(ServiceConfigurationError.class)
+            .hasMessageContaining("Not all events go to the same senders that group transactions");
   }
 
   @Test
@@ -184,7 +185,9 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event1);
     events.add(event2);
 
-    assertThat(TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache)).isNull();
+    assertThat(
+        TXLastEventInTransactionUtils.getLastTransactionEventInGroupedTxForWANSender(events, cache))
+            .isNull();
   }
 
   private EntryEventImpl createMockEntryEventImpl(InternalRegion region) {
