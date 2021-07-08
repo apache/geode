@@ -17,7 +17,7 @@
 
 benchmarks:
   baseline_branch: ''
-  baseline_version: '1.13.3'
+  baseline_version: '217be41f087072026ea3b411b89107700edfb5f7'
   benchmark_branch: ((geode-build-branch))
   flavors:
   - title: 'base'
