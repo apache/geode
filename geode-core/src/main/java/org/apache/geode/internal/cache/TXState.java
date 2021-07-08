@@ -486,7 +486,7 @@ public class TXState implements TXStateInterface {
         }
       }
 
-      List<TXEntryStateWithRegionAndKey> entries = generateEventOffsets();
+      List/* <TXEntryStateWithRegionAndKey> */ entries = generateEventOffsets();
       TXCommitMessage msg = null;
       try {
 
@@ -565,9 +565,11 @@ public class TXState implements TXStateInterface {
     }
   }
 
-  protected void attachFilterProfileInformation(List<TXEntryStateWithRegionAndKey> entries) {
+  protected void attachFilterProfileInformation(List entries) {
     {
-      for (TXEntryStateWithRegionAndKey o : entries) {
+      Iterator/* <TXEntryStateWithRegionAndKey> */ it = entries.iterator();
+      while (it.hasNext()) {
+        TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) it.next();
         try {
           if (o.r.isUsedForPartitionedRegionBucket()) {
             BucketRegion bucket = (BucketRegion) o.r;
@@ -654,18 +656,20 @@ public class TXState implements TXStateInterface {
    * @return a sorted list of TXEntryStateWithRegionAndKey that will be used to apply the ops on the
    *         nearside in the correct order.
    */
-  protected List<TXEntryStateWithRegionAndKey> generateEventOffsets() {
+  protected List/* <TXEntryStateWithRegionAndKey> */ generateEventOffsets() {
     this.baseMembershipId = EventID.getMembershipId(this.proxy.getTxMgr().getDM().getSystem());
     this.baseThreadId = EventID.getThreadId();
     this.baseSequenceId = EventID.getSequenceId();
 
-    List<TXEntryStateWithRegionAndKey> entries = getSortedEntries();
+    List/* <TXEntryStateWithRegionAndKey> */ entries = getSortedEntries();
     if (logger.isDebugEnabled()) {
       logger
           .debug("generateEventOffsets() entries " + entries + " RegionState Map=" + this.regions);
     }
-    for (TXEntryStateWithRegionAndKey txEntryStateWithRegionAndKey : entries) {
-      txEntryStateWithRegionAndKey.es.generateEventOffsets(this);
+    Iterator it = entries.iterator();
+    while (it.hasNext()) {
+      TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) it.next();
+      o.es.generateEventOffsets(this);
     }
     return entries;
   }
@@ -818,7 +822,7 @@ public class TXState implements TXStateInterface {
   /**
    * applies this transaction to the cache.
    */
-  protected void applyChanges(List<TXEntryStateWithRegionAndKey> entries) {
+  protected void applyChanges(List/* <TXEntryStateWithRegionAndKey> */ entries) {
     // applyChangesStart for each region
     for (Map.Entry<InternalRegion, TXRegionState> me : this.regions.entrySet()) {
       InternalRegion r = me.getKey();
@@ -827,17 +831,19 @@ public class TXState implements TXStateInterface {
     }
 
     // serializePendingValue for each entry
-    for (TXEntryStateWithRegionAndKey entry : entries) {
-      entry.es.serializePendingValue();
+    for (Object entry : entries) {
+      TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) entry;
+      o.es.serializePendingValue();
     }
 
     // applyChanges for each entry
-    for (TXEntryStateWithRegionAndKey entry : entries) {
+    for (Object entry : entries) {
+      TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) entry;
       if (this.internalDuringApplyChanges != null) {
         this.internalDuringApplyChanges.run();
       }
       try {
-        entry.es.applyChanges(entry.r, entry.key, this);
+        o.es.applyChanges(o.r, o.key, this);
       } catch (RegionDestroyedException ex) {
         // region was destroyed out from under us; after conflict checking
         // passed. So act as if the region destroy happened right after the
@@ -972,8 +978,8 @@ public class TXState implements TXStateInterface {
     }
   }
 
-  private List<TXEntryStateWithRegionAndKey> getSortedEntries() {
-    ArrayList<TXEntryStateWithRegionAndKey> entries = new ArrayList();
+  private List/* <TXEntryStateWithRegionAndKey> */ getSortedEntries() {
+    ArrayList/* <TXEntryStateWithRegionAndKey> */ entries = new ArrayList();
     Iterator it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry me = (Map.Entry) it.next();
@@ -986,13 +992,6 @@ public class TXState implements TXStateInterface {
     } else {
       Collections.sort(entries);
       return entries;
-    }
-  }
-
-  public void setTailKeyOnEntries(long tailKey) {
-    List<TXEntryStateWithRegionAndKey> entries = getSortedEntries();
-    for (TXEntryStateWithRegionAndKey o : entries) {
-      o.es.setTailKey(tailKey);
     }
   }
 

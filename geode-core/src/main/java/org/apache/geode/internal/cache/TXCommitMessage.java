@@ -128,11 +128,6 @@ public class TXCommitMessage extends PooledDistributionMessage
   private transient boolean hasReliableRegions = false;
 
   /**
-   * Member that requires notification only message.
-   */
-  private transient Set<InternalDistributedMember> notificationOnlyMembers = Collections.emptySet();
-
-  /**
    * Set of all caching exceptions produced while processing this tx
    */
   private transient Set processingExceptions = Collections.emptySet();
@@ -199,14 +194,6 @@ public class TXCommitMessage extends PooledDistributionMessage
   protected EventID getEventId(int eventOffset) {
     return new EventID(this.farsideBaseMembershipId, this.farsideBaseThreadId,
         this.farsideBaseSequenceId + eventOffset);
-  }
-
-  public void setNotificationOnlyMembers(Set<InternalDistributedMember> members) {
-    this.notificationOnlyMembers = members;
-  }
-
-  public Set<InternalDistributedMember> getNotificationOnlyMembers() {
-    return this.notificationOnlyMembers;
   }
 
   /**
@@ -404,16 +391,9 @@ public class TXCommitMessage extends PooledDistributionMessage
                 setRecipientsSendData(Collections.singleton(indivRecip.next()), processor, rcl);
               }
             } else {
-              if (this.notificationOnlyMembers.isEmpty()) {
-                // Run in normal mode sending to multiple recipients in one shot
-                setRecipientsSendData(recipients, processor, rcl);
-              } else {
-                recipients.removeAll(this.notificationOnlyMembers);
-                setRecipientsSendData(recipients, processor, rcl);
-
-                this.txState.setTailKeyOnEntries(-1L);
-                setRecipientsSendData(notificationOnlyMembers, processor, rcl);
-              }
+              // Run in normal mode sending to multiple recipients in
+              // one shot
+              setRecipientsSendData(recipients, processor, rcl);
             }
           }
         }
