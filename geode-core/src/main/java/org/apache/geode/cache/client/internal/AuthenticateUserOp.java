@@ -33,7 +33,6 @@ import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.command.PutUserCredentials;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -44,7 +43,7 @@ import org.apache.geode.security.NotAuthorizedException;
  * Authenticates this client (or a user) on a server. This op ideally should get executed
  * once-per-server.
  *
- * When multiuser-authentication is set to false, this op gets executed immedialtely after a
+ * When multiuser-authentication is set to false, this op gets executed immediately after a
  * client-to-server connection is established.
  *
  * When multiuser-authentication is set to true, this op gets executed before the user attempts to
@@ -63,9 +62,9 @@ public class AuthenticateUserOp {
    * @param pool The connection pool to use for this operation.
    * @return Object unique user-id.
    */
-  public static Object executeOn(Connection con, ExecutablePool pool) {
+  public static Long executeOn(Connection con, ExecutablePool pool) {
     AbstractOp op = new AuthenticateUserOpImpl(con);
-    return pool.executeOn(con, op);
+    return (Long) pool.executeOn(con, op);
   }
 
   /**
@@ -77,10 +76,10 @@ public class AuthenticateUserOp {
    * @param pool The connection pool to use for this operation.
    * @return Object unique user-id.
    */
-  public static Object executeOn(ServerLocation location, ExecutablePool pool,
+  public static Long executeOn(ServerLocation location, ExecutablePool pool,
       Properties securityProps) {
     AbstractOp op = new AuthenticateUserOpImpl(securityProps);
-    return pool.executeOn(location, op);
+    return (Long) pool.executeOn(location, op);
   }
 
   private AuthenticateUserOp() {
@@ -103,8 +102,7 @@ public class AuthenticateUserOp {
 
       // LOG: following passes the DS API LogWriters into the security API
       Properties credentials = Handshake.getCredentials(authInitMethod, tmpSecurityProperties,
-          server, false, (InternalLogWriter) sys.getLogWriter(),
-          (InternalLogWriter) sys.getSecurityLogWriter());
+          server, false, sys.getLogWriter(), sys.getSecurityLogWriter());
 
       getMessage().setMessageHasSecurePartFlag();
       try (HeapDataOutputStream heapdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
@@ -141,8 +139,7 @@ public class AuthenticateUserOp {
         String authInitMethod = sys.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
 
         Properties credentials = Handshake.getCredentials(authInitMethod, securityProperties,
-            server, false, (InternalLogWriter) sys.getLogWriter(),
-            (InternalLogWriter) sys.getSecurityLogWriter());
+            server, false, sys.getLogWriter(), sys.getSecurityLogWriter());
         byte[] credentialBytes;
         try (HeapDataOutputStream heapdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
           DataSerializer.writeProperties(credentials, heapdos);
