@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -94,7 +95,8 @@ public class PdxToJSON {
     return (pdxObj != null ? JSONFormatter.toJSON(pdxObj) : null);
   }
 
-  private void writeValue(JsonGenerator jg, Object value, String pf)
+  @VisibleForTesting
+  protected void writeValue(JsonGenerator jg, Object value, String pf)
       throws JsonGenerationException, IOException {
 
     if (value == null) {
@@ -135,17 +137,16 @@ public class PdxToJSON {
       jg.writeString(value.toString());
     } else if (value.getClass().equals(PdxInstanceEnumInfo.class)) {
       jg.writeString(value.toString());
+    } else if (value instanceof PdxInstance) {
+      getJSONString(jg, (PdxInstance) value);
+    } else if (value instanceof Collection) {
+      getJSONStringFromCollection(jg, (Collection<?>) value, pf);
+    } else if (value instanceof Map) {
+      getJSONStringFromMap(jg, (Map) value, pf);
     } else {
-      if (value instanceof PdxInstance) {
-        getJSONString(jg, (PdxInstance) value);
-      } else if (value instanceof Collection) {
-        getJSONStringFromCollection(jg, (Collection<?>) value, pf);
-      } else if (value instanceof Map) {
-        getJSONStringFromMap(jg, (Map) value, pf);
-      } else {
-        throw new IllegalStateException(
-            "PdxInstance returns unknwon pdxfield " + pf + " for type " + value);
-      }
+      throw new IllegalStateException(
+          "The pdx field " + pf + " has a value " + value + " whose type " + value.getClass()
+              + " can not be converted to JSON.");
     }
   }
 
@@ -180,10 +181,15 @@ public class PdxToJSON {
     return null;
   }
 
-  private void getJSONStringFromArray(JsonGenerator jg, Object value, String pf)
+  @VisibleForTesting
+  protected void getJSONStringFromArray(JsonGenerator jg, Object value, String pf)
       throws JsonGenerationException, IOException {
 
-    if (value.getClass().getName().equals("[Z")) {
+    if (!value.getClass().isArray()) {
+      throw new IllegalStateException(
+          "Expected an array for pdx field " + pf + ", but got an object of type "
+              + value.getClass());
+    } else if (value.getClass().getName().equals("[Z")) {
       JsonHelper.getJsonFromPrimitiveBoolArray(jg, (boolean[]) value, pf);
     } else if (value.getClass().getName().equals("[B")) {
       JsonHelper.getJsonFromPrimitiveByteArray(jg, (byte[]) value, pf);
@@ -226,7 +232,9 @@ public class PdxToJSON {
       jg.writeEndArray();
     } else {
       throw new IllegalStateException(
-          "PdxInstance returns unknown pdxfield " + pf + " for type " + value);
+          "The pdx field " + pf + " is an array whose component type "
+              + value.getClass().getComponentType()
+              + " can not be converted to JSON.");
     }
   }
 

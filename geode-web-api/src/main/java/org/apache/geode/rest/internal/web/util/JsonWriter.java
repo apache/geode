@@ -178,7 +178,11 @@ public class JsonWriter {
   public static void writeArrayAsJson(JsonGenerator generator, Object value, String pdxField)
       throws JsonGenerationException, IOException {
 
-    if (value.getClass().getName().equals("[Z")) {
+    if (!value.getClass().isArray()) {
+      throw new IllegalStateException(
+          "Expected an array for pdx field " + pdxField + ", but got an object of type "
+              + value.getClass());
+    } else if (value.getClass().getName().equals("[Z")) {
       writePrimitiveBoolArrayAsJson(generator, (boolean[]) value);
     } else if (value.getClass().getName().equals("[B")) {
       writePrimitiveByteArrayAsJson(generator, (byte[]) value);
@@ -216,7 +220,9 @@ public class JsonWriter {
       writeObjectArrayAsJson(generator, (Object[]) value, pdxField);
     } else {
       throw new IllegalStateException(
-          "PdxInstance returns unknwon pdxfield " + pdxField + " for type " + value);
+          "The pdx field " + pdxField + " is an array whose component type "
+              + value.getClass().getComponentType()
+              + " can not be converted to JSON.");
     }
   }
 
