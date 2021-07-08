@@ -97,7 +97,7 @@ public class CrashAndNoRepeatDUnitTest {
     lettuce = clusterClient.connect().sync();
 
     RetryConfig config = RetryConfig.custom()
-        .maxAttempts(20)
+        .maxAttempts(30)
         .retryOnException(e -> anyCauseContains(e, "Connection reset by peer")
             || anyCauseContains(e, "Unable to connect"))
         .build();
