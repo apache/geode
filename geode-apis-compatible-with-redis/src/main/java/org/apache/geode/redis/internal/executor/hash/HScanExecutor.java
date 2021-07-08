@@ -49,8 +49,7 @@ public class HScanExecutor extends AbstractScanExecutor {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
 
