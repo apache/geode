@@ -514,7 +514,7 @@ public class RedisSortedSet extends AbstractRedisData {
         // For use in (this <= other) and (this > other) comparisons
         this.member = bLEAST_MEMBER_NAME;
       }
-      this.scoreBytes = new byte[] {};
+      this.scoreBytes = null;
       this.score = score;
     }
   }

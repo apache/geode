@@ -54,7 +54,7 @@ public interface OrderStatisticsSet<T> extends Set<T> {
 
   /**
    * Returns the index of <code>element</code> in the sorted set. If the element is not present in
-   * the set, returns the index it would have if it was present
+   * the set, returns the index it would have if it were present.
    *
    * @param element the query element.
    * @return the index of the query element.
