@@ -131,7 +131,7 @@ public class PoolImpl implements InternalPool {
 
   private final ConnectionSource source;
   private final ConnectionManager manager;
-  private QueueManager queueManager;
+  private final QueueManager queueManager;
   protected final EndpointManager endpointManager;
   private final PoolManagerImpl pm;
   protected final InternalLogWriter securityLogWriter;
@@ -274,6 +274,8 @@ public class PoolImpl implements InternalPool {
     if (subscriptionEnabled) {
       queueManager = new QueueManagerImpl(this, endpointManager, source, connectionFactory,
           subscriptionRedundancyLevel, pingInterval, securityLogWriter, proxyId);
+    } else {
+      queueManager = null;
     }
 
     manager = new ConnectionManagerImpl(name, connectionFactory, endpointManager, maxConnections,
