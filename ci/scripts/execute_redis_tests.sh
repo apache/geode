@@ -58,7 +58,6 @@ failCount=0
   --server-port=0 \
   --compatible-with-redis-port=6379 \
   --compatible-with-redis-bind-address=127.0.0.1 \
-  --server-port=0 \
   --J=-Dgemfire.jmx-manager=true \
   --J=-Dgemfire.jmx-manager-start=true \
   --J=-Dgemfire.jmx-manager-port=1100
