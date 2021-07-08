@@ -14,6 +14,10 @@
  */
 package org.apache.geode.session.tests;
 
+import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT7;
+import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT8;
+import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT9_0_20;
+import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT9_RECENT;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -22,6 +26,7 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
 
+import org.codehaus.cargo.container.ContainerException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -75,28 +80,33 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
   protected File oldBuild;
   protected File oldModules;
 
-  protected TomcatInstall tomcat7079AndOldModules;
-  protected TomcatInstall tomcat7079AndCurrentModules;
+  protected TomcatInstall tomcat7AndOldModules;
+  protected TomcatInstall tomcat7AndCurrentModules;
   protected TomcatInstall tomcat8AndOldModules;
   protected TomcatInstall tomcat8AndCurrentModules;
+  protected TomcatInstall tomcat9AndOldModules;
+  protected TomcatInstall tomcat9AndCurrentModules;
 
   protected int locatorPort;
-  protected String classPathTomcat7079;
+  protected String classPathTomcat7;
   protected String classPathTomcat8;
+  protected String classPathTomcat9;
   protected String serverDir;
   protected String locatorDir;
+  protected final String oldVersion;
 
   protected TomcatSessionBackwardsCompatibilityTestBase(String version) {
     VersionManager versionManager = VersionManager.getInstance();
-    String installLocation = installLocation = versionManager.getInstall(version);
+    String installLocation = versionManager.getInstall(version);
+    oldVersion = version;
     oldBuild = new File(installLocation);
     oldModules = new File(installLocation + "/tools/Modules/");
   }
 
-  protected void startServer(String name, String classPath, int locatorPort) throws Exception {
+  protected void startServer(String classPath, int locatorPort) throws Exception {
     serverDir = tempFolder.newFolder("server").getPath();
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
-    command.addOption(CliStrings.START_SERVER__NAME, name);
+    command.addOption(CliStrings.START_SERVER__NAME, "server");
     command.addOption(CliStrings.START_SERVER__SERVER_PORT, "0");
     command.addOption(CliStrings.START_SERVER__CLASSPATH, classPath);
     command.addOption(CliStrings.START_SERVER__LOCATORS, "localhost[" + locatorPort + "]");
@@ -104,10 +114,10 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
     gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
   }
 
-  protected void startLocator(String name, String classPath, int port) throws Exception {
+  protected void startLocator(String classPath, int port) throws Exception {
     locatorDir = tempFolder.newFolder("locator").getPath();
     CommandStringBuilder locStarter = new CommandStringBuilder(CliStrings.START_LOCATOR);
-    locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, name);
+    locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, "loc");
     locStarter.addOption(CliStrings.START_LOCATOR__CLASSPATH, classPath);
     locStarter.addOption(CliStrings.START_LOCATOR__PORT, Integer.toString(port));
     locStarter.addOption(CliStrings.START_LOCATOR__DIR, locatorDir);
@@ -116,42 +126,67 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
 
   @Before
   public void setup() throws Exception {
-    tomcat7079AndOldModules =
-        new TomcatInstall("Tomcat7079AndOldModules", TomcatInstall.TomcatVersion.TOMCAT7,
+    TomcatInstall.TomcatVersion tomcat9Version = TOMCAT9_0_20;
+    // If Geode version is 1.12.2 or 1.13.3+, Tomcat 9 version > 9.0.20 may be used
+    if (TestVersion.compare(oldVersion, "1.13.2") > 0 ||
+        (TestVersion.compare(oldVersion, "1.13.0") < 0
+            && TestVersion.compare(oldVersion, "1.12.1") > 0)) {
+      tomcat9Version = TOMCAT9_RECENT;
+    }
+
+    tomcat7AndOldModules =
+        new TomcatInstall("Tomcat7AndOldModules", TOMCAT7,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             oldModules.getAbsolutePath(), oldBuild.getAbsolutePath() + "/lib",
             portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
-    tomcat7079AndCurrentModules =
-        new TomcatInstall("Tomcat7079AndCurrentModules", TomcatInstall.TomcatVersion.TOMCAT7,
+    tomcat7AndCurrentModules =
+        new TomcatInstall("Tomcat7AndCurrentModules", TOMCAT7,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
     tomcat8AndOldModules =
-        new TomcatInstall("Tomcat8AndOldModules", TomcatInstall.TomcatVersion.TOMCAT8,
+        new TomcatInstall("Tomcat8AndOldModules", TOMCAT8,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             oldModules.getAbsolutePath(),
             oldBuild.getAbsolutePath() + "/lib",
             portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
     tomcat8AndCurrentModules =
-        new TomcatInstall("Tomcat8AndCurrentModules", TomcatInstall.TomcatVersion.TOMCAT8,
+        new TomcatInstall("Tomcat8AndCurrentModules", TOMCAT8,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
-    classPathTomcat7079 = tomcat7079AndCurrentModules.getHome() + "/lib/*" + File.pathSeparator
-        + tomcat7079AndCurrentModules.getHome() + "/bin/*";
+    tomcat9AndOldModules =
+        new TomcatInstall("Tomcat9AndOldModules", tomcat9Version,
+            ContainerInstall.ConnectionType.CLIENT_SERVER,
+            oldModules.getAbsolutePath(),
+            oldBuild.getAbsolutePath() + "/lib",
+            portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
+
+    tomcat9AndCurrentModules =
+        new TomcatInstall("Tomcat9AndCurrentModules", TOMCAT9_RECENT,
+            ContainerInstall.ConnectionType.CLIENT_SERVER,
+            portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
+
+    classPathTomcat7 = tomcat7AndCurrentModules.getHome() + "/lib/*" + File.pathSeparator
+        + tomcat7AndCurrentModules.getHome() + "/bin/*";
     classPathTomcat8 = tomcat8AndCurrentModules.getHome() + "/lib/*" + File.pathSeparator
         + tomcat8AndCurrentModules.getHome() + "/bin/*";
+    classPathTomcat9 = tomcat9AndCurrentModules.getHome() + "/lib/*" + File.pathSeparator
+        + tomcat9AndCurrentModules.getHome() + "/bin/*";
 
     // Get available port for the locator
     locatorPort = portSupplier.getAvailablePort();
 
-    tomcat7079AndOldModules.setDefaultLocatorPort(locatorPort);
-    tomcat7079AndCurrentModules.setDefaultLocatorPort(locatorPort);
+    tomcat7AndOldModules.setDefaultLocatorPort(locatorPort);
+    tomcat7AndCurrentModules.setDefaultLocatorPort(locatorPort);
 
     tomcat8AndOldModules.setDefaultLocatorPort(locatorPort);
     tomcat8AndCurrentModules.setDefaultLocatorPort(locatorPort);
+
+    tomcat9AndOldModules.setDefaultLocatorPort(locatorPort);
+    tomcat9AndCurrentModules.setDefaultLocatorPort(locatorPort);
 
     client = new Client();
     manager = new ContainerManager();
@@ -161,8 +196,8 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
   }
 
   protected void startClusterWithTomcat(String tomcatClassPath) throws Exception {
-    startLocator("loc", tomcatClassPath, locatorPort);
-    startServer("server", tomcatClassPath, locatorPort);
+    startLocator(tomcatClassPath, locatorPort);
+    startServer(tomcatClassPath, locatorPort);
   }
 
   /**
@@ -170,7 +205,12 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
    */
   @After
   public void stop() throws Exception {
-    manager.stopAllActiveContainers();
+    try {
+      manager.stopAllActiveContainers();
+    } catch (ContainerException e) {
+      // container might fail to start within certain timeframe for older Geode versions due to
+      // classcast exception that was fixed in later versions
+    }
     manager.cleanUp();
 
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STOP_SERVER);

@@ -14,25 +14,38 @@
  */
 package org.apache.geode.session.tests;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runners.Parameterized;
 
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.TestVersion;
+import org.apache.geode.test.version.VersionManager;
 
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class TomcatSessionBackwardsCompatibilityTomcat7079WithOldModuleCanDoPutsTest
+public class TomcatSessionBackwardsCompatibilityTomcat9WithOldModuleCanDoPutsTest
     extends TomcatSessionBackwardsCompatibilityTestBase {
 
-  public TomcatSessionBackwardsCompatibilityTomcat7079WithOldModuleCanDoPutsTest(String version) {
+  @Parameterized.Parameters(name = "{0}")
+  public static Collection<String> data() {
+    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
+    // The Tomcat 9 module was not added until Geode 1.8.0
+    String minimumVersion = "1.8.0";
+    result.removeIf(s -> TestVersion.compare(s, minimumVersion) < 0);
+    return result;
+  }
+
+  public TomcatSessionBackwardsCompatibilityTomcat9WithOldModuleCanDoPutsTest(String version) {
     super(version);
   }
 
   @Test
   public void test() throws Exception {
-    startClusterWithTomcat(classPathTomcat7);
-    manager.addContainer(tomcat7AndOldModules);
-    manager.addContainer(tomcat7AndOldModules);
+    startClusterWithTomcat(classPathTomcat9);
+    manager.addContainer(tomcat9AndOldModules);
+    manager.addContainer(tomcat9AndOldModules);
     doPutAndGetSessionOnAllClients();
   }
-
 }

@@ -43,7 +43,8 @@ public class TomcatInstall extends ContainerInstall {
     TOMCAT6(6, "tomcat-6.0.37.zip"),
     TOMCAT7(7, "tomcat-7.0.109.zip"),
     TOMCAT8(8, "tomcat-8.5.66.zip"),
-    TOMCAT9(9, "tomcat-9.0.48.zip");
+    TOMCAT9_0_20(9, "tomcat-9.0.20.zip"),
+    TOMCAT9_RECENT(9, "tomcat-9.0.48.zip");
 
     private final int version;
 
@@ -80,7 +81,8 @@ public class TomcatInstall extends ContainerInstall {
         case TOMCAT7:
           return "tomcat.util.scan.DefaultJarScanner.jarsToSkip";
         case TOMCAT8:
-        case TOMCAT9:
+        case TOMCAT9_0_20:
+        case TOMCAT9_RECENT:
           return "tomcat.util.scan.StandardJarScanFilter.jarsToSkip";
         default:
           throw new IllegalArgumentException("Illegal tomcat version option");

@@ -30,9 +30,9 @@ public class TomcatSessionBackwardsCompatibilityTomcat7079WithOldModulesMixedWit
 
   @Test
   public void test() throws Exception {
-    startClusterWithTomcat(classPathTomcat7079);
-    manager.addContainer(tomcat7079AndOldModules);
-    manager.addContainer(tomcat7079AndCurrentModules);
+    startClusterWithTomcat(classPathTomcat7);
+    manager.addContainer(tomcat7AndOldModules);
+    manager.addContainer(tomcat7AndCurrentModules);
     doPutAndGetSessionOnAllClients();
   }
 
