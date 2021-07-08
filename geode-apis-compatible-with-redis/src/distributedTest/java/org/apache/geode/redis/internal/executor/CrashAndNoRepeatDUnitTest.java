@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -85,7 +86,7 @@ public class CrashAndNoRepeatDUnitTest {
     ClusterTopologyRefreshOptions refreshOptions =
         ClusterTopologyRefreshOptions.builder()
             .enableAllAdaptiveRefreshTriggers()
-            .refreshTriggersReconnectAttempts(1)
+            .enablePeriodicRefresh(Duration.ofSeconds(5))
             .build();
 
     clusterClient.setOptions(ClusterClientOptions.builder()
@@ -97,7 +98,8 @@ public class CrashAndNoRepeatDUnitTest {
 
     RetryConfig config = RetryConfig.custom()
         .maxAttempts(20)
-        .retryOnException(e -> anyCauseContains(e, "Connection reset by peer"))
+        .retryOnException(e -> anyCauseContains(e, "Connection reset by peer")
+            || anyCauseContains(e, "Unable to connect"))
         .build();
     RetryRegistry registry = RetryRegistry.of(config);
     retry = registry.retry("retries");
@@ -140,20 +142,32 @@ public class CrashAndNoRepeatDUnitTest {
     Future<Void> future3 = executor.runAsync(task3);
 
     future3.get();
+    phase.set("CRASH 1 SERVER2");
     clusterStartUp.crashVM(2);
+    phase.set("RESTART 1 SERVER2");
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
+    phase.set("REBALANCE 1 SERVER2");
     rebalanceAllRegions(server2);
 
+    phase.set("CRASH 2 SERVER3");
     clusterStartUp.crashVM(3);
+    phase.set("RESTART 2 SERVER3");
     server3 = clusterStartUp.startRedisVM(3, locator.getPort());
+    phase.set("REBALANCE 2 SERVER3");
     rebalanceAllRegions(server3);
 
+    phase.set("CRASH 3 SERVER2");
     clusterStartUp.crashVM(2);
+    phase.set("RESTART 3 SERVER2");
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
+    phase.set("REBALANCE 3 SERVER2");
     rebalanceAllRegions(server2);
 
+    phase.set("CRASH 4 SERVER3");
     clusterStartUp.crashVM(3);
+    phase.set("RESTART 4 SERVER3");
     server3 = clusterStartUp.startRedisVM(3, locator.getPort());
+    phase.set("REBALANCE 4 SERVER3");
     rebalanceAllRegions(server3);
 
     running1.set(false);
@@ -275,7 +289,7 @@ public class CrashAndNoRepeatDUnitTest {
     while (iterationCount < minimumIterations || isRunning.get()) {
       String appendString = "-" + key + "-" + iterationCount + "-";
       try {
-        lettuce.append(key, appendString);
+        Retry.decorateCallable(retry, () -> lettuce.append(key, appendString)).call();
       } catch (Exception ex) {
         isRunning.set(false);
         throw new RuntimeException("Exception performing APPEND " + appendString
