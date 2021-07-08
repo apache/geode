@@ -96,7 +96,9 @@ public interface RedisData extends Delta, DataSerializableFixedID, Sizeable {
       short ordinal = inputStream.readShort();
       KnownVersion knownVersion = KnownVersion.getKnownVersion(ordinal);
       if (knownVersion == null) {
-        throw new RedisException("Unknown version ordinal: " + ordinal);
+        LogService.getLogger()
+            .info("Error restoring object - unknown version ordinal: {}", ordinal);
+        throw new RedisException(ERROR_RESTORE_INVALID_PAYLOAD);
       }
 
       obj = DataSerializer.readObject(new VersionedDataInputStream(bais, knownVersion));

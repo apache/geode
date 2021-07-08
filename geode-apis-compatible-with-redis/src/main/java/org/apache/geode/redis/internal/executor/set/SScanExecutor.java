@@ -65,7 +65,7 @@ public class SScanExecutor extends AbstractScanExecutor {
 
     RedisKey key = command.getKey();
 
-    if (!getDataRegion(context).containsKey(key)) {
+    if (!context.getRegionProvider().isLocalExistingKey(key)) {
       context.getRedisStats().incKeyspaceMisses();
       return RedisResponse.emptyScan();
     }

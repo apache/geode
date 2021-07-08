@@ -261,6 +261,25 @@ public class RegionProvider {
     }
   }
 
+  /**
+   * Performs both a local check as well as an existence check. If the key is not local, a
+   * {@link RedisDataMovedException} will be thrown. Otherwise the existence of the key will be
+   * checked in the local data set.
+   *
+   * @return true or false depending on whether the key exists locally
+   * @throws RedisDataMovedException if the given key does not map to a local bucket
+   */
+  public boolean isLocalExistingKey(RedisKey key) {
+    if (!getSlotAdvisor().isLocal(key)) {
+      RedisMemberInfo memberInfo = getRedisMemberInfo(key);
+      Integer slot = key.getCrc16() & (REDIS_SLOTS - 1);
+      throw new RedisDataMovedException(slot, memberInfo.getHostAddress(),
+          memberInfo.getRedisPort());
+    }
+
+    return getLocalDataRegion().containsKey(key);
+  }
+
   public RedisHashCommands getHashCommands() {
     return hashCommands;
   }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal;
 
+
 /**
  * A general exception that can be thrown during command execution and will result in a Redis
  * protocol exception message being returned to the client.

@@ -135,7 +135,6 @@ public class HScanDunitTest {
           Map<String, String> resultEntries = result.getMap();
 
           resultEntries.forEach((key, value) -> allEntries.add(key));
-
         } while (!result.isFinished());
 
         assertThat(allEntries).containsAll(INITIAL_DATA_SET.keySet());

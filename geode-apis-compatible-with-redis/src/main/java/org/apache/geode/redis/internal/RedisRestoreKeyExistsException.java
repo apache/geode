@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal;
 /**
  * An exception thrown when the key being restored already exists.
  */
-public class RedisRestoreKeyExistsException extends RuntimeException {
+public class RedisRestoreKeyExistsException extends RedisException {
 
   private static final long serialVersionUID = -7022501593522613782L;
 
