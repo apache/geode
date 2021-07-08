@@ -17,6 +17,7 @@ package org.apache.geode.redis.session;
 
 
 import java.net.HttpCookie;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -27,6 +28,7 @@ import java.util.Map;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
+import io.lettuce.core.RedisConnectionException;
 import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
@@ -97,7 +99,8 @@ public abstract class SessionDUnitTest {
   protected static void setupRetry() {
     RetryConfig config = RetryConfig.custom()
         .maxAttempts(20)
-        .retryExceptions(HttpServerErrorException.InternalServerError.class)
+        .retryExceptions(HttpServerErrorException.InternalServerError.class,
+            RedisConnectionException.class)
         .build();
     RetryRegistry registry = RetryRegistry.of(config);
     retry = registry.retry("sessions");
@@ -129,6 +132,7 @@ public abstract class SessionDUnitTest {
     ClusterTopologyRefreshOptions refreshOptions =
         ClusterTopologyRefreshOptions.builder()
             .enableAllAdaptiveRefreshTriggers()
+            .enablePeriodicRefresh(Duration.ofSeconds(5))
             .build();
 
     redisClient.setOptions(ClusterClientOptions.builder()

@@ -22,6 +22,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
+import io.github.resilience4j.retry.RetryRegistry;
 import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
@@ -62,6 +65,7 @@ public class CrashAndNoRepeatDUnitTest {
   private static int redisServerPort1;
   private static int redisServerPort2;
   private static int redisServerPort3;
+  private static Retry retry;
 
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
@@ -90,6 +94,13 @@ public class CrashAndNoRepeatDUnitTest {
         .build());
 
     lettuce = clusterClient.connect().sync();
+
+    RetryConfig config = RetryConfig.custom()
+        .maxAttempts(20)
+        .retryOnException(e -> anyCauseContains(e, "Connection reset by peer"))
+        .build();
+    RetryRegistry registry = RetryRegistry.of(config);
+    retry = registry.retry("retries");
   }
 
   @AfterClass
@@ -97,14 +108,27 @@ public class CrashAndNoRepeatDUnitTest {
     clusterClient.shutdown();
   }
 
+  private static boolean anyCauseContains(Throwable cause, String message) {
+    Throwable error = cause;
+    do {
+      String thisMessage = error.getMessage();
+      if (thisMessage != null && thisMessage.contains(message)) {
+        return true;
+      }
+      error = error.getCause();
+    } while (error != null);
+
+    return false;
+  }
+
   @Test
-  public void givenServerCrashesDuringAPPEND_thenDataIsNotLost() throws Exception {
+  public void givenServerCrashesDuringAppend_thenDataIsNotLost() throws Exception {
     AtomicBoolean running1 = new AtomicBoolean(true);
     AtomicBoolean running2 = new AtomicBoolean(false);
 
-    String hashtag1 = getKeyOnServer("append", redisServerPort1);
-    String hashtag2 = getKeyOnServer("append", redisServerPort2);
-    String hashtag3 = getKeyOnServer("append", redisServerPort3);
+    String hashtag1 = getKeyOnServer("append", 1);
+    String hashtag2 = getKeyOnServer("append", 2);
+    String hashtag3 = getKeyOnServer("append", 3);
 
     AtomicReference<String> phase = new AtomicReference<>("STARTUP");
     Runnable task1 = () -> appendPerformAndVerify(1, 20000, hashtag1, running1, phase);
@@ -143,9 +167,9 @@ public class CrashAndNoRepeatDUnitTest {
     AtomicBoolean running = new AtomicBoolean(true);
     AtomicBoolean runningFalse = new AtomicBoolean(false);
 
-    String hashtag1 = getKeyOnServer("rename", redisServerPort1);
-    String hashtag2 = getKeyOnServer("rename", redisServerPort2);
-    String hashtag3 = getKeyOnServer("rename", redisServerPort3);
+    String hashtag1 = getKeyOnServer("rename", 1);
+    String hashtag2 = getKeyOnServer("rename", 2);
+    String hashtag3 = getKeyOnServer("rename", 3);
 
     AtomicReference<String> phase = new AtomicReference<>("STARTUP");
     Runnable task1 = () -> renamePerformAndVerify(1, 20000, hashtag1, running, phase);
@@ -191,7 +215,8 @@ public class CrashAndNoRepeatDUnitTest {
     future2.get();
   }
 
-  private String getKeyOnServer(String keyPrefix, int port) {
+  private String getKeyOnServer(String keyPrefix, int vmId) {
+    int port = clusterStartUp.getRedisPort(vmId);
     int i = 0;
     while (true) {
       String key = keyPrefix + i;
@@ -206,16 +231,15 @@ public class CrashAndNoRepeatDUnitTest {
   private void renamePerformAndVerify(int index, int minimumIterations, String hashtag,
       AtomicBoolean isRunning,
       AtomicReference<String> phase) {
-    String newKey;
     String baseKey = "{" + hashtag + "}-key-" + index;
     lettuce.set(baseKey + "-0", "value");
     int iterationCount = 0;
 
     while (iterationCount < minimumIterations || isRunning.get()) {
       String oldKey = baseKey + "-" + iterationCount;
-      newKey = baseKey + "-" + (iterationCount + 1);
+      String newKey = baseKey + "-" + (iterationCount + 1);
       try {
-        lettuce.rename(oldKey, newKey);
+        Retry.decorateCallable(retry, () -> lettuce.rename(oldKey, newKey)).call();
       } catch (RedisCommandExecutionException rex) {
         // The command was retried after a failure where the Geode part was completed but the
         // response never made it back. So the next time round, the key doesn't exist. As long as
@@ -223,15 +247,20 @@ public class CrashAndNoRepeatDUnitTest {
         if (!rex.getMessage().contains(RedisConstants.ERROR_NO_SUCH_KEY)) {
           throw rex;
         }
-      } catch (Exception exception) {
-        // This try/catch is here for debugging
-        System.err.println("---||| Exception on key " + newKey + " during phase: " + phase.get());
-        exception.printStackTrace();
+      } catch (Exception ex) {
         isRunning.set(false);
-        throw exception;
+        throw new RuntimeException("Exception performing RENAME " + oldKey + " " + newKey
+            + " during phase: " + phase.get(), ex);
       }
 
-      assertThat(lettuce.exists(newKey)).as("key " + newKey + " should exist").isEqualTo(1);
+      long exists;
+      try {
+        exists = Retry.decorateCallable(retry, () -> lettuce.exists(newKey)).call();
+      } catch (Exception ex) {
+        throw new RuntimeException(ex);
+      }
+
+      assertThat(exists).as("key " + newKey + " should exist").isEqualTo(1);
       iterationCount += 1;
     }
 
@@ -248,15 +277,20 @@ public class CrashAndNoRepeatDUnitTest {
       try {
         lettuce.append(key, appendString);
       } catch (Exception ex) {
-        System.err.println(
-            "---||| Exception on append string " + appendString + " during phase: " + phase.get());
-        ex.printStackTrace();
         isRunning.set(false);
+        throw new RuntimeException("Exception performing APPEND " + appendString
+            + " during phase: " + phase.get(), ex);
       }
       iterationCount += 1;
     }
 
-    String storedString = lettuce.get(key);
+    String storedString;
+    try {
+      storedString = Retry.decorateCallable(retry, () -> lettuce.get(key)).call();
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
+
     int idx = 0;
     int i = 0;
     while (i < iterationCount) {
