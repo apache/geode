@@ -89,6 +89,7 @@ configurations {
   webServerTomcat6
   webServerTomcat7
   webServerTomcat8
+  webServerTomcat8566
   webServerTomcat9
   webServerJetty
 
@@ -301,6 +302,7 @@ dependencies {
   webServerTomcat6('apache:tomcat:' + DependencyConstraints.get('tomcat6.version') + '@zip')
   webServerTomcat7('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat7.version') + '@zip')
   webServerTomcat8('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat8.version') + '@zip')
+  webServerTomcat8566('org.apache.tomcat:tomcat:8.5.66@zip')
   webServerTomcat9('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat9.version') + '@zip')
   webServerJetty('org.eclipse.jetty:jetty-distribution:' + DependencyConstraints.get('jetty.version') + '@zip')
 
