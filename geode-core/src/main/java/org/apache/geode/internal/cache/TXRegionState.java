@@ -319,17 +319,14 @@ public class TXRegionState {
     try {
       if (!r.getScope().isLocal() && !this.entryMods.isEmpty()) {
 
-        TXCommitMessage.RegionCommit regionCommit = msg.startRegion(r, entryMods.size());
+        msg.startRegion(r, entryMods.size());
         Iterator it = this.entryMods.entrySet().iterator();
         Set<InternalDistributedMember> newMemberSet = new HashSet<InternalDistributedMember>();
-        Set<InternalDistributedMember> redundantMemberSet =
-            new HashSet<InternalDistributedMember>();
 
         if (r.getScope().isDistributed()) {
           DistributedRegion dr = (DistributedRegion) r;
           msg.addViewVersion(dr, dr.getDistributionAdvisor().startOperation());
           newMemberSet.addAll(dr.getCacheDistributionAdvisor().adviseTX());
-          redundantMemberSet.addAll(dr.getCacheDistributionAdvisor().adviseTX());
         }
 
         while (it.hasNext()) {
@@ -338,16 +335,9 @@ public class TXRegionState {
           TXEntryState txes = (TXEntryState) me.getValue();
           txes.buildMessage(r, eKey, msg, this.otherMembers);
           if (txes.getFilterRoutingInfo() != null) {
-            HashSet tempSet = new HashSet(txes.getAdjunctRecipients());
+            msg.setNotificationOnlyMembers(txes.getAdjunctRecipients());
             // exclude members that actually host targeted bucket from notification only list
-            tempSet.removeAll(redundantMemberSet);
-            if (!tempSet.isEmpty()) {
-              if (msg.getNotificationOnlyMembers().get(regionCommit) == null) {
-                msg.getNotificationOnlyMembers().put(regionCommit, tempSet);
-              } else {
-                msg.getNotificationOnlyMembers().get(regionCommit).addAll(tempSet);
-              }
-            }
+            msg.getNotificationOnlyMembers().removeAll(newMemberSet);
             newMemberSet.addAll(txes.getFilterRoutingInfo().getMembers());
           }
           if (txes.getAdjunctRecipients() != null) {
