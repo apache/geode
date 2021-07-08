@@ -84,7 +84,7 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   protected int getSortedSetSize() {
-    return members.size();
+    return scoreSet.size();
   }
 
   // for serialization
@@ -231,7 +231,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
     AddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = membersToAdd.iterator();
-    int initialSize = getSortedSetSize();
+    int initialSize = scoreSet.size();
     int changesCount = 0;
     while (iterator.hasNext()) {
       byte[] score = iterator.next();
@@ -255,7 +255,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     storeChanges(region, key, deltaInfo);
-    return getSortedSetSize() - initialSize + changesCount;
+    return scoreSet.size() - initialSize + changesCount;
   }
 
   long zcard() {
@@ -304,22 +304,7 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   List<byte[]> zrange(int min, int max, boolean withScores) {
-    List<byte[]> result = new ArrayList<>();
-    int start = getBoundedStartIndex(min, getSortedSetSize());
-    int end = getBoundedEndIndex(max, getSortedSetSize());
-    if (start > end || start == getSortedSetSize()) {
-      return result;
-    }
-
-    Iterator<AbstractOrderedSetEntry> entryIterator = scoreSet.getIndexRange(start, end);
-    while (entryIterator.hasNext()) {
-      AbstractOrderedSetEntry entry = entryIterator.next();
-      result.add(entry.member);
-      if (withScores) {
-        result.add(entry.scoreBytes);
-      }
-    }
-    return result;
+    return getRange(min, max, withScores, false);
   }
 
   long zrank(byte[] member) {
@@ -344,6 +329,10 @@ public class RedisSortedSet extends AbstractRedisData {
     }
     storeChanges(region, key, deltaInfo);
     return membersRemoved;
+  }
+
+  List<byte[]> zrevrange(int min, int max, boolean withScores) {
+    return getRange(min, max, withScores, true);
   }
 
   long zrevrank(byte[] member) {
@@ -376,6 +365,40 @@ public class RedisSortedSet extends AbstractRedisData {
     return zincrby(region, key, increment, member);
   }
 
+  private List<byte[]> getRange(int min, int max, boolean withScores, boolean isReverse) {
+    List<byte[]> result = new ArrayList<>();
+    int start;
+    int rangeSize;
+    if (isReverse) {
+      // scoreSet.size() - 1 is the maximum index of elements in the sorted set
+      start = scoreSet.size() - 1 - getBoundedStartIndex(min, scoreSet.size());
+      int end = scoreSet.size() - 1 - getBoundedEndIndex(max, scoreSet.size());
+      // Add one to rangeSize because the range is inclusive, so even if start == end, we return one
+      // element
+      rangeSize = start - end + 1;
+    } else {
+      start = getBoundedStartIndex(min, scoreSet.size());
+      int end = getBoundedEndIndex(max, scoreSet.size());
+      // Add one to rangeSize because the range is inclusive, so even if start == end, we return one
+      // element
+      rangeSize = end - start + 1;
+    }
+    if (rangeSize <= 0 || start == scoreSet.size()) {
+      return result;
+    }
+
+    Iterator<AbstractOrderedSetEntry> entryIterator =
+        scoreSet.getIndexRange(start, rangeSize, isReverse);
+    while (entryIterator.hasNext()) {
+      AbstractOrderedSetEntry entry = entryIterator.next();
+      result.add(entry.member);
+      if (withScores) {
+        result.add(entry.scoreBytes);
+      }
+    }
+    return result;
+  }
+
   private int getBoundedStartIndex(int index, int size) {
     if (index >= 0) {
       return Math.min(index, size);
@@ -384,11 +407,11 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
-  private int getBoundedEndIndex(long index, int size) {
+  private int getBoundedEndIndex(int index, int size) {
     if (index >= 0) {
-      return (int) Math.min(index, size);
+      return Math.min(index, size);
     } else {
-      return (int) Math.max(index + size, -1);
+      return Math.max(index + size, -1);
     }
   }
 

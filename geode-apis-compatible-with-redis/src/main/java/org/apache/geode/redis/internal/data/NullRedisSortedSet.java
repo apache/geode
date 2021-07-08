@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.data;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
@@ -76,7 +77,12 @@ class NullRedisSortedSet extends RedisSortedSet {
 
   @Override
   List<byte[]> zrange(int min, int max, boolean withScores) {
-    return null;
+    return Collections.emptyList();
+  }
+
+  @Override
+  List<byte[]> zrevrange(int min, int max, boolean withScores) {
+    return Collections.emptyList();
   }
 
   @Override

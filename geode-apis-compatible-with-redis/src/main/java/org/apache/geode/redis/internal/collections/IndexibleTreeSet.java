@@ -50,7 +50,7 @@ class IndexibleTreeSet<E> extends TreeSet<E> implements OrderStatisticsSet<E> {
   }
 
   @Override
-  public Iterator<E> getIndexRange(int min, int max) {
+  public Iterator<E> getIndexRange(int startIndex, int maxElements, boolean reverseRange) {
     return null;
   }
 }

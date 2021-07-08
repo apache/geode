@@ -14,19 +14,23 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import org.junit.ClassRule;
 
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.NativeRedisClusterTestRule;
 
-public class ZRankExecutor extends AbstractZRankExecutor {
+public class ZRevRangeNativeRedisAcceptanceTest extends AbstractZRevRangeIntegrationTest {
+
+  @ClassRule
+  public static NativeRedisClusterTestRule server = new NativeRedisClusterTestRule();
+
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    return super.executeCommand(command, context);
+  public int getPort() {
+    return server.getExposedPorts().get(0);
   }
 
   @Override
-  public boolean isRev() {
-    return false;
+  public void flushAll() {
+    server.flushAll();
   }
+
 }
