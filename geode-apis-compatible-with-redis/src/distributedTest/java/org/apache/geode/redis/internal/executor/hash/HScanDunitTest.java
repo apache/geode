@@ -26,9 +26,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
+import io.github.resilience4j.retry.RetryRegistry;
 import io.lettuce.core.MapScanCursor;
-import io.lettuce.core.RedisCommandExecutionException;
-import io.lettuce.core.RedisException;
 import io.lettuce.core.ScanCursor;
 import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
@@ -37,18 +38,17 @@ import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Ignore("GEODE-9368")
 public class HScanDunitTest {
 
   @ClassRule
@@ -62,9 +62,11 @@ public class HScanDunitTest {
 
   private static MemberVM locator;
 
-  static final String HASH_KEY = "key";
-  static final String BASE_FIELD = "baseField_";
-  static final Map<String, String> INITIAL_DATA_SET = makeEntrySet(1000);
+  private static final String HASH_KEY = "key";
+  private static final String BASE_FIELD = "baseField_";
+  private static final Map<String, String> INITIAL_DATA_SET = makeEntrySet(1000);
+
+  private static Retry retry;
 
   @BeforeClass
   public static void classSetup() {
@@ -92,11 +94,32 @@ public class HScanDunitTest {
 
     commands = clusterClient.connect().sync();
     commands.hset(HASH_KEY, INITIAL_DATA_SET);
+
+    RetryConfig config = RetryConfig.custom()
+        .maxAttempts(30)
+        .retryOnException(e -> anyCauseContains(e, "Connection reset by peer")
+            || anyCauseContains(e, "Unable to connect"))
+        .build();
+    RetryRegistry registry = RetryRegistry.of(config);
+    retry = registry.retry("retries");
   }
 
   @AfterClass
   public static void tearDown() {
     clusterClient.shutdown();
+  }
+
+  private static boolean anyCauseContains(Throwable cause, String message) {
+    Throwable error = cause;
+    do {
+      String thisMessage = error.getMessage();
+      if (thisMessage != null && thisMessage.contains(message)) {
+        return true;
+      }
+      error = error.getCause();
+    } while (error != null);
+
+    return false;
   }
 
   @Test
@@ -130,27 +153,27 @@ public class HScanDunitTest {
       scanCursor.setCursor("0");
       scanCursor.setFinished(false);
 
-      try {
-        do {
-          result = commands.hscan(HASH_KEY, scanCursor);
-          scanCursor.setCursor(result.getCursor());
-          Map<String, String> resultEntries = result.getMap();
+      RedisMemberInfo memberBefore = redisClusterStartupRule.getMemberInfo(HASH_KEY);
+      do {
+        try {
+          result = Retry.decorateCallable(retry, () -> commands.hscan(HASH_KEY, scanCursor)).call();
+        } catch (Exception ex) {
+          throw new RuntimeException(ex);
+        }
+        scanCursor.setCursor(result.getCursor());
+        Map<String, String> resultEntries = result.getMap();
 
-          resultEntries.forEach((key, value) -> allEntries.add(key));
+        resultEntries.forEach((key, value) -> allEntries.add(key));
+      } while (!result.isFinished());
 
-        } while (!result.isFinished());
+      RedisMemberInfo memberAfter = redisClusterStartupRule.getMemberInfo(HASH_KEY);
 
+      if (memberBefore.equals(memberAfter)) {
         assertThat(allEntries).containsAll(INITIAL_DATA_SET.keySet());
         numberOfAssertionsCompleted++;
-
-      } catch (RedisCommandExecutionException ignore) {
-      } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")) {
-          throw ex;
-        } // ignore error
-
       }
     }
+
     keepCrashingVMs.set(false);
   }
 
@@ -166,7 +189,6 @@ public class HScanDunitTest {
       rebalanceAllRegions(vm);
       numberOfTimesServersCrashed.incrementAndGet();
       vmToCrashToggle = (vmToCrashToggle == 2) ? 3 : 2;
-
     } while (keepCrashingVMs.get());
   }
 

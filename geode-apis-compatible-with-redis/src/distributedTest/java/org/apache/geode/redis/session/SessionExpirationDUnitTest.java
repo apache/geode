@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -39,7 +38,6 @@ import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
-@Ignore("GEODE-9341")
 public class SessionExpirationDUnitTest extends SessionDUnitTest {
 
   protected static final int SHORT_SESSION_TIMEOUT = 5;
