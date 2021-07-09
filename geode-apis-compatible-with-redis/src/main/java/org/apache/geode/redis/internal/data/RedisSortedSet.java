@@ -53,7 +53,7 @@ import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
 public class RedisSortedSet extends AbstractRedisData {
   private Object2ObjectOpenCustomHashMap<byte[], OrderedSetEntry> members;
-  private OrderStatisticsSet<OrderedSetEntry> scoreSet;
+  private OrderStatisticsSet<AbstractOrderedSetEntry> scoreSet;
 
   protected static final int BASE_REDIS_SORTED_SET_OVERHEAD = 184;
   protected static final int PER_PAIR_OVERHEAD = 48;
@@ -263,12 +263,12 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   long zcount(SortedSetRangeOptions rangeOptions) {
-    OrderedSetEntry minEntry =
-        new OrderedSetEntry(rangeOptions.getMinDouble(), rangeOptions.isMinExclusive(), true);
+    AbstractOrderedSetEntry minEntry =
+        new DummyOrderedSetEntry(rangeOptions.getMinDouble(), rangeOptions.isMinExclusive(), true);
     long minIndex = scoreSet.indexOf(minEntry);
 
-    OrderedSetEntry maxEntry =
-        new OrderedSetEntry(rangeOptions.getMaxDouble(), rangeOptions.isMaxExclusive(), false);
+    AbstractOrderedSetEntry maxEntry =
+        new DummyOrderedSetEntry(rangeOptions.getMaxDouble(), rangeOptions.isMaxExclusive(), false);
     long maxIndex = scoreSet.indexOf(maxEntry);
 
     return maxIndex - minIndex;
@@ -311,9 +311,9 @@ public class RedisSortedSet extends AbstractRedisData {
       return result;
     }
 
-    Iterator<OrderedSetEntry> entryIterator = scoreSet.getIndexRange(start, end);
+    Iterator<AbstractOrderedSetEntry> entryIterator = scoreSet.getIndexRange(start, end);
     while (entryIterator.hasNext()) {
-      OrderedSetEntry entry = entryIterator.next();
+      AbstractOrderedSetEntry entry = entryIterator.next();
       result.add(entry.member);
       if (withScores) {
         result.add(entry.scoreBytes);
@@ -470,42 +470,18 @@ public class RedisSortedSet extends AbstractRedisData {
     // with same name...
   }
 
-  static class OrderedSetEntry implements Comparable<OrderedSetEntry> {
-    private final byte[] member;
-    private final byte[] scoreBytes;
-    private final Double score;
+  abstract static class AbstractOrderedSetEntry implements Comparable<AbstractOrderedSetEntry> {
+    final byte[] member;
+    final byte[] scoreBytes;
+    final Double score;
 
-    public byte[] getScoreBytes() {
-      return scoreBytes;
-    }
-
-    public byte[] getMember() {
-      return member;
-    }
-
-    @Override
-    public int compareTo(OrderedSetEntry o) {
-      int comparison = score.compareTo(o.score);
-      if (comparison == 0) {
-        // Scores equal, try lexical ordering, but first check if the entry is using the
-        // bLEAST_MEMBER_NAME or bGREATEST_MEMBER_NAME values
-        comparison = checkDummyMemberNames(member, o.member);
-        if (comparison == 0) {
-          return javaImplementationOfAnsiCMemCmp(member, o.member);
-        }
-      }
-      return comparison;
-    }
-
-    OrderedSetEntry(byte[] member, byte[] score) {
+    AbstractOrderedSetEntry(byte[] member, byte[] score) {
       this.member = member;
       this.scoreBytes = score;
       this.score = processByteArrayAsDouble(score);
     }
 
-    // Dummy entry used to find the rank of an element with the given score for inclusive or
-    // exclusive ranges
-    OrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
+    AbstractOrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
       if (isExclusive && isMinimum || !isExclusive && !isMinimum) {
         // For use in (this < other) and (this >= other) comparisons
         this.member = bGREATEST_MEMBER_NAME;
@@ -515,6 +491,51 @@ public class RedisSortedSet extends AbstractRedisData {
       }
       this.scoreBytes = null;
       this.score = score;
+    }
+
+    public byte[] getScoreBytes() {
+      return scoreBytes;
+    }
+
+    public byte[] getMember() {
+      return member;
+    }
+  }
+
+  // Entry used to store data in the scoreSet
+  static class OrderedSetEntry extends AbstractOrderedSetEntry {
+
+    OrderedSetEntry(byte[] member, byte[] score) {
+      super(member, score);
+    }
+
+    @Override
+    public int compareTo(AbstractOrderedSetEntry o) {
+      int comparison = score.compareTo(o.score);
+      if (comparison == 0) {
+        // Scores equal, try lexical ordering
+        return javaImplementationOfAnsiCMemCmp(member, o.member);
+      }
+      return comparison;
+    }
+  }
+
+  // Dummy entry used to find the rank of an element with the given score for inclusive or
+  // exclusive ranges
+  static class DummyOrderedSetEntry extends AbstractOrderedSetEntry {
+
+    DummyOrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
+      super(score, isExclusive, isMinimum);
+    }
+
+    @Override
+    public int compareTo(AbstractOrderedSetEntry o) {
+      int comparison = score.compareTo(o.score);
+      if (comparison == 0) {
+        // Scores equal, use the bLEAST_MEMBER_NAME or bGREATEST_MEMBER_NAME values
+        comparison = checkDummyMemberNames(member, o.member);
+      }
+      return comparison;
     }
   }
 }
