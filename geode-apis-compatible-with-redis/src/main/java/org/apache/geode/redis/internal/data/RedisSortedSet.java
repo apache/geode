@@ -493,6 +493,15 @@ public class RedisSortedSet extends AbstractRedisData {
       this.score = score;
     }
 
+    public int compareTo(AbstractOrderedSetEntry o) {
+      int comparison = score.compareTo(o.score);
+      if (comparison == 0) {
+        // Scores equal, try lexical ordering
+        return compareMembers(member, o.member);
+      }
+      return comparison;
+    }
+
     public byte[] getScoreBytes() {
       return scoreBytes;
     }
@@ -500,6 +509,8 @@ public class RedisSortedSet extends AbstractRedisData {
     public byte[] getMember() {
       return member;
     }
+
+    public abstract int compareMembers(byte[] array1, byte[] array2);
   }
 
   // Entry used to store data in the scoreSet
@@ -510,13 +521,8 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     @Override
-    public int compareTo(AbstractOrderedSetEntry o) {
-      int comparison = score.compareTo(o.score);
-      if (comparison == 0) {
-        // Scores equal, try lexical ordering
-        return javaImplementationOfAnsiCMemCmp(member, o.member);
-      }
-      return comparison;
+    public int compareMembers(byte[] array1, byte[] array2) {
+      return javaImplementationOfAnsiCMemCmp(array1, array2);
     }
   }
 
@@ -529,13 +535,8 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     @Override
-    public int compareTo(AbstractOrderedSetEntry o) {
-      int comparison = score.compareTo(o.score);
-      if (comparison == 0) {
-        // Scores equal, use the bLEAST_MEMBER_NAME or bGREATEST_MEMBER_NAME values
-        comparison = checkDummyMemberNames(member, o.member);
-      }
-      return comparison;
+    public int compareMembers(byte[] array1, byte[] array2) {
+      return checkDummyMemberNames(array1, array2);
     }
   }
 }

@@ -244,8 +244,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testZcount() {
-    runCountCommandAndAssertHitsAndMisses(SORTED_SET_KEY,
-        (k, min, max) -> jedis.zcount(k, min, max));
+    runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zcount(k, "-inf", "inf"));
   }
 
   @Test
@@ -560,25 +559,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
 
     command.accept("missed", "42");
-    info = RedisTestHelper.getInfo(jedis);
-
-    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
-    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
-  }
-
-  private void runCountCommandAndAssertHitsAndMisses(String key,
-      TriConsumer<String, String, String> command) {
-    Map<String, String> info = RedisTestHelper.getInfo(jedis);
-    long currentHits = Long.parseLong(info.get(HITS));
-    long currentMisses = Long.parseLong(info.get(MISSES));
-
-    command.accept(key, "-inf", "+inf");
-    info = RedisTestHelper.getInfo(jedis);
-
-    assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
-    assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
-
-    command.accept("missed", "-inf", "+inf");
     info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
