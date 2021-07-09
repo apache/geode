@@ -35,6 +35,7 @@ import java.util.concurrent.Callable;
 
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -167,7 +168,14 @@ public class RegionProvider {
   }
 
   public RedisData getRedisData(RedisKey key, RedisData notFoundValue) {
-    RedisData result = getLocalDataRegion().get(key);
+    RedisData result;
+    try {
+      result = getLocalDataRegion().get(key);
+    } catch (RegionDestroyedException rex) {
+      // This can happen when buckets are moving
+      throw createRedisDataMovedException(key);
+    }
+
     if (result != null) {
       if (result.hasExpired()) {
         result.doExpiration(this, key);
@@ -259,25 +267,6 @@ public class RegionProvider {
           "Could not start server compatible with Redis - System property '%s' must be <= %d",
           REDIS_REGION_BUCKETS_PARAM, REDIS_SLOTS));
     }
-  }
-
-  /**
-   * Performs both a local check as well as an existence check. If the key is not local, a
-   * {@link RedisDataMovedException} will be thrown. Otherwise the existence of the key will be
-   * checked in the local data set.
-   *
-   * @return true or false depending on whether the key exists locally
-   * @throws RedisDataMovedException if the given key does not map to a local bucket
-   */
-  public boolean isLocalExistingKey(RedisKey key) {
-    if (!getSlotAdvisor().isLocal(key)) {
-      RedisMemberInfo memberInfo = getRedisMemberInfo(key);
-      Integer slot = key.getCrc16() & (REDIS_SLOTS - 1);
-      throw new RedisDataMovedException(slot, memberInfo.getHostAddress(),
-          memberInfo.getRedisPort());
-    }
-
-    return getLocalDataRegion().containsKey(key);
   }
 
   public RedisHashCommands getHashCommands() {
