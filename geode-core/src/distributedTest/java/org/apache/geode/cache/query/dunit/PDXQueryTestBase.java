@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
@@ -81,7 +82,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
     preTearDownPDXQueryTestBase();
     disconnectAllFromDS(); // tests all expect to create a new ds
     // Reset the testObject numinstance for the next test.
-    TestObject.numInstance = 0;
+    TestObject.numInstance.set(0);
     // In all VM.
     resetTestObjectInstanceCount();
   }
@@ -95,11 +96,11 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
       vm.invoke(new CacheSerializableRunnable("Create cache server") {
         @Override
         public void run2() throws CacheException {
-          TestObject.numInstance = 0;
+          TestObject.numInstance.set(0);
           PortfolioPdx.numInstance = 0;
           PositionPdx.numInstance = 0;
           PositionPdx.cnt = 0;
-          TestObject2.numInstance = 0;
+          TestObject2.numInstance.set(0);
         }
       });
     }
@@ -305,15 +306,15 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
 
   public static class TestObject2 implements PdxSerializable {
     public int _id;
-    public static int numInstance = 0;
+    public static AtomicInteger numInstance = new AtomicInteger();
 
     public TestObject2() {
-      numInstance++;
+      numInstance.incrementAndGet();
     }
 
     public TestObject2(int id) {
       this._id = id;
-      numInstance++;
+      numInstance.incrementAndGet();
     }
 
     public int getId() {
@@ -358,7 +359,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
     public int important;
     public int selection;
     public int select;
-    public static int numInstance = 0;
+    public static final AtomicInteger numInstance = new AtomicInteger();
     public Map idTickers = new HashMap();
     public HashMap positions = new HashMap();
     public TestObject2 test;
@@ -367,7 +368,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
       if (log != null) {
         log.info("TestObject ctor stack trace", new Exception());
       }
-      numInstance++;
+      numInstance.incrementAndGet();
     }
 
     public TestObject(int id, String ticker) {
@@ -380,7 +381,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
       this.important = id;
       this.selection = id;
       this.select = id;
-      numInstance++;
+      numInstance.incrementAndGet();
       idTickers.put(id + "", ticker);
       this.test = new TestObject2(id);
     }
