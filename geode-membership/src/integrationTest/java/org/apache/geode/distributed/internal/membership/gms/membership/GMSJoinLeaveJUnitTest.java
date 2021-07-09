@@ -1533,7 +1533,7 @@ public class GMSJoinLeaveJUnitTest {
     assertThatThrownBy(gmsJoinLeave::join)
         .isInstanceOf(MembershipConfigurationException.class)
         .hasMessageContaining(
-            "Could not contact any of the locators: [locator1:12345, locator2:54321]")
+            "Could not contact any of the locators: [HostAndPort[locator1:12345], HostAndPort[locator2:54321]]")
         .hasCauseInstanceOf(IOException.class);
   }
 

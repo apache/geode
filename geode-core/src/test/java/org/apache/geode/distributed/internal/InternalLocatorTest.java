@@ -33,7 +33,6 @@ import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.internal.HttpService;
-import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalRegionFactory;
@@ -75,7 +74,7 @@ public class InternalLocatorTest {
     when(agentUtil.findWarLocation("geode-web-management")).thenReturn(uri);
     BaseManagementService.setManagementService(cache, managementService);
 
-    internalLocator = new InternalLocator(0, loggingSession, null, null, null, (HostAddress) null,
+    internalLocator = new InternalLocator(0, loggingSession, null, null, null, null,
         null, null, distributionConfig, null);
   }
 
