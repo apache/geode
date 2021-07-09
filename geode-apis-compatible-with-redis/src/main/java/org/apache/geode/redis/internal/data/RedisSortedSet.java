@@ -265,13 +265,13 @@ public class RedisSortedSet extends AbstractRedisData {
   long zcount(SortedSetRangeOptions rangeOptions) {
     OrderedSetEntry minEntry =
         new OrderedSetEntry(rangeOptions.getMinDouble(), rangeOptions.isMinExclusive(), true);
-    long minRank = scoreSet.indexOf(minEntry);
+    long minIndex = scoreSet.indexOf(minEntry);
 
     OrderedSetEntry maxEntry =
         new OrderedSetEntry(rangeOptions.getMaxDouble(), rangeOptions.isMaxExclusive(), false);
-    long maxRank = scoreSet.indexOf(maxEntry);
+    long maxIndex = scoreSet.indexOf(maxEntry);
 
-    return maxRank - minRank;
+    return maxIndex - minIndex;
   }
 
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
@@ -435,12 +435,11 @@ public class RedisSortedSet extends AbstractRedisData {
   // in StringBytesGlossary and user-supplied member names which may be equal in content but have
   // a different memory address.
   private static int checkDummyMemberNames(byte[] array1, byte[] array2) {
-    if ((array1 == bLEAST_MEMBER_NAME && array2 == bLEAST_MEMBER_NAME)
-        || (array1 == bGREATEST_MEMBER_NAME && array2 == bGREATEST_MEMBER_NAME)) {
-      throw new IllegalStateException(
-          "Arrays cannot both be least member name or greatest member name");
-    }
     if (array2 == bLEAST_MEMBER_NAME || array1 == bGREATEST_MEMBER_NAME) {
+      if (array1 == bLEAST_MEMBER_NAME || array2 == bGREATEST_MEMBER_NAME) {
+        throw new IllegalStateException(
+            "Arrays cannot both be least member name or greatest member name");
+      }
       return 1; // array2 < array1
     } else if (array1 == bLEAST_MEMBER_NAME || array2 == bGREATEST_MEMBER_NAME) {
       return -1; // array1 < array2

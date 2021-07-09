@@ -203,7 +203,7 @@ public class OrderStatisticsTreeTest {
 
     // Test values smaller than the lowest entry and greater than the largest entry
     assertThat(tree.indexOf(-1)).isEqualTo(0);
-    assertThat(tree.indexOf(1 + entries * stepSize)).isEqualTo(tree.size());
+    assertThat(tree.indexOf(entries * stepSize)).isEqualTo(tree.size());
 
     for (int i = 0; i < entries * stepSize; ++i) {
       assertThat(tree.indexOf(i)).isEqualTo((i + stepSize - 1) / stepSize);
