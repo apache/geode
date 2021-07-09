@@ -43,6 +43,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -152,6 +153,7 @@ public class HScanDunitTest {
       scanCursor.setCursor("0");
       scanCursor.setFinished(false);
 
+      RedisMemberInfo memberBefore = redisClusterStartupRule.getMemberInfo(HASH_KEY);
       do {
         try {
           result = Retry.decorateCallable(retry, () -> commands.hscan(HASH_KEY, scanCursor)).call();
@@ -164,8 +166,12 @@ public class HScanDunitTest {
         resultEntries.forEach((key, value) -> allEntries.add(key));
       } while (!result.isFinished());
 
-      assertThat(allEntries).containsAll(INITIAL_DATA_SET.keySet());
-      numberOfAssertionsCompleted++;
+      RedisMemberInfo memberAfter = redisClusterStartupRule.getMemberInfo(HASH_KEY);
+
+      if (memberBefore.equals(memberAfter)) {
+        assertThat(allEntries).containsAll(INITIAL_DATA_SET.keySet());
+        numberOfAssertionsCompleted++;
+      }
     }
 
     keepCrashingVMs.set(false);
@@ -183,7 +189,6 @@ public class HScanDunitTest {
       rebalanceAllRegions(vm);
       numberOfTimesServersCrashed.incrementAndGet();
       vmToCrashToggle = (vmToCrashToggle == 2) ? 3 : 2;
-
     } while (keepCrashingVMs.get());
   }
 
