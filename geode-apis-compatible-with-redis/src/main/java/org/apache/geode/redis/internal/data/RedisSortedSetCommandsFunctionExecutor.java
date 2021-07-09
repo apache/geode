@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
 public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
@@ -42,6 +43,11 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
 
   public long zcard(RedisKey key) {
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zcard());
+  }
+
+  @Override
+  public long zcount(RedisKey key, SortedSetRangeOptions rangeOptions) {
+    return stripedExecute(key, () -> getRedisSortedSet(key, true).zcount(rangeOptions));
   }
 
   @Override

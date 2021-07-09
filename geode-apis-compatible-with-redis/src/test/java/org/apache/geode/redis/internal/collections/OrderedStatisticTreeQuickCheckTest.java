@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.generator.InRange;
@@ -63,6 +64,23 @@ public class OrderedStatisticTreeQuickCheckTest {
     Long element = expected.get(elementIndex);
 
     assertThat(list.indexOf(element)).isEqualTo(expected.indexOf(element));
+  }
+
+  @Property
+  public void indexOfForElementsThatAreNotPresentReturnExpectedIndex(
+      @Size(min = 5, max = 500) Set<Long> insertData) {
+    // Add only 1/5 of the data
+    int subsetSize = insertData.size() / 5;
+    Set<Long> subset = insertData.stream().limit(subsetSize).collect(Collectors.toSet());
+    expected.addAll(subset);
+    list.addAll(subset);
+
+    insertData.removeAll(subset);
+
+    // Confirm that the index of elements not present in the set is as expected
+    for (Long element : insertData) {
+      assertThat(list.indexOf(element)).isEqualTo(expected.indexOf(element));
+    }
   }
 
   @Property

@@ -12,30 +12,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.List;
+public class SortedSetRangeOptions {
+  private final double minDouble;
+  private final boolean minExclusive;
+  private final double maxDouble;
+  private final boolean maxExclusive;
 
-import org.apache.geode.redis.internal.data.RedisKey;
+  public SortedSetRangeOptions(double min, boolean minExclusive, double max, boolean maxExclusive) {
+    this.minDouble = min;
+    this.minExclusive = minExclusive;
+    this.maxDouble = max;
+    this.maxExclusive = maxExclusive;
+  }
 
-public interface RedisSortedSetCommands {
+  public double getMinDouble() {
+    return minDouble;
+  }
 
-  Object zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd, ZAddOptions options);
+  public boolean isMinExclusive() {
+    return minExclusive;
+  }
 
-  long zcard(RedisKey key);
+  public double getMaxDouble() {
+    return maxDouble;
+  }
 
-  long zcount(RedisKey key, SortedSetRangeOptions rangeOptions);
-
-  byte[] zincrby(RedisKey key, byte[] increment, byte[] member);
-
-  List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores);
-
-  long zrank(RedisKey key, byte[] member);
-
-  long zrem(RedisKey key, List<byte[]> membersToRemove);
-
-  long zrevrank(RedisKey key, byte[] member);
-
-  byte[] zscore(RedisKey key, byte[] member);
+  public boolean isMaxExclusive() {
+    return maxExclusive;
+  }
 }

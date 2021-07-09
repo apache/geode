@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.TreeSet;
@@ -193,16 +194,19 @@ public class OrderStatisticsTreeTest {
 
   @Test
   public void testIndexOf() {
-    for (int i = 100; i < 200; ++i) {
-      assertThat(tree.add(i)).isTrue();
+    int stepSize = 10;
+    int entries = 20;
+    // All entries are multiple of 10, from 0 to 190
+    for (int i = 0; i < entries; ++i) {
+      assertThat(tree.add(i * stepSize)).isTrue();
     }
 
-    for (int i = 100; i < 200; ++i) {
-      assertThat(tree.indexOf(i)).isEqualTo(i - 100);
-    }
+    // Test values smaller than the lowest entry and greater than the largest entry
+    assertThat(tree.indexOf(-1)).isEqualTo(0);
+    assertThat(tree.indexOf(entries * stepSize)).isEqualTo(tree.size());
 
-    for (int i = 200; i < 250; ++i) {
-      assertThat(tree.indexOf(i)).isEqualTo(-1);
+    for (int i = 0; i < entries * stepSize; ++i) {
+      assertThat(tree.indexOf(i)).isEqualTo((i + stepSize - 1) / stepSize);
     }
   }
 
@@ -577,7 +581,7 @@ public class OrderStatisticsTreeTest {
       tree.add(i);
     }
 
-    ArrayList<Integer> subSet = new ArrayList<>();
+    List<Integer> subSet = new ArrayList<>();
     Iterator<Integer> subIterator = tree.getIndexRange(0, 9);
     while (subIterator.hasNext()) {
       subSet.add(subIterator.next());
