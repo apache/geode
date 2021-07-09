@@ -59,7 +59,7 @@ import org.apache.geode.rules.DockerComposeRule;
 public class DualServerSNIAcceptanceTest {
 
   private static final URL DOCKER_COMPOSE_PATH =
-      DualServerSNIAcceptanceTest.class.getResource("dual-server-docker-compose.yml");
+      SingleServerSNIAcceptanceTest.class.getResource("docker-compose.yml");
 
   @ClassRule
   public static DockerComposeRule docker = new DockerComposeRule.Builder()
@@ -72,21 +72,8 @@ public class DualServerSNIAcceptanceTest {
 
   @BeforeClass
   public static void beforeClass() {
-    docker.setContainerName("locator-maeve", "locator-maeve");
-    docker.setContainerName("server-dolores", "server-dolores");
-    docker.setContainerName("server-clementine", "server-clementine");
-
-    docker.loggingExecForService("locator-maeve",
-        "gfsh", "run", "--file=/geode/scripts/locator-maeve.gfsh");
-
-    docker.loggingExecForService("server-dolores",
-        "gfsh", "run", "--file=/geode/scripts/server-dolores.gfsh");
-
-    docker.loggingExecForService("server-clementine",
-        "gfsh", "run", "--file=/geode/scripts/server-clementine.gfsh");
-
-    docker.loggingExecForService("locator-maeve",
-        "gfsh", "run", "--file=/geode/scripts/create-regions.gfsh");
+    docker.loggingExecForService("geode",
+        "gfsh", "run", "--file=/geode/scripts/geode-starter-2.gfsh");
 
     final String trustStorePath =
         createTempFileFromResource(SingleServerSNIAcceptanceTest.class,

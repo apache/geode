@@ -49,7 +49,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -98,7 +97,7 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
           dsProperties = null;
           Properties props = getDistributedSystemProperties();
           locator = InternalLocator.startLocator(locatorPorts[locatorNumber], new File(""),
-              null, null, new HostAddress(LocalHostUtil.getLocalHost()), true,
+              null, null, LocalHostUtil.getLocalHost(), true,
               props, null, Paths.get(workingDir));
           system = locator.getDistributedSystem();
           cache = ((InternalLocator) locator).getCache();

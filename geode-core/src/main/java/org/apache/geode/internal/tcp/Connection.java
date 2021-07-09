@@ -1738,14 +1738,8 @@ public class Connection implements Runnable {
   private void createIoFilter(SocketChannel channel, boolean clientSocket) throws IOException {
     if (getConduit().useSSL() && channel != null) {
       InetSocketAddress address = (InetSocketAddress) channel.getRemoteAddress();
-      String hostName;
-      if (remoteAddr != null) {
-        hostName = remoteAddr.getHostName();
-      } else {
-        hostName = SocketCreator.getHostName(address.getAddress());
-      }
       SSLEngine engine =
-          getConduit().getSocketCreator().createSSLEngine(hostName,
+          getConduit().getSocketCreator().createSSLEngine(address.getHostString(),
               address.getPort(), clientSocket);
 
       final int packetBufferSize = engine.getSession().getPacketBufferSize();
