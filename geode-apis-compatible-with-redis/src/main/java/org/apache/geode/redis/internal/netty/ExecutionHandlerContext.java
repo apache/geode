@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.netty;
 
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -183,7 +184,10 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-    writeToChannel(getExceptionResponse(ctx, cause));
+    RedisResponse exceptionResponse = getExceptionResponse(ctx, cause);
+    if (exceptionResponse != null) {
+      writeToChannel(exceptionResponse);
+    }
   }
 
   public EventLoopGroup getSubscriberGroup() {
@@ -214,6 +218,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
+    if (cause instanceof IOException) {
+      channelInactive(ctx);
+      return null;
+    }
+
     if (cause instanceof IllegalStateException
         || cause instanceof RedisParametersMismatchException
         || cause instanceof RedisException
