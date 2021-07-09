@@ -718,7 +718,8 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     for (EntryEventImpl ee : callbacks) {
-      boolean isLastTransactionEvent = isConfigError || ee.equals(lastTransactionEvent);
+      boolean isLastTransactionEvent = TXLastEventInTransactionUtils
+          .isLastTransactionEvent(isConfigError, lastTransactionEvent, ee);
       try {
         if (ee.getOperation().isDestroy()) {
           ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true,
@@ -745,7 +746,8 @@ public class TXCommitMessage extends PooledDistributionMessage
   }
 
   EntryEventImpl getLastTransactionEvent(List<EntryEventImpl> callbacks) {
-    return TXLastEventInTransactionUtils.getLastTransactionEvent(callbacks, dm.getCache());
+    return TXLastEventInTransactionUtils.getLastTransactionEventInGroupedTxForWANSender(callbacks,
+        dm.getCache());
   }
 
   protected void processCacheRuntimeException(CacheRuntimeException problem) {

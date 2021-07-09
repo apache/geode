@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -125,7 +126,7 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event2);
 
     EntryEventImpl lastTransactionEvent =
-        TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache);
+        TXLastEventInTransactionUtils.getLastTransactionEventInGroupedTxForWANSender(events, cache);
 
     assertEquals(null, lastTransactionEvent);
   }
@@ -140,7 +141,7 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event2);
 
     EntryEventImpl lastTransactionEvent =
-        TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache);
+        TXLastEventInTransactionUtils.getLastTransactionEventInGroupedTxForWANSender(events, cache);
 
     assertEquals(event2, lastTransactionEvent);
   }
@@ -155,7 +156,7 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event2);
 
     EntryEventImpl lastTransactionEvent =
-        TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache);
+        TXLastEventInTransactionUtils.getLastTransactionEventInGroupedTxForWANSender(events, cache);
 
     assertEquals(event2, lastTransactionEvent);
   }
@@ -169,13 +170,14 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event1);
     events.add(event2);
 
-    assertThatThrownBy(() -> TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache))
-        .isInstanceOf(ServiceConfigurationError.class)
-        .hasMessageContaining("Not all events go to the same senders that group transactions");
+    assertThatThrownBy(() -> TXLastEventInTransactionUtils
+        .getLastTransactionEventInGroupedTxForWANSender(events, cache))
+            .isInstanceOf(ServiceConfigurationError.class)
+            .hasMessageContaining("Not all events go to the same senders that group transactions");
   }
 
   @Test
-  public void getLastTransactionEventThrowsExceptionWhenSenderNotFound() {
+  public void getLastTransactionEventReturnsNullWhenSenderNotFound() {
     List<EntryEventImpl> events = new ArrayList();
     EntryEventImpl event1 = createMockEntryEventImpl(region8);
     EntryEventImpl event2 = createMockEntryEventImpl(region8);
@@ -183,9 +185,9 @@ public class TXLastEventInTransactionUtilsTest {
     events.add(event1);
     events.add(event2);
 
-    assertThatThrownBy(() -> TXLastEventInTransactionUtils.getLastTransactionEvent(events, cache))
-        .isInstanceOf(ServiceConfigurationError.class)
-        .hasMessage("No information for senderId: sender5");
+    assertThat(
+        TXLastEventInTransactionUtils.getLastTransactionEventInGroupedTxForWANSender(events, cache))
+            .isNull();
   }
 
   private EntryEventImpl createMockEntryEventImpl(InternalRegion region) {
