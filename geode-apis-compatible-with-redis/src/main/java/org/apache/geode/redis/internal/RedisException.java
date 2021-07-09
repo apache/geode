@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal;
 
+
 /**
  * A general exception that can be thrown during command execution and will result in a Redis
  * protocol exception message being returned to the client.
@@ -28,6 +29,10 @@ public class RedisException extends RuntimeException {
 
   public RedisException(String message) {
     super(message);
+  }
+
+  public RedisException(Throwable throwable) {
+    super(throwable);
   }
 
   public RedisException(String message, Throwable throwable) {

@@ -35,6 +35,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -50,8 +51,7 @@ public class HScanExecutor extends AbstractScanExecutor {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
 
@@ -68,12 +68,13 @@ public class HScanExecutor extends AbstractScanExecutor {
     }
 
     RedisKey key = command.getKey();
-    if (!getDataRegion(context).containsKey(key)) {
+    RedisData value = context.getRegionProvider().getRedisData(key, null);
+    if (value == null) {
       context.getRedisStats().incKeyspaceMisses();
       return RedisResponse.emptyScan();
     }
 
-    if (getDataRegion(context).get(key).getType() != REDIS_HASH) {
+    if (value.getType() != REDIS_HASH) {
       throw new RedisDataTypeMismatchException(ERROR_WRONG_TYPE);
     }
 

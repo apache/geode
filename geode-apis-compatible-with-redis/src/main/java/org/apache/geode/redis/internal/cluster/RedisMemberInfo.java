@@ -19,6 +19,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedMember;
@@ -84,5 +85,23 @@ public class RedisMemberInfo implements DataSerializableFixedID, Serializable {
   @Override
   public String toString() {
     return member.toString() + " hostAddress: " + hostAddress + " redisPort: " + redisPort;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof RedisMemberInfo)) {
+      return false;
+    }
+    RedisMemberInfo that = (RedisMemberInfo) o;
+    return redisPort == that.redisPort && Objects.equals(member, that.member)
+        && Objects.equals(hostAddress, that.hostAddress);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(member, hostAddress, redisPort);
   }
 }
