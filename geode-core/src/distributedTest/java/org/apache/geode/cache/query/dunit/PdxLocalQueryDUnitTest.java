@@ -899,7 +899,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
   protected final void preTearDownPDXQueryTestBase() throws Exception {
     disconnectAllFromDS(); // tests all expect to create a new ds
     // Reset the testObject numinstance for the next test.
-    TestObject.numInstance = 0;
+    TestObject.numInstance.set(0);
     PortfolioPdx.DEBUG = false;
     // In all VM.
     resetTestObjectInstanceCount();
@@ -917,11 +917,11 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
       vm.invoke(new CacheSerializableRunnable("Create cache server") {
         @Override
         public void run2() throws CacheException {
-          TestObject.numInstance = 0;
+          TestObject.numInstance.set(0);
           PortfolioPdx.numInstance = 0;
           PositionPdx.numInstance = 0;
           PositionPdx.cnt = 0;
-          TestObject2.numInstance = 0;
+          TestObject2.numInstance.set(0);
         }
       });
     }
