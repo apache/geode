@@ -2301,6 +2301,21 @@ public class WANTestBase extends DistributedTestCase {
     }
   }
 
+  public static void doTxPuts(String regionName, int numPuts) {
+    try (
+        IgnoredException ignored = IgnoredException.addIgnoredException(InterruptedException.class);
+        IgnoredException ignored1 =
+            IgnoredException.addIgnoredException(GatewaySenderException.class)) {
+      Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+      assertNotNull(r);
+      for (long i = 0; i < numPuts; i++) {
+        cache.getCacheTransactionManager().begin();
+        r.put(i, "Value_" + i);
+        cache.getCacheTransactionManager().commit();
+      }
+    }
+  }
+
   public static void doPutsSameKey(String regionName, int numPuts, String key) {
     IgnoredException exp1 =
         IgnoredException.addIgnoredException(InterruptedException.class.getName());

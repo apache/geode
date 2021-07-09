@@ -245,15 +245,16 @@ public class TXState implements TXStateInterface {
     boolean isConfigError = false;
     EntryEventImpl lastTransactionEvent = null;
     try {
-      lastTransactionEvent =
-          TXLastEventInTransactionUtils.getLastTransactionEvent(getPendingCallbacks(), getCache());
+      lastTransactionEvent = TXLastEventInTransactionUtils
+          .getLastTransactionEventInGroupedTxForWANSender(getPendingCallbacks(), getCache());
     } catch (ServiceConfigurationError ex) {
       logger.error(ex.getMessage());
       isConfigError = true;
     }
 
     for (EntryEventImpl ee : getPendingCallbacks()) {
-      boolean isLastTransactionEvent = isConfigError || ee.equals(lastTransactionEvent);
+      boolean isLastTransactionEvent = TXLastEventInTransactionUtils
+          .isLastTransactionEvent(isConfigError, lastTransactionEvent, ee);
       if (ee.getOperation().isDestroy()) {
         ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true,
             isLastTransactionEvent);

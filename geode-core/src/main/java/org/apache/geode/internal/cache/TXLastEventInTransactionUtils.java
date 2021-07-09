@@ -20,15 +20,10 @@ import java.util.ServiceConfigurationError;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class TXLastEventInTransactionUtils {
-  private static final Logger logger = LogService.getLogger();
-
   /**
    * @param callbacks list of events belonging to a transaction
    *
@@ -39,9 +34,8 @@ public class TXLastEventInTransactionUtils {
    *         events belong have different sets of senders that group transactions
    *         then it throws a ServiceConfigurationError exception.
    */
-  public static EntryEventImpl getLastTransactionEvent(List<EntryEventImpl> callbacks,
-      Cache cache)
-      throws ServiceConfigurationError {
+  public static EntryEventImpl getLastTransactionEventInGroupedTxForWANSender(
+      List<EntryEventImpl> callbacks, Cache cache) throws ServiceConfigurationError {
     if (checkNoSendersGroupTransactionEvents(callbacks, cache)) {
       return null;
     }
@@ -77,11 +71,7 @@ public class TXLastEventInTransactionUtils {
       Cache cache) throws ServiceConfigurationError {
     for (String senderId : getSenderIdsForEvents(callbacks)) {
       GatewaySender sender = cache.getGatewaySender(senderId);
-      if (sender == null) {
-        logger.error("No sender found for {}", senderId);
-        throw new ServiceConfigurationError("No information for senderId: " + senderId);
-      }
-      if (sender.mustGroupTransactionEvents()) {
+      if (sender != null && sender.mustGroupTransactionEvents()) {
         return false;
       }
     }
@@ -116,5 +106,10 @@ public class TXLastEventInTransactionUtils {
       throw new ServiceConfigurationError("No information for senderId: " + senderId);
     }
     return sender.mustGroupTransactionEvents();
+  }
+
+  static boolean isLastTransactionEvent(boolean isConfigError,
+      EntryEventImpl lastTransactionEvent, EntryEventImpl entryEvent) {
+    return isConfigError || lastTransactionEvent == null || entryEvent.equals(lastTransactionEvent);
   }
 }
