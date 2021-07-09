@@ -71,17 +71,12 @@ public class UndeployFunction implements InternalFunction<Object[]> {
       Map<String, String> undeployedJars = new HashMap<>();
       for (String jarName : jarNamesToUndeploy) {
         String jarLocation;
-        try {
-          ServiceResult<Deployment> deploymentServiceResult =
-              ClassPathLoader.getLatest().getJarDeploymentService().undeployByFileName(jarName);
-          if (deploymentServiceResult.isSuccessful()) {
-            jarLocation = deploymentServiceResult.getMessage().getFilePath();
-          } else {
-            throw new IllegalArgumentException(deploymentServiceResult.getErrorMessage());
-          }
-        } catch (IllegalArgumentException iaex) {
-          // It's okay for it to have have been undeployed from this server
-          jarLocation = iaex.getMessage();
+        ServiceResult<Deployment> deploymentServiceResult =
+            ClassPathLoader.getLatest().getJarDeploymentService().undeployByFileName(jarName);
+        if (deploymentServiceResult.isSuccessful()) {
+          jarLocation = deploymentServiceResult.getMessage().getFilePath();
+        } else {
+          jarLocation = deploymentServiceResult.getErrorMessage();
         }
         undeployedJars.put(jarName, jarLocation);
       }
