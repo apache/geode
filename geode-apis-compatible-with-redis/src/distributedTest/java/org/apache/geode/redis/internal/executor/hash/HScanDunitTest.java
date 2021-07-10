@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -85,6 +86,7 @@ public class HScanDunitTest {
     ClusterTopologyRefreshOptions refreshOptions =
         ClusterTopologyRefreshOptions.builder()
             .enableAllAdaptiveRefreshTriggers()
+            .enablePeriodicRefresh(Duration.ofSeconds(5))
             .build();
 
     clusterClient.setOptions(ClusterClientOptions.builder()
