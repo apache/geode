@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -45,16 +46,12 @@ public abstract class AbstractZRevRangeIntegrationTest implements RedisIntegrati
   private static final String MEMBER_BASE_NAME = "member";
   private static final String KEY = "key";
   private JedisCluster jedis;
-  private final List<Double> scores = new ArrayList<>();
+  private static final List<Double> scores =
+      Arrays.asList(Double.NEGATIVE_INFINITY, -10.5, 0.0, 10.5, Double.POSITIVE_INFINITY);
 
   @Before
   public void setUp() {
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
-    scores.add(Double.NEGATIVE_INFINITY);
-    scores.add(-10.5);
-    scores.add(0.0);
-    scores.add(10.5);
-    scores.add(Double.POSITIVE_INFINITY);
   }
 
   @After
