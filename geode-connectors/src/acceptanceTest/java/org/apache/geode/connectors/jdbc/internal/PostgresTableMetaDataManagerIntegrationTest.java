@@ -34,11 +34,11 @@ public class PostgresTableMetaDataManagerIntegrationTest
     extends TableMetaDataManagerIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      PostgresTableMetaDataManagerIntegrationTest.class.getResource("postgres.yml");
+      PostgresTableMetaDataManagerIntegrationTest.class.getResource("/postgres.yml");
 
   @ClassRule
-  public static DatabaseConnectionRule dbRule = new PostgresConnectionRule.Builder()
-      .file(COMPOSE_RESOURCE_PATH.getPath()).serviceName("db").port(5432).database(DB_NAME).build();
+  public static DatabaseConnectionRule dbRule =
+      new PostgresConnectionRule.Builder().file(COMPOSE_RESOURCE_PATH.getPath()).build();
 
   @Override
   public Connection getConnection() throws SQLException {

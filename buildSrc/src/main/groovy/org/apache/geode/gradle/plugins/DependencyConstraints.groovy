@@ -157,6 +157,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.0.1.RELEASE')
         api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.2.RELEASE')
         api(group: 'org.springframework.shell', name: 'spring-shell', version: '1.2.0.RELEASE')
+        api(group: 'org.testcontainers', name: 'testcontainers', version: '1.13.0')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'redis.clients', name: 'jedis', version: '2.9.0')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
@@ -178,11 +179,6 @@ class DependencyConstraints implements Plugin<Project> {
     dependencySet(group: 'com.jayway.jsonpath', version: '2.4.0') {
       entry('json-path-assert')
       entry('json-path')
-    }
-
-    dependencySet(group: 'com.palantir.docker.compose', version: '0.31.1') {
-      entry('docker-compose-rule-core')
-      entry('docker-compose-rule-junit4')
     }
 
     dependencySet(group: 'com.pholser', version: '0.9') {

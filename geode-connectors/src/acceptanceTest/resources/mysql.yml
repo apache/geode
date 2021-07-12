@@ -14,15 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-version: '2.0'
+version: '3.0'
 
 services:
 
   db:
-    image: postgres
+    image: mysql:5.7
     restart: always
-    ports:
-      - 5432
     environment:
-      POSTGRES_DB: test
-      POSTGRES_HOST_AUTH_METHOD: trust
+      MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+      #MYSQL_ROOT_PASSWORD: "secret"
