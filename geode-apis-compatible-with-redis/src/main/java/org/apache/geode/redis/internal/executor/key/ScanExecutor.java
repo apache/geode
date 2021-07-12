@@ -18,8 +18,10 @@ package org.apache.geode.redis.internal.executor.key;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCOUNT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMATCH;
 
@@ -36,7 +38,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -75,7 +76,7 @@ public class ScanExecutor extends AbstractScanExecutor {
       } else if (equalsIgnoreCaseBytes(commandElemBytes, bCOUNT)) {
         commandElemBytes = commandElems.get(i + 1);
         try {
-          count = Coder.bytesToInt(commandElemBytes);
+          count = narrowLongToInt(bytesToLong(commandElemBytes));
         } catch (NumberFormatException e) {
           return RedisResponse.error(ERROR_NOT_INTEGER);
         }

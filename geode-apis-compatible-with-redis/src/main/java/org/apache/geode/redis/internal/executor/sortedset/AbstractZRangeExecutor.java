@@ -18,6 +18,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWITHSCORES;
 
 import java.util.List;
@@ -66,16 +67,6 @@ public abstract class AbstractZRangeExecutor extends AbstractExecutor {
     }
 
     return RedisResponse.array(retVal);
-  }
-
-  private int narrowLongToInt(long toBeNarrowed) {
-    if (toBeNarrowed > Integer.MAX_VALUE) {
-      return Integer.MAX_VALUE;
-    } else if (toBeNarrowed < Integer.MIN_VALUE) {
-      return Integer.MIN_VALUE;
-    } else {
-      return (int) toBeNarrowed;
-    }
   }
 
   public abstract boolean isRev();
