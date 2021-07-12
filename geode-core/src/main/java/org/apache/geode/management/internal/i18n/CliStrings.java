@@ -1438,10 +1438,10 @@ public class CliStrings {
       "Sender Id to use to copy the region.";
   public static final String WAN_COPY_REGION__MAXRATE = "max-rate";
   public static final String WAN_COPY_REGION__MAXRATE__HELP =
-      "Maximum rate for copying in events per second.";
+      "Maximum rate for copying in entries per second.";
   public static final String WAN_COPY_REGION__BATCHSIZE = "batch-size";
   public static final String WAN_COPY_REGION__BATCHSIZE__HELP =
-      "Size for batches of events to be copied.";
+      "Number of entries to be copied in each batch.";
   public static final String WAN_COPY_REGION__CANCEL = "cancel";
   public static final String WAN_COPY_REGION__CANCEL__HELP =
       "Cancel an ongoing wan-copy region command";
