@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.pubsub;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -45,9 +46,11 @@ public class PubSubImpl implements PubSub {
   private static final Logger logger = LogService.getLogger();
 
   private final Subscriptions subscriptions;
+  private final ExecutorService executor;
 
-  public PubSubImpl(Subscriptions subscriptions) {
+  public PubSubImpl(Subscriptions subscriptions, ExecutorService executorService) {
     this.subscriptions = subscriptions;
+    executor = executorService;
 
     registerPublishFunction();
   }
@@ -58,6 +61,12 @@ public class PubSubImpl implements PubSub {
 
   @Override
   public long publish(RegionProvider regionProvider, byte[] channel, byte[] message) {
+    executor.submit(() -> internalPublish(regionProvider, channel, message));
+
+    return getSubscriptionCount();
+  }
+
+  private void internalPublish(RegionProvider regionProvider, byte[] channel, byte[] message) {
     Set<DistributedMember> membersWithDataRegion = regionProvider.getRegionMembers();
     @SuppressWarnings("unchecked")
     ResultCollector<String[], List<Long>> subscriberCountCollector = FunctionService
@@ -65,16 +74,11 @@ public class PubSubImpl implements PubSub {
         .setArguments(new Object[] {channel, message})
         .execute(REDIS_PUB_SUB_FUNCTION_ID);
 
-    List<Long> subscriberCounts = null;
-
     try {
-      subscriberCounts = subscriberCountCollector.getResult();
+      subscriberCountCollector.getResult();
     } catch (Exception e) {
       logger.warn("Failed to execute publish function {}", e.getMessage());
-      return 0;
     }
-
-    return subscriberCounts.stream().mapToLong(x -> x).sum();
   }
 
   @Override
@@ -98,9 +102,8 @@ public class PubSubImpl implements PubSub {
       @Override
       public void execute(FunctionContext<Object[]> context) {
         Object[] publishMessage = context.getArguments();
-        long subscriberCount =
-            publishMessageToSubscribers((byte[]) publishMessage[0], (byte[]) publishMessage[1]);
-        context.getResultSender().lastResult(subscriberCount);
+        publishMessageToSubscribers((byte[]) publishMessage[0], (byte[]) publishMessage[1]);
+        context.getResultSender().lastResult(true);
       }
 
       /**
@@ -162,20 +165,14 @@ public class PubSubImpl implements PubSub {
   }
 
   @VisibleForTesting
-  long publishMessageToSubscribers(byte[] channel, byte[] message) {
-    List<Subscription> foundSubscriptions = subscriptions
-        .findSubscriptions(channel);
+  void publishMessageToSubscribers(byte[] channel, byte[] message) {
+    List<Subscription> foundSubscriptions = subscriptions.findSubscriptions(channel);
     if (foundSubscriptions.isEmpty()) {
-      return 0;
+      return;
     }
 
-    PublishResultCollector publishResultCollector =
-        new PublishResultCollector(foundSubscriptions.size(), subscriptions);
-
     foundSubscriptions.forEach(
-        subscription -> subscription.publishMessage(channel, message, publishResultCollector));
-
-    return publishResultCollector.getSuccessCount();
+        subscription -> subscription.publishMessage(channel, message));
   }
 
 }

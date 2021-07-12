@@ -41,8 +41,7 @@ public interface Subscription {
   /**
    * Will publish a message to the designated channel.
    */
-  void publishMessage(byte[] channel, byte[] message,
-      PublishResultCollector publishResultCollector);
+  void publishMessage(byte[] channel, byte[] message);
 
   /**
    * Verifies that the subscription is established with the designated client.
@@ -63,11 +62,6 @@ public interface Subscription {
    * Return the channel or pattern name.
    */
   byte[] getSubscriptionName();
-
-  /**
-   * Called once this subscriber is ready to have publishMessage called
-   */
-  void readyToPublish();
 
   void shutdown();
 }

@@ -23,6 +23,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.ExecutorService;
+
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.DefaultChannelPromise;
@@ -30,8 +32,10 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.junit.Test;
 
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 
 public class PubSubImplJUnitTest {
@@ -50,18 +54,17 @@ public class PubSubImplJUnitTest {
     ChannelSubscription subscription =
         spy(new ChannelSubscription(deadClient, stringToBytes("sally"), mockContext,
             subscriptions));
-    subscription.readyToPublish();
 
     subscriptions.add(subscription);
 
-    PubSubImpl subject = new PubSubImpl(subscriptions);
+    ExecutorService executor =
+        LoggingExecutors.newCachedThreadPool("publishThread", true);
+    PubSubImpl subject = new PubSubImpl(subscriptions, executor);
 
-    Long numberOfSubscriptions =
-        subject.publishMessageToSubscribers(stringToBytes("sally"),
-            stringToBytes("message"));
+    subject.publishMessageToSubscribers(stringToBytes("sally"), stringToBytes("message"));
 
-    assertThat(numberOfSubscriptions).isEqualTo(0);
-    assertThat(subscriptions.findSubscriptions(deadClient)).isEmpty();
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(subscriptions.findSubscriptions(deadClient)).isEmpty());
   }
 
   @SuppressWarnings("unchecked")

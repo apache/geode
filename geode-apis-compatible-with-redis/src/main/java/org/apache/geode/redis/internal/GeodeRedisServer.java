@@ -76,7 +76,9 @@ public class GeodeRedisServer {
   public GeodeRedisServer(String bindAddress, int port, InternalCache cache) {
 
     unsupportedCommandsEnabled = Boolean.getBoolean(ENABLE_UNSUPPORTED_COMMANDS_PARAM);
-    pubSub = new PubSubImpl(new Subscriptions());
+    ExecutorService publishExecutor =
+        LoggingExecutors.newCachedThreadPool("GeodeRedisServer-Publish-", true);
+    pubSub = new PubSubImpl(new Subscriptions(), publishExecutor);
     redisStats = createStats(cache);
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
