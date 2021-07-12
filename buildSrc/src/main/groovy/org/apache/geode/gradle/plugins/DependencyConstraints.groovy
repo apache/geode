@@ -188,11 +188,6 @@ class DependencyConstraints implements Plugin<Project> {
       entry('json-path')
     }
 
-    dependencySet(group: 'com.palantir.docker.compose', version: '0.31.1') {
-      entry('docker-compose-rule-core')
-      entry('docker-compose-rule-junit4')
-    }
-
     dependencySet(group: 'com.pholser', version: '0.9.1') {
       entry('junit-quickcheck-core')
       entry('junit-quickcheck-generators')

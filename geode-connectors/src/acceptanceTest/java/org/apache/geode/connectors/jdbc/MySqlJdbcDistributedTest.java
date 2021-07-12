@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc;
 
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -24,8 +25,8 @@ import java.sql.Types;
 
 import org.junit.ClassRule;
 
+import org.apache.geode.connectors.jdbc.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.connectors.jdbc.test.junit.rules.MySqlConnectionRule;
-import org.apache.geode.connectors.jdbc.test.junit.rules.SqlDatabaseConnectionRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
 /**
@@ -34,19 +35,11 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 public class MySqlJdbcDistributedTest extends JdbcDistributedTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      MySqlJdbcDistributedTest.class.getResource("mysql.yml");
+      MySqlJdbcDistributedTest.class.getResource("/mysql.yml");
 
   @ClassRule
-  public static transient SqlDatabaseConnectionRule dbRule = createConnectionRule();
-
-  private static SqlDatabaseConnectionRule createConnectionRule() {
-    try {
-      return new MySqlConnectionRule.Builder().file(COMPOSE_RESOURCE_PATH.getPath())
-          .serviceName("db").port(3306).database(DB_NAME).build();
-    } catch (IllegalStateException e) {
-      return null;
-    }
-  }
+  public static DatabaseConnectionRule dbRule =
+      new MySqlConnectionRule.Builder().file(COMPOSE_RESOURCE_PATH.getPath()).build();
 
   @Override
   public Connection getConnection() throws SQLException {
@@ -55,7 +48,7 @@ public class MySqlJdbcDistributedTest extends JdbcDistributedTest {
 
   @Override
   public String getConnectionUrl() {
-    return dbRule == null ? null : dbRule.getConnectionUrl();
+    return dbRule.getConnectionUrl();
   }
 
   @Override
@@ -70,7 +63,26 @@ public class MySqlJdbcDistributedTest extends JdbcDistributedTest {
   }
 
   @Override
-  protected void createNullStatement(String key, PreparedStatement statement) throws SQLException {
+  protected void insertNullDataForAllSupportedFieldsTable(MemberVM dataserver, String key,
+      String tableName) {
+    String finalUrl = getConnectionUrl();
+    dataserver.invoke(() -> {
+      Connection connection = DriverManager.getConnection(finalUrl);
+      DatabaseMetaData metaData = connection.getMetaData();
+      String quote = metaData.getIdentifierQuoteString();
+
+      String insertQuery =
+          "Insert into " + quote + tableName + quote + " values (" + "?,?,?,?,?,?,?,?,?,?,?,?,?)";
+      System.out.println("### Query is :" + insertQuery);
+      PreparedStatement statement = connection.prepareStatement(insertQuery);
+      createNullStatement(key, statement);
+
+      statement.execute();
+    });
+  }
+
+  private static void createNullStatement(String key, PreparedStatement statement)
+      throws SQLException {
     statement.setObject(1, key);
     statement.setNull(2, Types.BOOLEAN);
     statement.setNull(3, Types.SMALLINT);

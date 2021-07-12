@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.junit.ClassRule;
 
@@ -32,11 +33,11 @@ import org.apache.geode.pdx.FieldType;
 public class MySqlJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
-      MySqlJdbcLoaderIntegrationTest.class.getResource("mysql.yml");
+      MySqlJdbcLoaderIntegrationTest.class.getResource("/mysql.yml");
 
   @ClassRule
-  public static DatabaseConnectionRule dbRule = new MySqlConnectionRule.Builder()
-      .file(COMPOSE_RESOURCE_PATH.getPath()).serviceName("db").port(3306).database(DB_NAME).build();
+  public static DatabaseConnectionRule dbRule =
+      new MySqlConnectionRule.Builder().file(COMPOSE_RESOURCE_PATH.getPath()).build();
 
   @Override
   public Connection getConnection() throws SQLException {
@@ -44,8 +45,8 @@ public class MySqlJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
   }
 
   @Override
-  public String getConnectionUrl() {
-    return dbRule.getConnectionUrl();
+  public Supplier<String> getConnectionUrlSupplier() {
+    return () -> dbRule.getConnectionUrl();
   }
 
   @Override
