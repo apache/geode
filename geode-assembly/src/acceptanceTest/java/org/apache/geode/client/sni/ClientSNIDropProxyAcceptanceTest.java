@@ -14,8 +14,6 @@
  */
 package org.apache.geode.client.sni;
 
-import static com.palantir.docker.compose.execution.DockerComposeExecArgument.arguments;
-import static com.palantir.docker.compose.execution.DockerComposeExecOption.options;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
@@ -31,9 +29,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
-import com.palantir.docker.compose.DockerComposeRule;
-import com.palantir.docker.compose.execution.DockerComposeRunArgument;
-import com.palantir.docker.compose.execution.DockerComposeRunOption;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -45,18 +40,18 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
+import org.apache.geode.rules.DockerComposeRule;
 
 public class ClientSNIDropProxyAcceptanceTest {
 
   private static final URL DOCKER_COMPOSE_PATH =
       ClientSNIDropProxyAcceptanceTest.class.getResource("docker-compose.yml");
 
-  // Docker compose does not work on windows in CI. Ignore this test on windows
-  // Using a RuleChain to make sure we ignore the test before the rule comes into play
   @ClassRule
-  public static NotOnWindowsDockerRule docker =
-      new NotOnWindowsDockerRule(() -> DockerComposeRule.builder()
-          .file(DOCKER_COMPOSE_PATH.getPath()).build());
+  public static DockerComposeRule docker = new DockerComposeRule.Builder()
+      .file(DOCKER_COMPOSE_PATH.getPath())
+      .service("haproxy", 15443)
+      .build();
 
   private ClientCache cache;
 
@@ -69,8 +64,7 @@ public class ClientSNIDropProxyAcceptanceTest {
         createTempFileFromResource(ClientSNIDropProxyAcceptanceTest.class,
             "geode-config/truststore.jks")
                 .getAbsolutePath();
-    docker.get().exec(options("-T"), "geode",
-        arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
+    docker.execForService("geode", "gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh");
   }
 
   @After
@@ -79,22 +73,20 @@ public class ClientSNIDropProxyAcceptanceTest {
   }
 
   @Test
-  public void performSimpleOperationsDropSNIProxy()
-      throws IOException,
-      InterruptedException {
+  public void performSimpleOperationsDropSNIProxy() {
     final Region<String, Integer> region = getRegion();
 
     region.put("Roy Hobbs", 9);
     assertThat(region.get("Roy Hobbs")).isEqualTo(9);
 
-    stopProxy();
+    pauseProxy();
 
     assertThatThrownBy(() -> region.get("Roy Hobbs"))
         .isInstanceOf(NoAvailableLocatorsException.class)
         .hasMessageContaining("Unable to connect to any locators in the list");
 
 
-    restartProxy();
+    unpauseProxy();
 
     await().untilAsserted(() -> assertThat(region.get("Roy Hobbs")).isEqualTo(9));
 
@@ -109,53 +101,12 @@ public class ClientSNIDropProxyAcceptanceTest {
 
   }
 
-  private void stopProxy() throws IOException, InterruptedException {
-    docker.get().containers()
-        .container("haproxy")
-        .stop();
+  private void pauseProxy() {
+    docker.pauseService("haproxy");
   }
 
-  private void restartProxy() throws IOException, InterruptedException {
-    restartProxyOnPreviousPort();
-    // Leave this commented here in case you need it for troubleshooting
-    // restartProxyOnDockerComposePort();
-  }
-
-  /**
-   * Use this variant to (re)start the container on whatever port(s) is specified in
-   * docker-compose.yml. Usually that would look something like:
-   *
-   * ports:
-   * - "15443:15443"
-   *
-   * Leave this unused method here for troubleshooting.
-   */
-  private void restartProxyOnDockerComposePort() throws IOException, InterruptedException {
-    docker.get().containers()
-        .container("haproxy")
-        .start();
-  }
-
-  /**
-   * Use this variant to (re)start the container whatever host port it was bound to before
-   * it was stopped. Usually you'll want the ports spec in docker-compose.yml to look like
-   * this when using this method (allowing Docker to initially choose a random host port
-   * to bind to):
-   *
-   * ports:
-   * - "15443"
-   */
-  private void restartProxyOnPreviousPort() throws IOException, InterruptedException {
-    /*
-     * docker-compose run needs -d to daemonize the container (fork the process and return control
-     * to this process). The first time we ran the HAproxy container, we let it pick the host port
-     * to bind on. This time, we want it to bind to that same host port (proxyPort). The syntax
-     * for the --publish argument is <host-port>:<internal-port> in this case.
-     */
-    docker.get().run(
-        DockerComposeRunOption.options("-d", "--publish", String.format("%d:15443", proxyPort)),
-        "haproxy",
-        DockerComposeRunArgument.arguments("haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"));
+  private void unpauseProxy() {
+    docker.unpauseService("haproxy");
   }
 
   public Region<String, Integer> getRegion() {
@@ -168,10 +119,7 @@ public class ClientSNIDropProxyAcceptanceTest {
     gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
     gemFireProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
 
-    proxyPort = docker.get().containers()
-        .container("haproxy")
-        .port(15443)
-        .getExternalPort();
+    proxyPort = docker.getExternalPortForService("haproxy", 15443);
 
     ensureCacheClosed();
 
@@ -181,7 +129,7 @@ public class ClientSNIDropProxyAcceptanceTest {
             proxyPort))
         .setPoolSubscriptionEnabled(true)
         .create();
-    return (Region<String, Integer>) cache.<String, Integer>createClientRegionFactory(
+    return cache.<String, Integer>createClientRegionFactory(
         ClientRegionShortcut.PROXY)
         .create("jellyfish");
   }

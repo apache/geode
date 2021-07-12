@@ -16,6 +16,8 @@
  */
 package org.apache.geode.connectors.jdbc;
 
+import java.util.function.Supplier;
+
 import javax.sql.DataSource;
 
 import com.zaxxer.hikari.HikariDataSource;
@@ -23,10 +25,10 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler.DataSourceFactory;
 
 public class TestDataSourceFactory implements DataSourceFactory {
-  private final String url;
+  private final Supplier<String> url;
   private HikariDataSource dataSource;
 
-  public TestDataSourceFactory(String url) {
+  public TestDataSourceFactory(Supplier<String> url) {
     this.url = url;
   }
 
@@ -34,7 +36,7 @@ public class TestDataSourceFactory implements DataSourceFactory {
   public DataSource getDataSource(String dataSourceName) {
     if (dataSource == null) {
       dataSource = new HikariDataSource();
-      dataSource.setJdbcUrl(url);
+      dataSource.setJdbcUrl(url.get());
     }
     return dataSource;
   }
