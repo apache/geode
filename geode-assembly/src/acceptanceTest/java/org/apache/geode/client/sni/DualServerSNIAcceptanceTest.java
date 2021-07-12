@@ -72,7 +72,7 @@ public class DualServerSNIAcceptanceTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     docker.loggingExecForService("geode",
-            "gfsh", "run", "--file=/geode/scripts/geode-starter-2.gfsh");
+        "gfsh", "run", "--file=/geode/scripts/geode-starter-2.gfsh");
 
     final String trustStorePath =
         createTempFileFromResource(SingleServerSNIAcceptanceTest.class,

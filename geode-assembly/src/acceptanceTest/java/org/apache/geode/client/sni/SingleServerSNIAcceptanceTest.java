@@ -14,7 +14,6 @@
  */
 package org.apache.geode.client.sni;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
