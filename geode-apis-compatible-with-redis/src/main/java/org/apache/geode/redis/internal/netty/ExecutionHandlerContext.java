@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.netty;
 
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -183,7 +184,10 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-    writeToChannel(getExceptionResponse(ctx, cause));
+    RedisResponse exceptionResponse = getExceptionResponse(ctx, cause);
+    if (exceptionResponse != null) {
+      writeToChannel(exceptionResponse);
+    }
   }
 
   public EventLoopGroup getSubscriberGroup() {
@@ -214,30 +218,38 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
+    RedisResponse response;
+    if (cause instanceof IOException) {
+      channelInactive(ctx);
+      return null;
+    }
+
     if (cause instanceof IllegalStateException
         || cause instanceof RedisParametersMismatchException
         || cause instanceof RedisException
         || cause instanceof NumberFormatException
         || cause instanceof ArithmeticException) {
-      return RedisResponse.error(cause.getMessage());
+      response = RedisResponse.error(cause.getMessage());
     } else if (cause instanceof RedisDataMovedException) {
-      return RedisResponse.moved(cause.getMessage());
+      response = RedisResponse.moved(cause.getMessage());
     } else if (cause instanceof RedisDataTypeMismatchException) {
-      return RedisResponse.wrongType(cause.getMessage());
+      response = RedisResponse.wrongType(cause.getMessage());
     } else if (cause instanceof LowMemoryException) {
-      return RedisResponse.oom(RedisConstants.ERROR_OOM_COMMAND_NOT_ALLOWED);
+      response = RedisResponse.oom(RedisConstants.ERROR_OOM_COMMAND_NOT_ALLOWED);
     } else if (cause instanceof DecoderException
         && cause.getCause() instanceof RedisCommandParserException) {
-      return RedisResponse
-          .error(RedisConstants.PARSING_EXCEPTION_MESSAGE + ": " + cause.getMessage());
+      response =
+          RedisResponse.error(RedisConstants.PARSING_EXCEPTION_MESSAGE + ": " + cause.getMessage());
     } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException) {
-      return RedisResponse.error(RedisConstants.SERVER_ERROR_SHUTDOWN);
+      response = RedisResponse.error(RedisConstants.SERVER_ERROR_SHUTDOWN);
     } else {
       if (logger.isErrorEnabled()) {
         logger.error("GeodeRedisServer-Unexpected error handler for {}", ctx.channel(), cause);
       }
-      return RedisResponse.error(RedisConstants.SERVER_ERROR_MESSAGE);
+      response = RedisResponse.error(RedisConstants.SERVER_ERROR_MESSAGE);
     }
+
+    return response;
   }
 
   @Override
