@@ -16,9 +16,6 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
-import java.util.concurrent.CountDownLatch;
-
-import io.netty.channel.ChannelFuture;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -31,10 +28,6 @@ public abstract class AbstractSubscription implements Subscription {
   private final Client client;
   private final ExecutionHandlerContext context;
 
-  // Two things have to happen before we are ready to publish:
-  // 1 - we need to make sure the subscriber has switched EventLoopGroups
-  // 2 - the response to the SUBSCRIBE command has been submitted to the client
-  private final CountDownLatch readyForPublish = new CountDownLatch(1);
   private final Subscriptions subscriptions;
   private boolean running = true;
 
@@ -57,25 +50,9 @@ public abstract class AbstractSubscription implements Subscription {
   }
 
   @Override
-  public void readyToPublish() {
-    readyForPublish.countDown();
-  }
-
-  @Override
-  public void publishMessage(byte[] channel, byte[] message,
-      PublishResultCollector publishResultCollector) {
-    try {
-      readyForPublish.await();
-    } catch (InterruptedException e) {
-      // we must be shutting down or registration failed
-      Thread.interrupted();
-      running = false;
-    }
-
+  public void publishMessage(byte[] channel, byte[] message) {
     if (running) {
-      writeToChannel(constructResponse(channel, message), publishResultCollector);
-    } else {
-      publishResultCollector.failure(client);
+      context.writeToChannel(constructResponse(channel, message));
     }
   }
 
@@ -83,8 +60,6 @@ public abstract class AbstractSubscription implements Subscription {
   public synchronized void shutdown() {
     running = false;
     subscriptions.remove(client);
-    // release any threads currently waiting to publish
-    readyToPublish();
   }
 
   public Client getClient() {
@@ -100,21 +75,4 @@ public abstract class AbstractSubscription implements Subscription {
     return RedisResponse.array(createResponse(channel, message));
   }
 
-  /**
-   * We want to determine if the response, to the client, resulted in an error - for example if the
-   * client has disconnected and the write fails. In such cases we need to be able to notify the
-   * caller.
-   */
-  private void writeToChannel(RedisResponse response, PublishResultCollector resultCollector) {
-
-    ChannelFuture result = context.writeToChannel(response)
-        .syncUninterruptibly();
-
-    if (result.cause() == null) {
-      resultCollector.success();
-    } else {
-      resultCollector.failure(client);
-    }
-
-  }
 }
