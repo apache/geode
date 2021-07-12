@@ -108,7 +108,11 @@ public class HScanDunitTest {
 
   @AfterClass
   public static void tearDown() {
-    clusterClient.shutdown();
+    try {
+      clusterClient.shutdown();
+    } catch (Exception ignored) {
+      // See lettuce bug https://github.com/lettuce-io/lettuce-core/issues/1800
+    }
   }
 
   private static boolean anyCauseContains(Throwable cause, String message) {

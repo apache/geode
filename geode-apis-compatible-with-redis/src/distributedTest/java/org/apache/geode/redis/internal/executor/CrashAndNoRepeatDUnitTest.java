@@ -107,7 +107,11 @@ public class CrashAndNoRepeatDUnitTest {
 
   @AfterClass
   public static void cleanup() {
-    clusterClient.shutdown();
+    try {
+      clusterClient.shutdown();
+    } catch (Exception ignored) {
+      // See lettuce bug https://github.com/lettuce-io/lettuce-core/issues/1800
+    }
   }
 
   private static boolean anyCauseContains(Throwable cause, String message) {
