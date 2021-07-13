@@ -17,7 +17,6 @@
 package org.apache.geode.redis.internal.pubsub;
 
 import io.netty.channel.ChannelFutureListener;
-import io.netty.util.concurrent.GenericFutureListener;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -56,11 +55,11 @@ public abstract class AbstractSubscription implements Subscription {
     if (running) {
       context.writeToChannel(constructResponse(channel, message))
           .addListener((ChannelFutureListener) f -> {
-            if(f.cause() != null) {
+            if (f.cause() != null) {
               shutdown();
             }
           });
-      }
+    }
   }
 
   @Override
