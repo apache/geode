@@ -201,11 +201,9 @@ public class DeploymentSemanticVersionJarDUnitTest {
 
     ClusterManagementListResultAssert<Deployment, DeploymentInfo> listAssert =
         assertManagementListResult(client.list(new Deployment()));
-    listAssert.hasConfigurations().hasSize(1)
-        .extracting(Deployment::getFileName)
+    listAssert.hasConfigurations().hasSize(1).extracting(Deployment::getFileName)
         .containsExactly("def.jar");
-    listAssert.hasRuntimeInfos().hasSize(1)
-        .extracting(DeploymentInfo::getJarLocation).asString()
+    listAssert.hasRuntimeInfos().hasSize(1).extracting(DeploymentInfo::getJarLocation).asString()
         .containsOnlyOnce("def.v2.jar");
   }
 

@@ -131,7 +131,7 @@ public class FunctionToFileTrackerIntegrationTest {
     assertThat(registeredFunctions).containsExactly("JarClassLoaderJUnitFunction");
 
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByDeploymentName(deployment.getDeploymentName());
+        .undeployByFileName(deployment.getFileName());
     registeredFunctions = FunctionService.getRegisteredFunctions().keySet();
     assertThat(registeredFunctions.size()).isEqualTo(0);
   }

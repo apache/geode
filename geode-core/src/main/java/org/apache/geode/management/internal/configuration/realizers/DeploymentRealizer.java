@@ -57,7 +57,7 @@ public class DeploymentRealizer
   @Override
   public DeploymentInfo get(Deployment config, InternalCache cache) {
     DeploymentInfo info = new DeploymentInfo();
-    ServiceResult<Deployment> deployed = getDeployed(config.getDeploymentName());
+    ServiceResult<Deployment> deployed = getDeployed(config.getFileName());
     if (deployed.isSuccessful()) {
       info.setLastModified(deployed.getMessage().getDeployedTime());
       info.setJarLocation(deployed.getMessage().getFile().getAbsolutePath());

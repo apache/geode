@@ -105,7 +105,7 @@ public class DeployManagementIntegrationTest {
         .hasEntityInfo()
         .hasSize(2)
         .extracting(EntityInfo::getId)
-        .containsExactlyInAnyOrder("jar1", "jar2");
+        .containsExactlyInAnyOrder("jar1.jar", "jar2.jar");
   }
 
 

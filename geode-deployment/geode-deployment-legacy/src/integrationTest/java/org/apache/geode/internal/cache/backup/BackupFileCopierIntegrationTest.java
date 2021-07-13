@@ -166,7 +166,7 @@ public class BackupFileCopierIntegrationTest {
     assertThat(expectedJar).exists();
     assertThat(fileCopier.getBackupDefinition().getDeployedJars().keySet())
         .containsExactly(expectedJar);
-    jarDeploymentService.undeployByDeploymentName("myJar");
+    jarDeploymentService.undeployByFileName("myJar.jar");
   }
 
   @Test

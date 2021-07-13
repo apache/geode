@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.stream.Collectors;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -82,16 +83,18 @@ public class GfshParserAutoCompletionIntegrationTest {
   public void testCompletionDeploy() {
     String buffer = "deploy";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(6);
-    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " --dir");
+    assertThat(candidate.getCandidates()
+        .stream().map(completion -> completion.getValue().trim()).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("--dir", "--jar", "--jars", "--group", "--groups");
   }
 
   @Test
   public void testCompletionDeployWithSpace() {
     String buffer = "deploy ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(6);
-    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--dir");
+    assertThat(candidate.getCandidates()
+        .stream().map(completion -> completion.getValue().trim()).collect(Collectors.toList()))
+            .containsExactlyInAnyOrder("--dir", "--jar", "--jars", "--group", "--groups");
   }
 
   @Test

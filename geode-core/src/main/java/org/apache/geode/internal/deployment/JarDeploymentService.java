@@ -52,16 +52,6 @@ public interface JarDeploymentService {
   ServiceResult<Deployment> deploy(File file);
 
   /**
-   * Removes jars from the system for the name of the {@link Deployment} they were deployed with.
-   *
-   * @param deploymentName the name of a deployment that has previously been deployed.
-   * @return a {@link ServiceResult} containing a {@link Deployment} representing the removed jars
-   *         when successful and an error message when the the {@link Deployment} for
-   *         deploymentName could not be found or undeployed.
-   */
-  ServiceResult<Deployment> undeployByDeploymentName(String deploymentName);
-
-  /**
    * Removes jars from the system by their file name.
    *
    * @param fileName the name of a jar that has previously been deployed.
@@ -81,11 +71,11 @@ public interface JarDeploymentService {
   /**
    * Retrieves a {@link Deployment} by name.
    *
-   * @param deploymentName the name of an existing {@link Deployment} to be returned.
+   * @param fileName the name of an existing {@link Deployment} to be returned.
    * @return a {@link ServiceResult} containing a {@link Deployment} when a {@link Deployment} is
-   *         found deploymentName and an error message if one cannot be found.
+   *         found fileName and an error message if one cannot be found.
    */
-  ServiceResult<Deployment> getDeployed(String deploymentName);
+  ServiceResult<Deployment> getDeployed(String fileName);
 
   /**
    * Reconfigures the {@link JarDeploymentService} with a new working directory where jars will be
