@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import org.awaitility.Awaitility;
 import org.buildobjects.process.ProcBuilder;
 import org.buildobjects.process.StreamConsumer;
 import org.junit.After;
@@ -116,7 +118,8 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
 
-    assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages);
+    GeodeAwaitility.await().untilAsserted(() ->
+        assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages));
   }
 
   @Test
@@ -303,11 +306,12 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     Long result = publisher.publish("salutations".getBytes(), expectedMessage);
     assertThat(result).isEqualTo(1);
 
+    GeodeAwaitility.await().untilAsserted(() -> assertThat(mockSubscriber.getReceivedMessages()).isNotEmpty());
+    assertThat(mockSubscriber.getReceivedMessages().get(0)).isEqualTo(expectedMessage);
+
     mockSubscriber.unsubscribe("salutations".getBytes());
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
-
-    assertThat(mockSubscriber.getReceivedMessages().get(0)).isEqualTo(expectedMessage);
   }
 
   @Test
