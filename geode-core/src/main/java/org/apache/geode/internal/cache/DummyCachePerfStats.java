@@ -374,4 +374,14 @@ public class DummyCachePerfStats extends CachePerfStats {
     };
   }
 
+  @Override
+  public long startClear() {
+    return 0L;
+  }
+
+  @Override
+  public long endClear(long startTime) {
+    return 0L;
+  }
+
 }
