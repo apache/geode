@@ -38,7 +38,6 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 /**
  * verifies the count of clear operation
  */
-@SuppressWarnings("serial")
 public class RegionClearStatsDistributedTest implements Serializable {
 
   private static final String REGION_NAME = RegionClearStatsDistributedTest.class.getSimpleName();
@@ -58,7 +57,7 @@ public class RegionClearStatsDistributedTest implements Serializable {
   public CacheRule cacheRule = new CacheRule();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     server1 = getVM(0);
     client1 = getVM(1);
   }
@@ -96,7 +95,7 @@ public class RegionClearStatsDistributedTest implements Serializable {
   private int createCache(DataPolicy dataPolicy) throws IOException {
     cacheRule.createCache();
 
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory<String, String> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(dataPolicy);
 
@@ -129,7 +128,7 @@ public class RegionClearStatsDistributedTest implements Serializable {
             .setMinConnections(1).setReadTimeout(20000).setPingInterval(10000).setRetryAttempts(1)
             .create(getClass().getSimpleName());
 
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory<String, String> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setPoolName(pool.getName());
 
@@ -148,7 +147,7 @@ public class RegionClearStatsDistributedTest implements Serializable {
             .setMinConnections(1).setReadTimeout(20000).setPingInterval(10000).setRetryAttempts(1)
             .create(getClass().getSimpleName());
 
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory<String, String> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setPoolName(pool.getName());
     factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
@@ -157,7 +156,7 @@ public class RegionClearStatsDistributedTest implements Serializable {
   }
 
   private void doPutsAndClear() {
-    Region region = cacheRule.getCache().getRegion(REGION_NAME);
+    Region<String, String> region = cacheRule.getCache().getRegion(REGION_NAME);
 
     region.put(KEY1, VALUE1);
     region.put(KEY2, VALUE2);
@@ -169,7 +168,7 @@ public class RegionClearStatsDistributedTest implements Serializable {
   }
 
   private void validateClearCountStat() {
-    assertThat(cacheRule.getCache().getCachePerfStats().getRegionClearCount())
+    assertThat(cacheRule.getCache().getCachePerfStats().getClearCount())
         .isEqualTo(EXPECTED_CLEAR_COUNT_STAT_VALUE);
   }
 }

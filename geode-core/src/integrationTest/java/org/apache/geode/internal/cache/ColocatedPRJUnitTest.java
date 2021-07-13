@@ -31,13 +31,13 @@ public class ColocatedPRJUnitTest {
   @Test
   public void destroyColocatedPRCheckForLeak() {
     PartitionedRegion parent =
-        (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("PARENT");
+        (PartitionedRegion) PartitionedRegionTestHelper.createPartitionedRegion("PARENT");
     List<PartitionedRegion> colocatedList = parent.getColocatedByList();
     assertEquals(0, colocatedList.size());
     PartitionAttributes PRatts =
         new PartitionAttributesFactory().setColocatedWith(SEPARATOR + "PARENT").create();
     PartitionedRegion child =
-        (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("CHILD", PRatts);
+        (PartitionedRegion) PartitionedRegionTestHelper.createPartitionedRegion("CHILD", PRatts);
     assertTrue(colocatedList.contains(child));
     child.destroyRegion();
     assertFalse(colocatedList.contains(child));

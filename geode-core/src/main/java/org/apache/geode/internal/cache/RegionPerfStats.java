@@ -519,16 +519,29 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
     cachePerfStats.incEvictWorkTime(delta);
   }
 
-  @Override
-  public void incRegionClearCount() {
-    stats.incLong(regionClearsId, 1L);
-    cachePerfStats.incRegionClearCount();
+  private void startClearLocal() {
+    stats.incLong(clearsInProgressId, 1L);
+  }
+
+  private void endClearLocal(long timeTaken) {
+    stats.incLong(clearsInProgressId, -1L);
+    stats.incLong(clearsId, 1L);
+    if (clock.isEnabled()) {
+      stats.incLong(clearTimeId, timeTaken);
+    }
   }
 
   @Override
-  public void incBucketClearCount() {
-    stats.incLong(bucketClearsId, 1L);
-    cachePerfStats.incBucketClearCount();
+  public long startClear() {
+    startClearLocal();
+    return cachePerfStats.startClear();
+  }
+
+  @Override
+  public long endClear(long startTime) {
+    long timeTaken = cachePerfStats.endClear(startTime);
+    endClearLocal(timeTaken);
+    return timeTaken;
   }
 
   @Override

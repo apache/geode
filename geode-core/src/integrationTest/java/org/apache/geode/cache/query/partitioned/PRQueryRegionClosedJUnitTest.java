@@ -55,8 +55,6 @@ public class PRQueryRegionClosedJUnitTest {
   boolean encounteredException = false;
   static final int delayQuery = 1000;
 
-
-
   @Before
   public void setUp() throws Exception {
     if (logger == null) {
@@ -75,13 +73,13 @@ public class PRQueryRegionClosedJUnitTest {
    *
    */
   @Test
-  public void testQueryingWithRegionClose() throws Exception {
+  public void testQueryingWithRegionClose() {
 
     logger.info("PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: Test Started  ");
 
     logger.info("PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: creating PR Region ");
 
-    final Region region =
+    final Region<Integer, PortfolioData> region =
         PartitionedRegionTestHelper.createPartitionedRegion(regionName, localMaxMemory, redundancy);
 
     final Region localRegion = PartitionedRegionTestHelper.createLocalRegion(localRegionName);
@@ -155,9 +153,7 @@ public class PRQueryRegionClosedJUnitTest {
             StringWriter sw = new StringWriter();
             qe.printStackTrace(new PrintWriter(sw));
             errorBuf.append(sw);
-
           }
-
         }
         logger.info("<ExpectedException action=remove>" + expectedRegionDestroyedException
             + "</ExpectedException>");
@@ -215,7 +211,7 @@ public class PRQueryRegionClosedJUnitTest {
    * Populates the region with the Objects stores in the data Object array.
    *
    */
-  private void populateData(Region region, Object[] data) {
+  private void populateData(Region<Integer, PortfolioData> region, PortfolioData[] data) {
     logger.info("PRQueryRegionClosedJUnitTest#populateData: Populating Data in the PR Region ");
     for (int j = 0; j < data.length; j++) {
       region.put(j, data[j]);

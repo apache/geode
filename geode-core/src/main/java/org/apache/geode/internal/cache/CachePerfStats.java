@@ -118,11 +118,9 @@ public class CachePerfStats {
   static final int indexUpdateInProgressId;
   static final int indexUpdateCompletedId;
   static final int indexUpdateTimeId;
-  static final int bucketClearsId;
-  static final int regionClearsId;
-  static final int partitionedRegionClearLocalDurationId;
-  static final int partitionedRegionClearTotalDurationId;
-
+  static final int clearsId;
+  static final int clearTimeId;
+  static final int clearsInProgressId;
   private static final int indexInitializationInProgressId;
   private static final int indexInitializationCompletedId;
   private static final int indexInitializationTimeId;
@@ -292,14 +290,12 @@ public class CachePerfStats {
         "Current number of regions configured for reliablity that are missing required roles with Limited access";
     final String reliableRegionsMissingNoAccessDesc =
         "Current number of regions configured for reliablity that are missing required roles with No access";
-    final String regionClearsDesc =
+    final String clearsDesc =
         "The total number of times a clear has been done on this cache.";
-    final String bucketClearsDesc =
-        "The total number of times a clear has been done on this region and it's bucket regions";
-    final String partitionedRegionClearLocalDurationDesc =
-        "The time in nanoseconds partitioned region clear has been running for the region on this member";
-    final String partitionedRegionClearTotalDurationDesc =
-        "The time in nanoseconds partitioned region clear has been running for the region with this member as coordinator.";
+    final String clearTimeDesc =
+        "The total time spent performing clears in nanoseconds.";
+    final String clearsInProgressDesc =
+        "The number of clears currently in progress.";
     final String metaDataRefreshCountDesc =
         "Total number of times the meta data is refreshed due to hopping observed.";
     final String conflatedEventsDesc =
@@ -481,13 +477,10 @@ public class CachePerfStats {
             f.createLongCounter("retries",
                 "Number of times a concurrent destroy followed by a create has caused an entry operation to need to retry.",
                 "operations"),
-            f.createLongCounter("regionClears", regionClearsDesc, "operations"),
-            f.createLongCounter("bucketClears", bucketClearsDesc, "operations"),
-            f.createLongCounter("partitionedRegionClearLocalDuration",
-                partitionedRegionClearLocalDurationDesc, "nanoseconds"),
-            f.createLongCounter("partitionedRegionClearTotalDuration",
-                partitionedRegionClearTotalDurationDesc, "nanoseconds"),
-            f.createLongGauge("diskTasksWaiting",
+            f.createLongCounter("clears", clearsDesc, "operations"),
+            f.createLongGauge("clearsInProgress", clearsInProgressDesc, "operations"),
+            f.createLongCounter("clearTime", clearTimeDesc, "nanoseconds"),
+            f.createIntGauge("diskTasksWaiting",
                 "Current number of disk tasks (oplog compactions, asynchronous recoveries, etc) that are waiting for a thread to run the operation",
                 "operations"),
             f.createLongCounter("conflatedEvents", conflatedEventsDesc, "operations"),
@@ -630,11 +623,9 @@ public class CachePerfStats {
     eventsQueuedId = type.nameToId("eventsQueued");
 
     retriesId = type.nameToId("retries");
-    regionClearsId = type.nameToId("regionClears");
-    bucketClearsId = type.nameToId("bucketClears");
-    partitionedRegionClearLocalDurationId = type.nameToId("partitionedRegionClearLocalDuration");
-    partitionedRegionClearTotalDurationId = type.nameToId("partitionedRegionClearTotalDuration");
-
+    clearsId = type.nameToId("clears");
+    clearTimeId = type.nameToId("clearTime");
+    clearsInProgressId = type.nameToId("clearsInProgress");
     diskTasksWaitingId = type.nameToId("diskTasksWaiting");
     evictorJobsStartedId = type.nameToId("evictorJobsStarted");
     evictorJobsCompletedId = type.nameToId("evictorJobsCompleted");
@@ -1423,36 +1414,32 @@ public class CachePerfStats {
     };
   }
 
-  public long getRegionClearCount() {
-    return stats.getLong(regionClearsId);
+  public long getClearCount() {
+    return stats.getLong(clearsId);
   }
 
-  public long getBucketClearCount() {
-    return stats.getLong(bucketClearsId);
+  public long startClear() {
+    stats.incLong(clearsInProgressId, 1L);
+    return getTime();
   }
 
-  public long getPartitionedRegionClearLocalDuration() {
-    return stats.getLong(partitionedRegionClearLocalDurationId);
+  public long endClear(long startTime) {
+    long timeTaken = 0L;
+    if (clock.isEnabled()) {
+      timeTaken = getTime() - startTime;
+      stats.incLong(clearTimeId, timeTaken);
+    }
+    stats.incLong(clearsInProgressId, -1L);
+    stats.incLong(clearsId, 1L);
+    return timeTaken;
   }
 
-  public long getPartitionedRegionClearTotalDuration() {
-    return stats.getLong(partitionedRegionClearTotalDurationId);
+  public long getClearTime() {
+    return stats.getLong(clearTimeId);
   }
 
-  public void incRegionClearCount() {
-    stats.incLong(regionClearsId, 1L);
-  }
-
-  public void incBucketClearCount() {
-    stats.incLong(bucketClearsId, 1L);
-  }
-
-  public void incPartitionedRegionClearLocalDuration(long durationNanos) {
-    stats.incLong(partitionedRegionClearLocalDurationId, durationNanos);
-  }
-
-  public void incPartitionedRegionClearTotalDuration(long durationNanos) {
-    stats.incLong(partitionedRegionClearTotalDurationId, durationNanos);
+  public long getClearsInProgress() {
+    return stats.getLong(clearsInProgressId);
   }
 
   public long getConflatedEventsCount() {

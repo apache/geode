@@ -15,14 +15,23 @@
 
 package org.apache.geode.internal.cache;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.apache.geode.internal.cache.PartitionedRegionStats.bucketClearsId;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.IntStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
@@ -35,10 +44,12 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -48,6 +59,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 public class PartitionedRegionStatsJUnitTest {
   private static final File DISK_DIR = new File("PRStatsTest");
+  public static final int NUMBER_OF_BUCKETS = 13;
   Logger logger = null;
 
   @Before
@@ -61,12 +73,10 @@ public class PartitionedRegionStatsJUnitTest {
     FileUtils.deleteDirectory(DISK_DIR);
   }
 
-  private PartitionedRegion createPR(String name, int lmax) {
+  private PartitionedRegion createPRWithCache(String name, int lmax, Cache cache) {
     PartitionAttributesFactory<Object, Object> paf = new PartitionAttributesFactory<>();
-    paf.setLocalMaxMemory(lmax).setRedundantCopies(0).setTotalNumBuckets(13); // set low to
-                                                                              // reduce
-                                                                              // logging
-    Cache cache = PartitionedRegionTestHelper.createCache();
+    // set low to reduce logging
+    paf.setLocalMaxMemory(lmax).setRedundantCopies(0).setTotalNumBuckets(NUMBER_OF_BUCKETS);
     PartitionedRegion pr;
     try {
       RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
@@ -78,13 +88,21 @@ public class PartitionedRegionStatsJUnitTest {
     return pr;
   }
 
+  private PartitionedRegion createPR(String name, int lmax) {
+    PartitionAttributesFactory<Object, Object> paf = new PartitionAttributesFactory<>();
+    // set low to reduce logging
+    paf.setLocalMaxMemory(lmax).setRedundantCopies(0).setTotalNumBuckets(NUMBER_OF_BUCKETS);
+
+    Cache cache = PartitionedRegionTestHelper.createCache();
+    return createPRWithCache(name, lmax, cache);
+  }
+
   private PartitionedRegion createPRWithEviction(String name, int lmax,
       boolean diskSync,
       boolean persistent) {
     PartitionAttributesFactory<Object, Object> paf = new PartitionAttributesFactory<>();
-    paf.setLocalMaxMemory(lmax).setRedundantCopies(0).setTotalNumBuckets(13); // set low to
-                                                                              // reduce
-                                                                              // logging
+    paf.setLocalMaxMemory(lmax).setRedundantCopies(0).setTotalNumBuckets(NUMBER_OF_BUCKETS);
+
     Cache cache = PartitionedRegionTestHelper.createCache();
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
     regionFactory.setPartitionAttributes(paf.create());
@@ -484,5 +502,167 @@ public class PartitionedRegionStatsJUnitTest {
     }
 
     return bytes;
+  }
+
+  @Test
+  public void incBucketClearCountIncrementsClears() {
+    String regionName = "testStats";
+    int localMaxMemory = 100;
+    PartitionedRegion pr = createPR(regionName + 1, localMaxMemory);
+
+    final long startTime = pr.getPrStats().startBucketClear();
+    pr.getPrStats().endBucketClear(startTime);
+
+    assertThat(pr.getPrStats().getStats().getLong(bucketClearsId)).isEqualTo(1L);
+    assertThat(pr.getCachePerfStats().getClearCount()).isEqualTo(0L);
+  }
+
+  @Test
+  public void bucketClearsWrapsFromMaxLongToNegativeValue() {
+    String regionName = "testStats";
+    int localMaxMemory = 100;
+    PartitionedRegion pr = createPR(regionName + 1, localMaxMemory);
+    PartitionedRegionStats partitionedRegionStats = pr.getPrStats();
+    partitionedRegionStats.getStats().incLong(bucketClearsId, Long.MAX_VALUE);
+
+    final long startTime = 1L;
+    partitionedRegionStats.endBucketClear(startTime);
+    assertThat(partitionedRegionStats.getBucketClearCount()).isNegative();
+  }
+
+  @Test
+  public void testPartitionedRegionClearStats() {
+    String regionName = "testStats";
+    int localMaxMemory = 100;
+    PartitionedRegion pr = createPR(regionName + 1, localMaxMemory);
+
+    final int bucketMax = pr.getTotalNumberOfBuckets();
+    for (long i = 0L; i < 10000; i++) {
+      try {
+        pr.put(i, i);
+      } catch (PartitionedRegionStorageException ex) {
+        this.logger.warn(ex);
+      }
+    }
+
+    assertThat(pr.getPrStats().getTotalBucketCount()).isEqualTo(bucketMax);
+    assertThat(pr.size()).isEqualTo(10000);
+    pr.clear();
+    assertThat(pr.size()).isEqualTo(0);
+    assertThat(pr.getPrStats().getStats().getLong(bucketClearsId)).isEqualTo(bucketMax);
+  }
+
+  @Test
+  public void testBasicPartitionedRegionClearTimeStat() {
+    String regionName = "testStats";
+    int localMaxMemory = 100;
+    PartitionedRegion pr = createPR(regionName + 1, localMaxMemory);
+    assertThat(pr.getPrStats().getBucketClearTime()).isEqualTo(0L);
+
+    long startTime = pr.getPrStats().startBucketClear();
+    startTime -= 137L;
+    pr.getPrStats().endBucketClear(startTime);
+    assertThat(pr.getPrStats().getBucketClearTime()).isGreaterThanOrEqualTo(137L);
+  }
+
+  private void putRecords(PartitionedRegion pr) {
+    IntStream.range(0, 1000).forEach(i -> pr.put(i, i));
+  }
+
+
+  @Test
+  public void testFullPartitionedRegionClearTimeStat() {
+    String regionName = "testStats";
+    final int localMaxMemory = 700;
+    final int LOTS_OF_RECORDS = 1000;
+    AtomicLong fakeTime = new AtomicLong(System.nanoTime());
+
+    // If one optimizes the code and converts to a lambda spy will fail
+    @SuppressWarnings({"Anonymous2MethodRef", "Convert2Lambda"})
+    StatisticsClock statisticsClock = spy(new StatisticsClock() {
+      @Override
+      public long getTime() {
+        return fakeTime.getAndIncrement();
+      }
+    });
+    InternalCache cache = PartitionedRegionTestHelper.createCache();
+    when(cache.getStatisticsClock()).thenReturn(statisticsClock);
+    PartitionedRegion pr = spy(createPR(regionName + 1, localMaxMemory));
+    when(pr.getStatisticsClock()).thenReturn(statisticsClock);
+
+    putRecords(pr);
+
+    assertThat(pr.size()).isEqualTo(LOTS_OF_RECORDS);
+
+    assertThat(pr.getPrStats().getBucketClearCount()).isEqualTo(0L);
+
+    assertThat(pr.getPrStats().getBucketClearTime()).isEqualTo(0L);
+
+
+    pr.clear();
+
+    // We know the clock should be called 7189 times if everything is working as expected
+    verify(statisticsClock, times(7189)).getTime();
+
+    assertThat(pr.getPrStats().getBucketClearCount()).isGreaterThan(0L);
+    assertThat(pr.getPrStats().getBucketClearTime())
+        .describedAs(
+            "Bucket Clear Time should be the number of buckets "
+                + "because of the fake clock that just increments")
+        .isEqualTo(NUMBER_OF_BUCKETS);
+  }
+
+  @Test
+  public void testBasicPartitionedRegionClearsInProgressStat() {
+    String regionName = "testStats";
+    int localMaxMemory = 100;
+    PartitionedRegion pr = createPR(regionName + 1, localMaxMemory);
+    assertThat(pr.getPrStats().getBucketClearsInProgress()).isEqualTo(0L);
+
+    final long startTime = pr.getPrStats().startBucketClear();
+    assertThat(pr.getPrStats().getBucketClearsInProgress()).isEqualTo(1L);
+    pr.getPrStats().endBucketClear(startTime);
+    assertThat(pr.getPrStats().getBucketClearsInProgress()).isEqualTo(0L);
+  }
+
+  @Test
+  public void testFullPartitionedRegionClearsInProgressStat() {
+    String regionName = "testStats";
+    int localMaxMemory = 100;
+    PartitionedRegion pr = spy(createPR(regionName + 1, localMaxMemory));
+    for (long i = 0L; i < 100; i++) {
+      try {
+        pr.put(i, i);
+      } catch (PartitionedRegionStorageException ex) {
+        this.logger.warn(ex);
+      }
+    }
+    PartitionedRegionStats partitionedRegionStats = spy(pr.getPrStats());
+    when(pr.getPrStats()).thenReturn(partitionedRegionStats);
+
+    BucketRegion actualBucketRegion = pr.getBucketRegion(0L);
+    assertThat((Object) actualBucketRegion).isNotNull();
+    InternalRegionArguments arguments = mock(InternalRegionArguments.class);
+    when(arguments.getPartitionedRegion()).thenReturn(pr);
+    when(arguments.getBucketAdvisor()).thenReturn(actualBucketRegion.getBucketAdvisor());
+    when(arguments.getPartitionedRegionBucketRedundancy())
+        .thenReturn(actualBucketRegion.getRedundancyLevel());
+    when(arguments.isUsedForPartitionedRegionBucket()).thenReturn(true);
+
+    BucketRegion bucketRegion =
+        new BucketRegion(pr.getName(), pr.getBucketRegion(0L).getAttributes(), pr.getRoot(),
+            PartitionedRegionTestHelper.getCache(), arguments,
+            pr.getStatisticsClock());
+    bucketRegion = spy(bucketRegion);
+
+
+    assertThat(pr.size()).isEqualTo(100);
+    RegionEventImpl event = new RegionEventImpl(bucketRegion, Operation.REGION_CLEAR, null,
+        false, bucketRegion.getMyId(), bucketRegion.generateEventID());
+    bucketRegion.basicClear(event);
+    assertThat(bucketRegion.getPartitionedRegion().getPrStats().getBucketClearCount())
+        .isEqualTo(1L);
+    verify(partitionedRegionStats, times(1)).startBucketClear();
+    verify(partitionedRegionStats, times(1)).endBucketClear(anyLong());
   }
 }

@@ -85,7 +85,7 @@ public class PRQueryCacheClosedJUnitTest {
    *
    */
   @Test
-  public void testQueryOnSingleDataStoreWithCacheClose() throws Exception {
+  public void testQueryOnSingleDataStoreWithCacheClose() {
 
     logger.info(
         "PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Test Started  ");
@@ -93,10 +93,11 @@ public class PRQueryCacheClosedJUnitTest {
     logger.info(
         "PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: creating PR Region ");
 
-    final Region region =
+    final Region<Integer, PortfolioData> region =
         PartitionedRegionTestHelper.createPartitionedRegion(regionName, localMaxMemory, redundancy);
 
-    final Region localRegion = PartitionedRegionTestHelper.createLocalRegion(localRegionName);
+    final Region<Integer, PortfolioData> localRegion =
+        PartitionedRegionTestHelper.createLocalRegion(localRegionName);
 
     final StringBuilder errorBuf = new StringBuilder();
 
@@ -212,7 +213,6 @@ public class PRQueryCacheClosedJUnitTest {
       fail(
           "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Test failed because of exception "
               + e);
-
     }
 
     logger.info("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Test Ended");
@@ -223,7 +223,7 @@ public class PRQueryCacheClosedJUnitTest {
    * Populates the region with the Objects stores in the data Object array.
    *
    */
-  private void populateData(Region region, Object[] data) {
+  private void populateData(Region<Integer, PortfolioData> region, PortfolioData[] data) {
     logger.info("PRQueryCacheClosedJUnitTest#populateData: Populating Data in the PR Region ");
     for (int j = 0; j < data.length; j++) {
       region.put(j, data[j]);
