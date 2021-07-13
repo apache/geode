@@ -75,15 +75,12 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 
 @RunWith(JUnitParamsRunner.class)
-@SuppressWarnings({"deprecation", "unchecked", "unused"})
 public class PartitionedRegionTest {
 
   private InternalCache cache;
   private InternalDistributedSystem system;
   private DistributionManager distributionManager;
-  private InternalResourceManager resourceManager;
   private AttributesFactory attributesFactory;
-
   private PartitionedRegion partitionedRegion;
 
   @Rule
@@ -97,9 +94,9 @@ public class PartitionedRegionTest {
     InternalResourceManager resourceManager = mock(InternalResourceManager.class);
 
     cache = mock(InternalCache.class);
-    attributesFactory = new AttributesFactory();
+    attributesFactory = new AttributesFactory<>();
     attributesFactory.setPartitionAttributes(
-        new PartitionAttributesFactory().setTotalNumBuckets(1).setRedundantCopies(1).create());
+        new PartitionAttributesFactory<>().setTotalNumBuckets(1).setRedundantCopies(1).create());
 
     when(cache.getDistributedSystem())
         .thenReturn(system);
@@ -199,6 +196,7 @@ public class PartitionedRegionTest {
     verify(spyPartitionedRegion)
         .updatePRConfig(partitionRegionConfig, false);
 
+    assertThat(verifyOurNode).isNotNull();
     assertThat(verifyOurNode.isCacheLoaderAttached())
         .isEqualTo(cacheLoader != null);
     assertThat(verifyOurNode.isCacheWriterAttached())
@@ -219,7 +217,6 @@ public class PartitionedRegionTest {
     // ARRANGE
     EntryEventImpl clientEvent = mock(EntryEventImpl.class);
     InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
-    InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
     when(clientEvent.getOperation())
@@ -244,7 +241,6 @@ public class PartitionedRegionTest {
   public void getBucketNodeForReadOrWriteReturnsSecondaryNodeForNonRegisterInterest() {
     // ARRANGE
     EntryEventImpl clientEvent = mock(EntryEventImpl.class);
-    InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
@@ -269,7 +265,6 @@ public class PartitionedRegionTest {
   @Test
   public void getBucketNodeForReadOrWriteReturnsSecondaryNodeWhenClientEventIsNotPresent() {
     // ARRANGE
-    InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
@@ -291,7 +286,6 @@ public class PartitionedRegionTest {
   @Test
   public void getBucketNodeForReadOrWriteReturnsSecondaryNodeWhenClientEventOperationIsNotPresent() {
     // ARRANGE
-    InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
@@ -314,7 +308,6 @@ public class PartitionedRegionTest {
   public void updateBucketMapsForInterestRegistrationWithSetOfKeysFetchesPrimaryBucketsForRead() {
     // ARRANGE
     InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
-    InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
     doReturn(primaryMember)
@@ -334,7 +327,6 @@ public class PartitionedRegionTest {
   public void updateBucketMapsForInterestRegistrationWithAllKeysFetchesPrimaryBucketsForRead() {
     // ARRANGE
     InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
-    InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
     PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
     doReturn(primaryMember)

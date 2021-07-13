@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -340,20 +341,6 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     }
   }
 
-  void incClearCount(LocalRegion lr) {
-    if (lr != null && !(lr instanceof HARegion)) {
-      CachePerfStats stats = lr.getCachePerfStats();
-      if (stats != null) {
-        if (lr.isUsedForPartitionedRegionBucket()) {
-          stats.incBucketClearCount();
-        } else {
-          stats.incRegionClearCount();
-        }
-
-      }
-    }
-  }
-
   private void _mapClear() {
     Executor executor = null;
     InternalCache cache = this.owner.getCache();
@@ -388,90 +375,96 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     if (logger.isDebugEnabled()) {
       logger.debug("Clearing entries for {} rvv={}", _getOwner(), rvv);
     }
-    LocalRegion lr = _getOwner();
+    final LocalRegion lr = _getOwner();
     RegionVersionVector localRvv = lr.getVersionVector();
-    incClearCount(lr);
-    // lock for size calcs if the region might have tombstones
-    Object lockObj = lr.getConcurrencyChecksEnabled() ? lr.getSizeGuard() : new Object();
-    synchronized (lockObj) {
-      if (rvv == null) {
-        int delta = 0;
-        try {
-          delta = sizeInVM(); // TODO soplog need to determine if stats should
-                              // reflect only size in memory or the complete thing
-        } catch (GemFireIOException e) {
-          // ignore rather than throwing an exception during cache close
-        }
-        int tombstones = lr.getTombstoneCount();
-        _mapClear();
-        _getOwner().updateSizeOnClearRegion(delta - tombstones);
-        _getOwner().incTombstoneCount(-tombstones);
-        if (delta != 0) {
-          incEntryCount(-delta);
-        }
-      } else {
-        int delta = 0;
-        int tombstones = 0;
-        VersionSource myId = _getOwner().getVersionMember();
-        if (localRvv != rvv) {
-          localRvv.recordGCVersions(rvv);
-        }
-        final boolean isTraceEnabled = logger.isTraceEnabled();
-        for (RegionEntry re : regionEntries()) {
-          synchronized (re) {
-            Token value = re.getValueAsToken();
-            // if it's already being removed or the entry is being created we leave it alone
-            if (value == Token.REMOVED_PHASE1 || value == Token.REMOVED_PHASE2) {
-              continue;
-            }
 
-            VersionSource id = re.getVersionStamp().getMemberID();
-            if (id == null) {
-              id = myId;
-            }
-            if (rvv.contains(id, re.getVersionStamp().getRegionVersion())) {
-              if (isTraceEnabled) {
-                logger.trace("region clear op is removing {} {}", re.getKey(),
-                    re.getVersionStamp());
+    final long startTime = lr.startClear();
+
+    try {
+      // lock for size calcs if the region might have tombstones
+      Object lockObj = lr.getConcurrencyChecksEnabled() ? lr.getSizeGuard() : new Object();
+      synchronized (lockObj) {
+        if (rvv == null) {
+          int delta = 0;
+          try {
+            delta = sizeInVM(); // TODO soplog need to determine if stats should
+            // reflect only size in memory or the complete thing
+          } catch (GemFireIOException e) {
+            // ignore rather than throwing an exception during cache close
+          }
+          int tombstones = lr.getTombstoneCount();
+          _mapClear();
+          _getOwner().updateSizeOnClearRegion(delta - tombstones);
+          _getOwner().incTombstoneCount(-tombstones);
+          if (delta != 0) {
+            incEntryCount(-delta);
+          }
+        } else {
+          int delta = 0;
+          int tombstones = 0;
+          VersionSource myId = _getOwner().getVersionMember();
+          if (localRvv != rvv) {
+            localRvv.recordGCVersions(rvv);
+          }
+          final boolean isTraceEnabled = logger.isTraceEnabled();
+          for (RegionEntry re : regionEntries()) {
+            synchronized (re) {
+              Token value = re.getValueAsToken();
+              // if it's already being removed or the entry is being created we leave it alone
+              if (value == Token.REMOVED_PHASE1 || value == Token.REMOVED_PHASE2) {
+                continue;
               }
 
-              boolean tombstone = re.isTombstone();
-              // note: it.remove() did not reliably remove the entry so we use remove(K,V) here
-              if (getEntryMap().remove(re.getKey(), re)) {
-                if (OffHeapClearRequired.doesClearNeedToCheckForOffHeap()) {
-                  GatewaySenderEventImpl.release(re.getValue()); // OFFHEAP _getValue ok
-                }
-                // If this is an overflow only region, we need to free the entry on
-                // disk at this point.
-                try {
-                  re.removePhase1(lr, true);
-                } catch (RegionClearedException e) {
-                  // do nothing, it's already cleared.
-                }
-                re.removePhase2();
-                lruEntryDestroy(re);
-                if (tombstone) {
-                  _getOwner().incTombstoneCount(-1);
-                  tombstones += 1;
-                } else {
-                  delta += 1;
-                }
+              VersionSource id = re.getVersionStamp().getMemberID();
+              if (id == null) {
+                id = myId;
               }
-            } else { // rvv does not contain this entry so it is retained
-              result.add(id);
+              if (rvv.contains(id, re.getVersionStamp().getRegionVersion())) {
+                if (isTraceEnabled) {
+                  logger.trace("region clear op is removing {} {}", re.getKey(),
+                      re.getVersionStamp());
+                }
+
+                boolean tombstone = re.isTombstone();
+                // note: it.remove() did not reliably remove the entry so we use remove(K,V) here
+                if (getEntryMap().remove(re.getKey(), re)) {
+                  if (OffHeapClearRequired.doesClearNeedToCheckForOffHeap()) {
+                    GatewaySenderEventImpl.release(re.getValue()); // OFFHEAP _getValue ok
+                  }
+                  // If this is an overflow only region, we need to free the entry on
+                  // disk at this point.
+                  try {
+                    re.removePhase1(lr, true);
+                  } catch (RegionClearedException e) {
+                    // do nothing, it's already cleared.
+                  }
+                  re.removePhase2();
+                  lruEntryDestroy(re);
+                  if (tombstone) {
+                    _getOwner().incTombstoneCount(-1);
+                    tombstones += 1;
+                  } else {
+                    delta += 1;
+                  }
+                }
+              } else { // rvv does not contain this entry so it is retained
+                result.add(id);
+              }
             }
           }
-        }
-        _getOwner().updateSizeOnClearRegion(delta);
-        incEntryCount(-delta);
-        incEntryCount(-tombstones);
-        if (logger.isDebugEnabled()) {
-          logger.debug("Size after clearing = {}", getEntryMap().size());
-        }
-        if (isTraceEnabled && getEntryMap().size() < 20) {
-          _getOwner().dumpBackingMap();
+          _getOwner().updateSizeOnClearRegion(delta);
+          incEntryCount(-delta);
+          incEntryCount(-tombstones);
+          if (logger.isDebugEnabled()) {
+            logger.debug("Size after clearing = {}", getEntryMap().size());
+          }
+          if (isTraceEnabled && getEntryMap().size() < 20) {
+            _getOwner().dumpBackingMap();
+          }
         }
       }
+    } finally {
+      lr.endClear(startTime);
     }
     return result;
   }
@@ -699,7 +692,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
         }
         // incEntryCount is called for a tombstone because scheduleTombstone does entryCount--.
         incEntryCount(1); // we are creating an entry that was recovered from disk including
-                          // tombstone
+        // tombstone
       }
       lruEntryUpdate(newRe);
       needsCallback = true;

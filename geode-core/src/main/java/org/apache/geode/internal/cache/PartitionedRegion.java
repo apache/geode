@@ -571,13 +571,6 @@ public class PartitionedRegion extends LocalRegion
     return this.partitionListeners;
   }
 
-  public CachePerfStats getRegionCachePerfStats() {
-    if (dataStore != null && dataStore.getAllLocalBucketRegions().size() > 0) {
-      BucketRegion bucket = dataStore.getAllLocalBucketRegions().iterator().next();
-      return bucket.getCachePerfStats();
-    }
-    return null;
-  }
 
   /**
    * Return canonical representation for a bucket (for logging)
@@ -8083,6 +8076,11 @@ public class PartitionedRegion extends LocalRegion
       this.maxTimeInRetry = maxTime;
     }
 
+    public RetryTimeKeeper(long maxTime) {
+      this.maxTimeInRetry = maxTime;
+    }
+
+
     /**
      * wait for {@link PartitionedRegionHelper#DEFAULT_WAIT_PER_RETRY_ITERATION}, updating the total
      * wait time. Use this method when the same node has been selected for consecutive attempts with
@@ -10150,10 +10148,25 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
+  public void endClear(long startTime) {
+    getCachePerfStats().endClear(startTime);
+  }
+
+  @Override
+  public long startClear() {
+    return getCachePerfStats().startClear();
+  }
+
+  @Override
   void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
     // Synchronized to avoid other threads invoking clear on this vm/node.
-    synchronized (clearLock) {
-      partitionedRegionClear.doClear(regionEvent, cacheWrite);
+    final long startTime = startClear();
+    try {
+      synchronized (clearLock) {
+        partitionedRegionClear.doClear(regionEvent, cacheWrite);
+      }
+    } finally {
+      endClear(startTime);
     }
   }
 
