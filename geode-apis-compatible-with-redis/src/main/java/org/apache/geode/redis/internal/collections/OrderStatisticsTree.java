@@ -204,8 +204,12 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     return true;
   }
 
-  public Iterator<E> getIndexRange(int min, int max) {
-    return new TreeIterator(getNode(min), max - min);
+  public Iterator<E> getIndexRange(int startIndex, int maxElements, boolean reverseRange) {
+    if (reverseRange) {
+      return new ReverseTreeIterator(getNode(startIndex), maxElements);
+    } else {
+      return new TreeIterator(getNode(startIndex), maxElements);
+    }
   }
 
   private Node<E> getNode(int index) {
@@ -360,6 +364,27 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     Node<E> parent = node.parent;
 
     while (parent != null && parent.right == node) {
+      node = parent;
+      parent = parent.parent;
+    }
+
+    return parent;
+  }
+
+  private Node<E> predecessorOf(Node<E> node) {
+    if (node.left != null) {
+      node = node.left;
+
+      while (node.right != null) {
+        node = node.right;
+      }
+
+      return node;
+    }
+
+    Node<E> parent = node.parent;
+
+    while (parent != null && parent.left == node) {
       node = parent;
       parent = parent.parent;
     }
@@ -721,7 +746,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     }
   }
 
-  private final class TreeIterator implements Iterator<E> {
+  private class TreeIterator implements Iterator<E> {
     private Node<E> previousNode;
     private Node<E> nextNode;
     private int expectedModCount = modCount;
@@ -743,21 +768,25 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
 
     @Override
     public boolean hasNext() {
-      return indexCount <= limitIndex && nextNode != null;
+      return indexCount < limitIndex && nextNode != null;
     }
 
     @Override
     public E next() {
-      if (nextNode == null || indexCount > limitIndex) {
+      if (nextNode == null || indexCount >= limitIndex) {
         throw new NoSuchElementException("Iteration exceeded.");
       }
 
       checkConcurrentModification();
       E datum = nextNode.key;
       previousNode = nextNode;
-      nextNode = successorOf(nextNode);
+      nextNode = getNext(nextNode);
       indexCount++;
       return datum;
+    }
+
+    Node<E> getNext(Node<E> currentNode) {
+      return successorOf(currentNode);
     }
 
     @Override
@@ -787,6 +816,18 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
         throw new ConcurrentModificationException(
             "The set was modified while iterating.");
       }
+    }
+  }
+
+  private class ReverseTreeIterator extends TreeIterator {
+
+    ReverseTreeIterator(Node<E> startNode, int maxIndex) {
+      super(startNode, maxIndex);
+    }
+
+    @Override
+    Node<E> getNext(Node<E> currentNode) {
+      return predecessorOf(currentNode);
     }
   }
 }

@@ -175,6 +175,10 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bABSTTL = stringToBytes("ABSTTL");
 
+  // AbstractZRangeExecutor
+  @MakeImmutable
+  public static final byte[] bWITHSCORES = stringToBytes("WITHSCORES");
+
   // ********** Constants for Double Infinity comparisons **********
   public static final String P_INF = "+inf";
   public static final String INF = "inf";

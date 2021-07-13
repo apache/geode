@@ -64,9 +64,11 @@ public interface OrderStatisticsSet<T> extends Set<T> {
   /**
    * Returns an iterator over a range of <code>elements</code> between min and max.
    *
-   * @param min the minimum element.
-   * @param max the maximum element.
+   * @param startIndex the index of the element at which to start the iterator.
+   * @param maxElements the maximum number of elements to allow the iterator to iterate over.
+   * @param reverseRange if true, the elements are considered to be ordered from the highest to the
+   *        lowest score
    * @return an Iterator of <code>elements</code>.
    */
-  Iterator<T> getIndexRange(int min, int max);
+  Iterator<T> getIndexRange(int startIndex, int maxElements, boolean reverseRange);
 }

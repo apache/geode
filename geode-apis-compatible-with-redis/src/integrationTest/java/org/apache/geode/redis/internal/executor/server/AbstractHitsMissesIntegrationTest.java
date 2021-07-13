@@ -45,13 +45,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   private static final String HITS = "keyspace_hits";
   private static final String MISSES = "keyspace_misses";
-  public static final String STRING_KEY = "string";
-  public static final String STRING_INT_KEY = "int";
-  public static final String SET_KEY = "set";
-  public static final String HASH_KEY = "hash";
-  public static final String SORTED_SET_KEY = "sortedSet";
-  public static final String MAP_KEY_1 = "mapKey1";
-  public static final String MAP_KEY_2 = "mapKey2";
+  private static final String STRING_KEY = "string";
+  private static final String STRING_INT_KEY = "int";
+  private static final String SET_KEY = "set";
+  private static final String HASH_KEY = "hash";
+  private static final String SORTED_SET_KEY = "sortedSet";
+  private static final String MAP_KEY_1 = "mapKey1";
+  private static final String MAP_KEY_2 = "mapKey2";
 
   protected Jedis jedis;
 
@@ -253,6 +253,16 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testZrange() {
+    runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zrange(k, 0, 1));
+  }
+
+  @Test
+  public void testZrange_withScores() {
+    runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zrangeWithScores(k, 0, 1));
+  }
+
+  @Test
   public void testZrank() {
     runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, (k, m) -> jedis.zrank(k, m));
   }
@@ -260,6 +270,16 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testZrem() {
     runCommandAndAssertNoStatUpdates(SORTED_SET_KEY, (k, v) -> jedis.zrem(k, v));
+  }
+
+  @Test
+  public void testZrevrange() {
+    runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zrevrange(k, 0, 1));
+  }
+
+  @Test
+  public void testZrevrange_withScores() {
+    runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zrevrangeWithScores(k, 0, 1));
   }
 
   @Test

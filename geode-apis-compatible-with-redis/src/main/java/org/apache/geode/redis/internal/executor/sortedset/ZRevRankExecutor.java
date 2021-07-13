@@ -14,25 +14,19 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.List;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZRevRankExecutor extends AbstractExecutor {
+public class ZRevRankExecutor extends AbstractZRankExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
+    return super.executeCommand(command, context);
+  }
 
-    List<byte[]> commandElements = command.getProcessedCommand();
-
-    long rank = redisSortedSetCommands.zrevrank(command.getKey(), commandElements.get(2));
-
-    if (rank == -1) {
-      return RedisResponse.nil();
-    }
-    return RedisResponse.integer(rank);
+  @Override
+  public boolean isRev() {
+    return true;
   }
 }

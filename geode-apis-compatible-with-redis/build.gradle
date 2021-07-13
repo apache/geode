@@ -65,6 +65,7 @@ dependencies {
   integrationTestImplementation('org.apache.logging.log4j:log4j-core')
   // This only exists for debugging PubSubNativeRedisAcceptanceTest
   integrationTestImplementation('org.buildobjects:jproc:2.6.2')
+  integrationTestImplementation('pl.pragmatists:JUnitParams')
   integrationTestRuntimeOnly(project(':geode-log4j'))
 
   acceptanceTestImplementation(sourceSets.integrationTest.output)

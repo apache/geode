@@ -582,31 +582,79 @@ public class OrderStatisticsTreeTest {
     }
 
     List<Integer> subSet = new ArrayList<>();
-    Iterator<Integer> subIterator = tree.getIndexRange(0, 9);
+    int maxElements = 10;
+    Iterator<Integer> subIterator = tree.getIndexRange(0, maxElements, false);
     while (subIterator.hasNext()) {
       subSet.add(subIterator.next());
     }
-    assertThat(subSet.size()).isEqualTo(10);
+    assertThat(subSet.size()).isEqualTo(maxElements);
     assertThat(subSet).containsExactly(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
 
     subSet.clear();
-    subIterator = tree.getIndexRange(95, 110);
+
+    maxElements = 5;
+    subIterator = tree.getIndexRange(95, maxElements, false);
     while (subIterator.hasNext()) {
       subSet.add(subIterator.next());
     }
-    assertThat(subSet.size()).isEqualTo(5);
+    assertThat(subSet.size()).isEqualTo(maxElements);
     assertThat(subSet).containsExactly(95, 96, 97, 98, 99);
 
     subSet.clear();
-    subIterator = tree.getIndexRange(45, 55);
+
+    maxElements = 11;
+    subIterator = tree.getIndexRange(45, maxElements, false);
     while (subIterator.hasNext()) {
       subSet.add(subIterator.next());
     }
-    assertThat(subSet.size()).isEqualTo(11);
+    assertThat(subSet.size()).isEqualTo(maxElements);
     assertThat(subSet).containsExactly(45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55);
 
     subSet.clear();
-    subIterator = tree.getIndexRange(10, 0);
+    subIterator = tree.getIndexRange(10, 0, false);
+    while (subIterator.hasNext()) {
+      subSet.add(subIterator.next());
+    }
+    assertThat(subSet.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void testGetIndexRangeWithReverseRange() {
+    for (int i = 0; i < 100; ++i) {
+      tree.add(i);
+    }
+
+    List<Integer> subSet = new ArrayList<>();
+    int maxElements = 10;
+    Iterator<Integer> subIterator = tree.getIndexRange(99, maxElements, true);
+    while (subIterator.hasNext()) {
+      subSet.add(subIterator.next());
+    }
+    assertThat(subSet.size()).isEqualTo(maxElements);
+    assertThat(subSet).containsExactly(99, 98, 97, 96, 95, 94, 93, 92, 91, 90);
+
+    subSet.clear();
+
+    maxElements = 5;
+    subIterator = tree.getIndexRange(4, maxElements, true);
+    while (subIterator.hasNext()) {
+      subSet.add(subIterator.next());
+    }
+    assertThat(subSet.size()).isEqualTo(maxElements);
+    assertThat(subSet).containsExactly(4, 3, 2, 1, 0);
+
+    subSet.clear();
+
+    maxElements = 11;
+    subIterator = tree.getIndexRange(55, maxElements, true);
+    while (subIterator.hasNext()) {
+      subSet.add(subIterator.next());
+    }
+    assertThat(subSet.size()).isEqualTo(maxElements);
+    assertThat(subSet).containsExactly(55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45);
+
+    subSet.clear();
+    subIterator = tree.getIndexRange(10, 0, true);
     while (subIterator.hasNext()) {
       subSet.add(subIterator.next());
     }

@@ -14,19 +14,18 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import org.junit.ClassRule;
 
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class ZRankExecutor extends AbstractZRankExecutor {
-  @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    return super.executeCommand(command, context);
-  }
+public class ZRevRangeIntegrationTest extends AbstractZRevRangeIntegrationTest {
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
-  public boolean isRev() {
-    return false;
+  public int getPort() {
+    return server.getPort();
   }
+
 }
