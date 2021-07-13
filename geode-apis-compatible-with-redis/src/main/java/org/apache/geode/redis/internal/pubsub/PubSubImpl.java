@@ -63,7 +63,7 @@ public class PubSubImpl implements PubSub {
   public long publish(RegionProvider regionProvider, byte[] channel, byte[] message) {
     executor.submit(() -> internalPublish(regionProvider, channel, message));
 
-    return getSubscriptionCount();
+    return subscriptions.findSubscriptions(channel).size();
   }
 
   private void internalPublish(RegionProvider regionProvider, byte[] channel, byte[] message) {
