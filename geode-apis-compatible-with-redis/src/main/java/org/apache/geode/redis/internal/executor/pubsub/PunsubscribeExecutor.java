@@ -35,8 +35,6 @@ public class PunsubscribeExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
-    context.eventLoopReady();
-
     List<byte[]> patternNames = extractPatternNames(command);
     if (patternNames.isEmpty()) {
       patternNames = context.getPubSub().findSubscriptionNames(context.getClient(), PATTERN);
