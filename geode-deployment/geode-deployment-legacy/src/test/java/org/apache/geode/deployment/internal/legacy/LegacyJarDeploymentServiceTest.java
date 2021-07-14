@@ -108,8 +108,7 @@ public class LegacyJarDeploymentServiceTest {
 
     LegacyJarDeploymentService.deploy(deployment);
 
-    ServiceResult<Deployment> serviceResult =
-        LegacyJarDeploymentService.undeployByDeploymentName("myJar1");
+    ServiceResult<Deployment> serviceResult = LegacyJarDeploymentService.undeploy("myJar1.jar");
 
     assertThat(serviceResult.isSuccessful()).isTrue();
     List<Deployment> deployments = LegacyJarDeploymentService.listDeployed();
@@ -128,13 +127,12 @@ public class LegacyJarDeploymentServiceTest {
     LegacyJarDeploymentService.deploy(deployment1);
     LegacyJarDeploymentService.deploy(deployment2);
 
-    ServiceResult<Deployment> serviceResult =
-        LegacyJarDeploymentService.undeployByDeploymentName("myJar1");
+    ServiceResult<Deployment> serviceResult = LegacyJarDeploymentService.undeploy("myJar1.jar");
 
     assertThat(serviceResult.isSuccessful()).isTrue();
     List<Deployment> deployments = LegacyJarDeploymentService.listDeployed();
     assertThat(deployments.size()).isEqualTo(1);
-    assertThat(deployments.get(0).getDeploymentName()).contains("myJar2");
+    assertThat(deployments.get(0).getFileName()).contains("myJar2");
   }
 
   @Test
@@ -150,12 +148,12 @@ public class LegacyJarDeploymentServiceTest {
     LegacyJarDeploymentService.deploy(deployment2);
 
     ServiceResult<Deployment> serviceResult =
-        LegacyJarDeploymentService.undeployByFileName(myJar1.getName());
+        LegacyJarDeploymentService.undeploy(myJar1.getName());
 
     assertThat(serviceResult.isSuccessful()).isTrue();
     List<Deployment> deployments = LegacyJarDeploymentService.listDeployed();
     assertThat(deployments.size()).isEqualTo(1);
-    assertThat(deployments.get(0).getDeploymentName()).contains("myJar2");
+    assertThat(deployments.get(0).getFileName()).contains("myJar2");
   }
 
   @Test
@@ -167,7 +165,7 @@ public class LegacyJarDeploymentServiceTest {
     LegacyJarDeploymentService.deploy(deployment);
 
     ServiceResult<Deployment> serviceResult =
-        LegacyJarDeploymentService.undeployByFileName(myJar1.getName());
+        LegacyJarDeploymentService.undeploy(myJar1.getName());
 
     assertThat(serviceResult.isSuccessful()).isTrue();
     List<Deployment> deployments = LegacyJarDeploymentService.listDeployed();
@@ -179,7 +177,7 @@ public class LegacyJarDeploymentServiceTest {
     LegacyJarDeploymentService LegacyJarDeploymentService = new LegacyJarDeploymentService();
 
     ServiceResult<Deployment> serviceResult =
-        LegacyJarDeploymentService.undeployByDeploymentName("myJar");
+        LegacyJarDeploymentService.undeploy("myJar");
 
     assertThat(serviceResult.isSuccessful()).isFalse();
   }
@@ -189,7 +187,7 @@ public class LegacyJarDeploymentServiceTest {
     LegacyJarDeploymentService LegacyJarDeploymentService = new LegacyJarDeploymentService();
 
     ServiceResult<Deployment> serviceResult =
-        LegacyJarDeploymentService.undeployByDeploymentName("myJar.jar");
+        LegacyJarDeploymentService.undeploy("myJar.jar");
 
     assertThat(serviceResult.isSuccessful()).isFalse();
   }
@@ -204,7 +202,7 @@ public class LegacyJarDeploymentServiceTest {
 
     List<Deployment> deployments = LegacyJarDeploymentService.listDeployed();
     assertThat(deployments.size()).isEqualTo(1);
-    assertThat(deployments.get(0).getDeploymentName()).contains("myJar");
+    assertThat(deployments.get(0).getFileName()).contains("myJar");
   }
 
   @Test
@@ -223,9 +221,9 @@ public class LegacyJarDeploymentServiceTest {
 
     LegacyJarDeploymentService.deploy(deployment);
 
-    ServiceResult<Deployment> serviceResult = LegacyJarDeploymentService.getDeployed("myJar1");
+    ServiceResult<Deployment> serviceResult = LegacyJarDeploymentService.getDeployed("myJar1.jar");
     assertThat(serviceResult.isSuccessful()).isTrue();
-    assertThat(serviceResult.getMessage().getDeploymentName()).isEqualTo("myJar1");
+    assertThat(serviceResult.getMessage().getFileName()).isEqualTo("myJar1.jar");
   }
 
   @Test

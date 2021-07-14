@@ -39,7 +39,7 @@ public class ModularClasspathService implements ClasspathService {
   }
 
   @Override
-  public void chainClassloader(File jar, String deploymentName) {
+  public void chainClassloader(File jar) {
 
   }
 

@@ -94,7 +94,7 @@ jbossModulesExtension {
   geodeConfigurations {
     distributedTest {
       mainClass = "org.apache.geode.test.dunit.internal.ChildVM"
-      jbossJdkModules = [ "java.base","jdk.unsupported","java.rmi", "java.naming", "java.xml"]
+      jbossJdkModules = [ "java.se","jdk.unsupported","java.rmi", "java.naming", "java.xml"]
     }
   }
 }

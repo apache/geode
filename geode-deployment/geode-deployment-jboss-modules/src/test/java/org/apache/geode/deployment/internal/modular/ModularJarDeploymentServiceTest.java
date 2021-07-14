@@ -139,8 +139,7 @@ public class ModularJarDeploymentServiceTest {
 
     modularJarDeploymentService.deploy(deployment);
 
-    ServiceResult<Deployment> serviceResult =
-        modularJarDeploymentService.undeployByDeploymentName("myJar1");
+    ServiceResult<Deployment> serviceResult = modularJarDeploymentService.undeploy("myJar1.jar");
 
     assertThat(serviceResult.isSuccessful()).isTrue();
     List<Deployment> deployments = modularJarDeploymentService.listDeployed();
@@ -165,12 +164,12 @@ public class ModularJarDeploymentServiceTest {
     modularJarDeploymentService.deploy(deployment2);
 
     ServiceResult<Deployment> serviceResult =
-        modularJarDeploymentService.undeployByDeploymentName("myJar1");
+        modularJarDeploymentService.undeploy("myJar1.jar");
 
     assertThat(serviceResult.isSuccessful()).isTrue();
     List<Deployment> deployments = modularJarDeploymentService.listDeployed();
     assertThat(deployments.size()).isEqualTo(1);
-    assertThat(deployments.get(0).getDeploymentName()).contains("myJar2");
+    assertThat(deployments.get(0).getFileName()).contains("myJar2");
   }
 
   @Test
@@ -191,12 +190,12 @@ public class ModularJarDeploymentServiceTest {
     modularJarDeploymentService.deploy(deployment2);
 
     ServiceResult<Deployment> serviceResult =
-        modularJarDeploymentService.undeployByFileName(myJar1.getName());
+        modularJarDeploymentService.undeploy(myJar1.getName());
 
     assertThat(serviceResult.isSuccessful()).isTrue();
     List<Deployment> deployments = modularJarDeploymentService.listDeployed();
     assertThat(deployments.size()).isEqualTo(1);
-    assertThat(deployments.get(0).getDeploymentName()).contains("myJar2");
+    assertThat(deployments.get(0).getFileName()).contains("myJar2");
   }
 
   @Test
@@ -213,7 +212,7 @@ public class ModularJarDeploymentServiceTest {
     modularJarDeploymentService.deploy(deployment);
 
     ServiceResult<Deployment> serviceResult =
-        modularJarDeploymentService.undeployByFileName(myJar1.getName());
+        modularJarDeploymentService.undeploy(myJar1.getName());
 
     assertThat(serviceResult.isSuccessful()).isTrue();
     List<Deployment> deployments = modularJarDeploymentService.listDeployed();
@@ -228,7 +227,7 @@ public class ModularJarDeploymentServiceTest {
         new ModularJarDeploymentService(deploymentService);
 
     ServiceResult<Deployment> serviceResult =
-        modularJarDeploymentService.undeployByDeploymentName("myJar");
+        modularJarDeploymentService.undeploy("myJar");
 
     assertThat(serviceResult.isSuccessful()).isFalse();
   }
@@ -241,7 +240,7 @@ public class ModularJarDeploymentServiceTest {
         new ModularJarDeploymentService(deploymentService);
 
     ServiceResult<Deployment> serviceResult =
-        modularJarDeploymentService.undeployByDeploymentName("myJar.jar");
+        modularJarDeploymentService.undeploy("myJar.jar");
 
     assertThat(serviceResult.isSuccessful()).isFalse();
   }
@@ -260,7 +259,7 @@ public class ModularJarDeploymentServiceTest {
 
     List<Deployment> deployments = modularJarDeploymentService.listDeployed();
     assertThat(deployments.size()).isEqualTo(1);
-    assertThat(deployments.get(0).getDeploymentName()).contains("myJar");
+    assertThat(deployments.get(0).getFileName()).contains("myJar");
   }
 
   @Test
@@ -285,9 +284,9 @@ public class ModularJarDeploymentServiceTest {
 
     modularJarDeploymentService.deploy(deployment);
 
-    ServiceResult<Deployment> serviceResult = modularJarDeploymentService.getDeployed("myJar1");
+    ServiceResult<Deployment> serviceResult = modularJarDeploymentService.getDeployed("myJar1.jar");
     assertThat(serviceResult.isSuccessful()).isTrue();
-    assertThat(serviceResult.getMessage().getDeploymentName()).isEqualTo("myJar1");
+    assertThat(serviceResult.getMessage().getFileName()).isEqualTo("myJar1.jar");
   }
 
   @Test

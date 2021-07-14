@@ -167,7 +167,7 @@ public class ClassPathLoaderIntegrationTest {
     assertThatResourceCannotBeLoaded(classAResource);
 
     // Now undeploy JAR and make sure it gets cleaned up
-    ClassPathLoader.getLatest().getJarDeploymentService().undeployByFileName(jarName);
+    ClassPathLoader.getLatest().getJarDeploymentService().undeploy(jarName);
     assertThatClassCannotBeLoaded(classBName);
     assertThatClassCannotBeLoaded(classAName);
 

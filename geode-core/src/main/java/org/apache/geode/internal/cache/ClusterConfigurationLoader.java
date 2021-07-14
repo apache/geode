@@ -102,7 +102,7 @@ public class ClusterConfigurationLoader {
           getJarsFromLocator(response.getMember(), response.getJarNames());
       for (File file : stagedJarFiles) {
         logger.info("Removing old versions of {} in cluster configuration.", file.getName());
-        jarDeploymentService.undeployByFileName(file.getName());
+        jarDeploymentService.undeploy(file.getName());
         jarDeploymentService.deploy(file);
         logger.info("Deployed: {}", file.getAbsolutePath());
       }

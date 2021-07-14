@@ -109,7 +109,7 @@ public class ClassPathLoaderTest {
 
     // clean up the deployed files
     jarDeploymentService.listDeployed()
-        .forEach(deployment -> jarDeploymentService.undeployByFileName(deployment.getFileName()));
+        .forEach(deployment -> jarDeploymentService.undeploy(deployment.getFileName()));
   }
 
   /**

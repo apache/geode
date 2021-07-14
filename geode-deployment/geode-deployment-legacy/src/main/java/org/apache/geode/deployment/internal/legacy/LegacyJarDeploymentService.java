@@ -106,7 +106,7 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
   }
 
   @Override
-  public synchronized ServiceResult<Deployment> undeployByFileName(String fileName) {
+  public synchronized ServiceResult<Deployment> undeploy(String fileName) {
     try {
       logger.debug("Deployments List size before undeploy: {}", deployments.size());
       logger.debug("File being undeployed: {}", fileName);
@@ -191,12 +191,8 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
 
   @Override
   public void close() {
-    String[] jarNames = deployments.keySet().toArray(new String[] {});
-    logger.debug(
-        "Closing LegacyJarDeploymentService. The following Deployments will be removed: {}",
-        Arrays.toString(jarNames));
-    for (String jarName : jarNames) {
-      undeployByFileName(jarName);
+    for (Deployment deployment : deployments.values()) {
+      undeploy(deployment.getFileName());
     }
   }
 
