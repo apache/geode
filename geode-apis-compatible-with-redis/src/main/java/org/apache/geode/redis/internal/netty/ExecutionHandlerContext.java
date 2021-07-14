@@ -83,7 +83,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
-  private final EventLoopGroup subscriberGroup;
   private final DistributedMember member;
   private BigInteger scanCursor;
   private BigInteger sscanCursor;
@@ -111,7 +110,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       Runnable shutdownInvoker,
       RedisStats redisStats,
       ExecutorService backgroundExecutor,
-      EventLoopGroup subscriberGroup,
       byte[] password,
       int serverPort,
       DistributedMember member) {
@@ -121,7 +119,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
-    this.subscriberGroup = subscriberGroup;
     this.client = new Client(channel);
     this.byteBufAllocator = this.channel.alloc();
     this.authPassword = password;
@@ -188,10 +185,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     if (exceptionResponse != null) {
       writeToChannel(exceptionResponse);
     }
-  }
-
-  public EventLoopGroup getSubscriberGroup() {
-    return subscriberGroup;
   }
 
   public synchronized void changeChannelEventLoopGroup(EventLoopGroup newGroup,
