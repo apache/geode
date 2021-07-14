@@ -316,7 +316,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     String dlsName = getDLockServiceName();
     lockService = DistributedLockService.getServiceNamed(dlsName);
     if (lockService == null) {
-      lockService = DLockService.create(dlsName, ds, true, true, true);
+      lockService = DLockService.create(dlsName, ds, true, true);
     }
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Obtained DistributedLockService: {}", this, lockService);
