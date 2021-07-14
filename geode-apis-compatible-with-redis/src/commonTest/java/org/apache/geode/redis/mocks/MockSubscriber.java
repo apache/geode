@@ -15,6 +15,9 @@
 
 package org.apache.geode.redis.mocks;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +28,8 @@ import java.util.concurrent.TimeUnit;
 import redis.clients.jedis.Client;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class MockSubscriber extends JedisPubSub {
 
@@ -191,6 +196,12 @@ public class MockSubscriber extends JedisPubSub {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public void awaitPublishCompletion() {
+    GeodeAwaitility.await().atMost(Duration.ofMillis(300))
+        .pollDelay(Duration.ofMillis(10)).pollInterval(Duration.ofMillis(30))
+        .untilAsserted(() -> assertThat(this.getReceivedMessages()).isNotEmpty());
   }
 
   public static class UnsubscribeInfo {

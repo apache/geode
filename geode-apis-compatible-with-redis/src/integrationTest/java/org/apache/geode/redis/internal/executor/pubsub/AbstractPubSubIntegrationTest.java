@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -443,7 +444,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     AtomicBoolean running = new AtomicBoolean(true);
 
     Future<Void> future1 =
-        executor.submit(() -> runSubscribeAndPublish(1, 10000, running));
+        executor.submit(() -> runSubscribeAndPublish(1, 3000, running));
 
     running.set(false);
     future1.get();
@@ -485,6 +486,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
       mockSubscriber.awaitPSubscribe(pChannel);
 
       localPublisher.publish(channel, "hello-" + index + "-" + iteration);
+      mockSubscriber.awaitPublishCompletion();
 
       mockSubscriber.unsubscribe(channel);
       mockSubscriber.awaitUnsubscribe(channel);
