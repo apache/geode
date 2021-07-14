@@ -57,5 +57,8 @@ public class DummySubscription implements Subscription {
   }
 
   @Override
+  public void readyToPublish() {}
+
+  @Override
   public void shutdown() {}
 }

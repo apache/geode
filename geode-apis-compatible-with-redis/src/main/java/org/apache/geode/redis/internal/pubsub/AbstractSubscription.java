@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import java.util.concurrent.CountDownLatch;
+
 import io.netty.channel.ChannelFutureListener;
 import org.apache.logging.log4j.Logger;
 
@@ -29,6 +31,9 @@ public abstract class AbstractSubscription implements Subscription {
   private final Client client;
   private final ExecutionHandlerContext context;
 
+  // Before we are ready to publish we need to make sure that the response to the
+  // SUBSCRIBE command has been sent back to the client.
+  private final CountDownLatch readyForPublish = new CountDownLatch(1);
   private final Subscriptions subscriptions;
   private boolean running = true;
 
@@ -51,7 +56,20 @@ public abstract class AbstractSubscription implements Subscription {
   }
 
   @Override
+  public void readyToPublish() {
+    readyForPublish.countDown();
+  }
+
+  @Override
   public void publishMessage(byte[] channel, byte[] message) {
+    try {
+      readyForPublish.await();
+    } catch (InterruptedException e) {
+      // we must be shutting down or registration failed
+      Thread.interrupted();
+      running = false;
+    }
+
     if (running) {
       context.writeToChannel(constructResponse(channel, message))
           .addListener((ChannelFutureListener) f -> {
