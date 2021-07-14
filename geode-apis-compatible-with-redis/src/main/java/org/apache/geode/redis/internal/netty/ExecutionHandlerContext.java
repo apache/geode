@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.netty;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -93,7 +92,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       new LinkedBlockingQueue<>(MAX_QUEUED_COMMANDS);
 
   private final int serverPort;
-  private CountDownLatch eventLoopSwitched;
 
   private boolean isAuthenticated;
 
@@ -422,35 +420,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   public String getMemberName() {
     return member.getUniqueId();
-  }
-
-  /**
-   * This method and {@link #eventLoopReady()} are relevant for pubsub related commands which need
-   * to return responses on a different EventLoopGroup. We need to ensure that the EventLoopGroup
-   * switch has occurred before subsequent commands are executed.
-   */
-  public CountDownLatch getOrCreateEventLoopLatch() {
-    if (eventLoopSwitched != null) {
-      return eventLoopSwitched;
-    }
-
-    eventLoopSwitched = new CountDownLatch(1);
-    return eventLoopSwitched;
-  }
-
-  /**
-   * Signals that we have successfully switched over to a new EventLoopGroup.
-   */
-  public void eventLoopReady() {
-    if (eventLoopSwitched == null) {
-      return;
-    }
-
-    try {
-      eventLoopSwitched.await();
-    } catch (InterruptedException e) {
-      logger.info("Event loop interrupted", e);
-    }
   }
 
   public RedisHashCommands getHashCommands() {
