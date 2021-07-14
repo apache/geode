@@ -197,10 +197,10 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     V oldValue = super.put(k, v);
     if (oldValue == null) {
       // A create
-      arrayContentsOverhead += (int) (elementSizer.sizeof(k) + elementSizer.sizeof(v));
+      arrayContentsOverhead += (getElementSize(k) + getElementSize(v));
     } else {
       // An update
-      arrayContentsOverhead += (int) (elementSizer.sizeof(v) - elementSizer.sizeof(oldValue));
+      arrayContentsOverhead += (getElementSize(v) - getElementSize(oldValue));
     }
     return oldValue;
   }
@@ -209,7 +209,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
   public V remove(Object k) {
     V oldValue = super.remove(k);
     if (oldValue != null) {
-      arrayContentsOverhead -= (elementSizer.sizeof(k) + elementSizer.sizeof(oldValue));
+      arrayContentsOverhead -= (getElementSize(k) + getElementSize(oldValue));
     }
     return oldValue;
   }
@@ -224,6 +224,14 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     // This formula determined experimentally using tests.
     return BACKING_ARRAY_OVERHEAD_CONSTANT
         + BACKING_ARRAY_LENGTH_COEFFICIENT * getTotalBackingArrayLength();
+  }
+
+  private <E> int getElementSize(E element) {
+    if (element instanceof Sizeable) {
+      return ((Sizeable) element).getSizeInBytes();
+    } else {
+      return (int) elementSizer.sizeof(element);
+    }
   }
 
   @VisibleForTesting

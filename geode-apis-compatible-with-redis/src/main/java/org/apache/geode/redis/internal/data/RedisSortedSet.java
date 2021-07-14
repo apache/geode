@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.internal.size.ReflectionSingleObjectSizer.roundUpSize;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
@@ -36,7 +37,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
@@ -44,9 +44,11 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.collections.OrderStatisticsSet;
-import org.apache.geode.redis.internal.collections.OrderStatisticsTree;
+import org.apache.geode.redis.internal.collections.SizableOrderStatisticsTree;
+import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -54,27 +56,25 @@ import org.apache.geode.redis.internal.executor.sortedset.SortedSetRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
 public class RedisSortedSet extends AbstractRedisData {
-  private Object2ObjectOpenCustomHashMap<byte[], OrderedSetEntry> members;
+  private SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], OrderedSetEntry> members;
   private OrderStatisticsSet<AbstractOrderedSetEntry> scoreSet;
+  // This field is used to keep track of the size associated with objects that are referenced by
+  // both backing collections, since they will be counted twice otherwise
+  private int sizeInBytesAdjustment = 0;
 
-  protected static final int BASE_REDIS_SORTED_SET_OVERHEAD = 184;
-  protected static final int PER_PAIR_OVERHEAD = 48;
-
-  private int sizeInBytes = BASE_REDIS_SORTED_SET_OVERHEAD;
+  protected static final int BASE_REDIS_SORTED_SET_OVERHEAD = 40;
 
   @Override
   public int getSizeInBytes() {
-    return sizeInBytes;
-  }
-
-  int calculateSizeOfFieldValuePair(byte[] member, byte[] score) {
-    return PER_PAIR_OVERHEAD + member.length + score.length;
+    return BASE_REDIS_SORTED_SET_OVERHEAD + members.getSizeInBytes() + scoreSet.getSizeInBytes()
+        - sizeInBytesAdjustment;
   }
 
   RedisSortedSet(List<byte[]> members) {
     this.members =
-        new Object2ObjectOpenCustomHashMap<>(members.size() / 2, ByteArrays.HASH_STRATEGY);
-    scoreSet = new OrderStatisticsTree<>();
+        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(members.size() / 2,
+            ByteArrays.HASH_STRATEGY);
+    scoreSet = new SizableOrderStatisticsTree<>();
 
     Iterator<byte[]> iterator = members.iterator();
 
@@ -119,7 +119,6 @@ public class RedisSortedSet extends AbstractRedisData {
       InternalDataSerializer.writeByteArray(member, out);
       InternalDataSerializer.writeByteArray(score, out);
     }
-    InternalDataSerializer.writePrimitiveInt(sizeInBytes, out);
   }
 
   @Override
@@ -127,8 +126,9 @@ public class RedisSortedSet extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     int size = InternalDataSerializer.readPrimitiveInt(in);
-    members = new Object2ObjectOpenCustomHashMap<>(size, ByteArrays.HASH_STRATEGY);
-    scoreSet = new OrderStatisticsTree<>();
+    members =
+        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(size, ByteArrays.HASH_STRATEGY);
+    scoreSet = new SizableOrderStatisticsTree<>();
     for (int i = 0; i < size; i++) {
       byte[] member = InternalDataSerializer.readByteArray(in);
       byte[] score = InternalDataSerializer.readByteArray(in);
@@ -136,7 +136,6 @@ public class RedisSortedSet extends AbstractRedisData {
       members.put(member, newEntry);
       scoreSet.add(newEntry);
     }
-    sizeInBytes = InternalDataSerializer.readPrimitiveInt(in);
   }
 
   @Override
@@ -173,20 +172,24 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   protected synchronized byte[] memberAdd(byte[] memberToAdd, byte[] scoreToAdd) {
-    byte[] oldScore = null;
-
     OrderedSetEntry newEntry = new OrderedSetEntry(memberToAdd, scoreToAdd);
-    OrderedSetEntry orderedSetEntry = members.put(memberToAdd, newEntry);
-    if (orderedSetEntry == null) {
+    OrderedSetEntry existingEntry = members.put(memberToAdd, newEntry);
+    if (existingEntry == null) {
       scoreSet.add(newEntry);
-      sizeInBytes += calculateSizeOfFieldValuePair(memberToAdd, scoreToAdd);
+      // Without this adjustment, we count the entry and member name array twice, since references
+      // to them appear in both backing collections.
+      sizeInBytesAdjustment += newEntry.getSizeInBytes() + calculateByteArraySize(memberToAdd);
+      return null;
     } else {
-      scoreSet.remove(orderedSetEntry);
+      scoreSet.remove(existingEntry);
       scoreSet.add(newEntry);
-      oldScore = orderedSetEntry.getScoreBytes();
-      sizeInBytes += scoreToAdd.length - oldScore.length;
+      // When updating an entry, the references to the member name array in the backing collections
+      // are no longer pointing to the same object in memory, so we no longer need to adjust the
+      // size to prevent counting twice
+      newEntry.setFromUpdate();
+      sizeInBytesAdjustment -= calculateByteArraySize(memberToAdd);
+      return existingEntry.getScoreBytes();
     }
-    return oldScore;
   }
 
   synchronized byte[] memberRemove(byte[] member) {
@@ -195,11 +198,14 @@ public class RedisSortedSet extends AbstractRedisData {
     if (orderedSetEntry != null) {
       scoreSet.remove(orderedSetEntry);
       oldValue = orderedSetEntry.getScoreBytes();
-      sizeInBytes -= calculateSizeOfFieldValuePair(member, oldValue);
-    }
-
-    if (members.isEmpty()) {
-      sizeInBytes = BASE_REDIS_SORTED_SET_OVERHEAD;
+      // Adjust for removal. If the entry has been updated at any point, the references to the
+      // member name array in the backing collections are no longer pointing to the same object in
+      // memory, so we no longer need to adjust the size to prevent counting twice
+      if (orderedSetEntry.isFromUpdate()) {
+        sizeInBytesAdjustment -= orderedSetEntry.getSizeInBytes();
+      } else {
+        sizeInBytesAdjustment -= orderedSetEntry.getSizeInBytes() + calculateByteArraySize(member);
+      }
     }
 
     return oldValue;
@@ -483,7 +489,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
-  private static double processByteArrayAsDouble(byte[] value) {
+  public static double processByteArrayAsDouble(byte[] value) {
     try {
       double doubleValue = bytesToDouble(value);
       if (Double.isNaN(doubleValue)) {
@@ -536,31 +542,20 @@ public class RedisSortedSet extends AbstractRedisData {
     // with same name...
   }
 
-  abstract static class AbstractOrderedSetEntry implements Comparable<AbstractOrderedSetEntry> {
-    final byte[] member;
-    final byte[] scoreBytes;
-    final Double score;
+  private static int calculateByteArraySize(byte[] bytes) {
+    return (int) roundUpSize(bytes.length) + 16;
+  }
 
-    AbstractOrderedSetEntry(byte[] member, byte[] score) {
-      this.member = member;
-      this.scoreBytes = stripTrailingZeroFromDouble(score);
-      this.score = processByteArrayAsDouble(score);
-    }
+  abstract static class AbstractOrderedSetEntry implements Comparable<AbstractOrderedSetEntry>,
+      Sizeable {
+    byte[] member;
+    byte[] scoreBytes;
+    double score;
 
-    AbstractOrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
-      if (isExclusive && isMinimum || !isExclusive && !isMinimum) {
-        // For use in (this < other) and (this >= other) comparisons
-        this.member = bGREATEST_MEMBER_NAME;
-      } else {
-        // For use in (this <= other) and (this > other) comparisons
-        this.member = bLEAST_MEMBER_NAME;
-      }
-      this.scoreBytes = null;
-      this.score = score;
-    }
+    private AbstractOrderedSetEntry() {}
 
     public int compareTo(AbstractOrderedSetEntry o) {
-      int comparison = score.compareTo(o.score);
+      int comparison = Double.compare(score, o.score);
       if (comparison == 0) {
         // Scores equal, try lexical ordering
         return compareMembers(member, o.member);
@@ -577,18 +572,39 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     public abstract int compareMembers(byte[] array1, byte[] array2);
+
+    public abstract int getSizeInBytes();
   }
 
   // Entry used to store data in the scoreSet
-  static class OrderedSetEntry extends AbstractOrderedSetEntry {
+  public static class OrderedSetEntry extends AbstractOrderedSetEntry {
 
-    OrderedSetEntry(byte[] member, byte[] score) {
-      super(member, score);
+    public static final int BASE_ORDERED_SET_ENTRY_SIZE = 32;
+    private boolean fromUpdate;
+
+    public OrderedSetEntry(byte[] member, byte[] score) {
+      this.member = member;
+      this.scoreBytes = stripTrailingZeroFromDouble(score);
+      this.score = processByteArrayAsDouble(score);
     }
 
     @Override
     public int compareMembers(byte[] array1, byte[] array2) {
       return javaImplementationOfAnsiCMemCmp(array1, array2);
+    }
+
+    @Override
+    public int getSizeInBytes() {
+      return BASE_ORDERED_SET_ENTRY_SIZE + calculateByteArraySize(member)
+          + calculateByteArraySize(scoreBytes);
+    }
+
+    void setFromUpdate() {
+      this.fromUpdate = true;
+    }
+
+    boolean isFromUpdate() {
+      return fromUpdate;
     }
   }
 
@@ -597,12 +613,26 @@ public class RedisSortedSet extends AbstractRedisData {
   static class DummyOrderedSetEntry extends AbstractOrderedSetEntry {
 
     DummyOrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
-      super(score, isExclusive, isMinimum);
+      if (isExclusive && isMinimum || !isExclusive && !isMinimum) {
+        // For use in (this < other) and (this >= other) comparisons
+        this.member = bGREATEST_MEMBER_NAME;
+      } else {
+        // For use in (this <= other) and (this > other) comparisons
+        this.member = bLEAST_MEMBER_NAME;
+      }
+      this.scoreBytes = null;
+      this.score = score;
     }
 
     @Override
     public int compareMembers(byte[] array1, byte[] array2) {
       return checkDummyMemberNames(array1, array2);
+    }
+
+    @Override
+    // This object should never be persisted, so its size never needs to be calculated
+    public int getSizeInBytes() {
+      return 0;
     }
   }
 }

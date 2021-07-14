@@ -56,7 +56,7 @@ public class OrderedStatisticTreeBenchmark {
           set = new IndexibleTreeSet<>();
           break;
         case ORDER_STATISTICS_TREE:
-          set = new OrderStatisticsTree<>();
+          set = new SizableOrderStatisticsTree<>();
       }
     }
   }

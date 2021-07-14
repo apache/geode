@@ -38,6 +38,9 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
+import org.apache.geode.internal.size.SingleObjectSizer;
+import org.apache.geode.internal.size.Sizeable;
 
 /**
  * This class implements an order statistic tree which is based on AVL-trees.
@@ -46,11 +49,15 @@ import org.apache.geode.annotations.VisibleForTesting;
  * @author Rodion "rodde" Efremov
  * @version 1.6 (Feb 11, 2016)
  */
-public class OrderStatisticsTree<E extends Comparable<? super E>>
+public class SizableOrderStatisticsTree<E extends Comparable<? super E>>
     implements OrderStatisticsSet<E> {
+  public static final int ORDER_STATISTICS_TREE_BASE_SIZE = 32;
+  public static final int PER_ENTRY_OVERHEAD = 40;
   private Node<E> root;
   private int size;
   private int modCount;
+  private int sizeInBytes = ORDER_STATISTICS_TREE_BASE_SIZE;
+  private static final SingleObjectSizer elementSizer = new ReflectionSingleObjectSizer();
 
   @Override
   public Iterator<E> iterator() {
@@ -153,6 +160,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
       root = new Node<>(element);
       size = 1;
       modCount++;
+      updateSizeInBytes(element, true);
       return true;
     }
 
@@ -188,6 +196,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     newNode.parent = parent;
     size++;
     modCount++;
+    updateSizeInBytes(element, true);
     Node<E> hi = parent;
     Node<E> lo = newNode;
 
@@ -258,6 +267,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     }
 
     x = deleteNode(x);
+    updateSizeInBytes(x.key, false);
     fixAfterModification(x, false);
     size--;
     modCount++;
@@ -731,6 +741,25 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     return leftTreeSize + 1 + rightTreeSize;
   }
 
+  void updateSizeInBytes(E element, boolean isAdd) {
+    int sizeChange;
+    if (element instanceof Sizeable) {
+      sizeChange = ((Sizeable) element).getSizeInBytes() + PER_ENTRY_OVERHEAD;
+    } else {
+      sizeChange = (int) elementSizer.sizeof(element) + PER_ENTRY_OVERHEAD;
+    }
+    if (isAdd) {
+      sizeInBytes += sizeChange;
+    } else {
+      sizeInBytes -= sizeChange;
+    }
+  }
+
+  @Override
+  public int getSizeInBytes() {
+    return sizeInBytes;
+  }
+
   private static final class Node<T> {
     T key;
 
@@ -800,6 +829,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
       checkConcurrentModification();
 
       Node<E> x = deleteNode(previousNode);
+      updateSizeInBytes(x.key, false);
       fixAfterModification(x, false);
 
       if (x == nextNode) {

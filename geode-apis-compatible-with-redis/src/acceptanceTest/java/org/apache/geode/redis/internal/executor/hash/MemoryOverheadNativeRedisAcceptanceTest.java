@@ -39,6 +39,8 @@ public class MemoryOverheadNativeRedisAcceptanceTest extends AbstractMemoryOverh
     result.put(Measurement.SET_ENTRY, 75);
     result.put(Measurement.HASH, 228);
     result.put(Measurement.HASH_ENTRY, 70);
+    result.put(Measurement.SORTED_SET, 1601);
+    result.put(Measurement.SORTED_SET_ENTRY, 114);
 
     return result;
   }
