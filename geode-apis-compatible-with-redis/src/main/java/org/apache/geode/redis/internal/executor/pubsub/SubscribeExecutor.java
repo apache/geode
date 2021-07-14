@@ -47,7 +47,18 @@ public class SubscribeExecutor extends AbstractExecutor {
       items.add(item);
     }
 
-    return RedisResponse.flattenedArray(items);
+    Runnable callback = () -> {
+      for (SubscribeResult result : results) {
+        if (result.getSubscription() != null) {
+          result.getSubscription().readyToPublish();
+        }
+      }
+    };
+
+    RedisResponse response = RedisResponse.flattenedArray(items);
+    response.setAfterWriteCallback(callback);
+
+    return response;
   }
 
 }

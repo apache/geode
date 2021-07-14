@@ -864,10 +864,10 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
         executor.submit(() -> makeSubscribers(10000, running));
 
     Future<Integer> publish1 = executor.submit(() -> doPublishing(1, 10000, running));
-    // Future<Integer> publish2 = executor.submit(() -> doPublishing(2, 10000, running));
-    // Future<Integer> publish3 = executor.submit(() -> doPublishing(3, 10000, running));
-    // Future<Integer> publish4 = executor.submit(() -> doPublishing(4, 10000, running));
-    // Future<Integer> publish5 = executor.submit(() -> doPublishing(5, 10000, running));
+    Future<Integer> publish2 = executor.submit(() -> doPublishing(2, 10000, running));
+    Future<Integer> publish3 = executor.submit(() -> doPublishing(3, 10000, running));
+    Future<Integer> publish4 = executor.submit(() -> doPublishing(4, 10000, running));
+    Future<Integer> publish5 = executor.submit(() -> doPublishing(5, 10000, running));
 
     running.set(false);
 
@@ -875,10 +875,10 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     assertThat(makeSubscribersFuture2.get()).isGreaterThanOrEqualTo(10);
 
     assertThat(publish1.get()).isGreaterThan(0);
-    // assertThat(publish2.get()).isGreaterThan(0);
-    // assertThat(publish3.get()).isGreaterThan(0);
-    // assertThat(publish4.get()).isGreaterThan(0);
-    // assertThat(publish5.get()).isGreaterThan(0);
+    assertThat(publish2.get()).isGreaterThan(0);
+    assertThat(publish3.get()).isGreaterThan(0);
+    assertThat(publish4.get()).isGreaterThan(0);
+    assertThat(publish5.get()).isGreaterThan(0);
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {

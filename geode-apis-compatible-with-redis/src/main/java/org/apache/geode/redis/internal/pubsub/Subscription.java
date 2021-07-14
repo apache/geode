@@ -63,5 +63,7 @@ public interface Subscription {
    */
   byte[] getSubscriptionName();
 
+  void readyToPublish();
+
   void shutdown();
 }
