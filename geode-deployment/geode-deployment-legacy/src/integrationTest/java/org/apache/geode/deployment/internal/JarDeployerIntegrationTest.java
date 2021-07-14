@@ -32,7 +32,6 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.management.configuration.Deployment;
-import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.test.compiler.JarBuilder;
 
 
@@ -83,8 +82,7 @@ public class JarDeployerIntegrationTest {
   @Test
   public void deployABC() throws Exception {
     // deploy first version of abc.jar
-    DeployedJar deployedJar = jarDeployer
-        .deploy(JarFileUtils.getArtifactId(plainJarVersion1.getName()), plainJarVersion1);
+    DeployedJar deployedJar = jarDeployer.deploy(plainJarVersion1);
     assertThat(deployedJar).isNotNull();
     assertThat(deployedJar.getFile()).hasName("abc.v1.jar");
     assertThat(deployedJar.getArtifactId()).isEqualTo("abc");
@@ -94,8 +92,7 @@ public class JarDeployerIntegrationTest {
     assertThat(getVersion("jddunit.function.Abc")).isEqualTo("version1");
 
     // deploy 2nd version of abc.jar
-    deployedJar = jarDeployer.deploy(JarFileUtils.getArtifactId(plainJarVersion2.getName()),
-        plainJarVersion2);
+    deployedJar = jarDeployer.deploy(plainJarVersion2);
     assertThat(deployedJar).isNotNull();
     assertThat(deployedJar.getFile()).hasName("abc.v2.jar");
     assertThat(deployedJar.getArtifactId()).isEqualTo("abc");
@@ -108,11 +105,11 @@ public class JarDeployerIntegrationTest {
   @Test
   public void deployABC_mixed() throws Exception {
     // deploy abc.jar
-    jarDeployer.deploy(JarFileUtils.getArtifactId(plainJarVersion1.getName()), plainJarVersion1);
+    jarDeployer.deploy(plainJarVersion1);
 
     // deploy abc-1.0.jar
     DeployedJar deployedJar = jarDeployer
-        .deploy(JarFileUtils.getArtifactId(plainJarVersion1b.getName()), plainJarVersion1b);
+        .deploy(plainJarVersion1b);
     assertThat(deployedJar).isNotNull();
     assertThat(deployedJar.getFile()).hasName("abc-1.0.v2.jar");
     assertThat(deployedJar.getArtifactId()).isEqualTo("abc");
@@ -125,8 +122,7 @@ public class JarDeployerIntegrationTest {
   @Test
   public void deployDEF() throws Exception {
     // deploy first version of def.jar
-    DeployedJar deployedJar = jarDeployer
-        .deploy(JarFileUtils.getArtifactId(semanticJarVersion1.getName()), semanticJarVersion1);
+    DeployedJar deployedJar = jarDeployer.deploy(semanticJarVersion1);
     assertThat(deployedJar).isNotNull();
     assertThat(deployedJar.getFile()).hasName("def-1.0.v1.jar");
     assertThat(deployedJar.getArtifactId()).isEqualTo("def");
@@ -136,8 +132,7 @@ public class JarDeployerIntegrationTest {
     assertThat(getVersion("jddunit.function.Def")).isEqualTo("version1");
 
     // deploy second version of def.jar
-    deployedJar = jarDeployer.deploy(JarFileUtils.getArtifactId(semanticJarVersion2.getName()),
-        semanticJarVersion2);
+    deployedJar = jarDeployer.deploy(semanticJarVersion2);
     assertThat(deployedJar).isNotNull();
     assertThat(deployedJar.getFile()).hasName("def-1.1.v2.jar");
     assertThat(deployedJar.getArtifactId()).isEqualTo("def");
@@ -150,13 +145,11 @@ public class JarDeployerIntegrationTest {
   @Test
   public void deployDEF_mixed() throws Exception {
     // deploy first version of def-1.0.jar
-    jarDeployer.deploy(JarFileUtils.getArtifactId(semanticJarVersion1.getName()),
-        semanticJarVersion1);
+    jarDeployer.deploy(semanticJarVersion1);
 
     // deploy second version of def-1.0.jar with a different content
     DeployedJar deployedJar =
-        jarDeployer.deploy(JarFileUtils.getArtifactId(semanticJarVersion1b.getName()),
-            semanticJarVersion1b);
+        jarDeployer.deploy(semanticJarVersion1b);
     assertThat(deployedJar).isNotNull();
     assertThat(deployedJar.getFile()).hasName("def-1.0.v2.jar");
     assertThat(deployedJar.getArtifactId()).isEqualTo("def");
@@ -165,8 +158,7 @@ public class JarDeployerIntegrationTest {
 
     // deploy def.jar
 
-    deployedJar = jarDeployer.deploy(JarFileUtils.getArtifactId(semanticJarVersion1c.getName()),
-        semanticJarVersion1c);
+    deployedJar = jarDeployer.deploy(semanticJarVersion1c);
     assertThat(deployedJar).isNotNull();
     assertThat(deployedJar.getFile()).hasName("def.v3.jar");
     assertThat(deployedJar.getArtifactId()).isEqualTo("def");
@@ -180,16 +172,14 @@ public class JarDeployerIntegrationTest {
   @Test
   public void undeploy() throws Exception {
     // deploy abc.jar
-    jarDeployer.deploy(JarFileUtils.getArtifactId(plainJarVersion1.getName()), plainJarVersion1);
+    jarDeployer.deploy(plainJarVersion1);
     // deploy def.jar
-    jarDeployer.deploy(JarFileUtils.getArtifactId(semanticJarVersion1c.getName()),
-        semanticJarVersion1c);
+    jarDeployer.deploy(semanticJarVersion1c);
     // deploy def-1.0.jar
-    jarDeployer.deploy(JarFileUtils.getArtifactId(semanticJarVersion1.getName()),
-        semanticJarVersion1);
+    jarDeployer.deploy(semanticJarVersion1);
 
-    Deployment deployment = new Deployment("def", "def-1.0.jar", "test", Instant.now().toString());
-    jarDeployer.undeploy(deployment.getDeploymentName());
+    Deployment deployment = new Deployment("def-1.0.jar", "test", Instant.now().toString());
+    jarDeployer.undeploy(deployment.getFileName());
 
     // do not verify this on window's machine since it can not remove a file that a process has
     // open

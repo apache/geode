@@ -157,8 +157,8 @@ public class ClassPathLoader {
     };
   }
 
-  public void chainClassloader(File jar, String deploymentName) {
-    classPathService.chainClassloader(jar, deploymentName);
+  public void chainClassloader(File jar) {
+    classPathService.chainClassloader(jar);
   }
 
   public void unloadClassloaderForArtifact(String artifactId) {

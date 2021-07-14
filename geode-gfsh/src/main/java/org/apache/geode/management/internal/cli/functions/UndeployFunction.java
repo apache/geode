@@ -25,11 +25,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.classloader.internal.ClassPathLoader;
-import org.apache.geode.deployment.internal.JarDeploymentService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -74,7 +72,7 @@ public class UndeployFunction implements InternalFunction<Object[]> {
       for (String jarName : jarNamesToUndeploy) {
         String jarLocation;
         ServiceResult<Deployment> deploymentServiceResult =
-            ClassPathLoader.getLatest().getJarDeploymentService().undeployByFileName(jarName);
+            ClassPathLoader.getLatest().getJarDeploymentService().undeploy(jarName);
         if (deploymentServiceResult.isSuccessful()) {
           jarLocation = deploymentServiceResult.getMessage().getFilePath();
         } else {

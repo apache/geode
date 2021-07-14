@@ -19,11 +19,11 @@ package org.apache.geode.deployment.internal.modular;
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
@@ -75,8 +75,9 @@ public class ModularJarDeploymentService implements JarDeploymentService {
     if (deployment.getFile() == null) {
       return Failure.of("Cannot deploy Deployment without jar file");
     }
+    String artifactId = JarFileUtils.getArtifactId(deployment.getFileName());
 
-    Deployment existingDeployment = deployments.get(deployment.getDeploymentName());
+    Deployment existingDeployment = deployments.get(artifactId);
     if (existingDeployment != null
         && JarFileUtils.hasSameContent(existingDeployment.getFile(), deployment.getFile())) {
       return Success.of(null);
@@ -91,27 +92,23 @@ public class ModularJarDeploymentService implements JarDeploymentService {
       return Failure.of(e);
     }
 
-    List<String> moduleDependencies = new LinkedList<>(deployment.getModuleDependencyNames());
-    moduleDependencies.add(GEODE_CORE_MODULE_NAME);
-
     boolean serviceResult =
         deploymentService
-            .registerModule(deployment.getDeploymentName(), deployment.getFilePath(),
-                moduleDependencies);
+            .registerModule(artifactId, deployment.getFilePath(),
+                Collections.singletonList(GEODE_CORE_MODULE_NAME));
     logger.debug("Register module result: {} for deployment: {}", serviceResult,
-        deployment.getDeploymentName());
+        deployment.getFileName());
 
     if (serviceResult) {
-      Deployment deploymentCopy = new Deployment(deployment);
+      Deployment deploymentCopy = new Deployment(deployment, deployment.getFile());
       deploymentCopy.setDeployedTime(Instant.now().toString());
       logger.debug("Deployments before: {}", deployments.size());
-      deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
+      deployments.put(artifactId, deploymentCopy);
       logger.debug("Deployments after: {}", deployments.size());
       try {
-        functionToFileTracker.registerFunctionsFromFile(deployment.getDeploymentName(),
-            deployment.getFile());
+        functionToFileTracker.registerFunctionsFromFile(deployment.getFile());
       } catch (ClassNotFoundException | IOException e) {
-        undeployByDeploymentName(deployment.getDeploymentName());
+        undeploy(deployment.getFileName());
         return Failure.of(e);
       } finally {
         flushCaches();
@@ -133,34 +130,18 @@ public class ModularJarDeploymentService implements JarDeploymentService {
   }
 
   @Override
-  public synchronized ServiceResult<Deployment> undeployByDeploymentName(String deploymentName) {
-    if (!deployments.containsKey(deploymentName)) {
-      return Failure.of("No deployment found for name: " + deploymentName);
-    }
-
-    boolean serviceResult =
-        deploymentService.unregisterModule(deploymentName);
-    if (serviceResult) {
-      Deployment removedDeployment = deployments.remove(deploymentName);
-      functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment.getDeploymentName());
-      return Success.of(removedDeployment);
-    } else {
-      return Failure.of("Module could not be undeployed");
-    }
-  }
-
-  @Override
   public List<Deployment> listDeployed() {
     return new LinkedList<>(deployments.values());
   }
 
   @Override
-  public ServiceResult<Deployment> getDeployed(String deploymentName) {
-    if (!deployments.containsKey(deploymentName)) {
-      return Failure.of("No deployment found for name: " + deploymentName);
+  public ServiceResult<Deployment> getDeployed(String fileName) {
+    String artifactId = JarFileUtils.getArtifactId(fileName);
+    if (!deployments.containsKey(artifactId)) {
+      return Failure.of("No deployment found for name: " + fileName);
     }
 
-    return Success.of(deployments.get(deploymentName));
+    return Success.of(deployments.get(artifactId));
   }
 
   @Override
@@ -182,7 +163,7 @@ public class ModularJarDeploymentService implements JarDeploymentService {
       ServiceResult<Deployment> serviceResult = deploy(file);
       if (serviceResult.isSuccessful()) {
         Deployment deployment = serviceResult.getMessage();
-        logger.info("Registering new version of jar: {}", deployment.getDeploymentName());
+        logger.info("Registering new version of jar: {}", deployment.getFileName());
       } else {
         logger.error(serviceResult.getErrorMessage());
       }
@@ -191,7 +172,9 @@ public class ModularJarDeploymentService implements JarDeploymentService {
 
   @Override
   public void close() {
-    deployments.keySet().forEach(this::undeployByDeploymentName);
+    for (Deployment deployment : deployments.values()) {
+      undeploy(deployment.getFileName());
+    }
   }
 
   /**
@@ -201,18 +184,19 @@ public class ModularJarDeploymentService implements JarDeploymentService {
    * @return a {@link ServiceResult} containing a {@link Deployment} representing the removed jar
    *         when successful and an error message if the file could not be found or undeployed.
    */
-  public ServiceResult<Deployment> undeployByFileName(String fileName) {
-    List<String> deploymentNamesFromFileName =
-        listDeployed().stream()
-            .filter(deployment -> deployment.getFileName().equals(fileName))
-            .map(Deployment::getDeploymentName)
-            .collect(Collectors.toList());
-    if (deploymentNamesFromFileName.size() > 1) {
-      return Failure.of("There are multiple deployments with file: " + fileName);
-    } else if (deploymentNamesFromFileName.isEmpty()) {
+  public ServiceResult<Deployment> undeploy(String fileName) {
+    String artifactId = JarFileUtils.getArtifactId(fileName);
+    if (!deployments.containsKey(artifactId)) {
       return Failure.of(fileName + " not deployed");
+    }
+
+    boolean serviceResult = deploymentService.unregisterModule(artifactId);
+    if (serviceResult) {
+      Deployment removedDeployment = deployments.remove(artifactId);
+      functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment.getFileName());
+      return Success.of(removedDeployment);
     } else {
-      return undeployByDeploymentName(deploymentNamesFromFileName.get(0));
+      return Failure.of("Module could not be undeployed");
     }
   }
 

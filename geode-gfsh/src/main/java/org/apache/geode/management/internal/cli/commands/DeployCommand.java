@@ -95,8 +95,6 @@ public class DeployCommand extends GfshCommand {
 
     verifyJarContent(jarFullPaths);
 
-    verifyDeploymentNameOrJarNamesDontContainGeodeName(deploymentName, jarFullPaths);
-
     Set<DistributedMember> targetMembers;
     targetMembers = findMembers(groups, null);
 

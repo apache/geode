@@ -411,7 +411,7 @@ jbossModulesExtension {
     geodeConfigurations {
         main {
             mainClass = "org.apache.geode.distributed.ServerLauncher"
-            jbossJdkModules = [ "java.base","jdk.unsupported", "java.naming", "java.xml"]
+            jbossJdkModules = [ "java.se","jdk.unsupported", "java.naming", "java.xml"]
         }
     }
 }

@@ -83,8 +83,10 @@ public class FunctionToFileTracker {
       throw ioex;
     }
     String artifactId = JarFileUtils.toArtifactId(jarFile.getName());
-    List<Function<?>> previouslyRegisteredFunctions =
-        deploymentToFunctionsMap.remove(artifactId);
+    if (artifactId == null) {
+      artifactId = JarFileUtils.getArtifactId(jarFile.getName());
+    }
+    List<Function<?>> previouslyRegisteredFunctions = deploymentToFunctionsMap.remove(artifactId);
     if (!registeredFunctions.isEmpty()) {
       deploymentToFunctionsMap.put(artifactId, registeredFunctions);
     }

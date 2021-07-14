@@ -44,6 +44,11 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     launch(launchCommand);
   }
 
+  // @Override
+  // protected String getLocatorGFSHConnectionString() {
+  // return "connect";
+  // }
+
   @BeforeClass
   public static void setup() throws IOException {
     jarBuilder = new JarBuilder();
@@ -333,7 +338,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
         .of(getLocatorGFSHConnectionString(), "deploy --jar=" + jarPath)
         .execute(gfshRule).getOutputText());
 
-    if (isModular()) {
+    if (true) {
       assertThat(GfshScript
           .of(getLocatorGFSHConnectionString(), "execute function --id=" + "SpringFunction")
           .execute(gfshRule).getOutputText()).contains("Salutations, Earth");
@@ -433,24 +438,5 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
     GfshScript.of(getLocatorGFSHConnectionString(), "destroy region --name=/ExampleRegion")
         .execute(gfshRule);
-  }
-
-  @Test
-  public void testCannotDeployModulesThatStartWithGeode() throws IOException {
-    File source = loadTestResource("/example/test/pojo/ExamplePojo.java");
-
-    File geodeCoreJar = new File(stagingTempDir.newFolder(), "geode-core.jar");
-
-    jarBuilder.buildJar(geodeCoreJar, source);
-
-    assertThat(GfshScript
-        .of(getLocatorGFSHConnectionString(), "deploy --jars=" + geodeCoreJar.getAbsolutePath())
-        .expectExitCode(1)
-        .execute(gfshRule).getOutputText())
-            .contains("Jar names may not start with \"geode-\"");
-
-    assertThat(GfshScript
-        .of(getLocatorGFSHConnectionString(), "list deployed").execute(gfshRule).getOutputText())
-            .doesNotContain("geode-core");
   }
 }
