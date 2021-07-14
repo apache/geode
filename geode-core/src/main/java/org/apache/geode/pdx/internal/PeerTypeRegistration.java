@@ -222,8 +222,7 @@ public class PeerTypeRegistration implements TypeRegistration {
       if (dls == null) {
         try {
           dls = DLockService.create(LOCK_SERVICE_NAME,
-              cache.getInternalDistributedSystem(), true /* distributed */,
-              true /* destroyOnDisconnect */, true /* automateFreeResources */);
+              cache.getInternalDistributedSystem(), true, true);
         } catch (IllegalArgumentException e) {
           dls = DistributedLockService.getServiceNamed(LOCK_SERVICE_NAME);
           if (dls == null) {
