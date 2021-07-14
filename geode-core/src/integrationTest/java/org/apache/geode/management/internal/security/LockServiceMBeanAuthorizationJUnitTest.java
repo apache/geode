@@ -51,7 +51,7 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   public static void beforeClassSetUp() {
     Cache cache = server.getCache();
     DLockService.create("test-lock-service",
-        (InternalDistributedSystem) cache.getDistributedSystem(), false, true, true);
+        (InternalDistributedSystem) cache.getDistributedSystem(), false, true);
   }
 
   @Before

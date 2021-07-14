@@ -2275,7 +2275,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         dlockService = DistributedLockService.getServiceNamed(dlsName);
         if (dlockService == null) {
           // region destroy will destroy dls and manual freeResources only
-          dlockService = DLockService.create(getFullPath(), getSystem(), true, false, false);
+          dlockService = DLockService.create(getFullPath(), getSystem(), true, false);
         }
         // handle is-lock-grantor region attribute...
         if (isLockGrantor) {

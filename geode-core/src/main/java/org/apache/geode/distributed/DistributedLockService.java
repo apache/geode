@@ -51,8 +51,7 @@ public abstract class DistributedLockService {
   public static DistributedLockService create(String serviceName, DistributedSystem ds)
       throws IllegalArgumentException {
     DLockService.validateServiceName(serviceName);
-    return DLockService.create(serviceName, (InternalDistributedSystem) ds, true /* distributed */,
-        true /* destroyOnDisconnect */, false /* automateFreeResources */);
+    return DLockService.create(serviceName, (InternalDistributedSystem) ds, true, false);
   }
 
   /**

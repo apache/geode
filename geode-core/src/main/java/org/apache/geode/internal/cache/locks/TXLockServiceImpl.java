@@ -80,8 +80,7 @@ public class TXLockServiceImpl extends TXLockService {
 
     this.recoveryLock = new StoppableReentrantReadWriteLock(sys.getCancelCriterion());
 
-    this.dlock = (DLockService) DLockService.create(name, sys, true /* distributed */,
-        true /* destroyOnDisconnect */, true /* automateFreeResources */);
+    this.dlock = (DLockService) DLockService.create(name, sys, true, true);
 
     this.dlock.setDLockRecoverGrantorMessageProcessor(new TXRecoverGrantorMessageProcessor());
 

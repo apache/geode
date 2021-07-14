@@ -1253,8 +1253,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           }
           try { // TODO: call GemFireCache#getPartitionedRegionLockService
             dls = DLockService.create(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME,
-                getAdvisee().getSystem(), true /* distributed */, true /* destroyOnDisconnect */,
-                true /* automateFreeResources */);
+                getAdvisee().getSystem(), true, true);
           } catch (IllegalArgumentException e) {
             // indicates that the DLS is already created
             dls = DistributedLockService

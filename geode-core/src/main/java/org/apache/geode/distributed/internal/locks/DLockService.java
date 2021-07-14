@@ -15,6 +15,9 @@
 
 package org.apache.geode.distributed.internal.locks;
 
+import static java.util.Collections.emptySet;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.ArrayList;
@@ -22,7 +25,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -37,7 +39,6 @@ import org.jetbrains.annotations.NotNull;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -74,15 +75,14 @@ public class DLockService extends DistributedLockService {
   private static final Logger logger = LogService.getLogger();
 
   private static final long NOT_GRANTOR_SLEEP = Long
-      .getLong(GeodeGlossary.GEMFIRE_PREFIX + "DLockService.notGrantorSleep", 100).longValue();
+      .getLong(GeodeGlossary.GEMFIRE_PREFIX + "DLockService.notGrantorSleep", 100);
 
   private static final boolean DEBUG_NONGRANTOR_DESTROY_LOOP = Boolean
       .getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "DLockService.debug.nonGrantorDestroyLoop");
 
   private static final int DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT = Integer
       .getInteger(
-          GeodeGlossary.GEMFIRE_PREFIX + "DLockService.debug.nonGrantorDestroyLoopCount", 20)
-      .intValue();
+          GeodeGlossary.GEMFIRE_PREFIX + "DLockService.debug.nonGrantorDestroyLoopCount", 20);
 
   private static final boolean AUTOMATE_FREE_RESOURCES =
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "DLockService.automateFreeResources");
@@ -101,7 +101,7 @@ public class DLockService extends DistributedLockService {
   protected final InternalDistributedSystem ds;
 
   /** Known lock tokens for this service. Key:Object(name), Value:DLockToken */
-  private final Map<Object, DLockToken> tokens = new HashMap<Object, DLockToken>();
+  private final Map<Object, DLockToken> tokens = new HashMap<>();
 
   /**
    * True if this member has destroyed this named locking service. Field is volatile only because
@@ -149,16 +149,13 @@ public class DLockService extends DistributedLockService {
    */
   private int activeLocks = 0;
 
-  /** True if this service should be destroyed in system DisconnectListener */
-  private final boolean destroyOnDisconnect;
-
   /** True if this service should automatically freeResources */
   private final boolean automateFreeResources;
 
   /** Identifies the thread that is destroying this lock service. */
-  private final ThreadLocal<Boolean> destroyingThread = new ThreadLocal<Boolean>();
+  private final ThreadLocal<Boolean> destroyingThread = new ThreadLocal<>();
 
-  /// ** Held during destory and creation of this lock service. */
+  /// ** Held during destroy and creation of this lock service. */
   // private final Object serviceLock = new Object();
 
   /** Protects access to {@link #destroyed} and {@link #activeLocks}. */
@@ -173,7 +170,7 @@ public class DLockService extends DistributedLockService {
    * Only outbound threads and operations should ever wait on this. Do NOT allow inbound threads to
    * use the <code>lockGrantorFutureResult</code>.
    */
-  private FutureResult lockGrantorFutureResult;
+  private FutureResult<Object> lockGrantorFutureResult;
 
   private final DLockStopper stopper;
 
@@ -182,11 +179,9 @@ public class DLockService extends DistributedLockService {
   // -------------------------------------------------------------------------
 
   public boolean isDestroyed() {
-    synchronized (this.destroyLock) {
-      if (this.destroyed) {
-        if (!isCurrentThreadDoingDestroy()) {
-          return true;
-        }
+    synchronized (destroyLock) {
+      if (destroyed) {
+        return !isCurrentThreadDoingDestroy();
       }
       return false;
     }
@@ -224,11 +219,11 @@ public class DLockService extends DistributedLockService {
    * @param someLockGrantorId the LockGrantorId to check
    */
   private boolean checkLockGrantorId(LockGrantorId someLockGrantorId) {
-    Assert.assertHoldsLock(this.lockGrantorIdLock, true);
-    if (this.lockGrantorId == null) {
+    Assert.assertHoldsLock(lockGrantorIdLock, true);
+    if (lockGrantorId == null) {
       return false;
     }
-    return this.lockGrantorId.sameAs(someLockGrantorId);
+    return lockGrantorId.sameAs(someLockGrantorId);
   }
 
   /**
@@ -238,27 +233,27 @@ public class DLockService extends DistributedLockService {
    * @param someLockGrantorId the LockGrantorId to check
    */
   public boolean isLockGrantorId(LockGrantorId someLockGrantorId) {
-    synchronized (this.lockGrantorIdLock) {
+    synchronized (lockGrantorIdLock) {
       return checkLockGrantorId(someLockGrantorId);
     }
   }
 
   private boolean isCurrentThreadDoingDestroy() {
-    return Boolean.TRUE.equals(this.destroyingThread.get());
+    return Boolean.TRUE.equals(destroyingThread.get());
   }
 
   private void setDestroyingThread() {
-    this.destroyingThread.set(Boolean.TRUE);
+    destroyingThread.set(Boolean.TRUE);
   }
 
   private void clearDestroyingThread() {
-    this.destroyingThread.remove();
+    destroyingThread.remove();
   }
 
   private InternalDistributedMember getElderId() {
-    InternalDistributedMember elder = this.dm.getElderId();
+    InternalDistributedMember elder = dm.getElderId();
     if (elder == null) {
-      this.dm.getSystem().getCancelCriterion().checkCancelInProgress(null);
+      dm.getSystem().getCancelCriterion().checkCancelInProgress(null);
     }
     Assert.assertTrue(elder != null);
     return elder;
@@ -270,8 +265,8 @@ public class DLockService extends DistributedLockService {
    */
   public LockGrantorId getLockGrantorId() {
     final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
-    boolean ownLockGrantorFutureResult = false;
-    FutureResult lockGrantorFutureResultRef = null;
+    boolean ownLockGrantorFutureResult;
+    FutureResult<Object> lockGrantorFutureResultRef = null;
 
     long statStart = -1;
     LockGrantorId theLockGrantorId = null;
@@ -279,27 +274,28 @@ public class DLockService extends DistributedLockService {
 
       ownLockGrantorFutureResult = false;
       try {
-        Assert.assertHoldsLock(this.destroyLock, false);
-        synchronized (this.lockGrantorIdLock) {
-          if (this.lockGrantorFutureResult != null) {
-            lockGrantorFutureResultRef = this.lockGrantorFutureResult;
-          } else if (this.lockGrantorId != null) {
-            return this.lockGrantorId;
+        Assert.assertHoldsLock(destroyLock, false);
+        synchronized (lockGrantorIdLock) {
+          if (lockGrantorFutureResult != null) {
+            lockGrantorFutureResultRef = lockGrantorFutureResult;
+          } else if (lockGrantorId != null) {
+            return lockGrantorId;
           } else {
             ownLockGrantorFutureResult = true;
-            lockGrantorFutureResultRef = new FutureResult(this.dm.getCancelCriterion());
+            lockGrantorFutureResultRef = new FutureResult<>(dm.getCancelCriterion());
             if (isDebugEnabled_DLS) {
               logger.trace(LogMarker.DLS_VERBOSE,
                   "[getLockGrantorId] creating lockGrantorFutureResult");
             }
-            this.lockGrantorFutureResult = lockGrantorFutureResultRef;
+            lockGrantorFutureResult = lockGrantorFutureResultRef;
           }
         }
 
         statStart = getStats().startGrantorWait();
         if (!ownLockGrantorFutureResult) {
           LockGrantorId lockGrantorIdRef =
-              waitForLockGrantorFutureResult(lockGrantorFutureResultRef, 0, TimeUnit.MILLISECONDS);
+              waitForLockGrantorFutureResult(uncheckedCast(lockGrantorFutureResultRef), 0,
+                  TimeUnit.MILLISECONDS);
           if (lockGrantorIdRef != null) {
             return lockGrantorIdRef;
           } else {
@@ -312,7 +308,7 @@ public class DLockService extends DistributedLockService {
 
         GrantorInfo gi = getGrantorRequest();
         theLockGrantorId =
-            new LockGrantorId(this.dm, gi.getId(), gi.getVersionId(), gi.getSerialNumber());
+            new LockGrantorId(dm, gi.getId(), gi.getVersionId(), gi.getSerialNumber());
 
         if (isDebugEnabled_DLS) {
           logger.trace(LogMarker.DLS_VERBOSE, "[getLockGrantorId] elder says grantor is {}",
@@ -326,37 +322,37 @@ public class DLockService extends DistributedLockService {
             if (isDebugEnabled_DLS) {
               logger.trace(LogMarker.DLS_VERBOSE, "[getLockGrantorId] needsRecovery is false");
             }
-            synchronized (this.lockGrantorIdLock) {
+            synchronized (lockGrantorIdLock) {
               // either no previous grantor or grantor is newer
               Assert.assertTrue(
-                  this.lockGrantorId == null || this.lockGrantorId.isNewerThan(theLockGrantorId)
-                      || this.lockGrantorId.sameAs(theLockGrantorId),
-                  this.lockGrantorId + " should be null or newer than or same as "
+                  lockGrantorId == null || lockGrantorId.isNewerThan(theLockGrantorId)
+                      || lockGrantorId.sameAs(theLockGrantorId),
+                  lockGrantorId + " should be null or newer than or same as "
                       + theLockGrantorId);
             }
           }
           if (!createLocalGrantor(elder, needsRecovery, theLockGrantorId)) {
-            theLockGrantorId = this.lockGrantorId;
+            theLockGrantorId = lockGrantorId;
           }
         }
 
         // elder says another member is the grantor
         else {
-          synchronized (this.lockGrantorIdLock) {
+          synchronized (lockGrantorIdLock) {
             if (!setLockGrantorId(theLockGrantorId)) {
-              theLockGrantorId = this.lockGrantorId;
+              theLockGrantorId = lockGrantorId;
             }
           }
         }
       } finally {
-        synchronized (this.lockGrantorIdLock) {
+        synchronized (lockGrantorIdLock) {
           boolean getLockGrantorIdFailed = theLockGrantorId == null;
           if (statStart > -1) {
             getStats().endGrantorWait(statStart, getLockGrantorIdFailed);
           }
           if (ownLockGrantorFutureResult) {
             // this thread is doing the real work and must finish the future
-            Assert.assertTrue(this.lockGrantorFutureResult == lockGrantorFutureResultRef);
+            Assert.assertTrue(lockGrantorFutureResult == lockGrantorFutureResultRef);
             if (getLockGrantorIdFailed) {
               // failed so cancel lockGrantorFutureResult
               lockGrantorFutureResultRef.cancel(false);
@@ -365,7 +361,7 @@ public class DLockService extends DistributedLockService {
               lockGrantorFutureResultRef.set(theLockGrantorId);
             }
             // null out the reference so it is free for next usage
-            this.lockGrantorFutureResult = null;
+            lockGrantorFutureResult = null;
           }
         }
       } // finally block for lockGrantorFutureResult
@@ -398,7 +394,7 @@ public class DLockService extends DistributedLockService {
     final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
     boolean success = false;
     try {
-      synchronized (this.lockGrantorIdLock) {
+      synchronized (lockGrantorIdLock) {
         if (isDestroyed()) {
           checkDestroyed(); // exit
         }
@@ -414,29 +410,29 @@ public class DLockService extends DistributedLockService {
           return false; // exit
         }
 
-        if (this.deposingLockGrantorId != null) {
-          if (this.deposingLockGrantorId.isNewerThan(myLockGrantorId)) {
+        if (deposingLockGrantorId != null) {
+          if (deposingLockGrantorId.isNewerThan(myLockGrantorId)) {
             if (isDebugEnabled_DLS) {
               logger.trace(LogMarker.DLS_VERBOSE, "Failed to create {} because I was deposed by {}",
-                  myLockGrantorId, this.deposingLockGrantorId);
+                  myLockGrantorId, deposingLockGrantorId);
             }
-            this.deposingLockGrantorId = null;
+            deposingLockGrantorId = null;
             return false; // exit
           }
 
           if (isDebugEnabled_DLS) {
             logger.trace(LogMarker.DLS_VERBOSE, "{} failed to depose {}",
-                this.deposingLockGrantorId, myLockGrantorId);
+                deposingLockGrantorId, myLockGrantorId);
           }
           // older grantor couldn't depose us, so null it out...
-          this.deposingLockGrantorId = null;
+          deposingLockGrantorId = null;
         }
 
         if (!setLockGrantorId(myLockGrantorId, myGrantor)) {
           if (isDebugEnabled_DLS) {
             logger.trace(LogMarker.DLS_VERBOSE,
                 "[getLockGrantorId] failed to create {} because current grantor is {}",
-                myLockGrantorId, this.lockGrantorId);
+                myLockGrantorId, lockGrantorId);
           }
           return false; // exit
         }
@@ -445,9 +441,9 @@ public class DLockService extends DistributedLockService {
       // do NOT sync while doing recovery (because it waits for replies)
       if (needsRecovery) {
         boolean recovered =
-            DLockRecoverGrantorProcessor.recoverLockGrantor(this.dm.getDistributionManagerIds(),
+            DLockRecoverGrantorProcessor.recoverLockGrantor(dm.getDistributionManagerIds(),
                 this, // this lock service
-                myGrantor, this.dm, elder); // the elder that told us to be the grantor
+                myGrantor, dm, elder); // the elder that told us to be the grantor
         if (!recovered) {
           checkDestroyed();
           return false; // exit
@@ -456,26 +452,26 @@ public class DLockService extends DistributedLockService {
 
       // after recovery, resynchronize on lockGrantorIdLock again
       // check to see if myLockGrantorId has been deposed
-      synchronized (this.lockGrantorIdLock) {
+      synchronized (lockGrantorIdLock) {
         if (isDestroyed()) {
           checkDestroyed(); // exit
         }
 
-        if (this.deposingLockGrantorId != null) {
-          if (this.deposingLockGrantorId.isNewerThan(myLockGrantorId)) {
+        if (deposingLockGrantorId != null) {
+          if (deposingLockGrantorId.isNewerThan(myLockGrantorId)) {
             if (isDebugEnabled_DLS) {
               logger.trace(LogMarker.DLS_VERBOSE, "Failed to create {} because I was deposed by {}",
-                  myLockGrantorId, this.deposingLockGrantorId);
+                  myLockGrantorId, deposingLockGrantorId);
             }
-            this.deposingLockGrantorId = null;
+            deposingLockGrantorId = null;
             return false; // exit
           }
 
           if (isDebugEnabled_DLS) {
             logger.trace(LogMarker.DLS_VERBOSE, "{} failed to depose {}",
-                this.deposingLockGrantorId, myLockGrantorId);
+                deposingLockGrantorId, myLockGrantorId);
           }
-          this.deposingLockGrantorId = null;
+          deposingLockGrantorId = null;
         }
 
         if (checkLockGrantorId(myLockGrantorId)) {
@@ -541,22 +537,22 @@ public class DLockService extends DistributedLockService {
    * @param newLockGrantorId the new value for lockGrantorId
    */
   private boolean setLockGrantorId(LockGrantorId newLockGrantorId) {
-    Assert.assertHoldsLock(this.lockGrantorIdLock, true);
+    Assert.assertHoldsLock(lockGrantorIdLock, true);
     if (equalsLockGrantorId(newLockGrantorId)) {
       return true;
     } else if (!newLockGrantorId.hasLockGrantorVersion()) {
       // proceed with temporary placeholder used by become grantor
-      this.lockGrantorId = newLockGrantorId;
+      lockGrantorId = newLockGrantorId;
       return true;
-    } else if (newLockGrantorId.isRemote() && this.lockGrantorId != null
-        && this.lockGrantorId.hasLockGrantorVersion()) {
+    } else if (newLockGrantorId.isRemote() && lockGrantorId != null
+        && lockGrantorId.hasLockGrantorVersion()) {
       if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
         logger.trace(LogMarker.DLS_VERBOSE, "[setLockGrantorId] tried to replace {} with {}",
-            this.lockGrantorId, newLockGrantorId);
+            lockGrantorId, newLockGrantorId);
       }
       return false;
-    } else if (newLockGrantorId.isNewerThan(this.lockGrantorId)) {
-      this.lockGrantorId = newLockGrantorId;
+    } else if (newLockGrantorId.isNewerThan(lockGrantorId)) {
+      lockGrantorId = newLockGrantorId;
       return true;
     } else {
       return false;
@@ -572,10 +568,10 @@ public class DLockService extends DistributedLockService {
    * @param localGrantor the new local intance of DLockGrantor
    */
   private boolean setLockGrantorId(LockGrantorId localLockGrantorId, DLockGrantor localGrantor) {
-    Assert.assertHoldsLock(this.lockGrantorIdLock, true);
+    Assert.assertHoldsLock(lockGrantorIdLock, true);
     Assert.assertTrue(localLockGrantorId.isLocal(getSerialNumber()));
     if (setLockGrantorId(localLockGrantorId)) {
-      this.grantor = localGrantor;
+      grantor = localGrantor;
       return true;
     }
     return false;
@@ -591,13 +587,13 @@ public class DLockService extends DistributedLockService {
   void deposeOlderLockGrantorId(LockGrantorId newLockGrantorId) {
     LockGrantorId deposedLockGrantorId = null;
     final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
-    synchronized (this.lockGrantorIdLock) {
+    synchronized (lockGrantorIdLock) {
       if (isDebugEnabled_DLS) {
         logger.trace(LogMarker.DLS_VERBOSE, "[deposeOlderLockGrantorId] pre-deposing {} for new {}",
             deposedLockGrantorId, newLockGrantorId);
       }
-      this.deposingLockGrantorId = newLockGrantorId;
-      deposedLockGrantorId = this.lockGrantorId;
+      deposingLockGrantorId = newLockGrantorId;
+      deposedLockGrantorId = lockGrantorId;
     }
     if (deposedLockGrantorId != null && deposedLockGrantorId.hasLockGrantorVersion()
         && newLockGrantorId.isNewerThan(deposedLockGrantorId)) {
@@ -618,24 +614,24 @@ public class DLockService extends DistributedLockService {
    * @return true if lockGrantorId was set to null
    */
   private boolean nullLockGrantorId(LockGrantorId oldLockGrantorId) {
-    Assert.assertHoldsLock(this.destroyLock, false);
-    Assert.assertHoldsLock(this.lockGrantorIdLock, false);
+    Assert.assertHoldsLock(destroyLock, false);
+    Assert.assertHoldsLock(lockGrantorIdLock, false);
     if (oldLockGrantorId == null) {
       return false;
     }
     DLockGrantor grantorToDestroy = null;
     try {
-      synchronized (this.lockGrantorIdLock) {
+      synchronized (lockGrantorIdLock) {
         if (equalsLockGrantorId(oldLockGrantorId)
             || (oldLockGrantorId.isLocal(getSerialNumber()) && isMakingLockGrantor())) {
           // this.lockGrantorId != null && this.lockGrantorId.isLocal())) {
           if (oldLockGrantorId.isLocal(getSerialNumber())
-              && isLockGrantorVersion(this.grantor, oldLockGrantorId.getLockGrantorVersion())) {
+              && isLockGrantorVersion(grantor, oldLockGrantorId.getLockGrantorVersion())) {
             // need to destroy and remove grantor
-            grantorToDestroy = this.grantor;
-            this.grantor = null;
+            grantorToDestroy = grantor;
+            grantor = null;
           }
-          this.lockGrantorId = null;
+          lockGrantorId = null;
           return true;
         } else {
           return false;
@@ -673,11 +669,11 @@ public class DLockService extends DistributedLockService {
    * @return true if someLockGrantor equals the current lockGrantorId
    */
   private boolean equalsLockGrantorId(LockGrantorId someLockGrantor) {
-    Assert.assertHoldsLock(this.lockGrantorIdLock, true);
+    Assert.assertHoldsLock(lockGrantorIdLock, true);
     if (someLockGrantor == null) {
-      return this.lockGrantorId == null;
+      return lockGrantorId == null;
     }
-    return someLockGrantor.equals(this.lockGrantorId);
+    return someLockGrantor.equals(lockGrantorId);
   }
 
   /**
@@ -686,9 +682,9 @@ public class DLockService extends DistributedLockService {
    * lock grantor.
    */
   public LockGrantorId peekLockGrantorId() {
-    Assert.assertHoldsLock(this.destroyLock, false);
-    synchronized (this.lockGrantorIdLock) {
-      LockGrantorId currentLockGrantorId = this.lockGrantorId;
+    Assert.assertHoldsLock(destroyLock, false);
+    synchronized (lockGrantorIdLock) {
+      LockGrantorId currentLockGrantorId = lockGrantorId;
       if (currentLockGrantorId != null) {
         return currentLockGrantorId;
       }
@@ -704,7 +700,7 @@ public class DLockService extends DistributedLockService {
         return null;
       }
       theLockGrantorId =
-          new LockGrantorId(this.dm, lockGrantorMember, gi.getVersionId(), gi.getSerialNumber());
+          new LockGrantorId(dm, lockGrantorMember, gi.getVersionId(), gi.getSerialNumber());
       return theLockGrantorId;
     } finally {
       boolean getLockGrantorIdFailed = theLockGrantorId == null;
@@ -717,9 +713,9 @@ public class DLockService extends DistributedLockService {
    * {@link #checkDestroyed()}.
    */
   private void incActiveLocks() {
-    synchronized (this.destroyLock) {
+    synchronized (destroyLock) {
       checkDestroyed();
-      this.activeLocks++;
+      activeLocks++;
     }
   }
 
@@ -727,8 +723,8 @@ public class DLockService extends DistributedLockService {
    * Decrements {@link #activeLocks} while synchronized on {@link #destroyLock}.
    */
   private void decActiveLocks() {
-    synchronized (this.destroyLock) {
-      this.activeLocks--;
+    synchronized (destroyLock) {
+      activeLocks--;
     }
   }
 
@@ -740,7 +736,8 @@ public class DLockService extends DistributedLockService {
    * @param timeUnit the unit of measure for timeToWait
    * @return the LockGrantorId or null if FutureResult was cancelled
    */
-  private LockGrantorId waitForLockGrantorFutureResult(FutureResult lockGrantorFutureResultRef,
+  private LockGrantorId waitForLockGrantorFutureResult(
+      FutureResult<LockGrantorId> lockGrantorFutureResultRef,
       long timeToWait, final TimeUnit timeUnit) {
     LockGrantorId lockGrantorIdRef = null;
     while (lockGrantorIdRef == null) {
@@ -748,21 +745,20 @@ public class DLockService extends DistributedLockService {
       try {
         checkDestroyed();
         if (timeToWait == 0) {
-          lockGrantorIdRef = (LockGrantorId) lockGrantorFutureResultRef.get();
+          lockGrantorIdRef = lockGrantorFutureResultRef.get();
         } else {
-          lockGrantorIdRef = (LockGrantorId) lockGrantorFutureResultRef.get(timeToWait, timeUnit);
+          lockGrantorIdRef = lockGrantorFutureResultRef.get(timeToWait, timeUnit);
         }
       } catch (TimeoutException e) {
         break;
       } catch (InterruptedException e) {
         interrupted = true;
-        this.dm.getCancelCriterion().checkCancelInProgress(e);
+        dm.getCancelCriterion().checkCancelInProgress(e);
         if (lockGrantorFutureResultRef.isCancelled()) {
           // cancelled Future might throw InterruptedException...?
           checkDestroyed();
           break; // return null
         }
-        continue;
       } catch (CancellationException e) { // Future was cancelled
         checkDestroyed();
         break; // return null
@@ -787,39 +783,40 @@ public class DLockService extends DistributedLockService {
       if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
         logger.trace(LogMarker.DLS_VERBOSE,
             "notLockGrantorId {} returning early because notGrantor {} was equal to the local dm {}",
-            this.serviceName, notLockGrantorId, this.dm.getId());
+            serviceName, notLockGrantorId, dm.getId());
       }
       // Let the local destroy or processing of transfer do the clear
       return;
     }
 
     boolean ownLockGrantorFutureResult = false;
-    FutureResult lockGrantorFutureResultRef = null;
+    FutureResult<Object> lockGrantorFutureResultRef = null;
 
     long statStart = -1;
-    LockGrantorId currentLockGrantorId = null;
+    final LockGrantorId currentLockGrantorId;
 
     try {
-      Assert.assertHoldsLock(this.destroyLock, false);
-      synchronized (this.lockGrantorIdLock) {
-        currentLockGrantorId = this.lockGrantorId;
-        if (this.lockGrantorFutureResult != null) {
+      Assert.assertHoldsLock(destroyLock, false);
+      synchronized (lockGrantorIdLock) {
+        currentLockGrantorId = lockGrantorId;
+        if (lockGrantorFutureResult != null) {
           // some other thread is talking to elder
-          lockGrantorFutureResultRef = this.lockGrantorFutureResult;
+          lockGrantorFutureResultRef = lockGrantorFutureResult;
         } else if (!notLockGrantorId.sameAs(currentLockGrantorId)) {
           return;
         } else {
           // this thread needs to talk to elder
           ownLockGrantorFutureResult = true;
-          lockGrantorFutureResultRef = new FutureResult(this.dm.getCancelCriterion());
-          this.lockGrantorFutureResult = lockGrantorFutureResultRef;
+          lockGrantorFutureResultRef = new FutureResult<>(dm.getCancelCriterion());
+          lockGrantorFutureResult = lockGrantorFutureResultRef;
         }
       }
 
       statStart = getStats().startGrantorWait();
       if (!ownLockGrantorFutureResult) {
         if (timeToWait >= 0) {
-          waitForLockGrantorFutureResult(lockGrantorFutureResultRef, timeToWait, timeUnit);
+          waitForLockGrantorFutureResult(uncheckedCast(lockGrantorFutureResultRef), timeToWait,
+              timeUnit);
         }
         return;
       }
@@ -831,33 +828,32 @@ public class DLockService extends DistributedLockService {
       GrantorInfo gi = peekGrantor();
       if (gi.getId() != null) {
         elderLockGrantorId =
-            new LockGrantorId(this.dm, gi.getId(), gi.getVersionId(), gi.getSerialNumber());
+            new LockGrantorId(dm, gi.getId(), gi.getVersionId(), gi.getSerialNumber());
       }
 
       if (notLockGrantorId.sameAs(elderLockGrantorId)) {
         // elder says that notLockGrantorId is still the grantor...
         sleep(NOT_GRANTOR_SLEEP);
-        return;
       } else {
         // elder says another member is the grantor
         nullLockGrantorId(notLockGrantorId);
         if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
           logger.trace(LogMarker.DLS_VERBOSE,
-              "notLockGrantorId cleared lockGrantorId for service {}", this.serviceName);
+              "notLockGrantorId cleared lockGrantorId for service {}", serviceName);
         }
       }
     } finally {
-      synchronized (this.lockGrantorIdLock) {
+      synchronized (lockGrantorIdLock) {
         if (statStart > -1) {
           getStats().endGrantorWait(statStart, false);
         }
         if (ownLockGrantorFutureResult) {
           // this thread is doing the real work and must finish the future
-          Assert.assertTrue(this.lockGrantorFutureResult == lockGrantorFutureResultRef);
+          Assert.assertTrue(lockGrantorFutureResult == lockGrantorFutureResultRef);
           // cancel lockGrantorFutureResult
           lockGrantorFutureResultRef.cancel(false);
           // null out the reference so it is free for next usage
-          this.lockGrantorFutureResult = null;
+          lockGrantorFutureResult = null;
         }
       }
     } // finally block for lockGrantorFutureResult
@@ -872,7 +868,7 @@ public class DLockService extends DistributedLockService {
    * synchronization on this.becomeGrantorMonitor.
    */
   void clearGrantor(long grantorVersion, boolean withLocks) {
-    GrantorRequestProcessor.clearGrantor(grantorVersion, this, getSerialNumber(), this.ds,
+    GrantorRequestProcessor.clearGrantor(grantorVersion, this, getSerialNumber(), ds,
         withLocks);
   }
 
@@ -885,7 +881,7 @@ public class DLockService extends DistributedLockService {
    * synchronization on this.becomeGrantorMonitor.
    */
   private GrantorInfo getGrantorRequest() {
-    return GrantorRequestProcessor.getGrantor(this, getSerialNumber(), this.ds);
+    return GrantorRequestProcessor.getGrantor(this, getSerialNumber(), ds);
   }
 
   /**
@@ -897,7 +893,7 @@ public class DLockService extends DistributedLockService {
    * synchronization on this.becomeGrantorMonitor.
    */
   private GrantorInfo peekGrantor() {
-    return GrantorRequestProcessor.peekGrantor(this, this.ds);
+    return GrantorRequestProcessor.peekGrantor(this, ds);
   }
 
   /**
@@ -910,7 +906,7 @@ public class DLockService extends DistributedLockService {
    * synchronization on this.becomeGrantorMonitor.
    */
   private GrantorInfo becomeGrantor(InternalDistributedMember predecessor) {
-    return GrantorRequestProcessor.becomeGrantor(this, getSerialNumber(), predecessor, this.ds);
+    return GrantorRequestProcessor.becomeGrantor(this, getSerialNumber(), predecessor, ds);
   }
 
   // -------------------------------------------------------------------------
@@ -923,14 +919,14 @@ public class DLockService extends DistributedLockService {
   }
 
   public DLockGrantor getGrantor() {
-    Assert.assertHoldsLock(this.destroyLock, false);
-    synchronized (this.lockGrantorIdLock) {
-      return this.grantor;
+    Assert.assertHoldsLock(destroyLock, false);
+    synchronized (lockGrantorIdLock) {
+      return grantor;
     }
   }
 
   public DLockGrantor getGrantorWithNoSync() {
-    return this.grantor;
+    return grantor;
   }
 
   /**
@@ -939,7 +935,7 @@ public class DLockService extends DistributedLockService {
   private void becomeLockGrantor(InternalDistributedMember predecessor) {
     Assert.assertTrue(predecessor == null);
     boolean ownLockGrantorFutureResult = false;
-    FutureResult lockGrantorFutureResultRef = null;
+    FutureResult<Object> lockGrantorFutureResultRef = null;
 
     final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
     LockGrantorId myLockGrantorId = null;
@@ -949,27 +945,28 @@ public class DLockService extends DistributedLockService {
       // terminate loop if other thread has already made us lock grantor
       // terminate loop if this thread gets control of lockGrantorFutureResult
       while (!ownLockGrantorFutureResult) {
-        Assert.assertHoldsLock(this.destroyLock, false);
-        synchronized (this.lockGrantorIdLock) {
+        Assert.assertHoldsLock(destroyLock, false);
+        synchronized (lockGrantorIdLock) {
           if (isCurrentlyOrIsMakingLockGrantor()) {
             return;
-          } else if (this.lockGrantorFutureResult != null) {
+          } else if (lockGrantorFutureResult != null) {
             // need to wait for other thread controlling lockGrantorFutureResult
-            lockGrantorFutureResultRef = this.lockGrantorFutureResult;
+            lockGrantorFutureResultRef = lockGrantorFutureResult;
           } else {
-            // this thread is in control and will procede to become grantor
+            // this thread is in control and will proceed to become grantor
             // create new lockGrantorFutureResult for other threads to block on
             ownLockGrantorFutureResult = true;
-            lockGrantorFutureResultRef = new FutureResult(this.dm.getCancelCriterion());
+            lockGrantorFutureResultRef = new FutureResult<>(dm.getCancelCriterion());
             if (isDebugEnabled_DLS) {
               logger.trace(LogMarker.DLS_VERBOSE,
                   "[becomeLockGrantor] creating lockGrantorFutureResult");
             }
-            this.lockGrantorFutureResult = lockGrantorFutureResultRef;
+            lockGrantorFutureResult = lockGrantorFutureResultRef;
           }
         }
         if (!ownLockGrantorFutureResult) {
-          waitForLockGrantorFutureResult(lockGrantorFutureResultRef, 0, TimeUnit.MILLISECONDS);
+          waitForLockGrantorFutureResult(uncheckedCast(lockGrantorFutureResultRef), 0,
+              TimeUnit.MILLISECONDS);
         }
       }
 
@@ -979,19 +976,19 @@ public class DLockService extends DistributedLockService {
       // create the new grantor instance in non-ready state...
       long tempGrantorVersion = -1;
       LockGrantorId tempLockGrantorId =
-          new LockGrantorId(this.dm, this.dm.getId(), tempGrantorVersion, getSerialNumber());
+          new LockGrantorId(dm, dm.getId(), tempGrantorVersion, getSerialNumber());
 
       DLockGrantor myGrantor = DLockGrantor.createGrantor(this, tempGrantorVersion);
 
       try { // finally handles myGrantor
 
-        synchronized (this.lockGrantorIdLock) {
+        synchronized (lockGrantorIdLock) {
           Assert.assertTrue(setLockGrantorId(tempLockGrantorId, myGrantor));
         }
 
         if (isDebugEnabled_DLS) {
           logger.trace(LogMarker.DLS_VERBOSE, "become set lockGrantorId to {} for service {}",
-              this.lockGrantorId, this.serviceName);
+              lockGrantorId, serviceName);
         }
 
         InternalDistributedMember elder = getElderId();
@@ -1005,7 +1002,7 @@ public class DLockService extends DistributedLockService {
         myGrantor.setVersionId(myGrantorVersion);
 
         myLockGrantorId =
-            new LockGrantorId(this.dm, this.dm.getId(), myGrantorVersion, getSerialNumber());
+            new LockGrantorId(dm, dm.getId(), myGrantorVersion, getSerialNumber());
 
         if (isDebugEnabled_DLS) {
           logger.trace(LogMarker.DLS_VERBOSE, "[becomeLockGrantor] Calling makeLocalGrantor");
@@ -1016,27 +1013,27 @@ public class DLockService extends DistributedLockService {
 
       } finally {
         Assert.assertTrue(
-            myGrantor == null || !myGrantor.isInitializing()
-                || this.dm.getCancelCriterion().isCancelInProgress() || isDestroyed(),
+            !myGrantor.isInitializing() || dm.getCancelCriterion().isCancelInProgress()
+                || isDestroyed(),
             "BecomeLockGrantor failed and left grantor non-ready");
       }
     } finally {
-      synchronized (this.lockGrantorIdLock) {
+      synchronized (lockGrantorIdLock) {
         if (ownLockGrantorFutureResult) {
           // this thread is doing the real work and must finish the future
-          Assert.assertTrue(this.lockGrantorFutureResult == lockGrantorFutureResultRef);
+          Assert.assertTrue(lockGrantorFutureResult == lockGrantorFutureResultRef);
           boolean getLockGrantorIdFailed = myLockGrantorId == null;
           if (getLockGrantorIdFailed) {
             // failed so cancel lockGrantorFutureResult
             lockGrantorFutureResultRef.cancel(true); // interrupt waiting threads
           } else {
-            this.dm.getCancelCriterion().checkCancelInProgress(null); // don't succeed if shutting
-                                                                      // down
+            dm.getCancelCriterion().checkCancelInProgress(null); // don't succeed if shutting
+                                                                 // down
             // succeeded so set lockGrantorFutureResult
             lockGrantorFutureResultRef.set(myLockGrantorId);
           }
           // null out the reference so it is free for next usage
-          this.lockGrantorFutureResult = null;
+          lockGrantorFutureResult = null;
         }
       }
     }
@@ -1052,25 +1049,25 @@ public class DLockService extends DistributedLockService {
   }
 
   boolean isMakingLockGrantor() {
-    Assert.assertHoldsLock(this.destroyLock, false);
-    synchronized (this.lockGrantorIdLock) {
-      return this.lockGrantorId != null && this.lockGrantorId.isLocal(getSerialNumber())
-          && this.grantor != null && this.grantor.isInitializing();
+    Assert.assertHoldsLock(destroyLock, false);
+    synchronized (lockGrantorIdLock) {
+      return lockGrantorId != null && lockGrantorId.isLocal(getSerialNumber())
+          && grantor != null && grantor.isInitializing();
     }
   }
 
   boolean isCurrentlyOrIsMakingLockGrantor() {
-    Assert.assertHoldsLock(this.destroyLock, false);
-    synchronized (this.lockGrantorIdLock) {
-      return this.lockGrantorId != null && this.lockGrantorId.isLocal(getSerialNumber());
+    Assert.assertHoldsLock(destroyLock, false);
+    synchronized (lockGrantorIdLock) {
+      return lockGrantorId != null && lockGrantorId.isLocal(getSerialNumber());
     }
   }
 
   boolean isCurrentlyLockGrantor() {
-    Assert.assertHoldsLock(this.destroyLock, false);
-    synchronized (this.lockGrantorIdLock) {
-      return this.lockGrantorId != null && this.lockGrantorId.isLocal(getSerialNumber())
-          && this.grantor != null && this.grantor.isReady();
+    Assert.assertHoldsLock(destroyLock, false);
+    synchronized (lockGrantorIdLock) {
+      return lockGrantorId != null && lockGrantorId.isLocal(getSerialNumber())
+          && grantor != null && grantor.isReady();
     }
   }
 
@@ -1095,12 +1092,12 @@ public class DLockService extends DistributedLockService {
    * @return true if token has been destroyed and removed
    */
   private boolean removeTokenIfUnused(Object name) {
-    synchronized (this.tokens) {
-      if (this.destroyed) {
+    synchronized (tokens) {
+      if (destroyed) {
         getStats().incFreeResourcesFailed();
         return false;
       }
-      DLockToken token = this.tokens.get(name);
+      DLockToken token = tokens.get(name);
       if (token != null) {
         synchronized (token) {
           if (!token.isBeingUsed()) {
@@ -1121,7 +1118,7 @@ public class DLockService extends DistributedLockService {
   }
 
   protected Object removeTokenFromMap(Object name) {
-    return this.tokens.remove(name);
+    return tokens.remove(name);
   }
 
   /**
@@ -1129,13 +1126,13 @@ public class DLockService extends DistributedLockService {
    * token.
    */
   private void removeAllUnusedTokens() {
-    synchronized (this.tokens) {
-      if (this.destroyed) {
+    synchronized (tokens) {
+      if (destroyed) {
         getStats().incFreeResourcesFailed();
         return;
       }
-      Set<DLockToken> unusedTokens = Collections.emptySet();
-      for (DLockToken token : this.tokens.values()) {
+      Set<DLockToken> unusedTokens = emptySet();
+      for (DLockToken token : tokens.values()) {
         synchronized (token) {
           if (!token.isBeingUsed()) {
             if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
@@ -1152,10 +1149,10 @@ public class DLockService extends DistributedLockService {
       }
       for (DLockToken token : unusedTokens) {
         synchronized (token) {
-          int tokensSizeBefore = this.tokens.size();
+          int tokensSizeBefore = tokens.size();
           Object obj = removeTokenFromMap(token.getName());
           Assert.assertTrue(obj != null);
-          int tokensSizeAfter = this.tokens.size();
+          int tokensSizeAfter = tokens.size();
           Assert.assertTrue(tokensSizeBefore - tokensSizeAfter == 1);
           token.destroy();
           getStats().incTokens(-1);
@@ -1170,22 +1167,22 @@ public class DLockService extends DistributedLockService {
    * tokens map and each token.
    */
   private void removeAllTokens() {
-    synchronized (this.tokens) {
-      Assert.assertTrue(this.destroyed);
-      for (DLockToken token : this.tokens.values()) {
+    synchronized (tokens) {
+      Assert.assertTrue(destroyed);
+      for (DLockToken token : tokens.values()) {
         synchronized (token) {
           token.destroy();
         }
       }
-      getStats().incTokens(-this.tokens.size());
-      this.tokens.clear();
+      getStats().incTokens(-tokens.size());
+      tokens.clear();
     }
   }
 
   @Override
   public boolean isHeldByCurrentThread(Object name) {
     checkDestroyed();
-    synchronized (this.tokens) {
+    synchronized (tokens) {
       DLockToken token = basicGetToken(name);
       if (token == null) {
         return false;
@@ -1199,7 +1196,7 @@ public class DLockService extends DistributedLockService {
 
   public boolean isHeldByThreadId(Object name, int threadId) {
     checkDestroyed();
-    synchronized (this.tokens) {
+    synchronized (tokens) {
       DLockToken token = basicGetToken(name);
       if (token == null) {
         return false;
@@ -1232,17 +1229,16 @@ public class DLockService extends DistributedLockService {
 
   public boolean lock(Object name, long waitTimeMillis, long leaseTimeMillis, boolean tryLock,
       boolean disallowReentrant) {
-    return lock(name, waitTimeMillis, leaseTimeMillis, tryLock, false, false);
+    return lock(name, waitTimeMillis, leaseTimeMillis, tryLock, disallowReentrant, false);
   }
 
-
   public boolean lock(Object name, long waitTimeMillis, long leaseTimeMillis, boolean tryLock,
-      boolean disallowReentrant, boolean diableAlerts) {
+      boolean disallowReentrant, boolean disableAlerts) {
     checkDestroyed();
     try {
       boolean interruptible = false;
       return lockInterruptibly(name, waitTimeMillis, leaseTimeMillis, tryLock, interruptible,
-          disallowReentrant, diableAlerts);
+          disallowReentrant, disableAlerts);
     } catch (InterruptedException ex) { // LOST INTERRUPT
       Thread.currentThread().interrupt();
       // fail assertion
@@ -1268,7 +1264,6 @@ public class DLockService extends DistributedLockService {
         throw new InterruptedException();
       }
       Thread.sleep(millis);
-      return;
     } else {
       sleep(millis);
     }
@@ -1308,12 +1303,12 @@ public class DLockService extends DistributedLockService {
       int threadId, long startTime, long requestLeaseTime, long requestWaitTime, boolean reentrant,
       boolean tryLock, boolean disableAlerts) {
     return new DLockRequestProcessor(grantorId, this, name, threadId, startTime, requestLeaseTime,
-        requestWaitTime, reentrant, tryLock, disableAlerts, this.dm);
+        requestWaitTime, reentrant, tryLock, disableAlerts, dm);
   }
 
   protected boolean callReleaseProcessor(InternalDistributedMember grantor, Object name,
       boolean lockBatch, int lockId) {
-    return DLockService.callReleaseProcessor(this.dm, this.serviceName, grantor, name, lockBatch,
+    return DLockService.callReleaseProcessor(dm, serviceName, grantor, name, lockBatch,
         lockId);
   }
 
@@ -1400,10 +1395,10 @@ public class DLockService extends DistributedLockService {
       blockedOn.set(name);
       try { // try-block for end stats, token cleanup, and interrupt check
 
-        ThreadRequestState requestState = (ThreadRequestState) this.threadRequestState.get();
+        ThreadRequestState requestState = threadRequestState.get();
         if (requestState == null) {
           requestState = new ThreadRequestState(incThreadSequence(), interruptible);
-          this.threadRequestState.set(requestState);
+          threadRequestState.set(requestState);
         } else {
           requestState.interruptible = interruptible;
         }
@@ -1411,7 +1406,6 @@ public class DLockService extends DistributedLockService {
 
         // if reentry and no change to expiration then grantor is not bothered
 
-        long leaseExpireTime = 0;
         boolean keepTrying = true;
         int lockId = -1;
         incActiveLocks();
@@ -1435,10 +1429,10 @@ public class DLockService extends DistributedLockService {
                     name, token);
               }
               reentrant = true;
-              if (reentrant && disallowReentrant) {
+              if (disallowReentrant) {
                 throw new IllegalStateException(
                     String.format("%s attempted to reenter non-reentrant lock %s",
-                        new Object[] {Thread.currentThread(), token}));
+                        Thread.currentThread(), token));
               }
               recursionBefore = token.getRecursion();
               lockId = token.getLeaseId(); // keep lockId
@@ -1485,7 +1479,7 @@ public class DLockService extends DistributedLockService {
           }
 
           if (gotLock) {
-            leaseExpireTime = processor.getLeaseExpireTime();
+            final long leaseExpireTime = processor.getLeaseExpireTime();
             int recursion = recursionBefore + 1;
 
             if (!grantLocalDLockAfterObtainingRemoteLock(name, token, threadId, leaseExpireTime,
@@ -1586,14 +1580,14 @@ public class DLockService extends DistributedLockService {
       DLockRequestProcessor processor, int recursion) {
     boolean needToReleaseOrphanedGrant = false;
 
-    Assert.assertHoldsLock(this.destroyLock, false);
-    synchronized (this.lockGrantorIdLock) {
+    Assert.assertHoldsLock(destroyLock, false);
+    synchronized (lockGrantorIdLock) {
       if (!checkLockGrantorId(theLockGrantorId)) {
         // race: grantor changed
         if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
           logger.trace(LogMarker.DLS_VERBOSE,
               "Cannot honor grant from {} because {} is now a grantor.", theLockGrantorId,
-              this.lockGrantorId);
+              lockGrantorId);
         }
       } else if (isDestroyed()) {
         // race: dls was destroyed
@@ -1604,7 +1598,7 @@ public class DLockService extends DistributedLockService {
         }
         needToReleaseOrphanedGrant = true;
       } else {
-        synchronized (this.tokens) {
+        synchronized (tokens) {
           checkDestroyed();
           Assert.assertTrue(token == basicGetToken(name));
           RemoteThread rThread = new RemoteThread(getDistributionManager().getId(), threadId);
@@ -1615,7 +1609,7 @@ public class DLockService extends DistributedLockService {
     }
 
     if (needToReleaseOrphanedGrant) {
-      processor.getResponse().releaseOrphanedGrant(this.dm);
+      processor.getResponse().releaseOrphanedGrant(dm);
     }
     return false;
   }
@@ -1710,8 +1704,6 @@ public class DLockService extends DistributedLockService {
       // suspendLocking with distribute=false and gets stuck in
       // waitForGrantorCallsInProgress
 
-      SuspendLockingToken suspendToken = SUSPEND_LOCKING_TOKEN;
-
       boolean gotToken = false;
       boolean keepTrying = true;
 
@@ -1723,7 +1715,8 @@ public class DLockService extends DistributedLockService {
 
       while (!gotToken && keepTrying) {
         gotToken =
-            lockInterruptibly(suspendToken, waitTimeMillis, -1, tryLock, interruptible, false);
+            lockInterruptibly(SUSPEND_LOCKING_TOKEN, waitTimeMillis, -1, tryLock, interruptible,
+                false);
         keepTrying = !gotToken && waitLimit > System.currentTimeMillis();
       }
       return gotToken;
@@ -1751,8 +1744,7 @@ public class DLockService extends DistributedLockService {
     RemoteThread rThread = null;
 
     try {
-
-      synchronized (this.tokens) {
+      synchronized (tokens) {
         checkDestroyed();
         token = basicGetToken(name);
         if (token == null) {
@@ -1762,7 +1754,7 @@ public class DLockService extends DistributedLockService {
           throw new LockNotHeldException(
               String.format(
                   "Attempting to unlock %s : %s , but this thread does not own the lock.",
-                  new Object[] {this, name}));
+                  this, name));
         }
 
         synchronized (token) {
@@ -1777,7 +1769,7 @@ public class DLockService extends DistributedLockService {
             throw new LockNotHeldException(
                 String.format(
                     "Attempting to unlock %s : %s , but this thread does not own the lock. %s",
-                    new Object[] {this, name, token}));
+                    this, name, token));
           }
           // if recursion > 0 then token will still be locked after calling release
           hadRecursion = token.getRecursion() > 0;
@@ -1799,7 +1791,7 @@ public class DLockService extends DistributedLockService {
           checkDestroyed();
           LockGrantorId theLockGrantorId = getLockGrantorId();
           try {
-            synchronized (this.lockGrantorIdLock) {
+            synchronized (lockGrantorIdLock) {
               unlocked = token.releaseLock(lockId, rThread);
             }
             released = callReleaseProcessor(theLockGrantorId.getLockGrantorMember(), name,
@@ -1824,16 +1816,12 @@ public class DLockService extends DistributedLockService {
         if (!hadRecursion && lockId > -1 && token != null) {
           decActiveLocks();
           if (!unlocked) {
-            // // token is still held if grantor was remote, so now we unlock...
-            // checkDestroyed(); // part of fix for bug 35239
-            // // this release is ok even if we have become the lock grantor
-            // // because the grantor will have no state for this lock
             token.releaseLock(lockId, rThread);
           }
         }
       } finally {
         getStats().endLockRelease(statStart);
-        if (this.automateFreeResources) {
+        if (automateFreeResources) {
           freeResources(name);
         }
         if (isDebugEnabled_DLS) {
@@ -1858,7 +1846,7 @@ public class DLockService extends DistributedLockService {
       LockGrantorId theLockGrantorId = getLockGrantorId();
       try {
         queryReply = DLockQueryProcessor.query(theLockGrantorId.getLockGrantorMember(),
-            this.serviceName, name, false /* lockBatch */, this.dm);
+            serviceName, name, false /* lockBatch */, dm);
       } catch (LockGrantorDestroyedException e) {
         // loop back around to get next lock grantor
       } finally {
@@ -1887,7 +1875,8 @@ public class DLockService extends DistributedLockService {
    * @see org.apache.geode.distributed.DistributedLockService#create(String, DistributedSystem)
    */
   static DLockService basicCreate(String serviceName, InternalDistributedSystem ds,
-      boolean isDistributed, boolean destroyOnDisconnect, boolean automateFreeResources)
+      boolean isDistributed,
+      boolean automateFreeResources)
       throws IllegalArgumentException {
     Assert.assertHoldsLock(services, true);
 
@@ -1896,7 +1885,7 @@ public class DLockService extends DistributedLockService {
           serviceName);
     }
 
-    DLockService svc = new DLockService(serviceName, ds, isDistributed, destroyOnDisconnect,
+    DLockService svc = new DLockService(serviceName, ds, isDistributed,
         automateFreeResources);
     svc.init();
     return svc;
@@ -1906,17 +1895,17 @@ public class DLockService extends DistributedLockService {
   protected boolean init() {
     boolean success = false;
     try {
-      services.put(this.serviceName, this);
+      services.put(serviceName, this);
       getStats().incServices(1);
-      this.ds.addDisconnectListener(disconnectListener);
+      ds.addDisconnectListener(disconnectListener);
       success = true;
       if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
         logger.trace(LogMarker.DLS_VERBOSE, "Created DistributedLockService <{}>",
-            this.serviceName);
+            serviceName);
       }
     } finally {
       if (!success) {
-        services.remove(this.serviceName);
+        services.remove(serviceName);
         getStats().incServices(-1);
       }
     }
@@ -1935,16 +1924,16 @@ public class DLockService extends DistributedLockService {
    * DLockService.create(Object, DistributedSystem, DistributionAdvisor)
    */
   protected DLockService(String serviceName, DistributedSystem ds, boolean isDistributed,
-      boolean destroyOnDisconnect, boolean automateFreeResources) {
+      boolean automateFreeResources) {
     super();
-    this.dlockStats = getOrCreateStats(ds);
-    this.serialNumber = createSerialNumber();
+    dlockStats = getOrCreateStats(ds);
+    serialNumber = createSerialNumber();
     this.serviceName = serviceName;
     this.ds = (InternalDistributedSystem) ds;
-    this.dm = this.ds.getDistributionManager();
-    this.stopper = new DLockStopper(this.dm, this);
+    dm = this.ds.getDistributionManager();
+    stopper = new DLockStopper(this);
     this.isDistributed = isDistributed;
-    this.destroyOnDisconnect = destroyOnDisconnect;
+    // True if this service should be destroyed in system DisconnectListener
     this.automateFreeResources = automateFreeResources || AUTOMATE_FREE_RESOURCES;
   }
 
@@ -1954,12 +1943,10 @@ public class DLockService extends DistributedLockService {
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer(128);
-    buffer.append('<').append("DLockService").append("@")
-        .append(Integer.toHexString(System.identityHashCode(this))).append(" named ")
-        .append(this.serviceName).append(" destroyed=").append(this.destroyed).append(" grantorId=")
-        .append(this.lockGrantorId).append(" grantor=").append(this.grantor).append('>');
-    return buffer.toString();
+    return '<' + "DLockService" + "@"
+        + Integer.toHexString(System.identityHashCode(this)) + " named "
+        + serviceName + " destroyed=" + destroyed + " grantorId="
+        + lockGrantorId + " grantor=" + grantor + '>';
   }
 
   // -------------------------------------------------------------------------
@@ -1967,7 +1954,7 @@ public class DLockService extends DistributedLockService {
   // -------------------------------------------------------------------------
 
   public DistributedLockStats getStats() {
-    return this.dlockStats;
+    return dlockStats;
   }
 
   public void releaseTryLocks(DLockBatchId batchId, Callable<Boolean> untilCondition) {
@@ -1991,10 +1978,9 @@ public class DLockService extends DistributedLockService {
           throw new InternalGemFireException("unexpected exception", e);
         }
         checkDestroyed();
-        LockGrantorId theLockGrantorId = null;
 
-        theLockGrantorId = batchId.getLockGrantorId();
-        synchronized (this.lockGrantorIdLock) {
+        final LockGrantorId theLockGrantorId = batchId.getLockGrantorId();
+        synchronized (lockGrantorIdLock) {
           if (!checkLockGrantorId(theLockGrantorId)) {
             // the grantor is different so break and skip DLockReleaseProcessor
             break;
@@ -2055,10 +2041,10 @@ public class DLockService extends DistributedLockService {
     boolean gotLocks = false;
 
     try {
-      ThreadRequestState requestState = (ThreadRequestState) this.threadRequestState.get();
+      ThreadRequestState requestState = threadRequestState.get();
       if (requestState == null) {
         requestState = new ThreadRequestState(incThreadSequence(), false);
-        this.threadRequestState.set(requestState);
+        threadRequestState.set(requestState);
       } else {
         requestState.interruptible = false;
       }
@@ -2091,7 +2077,7 @@ public class DLockService extends DistributedLockService {
           if (keyIfFailed[0] == null) {
             if (isDebugEnabled_DLS) {
               logger.trace(LogMarker.DLS_VERBOSE,
-                  "[acquireTryLocks] lock request failed but provided no conflict key; responseCode=",
+                  "[acquireTryLocks] lock request failed but provided no conflict key; responseCode={}",
                   processor.getResponseCodeString());
             }
           } else {
@@ -2102,7 +2088,7 @@ public class DLockService extends DistributedLockService {
         long timeLeft = requestWaitTime;
         if (requestWaitTime < Long.MAX_VALUE) {
           // prevent txLock from performing next line...
-          timeLeft = waitLimit - getLockTimeStamp(this.dm);
+          timeLeft = waitLimit - getLockTimeStamp(dm);
         }
         keepTrying = !gotLocks && timeLeft > 0;
         if (keepTrying && timeLeft > 10) {
@@ -2133,8 +2119,8 @@ public class DLockService extends DistributedLockService {
    * @return copy of the tokens map
    */
   public Map<Object, DLockToken> snapshotService() {
-    synchronized (this.tokens) {
-      return new HashMap(this.tokens);
+    synchronized (tokens) {
+      return new HashMap<>(tokens);
     }
   }
 
@@ -2147,24 +2133,24 @@ public class DLockService extends DistributedLockService {
 
   /** Returns true if the lock service is distributed; false if local only */
   public boolean isDistributed() {
-    return this.isDistributed;
+    return isDistributed;
   }
 
   public void setDLockLessorDepartureHandler(DLockLessorDepartureHandler handler) {
-    this.lessorDepartureHandler = handler;
+    lessorDepartureHandler = handler;
   }
 
   public DLockLessorDepartureHandler getDLockLessorDepartureHandler() {
-    return this.lessorDepartureHandler;
+    return lessorDepartureHandler;
   }
 
   /** The name of this service */
   public String getName() {
-    return this.serviceName;
+    return serviceName;
   }
 
   public DistributionManager getDistributionManager() {
-    return this.dm;
+    return dm;
   }
 
   public void setDLockRecoverGrantorMessageProcessor(
@@ -2173,31 +2159,14 @@ public class DLockService extends DistributedLockService {
   }
 
   public DLockRecoverGrantorProcessor.MessageProcessor getDLockRecoverGrantorMessageProcessor() {
-    return this.recoverGrantorProcessor;
-  }
-
-  /**
-   * Returns true if any tokens in this service are currently held. Synchronizes on tokens map and
-   * on each token to check the lease.
-   *
-   * @return true if any tokens in this service are currently held
-   */
-  boolean hasHeldLocks() {
-    synchronized (this.tokens) {
-      for (DLockToken token : this.tokens.values()) {
-        if (token.isLeaseHeld()) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return recoverGrantorProcessor;
   }
 
   /**
    * @see org.apache.geode.distributed.DistributedLockService#destroy(String)
    */
   public static void destroyServiceNamed(String serviceName) throws IllegalArgumentException {
-    DLockService svc = null;
+    final DLockService svc;
     synchronized (services) {
       svc = services.get(serviceName);
     }
@@ -2248,13 +2217,13 @@ public class DLockService extends DistributedLockService {
               return;
             }
             setDestroyingThread();
-            synchronized (this.lockGrantorIdLock) { // force ordering in lock request
-              synchronized (this.destroyLock) {
-                this.destroyed = true;
-                maybeHasActiveLocks = this.activeLocks > 0;
+            synchronized (lockGrantorIdLock) { // force ordering in lock request
+              synchronized (destroyLock) {
+                destroyed = true;
+                maybeHasActiveLocks = activeLocks > 0;
               }
-              isCurrentlyLockGrantor = this.isCurrentlyLockGrantor();
-              isMakingLockGrantor = this.isMakingLockGrantor();
+              isCurrentlyLockGrantor = isCurrentlyLockGrantor();
+              isMakingLockGrantor = isMakingLockGrantor();
             }
           } finally {
             if (isCurrentThreadDoingDestroy()) {
@@ -2267,7 +2236,7 @@ public class DLockService extends DistributedLockService {
       } finally {
         if (isCurrentThreadDoingDestroy()) {
           try {
-            this.basicDestroy(isCurrentlyLockGrantor, isMakingLockGrantor, maybeHasActiveLocks);
+            basicDestroy(isCurrentlyLockGrantor, isMakingLockGrantor, maybeHasActiveLocks);
           } catch (CancelException e) {
             // don't propagate
           } finally {
@@ -2300,7 +2269,7 @@ public class DLockService extends DistributedLockService {
     }
 
     // if hasActiveLocks, tell grantor we're destroying...
-    if (!isCurrentlyLockGrantor && maybeHasActiveLocks && !this.ds.isDisconnectThread()) {
+    if (!isCurrentlyLockGrantor && maybeHasActiveLocks && !ds.isDisconnectThread()) {
       boolean retry;
       int nonGrantorDestroyLoopCount = 0;
       do {
@@ -2308,7 +2277,7 @@ public class DLockService extends DistributedLockService {
         LockGrantorId theLockGrantorId = peekLockGrantorId();
 
         if (theLockGrantorId != null && !theLockGrantorId.isLocal(getSerialNumber())) {
-          if (!NonGrantorDestroyedProcessor.send(this.serviceName, theLockGrantorId, dm)) {
+          if (!NonGrantorDestroyedProcessor.send(serviceName, theLockGrantorId, dm)) {
             // grantor responded NOT_GRANTOR
             notLockGrantorId(theLockGrantorId, 0, TimeUnit.MILLISECONDS); // nulls out grantor to
                                                                           // force call to elder
@@ -2321,11 +2290,11 @@ public class DLockService extends DistributedLockService {
           if (nonGrantorDestroyLoopCount >= DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT) {
             logger.fatal(LogMarker.DLS_MARKER,
                 "Failed to notify grantor of destruction within {} attempts.",
-                Integer.valueOf(DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT));
+                DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT);
             Assert.assertTrue(false,
                 String.format("Failed to notify grantor of destruction within %s attempts.",
 
-                    new Object[] {Integer.valueOf(DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT)}));
+                    DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT));
           }
         }
 
@@ -2335,7 +2304,7 @@ public class DLockService extends DistributedLockService {
     if (isCurrentlyLockGrantor || isMakingLockGrantor) {
       // If forcedDisconnect is in progress, the membership view will not
       // change and no-one else can contact this member, so don't wait for a grantor
-      if (this.ds.getCancelCriterion().isCancelInProgress()) {
+      if (ds.getCancelCriterion().isCancelInProgress()) {
         try {
           DLockGrantor.waitForGrantor(this);
         } catch (InterruptedException e) {
@@ -2347,21 +2316,13 @@ public class DLockService extends DistributedLockService {
           }
         }
       }
-      nullLockGrantorId(this.lockGrantorId);
+      nullLockGrantorId(lockGrantorId);
     }
     // }
   }
 
   protected void postDestroyAction() {
     ds.handleResourceEvent(ResourceEvent.LOCKSERVICE_REMOVE, this);
-  }
-
-  // -------------------------------------------------------------------------
-  // Package instance methods
-  // -------------------------------------------------------------------------
-
-  boolean destroyOnDisconnect() {
-    return this.destroyOnDisconnect;
   }
 
   /**
@@ -2371,15 +2332,15 @@ public class DLockService extends DistributedLockService {
    * @param newlockGrantorId the newly recovering grantor
    */
   Set<DLockRemoteToken> getLockTokensForRecovery(LockGrantorId newlockGrantorId) {
-    Set<DLockRemoteToken> heldLockSet = Collections.EMPTY_SET;
+    Set<DLockRemoteToken> heldLockSet = emptySet();
 
-    LockGrantorId currentLockGrantorId = null;
-    synchronized (this.lockGrantorIdLock) {
+    final LockGrantorId currentLockGrantorId;
+    synchronized (lockGrantorIdLock) {
       if (isDestroyed()) {
         return heldLockSet;
       }
 
-      currentLockGrantorId = this.lockGrantorId;
+      currentLockGrantorId = lockGrantorId;
     }
 
     // destroy local grantor if currentLockGrantorId is local
@@ -2390,10 +2351,10 @@ public class DLockService extends DistributedLockService {
     }
 
     final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
-    synchronized (this.lockGrantorIdLock) {
-      synchronized (this.tokens) {
+    synchronized (lockGrantorIdLock) {
+      synchronized (tokens) {
         // build up set of currently held locks
-        for (DLockToken token : this.tokens.values()) {
+        for (DLockToken token : tokens.values()) {
           synchronized (token) {
             if (token.isLeaseHeld()) {
 
@@ -2428,8 +2389,8 @@ public class DLockService extends DistributedLockService {
    * @return the named lock token or null if it doesn't exist
    */
   public DLockToken getToken(Object name) {
-    synchronized (this.tokens) {
-      return this.tokens.get(name);
+    synchronized (tokens) {
+      return tokens.get(name);
     }
   }
 
@@ -2440,7 +2401,7 @@ public class DLockService extends DistributedLockService {
    * @return the named lock token or null if it doesn't exist
    */
   private DLockToken basicGetToken(Object name) {
-    return this.tokens.get(name);
+    return tokens.get(name);
   }
 
   /**
@@ -2449,9 +2410,9 @@ public class DLockService extends DistributedLockService {
    *
    * @return an unmodifiable collection of the tokens map values
    */
-  public Collection getTokens() {
-    synchronized (this.tokens) {
-      return Collections.unmodifiableCollection(this.tokens.values());
+  public Collection<DLockToken> getTokens() {
+    synchronized (tokens) {
+      return Collections.unmodifiableCollection(tokens.values());
     }
   }
 
@@ -2462,16 +2423,16 @@ public class DLockService extends DistributedLockService {
    * @return an existing or new instantiated lock token
    */
   DLockToken getOrCreateToken(Object name) {
-    synchronized (this.tokens) {
+    synchronized (tokens) {
       checkDestroyed(); // check destroy after acquiring tokens map sync
-      DLockToken token = this.tokens.get(name);
+      DLockToken token = tokens.get(name);
       boolean createNewToken = token == null;
       if (createNewToken) {
-        token = new DLockToken(this.dm, name);
+        token = new DLockToken(dm, name);
       }
       synchronized (token) {
         if (createNewToken) {
-          this.tokens.put(name, token);
+          tokens.put(name, token);
           if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
             logger.trace(LogMarker.DLS_VERBOSE, "Creating {} in {}", token, this);
           }
@@ -2495,8 +2456,8 @@ public class DLockService extends DistributedLockService {
    */
   private int numLocksHeldInThisVM() {
     int numLocksHeld = 0;
-    synchronized (this.tokens) {
-      for (DLockToken token : this.tokens.values()) {
+    synchronized (tokens) {
+      for (DLockToken token : tokens.values()) {
         synchronized (token) {
           if (token.isLeaseHeld()) {
             numLocksHeld++;
@@ -2512,11 +2473,11 @@ public class DLockService extends DistributedLockService {
    * each lock token.
    */
   protected void dumpService() {
-    synchronized (this.tokens) {
+    synchronized (tokens) {
       StringBuffer buffer = new StringBuffer();
-      buffer.append("  ").append(this.tokens.size()).append(" tokens, ");
+      buffer.append("  ").append(tokens.size()).append(" tokens, ");
       buffer.append(numLocksHeldInThisVM()).append(" locks held\n");
-      for (Map.Entry<Object, DLockToken> entry : this.tokens.entrySet()) {
+      for (Map.Entry<Object, DLockToken> entry : tokens.entrySet()) {
         buffer.append("    ").append(entry.getKey()).append(": ");
         DLockToken token = entry.getValue();
         buffer.append(token.toString()).append("\n");
@@ -2538,28 +2499,28 @@ public class DLockService extends DistributedLockService {
     }
   }
 
-  private final ThreadLocal threadRequestState = new ThreadLocal();
+  private final ThreadLocal<ThreadRequestState> threadRequestState = new ThreadLocal<>();
 
-  private final UnsafeThreadLocal<Object> blockedOn = new UnsafeThreadLocal<Object>();
+  private final UnsafeThreadLocal<Object> blockedOn = new UnsafeThreadLocal<>();
 
   /**
    * Returns true if the calling thread has an active lock request that is interruptible
    */
   boolean isInterruptibleLockRequest() {
     // this method is called by grantor for local lock requests in grantor vm
-    final ThreadRequestState requestState = (ThreadRequestState) threadRequestState.get();
+    final ThreadRequestState requestState = threadRequestState.get();
     if (requestState == null) {
       return false;
     }
     return requestState.interruptible;
   }
 
-  ThreadLocal getThreadRequestState() {
+  ThreadLocal<ThreadRequestState> getThreadRequestState() {
     return threadRequestState;
   }
 
   protected int incThreadSequence() {
-    return this.threadSequence.incrementAndGet();
+    return threadSequence.incrementAndGet();
   }
 
   // -------------------------------------------------------------------------
@@ -2613,10 +2574,6 @@ public class DLockService extends DistributedLockService {
 
   private static final Object creationLock = new Object();
 
-  /** All DLock threads belong to this group */
-  @MakeNotStatic
-  private static ThreadGroup threadGroup;
-
   /** DLock statistics; static because multiple dlock instances can exist */
   @MakeNotStatic
   private static DistributedLockStats stats = DUMMY_STATS;
@@ -2637,8 +2594,7 @@ public class DLockService extends DistributedLockService {
    * Specifies the starting serial number for the serialNumberSequencer
    */
   public static final int START_SERIAL_NUMBER = Integer
-      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "DistributedLockService.startSerialNumber", 1)
-      .intValue();
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "DistributedLockService.startSerialNumber", 1);
 
   /**
    * Incrementing serial number used to identify order of DLS creation
@@ -2671,7 +2627,7 @@ public class DLockService extends DistributedLockService {
    * relation to other DLS'es or other instances of this named DLS during the life of this JVM.
    */
   public int getSerialNumber() {
-    return this.serialNumber;
+    return serialNumber;
   }
 
   // -------------------------------------------------------------------------
@@ -2682,7 +2638,7 @@ public class DLockService extends DistributedLockService {
     DistributedLockService cmsLockService = DLockService.getServiceNamed(serviceName);
     try {
       if (cmsLockService == null) {
-        cmsLockService = DLockService.create(serviceName, ds, true, true);
+        cmsLockService = DLockService.create(serviceName, ds, true);
       }
     } catch (IllegalArgumentException ignore) {
       return DLockService.getServiceNamed(serviceName);
@@ -2700,8 +2656,8 @@ public class DLockService extends DistributedLockService {
   }
 
   public static DistributedLockService create(String serviceName, InternalDistributedSystem ds,
-      boolean distributed, boolean destroyOnDisconnect) {
-    return create(serviceName, ds, distributed, destroyOnDisconnect, false);
+      boolean distributed) {
+    return create(serviceName, ds, distributed, false);
   }
 
   /**
@@ -2710,8 +2666,6 @@ public class DLockService extends DistributedLockService {
    * @param serviceName name of the service
    * @param ds InternalDistributedSystem
    * @param distributed true if lock service will be distributed; false will be local only
-   * @param destroyOnDisconnect true if lock service should destroy itself using system disconnect
-   *        listener
    * @param automateFreeResources true if freeResources should be automatically called during unlock
    *
    * @throws IllegalArgumentException if serviceName is invalid or this process has already created
@@ -2723,7 +2677,8 @@ public class DLockService extends DistributedLockService {
    */
   @NotNull
   public static DistributedLockService create(String serviceName, InternalDistributedSystem ds,
-      boolean distributed, boolean destroyOnDisconnect, boolean automateFreeResources)
+      boolean distributed,
+      boolean automateFreeResources)
       throws IllegalArgumentException, IllegalStateException {
     // basicCreate will construct DLockService and it calls getOrCreateStats...
     synchronized (creationLock) {
@@ -2734,7 +2689,7 @@ public class DLockService extends DistributedLockService {
               String.format("Service named %s already created",
                   serviceName));
         }
-        return DLockService.basicCreate(serviceName, ds, distributed, destroyOnDisconnect,
+        return DLockService.basicCreate(serviceName, ds, distributed,
             automateFreeResources);
       }
     }
@@ -2764,7 +2719,8 @@ public class DLockService extends DistributedLockService {
       throw new IllegalArgumentException(String.format("Service named '%s' is not valid",
           serviceName));
     }
-    DLockService svc = null;
+
+    final DLockService svc;
     synchronized (services) {
       svc = services.get(serviceName);
     }
@@ -2785,21 +2741,19 @@ public class DLockService extends DistributedLockService {
    * @param nonGrantors filled with service names of all services we have that we are not the
    *        grantor of.
    */
-  public static void recoverRmtElder(ArrayList grantors, ArrayList grantorVersions,
-      ArrayList grantorSerialNumbers, ArrayList nonGrantors) {
+  public static void recoverRmtElder(ArrayList<String> grantors, ArrayList<Long> grantorVersions,
+      ArrayList<Integer> grantorSerialNumbers, ArrayList<String> nonGrantors) {
     synchronized (services) {
-      Iterator entries = services.entrySet().iterator();
-      while (entries.hasNext()) {
-        Map.Entry entry = (Map.Entry) entries.next();
-        String serviceName = (String) entry.getKey();
-        DLockService service = (DLockService) entry.getValue();
+      for (final Map.Entry<String, DLockService> entry : services.entrySet()) {
+        String serviceName = entry.getKey();
+        DLockService service = entry.getValue();
         boolean foundGrantor = false;
         DLockGrantor grantor = service.getGrantor();
         if (grantor != null && grantor.getVersionId() != -1 && !grantor.isDestroyed()) {
           foundGrantor = true;
           grantors.add(serviceName);
-          grantorVersions.add(Long.valueOf(grantor.getVersionId()));
-          grantorSerialNumbers.add(Integer.valueOf(service.getSerialNumber()));
+          grantorVersions.add(grantor.getVersionId());
+          grantorSerialNumbers.add(service.getSerialNumber());
         }
         if (!foundGrantor) {
           nonGrantors.add(serviceName);
@@ -2818,11 +2772,9 @@ public class DLockService extends DistributedLockService {
   public static void recoverLocalElder(DistributionManager dm, Map<String, GrantorInfo> grantors,
       Set<String> needsRecovery) {
     synchronized (services) {
-      Iterator entries = services.entrySet().iterator();
-      while (entries.hasNext()) {
-        Map.Entry entry = (Map.Entry) entries.next();
-        String serviceName = (String) entry.getKey();
-        DLockService service = (DLockService) entry.getValue();
+      for (final Map.Entry<String, DLockService> entry : services.entrySet()) {
+        String serviceName = entry.getKey();
+        DLockService service = entry.getValue();
         boolean foundGrantor = false;
         DLockGrantor grantor = service.getGrantor();
         if (grantor != null && grantor.getVersionId() != -1 && !grantor.isDestroyed()) {
@@ -2880,13 +2832,11 @@ public class DLockService extends DistributedLockService {
    * service tokens maps and each lock token.
    */
   public static void dumpAllServices() { // used by: distributed/DistributedLockServiceTest
-    StringBuffer buffer = new StringBuffer();
     synchronized (services) {
       logger.info(LogMarker.DLS_MARKER,
           "DLockService.dumpAllServices() - " + services.size() + " services:\n");
-      for (Map.Entry entry : services.entrySet()) {
-        buffer.append("  " + entry.getKey() + ":\n");
-        DLockService svc = (DLockService) entry.getValue();
+      for (final Map.Entry<String, DLockService> entry : services.entrySet()) {
+        DLockService svc = entry.getValue();
         svc.dumpService();
         if (svc.isCurrentlyLockGrantor()) {
           svc.grantor.dumpService();
@@ -2894,14 +2844,6 @@ public class DLockService extends DistributedLockService {
 
       }
     }
-  }
-
-  // -------------------------------------------------------------------------
-  // Package static methods
-  // -------------------------------------------------------------------------
-
-  static ThreadGroup getThreadGroup() {
-    return threadGroup;
   }
 
   /**
@@ -2917,9 +2859,8 @@ public class DLockService extends DistributedLockService {
   protected static synchronized DistributedLockStats getOrCreateStats(DistributedSystem ds) {
     if (stats == DUMMY_STATS) {
       Assert.assertTrue(ds != null, "Need an instance of InternalDistributedSystem");
-      StatisticsFactory statFactory = ds;
       long statId = OSProcess.getId();
-      stats = new DLockStats(statFactory, statId);
+      stats = new DLockStats(ds, statId);
     }
     return stats;
   }
@@ -2943,7 +2884,7 @@ public class DLockService extends DistributedLockService {
   protected static void removeLockService(DLockService service) {
     service.removeAllTokens();
 
-    InternalDistributedSystem system = null;
+    final InternalDistributedSystem system;
     synchronized (services) {
       DLockService removedService = services.remove(service.getName());
       if (removedService == null) {
@@ -3038,11 +2979,9 @@ public class DLockService extends DistributedLockService {
     /**
      * Creates a new DLockStopper for the specified DLockService and DM.
      *
-     * @param dm the DM to check for shutdown
      * @param dls the DLockService to check for DLS destroy
      */
-    DLockStopper(DistributionManager dm, DLockService dls) {
-      Assert.assertTrue(dls != null);
+    DLockStopper(final @NotNull DLockService dls) {
       this.dls = dls;
       Assert.assertTrue(dls.getDistributionManager() != null);
     }
@@ -3050,13 +2989,13 @@ public class DLockService extends DistributedLockService {
     @Override
     public String cancelInProgress() {
       String cancelInProgressString =
-          this.dls.getDistributionManager().getCancelCriterion().cancelInProgress();
+          dls.getDistributionManager().getCancelCriterion().cancelInProgress();
       if (cancelInProgressString != null) {
         // delegate to underlying DM's CancelCriterion...
         return cancelInProgressString;
-      } else if (this.dls.isDestroyed()) {
+      } else if (dls.isDestroyed()) {
         // this.stoppedByDLS = true;
-        return this.dls.generateLockServiceDestroyedMessage();
+        return dls.generateLockServiceDestroyedMessage();
       } else {
         // return null since neither DM nor DLS are shutting down
         // cannot call super.cancelInProgress because it's abstract
@@ -3070,7 +3009,7 @@ public class DLockService extends DistributedLockService {
       if (reason == null) {
         return null;
       }
-      return this.dls.generateLockServiceDestroyedException(reason);
+      return dls.generateLockServiceDestroyedException(reason);
     }
 
   }

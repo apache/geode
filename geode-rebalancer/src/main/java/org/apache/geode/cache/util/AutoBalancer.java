@@ -521,7 +521,7 @@ public class AutoBalancer implements Declarable {
           logger.debug("Creating DistributeLockService");
         }
         dls = DLockService.create(AUTO_BALANCER_LOCK_SERVICE_NAME,
-            cache.getInternalDistributedSystem(), true, true, true);
+            cache.getInternalDistributedSystem(), true, true);
       }
 
       return dls;
