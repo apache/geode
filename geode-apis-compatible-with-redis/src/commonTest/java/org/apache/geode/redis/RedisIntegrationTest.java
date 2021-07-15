@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis;
 
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 
 import redis.clients.jedis.Jedis;
@@ -25,7 +26,7 @@ public interface RedisIntegrationTest {
 
   default void flushAll() {
     ClusterNodes nodes;
-    try (Jedis jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT)) {
+    try (Jedis jedis = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT)) {
       nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes());
     }
 
