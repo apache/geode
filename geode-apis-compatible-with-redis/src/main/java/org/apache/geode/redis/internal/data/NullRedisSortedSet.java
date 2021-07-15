@@ -63,6 +63,11 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
+  List<byte[]> zrangebyscore(SortedSetRangeOptions rangeOptions, boolean withScores) {
+    return Collections.emptyList();
+  }
+
+  @Override
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
     List<byte[]> valuesToAdd = new ArrayList<>();

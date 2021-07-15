@@ -238,6 +238,12 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bRADISH_DUMP_HEADER = stringToBytes("RADISH");
 
+  @MakeImmutable
+  public static final byte[] bRADISH_WITHSCORES = stringToBytes("WITHSCORES");
+
+  @MakeImmutable
+  public static final byte[] bRADISH_LIMIT = stringToBytes("LIMIT");
+
   /**
    * These member names will always be evaluated to be "greater than" or "less than" any other when
    * using the {@link RedisSortedSet.OrderedSetEntry#compareTo(RedisSortedSet.OrderedSetEntry)}

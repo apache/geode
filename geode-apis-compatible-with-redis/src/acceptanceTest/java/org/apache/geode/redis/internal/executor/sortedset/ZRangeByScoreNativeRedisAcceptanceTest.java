@@ -12,34 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.List;
+import org.junit.ClassRule;
 
-import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.NativeRedisClusterTestRule;
 
-public interface RedisSortedSetCommands {
+public class ZRangeByScoreNativeRedisAcceptanceTest extends AbstractZRangeByScoreIntegrationTest {
 
-  Object zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd, ZAddOptions options);
+  @ClassRule
+  public static NativeRedisClusterTestRule server = new NativeRedisClusterTestRule();
 
-  long zcard(RedisKey key);
+  @Override
+  public int getPort() {
+    return server.getExposedPorts().get(0);
+  }
 
-  long zcount(RedisKey key, SortedSetRangeOptions rangeOptions);
-
-  byte[] zincrby(RedisKey key, byte[] increment, byte[] member);
-
-  List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores);
-
-  List<byte[]> zrangebyscore(RedisKey key, SortedSetRangeOptions rangeOptions, boolean withScores);
-
-  long zrank(RedisKey key, byte[] member);
-
-  long zrem(RedisKey key, List<byte[]> membersToRemove);
-
-  List<byte[]> zrevrange(RedisKey key, int min, int max, boolean withScore);
-
-  long zrevrank(RedisKey key, byte[] member);
-
-  byte[] zscore(RedisKey key, byte[] member);
+  @Override
+  public void flushAll() {
+    server.flushAll();
+  }
 }

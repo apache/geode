@@ -14,47 +14,13 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-public class SortedSetRangeOptions {
-  private final double minDouble;
-  private final boolean minExclusive;
-  private final double maxDouble;
-  private final boolean maxExclusive;
+public class SortedSetRangeLimitOptions {
+  private final int offset;
+  private final int count;
 
-  private boolean hasLimit = false;
-  private int offset = 0;
-  private int count = 0;
-
-  public SortedSetRangeOptions(double min, boolean minExclusive, double max, boolean maxExclusive) {
-    this.minDouble = min;
-    this.minExclusive = minExclusive;
-    this.maxDouble = max;
-    this.maxExclusive = maxExclusive;
-  }
-
-  public void setLimitValues(int offset, int count) {
-    hasLimit = true;
+  public SortedSetRangeLimitOptions(int offset, int count) {
     this.offset = offset;
     this.count = count;
-  }
-
-  public double getMinDouble() {
-    return minDouble;
-  }
-
-  public boolean isMinExclusive() {
-    return minExclusive;
-  }
-
-  public double getMaxDouble() {
-    return maxDouble;
-  }
-
-  public boolean isMaxExclusive() {
-    return maxExclusive;
-  }
-
-  public boolean hasLimit() {
-    return hasLimit;
   }
 
   public int getOffset() {

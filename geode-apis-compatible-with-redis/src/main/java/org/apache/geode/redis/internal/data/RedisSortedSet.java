@@ -28,6 +28,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -305,6 +306,56 @@ public class RedisSortedSet extends AbstractRedisData {
 
   List<byte[]> zrange(int min, int max, boolean withScores) {
     return getRange(min, max, withScores, false);
+  }
+
+
+  List<byte[]> zrangebyscore(SortedSetRangeOptions rangeOptions, boolean withScores) {
+    List<byte[]> result = new ArrayList<>();
+    AbstractOrderedSetEntry minEntry =
+        new DummyOrderedSetEntry(rangeOptions.getMinDouble(), rangeOptions.isMinExclusive(), true);
+    long minIndex = scoreSet.indexOf(minEntry);
+    if (minIndex >= scoreSet.size()) {
+      return Collections.emptyList();
+    }
+
+    AbstractOrderedSetEntry maxEntry =
+        new DummyOrderedSetEntry(rangeOptions.getMaxDouble(), rangeOptions.isMaxExclusive(), false);
+    long maxIndex = scoreSet.indexOf(maxEntry);
+    if (minIndex == maxIndex) {
+      return Collections.emptyList();
+    }
+
+    // Okay, there's an actual range of things to return.
+    int offset = 0;
+    int count = Integer.MAX_VALUE;
+    Iterator<AbstractOrderedSetEntry> entryIterator =
+        scoreSet.getIndexRange((int) minIndex, (int) maxIndex);
+    if (rangeOptions.hasLimit()) {
+      count = rangeOptions.getCount();
+      offset = rangeOptions.getOffset();
+    }
+    int skip = 0;
+    int returnedCount = 0;
+    while (entryIterator.hasNext() && returnedCount < count) {
+      AbstractOrderedSetEntry entry = entryIterator.next();
+      if (skip < offset) {
+        skip++;
+        continue;
+      }
+      if (rangeOptions.isMaxExclusive()) {
+        if (entry.score >= rangeOptions.getMaxDouble()) {
+          break;
+        }
+      } else if (entry.score > rangeOptions.getMaxDouble()) {
+        break;
+      }
+      returnedCount++;
+      result.add(entry.member);
+      if (withScores) {
+        result.add(entry.scoreBytes);
+      }
+    }
+    return result;
   }
 
   long zrank(byte[] member) {
