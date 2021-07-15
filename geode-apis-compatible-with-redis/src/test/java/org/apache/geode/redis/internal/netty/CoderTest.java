@@ -22,6 +22,7 @@ import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.isNaN;
 import static org.apache.geode.redis.internal.netty.Coder.isNegativeInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.isPositiveInfinity;
+import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,6 +71,29 @@ public class CoderTest {
   public void doubleToString_processesLikeRedis(String inputString, String expectedString) {
     byte[] bytes = stringToBytes(inputString);
     assertThat(doubleToString(bytesToDouble(bytes))).isEqualTo(expectedString);
+  }
+
+  @Test
+  public void narrowLongToInt_correctlyConvertsLongToIntMinValue() {
+    for (long i = Integer.MIN_VALUE; i > Integer.MIN_VALUE - 10L; --i) {
+      assertThat(narrowLongToInt(i)).isEqualTo(Integer.MIN_VALUE);
+    }
+    assertThat(narrowLongToInt(Long.MIN_VALUE)).isEqualTo(Integer.MIN_VALUE);
+  }
+
+  @Test
+  public void narrowLongToInt_correctlyConvertsLongToIntMaxValue() {
+    for (long i = Integer.MAX_VALUE; i < Integer.MAX_VALUE + 10L; ++i) {
+      assertThat(narrowLongToInt(i)).isEqualTo(Integer.MAX_VALUE);
+    }
+    assertThat(narrowLongToInt(Long.MAX_VALUE)).isEqualTo(Integer.MAX_VALUE);
+  }
+
+  @Test
+  public void narrowLongToInt_correctlyConvertsLongToInt() {
+    for (long i = -10; i < 10; ++i) {
+      assertThat(narrowLongToInt(i)).isEqualTo(Math.toIntExact(i));
+    }
   }
 
   @SuppressWarnings("unused")

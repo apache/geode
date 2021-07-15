@@ -339,10 +339,6 @@ public class Coder {
     return new BigDecimal(bytesToString(bytes));
   }
 
-  public static int bytesToInt(byte[] bytes) {
-    return Integer.parseInt(bytesToString(bytes));
-  }
-
   public static long bytesToLong(byte[] bytes) {
     return Long.parseLong(bytesToString(bytes));
   }
@@ -462,5 +458,17 @@ public class Coder {
   public static boolean isNegativeInfinity(byte[] bytes) {
     return equalsIgnoreCaseBytes(bytes, bN_INF)
         || equalsIgnoreCaseBytes(bytes, bN_INFINITY);
+  }
+
+  // Takes a long value and converts it to an int. Values outside the range Integer.MIN_VALUE and
+  // Integer.MAX_VALUE will be converted to either Integer.MIN_VALUE or Integer.MAX_VALUE
+  public static int narrowLongToInt(long toBeNarrowed) {
+    if (toBeNarrowed > Integer.MAX_VALUE) {
+      return Integer.MAX_VALUE;
+    } else if (toBeNarrowed < Integer.MIN_VALUE) {
+      return Integer.MIN_VALUE;
+    } else {
+      return (int) toBeNarrowed;
+    }
   }
 }

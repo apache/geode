@@ -15,13 +15,15 @@
 package org.apache.geode.redis.internal.executor.set;
 
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
+import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
+
 import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -35,7 +37,7 @@ public class SPopExecutor extends AbstractExecutor {
 
     if (commandElems.size() == 3) {
       isCountPassed = true;
-      popCount = Coder.bytesToInt(commandElems.get(2));
+      popCount = narrowLongToInt(bytesToLong(commandElems.get(2)));
     }
 
     RedisKey key = command.getKey();

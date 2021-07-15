@@ -63,11 +63,19 @@ public abstract class AbstractZRevRangeIntegrationTest implements RedisIntegrati
   @Test
   public void shouldError_givenNonIntegerRangeValues() {
     jedis.zadd(KEY, 1.0, MEMBER_BASE_NAME);
+    String tooSmall = Long.MIN_VALUE + "0";
+    String tooBig = Long.MAX_VALUE + "0";
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGE, KEY, "NOT_AN_INT", "2"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGE, KEY, "1", "NOT_AN_INT"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGE, KEY, tooSmall, "1"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGE, KEY, "1", tooBig))
             .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
@@ -82,7 +90,7 @@ public abstract class AbstractZRevRangeIntegrationTest implements RedisIntegrati
   @Test
   @Parameters({"1,0", "25,30", "8,-3", "8,8", "-8,-8", "-30,-25"})
   @TestCaseName("{method}: start:{0}, end:{1}")
-  public void shouldReturnEmptyCollection_givenInvalidRange(int start, int end) {
+  public void shouldReturnEmptyCollection_givenInvalidRange(long start, long end) {
     for (int i = 0; i < scores.size(); i++) {
       String memberName = MEMBER_BASE_NAME + i;
       Double score = scores.get(i);
@@ -92,9 +100,9 @@ public abstract class AbstractZRevRangeIntegrationTest implements RedisIntegrati
   }
 
   @Test
-  @Parameters({"0,1", "0,3", "0,6", "2,2", "2,4", "0,-2", "2,-2", "-3,-1", "-6,2"})
+  @Parameters(method = "getValidRanges")
   @TestCaseName("{method}: start:{0}, end:{1}")
-  public void zrevrange_withValidRanges(int start, int end) {
+  public void zrevrange_withValidRanges(long start, long end) {
     List<String> entries = new ArrayList<>();
     for (int i = 0; i < scores.size(); i++) {
       String memberName = MEMBER_BASE_NAME + i;
@@ -107,9 +115,9 @@ public abstract class AbstractZRevRangeIntegrationTest implements RedisIntegrati
   }
 
   @Test
-  @Parameters({"0,1", "0,3", "0,6", "2,2", "2,4", "0,-2", "2,-2", "-3,-1", "-6,2"})
+  @Parameters(method = "getValidRanges")
   @TestCaseName("{method}: start:{0}, end:{1}")
-  public void zrevrangeWithScores_withValidRanges(int start, int end) {
+  public void zrevrangeWithScores_withValidRanges(long start, long end) {
     List<Tuple> entries = new ArrayList<>();
     int numOfEntries = scores.size();
     for (int i = 0; i < numOfEntries; i++) {
@@ -130,9 +138,9 @@ public abstract class AbstractZRevRangeIntegrationTest implements RedisIntegrati
   }
 
   @Test
-  @Parameters({"0,1", "0,3", "0,6", "2,2", "2,4", "0,-2", "2,-2", "-3,-1", "-6,2"})
+  @Parameters(method = "getValidRanges")
   @TestCaseName("{method}: start:{0}, end:{1}")
-  public void zrevrange_withSameScores_shouldOrderLexically(int start, int end) {
+  public void zrevrange_withSameScores_shouldOrderLexically(long start, long end) {
     List<String> entries = new ArrayList<>();
     for (int i = 5; i > 0; i--) {
       String memberName = MEMBER_BASE_NAME + i;
@@ -146,23 +154,23 @@ public abstract class AbstractZRevRangeIntegrationTest implements RedisIntegrati
     validateRevrange(start, end, entries);
   }
 
-  private int getSubListStartIndex(int end, int numOfEntries) {
+  private int getSubListStartIndex(long end, long numOfEntries) {
     if (end >= 0) {
-      return Math.max(numOfEntries - end - 1, 0);
+      return (int) Math.max(numOfEntries - end - 1, 0);
     } else {
-      return Math.min(-end - 1, numOfEntries - 1);
+      return (int) Math.min(-end - 1, numOfEntries - 1);
     }
   }
 
-  private int getSubListEndIndex(int start, int numOfEntries) {
+  private int getSubListEndIndex(long start, long numOfEntries) {
     if (start >= 0) {
-      return Math.max(numOfEntries - start, 0);
+      return (int) Math.max(numOfEntries - start, 0);
     } else {
-      return Math.min(-start, numOfEntries);
+      return (int) Math.min(-start, numOfEntries);
     }
   }
 
-  private void validateRevrange(int start, int end, List<String> entries) {
+  private void validateRevrange(long start, long end, List<String> entries) {
     int subListStartIndex = getSubListStartIndex(end, entries.size());
     int subListEndIndex = getSubListEndIndex(start, entries.size());
     List<String> expectedRevrange = entries.subList(subListStartIndex, subListEndIndex);
@@ -171,5 +179,22 @@ public abstract class AbstractZRevRangeIntegrationTest implements RedisIntegrati
     Set<String> revrange = jedis.zrevrange(KEY, start, end);
 
     assertThat(revrange).containsExactlyElementsOf(expectedRevrange);
+  }
+
+  @SuppressWarnings("unused")
+  private Object[] getValidRanges() {
+    return new Object[] {
+        "0,1",
+        "0,3",
+        "0,6",
+        "2,2",
+        "2,4",
+        "0,-2",
+        "2,-2",
+        "-3,-1",
+        "-6,2",
+        "0," + 2L * Integer.MAX_VALUE,
+        2L * Integer.MIN_VALUE + ",-1"
+    };
   }
 }

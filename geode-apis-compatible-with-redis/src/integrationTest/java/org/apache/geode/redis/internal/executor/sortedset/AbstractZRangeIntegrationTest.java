@@ -72,6 +72,8 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
   @Test
   public void shouldError_givenNonIntegerRangeValues() {
     jedis.zadd(SORTED_SET_KEY, 1.0, "member");
+    String tooSmall = Long.MIN_VALUE + "0";
+    String tooBig = Long.MAX_VALUE + "0";
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY,
             "NOT_AN_INT", "2"))
@@ -79,6 +81,14 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, "1",
             "ALSO_NOT_AN_INT"))
+                .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, tooSmall,
+            "1"))
+                .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, "1",
+            tooBig))
                 .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
@@ -112,6 +122,8 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
     assertThat(jedis.zrange(SORTED_SET_KEY, 0, 10)).containsExactlyElementsOf(members);
     assertThat(jedis.zrange(SORTED_SET_KEY, 3, 4)).containsExactlyElementsOf(members.subList(3, 5));
     assertThat(jedis.zrange(SORTED_SET_KEY, 0, 2)).containsExactlyElementsOf(members.subList(0, 3));
+    assertThat(jedis.zrange(SORTED_SET_KEY, 0, 2L * Integer.MAX_VALUE))
+        .containsExactlyElementsOf(members);
   }
 
   @Test
@@ -121,6 +133,8 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
         .containsExactlyElementsOf(members.subList(3, 5));
     assertThat(jedis.zrange(SORTED_SET_KEY, -8, -3))
         .containsExactlyElementsOf(members.subList(0, 3));
+    assertThat(jedis.zrange(SORTED_SET_KEY, 2L * Integer.MIN_VALUE, -1))
+        .containsExactlyElementsOf(members);
   }
 
   @Test
