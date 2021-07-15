@@ -325,7 +325,7 @@ public class RedisSortedSet extends AbstractRedisData {
       return Collections.emptyList();
     }
 
-    // Okay, there's an actual range of things to return.
+    // Okay, if we make it this far there's a potential range of things to return.
     int offset = 0;
     int count = Integer.MAX_VALUE;
     Iterator<AbstractOrderedSetEntry> entryIterator =
@@ -336,6 +336,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
     int skip = 0;
     int returnedCount = 0;
+
     while (entryIterator.hasNext() && returnedCount < count) {
       AbstractOrderedSetEntry entry = entryIterator.next();
       if (skip < offset) {

@@ -92,7 +92,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
     // Count -inf <= score <= +inf
     assertThat(jedis.zrangeByScore(KEY, "-inf", "inf"))
-        .containsExactlyElementsOf(Arrays.asList("member"));
+        .containsExactly("member");
   }
 
   @Test
@@ -111,7 +111,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
     // Count 1 <= score <= 1
     assertThat(jedis.zrangeByScore(KEY, score, score))
-        .containsExactlyElementsOf(Arrays.asList("member"));
+        .containsExactly("member");
   }
 
   @Test
@@ -212,22 +212,12 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
     assertThat(jedis.zrangeByScore(KEY, "(", "inf")).containsExactly("slightlyMoreThanZero");
 
     // Count -inf <= score < 0
-    assertThat(jedis.zrangeByScore(KEY, "-inf", "(")).containsExactly("slightlyLessThanZero");;
+    assertThat(jedis.zrangeByScore(KEY, "-inf", "(")).containsExactly("slightlyLessThanZero");
   }
 
   @Test
   public void shouldReturnRange_boundedByLimit() {
-    Map<String, Double> map = new HashMap<>();
-
-    map.put("a", Double.NEGATIVE_INFINITY);
-    map.put("b", 1d);
-    map.put("c", 2d);
-    map.put("d", 3d);
-    map.put("e", 4d);
-    map.put("f", 5d);
-    map.put("g", Double.POSITIVE_INFINITY);
-
-    jedis.zadd(KEY, map);
+    createZSetRangeTestMap();
 
     assertThat(jedis.zrangeByScore(KEY, "0", "10", 0, 2))
         .containsExactlyElementsOf(Arrays.asList("b", "c"));
@@ -240,17 +230,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
   @Test
   public void shouldReturnRange_withScores_boundedByLimit() {
-    Map<String, Double> map = new HashMap<>();
-
-    map.put("a", Double.NEGATIVE_INFINITY);
-    map.put("b", 1d);
-    map.put("c", 2d);
-    map.put("d", 3d);
-    map.put("e", 4d);
-    map.put("f", 5d);
-    map.put("g", Double.POSITIVE_INFINITY);
-
-    jedis.zadd(KEY, map);
+    createZSetRangeTestMap();
 
     Set<Tuple> firstExpected = new LinkedHashSet<>();
     firstExpected.add(new Tuple("b", 1d));
@@ -271,5 +251,19 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
         .containsExactlyElementsOf(secondExpected);
     assertThat(jedis.zrangeByScoreWithScores(KEY, "0", "10", 2, -1))
         .containsExactlyElementsOf(secondExpected);
+  }
+
+  private void createZSetRangeTestMap() {
+    Map<String, Double> map = new HashMap<>();
+
+    map.put("a", Double.NEGATIVE_INFINITY);
+    map.put("b", 1d);
+    map.put("c", 2d);
+    map.put("d", 3d);
+    map.put("e", 4d);
+    map.put("f", 5d);
+    map.put("g", Double.POSITIVE_INFINITY);
+
+    jedis.zadd(KEY, map);
   }
 }
