@@ -1186,7 +1186,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   @VisibleForTesting
-  int getTmpDroppedEventSize() {
+  public int getTmpDroppedEventSize() {
     return tmpDroppedEvents.size();
   }
 
@@ -1205,10 +1205,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   public void enqueueTempEvents() {
     if (this.eventProcessor != null) {// Fix for defect #47308
       // process tmpDroppedEvents
-      EntryEventImpl droppedEvent;
-      while ((droppedEvent = tmpDroppedEvents.poll()) != null) {
-        this.eventProcessor.registerEventDroppedInPrimaryQueue(droppedEvent);
-      }
+      enqueueTempDroppedEvents();
 
       TmpQueueEvent nextEvent = null;
       final GatewaySenderStats stats = getStatistics();
@@ -1238,6 +1235,22 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
             "%s: An Exception occurred while queueing %s to perform operation %s for %s",
             new Object[] {this, getId(), nextEvent.getOperation(), nextEvent}),
             e);
+      }
+    }
+  }
+
+  /**
+   * During sender is recovered in stopped state, if there are any cache operations while
+   * queue and event processor is being created then these events should be stored in
+   * tmpDroppedEvents temporary queue. Once event processor is created then queue will be
+   * drained and ParallelQueueRemovalMessage will be sent.
+   */
+  public void enqueueTempDroppedEvents() {
+    if (this.eventProcessor != null) {
+      // process tmpDroppedEvents
+      EntryEventImpl droppedEvent;
+      while ((droppedEvent = tmpDroppedEvents.poll()) != null) {
+        this.eventProcessor.registerEventDroppedInPrimaryQueue(droppedEvent);
       }
     }
   }

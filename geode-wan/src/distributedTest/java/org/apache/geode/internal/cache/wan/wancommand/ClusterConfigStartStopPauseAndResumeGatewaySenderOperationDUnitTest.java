@@ -28,6 +28,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
@@ -67,7 +67,7 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
     implements Serializable {
 
   @Rule
-  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(8);
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(9);
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -392,11 +392,7 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
 
     executeGfshCommand(CliStrings.STOP_GATEWAYSENDER);
 
-    if (isParallel.equals("true")) {
-      verifyGatewaySenderState(false, true);
-    } else {
-      verifyGatewaySenderState(false, false);
-    }
+    verifyGatewaySenderState(false, isParallel.equals("true"));
 
     Set<String> keysNotQueued = clientSite2.invoke(() -> doPutsInRange(100, 105));
     clientSite2.invoke(() -> checkDataAvailable(keysNotQueued));
@@ -427,6 +423,78 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
     server1Site2.invoke(() -> checkQueueSize("ln", 0));
     clientSite1.invoke(() -> checkDataAvailable(keysQueued));
     clientSite1.invoke(() -> checkDataNotAvailable(keysNotQueued));
+  }
+
+  /**
+   * This test case verifies that the server during recovery of gateway-sender in stopped state
+   * stores events in tmpDroppedEvents queue, and handles them after sender has been recovered.
+   */
+  @Test
+  public void testSubscriptionQueueWanTrafficWhileServerIsRestarted() throws Exception {
+    configureSites(true, "PARTITION_REDUNDANT_PERSISTENT", "1", "true");
+
+    List<MemberVM> allMembers = new ArrayList<>();
+    allMembers.add(server1Site2);
+    allMembers.add(server2Site2);
+
+    executeGfshCommand(CliStrings.STOP_GATEWAYSENDER);
+    verifyGatewaySenderState(false, false);
+
+    Set<String> keys1 = clientSite2.invoke(() -> doPutsInRange(0, 500));
+    clientSite2.invoke(() -> checkDataAvailable(keys1));
+    server1Site2.invoke(() -> checkQueueSize("ln", 0));
+
+    MemberVM startServer = clusterStartupRule.startServerVM(9, locatorSite2.getPort());
+
+    // perform rebalance operation to redistribute primaries on running servers
+    String command = new CommandStringBuilder(CliStrings.REBALANCE)
+        .getCommandString();
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+
+    startServer.stop(false);
+
+    Thread thread = new Thread(
+        () -> clientSite2.invoke(() -> doPutsInRange(0, 15000)));
+    thread.start();
+
+    startServer = clusterStartupRule.startServerVM(9, locatorSite2.getPort());
+
+    allMembers.add(startServer);
+
+    for (MemberVM member : allMembers) {
+      member.invoke(() -> {
+        // test that non of the events are stored in primary and secondary buckets
+        testLocalQueueIsEmpty("ln");
+        // check that tmpDroppedEvent queue has been drained after it recovered in stopped state
+        verifyTmpDroppedEventSize("ln", 0);
+      });
+    }
+  }
+
+  public static void verifyTmpDroppedEventSize(String senderId, int size) {
+    GatewaySender sender = getGatewaySender(senderId);
+
+    AbstractGatewaySender ags = (AbstractGatewaySender) sender;
+    await().untilAsserted(() -> assertEquals("Expected tmpDroppedEvents size: " + size
+        + " but actual size: " + ags.getTmpDroppedEventSize(), size, ags.getTmpDroppedEventSize()));
+  }
+
+  public static void testLocalQueueIsEmpty(String senderId) {
+    await()
+        .untilAsserted(() -> localQueueSize(senderId));
+  }
+
+  public static void localQueueSize(String senderId) {
+    GatewaySender sender = getGatewaySender(senderId);
+    int totalSize = 0;
+    Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
+    if (queues != null) {
+      for (RegionQueue q : queues) {
+        ConcurrentParallelGatewaySenderQueue prQ = (ConcurrentParallelGatewaySenderQueue) q;
+        prQ.localSize(true);
+      }
+    }
+    assertEquals(0, totalSize);
   }
 
   void configureSites(boolean enableGWSPersistence, String regionShortcut, String redundancy,
@@ -580,15 +648,19 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
     return size;
   }
 
+  public static GatewaySender getGatewaySender(String senderId) {
+    assertThat(ClusterStartupRule.getCache()).isNotNull();
+    InternalCache internalCache = ClusterStartupRule.getCache();
+    return internalCache.getGatewaySender(senderId);
+  }
+
   public static void checkQueueSize(String senderId, int numQueueEntries) {
     await()
         .untilAsserted(() -> testQueueSize(senderId, numQueueEntries));
   }
 
   public static void testQueueSize(String senderId, int numQueueEntries) {
-    assertThat(ClusterStartupRule.getCache()).isNotNull();
-    InternalCache internalCache = ClusterStartupRule.getCache();
-    GatewaySender sender = internalCache.getGatewaySender(senderId);
+    GatewaySender sender = getGatewaySender(senderId);
     int totalSize = 0;
     Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
     if (sender.isParallel()) {
@@ -622,17 +694,14 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
   }
 
   public static void testDispatcherThreadsToPause(String senderId) {
-    assertThat(ClusterStartupRule.getCache()).isNotNull();
-    InternalCache internalCache = ClusterStartupRule.getCache();
-    AbstractGatewaySender sender = (AbstractGatewaySender) internalCache.getGatewaySender(senderId);
+    AbstractGatewaySender sender = (AbstractGatewaySender) getGatewaySender(senderId);
     if (sender.isParallel()) {
       ConcurrentParallelGatewaySenderEventProcessor abProc =
           (ConcurrentParallelGatewaySenderEventProcessor) sender.getEventProcessor();
       List<ParallelGatewaySenderEventProcessor> lproc = abProc.getProcessors();
       assertFalse(lproc.isEmpty());
       for (ParallelGatewaySenderEventProcessor serialProc : lproc) {
-        AbstractGatewaySenderEventProcessor abstProc = serialProc;
-        abstProc.waitForDispatcherToPause();
+        serialProc.waitForDispatcherToPause();
       }
     } else {
       ConcurrentSerialGatewaySenderEventProcessor abProc =
@@ -640,8 +709,7 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
       List<SerialGatewaySenderEventProcessor> lproc = abProc.getProcessors();
       assertFalse(lproc.isEmpty());
       for (SerialGatewaySenderEventProcessor serialProc : lproc) {
-        AbstractGatewaySenderEventProcessor abstProc = serialProc;
-        abstProc.waitForDispatcherToPause();
+        serialProc.waitForDispatcherToPause();
       }
     }
   }
