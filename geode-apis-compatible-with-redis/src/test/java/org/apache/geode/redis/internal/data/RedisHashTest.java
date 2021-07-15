@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.RedisHash.BASE_REDIS_HASH_OVERHEAD;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -182,24 +183,29 @@ public class RedisHashTest {
   @Test
   public void hscanReturnsCorrectNumberOfElements() {
     RedisHash hash = createRedisHash("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4");
-    ImmutablePair<Integer, List<byte[]>> result =
+    ImmutablePair<Integer, List<ImmutablePair<byte[], byte[]>>> result =
         hash.hscan(null, 2, 0);
 
     assertThat(result.left).isNotEqualTo(0);
-    assertThat(result.right).hasSize(4);
+    assertThat(result.right).hasSize(2);
     result = hash.hscan(null, 3, result.left);
     assertThat(result.left).isEqualTo(0);
-    assertThat(result.right).hasSize(4);
+    assertThat(result.right).hasSize(2);
   }
 
   @Test
   public void hscanOnlyReturnsElementsMatchingPattern() {
     RedisHash hash = createRedisHash("ak1", "v1", "k2", "v2", "ak3", "v3", "k4", "v4");
-    ImmutablePair<Integer, List<byte[]>> result =
+    ImmutablePair<Integer, List<ImmutablePair<byte[], byte[]>>> result =
         hash.hscan(Pattern.compile("a.*"), 3, 0);
 
     assertThat(result.left).isEqualTo(0);
-    assertThat(toListOfStrings(result.right)).containsExactly("ak1", "v1", "ak3", "v3");
+    List<String> fieldsAndValues = new ArrayList<>();
+    result.right.forEach(pair -> {
+      fieldsAndValues.add(bytesToString(pair.left));
+      fieldsAndValues.add(bytesToString(pair.right));
+    });
+    assertThat(fieldsAndValues).containsExactly("ak1", "v1", "ak3", "v3");
   }
 
   /************* Hash Size *************/
@@ -465,11 +471,6 @@ public class RedisHashTest {
     assertThat(finalSize).isLessThan(initialSize);
 
     assertThat(finalSize).isEqualTo(sizer.sizeof(redisHash));
-  }
-
-  /************* Helper Methods *************/
-  private List<String> toListOfStrings(List<byte[]> byteList) {
-    return byteList.stream().map(Coder::bytesToString).collect(Collectors.toList());
   }
 
   private RedisHash createRedisHash(String... keysAndValues) {

@@ -426,6 +426,39 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
         .isSubsetOf(entryMap.entrySet());
   }
 
+  @Test
+  public void should_notErrorGivenCountEqualToIntegerMaxValue() {
+    Map<byte[], byte[]> entryMap = initializeThreeFieldHashBytes();
+
+    ScanParams scanParams = new ScanParams().count(Integer.MAX_VALUE);
+    scanParams.count(Integer.MAX_VALUE);
+
+    ScanResult<Map.Entry<byte[], byte[]>> result =
+        jedis.hscan(HASH_KEY.getBytes(), ZERO_CURSOR.getBytes(), scanParams);
+    assertThat(result.getResult())
+        .usingElementComparator(new MapEntryWithByteArraysComparator())
+        .containsExactlyInAnyOrderElementsOf(entryMap.entrySet());
+  }
+
+  @Test
+  public void should_notErrorGivenCountGreaterThanIntegerMaxValue() {
+    initializeThreeFieldHash();
+
+    String greaterThanInt = String.valueOf(2L * Integer.MAX_VALUE);
+    List<Object> result =
+        uncheckedCast(jedis.sendCommand(HASH_KEY.getBytes(), Protocol.Command.HSCAN,
+            HASH_KEY.getBytes(), ZERO_CURSOR.getBytes(),
+            "COUNT".getBytes(), greaterThanInt.getBytes()));
+
+    assertThat((byte[]) result.get(0)).isEqualTo(ZERO_CURSOR.getBytes());
+
+    List<byte[]> fieldsAndValues = uncheckedCast(result.get(1));
+    assertThat(fieldsAndValues).containsExactlyInAnyOrder(
+        FIELD_ONE.getBytes(), VALUE_ONE.getBytes(),
+        FIELD_TWO.getBytes(), VALUE_TWO.getBytes(),
+        FIELD_THREE_BYTES, VALUE_THREE.getBytes());
+  }
+
   /**** Concurrency ***/
 
   @Test
