@@ -154,7 +154,7 @@ public class RegionProvider {
     try {
       return partitionedRegion.computeWithPrimaryLocked(key,
           () -> stripedExecutor.execute(key, callable));
-    } catch (PrimaryBucketLockException | BucketMovedException ex) {
+    } catch (PrimaryBucketLockException | BucketMovedException | RegionDestroyedException ex) {
       throw createRedisDataMovedException((RedisKey) key);
     } catch (RedisException bex) {
       throw bex;
@@ -169,12 +169,7 @@ public class RegionProvider {
 
   public RedisData getRedisData(RedisKey key, RedisData notFoundValue) {
     RedisData result;
-    try {
-      result = getLocalDataRegion().get(key);
-    } catch (RegionDestroyedException rex) {
-      // This can happen when buckets are moving
-      throw createRedisDataMovedException(key);
-    }
+    result = getLocalDataRegion().get(key);
 
     if (result != null) {
       if (result.hasExpired()) {
