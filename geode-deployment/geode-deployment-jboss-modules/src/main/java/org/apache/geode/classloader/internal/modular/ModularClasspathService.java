@@ -59,8 +59,8 @@ public class ModularClasspathService implements ClasspathService {
       String normalizedName = name.replaceAll("/", ".");
       return GemFireCache.class.getClassLoader().loadClass(normalizedName);
     } else {
-    return GemFireCache.class.getClassLoader().loadClass(name);
-  }
+      return GemFireCache.class.getClassLoader().loadClass(name);
+    }
   }
 
   @Override

@@ -141,14 +141,14 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
   }
 
   @Override
-  public ServiceResult<Deployment> getDeployed(String fileName) {
-    logger.debug("Looking up Deployment for name: {}", fileName);
+  public ServiceResult<Deployment> getDeployed(String jarName) {
+    logger.debug("Looking up Deployment for name: {}", jarName);
     logger.debug("Deployments keySet: {}", Arrays.toString(deployments.keySet().toArray()));
-    String artifactId = JarFileUtils.getArtifactId(fileName);
+    String artifactId = JarFileUtils.getArtifactId(jarName);
     if (deployments.containsKey(artifactId)) {
       return Success.of(deployments.get(artifactId));
     } else {
-      return Failure.of(fileName + " is not deployed.");
+      return Failure.of(jarName + " is not deployed.");
     }
   }
 

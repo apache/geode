@@ -20,12 +20,7 @@ import org.jboss.modules.filter.PathFilter;
 
 public class GeodeExtension extends ExtensionBaseImpl {
 
-}
-
-jbossModulesExtension {
-  geodeConfigurations {
-    main {
-      jbossJdkModules = [ "java.se","jdk.unsupported", "jdk.scripting.nashorn"]
-    }
+  public GeodeExtension(String name, PathFilter pathFilter) {
+    super(name, pathFilter);
   }
 }

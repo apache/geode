@@ -71,11 +71,11 @@ public interface JarDeploymentService {
   /**
    * Retrieves a {@link Deployment} by name.
    *
-   * @param deploymentName the name of an existing {@link Deployment} to be returned.
+   * @param jarName the name of an existing {@link Deployment} to be returned.
    * @return a {@link ServiceResult} containing a {@link Deployment} when a {@link Deployment} is
-   *         found deploymentName and an error message if one cannot be found.
+   *         found jarName and an error message if one cannot be found.
    */
-  ServiceResult<Deployment> getDeployed(String deploymentName);
+  ServiceResult<Deployment> getDeployed(String jarName);
 
   /**
    * Reconfigures the {@link JarDeploymentService} with a new working directory where jars will be

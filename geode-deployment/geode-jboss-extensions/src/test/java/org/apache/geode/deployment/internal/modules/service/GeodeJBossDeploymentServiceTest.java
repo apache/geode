@@ -18,7 +18,9 @@ package org.apache.geode.deployment.internal.modules.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +48,7 @@ public class GeodeJBossDeploymentServiceTest {
   public static void setup() throws IOException, ModuleLoadException {
     JarBuilder jarBuilder = new JarBuilder();
     GeodeModuleLoader geodeModuleLoader = mock(GeodeModuleLoader.class);
+    when(geodeModuleLoader.registerApplication(any())).thenReturn(true);
     TestExtensionsContainer testExtensionsContainer =
         new TestExtensionsContainer(geodeModuleLoader);
     geodeJBossDeploymentService =

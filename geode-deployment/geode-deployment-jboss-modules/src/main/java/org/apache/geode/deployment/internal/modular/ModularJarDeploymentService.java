@@ -80,22 +80,20 @@ public class ModularJarDeploymentService implements JarDeploymentService, Extens
     if (isDeploymentValidResult.isFailure()) {
       return Failure.of(isDeploymentValidResult.getErrorMessage());
     }
+    String artifactId = JarFileUtils.getArtifactId(deployment.getFileName());
 
-    Deployment existingDeployment = deployments.get(deployment.getDeploymentName());
+    Deployment existingDeployment = deployments.get(artifactId);
     if (existingDeployment != null
         && JarFileUtils.hasSameContent(existingDeployment.getFile(), deployment.getFile())) {
       return Success.of(null);
     }
 
-    List<String> moduleDependencies = new LinkedList<>(deployment.getModuleDependencyNames());
-    moduleDependencies.add(GEODE_CORE_MODULE_NAME);
-
     boolean moduleRegistered =
         geodeJBossDeploymentService
-            .registerModule(deployment.getDeploymentName(), deployment.getFilePath(),
-                moduleDependencies);
+            .registerModule(artifactId, deployment.getFilePath(),
+                Collections.singletonList(GEODE_CORE_MODULE_NAME));
     logger.debug("Register module result: {} for deployment: {}", moduleRegistered,
-        deployment.getDeploymentName());
+        artifactId);
 
     if (moduleRegistered) {
       return registerFunctions(deployment);
@@ -115,16 +113,16 @@ public class ModularJarDeploymentService implements JarDeploymentService, Extens
   }
 
   private ServiceResult<Deployment> registerFunctions(Deployment deployment) {
-    Deployment deploymentCopy = new Deployment(deployment);
+    Deployment deploymentCopy = new Deployment(deployment, deployment.getFile());
+    String artifactId = JarFileUtils.getArtifactId(deployment.getFileName());
     deploymentCopy.setDeployedTime(Instant.now().toString());
     logger.debug("Deployments before: {}", deployments.size());
-    deployments.put(deploymentCopy.getDeploymentName(), deploymentCopy);
+    deployments.put(artifactId, deploymentCopy);
     logger.debug("Deployments after: {}", deployments.size());
     try {
-      functionToFileTracker.registerFunctionsFromFile(deployment.getDeploymentName(),
-          deployment.getFile());
+      functionToFileTracker.registerFunctionsFromFile(deployment.getFile());
     } catch (ClassNotFoundException | IOException e) {
-      undeployByDeploymentName(deployment.getDeploymentName());
+      undeploy(artifactId);
       return Failure.of(e);
     } finally {
       flushCaches();
@@ -143,34 +141,18 @@ public class ModularJarDeploymentService implements JarDeploymentService, Extens
   }
 
   @Override
-  public synchronized ServiceResult<Deployment> undeployByDeploymentName(String deploymentName) {
-    if (!deployments.containsKey(deploymentName)) {
-      return Failure.of("No deployment found for name: " + deploymentName);
-    }
-
-    boolean serviceResult =
-        geodeJBossDeploymentService.unregisterModule(deploymentName);
-    if (serviceResult) {
-      Deployment removedDeployment = deployments.remove(deploymentName);
-      functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment.getDeploymentName());
-      return Success.of(removedDeployment);
-    } else {
-      return Failure.of("Module could not be undeployed");
-    }
-  }
-
-  @Override
   public List<Deployment> listDeployed() {
     return new LinkedList<>(deployments.values());
   }
 
   @Override
-  public ServiceResult<Deployment> getDeployed(String deploymentName) {
-    if (!deployments.containsKey(deploymentName)) {
-      return Failure.of("No deployment found for name: " + deploymentName);
+  public ServiceResult<Deployment> getDeployed(String jarName) {
+    String artifactId = JarFileUtils.getArtifactId(jarName);
+    if (!deployments.containsKey(artifactId)) {
+      return Failure.of("No deployment found for name: " + jarName);
     }
 
-    return Success.of(deployments.get(deploymentName));
+    return Success.of(deployments.get(artifactId));
   }
 
   @Override
@@ -192,7 +174,7 @@ public class ModularJarDeploymentService implements JarDeploymentService, Extens
       ServiceResult<Deployment> serviceResult = deploy(file);
       if (serviceResult.isSuccessful()) {
         Deployment deployment = serviceResult.getMessage();
-        logger.info("Registering new version of jar: {}", deployment.getDeploymentName());
+        logger.info("Registering new version of jar: {}", deployment.getFileName());
       } else {
         logger.error(serviceResult.getErrorMessage());
       }
@@ -219,7 +201,7 @@ public class ModularJarDeploymentService implements JarDeploymentService, Extens
       return Failure.of(fileName + " not deployed");
     }
 
-    boolean serviceResult = deploymentService.unregisterModule(artifactId);
+    boolean serviceResult = geodeJBossDeploymentService.unregisterModule(artifactId);
     if (serviceResult) {
       Deployment removedDeployment = deployments.remove(artifactId);
       functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment.getFileName());

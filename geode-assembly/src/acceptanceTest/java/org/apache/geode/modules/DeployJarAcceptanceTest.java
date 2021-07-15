@@ -44,11 +44,6 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     launch(launchCommand);
   }
 
-  // @Override
-  // protected String getLocatorGFSHConnectionString() {
-  // return "connect";
-  // }
-
   @BeforeClass
   public static void setup() throws IOException {
     jarBuilder = new JarBuilder();

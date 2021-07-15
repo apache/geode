@@ -45,7 +45,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.util.internal.GeodeGlossary;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This implementation of {@link ClasspathService} will be used by {@link ClassPathLoader} when the
