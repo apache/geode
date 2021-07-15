@@ -218,8 +218,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
-    Throwable rootCause = getRootCause(cause);
+    if (cause instanceof IOException) {
+      channelInactive(ctx);
+      return null;
+    }
 
+    Throwable rootCause = getRootCause(cause);
     if (rootCause instanceof RedisDataMovedException) {
       return RedisResponse.moved(rootCause.getMessage());
     } else if (rootCause instanceof RedisDataTypeMismatchException) {
