@@ -87,12 +87,13 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
           new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj(),
               false, true);
 
-      logger.info("Stopped  {}", this);
-
       InternalDistributedSystem system =
           (InternalDistributedSystem) this.cache.getDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
 
+      logger.info("Stopped {}", this);
+
+      enqueueTempDroppedEvents();
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }
