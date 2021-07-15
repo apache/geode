@@ -329,7 +329,7 @@ public class RedisSortedSet extends AbstractRedisData {
     int offset = 0;
     int count = Integer.MAX_VALUE;
     Iterator<AbstractOrderedSetEntry> entryIterator =
-        scoreSet.getIndexRange((int) minIndex, (int) maxIndex);
+        scoreSet.getIndexRange((int) minIndex, (int) maxIndex, false);
     if (rangeOptions.hasLimit()) {
       count = rangeOptions.getCount();
       offset = rangeOptions.getOffset();
