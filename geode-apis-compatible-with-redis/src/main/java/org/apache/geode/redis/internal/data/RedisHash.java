@@ -237,35 +237,32 @@ public class RedisHash extends AbstractRedisData {
     return new ArrayList<>(hash.keySet());
   }
 
-  public ImmutablePair<Integer, List<byte[]>> hscan(Pattern matchPattern,
-      int count,
-      int cursor) {
-
-    ArrayList<byte[]> resultList = new ArrayList<>(count + 2);
+  public ImmutablePair<Integer, List<ImmutablePair<byte[], byte[]>>> hscan(Pattern matchPattern,
+      int count, int cursor) {
+    // No need to allocate more space than it's possible to use given the size of the hash
+    int initialCapacity = Math.min(count, hash.size());
+    List<ImmutablePair<byte[], byte[]>> resultList = new ArrayList<>(initialCapacity);
     do {
       cursor = hash.scan(cursor, 1,
           (list, key, value) -> addIfMatching(matchPattern, list, key, value), resultList);
-    } while (cursor != 0 && resultList.size() < (count * 2));
+    } while (cursor != 0 && resultList.size() < count);
 
     return new ImmutablePair<>(cursor, resultList);
   }
 
-  private void addIfMatching(Pattern matchPattern, List<byte[]> resultList, byte[] key,
-      byte[] value) {
+  private void addIfMatching(Pattern matchPattern, List<ImmutablePair<byte[], byte[]>> resultList,
+      byte[] key, byte[] value) {
     if (matchPattern != null) {
       if (matchPattern.matcher(bytesToString(key)).matches()) {
-        resultList.add(key);
-        resultList.add(value);
+        resultList.add(new ImmutablePair<>(key, value));
       }
     } else {
-      resultList.add(key);
-      resultList.add(value);
+      resultList.add(new ImmutablePair<>(key, value));
     }
   }
 
-  public long hincrby(Region<RedisKey, RedisData> region, RedisKey key,
-      byte[] field, long increment)
-      throws NumberFormatException, ArithmeticException {
+  public long hincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] field,
+      long increment) throws NumberFormatException, ArithmeticException {
     byte[] oldValue = hash.get(field);
     if (oldValue == null) {
       byte[] newValue = Coder.longToBytes(increment);

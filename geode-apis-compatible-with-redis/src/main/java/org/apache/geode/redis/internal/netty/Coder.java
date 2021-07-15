@@ -46,6 +46,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPERIOD;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGTYPE;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -56,6 +57,7 @@ import java.util.Collection;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.redis.internal.data.RedisKey;
@@ -157,32 +159,29 @@ public class Coder {
     buffer.writeByte(ARRAY_ID);
     buffer.writeBytes(intToBytes(2));
     buffer.writeBytes(bCRLF);
-    buffer.writeByte(BULK_STRING_ID);
     byte[] cursorBytes = stringToBytes(cursor.toString());
-    buffer.writeBytes(intToBytes(cursorBytes.length));
-    buffer.writeBytes(bCRLF);
-    buffer.writeBytes(cursorBytes);
-    buffer.writeBytes(bCRLF);
+    writeStringResponse(buffer, cursorBytes);
     buffer.writeByte(ARRAY_ID);
-    buffer.writeBytes(intToBytes(scanResult.size()));
+    // For hscan and zscan, elements are returned in pairs, so the total size of the results array
+    // has to be increased by one for each pair being written
+    long resultsSize =
+        scanResult.size() + scanResult.stream().filter(e -> e instanceof ImmutablePair).count();
+    buffer.writeBytes(longToBytes(resultsSize));
     buffer.writeBytes(bCRLF);
 
     for (Object nextObject : scanResult) {
-      byte[] bytes;
       if (nextObject instanceof String) {
         String next = (String) nextObject;
-        bytes = stringToBytes(next);
+        writeStringResponse(buffer, stringToBytes(next));
       } else if (nextObject instanceof RedisKey) {
-        bytes = ((RedisKey) nextObject).toBytes();
+        writeStringResponse(buffer, ((RedisKey) nextObject).toBytes());
+      } else if (nextObject instanceof ImmutablePair) {
+        ImmutablePair<byte[], byte[]> pair = uncheckedCast(nextObject);
+        writeStringResponse(buffer, pair.left);
+        writeStringResponse(buffer, pair.right);
       } else {
-        bytes = (byte[]) nextObject;
+        writeStringResponse(buffer, (byte[]) nextObject);
       }
-
-      buffer.writeByte(BULK_STRING_ID);
-      buffer.writeBytes(intToBytes(bytes.length));
-      buffer.writeBytes(bCRLF);
-      buffer.writeBytes(bytes);
-      buffer.writeBytes(bCRLF);
     }
     return buffer;
   }
