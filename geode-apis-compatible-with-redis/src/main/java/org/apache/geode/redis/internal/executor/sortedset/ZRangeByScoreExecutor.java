@@ -16,15 +16,12 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToInt;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEFT_PAREN;
+import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRADISH_LIMIT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRADISH_WITHSCORES;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
@@ -45,7 +42,7 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
     try {
       byte[] minBytes = commandElements.get(2);
       byte[] maxBytes = commandElements.get(3);
-      rangeOptions = parseRangeArguments(minBytes, maxBytes);
+      rangeOptions = new SortedSetRangeOptions(minBytes, maxBytes);
     } catch (NumberFormatException ex) {
       return RedisResponse.error(ERROR_MIN_MAX_NOT_A_FLOAT);
     }
@@ -65,14 +62,15 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
         } catch (NumberFormatException ex) {
           return RedisResponse.error(ERROR_NOT_INTEGER);
         } catch (Exception e) {
-          return RedisResponse.error(ERROR_SYNTAX);
+          return RedisResponse.error(ERROR_MIN_MAX_NOT_A_FLOAT);
         }
       }
     }
 
     // If the range is empty (min > max or min == max and both are exclusive), or
     // limit specified but count is zero, return early
-    if ((rangeOptions.hasLimit() && rangeOptions.getCount() == 0) ||
+    if ((rangeOptions.hasLimit() && (rangeOptions.getCount() == 0 || rangeOptions.getOffset() < 0))
+        ||
         rangeOptions.getMinDouble() > rangeOptions.getMaxDouble() ||
         (rangeOptions.getMinDouble() == rangeOptions.getMaxDouble())
             && rangeOptions.isMinExclusive() && rangeOptions.isMaxExclusive()) {
@@ -91,8 +89,8 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
     int offset;
     int count;
     if (equalsIgnoreCaseBytes(commandElements.get(commandIndex), bRADISH_LIMIT)) {
-      offset = bytesToInt(commandElements.get(commandIndex + 1));
-      count = bytesToInt(commandElements.get(commandIndex + 2));
+      offset = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 1)));
+      count = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 2)));
       if (count < 0) {
         count = Integer.MAX_VALUE;
       }
@@ -100,38 +98,5 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
       throw new Exception();
     }
     rangeOptions.setLimitValues(offset, count);
-  }
-
-  SortedSetRangeOptions parseRangeArguments(byte[] minBytes, byte[] maxBytes) {
-    boolean minExclusive = false;
-    double minDouble;
-    if (minBytes[0] == bLEFT_PAREN) {
-      // A value of "(" is equivalent to "(0"
-      if (minBytes.length == 1) {
-        minDouble = 0;
-      } else {
-        minDouble =
-            bytesToDouble(Arrays.copyOfRange(minBytes, 1, minBytes.length));
-      }
-      minExclusive = true;
-    } else {
-      minDouble = bytesToDouble(minBytes);
-    }
-
-    boolean maxExclusive = false;
-    double maxDouble;
-    if (maxBytes[0] == bLEFT_PAREN) {
-      // A value of "(" is equivalent to "(0"
-      if (maxBytes.length == 1) {
-        maxDouble = 0;
-      } else {
-        maxDouble =
-            bytesToDouble(Arrays.copyOfRange(maxBytes, 1, maxBytes.length));
-      }
-      maxExclusive = true;
-    } else {
-      maxDouble = bytesToDouble(maxBytes);
-    }
-    return new SortedSetRangeOptions(minDouble, minExclusive, maxDouble, maxExclusive);
   }
 }
