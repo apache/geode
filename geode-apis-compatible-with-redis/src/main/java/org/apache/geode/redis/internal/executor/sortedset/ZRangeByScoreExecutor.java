@@ -51,7 +51,6 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
     }
 
     if (commandElements.size() >= 5) {
-      boolean done = false;
       int currentCommandElement = 4;
       while (currentCommandElement < commandElements.size()) {
         try {
@@ -60,7 +59,7 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
             withScores = true;
             currentCommandElement++;
           } else {
-            parseLimitArguments(rangeOptions, commandElements, 4);
+            parseLimitArguments(rangeOptions, commandElements, currentCommandElement);
             currentCommandElement += 3;
           }
         } catch (NumberFormatException ex) {
