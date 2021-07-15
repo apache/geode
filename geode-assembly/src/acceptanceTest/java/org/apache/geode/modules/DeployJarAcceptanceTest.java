@@ -332,7 +332,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
         .of(getLocatorGFSHConnectionString(), "deploy --jar=" + jarPath)
         .execute(gfshRule).getOutputText());
 
-    if (true) {
+    if (isModular()) {
       assertThat(GfshScript
           .of(getLocatorGFSHConnectionString(), "execute function --id=" + "SpringFunction")
           .execute(gfshRule).getOutputText()).contains("Salutations, Earth");
@@ -355,7 +355,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
         .of(getLocatorGFSHConnectionString(), "deploy --jars=" + functionJar.getAbsolutePath())
         .execute(gfshRule).getOutputText());
 
-    if (true) {
+    if (isModular()) {
       assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed").execute(gfshRule)
           .getOutputText()).doesNotContain("function");
 
