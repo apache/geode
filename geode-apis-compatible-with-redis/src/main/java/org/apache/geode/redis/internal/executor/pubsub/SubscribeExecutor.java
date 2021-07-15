@@ -44,6 +44,7 @@ public class SubscribeExecutor extends AbstractExecutor {
       item.add("subscribe");
       item.add(result.getChannel());
       item.add(result.getChannelCount());
+
       items.add(item);
     }
 

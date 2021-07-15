@@ -485,7 +485,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
       mockSubscriber.awaitPSubscribe(pChannel);
 
       localPublisher.publish(channel, "hello-" + index + "-" + iteration);
-      mockSubscriber.awaitPublishCompletion();
+      mockSubscriber.awaitMessageReceived();
 
       mockSubscriber.unsubscribe(channel);
       mockSubscriber.awaitUnsubscribe(channel);

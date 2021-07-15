@@ -198,10 +198,14 @@ public class MockSubscriber extends JedisPubSub {
     }
   }
 
-  public void awaitPublishCompletion() {
-    GeodeAwaitility.await().atMost(Duration.ofMillis(300))
-        .pollDelay(Duration.ofMillis(10)).pollInterval(Duration.ofMillis(30))
-        .untilAsserted(() -> assertThat(this.getReceivedMessages()).isNotEmpty());
+  public void awaitMessageReceived(long minNumOfReceivedMessages) {
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(4))
+        .untilAsserted(() -> assertThat((long) this.getReceivedMessages().size())
+            .isGreaterThanOrEqualTo(minNumOfReceivedMessages));
+  }
+
+  public void awaitMessageReceived() {
+    awaitMessageReceived(1l);
   }
 
   public static class UnsubscribeInfo {
