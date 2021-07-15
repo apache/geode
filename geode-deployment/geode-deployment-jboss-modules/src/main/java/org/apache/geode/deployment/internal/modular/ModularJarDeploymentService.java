@@ -17,9 +17,7 @@
 package org.apache.geode.deployment.internal.modular;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -88,10 +86,12 @@ public class ModularJarDeploymentService implements JarDeploymentService, Extens
       return Success.of(null);
     }
 
+    List<String> moduleDependencies = deployment.getDependencies();
+    moduleDependencies.add(GEODE_CORE_MODULE_NAME);
+
     boolean moduleRegistered =
         geodeJBossDeploymentService
-            .registerModule(artifactId, deployment.getFilePath(),
-                Collections.singletonList(GEODE_CORE_MODULE_NAME));
+            .registerModule(artifactId, deployment.getFilePath(), moduleDependencies);
     logger.debug("Register module result: {} for deployment: {}", moduleRegistered,
         artifactId);
 
@@ -121,9 +121,9 @@ public class ModularJarDeploymentService implements JarDeploymentService, Extens
     logger.debug("Deployments after: {}", deployments.size());
     try {
       functionToFileTracker.registerFunctionsFromFile(deployment.getFile());
-    } catch (ClassNotFoundException | IOException e) {
+    } catch (Throwable t) {
       undeploy(artifactId);
-      return Failure.of(e);
+      return Failure.of(t);
     } finally {
       flushCaches();
     }

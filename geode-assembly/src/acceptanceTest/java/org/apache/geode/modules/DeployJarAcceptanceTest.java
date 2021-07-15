@@ -36,6 +36,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
   private static File myJarV1;
   private static File myJarV2;
   private static File anotherJarFile;
+  private static File dependencyFunctionJar;
   private static File functionJar;
   private static File pojoFunctionJar;
   private static File pojoJar;
@@ -52,7 +53,10 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     myJarV2 = new File(stagingDir, "myJar-2.0.jar");
     anotherJarFile = new File(stagingDir, "anotherJar-1.0.jar");
     functionJar = new File(stagingDir, "function.jar");
+    dependencyFunctionJar = new File(stagingDir, "dependencyFunction.jar");
     File functionSource = loadTestResource("/example/test/function/ExampleFunction.java");
+    File dependencyFunctionSource =
+        loadTestResource("/example/test/function/DependencyFunction.java");
     File pojoFunctionSource = loadTestResource("/example/test/function/PojoFunction.java");
     File pojoSource = loadTestResource("/version1/example/test/pojo/ExamplePojo.java");
     pojoJar = new File(stagingTempDir.newFolder(), "pojo.jar");
@@ -60,6 +64,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     jarBuilder.buildJar(pojoJar, "example.test.pojo.ExamplePojo", pojoSource);
     jarBuilder.buildJar(pojoFunctionJar, "example.test.function.PojoFunction", pojoFunctionSource);
     jarBuilder.buildJar(functionJar, functionSource);
+    jarBuilder.buildJar(dependencyFunctionJar, dependencyFunctionSource);
     jarBuilder.buildJarFromClassNames(myJarV1, "SomeClass");
     jarBuilder.buildJarFromClassNames(myJarV2, "SomeClass", "SomeClassVersionTwo");
     jarBuilder.buildJarFromClassNames(anotherJarFile, "SomeOtherClass");
@@ -192,6 +197,37 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
         GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=ExampleFunction")
             .execute(gfshRule)
             .getOutputText()).contains("SUCCESS");
+  }
+
+  @Test
+  public void testDeployModuleWithDependencies() throws IOException {
+    String deployOutput = GfshScript
+        .of(getLocatorGFSHConnectionString(),
+            "deploy --jars=" + dependencyFunctionJar.getCanonicalPath()
+                + " --dependencies=java.sql")
+        .execute(gfshRule).getOutputText();
+
+    assertThat(deployOutput).doesNotContain("ModuleLoadError");
+
+    String outputText =
+        GfshScript.of(getLocatorGFSHConnectionString(), "list functions").execute(gfshRule)
+            .getOutputText();
+    assertThat(outputText).contains("DependencyFunction");
+
+    assertThat(
+        GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=DependencyFunction")
+            .execute(gfshRule)
+            .getOutputText()).contains("SUCCESS");
+  }
+
+  @Test
+  public void tesDeployModuleWithInvalidDependencies() throws IOException {
+    String outputText = GfshScript
+        .of(getLocatorGFSHConnectionString(),
+            "deploy --jars=" + dependencyFunctionJar.getCanonicalPath()
+                + " --dependencies=invalid.module")
+        .execute(gfshRule).getOutputText();
+    assertThat(outputText).contains("ModuleLoadError");
   }
 
   @Test

@@ -1121,6 +1121,9 @@ public class CliStrings {
   public static final String DEPLOY__GROUP__HELP =
       "Group(s) to which the specified JARs will be deployed. If not specified, deploy will occur on all members.";
   public static final String DEPLOY__JAR__HELP = "Path of the JAR to deploy.";
+  public static final String DEPENDENCIES = "dependencies";
+  public static final String DEPENDENCIES__HELP =
+      "Names of modules for this deployment to depend on. valid only when server is running classloader-isolated.";
 
   /* describe config command */
   public static final String DESCRIBE_CONFIG = "describe config";

@@ -192,6 +192,6 @@ public abstract class AbstractDockerizedAcceptanceTest {
 
   @Parameterized.Parameters
   public static List<String> getStartServerCommand() {
-    return Arrays.asList(MODULAR_LAUNCH_COMMAND);// , NONMODULAR_LAUNCH_COMMAND);
+    return Arrays.asList(MODULAR_LAUNCH_COMMAND, NONMODULAR_LAUNCH_COMMAND);
   }
 }
