@@ -169,7 +169,11 @@ public class RegionProvider {
 
   public RedisData getRedisData(RedisKey key, RedisData notFoundValue) {
     RedisData result;
-    result = getLocalDataRegion().get(key);
+    try {
+      result = getLocalDataRegion().get(key);
+    } catch (RegionDestroyedException rex) {
+      throw createRedisDataMovedException(key);
+    }
 
     if (result != null) {
       if (result.hasExpired()) {

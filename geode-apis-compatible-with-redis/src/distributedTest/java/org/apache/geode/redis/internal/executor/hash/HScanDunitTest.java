@@ -66,8 +66,6 @@ public class HScanDunitTest {
     locator = redisClusterStartupRule.startLocatorVM(0);
     int locatorPort = locator.getPort();
 
-    // note: due to rules around member weighting in split-brain scenarios,
-    // vm1 (server1) should not be crashed or it will cause additional (unrelated) failures
     redisClusterStartupRule.startRedisVM(1, locatorPort);
     redisClusterStartupRule.startRedisVM(2, locatorPort);
     redisClusterStartupRule.startRedisVM(3, locatorPort);
