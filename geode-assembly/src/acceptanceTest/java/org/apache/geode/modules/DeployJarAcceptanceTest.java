@@ -227,7 +227,11 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
             "deploy --jars=" + dependencyFunctionJar.getCanonicalPath()
                 + " --dependencies=invalid.module")
         .execute(gfshRule).getOutputText();
-    assertThat(outputText).contains("ModuleLoadError");
+    if (isModular()) {
+      assertThat(outputText).contains("ModuleLoadError");
+    } else {
+      assertThat(outputText).contains("dependencyFunction.v1.jar");
+    }
   }
 
   @Test
@@ -293,7 +297,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
     thread.setDaemon(true);
     thread.start();
 
-    // runGfshCommandInContainer("connect", getServer2StartCommand() + getCurrentLaunchCommand());
+    runGfshCommandInContainer("connect", getServer2StartCommand() + getCurrentLaunchCommand());
 
     GeodeAwaitility.await().pollDelay(5, TimeUnit.SECONDS).pollInterval(5, TimeUnit.SECONDS)
         .atMost(30, TimeUnit.SECONDS)

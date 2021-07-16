@@ -41,9 +41,12 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
   private List<String> dependencies;
 
   // the file is not serialized over the wire
+
   private transient File file;
 
-  public Deployment() {}
+  public Deployment() {
+    dependencies = Collections.emptyList();
+  }
 
   public Deployment(String jarFileName, String deployedBy, String deployedTime,
       List<String> dependencies) {
@@ -135,6 +138,19 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
   }
 
   @Override
+  public CommandType getCreationCommandType() {
+    return CommandType.CREATE_OR_UPDATE;
+  }
+
+  public List<String> getDependencies() {
+    return dependencies;
+  }
+
+  public void setDependencies(List<String> dependencies) {
+    this.dependencies = dependencies;
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -151,14 +167,5 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
   @Override
   public int hashCode() {
     return Objects.hash(jarFileName, deployedTime, deployedBy);
-  }
-
-  @Override
-  public CommandType getCreationCommandType() {
-    return CommandType.CREATE_OR_UPDATE;
-  }
-
-  public List<String> getDependencies() {
-    return dependencies;
   }
 }
