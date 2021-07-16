@@ -745,11 +745,11 @@ public class OrderStatisticsTree<E extends Comparable<? super E>> implements Ord
   }
 
   void incrementSize(E element) {
-    sizeInBytes += elementSizer.sizeof(element) + PER_ENTRY_OVERHEAD;
+    sizeInBytes += (int) elementSizer.sizeof(element) + PER_ENTRY_OVERHEAD;
   }
 
   void decrementSize(E element) {
-    sizeInBytes -= elementSizer.sizeof(element) + PER_ENTRY_OVERHEAD;
+    sizeInBytes -= (int) elementSizer.sizeof(element) + PER_ENTRY_OVERHEAD;
   }
 
   @Override

@@ -20,7 +20,7 @@ package org.apache.geode.internal.size;
  */
 public class SizeableObjectSizer implements SingleObjectSizer {
 
-  private static final SingleObjectSizer sizer = new ReflectionSingleObjectSizer();
+  private final SingleObjectSizer sizer = new ReflectionSingleObjectSizer();
 
   @Override
   public long sizeof(Object object) {
