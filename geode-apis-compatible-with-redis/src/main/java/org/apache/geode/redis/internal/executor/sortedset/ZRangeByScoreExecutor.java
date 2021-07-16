@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
@@ -47,8 +48,11 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
       return RedisResponse.error(ERROR_MIN_MAX_NOT_A_FLOAT);
     }
 
+    // Native redis allows multiple "withscores" and "limit ? ?" clauses; the last "limit"
+    // clause overrides any previous ones
     if (commandElements.size() >= 5) {
       int currentCommandElement = 4;
+
       while (currentCommandElement < commandElements.size()) {
         try {
           if (equalsIgnoreCaseBytes(commandElements.get(currentCommandElement),
@@ -59,10 +63,10 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
             parseLimitArguments(rangeOptions, commandElements, currentCommandElement);
             currentCommandElement += 3;
           }
-        } catch (NumberFormatException ex) {
+        } catch (NumberFormatException nfex) {
           return RedisResponse.error(ERROR_NOT_INTEGER);
-        } catch (Exception e) {
-          return RedisResponse.error(ERROR_MIN_MAX_NOT_A_FLOAT);
+        } catch (IllegalArgumentException iex) {
+          return RedisResponse.error(ERROR_SYNTAX);
         }
       }
     }
@@ -84,8 +88,7 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
   }
 
   void parseLimitArguments(SortedSetRangeOptions rangeOptions, List<byte[]> commandElements,
-      int commandIndex)
-      throws Exception {
+      int commandIndex) {
     int offset;
     int count;
     if (equalsIgnoreCaseBytes(commandElements.get(commandIndex), bRADISH_LIMIT)) {
@@ -95,7 +98,7 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
         count = Integer.MAX_VALUE;
       }
     } else {
-      throw new Exception();
+      throw new IllegalArgumentException();
     }
     rangeOptions.setLimitValues(offset, count);
   }

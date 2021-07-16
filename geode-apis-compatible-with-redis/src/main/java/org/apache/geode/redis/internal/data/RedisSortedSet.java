@@ -313,14 +313,14 @@ public class RedisSortedSet extends AbstractRedisData {
     List<byte[]> result = new ArrayList<>();
     AbstractOrderedSetEntry minEntry =
         new DummyOrderedSetEntry(rangeOptions.getMinDouble(), rangeOptions.isMinExclusive(), true);
-    long minIndex = scoreSet.indexOf(minEntry);
+    int minIndex = scoreSet.indexOf(minEntry);
     if (minIndex >= scoreSet.size()) {
       return Collections.emptyList();
     }
 
     AbstractOrderedSetEntry maxEntry =
         new DummyOrderedSetEntry(rangeOptions.getMaxDouble(), rangeOptions.isMaxExclusive(), false);
-    long maxIndex = scoreSet.indexOf(maxEntry);
+    int maxIndex = scoreSet.indexOf(maxEntry);
     if (minIndex == maxIndex) {
       return Collections.emptyList();
     }
@@ -329,18 +329,18 @@ public class RedisSortedSet extends AbstractRedisData {
     int offset = 0;
     int count = Integer.MAX_VALUE;
     Iterator<AbstractOrderedSetEntry> entryIterator =
-        scoreSet.getIndexRange((int) minIndex, (int) maxIndex, false);
+        scoreSet.getIndexRange(minIndex, maxIndex, false);
     if (rangeOptions.hasLimit()) {
       count = rangeOptions.getCount();
       offset = rangeOptions.getOffset();
     }
-    int skip = 0;
+    int skippedCount = 0;
     int returnedCount = 0;
 
     while (entryIterator.hasNext() && returnedCount < count) {
       AbstractOrderedSetEntry entry = entryIterator.next();
-      if (skip < offset) {
-        skip++;
+      if (skippedCount < offset) {
+        skippedCount++;
         continue;
       }
       if (rangeOptions.isMaxExclusive()) {
@@ -350,11 +350,12 @@ public class RedisSortedSet extends AbstractRedisData {
       } else if (entry.score > rangeOptions.getMaxDouble()) {
         break;
       }
-      returnedCount++;
+
       result.add(entry.member);
       if (withScores) {
         result.add(entry.scoreBytes);
       }
+      returnedCount++;
     }
     return result;
   }
