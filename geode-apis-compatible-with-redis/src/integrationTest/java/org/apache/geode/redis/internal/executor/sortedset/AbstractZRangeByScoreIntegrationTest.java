@@ -20,12 +20,15 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -286,6 +289,39 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
         "LIMIT", "0", "invalid"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
+  }
+
+  @Test
+  public void shouldReturnRange_givenMultipleCopiesOfWithscoresAndOrLimit() {
+    createZSetRangeTestMap();
+
+    List<byte[]> expectedWithScores = new ArrayList<>();
+    expectedWithScores.add("b".getBytes());
+    expectedWithScores.add("1".getBytes());
+    expectedWithScores.add("c".getBytes());
+    expectedWithScores.add("2".getBytes());
+
+    List<byte[]> expectedWithoutScores = new ArrayList<>();
+    expectedWithoutScores.add("b".getBytes());
+    expectedWithoutScores.add("c".getBytes());
+
+    List<byte[]> result = uncheckedCast(jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY,
+        "0", "10",
+        "LIMIT", "0", "5",
+        "LIMIT", "0", "2"));
+    assertThat(result).containsExactlyElementsOf(expectedWithoutScores);
+    result = uncheckedCast(jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY,
+        "1", "2",
+        "WITHSCORES",
+        "WITHSCORES"));
+    assertThat(result).containsExactlyElementsOf(expectedWithScores);
+    result = uncheckedCast(jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY,
+        "0", "10",
+        "WITHSCORES",
+        "LIMIT", "0", "5",
+        "LIMIT", "0", "2",
+        "WITHSCORES"));
+    assertThat(result).containsExactlyElementsOf(expectedWithScores);
   }
 
   private void createZSetRangeTestMap() {
