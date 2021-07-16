@@ -54,6 +54,8 @@ public class GeodeRedisServer {
    */
   public static final int DEFAULT_REDIS_SERVER_PORT = 6379;
   public static final String ENABLE_UNSUPPORTED_COMMANDS_PARAM = "enable-unsupported-commands";
+  private static final int DEFAULT_PUBLISH_THREAD_COUNT =
+      Integer.getInteger("redis.publish-thread-count", 100);
   private static boolean unsupportedCommandsEnabled;
   private static final Logger logger = LogService.getLogger();
   private final PassiveExpirationManager passiveExpirationManager;
@@ -76,8 +78,8 @@ public class GeodeRedisServer {
   public GeodeRedisServer(String bindAddress, int port, InternalCache cache) {
 
     unsupportedCommandsEnabled = Boolean.getBoolean(ENABLE_UNSUPPORTED_COMMANDS_PARAM);
-    ExecutorService publishExecutor =
-        LoggingExecutors.newCachedThreadPool("GeodeRedisServer-Publish-", true);
+    ExecutorService publishExecutor = LoggingExecutors
+        .newFixedThreadPool(DEFAULT_PUBLISH_THREAD_COUNT, "GeodeRedisServer-Publish-", true);
     pubSub = new PubSubImpl(new Subscriptions(), publishExecutor);
     redisStats = createStats(cache);
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();

@@ -19,7 +19,6 @@ package org.apache.geode.redis.internal.executor.pubsub;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -169,7 +168,7 @@ public class PubSubDUnitTest {
 
         Jedis localPublisher = getConnection(random);
         localPublisher.publish(channelName, "hi");
-        mockSubscribers.forEach(MockSubscriber::awaitMessageReceived);
+        mockSubscribers.forEach((x) -> x.awaitMessageReceived(1L));
         localPublisher.close();
 
         mockSubscribers.forEach(s -> {
@@ -222,7 +221,7 @@ public class PubSubDUnitTest {
 
     server1.stop();
     publisher1.publish(CHANNEL_NAME, "hello again");
-    mockSubscriber2.awaitMessageReceived();
+    mockSubscriber2.awaitMessageReceived(1L);
 
     mockSubscriber2.unsubscribe(CHANNEL_NAME);
     GeodeAwaitility.await().untilAsserted(subscriber2Future::get);
@@ -301,7 +300,7 @@ public class PubSubDUnitTest {
 
     publisher1.publish(CHANNEL_NAME, "hello again");
     publisher2.publish(CHANNEL_NAME, "hello again");
-    mockSubscriber1.awaitMessageReceived();
+    mockSubscriber1.awaitMessageReceived(1L);
 
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
 
@@ -326,8 +325,8 @@ public class PubSubDUnitTest {
         .isTrue();
 
     publisher1.publish(CHANNEL_NAME, "hello");
-    mockSubscriber1.awaitMessageReceived();
-    mockSubscriber2.awaitMessageReceived();
+    mockSubscriber1.awaitMessageReceived(1L);
+    mockSubscriber2.awaitMessageReceived(1L);
 
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
     mockSubscriber2.unsubscribe(CHANNEL_NAME);
@@ -373,17 +372,20 @@ public class PubSubDUnitTest {
       GeodeAwaitility.await().untilAsserted(future::get);
     }
 
-    mockSubscriber1.awaitMessageReceived();
-    mockSubscriber2.awaitMessageReceived();
+
+
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber1.getReceivedMessages().size())
+            .isEqualTo(CLIENT_COUNT * ITERATIONS));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber2.getReceivedMessages().size())
+            .isEqualTo(CLIENT_COUNT * ITERATIONS));
 
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
     mockSubscriber2.unsubscribe(CHANNEL_NAME);
 
-    GeodeAwaitility.await().untilAsserted(subscriber1Future::get);
-    GeodeAwaitility.await().untilAsserted(subscriber2Future::get);
-
-    assertThat(mockSubscriber1.getReceivedMessages().size()).isEqualTo(CLIENT_COUNT * ITERATIONS);
-    assertThat(mockSubscriber2.getReceivedMessages().size()).isEqualTo(CLIENT_COUNT * ITERATIONS);
+    subscriber1Future.get();
+    subscriber2Future.get();
   }
 
   @Test
