@@ -217,7 +217,8 @@ public enum RedisCommandType {
   ZRANGEBYSCORE(new ZRangeByScoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
   ZRANK(new ZRankExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   ZREM(new ZRemExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
-  ZREVRANGE(new ZRevRangeExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
+  ZREVRANGE(new ZRevRangeExecutor(), SUPPORTED, new MinimumParameterRequirements(4)
+      .and(new MaximumParameterRequirements(5, ERROR_SYNTAX))),
   ZREVRANK(new ZRevRankExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   ZSCORE(new ZScoreExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
 

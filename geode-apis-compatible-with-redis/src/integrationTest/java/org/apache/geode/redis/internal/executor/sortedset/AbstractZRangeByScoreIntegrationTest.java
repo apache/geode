@@ -82,15 +82,15 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
   public void shouldReturnZero_givenMinGreaterThanMax() {
     jedis.zadd(KEY, 1, "member");
 
-    // Count +inf <= score <= -inf
+    // Range +inf <= score <= -inf
     assertThat(jedis.zrangeByScore(KEY, "+inf", "-inf")).isEmpty();
   }
 
   @Test
-  public void shouldReturnCount_givenRangeIncludingScore() {
+  public void shouldReturnElement_givenRangeIncludingScore() {
     jedis.zadd(KEY, 1, "member");
 
-    // Count -inf <= score <= +inf
+    // Range -inf <= score <= +inf
     assertThat(jedis.zrangeByScore(KEY, "-inf", "inf"))
         .containsExactly("member");
   }
@@ -100,7 +100,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
     int score = 1;
     jedis.zadd(KEY, score, "member");
 
-    // Count 2 <= score <= 3
+    // Range 2 <= score <= 3
     assertThat(jedis.zrangeByScore(KEY, score + 1, score + 2)).isEmpty();
   }
 
@@ -109,7 +109,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
     int score = 1;
     jedis.zadd(KEY, score, "member");
 
-    // Count 1 <= score <= 1
+    // Range 1 <= score <= 1
     assertThat(jedis.zrangeByScore(KEY, score, score))
         .containsExactly("member");
   }
@@ -124,7 +124,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
     jedis.zadd(KEY, map);
 
-    // Count -5 <= score <= 15
+    // Range -5 <= score <= 15
     assertThat(jedis.zrangeByScore(KEY, "-5", "15"))
         .containsExactlyElementsOf(Arrays.asList("member2", "member3"));
   }
@@ -139,7 +139,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
     jedis.zadd(KEY, map);
 
-    // Count 1 <= score <= 1
+    // Range 1 <= score <= 1
     assertThat(jedis.zrangeByScore(KEY, score, score))
         .containsExactly("member1", "member2", "member3");
   }
@@ -170,7 +170,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
     jedis.zadd(KEY, map);
 
-    // Count -inf < score <= +inf
+    // Range -inf < score <= +inf
     assertThat(jedis.zrangeByScore(KEY, "(-inf", "+inf"))
         .containsExactlyElementsOf(Arrays.asList("member2", "member3"));
   }
@@ -181,7 +181,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
     jedis.zadd(KEY, map);
 
-    // Count -inf <= score < +inf
+    // Range -inf <= score < +inf
     assertThat(jedis.zrangeByScore(KEY, "-inf", "(+inf"))
         .containsExactlyElementsOf(Arrays.asList("member1", "member2"));
   }
@@ -192,7 +192,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
     jedis.zadd(KEY, map);
 
-    // Count -inf < score < +inf
+    // Range -inf < score < +inf
     assertThat(jedis.zrangeByScore(KEY, "(-inf", "(+inf")).containsExactly("member2");
   }
 
@@ -226,10 +226,10 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
     jedis.zadd(KEY, map);
 
-    // Count 0 < score <= inf
+    // Range 0 < score <= inf
     assertThat(jedis.zrangeByScore(KEY, "(", "inf")).containsExactly("slightlyMoreThanZero");
 
-    // Count -inf <= score < 0
+    // Range -inf <= score < 0
     assertThat(jedis.zrangeByScore(KEY, "-inf", "(")).containsExactly("slightlyLessThanZero");
   }
 
