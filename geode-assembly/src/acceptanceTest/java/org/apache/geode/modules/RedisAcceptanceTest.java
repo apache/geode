@@ -41,13 +41,13 @@ public class RedisAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
   @Override
   protected String getServer1SpecificGfshCommands() {
-    return "--compatible-with-redis-port=6378";
-  }
-
-  @Override
-  protected String getServer2SpecificGfshCommands() {
     return "--compatible-with-redis-port=6379";
   }
+
+  // @Override
+  // protected String getServer2SpecificGfshCommands() {
+  // return "--compatible-with-redis-port=6378";
+  // }
 
   @Before
   public void setup() {
@@ -70,7 +70,6 @@ public class RedisAcceptanceTest extends AbstractDockerizedAcceptanceTest {
   public void testRedisCommands() {
     RedisCommands<String, String> redisCommands = connection.sync();
     try {
-
       Long pushedValuesCount = redisCommands.sadd("testList", "value1", "value2");
       assertThat(pushedValuesCount).isEqualTo(2);
     } catch (Throwable t) {
