@@ -141,16 +141,32 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
     // Count 1 <= score <= 1
     assertThat(jedis.zrangeByScore(KEY, score, score))
-        .containsExactlyInAnyOrderElementsOf(map.keySet());
+        .containsExactly("member1", "member2", "member3");
+  }
+
+  @Test
+  public void shouldReturnRange_basicExclusivity() {
+    Map<String, Double> map = new HashMap<>();
+
+    map.put("member0", 0.0);
+    map.put("member1", 1.0);
+    map.put("member2", 2.0);
+    map.put("member3", 3.0);
+    map.put("member4", 4.0);
+
+    jedis.zadd(KEY, map);
+
+    assertThat(jedis.zrangeByScore(KEY, "(1.0", "(3.0"))
+        .containsExactly("member2");
+    assertThat(jedis.zrangeByScore(KEY, "(1.0", "3.0"))
+        .containsExactly("member2", "member3");
+    assertThat(jedis.zrangeByScore(KEY, "1.0", "(3.0"))
+        .containsExactly("member1", "member2");
   }
 
   @Test
   public void shouldReturnRange_givenExclusiveMin() {
-    Map<String, Double> map = new HashMap<>();
-
-    map.put("member1", Double.NEGATIVE_INFINITY);
-    map.put("member2", 1.0);
-    map.put("member3", Double.POSITIVE_INFINITY);
+    Map<String, Double> map = getExclusiveTestMap();
 
     jedis.zadd(KEY, map);
 
@@ -161,11 +177,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
   @Test
   public void shouldReturnRange_givenExclusiveMax() {
-    Map<String, Double> map = new HashMap<>();
-
-    map.put("member1", Double.NEGATIVE_INFINITY);
-    map.put("member2", 1.0);
-    map.put("member3", Double.POSITIVE_INFINITY);
+    Map<String, Double> map = getExclusiveTestMap();
 
     jedis.zadd(KEY, map);
 
@@ -176,16 +188,22 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
   @Test
   public void shouldReturnRange_givenExclusiveMinAndMax() {
-    Map<String, Double> map = new HashMap<>();
-
-    map.put("member1", Double.NEGATIVE_INFINITY);
-    map.put("member2", 1.0);
-    map.put("member3", Double.POSITIVE_INFINITY);
+    Map<String, Double> map = getExclusiveTestMap();
 
     jedis.zadd(KEY, map);
 
     // Count -inf < score < +inf
     assertThat(jedis.zrangeByScore(KEY, "(-inf", "(+inf")).containsExactly("member2");
+  }
+
+
+  private Map<String, Double> getExclusiveTestMap() {
+    Map<String, Double> map = new HashMap<>();
+
+    map.put("member1", Double.NEGATIVE_INFINITY);
+    map.put("member2", 1.0);
+    map.put("member3", Double.POSITIVE_INFINITY);
+    return map;
   }
 
   @Test
