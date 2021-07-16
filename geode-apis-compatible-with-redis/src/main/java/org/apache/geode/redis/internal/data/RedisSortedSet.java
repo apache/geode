@@ -330,9 +330,9 @@ public class RedisSortedSet extends AbstractRedisData {
     if (rangeOptions.hasLimit()) {
       count = rangeOptions.getCount();
       minIndex += rangeOptions.getOffset();
-    }
-    if (minIndex > getSortedSetSize()) {
-      return Collections.emptyList();
+      if (minIndex > getSortedSetSize()) {
+        return Collections.emptyList();
+      }
     }
     Iterator<AbstractOrderedSetEntry> entryIterator =
         scoreSet.getIndexRange(minIndex, Math.min(count, maxIndex - minIndex), false);
