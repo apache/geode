@@ -339,13 +339,6 @@ public class RedisSortedSet extends AbstractRedisData {
 
     while (entryIterator.hasNext()) {
       AbstractOrderedSetEntry entry = entryIterator.next();
-      if (rangeOptions.isMaxExclusive()) {
-        if (entry.score >= rangeOptions.getMaxDouble()) {
-          break;
-        }
-      } else if (entry.score > rangeOptions.getMaxDouble()) {
-        break;
-      }
 
       result.add(entry.member);
       if (withScores) {
