@@ -239,13 +239,14 @@ public class RedisHash extends AbstractRedisData {
 
   public ImmutablePair<Integer, List<ImmutablePair<byte[], byte[]>>> hscan(Pattern matchPattern,
       int count, int cursor) {
-    // No need to allocate more space than it's possible to use given the size of the hash
-    int initialCapacity = Math.min(count, hash.size());
-    List<ImmutablePair<byte[], byte[]>> resultList = new ArrayList<>(initialCapacity);
+    // No need to allocate more space than it's possible to use given the size of the hash. We need
+    // to add 1 to hash.size() to ensure that if count > hash.size(), we return a cursor of 0
+    int maximumCapacity = Math.min(count, hash.size() + 1);
+    List<ImmutablePair<byte[], byte[]>> resultList = new ArrayList<>(maximumCapacity);
     do {
       cursor = hash.scan(cursor, 1,
           (list, key, value) -> addIfMatching(matchPattern, list, key, value), resultList);
-    } while (cursor != 0 && resultList.size() < count);
+    } while (cursor != 0 && resultList.size() < maximumCapacity);
 
     return new ImmutablePair<>(cursor, resultList);
   }
