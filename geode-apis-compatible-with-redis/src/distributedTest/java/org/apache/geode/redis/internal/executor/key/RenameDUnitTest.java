@@ -17,61 +17,62 @@ package org.apache.geode.redis.internal.executor.key;
 
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 
-import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class RenameDUnitTest {
 
   @ClassRule
   public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(3);
 
-  private static final String LOCAL_HOST = "127.0.0.1";
-  private static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private final ExecutorService pool = Executors.newCachedThreadPool();
+  @Rule
+  public ExecutorServiceRule executor = new ExecutorServiceRule();
 
   private static JedisCluster jedisCluster;
   private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
 
   @BeforeClass
   public static void setup() {
     locator = clusterStartUp.startLocatorVM(0);
-    server1 = clusterStartUp.startRedisVM(1, locator.getPort());
-    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
+    clusterStartUp.startRedisVM(1, locator.getPort());
+    clusterStartUp.startRedisVM(2, locator.getPort());
+    clusterStartUp.startRedisVM(3, locator.getPort());
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
-    jedisCluster = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort1), JEDIS_TIMEOUT);
+    jedisCluster =
+        new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
   }
 
   @Before
@@ -82,9 +83,6 @@ public class RenameDUnitTest {
   @AfterClass
   public static void tearDown() {
     jedisCluster.close();
-
-    server1.stop();
-    server2.stop();
   }
 
   @Test
@@ -125,28 +123,15 @@ public class RenameDUnitTest {
   @Test
   public void testRenameWithKeysOnDifferentServers_shouldReturnMovedError() {
     int port1 = clusterStartUp.getRedisPort(1);
-    int port2 = clusterStartUp.getRedisPort(2);
     Jedis jedis = new Jedis(BIND_ADDRESS, port1, REDIS_CLIENT_TIMEOUT);
 
-    String srcKey = getKeyOnServer("key-", port1);
-    String dstKey = getKeyOnServer("key-", port2);
+    String srcKey = clusterStartUp.getKeyOnServer("key-", 1);
+    String dstKey = clusterStartUp.getKeyOnServer("key-", 2);
 
     jedis.set(srcKey, "Fancy that");
 
     assertThatThrownBy(() -> jedis.rename(srcKey, dstKey))
         .isInstanceOf(JedisMovedDataException.class);
-  }
-
-  private String getKeyOnServer(String keyPrefix, int port) {
-    int i = 0;
-    while (true) {
-      String key = keyPrefix + i;
-      RedisMemberInfo memberInfo = clusterStartUp.getMemberInfo(key);
-      if (memberInfo.getRedisPort() == port) {
-        return key;
-      }
-      i++;
-    }
   }
 
   private Set<String> getKeysOnSameRandomStripe(int numKeysNeeded) {
@@ -194,35 +179,86 @@ public class RenameDUnitTest {
     String oldKey4 = listOfKeys4.get(0);
     String newKey4 = listOfKeys4.get(1);
 
-    Runnable renameOldKey1ToNewKey1 = () -> {
+    Callable<String> renameOldKey1ToNewKey1 = () -> {
       cyclicBarrierAwait(startCyclicBarrier);
-      jedisCluster.rename(oldKey1, newKey1);
+      return jedisCluster.rename(oldKey1, newKey1);
     };
 
-    Runnable renameOldKey2ToNewKey2 = () -> {
+    Callable<String> renameOldKey2ToNewKey2 = () -> {
       cyclicBarrierAwait(startCyclicBarrier);
-      jedisCluster.rename(oldKey2, newKey2);
+      return jedisCluster.rename(oldKey2, newKey2);
     };
 
-    Runnable renameOldKey3ToNewKey3 = () -> {
+    Callable<String> renameOldKey3ToNewKey3 = () -> {
       cyclicBarrierAwait(startCyclicBarrier);
-      jedisCluster.rename(oldKey3, newKey3);
+      return jedisCluster.rename(oldKey3, newKey3);
     };
 
-    Runnable renameOldKey4ToNewKey4 = () -> {
+    Callable<String> renameOldKey4ToNewKey4 = () -> {
       cyclicBarrierAwait(startCyclicBarrier);
-      jedisCluster.rename(oldKey4, newKey4);
+      return jedisCluster.rename(oldKey4, newKey4);
     };
 
-    Future<?> future1 = pool.submit(renameOldKey1ToNewKey1);
-    Future<?> future2 = pool.submit(renameOldKey2ToNewKey2);
-    Future<?> future3 = pool.submit(renameOldKey3ToNewKey3);
-    Future<?> future4 = pool.submit(renameOldKey4ToNewKey4);
+    Future<?> future1 = executor.submit(renameOldKey1ToNewKey1);
+    Future<?> future2 = executor.submit(renameOldKey2ToNewKey2);
+    Future<?> future3 = executor.submit(renameOldKey3ToNewKey3);
+    Future<?> future4 = executor.submit(renameOldKey4ToNewKey4);
 
     future1.get();
     future2.get();
     future3.get();
     future4.get();
+  }
+
+  @Test
+  public void givenBucketsMoveDuringRename_thenDataIsNotLost() throws Exception {
+    AtomicBoolean running = new AtomicBoolean(true);
+
+    List<String> hashtags = new ArrayList<>();
+    hashtags.add(clusterStartUp.getKeyOnServer("rename", 1));
+    hashtags.add(clusterStartUp.getKeyOnServer("rename", 2));
+    hashtags.add(clusterStartUp.getKeyOnServer("rename", 3));
+
+    Runnable task1 = () -> renamePerformAndVerify(1, 10000, hashtags.get(0), running);
+    Runnable task2 = () -> renamePerformAndVerify(2, 10000, hashtags.get(1), running);
+    Runnable task3 = () -> renamePerformAndVerify(3, 10000, hashtags.get(2), running);
+
+    Future<Void> future1 = executor.runAsync(task1);
+    Future<Void> future2 = executor.runAsync(task2);
+    Future<Void> future3 = executor.runAsync(task3);
+
+    for (int i = 0; i < 100 && running.get(); i++) {
+      clusterStartUp.moveBucketForKey(hashtags.get(i % hashtags.size()));
+      GeodeAwaitility.await().during(Duration.ofMillis(200)).until(() -> true);
+    }
+
+    running.set(false);
+
+    future1.get();
+    future2.get();
+    future3.get();
+  }
+
+  private void renamePerformAndVerify(int index, int minimumIterations, String hashtag,
+      AtomicBoolean isRunning) {
+    String baseKey = "{" + hashtag + "}-key-" + index;
+    jedisCluster.set(baseKey + "-0", "value");
+    int iterationCount = 0;
+
+    while (iterationCount < minimumIterations || isRunning.get()) {
+      String oldKey = baseKey + "-" + iterationCount;
+      String newKey = baseKey + "-" + (iterationCount + 1);
+      try {
+        jedisCluster.rename(oldKey, newKey);
+      } catch (Exception ex) {
+        isRunning.set(false);
+        throw new RuntimeException("Exception performing RENAME " + oldKey + " " + newKey, ex);
+      }
+
+      assertThat(jedisCluster.exists(newKey))
+          .as("key " + newKey + " should exist").isTrue();
+      iterationCount += 1;
+    }
   }
 
   private void cyclicBarrierAwait(CyclicBarrier startCyclicBarrier) {

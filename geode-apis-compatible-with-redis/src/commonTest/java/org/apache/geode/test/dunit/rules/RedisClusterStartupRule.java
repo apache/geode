@@ -190,4 +190,18 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
     });
   }
 
+  public String getKeyOnServer(String keyPrefix, int vmId) {
+    int port = getRedisPort(vmId);
+    int i = 0;
+    while (true) {
+      String key = keyPrefix + i;
+      RedisMemberInfo memberInfo = getMemberInfo(key);
+      if (memberInfo.getRedisPort() == port) {
+        return key;
+      }
+      i++;
+    }
+  }
+
+
 }
