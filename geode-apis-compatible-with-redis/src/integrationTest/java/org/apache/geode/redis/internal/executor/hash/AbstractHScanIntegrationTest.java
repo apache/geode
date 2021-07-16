@@ -55,6 +55,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
   protected JedisCluster jedis;
 
   public static final String HASH_KEY = "key";
+  public static final int SLOT_FOR_KEY = CRC16.calculate(HASH_KEY) % RegionProvider.REDIS_SLOTS;
   public static final String ZERO_CURSOR = "0";
 
   public static final String FIELD_ONE = "1";
@@ -467,9 +468,8 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, initialHashData);
     final int iterationCount = 500;
 
-    int slot = getSlotForKey();
-    Jedis jedis1 = jedis.getConnectionFromSlot(slot);
-    Jedis jedis2 = jedis.getConnectionFromSlot(slot);
+    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
 
     new ConcurrentLoopingThreads(iterationCount,
         (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis1, initialHashData),
@@ -489,9 +489,8 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, initialHashData);
     final int iterationCount = 500;
 
-    int slot = getSlotForKey();
-    Jedis jedis1 = jedis.getConnectionFromSlot(slot);
-    Jedis jedis2 = jedis.getConnectionFromSlot(slot);
+    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
 
     new ConcurrentLoopingThreads(iterationCount,
         (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis1, initialHashData),
@@ -512,9 +511,8 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, initialHashData);
     final int iterationCount = 500;
 
-    int slot = getSlotForKey();
-    Jedis jedis1 = jedis.getConnectionFromSlot(slot);
-    Jedis jedis2 = jedis.getConnectionFromSlot(slot);
+    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
 
     new ConcurrentLoopingThreads(iterationCount,
         (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis1, initialHashData),
@@ -593,11 +591,6 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
       dataSet.put(BASE_FIELD + i, "value_" + i);
     }
     return dataSet;
-  }
-
-  private int getSlotForKey() {
-    int crc = CRC16.calculate(HASH_KEY);
-    return crc % RegionProvider.REDIS_SLOTS;
   }
 
   private static class MapEntryWithByteArraysComparator
