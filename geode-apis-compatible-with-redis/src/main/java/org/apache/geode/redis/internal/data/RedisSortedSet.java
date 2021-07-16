@@ -326,22 +326,19 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     // Okay, if we make it this far there's a potential range of things to return.
-    Iterator<AbstractOrderedSetEntry> entryIterator =
-        scoreSet.getIndexRange(minIndex, maxIndex, false);
-
-    int offset = 0;
     int count = Integer.MAX_VALUE;
     if (rangeOptions.hasLimit()) {
       count = rangeOptions.getCount();
-      offset = rangeOptions.getOffset();
+      minIndex += rangeOptions.getOffset();
     }
+    if (minIndex > getSortedSetSize()) {
+      return Collections.emptyList();
+    }
+    Iterator<AbstractOrderedSetEntry> entryIterator =
+        scoreSet.getIndexRange(minIndex, Math.min(count, maxIndex - minIndex), false);
 
-    while (entryIterator.hasNext() && count > 0) {
+    while (entryIterator.hasNext()) {
       AbstractOrderedSetEntry entry = entryIterator.next();
-      if (offset > 0) {
-        offset--;
-        continue;
-      }
       if (rangeOptions.isMaxExclusive()) {
         if (entry.score >= rangeOptions.getMaxDouble()) {
           break;
@@ -354,7 +351,6 @@ public class RedisSortedSet extends AbstractRedisData {
       if (withScores) {
         result.add(entry.scoreBytes);
       }
-      count--;
     }
     return result;
   }

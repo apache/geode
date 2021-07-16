@@ -91,7 +91,8 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
       int commandIndex) {
     int offset;
     int count;
-    if (equalsIgnoreCaseBytes(commandElements.get(commandIndex), bRADISH_LIMIT)) {
+    if (equalsIgnoreCaseBytes(commandElements.get(commandIndex), bRADISH_LIMIT)
+        && commandElements.size() > commandIndex + 2) {
       offset = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 1)));
       count = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 2)));
       if (count < 0) {

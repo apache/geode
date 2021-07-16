@@ -16,6 +16,8 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A_FLOAT;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -269,6 +271,21 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
         .containsExactlyElementsOf(secondExpected);
     assertThat(jedis.zrangeByScoreWithScores(KEY, "0", "10", 2, -1))
         .containsExactlyElementsOf(secondExpected);
+  }
+
+  @Test
+  public void shouldReturnProperError_givenLimitWithWrongFormat() {
+    createZSetRangeTestMap();
+
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10", "LIMIT"))
+            .hasMessageContaining(ERROR_SYNTAX);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10", "LIMIT", "0"))
+            .hasMessageContaining(ERROR_SYNTAX);
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
+        "LIMIT", "0", "invalid"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   private void createZSetRangeTestMap() {
