@@ -33,8 +33,8 @@ import org.junit.runner.RunWith;
  * undergone the same operations and ensures that the results match.
  */
 @RunWith(JUnitQuickcheck.class)
-public class SizeableOrderedStatisticTreeQuickCheckTest {
-  OrderStatisticsSet<Long> list = new SizableOrderStatisticsTree<>();
+public class OrderedStatisticTreeQuickCheckTest {
+  OrderStatisticsSet<Long> list = new OrderStatisticsTree<>();
   OrderStatisticsSet<Long> expected = new IndexibleTreeSet<>();
 
   @Property

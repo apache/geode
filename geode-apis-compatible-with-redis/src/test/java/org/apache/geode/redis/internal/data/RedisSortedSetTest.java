@@ -55,7 +55,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.collections.OrderStatisticsSet;
-import org.apache.geode.redis.internal.collections.SizableOrderStatisticsTree;
+import org.apache.geode.redis.internal.collections.OrderStatisticsTree;
 import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
@@ -406,8 +406,7 @@ public class RedisSortedSetTest {
     RedisSortedSet set = new RedisSortedSet(Collections.emptyList());
     SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], RedisSortedSet.OrderedSetEntry> backingMap =
         new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(0, ByteArrays.HASH_STRATEGY);
-    OrderStatisticsSet<RedisSortedSet.OrderedSetEntry> backingTree =
-        new SizableOrderStatisticsTree<>();
+    OrderStatisticsSet<RedisSortedSet.OrderedSetEntry> backingTree = new OrderStatisticsTree<>();
     int baseRedisSetOverhead =
         sizer.sizeof(set) - sizer.sizeof(backingMap) - sizer.sizeof(backingTree);
 

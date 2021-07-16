@@ -25,8 +25,8 @@
  */
 package org.apache.geode.redis.internal.collections;
 
-import static org.apache.geode.redis.internal.collections.SizableOrderStatisticsTree.ORDER_STATISTICS_TREE_BASE_SIZE;
-import static org.apache.geode.redis.internal.collections.SizableOrderStatisticsTree.PER_ENTRY_OVERHEAD;
+import static org.apache.geode.redis.internal.collections.OrderStatisticsTree.ORDER_STATISTICS_TREE_BASE_SIZE;
+import static org.apache.geode.redis.internal.collections.OrderStatisticsTree.PER_ENTRY_OVERHEAD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -49,11 +49,10 @@ import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 
 
-public class SizableOrderStatisticsTreeTest {
+public class OrderStatisticsTreeTest {
   private final ObjectSizer sizer = ReflectionObjectSizer.getInstance();
 
-  private final SizableOrderStatisticsTree<Integer> tree =
-      new SizableOrderStatisticsTree<>();
+  private final OrderStatisticsTree<Integer> tree = new OrderStatisticsTree<>();
   private final TreeSet<Integer> set = new TreeSet<>();
 
   @After
@@ -712,7 +711,7 @@ public class SizableOrderStatisticsTreeTest {
     byte[] member;
     byte[] scoreBytes;
     List<RedisSortedSet.OrderedSetEntry> entries = new ArrayList<>();
-    OrderStatisticsSet<RedisSortedSet.OrderedSetEntry> tree = new SizableOrderStatisticsTree<>();
+    OrderStatisticsSet<RedisSortedSet.OrderedSetEntry> tree = new OrderStatisticsTree<>();
 
     assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree));
 
@@ -747,20 +746,19 @@ public class SizableOrderStatisticsTreeTest {
     }
   }
 
-  // These tests contain the math that is used to derive the constants in
-  // SizableOrderStatisticsTree. If these tests start failing, it is because the overheads of
-  // SizableOrderStatisticsTree have changed. If they have decreased, good job! You can change the
-  // constants in SizableOrderStatisticsTree to reflect that. If they have increased, carefully
-  // consider that increase before changing the constants.
+  // These tests contain the math that is used to derive the constants in OrderStatisticsTree. If
+  // these tests start failing, it is because the overheads of OrderStatisticsTree have changed. If
+  // they have decreased, good job! You can change the constants in OrderStatisticsTree to reflect
+  // that. If they have increased, carefully consider that increase before changing the constants.
   @Test
   public void orderStatisticsTreeBaseSize_shouldMatchReflectedSize() {
-    OrderStatisticsSet<RedisSortedSet.OrderedSetEntry> tree = new SizableOrderStatisticsTree<>();
+    OrderStatisticsSet<RedisSortedSet.OrderedSetEntry> tree = new OrderStatisticsTree<>();
     assertThat(ORDER_STATISTICS_TREE_BASE_SIZE).isEqualTo(sizer.sizeof(tree));
   }
 
   @Test
   public void orderStatisticsTreePerEntryOverhead_shouldMatchReflectedSize() {
-    OrderStatisticsSet<RedisSortedSet.OrderedSetEntry> tree = new SizableOrderStatisticsTree<>();
+    OrderStatisticsSet<RedisSortedSet.OrderedSetEntry> tree = new OrderStatisticsTree<>();
     int beforeSize = sizer.sizeof(tree);
     for (int i = 0; i < 100; ++i) {
       byte[] member = new byte[i];

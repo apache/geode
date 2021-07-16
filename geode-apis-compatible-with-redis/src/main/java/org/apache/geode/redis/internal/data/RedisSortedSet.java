@@ -47,7 +47,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.collections.OrderStatisticsSet;
-import org.apache.geode.redis.internal.collections.SizableOrderStatisticsTree;
+import org.apache.geode.redis.internal.collections.OrderStatisticsTree;
 import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
@@ -62,6 +62,10 @@ public class RedisSortedSet extends AbstractRedisData {
   // both backing collections, since they will be counted twice otherwise
   private int sizeInBytesAdjustment = 0;
 
+  // The following constant was calculated using reflection. You can find the test for this value in
+  // RedisSortedSetTest, which shows the way this number was calculated. If our internal
+  // implementation changes, this value may be incorrect. An increase in overhead should be
+  // carefully considered.
   protected static final int BASE_REDIS_SORTED_SET_OVERHEAD = 40;
 
   @Override
@@ -74,7 +78,7 @@ public class RedisSortedSet extends AbstractRedisData {
     this.members =
         new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(members.size() / 2,
             ByteArrays.HASH_STRATEGY);
-    scoreSet = new SizableOrderStatisticsTree<>();
+    scoreSet = new OrderStatisticsTree<>();
 
     Iterator<byte[]> iterator = members.iterator();
 
@@ -128,7 +132,7 @@ public class RedisSortedSet extends AbstractRedisData {
     int size = InternalDataSerializer.readPrimitiveInt(in);
     members =
         new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(size, ByteArrays.HASH_STRATEGY);
-    scoreSet = new SizableOrderStatisticsTree<>();
+    scoreSet = new OrderStatisticsTree<>();
     for (int i = 0; i < size; i++) {
       byte[] member = InternalDataSerializer.readByteArray(in);
       byte[] score = InternalDataSerializer.readByteArray(in);
@@ -172,9 +176,10 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   protected synchronized byte[] memberAdd(byte[] memberToAdd, byte[] scoreToAdd) {
-    OrderedSetEntry newEntry = new OrderedSetEntry(memberToAdd, scoreToAdd);
-    OrderedSetEntry existingEntry = members.put(memberToAdd, newEntry);
+    OrderedSetEntry existingEntry = members.get(memberToAdd);
     if (existingEntry == null) {
+      OrderedSetEntry newEntry = new OrderedSetEntry(memberToAdd, scoreToAdd);
+      members.put(memberToAdd, newEntry);
       scoreSet.add(newEntry);
       // Without this adjustment, we count the entry and member name array twice, since references
       // to them appear in both backing collections.
@@ -182,13 +187,11 @@ public class RedisSortedSet extends AbstractRedisData {
       return null;
     } else {
       scoreSet.remove(existingEntry);
-      scoreSet.add(newEntry);
-      // When updating an entry, the references to the member name array in the backing collections
-      // are no longer pointing to the same object in memory, so we no longer need to adjust the
-      // size to prevent counting twice
-      newEntry.setFromUpdate();
-      sizeInBytesAdjustment -= calculateByteArraySize(memberToAdd);
-      return existingEntry.getScoreBytes();
+      byte[] oldScore = existingEntry.scoreBytes;
+      existingEntry.updateScore(scoreToAdd);
+      members.put(memberToAdd, existingEntry);
+      scoreSet.add(existingEntry);
+      return oldScore;
     }
   }
 
@@ -198,14 +201,8 @@ public class RedisSortedSet extends AbstractRedisData {
     if (orderedSetEntry != null) {
       scoreSet.remove(orderedSetEntry);
       oldValue = orderedSetEntry.getScoreBytes();
-      // Adjust for removal. If the entry has been updated at any point, the references to the
-      // member name array in the backing collections are no longer pointing to the same object in
-      // memory, so we no longer need to adjust the size to prevent counting twice
-      if (orderedSetEntry.isFromUpdate()) {
-        sizeInBytesAdjustment -= orderedSetEntry.getSizeInBytes();
-      } else {
-        sizeInBytesAdjustment -= orderedSetEntry.getSizeInBytes() + calculateByteArraySize(member);
-      }
+      // Adjust for removal.
+      sizeInBytesAdjustment -= orderedSetEntry.getSizeInBytes() + calculateByteArraySize(member);
     }
 
     return oldValue;
@@ -579,8 +576,11 @@ public class RedisSortedSet extends AbstractRedisData {
   // Entry used to store data in the scoreSet
   public static class OrderedSetEntry extends AbstractOrderedSetEntry {
 
+    // The following constant was calculated using reflection. You can find the test for this value
+    // in RedisSortedSetTest, which shows the way this number was calculated. If our internal
+    // implementation changes, this value may be incorrect. An increase in overhead should be
+    // carefully considered.
     public static final int BASE_ORDERED_SET_ENTRY_SIZE = 32;
-    private boolean fromUpdate;
 
     public OrderedSetEntry(byte[] member, byte[] score) {
       this.member = member;
@@ -599,12 +599,11 @@ public class RedisSortedSet extends AbstractRedisData {
           + calculateByteArraySize(scoreBytes);
     }
 
-    void setFromUpdate() {
-      this.fromUpdate = true;
-    }
-
-    boolean isFromUpdate() {
-      return fromUpdate;
+    void updateScore(byte[] newScore) {
+      if (!Arrays.equals(newScore, scoreBytes)) {
+        scoreBytes = newScore;
+        score = processByteArrayAsDouble(newScore);
+      }
     }
   }
 

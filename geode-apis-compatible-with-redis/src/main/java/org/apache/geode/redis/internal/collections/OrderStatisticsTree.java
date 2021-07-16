@@ -38,9 +38,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.size.SingleObjectSizer;
-import org.apache.geode.internal.size.Sizeable;
+import org.apache.geode.internal.size.SizeableObjectSizer;
 
 /**
  * This class implements an order statistic tree which is based on AVL-trees.
@@ -49,15 +48,19 @@ import org.apache.geode.internal.size.Sizeable;
  * @author Rodion "rodde" Efremov
  * @version 1.6 (Feb 11, 2016)
  */
-public class SizableOrderStatisticsTree<E extends Comparable<? super E>>
-    implements OrderStatisticsSet<E> {
+public class OrderStatisticsTree<E extends Comparable<? super E>> implements OrderStatisticsSet<E> {
+
+  // The following constants were calculated using reflection. You can find the tests for these
+  // values in OrderStatisticsTreeTest, which shows the way these numbers were calculated. If our
+  // internal implementation changes, these values may be incorrect. An increase in overhead should
+  // be carefully considered.
   public static final int ORDER_STATISTICS_TREE_BASE_SIZE = 32;
   public static final int PER_ENTRY_OVERHEAD = 40;
   private Node<E> root;
   private int size;
   private int modCount;
   private int sizeInBytes = ORDER_STATISTICS_TREE_BASE_SIZE;
-  private static final SingleObjectSizer elementSizer = new ReflectionSingleObjectSizer();
+  private static final SingleObjectSizer elementSizer = new SizeableObjectSizer();
 
   @Override
   public Iterator<E> iterator() {
@@ -160,7 +163,7 @@ public class SizableOrderStatisticsTree<E extends Comparable<? super E>>
       root = new Node<>(element);
       size = 1;
       modCount++;
-      updateSizeInBytes(element, true);
+      incrementSize(element);
       return true;
     }
 
@@ -196,7 +199,7 @@ public class SizableOrderStatisticsTree<E extends Comparable<? super E>>
     newNode.parent = parent;
     size++;
     modCount++;
-    updateSizeInBytes(element, true);
+    incrementSize(element);
     Node<E> hi = parent;
     Node<E> lo = newNode;
 
@@ -267,7 +270,7 @@ public class SizableOrderStatisticsTree<E extends Comparable<? super E>>
     }
 
     x = deleteNode(x);
-    updateSizeInBytes(x.key, false);
+    decrementSize(x.key);
     fixAfterModification(x, false);
     size--;
     modCount++;
@@ -741,18 +744,12 @@ public class SizableOrderStatisticsTree<E extends Comparable<? super E>>
     return leftTreeSize + 1 + rightTreeSize;
   }
 
-  void updateSizeInBytes(E element, boolean isAdd) {
-    int sizeChange;
-    if (element instanceof Sizeable) {
-      sizeChange = ((Sizeable) element).getSizeInBytes() + PER_ENTRY_OVERHEAD;
-    } else {
-      sizeChange = (int) elementSizer.sizeof(element) + PER_ENTRY_OVERHEAD;
-    }
-    if (isAdd) {
-      sizeInBytes += sizeChange;
-    } else {
-      sizeInBytes -= sizeChange;
-    }
+  void incrementSize(E element) {
+    sizeInBytes += elementSizer.sizeof(element) + PER_ENTRY_OVERHEAD;
+  }
+
+  void decrementSize(E element) {
+    sizeInBytes -= elementSizer.sizeof(element) + PER_ENTRY_OVERHEAD;
   }
 
   @Override
@@ -829,7 +826,7 @@ public class SizableOrderStatisticsTree<E extends Comparable<? super E>>
       checkConcurrentModification();
 
       Node<E> x = deleteNode(previousNode);
-      updateSizeInBytes(x.key, false);
+      decrementSize(x.key);
       fixAfterModification(x, false);
 
       if (x == nextNode) {
