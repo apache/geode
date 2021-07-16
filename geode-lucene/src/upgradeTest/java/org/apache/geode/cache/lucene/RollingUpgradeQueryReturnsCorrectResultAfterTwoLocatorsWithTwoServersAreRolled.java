@@ -35,8 +35,8 @@ public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServe
   public void luceneQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServersAreRolled()
       throws Exception {
     final Host host = Host.getHost(0);
-    VM locator1 = host.getVM(oldVersion, 0);
-    VM locator2 = host.getVM(oldVersion, 1);
+    VM locator1 = host.getVM(oldVersion, 0).initializeAsLocatorVM();
+    VM locator2 = host.getVM(oldVersion, 1).initializeAsLocatorVM();
     VM server1 = host.getVM(oldVersion, 2);
     VM server2 = host.getVM(oldVersion, 3);
 
