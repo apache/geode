@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -131,7 +130,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
     // Range -5 <= score <= 15
     assertThat(jedis.zrangeByScore(KEY, "-5", "15"))
-        .containsExactlyElementsOf(Arrays.asList("member2", "member3"));
+        .containsExactly("member2", "member3");
   }
 
   @Test
@@ -177,7 +176,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
     // Range -inf < score <= +inf
     assertThat(jedis.zrangeByScore(KEY, "(-inf", "+inf"))
-        .containsExactlyElementsOf(Arrays.asList("member2", "member3"));
+        .containsExactly("member2", "member3");
   }
 
   @Test
@@ -188,7 +187,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
     // Range -inf <= score < +inf
     assertThat(jedis.zrangeByScore(KEY, "-inf", "(+inf"))
-        .containsExactlyElementsOf(Arrays.asList("member1", "member2"));
+        .containsExactly("member1", "member2");
   }
 
   @Test
@@ -243,11 +242,11 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
     createZSetRangeTestMap();
 
     assertThat(jedis.zrangeByScore(KEY, "0", "10", 0, 2))
-        .containsExactlyElementsOf(Arrays.asList("b", "c"));
+        .containsExactly("b", "c");
     assertThat(jedis.zrangeByScore(KEY, "0", "10", 2, 3))
-        .containsExactlyElementsOf(Arrays.asList("d", "e", "f"));
+        .containsExactly("d", "e", "f");
     assertThat(jedis.zrangeByScore(KEY, "0", "10", 2, 10))
-        .containsExactlyElementsOf(Arrays.asList("d", "e", "f"));
+        .containsExactly("d", "e", "f");
     assertThat(jedis.zrangeByScore(KEY, "0", "10", 20, 10)).isEmpty();
   }
 
