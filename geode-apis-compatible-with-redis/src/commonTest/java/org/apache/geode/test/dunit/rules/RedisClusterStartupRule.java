@@ -190,18 +190,29 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
     });
   }
 
+  /**
+   * Return some key of the form {@code prefix<N>}, (where {@code N} is an integer), for which the
+   * given VM is the primary bucket holder. This is useful in tests where one needs to ensure that
+   * a given key would be hosted on a given server.
+   */
   public String getKeyOnServer(String keyPrefix, int vmId) {
-    int port = getRedisPort(vmId);
-    int i = 0;
-    while (true) {
-      String key = keyPrefix + i;
-      RedisMemberInfo memberInfo = getMemberInfo(key);
-      if (memberInfo.getRedisPort() == port) {
-        return key;
-      }
-      i++;
-    }
-  }
+    return getMember(1).invoke("getKeyOnServer", () -> {
+      Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
+          .getRegion(RegionProvider.REDIS_DATA_REGION);
 
+      String server = "server-" + vmId;
+      String key;
+      int i = 0;
+      while (true) {
+        key = keyPrefix + i;
+        DistributedMember primaryMember =
+            PartitionRegionHelper.getPrimaryMemberForKey(r, new RedisKey(key.getBytes()));
+        if (primaryMember.getName().equals(server)) {
+          return key;
+        }
+        i++;
+      }
+    });
+  }
 
 }

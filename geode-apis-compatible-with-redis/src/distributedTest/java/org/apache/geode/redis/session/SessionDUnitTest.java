@@ -164,6 +164,7 @@ public abstract class SessionDUnitTest {
     try {
       redisClient.shutdown();
     } catch (Exception ignored) {
+      // https://github.com/lettuce-io/lettuce-core/issues/1800
     }
   }
 

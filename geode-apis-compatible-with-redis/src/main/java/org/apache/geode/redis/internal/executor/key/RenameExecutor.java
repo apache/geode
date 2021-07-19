@@ -40,6 +40,12 @@ public class RenameExecutor extends AbstractExecutor {
       return RedisResponse.ok();
     }
 
+    if (key.getBucketId() != newKey.getBucketId()) {
+      // Will produce MOVED exceptions here for whichever key is at fault
+      context.getRegionProvider().getRedisData(newKey);
+      context.getRegionProvider().getRedisData(key);
+    }
+
     if (!redisKeyCommands.rename(key, newKey)) {
       return RedisResponse.error(ERROR_NO_SUCH_KEY);
     }
