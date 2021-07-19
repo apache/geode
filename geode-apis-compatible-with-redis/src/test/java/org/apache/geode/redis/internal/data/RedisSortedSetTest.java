@@ -373,7 +373,7 @@ public class RedisSortedSetTest {
   public void zrange_shouldAlsoReturnScores_whenWithScoresSpecified() {
     Collection<byte[]> rangeList = rangeSortedSet.zrange(0, 5, true);
     assertThat(rangeList).hasSize(12);
-    assertThat(rangeList).containsExactly("member1".getBytes(), "1.0".getBytes(),
+    assertThat(rangeList).containsExactly("member1".getBytes(), "1".getBytes(),
         "member2".getBytes(), "1.1".getBytes(), "member3".getBytes(), "1.2".getBytes(),
         "member4".getBytes(), "1.3".getBytes(), "member5".getBytes(), "1.4".getBytes(),
         "member6".getBytes(), "1.5".getBytes());
