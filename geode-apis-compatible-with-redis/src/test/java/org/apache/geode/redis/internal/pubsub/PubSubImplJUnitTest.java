@@ -56,6 +56,7 @@ public class PubSubImplJUnitTest {
             subscriptions));
 
     subscriptions.add(subscription);
+    subscription.readyToPublish();
 
     ExecutorService executor =
         LoggingExecutors.newCachedThreadPool("publishThread", true);
