@@ -20,8 +20,8 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRADISH_LIMIT;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRADISH_WITHSCORES;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLIMIT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWITHSCORES;
 
 import java.util.List;
 
@@ -56,7 +56,7 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
       while (currentCommandElement < commandElements.size()) {
         try {
           if (equalsIgnoreCaseBytes(commandElements.get(currentCommandElement),
-              bRADISH_WITHSCORES)) {
+              bWITHSCORES)) {
             withScores = true;
             currentCommandElement++;
           } else {
@@ -91,7 +91,7 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
       int commandIndex) {
     int offset;
     int count;
-    if (equalsIgnoreCaseBytes(commandElements.get(commandIndex), bRADISH_LIMIT)
+    if (equalsIgnoreCaseBytes(commandElements.get(commandIndex), bLIMIT)
         && commandElements.size() > commandIndex + 2) {
       offset = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 1)));
       count = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 2)));

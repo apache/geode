@@ -179,6 +179,9 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bWITHSCORES = stringToBytes("WITHSCORES");
 
+  @MakeImmutable
+  public static final byte[] bLIMIT = stringToBytes("LIMIT");
+
   // ********** Constants for Double Infinity comparisons **********
   public static final String P_INF = "+inf";
   public static final String INF = "inf";
@@ -239,12 +242,6 @@ public class StringBytesGlossary {
 
   @MakeImmutable
   public static final byte[] bRADISH_DUMP_HEADER = stringToBytes("RADISH");
-
-  @MakeImmutable
-  public static final byte[] bRADISH_WITHSCORES = stringToBytes("WITHSCORES");
-
-  @MakeImmutable
-  public static final byte[] bRADISH_LIMIT = stringToBytes("LIMIT");
 
   /**
    * These member names will always be evaluated to be "greater than" or "less than" any other when
