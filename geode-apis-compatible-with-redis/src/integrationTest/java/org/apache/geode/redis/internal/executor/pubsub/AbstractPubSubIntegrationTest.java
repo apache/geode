@@ -376,7 +376,8 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     assertThat(mockSubscriber.unsubscribeInfos.get(0).count).isEqualTo(0);
     waitFor(() -> !subscriberThread.isAlive());
 
-    assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages);
+    assertThat(mockSubscriber.getReceivedMessages())
+        .containsExactlyInAnyOrderElementsOf(expectedMessages);
   }
 
   @Test
