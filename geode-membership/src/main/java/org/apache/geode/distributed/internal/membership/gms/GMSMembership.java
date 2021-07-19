@@ -369,11 +369,10 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       // update the view to reflect our changes, so that
       // callbacks will see the new (updated) view.
       MembershipView<ID> newlatestView = newView;
+      final List<ID> newMembers = new ArrayList<>();
 
       // look for additions
-      for (int i = 0; i < newView.getMembers().size(); i++) { // additions
-        ID m = newView.getMembers().get(i);
-
+      for (ID m : newView.getMembers()) { // additions
         // Once a member has been seen via a view, remove them from the
         // newborn set. Replace the member data of the surpriseMember ID
         // in case it was a partial ID and is being retained by DistributionManager
@@ -416,13 +415,11 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         }
 
         logger.info("Membership: Processing addition <{}>", m);
-
-        listener.newMemberConnected(m);
+        newMembers.add(m);
       } // additions
 
       // look for departures
-      for (int i = 0; i < priorView.getMembers().size(); i++) { // departures
-        ID m = priorView.getMembers().get(i);
+      for (ID m : priorView.getMembers()) { // departures
         if (newView.contains(m)) {
           continue; // still alive
         }
@@ -479,6 +476,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
       // the view is complete - let's install it
       latestView = newlatestView;
+      for (ID newMember : newMembers) {
+        listener.newMemberConnected(newMember);
+      }
       listener.viewInstalled(latestView);
     } finally {
       latestViewWriteLock.unlock();
