@@ -17,12 +17,14 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.RedisHash.BASE_REDIS_HASH_OVERHEAD;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.io.DataOutput;
@@ -183,29 +185,34 @@ public class RedisHashTest {
   @Test
   public void hscanReturnsCorrectNumberOfElements() {
     RedisHash hash = createRedisHash("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4");
-    ImmutablePair<Integer, List<ImmutablePair<byte[], byte[]>>> result =
-        hash.hscan(null, 2, 0);
+    ImmutablePair<Integer, List<byte[]>> result = hash.hscan(null, 2, 0);
 
     assertThat(result.left).isNotEqualTo(0);
-    assertThat(result.right).hasSize(2);
+    assertThat(result.right).hasSize(4);
     result = hash.hscan(null, 3, result.left);
     assertThat(result.left).isEqualTo(0);
-    assertThat(result.right).hasSize(2);
+    assertThat(result.right).hasSize(4);
   }
 
   @Test
   public void hscanOnlyReturnsElementsMatchingPattern() {
     RedisHash hash = createRedisHash("ak1", "v1", "k2", "v2", "ak3", "v3", "k4", "v4");
-    ImmutablePair<Integer, List<ImmutablePair<byte[], byte[]>>> result =
-        hash.hscan(Pattern.compile("a.*"), 3, 0);
+    ImmutablePair<Integer, List<byte[]>> result = hash.hscan(Pattern.compile("a.*"), 3, 0);
 
     assertThat(result.left).isEqualTo(0);
-    List<String> fieldsAndValues = new ArrayList<>();
-    result.right.forEach(pair -> {
-      fieldsAndValues.add(bytesToString(pair.left));
-      fieldsAndValues.add(bytesToString(pair.right));
-    });
+    List<String> fieldsAndValues =
+        result.right.stream().map(Coder::bytesToString).collect(Collectors.toList());
+
     assertThat(fieldsAndValues).containsExactly("ak1", "v1", "ak3", "v3");
+  }
+
+  @Test
+  public void hscanThrowsWhenReturnedArrayListLengthWouldExceedVMLimit() {
+    RedisHash hash = spy(new RedisHash());
+    doReturn(Integer.MAX_VALUE - 10).when(hash).hlen();
+
+    assertThatThrownBy(() -> hash.hscan(null, Integer.MAX_VALUE - 10, 0))
+        .isInstanceOf(OutOfMemoryError.class);
   }
 
   /************* Hash Size *************/

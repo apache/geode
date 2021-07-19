@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -112,7 +112,7 @@ public class HScanExecutor extends AbstractScanExecutor {
     }
     RedisHashCommands redisHashCommands = context.getHashCommands();
 
-    ImmutablePair<Integer, List<ImmutablePair<byte[], byte[]>>> scanResult =
+    Pair<Integer, List<byte[]>> scanResult =
         redisHashCommands.hscan(key, matchPattern, count, cursor);
 
     return RedisResponse.scan(new BigInteger(String.valueOf(scanResult.getLeft())),

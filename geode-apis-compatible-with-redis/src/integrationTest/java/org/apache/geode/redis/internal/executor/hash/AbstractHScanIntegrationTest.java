@@ -244,9 +244,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
   @Test
   public void givenInvalidRegexSyntax_returnsEmptyArray() {
     jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
-    ScanParams scanParams = new ScanParams();
-    scanParams.count(1);
-    scanParams.match("\\p");
+    ScanParams scanParams = new ScanParams().count(1).match("\\p");
 
     ScanResult<Map.Entry<byte[], byte[]>> result =
         jedis.hscan(HASH_KEY.getBytes(), ZERO_CURSOR.getBytes(), scanParams);
@@ -302,8 +300,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
   public void givenCompleteIteration_shouldReturnCursorWithValueOfZero() {
     initializeThreeFieldHash();
 
-    ScanParams scanParams = new ScanParams();
-    scanParams.count(1);
+    ScanParams scanParams = new ScanParams().count(1);
     ScanResult<Map.Entry<byte[], byte[]>> result;
     String cursor = ZERO_CURSOR;
 
@@ -319,8 +316,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
   public void givenMatch_returnsAllMatchingEntries() {
     Map<byte[], byte[]> entryMap = initializeThreeFieldHashBytes();
 
-    ScanParams scanParams = new ScanParams();
-    scanParams.match("1*");
+    ScanParams scanParams = new ScanParams().match("1*");
 
     ScanResult<Map.Entry<byte[], byte[]>> result =
         jedis.hscan(HASH_KEY.getBytes(), ZERO_CURSOR.getBytes(), scanParams);
@@ -353,9 +349,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
   public void givenMatchAndCount_returnsAllMatchingKeys() {
     Map<byte[], byte[]> entryMap = initializeThreeFieldHashBytes();
 
-    ScanParams scanParams = new ScanParams();
-    scanParams.count(1);
-    scanParams.match("1*");
+    ScanParams scanParams = new ScanParams().count(1).match("1*");
     ScanResult<Map.Entry<byte[], byte[]>> result;
     List<Map.Entry<byte[], byte[]>> allEntries = new ArrayList<>();
     String cursor = ZERO_CURSOR;
@@ -432,7 +426,6 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     Map<byte[], byte[]> entryMap = initializeThreeFieldHashBytes();
 
     ScanParams scanParams = new ScanParams().count(Integer.MAX_VALUE);
-    scanParams.count(Integer.MAX_VALUE);
 
     ScanResult<Map.Entry<byte[], byte[]>> result =
         jedis.hscan(HASH_KEY.getBytes(), ZERO_CURSOR.getBytes(), scanParams);
