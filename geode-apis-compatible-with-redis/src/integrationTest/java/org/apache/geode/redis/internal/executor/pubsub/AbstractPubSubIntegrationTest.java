@@ -333,11 +333,14 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     Long result = publisher.publish(binaryBlob, binaryBlob);
     assertThat(result).isEqualTo(1);
 
+    GeodeAwaitility.await().untilAsserted(
+        () -> assertThat(mockSubscriber.getReceivedMessages()).isNotEmpty());
+    assertThat(mockSubscriber.getReceivedMessages().get(0)).isEqualTo(binaryBlob);
+
     mockSubscriber.unsubscribe(binaryBlob);
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
 
-    assertThat(mockSubscriber.getReceivedMessages().get(0)).isEqualTo(binaryBlob);
   }
 
   @Test
