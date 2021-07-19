@@ -112,6 +112,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     Long result = publisher.publish("salutations", "hello");
     assertThat(result).isEqualTo(1);
 
+    mockSubscriber.awaitMessageReceived(1L);
     mockSubscriber.unsubscribe("salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
@@ -361,6 +362,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
 
     result = publisher.publish("yuletide", "howdy");
     assertThat(result).isEqualTo(1);
+    mockSubscriber.awaitMessageReceived(2L);
     mockSubscriber.unsubscribe("salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
     assertThat(mockSubscriber.unsubscribeInfos).hasSize(1);
@@ -522,6 +524,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
 
     Long result = publisher.publish("salutations", "hello");
     assertThat(result).isEqualTo(2);
+    mockSubscriber1.awaitMessageReceived(1L);
     mockSubscriber1.unsubscribe("salutations");
     waitFor(() -> mockSubscriber1.getSubscribedChannels() == 0);
     waitFor(() -> !subscriber1Thread.isAlive());
@@ -531,6 +534,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
 
     result = publisher.publish("salutations", "goodbye");
     assertThat(result).isEqualTo(1);
+    mockSubscriber2.awaitMessageReceived(1L);
     mockSubscriber2.unsubscribe("salutations");
     waitFor(() -> mockSubscriber2.getSubscribedChannels() == 0);
     waitFor(() -> !subscriber2Thread.isAlive());
@@ -564,6 +568,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     Long result = publisher.publish("salutations", "hello");
     assertThat(result).isEqualTo(1);
 
+    mockSubscriber.awaitMessageReceived(1L);
     mockSubscriber.unsubscribe("salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
 
@@ -676,6 +681,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     Long result = publisher.publish("salutations", "hello");
     assertThat(result).isEqualTo(2);
 
+    mockSubscriber.awaitMessageReceived(1L);
     mockSubscriber.punsubscribe("sal*s");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
     assertThat(mockSubscriber.punsubscribeInfos).hasSize(1);
@@ -712,6 +718,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     Long result = publisher.publish("salutations", "hello");
     assertThat(result).isEqualTo(2);
 
+    mockSubscriber.awaitMessageReceived(1L);
     mockSubscriber.punsubscribe("salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
@@ -722,6 +729,34 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
 
     assertThat(mockSubscriber.getReceivedMessages()).containsExactly("hello");
     assertThat(mockSubscriber.getReceivedPMessages()).containsExactly("hello");
+  }
+
+  @Test
+  public void concurrentSubscribers_andPublishers_doesNotHang()
+      throws InterruptedException, ExecutionException {
+    AtomicBoolean running = new AtomicBoolean(true);
+
+    Future<Integer> makeSubscribersFuture1 =
+        executor.submit(() -> makeSubscribers(10000, running));
+    Future<Integer> makeSubscribersFuture2 =
+        executor.submit(() -> makeSubscribers(10000, running));
+
+    Future<Integer> publish1 = executor.submit(() -> doPublishing(1, 10000, running));
+    Future<Integer> publish2 = executor.submit(() -> doPublishing(2, 10000, running));
+    Future<Integer> publish3 = executor.submit(() -> doPublishing(3, 10000, running));
+    Future<Integer> publish4 = executor.submit(() -> doPublishing(4, 10000, running));
+    Future<Integer> publish5 = executor.submit(() -> doPublishing(5, 10000, running));
+
+    running.set(false);
+
+    assertThat(makeSubscribersFuture1.get()).isGreaterThanOrEqualTo(10);
+    assertThat(makeSubscribersFuture2.get()).isGreaterThanOrEqualTo(10);
+
+    assertThat(publish1.get()).isGreaterThan(0);
+    assertThat(publish2.get()).isGreaterThan(0);
+    assertThat(publish3.get()).isGreaterThan(0);
+    assertThat(publish4.get()).isGreaterThan(0);
+    assertThat(publish5.get()).isGreaterThan(0);
   }
 
   private Jedis getConnection() {
@@ -857,34 +892,6 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     executor.shutdownNow();
 
     return result;
-  }
-
-  @Test
-  public void concurrentSubscribers_andPublishers_doesNotHang()
-      throws InterruptedException, ExecutionException {
-    AtomicBoolean running = new AtomicBoolean(true);
-
-    Future<Integer> makeSubscribersFuture1 =
-        executor.submit(() -> makeSubscribers(10000, running));
-    Future<Integer> makeSubscribersFuture2 =
-        executor.submit(() -> makeSubscribers(10000, running));
-
-    Future<Integer> publish1 = executor.submit(() -> doPublishing(1, 10000, running));
-    Future<Integer> publish2 = executor.submit(() -> doPublishing(2, 10000, running));
-    Future<Integer> publish3 = executor.submit(() -> doPublishing(3, 10000, running));
-    Future<Integer> publish4 = executor.submit(() -> doPublishing(4, 10000, running));
-    Future<Integer> publish5 = executor.submit(() -> doPublishing(5, 10000, running));
-
-    running.set(false);
-
-    assertThat(makeSubscribersFuture1.get()).isGreaterThanOrEqualTo(10);
-    assertThat(makeSubscribersFuture2.get()).isGreaterThanOrEqualTo(10);
-
-    assertThat(publish1.get()).isGreaterThan(0);
-    assertThat(publish2.get()).isGreaterThan(0);
-    assertThat(publish3.get()).isGreaterThan(0);
-    assertThat(publish4.get()).isGreaterThan(0);
-    assertThat(publish5.get()).isGreaterThan(0);
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {
