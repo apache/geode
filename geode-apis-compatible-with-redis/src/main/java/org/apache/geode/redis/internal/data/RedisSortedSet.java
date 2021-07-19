@@ -245,7 +245,8 @@ public class RedisSortedSet extends AbstractRedisData {
         continue;
       }
       byte[] oldScore = memberAdd(member, score);
-      if (options.isCH() && oldScore != null && !Arrays.equals(oldScore, score)) {
+      if (options.isCH() && oldScore != null
+          && !Arrays.equals(oldScore, stripTrailingZeroFromDouble(score))) {
         changesCount++;
       }
 
