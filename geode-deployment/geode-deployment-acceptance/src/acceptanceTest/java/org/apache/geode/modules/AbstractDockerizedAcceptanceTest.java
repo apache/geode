@@ -31,7 +31,6 @@ import org.junit.runners.Parameterized;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
@@ -54,6 +53,8 @@ public abstract class AbstractDockerizedAcceptanceTest {
   private static final String MODULAR_LAUNCH_COMMAND = "--experimental";
 
   private static final String EMPTY_STRING = "";
+
+  private static boolean restartContainer = false;
 
   private static GenericContainer<?> geodeContainer = setupDockerContainer();
 
@@ -168,15 +169,9 @@ public abstract class AbstractDockerizedAcceptanceTest {
   }
 
   private static GenericContainer<?> setupDockerContainer() {
-    String currentDirectory = System.getProperty("user.dir");
-    geodeContainer = new GenericContainer<>(
-        new ImageFromDockerfile()
-            .withDockerfile(new File(
-                currentDirectory.substring(0, currentDirectory.indexOf("build"))
-                    .concat("build/modularDocker/Dockerfile"))
-                        .toPath()));
+    geodeContainer = new GenericContainer<>("modulargeode:develop");
     geodeContainer.withExposedPorts(9090, 10334, 40404, 1099, 7070, 6379, 5678);
-    geodeContainer.withReuse(true);
+    geodeContainer.withReuse(false);
     geodeContainer.waitingFor(Wait.forHealthcheck());
     geodeContainer.withStartupTimeout(Duration.ofSeconds(120));
     return geodeContainer;

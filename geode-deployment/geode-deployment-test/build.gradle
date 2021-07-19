@@ -47,7 +47,7 @@ shadowJar {
 }
 
 
-project(":geode-assembly").tasks.forEach {
+project(":geode-deployment:geode-deployment-acceptance").tasks.forEach {
     if(it.name == "acceptanceTest"){
         it.dependsOn(":geode-deployment:geode-deployment-test:createShadowJar")
         it.doFirst {

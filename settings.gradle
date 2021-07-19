@@ -71,11 +71,11 @@ include 'geode-concurrency-test'
 include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
-include 'geode-deployment'
 include 'geode-deployment:geode-jboss-extensions'
 include 'geode-deployment:geode-deployment-legacy'
 include 'geode-deployment:geode-deployment-jboss-modules'
 include 'geode-deployment:geode-deployment-test'
+include 'geode-deployment:geode-deployment-acceptance'
 
 
 ['1.0.0-incubating',
