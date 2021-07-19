@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
@@ -92,8 +92,8 @@ public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunction
   }
 
   @Override
-  public ImmutablePair<Integer, List<ImmutablePair<byte[], byte[]>>> hscan(RedisKey key,
-      Pattern matchPattern, int count, int cursor) {
+  public Pair<Integer, List<byte[]>> hscan(RedisKey key, Pattern matchPattern, int count,
+      int cursor) {
     return stripedExecute(key,
         () -> getRedisHash(key, true)
             .hscan(matchPattern, count, cursor));

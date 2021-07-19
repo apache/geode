@@ -46,7 +46,6 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPERIOD;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGTYPE;
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -57,7 +56,6 @@ import java.util.Collection;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.redis.internal.data.RedisKey;
@@ -162,11 +160,7 @@ public class Coder {
     byte[] cursorBytes = stringToBytes(cursor.toString());
     writeStringResponse(buffer, cursorBytes);
     buffer.writeByte(ARRAY_ID);
-    // For hscan and zscan, elements are returned in pairs, so the total size of the results array
-    // has to be increased by one for each pair being written
-    long resultsSize =
-        scanResult.size() + scanResult.stream().filter(e -> e instanceof ImmutablePair).count();
-    buffer.writeBytes(longToBytes(resultsSize));
+    buffer.writeBytes(longToBytes(scanResult.size()));
     buffer.writeBytes(bCRLF);
 
     for (Object nextObject : scanResult) {
@@ -175,10 +169,6 @@ public class Coder {
         writeStringResponse(buffer, stringToBytes(next));
       } else if (nextObject instanceof RedisKey) {
         writeStringResponse(buffer, ((RedisKey) nextObject).toBytes());
-      } else if (nextObject instanceof ImmutablePair) {
-        ImmutablePair<byte[], byte[]> pair = uncheckedCast(nextObject);
-        writeStringResponse(buffer, pair.left);
-        writeStringResponse(buffer, pair.right);
       } else {
         writeStringResponse(buffer, (byte[]) nextObject);
       }
