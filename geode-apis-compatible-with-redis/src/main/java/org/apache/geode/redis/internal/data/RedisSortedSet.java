@@ -20,6 +20,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_F
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
+import static org.apache.geode.redis.internal.netty.Coder.stripTrailingZeroFromDouble;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
 
@@ -541,7 +542,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
     AbstractOrderedSetEntry(byte[] member, byte[] score) {
       this.member = member;
-      this.scoreBytes = score;
+      this.scoreBytes = stripTrailingZeroFromDouble(score);
       this.score = processByteArrayAsDouble(score);
     }
 

@@ -226,6 +226,8 @@ public class StringBytesGlossary {
 
   public static final byte bLEFT_PAREN = 40; // (
 
+  public static final byte bPERIOD = 46; // .
+
 
   public static final String PING_RESPONSE = "PONG";
 

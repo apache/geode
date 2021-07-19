@@ -22,6 +22,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INTEGER_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMBER_0_BYTE;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SIMPLE_STRING_ID;
@@ -41,6 +42,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INFIN
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOK;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOOM;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPERIOD;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGTYPE;
@@ -49,6 +51,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -470,5 +473,13 @@ public class Coder {
     } else {
       return (int) toBeNarrowed;
     }
+  }
+
+  public static byte[] stripTrailingZeroFromDouble(byte[] doubleBytes) {
+    if (doubleBytes.length > 1 && doubleBytes[doubleBytes.length - 2] == bPERIOD
+        && doubleBytes[doubleBytes.length - 1] == NUMBER_0_BYTE) {
+      return Arrays.copyOfRange(doubleBytes, 0, doubleBytes.length - 2);
+    }
+    return doubleBytes;
   }
 }
