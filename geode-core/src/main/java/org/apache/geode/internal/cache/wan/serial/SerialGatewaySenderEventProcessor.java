@@ -863,7 +863,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.debug(
-            "Exception in sending dropped event could be ignored in order not to interrupt sender starting",
+            "Exception in sending dropped event could be ignored in order not to interrupt sender starting: {}",
             e);
       }
     }

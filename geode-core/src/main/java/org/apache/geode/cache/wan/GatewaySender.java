@@ -174,7 +174,15 @@ public interface GatewaySender {
    */
   int GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-retries",
-          10);
+          3);
+  /**
+   * Milliseconds to wait before retrying to get events for a transaction from the
+   * gateway sender queue when group-transaction-events is true.
+   */
+  int GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS =
+      Integer.getInteger(
+          GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-wait-time-ms",
+          1);
 
   /**
    * The order policy. This enum is applicable only when concurrency-level is > 1.
@@ -422,6 +430,14 @@ public interface GatewaySender {
   boolean mustGroupTransactionEvents();
 
   /**
+   * Returns retriesToGetTransactionEventsFromQueue int property for this GatewaySender.
+   *
+   * @return retriesToGetTransactionEventsFromQueue int property for this GatewaySender
+   *
+   */
+  int getRetriesToGetTransactionEventsFromQueue();
+
+  /**
    * Returns the number of dispatcher threads working for this <code>GatewaySender</code>. Default
    * number of dispatcher threads is 5.
    *
@@ -499,5 +515,15 @@ public interface GatewaySender {
    *
    */
   void setGatewayEventFilters(List<GatewayEventFilter> filters);
+
+  /**
+   * Set the number of retries to get transaction events
+   * for this GatewaySender when GroupTransactionEvents
+   * is set.
+   *
+   * @since Geode 1.15
+   *
+   */
+  void setRetriesToGetTransactionEventsFromQueue(int retries);
 
 }
