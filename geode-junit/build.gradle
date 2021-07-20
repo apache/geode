@@ -51,7 +51,6 @@ dependencies {
   api('org.apache.logging.log4j:log4j-api')
   
   api('org.awaitility:awaitility')
-  api('org.bouncycastle:bcpkix-jdk15on')
   api('org.hamcrest:hamcrest')
   api('io.micrometer:micrometer-core')
   
