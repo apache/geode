@@ -101,6 +101,8 @@ public class GfshExecution {
       assertThat(process.exitValue())
           .as(SCRIPT_EXIT_VALUE_DESCRIPTION, script)
           .isEqualTo(script.getExpectedExitValue());
+      printLogFiles();
+
     } catch (AssertionError error) {
       printLogFiles();
       throw error;
