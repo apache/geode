@@ -17,8 +17,6 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.CountDownLatch;
-import java.util.function.Consumer;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -31,8 +29,6 @@ public class SubscribeExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-
-    context.eventLoopReady();
 
     Collection<SubscribeResult> results = new ArrayList<>();
     for (int i = 1; i < command.getProcessedCommand().size(); i++) {
@@ -48,25 +44,16 @@ public class SubscribeExecutor extends AbstractExecutor {
       item.add("subscribe");
       item.add(result.getChannel());
       item.add(result.getChannelCount());
+
       items.add(item);
     }
 
-    CountDownLatch subscriberLatch = context.getOrCreateEventLoopLatch();
-
     Runnable callback = () -> {
-      Consumer<Boolean> innerCallback = success -> {
-        for (SubscribeResult result : results) {
-          if (result.getSubscription() != null) {
-            if (success) {
-              result.getSubscription().readyToPublish();
-            } else {
-              result.getSubscription().shutdown();
-            }
-          }
+      for (SubscribeResult result : results) {
+        if (result.getSubscription() != null) {
+          result.getSubscription().readyToPublish();
         }
-        subscriberLatch.countDown();
-      };
-      context.changeChannelEventLoopGroup(context.getSubscriberGroup(), innerCallback);
+      }
     };
 
     RedisResponse response = RedisResponse.flattenedArray(items);

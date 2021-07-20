@@ -31,10 +31,8 @@ public interface PubSub {
   /**
    * Publish a message on a channel
    *
-   *
    * @param channel to publish to
    * @param message to publish
-   * @return the number of messages published
    */
   long publish(RegionProvider regionProvider, byte[] channel, byte[] message);
 

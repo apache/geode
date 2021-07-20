@@ -19,7 +19,6 @@ package org.apache.geode.redis.mocks;
 import java.util.List;
 
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.pubsub.PublishResultCollector;
 import org.apache.geode.redis.internal.pubsub.Subscription;
 
 public class DummySubscription implements Subscription {
@@ -35,8 +34,7 @@ public class DummySubscription implements Subscription {
   }
 
   @Override
-  public void publishMessage(byte[] channel, byte[] message,
-      PublishResultCollector publishResultCollector) {}
+  public void publishMessage(byte[] channel, byte[] message) {}
 
   @Override
   public boolean matchesClient(Client client) {

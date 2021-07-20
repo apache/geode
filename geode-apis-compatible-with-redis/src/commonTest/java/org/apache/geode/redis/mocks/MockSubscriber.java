@@ -15,6 +15,9 @@
 
 package org.apache.geode.redis.mocks;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +28,8 @@ import java.util.concurrent.TimeUnit;
 import redis.clients.jedis.Client;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class MockSubscriber extends JedisPubSub {
 
@@ -191,6 +196,20 @@ public class MockSubscriber extends JedisPubSub {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public void awaitPMessageReceived(long minNumOfReceivedMessages) {
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(4))
+        .pollDelay(Duration.ofMillis(30)).pollInterval(Duration.ofMillis(30))
+        .untilAsserted(() -> assertThat((long) this.getReceivedPMessages().size())
+            .isGreaterThanOrEqualTo(minNumOfReceivedMessages));
+  }
+
+  public void awaitMessageReceived(long minNumOfReceivedMessages) {
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(4))
+        .pollDelay(Duration.ofMillis(30)).pollInterval(Duration.ofMillis(30))
+        .untilAsserted(() -> assertThat((long) this.getReceivedMessages().size())
+            .isGreaterThanOrEqualTo(minNumOfReceivedMessages));
   }
 
   public static class UnsubscribeInfo {

@@ -167,11 +167,12 @@ public class PubSubDUnitTest {
         mockSubscribers.forEach(x -> x.awaitSubscribe(channelName));
 
         Jedis localPublisher = getConnection(random);
-        long published = localPublisher.publish(channelName, "hi");
-        publishCount.getAndAdd(published);
+        localPublisher.publish(channelName, "hi");
+        mockSubscribers.forEach((x) -> x.awaitMessageReceived(1L));
         localPublisher.close();
 
         mockSubscribers.forEach(s -> {
+          publishCount.addAndGet(s.getReceivedMessages().size());
           s.unsubscribe(channelName);
           s.awaitUnsubscribe(channelName);
         });
@@ -209,20 +210,18 @@ public class PubSubDUnitTest {
     MockSubscriber mockSubscriber1 = new MockSubscriber(latch);
     MockSubscriber mockSubscriber2 = new MockSubscriber(latch);
 
-    Future<Void> subscriber1Future =
-        executor.submit(() -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME));
+    executor.submit(() -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME));
     Future<Void> subscriber2Future =
         executor.submit(() -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
 
     assertThat(latch.await(30, TimeUnit.SECONDS)).as("channel subscription was not received")
         .isTrue();
 
-    Long result = publisher1.publish(CHANNEL_NAME, "hello");
-    assertThat(result).isEqualTo(2);
+    publisher1.publish(CHANNEL_NAME, "hello");
 
     server1.stop();
-    Long resultFromSecondMessage = publisher1.publish(CHANNEL_NAME, "hello again");
-    assertThat(resultFromSecondMessage).isEqualTo(1);
+    publisher1.publish(CHANNEL_NAME, "hello again");
+    mockSubscriber2.awaitMessageReceived(1L);
 
     mockSubscriber2.unsubscribe(CHANNEL_NAME);
     GeodeAwaitility.await().untilAsserted(subscriber2Future::get);
@@ -244,18 +243,17 @@ public class PubSubDUnitTest {
     Future<Void> subscriber2Future =
         executor.submit(() -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
 
-    assertThat(latch.await(30, TimeUnit.SECONDS)).as("channel subscription was not received")
-        .isTrue();
+    assertThat(latch.await(30, TimeUnit.SECONDS))
+        .as("channel subscription was not received").isTrue();
 
-    Long result = publisher1.publish(CHANNEL_NAME, "hello");
-    assertThat(result).isEqualTo(2);
+    publisher1.publish(CHANNEL_NAME, "hello");
 
     cluster.crashVM(2);
 
     boolean published = false;
     do {
       try {
-        result = publisher1.publish(CHANNEL_NAME, "hello again");
+        publisher1.publish(CHANNEL_NAME, "hello again");
         published = true;
       } catch (JedisConnectionException ex) {
         if (ex.getMessage().contains("Unexpected end of stream.")) {
@@ -266,7 +264,6 @@ public class PubSubDUnitTest {
         }
       }
     } while (!published);
-    assertThat(result).isLessThanOrEqualTo(1);
 
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
 
@@ -291,21 +288,19 @@ public class PubSubDUnitTest {
 
     Future<Void> subscriber1Future =
         executor.submit(() -> subscriber1.subscribe(mockSubscriber1, CHANNEL_NAME));
-    Future<Void> subscriber2Future =
-        executor.submit(() -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
+    executor.submit(() -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
 
     assertThat(latch.await(30, TimeUnit.SECONDS)).as("channel subscription was not received")
         .isTrue();
 
-    Long resultPublisher1 = publisher1.publish(CHANNEL_NAME, "hello");
-    Long resultPublisher2 = publisher2.publish(CHANNEL_NAME, "hello");
-    assertThat(resultPublisher1).isEqualTo(2);
-    assertThat(resultPublisher2).isEqualTo(2);
+    publisher1.publish(CHANNEL_NAME, "hello");
+    publisher2.publish(CHANNEL_NAME, "hello");
 
     server2.stop();
 
     publisher1.publish(CHANNEL_NAME, "hello again");
     publisher2.publish(CHANNEL_NAME, "hello again");
+    mockSubscriber1.awaitMessageReceived(1L);
 
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
 
@@ -329,8 +324,9 @@ public class PubSubDUnitTest {
     assertThat(latch.await(30, TimeUnit.SECONDS)).as("channel subscription was not received")
         .isTrue();
 
-    Long result = publisher1.publish(CHANNEL_NAME, "hello");
-    assertThat(result).isEqualTo(2);
+    publisher1.publish(CHANNEL_NAME, "hello");
+    mockSubscriber1.awaitMessageReceived(1L);
+    mockSubscriber2.awaitMessageReceived(1L);
 
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
     mockSubscriber2.unsubscribe(CHANNEL_NAME);
@@ -376,14 +372,20 @@ public class PubSubDUnitTest {
       GeodeAwaitility.await().untilAsserted(future::get);
     }
 
+
+
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber1.getReceivedMessages().size())
+            .isEqualTo(CLIENT_COUNT * ITERATIONS));
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(mockSubscriber2.getReceivedMessages().size())
+            .isEqualTo(CLIENT_COUNT * ITERATIONS));
+
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
     mockSubscriber2.unsubscribe(CHANNEL_NAME);
 
-    GeodeAwaitility.await().untilAsserted(subscriber1Future::get);
-    GeodeAwaitility.await().untilAsserted(subscriber2Future::get);
-
-    assertThat(mockSubscriber1.getReceivedMessages().size()).isEqualTo(CLIENT_COUNT * ITERATIONS);
-    assertThat(mockSubscriber2.getReceivedMessages().size()).isEqualTo(CLIENT_COUNT * ITERATIONS);
+    subscriber1Future.get();
+    subscriber2Future.get();
   }
 
   @Test
