@@ -196,6 +196,8 @@ public class GatewaySenderEventImpl
 
   private static final int VERSION_ACTION = 3;
 
+  public static final int UPDATE_ACTION_NO_GENERATE_CALLBACKS = 4;
+
   private static final int INVALIDATE_ACTION = 5;
   /**
    * Static constants for Operation detail of EntryEvent.
@@ -310,7 +312,7 @@ public class GatewaySenderEventImpl
 
     // Initialize the action and number of parts (called after _callbackArgument
     // is set above)
-    initializeAction(this.operation);
+    initializeAction(this.operation, event);
 
     // initialize the operation detail
     initializeOperationDetail(event.getOperation());
@@ -1021,7 +1023,7 @@ public class GatewaySenderEventImpl
    *
    * @param operation The operation from which to initialize this event's action and number of parts
    */
-  protected void initializeAction(EnumListenerEvent operation) {
+  protected void initializeAction(EnumListenerEvent operation, EntryEventImpl event) {
     if (operation == EnumListenerEvent.AFTER_CREATE) {
       // Initialize after create action
       action = CREATE_ACTION;
@@ -1064,6 +1066,13 @@ public class GatewaySenderEventImpl
       // Initialize number of parts
       // Since there is no value, there is one less part
       numberOfParts = (callbackArgument == null) ? 7 : 8;
+    } else if (operation == EnumListenerEvent.AFTER_UPDATE_WITH_GENERATE_CALLBACKS) {
+      if (event.isGenerateCallbacks()) {
+        action = UPDATE_ACTION;
+      } else {
+        action = UPDATE_ACTION_NO_GENERATE_CALLBACKS;
+      }
+      numberOfParts = (this.callbackArgument == null) ? 8 : 9;
     }
   }
 

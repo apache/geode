@@ -50,6 +50,7 @@ public class CommandAvailabilityIndicator extends GfshCommand {
       CliStrings.STOP_GATEWAYRECEIVER, CliStrings.LIST_GATEWAY, CliStrings.STATUS_GATEWAYSENDER,
       CliStrings.STATUS_GATEWAYRECEIVER, CliStrings.LOAD_BALANCE_GATEWAYSENDER,
       CliStrings.DESTROY_GATEWAYSENDER, AlterAsyncEventQueueCommand.COMMAND_NAME,
+      CliStrings.WAN_COPY_REGION,
       DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE,
       DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER,
       CreateJndiBindingCommand.CREATE_JNDIBINDING, DestroyJndiBindingCommand.DESTROY_JNDIBINDING,
