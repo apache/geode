@@ -20,6 +20,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_F
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
+import static org.apache.geode.redis.internal.netty.Coder.stripTrailingZeroFromDouble;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
 
@@ -28,6 +29,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -243,7 +245,8 @@ public class RedisSortedSet extends AbstractRedisData {
         continue;
       }
       byte[] oldScore = memberAdd(member, score);
-      if (options.isCH() && oldScore != null && !Arrays.equals(oldScore, score)) {
+      if (options.isCH() && oldScore != null
+          && !Arrays.equals(oldScore, stripTrailingZeroFromDouble(score))) {
         changesCount++;
       }
 
@@ -305,6 +308,46 @@ public class RedisSortedSet extends AbstractRedisData {
 
   List<byte[]> zrange(int min, int max, boolean withScores) {
     return getRange(min, max, withScores, false);
+  }
+
+
+  List<byte[]> zrangebyscore(SortedSetRangeOptions rangeOptions, boolean withScores) {
+    List<byte[]> result = new ArrayList<>();
+    AbstractOrderedSetEntry minEntry =
+        new DummyOrderedSetEntry(rangeOptions.getMinDouble(), rangeOptions.isMinExclusive(), true);
+    int minIndex = scoreSet.indexOf(minEntry);
+    if (minIndex >= scoreSet.size()) {
+      return Collections.emptyList();
+    }
+
+    AbstractOrderedSetEntry maxEntry =
+        new DummyOrderedSetEntry(rangeOptions.getMaxDouble(), rangeOptions.isMaxExclusive(), false);
+    int maxIndex = scoreSet.indexOf(maxEntry);
+    if (minIndex == maxIndex) {
+      return Collections.emptyList();
+    }
+
+    // Okay, if we make it this far there's a potential range of things to return.
+    int count = Integer.MAX_VALUE;
+    if (rangeOptions.hasLimit()) {
+      count = rangeOptions.getCount();
+      minIndex += rangeOptions.getOffset();
+      if (minIndex > getSortedSetSize()) {
+        return Collections.emptyList();
+      }
+    }
+    Iterator<AbstractOrderedSetEntry> entryIterator =
+        scoreSet.getIndexRange(minIndex, Math.min(count, maxIndex - minIndex), false);
+
+    while (entryIterator.hasNext()) {
+      AbstractOrderedSetEntry entry = entryIterator.next();
+
+      result.add(entry.member);
+      if (withScores) {
+        result.add(entry.scoreBytes);
+      }
+    }
+    return result;
   }
 
   long zrank(byte[] member) {
@@ -500,7 +543,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
     AbstractOrderedSetEntry(byte[] member, byte[] score) {
       this.member = member;
-      this.scoreBytes = score;
+      this.scoreBytes = stripTrailingZeroFromDouble(score);
       this.score = processByteArrayAsDouble(score);
     }
 

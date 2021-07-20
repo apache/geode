@@ -179,6 +179,9 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bWITHSCORES = stringToBytes("WITHSCORES");
 
+  @MakeImmutable
+  public static final byte[] bLIMIT = stringToBytes("LIMIT");
+
   // ********** Constants for Double Infinity comparisons **********
   public static final String P_INF = "+inf";
   public static final String INF = "inf";
@@ -225,6 +228,8 @@ public class StringBytesGlossary {
   public static final byte bLOWERCASE_Z = 122; // z
 
   public static final byte bLEFT_PAREN = 40; // (
+
+  public static final byte bPERIOD = 46; // .
 
 
   public static final String PING_RESPONSE = "PONG";
