@@ -19,6 +19,10 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+compileJava {
+  options.compilerArgs << '-Xlint:-sunapi'
+  options.compilerArgs << '-XDenableSunApiLintControl'
+}
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))

@@ -192,22 +192,22 @@ public class CertificateBuilder {
 
       byte[] keyIdBytes = new KeyIdentifier(publicKey).getIdentifier();
       SubjectKeyIdentifierExtension keyIdentifier = new SubjectKeyIdentifierExtension(keyIdBytes);
-      extensions.set(keyIdentifier.getExtensionId().toString(), keyIdentifier);
+      extensions.set(SubjectKeyIdentifierExtension.NAME, keyIdentifier);
 
       GeneralNames subjectAltNames = san();
       if (!subjectAltNames.isEmpty()) {
         SubjectAlternativeNameExtension altNames =
             new SubjectAlternativeNameExtension(subjectAltNames);
-        extensions.set(altNames.getExtensionId().toString(), altNames);
+        extensions.set(SubjectAlternativeNameExtension.NAME, altNames);
       }
 
       if (isCA) {
         KeyUsageExtension usageExtension = new KeyUsageExtension();
         usageExtension.set(KeyUsageExtension.KEY_CERTSIGN, true);
-        extensions.set(usageExtension.getExtensionId().toString(), usageExtension);
+        extensions.set(KeyUsageExtension.NAME, usageExtension);
 
         BasicConstraintsExtension basicConstraints = new BasicConstraintsExtension(true, 0);
-        extensions.set(basicConstraints.getExtensionId().toString(), basicConstraints);
+        extensions.set(BasicConstraintsExtension.NAME, basicConstraints);
       }
 
       if (!extensions.getAllExtensions().isEmpty()) {
@@ -216,6 +216,12 @@ public class CertificateBuilder {
 
       // Sign the cert to identify the algorithm that's used.
       X509CertImpl cert = new X509CertImpl(info);
+      cert.sign(privateKey, algorithm);
+
+      // Update the algorithm, and resign.
+      algo = (AlgorithmId) cert.get(X509CertImpl.SIG_ALG);
+      info.set(CertificateAlgorithmId.NAME + "." + CertificateAlgorithmId.ALGORITHM, algo);
+      cert = new X509CertImpl(info);
       cert.sign(privateKey, algorithm);
 
       return cert;

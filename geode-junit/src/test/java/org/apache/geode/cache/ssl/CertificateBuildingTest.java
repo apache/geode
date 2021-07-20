@@ -53,7 +53,6 @@ public class CertificateBuildingTest {
         X509TrustManager x509TrustManager = (X509TrustManager) trustManager;
         x509TrustManager
             .checkServerTrusted(new X509Certificate[] {
-                ca.getCertificate(),
                 cert.getCertificate()},
                 "RSA");
       }
