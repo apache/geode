@@ -38,8 +38,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.size.SingleObjectSizer;
-import org.apache.geode.internal.size.SizeableObjectSizer;
+import org.apache.geode.redis.internal.data.SizeableObjectSizer;
 
 /**
  * This class implements an order statistic tree which is based on AVL-trees.
@@ -60,7 +59,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>> implements Ord
   private int size;
   private int modCount;
   private int sizeInBytes = ORDER_STATISTICS_TREE_BASE_SIZE;
-  private static final SingleObjectSizer elementSizer = new SizeableObjectSizer();
+  private static final SizeableObjectSizer elementSizer = new SizeableObjectSizer();
 
   @Override
   public Iterator<E> iterator() {
@@ -745,11 +744,11 @@ public class OrderStatisticsTree<E extends Comparable<? super E>> implements Ord
   }
 
   void incrementSize(E element) {
-    sizeInBytes += (int) elementSizer.sizeof(element) + PER_ENTRY_OVERHEAD;
+    sizeInBytes += elementSizer.sizeof(element) + PER_ENTRY_OVERHEAD;
   }
 
   void decrementSize(E element) {
-    sizeInBytes -= (int) elementSizer.sizeof(element) + PER_ENTRY_OVERHEAD;
+    sizeInBytes -= elementSizer.sizeof(element) + PER_ENTRY_OVERHEAD;
   }
 
   @Override

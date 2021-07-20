@@ -22,9 +22,8 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
-import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.size.Sizeable;
+import org.apache.geode.redis.internal.data.SizeableObjectSizer;
 
 /**
  * An extention of {@link Object2ObjectOpenCustomHashMap} that supports
@@ -40,7 +39,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
   private static final long serialVersionUID = 9079713776660851891L;
   public static final int BACKING_ARRAY_OVERHEAD_CONSTANT = 128;
   public static final int BACKING_ARRAY_LENGTH_COEFFICIENT = 4;
-  private static final SingleObjectSizer elementSizer = new ReflectionSingleObjectSizer();
+  private static final SizeableObjectSizer elementSizer = new SizeableObjectSizer();
 
   private int arrayContentsOverhead;
 
@@ -197,10 +196,10 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     V oldValue = super.put(k, v);
     if (oldValue == null) {
       // A create
-      arrayContentsOverhead += (getElementSize(k) + getElementSize(v));
+      arrayContentsOverhead += elementSizer.sizeof(k) + elementSizer.sizeof(v);
     } else {
       // An update
-      arrayContentsOverhead += (getElementSize(v) - getElementSize(oldValue));
+      arrayContentsOverhead += elementSizer.sizeof(v) - elementSizer.sizeof(oldValue);
     }
     return oldValue;
   }
@@ -209,7 +208,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
   public V remove(Object k) {
     V oldValue = super.remove(k);
     if (oldValue != null) {
-      arrayContentsOverhead -= (getElementSize(k) + getElementSize(oldValue));
+      arrayContentsOverhead -= elementSizer.sizeof(k) + elementSizer.sizeof(oldValue);
     }
     return oldValue;
   }
@@ -224,14 +223,6 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     // This formula determined experimentally using tests.
     return BACKING_ARRAY_OVERHEAD_CONSTANT
         + BACKING_ARRAY_LENGTH_COEFFICIENT * getTotalBackingArrayLength();
-  }
-
-  private <E> int getElementSize(E element) {
-    if (element instanceof Sizeable) {
-      return ((Sizeable) element).getSizeInBytes();
-    } else {
-      return (int) elementSizer.sizeof(element);
-    }
   }
 
   @VisibleForTesting
