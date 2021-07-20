@@ -77,6 +77,13 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
+  public List<byte[]> zrevrangebyscore(RedisKey key, SortedSetRangeOptions rangeOptions,
+      boolean withScores) {
+    return stripedExecute(key,
+        () -> getRedisSortedSet(key, true).zrevrangebyscore(rangeOptions, withScores));
+  }
+
+  @Override
   public long zrank(RedisKey key, byte[] member) {
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zrank(member));
   }

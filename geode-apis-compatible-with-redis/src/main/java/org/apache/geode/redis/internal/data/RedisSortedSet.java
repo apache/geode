@@ -313,6 +313,9 @@ public class RedisSortedSet extends AbstractRedisData {
     return getRange(min, max, withScores, false);
   }
 
+  List<byte[]> zrevrangebyscore(SortedSetRangeOptions rangeOptions, boolean withScores) {
+    return null;
+  }
   List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
     // Assume that all members have the same score. Behaviour is unspecified otherwise.
     double score = scoreSet.get(0).score;

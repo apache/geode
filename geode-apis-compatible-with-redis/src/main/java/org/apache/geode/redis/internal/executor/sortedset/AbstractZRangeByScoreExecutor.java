@@ -17,7 +17,10 @@ package org.apache.geode.redis.internal.executor.sortedset;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLIMIT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWITHSCORES;
 
 import java.util.List;
@@ -27,37 +30,42 @@ import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZRangeByScoreExecutor extends AbstractExecutor {
+public abstract class AbstractZRangeByScoreExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
+
     List<byte[]> commandElements = command.getProcessedCommand();
 
-    SortedSetScoreRangeOptions rangeOptions;
+    SortedSetRangeOptions rangeOptions;
+    boolean withScores = false;
 
     try {
       byte[] minBytes = commandElements.get(2);
       byte[] maxBytes = commandElements.get(3);
-      rangeOptions = new SortedSetScoreRangeOptions(minBytes, maxBytes);
+      rangeOptions = new SortedSetRangeOptions(minBytes, maxBytes);
     } catch (NumberFormatException ex) {
       return RedisResponse.error(ERROR_MIN_MAX_NOT_A_FLOAT);
     }
 
     // Native redis allows multiple "withscores" and "limit ? ?" clauses; the last "limit"
     // clause overrides any previous ones
-    // Start parsing at index = 4, since 0 is the command name, 1 is the key, 2 is the min and 3 is
-    // the max
-    boolean withScores = false;
-
     if (commandElements.size() >= 5) {
-      for (int index = 4; index < commandElements.size(); ++index) {
+      int currentCommandElement = 4;
+
+      while (currentCommandElement < commandElements.size()) {
         try {
-          byte[] commandBytes = commandElements.get(index);
-          if (equalsIgnoreCaseBytes(commandBytes, bWITHSCORES)) {
+          if (equalsIgnoreCaseBytes(commandElements.get(currentCommandElement),
+              bWITHSCORES)) {
             withScores = true;
+            currentCommandElement++;
           } else {
-            rangeOptions.parseLimitArguments(commandElements, index);
-            // If we successfully parse a set of three LIMIT options, increment the index past them
-            index += 2;
+            if (isRev()) {
+              // No "LIMIT" option for ZREVRANGEBYSCORE
+              return RedisResponse.error(ERROR_SYNTAX);
+            }
+            parseLimitArguments(rangeOptions, commandElements, currentCommandElement);
+            currentCommandElement += 3;
           }
         } catch (NumberFormatException nfex) {
           return RedisResponse.error(ERROR_NOT_INTEGER);
@@ -67,18 +75,27 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
       }
     }
 
-    // If the range is empty, return early
-    if (rangeOptions.isEmptyRange()) {
+    // If the range is empty (min > max or min == max and both are exclusive), or
+    // limit specified but count is zero, return early
+    if ((rangeOptions.hasLimit() && (rangeOptions.getCount() == 0 || rangeOptions.getOffset() < 0))
+        ||
+        rangeOptions.getMinDouble() > rangeOptions.getMaxDouble() ||
+        (rangeOptions.getMinDouble() == rangeOptions.getMaxDouble())
+            && rangeOptions.isMinExclusive() && rangeOptions.isMaxExclusive()) {
       return RedisResponse.emptyArray();
     }
 
-    List<byte[]> result =
-        context.getSortedSetCommands().zrangebyscore(command.getKey(), rangeOptions, withScores);
+    List<byte[]> result;
+    if (isRev()) {
+      result = redisSortedSetCommands.zrevrangebyscore(command.getKey(), rangeOptions, withScores);
+    } else {
+      result = redisSortedSetCommands.zrangebyscore(command.getKey(), rangeOptions, withScores);
+    }
 
     return RedisResponse.array(result);
   }
 
-  void parseLimitArguments(SortedSetScoreRangeOptions rangeOptions, List<byte[]> commandElements,
+  void parseLimitArguments(SortedSetRangeOptions rangeOptions, List<byte[]> commandElements,
       int commandIndex) {
     int offset;
     int count;
@@ -95,8 +112,5 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
     rangeOptions.setLimitValues(offset, count);
   }
 
-  @Override
-  public boolean isRev() {
-    return false;
-  }
+  public abstract boolean isRev();
 }
