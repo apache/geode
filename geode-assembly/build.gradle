@@ -90,6 +90,7 @@ configurations {
   webServerTomcat7
   webServerTomcat8
   webServerTomcat9
+  webServerTomcat9020
   webServerJetty
 
   geodeArchives {
@@ -291,6 +292,7 @@ dependencies {
   upgradeTestImplementation('org.apache.httpcomponents:httpclient')
 
   upgradeTestCompileOnly(platform(project(':boms:geode-all-bom')))
+  upgradeTestCompileOnly('org.codehaus.cargo:cargo-core-uberjar')
   upgradeTestCompileOnly('io.swagger:swagger-annotations')
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
   upgradeTestRuntimeOnly(project(':extensions:session-testing-war'))
@@ -302,6 +304,7 @@ dependencies {
   webServerTomcat7('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat7.version') + '@zip')
   webServerTomcat8('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat8.version') + '@zip')
   webServerTomcat9('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat9.version') + '@zip')
+  webServerTomcat9020('org.apache.tomcat:tomcat:9.0.20@zip')
   webServerJetty('org.eclipse.jetty:jetty-distribution:' + DependencyConstraints.get('jetty.version') + '@zip')
 
   gfshDependencies ('org.springframework:spring-web') {
