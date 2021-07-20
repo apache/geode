@@ -841,11 +841,14 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       this.localAddress.setVmViewId(0);
       installView(newView);
       isJoined = true;
+      logger.info(
+          "EB: GMSJL.becomeCoordiator current view == null --- newView ID: " + newView.getViewId());
       createAndStartViewCreator(newView);
       startViewBroadcaster();
     } else {
       // create and send out a new view
       GMSMembershipView<ID> newView = copyCurrentViewAndAddMyAddress(oldCoordinator);
+      logger.info("EB: GMSJL.becomeCoordiator else --- newView ID: " + newView.getViewId());
       createAndStartViewCreator(newView);
       startViewBroadcaster();
     }
@@ -856,6 +859,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       services.getMessenger().initClusterKey();
       viewCreator = new ViewCreator("Geode Membership View Creator");
       if (newView != null) {
+        logger.info("EB: GMSJL.createAndStartViewCreator  newview != null --- newView ID: "
+            + newView.getViewId());
         viewCreator.setInitialView(newView, newView.getNewMembers(),
             newView.getShutdownMembers(),
             newView.getCrashedMembers());
@@ -2201,6 +2206,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
               iRemoves = initialRemovals;
             }
             if (iView != null) {
+              logger.info("EB: GMSJL.sendInitialView - before call to prepareAndSendView ID: "
+                  + iView.getViewId());
               prepareAndSendView(iView, iJoins, iLeaves, iRemoves);
             }
           } finally {
@@ -2575,6 +2582,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         Set<ID> leaveReqs, Set<ID> removalReqs)
         throws InterruptedException, ViewAbandonedException {
       boolean prepared;
+      logger.info("EB: GMSJL.prepareAndSendView top before do/while  ID: " + newView.getViewId());
+
       do {
         if (this.shutdown || Thread.currentThread().isInterrupted()) {
           return;
@@ -2709,6 +2718,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
 
       lastConflictingView = null;
 
+      logger.info("EB: GMSJL.prepareAndSendView before sendView call  ID: " + newView.getViewId());
       sendView(newView, joinReqs);
 
       // we also send a join response so that information like the multicast message digest
