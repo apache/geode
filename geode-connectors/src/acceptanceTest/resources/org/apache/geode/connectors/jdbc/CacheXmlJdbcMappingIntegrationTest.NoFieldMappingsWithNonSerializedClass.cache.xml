@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<cache
+        xmlns="http://geode.apache.org/schema/cache"
+        xmlns:jdbc="http://geode.apache.org/schema/jdbc"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://geode.apache.org/schema/cache
+        http://geode.apache.org/schema/cache/cache-1.0.xsd
+        http://geode.apache.org/schema/jdbc
+        http://geode.apache.org/schema/jdbc/jdbc-1.0.xsd"
+        version="1.0">
+
+    <region name="Region1" refid="REPLICATE">
+        <jdbc:mapping
+                data-source="TestDataSource"
+                table="employees"
+                pdx-name="org.apache.geode.connectors.jdbc.NonSerializedEmployee"
+                ids="id"
+        />
+    </region>
+
+    <jndi-bindings>
+        <jndi-binding type="SimpleDataSource"
+                      jndi-name="TestDataSource"
+                      jdbc-driver-class="com.mysql.jdbc.Driver"
+                      connection-url="${TestDataSourceUrl}">
+        </jndi-binding>
+    </jndi-bindings>
+</cache>
