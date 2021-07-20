@@ -427,7 +427,7 @@ public class RedisSortedSetTest {
   /****************** Size ******************/
 
   @Test
-  public void redisSortedSetGetSizeInBytes_isAccurate() {
+  public void redisSortedSetGetSizeInBytes_isAccurateForAddsUpdatesAndRemoves() {
     Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
     RedisKey mockKey = mock(RedisKey.class);
     ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);

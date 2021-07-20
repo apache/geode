@@ -153,17 +153,17 @@ public class RedisSortedSet extends AbstractRedisData {
     if (!super.equals(o)) {
       return false;
     }
-    RedisSortedSet redisSortedSet = (RedisSortedSet) o;
-    if (members.size() != redisSortedSet.members.size()) {
+    RedisSortedSet other = (RedisSortedSet) o;
+    if (members.size() != other.members.size()) {
       return false;
     }
 
     for (Map.Entry<byte[], OrderedSetEntry> entry : members.entrySet()) {
-      OrderedSetEntry orderedSetEntry = redisSortedSet.members.get(entry.getKey());
-      if (orderedSetEntry == null) {
+      OrderedSetEntry otherEntry = other.members.get(entry.getKey());
+      if (otherEntry == null) {
         return false;
       }
-      if (!Arrays.equals(orderedSetEntry.getScoreBytes(), (entry.getValue().getScoreBytes()))) {
+      if (Double.compare(otherEntry.getScore(), entry.getValue().getScore()) != 0) {
         return false;
       }
     }
@@ -188,7 +188,7 @@ public class RedisSortedSet extends AbstractRedisData {
     } else {
       scoreSet.remove(existingEntry);
       byte[] oldScore = existingEntry.scoreBytes;
-      existingEntry.updateScore(scoreToAdd);
+      existingEntry.updateScore(stripTrailingZeroFromDouble(scoreToAdd));
       members.put(memberToAdd, existingEntry);
       scoreSet.add(existingEntry);
       return oldScore;
@@ -282,15 +282,12 @@ public class RedisSortedSet extends AbstractRedisData {
 
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
-    byte[] byteScore = null;
     OrderedSetEntry orderedSetEntry = members.get(member);
-    if (orderedSetEntry != null) {
-      byteScore = orderedSetEntry.getScoreBytes();
-    }
     double incr = processByteArrayAsDouble(increment);
 
-    if (byteScore != null) {
-      incr += bytesToDouble(byteScore);
+    if (orderedSetEntry != null) {
+      double byteScore = orderedSetEntry.getScore();
+      incr += byteScore;
 
       if (Double.isNaN(incr)) {
         throw new NumberFormatException(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
@@ -560,12 +557,16 @@ public class RedisSortedSet extends AbstractRedisData {
       return comparison;
     }
 
+    public byte[] getMember() {
+      return member;
+    }
+
     public byte[] getScoreBytes() {
       return scoreBytes;
     }
 
-    public byte[] getMember() {
-      return member;
+    public double getScore() {
+      return score;
     }
 
     public abstract int compareMembers(byte[] array1, byte[] array2);
