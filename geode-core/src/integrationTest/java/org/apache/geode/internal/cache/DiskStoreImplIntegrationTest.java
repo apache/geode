@@ -295,6 +295,23 @@ public class DiskStoreImplIntegrationTest {
     assertThat(oplogFileIsInDir(9, dirs[0])).isFalse();
   }
 
+  @Test
+  public void oplogWriteBufferSizeIsEqualsToDiskStoreWriteBufferSize() throws Exception {
+    File[] diskDirs = new File[1];
+    int expectedWriteBufferSize = 12345;
+    diskDirs[0] = temporaryDirectory.newFolder("dir1");
+    cache = createCache();
+    cache.createDiskStoreFactory().setWriteBufferSize(expectedWriteBufferSize).setDiskDirs(diskDirs)
+        .create(DISK_STORE_NAME);
+    Region region = cache.<String, String>createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
+        .setDiskStoreName(DISK_STORE_NAME).create(REGION_NAME);
+    putEntries(region, 1);
+    DiskStore diskStore = cache.findDiskStore(DISK_STORE_NAME);
+    assertThat(diskStore.getWriteBufferSize()).isEqualTo(expectedWriteBufferSize);
+    Oplog oplog = ((DiskStoreImpl) diskStore).getPersistentOplogs().getChild();
+    assertThat(oplog.getWriteBuf().capacity()).isEqualTo(expectedWriteBufferSize);
+  }
+
   /**
    * Returns true if the files of the given oplog file are in the
    * given directory.
