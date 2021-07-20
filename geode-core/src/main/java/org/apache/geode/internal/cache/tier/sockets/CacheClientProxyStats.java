@@ -60,6 +60,8 @@ public class CacheClientProxyStats implements MessageStats {
   private static final String DELTA_FULL_MESSAGES_SENT = "deltaFullMessagesSent";
   /** Name of the CQ count statistic */
   private static final String CQ_COUNT = "cqCount";
+  /** Name of the messages waiting to be put in queue statistic */
+  private static final String MESSAGES_WAITING_TO_QUEUE = "messagesWaitingToQueue";
 
   /** Id of the messages received statistic */
   private static final int _messagesReceivedId;
@@ -84,6 +86,9 @@ public class CacheClientProxyStats implements MessageStats {
   /** Id of the CQ count statistic */
   private static final int _cqCountId;
   private static final int _sentBytesId;
+
+  /** Id of the messages waiting to be put in queue statistic */
+  private static final int _messagesWaitingToQueueId;
 
   /*
    * Static initializer to create and initialize the <code>StatisticsType</code>
@@ -128,7 +133,11 @@ public class CacheClientProxyStats implements MessageStats {
             "operations"),
 
         f.createLongCounter(CQ_COUNT, "Number of CQs on the client.", "operations"),
-        f.createLongCounter("sentBytes", "Total number of bytes sent to client.", "bytes"),});
+        f.createLongCounter("sentBytes", "Total number of bytes sent to client.", "bytes"),
+        f.createLongGauge(MESSAGES_WAITING_TO_QUEUE,
+            "Threads currently adding a message to the queue. Consistently high values indicate that the queue is full and adds are being delayed.",
+            "threads"),
+    });
 
     // Initialize id fields
     _messagesReceivedId = _type.nameToId(MESSAGES_RECEIVED);
@@ -143,6 +152,8 @@ public class CacheClientProxyStats implements MessageStats {
     _deltaFullMessagesSentId = _type.nameToId(DELTA_FULL_MESSAGES_SENT);
     _cqCountId = _type.nameToId(CQ_COUNT);
     _sentBytesId = _type.nameToId("sentBytes");
+    _messagesWaitingToQueueId = _type.nameToId(MESSAGES_WAITING_TO_QUEUE);
+
   }
 
   ////////////////////// Instance Fields //////////////////////
@@ -272,6 +283,15 @@ public class CacheClientProxyStats implements MessageStats {
   }
 
   /**
+   * Returns the current value of the "_messagesWaitingToQueue" stat.
+   *
+   * @return the current value of the "_messagesWaitingToQueue" stat
+   */
+  public long getMessagesWaitingToQueue() {
+    return this._stats.getLong(_messagesWaitingToQueueId);
+  }
+
+  /**
    * Increments the "messagesReceived" stat.
    */
   public void incMessagesReceived() {
@@ -314,10 +334,25 @@ public class CacheClientProxyStats implements MessageStats {
   }
 
   /**
+   * Increments the "messagesWaitingToQueue" stat.
+   */
+  public void incMessagesWaitingToQueue() {
+    this._stats.incLong(_messagesWaitingToQueueId, 1);
+  }
+
+
+  /**
    * Decrements the "cqCount" stat.
    */
   public void decCqCount() {
     this._stats.incInt(_cqCountId, -1);
+  }
+
+  /**
+   * Decrements the "messagesWaitingToQueue" stat.
+   */
+  public void decMessagesWaitingToQueue() {
+    this._stats.incLong(_messagesWaitingToQueueId, -1);
   }
 
   /**
