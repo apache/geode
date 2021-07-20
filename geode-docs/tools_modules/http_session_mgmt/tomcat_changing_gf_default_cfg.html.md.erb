@@ -36,11 +36,12 @@ On the application server side, the default inactive interval for session expira
 ``` pre
 <Listener 
   className="org.apache.geode.modules.session.catalina.xxxLifecycleListener"
-  name="value" 
-  name="value" 
+  property-name="property-value" 
+  property-name="property-value" 
   ...
 /> 
 ```
+where `property-name` is the name of a property and `property-value` is that property's value.
 
 If the `xxxLifecycleListener` is a `PeerToPeerCacheLifecycleListener`, then a minimal addition to the `server.xml` file is
 
@@ -53,21 +54,21 @@ If the `xxxLifecycleListener` is a `PeerToPeerCacheLifecycleListener`, then a mi
  /> 
 ```
 
-The list of configurable Tomcat's `server.xml` system properties include any of the properties that can be specified in <%=vars.product_name%>'s `gemfire.properties` file. The following list contains some of the properties that can be configured.
+The list of Tomcat's configurable `server.xml` system properties includes any of the properties that can be specified in <%=vars.product_name%>'s `gemfire.properties` file. The following list contains some of the properties that can be configured.
 
-| Parameter                                 | Description                                                                                                                                                                                 | Default                                                                 |
-|-------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
-| cache-xml-file                            | name of the cache configuration file                                                                                                                                                        | `cache-peer.xml` for peer-to-peer, `cache-client.xml` for client/server |
+| Property                                 | Description                           | Default  |
+|------------------------------------------|---------------------------------------|----------|
+| cache-xml-file                            | name of the cache configuration file | `cache-peer.xml` for peer-to-peer, `cache-client.xml` for client/server |
 | locators (only for peer-to-peer topology) | (required) list of locators (host\[port\]) used by <%=vars.product_name%> members; if a single locator listens on its default port, then set this value to `"localhost[10334]"` | empty string                                                            |
-| log-file                                  | name of the <%=vars.product_name%> log file                                                                                                                                     | `gemfire_modules.log`                                                   |
-| statistic-archive-file                    | name of the <%=vars.product_name%> statistics file                                                                                                                              | `gemfire_modules.gfs`                                                   |
-| statistic-sampling-enabled                | whether <%=vars.product_name%> statistics sampling is enabled                                                                                                                   | false                                                                   |
+| log-file                                  | name of the <%=vars.product_name%> log file | `gemfire_modules.log`   |
+| statistic-archive-file                    | name of the <%=vars.product_name%> statistics file                    | `gemfire_modules.gfs` |
+| statistic-sampling-enabled                | whether <%=vars.product_name%> statistics sampling is enabled         | false                 |
 
 For more information on these properties, along with the full list of properties, see the [Reference](../../reference/book_intro.html#reference).
 
 In addition to the standard <%=vars.product_name%> system properties, the following cache-specific properties can also be configured with the `LifecycleListener`.
 
-| Parameter              | Description                                                                                     | Default      |
+| Property               | Description                                                                                     | Default      |
 |------------------------|-------------------------------------------------------------------------------------------------|--------------|
 | criticalHeapPercentage | percentage of heap at which updates to the cache are refused                                    | 0 (disabled) |
 | evictionHeapPercentage | percentage of heap at which session eviction begins                                             | 80.0         |
@@ -82,13 +83,13 @@ To edit <%=vars.product_name%> cache properties such as the name and the charact
 ``` pre
 <Manager 
   className="org.apache.geode.modules.session.catalina.Tomcat9DeltaSessionManager"
-  name="value" 
-  name="value" 
+  property-name="property-value" 
+  property-name="property-value" 
   ...
 /> 
 ```
-
-In the preceding code snippet, `name` is the property name and `value` is the property value. For example:
+where `property-name` is the name of a property and `property-value` is that property's value.
+For example, this entry creates a partitioned region by the name of "my\_region".
 
 ``` pre
 <Manager className="org.apache.geode.modules.session.catalina.
@@ -97,8 +98,6 @@ In the preceding code snippet, `name` is the property name and `value` is the pr
   regionName="my_region" 
 /> 
 ```
-
-This example creates a partitioned region by the name of "my\_region".
 
 The following parameters are the cache configuration parameters that can be added to Tomcat's `context.xml` file.
 
