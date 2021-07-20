@@ -92,8 +92,8 @@ public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunction
   }
 
   @Override
-  public Pair<Integer, List<byte[]>> hscan(RedisKey key, Pattern matchPattern,
-      int count, int cursor) {
+  public Pair<Integer, List<byte[]>> hscan(RedisKey key, Pattern matchPattern, int count,
+      int cursor) {
     return stripedExecute(key,
         () -> getRedisHash(key, true)
             .hscan(matchPattern, count, cursor));

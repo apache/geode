@@ -57,9 +57,6 @@ public class HScanExecutor extends AbstractScanExecutor {
 
     String cursorString = bytesToString(commandElems.get(2));
     int cursor;
-    Pattern matchPattern;
-    String globPattern = null;
-    int count = DEFAULT_COUNT;
 
     try {
       cursor = Integer.parseInt(cursorString);
@@ -79,6 +76,8 @@ public class HScanExecutor extends AbstractScanExecutor {
 
     command.getCommandType().checkDeferredParameters(command, context);
 
+    int count = DEFAULT_COUNT;
+    String globPattern = null;
     for (int i = 3; i < commandElems.size(); i = i + 2) {
       byte[] commandElemBytes = commandElems.get(i);
       if (equalsIgnoreCaseBytes(commandElemBytes, bMATCH)) {
@@ -101,6 +100,7 @@ public class HScanExecutor extends AbstractScanExecutor {
         return RedisResponse.error(ERROR_SYNTAX);
       }
     }
+    Pattern matchPattern;
     try {
       matchPattern = convertGlobToRegex(globPattern);
     } catch (PatternSyntaxException e) {
