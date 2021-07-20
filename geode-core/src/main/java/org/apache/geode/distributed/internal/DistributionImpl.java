@@ -387,6 +387,11 @@ public class DistributionImpl implements Distribution {
         Throwable th = it_causes.next();
 
         if (!membership.hasMember(member) || (th instanceof ShunnedMemberException)) {
+          if (logger.isDebugEnabled()) {
+            logger
+                .debug(String.format("Failed to send message <%s> to member <%s> no longer in view",
+                    content.getShortClassName(), member), th);
+          }
           continue;
         }
         logger
@@ -395,7 +400,6 @@ public class DistributionImpl implements Distribution {
                 // view object. Is it ok to log membershipManager.getView here?
                 new Object[] {content, member, membership.getView()}),
                 th);
-        // Assert.assertTrue(false, "messaging contract failure");
       }
       return new HashSet<>(members);
     } // catch ConnectionExceptions
