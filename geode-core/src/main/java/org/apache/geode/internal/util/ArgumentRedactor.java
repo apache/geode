@@ -12,118 +12,62 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.util;
 
-import java.util.Collections;
+import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.toList;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PREFIX;
+import static org.apache.geode.distributed.internal.DistributionConfig.SSL_SYSTEM_PROPS_NAME;
+import static org.apache.geode.distributed.internal.DistributionConfig.SYS_PROP_NAME;
+import static org.apache.geode.internal.util.ArrayUtils.asList;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.DistributionConfig;
 
 public class ArgumentRedactor {
-  public static final String redacted = "********";
 
-  @Immutable
-  private static final List<String> tabooToContain =
-      Collections.unmodifiableList(ArrayUtils.asList("password"));
-  @Immutable
-  private static final List<String> tabooForOptionToStartWith =
-      Collections.unmodifiableList(ArrayUtils.asList(DistributionConfig.SYS_PROP_NAME,
-          DistributionConfig.SSL_SYSTEM_PROPS_NAME,
-          ConfigurationProperties.SECURITY_PREFIX));
-
-  private static final Pattern optionWithArgumentPattern = getOptionWithArgumentPattern();
-
+  public static final String REDACTED = "********";
 
   /**
-   * This method returns the {@link java.util.regex.Pattern} given below, used to capture
-   * command-line options that accept an argument. For clarity, the regex is given here without
-   * the escape characters required by Java's string handling.
-   * <p>
-   *
-   * {@code ((?:^| )(?:--J=)?--?)([^\s=]+)(?=[ =])( *[ =] *)(?! *-)((?:"[^"]*"|\S+))}
-   *
-   * <p>
-   * This pattern consists of one captured boundary,
-   * three additional capture groups, and two look-ahead boundaries.
-   *
-   * <p>
-   * The four capture groups are:
-   * <ul>
-   * <li>[1] The beginning boundary, including at most one leading space,
-   * possibly including "--J=", and including the option's leading "-" or "--"</li>
-   * <li>[2] The option, which cannot include spaces</li>
-   * <li>[3] The option / argument separator, consisting of at least one character
-   * made of spaces and/or at most one "="</li>
-   * <li>[4] The argument, which terminates at the next space unless it is encapsulated by
-   * quotation-marks, in which case it terminates at the next quotation mark.</li>
-   * </ul>
-   *
-   * Look-ahead groups avoid falsely identifying two flag options (e.g. `{@code --help --all}`) from
-   * interpreting the second flag as the argument to the first option
-   * (here, misinterpreting as `{@code --help="--all"}`).
-   * <p>
-   *
-   * Note that at time of writing, the argument (capture group 4) is not consumed by this class's
-   * logic, but its capture has proven repeatedly useful during iteration and testing.
+   * Taboo for an argument (option=argument) to contain this list of strings.
    */
-  private static Pattern getOptionWithArgumentPattern() {
-    String capture_beginningBoundary;
-    {
-      String spaceOrBeginningAnchor = "(?:^| )";
-      String maybeLeadingWithDashDashJEquals = "(?:--J=)?";
-      String oneOrTwoDashes = "--?";
-      capture_beginningBoundary =
-          "(" + spaceOrBeginningAnchor + maybeLeadingWithDashDashJEquals + oneOrTwoDashes + ")";
-    }
+  @Immutable
+  private static final List<String> TABOO_TO_CONTAIN =
+      unmodifiableList(asList("password"));
 
-    String capture_optionNameHasNoSpaces = "([^\\s=]+)";
+  /**
+   * Taboo for an option (option=argument) to contain this list of strings.
+   */
+  @Immutable
+  private static final List<String> TABOO_FOR_OPTION_TO_START_WITH =
+      unmodifiableList(asList(SYS_PROP_NAME, SSL_SYSTEM_PROPS_NAME, SECURITY_PREFIX));
 
-    String boundary_lookAheadForSpaceOrEquals = "(?=[ =])";
-
-    String capture_optionArgumentSeparator = "( *[ =] *)";
-
-    String boundary_negativeLookAheadToPreventNextOptionAsThisArgument = "(?! *-)";
-
-    String capture_Argument;
-    {
-      String argumentCanBeAnythingBetweenQuotes = "\"[^\"]*\"";
-      String argumentCanHaveNoSpacesWithoutQuotes = "\\S+";
-      String argumentCanBeEitherOfTheAbove = "(?:" + argumentCanBeAnythingBetweenQuotes + "|"
-          + argumentCanHaveNoSpacesWithoutQuotes + ")";
-      capture_Argument = "(" + argumentCanBeEitherOfTheAbove + ")";
-    }
-
-    String fullPattern = capture_beginningBoundary + capture_optionNameHasNoSpaces
-        + boundary_lookAheadForSpaceOrEquals + capture_optionArgumentSeparator
-        + boundary_negativeLookAheadToPreventNextOptionAsThisArgument + capture_Argument;
-    return Pattern.compile(fullPattern);
+  private ArgumentRedactor() {
+    // do not instantiate
   }
 
-  private ArgumentRedactor() {}
-
   /**
-   * Parse a string to find option/argument pairs and redact the arguments if necessary.<br>
+   * Parse a string to find option/argument pairs and redact the arguments if necessary.
    *
+   * <p>
    * The following format is expected:<br>
    * - Each option/argument pair should be separated by spaces.<br>
    * - The option of each pair must be preceded by at least one hyphen '-'.<br>
    * - Arguments may or may not be wrapped in quotation marks.<br>
    * - Options and arguments may be separated by an equals sign '=' or any number of spaces.<br>
-   * <br>
+   *
+   * <p>
    * Examples:<br>
    * "--password=secret"<br>
    * "--user me --password secret"<br>
    * "-Dflag -Dopt=arg"<br>
    * "--classpath=."<br>
    *
-   * See {@link #getOptionWithArgumentPattern()} for more information on
-   * the regular expression used.
+   * <p>
+   * See {@link ArgumentRedactorRegex} for more information on the regular expression used.
    *
    * @param line The argument input to be parsed
    * @param permitFirstPairWithoutHyphen When true, prepends the line with a "-", which is later
@@ -132,14 +76,13 @@ public class ArgumentRedactor {
    * @return A redacted string that has sensitive information obscured.
    */
   public static String redact(String line, boolean permitFirstPairWithoutHyphen) {
-
     boolean wasPaddedWithHyphen = false;
     if (!line.trim().startsWith("-") && permitFirstPairWithoutHyphen) {
       line = "-" + line.trim();
       wasPaddedWithHyphen = true;
     }
 
-    Matcher matcher = optionWithArgumentPattern.matcher(line);
+    Matcher matcher = ArgumentRedactorRegex.getPattern().matcher(line);
     while (matcher.find()) {
       String option = matcher.group(2);
       if (!isTaboo(option)) {
@@ -148,7 +91,7 @@ public class ArgumentRedactor {
 
       String leadingBoundary = matcher.group(1);
       String separator = matcher.group(3);
-      String withRedaction = leadingBoundary + option + separator + redacted;
+      String withRedaction = leadingBoundary + option + separator + REDACTED;
       line = line.replace(matcher.group(), withRedaction);
     }
 
@@ -159,14 +102,13 @@ public class ArgumentRedactor {
   }
 
   /**
-   * Alias for {@code redact(line, true)}. See
-   * {@link org.apache.geode.internal.util.ArgumentRedactor#redact(java.lang.String, boolean)}
+   * Alias for {@code redact(line, true)}.
    */
   public static String redact(String line) {
     return redact(line, true);
   }
 
-  public static String redact(final List<String> args) {
+  public static String redact(final Iterable<String> args) {
     return redact(String.join(" ", args));
   }
 
@@ -182,7 +124,7 @@ public class ArgumentRedactor {
    */
   public static String redactArgumentIfNecessary(String option, String argument) {
     if (isTaboo(option)) {
-      return redacted;
+      return REDACTED;
     }
     return argument;
   }
@@ -198,7 +140,7 @@ public class ArgumentRedactor {
     if (option == null) {
       return false;
     }
-    for (String taboo : tabooForOptionToStartWith) {
+    for (String taboo : TABOO_FOR_OPTION_TO_START_WITH) {
       // If a parameter is passed with -Dsecurity-option=argument, the option option is
       // "Dsecurity-option".
       // With respect to taboo words, also check for the addition of the extra D
@@ -206,7 +148,7 @@ public class ArgumentRedactor {
         return true;
       }
     }
-    for (String taboo : tabooToContain) {
+    for (String taboo : TABOO_TO_CONTAIN) {
       if (option.toLowerCase().contains(taboo)) {
         return true;
       }
@@ -214,7 +156,9 @@ public class ArgumentRedactor {
     return false;
   }
 
-  public static List<String> redactEachInList(List<String> argList) {
-    return argList.stream().map(ArgumentRedactor::redact).collect(Collectors.toList());
+  public static List<String> redactEachInList(Collection<String> argList) {
+    return argList.stream()
+        .map(ArgumentRedactor::redact)
+        .collect(toList());
   }
 }
