@@ -162,6 +162,7 @@ public class LocalHostUtil {
         Enumeration<InetAddress> addrs = face.getInetAddresses();
         while (addrs.hasMoreElements()) {
           InetAddress addr = addrs.nextElement();
+          addr = convertFromIPv4MappedAddress(addr);
           if (addr.isLoopbackAddress() || addr.isAnyLocalAddress()
               || (!useLinkLocalAddresses && addr.isLinkLocalAddress())) {
             locals.add(addr);
@@ -171,13 +172,61 @@ public class LocalHostUtil {
         } // while
       }
     } // while
-    // fix for bug #42427 - allow product to run on a standalone box by using
+    // allow product to run on a standalone box by using
     // local addresses if there are no non-local addresses available
     if (result.size() == 0) {
       return locals;
     } else {
       return result;
     }
+  }
+
+  /**
+   * Converts an IPv4-mapped IPv6 address to an IPv4 address.
+   *
+   * {@link Inet6Address} documentation states that Java will never return an IPv4-mapped IPv6
+   * address. However, we found that {@link NetworkInterface#getInetAddresses} can return
+   * an IPv4-mapped address.
+   * This can become a problem if {@link NetworkInterface#getInetAddresses} returns
+   * an IPv4-mapped IPv6 address that represents an IPv4 loopback address (i.e. "::ffff:127.0.0.1")
+   * because {@link Inet6Address#isLoopbackAddress()} will not recognize it
+   * as a loopback address.
+   *
+   * @return an IPv4 address if the provided address is an IPv4-mapped IPv6 address,
+   *         otherwise returns the original address.
+   */
+  static InetAddress convertFromIPv4MappedAddress(final InetAddress address) {
+    InetAddress result = address;
+    if (address instanceof Inet6Address && isIPv4MappedAddress(address.getAddress())) {
+      try {
+        result = Inet6Address.getByAddress(address.getAddress());
+      } catch (UnknownHostException e) {
+        // return the original address
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Utility routine to check if the InetAddress is an IPv4-mapped IPv6 address.
+   *
+   * @return a <code>boolean</code> indicating if the InetAddress is
+   *         an IPv4-mapped IPv6 address; or false if address is IPv4 address.
+   */
+  static boolean isIPv4MappedAddress(byte[] addr) {
+    if (addr.length < 16) {
+      return false;
+    }
+    if ((addr[0] == 0x00) && (addr[1] == 0x00) &&
+        (addr[2] == 0x00) && (addr[3] == 0x00) &&
+        (addr[4] == 0x00) && (addr[5] == 0x00) &&
+        (addr[6] == 0x00) && (addr[7] == 0x00) &&
+        (addr[8] == 0x00) && (addr[9] == 0x00) &&
+        (addr[10] == (byte) 0xff) &&
+        (addr[11] == (byte) 0xff)) {
+      return true;
+    }
+    return false;
   }
 
   /**
