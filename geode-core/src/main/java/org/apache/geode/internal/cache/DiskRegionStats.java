@@ -21,6 +21,7 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * GemFire statistics about a {@link DiskRegion}.
@@ -221,6 +222,12 @@ public class DiskRegionStats {
    */
   public void incNumOverflowOnDisk(long delta) {
     this.stats.incLong(numOverflowOnDiskId, delta);
+    if (this.stats.getTextId()
+        .contains("ln_for_testParallelGatewaySenderOverflowMBeanAttributesAfterServerRestart")) {
+      LogService.getLogger().warn(
+          "XXX DiskRegionStats.incNumOverflowOnDisk name=" + this.stats.getTextId() + "; delta="
+              + delta + "; numOverflowOnDisk=" + this.stats.getLong(numOverflowOnDiskId));
+    }
   }
 
   /**
