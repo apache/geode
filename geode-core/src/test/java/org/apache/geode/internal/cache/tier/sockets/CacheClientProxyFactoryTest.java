@@ -33,6 +33,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxyFactory.InternalCacheClientProxyFactory;
+import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -82,7 +83,7 @@ public class CacheClientProxyFactoryTest {
     CacheClientProxyFactory factory = new CacheClientProxyFactory();
 
     CacheClientProxy proxy = factory.create(notifier, socket, proxyId, false, CONFLATION_DEFAULT,
-        clientVersion, 0, false, securityService, subject, statisticsClock);
+        clientVersion, 0, false, securityService, subject, statisticsClock, null);
 
     assertThat(proxy).isExactlyInstanceOf(CacheClientProxy.class);
   }
@@ -94,7 +95,7 @@ public class CacheClientProxyFactoryTest {
     CacheClientProxyFactory factory = new CacheClientProxyFactory();
 
     CacheClientProxy proxy = factory.create(notifier, socket, proxyId, false, CONFLATION_DEFAULT,
-        clientVersion, 0, false, securityService, subject, statisticsClock);
+        clientVersion, 0, false, securityService, subject, statisticsClock, null);
 
     assertThat(proxy).isExactlyInstanceOf(SubCacheClientProxy.class);
 
@@ -106,11 +107,12 @@ public class CacheClientProxyFactoryTest {
     public CacheClientProxy create(CacheClientNotifier notifier, Socket socket,
         ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
         KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
-        SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
+        SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
+        NioFilter ioFilter)
         throws CacheException {
       return new SubCacheClientProxy(notifier, socket, proxyId, isPrimary, clientConflation,
           clientVersion, acceptorId, notifyBySubscription, securityService, subject,
-          statisticsClock);
+          statisticsClock, ioFilter);
     }
   }
 
@@ -119,10 +121,11 @@ public class CacheClientProxyFactoryTest {
     SubCacheClientProxy(CacheClientNotifier notifier, Socket socket,
         ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
         KnownVersion clientVersion, long acceptorId, boolean notifyBySubscription,
-        SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
+        SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
+        NioFilter ioFilter)
         throws CacheException {
       super(notifier, socket, proxyId, isPrimary, clientConflation, clientVersion, acceptorId,
-          notifyBySubscription, securityService, subject, statisticsClock);
+          notifyBySubscription, securityService, subject, statisticsClock, ioFilter);
     }
   }
 }

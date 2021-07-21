@@ -438,6 +438,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     try {
       nioSslEngine.handshake(socketChannel, timeout, peerNetBuffer);
     } catch (SSLException e) {
+      nioSslEngine.close(socketChannel);
       if (!socketChannel.socket().isClosed()) {
         socketChannel.close();
       }

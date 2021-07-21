@@ -73,7 +73,7 @@ public class CacheClientProxyTest {
 
     CacheClientProxy proxy = new CacheClientProxy(ccn, socket, proxyID, true,
         Handshake.CONFLATION_DEFAULT, KnownVersion.CURRENT, 1L, true,
-        null, null, mock(StatisticsClock.class));
+        null, null, mock(StatisticsClock.class), null);
 
     CompletableFuture<Void> result1 = executorServiceRule.runAsync(() -> proxy.close());
     CompletableFuture<Void> result2 = executorServiceRule.runAsync(() -> proxy.close());
