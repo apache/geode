@@ -15,14 +15,14 @@
 package org.apache.geode.session.tests;
 
 import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER;
-import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT8;
+import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT8_RECENT;
 
 import java.util.function.IntSupplier;
 
 public class Tomcat8CachingClientServerTest extends TomcatClientServerTest {
   @Override
   public ContainerInstall getInstall(IntSupplier portSupplier) throws Exception {
-    return new TomcatInstall(getClass().getSimpleName(), TOMCAT8, CACHING_CLIENT_SERVER,
+    return new TomcatInstall(getClass().getSimpleName(), TOMCAT8_RECENT, CACHING_CLIENT_SERVER,
         portSupplier, TomcatInstall.CommitValve.DEFAULT);
   }
 }

@@ -15,14 +15,14 @@
 package org.apache.geode.session.tests;
 
 import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.PEER_TO_PEER;
-import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT8;
+import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT8_RECENT;
 
 import java.util.function.IntSupplier;
 
 public class Tomcat8Test extends CargoTestBase {
   @Override
   public ContainerInstall getInstall(IntSupplier portSupplier) throws Exception {
-    return new TomcatInstall(getClass().getSimpleName(), TOMCAT8, PEER_TO_PEER, portSupplier,
+    return new TomcatInstall(getClass().getSimpleName(), TOMCAT8_RECENT, PEER_TO_PEER, portSupplier,
         TomcatInstall.CommitValve.DEFAULT);
   }
 }

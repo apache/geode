@@ -85,18 +85,20 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
   protected String classPathTomcat8;
   protected String serverDir;
   protected String locatorDir;
+  private final String version;
 
   protected TomcatSessionBackwardsCompatibilityTestBase(String version) {
     VersionManager versionManager = VersionManager.getInstance();
-    String installLocation = installLocation = versionManager.getInstall(version);
+    String installLocation = versionManager.getInstall(version);
+    this.version = version;
     oldBuild = new File(installLocation);
     oldModules = new File(installLocation + "/tools/Modules/");
   }
 
-  protected void startServer(String name, String classPath, int locatorPort) throws Exception {
+  protected void startServer(String classPath, int locatorPort) throws Exception {
     serverDir = tempFolder.newFolder("server").getPath();
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
-    command.addOption(CliStrings.START_SERVER__NAME, name);
+    command.addOption(CliStrings.START_SERVER__NAME, "server");
     command.addOption(CliStrings.START_SERVER__SERVER_PORT, "0");
     command.addOption(CliStrings.START_SERVER__CLASSPATH, classPath);
     command.addOption(CliStrings.START_SERVER__LOCATORS, "localhost[" + locatorPort + "]");
@@ -104,10 +106,10 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
     gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
   }
 
-  protected void startLocator(String name, String classPath, int port) throws Exception {
+  protected void startLocator(String classPath, int port) throws Exception {
     locatorDir = tempFolder.newFolder("locator").getPath();
     CommandStringBuilder locStarter = new CommandStringBuilder(CliStrings.START_LOCATOR);
-    locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, name);
+    locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, "loc");
     locStarter.addOption(CliStrings.START_LOCATOR__CLASSPATH, classPath);
     locStarter.addOption(CliStrings.START_LOCATOR__PORT, Integer.toString(port));
     locStarter.addOption(CliStrings.START_LOCATOR__DIR, locatorDir);
@@ -116,6 +118,13 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
 
   @Before
   public void setup() throws Exception {
+    TomcatInstall.TomcatVersion tomcat8Version = TomcatInstall.TomcatVersion.TOMCAT8_5_66;
+    if (TestVersion.compare(version, "1.13.2") > 0 ||
+        (TestVersion.compare(version, "1.13.0") < 0
+            && TestVersion.compare(version, "1.12.1") > 0)) {
+      tomcat8Version = TomcatInstall.TomcatVersion.TOMCAT8_RECENT;
+    }
+
     tomcat7079AndOldModules =
         new TomcatInstall("Tomcat7079AndOldModules", TomcatInstall.TomcatVersion.TOMCAT7,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
@@ -128,14 +137,14 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
             portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
     tomcat8AndOldModules =
-        new TomcatInstall("Tomcat8AndOldModules", TomcatInstall.TomcatVersion.TOMCAT8,
+        new TomcatInstall("Tomcat8AndOldModules", tomcat8Version,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             oldModules.getAbsolutePath(),
             oldBuild.getAbsolutePath() + "/lib",
             portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
     tomcat8AndCurrentModules =
-        new TomcatInstall("Tomcat8AndCurrentModules", TomcatInstall.TomcatVersion.TOMCAT8,
+        new TomcatInstall("Tomcat8AndCurrentModules", tomcat8Version,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
@@ -161,8 +170,8 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
   }
 
   protected void startClusterWithTomcat(String tomcatClassPath) throws Exception {
-    startLocator("loc", tomcatClassPath, locatorPort);
-    startServer("server", tomcatClassPath, locatorPort);
+    startLocator(tomcatClassPath, locatorPort);
+    startServer(tomcatClassPath, locatorPort);
   }
 
   /**
